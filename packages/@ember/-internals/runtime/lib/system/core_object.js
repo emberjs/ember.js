@@ -3,11 +3,13 @@
 */
 
 import { FACTORY_FOR } from '@ember/-internals/container';
+import { getOwner } from '@ember/-internals/owner';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
 import {
   guidFor,
   getName,
   setName,
+  symbol,
   makeArray,
   HAS_NATIVE_PROXY,
   isInternalSymbol,
@@ -16,9 +18,9 @@ import { schedule } from '@ember/runloop';
 import { meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
 import {
   PROXY_CONTENT,
-  finishChains,
   sendEvent,
   Mixin,
+  activateObserver,
   applyMixin,
   defineProperty,
   descriptorForProperty,
@@ -38,13 +40,13 @@ const factoryMap = new WeakMap();
 
 const prototypeMixinMap = new WeakMap();
 
-let PASSED_FROM_CREATE;
-let initCalled; // only used in debug builds to enable the proxy trap
+const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
+const PASSED_FROM_CREATE = DEBUG ? symbol('PASSED_FROM_CREATE') : undefined;
 
-// using DEBUG here to avoid the extraneous variable when not needed
-if (DEBUG) {
-  PASSED_FROM_CREATE = Symbol();
-  initCalled = new WeakSet();
+const FRAMEWORK_CLASSES = symbol('FRAMEWORK_CLASS');
+
+export function setFrameworkClass(klass) {
+  klass[FRAMEWORK_CLASSES] = true;
 }
 
 function initialize(obj, properties) {
@@ -129,9 +131,16 @@ function initialize(obj, properties) {
   }
   obj.init(properties);
 
-  // re-enable chains
   m.unsetInitializing();
-  finishChains(m);
+
+  let observerEvents = m.observerEvents();
+
+  if (observerEvents !== undefined) {
+    for (let i = 0; i < observerEvents.length; i++) {
+      activateObserver(obj, observerEvents[i].event, observerEvents[i].sync);
+    }
+  }
+
   sendEvent(obj, 'init', undefined, undefined, undefined, m);
 }
 
@@ -201,7 +210,7 @@ class CoreObject {
     factoryMap.set(this, factory);
   }
 
-  constructor(properties) {
+  constructor(passedFromCreate) {
     // pluck off factory
     let initFactory = factoryMap.get(this.constructor);
     if (initFactory !== undefined) {
@@ -267,13 +276,26 @@ class CoreObject {
 
     // disable chains
     let m = meta(self);
+
     m.setInitializing();
 
     assert(
-      `An EmberObject based class, ${
-        this.constructor
-      }, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
-      properties[PASSED_FROM_CREATE]
+      `An EmberObject based class, ${this.constructor}, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
+      (() => {
+        if (passedFromCreate === PASSED_FROM_CREATE) {
+          return true;
+        }
+
+        if (initFactory === undefined) {
+          return false;
+        }
+
+        if (passedFromCreate === initFactory.owner) {
+          return true;
+        }
+
+        return false;
+      })()
     );
 
     // only return when in debug builds and `self` is the proxy created above
@@ -749,7 +771,28 @@ class CoreObject {
   */
   static create(props, extra) {
     let C = this;
-    let instance = DEBUG ? new C(Object.freeze({ [PASSED_FROM_CREATE]: true })) : new C();
+    let instance;
+
+    if (this[FRAMEWORK_CLASSES]) {
+      let initFactory = factoryMap.get(this);
+      let owner;
+      if (initFactory !== undefined) {
+        owner = initFactory.owner;
+      } else if (props !== undefined) {
+        owner = getOwner(props);
+      }
+
+      if (owner === undefined) {
+        // fallback to passing the special PASSED_FROM_CREATE symbol
+        // to avoid an error when folks call things like Controller.extend().create()
+        // we should do a subsequent deprecation pass to ensure this isn't allowed
+        owner = PASSED_FROM_CREATE;
+      }
+
+      instance = new C(owner);
+    } else {
+      instance = DEBUG ? new C(PASSED_FROM_CREATE) : new C();
+    }
 
     if (extra === undefined) {
       initialize(instance, props);

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { checkTest, DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
 
 type Actual = [string, boolean, DebugFunctionOptions];
@@ -68,7 +69,6 @@ export default class MethodCallTracker {
 
   assert() {
     let { assert } = QUnit.config.current;
-    let env = this._env;
     let methodName = this._methodName;
     let isExpectingNoCalls = this._isExpectingNoCalls;
     let expectedMessages = this._expectedMessages;
@@ -80,7 +80,7 @@ export default class MethodCallTracker {
       return;
     }
 
-    if (env.runningProdBuild) {
+    if (!DEBUG) {
       assert.ok(true, `calls to Ember.${methodName} disabled in production builds.`);
       return;
     }
@@ -161,16 +161,12 @@ export default class MethodCallTracker {
       } else if (actual[1]) {
         assert.ok(
           false,
-          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was success with '${
-            actual[0]
-          }' ${actualOptionsMessage}`
+          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was success with '${actual[0]}' ${actualOptionsMessage}`
         );
       } else if (!actual[1]) {
         assert.ok(
           false,
-          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was failure with '${
-            actual[0]
-          }' ${actualOptionsMessage}`
+          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was failure with '${actual[0]}' ${actualOptionsMessage}`
         );
       }
     }

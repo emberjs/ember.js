@@ -135,8 +135,8 @@ moduleFor(
       location.initState();
       location.setURL('/one/two');
 
-      assert.equal(location._historyState.path, '/base/one/two');
-      assert.ok(location._historyState.uuid);
+      assert.equal(location.history.state.path, '/base/one/two');
+      assert.ok(location.history.state.uuid);
     }
 
     ['@test setURL continues to set even with a null state (iframes may set this)'](assert) {
@@ -146,8 +146,8 @@ moduleFor(
       FakeHistory.pushState(null);
       location.setURL('/three/four');
 
-      assert.equal(location._historyState.path, '/three/four');
-      assert.ok(location._historyState.uuid);
+      assert.equal(location.history.state.path, '/three/four');
+      assert.ok(location.history.state.uuid);
     }
 
     ['@test replaceURL continues to set even with a null state (iframes may set this)'](assert) {
@@ -157,8 +157,8 @@ moduleFor(
       FakeHistory.pushState(null);
       location.replaceURL('/three/four');
 
-      assert.equal(location._historyState.path, '/three/four');
-      assert.ok(location._historyState.uuid);
+      assert.equal(location.history.state.path, '/three/four');
+      assert.ok(location.history.state.uuid);
     }
 
     ['@test HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL'](
@@ -288,15 +288,15 @@ moduleFor(
       HistoryTestLocation.reopen({
         init() {
           this._super(...arguments);
-          let location = mockBrowserLocation('//');
-          location.pathname = '//'; // mockBrowserLocation does not allow for `//`, so force it
+          let location = mockBrowserLocation('//admin//profile//');
+          location.pathname = '//admin//profile//'; // mockBrowserLocation does not allow for `//`, so force it
           set(this, 'location', location);
         },
       });
 
       createLocation();
 
-      assert.equal(location.getURL(), '/');
+      assert.equal(location.getURL(), '/admin/profile/');
     }
 
     ['@test Existing state is preserved on init'](assert) {
@@ -316,7 +316,7 @@ moduleFor(
 
       createLocation();
       location.initState();
-      assert.deepEqual(location.getState(), existingState);
+      assert.deepEqual(location.history.state, existingState);
     }
   }
 );

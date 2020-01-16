@@ -82,7 +82,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar joker=model.wat batman=model.super}}', {
+      this.render('{{foo-bar joker=this.model.wat batman=this.model.super}}', {
         model: { wat: false, super: { robin: true } },
       });
 

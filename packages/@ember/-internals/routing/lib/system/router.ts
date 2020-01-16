@@ -1,6 +1,8 @@
+import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
+import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
 import { APP_CTRL_ROUTER_PROPS, ROUTER_EVENTS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
@@ -14,6 +16,7 @@ import Route, {
   defaultSerialize,
   hasDefaultSerialize,
   RenderOptions,
+  ROUTE_CONNECTIONS,
   ROUTER_EVENT_DEPRECATIONS,
 } from './route';
 import RouterState from './router_state';
@@ -131,10 +134,14 @@ class EmberRouter extends EmberObject {
 
   _qpCache = Object.create(null);
   _qpUpdates = new Set();
+  _queuedQPChanges: { [key: string]: unknown } = {};
 
+  _toplevelView: OutletView | null = null;
   _handledErrors = new Set();
   _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
   _engineInfoByRoute = Object.create(null);
+
+  _slowTransitionTimer: unknown;
 
   constructor() {
     super(...arguments);
@@ -149,7 +156,7 @@ class EmberRouter extends EmberObject {
     let seen = Object.create(null);
 
     class PrivateRouter extends Router<Route> {
-      getRoute(name: string) {
+      getRoute(name: string): Route {
         let routeName = name;
         let routeOwner = owner;
         let engineInfo = router._engineInfoByRoute[routeName];
@@ -163,10 +170,10 @@ class EmberRouter extends EmberObject {
 
         let fullRouteName = `route:${routeName}`;
 
-        let route: Route = routeOwner.lookup(fullRouteName);
+        let route = routeOwner.lookup<Route>(fullRouteName);
 
         if (seen[name]) {
-          return route;
+          return route!;
         }
 
         seen[name] = true;
@@ -183,15 +190,15 @@ class EmberRouter extends EmberObject {
           }
         }
 
-        route._setRouteName(routeName);
+        route!._setRouteName(routeName);
 
-        if (engineInfo && !hasDefaultSerialize(route)) {
+        if (engineInfo && !hasDefaultSerialize(route!)) {
           throw new Error(
             'Defining a custom serialize method on an Engine route is not supported.'
           );
         }
 
-        return route;
+        return route!;
       }
 
       getSerializer(name: string) {
@@ -441,7 +448,7 @@ class EmberRouter extends EmberObject {
 
     for (let i = 0; i < routeInfos.length; i++) {
       route = routeInfos[i].route;
-      let connections = route!.connections;
+      let connections = ROUTE_CONNECTIONS.get(route!);
       let ownState: OutletState;
       for (let j = 0; j < connections.length; j++) {
         let appended = appendLiveRoute(liveRoutes!, defaultParentState!, connections[j]);
@@ -454,7 +461,7 @@ class EmberRouter extends EmberObject {
         }
       }
       if (connections.length === 0) {
-        ownState = representEmptyRoute(liveRoutes!, defaultParentState as OutletState, route!);
+        ownState = representEmptyRoute(liveRoutes!, defaultParentState! as OutletState, route!);
       }
       defaultParentState = ownState!;
     }
@@ -471,12 +478,12 @@ class EmberRouter extends EmberObject {
     if (!this._toplevelView) {
       let owner = getOwner(this);
       let OutletView = owner.factoryFor('view:-outlet')!;
-      this._toplevelView = OutletView.create();
-      this._toplevelView.setOutletState(liveRoutes);
+      this._toplevelView = OutletView.create() as OutletView;
+      this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
       let instance: any = owner.lookup('-application-instance:main');
       instance.didCreateRootView(this._toplevelView);
     } else {
-      this._toplevelView.setOutletState(liveRoutes);
+      this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
     }
   }
 
@@ -497,7 +504,7 @@ class EmberRouter extends EmberObject {
     Transition the application into another route. The route may
     be either a single route or route path:
 
-    See [transitionTo](/api/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
+    See [transitionTo](/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
     @method transitionTo
     @param {String} name the name of the route or a URL
@@ -512,18 +519,14 @@ class EmberRouter extends EmberObject {
   transitionTo(...args: unknown[]) {
     if (resemblesURL(args[0] as string)) {
       assert(
-        `A transition was attempted from '${this.currentRouteName}' to '${
-          args[0]
-        }' but the application instance has already been destroyed.`,
+        `A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`,
         !this.isDestroying && !this.isDestroyed
       );
       return this._doURLTransition('transitionTo', args[0] as string);
     }
     let { routeName, models, queryParams } = extractRouteArgs(args);
     assert(
-      `A transition was attempted from '${
-        this.currentRouteName
-      }' to '${routeName}' but the application instance has already been destroyed.`,
+      `A transition was attempted from '${this.currentRouteName}' to '${routeName}' but the application instance has already been destroyed.`,
       !this.isDestroying && !this.isDestroyed
     );
     return this._doTransition(routeName, models, queryParams);
@@ -958,13 +961,7 @@ class EmberRouter extends EmberObject {
           qpOther = qpsByUrlKey![urlKey];
           if (qpOther && qpOther.controllerName !== qp.controllerName) {
             assert(
-              `You're not allowed to have more than one controller property map to the same query param key, but both \`${
-                qpOther.scopedPropertyName
-              }\` and \`${
-                qp.scopedPropertyName
-              }\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${
-                qpOther.prop
-              }: { as: \'other-${qpOther.prop}\' }\``,
+              `You're not allowed to have more than one controller property map to the same query param key, but both \`${qpOther.scopedPropertyName}\` and \`${qp.scopedPropertyName}\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${qpOther.prop}: { as: \'other-${qpOther.prop}\' }\``,
               false
             );
           }
@@ -1066,15 +1063,16 @@ class EmberRouter extends EmberObject {
           (qp.urlKey in queryParams && qp.urlKey);
 
         assert(
-          `You passed the \`${presentProp}\` query parameter during a transition into ${
-            qp.route.routeName
-          }, please update to ${qp.urlKey}`,
+          `You passed the \`${presentProp}\` query parameter during a transition into ${qp.route.routeName}, please update to ${qp.urlKey}`,
           (function() {
             if (qp.urlKey === presentProp) {
               return true;
             }
 
-            if (_fromRouterService && presentProp !== false) {
+            if (_fromRouterService && presentProp !== false && qp.urlKey !== qp.prop) {
+              // assumptions (mainly from current transitionTo_test):
+              // - this is only supposed to be run when there is an alias to a query param and the alias is used to set the param
+              // - when there is no alias: qp.urlKey == qp.prop
               return false;
             }
 
@@ -1471,7 +1469,7 @@ function updatePaths(router: EmberRouter) {
   set(router, 'currentRouteName', currentRouteName);
   set(router, 'currentURL', currentURL);
 
-  let appController = getOwner(router).lookup('controller:application');
+  let appController = getOwner(router).lookup<Controller>('controller:application');
 
   if (!appController) {
     // appController might not exist when top-level loading/error
@@ -1802,7 +1800,13 @@ EmberRouter.reopen(Evented, {
    @private
  */
   url: computed(function(this: Router<Route>) {
-    return get(this, 'location').getURL();
+    let location = get(this, 'location');
+
+    if (typeof location === 'string') {
+      return undefined;
+    }
+
+    return location.getURL();
   }),
 });
 

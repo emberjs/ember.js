@@ -1,4 +1,4 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { get } from '@ember/-internals/metal';
 import { runArrayTests, newFixture } from '../helpers/array';
 
@@ -10,7 +10,7 @@ class UnshiftObjectsTests extends AbstractTestCase {
     this.assert.equal(obj.unshiftObjects(items), obj, 'should return receiver');
   }
 
-  '@test [].unshiftObjects([A,B,C]) => [A,B,C] + notify'() {
+  async '@test [].unshiftObjects([A,B,C]) => [A,B,C] + notify'() {
     let before = [];
     let items = newFixture(3);
     let obj = this.newObject(before);
@@ -19,6 +19,9 @@ class UnshiftObjectsTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     obj.unshiftObjects(items);
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), items, 'post item results');
     this.assert.equal(get(obj, 'length'), items.length, 'length');
@@ -38,7 +41,7 @@ class UnshiftObjectsTests extends AbstractTestCase {
     );
   }
 
-  '@test [A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify'() {
+  async '@test [A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify'() {
     let before = newFixture(3);
     let items = newFixture(2);
     let after = items.concat(before);
@@ -48,6 +51,9 @@ class UnshiftObjectsTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     obj.unshiftObjects(items);
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
@@ -68,7 +74,7 @@ class UnshiftObjectsTests extends AbstractTestCase {
     );
   }
 
-  '@test [A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify'() {
+  async '@test [A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify'() {
     let before = newFixture(3);
     let items = [before[0], before[1]]; // note same object as current head. should end up twice
     let after = items.concat(before);
@@ -78,6 +84,9 @@ class UnshiftObjectsTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     obj.unshiftObjects(items);
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');

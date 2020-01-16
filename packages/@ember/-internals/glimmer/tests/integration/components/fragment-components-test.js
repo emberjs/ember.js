@@ -57,6 +57,7 @@ moduleFor(
       let FooBarComponent = Component.extend({
         tagName: '',
         click() {},
+        mouseEnter() {},
       });
 
       this.registerComponent('foo-bar', {
@@ -66,7 +67,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
-      }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
+      }, /You can not define `click,mouseEnter` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
     }
 
     ['@test throws an error if a custom defined event function is defined in a tagless component']() {
@@ -83,7 +84,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
-      }, /You can not define a function that handles DOM events in the .* tagless component since it doesn't have any DOM element./);
+      }, /You can not define `folks` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
     }
 
     ['@test throws an error if `tagName` is an empty string and `classNameBindings` are specified']() {

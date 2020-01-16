@@ -2,7 +2,11 @@ import Engine, { getEngineParent, setEngineParent } from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { run } from '@ember/runloop';
 import { factory } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ModuleBasedTestResolver,
+  AbstractTestCase as TestCase,
+} from 'internal-test-helpers';
 
 let engine, engineInstance;
 
@@ -13,7 +17,10 @@ moduleFor(
       super();
 
       run(() => {
-        engine = Engine.create({ router: null });
+        engine = Engine.create({
+          router: null,
+          Resolver: ModuleBasedTestResolver,
+        });
       });
     }
 
@@ -86,7 +93,9 @@ moduleFor(
     }
 
     ['@test can build a child instance of a registered engine'](assert) {
-      let ChatEngine = Engine.extend();
+      let ChatEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       let chatEngineInstance;
 
       engine.register('engine:chat', ChatEngine);

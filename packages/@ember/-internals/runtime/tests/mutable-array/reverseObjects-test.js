@@ -1,9 +1,9 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 import { get } from '@ember/-internals/metal';
 
 class ReverseObjectsTests extends AbstractTestCase {
-  '@test [A,B,C].reverseObjects() => [] + notify'() {
+  async '@test [A,B,C].reverseObjects() => [] + notify'() {
     let before = newFixture(3);
     let after = [before[2], before[1], before[0]];
     let obj = this.newObject(before);
@@ -12,6 +12,9 @@ class ReverseObjectsTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     this.assert.equal(obj.reverseObjects(), obj, 'return self');
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');

@@ -1,6 +1,5 @@
 import { peekMeta } from '@ember/-internals/meta';
 import { peekCacheFor } from './computed_cache';
-import { eachProxyArrayDidChange, eachProxyArrayWillChange } from './each_proxy_events';
 import { sendEvent } from './events';
 import { notifyPropertyChange } from './property_events';
 
@@ -23,8 +22,6 @@ export function arrayContentWillChange<T extends object>(
       addAmt = -1;
     }
   }
-
-  eachProxyArrayWillChange(array, startIdx, removeAmt, addAmt);
 
   sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
 
@@ -58,8 +55,6 @@ export function arrayContentDidChange<T extends { length: number }>(
   }
 
   notifyPropertyChange(array, '[]', meta);
-
-  eachProxyArrayDidChange(array, startIdx, removeAmt, addAmt);
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 

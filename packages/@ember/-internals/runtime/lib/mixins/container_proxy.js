@@ -3,6 +3,8 @@ import { schedule, join } from '@ember/runloop';
 @module ember
 */
 import { Mixin } from '@ember/-internals/metal';
+import { guidFor } from '@ember/-internals/utils';
+import { OWNER_MAP } from '@ember/-internals/owner';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -12,6 +14,18 @@ import { Mixin } from '@ember/-internals/metal';
   @private
 */
 let containerProxyMixin = {
+  init() {
+    this._super(...arguments);
+
+    OWNER_MAP.set(guidFor(this), this);
+  },
+
+  willDestroy() {
+    this._super();
+
+    OWNER_MAP.delete(guidFor(this));
+  },
+
   /**
    The container stores state.
 

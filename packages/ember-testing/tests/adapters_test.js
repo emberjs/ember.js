@@ -4,7 +4,7 @@ import Test from '../lib/test';
 import Adapter from '../lib/adapters/adapter';
 import QUnitAdapter from '../lib/adapters/qunit';
 import EmberApplication from '@ember/application';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
@@ -13,9 +13,9 @@ const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
 const originalDebug = getDebugFunction('debug');
 const noop = function() {};
 
-var App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
+let App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
 
-var originalConsoleError = console.error; // eslint-disable-line no-console
+const originalConsoleError = console.error; // eslint-disable-line no-console
 
 function runThatThrowsSync(message = 'Error for testing error handling') {
   return run(() => {
@@ -63,7 +63,7 @@ moduleFor(
   class extends AdapterSetupAndTearDown {
     ['@test Setting a test adapter manually'](assert) {
       assert.expect(1);
-      var CustomAdapter;
+      let CustomAdapter;
 
       CustomAdapter = Adapter.extend({
         asyncStart() {
@@ -72,7 +72,9 @@ moduleFor(
       });
 
       run(function() {
-        App = EmberApplication.create();
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         Test.adapter = CustomAdapter.create();
         App.setupForTesting();
       });
@@ -86,7 +88,9 @@ moduleFor(
       Test.adapter = null;
 
       run(function() {
-        App = EmberApplication.create();
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         App.setupForTesting();
       });
 
@@ -101,7 +105,9 @@ moduleFor(
       Test.adapter = null;
 
       run(function() {
-        App = EmberApplication.create();
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         App.setupForTesting();
       });
 

@@ -38,7 +38,7 @@ export default function confirmExport(Ember, assert, path, moduleId, exportName)
   } catch (error) {
     assert.pushResult({
       result: false,
-      message: `An error occured while testing ${path} is exported from ${moduleId}.`,
+      message: `An error occurred while testing ${path} is exported from ${moduleId}.`,
       source: error,
     });
   }

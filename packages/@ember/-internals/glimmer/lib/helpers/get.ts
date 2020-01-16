@@ -1,17 +1,14 @@
-import { set } from '@ember/-internals/metal';
-import { Opaque } from '@glimmer/interfaces';
+import { get as emberGet, set as emberSet } from '@ember/-internals/metal';
+import { isObject } from '@ember/-internals/utils';
+import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
 import {
-  combine,
-  CONSTANT_TAG,
-  isConst,
-  PathReference,
-  Tag,
-  TagWrapper,
-  UpdatableTag,
+  HelperRootReference,
+  UPDATE_REFERENCED_VALUE,
   VersionedPathReference,
 } from '@glimmer/reference';
-import { Arguments, NULL_REFERENCE, VM } from '@glimmer/runtime';
-import { CachedReference, referenceFromParts, UPDATE } from '../utils/references';
+import { NULL_REFERENCE } from '@glimmer/runtime';
+import { isConst } from '@glimmer/validator';
+import { referenceFromParts } from '../utils/references';
 
 /**
 @module ember
@@ -23,33 +20,70 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
 
   For example, these two usages are equivalent:
 
+  ```app/components/developer-detail.js
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
+
+  export default class extends Component {
+    @tracked developer = {
+      name: "Sandi Metz",
+      language: "Ruby"
+    }
+  }
+  ```
+
   ```handlebars
-  {{person.height}}
-  {{get person "height"}}
+  {{this.developer.name}}
+  {{get this.developer "name"}}
   ```
 
   If there were several facts about a person, the `{{get}}` helper can dynamically
   pick one:
 
+  ```app/templates/application.hbs
+  <DeveloperDetail @factName="language" />
+  ```
+
   ```handlebars
-  {{get person factName}}
+  {{get this.developer @factName}}
   ```
 
   For a more complex example, this template would allow the user to switch
   between showing the user's height and weight with a click:
 
-  ```handlebars
-  {{get person factName}}
-  <button {{action (action (mut factName)) "height"}}>Show height</button>
-  <button {{action (action (mut factName)) "weight"}}>Show weight</button>
+  ```app/components/developer-detail.js
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
+
+  export default class extends Component {
+    @tracked developer = {
+      name: "Sandi Metz",
+      language: "Ruby"
+    }
+
+    @tracked currentFact = 'name'
+
+    @action
+    showFact(fact) {
+      this.currentFact = fact;
+    }
+  }
+  ```
+
+  ```app/components/developer-detail.js
+  {{get this.developer this.currentFact}}
+
+  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
+  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
   ```
 
   The `{{get}}` helper can also respect mutable values itself. For example:
 
-  ```handlebars
-  {{input value=(mut (get person factName)) type="text"}}
-  <button {{action (action (mut factName)) "height"}}>Show height</button>
-  <button {{action (action (mut factName)) "weight"}}>Show weight</button>
+  ```app/components/developer-detail.js
+  <Input @value={{mut (get this.person this.currentFact)}} />
+
+  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
+  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
   ```
 
   Would allow the user to swap what fact is being displayed, and also edit
@@ -60,77 +94,55 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   @for Ember.Templates.helpers
   @since 2.1.0
  */
+export default function(args: VMArguments, vm: VM) {
+  let sourceReference = args.positional.at(0);
+  let pathReference = args.positional.at(1);
 
-export default function(_vm: VM, args: Arguments) {
-  return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
-}
+  if (isConst(pathReference)) {
+    // Since the path is constant, we can create a normal chain of property
+    // references. The source reference will update like normal, and all of the
+    // child references will update accordingly.
+    let path = pathReference.value();
 
-function referenceFromPath(
-  source: VersionedPathReference<Opaque>,
-  path: string
-): VersionedPathReference<Opaque> {
-  let innerReference;
-  if (path === undefined || path === null || path === '') {
-    innerReference = NULL_REFERENCE;
-  } else if (typeof path === 'string' && path.indexOf('.') > -1) {
-    innerReference = referenceFromParts(source, path.split('.'));
-  } else {
-    innerReference = source.get(path);
-  }
-  return innerReference;
-}
-
-class GetHelperReference extends CachedReference {
-  public sourceReference: VersionedPathReference<Opaque>;
-  public pathReference: PathReference<string>;
-  public lastPath: string | null;
-  public innerReference: VersionedPathReference<Opaque>;
-  public innerTag: TagWrapper<UpdatableTag>;
-  public tag: Tag;
-
-  static create(
-    sourceReference: VersionedPathReference<Opaque>,
-    pathReference: PathReference<string>
-  ) {
-    if (isConst(pathReference)) {
-      let path = pathReference.value();
-      return referenceFromPath(sourceReference, path);
+    if (path === undefined || path === null || path === '') {
+      return NULL_REFERENCE;
+    } else if (typeof path === 'string' && path.indexOf('.') > -1) {
+      return referenceFromParts(sourceReference, path.split('.'));
     } else {
-      return new GetHelperReference(sourceReference, pathReference);
+      return sourceReference.get(String(path));
     }
+  } else {
+    return new GetHelperRootReference(args.capture(), vm.env);
+  }
+}
+
+function get({ positional }: CapturedArguments) {
+  let source = positional.at(0).value();
+
+  if (isObject(source)) {
+    let path = positional.at(1).value();
+
+    return emberGet(source, String(path));
+  }
+}
+
+class GetHelperRootReference extends HelperRootReference {
+  private sourceReference: VersionedPathReference<object>;
+  private pathReference: VersionedPathReference<string>;
+
+  constructor(args: CapturedArguments, env: Environment) {
+    super(get, args, env);
+    this.sourceReference = args.positional.at(0);
+    this.pathReference = args.positional.at(1);
   }
 
-  constructor(
-    sourceReference: VersionedPathReference<Opaque>,
-    pathReference: PathReference<string>
-  ) {
-    super();
-    this.sourceReference = sourceReference;
-    this.pathReference = pathReference;
+  [UPDATE_REFERENCED_VALUE](value: any) {
+    let source = this.sourceReference.value();
 
-    this.lastPath = null;
-    this.innerReference = NULL_REFERENCE;
+    if (isObject(source)) {
+      let path = String(this.pathReference.value());
 
-    let innerTag = (this.innerTag = UpdatableTag.create(CONSTANT_TAG));
-
-    this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
-  }
-
-  compute() {
-    let { lastPath, innerReference, innerTag } = this;
-    let path = this.pathReference.value();
-
-    if (path !== lastPath) {
-      innerReference = referenceFromPath(this.sourceReference, path);
-      innerTag.inner.update(innerReference.tag);
-      this.innerReference = innerReference;
-      this.lastPath = path;
+      emberSet(source, path, value);
     }
-
-    return innerReference.value();
-  }
-
-  [UPDATE](value: any) {
-    set(this.sourceReference.value() as any, this.pathReference.value(), value);
   }
 }

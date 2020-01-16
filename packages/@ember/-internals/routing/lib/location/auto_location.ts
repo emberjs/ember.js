@@ -1,10 +1,9 @@
 import { history, location, userAgent, window } from '@ember/-internals/browser-environment';
-import { get, set } from '@ember/-internals/metal';
+import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { tryInvoke } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-
 import { EmberLocation, UpdateCallback } from './api';
 import {
   getFullPath,
@@ -100,16 +99,15 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
       implementation = 'none';
     }
 
-    let concrete = getOwner(this).lookup(`location:${implementation}`);
-    set(concrete, 'rootURL', rootURL);
+    let concrete = getOwner(this).lookup<EmberLocation>(`location:${implementation}`);
+    assert(`Could not find location '${implementation}'.`, concrete !== undefined);
 
-    assert(`Could not find location '${implementation}'.`, Boolean(concrete));
-
-    set(this, 'concreteImplementation', concrete);
+    set(concrete!, 'rootURL', rootURL);
+    set(this, 'concreteImplementation', concrete!);
   }
 
   willDestroy() {
-    let concreteImplementation = get(this, 'concreteImplementation');
+    let { concreteImplementation } = this;
 
     if (concreteImplementation) {
       concreteImplementation.destroy();
@@ -196,7 +194,7 @@ AutoLocation.reopen({
 
 function delegateToConcreteImplementation(methodName: string) {
   return function(this: AutoLocation, ...args: any[]) {
-    let concreteImplementation = get(this, 'concreteImplementation');
+    let { concreteImplementation } = this;
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",
       Boolean(concreteImplementation)

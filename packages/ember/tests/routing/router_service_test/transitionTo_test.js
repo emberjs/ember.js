@@ -6,6 +6,7 @@ import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
+import { inject as service } from '@ember/service';
 
 moduleFor(
   'Router Service - transitionTo',
@@ -157,14 +158,14 @@ moduleFor(
       });
     }
 
-    ['@test RouterService#transitionTo with dynamic segment'](assert) {
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) RouterService#transitionTo with dynamic segment'](assert) {
       assert.expect(3);
 
       let componentInstance;
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
       this.addTemplate('parent.index', '{{foo-bar}}');
-      this.addTemplate('dynamic', '{{model.contents}}');
+      this.addTemplate('dynamic', '{{this.model.contents}}');
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
@@ -193,7 +194,47 @@ moduleFor(
       });
     }
 
-    ['@test RouterService#transitionTo with dynamic segment and model hook'](assert) {
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) RouterService#transitionTo with dynamic segment'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let componentInstance;
+      let dynamicModel = { id: 1, contents: 'much dynamicism' };
+
+      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('dynamic', '{{@model.contents}}');
+
+      this.addComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          routerService: injectService('router'),
+          init() {
+            this._super();
+            componentInstance = this;
+          },
+          actions: {
+            transitionToDynamic() {
+              get(this, 'routerService').transitionTo('dynamic', dynamicModel);
+            },
+          },
+        }),
+        template: `foo-bar`,
+      });
+
+      await this.visit('/');
+
+      run(function() {
+        componentInstance.send('transitionToDynamic');
+      });
+
+      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
+      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      this.assertText('much dynamicism');
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) RouterService#transitionTo with dynamic segment and model hook'](
+      assert
+    ) {
       assert.expect(3);
 
       let componentInstance;
@@ -209,7 +250,7 @@ moduleFor(
       );
 
       this.addTemplate('parent.index', '{{foo-bar}}');
-      this.addTemplate('dynamic', '{{model.contents}}');
+      this.addTemplate('dynamic', '{{this.model.contents}}');
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
@@ -236,6 +277,53 @@ moduleFor(
         assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
         this.assertText('much dynamicism');
       });
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) RouterService#transitionTo with dynamic segment and model hook'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let componentInstance;
+      let dynamicModel = { id: 1, contents: 'much dynamicism' };
+
+      this.add(
+        'route:dynamic',
+        Route.extend({
+          model() {
+            return dynamicModel;
+          },
+        })
+      );
+
+      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.addTemplate('dynamic', '{{@model.contents}}');
+
+      this.addComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          routerService: injectService('router'),
+          init() {
+            this._super();
+            componentInstance = this;
+          },
+          actions: {
+            transitionToDynamic() {
+              get(this, 'routerService').transitionTo('dynamic', 1);
+            },
+          },
+        }),
+        template: `foo-bar`,
+      });
+
+      await this.visit('/');
+
+      run(function() {
+        componentInstance.send('transitionToDynamic');
+      });
+
+      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
+      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      this.assertText('much dynamicism');
     }
 
     ['@test RouterService#transitionTo with basic query params does not remove query param defaults'](
@@ -360,6 +448,32 @@ moduleFor(
         expectAssertion(() => {
           return this.routerService.transitionTo('parent.child', queryParams);
         }, 'You passed the `cont_sort` query parameter during a transition into parent.child, please update to url_sort');
+      });
+    }
+
+    ['@test RouterService#transitionTo with application query params when redirecting form a different route'](
+      assert
+    ) {
+      assert.expect(1);
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          router: service(),
+          beforeModel() {
+            this.router.transitionTo('parent');
+          },
+        })
+      );
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          queryParams: ['url_sort'],
+        })
+      );
+
+      return this.visit('/child?url_sort=a').then(() => {
+        assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
     }
   }

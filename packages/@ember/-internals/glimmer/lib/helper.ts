@@ -3,14 +3,15 @@
 */
 
 import { Factory } from '@ember/-internals/owner';
-import { FrameworkObject } from '@ember/-internals/runtime';
+import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
-import { Dict, Opaque } from '@glimmer/interfaces';
-import { DirtyableTag } from '@glimmer/reference';
+import { join } from '@ember/runloop';
+import { Dict } from '@glimmer/interfaces';
+import { createTag, dirty } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
-export type HelperFunction = (positional: Opaque[], named: Dict<Opaque>) => Opaque;
+export type HelperFunction<T = unknown> = (positional: unknown[], named: Dict<unknown>) => T;
 
 export type SimpleHelperFactory = Factory<SimpleHelper, HelperFactory<SimpleHelper>>;
 export type ClassHelperFactory = Factory<HelperInstance, HelperFactory<HelperInstance>>;
@@ -20,13 +21,13 @@ export interface HelperFactory<T> {
   create(): T;
 }
 
-export interface HelperInstance {
-  compute(positional: Opaque[], named: Dict<Opaque>): Opaque;
+export interface HelperInstance<T = unknown> {
+  compute(positional: unknown[], named: Dict<unknown>): T;
   destroy(): void;
 }
 
-export interface SimpleHelper {
-  compute: HelperFunction;
+export interface SimpleHelper<T = unknown> {
+  compute: HelperFunction<T>;
 }
 
 export function isHelperFactory(
@@ -45,16 +46,20 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
   Ember Helpers are functions that can compute values, and are used in templates.
   For example, this code calls a helper named `format-currency`:
 
-  ```handlebars
-  <div>{{format-currency cents currency="$"}}</div>
+  ```app/templates/application.hbs
+  <Cost @cents={{230}} />
   ```
 
-  Additionally a helper can be called as a nested helper (sometimes called a
-  subexpression). In this example, the computed value of a helper is passed
-  to a component named `show-money`:
+  ```app/components/cost.hbs
+  <div>{{format-currency @cents currency="$"}}</div>
+  ```
+
+  Additionally a helper can be called as a nested helper.
+  In this example, we show the formatted currency value if the `showMoney`
+  named argument is truthy.
 
   ```handlebars
-  {{show-money amount=(format-currency cents currency="$")}}
+  {{if @showMoney (format-currency @cents currency="$")}}
   ```
 
   Helpers defined using a class must provide a `compute` function. For example:
@@ -62,11 +67,11 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
   ```app/helpers/format-currency.js
   import Helper from '@ember/component/helper';
 
-  export default Helper.extend({
+  export default class extends Helper {
     compute([cents], { currency }) {
       return `${currency}${cents * 0.01}`;
     }
-  });
+  }
   ```
 
   Each time the input to a helper changes, the `compute` function will be
@@ -84,7 +89,7 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
 let Helper = FrameworkObject.extend({
   init() {
     this._super(...arguments);
-    this[RECOMPUTE_TAG] = DirtyableTag.create();
+    this[RECOMPUTE_TAG] = createTag();
   },
 
   /**
@@ -101,9 +106,11 @@ let Helper = FrameworkObject.extend({
 
     export default Helper.extend({
       session: service(),
+
       onNewUser: observer('session.currentUser', function() {
         this.recompute();
       }),
+
       compute() {
         return this.get('session.currentUser.email');
       }
@@ -115,7 +122,7 @@ let Helper = FrameworkObject.extend({
     @since 1.13.0
   */
   recompute() {
-    this[RECOMPUTE_TAG].inner.dirty();
+    join(() => dirty(this[RECOMPUTE_TAG]));
   },
 
   /**
@@ -131,6 +138,8 @@ let Helper = FrameworkObject.extend({
 
 Helper.isHelperFactory = true;
 
+setFrameworkClass(Helper);
+
 class Wrapper implements HelperFactory<SimpleHelper> {
   isHelperFactory: true = true;
 
@@ -145,16 +154,14 @@ class Wrapper implements HelperFactory<SimpleHelper> {
 }
 
 /**
-  In many cases, the ceremony of a full `Helper` class is not required.
-  The `helper` method create pure-function helpers without instances. For
-  example:
+  In many cases it is not necessary to use the full `Helper` class.
+  The `helper` method create pure-function helpers without instances.
+  For example:
 
   ```app/helpers/format-currency.js
   import { helper } from '@ember/component/helper';
 
-  export default helper(function(params, hash) {
-    let cents = params[0];
-    let currency = hash.currency;
+  export default helper(function([cents], {currency}) {
     return `${currency}${cents * 0.01}`;
   });
   ```

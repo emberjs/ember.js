@@ -1192,21 +1192,21 @@ class LifeCycleHooksTest extends RenderingTestCase {
         ['nested-item', 'willRender'],
         ['nested-item', 'willInsertElement'],
 
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-
         ['nested-item', 'didInsertElement'],
         ['nested-item', 'didRender'],
         ['no-items', 'didInsertElement'],
         ['no-items', 'didRender'],
+
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
 
         ['an-item', 'willDestroy'],
         ['nested-item', 'willDestroy'],
@@ -1465,16 +1465,16 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each items as |item|}}
-        {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
-      {{/each}}
-      {{#if model.shouldShow}}
-        {{#parent-component itemId=6}}6{{/parent-component}}
-      {{/if}}
-      {{#if model.shouldShow}}
-        {{#parent-component itemId=7}}7{{/parent-component}}
-      {{/if}}
-    `,
+        {{#each items as |item|}}
+          {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
+        {{/each}}
+        {{#if this.model.shouldShow}}
+          {{#parent-component itemId=6}}6{{/parent-component}}
+        {{/if}}
+        {{#if this.model.shouldShow}}
+          {{#parent-component itemId=7}}7{{/parent-component}}
+        {{/if}}
+        `,
         {
           items: array,
           model: { shouldShow: true },

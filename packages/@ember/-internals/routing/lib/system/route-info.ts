@@ -62,7 +62,6 @@
   Will contain the result `Route#buildRouteInfoMetadata`
   for the corresponding Route.
   @property {Any} metadata
-  @category EMBER_ROUTING_BUILD_ROUTEINFO_METADATA
   @public
 */
 

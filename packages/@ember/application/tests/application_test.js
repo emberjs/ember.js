@@ -1,4 +1,4 @@
-/*globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
 import { ENV, context } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';
@@ -6,7 +6,6 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setTemplates } from '@ember/-internals/glimmer';
@@ -155,11 +154,7 @@ moduleFor(
       verifyRegistration(assert, application, 'component:-checkbox');
       verifyRegistration(assert, application, 'component:link-to');
 
-      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-        verifyRegistration(assert, application, 'component:textarea');
-      } else {
-        verifyRegistration(assert, application, 'component:-text-area');
-      }
+      verifyRegistration(assert, application, 'component:textarea');
 
       verifyRegistration(assert, application, 'service:-routing');
       verifyInjection(assert, application, 'service:-routing', 'router', 'router:main');
@@ -183,31 +178,12 @@ moduleFor(
       verifyRegistration(assert, application, 'container-debug-adapter:main');
       verifyRegistration(assert, application, 'component-lookup:main');
 
-      verifyRegistration(assert, application, 'service:-glimmer-environment');
-      verifyRegistration(assert, application, 'service:-dom-changes');
-      verifyRegistration(assert, application, 'service:-dom-tree-construction');
-      verifyInjection(
-        assert,
-        application,
-        'service:-glimmer-environment',
-        'appendOperations',
-        'service:-dom-tree-construction'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'service:-glimmer-environment',
-        'updateOperations',
-        'service:-dom-changes'
-      );
-      verifyInjection(assert, application, 'renderer', 'env', 'service:-glimmer-environment');
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
       verifyRegistration(assert, application, 'renderer:-inert');
       verifyRegistration(assert, application, P`template:components/-default`);
       verifyRegistration(assert, application, 'template:-outlet');
       verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
-      verifyInjection(assert, application, 'template', 'compiler', P`template-compiler:main`);
 
       assert.deepEqual(
         application.registeredOptionsForType('helper'),
@@ -360,7 +336,7 @@ moduleFor(
     }
 
     [`@test enable log of libraries with an ENV var`](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }

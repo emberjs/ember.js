@@ -21,17 +21,6 @@ class FilterTest extends AbstractTestCase {
 }
 
 class FilterByTest extends AbstractTestCase {
-  '@test should filter based on object'() {
-    let obj, ary;
-
-    ary = [{ foo: 'foo', bar: 'BAZ' }, EmberObject.create({ foo: 'foo', bar: 'bar' })];
-
-    obj = this.newObject(ary);
-
-    this.assert.deepEqual(obj.filterBy('foo', 'foo'), ary, 'filterBy(foo)');
-    this.assert.deepEqual(obj.filterBy('bar', 'bar'), [ary[1]], 'filterBy(bar)');
-  }
-
   '@test should include in result if property is true'() {
     let obj, ary;
 
@@ -72,16 +61,6 @@ class FilterByTest extends AbstractTestCase {
     obj = this.newObject(ary);
 
     this.assert.deepEqual(obj.filterBy('foo', null), [ary[1], ary[2]], "filterBy('foo', 3)')");
-  }
-
-  '@test should not return all objects on undefined second argument'() {
-    let obj, ary;
-
-    ary = [{ name: 'obj1', foo: 3 }, EmberObject.create({ name: 'obj2', foo: 2 })];
-
-    obj = this.newObject(ary);
-
-    this.assert.deepEqual(obj.filterBy('foo', undefined), [], "filterBy('foo', 3)')");
   }
 
   '@test should correctly filter explicit undefined second argument'() {

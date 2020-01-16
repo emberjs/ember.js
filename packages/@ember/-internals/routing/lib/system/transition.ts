@@ -139,7 +139,7 @@
  * where the router is transitioning to. It's important
  * to note that a `RouteInfo` is a linked list and this
  * property represents the leafmost route.
- * @property {RouteInfo|RouteInfoWithAttributes} to
+ * @property {null|RouteInfo|RouteInfoWithAttributes} to
  * @public
  */
 
@@ -150,7 +150,7 @@
  * property represents the head node of the list.
  * In the case of an initial render, `from` will be set to
  * `null`.
- * @property {RouteInfoWithAttributes} from
+ * @property {null|RouteInfoWithAttributes} from
  * @public
  */
 

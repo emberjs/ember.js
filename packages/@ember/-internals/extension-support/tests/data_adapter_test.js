@@ -2,7 +2,7 @@ import { run } from '@ember/runloop';
 import { get, set, addObserver, removeObserver } from '@ember/-internals/metal';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import EmberDataAdapter from '../lib/data_adapter';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
 
 let adapter;
 const Model = EmberObject.extend();
@@ -267,23 +267,30 @@ moduleFor(
       );
       this.add('model:post', PostClass);
 
-      return this.visit('/').then(() => {
-        adapter = this.applicationInstance.lookup('data-adapter:main');
+      let release;
 
-        function recordsAdded() {
-          set(post, 'title', 'Post Modified');
-        }
+      return this.visit('/')
+        .then(() => {
+          adapter = this.applicationInstance.lookup('data-adapter:main');
 
-        function recordsUpdated(records) {
-          updatesCalled++;
-          assert.equal(records[0].columnValues.title, 'Post Modified');
-        }
+          function recordsAdded() {
+            set(post, 'title', 'Post Modified');
+          }
 
-        let release = adapter.watchRecords('post', recordsAdded, recordsUpdated);
-        release();
-        set(post, 'title', 'New Title');
-        assert.equal(updatesCalled, 1, 'Release function removes observers');
-      });
+          function recordsUpdated(records) {
+            updatesCalled++;
+            assert.equal(records[0].columnValues.title, 'Post Modified');
+          }
+
+          release = adapter.watchRecords('post', recordsAdded, recordsUpdated);
+
+          return runLoopSettled();
+        })
+        .then(() => {
+          release();
+          set(post, 'title', 'New Title');
+          assert.equal(updatesCalled, 1, 'Release function removes observers');
+        });
     }
 
     ['@test _nameToClass does not error when not found'](assert) {

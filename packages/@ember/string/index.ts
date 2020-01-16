@@ -281,7 +281,7 @@ export function capitalize(str: string): string {
 if (ENV.EXTEND_PROTOTYPES.String) {
   Object.defineProperties(String.prototype, {
     /**
-      See [String.w](/api/ember/release/classes/String/methods/w?anchor=w).
+      See [String.w](/ember/release/classes/String/methods/w?anchor=w).
 
       @method w
       @for @ember/string
@@ -298,7 +298,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.loc](/api/ember/release/classes/String/methods/loc?anchor=loc).
+      See [String.loc](/ember/release/classes/String/methods/loc?anchor=loc).
 
       @method loc
       @for @ember/string
@@ -315,7 +315,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.camelize](/api/ember/release/classes/String/methods/camelize?anchor=camelize).
+      See [String.camelize](/ember/release/classes/String/methods/camelize?anchor=camelize).
 
       @method camelize
       @for @ember/string
@@ -332,7 +332,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.decamelize](/api/ember/release/classes/String/methods/decamelize?anchor=decamelize).
+      See [String.decamelize](/ember/release/classes/String/methods/decamelize?anchor=decamelize).
 
       @method decamelize
       @for @ember/string
@@ -349,7 +349,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.dasherize](/api/ember/release/classes/String/methods/dasherize?anchor=dasherize).
+      See [String.dasherize](/ember/release/classes/String/methods/dasherize?anchor=dasherize).
 
       @method dasherize
       @for @ember/string
@@ -366,7 +366,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.underscore](/api/ember/release/classes/String/methods/underscore?anchor=underscore).
+      See [String.underscore](/ember/release/classes/String/methods/underscore?anchor=underscore).
 
       @method underscore
       @for @ember/string
@@ -383,7 +383,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.classify](/api/ember/release/classes/String/methods/classify?anchor=classify).
+      See [String.classify](/ember/release/classes/String/methods/classify?anchor=classify).
 
       @method classify
       @for @ember/string
@@ -400,7 +400,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.capitalize](/api/ember/release/classes/String/methods/capitalize?anchor=capitalize).
+      See [String.capitalize](/ember/release/classes/String/methods/capitalize?anchor=capitalize).
 
       @method capitalize
       @for @ember/string

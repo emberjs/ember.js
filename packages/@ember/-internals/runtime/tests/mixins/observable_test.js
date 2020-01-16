@@ -1,6 +1,6 @@
 import { computed, addObserver, get } from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
   'mixins/observable',
@@ -43,7 +43,7 @@ moduleFor(
       assert.equal('Cook', obj.get('lastName'));
     }
 
-    ['@test calling setProperties completes safely despite exceptions'](assert) {
+    async ['@test calling setProperties completes safely despite exceptions'](assert) {
       let exc = new Error('Something unexpected happened!');
       let obj = EmberObject.extend({
         companyName: computed({
@@ -74,6 +74,8 @@ moduleFor(
           throw err;
         }
       }
+
+      await runLoopSettled();
 
       assert.equal(firstNameChangedCount, 1, 'firstName should have fired once');
     }

@@ -31,11 +31,7 @@ import {
   intersect,
   collect,
 } from '@ember/object/computed';
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 let obj;
 moduleFor(
@@ -253,7 +249,7 @@ moduleFor(
       assert.deepEqual(obj.get('mapped'), [1, 3, 2, 5]);
     }
 
-    ['@test it is observable'](assert) {
+    async ['@test it is observable'](assert) {
       let calls = 0;
 
       assert.deepEqual(obj.get('mapped'), [1, 3, 2, 1]);
@@ -261,6 +257,7 @@ moduleFor(
       addObserver(obj, 'mapped.@each', () => calls++);
 
       obj.get('array').pushObject({ v: 5 });
+      await runLoopSettled();
 
       assert.equal(calls, 1, 'mapBy is observable');
     }
@@ -1515,35 +1512,33 @@ moduleFor(
   }
 );
 
-if (EMBER_NATIVE_DECORATOR_SUPPORT) {
-  moduleFor(
-    'sort - sortProperties - Native Class',
-    class extends SortWithSortPropertiesTestCase {
-      buildObject(_items, _itemSorting) {
-        let items =
-          _items ||
-          emberA([
-            { fname: 'Jaime', lname: 'Lannister', age: 34 },
-            { fname: 'Cersei', lname: 'Lannister', age: 34 },
-            { fname: 'Robb', lname: 'Stark', age: 16 },
-            { fname: 'Bran', lname: 'Stark', age: 8 },
-          ]);
+moduleFor(
+  'sort - sortProperties - Native Class',
+  class extends SortWithSortPropertiesTestCase {
+    buildObject(_items, _itemSorting) {
+      let items =
+        _items ||
+        emberA([
+          { fname: 'Jaime', lname: 'Lannister', age: 34 },
+          { fname: 'Cersei', lname: 'Lannister', age: 34 },
+          { fname: 'Robb', lname: 'Stark', age: 16 },
+          { fname: 'Bran', lname: 'Stark', age: 8 },
+        ]);
 
-        let itemSorting = _itemSorting || emberA(['lname', 'fname']);
+      let itemSorting = _itemSorting || emberA(['lname', 'fname']);
 
-        return new class {
-          items = items;
-          itemSorting = itemSorting;
+      return new (class {
+        items = items;
+        itemSorting = itemSorting;
 
-          @sort('items', 'itemSorting')
-          sortedItems;
-        }();
-      }
-
-      cleanupObject() {}
+        @sort('items', 'itemSorting')
+        sortedItems;
+      })();
     }
-  );
-}
+
+    cleanupObject() {}
+  }
+);
 
 function sortByLnameFname(a, b) {
   let lna = get(a, 'lname');
@@ -1790,32 +1785,6 @@ moduleFor(
         ['Jaime', 'Tyrion', 'Bran', 'Robb'],
         'updating a specified property on an item resorts it'
       );
-    }
-
-    ['@test changing item properties not specified via @each does not trigger a resort'](assert) {
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        let items = obj.get('items');
-        let cersei = items[1];
-
-        assert.deepEqual(
-          obj.get('sortedItems').mapBy('fname'),
-          ['Cersei', 'Jaime', 'Bran', 'Robb'],
-          'precond - array is initially sorted'
-        );
-
-        set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
-
-        // The array has become unsorted.  If your sort function is sensitive to
-        // properties, they *must* be specified as dependent item property keys or
-        // we'll be doing binary searches on unsorted arrays.
-        assert.deepEqual(
-          obj.get('sortedItems').mapBy('fname'),
-          ['Cersei', 'Jaime', 'Bran', 'Robb'],
-          'updating an unspecified property on an item does not resort it'
-        );
-      } else {
-        assert.expect(0);
-      }
     }
 
     ['@test sort updates if additional dependent keys are present'](assert) {
@@ -2309,7 +2278,7 @@ moduleFor(
       run(obj, 'destroy');
     }
 
-    ['@test it computes interdependent array computed properties'](assert) {
+    async ['@test it computes interdependent array computed properties'](assert) {
       assert.equal(obj.get('max'), 3, 'sanity - it properly computes the maximum value');
 
       let calls = 0;
@@ -2317,6 +2286,7 @@ moduleFor(
       addObserver(obj, 'max', () => calls++);
 
       obj.get('array').pushObject({ v: 5 });
+      await runLoopSettled();
 
       assert.equal(obj.get('max'), 5, 'maximum value is updated correctly');
       assert.equal(userFnCalls, 1, 'object defined observers fire');

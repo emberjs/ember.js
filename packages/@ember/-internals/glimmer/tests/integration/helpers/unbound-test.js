@@ -1,4 +1,10 @@
-import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
+import {
+  RenderingTestCase,
+  moduleFor,
+  strip,
+  runTask,
+  runLoopSettled,
+} from 'internal-test-helpers';
 
 import { set, get, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
@@ -81,7 +87,7 @@ moduleFor(
     }
 
     ['@test should render on attributes']() {
-      this.render(`<a href="{{unbound model.foo}}"></a>`, {
+      this.render(`<a href="{{unbound this.model.foo}}"></a>`, {
         model: { foo: 'BORK' },
       });
 
@@ -286,7 +292,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{unbound (surround model.prefix model.value "bar")}} {{surround model.prefix model.value "bar"}} {{unbound (surround "bar" model.value model.suffix)}} {{surround "bar" model.value model.suffix}}`,
+      {{unbound (surround this.model.prefix this.model.value "bar")}} {{surround this.model.prefix this.model.value "bar"}} {{unbound (surround "bar" this.model.value this.model.suffix)}} {{surround "bar" this.model.value this.model.suffix}}`,
         {
           model: {
             prefix: 'before',
@@ -329,7 +335,7 @@ moduleFor(
       this.registerHelper('fauxconcat', params => params.join(''));
 
       this.render(
-        `{{fauxconcat model.foo model.bar model.bing}} {{unbound (fauxconcat model.foo model.bar model.bing)}}`,
+        `{{fauxconcat this.model.foo this.model.bar this.model.bing}} {{unbound (fauxconcat this.model.foo this.model.bar this.model.bing)}}`,
         {
           model: {
             foo: 'a',
@@ -360,7 +366,7 @@ moduleFor(
       this.assertText('abc abc');
     }
 
-    ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
+    async ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
       this.registerHelper('capitalizeName', {
         destroy() {
           this.removeObserver('value.firstName', this, this.recompute);
@@ -368,7 +374,7 @@ moduleFor(
         },
 
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
@@ -387,7 +393,7 @@ moduleFor(
           this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.teardown();
           }
           this.set('value', value);
@@ -410,10 +416,12 @@ moduleFor(
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => this.rerender());
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => set(this.context, 'person.firstName', 'sally'));
+      await runLoopSettled();
 
       this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
 
@@ -423,6 +431,7 @@ moduleFor(
           lastName: 'taylor',
         })
       );
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
     }
@@ -476,7 +485,7 @@ moduleFor(
       this.assertText('SHOOBY SHOOBYCINDY CINDY');
     }
 
-    ['@test should be able to render an unbound helper invocation with bound hash options']() {
+    async ['@test should be able to render an unbound helper invocation with bound hash options']() {
       this.registerHelper('capitalizeName', {
         destroy() {
           this.removeObserver('value.firstName', this, this.recompute);
@@ -484,7 +493,7 @@ moduleFor(
         },
 
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
@@ -503,7 +512,7 @@ moduleFor(
           this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.teardown();
           }
           this.set('value', value);
@@ -522,14 +531,17 @@ moduleFor(
           },
         }
       );
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => this.rerender());
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => set(this.context, 'person.firstName', 'sally'));
+      await runLoopSettled();
 
       this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
 
@@ -546,13 +558,13 @@ moduleFor(
     ['@test should be able to render bound form of a helper inside unbound form of same helper']() {
       this.render(
         strip`
-      {{#if (unbound model.foo)}}
-        {{#if model.bar}}true{{/if}}
-        {{#unless model.bar}}false{{/unless}}
+      {{#if (unbound this.model.foo)}}
+        {{#if this.model.bar}}true{{/if}}
+        {{#unless this.model.bar}}false{{/unless}}
       {{/if}}
-      {{#unless (unbound model.notfoo)}}
-        {{#if model.bar}}true{{/if}}
-        {{#unless model.bar}}false{{/unless}}
+      {{#unless (unbound this.model.notfoo)}}
+        {{#if this.model.bar}}true{{/if}}
+        {{#unless this.model.bar}}false{{/unless}}
       {{/unless}}`,
         {
           model: {
@@ -596,7 +608,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (unbound model.foo)}}`,
+        template: `{{yield (unbound this.model.foo)}}`,
       });
 
       this.render(`{{#foo-bar as |value|}}{{value}}{{/foo-bar}}`);
@@ -628,7 +640,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (unbound (hash foo=model.foo))}}`,
+        template: `{{yield (unbound (hash foo=this.model.foo))}}`,
       });
 
       this.render(`{{#foo-bar as |value|}}{{value.foo}}{{/foo-bar}}`);

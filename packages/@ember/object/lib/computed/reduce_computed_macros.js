@@ -4,12 +4,10 @@
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
 import {
-  addObserver,
   computed,
+  descriptorForDecorator,
   get,
   isElementDescriptor,
-  notifyPropertyChange,
-  removeObserver,
 } from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
@@ -1424,11 +1422,9 @@ export function collect(...dependentKeys) {
   @for @ember/object/computed
   @static
   @param {String} itemsKey
-  @param {Array} [additionalDependentKeys] optional array of additional
-  dependent keys
-  @param {String or Function} sortDefinition a dependent key to an array of sort
-  properties (add `:desc` to the arrays sort properties to sort descending) or a
-  function to use when sorting
+  @param {String|Function|Array} sortDefinitionOrDependentKeys The key of the sort definition (an array of sort properties),
+  the sort function, or an array of additional dependent keys
+  @param {Function?} sortDefinition the sort function (when used with additional dependent keys)
   @return {ComputedProperty} computes a new sorted array based on the sort
   property array or callback function
   @public
@@ -1457,7 +1453,7 @@ export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
     }
 
     assert(
-      '`computed.sort` can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may recieve up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
+      '`computed.sort` can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may receive up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
       argumentsValid
     );
   }
@@ -1483,10 +1479,7 @@ function customSort(itemsKey, additionalDependentKeys, comparator) {
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
-  let activeObserversMap = new WeakMap();
-  let sortPropertyDidChangeMap = new WeakMap();
-
-  return computed(`${sortPropertiesKey}.[]`, function(key) {
+  let cp = computed(`${itemsKey}.[]`, `${sortPropertiesKey}.[]`, function(key) {
     let sortProperties = get(this, sortPropertiesKey);
 
     assert(
@@ -1494,36 +1487,8 @@ function propertySort(itemsKey, sortPropertiesKey) {
       isArray(sortProperties) && sortProperties.every(s => typeof s === 'string')
     );
 
-    // Add/remove property observers as required.
-    let activeObservers = activeObserversMap.get(this);
-
-    if (!sortPropertyDidChangeMap.has(this)) {
-      sortPropertyDidChangeMap.set(this, function() {
-        notifyPropertyChange(this, key);
-      });
-    }
-
-    let sortPropertyDidChange = sortPropertyDidChangeMap.get(this);
-
-    if (activeObservers !== undefined) {
-      activeObservers.forEach(path => removeObserver(this, path, sortPropertyDidChange));
-    }
-
     let itemsKeyIsAtThis = itemsKey === '@this';
     let normalizedSortProperties = normalizeSortProperties(sortProperties);
-    if (normalizedSortProperties.length === 0) {
-      let path = itemsKeyIsAtThis ? `[]` : `${itemsKey}.[]`;
-      addObserver(this, path, sortPropertyDidChange);
-      activeObservers = [path];
-    } else {
-      activeObservers = normalizedSortProperties.map(([prop]) => {
-        let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
-        addObserver(this, path, sortPropertyDidChange);
-        return path;
-      });
-    }
-
-    activeObserversMap.set(this, activeObservers);
 
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
     if (!isArray(items)) {
@@ -1536,6 +1501,10 @@ function propertySort(itemsKey, sortPropertiesKey) {
       return sortByNormalizedSortProperties(items, normalizedSortProperties);
     }
   }).readOnly();
+
+  descriptorForDecorator(cp).auto();
+
+  return cp;
 }
 
 function normalizeSortProperties(sortProperties) {

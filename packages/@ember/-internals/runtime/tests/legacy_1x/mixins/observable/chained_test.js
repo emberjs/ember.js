@@ -1,8 +1,7 @@
-import { run } from '@ember/runloop';
 import { get, set, addObserver } from '@ember/-internals/metal';
 import EmberObject from '../../../../lib/system/object';
 import { A as emberA } from '../../../../lib/mixins/array';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -18,7 +17,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 moduleFor(
   'Ember.Observable - Observing with @each',
   class extends AbstractTestCase {
-    ['@test chained observers on enumerable properties are triggered when the observed property of any item changes'](
+    async ['@test chained observers on enumerable properties are triggered when the observed property of any item changes'](
       assert
     ) {
       let family = EmberObject.create({ momma: null });
@@ -38,21 +37,32 @@ moduleFor(
       });
 
       observerFiredCount = 0;
-      run(() => get(momma, 'children').setEach('name', 'Juan'));
+
+      for (let i = 0; i < momma.children.length; i++) {
+        momma.children[i].set('name', 'Juan');
+        await runLoopSettled();
+      }
       assert.equal(observerFiredCount, 3, 'observer fired after changing child names');
 
       observerFiredCount = 0;
-      run(() => get(momma, 'children').pushObject(child4));
+      get(momma, 'children').pushObject(child4);
+      await runLoopSettled();
+
       assert.equal(observerFiredCount, 1, 'observer fired after adding a new item');
 
       observerFiredCount = 0;
-      run(() => set(child4, 'name', 'Herbert'));
+      set(child4, 'name', 'Herbert');
+      await runLoopSettled();
+
       assert.equal(observerFiredCount, 1, 'observer fired after changing property on new object');
 
       set(momma, 'children', []);
+      await runLoopSettled();
 
       observerFiredCount = 0;
-      run(() => set(child1, 'name', 'Hanna'));
+      set(child1, 'name', 'Hanna');
+      await runLoopSettled();
+
       assert.equal(
         observerFiredCount,
         0,

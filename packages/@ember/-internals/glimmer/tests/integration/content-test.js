@@ -1,4 +1,4 @@
-/* globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 
 import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
 
@@ -1058,7 +1058,7 @@ moduleFor(
     }
 
     ['@test can set dynamic href']() {
-      this.render('<a href={{model.url}}>Example</a>', {
+      this.render('<a href={{this.model.url}}>Example</a>', {
         model: {
           url: 'http://example.com',
         },
@@ -1160,7 +1160,7 @@ moduleFor(
     }
 
     ['@test unquoted class attribute can contain multiple classes']() {
-      this.render('<div class={{model.classes}}>hello</div>', {
+      this.render('<div class={{this.model.classes}}>hello</div>', {
         model: {
           classes: 'foo bar baz',
         },
@@ -1198,7 +1198,7 @@ moduleFor(
     }
 
     ['@test unquoted class attribute']() {
-      this.render('<div class={{model.foo}}>hello</div>', {
+      this.render('<div class={{this.model.foo}}>hello</div>', {
         model: {
           foo: 'foo',
         },
@@ -1236,7 +1236,7 @@ moduleFor(
     }
 
     ['@test quoted class attribute']() {
-      this.render('<div class="{{model.foo}}">hello</div>', {
+      this.render('<div class="{{this.model.foo}}">hello</div>', {
         model: {
           foo: 'foo',
         },
@@ -1274,7 +1274,7 @@ moduleFor(
     }
 
     ['@test quoted class attribute can contain multiple classes']() {
-      this.render('<div class="{{model.classes}}">hello</div>', {
+      this.render('<div class="{{this.model.classes}}">hello</div>', {
         model: {
           classes: 'foo bar baz',
         },
@@ -1312,13 +1312,16 @@ moduleFor(
     }
 
     ['@test class attribute concats bound values']() {
-      this.render('<div class="{{model.foo}} {{model.bar}} {{model.bizz}}">hello</div>', {
-        model: {
-          foo: 'foo',
-          bar: 'bar',
-          bizz: 'bizz',
-        },
-      });
+      this.render(
+        '<div class="{{this.model.foo}} {{this.model.bar}} {{this.model.bizz}}">hello</div>',
+        {
+          model: {
+            foo: 'foo',
+            bar: 'bar',
+            bizz: 'bizz',
+          },
+        }
+      );
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1367,7 +1370,7 @@ moduleFor(
 
     ['@test class attribute accepts nested helpers, and updates']() {
       this.render(
-        `<div class="{{if model.hasSize model.size}} {{if model.hasShape model.shape}}">hello</div>`,
+        `<div class="{{if this.model.hasSize this.model.size}} {{if this.model.hasShape this.model.shape}}">hello</div>`,
         {
           model: {
             size: 'large',
@@ -1426,7 +1429,7 @@ moduleFor(
 
     ['@test Multiple dynamic classes']() {
       this.render(
-        '<div class="{{model.foo}} {{model.bar}} {{model.fizz}} {{model.baz}}">hello</div>',
+        '<div class="{{this.model.foo}} {{this.model.bar}} {{this.model.fizz}} {{this.model.baz}}">hello</div>',
         {
           model: {
             foo: 'foo',
@@ -1479,7 +1482,7 @@ moduleFor(
     }
 
     ['@test classes are ordered: See issue #9912']() {
-      this.render('<div class="{{model.foo}}  static   {{model.bar}}">hello</div>', {
+      this.render('<div class="{{this.model.foo}}  static   {{this.model.bar}}">hello</div>', {
         model: {
           foo: 'foo',
           bar: 'bar',
@@ -1557,7 +1560,7 @@ moduleFor(
   'Inline style tests',
   class extends StyleTest {
     ['@test can set dynamic style']() {
-      this.render('<div style={{model.style}}></div>', {
+      this.render('<div style={{this.model.style}}></div>', {
         model: {
           style: htmlSafe('width: 60px;'),
         },
@@ -1604,7 +1607,7 @@ moduleFor(
   }
 );
 
-if (!EmberDev.runningProdBuild) {
+if (DEBUG) {
   moduleFor(
     'Inline style tests - warnings',
     class extends StyleTest {

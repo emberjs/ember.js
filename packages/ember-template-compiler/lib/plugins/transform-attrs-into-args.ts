@@ -45,7 +45,7 @@ export default function transformAttrsIntoArgs(env: ASTPluginEnvironment): ASTPl
 
       PathExpression(node: AST.PathExpression): AST.Node | void {
         if (isAttrs(node, stack[stack.length - 1])) {
-          let path = b.path(node.original.substr(6));
+          let path = b.path(node.original.substr(6)) as AST.PathExpression;
           path.original = `@${path.original}`;
           path.data = true;
           return path;

@@ -10,7 +10,7 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
 
-var originalConsoleError = console.error; // eslint-disable-line no-console
+const originalConsoleError = console.error; // eslint-disable-line no-console
 let testContext;
 
 if (!jQueryDisabled) {

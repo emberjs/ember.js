@@ -1,11 +1,19 @@
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { inspect, toString } from '@ember/-internals/utils';
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { Meta, meta as metaFor } from '@ember/-internals/meta';
+import { inspect, isEmberArray, toString } from '@ember/-internals/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
+import {
+  combine,
+  consume,
+  Tag,
+  track,
+  untrack,
+  UpdatableTag,
+  update,
+  validate,
+  value as tagValue,
+} from '@glimmer/validator';
+import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import {
   getCachedValueFor,
   getCacheFor,
@@ -14,21 +22,23 @@ import {
   setLastRevisionFor,
 } from './computed_cache';
 import {
-  addDependentKeys,
   ComputedDescriptor,
   Decorator,
   DecoratorPropertyDescriptor,
   isElementDescriptor,
   makeComputedDecorator,
-  removeDependentKeys,
 } from './decorator';
-import { descriptorForDecorator, isClassicDecorator } from './descriptor_map';
+import {
+  descriptorForDecorator,
+  descriptorForProperty,
+  isClassicDecorator,
+} from './descriptor_map';
 import expandProperties from './expand_properties';
+import { setObserverSuspended } from './observer';
 import { defineProperty } from './properties';
-import { notifyPropertyChange } from './property_events';
+import { beginPropertyChanges, endPropertyChanges, notifyPropertyChange } from './property_events';
 import { set } from './property_set';
-import { tagForProperty, update } from './tags';
-import { getCurrentTracker, setCurrentTracker } from './tracked';
+import { tagForProperty } from './tags';
 
 export type ComputedPropertyGetter = (keyName: string) => any;
 export type ComputedPropertySetter = (keyName: string, value: any, cachedValue?: any) => any;
@@ -142,7 +152,7 @@ function noop(): void {}
   import { computed, set } from '@ember/object';
 
   function fullNameMacro(firstNameKey, lastNameKey) {
-    @computed(firstNameKey, lastNameKey, {
+    return computed(firstNameKey, lastNameKey, {
       get() {
         return `${this[firstNameKey]} ${this[lastNameKey]}`;
       }
@@ -293,10 +303,6 @@ export class ComputedProperty extends ComputedDescriptor {
     if (args.length > 0) {
       this._property(...(args as string[]));
     }
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this._auto = false;
-    }
   }
 
   setup(obj: object, keyName: string, propertyDesc: DecoratorPropertyDescriptor, meta: Meta) {
@@ -353,17 +359,40 @@ export class ComputedProperty extends ComputedDescriptor {
     mode the computed property will not automatically cache the return value.
     It also does not automatically fire any change events. You must manually notify
     any changes if you want to observe this property.
+
     Dependency keys have no effect on volatile properties as they are for cache
     invalidation and notification when cached value is invalidated.
+
+    Example:
+
+    ```javascript
+    import { computed } from '@ember/object';
+
+    class CallCounter {
+      _calledCount = 0;
+
+      @computed().volatile()
+      get calledCount() {
+        return this._calledCount++;
+      }
+    }
+    ```
+
+    Classic Class Example:
+
     ```javascript
     import EmberObject, { computed } from '@ember/object';
-    let outsideService = EmberObject.extend({
+
+    let CallCounter = EmberObject.extend({
+      _calledCount: 0,
+
       value: computed(function() {
-        return OutsideService.getValue();
+        return this._calledCount++;
       }).volatile()
-    }).create();
+    });
     ```
     @method volatile
+    @deprecated
     @return {ComputedProperty} this
     @chainable
     @public
@@ -385,16 +414,38 @@ export class ComputedProperty extends ComputedDescriptor {
   /**
     Call on a computed property to set it into read-only mode. When in this
     mode the computed property will throw an error when set.
+
+    Example:
+
+    ```javascript
+    import { computed, set } from '@ember/object';
+
+    class Person {
+      @computed().readOnly()
+      get guid() {
+        return 'guid-guid-guid';
+      }
+    }
+
+    let person = new Person();
+    set(person, 'guid', 'new-guid'); // will throw an exception
+    ```
+
+    Classic Class Example:
+
     ```javascript
     import EmberObject, { computed } from '@ember/object';
+
     let Person = EmberObject.extend({
       guid: computed(function() {
         return 'guid-guid-guid';
       }).readOnly()
     });
+
     let person = Person.create();
     person.set('guid', 'new-guid'); // will throw an exception
     ```
+
     @method readOnly
     @return {ComputedProperty} this
     @chainable
@@ -411,22 +462,55 @@ export class ComputedProperty extends ComputedDescriptor {
   /**
     Sets the dependent keys on this computed property. Pass any number of
     arguments containing key paths that this computed property depends on.
+
+    Example:
+
     ```javascript
     import EmberObject, { computed } from '@ember/object';
+
+    class President {
+      constructor(firstName, lastName) {
+        set(this, 'firstName', firstName);
+        set(this, 'lastName', lastName);
+      }
+
+      // Tell Ember that this computed property depends on firstName
+      // and lastName
+      @computed().property('firstName', 'lastName')
+      get fullName() {
+        return `${this.firstName} ${this.lastName}`;
+      }
+    }
+
+    let president = new President('Barack', 'Obama');
+
+    president.fullName; // 'Barack Obama'
+    ```
+
+    Classic Class Example:
+
+    ```javascript
+    import EmberObject, { computed } from '@ember/object';
+
     let President = EmberObject.extend({
-      fullName: computed('firstName', 'lastName', function() {
+      fullName: computed(function() {
         return this.get('firstName') + ' ' + this.get('lastName');
+
         // Tell Ember that this computed property depends on firstName
         // and lastName
-      })
+      }).property('firstName', 'lastName')
     });
+
     let president = President.create({
       firstName: 'Barack',
       lastName: 'Obama'
     });
+
     president.get('fullName'); // 'Barack Obama'
     ```
+
     @method property
+    @deprecated
     @param {String} path* zero or more property paths
     @return {ComputedProperty} this
     @chainable
@@ -471,45 +555,48 @@ export class ComputedProperty extends ComputedDescriptor {
     In some cases, you may want to annotate computed properties with additional
     metadata about how they function or what values they operate on. For example,
     computed property functions may close over variables that are then no longer
-    available for introspection.
-    You can pass a hash of these values to a computed property like this:
-    ```
+    available for introspection. You can pass a hash of these values to a
+    computed property.
+
+    Example:
+
+    ```javascript
     import { computed } from '@ember/object';
     import Person from 'my-app/utils/person';
-    person: computed(function() {
-      let personId = this.get('personId');
-      return Person.create({ id: personId });
-    }).meta({ type: Person })
+
+    class Store {
+      @computed().meta({ type: Person })
+      get person() {
+        let personId = this.personId;
+        return Person.create({ id: personId });
+      }
+    }
     ```
+
+    Classic Class Example:
+
+    ```javascript
+    import { computed } from '@ember/object';
+    import Person from 'my-app/utils/person';
+
+    const Store = EmberObject.extend({
+      person: computed(function() {
+        let personId = this.get('personId');
+        return Person.create({ id: personId });
+      }).meta({ type: Person })
+    });
+    ```
+
     The hash that you pass to the `meta()` function will be saved on the
     computed property descriptor under the `_meta` key. Ember runtime
     exposes a public API for retrieving these values from classes,
     via the `metaForProperty()` function.
+
     @method meta
     @param {Object} meta
     @chainable
     @public
   */
-
-  // invalidate cache when CP key changes
-  didChange(obj: object, keyName: string): void {
-    // _suspended is set via a CP.set to ensure we don't clear
-    // the cached value set by the setter
-    if (this._volatile || this._suspended === obj) {
-      return;
-    }
-
-    // don't create objects just to invalidate
-    let meta = peekMeta(obj);
-    if (meta === null || meta.source !== obj) {
-      return;
-    }
-
-    let cache = peekCacheFor(obj);
-    if (cache !== undefined && cache.delete(keyName)) {
-      removeDependentKeys(this, obj, keyName, meta);
-    }
-  }
 
   get(obj: object, keyName: string): any {
     if (this._volatile) {
@@ -517,56 +604,57 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     let cache = getCacheFor(obj);
-    let propertyTag;
+    let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      propertyTag = tagForProperty(obj, keyName);
+    let ret;
 
-      if (cache.has(keyName)) {
-        // special-case for computed with no dependent keys used to
-        // trigger cacheable behavior.
-        if (!this._auto && (!this._dependentKeys || this._dependentKeys.length === 0)) {
-          return cache.get(keyName);
-        }
-
-        let lastRevision = getLastRevisionFor(obj, keyName);
-        if (propertyTag.validate(lastRevision)) {
-          return cache.get(keyName);
-        }
-      }
+    if (cache.has(keyName) && validate(propertyTag, getLastRevisionFor(obj, keyName))) {
+      ret = cache.get(keyName);
     } else {
-      if (cache.has(keyName)) {
-        return cache.get(keyName);
+      // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
+      // should be allowed, even after the object has been destroyed, which is why we check _dependentKeys.
+      assert(
+        `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
+        this._dependentKeys === undefined || !metaFor(obj).isMetaDestroyed()
+      );
+
+      let upstreamTag: Tag | undefined = undefined;
+
+      if (this._auto === true) {
+        upstreamTag = track(() => {
+          ret = this._getter!.call(obj, keyName);
+        });
+      } else {
+        // Create a tracker that absorbs any trackable actions inside the CP
+        untrack(() => {
+          ret = this._getter!.call(obj, keyName);
+        });
       }
+
+      if (this._dependentKeys !== undefined) {
+        let tag = combine(getChainTagsForKeys(obj, this._dependentKeys));
+
+        upstreamTag = upstreamTag === undefined ? tag : combine([upstreamTag, tag]);
+      }
+
+      if (upstreamTag !== undefined) {
+        update(propertyTag!, upstreamTag);
+      }
+
+      setLastRevisionFor(obj, keyName, tagValue(propertyTag));
+
+      cache.set(keyName, ret);
+
+      finishLazyChains(obj, keyName, ret);
     }
 
-    let parent: any;
-    let tracker: any;
+    consume(propertyTag!);
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      parent = getCurrentTracker();
-      tracker = setCurrentTracker();
+    // Add the tag of the returned value if it is an array, since arrays
+    // should always cause updates if they are consumed and then changed
+    if (Array.isArray(ret) || isEmberArray(ret)) {
+      consume(tagForProperty(ret, '[]'));
     }
-
-    let ret = this._getter!.call(obj, keyName);
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      setCurrentTracker(parent!);
-      let tag = tracker!.combine();
-      if (parent) parent.add(tag);
-
-      update(propertyTag as any, tag);
-      setLastRevisionFor(obj, keyName, (propertyTag as any).value());
-    }
-
-    cache.set(keyName, ret);
-
-    let meta = metaFor(obj);
-    let chainWatchers = meta.readableChainWatchers();
-    if (chainWatchers !== undefined) {
-      chainWatchers.revalidate(keyName);
-    }
-    addDependentKeys(this, obj, keyName, meta);
 
     return ret;
   }
@@ -584,7 +672,26 @@ export class ComputedProperty extends ComputedDescriptor {
       return this.volatileSet(obj, keyName, value);
     }
 
-    return this.setWithSuspend(obj, keyName, value);
+    let ret;
+
+    try {
+      beginPropertyChanges();
+      ret = this._set(obj, keyName, value);
+
+      finishLazyChains(obj, keyName, ret);
+
+      let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
+
+      if (this._dependentKeys !== undefined) {
+        update(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys)));
+      }
+
+      setLastRevisionFor(obj, keyName, tagValue(propertyTag));
+    } finally {
+      endPropertyChanges();
+    }
+
+    return ret;
   }
 
   _throwReadOnlyError(obj: object, keyName: string): never {
@@ -595,7 +702,7 @@ export class ComputedProperty extends ComputedDescriptor {
     deprecate(
       `The ${toString(
         obj
-      )}#${keyName} computed property was just overriden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually.`,
+      )}#${keyName} computed property was just overridden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually.`,
       false,
       {
         id: 'computed-property.override',
@@ -629,7 +736,15 @@ export class ComputedProperty extends ComputedDescriptor {
     let hadCachedValue = cache.has(keyName);
     let cachedValue = cache.get(keyName);
 
-    let ret = this._setter!.call(obj, keyName, value, cachedValue);
+    let ret;
+
+    setObserverSuspended(obj, keyName, true);
+
+    try {
+      ret = this._setter!.call(obj, keyName, value, cachedValue);
+    } finally {
+      setObserverSuspended(obj, keyName, false);
+    }
 
     // allows setter to return the same value that is cached already
     if (hadCachedValue && cachedValue === ret) {
@@ -637,18 +752,10 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     let meta = metaFor(obj);
-    if (!hadCachedValue) {
-      addDependentKeys(this, obj, keyName, meta);
-    }
 
     cache.set(keyName, ret);
 
     notifyPropertyChange(obj, keyName, meta);
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let propertyTag = tagForProperty(obj, keyName);
-      setLastRevisionFor(obj, keyName, propertyTag.value());
-    }
 
     return ret;
   }
@@ -657,21 +764,16 @@ export class ComputedProperty extends ComputedDescriptor {
   teardown(obj: object, keyName: string, meta?: any): void {
     if (!this._volatile) {
       let cache = peekCacheFor(obj);
-      if (cache !== undefined && cache.delete(keyName)) {
-        removeDependentKeys(this, obj, keyName, meta);
+      if (cache !== undefined) {
+        cache.delete(keyName);
       }
     }
     super.teardown(obj, keyName, meta);
   }
 
-  auto!: () => ComputedProperty;
-}
-
-if (EMBER_METAL_TRACKED_PROPERTIES) {
-  ComputedProperty.prototype.auto = function(): ComputedProperty {
+  auto() {
     this._auto = true;
-    return this;
-  };
+  }
 }
 
 export type ComputedDecorator = Decorator & PropertyDecorator & ComputedDecoratorImpl;
@@ -718,11 +820,35 @@ class ComputedDecoratorImpl extends Function {
 
 /**
   This helper returns a new property descriptor that wraps the passed
-  computed property function. You can use this helper to define properties
-  with mixins or via `defineProperty()`.
+  computed property function. You can use this helper to define properties with
+  native decorator syntax, mixins, or via `defineProperty()`.
 
-  If you pass a function as an argument, it will be used as a getter. A computed
-  property defined in this way might look like this:
+  Example:
+
+  ```js
+  import { computed, set } from '@ember/object';
+
+  class Person {
+    constructor() {
+      this.firstName = 'Betty';
+      this.lastName = 'Jones';
+    },
+
+    @computed('firstName', 'lastName')
+    get fullName() {
+      return `${this.firstName} ${this.lastName}`;
+    }
+  }
+
+  let client = new Person();
+
+  client.fullName; // 'Betty Jones'
+
+  set(client, 'lastName', 'Fuller');
+  client.fullName; // 'Betty Fuller'
+  ```
+
+  Classic Class Example:
 
   ```js
   import EmberObject, { computed } from '@ember/object';
@@ -748,8 +874,44 @@ class ComputedDecoratorImpl extends Function {
   client.get('fullName'); // 'Betty Fuller'
   ```
 
-  You can pass a hash with two functions, `get` and `set`, as an
-  argument to provide both a getter and setter:
+  You can also provide a setter, either directly on the class using native class
+  syntax, or by passing a hash with `get` and `set` functions.
+
+  Example:
+
+  ```js
+  import { computed, set } from '@ember/object';
+
+  class Person {
+    constructor() {
+      this.firstName = 'Betty';
+      this.lastName = 'Jones';
+    },
+
+    @computed('firstName', 'lastName')
+    get fullName() {
+      return `${this.firstName} ${this.lastName}`;
+    }
+
+    set fullName(value) {
+      let [firstName, lastName] = value.split(/\s+/);
+
+      set(this, 'firstName', firstName);
+      set(this, 'lastName', lastName);
+
+      return value;
+    }
+  }
+
+  let client = new Person();
+
+  client.fullName; // 'Betty Jones'
+
+  set(client, 'lastName', 'Fuller');
+  client.fullName; // 'Betty Fuller'
+  ```
+
+  Classic Class Example:
 
   ```js
   import EmberObject, { computed } from '@ember/object';
@@ -781,8 +943,9 @@ class ComputedDecoratorImpl extends Function {
   client.get('firstName'); // 'Carroll'
   ```
 
-  The `set` function should accept two parameters, `key` and `value`. The value
-  returned from `set` will be the new value of the property.
+  When passed as an argument, the `set` function should accept two parameters,
+  `key` and `value`. The value returned from `set` will be the new value of the
+  property.
 
   _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
@@ -795,6 +958,8 @@ class ComputedDecoratorImpl extends Function {
     return this.get('firstName') + ' ' + this.get('lastName');
   }.property('firstName', 'lastName')
   ```
+
+  This form does not work with native decorators.
 
   @method computed
   @for @ember/object
@@ -815,11 +980,6 @@ export function computed(
   );
 
   if (isElementDescriptor(args)) {
-    assert(
-      'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag. If you are using computed in a classic class, add parenthesis to it: computed()',
-      Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
-    );
-
     let decorator = makeComputedDecorator(
       new ComputedProperty([]),
       ComputedDecoratorImpl
@@ -832,6 +992,23 @@ export function computed(
     new ComputedProperty(args as (string | ComputedPropertyConfig)[]),
     ComputedDecoratorImpl
   ) as ComputedDecorator;
+}
+
+/**
+  Allows checking if a given property on an object is a computed property. For the most part,
+  this doesn't matter (you would normally just access the property directly and use its value),
+  but for some tooling specific scenarios (e.g. the ember-inspector) it is important to
+  differentiate if a property is a computed property or a "normal" property.
+
+  This will work on either a class's prototype or an instance itself.
+
+  @static
+  @method isComputed
+  @for @ember/debug
+  @private
+ */
+export function isComputed(obj: object, key: string): boolean {
+  return Boolean(descriptorForProperty(obj, key));
 }
 
 export const _globalsComputed = computed.bind(null);

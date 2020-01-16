@@ -8,6 +8,7 @@ import {
   defineProperty,
 } from '@ember/-internals/metal';
 import { oneWay as reads } from '@ember/object/computed';
+import { A as EmberArray, isArray } from '../../..';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -375,6 +376,164 @@ moduleFor(
       obj.set('bar', 2);
 
       assert.equal(obj.get('foo'), 2);
+    }
+
+    ['@test native getters and setters work'](assert) {
+      let MyClass = EmberObject.extend({
+        bar: 123,
+
+        foo: computed({
+          get() {
+            return this.bar;
+          },
+
+          set(key, value) {
+            this.bar = value;
+          },
+        }),
+      });
+
+      let instance = MyClass.create();
+
+      assert.equal(instance.foo, 123, 'getters work');
+      instance.foo = 456;
+      assert.equal(instance.bar, 456, 'setters work');
+    }
+
+    ['@test @each on maybe array'](assert) {
+      let Normalizer = EmberObject.extend({
+        options: null, // null | undefined | { value: any } | Array<{ value: any }>
+
+        // Normalize into Array<any>
+        normalized: computed('options', 'options.value', 'options.@each.value', function() {
+          let { options } = this;
+
+          if (isArray(options)) {
+            return options.map(item => item.value);
+          } else if (options !== null && typeof options === 'object') {
+            return [options.value];
+          } else {
+            return [];
+          }
+        }),
+      });
+
+      let n = Normalizer.create();
+      assert.deepEqual(n.normalized, []);
+
+      n.set('options', { value: 'foo' });
+      assert.deepEqual(n.normalized, ['foo']);
+
+      n.set('options.value', 'bar');
+      assert.deepEqual(n.normalized, ['bar']);
+
+      n.set('options', { extra: 'wat', value: 'baz' });
+      assert.deepEqual(n.normalized, ['baz']);
+
+      n.set('options', EmberArray([{ value: 'foo' }]));
+      assert.deepEqual(n.normalized, ['foo']);
+
+      n.options.pushObject({ value: 'bar' });
+      assert.deepEqual(n.normalized, ['foo', 'bar']);
+
+      n.options.pushObject({ extra: 'wat', value: 'baz' });
+      assert.deepEqual(n.normalized, ['foo', 'bar', 'baz']);
+
+      n.options.clear();
+      assert.deepEqual(n.normalized, []);
+
+      n.set('options', [{ value: 'foo' }, { value: 'bar' }]);
+      assert.deepEqual(n.normalized, ['foo', 'bar']);
+
+      set(n.options[0], 'value', 'FOO');
+      assert.deepEqual(n.normalized, ['FOO', 'bar']);
+
+      n.set('options', null);
+      assert.deepEqual(n.normalized, []);
+    }
+
+    ['@test @each works on array with falsy values'](assert) {
+      let obj = EmberObject.extend({
+        falsy: [null, undefined, false, '', 0, {}],
+        truthy: [true, 'foo', 123],
+
+        falsyComputed: computed('falsy.@each.foo', () => {
+          assert.ok(true, 'falsy computed');
+        }),
+
+        truthyComputed: computed('truthy.@each.foo', () => {
+          assert.ok(true, 'truthy computed');
+        }),
+      }).create();
+
+      // should throw no errors
+      obj.falsyComputed;
+
+      expectAssertion(() => {
+        obj.truthyComputed;
+      }, /When using @each to observe the array `true,foo,123`, the items in the array must be objects/);
+    }
+
+    ['@test @each works with array-likes'](assert) {
+      class ArrayLike {
+        constructor(arr = []) {
+          this.inner = arr;
+        }
+
+        get length() {
+          return this.inner.length;
+        }
+
+        objectAt(index) {
+          return this.inner[index];
+        }
+
+        map(fn) {
+          return this.inner.map(fn);
+        }
+      }
+
+      let Normalizer = EmberObject.extend({
+        options: null, // null | ArrayLike<{ value: any }>
+
+        // Normalize into Array<any>
+        normalized: computed('options.@each.value', function() {
+          let options = this.options || [];
+          return options.map(item => item.value);
+        }),
+      });
+
+      let n = Normalizer.create();
+      assert.deepEqual(n.normalized, []);
+
+      let options = new ArrayLike([{ value: 'foo' }]);
+
+      n.set('options', options);
+      assert.deepEqual(n.normalized, ['foo']);
+
+      set(options.objectAt(0), 'value', 'bar');
+      assert.deepEqual(n.normalized, ['bar']);
+    }
+
+    ['@test lazy computation cannot cause infinite cycles'](assert) {
+      // This is based off a real world bug found in ember-cp-validations:
+      // https://github.com/offirgolan/ember-cp-validations/issues/659
+      let CycleObject = EmberObject.extend({
+        foo: computed(function() {
+          return EmberObject.extend({
+            parent: this,
+            alias: alias('parent.foo'),
+          }).create();
+        }),
+        bar: computed('foo.alias', () => {}),
+      });
+
+      let obj = CycleObject.create();
+
+      obj.bar;
+      obj.foo;
+
+      assert.ok(true);
     }
   }
 );

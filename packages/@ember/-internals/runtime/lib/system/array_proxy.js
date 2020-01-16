@@ -10,10 +10,12 @@ import {
   addArrayObserver,
   removeArrayObserver,
   replace,
+  getChainTagsForKey,
 } from '@ember/-internals/metal';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
+import { combine, validate, value } from '@glimmer/validator';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
@@ -101,11 +103,16 @@ export default class ArrayProxy extends EmberObject {
     this._length = 0;
 
     this._arrangedContent = null;
-    this._addArrangedContentArrayObsever();
+
+    this._arrangedContentIsUpdating = false;
+    this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
+    this._arrangedContentRevision = value(this._arrangedContentTag);
+
+    this._addArrangedContentArrayObserver();
   }
 
   willDestroy() {
-    this._removeArrangedContentArrayObsever();
+    this._removeArrangedContentArrayObserver();
   }
 
   /**
@@ -134,7 +141,7 @@ export default class ArrayProxy extends EmberObject {
   }
 
   // See additional docs for `replace` from `MutableArray`:
-  // https://www.emberjs.com/api/ember/3.3/classes/MutableArray/methods/replace?anchor=replace
+  // https://api.emberjs.com/ember/release/classes/MutableArray/methods/replace?anchor=replace
   replace(idx, amt, objects) {
     assert(
       'Mutating an arranged ArrayProxy is not allowed',
@@ -164,6 +171,8 @@ export default class ArrayProxy extends EmberObject {
 
   // Overriding objectAt is not supported.
   objectAt(idx) {
+    this._revalidate();
+
     if (this._objects === null) {
       this._objects = [];
     }
@@ -187,6 +196,8 @@ export default class ArrayProxy extends EmberObject {
 
   // Overriding length is not supported.
   get length() {
+    this._revalidate();
+
     if (this._lengthDirty) {
       let arrangedContent = get(this, 'arrangedContent');
       this._length = arrangedContent ? get(arrangedContent, 'length') : 0;
@@ -216,27 +227,27 @@ export default class ArrayProxy extends EmberObject {
     }
   }
 
-  [PROPERTY_DID_CHANGE](key) {
-    if (key === 'arrangedContent') {
-      let oldLength = this._objects === null ? 0 : this._objects.length;
-      let arrangedContent = get(this, 'arrangedContent');
-      let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
-
-      this._removeArrangedContentArrayObsever();
-      this.arrayContentWillChange(0, oldLength, newLength);
-
-      this._invalidate();
-
-      this.arrayContentDidChange(0, oldLength, newLength);
-      this._addArrangedContentArrayObsever();
-    } else if (key === 'content') {
-      this._invalidate();
-    }
+  [PROPERTY_DID_CHANGE]() {
+    this._revalidate();
   }
 
-  _addArrangedContentArrayObsever() {
+  _updateArrangedContentArray() {
+    let oldLength = this._objects === null ? 0 : this._objects.length;
     let arrangedContent = get(this, 'arrangedContent');
-    if (arrangedContent) {
+    let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
+
+    this._removeArrangedContentArrayObserver();
+    this.arrayContentWillChange(0, oldLength, newLength);
+
+    this._invalidate();
+
+    this.arrayContentDidChange(0, oldLength, newLength);
+    this._addArrangedContentArrayObserver();
+  }
+
+  _addArrangedContentArrayObserver() {
+    let arrangedContent = get(this, 'arrangedContent');
+    if (arrangedContent && !arrangedContent.isDestroyed) {
       assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
       assert(
         `ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
@@ -249,7 +260,7 @@ export default class ArrayProxy extends EmberObject {
     }
   }
 
-  _removeArrangedContentArrayObsever() {
+  _removeArrangedContentArrayObserver() {
     if (this._arrangedContent) {
       removeArrayObserver(this._arrangedContent, this, ARRAY_OBSERVER_MAPPING);
     }
@@ -278,6 +289,20 @@ export default class ArrayProxy extends EmberObject {
   _invalidate() {
     this._objectsDirtyIndex = 0;
     this._lengthDirty = true;
+  }
+
+  _revalidate() {
+    if (
+      !this._arrangedContentIsUpdating &&
+      !validate(this._arrangedContentTag, this._arrangedContentRevision)
+    ) {
+      this._arrangedContentIsUpdating = true;
+      this._updateArrangedContentArray();
+      this._arrangedContentIsUpdating = false;
+
+      this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
+      this._arrangedContentRevision = value(this._arrangedContentTag);
+    }
   }
 }
 

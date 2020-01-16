@@ -1,5 +1,3 @@
-/* globals EmberDev */
-
 import {
   moduleFor,
   RenderingTestCase,
@@ -9,6 +7,7 @@ import {
   equalsElement,
   styles,
   runTask,
+  runLoopSettled,
 } from 'internal-test-helpers';
 
 import { run } from '@ember/runloop';
@@ -19,6 +18,7 @@ import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 moduleFor(
   'Components test: curly components',
@@ -96,7 +96,7 @@ moduleFor(
         content: 'blahzorz',
       });
 
-      if (EmberDev && !EmberDev.runningProdBuild) {
+      if (DEBUG) {
         let willThrow = () => run(null, set, component, 'elementId', 'herpyderpy');
 
         assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
@@ -429,7 +429,7 @@ moduleFor(
     ['@test should apply classes of the dasherized property name when bound property specified is true']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar class=model.someTruth}}', {
+      this.render('{{foo-bar class=this.model.someTruth}}', {
         model: { someTruth: true },
       });
 
@@ -688,7 +688,7 @@ moduleFor(
         template: '{{@foo}}',
       });
 
-      this.render('{{foo-bar foo=model.bar}}', {
+      this.render('{{foo-bar foo=this.model.bar}}', {
         model: {
           bar: 'Hola',
         },
@@ -714,7 +714,7 @@ moduleFor(
         template: '{{foo}}',
       });
 
-      this.render('{{foo-bar foo=model.bar}}', {
+      this.render('{{foo-bar foo=this.model.bar}}', {
         model: {
           bar: 'Hola',
         },
@@ -760,7 +760,9 @@ moduleFor(
         template: '{{partial "partialWithYield"}} - In component',
       });
 
-      this.render('{{#foo-bar}}hello{{/foo-bar}}');
+      expectDeprecation(() => {
+        this.render('{{#foo-bar}}hello{{/foo-bar}}');
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
@@ -780,7 +782,9 @@ moduleFor(
         template: '{{partial "partialWithYield"}} - In component',
       });
 
-      this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+      expectDeprecation(() => {
+        this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
@@ -1281,7 +1285,7 @@ moduleFor(
       this.assertText('some-prop some-component');
     }
 
-    ['@feature(ember-glimmer-angle-bracket-built-ins) component without dash is looked up']() {
+    ['@test component without dash is looked up']() {
       this.registerComponent('somecomponent', {
         template: 'somecomponent',
       });
@@ -1301,30 +1305,6 @@ moduleFor(
       runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
 
       this.assertText('somecomponent');
-    }
-
-    ['@feature(!ember-glimmer-angle-bracket-built-ins) component without dash is not looked up']() {
-      this.registerComponent('somecomponent', {
-        template: 'somecomponent',
-      });
-
-      this.render('{{somecomponent}}', {
-        somecomponent: 'notsomecomponent',
-      });
-
-      this.assertText('notsomecomponent');
-
-      runTask(() => this.rerender());
-
-      this.assertText('notsomecomponent');
-
-      runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
-
-      this.assertText('not not notsomecomponent');
-
-      runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
-
-      this.assertText('notsomecomponent');
     }
 
     ['@test non-block with properties on attrs']() {
@@ -1502,7 +1482,7 @@ moduleFor(
       `,
       });
 
-      this.render('{{foo-bar value=model.value items=model.items}}', {
+      this.render('{{foo-bar value=this.model.value items=this.model.items}}', {
         model: {
           value: 'wat',
           items: [1, 2, 3],
@@ -2526,15 +2506,11 @@ moduleFor(
       );
     }
 
-    ["@test when a property is changed during children's rendering"](assert) {
-      let outer, middle;
+    ["@test when a property is changed during children's rendering"]() {
+      let middle;
 
       this.registerComponent('x-outer', {
         ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            outer = this;
-          },
           value: 1,
         }),
         template: '{{#x-middle}}{{x-inner value=value}}{{/x-middle}}',
@@ -2554,35 +2530,19 @@ moduleFor(
       this.registerComponent('x-inner', {
         ComponentClass: Component.extend({
           value: null,
-          pushDataUp: observer('value', function() {
+          didReceiveAttrs() {
             middle.set('value', this.get('value'));
-          }),
+          },
         }),
         template: '<div id="inner-value">{{value}}</div>',
       });
 
-      this.render('{{x-outer}}');
-
-      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-      assert.equal(
-        this.$('#middle-value').text(),
-        '',
-        'initial render of middle (observers do not run during init)'
-      );
-
-      runTask(() => this.rerender());
-
-      assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
-      assert.equal(
-        this.$('#middle-value').text(),
-        '',
-        'initial render of middle (observers do not run during init)'
-      );
-
-      let expectedBacktrackingMessage = /modified "value" twice on <.+?> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('value', '<.+?>', {
+        renderTree: ['x-outer', 'x-middle', 'this.value'],
+      });
 
       expectAssertion(() => {
-        runTask(() => outer.set('value', 2));
+        this.render('{{x-outer}}');
       }, expectedBacktrackingMessage);
     }
 
@@ -2606,7 +2566,9 @@ moduleFor(
         template: '<div id="inner-value">{{wrapper.content}}</div>',
       });
 
-      let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <.+?> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
+        renderTree: ['x-outer', 'this.wrapper.content'],
+      });
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
@@ -2741,9 +2703,11 @@ moduleFor(
       this.assertText('initial value - initial value');
 
       if (DEBUG) {
+        let message = /You attempted to update .*, but it is being tracked by a tracking context/;
+
         expectAssertion(() => {
           component.bar = 'foo-bar';
-        }, /You must use set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);
+        }, message);
 
         this.assertText('initial value - initial value');
       }
@@ -2946,22 +2910,30 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false,
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+          visible: false,
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('display: none;');
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+
       assertStyle('');
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+
       assertStyle('display: none;');
     }
 
@@ -2975,9 +2947,11 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false,
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+          visible: false,
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -2986,18 +2960,22 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'foo-bar', style: styles('color: blue;') },
       });
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -3028,25 +3006,31 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
-        visible: false,
-        foo: 'baz',
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
+          visible: false,
+          foo: 'baz',
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('display: none;');
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('');
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-        set(this.context, 'foo', 'woo');
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+          set(this.context, 'foo', 'woo');
+        });
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('display: none;');
       assert.equal(this.firstChild.getAttribute('foo'), 'woo');
@@ -3130,7 +3114,7 @@ moduleFor(
           },
 
           updateValue() {
-            var newValue = this.get('options.lastObject.value');
+            let newValue = this.get('options.lastObject.value');
 
             this.set('value', newValue);
           },
@@ -3208,7 +3192,7 @@ moduleFor(
       this.assertText('things');
     }
 
-    ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
+    async ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
       let barCopyDidChangeCount = 0;
 
       this.registerComponent('foo-bar', {
@@ -3231,13 +3215,15 @@ moduleFor(
         template: '{{bar}}-{{barCopy}}',
       });
 
-      this.render(`{{foo-bar bar=bar}}`, { bar: 3 });
+      await this.render(`{{foo-bar bar=bar}}`, { bar: 3 });
 
       this.assertText('3-4');
 
       assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
 
-      runTask(() => set(this.context, 'bar', 7));
+      set(this.context, 'bar', 7);
+
+      await runLoopSettled();
 
       this.assertText('7-8');
 
@@ -3534,7 +3520,7 @@ moduleFor(
       class FooBarComponent extends Component {
         constructor(injections) {
           super(injections);
-          // analagous to class field defaults
+          // analogous to class field defaults
           this.foo = 'bar';
         }
 
@@ -3607,6 +3593,28 @@ moduleFor(
       runTask(() => set(fooInstance, 'source', 'third'));
 
       this.assertText('[third][]');
+    }
+
+    ['@test it can render a basic component in native ES class syntax'](assert) {
+      let testContext = this;
+      this.registerComponent('foo-bar', {
+        ComponentClass: class extends Component {
+          constructor(owner) {
+            super(owner);
+
+            assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
+          }
+        },
+        template: 'hello',
+      });
+
+      this.render('{{foo-bar}}');
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
   }
 );

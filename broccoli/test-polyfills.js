@@ -4,7 +4,14 @@ const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 
 module.exports = function polyfills() {
-  let polyfillEntry = writeFile('polyfill-entry.js', 'require("core-js/modules/es6.symbol");');
+  let polyfillEntry = writeFile(
+    'polyfill-entry.js',
+    `
+      require('core-js/modules/es6.promise');
+      require('core-js/modules/es6.symbol');
+      require('regenerator-runtime/runtime');
+    `
+  );
 
   return new Rollup(polyfillEntry, {
     rollup: {

@@ -1,4 +1,5 @@
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { isPath } from './utils';
 /**
  @module ember
 */
@@ -38,7 +39,7 @@ export default function transformHasBlockSyntax(env: ASTPluginEnvironment): ASTP
         }
       },
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
-        if (typeof node.path.original === 'string' && TRANSFORMATIONS[node.path.original]) {
+        if (isPath(node.path) && TRANSFORMATIONS[node.path.original]) {
           return b.mustache(
             b.path(TRANSFORMATIONS[node.path.original]),
             node.params,
@@ -49,7 +50,7 @@ export default function transformHasBlockSyntax(env: ASTPluginEnvironment): ASTP
         }
       },
       SubExpression(node: AST.SubExpression): AST.Node | void {
-        if (TRANSFORMATIONS[node.path.original]) {
+        if (isPath(node.path) && TRANSFORMATIONS[node.path.original]) {
           return b.sexpr(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash);
         }
       },

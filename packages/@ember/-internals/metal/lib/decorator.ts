@@ -1,8 +1,7 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
+import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { setClassicDecorator } from './descriptor_map';
-import { unwatch, watch } from './watching';
 
 export type DecoratorPropertyDescriptor = PropertyDescriptor & { initializer?: any } | undefined;
 
@@ -35,54 +34,6 @@ export function isElementDescriptor(
       // TS compatibility
       maybeDesc === undefined)
   );
-}
-
-// ..........................................................
-// DEPENDENT KEYS
-//
-
-export function addDependentKeys(
-  desc: ComputedDescriptor,
-  obj: object,
-  keyName: string,
-  meta: Meta
-): void {
-  // the descriptor has a list of dependent keys, so
-  // add all of its dependent keys.
-  let depKeys = desc._dependentKeys;
-  if (depKeys === null || depKeys === undefined) {
-    return;
-  }
-
-  for (let idx = 0; idx < depKeys.length; idx++) {
-    let depKey = depKeys[idx];
-    // Increment the number of times depKey depends on keyName.
-    meta.writeDeps(depKey, keyName, meta.peekDeps(depKey, keyName) + 1);
-    // Watch the depKey
-    watch(obj, depKey, meta);
-  }
-}
-
-export function removeDependentKeys(
-  desc: ComputedDescriptor,
-  obj: object,
-  keyName: string,
-  meta: Meta
-): void {
-  // the descriptor has a list of dependent keys, so
-  // remove all of its dependent keys.
-  let depKeys = desc._dependentKeys;
-  if (depKeys === null || depKeys === undefined) {
-    return;
-  }
-
-  for (let idx = 0; idx < depKeys.length; idx++) {
-    let depKey = depKeys[idx];
-    // Decrement the number of times depKey depends on keyName.
-    meta.writeDeps(depKey, keyName, meta.peekDeps(depKey, keyName) - 1);
-    // Unwatch the depKey
-    unwatch(obj, depKey, meta);
-  }
 }
 
 export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
@@ -123,11 +74,6 @@ export abstract class ComputedDescriptor {
 
   abstract get(obj: object, keyName: string): any | null | undefined;
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
-
-  willWatch?(obj: object, keyName: string, meta: Meta): void;
-  didUnwatch?(obj: object, keyName: string, meta: Meta): void;
-
-  didChange?(obj: object, keyName: string): void;
 }
 
 function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor): () => any {
@@ -135,6 +81,21 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor
     return descriptor.get(this, name);
   };
 }
+
+function DESCRIPTOR_SETTER_FUNCTION(
+  name: string,
+  descriptor: ComputedDescriptor
+): (value: any) => void {
+  let func = function CPSETTER_FUNCTION(this: object, value: any): void {
+    return descriptor.set(this, name, value);
+  };
+
+  CP_SETTER_FUNCS.add(func);
+
+  return func;
+}
+
+export const CP_SETTER_FUNCS = new WeakSet();
 
 export function makeComputedDecorator(
   desc: ComputedDescriptor,
@@ -148,12 +109,7 @@ export function makeComputedDecorator(
     isClassicDecorator?: boolean
   ): DecoratorPropertyDescriptor {
     assert(
-      'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag',
-      EMBER_NATIVE_DECORATOR_SUPPORT || isClassicDecorator
-    );
-
-    assert(
-      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unecessary.`,
+      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
       isClassicDecorator ||
         !propertyDesc ||
         !propertyDesc.get ||
@@ -163,11 +119,14 @@ export function makeComputedDecorator(
     let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
     desc.setup(target, key, propertyDesc, meta!);
 
-    return {
+    let computedDesc: PropertyDescriptor = {
       enumerable: desc.enumerable,
       configurable: desc.configurable,
       get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
+      set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
     };
+
+    return computedDesc;
   };
 
   setClassicDecorator(decorator, desc);

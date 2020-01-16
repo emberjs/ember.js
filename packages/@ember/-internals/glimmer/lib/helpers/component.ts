@@ -4,7 +4,7 @@
 
 /**
   The `{{component}}` helper lets you add instances of `Component` to a
-  template. See [Component](/api/ember/release/classes/Component) for
+  template. See [Component](/ember/release/classes/Component) for
   additional information on how a `Component` functions.
   `{{component}}`'s primary use is for cases where you want to dynamically
   change which type of component is rendered as the state of your application
@@ -15,26 +15,22 @@
   Given the following template:
 
   ```app/application.hbs
-  {{component infographicComponentName}}
+  {{component this.infographicComponentName}}
   ```
 
   And the following application code:
 
   ```app/controllers/application.js
   import Controller from '@ember/controller';
-  import { computed } from '@ember/object';
+  import { tracked } from '@glimmer/tracking';
 
-  export default Controller.extend({
-    infographicComponentName: computed('isMarketOpen', {
-      get() {
-        if (this.get('isMarketOpen')) {
-          return 'live-updating-chart';
-        } else {
-          return 'market-close-summary';
-        }
-      }
-    })
-  });
+  export default class ApplicationController extends Controller {
+    @tracked isMarketOpen = 'live-updating-chart'
+
+    get infographicComponentName() {
+      return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
+    }
+  }
   ```
 
   The `live-updating-chart` component will be appended when `isMarketOpen` is
@@ -47,7 +43,9 @@
   ```app/templates/application.hbs
   <LiveUpdatingChart />
   ```
+
   or
+
   ```app/templates/application.hbs
   {{live-updating-chart}}
   ```
@@ -58,8 +56,8 @@
   of a component. Given the following application template:
 
   ```app/templates/application.hbs
-  {{#component infographicComponentName}}
-    Last update: {{lastUpdateTimestamp}}
+  {{#component this.infographicComponentName}}
+    Last update: {{this.lastUpdateTimestamp}}
   {{/component}}
   ```
 
@@ -68,22 +66,19 @@
   ```app/controllers/application.js
   import Controller from '@ember/controller';
   import { computed } from '@ember/object';
+  import { tracked } from '@glimmer/tracking';
 
-  export default Controller.extend({
-    lastUpdateTimestamp: computed(function() {
+  export default class ApplicationController extends Controller {
+    @tracked isMarketOpen = 'live-updating-chart'
+
+    get lastUpdateTimestamp() {
       return new Date();
-    }),
+    }
 
-    infographicComponentName: computed('isMarketOpen', {
-      get() {
-        if (this.get('isMarketOpen')) {
-          return 'live-updating-chart';
-        } else {
-          return 'market-close-summary';
-        }
-      }
-    })
-  });
+    get infographicComponentName() {
+      return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
+    }
+  }
   ```
 
   And the following component template:
@@ -93,7 +88,7 @@
   {{yield}}
   ```
 
-  The `Last Update: {{lastUpdateTimestamp}}` will be rendered in place of the `{{yield}}`.
+  The `Last Update: {{this.lastUpdateTimestamp}}` will be rendered in place of the `{{yield}}`.
 
   ### Nested Usage
 
@@ -103,7 +98,7 @@
 
   ```app/templates/components/person-form.hbs
   {{yield (hash
-    nameInput=(component "my-input-component" value=model.name placeholder="First Name")
+    nameInput=(component "my-input-component" value=@model.name placeholder="First Name")
   )}}
   ```
 
@@ -130,7 +125,7 @@
   For example, below is a `full-name` component template:
 
   ```handlebars
-  {{yield (component "my-input-component" value=model.name placeholder="Name")}}
+  {{yield (component "my-input-component" value=@model.name placeholder="Name")}}
   ```
 
   ```

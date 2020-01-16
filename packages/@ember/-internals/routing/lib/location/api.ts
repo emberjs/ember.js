@@ -1,4 +1,3 @@
-import { location } from '@ember/-internals/browser-environment';
 import { assert } from '@ember/debug';
 
 export interface EmberLocation {
@@ -27,10 +26,10 @@ export type UpdateCallback = (url: string) => void;
   You can pass an implementation name (`hash`, `history`, `none`, `auto`) to force a
   particular implementation to be used in your application.
 
-  See [HashLocation](/api/ember/release/classes/HashLocation).
-  See [HistoryLocation](/api/ember/release/classes/HistoryLocation).
-  See [NoneLocation](/api/ember/release/classes/NoneLocation).
-  See [AutoLocation](/api/ember/release/classes/AutoLocation).
+  See [HashLocation](/ember/release/classes/HashLocation).
+  See [HistoryLocation](/ember/release/classes/HistoryLocation).
+  See [NoneLocation](/ember/release/classes/NoneLocation).
+  See [AutoLocation](/ember/release/classes/AutoLocation).
 
   ## Location API
 
@@ -111,5 +110,4 @@ export default {
   },
 
   implementations: {},
-  _location: location,
 };

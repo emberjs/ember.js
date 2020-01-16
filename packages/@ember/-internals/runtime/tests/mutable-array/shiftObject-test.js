@@ -1,9 +1,9 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 import { get } from '@ember/-internals/metal';
 
 class ShiftObjectTests extends AbstractTestCase {
-  '@test [].shiftObject() => [] + returns undefined + NO notify'() {
+  async '@test [].shiftObject() => [] + returns undefined + NO notify'() {
     let before = [];
     let after = [];
     let obj = this.newObject(before);
@@ -12,6 +12,9 @@ class ShiftObjectTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     this.assert.equal(obj.shiftObject(), undefined);
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
@@ -44,7 +47,7 @@ class ShiftObjectTests extends AbstractTestCase {
     );
   }
 
-  '@test [X].shiftObject() => [] + notify'() {
+  async '@test [X].shiftObject() => [] + notify'() {
     let before = newFixture(1);
     let after = [];
     let obj = this.newObject(before);
@@ -53,6 +56,9 @@ class ShiftObjectTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     this.assert.equal(obj.shiftObject(), before[0], 'should return object');
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
@@ -72,7 +78,7 @@ class ShiftObjectTests extends AbstractTestCase {
     );
   }
 
-  '@test [A,B,C].shiftObject() => [B,C] + notify'() {
+  async '@test [A,B,C].shiftObject() => [B,C] + notify'() {
     let before = newFixture(3);
     let after = [before[1], before[2]];
     let obj = this.newObject(before);
@@ -81,6 +87,9 @@ class ShiftObjectTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     this.assert.equal(obj.shiftObject(), before[0], 'should return object');
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');

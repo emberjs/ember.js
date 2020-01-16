@@ -14,6 +14,7 @@ module.exports = {
     'prettier',
     'import',
     'qunit',
+    'disable-features',
   ],
   rules: {
     'no-implicit-coercion': 'error',
@@ -21,9 +22,12 @@ module.exports = {
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
+    'no-var': 'error',
     'prettier/prettier': 'error',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
+    'disable-features/disable-async-await': 'error',
+    'disable-features/disable-generator-functions': 'error',
   },
 
   settings: {
@@ -35,7 +39,7 @@ module.exports = {
       'node-module',
     ],
     'import/parsers': {
-      'typescript-eslint-parser': ['.ts'],
+      '@typescript-eslint/parser': ['.ts'],
     },
     'import/resolver': {
       node: {
@@ -51,7 +55,7 @@ module.exports = {
     {
       files: [ '**/*.ts' ],
 
-      parser: 'typescript-eslint-parser',
+      parser: '@typescript-eslint/parser',
 
       parserOptions: {
         sourceType: 'module',
@@ -60,6 +64,7 @@ module.exports = {
       rules: {
         // the TypeScript compiler already takes care of this and
         // leaving it enabled results in false positives for interface imports
+        'no-dupe-class-members': 'off',
         'no-unused-vars': 'off',
         'no-undef': 'off',
 
@@ -109,12 +114,17 @@ module.exports = {
       globals: {
         'expectAssertion': true,
         'expectDeprecation': true,
+        'expectDeprecationAsync': true,
         'expectNoDeprecation': true,
         'expectWarning': true,
         'expectNoWarning': true,
         'ignoreAssertion': true,
         'ignoreDeprecation': true,
       },
+      rules: {
+        'disable-features/disable-async-await': 'off',
+        'disable-features/disable-generator-functions': 'off',
+      }
     },
     {
       // matches all node-land files
@@ -150,7 +160,9 @@ module.exports = {
       rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
         // add your custom rules and overrides for node files here
         'no-process-exit': 'off',
-        'no-throw-literal': 'error'
+        'no-throw-literal': 'error',
+        'disable-features/disable-async-await': 'off',
+        'disable-features/disable-generator-functions': 'off',
       }),
     },
     {

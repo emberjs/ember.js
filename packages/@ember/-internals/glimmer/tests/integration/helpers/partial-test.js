@@ -9,7 +9,9 @@ moduleFor(
     ['@test should render other templates registered with the container']() {
       this.registerPartial('_subTemplateFromContainer', 'sub-template');
 
-      this.render(`This {{partial "subTemplateFromContainer"}} is pretty great.`);
+      expectDeprecation(() => {
+        this.render(`This {{partial "subTemplateFromContainer"}} is pretty great.`);
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "subTemplateFromContainer" partial to a component');
 
       this.assertStableRerender();
 
@@ -19,7 +21,9 @@ moduleFor(
     ['@test should render other slash-separated templates registered with the container']() {
       this.registerPartial('child/_subTemplateFromContainer', 'sub-template');
 
-      this.render(`This {{partial "child/subTemplateFromContainer"}} is pretty great.`);
+      expectDeprecation(() => {
+        this.render(`This {{partial "child/subTemplateFromContainer"}} is pretty great.`);
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "child/subTemplateFromContainer" partial to a component');
 
       this.assertStableRerender();
 
@@ -27,14 +31,16 @@ moduleFor(
     }
 
     ['@test should use the current context']() {
-      this.registerPartial('_person_name', '{{model.firstName}} {{model.lastName}}');
+      this.registerPartial('_person_name', '{{this.model.firstName}} {{this.model.lastName}}');
 
-      this.render('Who is {{partial "person_name"}}?', {
-        model: {
-          firstName: 'Kris',
-          lastName: 'Selden',
-        },
-      });
+      expectDeprecation(() => {
+        this.render('Who is {{partial "person_name"}}?', {
+          model: {
+            firstName: 'Kris',
+            lastName: 'Selden',
+          },
+        });
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "person_name" partial to a component');
 
       this.assertStableRerender();
 
@@ -53,18 +59,22 @@ moduleFor(
       this.registerPartial('_subTemplate', 'sub-template');
       this.registerPartial('_otherTemplate', 'other-template');
 
-      this.render(
-        'This {{partial templates.partialName}} is pretty {{partial nonexistent}}great.',
-        {
-          templates: { partialName: 'subTemplate' },
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          'This {{partial templates.partialName}} is pretty {{partial nonexistent}}great.',
+          {
+            templates: { partialName: 'subTemplate' },
+          }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "subTemplate" partial to a component');
 
       this.assertStableRerender();
 
       this.assertText('This sub-template is pretty great.');
 
-      runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
+      expectDeprecation(() => {
+        runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "otherTemplate" partial to a component');
 
       this.assertText('This other-template is pretty great.');
 
@@ -72,31 +82,37 @@ moduleFor(
 
       this.assertText('This  is pretty great.');
 
-      runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
+      expectDeprecation(() => {
+        runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "subTemplate" partial to a component');
 
       this.assertText('This sub-template is pretty great.');
     }
 
-    ['@test partial using data from {{#each}}']() {
+    ['@test 1234 partial using data from {{#each}}']() {
       this.registerPartial('show-item', '{{item}}');
 
-      this.render(
-        strip`
-      {{#each model.items as |item|}}
-        {{item}}: {{partial 'show-item'}} |
-      {{/each}}`,
-        {
-          model: {
-            items: emberA(['apple', 'orange', 'banana']),
-          },
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+          {{#each this.model.items as |item|}}
+            {{item}}: {{partial 'show-item'}} |
+          {{/each}}`,
+          {
+            model: {
+              items: emberA(['apple', 'orange', 'banana']),
+            },
+          }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-item" partial to a component');
 
       this.assertStableRerender();
 
       this.assertText('apple: apple |orange: orange |banana: banana |');
 
-      runTask(() => this.context.model.items.pushObject('strawberry'));
+      expectDeprecation(() => {
+        runTask(() => this.context.model.items.pushObject('strawberry'));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-item" partial to a component');
 
       this.assertText('apple: apple |orange: orange |banana: banana |strawberry: strawberry |');
 
@@ -112,15 +128,17 @@ moduleFor(
     ['@test partial using `{{get` on data from {{#with}}']() {
       this.registerPartial('show-id', '{{get item "id"}}');
 
-      this.render(
-        strip`
-      {{#with model as |item|}}
-        {{item.name}}: {{partial 'show-id'}}
-      {{/with}}`,
-        {
-          model: { id: 1, name: 'foo' },
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+          {{#with this.model as |item|}}
+            {{item.name}}: {{partial 'show-id'}}
+          {{/with}}`,
+          {
+            model: { id: 1, name: 'foo' },
+          }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-id" partial to a component');
 
       this.assertStableRerender();
 
@@ -142,25 +160,31 @@ moduleFor(
     ['@test partial using `{{get` on data from {{#each}}']() {
       this.registerPartial('show-item', '{{get item "id"}}');
 
-      this.render(
-        strip`
-      {{#each items as |item|}}
-        {{item.id}}: {{partial 'show-item'}} |
-      {{/each}}`,
-        {
-          items: emberA([{ id: 1 }, { id: 2 }, { id: 3 }]),
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+        {{#each items as |item|}}
+          {{item.id}}: {{partial 'show-item'}} |
+        {{/each}}`,
+          {
+            items: emberA([{ id: 1 }, { id: 2 }, { id: 3 }]),
+          }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-item" partial to a component');
 
       this.assertStableRerender();
 
       this.assertText('1: 1 |2: 2 |3: 3 |');
 
-      runTask(() => this.context.items.pushObject({ id: 4 }));
+      expectDeprecation(() => {
+        runTask(() => this.context.items.pushObject({ id: 4 }));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-item" partial to a component');
 
       this.assertText('1: 1 |2: 2 |3: 3 |4: 4 |');
 
-      runTask(() => set(this.context, 'items', emberA([{ id: 1 }, { id: 2 }, { id: 3 }])));
+      expectDeprecation(() => {
+        runTask(() => set(this.context, 'items', emberA([{ id: 1 }, { id: 2 }, { id: 3 }])));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-item" partial to a component');
 
       this.assertText('1: 1 |2: 2 |3: 3 |');
     }
@@ -168,21 +192,25 @@ moduleFor(
     ['@test partial using conditional on data from {{#each}}']() {
       this.registerPartial('show-item', '{{#if item}}{{item}}{{/if}}');
 
-      this.render(
-        strip`
-      {{#each items as |item|}}
-        {{item}}: {{partial 'show-item'}} |
-      {{/each}}`,
-        {
-          items: emberA(['apple', null, 'orange', 'banana']),
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+        {{#each items as |item|}}
+          {{item}}: {{partial 'show-item'}} |
+        {{/each}}`,
+          {
+            items: emberA(['apple', null, 'orange', 'banana']),
+          }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-item" partial to a component');
 
       this.assertStableRerender();
 
       this.assertText('apple: apple |:  |orange: orange |banana: banana |');
 
-      runTask(() => this.context.items.pushObject('strawberry'));
+      expectDeprecation(() => {
+        runTask(() => this.context.items.pushObject('strawberry'));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "show-item" partial to a component');
 
       this.assertText('apple: apple |:  |orange: orange |banana: banana |strawberry: strawberry |');
 
@@ -201,21 +229,25 @@ moduleFor(
 
       this.registerPartial('inner-partial', '[inner: {{name}}]');
 
-      this.render(
-        strip`
-      {{#each names as |name i|}}
-        {{i}}: {{partial 'outer-partial'}}
-      {{/each}}`,
-        {
-          names: emberA(['Alex', 'Ben']),
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+        {{#each names as |name i|}}
+          {{i}}: {{partial 'outer-partial'}}
+        {{/each}}`,
+          {
+            names: emberA(['Alex', 'Ben']),
+          }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "outer-partial" partial to a component');
 
       this.assertStableRerender();
 
       this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
 
-      runTask(() => this.context.names.pushObject('Sophie'));
+      expectDeprecation(() => {
+        runTask(() => this.context.names.pushObject('Sophie'));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "outer-partial" partial to a component');
 
       this.assertText(
         '0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]2: [outer: Sophie] [inner: Sophie]'
@@ -254,13 +286,15 @@ moduleFor(
     `
       );
 
-      this.render(
-        strip`
-      {{#with 'Sophie' as |person1|}}
-        Hi {{person1}} (aged {{age}}). {{partial 'person2-partial'}}
-      {{/with}}`,
-        { age: 0 }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+        {{#with 'Sophie' as |person1|}}
+          Hi {{person1}} (aged {{age}}). {{partial 'person2-partial'}}
+        {{/with}}`,
+          { age: 0 }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "person2-partial" partial to a component');
 
       this.assertStableRerender();
 
@@ -285,18 +319,20 @@ moduleFor(
       this.registerPartial('_odd', 'ODD{{i}}');
       this.registerPartial('_even', 'EVEN{{i}}');
 
-      this.render(
-        strip`
-      {{#each model.items as |template i|}}
-        {{model.type}}: {{partial template}}
-      {{/each}}`,
-        {
-          model: {
-            items: ['even', 'odd', 'even', 'odd'],
-            type: 'number',
-          },
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+          {{#each this.model.items as |template i|}}
+            {{this.model.type}}: {{partial template}}
+          {{/each}}`,
+          {
+            model: {
+              items: ['even', 'odd', 'even', 'odd'],
+              type: 'number',
+            },
+          }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "odd" partial to a component');
 
       this.assertStableRerender();
 
@@ -335,7 +371,9 @@ moduleFor(
 
       this.assertText('Nothing!');
 
-      runTask(() => set(this.context, 'item.thing', 'thing'));
+      expectDeprecation(() => {
+        runTask(() => set(this.context, 'item.thing', 'thing'));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "thing" partial to a component');
 
       this.assertText('thing');
 
@@ -362,13 +400,15 @@ moduleFor(
     `
       );
 
-      this.render(
-        strip`
-      {{#outer-component name=name as |outer|}}
-        {{partial 'some-partial'}}
-      {{/outer-component}}`,
-        { name: 'Sophie' }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+        {{#outer-component name=name as |outer|}}
+          {{partial 'some-partial'}}
+        {{/outer-component}}`,
+          { name: 'Sophie' }
+        );
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "some-partial" partial to a component');
 
       this.assertStableRerender();
 

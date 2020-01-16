@@ -14,7 +14,7 @@ module.exports = {
    */
   register() {
     QUnit.assert.htmlMatches = function(actual, expected, message) {
-      var isEqual = htmlDiffer.isEqual(actual, expected);
+      let isEqual = htmlDiffer.isEqual(actual, expected);
 
       this.pushResult({
         result: isEqual,

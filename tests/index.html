@@ -3,28 +3,20 @@
   <head>
     <meta charset="utf-8">
     <title>Ember</title>
-    <link rel="stylesheet" href="../qunit/qunit.css">
+    <link rel="stylesheet" href="./qunit/qunit.css">
     <style type="text/css">
       #qunit-tests.hideskipped li.skipped {
         display: none;
       }
     </style>
-    <script src="../polyfill.js" nomodule></script>
-    <script src="../qunit/qunit.js"></script>
+    <script src="./polyfill.js"></script>
+    <script src="./qunit/qunit.js"></script>
     <script src="/testem.js"></script>
 
     <script type="text/javascript">
       window.loadScript = function(url) {
         document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
       };
-      window.addEventListener('beforeunload', function (e) {
-        debugger
-
-        // Cancel the event
-        e.preventDefault();
-        // Chrome requires returnValue to be set
-        e.returnValue = '';
-      });
     </script>
 
     <script type="text/javascript">
@@ -39,54 +31,47 @@
     <script type="text/javascript">
       // Fallback to default jQuery
       if (jQueryVersion !== 'none' && !window.jQuery) {
-        loadScript('../jquery/jquery.js');
+        loadScript('./jquery/jquery.js');
       }
       // Close the script tag to make sure document.write happens
     </script>
 
     <script>
       (function() {
-        window.ENV = window.ENV || {};
+        window.EmberENV = window.EmberENV || {};
 
-        // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
-        ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
-        ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
-        ENV.__test_hook_count__ = 0;
-        ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
-          ENV.__test_hook_count__ += object;
+        // Test for "hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"
+        EmberENV.EMBER_LOAD_HOOKS = EmberENV.EMBER_LOAD_HOOKS || {};
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
+        EmberENV.__test_hook_count__ = 0;
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
+          EmberENV.__test_hook_count__ += object;
         });
 
 
         // Handle extending prototypes
-        ENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
+        EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
 
         // Handle testing feature flags
         if (QUnit.urlParams.enableoptionalfeatures) {
-          ENV.ENABLE_OPTIONAL_FEATURES = true;
+          EmberENV.ENABLE_OPTIONAL_FEATURES = true;
         }
 
-        ENV['RAISE_ON_DEPRECATION'] = true;
+        EmberENV['RAISE_ON_DEPRECATION'] = true;
+
+        if (QUnit.urlParams.debugrendertree) {
+          EmberENV['_DEBUG_RENDER_TREE'] = true;
+        }
       })();
     </script>
 
     <script>
-      var dist = QUnit.urlParams.dist;
-      var legacy = QUnit.urlParams.legacy;
-
-      var relativePath = legacy ? '../legacy' : '..';
-
-      switch (dist) {
-        case 'prod':
-        case 'min':
-          loadScript(relativePath + '/ember.' + dist + '.js');
-          break;
-        case 'es':
-          loadScript(relativePath + '/ember-all.debug.js');
-          break;
-        default:
-          loadScript(relativePath + '/ember.debug.js');
-          break;
+      if (QUnit.urlParams.prebuilt) {
+        loadScript('../ember.debug.js');
+      } else {
+        loadScript('./ember.js');
       }
+      loadScript('./ember-testing.js');
     </script>
 
     <script type="text/javascript">
@@ -95,32 +80,8 @@
     </script>
 
     <script>
-      var dist = QUnit.urlParams.dist;
-      var legacy = QUnit.urlParams.legacy;
-
-      var relativePath = legacy ? '../legacy' : '..';
-
-      if (dist === 'es') {
-        // do nothing template compiler already included
-      } else {
-        loadScript(relativePath + '/ember-template-compiler.js');
-      }
-    </script>
-
-    <script>
-      var prod = QUnit.urlParams.prod;
-      var dist = QUnit.urlParams.dist;
-      var legacy = QUnit.urlParams.legacy;
-
-      var relativePath = legacy ? '../legacy' : '..';
-
-      if (dist === 'es') {
-        // do nothing, tests are included
-      } else if (prod) {
-        loadScript(relativePath + '/ember-tests.prod.js');
-      } else {
-        loadScript(relativePath + '/ember-tests.js');
-      }
+      loadScript('../ember-template-compiler.js');
+      loadScript('./ember-tests.js');
     </script>
 
     <script>
@@ -138,11 +99,8 @@
           }
         }
 
-        window.EmberDev = window.EmberDev || {};
-        EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
-
         var setupQUnit = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
-        setupQUnit({ runningProdBuild: EmberDev.runningProdBuild });
+        setupQUnit();
 
         // Tests should time out after 15 seconds
         QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;
@@ -159,9 +117,10 @@
           QUnit.config.reorder = false;
         }
 
-        var testsTotal, testsPassed, testsFailed;
+        var testsTotal, testsPassed, testsFailed, testsRunning;
 
         QUnit.begin(function() {
+          testsRunning = true;
           testsTotal = testsPassed = testsFailed = 0;
 
           if (QUnit.urlParams.hideskipped) {
@@ -180,7 +139,19 @@
         });
 
         QUnit.done(function(result) {
-            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
+          console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
+          testsRunning = false;
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+          if (testsRunning) {
+            debugger
+
+            // Cancel the event
+            e.preventDefault();
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+          }
         });
       })();
     </script>

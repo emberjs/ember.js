@@ -41,7 +41,8 @@ export function addListener(
   eventName: string,
   target: object | Function | null,
   method?: Function | string,
-  once?: boolean
+  once?: boolean,
+  sync = true
 ): void {
   assert(
     'You must pass at least an object and event name to addListener',
@@ -53,7 +54,7 @@ export function addListener(
     target = null;
   }
 
-  metaFor(obj).addToListeners(eventName, target, method!, once === true);
+  metaFor(obj).addToListeners(eventName, target, method!, once === true, sync);
 }
 
 /**

@@ -1,38 +1,58 @@
-import { getOwner } from '@ember/-internals/owner';
+import { Owner } from '@ember/-internals/owner';
+import { guidFor } from '@ember/-internals/utils';
 import { OwnedTemplateMeta, StaticTemplateMeta } from '@ember/-internals/views';
-import { Template } from '@glimmer/interfaces';
-import { LazyCompiler, templateFactory, TemplateFactory } from '@glimmer/opcode-compiler';
-import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
+import { SerializedTemplateWithLazyBlock, Template } from '@glimmer/interfaces';
+import { templateFactory } from '@glimmer/opcode-compiler';
 
 export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
 export type OwnedTemplate = Template<OwnedTemplateMeta>;
 
-export default function template(json: StaticTemplate): Factory {
-  return new FactoryWrapper(templateFactory(json));
+export function isTemplateFactory(template: OwnedTemplate | Factory): template is Factory {
+  return typeof template === 'function';
 }
 
-export interface Injections {
-  compiler: LazyCompiler<StaticTemplateMeta>;
-  [key: string]: any;
+export function id(factory: Factory): string {
+  return factory.__id;
+}
+
+export function meta(factory: Factory): StaticTemplateMeta {
+  return factory.__meta;
+}
+
+export let counters = {
+  cacheHit: 0,
+  cacheMiss: 0,
+};
+
+export default function template(json: StaticTemplate): Factory {
+  let glimmerFactory = templateFactory(json);
+  let cache = new WeakMap<Owner, OwnedTemplate>();
+
+  const meta = glimmerFactory.meta as StaticTemplateMeta;
+
+  let factory = ((owner: Owner) => {
+    let result = cache.get(owner);
+    let ownerId = guidFor(owner);
+
+    if (result === undefined) {
+      counters.cacheMiss++;
+      result = glimmerFactory.create(Object.assign({ ownerId }, meta));
+      cache.set(owner, result);
+    } else {
+      counters.cacheHit++;
+    }
+
+    return result;
+  }) as Factory;
+
+  factory.__id = glimmerFactory.id;
+  factory.__meta = meta;
+
+  return factory;
 }
 
 export interface Factory {
-  id: string;
-  meta: StaticTemplateMeta;
-  create(injections: Injections): OwnedTemplate;
-}
-
-class FactoryWrapper implements Factory {
-  public id: string;
-  public meta: StaticTemplateMeta;
-
-  constructor(public factory: TemplateFactory<StaticTemplateMeta>) {
-    this.id = factory.id;
-    this.meta = factory.meta;
-  }
-
-  create(injections: Injections): OwnedTemplate {
-    const owner = getOwner(injections);
-    return this.factory.create(injections.compiler, { owner });
-  }
+  __id: string;
+  __meta: StaticTemplateMeta;
+  (owner: Owner): OwnedTemplate;
 }

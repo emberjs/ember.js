@@ -1,10 +1,72 @@
 import Controller, { inject as injectController } from '@ember/controller';
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Mixin, get } from '@ember/-internals/metal';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';
+import { action } from '@ember/object';
+
+moduleFor(
+  'Controller model',
+  class extends ApplicationTestCase {
+    async '@test model is tracked'() {
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor() {
+            super(...arguments);
+            this.model = 0;
+          }
+
+          get derived() {
+            return this.model + 1;
+          }
+
+          @action
+          update() {
+            this.model++;
+          }
+        }
+      );
+
+      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.derived}}</button>');
+
+      await this.visit('/');
+
+      this.assertText('1');
+
+      runTask(() => this.$('button').click());
+      this.assertText('2');
+    }
+
+    async '@test model can be observed with sync observers'(assert) {
+      let observerRunCount = 0;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor() {
+            super(...arguments);
+            this.model = 0;
+
+            this.addObserver('model', this, () => observerRunCount++, true);
+          }
+
+          @action
+          update() {
+            this.model++;
+          }
+        }
+      );
+
+      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.model}}</button>');
+
+      await this.visit('/');
+      runTask(() => this.$('button').click());
+      assert.equal(observerRunCount, 1, 'observer ran exactly once');
+    }
+  }
+);
 
 moduleFor(
   'Controller event handling',
@@ -138,10 +200,10 @@ moduleFor(
       assert.expect(3);
       expectNoDeprecation();
 
-      let controller = Controller.extend({
+      let controller = Controller.create({
         content: 'foo-bar',
         model: 'blammo',
-      }).create();
+      });
 
       assert.equal(get(controller, 'content'), 'foo-bar');
       assert.equal(get(controller, 'model'), 'blammo');
@@ -209,43 +271,41 @@ moduleFor(
   }
 );
 
-if (EMBER_NATIVE_DECORATOR_SUPPORT) {
-  moduleFor(
-    'Controller Injections',
-    class extends AbstractTestCase {
-      ['@test works with native decorators'](assert) {
-        let owner = buildOwner();
+moduleFor(
+  'Controller Injections',
+  class extends AbstractTestCase {
+    ['@test works with native decorators'](assert) {
+      let owner = buildOwner();
 
-        class MainController extends Controller {}
+      class MainController extends Controller {}
 
-        class IndexController extends Controller {
-          @injectController('main') main;
-        }
-
-        owner.register('controller:main', MainController);
-        owner.register('controller:index', IndexController);
-
-        let index = owner.lookup('controller:index');
-
-        assert.ok(index.main instanceof Controller, 'controller injected correctly');
+      class IndexController extends Controller {
+        @injectController('main') main;
       }
 
-      ['@test uses the decorated property key if not provided'](assert) {
-        let owner = buildOwner();
+      owner.register('controller:main', MainController);
+      owner.register('controller:index', IndexController);
 
-        class MainController extends Controller {}
+      let index = owner.lookup('controller:index');
 
-        class IndexController extends Controller {
-          @injectController main;
-        }
-
-        owner.register('controller:main', MainController);
-        owner.register('controller:index', IndexController);
-
-        let index = owner.lookup('controller:index');
-
-        assert.ok(index.main instanceof Controller, 'controller injected correctly');
-      }
+      assert.ok(index.main instanceof Controller, 'controller injected correctly');
     }
-  );
-}
+
+    ['@test uses the decorated property key if not provided'](assert) {
+      let owner = buildOwner();
+
+      class MainController extends Controller {}
+
+      class IndexController extends Controller {
+        @injectController main;
+      }
+
+      owner.register('controller:main', MainController);
+      owner.register('controller:index', IndexController);
+
+      let index = owner.lookup('controller:index');
+
+      assert.ok(index.main instanceof Controller, 'controller injected correctly');
+    }
+  }
+);

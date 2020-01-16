@@ -11,7 +11,7 @@ import {
   removeListener,
   sendEvent,
 } from '@ember/-internals/metal';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject ES Compatibility',
@@ -339,25 +339,31 @@ moduleFor(
 
       let a = A.create();
       a.set('foo', 'something');
-      assert.equal(fooDidChangeBase, 1);
-      assert.equal(fooDidChangeA, 1);
-      assert.equal(fooDidChangeB, 0);
 
-      sendEvent(a, 'someEvent');
-      assert.equal(someEventBase, 1);
-      assert.equal(someEventA, 1);
-      assert.equal(someEventB, 0);
+      // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
+      return runLoopSettled().then(async () => {
+        assert.equal(fooDidChangeBase, 1);
+        assert.equal(fooDidChangeA, 1);
+        assert.equal(fooDidChangeB, 0);
 
-      let b = B.create();
-      b.set('foo', 'something');
-      assert.equal(fooDidChangeBase, 1);
-      assert.equal(fooDidChangeA, 1);
-      assert.equal(fooDidChangeB, 0);
+        sendEvent(a, 'someEvent');
+        assert.equal(someEventBase, 1);
+        assert.equal(someEventA, 1);
+        assert.equal(someEventB, 0);
 
-      sendEvent(b, 'someEvent');
-      assert.equal(someEventBase, 1);
-      assert.equal(someEventA, 1);
-      assert.equal(someEventB, 0);
+        let b = B.create();
+        b.set('foo', 'something');
+        await runLoopSettled();
+
+        assert.equal(fooDidChangeBase, 1);
+        assert.equal(fooDidChangeA, 1);
+        assert.equal(fooDidChangeB, 0);
+
+        sendEvent(b, 'someEvent');
+        assert.equal(someEventBase, 1);
+        assert.equal(someEventA, 1);
+        assert.equal(someEventB, 0);
+      });
     }
 
     '@test super and _super interop between old and new methods'(assert) {
@@ -506,20 +512,24 @@ moduleFor(
       assert.equal(d.full, 'Robert Jackson');
 
       d.setProperties({ first: 'Kris', last: 'Selden' });
-      assert.deepEqual(changes, [
-        'D fullNameDidChange before super.fullNameDidChange',
-        'B fullNameDidChange',
-        'D fullNameDidChange after super.fullNameDidChange',
-      ]);
 
-      assert.equal(d.full, 'Kris Selden');
+      // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
+      return runLoopSettled().then(() => {
+        assert.deepEqual(changes, [
+          'D fullNameDidChange before super.fullNameDidChange',
+          'B fullNameDidChange',
+          'D fullNameDidChange after super.fullNameDidChange',
+        ]);
 
-      d.triggerSomeEvent('event arg');
-      assert.deepEqual(events, [
-        'D onSomeEvent before super.onSomeEvent',
-        'B onSomeEvent event arg',
-        'D onSomeEvent after super.onSomeEvent',
-      ]);
+        assert.equal(d.full, 'Kris Selden');
+
+        d.triggerSomeEvent('event arg');
+        assert.deepEqual(events, [
+          'D onSomeEvent before super.onSomeEvent',
+          'B onSomeEvent event arg',
+          'D onSomeEvent after super.onSomeEvent',
+        ]);
+      });
     }
   }
 );

@@ -1,16 +1,16 @@
 import {
   alias,
+  computed,
   defineProperty,
   get,
   set,
-  isWatching,
   addObserver,
   removeObserver,
-  tagFor,
   tagForProperty,
 } from '..';
-import { meta } from '@ember/-internals/meta';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { Object as EmberObject } from '@ember/-internals/runtime';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { value, validate } from '@glimmer/validator';
 
 let obj, count;
 
@@ -41,75 +41,86 @@ moduleFor(
       assert.equal(get(obj, 'foo.faz'), 'BAR');
     }
 
-    ['@test old dependent keys should not trigger property changes'](assert) {
+    async ['@test old dependent keys should not trigger property changes'](assert) {
       let obj1 = Object.create(null);
       defineProperty(obj1, 'foo', null, null);
       defineProperty(obj1, 'bar', alias('foo'));
       defineProperty(obj1, 'baz', alias('foo'));
       defineProperty(obj1, 'baz', alias('bar')); // redefine baz
+
       addObserver(obj1, 'baz', incrementCount);
 
       set(obj1, 'foo', 'FOO');
+      await runLoopSettled();
+
       assert.equal(count, 1);
 
       removeObserver(obj1, 'baz', incrementCount);
 
       set(obj1, 'foo', 'OOF');
+      await runLoopSettled();
+
       assert.equal(count, 1);
     }
 
-    [`@test inheriting an observer of the alias from the prototype then
+    async [`@test inheriting an observer of the alias from the prototype then
     redefining the alias on the instance to another property dependent on same key
     does not call the observer twice`](assert) {
-      let obj1 = Object.create(null);
-      obj1.incrementCount = incrementCount;
+      let obj1 = EmberObject.extend({
+        foo: null,
+        bar: alias('foo'),
+        baz: alias('foo'),
 
-      meta(obj1).proto = obj1;
+        incrementCount,
+      });
 
-      defineProperty(obj1, 'foo', null, null);
-      defineProperty(obj1, 'bar', alias('foo'));
-      defineProperty(obj1, 'baz', alias('foo'));
-      addObserver(obj1, 'baz', null, 'incrementCount');
+      addObserver(obj1.prototype, 'baz', null, 'incrementCount');
 
-      let obj2 = Object.create(obj1);
+      let obj2 = obj1.create();
       defineProperty(obj2, 'baz', alias('bar')); // override baz
 
       set(obj2, 'foo', 'FOO');
+      await runLoopSettled();
+
       assert.equal(count, 1);
 
       removeObserver(obj2, 'baz', null, 'incrementCount');
 
       set(obj2, 'foo', 'OOF');
+      await runLoopSettled();
+
       assert.equal(count, 1);
     }
 
-    ['@test an observer of the alias works if added after defining the alias'](assert) {
+    async ['@test an observer of the alias works if added after defining the alias'](assert) {
       defineProperty(obj, 'bar', alias('foo.faz'));
+
       addObserver(obj, 'bar', incrementCount);
-      assert.ok(isWatching(obj, 'foo.faz'));
       set(obj, 'foo.faz', 'BAR');
+
+      await runLoopSettled();
       assert.equal(count, 1);
     }
 
-    ['@test an observer of the alias works if added before defining the alias'](assert) {
+    async ['@test an observer of the alias works if added before defining the alias'](assert) {
       addObserver(obj, 'bar', incrementCount);
       defineProperty(obj, 'bar', alias('foo.faz'));
-      assert.ok(isWatching(obj, 'foo.faz'));
+
       set(obj, 'foo.faz', 'BAR');
+
+      await runLoopSettled();
       assert.equal(count, 1);
     }
 
-    ['@test object with alias is dirtied if interior object of alias is set after consumption'](
-      assert
-    ) {
+    ['@test alias is dirtied if interior object of alias is set after consumption'](assert) {
       defineProperty(obj, 'bar', alias('foo.faz'));
       get(obj, 'bar');
 
-      let tag = tagFor(obj);
-      let tagValue = tag.value();
+      let tag = tagForProperty(obj, 'bar');
+      let tagValue = value(tag);
       set(obj, 'foo.faz', 'BAR');
 
-      assert.ok(!tag.validate(tagValue), 'setting the aliased key should dirty the object');
+      assert.ok(!validate(tag, tagValue), 'setting the aliased key should dirty the object');
     }
 
     ['@test setting alias on self should fail assertion']() {
@@ -119,74 +130,23 @@ moduleFor(
       );
     }
 
-    ['@test destroyed alias does not disturb watch count'](assert) {
-      defineProperty(obj, 'bar', alias('foo.faz'));
-
-      assert.equal(get(obj, 'bar'), 'FOO');
-      assert.ok(isWatching(obj, 'foo.faz'));
-
-      defineProperty(obj, 'bar', null);
-
-      assert.notOk(isWatching(obj, 'foo.faz'));
-    }
-
-    ['@test setting on oneWay alias does not disturb watch count'](assert) {
-      defineProperty(obj, 'bar', alias('foo.faz').oneWay());
-
-      assert.equal(get(obj, 'bar'), 'FOO');
-      assert.ok(isWatching(obj, 'foo.faz'));
-
-      set(obj, 'bar', null);
-
-      assert.notOk(isWatching(obj, 'foo.faz'));
-    }
-
-    ['@test redefined alias with observer does not disturb watch count'](assert) {
-      defineProperty(obj, 'bar', alias('foo.faz').oneWay());
-
-      assert.equal(get(obj, 'bar'), 'FOO');
-      assert.ok(isWatching(obj, 'foo.faz'));
-
-      addObserver(obj, 'bar', incrementCount);
-
-      assert.equal(count, 0);
-
-      set(obj, 'bar', null);
-
-      assert.equal(count, 1);
-      assert.notOk(isWatching(obj, 'foo.faz'));
-
-      defineProperty(obj, 'bar', alias('foo.faz'));
-
-      assert.equal(count, 1);
-      assert.ok(isWatching(obj, 'foo.faz'));
-
-      set(obj, 'foo.faz', 'great');
-
-      assert.equal(count, 2);
-    }
-
     ['@test property tags are bumped when the source changes [GH#17243]'](assert) {
       function assertPropertyTagChanged(obj, keyName, callback) {
         let tag = tagForProperty(obj, keyName);
-        let before = tag.value();
+        let before = value(tag);
 
         callback();
 
-        let after = tag.value();
-
-        assert.notEqual(after, before, `tagForProperty ${keyName} should change`);
+        assert.notOk(validate(tag, before), `tagForProperty ${keyName} should change`);
       }
 
       function assertPropertyTagUnchanged(obj, keyName, callback) {
         let tag = tagForProperty(obj, keyName);
-        let before = tag.value();
+        let before = value(tag);
 
         callback();
 
-        let after = tag.value();
-
-        assert.equal(after, before, `tagForProperty ${keyName} should not change`);
+        assert.ok(validate(tag, before), `tagForProperty ${keyName} should not change`);
       }
 
       defineProperty(obj, 'bar', alias('foo.faz'));
@@ -204,7 +164,6 @@ moduleFor(
       });
 
       assertPropertyTagUnchanged(obj, 'bar', () => {
-        // trigger willWatch, then didUnwatch
         addObserver(obj, 'bar', incrementCount);
         removeObserver(obj, 'bar', incrementCount);
       });
@@ -216,6 +175,39 @@ moduleFor(
       assertPropertyTagUnchanged(obj, 'bar', () => {
         assert.equal(get(obj, 'bar'), 'FOO');
       });
+    }
+
+    ['@test nested aliases update their chained dependencies properly'](assert) {
+      let count = 0;
+
+      class Inner {
+        @alias('pojo') aliased;
+
+        pojo = {
+          value: 123,
+        };
+      }
+
+      class Outer {
+        @computed('inner.aliased.value')
+        get value() {
+          count++;
+          return this.inner.aliased.value;
+        }
+
+        inner = new Inner();
+      }
+
+      let outer = new Outer();
+
+      assert.equal(outer.value, 123, 'Property works');
+
+      outer.value;
+      assert.equal(count, 1, 'Property was properly cached');
+
+      set(outer, 'inner.pojo.value', 456);
+
+      assert.equal(outer.value, 456, 'Property was invalidated correctly');
     }
   }
 );

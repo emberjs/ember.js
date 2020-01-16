@@ -1,7 +1,19 @@
 import { Factory } from '@ember/-internals/owner';
-import { Dict, Opaque, Simple } from '@glimmer/interfaces';
-import { Tag } from '@glimmer/reference';
-import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
+import { getDebugName } from '@ember/-internals/utils';
+import { assert, deprecate } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
+import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import {
+  combine,
+  CONSTANT_TAG,
+  createUpdatableTag,
+  Tag,
+  track,
+  untrack,
+  update,
+} from '@glimmer/validator';
+import { SimpleElement } from '@simple-dom/interface';
+import debugRenderMessage from '../utils/debug-render-message';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
@@ -9,32 +21,65 @@ export interface CustomModifierDefinitionState<ModifierInstance> {
   delegate: ModifierManagerDelegate<ModifierInstance>;
 }
 
-export interface Capabilities {}
+export interface OptionalCapabilities {
+  disableAutoTracking?: boolean;
+}
 
-// Currently there are no capabilities for modifiers
-export function capabilities(_managerAPI: string, _optionalFeatures?: {}): Capabilities {
-  return {};
+export interface Capabilities {
+  disableAutoTracking: boolean;
+}
+
+export function capabilities(
+  managerAPI: string,
+  optionalFeatures: OptionalCapabilities = {}
+): Capabilities {
+  if (managerAPI !== '3.13') {
+    managerAPI = '3.13';
+
+    deprecate(
+      'Modifier manager capabilities now require you to pass a valid version when being generated. Valid versions include: 3.13',
+      false,
+      {
+        until: '3.17.0',
+        id: 'implicit-modifier-manager-capabilities',
+      }
+    );
+  }
+
+  assert('Invalid modifier manager compatibility specified', managerAPI === '3.13');
+
+  return {
+    disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
+  };
 }
 
 export class CustomModifierDefinition<ModifierInstance> {
   public state: CustomModifierDefinitionState<ModifierInstance>;
-  public manager = CUSTOM_MODIFIER_MANAGER;
+  public manager: ModifierManager<unknown | null, CustomModifierDefinitionState<ModifierInstance>>;
+
   constructor(
     public name: string,
     public ModifierClass: Factory<ModifierInstance>,
-    public delegate: ModifierManagerDelegate<ModifierInstance>
+    public delegate: ModifierManagerDelegate<ModifierInstance>,
+    isInteractive: boolean
   ) {
     this.state = {
       ModifierClass,
       name,
       delegate,
     };
+
+    this.manager = isInteractive
+      ? CUSTOM_INTERACTIVE_MODIFIER_MANAGER
+      : CUSTOM_NON_INTERACTIVE_MODIFIER_MANAGER;
   }
 }
 
 export class CustomModifierState<ModifierInstance> {
+  public tag = createUpdatableTag();
+
   constructor(
-    public element: Simple.Element,
+    public element: SimpleElement,
     public delegate: ModifierManagerDelegate<ModifierInstance>,
     public modifier: ModifierInstance,
     public args: CapturedArguments
@@ -48,14 +93,14 @@ export class CustomModifierState<ModifierInstance> {
 
 // TODO: export ICapturedArgumentsValue from glimmer and replace this
 export interface Args {
-  named: Dict<Opaque>;
-  positional: Opaque[];
+  named: Dict<unknown>;
+  positional: unknown[];
 }
 
 export interface ModifierManagerDelegate<ModifierInstance> {
   capabilities: Capabilities;
-  createModifier(factory: Opaque, args: Args): ModifierInstance;
-  installModifier(instance: ModifierInstance, element: Simple.Element, args: Args): void;
+  createModifier(factory: unknown, args: Args): ModifierInstance;
+  installModifier(instance: ModifierInstance, element: SimpleElement, args: Args): void;
   updateModifier(instance: ModifierInstance, args: Args): void;
   destroyModifier(instance: ModifierInstance, args: Args): void;
 }
@@ -67,12 +112,15 @@ export interface ModifierManagerDelegate<ModifierInstance> {
   implements a set of hooks that determine modifier behavior.
   To create a custom modifier manager, instantiate a new CustomModifierManager
   class and pass the delegate as the first argument:
+
   ```js
   let manager = new CustomModifierManager({
     // ...delegate implementation...
   });
   ```
+
   ## Delegate Hooks
+
   Throughout the lifecycle of a modifier, the modifier manager will invoke
   delegate hooks that are responsible for surfacing those lifecycle changes to
   the end developer.
@@ -81,37 +129,71 @@ export interface ModifierManagerDelegate<ModifierInstance> {
   * `updateModifier()` - invoked when the arguments passed to a modifier change
   * `destroyModifier()` - invoked when the modifier is about to be destroyed
 */
-class CustomModifierManager<ModifierInstance>
+class InteractiveCustomModifierManager<ModifierInstance>
   implements
     ModifierManager<
       CustomModifierState<ModifierInstance>,
       CustomModifierDefinitionState<ModifierInstance>
     > {
   create(
-    element: Simple.Element,
+    element: SimpleElement,
     definition: CustomModifierDefinitionState<ModifierInstance>,
-    args: Arguments
+    args: VMArguments
   ) {
+    let { delegate, ModifierClass } = definition;
     const capturedArgs = args.capture();
-    let instance = definition.delegate.createModifier(
-      definition.ModifierClass,
-      capturedArgs.value()
-    );
-    return new CustomModifierState(element, definition.delegate, instance, capturedArgs);
+
+    let instance = definition.delegate.createModifier(ModifierClass, capturedArgs.value());
+
+    if (delegate.capabilities === undefined) {
+      delegate.capabilities = capabilities('3.13');
+
+      deprecate(
+        'Custom modifier managers must define their capabilities using the capabilities() helper function',
+        false,
+        {
+          until: '3.17.0',
+          id: 'implicit-modifier-manager-capabilities',
+        }
+      );
+    }
+
+    return new CustomModifierState(element, delegate, instance, capturedArgs);
   }
 
-  getTag({ args }: CustomModifierState<ModifierInstance>): Tag {
-    return args.tag;
+  getTag({ args, tag }: CustomModifierState<ModifierInstance>): Tag {
+    return combine([tag, args.tag]);
   }
 
   install(state: CustomModifierState<ModifierInstance>) {
-    let { element, args, delegate, modifier } = state;
-    delegate.installModifier(modifier, element, args.value());
+    let { element, args, delegate, modifier, tag } = state;
+    let { capabilities } = delegate;
+
+    if (capabilities.disableAutoTracking === true) {
+      untrack(() => delegate.installModifier(modifier, element, args.value()));
+    } else {
+      let combinedTrackingTag = track(
+        () => delegate.installModifier(modifier, element, args.value()),
+        DEBUG && debugRenderMessage!(`(instance of a \`${getDebugName!(modifier)}\` modifier)`)
+      );
+
+      update(tag, combinedTrackingTag);
+    }
   }
 
   update(state: CustomModifierState<ModifierInstance>) {
-    let { args, delegate, modifier } = state;
-    delegate.updateModifier(modifier, args.value());
+    let { args, delegate, modifier, tag } = state;
+    let { capabilities } = delegate;
+
+    if (capabilities.disableAutoTracking === true) {
+      untrack(() => delegate.updateModifier(modifier, args.value()));
+    } else {
+      let combinedTrackingTag = track(
+        () => delegate.updateModifier(modifier, args.value()),
+        DEBUG && debugRenderMessage!(`(instance of a \`${getDebugName!(modifier)}\` modifier)`)
+      );
+      update(tag, combinedTrackingTag);
+    }
   }
 
   getDestructor(state: CustomModifierState<ModifierInstance>) {
@@ -119,4 +201,24 @@ class CustomModifierManager<ModifierInstance>
   }
 }
 
-const CUSTOM_MODIFIER_MANAGER = new CustomModifierManager();
+class NonInteractiveCustomModifierManager<ModifierInstance>
+  implements ModifierManager<null, CustomModifierDefinitionState<ModifierInstance>> {
+  create() {
+    return null;
+  }
+
+  getTag(): Tag {
+    return CONSTANT_TAG;
+  }
+
+  install() {}
+
+  update() {}
+
+  getDestructor() {
+    return null;
+  }
+}
+
+const CUSTOM_INTERACTIVE_MODIFIER_MANAGER = new InteractiveCustomModifierManager();
+const CUSTOM_NON_INTERACTIVE_MODIFIER_MANAGER = new NonInteractiveCustomModifierManager();

@@ -7,9 +7,9 @@ import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
 import { deleteMeta, meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import { FEATURES, isEnabled } from '@ember/canary-features';
+import { FEATURES, isEnabled, EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
-import { assert, deprecate } from '@ember/debug';
+import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
 import Logger from '@ember/-internals/console';
 import Controller, { inject as injectController } from '@ember/controller';
@@ -29,6 +29,7 @@ import {
 import Service, { inject as injectService } from '@ember/service';
 
 import { action } from '@ember/object';
+import { dependentKeyCompat } from '@ember/object/compat';
 
 import {
   and,
@@ -91,6 +92,7 @@ import {
   CoreObject,
   NativeArray,
   A,
+  setFrameworkClass,
 } from '@ember/-internals/runtime';
 import {
   Checkbox,
@@ -110,7 +112,9 @@ import {
   TextArea,
   isSerializationFirstNode,
   setModifierManager,
-  modifierCapabilties,
+  modifierCapabilities,
+  setComponentTemplate,
+  getComponentTemplate,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
@@ -128,6 +132,7 @@ import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
+import templateOnlyComponent from '@ember/component/template-only';
 
 // ****@ember/-internals/environment****
 
@@ -171,8 +176,29 @@ if (EMBER_EXTEND_PROTOTYPES) {
 Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
 Ember.Application = Application;
-Ember.DefaultResolver = Ember.Resolver = Resolver;
 Ember.ApplicationInstance = ApplicationInstance;
+
+Object.defineProperty(Ember, 'Resolver', {
+  get() {
+    deprecate(
+      'Using the globals resolver is deprecated. Use the ember-resolver package instead. See https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+      false,
+      {
+        id: 'ember.globals-resolver',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+      }
+    );
+
+    return Resolver;
+  },
+});
+
+Object.defineProperty(Ember, 'DefaultResolver', {
+  get() {
+    return Ember.Resolver;
+  },
+});
 
 // ****@ember/engine****
 Ember.Engine = Engine;
@@ -192,18 +218,6 @@ Ember.canInvoke = utils.canInvoke;
 Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
-
-Object.defineProperty(Ember, 'NAME_KEY', {
-  enumerable: false,
-  get() {
-    deprecate('Using `Ember.NAME_KEY` is deprecated, override `.toString` instead', false, {
-      id: 'ember-name-key-usage',
-      until: '3.9.0',
-    });
-
-    return utils.NAME_KEY;
-  },
-});
 
 // ****@ember/-internals/container****
 Ember.Container = Container;
@@ -227,6 +241,7 @@ Ember.Error = EmberError;
 Ember.Debug = {
   registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
   registerWarnHandler: EmberDebug.registerWarnHandler,
+  isComputed: metal.isComputed,
 };
 
 // ****@ember/instrumentation****
@@ -308,7 +323,6 @@ Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
-Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;
 Ember.changeProperties = metal.changeProperties;
@@ -317,16 +331,6 @@ Ember.platform = {
   hasPropertyAccessors: true,
 };
 Ember.defineProperty = metal.defineProperty;
-Ember.watchKey = metal.watchKey;
-Ember.unwatchKey = metal.unwatchKey;
-Ember.removeChainWatcher = metal.removeChainWatcher;
-Ember._ChainNode = metal.ChainNode;
-Ember.finishChains = metal.finishChains;
-Ember.watchPath = metal.watchPath;
-Ember.unwatchPath = metal.unwatchPath;
-Ember.watch = metal.watch;
-Ember.isWatching = metal.isWatching;
-Ember.unwatch = metal.unwatch;
 Ember.destroy = deleteMeta;
 Ember.libraries = metal.libraries;
 Ember.getProperties = metal.getProperties;
@@ -399,6 +403,7 @@ Ember._ContainerProxyMixin = ContainerProxyMixin;
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
+Ember._setFrameworkClass = setFrameworkClass;
 
 /**
 @module ember
@@ -450,6 +455,7 @@ Ember.RSVP = RSVP;
 Ember.Namespace = Namespace;
 
 Ember._action = action;
+Ember._dependentKeyCompat = dependentKeyCompat;
 
 computed.empty = empty;
 computed.notEmpty = notEmpty;
@@ -533,7 +539,13 @@ Ember.LinkComponent = LinkComponent;
 Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = capabilities;
 Ember._setModifierManager = setModifierManager;
-Ember._modifierManagerCapabilties = modifierCapabilties;
+Ember._modifierManagerCapabilities = modifierCapabilities;
+if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
+  Ember._getComponentTemplate = getComponentTemplate;
+  Ember._setComponentTemplate = setComponentTemplate;
+  Ember._templateOnlyComponent = templateOnlyComponent;
+}
+Ember._captureRenderTree = captureRenderTree;
 Ember.Handlebars = {
   template,
   Utils: {

@@ -19,7 +19,7 @@ export interface CompileOptions {
   plugins?: Plugins | undefined;
 }
 
-export default function compileOptions(_options: Partial<CompileOptions>): PrecompileOptions {
+export default function compileOptions(_options: Partial<CompileOptions> = {}): PrecompileOptions {
   let options = assign({ meta: {} }, _options, {
     customizeComponentName(tagname: string): string {
       return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);

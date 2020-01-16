@@ -10,6 +10,7 @@
 */
 export { default as symbol, isInternalSymbol } from './lib/symbol';
 export { default as dictionary } from './lib/dictionary';
+export { default as getDebugName } from './lib/get-debug-name';
 export { default as getOwnPropertyDescriptors } from './lib/get-own-property-descriptors';
 export { uuid, GUID_KEY, generateGuid, guidFor } from './lib/guid';
 export { default as intern } from './lib/intern';
@@ -28,10 +29,14 @@ export { canInvoke, tryInvoke } from './lib/invoke';
 export { default as makeArray } from './lib/make-array';
 export { getName, setName } from './lib/name';
 export { default as toString } from './lib/to-string';
+export { isObject } from './lib/spec';
 export { HAS_NATIVE_SYMBOL } from './lib/symbol-utils';
 export { HAS_NATIVE_PROXY } from './lib/proxy-utils';
 export { isProxy, setProxy } from './lib/is_proxy';
 export { default as Cache } from './lib/cache';
-
-import symbol from './lib/symbol';
-export const NAME_KEY = symbol('NAME_KEY');
+export { EMBER_ARRAY, EmberArray, isEmberArray } from './lib/ember-array';
+export {
+  setupMandatorySetter,
+  teardownMandatorySetter,
+  setWithMandatorySetter,
+} from './lib/mandatory-setter';

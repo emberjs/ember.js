@@ -1,7 +1,7 @@
 import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
 import AbstractTestCase from './abstract';
-import { runDestroy, runTask } from '../run';
+import { runDestroy, runTask, runLoopSettled } from '../run';
 
 export default class AbstractApplicationTestCase extends AbstractTestCase {
   _ensureInstance(bootOptions) {
@@ -16,13 +16,16 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     }));
   }
 
-  visit(url, options) {
-    // TODO: THIS IS HORRIBLE
-    // the promise returned by `ApplicationInstance.protoype.visit` does **not**
-    // currently guarantee rendering is completed
-    return runTask(() => {
-      return this._ensureInstance(options).then(instance => instance.visit(url));
-    });
+  async visit(url, options) {
+    // Create the instance
+    let instance = await this._ensureInstance(options).then(instance =>
+      runTask(() => instance.visit(url))
+    );
+
+    // Await all asynchronous actions
+    await runLoopSettled();
+
+    return instance;
   }
 
   get element() {

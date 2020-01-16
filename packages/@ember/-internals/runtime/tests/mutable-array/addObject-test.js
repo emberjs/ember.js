@@ -1,5 +1,5 @@
 import { get } from '@ember/-internals/metal';
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class AddObjectTest extends AbstractTestCase {
@@ -9,7 +9,7 @@ class AddObjectTest extends AbstractTestCase {
     this.assert.equal(obj.addObject(before[1]), obj, 'should return receiver');
   }
 
-  '@test [A,B].addObject(C) => [A,B,C] + notify'() {
+  async '@test [A,B].addObject(C) => [A,B,C] + notify'() {
     let before = newFixture(2);
     let item = newFixture(1)[0];
     let after = [before[0], before[1], item];
@@ -19,6 +19,9 @@ class AddObjectTest extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     obj.addObject(item);
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
@@ -41,7 +44,7 @@ class AddObjectTest extends AbstractTestCase {
     }
   }
 
-  '@test [A,B,C].addObject(A) => [A,B,C] + NO notify'() {
+  async '@test [A,B,C].addObject(A) => [A,B,C] + NO notify'() {
     let before = newFixture(3);
     let after = before;
     let item = before[0];
@@ -51,6 +54,9 @@ class AddObjectTest extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     obj.addObject(item); // note: item in set
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');

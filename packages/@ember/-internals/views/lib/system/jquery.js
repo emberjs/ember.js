@@ -3,7 +3,7 @@ import { hasDOM } from '@ember/-internals/browser-environment';
 import { ENV } from '@ember/-internals/environment';
 import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
-let jQuery;
+export let jQuery;
 export let jQueryDisabled = !JQUERY_INTEGRATION || ENV._JQUERY_INTEGRATION === false;
 
 if (JQUERY_INTEGRATION && hasDOM) {
@@ -23,8 +23,7 @@ if (JQUERY_INTEGRATION && hasDOM) {
       );
     }
   } else {
+    jQuery = undefined;
     jQueryDisabled = true;
   }
 }
-
-export default (jQueryDisabled ? undefined : jQuery);

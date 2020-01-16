@@ -4,19 +4,37 @@ import {
   getCachedValueFor,
   defineProperty,
   isClassicDecorator,
+  isComputed,
   get,
   set,
-  isWatching,
   addObserver,
 } from '..';
 import { meta as metaFor } from '@ember/-internals/meta';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 let obj, count;
 
 moduleFor(
   'computed',
   class extends AbstractTestCase {
+    ['@test isComputed is true for computed property on a factory'](assert) {
+      let Obj = EmberObject.extend({
+        foo: computed(function() {}),
+      });
+
+      Obj.proto(); // ensure the prototype is "collapsed" / merged
+
+      assert.ok(isComputed(Obj.prototype, 'foo'));
+    }
+
+    ['@test isComputed is true for computed property on an instance'](assert) {
+      let obj = EmberObject.extend({
+        foo: computed(function() {}),
+      }).create();
+
+      assert.ok(isComputed(obj, 'foo'));
+    }
+
     ['@test computed property should be an instance of descriptor'](assert) {
       assert.ok(isClassicDecorator(computed(function() {})));
     }
@@ -110,7 +128,7 @@ moduleFor(
 
       expectDeprecation(() => {
         set(obj, 'foo', 'boom');
-      }, /The \[object Object\]#foo computed property was just overriden./);
+      }, /The \[object Object\]#foo computed property was just overridden./);
 
       assert.equal(obj.foo, 'boom');
     }
@@ -172,6 +190,30 @@ moduleFor(
         let obj = {};
         defineProperty(obj, 'someProp', computed('todos.@each.owner.@each.name', () => {}));
       }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
+
+      let expected = new RegExp(
+        'When using @each in a dependent-key or an observer, ' +
+          'you can only chain one property level deep after the @each\\. ' +
+          'That is, `todos\\.@each\\.owner` is allowed but ' +
+          '`todos\\.@each\\.owner\\.name` \\(which is what you passed\\) is not\\.\n\n' +
+          'This was never supported\\. Currently, the extra segments ' +
+          'are silently ignored, i\\.e\\. `todos\\.@each\\.owner\\.name` ' +
+          'behaves exactly the same as `todos\\.@each\\.owner`\\. ' +
+          'In the future, this will throw an error\\.\n\n' +
+          'If the current behavior is acceptable for your use case, ' +
+          'please remove the extraneous segments by changing your key to ' +
+          '`todos\\.@each\\.owner`\\. Otherwise, please create an ' +
+          'intermediary computed property or switch to using tracked properties\\.'
+      );
+
+      expectDeprecation(() => {
+        let obj = {
+          todos: [],
+        };
+        defineProperty(obj, 'someProp', computed('todos.@each.owner.name', () => {}));
+
+        get(obj, 'someProp');
+      }, expected);
     }
   }
 );
@@ -484,67 +526,6 @@ moduleFor(
       obj = count = null;
     }
 
-    ['@test should lazily watch dependent keys on set'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      set(obj, 'foo', 'bar');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
-    }
-
-    ['@test should lazily watch dependent keys on get'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      get(obj, 'foo');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
-    }
-
-    ['@test local dependent key should invalidate cache'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
-
-      set(obj, 'bar', 'BIFF'); // should invalidate foo
-
-      assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
-      assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
-    }
-
-    ['@test should invalidate multiple nested dependent keys'](assert) {
-      let count = 0;
-      defineProperty(
-        obj,
-        'bar',
-        computed('baz', function() {
-          count++;
-          get(this, 'baz');
-          return 'baz ' + count;
-        })
-      );
-
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      assert.equal(isWatching(obj, 'baz'), false, 'precond not watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
-      assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
-
-      set(obj, 'baz', 'BIFF'); // should invalidate bar -> foo
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'should not be watching dependent key after cache cleared'
-      );
-      assert.equal(
-        isWatching(obj, 'baz'),
-        false,
-        'should not be watching dependent key after cache cleared'
-      );
-
-      assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
-      assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
-      assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
-    }
-
     ['@test circular keys should not blow up'](assert) {
       let func = function() {
         count++;
@@ -571,9 +552,7 @@ moduleFor(
     }
 
     ['@test redefining a property should undo old dependent keys'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
       assert.equal(get(obj, 'foo'), 'bar 1');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
 
       defineProperty(
         obj,
@@ -582,12 +561,6 @@ moduleFor(
           count++;
           return 'baz ' + count;
         })
-      );
-
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'after redefining should not be watching dependent key'
       );
 
       assert.equal(get(obj, 'foo'), 'baz 2');
@@ -641,19 +614,33 @@ moduleFor(
       }, /cannot contain spaces/);
     }
 
-    ['@test throws an assertion if an uncached `get` is called after object is destroyed'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-
+    ['@test throws an assertion if an uncached `get` is called after object is destroyed']() {
       let meta = metaFor(obj);
       meta.destroy();
 
       obj.toString = () => '<custom-obj:here>';
 
-      expectAssertion(() => {
-        get(obj, 'foo');
-      }, 'Cannot modify dependent keys for `foo` on `<custom-obj:here>` after it has been destroyed.');
+      let message =
+        'Attempted to access the computed <custom-obj:here>.foo on a destroyed object, which is not allowed';
 
-      assert.equal(isWatching(obj, 'bar'), false, 'deps were not updated');
+      expectAssertion(() => get(obj, 'foo'), message);
+    }
+
+    ['@test does not throw an assertion if an uncached `get` is called on computed without dependencies after object is destroyed'](
+      assert
+    ) {
+      let meta = metaFor(obj);
+      defineProperty(
+        obj,
+        'foo',
+        computed(function() {
+          return 'baz';
+        })
+      );
+
+      meta.destroy();
+
+      assert.equal(get(obj, 'foo'), 'baz', 'CP calculated successfully');
     }
   }
 );
@@ -789,7 +776,7 @@ moduleFor(
 
       expectDeprecation(() => {
         testObj.set('aInt', '123');
-      }, /The <\(unknown\):ember\d*>#aInt computed property was just overriden/);
+      }, /The <\(unknown\):ember\d*>#aInt computed property was just overridden/);
 
       assert.ok(testObj.get('aInt') === '123', 'cp has been updated too');
     }
@@ -881,7 +868,7 @@ moduleFor(
 moduleFor(
   'computed - setter',
   class extends AbstractTestCase {
-    ['@test setting a watched computed property'](assert) {
+    async ['@test setting a watched computed property'](assert) {
       let obj = {
         firstName: 'Yehuda',
         lastName: 'Katz',
@@ -926,12 +913,14 @@ moduleFor(
       assert.equal(get(obj, 'firstName'), 'Kris');
       assert.equal(get(obj, 'lastName'), 'Selden');
 
+      await runLoopSettled();
+
       assert.equal(fullNameDidChange, 1);
       assert.equal(firstNameDidChange, 1);
       assert.equal(lastNameDidChange, 1);
     }
 
-    ['@test setting a cached computed property that modifies the value you give it'](assert) {
+    async ['@test setting a cached computed property that modifies the value you give it'](assert) {
       let obj = {
         foo: 0,
       };
@@ -956,16 +945,22 @@ moduleFor(
       });
 
       assert.equal(get(obj, 'plusOne'), 1);
+
       set(obj, 'plusOne', 1);
-      assert.equal(get(obj, 'plusOne'), 2);
-      set(obj, 'plusOne', 1);
+      await runLoopSettled();
+
       assert.equal(get(obj, 'plusOne'), 2);
 
+      set(obj, 'plusOne', 1);
+      await runLoopSettled();
+
+      assert.equal(get(obj, 'plusOne'), 2);
       assert.equal(plusOneDidChange, 1);
 
       set(obj, 'foo', 5);
-      assert.equal(get(obj, 'plusOne'), 6);
+      await runLoopSettled();
 
+      assert.equal(get(obj, 'plusOne'), 6);
       assert.equal(plusOneDidChange, 2);
     }
   }
@@ -974,7 +969,7 @@ moduleFor(
 moduleFor(
   'computed - default setter',
   class extends AbstractTestCase {
-    ["@test when setting a value on a computed property that doesn't handle sets"](assert) {
+    async ["@test when setting a value on a computed property that doesn't handle sets"](assert) {
       let obj = {};
       let observerFired = false;
 
@@ -990,10 +985,13 @@ moduleFor(
 
       expectDeprecation(() => {
         set(obj, 'foo', 'bar');
-      }, /The \[object Object\]#foo computed property was just overriden./);
+      }, /The \[object Object\]#foo computed property was just overridden./);
 
       assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
       assert.ok(typeof obj.foo === 'string', 'The computed property was removed');
+
+      await runLoopSettled();
+
       assert.ok(observerFired, 'The observer was still notified');
     }
   }

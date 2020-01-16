@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { callWithStub, checkTest, DebugEnv, Message } from './utils';
 
 type ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => void;
@@ -30,9 +31,11 @@ const BREAK = {};
   disrupt the control flow.
 */
 export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
+  let originalAssertFunc = env.getDebugFunction('assert');
+
   hooks.beforeEach(function(assert) {
     let expectAssertion: ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => {
-      if (env.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Assertions disabled in production builds.');
         return;
       }
@@ -69,6 +72,10 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
   });
 
   hooks.afterEach(function() {
+    // Edge will occasionally not run finally blocks, so we have to be extra
+    // sure we restore the original assert function
+    env.setDebugFunction('assert', originalAssertFunc);
+
     window.expectAssertion = null;
     window.ignoreAssertion = null;
   });

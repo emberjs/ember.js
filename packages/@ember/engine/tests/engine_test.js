@@ -1,5 +1,4 @@
 import { context } from '@ember/-internals/environment';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
 import { Object as EmberObject } from '@ember/-internals/runtime';
@@ -7,6 +6,7 @@ import { privatize as P } from '@ember/-internals/container';
 import {
   moduleFor,
   AbstractTestCase as TestCase,
+  ModuleBasedTestResolver,
   verifyInjection,
   verifyRegistration,
 } from 'internal-test-helpers';
@@ -21,7 +21,9 @@ moduleFor(
       super();
 
       run(() => {
-        engine = Engine.create();
+        engine = Engine.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         context.lookup = { TestEngine: engine };
       });
     }
@@ -61,6 +63,7 @@ moduleFor(
       );
       verifyRegistration(assert, engine, 'controller:basic');
       verifyInjection(assert, engine, 'view', '_viewRegistry', '-view-registry:main');
+      verifyInjection(assert, engine, 'renderer', '_viewRegistry', '-view-registry:main');
       verifyInjection(assert, engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
       verifyInjection(assert, engine, 'view:-outlet', 'namespace', 'application:main');
 
@@ -76,11 +79,7 @@ moduleFor(
       verifyRegistration(assert, engine, 'component:-checkbox');
       verifyRegistration(assert, engine, 'component:link-to');
 
-      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-        verifyRegistration(assert, engine, 'component:textarea');
-      } else {
-        verifyRegistration(assert, engine, 'component:-text-area');
-      }
+      verifyRegistration(assert, engine, 'component:textarea');
 
       verifyRegistration(assert, engine, 'service:-routing');
       verifyInjection(assert, engine, 'service:-routing', 'router', 'router:main');
@@ -104,19 +103,10 @@ moduleFor(
       verifyRegistration(assert, engine, 'container-debug-adapter:main');
       verifyRegistration(assert, engine, 'component-lookup:main');
 
-      verifyInjection(assert, engine, 'service:-dom-changes', 'document', 'service:-document');
-      verifyInjection(
-        assert,
-        engine,
-        'service:-dom-tree-construction',
-        'document',
-        'service:-document'
-      );
       verifyRegistration(assert, engine, 'view:-outlet');
       verifyRegistration(assert, engine, P`template:components/-default`);
       verifyRegistration(assert, engine, 'template:-outlet');
       verifyInjection(assert, engine, 'view:-outlet', 'template', 'template:-outlet');
-      verifyInjection(assert, engine, 'template', 'compiler', P`template-compiler:main`);
       assert.deepEqual(
         engine.registeredOptionsForType('helper'),
         { instantiate: false },

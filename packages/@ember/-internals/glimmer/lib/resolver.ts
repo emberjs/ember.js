@@ -1,22 +1,20 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
-import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
+import { Factory, FactoryClass, getOwnerById, LookupOptions, Owner } from '@ember/-internals/owner';
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import {
-  EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS,
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODULE_UNIFICATION,
 } from '@ember/canary-features';
-import { assert } from '@ember/debug';
+import { isTemplateOnlyComponent } from '@ember/component/template-only';
+import { assert, deprecate } from '@ember/debug';
+import { PARTIALS } from '@ember/deprecated-features';
+import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
-import {
-  ComponentDefinition,
-  Opaque,
-  Option,
-  RuntimeResolver as IRuntimeResolver,
-} from '@glimmer/interfaces';
-import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
-import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
-import CompileTimeLookup from './compile-time-lookup';
+import { DEBUG } from '@glimmer/env';
+import { ComponentDefinition, Helper, JitRuntimeResolver, Option } from '@glimmer/interfaces';
+import { PartialDefinition, unwrapTemplate } from '@glimmer/opcode-compiler';
+import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
 import InternalComponentManager, {
@@ -25,13 +23,14 @@ import InternalComponentManager, {
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
-import { default as classHelper } from './helpers/-class';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
+import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
 import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
+import { default as fn } from './helpers/fn';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { inlineIf, inlineUnless } from './helpers/if-unless';
@@ -42,13 +41,14 @@ import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
 import { CustomModifierDefinition, ModifierManagerDelegate } from './modifiers/custom';
-import { populateMacros } from './syntax';
+import OnModifierManager from './modifiers/on';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
+import { Factory as TemplateFactory, OwnedTemplate } from './template';
+import { getComponentTemplate } from './utils/component-template';
 import { getModifierManager } from './utils/custom-modifier-manager';
 import { getManager } from './utils/managers';
-import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
+import { EmberHelperRootReference } from './utils/references';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -61,11 +61,185 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
   };
 }
 
-const BUILTINS_HELPERS = {
+function componentFor(
+  name: string,
+  owner: Owner,
+  options?: LookupOptions
+): Option<Factory<{}, {}>> {
+  let fullName = `component:${name}`;
+  return owner.factoryFor(fullName, options) || null;
+}
+
+function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<OwnedTemplate> {
+  let templateFullName = `template:components/${name}`;
+
+  return owner.lookup(templateFullName, options) || null;
+}
+
+function lookupModuleUnificationComponentPair(
+  owner: Owner,
+  name: string,
+  options?: LookupOptions
+): Option<LookupResult> {
+  let localComponent = componentFor(name, owner, options);
+  let localLayout = layoutFor(name, owner, options);
+
+  let globalComponent = componentFor(name, owner);
+  let globalLayout = layoutFor(name, owner);
+
+  // TODO: we shouldn't have to recheck fallback, we should have a lookup that doesn't fallback
+  if (
+    localComponent !== null &&
+    globalComponent !== null &&
+    globalComponent.class === localComponent.class
+  ) {
+    localComponent = null;
+  }
+  // TODO: Remove this when the MU feature flag is removed
+  if (
+    localLayout !== null &&
+    globalLayout !== null &&
+    unwrapTemplate(localLayout).referrer.moduleName ===
+      unwrapTemplate(globalLayout).referrer.moduleName
+  ) {
+    localLayout = null;
+  }
+
+  if (localComponent !== null || localLayout !== null) {
+    return { component: localComponent, layout: localLayout } as LookupResult;
+  } else if (globalComponent !== null || globalLayout !== null) {
+    return { component: globalComponent, layout: globalLayout } as LookupResult;
+  } else {
+    return null;
+  }
+}
+
+type LookupResult =
+  | {
+      component: Factory<{}, {}>;
+      layout: TemplateFactory;
+    }
+  | {
+      component: Factory<{}, {}>;
+      layout: null;
+    }
+  | {
+      component: null;
+      layout: TemplateFactory;
+    };
+
+function lookupComponentPair(
+  owner: Owner,
+  name: string,
+  options?: LookupOptions
+): Option<LookupResult> {
+  let component = componentFor(name, owner, options);
+
+  if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
+    if (component !== null && component.class !== undefined) {
+      let layout = getComponentTemplate(component.class);
+
+      if (layout !== null) {
+        return { component, layout };
+      }
+    }
+  }
+
+  let layout = layoutFor(name, owner, options);
+
+  if (component === null && layout === null) {
+    return null;
+  } else {
+    return { component, layout } as LookupResult;
+  }
+}
+
+function lookupComponent(owner: Owner, name: string, options: LookupOptions): Option<LookupResult> {
+  if (options.source || options.namespace) {
+    if (EMBER_MODULE_UNIFICATION) {
+      return lookupModuleUnificationComponentPair(owner, name, options);
+    }
+
+    let pair = lookupComponentPair(owner, name, options);
+
+    if (pair !== null) {
+      return pair;
+    }
+  }
+
+  if (EMBER_MODULE_UNIFICATION) {
+    return lookupModuleUnificationComponentPair(owner, name);
+  }
+
+  return lookupComponentPair(owner, name);
+}
+
+let lookupPartial: { templateName: string; owner: Owner } | any;
+let templateFor: { owner: Owner; underscored: string; name: string } | any;
+let parseUnderscoredName: { templateName: string } | any;
+
+if (PARTIALS) {
+  lookupPartial = function(templateName: string, owner: Owner) {
+    deprecate(
+      `The use of \`{{partial}}\` is deprecated, please refactor the "${templateName}" partial to a component`,
+      false,
+      {
+        id: 'ember-views.partial',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-views-partial',
+      }
+    );
+
+    if (templateName === null) {
+      return;
+    }
+
+    let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
+
+    assert(`Unable to find partial with name "${templateName}"`, Boolean(template));
+
+    return template;
+  };
+
+  templateFor = function(owner: any, underscored: string, name: string) {
+    if (PARTIALS) {
+      if (!name) {
+        return;
+      }
+      assert(`templateNames are not allowed to contain periods: ${name}`, name.indexOf('.') === -1);
+
+      if (!owner) {
+        throw new EmberError(
+          'Container was not found when looking up a views template. ' +
+            'This is most likely due to manually instantiating an Ember.View. ' +
+            'See: http://git.io/EKPpnA'
+        );
+      }
+
+      return owner.lookup(`template:${underscored}`) || owner.lookup(`template:${name}`);
+    }
+  };
+
+  parseUnderscoredName = function(templateName: string) {
+    let nameParts = templateName.split('/');
+    let lastPart = nameParts[nameParts.length - 1];
+
+    nameParts[nameParts.length - 1] = `_${lastPart}`;
+
+    return nameParts.join('/');
+  };
+}
+
+interface IBuiltInHelpers {
+  [name: string]: Helper | undefined;
+}
+
+const BUILTINS_HELPERS: IBuiltInHelpers = {
   if: inlineIf,
   action,
   array,
   concat,
+  fn,
   get,
   hash,
   log,
@@ -74,50 +248,45 @@ const BUILTINS_HELPERS = {
   readonly,
   unbound,
   unless: inlineUnless,
-  '-class': classHelper,
+  '-hash': hash,
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
   '-normalize-class': normalizeClassHelper,
+  '-track-array': trackArray,
   '-get-dynamic-var': getDynamicVar,
   '-mount': mountHelper,
   '-outlet': outletHelper,
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
 };
 
-const BUILTIN_MODIFIERS = {
-  action: { manager: new ActionModifierManager(), state: null },
-};
+interface IBuiltInModifiers {
+  [name: string]: ModifierDefinition | undefined;
+}
 
-export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
-  public compiler: LazyCompiler<OwnedTemplateMeta>;
+export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplateMeta> {
+  public isInteractive: boolean;
 
   private handles: any[] = [
     undefined, // ensure no falsy handle
   ];
   private objToHandle = new WeakMap<any, number>();
 
-  private builtInHelpers: {
-    [name: string]: Helper | undefined;
-  } = BUILTINS_HELPERS;
+  private builtInHelpers: IBuiltInHelpers = BUILTINS_HELPERS;
 
-  private builtInModifiers: {
-    [name: string]: ModifierDefinition;
-  } = BUILTIN_MODIFIERS;
+  private builtInModifiers: IBuiltInModifiers;
 
-  // supports directly imported late bound layouts on component.prototype.layout
-  private templateCache: Map<Owner, Map<TemplateFactory, OwnedTemplate>> = new Map();
   private componentDefinitionCache: Map<object, ComponentDefinition | null> = new Map();
-  private customManagerCache: Map<string, ManagerDelegate<Opaque>> = new Map();
 
-  public templateCacheHits = 0;
-  public templateCacheMisses = 0;
   public componentDefinitionCount = 0;
   public helperDefinitionCount = 0;
 
-  constructor() {
-    let macros = new Macros();
-    populateMacros(macros);
-    this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
+  constructor(isInteractive: boolean) {
+    this.isInteractive = isInteractive;
+
+    this.builtInModifiers = {
+      action: { manager: new ActionModifierManager(), state: null },
+      on: { manager: new OnModifierManager(isInteractive), state: null },
+    };
   }
 
   /***  IRuntimeResolver ***/
@@ -126,7 +295,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    * public componentDefHandleCount = 0;
    * Called while executing Append Op.PushDynamicComponentManager if string
    */
-  lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
+  lookupComponent(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let handle = this.lookupComponentHandle(name, meta);
     if (handle === null) {
       assert(
@@ -143,7 +312,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     assert(
       'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
-      !(EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name === 'text-area' && handle === null)
+      !(name === 'text-area' && handle === null)
     );
 
     if (nextHandle === handle) {
@@ -188,42 +357,22 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    * Called by CompileTimeLookup to lookup partial
    */
   lookupPartial(name: string, meta: OwnedTemplateMeta): Option<number> {
-    let partial = this._lookupPartial(name, meta);
-    return this.handle(partial);
+    if (PARTIALS) {
+      let partial = this._lookupPartial(name, meta);
+      return this.handle(partial);
+    } else {
+      return null;
+    }
   }
+
+  // TODO: This isn't necessary in all embedding environments, we should likely
+  // make it optional within Glimmer-VM
+  compilable(): any {}
 
   // end CompileTimeLookup
 
-  /**
-   * Creates a template with injections from a directly imported template factory.
-   * @param templateFactory the directly imported template factory.
-   * @param owner the owner the template instance would belong to if resolved
-   */
-  createTemplate(factory: TemplateFactory, owner: Owner): OwnedTemplate {
-    let cache = this.templateCache.get(owner);
-    let template;
-    if (cache === undefined) {
-      cache = new Map();
-      this.templateCache.set(owner, cache);
-    } else {
-      template = cache.get(factory);
-    }
-
-    if (template === undefined) {
-      const { compiler } = this;
-      const injections: Injections = { compiler };
-      setOwner(injections, owner);
-      template = factory.create(injections);
-      cache.set(factory, template);
-      this.templateCacheMisses++;
-    } else {
-      this.templateCacheHits++;
-    }
-    return template;
-  }
-
   // needed for lazy compile time lookup
-  private handle(obj: Opaque) {
+  private handle(obj: unknown) {
     if (obj === undefined || obj === null) {
       return null;
     }
@@ -236,12 +385,18 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
 
   private _lookupHelper(_name: string, meta: OwnedTemplateMeta): Option<Helper> {
+    assert(
+      `You attempted to overwrite the built-in helper "${_name}" which is not allowed. Please rename the helper.`,
+      !(this.builtInHelpers[_name] && getOwnerById(meta.ownerId).hasRegistration(`helper:${_name}`))
+    );
+
     const helper = this.builtInHelpers[_name];
     if (helper !== undefined) {
       return helper;
     }
 
-    const { owner, moduleName } = meta;
+    const { moduleName } = meta;
+    let owner = getOwnerById(meta.ownerId);
 
     let name = _name;
     let namespace = undefined;
@@ -260,37 +415,43 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return null;
     }
 
-    return (vm, args) => {
+    return (args, vm) => {
       const helper = factory.create();
-      if (isSimpleHelper(helper)) {
-        return SimpleHelperReference.create(helper.compute, args.capture());
+
+      if (!isSimpleHelper(helper)) {
+        vm.associateDestroyable(helper);
+      } else if (DEBUG) {
+        // Bind to null in case someone accidentally passed an unbound function
+        // in, and attempts use `this` on it.
+        //
+        // TODO: Update buildUntouchableThis to be flexible enough to provide a
+        // nice error message here.
+        helper.compute = helper.compute.bind(null);
       }
-      vm.newDestroyable(helper);
-      return ClassBasedHelperReference.create(helper, args.capture());
+
+      return new EmberHelperRootReference(helper, args.capture(), vm.env);
     };
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
-    const template = lookupPartial(name, meta.owner);
+    let owner = getOwnerById(meta.ownerId);
+    let templateFactory = lookupPartial(name, owner);
+    let template = templateFactory(owner);
 
-    if (template) {
-      return new PartialDefinition(name, template);
-    } else {
-      throw new Error(`${name} is not a partial`);
-    }
+    return new PartialDefinition(name, template);
   }
 
   private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
     let builtin = this.builtInModifiers[name];
 
     if (builtin === undefined) {
-      let { owner } = meta;
-      let modifier = owner.factoryFor(`modifier:${name}`);
+      let owner = getOwnerById(meta.ownerId);
+      let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
       if (modifier !== undefined) {
-        let managerFactory = getModifierManager<ModifierManagerDelegate<Opaque>>(modifier.class);
+        let managerFactory = getModifierManager<ModifierManagerDelegate<unknown>>(modifier.class);
         let manager = managerFactory!(owner);
 
-        return new CustomModifierDefinition(name, modifier, manager);
+        return new CustomModifierDefinition(name, modifier, manager, this.isInteractive);
       }
     }
 
@@ -311,31 +472,30 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private _lookupComponentDefinition(
     _name: string,
-    { moduleName, owner }: OwnedTemplateMeta
+    meta: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
-    assert(
-      'Invoking `{{textarea}}` using angle bracket syntax or `component` helper is not yet supported.',
-      EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || _name !== 'textarea'
-    );
-
-    assert(
-      'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.',
-      EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || _name !== 'input'
-    );
-
     let name = _name;
     let namespace = undefined;
+    let owner = getOwnerById(meta.ownerId);
+    let { moduleName } = meta;
+
     if (EMBER_MODULE_UNIFICATION) {
       const parsed = this._parseNameForNamespace(_name);
       name = parsed.name;
       namespace = parsed.namespace;
     }
-    let { layout, component } = lookupComponent(owner, name, makeOptions(moduleName, namespace));
-
-    let key = component === undefined ? layout : component;
-
-    if (key === undefined) {
+    let pair = lookupComponent(owner, name, makeOptions(moduleName, namespace));
+    if (pair === null) {
       return null;
+    }
+
+    let layout: OwnedTemplate | undefined;
+    let key: object;
+
+    if (pair.component === null) {
+      key = layout = pair.layout!(owner);
+    } else {
+      key = pair.component;
     }
 
     let cachedComponentDefinition = this.componentDefinitionCache.get(key);
@@ -343,34 +503,50 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return cachedComponentDefinition;
     }
 
+    if (layout === undefined && pair.layout !== null) {
+      layout = pair.layout(owner);
+    }
+
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
 
     let definition: Option<ComponentDefinition> = null;
 
-    if (layout !== undefined && component === undefined && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-      definition = new TemplateOnlyComponentDefinition(layout);
+    if (pair.component === null) {
+      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+        definition = new TemplateOnlyComponentDefinition(name, layout!);
+      }
+    } else if (
+      EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
+      isTemplateOnlyComponent(pair.component.class)
+    ) {
+      definition = new TemplateOnlyComponentDefinition(name, layout!);
     }
 
-    if (component !== undefined && component.class !== undefined) {
-      let wrapper = getManager(component.class);
+    if (pair.component !== null) {
+      assert(`missing component class ${name}`, pair.component.class !== undefined);
 
-      if (wrapper && wrapper.type === 'component') {
+      let ComponentClass = pair.component.class!;
+      let wrapper = getManager(ComponentClass);
+
+      if (wrapper !== null && wrapper.type === 'component') {
         let { factory } = wrapper;
 
         if (wrapper.internal) {
-          assert(`missing layout for internal component ${name}`, layout !== undefined);
+          assert(`missing layout for internal component ${name}`, pair.layout !== null);
 
           definition = new InternalComponentDefinition(
-            factory(owner) as InternalComponentManager<Opaque>,
-            component.class,
+            factory(owner) as InternalComponentManager<unknown>,
+            ComponentClass as Factory<any, any>,
             layout!
           );
         } else {
           definition = new CustomManagerDefinition(
             name,
-            component,
-            factory(owner) as ManagerDelegate<Opaque>,
-            layout || owner.lookup<OwnedTemplate>(P`template:components/-default`)
+            pair.component,
+            factory(owner) as ManagerDelegate<unknown>,
+            layout !== undefined
+              ? layout
+              : owner.lookup<TemplateFactory>(P`template:components/-default`)!(owner)
           );
         }
       }
@@ -379,25 +555,13 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     if (definition === null) {
       definition = new CurlyComponentDefinition(
         name,
-        component || owner.factoryFor(P`component:-default`),
-        null,
-        layout! // TODO fix type
+        pair.component || owner.factoryFor(P`component:-default`),
+        layout
       );
     }
 
     finalizer();
     this.componentDefinitionCache.set(key, definition);
     return definition;
-  }
-
-  _lookupComponentManager(owner: Owner, managerId: string): ManagerDelegate<Opaque> {
-    if (this.customManagerCache.has(managerId)) {
-      return this.customManagerCache.get(managerId)!;
-    }
-    let delegate = owner.lookup<ManagerDelegate<Opaque>>(`component-manager:${managerId}`);
-
-    this.customManagerCache.set(managerId, delegate);
-
-    return delegate;
   }
 }

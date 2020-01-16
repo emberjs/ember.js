@@ -24,7 +24,7 @@ export type DeprecateFunc = (message: string, test?: boolean, options?: Deprecat
 */
 /**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
-  Deprecations are invoked by calls to [@ember/application/deprecations/deprecate](https://emberjs.com/api/ember/release/classes/@ember%2Fapplication%2Fdeprecations/methods/deprecate?anchor=deprecate).
+  Deprecations are invoked by calls to [@ember/debug/deprecate](/ember/release/classes/@ember%2Fdebug/methods/deprecate?anchor=deprecate).
   The following example demonstrates its usage by registering a handler that throws an error if the
   message contains the word "should", otherwise defers to the default handler.
 
@@ -155,7 +155,7 @@ if (DEBUG) {
   missingOptionsIdDeprecation = 'When calling `deprecate` you must provide `id` in options.';
   missingOptionsUntilDeprecation = 'When calling `deprecate` you must provide `until` in options.';
   /**
-   @module @ember/application
+   @module @ember/debug
    @public
    */
   /**
@@ -166,7 +166,7 @@ if (DEBUG) {
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
     @method deprecate
-    @for @ember/application/deprecations
+    @for @ember/debug
     @param {String} message A description of the deprecation.
     @param {Boolean} test A boolean. If falsy, the deprecation will be displayed.
     @param {Object} options

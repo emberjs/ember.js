@@ -1,7 +1,7 @@
 import { OWNER, Owner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { schedule } from '@ember/runloop';
-import { Simple } from '@glimmer/interfaces';
+import { SimpleElement } from '@simple-dom/interface';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
 import { OwnedTemplate } from '../template';
@@ -34,8 +34,9 @@ export default class OutletView {
   }
 
   static create(options: any) {
-    let { _environment, renderer, template } = options;
+    let { _environment, renderer, template: templateFactory } = options;
     let owner = options[OWNER];
+    let template = templateFactory(owner);
     return new OutletView(_environment, renderer, owner, template);
   }
 
@@ -56,6 +57,7 @@ export default class OutletView {
         outlet: TOP_LEVEL_OUTLET,
         name: TOP_LEVEL_NAME,
         controller: undefined,
+        model: undefined,
         template,
       },
     }));
@@ -65,10 +67,11 @@ export default class OutletView {
       outlet: TOP_LEVEL_OUTLET,
       template,
       controller: undefined,
+      model: undefined,
     };
   }
 
-  appendTo(selector: string | Simple.Element) {
+  appendTo(selector: string | SimpleElement) {
     let target;
 
     if (this._environment.hasDOM) {

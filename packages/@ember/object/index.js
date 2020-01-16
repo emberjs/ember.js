@@ -1,4 +1,3 @@
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
@@ -107,87 +106,84 @@ import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/meta
   They also do not have equivalents in JavaScript directly, so they cannot be
   used for other situations where binding would be useful.
 
+  @public
   @method action
-  @category EMBER_NATIVE_DECORATOR_SUPPORT
   @for @ember/object
   @static
-  @param {} elementDesc the descriptor of the element to decorate
-  @return {ElementDescriptor} the decorated descriptor
-  @private
+  @param {Function|undefined} callback The function to turn into an action,
+                                       when used in classic classes
+  @return {PropertyDecorator} property decorator instance
 */
-export let action;
 
-if (EMBER_NATIVE_DECORATOR_SUPPORT) {
-  let BINDINGS_MAP = new WeakMap();
+const BINDINGS_MAP = new WeakMap();
 
-  let setupAction = function(target, key, actionFn) {
-    if (target.constructor !== undefined && typeof target.constructor.proto === 'function') {
-      target.constructor.proto();
-    }
+function setupAction(target, key, actionFn) {
+  if (target.constructor !== undefined && typeof target.constructor.proto === 'function') {
+    target.constructor.proto();
+  }
 
-    if (!target.hasOwnProperty('actions')) {
-      let parentActions = target.actions;
-      // we need to assign because of the way mixins copy actions down when inheriting
-      target.actions = parentActions ? assign({}, parentActions) : {};
-    }
+  if (!target.hasOwnProperty('actions')) {
+    let parentActions = target.actions;
+    // we need to assign because of the way mixins copy actions down when inheriting
+    target.actions = parentActions ? assign({}, parentActions) : {};
+  }
 
-    target.actions[key] = actionFn;
+  target.actions[key] = actionFn;
 
-    return {
-      get() {
-        let bindings = BINDINGS_MAP.get(this);
+  return {
+    get() {
+      let bindings = BINDINGS_MAP.get(this);
 
-        if (bindings === undefined) {
-          bindings = new Map();
-          BINDINGS_MAP.set(this, bindings);
-        }
+      if (bindings === undefined) {
+        bindings = new Map();
+        BINDINGS_MAP.set(this, bindings);
+      }
 
-        let fn = bindings.get(actionFn);
+      let fn = bindings.get(actionFn);
 
-        if (fn === undefined) {
-          fn = actionFn.bind(this);
-          bindings.set(actionFn, fn);
-        }
+      if (fn === undefined) {
+        fn = actionFn.bind(this);
+        bindings.set(actionFn, fn);
+      }
 
-        return fn;
-      },
-    };
+      return fn;
+    },
   };
-
-  action = function action(target, key, desc) {
-    let actionFn;
-
-    if (!isElementDescriptor([target, key, desc])) {
-      actionFn = target;
-
-      let decorator = function(target, key, desc, meta, isClassicDecorator) {
-        assert(
-          'The @action decorator may only be passed a method when used in classic classes. You should decorate methods directly in native classes',
-          isClassicDecorator
-        );
-
-        assert(
-          'The action() decorator must be passed a method when used in classic classes',
-          typeof actionFn === 'function'
-        );
-
-        return setupAction(target, key, actionFn);
-      };
-
-      setClassicDecorator(decorator);
-
-      return decorator;
-    }
-
-    actionFn = desc.value;
-
-    assert(
-      'The @action decorator must be applied to methods when used in native classes',
-      typeof actionFn === 'function'
-    );
-
-    return setupAction(target, key, actionFn);
-  };
-
-  setClassicDecorator(action);
 }
+
+export function action(target, key, desc) {
+  let actionFn;
+
+  if (!isElementDescriptor([target, key, desc])) {
+    actionFn = target;
+
+    let decorator = function(target, key, desc, meta, isClassicDecorator) {
+      assert(
+        'The @action decorator may only be passed a method when used in classic classes. You should decorate methods directly in native classes',
+        isClassicDecorator
+      );
+
+      assert(
+        'The action() decorator must be passed a method when used in classic classes',
+        typeof actionFn === 'function'
+      );
+
+      return setupAction(target, key, actionFn);
+    };
+
+    setClassicDecorator(decorator);
+
+    return decorator;
+  }
+
+  actionFn = desc.value;
+
+  assert(
+    'The @action decorator must be applied to methods when used in native classes',
+    typeof actionFn === 'function'
+  );
+
+  return setupAction(target, key, actionFn);
+}
+
+setClassicDecorator(action);

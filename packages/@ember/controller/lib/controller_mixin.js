@@ -1,5 +1,8 @@
-import { Mixin } from '@ember/-internals/metal';
+import { Mixin, computed } from '@ember/-internals/metal';
 import { ActionHandler } from '@ember/-internals/runtime';
+import { symbol } from '@ember/-internals/utils';
+
+const MODEL = symbol('MODEL');
 
 /**
 @module ember
@@ -42,5 +45,13 @@ export default Mixin.create(ActionHandler, {
     @property model
     @public
   */
-  model: null,
+  model: computed({
+    get() {
+      return this[MODEL];
+    },
+
+    set(key, value) {
+      return (this[MODEL] = value);
+    },
+  }),
 });

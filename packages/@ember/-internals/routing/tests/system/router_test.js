@@ -283,5 +283,10 @@ moduleFor(
         router.transitionTo('./route-b/1');
       }, "A transition was attempted from 'route-a' to './route-b/1' but the application instance has already been destroyed.");
     }
+
+    ['@test computed url when location is a string should not crash'](assert) {
+      let router = createRouter(undefined, { disableSetup: true });
+      assert.equal(router.url, undefined);
+    }
   }
 );

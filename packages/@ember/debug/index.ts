@@ -8,6 +8,7 @@ import _warn, { WarnFunc } from './lib/warn';
 export { registerHandler as registerWarnHandler } from './lib/warn';
 export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
 export { isTesting, setTesting } from './lib/testing';
+export { default as captureRenderTree } from './lib/capture-render-tree';
 
 export type DebugFunctionType =
   | 'assert'
@@ -156,7 +157,7 @@ if (DEBUG) {
     @for @ember/debug
     @param {String} description Describes the expectation. This will become the
       text of the Error thrown if the assertion fails.
-    @param {Boolean} condition Must be truthy for the assertion to pass. If
+    @param {any} condition Must be truthy for the assertion to pass. If
       falsy, an exception will be thrown.
     @public
     @since 1.0.0
@@ -211,7 +212,7 @@ if (DEBUG) {
   });
 
   /**
-   @module @ember/application
+   @module @ember/debug
    @public
   */
 
@@ -226,14 +227,14 @@ if (DEBUG) {
     incuring any performance penalty.
 
     ```javascript
-    import { deprecateFunc } from '@ember/application/deprecations';
+    import { deprecateFunc } from '@ember/debug';
 
     Ember.oldMethod = deprecateFunc('Please use the new, updated method', options, Ember.newMethod);
     ```
 
     @method deprecateFunc
     @static
-    @for @ember/application/deprecations
+    @for @ember/debug
     @param {String} message A description of the deprecation.
     @param {Object} [options] The options object for `deprecate`.
     @param {Function} func The new function called to replace its deprecated counterpart.

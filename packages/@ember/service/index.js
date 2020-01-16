@@ -1,4 +1,4 @@
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { inject as metalInject } from '@ember/-internals/metal';
 
 /**
@@ -63,10 +63,12 @@ export function inject() {
   @since 1.10.0
   @public
 */
-const Service = EmberObject.extend();
+const Service = FrameworkObject.extend();
 
 Service.reopenClass({
   isServiceFactory: true,
 });
+
+setFrameworkClass(Service);
 
 export default Service;

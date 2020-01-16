@@ -56,12 +56,10 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
 
   function shouldTest(features) {
     return features.every(feature => {
-      if (feature[0] === '!' && isEnabled(feature.slice(1))) {
-        return false;
-      } else if (!isEnabled(feature)) {
-        return false;
+      if (feature[0] === '!') {
+        return !isEnabled(feature.slice(1));
       } else {
-        return true;
+        return isEnabled(feature);
       }
     });
   }
@@ -81,7 +79,7 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
         return this.instance[name](assert);
       });
     } else {
-      let match = /^@feature\(([A-Z_a-z-!]+)\) /.exec(name);
+      let match = /^@feature\(([A-Z_a-z-! ,]+)\) /.exec(name);
 
       if (match) {
         let features = match[1].replace(/ /g, '').split(',');

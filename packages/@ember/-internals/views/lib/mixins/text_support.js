@@ -4,7 +4,6 @@
 
 import { get, set, Mixin } from '@ember/-internals/metal';
 import { TargetActionSupport } from '@ember/-internals/runtime';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 
@@ -311,9 +310,7 @@ function sendAction(eventName, view, event) {
   let value = get(view, 'value');
 
   if (SEND_ACTION && typeof actionName === 'string') {
-    let message = EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS
-      ? `Passing actions to components as strings (like \`<Input @${eventName}="${actionName}" />\`) is deprecated. Please use closure actions instead (\`<Input @${eventName}={{action "${actionName}"}} />\`).`
-      : `Passing actions to components as strings (like \`{{input ${eventName}="${actionName}"}}\`) is deprecated. Please use closure actions instead (\`{{input ${eventName}=(action "${actionName}")}}\`).`;
+    let message = `Passing actions to components as strings (like \`<Input @${eventName}="${actionName}" />\`) is deprecated. Please use closure actions instead (\`<Input @${eventName}={{action "${actionName}"}} />\`).`;
 
     deprecate(message, false, {
       id: 'ember-component.send-action',

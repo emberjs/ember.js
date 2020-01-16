@@ -1,8 +1,9 @@
-/* globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
-
-import { set } from '@ember/-internals/metal';
+import { Helper } from '@ember/-internals/glimmer';
+import { set, tracked } from '@ember/-internals/metal';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 moduleFor(
   'Helpers test: custom helpers',
@@ -155,6 +156,43 @@ moduleFor(
       assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
     }
 
+    // https://github.com/emberjs/ember.js/issues/14774
+    ['@test class-based helper with static arguments can recompute a new value without a runloop'](
+      assert
+    ) {
+      let destroyCount = 0;
+      let computeCount = 0;
+      let helper;
+
+      this.registerHelper('hello-world', {
+        init() {
+          this._super(...arguments);
+          helper = this;
+        },
+        compute() {
+          return ++computeCount;
+        },
+        destroy() {
+          destroyCount++;
+          this._super();
+        },
+      });
+
+      this.render('{{hello-world "whut"}}');
+
+      this.assertText('1');
+
+      runTask(() => this.rerender());
+
+      this.assertText('1');
+
+      helper.recompute();
+
+      this.assertText('2');
+
+      assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
+    }
+
     ['@test helper params can be returned']() {
       this.registerHelper('hello-world', values => {
         return values;
@@ -172,7 +210,7 @@ moduleFor(
         return hash.model;
       });
 
-      this.render(`{{get (hello-world model=model) 'name'}}`, {
+      this.render(`{{get (hello-world model=this.model) 'name'}}`, {
         model: { name: 'bob' },
       });
 
@@ -187,7 +225,7 @@ moduleFor(
         return `${value}-value`;
       });
 
-      this.render('{{hello-world model.name}}', {
+      this.render('{{hello-world this.model.name}}', {
         model: { name: 'bob' },
       });
 
@@ -229,7 +267,7 @@ moduleFor(
         },
       });
 
-      this.render('{{hello-world model.name}}', {
+      this.render('{{hello-world this.model.name}}', {
         model: { name: 'bob' },
       });
 
@@ -262,7 +300,7 @@ moduleFor(
         return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
       });
 
-      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      this.render('{{hello-world this.model.name "rich" first=this.model.age last="sam"}}', {
         model: {
           name: 'bob',
           age: 42,
@@ -295,7 +333,7 @@ moduleFor(
         },
       });
 
-      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      this.render('{{hello-world this.model.name "rich" first=this.model.age last="sam"}}', {
         model: {
           name: 'bob',
           age: 42,
@@ -331,7 +369,7 @@ moduleFor(
       this.render(
         `{{join-words "Who"
                    (join-words "overcomes" "by")
-                   model.reason
+                   this.model.reason
                    (join-words (join-words "hath overcome but" "half"))
                    (join-words "his" (join-words "foe"))}}`,
         { model: { reason: 'force' } }
@@ -403,7 +441,7 @@ moduleFor(
 
       this.assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }, /Error: Compile Error: Unexpected Modifier some-helper @ 0..0/);
     }
 
     ['@test class-based helper not usable within element']() {
@@ -413,7 +451,7 @@ moduleFor(
 
       this.assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }, /Error: Compile Error: Unexpected Modifier some-helper @ 0..0/);
     }
 
     ['@test class-based helper is torn down'](assert) {
@@ -599,10 +637,74 @@ moduleFor(
       assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
       assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
     }
+
+    ['@test class-based helper in native ES syntax receives owner'](assert) {
+      let testContext = this;
+      this.add(
+        'helper:hello-world',
+        class extends Helper {
+          constructor(owner) {
+            super(owner);
+
+            assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
+          }
+
+          compute() {
+            return 'huzza!';
+          }
+        }
+      );
+
+      this.render('{{hello-world}}');
+
+      this.assertText('huzza!');
+    }
+
+    ['@test class-based helper gives helpful warning when mutating a value that was tracked already']() {
+      this.add(
+        'helper:hello-world',
+        class extends Helper {
+          compute() {
+            this.get('value');
+            this.set('value', 123);
+          }
+        }
+      );
+
+      let expectedMessage = backtrackingMessageFor('value', '<.+?>', {
+        renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
+      });
+
+      expectDeprecation(() => {
+        this.render('{{hello-world}}');
+      }, expectedMessage);
+    }
+
+    ['@test class-based helper gives helpful assertion when mutating a tracked property that was tracked already']() {
+      this.add(
+        'helper:hello-world',
+        class HelloWorld extends Helper {
+          @tracked value;
+
+          compute() {
+            this.value;
+            this.value = 123;
+          }
+        }
+      );
+
+      let expectedMessage = backtrackingMessageFor('value', '<HelloWorld.+?>', {
+        renderTree: ['\\(result of a `<HelloWorld.*?>` helper\\)'],
+      });
+
+      expectAssertion(() => {
+        this.render('{{hello-world}}');
+      }, expectedMessage);
+    }
   }
 );
 
-if (!EmberDev.runningProdBuild) {
+if (DEBUG) {
   class HelperMutatingArgsTests extends RenderingTestCase {
     buildCompute() {
       return (params, hash) => {

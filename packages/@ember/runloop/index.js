@@ -1,8 +1,7 @@
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
-import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
+import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner from 'backburner';
-import { RUN_SYNC } from '@ember/deprecated-features';
 
 let currentRunLoop = null;
 export function getCurrentRunLoop() {
@@ -15,6 +14,16 @@ function onBegin(current) {
 
 function onEnd(current, next) {
   currentRunLoop = next;
+
+  flushAsyncObservers();
+}
+
+function flush(queueName, next) {
+  if (queueName === 'render' || queueName === _rsvpErrorQueue) {
+    flushAsyncObservers();
+  }
+
+  next();
 }
 
 export const _rsvpErrorQueue = `${Math.random()}${Date.now()}`.replace('.', '');
@@ -46,24 +55,14 @@ export const queues = [
   _rsvpErrorQueue,
 ];
 
-let backburnerOptions = {
+export const backburner = new Backburner(queues, {
   defaultQueue: 'actions',
   onBegin,
   onEnd,
   onErrorTarget,
   onErrorMethod: 'onerror',
-};
-
-if (RUN_SYNC) {
-  queues.unshift('sync');
-
-  backburnerOptions.sync = {
-    before: beginPropertyChanges,
-    after: endPropertyChanges,
-  };
-}
-
-export const backburner = new Backburner(queues, backburnerOptions);
+  flush,
+});
 
 /**
  @module @ember/runloop
@@ -301,15 +300,20 @@ export function end() {
   ```javascript
   import { schedule } from '@ember/runloop';
 
+  schedule('afterRender', this, function() {
+    // this will be executed in the 'afterRender' queue
+    console.log('scheduled on afterRender queue');
+  });
+
   schedule('actions', this, function() {
-    // this will be executed in the 'actions' queue, after bindings have synced.
+    // this will be executed in the 'actions' queue
     console.log('scheduled on actions queue');
   });
 
   // Note the functions will be run in order based on the run queues order.
   // Output would be:
-  //   scheduled on sync queue
   //   scheduled on actions queue
+  //   scheduled on afterRender queue
   ```
 
   @method schedule
@@ -324,12 +328,7 @@ export function end() {
   @return {*} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function schedule(queue /*, target, method */) {
-  deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
-    id: 'ember-metal.run.sync',
-    until: '3.5.0',
-  });
-
+export function schedule(/* queue, target, method */) {
   return backburner.schedule(...arguments);
 }
 
@@ -469,11 +468,7 @@ export function once(...args) {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function scheduleOnce(queue /*, target, method*/) {
-  deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
-    id: 'ember-metal.run.sync',
-    until: '3.5.0',
-  });
+export function scheduleOnce(/* queue, target, method*/) {
   return backburner.scheduleOnce(...arguments);
 }
 

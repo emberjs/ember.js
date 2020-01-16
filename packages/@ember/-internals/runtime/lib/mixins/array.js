@@ -3,7 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
-import { symbol, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
+import { EMBER_ARRAY, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
 import {
   get,
   set,
@@ -19,6 +19,7 @@ import {
   removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
+  nativeDescDecorator as descriptor,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import Enumerable from './enumerable';
@@ -29,11 +30,6 @@ import MutableEnumerable from './mutable_enumerable';
 import { typeOf } from '../type-of';
 
 const EMPTY_ARRAY = Object.freeze([]);
-const EMBER_ARRAY = symbol('EMBER_ARRAY');
-
-export function isEmberArray(obj) {
-  return obj && obj[EMBER_ARRAY];
-}
 
 const identityFunction = item => item;
 
@@ -191,10 +187,10 @@ function mapBy(key) {
   concrete implementation, but it can be used up by other classes that want
   to appear like arrays.
 
-  For example, ArrayProxy is a concrete classes that can
-  be instantiated to implement array-like behavior. Both of these classes use
-  the Array Mixin by way of the MutableArray mixin, which allows observable
-  changes to be made to the underlying array.
+  For example, ArrayProxy is a concrete class that can be instantiated to
+  implement array-like behavior. This class uses the Array Mixin by way of
+  the MutableArray mixin, which allows observable changes to be made to the
+  underlying array.
 
   This mixin defines methods specifically for collections that provide
   index-ordered access to their contents. When you are designing code that
@@ -208,8 +204,8 @@ function mapBy(key) {
   as controllers and collections.
 
   You can use the methods defined in this module to access and modify array
-  contents in a KVO-friendly way. You can also be notified whenever the
-  membership of an array changes by using `.observes('myArray.[]')`.
+  contents in an observable-friendly way. You can also be notified whenever
+  the membership of an array changes by using `.observes('myArray.[]')`.
 
   To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
@@ -281,6 +277,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
 
+    ```javascript
+    let peopleToMoon = ['Armstrong', 'Aldrin'];
+
+    peopleToMoon.get('[]'); // ['Armstrong', 'Aldrin']
+
+    peopleToMoon.set('[]', ['Collins']); // ['Collins']
+    peopleToMoon.get('[]'); // ['Collins']
+    ```
+
     @property []
     @return this
     @public
@@ -297,6 +302,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   /**
     The first object in the array, or `undefined` if the array is empty.
+
+    ```javascript
+    let vowels = ['a', 'e', 'i', 'o', 'u'];
+    vowels.firstObject; // 'a'
+
+    vowels.shiftObject();
+    vowels.firstObject; // 'e'
+
+    vowels.reverseObjects();
+    vowels.firstObject; // 'u'
+
+    vowels.clear();
+    vowels.firstObject; // undefined
+    ```
 
     @property firstObject
     @return {Object | undefined} The first object in the array
@@ -359,10 +378,14 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns the index of the given object's first occurrence.
-    If no `startAt` argument is given, the starting location to
-    search is 0. If it's negative, will count backward from
-    the end of the array. Returns -1 if no match is found.
+    Used to determine the passed object's first occurrence in the array.
+    Returns the index if found, -1 if no match is found.
+
+    The optional `startAt` argument can be used to pass a starting
+    index to search from, effectively slicing the searchable portion
+    of the array. If it's negative it will add the array length to
+    the startAt value passed in as the index to search from. If less
+    than or equal to `-1 * array.length` the entire array is searched.
 
     ```javascript
     let arr = ['a', 'b', 'c', 'd', 'a'];
@@ -370,9 +393,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
     arr.indexOf('a');       //  0
     arr.indexOf('z');       // -1
     arr.indexOf('a', 2);    //  4
-    arr.indexOf('a', -1);   //  4
+    arr.indexOf('a', -1);   //  4, equivalent to indexOf('a', 4)
+    arr.indexOf('a', -100); //  0, searches entire array
     arr.indexOf('b', 3);    // -1
     arr.indexOf('a', 100);  // -1
+
+    let people = [{ name: 'Zoey' }, { name: 'Bob' }]
+    let newPerson = { name: 'Tom' };
+    people = [newPerson, ...people, newPerson];
+
+    people.indexOf(newPerson);     //  0
+    people.indexOf(newPerson, 1);  //  3
+    people.indexOf(newPerson, -4); //  0
+    people.indexOf(newPerson, 10); // -1
     ```
 
     @method indexOf
@@ -387,10 +420,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns the index of the given object's last occurrence.
-    If no `startAt` argument is given, the search starts from
-    the last position. If it's negative, will count backward
-    from the end of the array. Returns -1 if no match is found.
+    Returns the index of the given `object`'s last occurrence.
+
+    - If no `startAt` argument is given, the search starts from
+    the last position.
+    - If it's greater than or equal to the length of the array,
+    the search starts from the last position.
+    - If it's negative, it is taken as the offset from the end
+    of the array i.e. `startAt + array.length`.
+    - If it's any other positive number, will search backwards
+    from that index of the array.
+
+    Returns -1 if no match is found.
 
     ```javascript
     let arr = ['a', 'b', 'c', 'd', 'a'];
@@ -399,14 +440,17 @@ const ArrayMixin = Mixin.create(Enumerable, {
     arr.lastIndexOf('z');       // -1
     arr.lastIndexOf('a', 2);    //  0
     arr.lastIndexOf('a', -1);   //  4
+    arr.lastIndexOf('a', -3);   //  0
     arr.lastIndexOf('b', 3);    //  1
     arr.lastIndexOf('a', 100);  //  4
     ```
 
     @method lastIndexOf
     @param {Object} object the item to search for
-    @param {Number} startAt optional starting location to search, default 0
-    @return {Number} index or -1 if not found
+    @param {Number} startAt optional starting location to search from
+    backwards, defaults to `(array.length - 1)`
+    @return {Number} The last index of the `object` in the array or -1
+    if not found
     @public
   */
   lastIndexOf(object, startAt) {
@@ -457,6 +501,29 @@ const ArrayMixin = Mixin.create(Enumerable, {
       `willChange` and `didChange` option.
     @return {EmberArray} receiver
     @public
+    @example
+        import Service from '@ember/service';
+
+        export default Service.extend({
+          data: Ember.A(),
+
+          init() {
+            this._super(...arguments);
+
+            this.data.addArrayObserver(this, {
+              willChange: 'dataWillChange',
+              didChange: 'dataDidChange'
+            });
+          },
+
+          dataWillChange(array, start, removeCount, addCount) {
+            console.log('array will change', array, start, removeCount, addCount);
+          },
+
+          dataDidChange(array, start, removeCount, addCount) {
+            console.log('array did change', array, start, removeCount, addCount);
+          }
+        });
   */
 
   addArrayObserver(target, opts) {
@@ -483,11 +550,27 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Becomes true whenever the array currently has observers watching changes
     on the array.
 
+    ```javascript
+    let arr = [1, 2, 3, 4, 5];
+    arr.hasArrayObservers; // false
+
+    arr.addArrayObserver(this, {
+      willChange() {
+        console.log('willChange');
+      }
+    });
+    arr.hasArrayObservers; // true
+    ```
+
     @property {Boolean} hasArrayObservers
     @public
   */
-  hasArrayObservers: nonEnumerableComputed(function() {
-    return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
+  hasArrayObservers: descriptor({
+    configurable: true,
+    enumerable: false,
+    get() {
+      hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
+    },
   }),
 
   /**
@@ -495,6 +578,54 @@ const ArrayMixin = Mixin.create(Enumerable, {
     method just before the array content changes to notify any observers and
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
+
+    ```app/components/show-post.js
+    import Component from '@ember/component';
+    import EmberObject from '@ember/object';
+
+    const Post = EmberObject.extend({
+      body: '',
+      save() {}
+    })
+
+    export default Component.extend({
+      attemptsToModify: 0,
+      successfulModifications: 0,
+      posts: null,
+
+      init() {
+        this._super(...arguments);
+
+        this.posts = [1, 2, 3].map(i => Post.create({ body: i }));
+        this.posts.addArrayObserver(this, {
+          willChange() {
+            this.incrementProperty('attemptsToModify');
+          },
+          didChange() {
+            this.incrementProperty('successfulModifications');
+          }
+        });
+      },
+
+      actions: {
+        editPost(post, newContent) {
+          let oldContent = post.body,
+              postIndex = this.posts.indexOf(post);
+
+          this.posts.arrayContentWillChange(postIndex, 0, 0); // attemptsToModify = 1
+          post.set('body', newContent);
+
+          post.save()
+            .then(response => {
+              this.posts.arrayContentDidChange(postIndex, 0, 0); // successfulModifications = 1
+            })
+            .catch(error => {
+              post.set('body', oldContent);
+            })
+        }
+      }
+    });
+    ```
 
     @method arrayContentWillChange
     @param {Number} startIdx The starting index in the array that will change.
@@ -514,6 +645,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
     method just after the array content changes to notify any observers and
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
+
+    ```javascript
+    let arr = [1, 2, 3, 4, 5];
+
+    arr.copyWithin(-2); // [1, 2, 3, 1, 2]
+    // arr.lastObject = 5
+    arr.arrayContentDidChange(3, 2, 2);
+    // arr.lastObject = 2
+    ```
 
     @method arrayContentDidChange
     @param {Number} startIdx The starting index in the array that did change.
@@ -548,6 +688,27 @@ const ArrayMixin = Mixin.create(Enumerable, {
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
 
+    Example Usage:
+
+    ```javascript
+    let foods = [
+      { name: 'apple', eaten: false },
+      { name: 'banana', eaten: false },
+      { name: 'carrot', eaten: false }
+    ];
+
+    foods.forEach((food) => food.eaten = true);
+
+    let output = '';
+    foods.forEach((item, index, array) =>
+      output += `${index + 1}/${array.length} ${item.name}\n`;
+    );
+    console.log(output);
+    // 1/3 apple
+    // 2/3 banana
+    // 3/3 carrot
+    ```
+
     @method forEach
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
@@ -568,7 +729,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Alias for `mapBy`
+    Alias for `mapBy`.
+
+    Returns the value of the named
+    property on all items in the enumeration.
+
+    ```javascript
+    let people = [{name: 'Joe'}, {name: 'Matt'}];
+
+    people.getEach('name');
+    // ['Joe', 'Matt'];
+
+    people.getEach('nonexistentProperty');
+    // [undefined, undefined];
+    ```
 
     @method getEach
     @param {String} key name of the property
@@ -582,6 +756,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ergonomic than using other methods defined on this helper. If the object
     implements Observable, the value will be changed to `set(),` otherwise
     it will be set directly. `null` objects are skipped.
+
+    ```javascript
+    let people = [{name: 'Joe'}, {name: 'Matt'}];
+
+    people.setEach('zipCode', '10011);
+    // [{name: 'Joe', zipCode: '10011'}, {name: 'Matt', zipCode: '10011'}];
+    ```
 
     @method setEach
     @param {String} key The key to set
@@ -602,6 +783,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     ```javascript
     function(item, index, array);
+    let arr = [1, 2, 3, 4, 5, 6];
+
+    arr.map(element => element * element);
+    // [1, 4, 9, 16, 25, 36];
+
+    arr.map((element, index) => element + index);
+    // [1, 3, 5, 7, 9, 11];
     ```
 
     - `item` is the current item in the iteration.
@@ -634,6 +822,16 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Similar to map, this specialized function returns the value of the named
     property on all items in the enumeration.
 
+    ```javascript
+    let people = [{name: 'Joe'}, {name: 'Matt'}];
+
+    people.mapBy('name');
+    // ['Joe', 'Matt'];
+
+    people.mapBy('unknownProperty');
+    // [undefined, undefined];
+    ```
+
     @method mapBy
     @param {String} key name of the property
     @return {Array} The mapped array.
@@ -642,12 +840,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
   mapBy,
 
   /**
-    Returns an array with all of the items in the enumeration that the passed
-    function returns true for. This method corresponds to `filter()` defined in
-    JavaScript 1.6.
+    Returns a new array with all of the items in the enumeration that the provided
+    callback function returns true for. This method corresponds to [Array.prototype.filter()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter).
 
-    The callback method you provide should have the following signature (all
-    parameters are optional):
+    The callback method should have the following signature:
 
     ```javascript
     function(item, index, array);
@@ -657,12 +853,24 @@ const ArrayMixin = Mixin.create(Enumerable, {
     - `index` is the current index in the iteration.
     - `array` is the array itself.
 
-    It should return `true` to include the item in the results, `false`
-    otherwise.
+    All parameters are optional. The function should return `true` to include the item
+    in the results, and `false` otherwise.
 
-    Note that in addition to a callback, you can also pass an optional target
-    object that will be set as `this` on the context. This is a good way
-    to give your iterator function access to the current object.
+    Example:
+
+    ```javascript
+    function isAdult(person) {
+      return person.age > 18;
+    };
+
+    let people = Ember.A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
+
+    people.filter(isAdult); // returns [{ name: 'Joan', age: 45 }];
+    ```
+
+    Note that in addition to a callback, you can pass an optional target object
+    that will be set as `this` on the context. This is a good way to give your
+    iterator function access to the current object.
 
     @method filter
     @param {Function} callback The callback to execute
@@ -705,6 +913,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
     object that will be set as "this" on the context. This is a good way
     to give your iterator function access to the current object.
 
+    Example Usage:
+
+    ```javascript
+    const food = [
+      { food: 'apple', isFruit: true },
+      { food: 'bread', isFruit: false },
+      { food: 'banana', isFruit: true }
+    ];
+    const nonFruits = food.reject(function(thing) {
+      return thing.isFruit;
+    }); // [{food: 'bread', isFruit: false}]
+    ```
+
     @method reject
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
@@ -719,9 +940,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns an array with just the items with the matched property. You
-    can pass an optional second argument with the target value. Otherwise
-    this will match any property that evaluates to `true`.
+    Filters the array by the property and an optional value. If a value is given, it returns
+    the items that have said value for the property. If not, it returns all the items that
+    have a truthy value for the property.
+
+    Example Usage:
+
+    ```javascript
+    let things = Ember.A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
+
+    things.filterBy('food', 'beans'); // [{ food: 'beans' }]
+    things.filterBy('isFruit'); // [{ food: 'apple' }]
+    ```
 
     @method filterBy
     @param {String} key the property to test
@@ -734,9 +964,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns an array with the items that do not have truthy values for
-    key.  You can pass an optional second argument with the target value.  Otherwise
-    this will match any property that evaluates to false.
+    Returns an array with the items that do not have truthy values for the provided key.
+    You can pass an optional second argument with a target value to reject for the key.
+    Otherwise this will reject objects where the provided property evaluates to false.
+
+    Example Usage:
+
+    ```javascript
+      let food = [
+        { name: "apple", isFruit: true },
+        { name: "carrot", isFruit: false },
+        { name: "bread", isFruit: false },
+      ];
+      food.rejectBy('isFruit'); // [{ name: "carrot", isFruit: false }, { name: "bread", isFruit: false }]
+      food.rejectBy('name', 'carrot'); // [{ name: "apple", isFruit: true }}, { name: "bread", isFruit: false }]
+    ```
 
     @method rejectBy
     @param {String} key the property to test
@@ -770,6 +1012,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
 
+    Example Usage:
+
+    ```javascript
+    let users = [
+      { id: 1, name: 'Yehuda' },
+      { id: 2, name: 'Tom' },
+      { id: 3, name: 'Melanie' },
+      { id: 4, name: 'Leah' }
+    ];
+
+    users.find((user) => user.name == 'Tom'); // [{ id: 2, name: 'Tom' }]
+    users.find(({ id }) => id == 3); // [{ id: 3, name: 'Melanie' }]
+    ```
+
     @method find
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
@@ -788,6 +1044,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     This method works much like the more generic `find()` method.
 
+    Usage Example:
+
+    ```javascript
+    let users = [
+      { id: 1, name: 'Yehuda', isTom: false },
+      { id: 2, name: 'Tom', isTom: true },
+      { id: 3, name: 'Melanie', isTom: false },
+      { id: 4, name: 'Leah', isTom: false }
+    ];
+
+    users.findBy('id', 4); // { id: 4, name: 'Leah', isTom: false }
+    users.findBy('name', 'Melanie'); // { id: 3, name: 'Melanie', isTom: false }
+    users.findBy('isTom'); // { id: 2, name: 'Tom', isTom: true }
+    ```
+
     @method findBy
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
@@ -800,10 +1071,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   /**
     Returns `true` if the passed function returns true for every item in the
-    enumeration. This corresponds with the `every()` method in JavaScript 1.6.
+    enumeration. This corresponds with the `Array.prototype.every()` method defined in ES5.
 
-    The callback method you provide should have the following signature (all
-    parameters are optional):
+    The callback method should have the following signature:
 
     ```javascript
     function(item, index, array);
@@ -813,18 +1083,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
     - `index` is the current index in the iteration.
     - `array` is the array itself.
 
-    It should return the `true` or `false`.
+    All params are optional. The method should return `true` or `false`.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
 
-    Example Usage:
+    Usage example:
 
     ```javascript
-    if (people.every(isEngineer)) {
-      Paychecks.addBigBonus();
-    }
+    function isAdult(person) {
+      return person.age > 18;
+    };
+
+    const people = Ember.A([{ name: 'John', age: 24 }, { name: 'Joan', age: 45 }]);
+    const areAllAdults = people.every(isAdult);
     ```
 
     @method every
@@ -845,6 +1118,29 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     Note that like the native `Array.every`, `isEvery` will return true when called
     on any empty array.
+    ```javascript
+    class Language {
+      constructor(name, isProgrammingLanguage) {
+        this.name = name;
+        this.programmingLanguage = isProgrammingLanguage;
+      }
+    }
+
+    const compiledLanguages = [
+      new Language('Java', true),
+      new Language('Go', true),
+      new Language('Rust', true)
+    ]
+
+    const languagesKnownByMe = [
+      new Language('Javascript', true),
+      new Language('English', false),
+      new Language('Ruby', true)
+    ]
+
+    compiledLanguages.isEvery('programmingLanguage'); // true
+    languagesKnownByMe.isEvery('programmingLanguage'); // false
+    ```
 
     @method isEvery
     @param {String} key the property to test
@@ -858,11 +1154,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns `true` if the passed function returns true for any item in the
-    enumeration.
-
-    The callback method you provide should have the following signature (all
-    parameters are optional):
+    The any() method executes the callback function once for each element
+    present in the array until it finds the one where callback returns a truthy
+    value (i.e. `true`). If such an element is found, any() immediately returns
+    true. Otherwise, any() returns false.
 
     ```javascript
     function(item, index, array);
@@ -872,18 +1167,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
     - `index` is the current index in the iteration.
     - `array` is the array object itself.
 
-    It must return a truthy value (i.e. `true`) to include an item in the
-    results. Any non-truthy return value will discard the item from the
-    results.
-
     Note that in addition to a callback, you can also pass an optional target
-    object that will be set as `this` on the context. This is a good way
-    to give your iterator function access to the current object.
+    object that will be set as `this` on the context. It can be a good way
+    to give your iterator function access to an object in cases where an ES6
+    arrow function would not be appropriate.
 
     Usage Example:
 
     ```javascript
-    if (people.any(isManager)) {
+    let includesManager = people.any(this.findPersonInManagersList, this);
+
+    let includesStockHolder = people.any(person => {
+      return this.findPersonInStockHoldersList(person)
+    });
+
+    if (includesManager || includesStockHolder) {
       Paychecks.addBiggerBonus();
     }
     ```
@@ -904,6 +1202,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     argument for any item in the array. This method is often simpler/faster
     than using a callback.
 
+    Example usage:
+
+    ```javascript
+    const food = [
+      { food: 'apple', isFruit: true },
+      { food: 'bread', isFruit: false },
+      { food: 'banana', isFruit: true }
+    ];
+
+    food.isAny('isFruit'); // true
+    ```
+
     @method isAny
     @param {String} key the property to test
     @param {String} [value] optional value to test against. Defaults to `true`
@@ -916,8 +1226,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    This will combine the values of the enumerator into a single value. It
-    is a useful way to collect a summary value from an enumeration. This
+    This will combine the values of the array into a single value. It
+    is a useful way to collect a summary value from an array. This
     corresponds to the `reduce()` method defined in JavaScript 1.8.
 
     The callback method you provide should have the following signature (all
@@ -942,6 +1252,27 @@ const ArrayMixin = Mixin.create(Enumerable, {
     pass a target object to set as this for the callback. It's part of the
     spec. Sorry.
 
+    Example Usage:
+
+    ```javascript
+      let numbers = [1, 2, 3, 4, 5];
+
+      numbers.reduce(function(summation, current) {
+        return summation + current;
+      }); // 15 (1 + 2 + 3 + 4 + 5)
+
+      numbers.reduce(function(summation, current) {
+        return summation + current;
+      }, -15); // 0 (-15 + 1 + 2 + 3 + 4 + 5)
+
+
+      let binaryValues = [true, false, false];
+
+      binaryValues.reduce(function(truthValue, current) {
+        return truthValue && current;
+      }); // false (true && false && false)
+    ```
+
     @method reduce
     @param {Function} callback The callback to execute
     @param {Object} initialValue Initial value for the reduce
@@ -964,6 +1295,25 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Invokes the named method on every object in the receiver that
     implements it. This method corresponds to the implementation in
     Prototype 1.6.
+
+    ```javascript
+    class Person {
+      name = null;
+
+      constructor(name) {
+        this.name = name;
+      }
+
+      greet(prefix='Hello') {
+        return `${prefix} ${this.name}`;
+      }
+    }
+
+    let people = [new Person('Joe'), new Person('Matt')];
+
+    people.invoke('greet'); // ['Hello Joe', 'Hello Matt']
+    people.invoke('greet', 'Bonjour'); // ['Bonjour Joe', 'Bonjour Matt']
+    ```
 
     @method invoke
     @param {String} methodName the name of the method
@@ -1008,11 +1358,16 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns `true` if the passed object can be found in the array.
-    This method is a Polyfill for ES 2016 Array.includes.
-    If no `startAt` argument is given, the starting location to
-    search is 0. If it's negative, searches from the index of
-    `this.length + startAt` by asc.
+    Used to determine if the array contains the passed object.
+    Returns `true` if found, `false` otherwise.
+
+    The optional `startAt` argument can be used to pass a starting
+    index to search from, effectively slicing the searchable portion
+    of the array. If it's negative it will add the array length to
+    the startAt value passed in as the index to search from. If less
+    than or equal to `-1 * array.length` the entire array is searched.
+
+    This method has the same behavior of JavaScript's [Array.includes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes).
 
     ```javascript
     [1, 2, 3].includes(2);     // true
@@ -1041,9 +1396,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     You may provide multiple arguments to sort by multiple properties.
 
     ```javascript
-   let colors = [{name: 'red'}, {name: 'green'}, {name: 'blue'}];
-   colors.sortBy('name'); // [{name: 'blue'}, {name: 'green'}, {name: 'red'}]
-    ```
+   let colors = [
+     { name: 'red', weight: 500 },
+     { name: 'green', weight: 600 },
+     { name: 'blue', weight: 500 }
+    ];
+
+   colors.sortBy('name');
+   // [{name: 'blue', weight: 500}, {name: 'green', weight: 600}, {name: 'red', weight: 500}]
+
+   colors.sortBy('weight', 'name');
+   // [{name: 'blue', weight: 500}, {name: 'red', weight: 500}, {name: 'green', weight: 600}]
+   ```
 
     @method sortBy
     @param {String} property name(s) to sort on

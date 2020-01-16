@@ -27,6 +27,13 @@ describe('Blueprint: template', function() {
       });
     });
 
+    it('template foo.hbs', function() {
+      return emberGenerateDestroy(['template', 'foo.hbs'], _file => {
+        expect(_file('app/templates/foo.hbs.hbs')).to.not.exist;
+        expect(_file('app/templates/foo.hbs')).to.equal('');
+      });
+    });
+
     it('template foo/bar', function() {
       return emberGenerateDestroy(['template', 'foo/bar'], _file => {
         expect(_file('app/templates/foo/bar.hbs')).to.equal('');
@@ -40,6 +47,13 @@ describe('Blueprint: template', function() {
 
       it('template foo', function() {
         return emberGenerateDestroy(['template', 'foo'], _file => {
+          expect(_file('app/foo/template.hbs')).to.equal('');
+        });
+      });
+
+      it('template foo.hbs', function() {
+        return emberGenerateDestroy(['template', 'foo.hbs'], _file => {
+          expect(_file('app/foo.hbs/template.hbs')).to.not.exist;
           expect(_file('app/foo/template.hbs')).to.equal('');
         });
       });
@@ -65,6 +79,13 @@ describe('Blueprint: template', function() {
         });
       });
 
+      it('template foo.hbs', function() {
+        return emberGenerateDestroy(['template', 'foo.hbs'], _file => {
+          expect(_file('app/pods/foo.hbs/template.hbs')).to.not.exist;
+          expect(_file('app/pods/foo/template.hbs')).to.equal('');
+        });
+      });
+
       it('template foo/bar', function() {
         return emberGenerateDestroy(['template', 'foo/bar'], _file => {
           expect(_file('app/pods/foo/bar/template.hbs')).to.equal('');
@@ -84,6 +105,13 @@ describe('Blueprint: template', function() {
       });
     });
 
+    it('template foo.hbs', function() {
+      return emberGenerateDestroy(['template', 'foo.hbs'], _file => {
+        expect(_file('addon/templates/foo.hbs.hbs')).to.not.exist;
+        expect(_file('addon/templates/foo.hbs')).to.equal('');
+      });
+    });
+
     it('template foo/bar', function() {
       return emberGenerateDestroy(['template', 'foo/bar'], _file => {
         expect(_file('addon/templates/foo/bar.hbs')).to.equal('');
@@ -92,6 +120,13 @@ describe('Blueprint: template', function() {
 
     it('template foo --dummy', function() {
       return emberGenerateDestroy(['template', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/templates/foo.hbs')).to.equal('');
+      });
+    });
+
+    it('template foo.hbs --dummy', function() {
+      return emberGenerateDestroy(['template', 'foo.hbs', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/templates/foo.hbs.hbs')).to.not.exist;
         expect(_file('tests/dummy/app/templates/foo.hbs')).to.equal('');
       });
     });
@@ -114,6 +149,13 @@ describe('Blueprint: template', function() {
       });
     });
 
+    it('template foo.hbs --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['template', 'foo.hbs', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/templates/foo.hbs.hbs')).to.not.exist;
+        expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal('');
+      });
+    });
+
     it('template foo/bar --in-repo-addon=my-addon', function() {
       return emberGenerateDestroy(['template', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
         expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal('');
@@ -130,6 +172,13 @@ describe('Blueprint: template', function() {
 
     it('template foo', function() {
       return emberGenerateDestroy(['template', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
+      });
+    });
+
+    it('template foo.hbs', function() {
+      return emberGenerateDestroy(['template', 'foo.hbs'], _file => {
+        expect(_file('src/ui/routes/foo.hbs/template.hbs')).to.not.exist;
         expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
       });
     });
@@ -169,6 +218,13 @@ describe('Blueprint: template', function() {
       });
     });
 
+    it('template foo.hbs', function() {
+      return emberGenerateDestroy(['template', 'foo.hbs'], _file => {
+        expect(_file('src/ui/routes/foo.hbs/template.hbs')).to.not.exist;
+        expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
+      });
+    });
+
     it('template foo/bar', function() {
       return emberGenerateDestroy(['template', 'foo/bar'], _file => {
         expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('');
@@ -177,6 +233,13 @@ describe('Blueprint: template', function() {
 
     it('template foo --dummy', function() {
       return emberGenerateDestroy(['template', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/template.hbs')).to.equal('');
+      });
+    });
+
+    it('template foo.hbs --dummy', function() {
+      return emberGenerateDestroy(['template', 'foo.hbs', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo.hbs/template.hbs')).to.not.exist;
         expect(_file('tests/dummy/src/ui/routes/foo/template.hbs')).to.equal('');
       });
     });

@@ -1,8 +1,15 @@
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap<object, Map<string, any | null | undefined>>();
-const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
-  ? new WeakMap<object, Map<string, number>>()
-  : undefined;
+const COMPUTED_PROPERTY_LAST_REVISION = new WeakMap<object, Map<string, number>>();
+
+export function getCacheFor(obj: object): Map<string, any> {
+  let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
+  if (cache === undefined) {
+    cache = new Map<string, any>();
+
+    COMPUTED_PROPERTY_CACHED_VALUES.set(obj, cache);
+  }
+  return cache;
+}
 
 /**
   Returns the cached value for a property, if one exists.
@@ -19,20 +26,6 @@ const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
   @return {Object} the cached value
   @public
 */
-export function getCacheFor(obj: object): Map<string, any> {
-  let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
-  if (cache === undefined) {
-    cache = new Map<string, any>();
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      COMPUTED_PROPERTY_LAST_REVISION!.set(obj, new Map<string, any>());
-    }
-
-    COMPUTED_PROPERTY_CACHED_VALUES.set(obj, cache);
-  }
-  return cache;
-}
-
 export function getCachedValueFor(obj: object, key: string): any {
   let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
   if (cache !== undefined) {
@@ -40,24 +33,25 @@ export function getCachedValueFor(obj: object, key: string): any {
   }
 }
 
-export let setLastRevisionFor: (obj: object, key: string, revision: number) => void;
-export let getLastRevisionFor: (obj: object, key: string) => number;
+export function setLastRevisionFor(obj: object, key: string, revision: number): void {
+  let cache = COMPUTED_PROPERTY_LAST_REVISION!.get(obj);
 
-if (EMBER_METAL_TRACKED_PROPERTIES) {
-  setLastRevisionFor = (obj, key, revision) => {
-    let lastRevision = COMPUTED_PROPERTY_LAST_REVISION!.get(obj);
-    lastRevision!.set(key, revision);
-  };
+  if (cache === undefined) {
+    cache = new Map<string, any>();
+    COMPUTED_PROPERTY_LAST_REVISION!.set(obj, cache);
+  }
 
-  getLastRevisionFor = (obj, key) => {
-    let cache = COMPUTED_PROPERTY_LAST_REVISION!.get(obj);
-    if (cache === undefined) {
-      return 0;
-    } else {
-      let revision = cache.get(key);
-      return revision === undefined ? 0 : revision;
-    }
-  };
+  cache!.set(key, revision);
+}
+
+export function getLastRevisionFor(obj: object, key: string): number {
+  let cache = COMPUTED_PROPERTY_LAST_REVISION!.get(obj);
+  if (cache === undefined) {
+    return 0;
+  } else {
+    let revision = cache.get(key);
+    return revision === undefined ? 0 : revision;
+  }
 }
 
 export function peekCacheFor(obj: object): any {

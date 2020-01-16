@@ -1,94 +1,108 @@
-import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { isProxy } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { backburner } from '@ember/runloop';
+import { meta as metaFor } from '@ember/-internals/meta';
 import {
-  combine,
+  getDebugName,
+  isObject,
+  setupMandatorySetter,
+  symbol,
+  toString,
+} from '@ember/-internals/utils';
+import { assert, deprecate } from '@ember/debug';
+import { _WeakSet as WeakSet } from '@ember/polyfills';
+import { backburner } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
+import {
   CONSTANT_TAG,
-  DirtyableTag,
+  dirtyTagFor,
+  setAutotrackingTransactionEnv,
+  setPropertyDidChange,
   Tag,
-  TagWrapper,
-  UpdatableTag,
-} from '@glimmer/reference';
+  tagFor,
+} from '@glimmer/validator';
 
-function makeTag(): TagWrapper<DirtyableTag> {
-  return DirtyableTag.create();
+/////////
+
+// Setup tracking environment
+
+setPropertyDidChange(() => backburner.ensureInstance());
+
+if (DEBUG) {
+  setAutotrackingTransactionEnv!({
+    assert(message) {
+      assert(message, false);
+    },
+
+    deprecate(message) {
+      deprecate(message, false, {
+        id: 'autotracking.mutation-after-consumption',
+        until: '4.0.0',
+      });
+    },
+
+    debugMessage(obj, keyName) {
+      let dirtyString = keyName
+        ? `\`${keyName}\` on \`${getDebugName!(obj)}\``
+        : `\`${getDebugName!(obj)}\``;
+
+      return `You attempted to update ${dirtyString}, but it had already been used previously in the same computation.  Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.`;
+    },
+  });
 }
 
-export function tagForProperty(object: any, propertyKey: string | symbol, _meta?: Meta): Tag {
-  let objectType = typeof object;
-  if (objectType !== 'function' && (objectType !== 'object' || object === null)) {
+/////////
+
+export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
+
+// This is exported for `@tracked`, but should otherwise be avoided. Use `tagForObject`.
+export const SELF_TAG: string = symbol('SELF_TAG');
+
+let SEEN_TAGS: WeakSet<Tag> | undefined;
+
+if (DEBUG) {
+  SEEN_TAGS = new WeakSet();
+}
+
+export function tagForProperty(obj: unknown, propertyKey: string | symbol): Tag {
+  if (!isObject(obj)) {
     return CONSTANT_TAG;
   }
-  let meta = _meta === undefined ? metaFor(object) : _meta;
 
-  if (isProxy(object)) {
-    return tagFor(object, meta);
+  if (!(propertyKey in obj) && typeof obj[UNKNOWN_PROPERTY_TAG] === 'function') {
+    return obj[UNKNOWN_PROPERTY_TAG](propertyKey);
   }
 
-  let tags = meta.writableTags();
-  let tag = tags[propertyKey];
-  if (tag) {
-    return tag;
+  let tag = tagFor(obj, propertyKey);
+
+  if (DEBUG && !SEEN_TAGS!.has(tag)) {
+    SEEN_TAGS!.add(tag);
+
+    setupMandatorySetter!(obj, propertyKey);
+
+    (tag as any)._propertyKey = propertyKey;
   }
 
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    let pair = combine([makeTag(), UpdatableTag.create(CONSTANT_TAG)]);
-    return (tags[propertyKey] = pair);
-  } else {
-    return (tags[propertyKey] = makeTag());
-  }
+  return tag;
 }
 
-export function tagFor(object: any | null, _meta?: Meta): Tag {
-  if (typeof object === 'object' && object !== null) {
-    let meta = _meta === undefined ? metaFor(object) : _meta;
-    return meta.writableTag(makeTag);
-  } else {
-    return CONSTANT_TAG;
-  }
-}
+export function tagForObject(obj: unknown | null): Tag {
+  if (isObject(obj)) {
+    if (DEBUG) {
+      let meta = metaFor(obj);
 
-export let dirty: (tag: Tag) => void;
-export let update: (outer: Tag, inner: Tag) => void;
-
-if (EMBER_METAL_TRACKED_PROPERTIES) {
-  dirty = tag => {
-    (tag.inner! as any).first.inner.dirty();
-  };
-
-  update = (outer, inner) => {
-    (outer.inner! as any).second.inner.update(inner);
-  };
-} else {
-  dirty = tag => {
-    (tag.inner! as any).dirty();
-  };
-}
-
-export function markObjectAsDirty(obj: object, propertyKey: string, meta: Meta): void {
-  let objectTag = meta.readableTag();
-
-  if (objectTag !== undefined) {
-    if (isProxy(obj)) {
-      (objectTag.inner! as any).first.inner.dirty();
-    } else {
-      (objectTag.inner! as any).dirty();
+      assert(
+        meta.isMetaDestroyed()
+          ? `Cannot create a new tag for \`${toString(meta.source)}\` after it has been destroyed.`
+          : '',
+        !meta.isMetaDestroyed()
+      );
     }
+
+    return tagFor(obj, SELF_TAG);
   }
 
-  let tags = meta.readableTags();
-  let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
-
-  if (propertyTag !== undefined) {
-    dirty(propertyTag);
-  }
-
-  if (objectTag !== undefined || propertyTag !== undefined) {
-    ensureRunloop();
-  }
+  return CONSTANT_TAG;
 }
 
-export function ensureRunloop(): void {
-  backburner.ensureInstance();
+export function markObjectAsDirty(obj: object, propertyKey: string): void {
+  dirtyTagFor(obj, propertyKey);
+  dirtyTagFor(obj, SELF_TAG);
 }

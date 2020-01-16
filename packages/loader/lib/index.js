@@ -1,10 +1,13 @@
 /*globals process */
-var enifed, requireModule, Ember;
+let define, require, Ember;
 
 // Used in @ember/-internals/environment/lib/global.js
 mainContext = this; // eslint-disable-line no-undef
 
 (function() {
+  let registry;
+  let seen;
+
   function missingModule(name, referrerName) {
     if (referrerName) {
       throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
@@ -14,15 +17,15 @@ mainContext = this; // eslint-disable-line no-undef
   }
 
   function internalRequire(_name, referrerName) {
-    var name = _name;
-    var mod = registry[name];
+    let name = _name;
+    let mod = registry[name];
 
     if (!mod) {
       name = name + '/index';
       mod = registry[name];
     }
 
-    var exports = seen[name];
+    let exports = seen[name];
 
     if (exports !== undefined) {
       return exports;
@@ -34,15 +37,15 @@ mainContext = this; // eslint-disable-line no-undef
       missingModule(_name, referrerName);
     }
 
-    var deps = mod.deps;
-    var callback = mod.callback;
-    var reified = new Array(deps.length);
+    let deps = mod.deps;
+    let callback = mod.callback;
+    let reified = new Array(deps.length);
 
-    for (var i = 0; i < deps.length; i++) {
+    for (let i = 0; i < deps.length; i++) {
       if (deps[i] === 'exports') {
         reified[i] = exports;
       } else if (deps[i] === 'require') {
-        reified[i] = requireModule;
+        reified[i] = require;
       } else {
         reified[i] = internalRequire(deps[i], name);
       }
@@ -53,7 +56,7 @@ mainContext = this; // eslint-disable-line no-undef
     return exports;
   }
 
-  var isNode =
+  let isNode =
     typeof window === 'undefined' &&
     typeof process !== 'undefined' &&
     {}.toString.call(process) === '[object process]';
@@ -67,11 +70,11 @@ mainContext = this; // eslint-disable-line no-undef
   }
 
   if (typeof Ember.__loader === 'undefined') {
-    var registry = Object.create(null);
-    var seen = Object.create(null);
+    registry = Object.create(null);
+    seen = Object.create(null);
 
-    enifed = function(name, deps, callback) {
-      var value = {};
+    define = function(name, deps, callback) {
+      let value = {};
 
       if (!callback) {
         value.deps = [];
@@ -84,26 +87,26 @@ mainContext = this; // eslint-disable-line no-undef
       registry[name] = value;
     };
 
-    requireModule = function(name) {
+    require = function(name) {
       return internalRequire(name, null);
     };
 
     // setup `require` module
-    requireModule['default'] = requireModule;
+    require['default'] = require;
 
-    requireModule.has = function registryHas(moduleName) {
+    require.has = function registryHas(moduleName) {
       return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
     };
 
-    requireModule._eak_seen = registry;
+    require._eak_seen = registry;
 
     Ember.__loader = {
-      define: enifed,
-      require: requireModule,
+      define: define,
+      require: require,
       registry: registry,
     };
   } else {
-    enifed = Ember.__loader.define;
-    requireModule = Ember.__loader.require;
+    define = Ember.__loader.define;
+    require = Ember.__loader.require;
   }
 })();

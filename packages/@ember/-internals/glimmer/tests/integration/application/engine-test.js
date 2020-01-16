@@ -1,10 +1,17 @@
-import { moduleFor, ApplicationTestCase, strip, runTaskNext } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  strip,
+  runTaskNext,
+} from 'internal-test-helpers';
 
-import Controller from '@ember/controller';
-import { RSVP } from '@ember/-internals/runtime';
 import { Component } from '@ember/-internals/glimmer';
-import Engine from '@ember/engine';
 import { Route } from '@ember/-internals/routing';
+import { RSVP } from '@ember/-internals/runtime';
+import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
+import Controller from '@ember/controller';
+import Engine from '@ember/engine';
 import { next } from '@ember/runloop';
 
 import { compile } from '../../utils/helpers';
@@ -79,6 +86,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -130,6 +139,8 @@ moduleFor(
       this.add(
         'engine:chat-engine',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:application', compile('Engine'));
@@ -166,6 +177,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:foo', compile('foo partial'));
@@ -201,6 +214,8 @@ moduleFor(
       this.add(
         'engine:chat-engine',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:foo', compile('foo partial'));
@@ -229,6 +244,8 @@ moduleFor(
       this.add(
         'engine:chat-engine',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
@@ -250,6 +267,10 @@ moduleFor(
     }
 
     ['@test attrs in an engine']() {
+      expectDeprecation(
+        `The use of \`{{partial}}\` is deprecated, please refactor the "troll" partial to a component`
+      );
+
       this.setupEngineWithAttrs([]);
 
       return this.visit('/').then(() => {
@@ -284,6 +305,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
 
@@ -313,8 +336,8 @@ moduleFor(
       this.assert.expect(1);
 
       let sharedLayout = compile(strip`
-      {{ambiguous-curlies}}
-    `);
+        {{ambiguous-curlies}}
+      `);
 
       let sharedComponent = Component.extend({
         layout: sharedLayout,
@@ -323,10 +346,10 @@ moduleFor(
       this.addTemplate(
         'application',
         strip`
-      <h1>Application</h1>
-      {{my-component ambiguous-curlies="Local Data!"}}
-      {{outlet}}
-    `
+          <h1>Application</h1>
+          {{my-component ambiguous-curlies="Local Data!"}}
+          {{outlet}}
+        `
       );
 
       this.add('component:my-component', sharedComponent);
@@ -339,22 +362,24 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
               'template:application',
               compile(strip`
-          <h1>Engine</h1>
-          {{my-component}}
-          {{outlet}}
-        `)
+                <h1>Engine</h1>
+                {{my-component}}
+                {{outlet}}
+              `)
             );
             this.register('component:my-component', sharedComponent);
             this.register(
               'template:components/ambiguous-curlies',
               compile(strip`
-          <p>Component!</p>
-        `)
+                <p>Component!</p>
+              `)
             );
           },
         })
@@ -430,7 +455,11 @@ moduleFor(
     }
 
     ['@test visit() with partials in routable engine'](assert) {
-      assert.expect(2);
+      assert.expect(3);
+
+      expectDeprecation(
+        `The use of \`{{partial}}\` is deprecated, please refactor the "foo" partial to a component`
+      );
 
       let hooks = [];
 
@@ -448,7 +477,11 @@ moduleFor(
     }
 
     ['@test visit() with partials in non-routable engine'](assert) {
-      assert.expect(2);
+      assert.expect(3);
+
+      expectDeprecation(
+        `The use of \`{{partial}}\` is deprecated, please refactor the "foo" partial to a component`
+      );
 
       let hooks = [];
 
@@ -473,6 +506,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:application', compile('Engine{{outlet}}'));
@@ -517,7 +552,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:application_error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:application_error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post',
           Route.extend({
@@ -556,7 +596,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post',
           Route.extend({
@@ -595,7 +640,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:post_error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:post_error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post',
           Route.extend({
@@ -634,7 +684,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:post.error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:post.error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post.comments',
           Route.extend({
@@ -856,7 +911,7 @@ moduleFor(
       });
     }
 
-    ['@test query params in customized controllerName have stickiness by default between model'](
+    async ['@test query params in customized controllerName have stickiness by default between model'](
       assert
     ) {
       assert.expect(2);
@@ -867,16 +922,16 @@ moduleFor(
         this.register('template:author', compile(tmpl));
       });
 
-      return this.visit('/blog/author/1?official=true').then(() => {
-        let suffix1 = '/blog/author/1?official=true';
-        let href1 = this.element.querySelector('.author-1').href;
-        let suffix1337 = '/blog/author/1337';
-        let href1337 = this.element.querySelector('.author-1337').href;
+      await this.visit('/blog/author/1?official=true');
 
-        // check if link ends with the suffix
-        assert.ok(this.stringsEndWith(href1, suffix1), `${href1} ends with ${suffix1}`);
-        assert.ok(this.stringsEndWith(href1337, suffix1337), `${href1337} ends with ${suffix1337}`);
-      });
+      let suffix1 = '/blog/author/1?official=true';
+      let href1 = this.element.querySelector('.author-1').href;
+      let suffix1337 = '/blog/author/1337';
+      let href1337 = this.element.querySelector('.author-1337').href;
+
+      // check if link ends with the suffix
+      assert.ok(this.stringsEndWith(href1, suffix1), `${href1} ends with ${suffix1}`);
+      assert.ok(this.stringsEndWith(href1337, suffix1337), `${href1337} ends with ${suffix1337}`);
     }
 
     ['@test visit() routable engine which errors on init'](assert) {

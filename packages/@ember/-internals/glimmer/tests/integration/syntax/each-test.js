@@ -1186,14 +1186,14 @@ if (typeof MutationObserver === 'function') {
 
         this.render(
           strip`
-        <h1>{{page.title}}</h1>
+          <h1>{{this.page.title}}</h1>
 
-        <ul id="posts">
-          {{#each model as |post|}}
-            <li>{{post.title}}</li>
-          {{/each}}
-        </ul>
-      `,
+          <ul id="posts">
+            {{#each this.model as |post|}}
+              <li>{{post.title}}</li>
+            {{/each}}
+          </ul>
+          `,
           { page, model }
         );
 

@@ -594,8 +594,10 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     let template = this.wrappedTemplateFor({
       cond: 'cond',
-      truthy: '(x-truthy)',
-      falsy: '(x-falsy)',
+
+      // pass values so the helpers don't eagerly compute
+      truthy: '(x-truthy this.foo)',
+      falsy: '(x-falsy this.foo)',
     });
 
     withoutEvaluatingFalsy(() => this.render(template, { cond: this.truthyValue }));

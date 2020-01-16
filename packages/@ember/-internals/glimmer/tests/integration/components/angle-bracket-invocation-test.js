@@ -1,18 +1,15 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';
-import { setModifierManager } from '@ember/-internals/glimmer';
+import { setModifierManager, modifierCapabilities } from '@ember/-internals/glimmer';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 
-import {
-  EMBER_GLIMMER_ANGLE_BRACKET_NESTED_LOOKUP,
-  EMBER_GLIMMER_FORWARD_MODIFIERS_WITH_SPLATTRIBUTES,
-} from '@ember/canary-features';
 import { set, setProperties } from '@ember/-internals/metal';
 
 import { Component } from '../../utils/helpers';
 
 class CustomModifierManager {
   constructor(owner) {
+    this.capabilities = modifierCapabilities('3.13');
     this.owner = owner;
   }
 
@@ -421,7 +418,7 @@ moduleFor(
         template: '{{@foo}}',
       });
 
-      this.render('<FooBar @foo={{model.bar}} />', {
+      this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
           bar: 'Hola',
         },
@@ -447,7 +444,7 @@ moduleFor(
         template: '{{foo}}',
       });
 
-      this.render('<FooBar @foo={{model.bar}} />', {
+      this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
           bar: 'Hola',
         },
@@ -1241,264 +1238,260 @@ moduleFor(
   }
 );
 
-if (EMBER_GLIMMER_ANGLE_BRACKET_NESTED_LOOKUP) {
-  moduleFor(
-    'AngleBracket Invocation Nested Lookup',
-    class extends RenderingTestCase {
-      '@test it can resolve <Foo::Bar::BazBing /> to foo/bar/baz-bing'() {
-        this.registerComponent('foo/bar/baz-bing', { template: 'hello' });
+moduleFor(
+  'AngleBracket Invocation Nested Lookup',
+  class extends RenderingTestCase {
+    '@test it can resolve <Foo::Bar::BazBing /> to foo/bar/baz-bing'() {
+      this.registerComponent('foo/bar/baz-bing', { template: 'hello' });
 
-        this.render('<Foo::Bar::BazBing />');
+      this.render('<Foo::Bar::BazBing />');
 
-        this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-        runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
-        this.assertComponentElement(this.firstChild, { content: 'hello' });
-      }
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
-  );
-}
+  }
+);
 
-if (EMBER_GLIMMER_FORWARD_MODIFIERS_WITH_SPLATTRIBUTES) {
-  moduleFor(
-    'Element modifiers on AngleBracket components',
-    class extends RenderingTestCase {
-      '@test modifiers are forwarded to a single element receiving the splattributes'(assert) {
-        let modifierParams = null;
-        let modifierNamedArgs = null;
-        let modifiedElement;
-        this.registerComponent('the-foo', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template: '<div id="inner-div" ...attributes>Foo</div>',
-        });
-        this.registerModifier(
-          'bar',
-          BaseModifier.extend({
-            didInsertElement(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              modifiedElement = this.element;
-            },
-          })
-        );
-        this.render('<TheFoo {{bar "something" foo="else"}}/>', {});
-        assert.deepEqual(modifierParams, ['something']);
-        assert.deepEqual(modifierNamedArgs, { foo: 'else' });
-        assert.equal(
-          modifiedElement && modifiedElement.getAttribute('id'),
-          'inner-div',
-          'Modifier is called on the element receiving the splattributes'
-        );
-      }
-
-      '@test modifiers are forwarded to all the elements receiving the splattributes'(assert) {
-        let elementIds = [];
-        this.registerComponent('the-foo', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template:
-            '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>',
-        });
-        this.registerModifier(
-          'bar',
-          BaseModifier.extend({
-            didInsertElement(params, namedArgs) {
-              assert.deepEqual(params, ['something']);
-              assert.deepEqual(namedArgs, { foo: 'else' });
-              if (this.element) {
-                elementIds.push(this.element.getAttribute('id'));
-              }
-            },
-          })
-        );
-        this.render('<TheFoo {{bar "something" foo="else"}}/>');
-        assert.deepEqual(
-          elementIds,
-          ['inner-one', 'inner-two'],
-          'The modifier has been instantiated twice, once for each element with splattributes'
-        );
-      }
-
-      '@test modifiers on components accept bound arguments and track changes on the'(assert) {
-        let modifierParams = null;
-        let modifierNamedArgs = null;
-        let modifiedElement;
-        this.registerComponent('the-foo', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template: '<div id="inner-div" ...attributes>Foo</div>',
-        });
-        this.registerModifier(
-          'bar',
-          BaseModifier.extend({
-            didInsertElement(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              modifiedElement = this.element;
-            },
-            didUpdate(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              modifiedElement = this.element;
-            },
-          })
-        );
-        this.render('<TheFoo {{bar this.something foo=this.foo}}/>', {
-          something: 'something',
-          foo: 'else',
-        });
-        assert.deepEqual(modifierParams, ['something']);
-        assert.deepEqual(modifierNamedArgs, { foo: 'else' });
-        assert.equal(
-          modifiedElement && modifiedElement.getAttribute('id'),
-          'inner-div',
-          'Modifier is called on the element receiving the splattributes'
-        );
-        runTask(() => setProperties(this.context, { something: 'another', foo: 'thingy' }));
-        assert.deepEqual(modifierParams, ['another']);
-        assert.deepEqual(modifierNamedArgs, { foo: 'thingy' });
-        assert.equal(
-          modifiedElement && modifiedElement.getAttribute('id'),
-          'inner-div',
-          'Modifier is called on the element receiving the splattributes'
-        );
-      }
-
-      '@test modifiers on components accept `this` in both positional params and named arguments, and updates when it changes'(
-        assert
-      ) {
-        let modifierParams = null;
-        let modifierNamedArgs = null;
-        let modifiedElement;
-        let context = { id: 1 };
-        let context2 = { id: 2 };
-        this.registerComponent('the-foo', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template: '<div id="inner-div" ...attributes>Foo</div>',
-        });
-        this.registerModifier(
-          'bar',
-          BaseModifier.extend({
-            didInsertElement(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              modifiedElement = this.element;
-            },
-            didUpdate(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              modifiedElement = this.element;
-            },
-          })
-        );
-        this.render('<TheFoo {{bar "name" this foo=this}}/>', context);
-        assert.equal(modifierParams[1].id, 1);
-        assert.equal(modifierNamedArgs.foo.id, 1);
-        assert.equal(
-          modifiedElement && modifiedElement.getAttribute('id'),
-          'inner-div',
-          'Modifier is called on the element receiving the splattributes'
-        );
-        runTask(() => setProperties(this.context, context2));
-        assert.equal(modifierParams[1].id, 2);
-        assert.equal(modifierNamedArgs.foo.id, 2);
-        assert.equal(
-          modifiedElement && modifiedElement.getAttribute('id'),
-          'inner-div',
-          'Modifier is called on the element receiving the splattributes'
-        );
-      }
-
-      '@test modifiers on components accept local variables in both positional params and named arguments, and updates when they change'(
-        assert
-      ) {
-        let modifierParams = null;
-        let modifierNamedArgs = null;
-        let modifiedElement;
-        this.registerComponent('the-foo', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template: '<div id="inner-div" ...attributes>Foo</div>',
-        });
-        this.registerModifier(
-          'bar',
-          BaseModifier.extend({
-            didInsertElement(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              modifiedElement = this.element;
-            },
-            didUpdate(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              modifiedElement = this.element;
-            },
-          })
-        );
-        this.render(
-          `
-          {{#let this.foo as |v|}}
-            <TheFoo {{bar v foo=v}}/>
-          {{/let}}`,
-          { foo: 'bar' }
-        );
-        assert.deepEqual(modifierParams, ['bar']);
-        assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
-        assert.equal(
-          modifiedElement && modifiedElement.getAttribute('id'),
-          'inner-div',
-          'Modifier is called on the element receiving the splattributes'
-        );
-        runTask(() => setProperties(this.context, { foo: 'qux' }));
-        assert.deepEqual(modifierParams, ['qux']);
-        assert.deepEqual(modifierNamedArgs, { foo: 'qux' });
-        assert.equal(
-          modifiedElement && modifiedElement.getAttribute('id'),
-          'inner-div',
-          'Modifier is called on the element receiving the splattributes'
-        );
-      }
-
-      '@test modifiers on components can be received and forwarded to inner component'(assert) {
-        let modifierParams = null;
-        let modifierNamedArgs = null;
-        let elementIds = [];
-
-        this.registerComponent('the-inner', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template: '<div id="inner-div" ...attributes>{{yield}}</div>',
-        });
-        this.registerComponent('the-foo', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template:
-            '<div id="outer-div" ...attributes>Outer</div><TheInner ...attributes>Hello</TheInner>',
-        });
-        this.registerModifier(
-          'bar',
-          BaseModifier.extend({
-            didInsertElement(params, namedArgs) {
-              modifierParams = params;
-              modifierNamedArgs = namedArgs;
-              if (this.element) {
-                elementIds.push(this.element.getAttribute('id'));
-              }
-            },
-          })
-        );
-        this.render(
-          `
-          {{#let this.foo as |v|}}
-            <TheFoo {{bar v foo=v}}/>
-          {{/let}}
-        `,
-          { foo: 'bar' }
-        );
-        assert.deepEqual(modifierParams, ['bar']);
-        assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
-        assert.deepEqual(
-          elementIds,
-          ['outer-div', 'inner-div'],
-          'Modifiers are called on all levels'
-        );
-      }
+moduleFor(
+  'Element modifiers on AngleBracket components',
+  class extends RenderingTestCase {
+    '@test modifiers are forwarded to a single element receiving the splattributes'(assert) {
+      let modifierParams = null;
+      let modifierNamedArgs = null;
+      let modifiedElement;
+      this.registerComponent('the-foo', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '<div id="inner-div" ...attributes>Foo</div>',
+      });
+      this.registerModifier(
+        'bar',
+        BaseModifier.extend({
+          didInsertElement(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            modifiedElement = this.element;
+          },
+        })
+      );
+      this.render('<TheFoo {{bar "something" foo="else"}}/>', {});
+      assert.deepEqual(modifierParams, ['something']);
+      assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+      assert.equal(
+        modifiedElement && modifiedElement.getAttribute('id'),
+        'inner-div',
+        'Modifier is called on the element receiving the splattributes'
+      );
     }
-  );
-}
+
+    '@test modifiers are forwarded to all the elements receiving the splattributes'(assert) {
+      let elementIds = [];
+      this.registerComponent('the-foo', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template:
+          '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>',
+      });
+      this.registerModifier(
+        'bar',
+        BaseModifier.extend({
+          didInsertElement(params, namedArgs) {
+            assert.deepEqual(params, ['something']);
+            assert.deepEqual(namedArgs, { foo: 'else' });
+            if (this.element) {
+              elementIds.push(this.element.getAttribute('id'));
+            }
+          },
+        })
+      );
+      this.render('<TheFoo {{bar "something" foo="else"}}/>');
+      assert.deepEqual(
+        elementIds,
+        ['inner-one', 'inner-two'],
+        'The modifier has been instantiated twice, once for each element with splattributes'
+      );
+    }
+
+    '@test modifiers on components accept bound arguments and track changes on the'(assert) {
+      let modifierParams = null;
+      let modifierNamedArgs = null;
+      let modifiedElement;
+      this.registerComponent('the-foo', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '<div id="inner-div" ...attributes>Foo</div>',
+      });
+      this.registerModifier(
+        'bar',
+        BaseModifier.extend({
+          didInsertElement(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            modifiedElement = this.element;
+          },
+          didUpdate(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            modifiedElement = this.element;
+          },
+        })
+      );
+      this.render('<TheFoo {{bar this.something foo=this.foo}}/>', {
+        something: 'something',
+        foo: 'else',
+      });
+      assert.deepEqual(modifierParams, ['something']);
+      assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+      assert.equal(
+        modifiedElement && modifiedElement.getAttribute('id'),
+        'inner-div',
+        'Modifier is called on the element receiving the splattributes'
+      );
+      runTask(() => setProperties(this.context, { something: 'another', foo: 'thingy' }));
+      assert.deepEqual(modifierParams, ['another']);
+      assert.deepEqual(modifierNamedArgs, { foo: 'thingy' });
+      assert.equal(
+        modifiedElement && modifiedElement.getAttribute('id'),
+        'inner-div',
+        'Modifier is called on the element receiving the splattributes'
+      );
+    }
+
+    '@test modifiers on components accept `this` in both positional params and named arguments, and updates when it changes'(
+      assert
+    ) {
+      let modifierParams = null;
+      let modifierNamedArgs = null;
+      let modifiedElement;
+      let context = { id: 1 };
+      let context2 = { id: 2 };
+      this.registerComponent('the-foo', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '<div id="inner-div" ...attributes>Foo</div>',
+      });
+      this.registerModifier(
+        'bar',
+        BaseModifier.extend({
+          didInsertElement(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            modifiedElement = this.element;
+          },
+          didUpdate(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            modifiedElement = this.element;
+          },
+        })
+      );
+      this.render('<TheFoo {{bar "name" this foo=this}}/>', context);
+      assert.equal(modifierParams[1].id, 1);
+      assert.equal(modifierNamedArgs.foo.id, 1);
+      assert.equal(
+        modifiedElement && modifiedElement.getAttribute('id'),
+        'inner-div',
+        'Modifier is called on the element receiving the splattributes'
+      );
+      runTask(() => setProperties(this.context, context2));
+      assert.equal(modifierParams[1].id, 2);
+      assert.equal(modifierNamedArgs.foo.id, 2);
+      assert.equal(
+        modifiedElement && modifiedElement.getAttribute('id'),
+        'inner-div',
+        'Modifier is called on the element receiving the splattributes'
+      );
+    }
+
+    '@test modifiers on components accept local variables in both positional params and named arguments, and updates when they change'(
+      assert
+    ) {
+      let modifierParams = null;
+      let modifierNamedArgs = null;
+      let modifiedElement;
+      this.registerComponent('the-foo', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '<div id="inner-div" ...attributes>Foo</div>',
+      });
+      this.registerModifier(
+        'bar',
+        BaseModifier.extend({
+          didInsertElement(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            modifiedElement = this.element;
+          },
+          didUpdate(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            modifiedElement = this.element;
+          },
+        })
+      );
+      this.render(
+        `
+        {{#let this.foo as |v|}}
+          <TheFoo {{bar v foo=v}}/>
+        {{/let}}`,
+        { foo: 'bar' }
+      );
+      assert.deepEqual(modifierParams, ['bar']);
+      assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+      assert.equal(
+        modifiedElement && modifiedElement.getAttribute('id'),
+        'inner-div',
+        'Modifier is called on the element receiving the splattributes'
+      );
+      runTask(() => setProperties(this.context, { foo: 'qux' }));
+      assert.deepEqual(modifierParams, ['qux']);
+      assert.deepEqual(modifierNamedArgs, { foo: 'qux' });
+      assert.equal(
+        modifiedElement && modifiedElement.getAttribute('id'),
+        'inner-div',
+        'Modifier is called on the element receiving the splattributes'
+      );
+    }
+
+    '@test modifiers on components can be received and forwarded to inner component'(assert) {
+      let modifierParams = null;
+      let modifierNamedArgs = null;
+      let elementIds = [];
+
+      this.registerComponent('the-inner', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '<div id="inner-div" ...attributes>{{yield}}</div>',
+      });
+      this.registerComponent('the-foo', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template:
+          '<div id="outer-div" ...attributes>Outer</div><TheInner ...attributes>Hello</TheInner>',
+      });
+      this.registerModifier(
+        'bar',
+        BaseModifier.extend({
+          didInsertElement(params, namedArgs) {
+            modifierParams = params;
+            modifierNamedArgs = namedArgs;
+            if (this.element) {
+              elementIds.push(this.element.getAttribute('id'));
+            }
+          },
+        })
+      );
+      this.render(
+        `
+        {{#let this.foo as |v|}}
+          <TheFoo {{bar v foo=v}}/>
+        {{/let}}
+      `,
+        { foo: 'bar' }
+      );
+      assert.deepEqual(modifierParams, ['bar']);
+      assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+      assert.deepEqual(
+        elementIds,
+        ['outer-div', 'inner-div'],
+        'Modifiers are called on all levels'
+      );
+    }
+  }
+);

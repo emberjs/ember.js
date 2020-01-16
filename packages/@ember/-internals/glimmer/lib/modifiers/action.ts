@@ -1,19 +1,19 @@
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, isSimpleClick } from '@ember/-internals/views';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { Opaque, Simple } from '@glimmer/interfaces';
-import { RevisionTag, TagWrapper } from '@glimmer/reference';
 import {
-  Arguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
+  Destroyable,
   DynamicScope,
   ModifierManager,
-} from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
-import { INVOKE } from '../utils/references';
+  VMArguments,
+} from '@glimmer/interfaces';
+import { Tag } from '@glimmer/validator';
+import { SimpleElement } from '@simple-dom/interface';
+import { INVOKE } from '../helpers/mut';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -61,7 +61,7 @@ export let ActionHelper = {
 };
 
 export class ActionState {
-  public element: Simple.Element;
+  public element: SimpleElement;
   public actionId: number;
   public actionName: any;
   public actionArgs: any;
@@ -70,10 +70,10 @@ export class ActionState {
   public implicitTarget: any;
   public dom: any;
   public eventName: any;
-  public tag: TagWrapper<RevisionTag | null>;
+  public tag: Tag;
 
   constructor(
-    element: Simple.Element,
+    element: SimpleElement,
     actionId: number,
     actionName: any,
     actionArgs: any[],
@@ -81,7 +81,7 @@ export class ActionState {
     positionalArgs: CapturedPositionalArguments,
     implicitTarget: any,
     dom: any,
-    tag: TagWrapper<RevisionTag | null>
+    tag: Tag
   ) {
     this.element = element;
     this.actionId = actionId;
@@ -186,11 +186,11 @@ export class ActionState {
 }
 
 // implements ModifierManager<Action>
-export default class ActionModifierManager implements ModifierManager<ActionState, Opaque> {
+export default class ActionModifierManager implements ModifierManager<ActionState, unknown> {
   create(
-    element: Simple.Element,
-    _state: Opaque,
-    args: Arguments,
+    element: SimpleElement,
+    _state: unknown,
+    args: VMArguments,
     _dynamicScope: DynamicScope,
     dom: any
   ) {
@@ -230,7 +230,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     }
 
     let actionId = uuid();
-    return new ActionState(
+    let actionState = new ActionState(
       element,
       actionId,
       actionName,
@@ -241,6 +241,20 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       dom,
       tag
     );
+
+    deprecate(
+      `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
+      actionState.eventName !== 'mouseEnter' &&
+        actionState.eventName !== 'mouseLeave' &&
+        actionState.eventName !== 'mouseMove',
+      {
+        id: 'ember-views.event-dispatcher.mouseenter-leave-move',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_action-mouseenter-leave-move',
+      }
+    );
+
+    return actionState;
   }
 
   install(actionState: ActionState) {

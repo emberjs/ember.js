@@ -8,7 +8,7 @@ import {
   endPropertyChanges,
   addObserver,
 } from '..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*
   This test file is designed to capture performance regressions related to
@@ -20,7 +20,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 moduleFor(
   'Computed Properties - Number of times evaluated',
   class extends AbstractTestCase {
-    ['@test computed properties that depend on multiple properties should run only once per run loop'](
+    async ['@test computed properties that depend on multiple properties should run only once per run loop'](
       assert
     ) {
       let obj = { a: 'a', b: 'b', c: 'c' };
@@ -51,6 +51,8 @@ moduleFor(
       endPropertyChanges();
 
       get(obj, 'abc');
+
+      await runLoopSettled();
 
       assert.equal(cpCount, 1, 'The computed property is only invoked once');
       assert.equal(obsCount, 1, 'The observer is only invoked once');

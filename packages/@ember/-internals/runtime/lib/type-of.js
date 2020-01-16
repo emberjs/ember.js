@@ -1,4 +1,4 @@
-import EmberObject from './system/object';
+import CoreObject from './system/core_object';
 
 // ........................................
 // TYPING & ARRAY MESSAGING
@@ -61,6 +61,7 @@ const { toString } = Object.prototype;
   typeOf(true);                   // 'boolean'
   typeOf(new Boolean(true));      // 'boolean'
   typeOf(A);                      // 'function'
+  typeOf(A());                    // 'array'
   typeOf([1, 2, 90]);             // 'array'
   typeOf(/abc/);                  // 'regexp'
   typeOf(new Date());             // 'date'
@@ -90,13 +91,13 @@ export function typeOf(item) {
   let ret = TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {
-    if (EmberObject.detect(item)) {
+    if (CoreObject.detect(item)) {
       ret = 'class';
     }
   } else if (ret === 'object') {
     if (item instanceof Error) {
       ret = 'error';
-    } else if (item instanceof EmberObject) {
+    } else if (item instanceof CoreObject) {
       ret = 'instance';
     } else if (item instanceof Date) {
       ret = 'date';

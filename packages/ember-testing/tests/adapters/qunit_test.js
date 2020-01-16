@@ -2,7 +2,7 @@ import { run } from '@ember/runloop';
 import QUnitAdapter from '../../lib/adapters/qunit';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-var adapter;
+let adapter;
 
 moduleFor(
   'ember-testing QUnitAdapter: QUnit 2.x',

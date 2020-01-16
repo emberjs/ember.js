@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 
 const setPrototypeOf = Object.setPrototypeOf;
 
-var nativeWrapperCache = new Map();
+const nativeWrapperCache = new Map();
 
 // Super minimal version of Babel's wrapNativeSuper. We only use this for
 // extending Function, for ComputedDecoratorImpl and AliasDecoratorImpl. We know
@@ -40,7 +40,7 @@ export function classCallCheck(instance, Constructor) {
   Overrides default `inheritsLoose` to _also_ call `Object.setPrototypeOf`.
   This is needed so that we can use `loose` option with the
   `@babel/plugin-transform-classes` (because we want simple assignment to the
-  prototype whereever possible) but also keep our constructor based prototypal
+  prototype wherever possible) but also keep our constructor based prototypal
   inheritance working properly
 */
 export function inheritsLoose(subClass, superClass) {
@@ -70,8 +70,8 @@ export function taggedTemplateLiteralLoose(strings, raw) {
 }
 
 function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
+  for (let i = 0; i < props.length; i++) {
+    let descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
     descriptor.configurable = true;
     if ('value' in descriptor) descriptor.writable = true;

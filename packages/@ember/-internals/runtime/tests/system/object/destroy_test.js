@@ -9,7 +9,7 @@ import {
 import { peekMeta } from '@ember/-internals/meta';
 import EmberObject from '../../../lib/system/object';
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
   '@ember/-internals/runtime/system/object/destroy_test',
@@ -51,7 +51,7 @@ moduleFor(
       }
     }
 
-    ['@test observers should not fire after an object has been destroyed'](assert) {
+    async ['@test observers should not fire after an object has been destroyed'](assert) {
       let count = 0;
       let obj = EmberObject.extend({
         fooDidChange: observer('foo', function() {
@@ -60,20 +60,20 @@ moduleFor(
       }).create();
 
       obj.set('foo', 'bar');
+      await runLoopSettled();
 
       assert.equal(count, 1, 'observer was fired once');
 
-      run(() => {
-        beginPropertyChanges();
-        obj.set('foo', 'quux');
-        obj.destroy();
-        endPropertyChanges();
-      });
+      beginPropertyChanges();
+      obj.set('foo', 'quux');
+      obj.destroy();
+      endPropertyChanges();
+      await runLoopSettled();
 
       assert.equal(count, 1, 'observer was not called after object was destroyed');
     }
 
-    ['@test destroyed objects should not see each others changes during teardown but a long lived object should'](
+    async ['@test destroyed objects should not see each others changes during teardown but a long lived object should'](
       assert
     ) {
       let shouldChange = 0;
@@ -138,12 +138,11 @@ moduleFor(
 
       LongLivedObject.create();
 
-      run(() => {
-        let keys = Object.keys(objs);
-        for (let i = 0; i < keys.length; i++) {
-          objs[keys[i]].destroy();
-        }
-      });
+      for (let obj in objs) {
+        objs[obj].destroy();
+      }
+
+      await runLoopSettled();
 
       assert.equal(shouldNotChange, 0, 'destroyed graph objs should not see change in willDestroy');
       assert.equal(shouldChange, 1, 'long lived should see change in willDestroy');

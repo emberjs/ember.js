@@ -1,4 +1,4 @@
-/* globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Libraries } from '..';
 import { EMBER_LIBRARIES_ISREGISTERED } from '@ember/canary-features';
@@ -36,7 +36,7 @@ moduleFor(
     ['@test only the first registration of a library is stored'](assert) {
       assert.expect(3);
 
-      // overwrite warn to supress the double registration warning (see https://github.com/emberjs/ember.js/issues/16391)
+      // overwrite warn to suppress the double registration warning (see https://github.com/emberjs/ember.js/issues/16391)
       setDebugFunction('warn', noop);
       libs.register('magic', 1.23);
       libs.register('magic', 2.23);
@@ -63,7 +63,7 @@ moduleFor(
     }
 
     ['@test attempting to register a library that is already registered warns you'](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }

@@ -1,6 +1,6 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 let counter;
 
@@ -18,6 +18,10 @@ moduleFor(
 
       this.addTemplate('application', `<div id="app">{{outlet}}</div>`);
       this.addTemplate('index', 'INDEX');
+    }
+
+    visit(...args) {
+      return runTask(() => super.visit(...args));
     }
 
     getController(name) {
@@ -377,10 +381,10 @@ moduleFor(
       return promise;
     }
 
-    ['@test Prioritized error substate entry works with preserved-namespaec nested routes'](
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with preserved-namespace nested routes'](
       assert
     ) {
-      this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{model.msg}}');
+      this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{this.model.msg}}');
       this.addTemplate('foo.bar', 'YAY');
 
       this.router.map(function() {
@@ -411,6 +415,41 @@ moduleFor(
         });
       });
     }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with preserved-namespace nested routes'](
+      assert
+    ) {
+      this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{@model.msg}}');
+      this.addTemplate('foo.bar', 'YAY');
+
+      this.router.map(function() {
+        this.route('foo', function() {
+          this.route('bar');
+        });
+      });
+
+      this.add(
+        'route:foo.bar',
+        Route.extend({
+          model() {
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      await this.visit('/foo/bar');
+
+      assert.equal(
+        this.$('#app').text(),
+        'FOOBAR ERROR: did it broke?',
+        `foo.bar_error was entered (as opposed to something like foo/foo/bar_error)`
+      );
+    }
+
     ['@test Prioritized loading substate entry works with auto-generated index routes'](assert) {
       let deferred = RSVP.defer();
       this.addTemplate('foo.index_loading', 'FOO LOADING');
@@ -453,8 +492,10 @@ moduleFor(
       return promise;
     }
 
-    ['@test Prioritized error substate entry works with auto-generated index routes'](assert) {
-      this.addTemplate('foo.index_error', 'FOO ERROR: {{model.msg}}');
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with auto-generated index routes'](
+      assert
+    ) {
+      this.addTemplate('foo.index_error', 'FOO ERROR: {{this.model.msg}}');
       this.addTemplate('foo.index', 'YAY');
       this.addTemplate('foo', '{{outlet}}');
 
@@ -492,7 +533,50 @@ moduleFor(
       });
     }
 
-    ['@test Rejected promises returned from ApplicationRoute transition into top-level application_error'](
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with auto-generated index routes'](
+      assert
+    ) {
+      this.addTemplate('foo.index_error', 'FOO ERROR: {{@model.msg}}');
+      this.addTemplate('foo.index', 'YAY');
+      this.addTemplate('foo', '{{outlet}}');
+
+      this.router.map(function() {
+        this.route('foo', function() {
+          this.route('bar');
+        });
+      });
+
+      this.add(
+        'route:foo.index',
+        Route.extend({
+          model() {
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+        })
+      );
+      this.add(
+        'route:foo',
+        Route.extend({
+          model() {
+            return true;
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      await this.visit('/foo');
+
+      assert.equal(
+        this.$('#app').text(),
+        'FOO ERROR: did it broke?',
+        'foo.index_error was entered'
+      );
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Rejected promises returned from ApplicationRoute transition into top-level application_error'](
       assert
     ) {
       let reject = true;
@@ -516,9 +600,7 @@ moduleFor(
 
       this.addTemplate(
         'application_error',
-        `
-      <p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>
-    `
+        `<p id="toplevel-error">TOPLEVEL ERROR: {{this.model.msg}}</p>`
       );
 
       return this.visit('/')
@@ -534,6 +616,48 @@ moduleFor(
           let text = this.$('#index').text();
           assert.equal(text, 'INDEX', 'the index route resolved');
         });
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Rejected promises returned from ApplicationRoute transition into top-level application_error'](
+      assert
+    ) {
+      let reject = true;
+
+      this.addTemplate('index', '<div id="index">INDEX</div>');
+      this.add(
+        'route:application',
+        Route.extend({
+          init() {
+            this._super(...arguments);
+          },
+          model() {
+            if (reject) {
+              return RSVP.reject({ msg: 'BAD NEWS BEARS' });
+            } else {
+              return {};
+            }
+          },
+        })
+      );
+
+      this.addTemplate(
+        'application_error',
+        `<p id="toplevel-error">TOPLEVEL ERROR: {{@model.msg}}</p>`
+      );
+
+      await this.visit('/');
+
+      assert.equal(
+        this.$('#toplevel-error').text(),
+        'TOPLEVEL ERROR: BAD NEWS BEARS',
+        'toplevel error rendered'
+      );
+
+      reject = false;
+
+      await this.visit('/');
+
+      assert.equal(this.$('#index').text(), 'INDEX', 'the index route resolved');
     }
   }
 );
@@ -561,8 +685,6 @@ moduleFor(
         });
         this.route('memere', { path: '/memere/:seg' }, function() {});
       });
-
-      this.visit('/');
     }
 
     getController(name) {
@@ -577,7 +699,9 @@ moduleFor(
       return currentPath;
     }
 
-    ['@test ApplicationRoute#currentPath reflects loading state path'](assert) {
+    async ['@test ApplicationRoute#currentPath reflects loading state path'](assert) {
+      await this.visit('/');
+
       let momDeferred = RSVP.defer();
 
       this.addTemplate('grandma.loading', 'GRANDMALOADING');
@@ -591,7 +715,7 @@ moduleFor(
         })
       );
 
-      let promise = this.visit('/grandma/mom').then(() => {
+      let promise = runTask(() => this.visit('/grandma/mom')).then(() => {
         text = this.$('#app').text();
 
         assert.equal(text, 'GRANDMA MOM', `Grandma.mom loaded text is displayed`);
@@ -608,7 +732,9 @@ moduleFor(
       return promise;
     }
 
-    [`@test Loading actions bubble to root but don't enter substates above pivot `](assert) {
+    async [`@test Loading actions bubble to root but don't enter substates above pivot `](assert) {
+      await this.visit('/');
+
       let sallyDeferred = RSVP.defer();
       let puppiesDeferred = RSVP.defer();
 
@@ -668,8 +794,12 @@ moduleFor(
       return promise;
     }
 
-    ['@test Default error event moves into nested route'](assert) {
-      this.addTemplate('grandma.error', 'ERROR: {{model.msg}}');
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Default error event moves into nested route'](
+      assert
+    ) {
+      await this.visit('/');
+
+      this.addTemplate('grandma.error', 'ERROR: {{this.model.msg}}');
 
       this.add(
         'route:mom.sally',
@@ -699,7 +829,42 @@ moduleFor(
       });
     }
 
-    [`@test Non-bubbled errors that re-throw aren't swallowed`](assert) {
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Default error event moves into nested route'](
+      assert
+    ) {
+      await this.visit('/');
+
+      this.addTemplate('grandma.error', 'ERROR: {{@model.msg}}');
+
+      this.add(
+        'route:mom.sally',
+        Route.extend({
+          model() {
+            step(assert, 1, 'MomSallyRoute#model');
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+          actions: {
+            error() {
+              step(assert, 2, 'MomSallyRoute#actions.error');
+              return true;
+            },
+          },
+        })
+      );
+
+      await this.visit('/grandma/mom/sally');
+
+      step(assert, 3, 'App finished loading');
+
+      assert.equal(this.$('#app').text(), 'GRANDMA ERROR: did it broke?', 'error bubbles');
+      assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
+    }
+
+    async [`@test Non-bubbled errors that re-throw aren't swallowed`](assert) {
+      await this.visit('/');
+
       this.add(
         'route:mom.sally',
         Route.extend({
@@ -717,20 +882,18 @@ moduleFor(
         })
       );
 
-      assert.throws(
-        () => {
-          this.visit('/grandma/mom/sally');
-        },
+      await assert.rejects(
+        this.visit('/grandma/mom/sally'),
         function(err) {
           return err.msg === 'did it broke?';
         },
         'it broke'
       );
-
-      return runLoopSettled();
     }
 
-    [`@test Handled errors that re-throw aren't swallowed`](assert) {
+    async [`@test Handled errors that re-throw aren't swallowed`](assert) {
+      await this.visit('/');
+
       let handledError;
 
       this.add(
@@ -764,20 +927,18 @@ moduleFor(
         })
       );
 
-      assert.throws(
-        () => {
-          this.visit('/grandma/mom/sally');
-        },
+      await assert.rejects(
+        this.visit('/grandma/mom/sally'),
         function(err) {
           return err.msg === 'did it broke?';
         },
         `it broke`
       );
-
-      return runLoopSettled();
     }
 
-    ['@test errors that are bubbled are thrown at a higher level if not handled'](assert) {
+    async ['@test errors that are bubbled are thrown at a higher level if not handled'](assert) {
+      await this.visit('/');
+
       this.add(
         'route:mom.sally',
         Route.extend({
@@ -796,20 +957,18 @@ moduleFor(
         })
       );
 
-      assert.throws(
-        () => {
-          this.visit('/grandma/mom/sally');
-        },
+      await assert.rejects(
+        this.visit('/grandma/mom/sally'),
         function(err) {
           return err.msg == 'did it broke?';
         },
         'Correct error was thrown'
       );
-
-      return runLoopSettled();
     }
 
-    [`@test Handled errors that are thrown through rejection aren't swallowed`](assert) {
+    async [`@test Handled errors that are thrown through rejection aren't swallowed`](assert) {
+      await this.visit('/');
+
       let handledError;
 
       this.add(
@@ -843,24 +1002,22 @@ moduleFor(
         })
       );
 
-      assert.throws(
-        () => {
-          this.visit('/grandma/mom/sally');
-        },
+      await assert.rejects(
+        this.visit('/grandma/mom/sally'),
         function(err) {
           return err.msg === 'did it broke?';
         },
         'it broke'
       );
-
-      return runLoopSettled();
     }
 
-    ['@test Default error events move into nested route, prioritizing more specifically named error routes - NEW'](
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Default error events move into nested route, prioritizing more specifically named error routes - NEW'](
       assert
     ) {
-      this.addTemplate('grandma.error', 'ERROR: {{model.msg}}');
-      this.addTemplate('mom_error', 'MOM ERROR: {{model.msg}}');
+      await this.visit('/');
+
+      this.addTemplate('grandma.error', 'ERROR: {{this.model.msg}}');
+      this.addTemplate('mom_error', 'MOM ERROR: {{this.model.msg}}');
 
       this.add(
         'route:mom.sally',
@@ -880,20 +1037,61 @@ moduleFor(
         })
       );
 
-      return this.visit('/grandma/mom/sally').then(() => {
-        step(assert, 3, 'Application finished booting');
+      await this.visit('/grandma/mom/sally');
 
-        assert.equal(
-          this.$('#app').text(),
-          'GRANDMA MOM ERROR: did it broke?',
-          'the more specifically named mome error substate was entered over the other error route'
-        );
+      step(assert, 3, 'Application finished booting');
 
-        assert.equal(this.currentPath, 'grandma.mom_error', 'Initial route fully loaded');
-      });
+      assert.equal(
+        this.$('#app').text(),
+        'GRANDMA MOM ERROR: did it broke?',
+        'the more specifically named mome error substate was entered over the other error route'
+      );
+
+      assert.equal(this.currentPath, 'grandma.mom_error', 'Initial route fully loaded');
     }
 
-    ['@test Slow promises waterfall on startup'](assert) {
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Default error events move into nested route, prioritizing more specifically named error routes - NEW'](
+      assert
+    ) {
+      await this.visit('/');
+
+      this.addTemplate('grandma.error', 'ERROR: {{@model.msg}}');
+      this.addTemplate('mom_error', 'MOM ERROR: {{@model.msg}}');
+
+      this.add(
+        'route:mom.sally',
+        Route.extend({
+          model() {
+            step(assert, 1, 'MomSallyRoute#model');
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+          actions: {
+            error() {
+              step(assert, 2, 'MomSallyRoute#actions.error');
+              return true;
+            },
+          },
+        })
+      );
+
+      await this.visit('/grandma/mom/sally');
+
+      step(assert, 3, 'Application finished booting');
+
+      assert.equal(
+        this.$('#app').text(),
+        'GRANDMA MOM ERROR: did it broke?',
+        'the more specifically named mome error substate was entered over the other error route'
+      );
+
+      assert.equal(this.currentPath, 'grandma.mom_error', 'Initial route fully loaded');
+    }
+
+    async ['@test Slow promises waterfall on startup'](assert) {
+      await this.visit('/');
+
       let grandmaDeferred = RSVP.defer();
       let sallyDeferred = RSVP.defer();
 
@@ -935,7 +1133,7 @@ moduleFor(
         })
       );
 
-      let promise = this.visit('/grandma/mom/sally').then(() => {
+      let promise = runTask(() => this.visit('/grandma/mom/sally')).then(() => {
         text = this.$('#app').text();
 
         assert.equal(text, 'GRANDMA MOM SALLY', `Sally template displayed`);
@@ -961,7 +1159,10 @@ moduleFor(
 
       return promise;
     }
-    ['@test Enter child loading state of pivot route'](assert) {
+
+    async ['@test Enter child loading state of pivot route'](assert) {
+      await this.visit('/');
+
       let deferred = RSVP.defer();
       this.addTemplate('grandma.loading', 'GMONEYLOADING');
 
@@ -983,21 +1184,22 @@ moduleFor(
         })
       );
 
-      return this.visit('/grandma/mom/sally').then(() => {
-        assert.equal(this.currentPath, 'grandma.mom.sally', 'Initial route fully loaded');
+      await this.visit('/grandma/mom/sally');
+      assert.equal(this.currentPath, 'grandma.mom.sally', 'Initial route fully loaded');
 
-        let promise = this.visit('/grandma/puppies').then(() => {
-          assert.equal(this.currentPath, 'grandma.puppies', 'Finished transition');
-        });
-
-        assert.equal(this.currentPath, 'grandma.loading', `in pivot route's child loading state`);
-        deferred.resolve();
-
-        return promise;
+      let promise = runTask(() => this.visit('/grandma/puppies')).then(() => {
+        assert.equal(this.currentPath, 'grandma.puppies', 'Finished transition');
       });
+
+      assert.equal(this.currentPath, 'grandma.loading', `in pivot route's child loading state`);
+      deferred.resolve();
+
+      return promise;
     }
 
-    [`@test Error events that aren't bubbled don't throw application assertions`](assert) {
+    async [`@test Error events that aren't bubbled don't throw application assertions`](assert) {
+      await this.visit('/');
+
       this.add(
         'route:mom.sally',
         Route.extend({
@@ -1062,7 +1264,9 @@ moduleFor(
       return this.visit('/grandma/mom/sally');
     }
 
-    ['@test Setting a query param during a slow transition should work'](assert) {
+    async ['@test Setting a query param during a slow transition should work'](assert) {
+      await this.visit('/');
+
       let deferred = RSVP.defer();
       this.addTemplate('memere.loading', 'MMONEYLOADING');
 
@@ -1093,7 +1297,7 @@ moduleFor(
         })
       );
 
-      let promise = this.visit('/grandma').then(() => {
+      let promise = runTask(() => this.visit('/grandma')).then(() => {
         assert.equal(this.currentPath, 'memere.index', 'Transition should be complete');
       });
       let memereController = this.getController('memere');

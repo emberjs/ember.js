@@ -1,11 +1,19 @@
+import { ENV } from '@ember/-internals/environment';
 import { set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { assert, debugFreeze } from '@ember/debug';
-import { ComponentCapabilities, Dict } from '@glimmer/interfaces';
-import { CONSTANT_TAG, isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, DynamicScope, Environment, PreparedArguments } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
-import { RootReference } from '../utils/references';
+import {
+  Bounds,
+  ComponentCapabilities,
+  Destroyable,
+  Dict,
+  DynamicScope,
+  PreparedArguments,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { ComponentRootReference, ConstReference, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, createTag, isConst } from '@glimmer/validator';
+import { EmberVMEnvironment } from '../environment';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
 
 const CAPABILITIES: ComponentCapabilities = {
@@ -19,9 +27,12 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicScope: false,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
+  willDestroy: false,
 };
 
 export interface InputComponentState {
+  env: EmberVMEnvironment;
   type: VersionedPathReference;
   instance: Destroyable;
 }
@@ -35,7 +46,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return CAPABILITIES;
   }
 
-  prepareArgs(_state: InternalDefinitionState, args: Arguments): PreparedArguments {
+  prepareArgs(_state: InternalDefinitionState, args: VMArguments): PreparedArguments {
     assert(
       'The `<Input />` component does not take any positional arguments',
       args.positional.length === 0
@@ -46,16 +57,16 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return {
       positional: EMPTY_POSITIONAL_ARGS,
       named: {
-        __ARGS__: new RootReference(__ARGS__),
+        __ARGS__: new ConstReference(__ARGS__),
         type: args.named.get('type'),
       },
     };
   }
 
   create(
-    _env: Environment,
-    { ComponentClass }: InternalDefinitionState,
-    args: Arguments,
+    env: EmberVMEnvironment,
+    { ComponentClass, layout }: InternalDefinitionState,
+    args: VMArguments,
     _dynamicScope: DynamicScope,
     caller: VersionedPathReference
   ): InputComponentState {
@@ -68,23 +79,66 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
       type: type.value(),
     });
 
-    return { type, instance };
+    let state = { env, type, instance };
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      env.extra.debugRenderTree.create(state, {
+        type: 'component',
+        name: 'input',
+        args: args.capture(),
+        instance,
+        template: layout,
+      });
+    }
+
+    return state;
   }
 
-  getSelf({ instance }: InputComponentState): VersionedPathReference {
-    return new RootReference(instance);
+  getSelf({ env, instance }: InputComponentState): VersionedPathReference {
+    return new ComponentRootReference(instance, env);
   }
 
   getTag() {
-    return CONSTANT_TAG;
+    if (ENV._DEBUG_RENDER_TREE) {
+      // returning a const tag skips the update hook (VM BUG?)
+      return createTag();
+    } else {
+      // an outlet has no hooks
+      return CONSTANT_TAG;
+    }
   }
 
-  update({ type, instance }: InputComponentState): void {
-    set(instance, 'type', type.value());
+  didRenderLayout(state: InputComponentState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.extra.debugRenderTree.didRender(state, bounds);
+    }
   }
 
-  getDestructor({ instance }: InputComponentState): Destroyable {
-    return instance;
+  update(state: InputComponentState): void {
+    set(state.instance, 'type', state.type.value());
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.extra.debugRenderTree.update(state);
+    }
+  }
+
+  didUpdateLayout(state: InputComponentState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.extra.debugRenderTree.didRender(state, bounds);
+    }
+  }
+
+  getDestructor(state: InputComponentState): Destroyable {
+    if (ENV._DEBUG_RENDER_TREE) {
+      return {
+        destroy() {
+          state.env.extra.debugRenderTree.willDestroy(state);
+          state.instance.destroy();
+        },
+      };
+    } else {
+      return state.instance;
+    }
   }
 }
 

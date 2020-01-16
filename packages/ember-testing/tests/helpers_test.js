@@ -20,8 +20,8 @@ import { setAdapter, getAdapter } from '../lib/test/adapter';
 import { registerWaiter, unregisterWaiter } from '../lib/test/waiters';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
-var originalInfo = getDebugFunction('info');
-var noop = function() {};
+const originalInfo = getDebugFunction('info');
+const noop = function() {};
 
 function registerHelper() {
   Test.registerHelper('LeakyMcLeakLeak', () => {});
@@ -36,8 +36,8 @@ function assertHelpers(assert, application, helperContainer, expected) {
   }
 
   function checkHelperPresent(helper, expected) {
-    var presentInHelperContainer = Boolean(helperContainer[helper]);
-    var presentInTestHelpers = Boolean(application.testHelpers[helper]);
+    let presentInHelperContainer = Boolean(helperContainer[helper]);
+    let presentInTestHelpers = Boolean(application.testHelpers[helper]);
 
     assert.ok(
       presentInHelperContainer === expected,
@@ -979,7 +979,7 @@ if (!jQueryDisabled) {
 
       [`@test pauseTest pauses`](assert) {
         assert.expect(1);
-        // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
+        // overwrite info to suppress the console output (see https://github.com/emberjs/ember.js/issues/16391)
         setDebugFunction('info', noop);
 
         let { andThen, pauseTest } = this.application.testHelpers;
@@ -995,7 +995,7 @@ if (!jQueryDisabled) {
 
       [`@test resumeTest resumes paused tests`](assert) {
         assert.expect(1);
-        // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
+        // overwrite info to suppress the console output (see https://github.com/emberjs/ember.js/issues/16391)
         setDebugFunction('info', noop);
 
         let {

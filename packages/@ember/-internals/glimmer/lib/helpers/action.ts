@@ -2,14 +2,18 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
+import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
-import { ACTION, INVOKE, UnboundReference } from '../utils/references';
+import { VM, VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { isConst } from '@glimmer/validator';
+import { UnboundRootReference } from '../utils/references';
+import { INVOKE } from './mut';
+
+export const ACTION = symbol('ACTION');
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -61,15 +65,15 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   Here is an example action handler on a component:
 
   ```app/components/my-component.js
-  import Component from '@ember/component';
+  import Component from '@glimmer/component';
+  import { action } from '@ember/object';
 
-  export default Component.extend({
-    actions: {
-      save() {
-        this.get('model').save();
-      }
+  export default class extends Component {
+    @action
+    save() {
+      this.model.save();
     }
-  });
+  }
   ```
 
   Actions are always looked up on the `actions` property of the current context.
@@ -87,28 +91,28 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
   Closure actions curry both their scope and any arguments. When invoked, any
   additional arguments are added to the already curried list.
-  Actions should be invoked using the [sendAction](/api/ember/release/classes/Component/methods/sendAction?anchor=sendAction)
+  Actions should be invoked using the [sendAction](/ember/release/classes/Component/methods/sendAction?anchor=sendAction)
   method. The first argument to `sendAction` is the action to be called, and
   additional arguments are passed to the action function. This has interesting
   properties combined with currying of arguments. For example:
 
-  ```app/templates/components/my-component.hbs
-  {{input on-input=(action (action 'setName' model) value="target.value")}}
-  ```
+  ```app/components/update-name.js
+  import Component from '@glimmer/component';
+  import { action } from '@ember/object';
 
-  ```app/components/my-component.js
-  import Component from '@ember/component';
-
-  export default Component.extend({
-    actions: {
-      setName(model, name) {
-        model.set('name', name);
-      }
+  export default class extends Component {
+    @action
+    setName(model, name) {
+      model.set('name', name);
     }
-  });
+  }
   ```
 
-  The first argument (`model`) was curried over, and the run-time argument (`event`)
+  ```app/components/update-name.hbs
+  {{input on-input=(action (action 'setName' @model) value="target.value")}}
+  ```
+
+  The first argument (`@model`) was curried over, and the run-time argument (`event`)
   becomes a second argument. Action calls can be nested this way because each simply
   returns a function. Any function can be passed to the `{{action}}` helper, including
   other actions.
@@ -117,23 +121,25 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   with `on-input` above. For example:
 
   ```app/components/my-input.js
-  import Component from '@ember/component';
+  import Component from '@glimmer/component';
+  import { action } from '@ember/object';
 
-  export default Component.extend({
-    actions: {
-      setName(model, name) {
-        model.set('name', name);
-      }
+  export default class extends Component {
+    @action
+    setName(model, name) {
+      model.set('name', name);
     }
-  });
+  }
   ```
 
   ```handlebars
-  <MyInput @submit={{action 'setName' this.model}} />
+  <MyInput @submit={{action 'setName' @model}} />
   ```
+
   or
+
   ```handlebars
-  {{my-input submit=(action 'setName' model)}}
+  {{my-input submit=(action 'setName' @model)}}
   ```
 
   ```app/components/my-component.js
@@ -208,7 +214,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
   If you need the default handler to trigger you should either register your
   own event handler, or use event methods on your view class. See
-  ["Responding to Browser Events"](/api/ember/release/classes/Component)
+  ["Responding to Browser Events"](/ember/release/classes/Component)
   in the documentation for `Component` for more information.
 
   ### Specifying DOM event type
@@ -223,7 +229,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   </div>
   ```
 
-  See ["Event Names"](/api/ember/release/classes/Component) for a list of
+  See ["Event Names"](/ember/release/classes/Component) for a list of
   acceptable DOM event names.
 
   ### Specifying whitelisted modifier keys
@@ -263,16 +269,16 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   import Controller from '@ember/controller';
   import { inject as service } from '@ember/service';
 
-  export default Controller.extend({
-    someService: service()
-  });
+  export default class extends Controller {
+    @service someService;
+  }
   ```
 
   @method action
   @for Ember.Templates.helpers
   @public
 */
-export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
+export default function(args: VMArguments, vm: VM): UnboundRootReference<Function> {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -301,21 +307,21 @@ export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
 
   fn[ACTION] = true;
 
-  return new UnboundReference(fn);
+  return new UnboundRootReference(fn, vm.env);
 }
 
-function NOOP(args: Arguments) {
+function NOOP(args: VMArguments) {
   return args;
 }
 
 function makeArgsProcessor(
-  valuePathRef: VersionedPathReference<Opaque> | false,
-  actionArgsRef: Array<VersionedPathReference<Opaque>>
+  valuePathRef: VersionedPathReference<unknown> | false,
+  actionArgsRef: Array<VersionedPathReference<unknown>>
 ) {
   let mergeArgs: any;
 
   if (actionArgsRef.length > 0) {
-    mergeArgs = (args: Arguments) => {
+    mergeArgs = (args: VMArguments) => {
       return actionArgsRef.map(ref => ref.value()).concat(args);
     };
   }
@@ -335,7 +341,7 @@ function makeArgsProcessor(
   }
 
   if (mergeArgs && readValue) {
-    return (args: Arguments) => {
+    return (args: VMArguments) => {
       return readValue(mergeArgs(args));
     };
   } else {

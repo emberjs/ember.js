@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { set, setProperties, computed } from '@ember/-internals/metal';
@@ -547,7 +547,7 @@ moduleFor(
       this.assertHTML(`<p>Chad Hietala</p>`);
     }
 
-    ['@test updating attributes triggers didUpdateComponent'](assert) {
+    ['@test updating attributes triggers updateComponent and didUpdateComponent'](assert) {
       let TestManager = EmberObject.extend({
         capabilities: capabilities('3.4', {
           destructor: true,
@@ -605,7 +605,110 @@ moduleFor(
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
       runTask(() => this.context.set('value', 'bar'));
-      assert.verifySteps(['didUpdateComponent']);
+      assert.verifySteps(['updateComponent', 'didUpdateComponent']);
+    }
+
+    ['@test updateComponent fires consistently with or without args'](assert) {
+      let updated = [];
+
+      class TestManager {
+        static create() {
+          return new TestManager();
+        }
+
+        capabilities = capabilities('3.13', {
+          updateHook: true,
+        });
+
+        createComponent(_factory, args) {
+          assert.step('createComponent');
+          return { id: args.named.id || 'no-id' };
+        }
+
+        updateComponent(component) {
+          assert.step('updateComponent');
+          updated.push(component);
+        }
+
+        getContext(component) {
+          assert.step('getContext');
+          return component;
+        }
+      }
+
+      let ComponentClass = setComponentManager(() => new TestManager(), {});
+
+      this.registerComponent('foo-bar', {
+        template: '{{yield}}',
+        ComponentClass,
+      });
+
+      this.render(
+        strip`
+          [<FooBar>{{this.value}}</FooBar>]
+          [<FooBar @id="static-id">{{this.value}}</FooBar>]
+          [<FooBar @id={{this.id}}>{{this.value}}</FooBar>]
+        `,
+        { id: 'dynamic-id', value: 'Hello World' }
+      );
+
+      this.assertHTML(`[Hello World][Hello World][Hello World]`);
+      assert.deepEqual(updated, []);
+      assert.verifySteps([
+        'createComponent',
+        'getContext',
+        'createComponent',
+        'getContext',
+        'createComponent',
+        'getContext',
+      ]);
+
+      runTask(() => this.context.set('value', 'bar'));
+      assert.deepEqual(updated, [{ id: 'no-id' }, { id: 'static-id' }, { id: 'dynamic-id' }]);
+      assert.verifySteps(['updateComponent', 'updateComponent', 'updateComponent']);
+    }
+
+    ['@test updating arguments does not trigger updateComponent or didUpdateComponent if `updateHook` is false'](
+      assert
+    ) {
+      class TestManager {
+        capabilities = capabilities('3.13', {
+          /* implied: updateHook: false */
+        });
+
+        createComponent() {
+          assert.step('createComponent');
+          return {};
+        }
+
+        getContext(component) {
+          assert.step('getContext');
+          return component;
+        }
+
+        updateComponent() {
+          throw new Error('updateComponent called unexpectedly');
+        }
+
+        didUpdateComponent() {
+          throw new Error('didUpdateComponent called unexpectedly');
+        }
+      }
+
+      let ComponentClass = setComponentManager(() => new TestManager(), {});
+
+      this.registerComponent('foo-bar', {
+        template: `<p ...attributes>Hello world!</p>`,
+        ComponentClass,
+      });
+
+      this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
+
+      this.assertHTML(`<p data-test="foo">Hello world!</p>`);
+      assert.verifySteps(['createComponent', 'getContext']);
+
+      runTask(() => this.context.set('value', 'bar'));
+      assert.verifySteps([]);
     }
   }
 );

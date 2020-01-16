@@ -4,6 +4,9 @@ import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import { Route } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
+import { set, tracked } from '@ember/-internals/metal';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
+import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 
 moduleFor(
   'Application test: rendering',
@@ -38,7 +41,7 @@ moduleFor(
       });
     }
 
-    ['@test it can access the model provided by the route']() {
+    ['@feature(EMBER_ROUTING_MODEL_ARG) it can access the model provided by the route via @model']() {
       this.add(
         'route:application',
         Route.extend({
@@ -51,12 +54,12 @@ moduleFor(
       this.addTemplate(
         'application',
         strip`
-      <ul>
-        {{#each model as |item|}}
-          <li>{{item}}</li>
-        {{/each}}
-      </ul>
-    `
+        <ul>
+          {{#each @model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
       );
 
       return this.visit('/').then(() => {
@@ -70,7 +73,342 @@ moduleFor(
       });
     }
 
-    ['@test it can render a nested route']() {
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) it cannot access the model provided by the route via @model']() {
+      this.add(
+        'route:application',
+        Route.extend({
+          model() {
+            return ['red', 'yellow', 'blue'];
+          },
+        })
+      );
+
+      this.addTemplate(
+        'application',
+        strip`
+        <ul>
+          {{#each @model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
+      );
+
+      return this.visit('/').then(() => {
+        this.assertInnerHTML('<ul><!----></ul>');
+      });
+    }
+
+    ['@test it can access the model provided by the route via this.model']() {
+      this.add(
+        'route:application',
+        Route.extend({
+          model() {
+            return ['red', 'yellow', 'blue'];
+          },
+        })
+      );
+
+      this.addTemplate(
+        'application',
+        strip`
+        <ul>
+          {{#each this.model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
+      );
+
+      return this.visit('/').then(() => {
+        this.assertInnerHTML(strip`
+        <ul>
+          <li>red</li>
+          <li>yellow</li>
+          <li>blue</li>
+        </ul>
+      `);
+      });
+    }
+
+    ['@test it can access the model provided by the route via implicit this fallback']() {
+      this.add(
+        'route:application',
+        Route.extend({
+          model() {
+            return ['red', 'yellow', 'blue'];
+          },
+        })
+      );
+
+      this.addTemplate(
+        'application',
+        strip`
+        <ul>
+          {{#each model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
+      );
+
+      return this.visit('/').then(() => {
+        this.assertInnerHTML(strip`
+        <ul>
+          <li>red</li>
+          <li>yellow</li>
+          <li>blue</li>
+        </ul>
+      `);
+      });
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) interior mutations on the model with set'](assert) {
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return { color };
+          },
+        })
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model.color}}]
+        [this.model: {{this.model.color}}]
+        [model: {{model.color}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        let { model } = this.controllerFor('color');
+        set(model, 'color', 'blue');
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: blue]
+        [this.model: blue]
+        [model: blue]
+      `);
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) interior mutations on the model with tracked properties'](
+      assert
+    ) {
+      class Model {
+        @tracked color;
+
+        constructor(color) {
+          this.color = color;
+        }
+      }
+
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return new Model(color);
+          },
+        })
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model.color}}]
+        [this.model: {{this.model.color}}]
+        [model: {{model.color}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        this.controllerFor('color').model.color = 'blue';
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: blue]
+        [this.model: blue]
+        [model: blue]
+      `);
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) exterior mutations on the model with set'](assert) {
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return color;
+          },
+        })
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model}}]
+        [this.model: {{this.model}}]
+        [model: {{model}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        let controller = this.controllerFor('color');
+        set(controller, 'model', 'blue');
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: blue]
+        [model: blue]
+      `);
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) exterior mutations on the model with tracked properties'](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return color;
+          },
+        })
+      );
+
+      this.add(
+        'controller:color',
+        class ColorController extends Controller {
+          @tracked model;
+        }
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model}}]
+        [this.model: {{this.model}}]
+        [model: {{model}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        this.controllerFor('color').model = 'blue';
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: blue]
+        [model: blue]
+      `);
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) it can render a nested route']() {
       this.router.map(function() {
         this.route('lists', function() {
           this.route('colors', function() {
@@ -92,26 +430,67 @@ moduleFor(
       this.addTemplate(
         'lists.colors.favorite',
         strip`
-      <ul>
-        {{#each model as |item|}}
-          <li>{{item}}</li>
-        {{/each}}
-      </ul>
-    `
+        <ul>
+          {{#each this.model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
       );
 
       return this.visit('/lists/colors/favorite').then(() => {
         this.assertInnerHTML(strip`
+          <ul>
+            <li>red</li>
+            <li>yellow</li>
+            <li>blue</li>
+          </ul>
+        `);
+      });
+    }
+
+    ['@feature(EMBER_ROUTING_MODEL_ARG) it can render a nested route']() {
+      this.router.map(function() {
+        this.route('lists', function() {
+          this.route('colors', function() {
+            this.route('favorite');
+          });
+        });
+      });
+
+      // The "favorite" route will inherit the model
+      this.add(
+        'route:lists.colors',
+        Route.extend({
+          model() {
+            return ['red', 'yellow', 'blue'];
+          },
+        })
+      );
+
+      this.addTemplate(
+        'lists.colors.favorite',
+        strip`
         <ul>
-          <li>red</li>
-          <li>yellow</li>
-          <li>blue</li>
+          {{#each @model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
         </ul>
-      `);
+        `
+      );
+
+      return this.visit('/lists/colors/favorite').then(() => {
+        this.assertInnerHTML(strip`
+          <ul>
+            <li>red</li>
+            <li>yellow</li>
+            <li>blue</li>
+          </ul>
+        `);
       });
     }
 
-    ['@test it can render into named outlets']() {
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) it can render into named outlets']() {
       this.router.map(function() {
         this.route('colors');
       });
@@ -119,16 +498,16 @@ moduleFor(
       this.addTemplate(
         'application',
         strip`
-      <nav>{{outlet "nav"}}</nav>
-      <main>{{outlet}}</main>
-    `
+        <nav>{{outlet "nav"}}</nav>
+        <main>{{outlet}}</main>
+        `
       );
 
       this.addTemplate(
         'nav',
         strip`
-      <a href="https://emberjs.com/">Ember</a>
-    `
+        <a href="https://emberjs.com/">Ember</a>
+        `
       );
 
       this.add(
@@ -156,31 +535,31 @@ moduleFor(
       this.addTemplate(
         'colors',
         strip`
-      <ul>
-        {{#each model as |item|}}
-          <li>{{item}}</li>
-        {{/each}}
-      </ul>
-    `
+        <ul>
+          {{#each this.model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
       );
 
       return this.visit('/colors').then(() => {
         this.assertInnerHTML(strip`
-        <nav>
-          <a href="https://emberjs.com/">Ember</a>
-        </nav>
-        <main>
-          <ul>
-            <li>red</li>
-            <li>yellow</li>
-            <li>blue</li>
-          </ul>
-        </main>
-      `);
+          <nav>
+            <a href="https://emberjs.com/">Ember</a>
+          </nav>
+          <main>
+            <ul>
+              <li>red</li>
+              <li>yellow</li>
+              <li>blue</li>
+            </ul>
+          </main>
+        `);
       });
     }
 
-    ['@test it can render into named outlets']() {
+    ['@feature(EMBER_ROUTING_MODEL_ARG) it can render into named outlets']() {
       this.router.map(function() {
         this.route('colors');
       });
@@ -188,16 +567,16 @@ moduleFor(
       this.addTemplate(
         'application',
         strip`
-      <nav>{{outlet "nav"}}</nav>
-      <main>{{outlet}}</main>
-    `
+        <nav>{{outlet "nav"}}</nav>
+        <main>{{outlet}}</main>
+        `
       );
 
       this.addTemplate(
         'nav',
         strip`
-      <a href="https://emberjs.com/">Ember</a>
-    `
+        <a href="https://emberjs.com/">Ember</a>
+        `
       );
 
       this.add(
@@ -225,27 +604,27 @@ moduleFor(
       this.addTemplate(
         'colors',
         strip`
-      <ul>
-        {{#each model as |item|}}
-          <li>{{item}}</li>
-        {{/each}}
-      </ul>
-    `
+        <ul>
+          {{#each @model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
       );
 
       return this.visit('/colors').then(() => {
         this.assertInnerHTML(strip`
-        <nav>
-          <a href="https://emberjs.com/">Ember</a>
-        </nav>
-        <main>
-          <ul>
-            <li>red</li>
-            <li>yellow</li>
-            <li>blue</li>
-          </ul>
-        </main>
-      `);
+          <nav>
+            <a href="https://emberjs.com/">Ember</a>
+          </nav>
+          <main>
+            <ul>
+              <li>red</li>
+              <li>yellow</li>
+              <li>blue</li>
+            </ul>
+          </main>
+        `);
       });
     }
 
@@ -280,7 +659,7 @@ moduleFor(
         });
     }
 
-    ['@test it should produce a stable DOM when the model changes']() {
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when the model changes']() {
       this.router.map(function() {
         this.route('color', { path: '/colors/:color' });
       });
@@ -294,7 +673,35 @@ moduleFor(
         })
       );
 
-      this.addTemplate('color', 'color: {{model}}');
+      this.addTemplate('color', 'color: {{this.model}}');
+
+      return this.visit('/colors/red')
+        .then(() => {
+          this.assertInnerHTML('color: red');
+          this.takeSnapshot();
+          return this.visit('/colors/green');
+        })
+        .then(() => {
+          this.assertInnerHTML('color: green');
+          this.assertInvariants();
+        });
+    }
+
+    ['@feature(EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when the model changes']() {
+      this.router.map(function() {
+        this.route('color', { path: '/colors/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model(params) {
+            return params.color;
+          },
+        })
+      );
+
+      this.addTemplate('color', 'color: {{@model}}');
 
       return this.visit('/colors/red')
         .then(() => {
@@ -339,7 +746,7 @@ moduleFor(
         .then(() => this.assertText('b'));
     }
 
-    ['@test it should update correctly when the controller changes']() {
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) it should update correctly when the controller changes']() {
       this.router.map(function() {
         this.route('color', { path: '/colors/:color' });
       });
@@ -371,7 +778,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('color', 'model color: {{model.color}}, controller color: {{color}}');
+      this.addTemplate('color', 'model color: {{this.model.color}}, controller color: {{color}}');
 
       return this.visit('/colors/red')
         .then(() => {
@@ -383,7 +790,51 @@ moduleFor(
         });
     }
 
-    ['@test it should produce a stable DOM when two routes render the same template']() {
+    ['@feature(EMBER_ROUTING_MODEL_ARG) it should update correctly when the controller changes']() {
+      this.router.map(function() {
+        this.route('color', { path: '/colors/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model(params) {
+            return { color: params.color };
+          },
+
+          renderTemplate(controller, model) {
+            this.render({ controller: model.color, model });
+          },
+        })
+      );
+
+      this.add(
+        'controller:red',
+        Controller.extend({
+          color: 'red',
+        })
+      );
+
+      this.add(
+        'controller:green',
+        Controller.extend({
+          color: 'green',
+        })
+      );
+
+      this.addTemplate('color', 'model color: {{@model.color}}, controller color: {{color}}');
+
+      return this.visit('/colors/red')
+        .then(() => {
+          this.assertInnerHTML('model color: red, controller color: red');
+          return this.visit('/colors/green');
+        })
+        .then(() => {
+          this.assertInnerHTML('model color: green, controller color: green');
+        });
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when two routes render the same template']() {
       this.router.map(function() {
         this.route('a');
         this.route('b');
@@ -422,7 +873,60 @@ moduleFor(
         })
       );
 
-      this.addTemplate('common', '{{prefix}} {{model}}');
+      this.addTemplate('common', '{{prefix}} {{this.model}}');
+
+      return this.visit('/a')
+        .then(() => {
+          this.assertInnerHTML('common A');
+          this.takeSnapshot();
+          return this.visit('/b');
+        })
+        .then(() => {
+          this.assertInnerHTML('common B');
+          this.assertInvariants();
+        });
+    }
+
+    ['@feature(EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when two routes render the same template']() {
+      this.router.map(function() {
+        this.route('a');
+        this.route('b');
+      });
+
+      this.add(
+        'route:a',
+        Route.extend({
+          model() {
+            return 'A';
+          },
+
+          renderTemplate(controller, model) {
+            this.render('common', { controller: 'common', model });
+          },
+        })
+      );
+
+      this.add(
+        'route:b',
+        Route.extend({
+          model() {
+            return 'B';
+          },
+
+          renderTemplate(controller, model) {
+            this.render('common', { controller: 'common', model });
+          },
+        })
+      );
+
+      this.add(
+        'controller:common',
+        Controller.extend({
+          prefix: 'common',
+        })
+      );
+
+      this.addTemplate('common', '{{prefix}} {{@model}}');
 
       return this.visit('/a')
         .then(() => {
@@ -469,7 +973,60 @@ moduleFor(
       });
     }
 
-    ['@test it emits a useful backtracking re-render assertion message']() {
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) it emits a useful backtracking re-render assertion message'](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('routeWithError');
+      });
+
+      this.add(
+        'controller:routeWithError',
+        Controller.extend({
+          toString() {
+            return 'RouteWithErrorController';
+          },
+        })
+      );
+
+      this.add(
+        'route:routeWithError',
+        Route.extend({
+          model() {
+            return {
+              name: 'Alex',
+              toString() {
+                return `Person (${this.name})`;
+              },
+            };
+          },
+        })
+      );
+
+      this.addTemplate('routeWithError', 'Hi {{this.model.name}} <Foo @person={{this.model}} />');
+
+      this.addComponent('foo', {
+        ComponentClass: Component.extend({
+          init() {
+            this._super(...arguments);
+            this.set('person.name', 'Ben');
+          },
+        }),
+        template: 'Hi {{this.person.name}} from component',
+      });
+
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['application', 'routeWithError', 'this.model.name'],
+      });
+
+      await this.visit('/');
+
+      return assert.rejectsAssertion(this.visit('/routeWithError'), expectedBacktrackingMessage);
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) it emits a useful backtracking re-render assertion message'](
+      assert
+    ) {
       this.router.map(function() {
         this.route('routeWithError');
       });
@@ -478,30 +1035,35 @@ moduleFor(
         'route:routeWithError',
         Route.extend({
           model() {
-            return { name: 'Alex' };
+            return {
+              name: 'Alex',
+              toString() {
+                return `Person (${this.name})`;
+              },
+            };
           },
         })
       );
 
-      this.addTemplate('routeWithError', 'Hi {{model.name}} {{x-foo person=model}}');
+      this.addTemplate('routeWithError', 'Hi {{@model.name}} <Foo @person={{@model}} />');
 
-      this.addComponent('x-foo', {
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['application', 'routeWithError', '@model.name'],
+      });
+
+      await this.visit('/');
+
+      this.addComponent('foo', {
         ComponentClass: Component.extend({
           init() {
             this._super(...arguments);
             this.set('person.name', 'Ben');
           },
         }),
-        template: 'Hi {{person.name}} from component',
+        template: 'Hi {{this.person.name}} from component',
       });
 
-      let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/routeWithError.hbs" and modified in "component:x-foo"/;
-
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/routeWithError');
-        }, expectedBacktrackingMessage);
-      });
+      return assert.rejectsAssertion(this.visit('/routeWithError'), expectedBacktrackingMessage);
     }
 
     ['@test route templates with {{{undefined}}} [GH#14924] [GH#16172]']() {

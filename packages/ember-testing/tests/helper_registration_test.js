@@ -1,9 +1,9 @@
 import { run } from '@ember/runloop';
 import Test from '../lib/test';
 import EmberApplication from '@ember/application';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
 
-var App, appBooted, helperContainer;
+let App, appBooted, helperContainer;
 
 function registerHelper() {
   Test.registerHelper('boot', function(app) {
@@ -17,14 +17,16 @@ function unregisterHelper() {
   Test.unregisterHelper('boot');
 }
 
-var originalAdapter = Test.adapter;
+const originalAdapter = Test.adapter;
 
 function setupApp() {
   appBooted = false;
   helperContainer = {};
 
   run(function() {
-    App = EmberApplication.create();
+    App = EmberApplication.create({
+      Resolver: ModuleBasedTestResolver,
+    });
     App.setupForTesting();
     App.injectTestHelpers(helperContainer);
   });

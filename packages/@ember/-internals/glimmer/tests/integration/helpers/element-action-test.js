@@ -1095,7 +1095,7 @@ moduleFor(
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<button {{action "edit" "herp" model}}>click me</button>',
+        template: '<button {{action "edit" "herp" this.model}}>click me</button>',
       });
 
       this.render('{{example-component}}');
@@ -1662,6 +1662,131 @@ moduleFor(
         !this.$('button').hasClass('selected'),
         "Element with action handler has properly updated it's conditional class"
       );
+    }
+
+    ['@test [DEPRECATED] it should support mouseEnter events']() {
+      let showCalled = false;
+
+      let ExampleComponent = Component.extend({
+        actions: {
+          show() {
+            showCalled = true;
+          },
+        },
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: '<div id="inner" {{action "show" on="mouseEnter"}}></div>',
+      });
+
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
+        'Using the `{{action}}` modifier with `mouseEnter` events has been deprecated.'
+      );
+
+      let parent = this.element;
+      let outer = this.$('#outer')[0];
+      let inner = this.$('#inner')[0];
+
+      runTask(() => {
+        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
+        this.$(inner).trigger('mouseover', { relatedTarget: parent });
+        this.$(parent).trigger('mouseout', { relatedTarget: inner });
+      });
+
+      this.assert.ok(showCalled, 'show action was called on mouseEnter');
+    }
+
+    ['@test [DEPRECATED] it should support mouseLeave events']() {
+      let showCalled = false;
+
+      let ExampleComponent = Component.extend({
+        actions: {
+          show() {
+            showCalled = true;
+          },
+        },
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: '<div id="inner" {{action "show" on="mouseLeave"}}></div>',
+      });
+
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
+        'Using the `{{action}}` modifier with `mouseLeave` events has been deprecated.'
+      );
+
+      let parent = this.element;
+      let outer = this.$('#outer')[0];
+      let inner = this.$('#inner')[0];
+
+      runTask(() => {
+        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
+        this.$(inner).trigger('mouseout', { relatedTarget: parent });
+        this.$(parent).trigger('mouseover', { relatedTarget: inner });
+      });
+
+      this.assert.ok(showCalled, 'show action was called on mouseLeave');
+    }
+
+    ['@test [DEPRECATED] it should support mouseMove events']() {
+      let showCalled = false;
+
+      let ExampleComponent = Component.extend({
+        actions: {
+          show() {
+            showCalled = true;
+          },
+        },
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: '<div id="inner" {{action "show" on="mouseMove"}}></div>',
+      });
+
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
+        'Using the `{{action}}` modifier with `mouseMove` events has been deprecated.'
+      );
+
+      runTask(() => {
+        this.$('#inner').trigger('mousemove');
+      });
+
+      this.assert.ok(showCalled, 'show action was called on mouseMove');
+    }
+
+    ['@test [DEPRECATED] it should support bound mouseMove events']() {
+      let showCalled = false;
+
+      let ExampleComponent = Component.extend({
+        eventType: 'mouseMove',
+        actions: {
+          show() {
+            showCalled = true;
+          },
+        },
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: '<div id="inner" {{action "show" on=eventType}}></div>',
+      });
+
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
+        'Using the `{{action}}` modifier with `mouseMove` events has been deprecated.'
+      );
+
+      runTask(() => {
+        this.$('#inner').trigger('mousemove');
+      });
+
+      this.assert.ok(showCalled, 'show action was called on mouseMove');
     }
   }
 );

@@ -5,10 +5,16 @@ import { compile } from 'ember-template-compiler';
 import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { moduleFor, ApplicationTestCase, runDestroy, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  getTextOf,
+  ModuleBasedTestResolver,
+  runDestroy,
+  runTask,
+} from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/metal';
-import { getTextOf } from 'internal-test-helpers';
+import { Mixin, computed, set, addObserver } from '@ember/-internals/metal';
 import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
@@ -22,7 +28,7 @@ moduleFor(
       super(...arguments);
       this.addTemplate('home', '<h3 class="hours">Hours</h3>');
       this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{model.home}}</p>');
+      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
 
       this.router.map(function() {
         this.route('home', { path: '/' });
@@ -75,10 +81,6 @@ moduleFor(
       return currentPath;
     }
 
-    get currentURL() {
-      return this.appRouter.get('currentURL');
-    }
-
     handleURLRejectsWith(context, assert, path, expectedReason) {
       return context
         .visit(path)
@@ -90,12 +92,10 @@ moduleFor(
         });
     }
 
-    ['@test warn on URLs not included in the route set']() {
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/what-is-this-i-dont-even');
-        }, /'\/what-is-this-i-dont-even' did not match any routes/);
-      });
+    async ['@test warn on URLs not included in the route set'](assert) {
+      await this.visit('/');
+
+      await assert.rejects(this.visit('/what-is-this-i-dont-even'), /\/what-is-this-i-dont-even/);
     }
 
     ['@test The Homepage'](assert) {
@@ -145,7 +145,7 @@ moduleFor(
       });
     }
 
-    [`@test an alternate template will pull in an alternate controller`](assert) {
+    async [`@test an alternate template will pull in an alternate controller`](assert) {
       this.add(
         'route:home',
         Route.extend({
@@ -157,20 +157,19 @@ moduleFor(
       this.add(
         'controller:homepage',
         Controller.extend({
-          model: {
-            home: 'Comes from homepage',
+          init() {
+            this._super(...arguments);
+            this.name = 'Comes from homepage';
           },
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
-      });
+      assert.equal(this.$('p').text(), 'Comes from homepage', 'the homepage template was rendered');
     }
 
-    [`@test An alternate template will pull in an alternate controller instead of controllerName`](
+    async [`@test An alternate template will pull in an alternate controller instead of controllerName`](
       assert
     ) {
       this.add(
@@ -185,28 +184,28 @@ moduleFor(
       this.add(
         'controller:foo',
         Controller.extend({
-          model: {
-            home: 'Comes from foo',
+          init() {
+            this._super(...arguments);
+            this.name = 'Comes from foo';
           },
         })
       );
       this.add(
         'controller:homepage',
         Controller.extend({
-          model: {
-            home: 'Comes from homepage',
+          init() {
+            this._super(...arguments);
+            this.name = 'Comes from homepage';
           },
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
-      });
+      assert.equal(this.$('p').text(), 'Comes from homepage', 'the homepage template was rendered');
     }
 
-    [`@test The template will pull in an alternate controller via key/value`](assert) {
+    async [`@test The template will pull in an alternate controller via key/value`](assert) {
       this.router.map(function() {
         this.route('homepage', { path: '/' });
       });
@@ -222,29 +221,31 @@ moduleFor(
       this.add(
         'controller:home',
         Controller.extend({
-          model: {
-            home: 'Comes from home.',
+          init() {
+            this._super(...arguments);
+            this.name = 'Comes from home.';
           },
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(
-          text,
-          'Comes from home.',
-          'the homepage template was rendered from data from the HomeController'
-        );
-      });
+      assert.equal(
+        this.$('p').text(),
+        'Comes from home.',
+        'the homepage template was rendered from data from the HomeController'
+      );
     }
 
-    [`@test The Homepage with explicit template name in renderTemplate and controller`](assert) {
+    async [`@test The Homepage with explicit template name in renderTemplate and controller`](
+      assert
+    ) {
       this.add(
         'controller:home',
         Controller.extend({
-          model: {
-            home: 'YES I AM HOME',
+          init() {
+            this._super(...arguments);
+            this.name = 'YES I AM HOME';
           },
         })
       );
@@ -257,15 +258,15 @@ moduleFor(
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(text, 'YES I AM HOME', 'The homepage template was rendered');
-      });
+      assert.equal(this.$('p').text(), 'YES I AM HOME', 'The homepage template was rendered');
     }
 
-    [`@test Model passed via renderTemplate model is set as controller's model`](assert) {
-      this.addTemplate('bio', '<p>{{model.name}}</p>');
+    [`@feature(!EMBER_ROUTING_MODEL_ARG) Model passed via renderTemplate model is set as controller's model`](
+      assert
+    ) {
+      this.addTemplate('bio', '<p>{{this.model.name}}</p>');
       this.add(
         'route:home',
         Route.extend({
@@ -282,6 +283,39 @@ moduleFor(
 
         assert.equal(text, 'emberjs', `Passed model was set as controller's model`);
       });
+    }
+
+    async [`@feature(EMBER_ROUTING_MODEL_ARG) Model passed via renderTemplate model is set as controller's model`](
+      assert
+    ) {
+      this.addTemplate(
+        'bio',
+        '<p>Model: {{@model.name}}</p><p>Controller: {{this.model.name}}</p>'
+      );
+      this.add(
+        'route:home',
+        Route.extend({
+          renderTemplate() {
+            this.render('bio', {
+              model: { name: 'emberjs' },
+            });
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      let text = this.$('p').text();
+
+      assert.ok(
+        text.indexOf('Model: emberjs') > -1,
+        'Passed model was available as the `@model` argument'
+      );
+
+      assert.ok(
+        text.indexOf('Controller: emberjs') > -1,
+        "Passed model was set as controller's `model` property"
+      );
     }
 
     ['@test render uses templateName from route'](assert) {
@@ -587,7 +621,7 @@ moduleFor(
 
       this.addTemplate(
         'home',
-        '<ul>{{#each model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
+        '<ul>{{#each this.model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
       );
 
       return this.visit('/').then(() => {
@@ -638,7 +672,7 @@ moduleFor(
       });
     }
 
-    [`@test The Specials Page getting its controller context by deserializing the params hash`](
+    [`@feature(!EMBER_ROUTING_MODEL_ARG) The Specials Page getting its controller context by deserializing the params hash`](
       assert
     ) {
       this.router.map(function() {
@@ -657,7 +691,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('special', '<p>{{model.menuItemId}}</p>');
+      this.addTemplate('special', '<p>{{this.model.menuItemId}}</p>');
 
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
@@ -666,7 +700,35 @@ moduleFor(
       });
     }
 
-    ['@test The Specials Page defaults to looking models up via `find`']() {
+    [`@feature(EMBER_ROUTING_MODEL_ARG) The Specials Page getting its model by deserializing the params hash`](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+        this.route('special', { path: '/specials/:menu_item_id' });
+      });
+
+      this.add(
+        'route:special',
+        Route.extend({
+          model(params) {
+            return EmberObject.create({
+              menuItemId: params.menu_item_id,
+            });
+          },
+        })
+      );
+
+      this.addTemplate('special', '<p>{{@model.menuItemId}}</p>');
+
+      return this.visit('/specials/1').then(() => {
+        let text = this.$('p').text();
+
+        assert.equal(text, '1', 'The model was used to render the template');
+      });
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) The Specials Page defaults to looking models up via `find`']() {
       let MenuItem = EmberObject.extend();
       MenuItem.reopenClass({
         find(id) {
@@ -680,14 +742,35 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      this.addTemplate('special', '{{model.id}}');
+      this.addTemplate('special', '{{this.model.id}}');
 
       return this.visit('/specials/1').then(() => {
         this.assertText('1', 'The model was used to render the template');
       });
     }
 
-    ['@test The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
+    ['@feature(EMBER_ROUTING_MODEL_ARG) The Specials Page defaults to looking models up via `find`']() {
+      let MenuItem = EmberObject.extend();
+      MenuItem.reopenClass({
+        find(id) {
+          return MenuItem.create({ id });
+        },
+      });
+      this.add('model:menu_item', MenuItem);
+
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+        this.route('special', { path: '/specials/:menu_item_id' });
+      });
+
+      this.addTemplate('special', '{{@model.id}}');
+
+      return this.visit('/specials/1').then(() => {
+        this.assertText('1', 'The model was used to render the template');
+      });
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
       this.router.map(function() {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
@@ -708,10 +791,10 @@ moduleFor(
 
       this.add('model:menu_item', MenuItem);
 
-      this.addTemplate('special', '<p>{{model.id}}</p>');
+      this.addTemplate('special', '<p>{{this.model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
-      let visited = this.visit('/specials/1');
+      let visited = runTask(() => this.visit('/specials/1'));
       this.assertText('LOADING!', 'The app is in the loading state');
 
       resolve(menuItem);
@@ -721,7 +804,41 @@ moduleFor(
       });
     }
 
-    [`@test The loading state doesn't get entered for promises that resolve on the same run loop`](
+    ['@feature(EMBER_ROUTING_MODEL_ARG) The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+        this.route('special', { path: '/specials/:menu_item_id' });
+      });
+
+      let menuItem, resolve;
+
+      let MenuItem = EmberObject.extend();
+      MenuItem.reopenClass({
+        find(id) {
+          menuItem = MenuItem.create({ id: id });
+
+          return new RSVP.Promise(function(res) {
+            resolve = res;
+          });
+        },
+      });
+
+      this.add('model:menu_item', MenuItem);
+
+      this.addTemplate('special', '<p>{{@model.id}}</p>');
+      this.addTemplate('loading', '<p>LOADING!</p>');
+
+      let visited = runTask(() => this.visit('/specials/1'));
+      this.assertText('LOADING!', 'The app is in the loading state');
+
+      resolve(menuItem);
+
+      return visited.then(() => {
+        this.assertText('1', 'The app is now in the specials state');
+      });
+    }
+
+    [`@feature(!EMBER_ROUTING_MODEL_ARG) The loading state doesn't get entered for promises that resolve on the same run loop`](
       assert
     ) {
       this.router.map(function() {
@@ -747,7 +864,43 @@ moduleFor(
         })
       );
 
-      this.addTemplate('special', '<p>{{model.id}}</p>');
+      this.addTemplate('special', '<p>{{this.model.id}}</p>');
+      this.addTemplate('loading', '<p>LOADING!</p>');
+
+      return this.visit('/specials/1').then(() => {
+        let text = this.$('p').text();
+
+        assert.equal(text, '1', 'The app is now in the specials state');
+      });
+    }
+
+    [`@feature(EMBER_ROUTING_MODEL_ARG) The loading state doesn't get entered for promises that resolve on the same run loop`](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+        this.route('special', { path: '/specials/:menu_item_id' });
+      });
+
+      let MenuItem = EmberObject.extend();
+      MenuItem.reopenClass({
+        find(id) {
+          return { id: id };
+        },
+      });
+
+      this.add('model:menu_item', MenuItem);
+
+      this.add(
+        'route:loading',
+        Route.extend({
+          enter() {
+            assert.ok(false, "LoadingRoute shouldn't have been entered.");
+          },
+        })
+      );
+
+      this.addTemplate('special', '<p>{{@model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
       return this.visit('/specials/1').then(() => {
@@ -796,9 +949,9 @@ moduleFor(
         })
       );
 
-      this.handleURLRejectsWith(this, assert, 'specials/1', 'Setup error');
+      runTask(() => this.handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
 
-      run(() => resolve(menuItem));
+      resolve(menuItem);
     }
 
     ["@test ApplicationRoute's default error handler can be overridden"](assert) {
@@ -846,12 +999,18 @@ moduleFor(
         })
       );
 
-      this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error');
+      let promise = runTask(() =>
+        this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error')
+      );
 
-      run(() => resolve(menuItem));
+      resolve(menuItem);
+
+      return promise;
     }
 
-    ['@test Moving from one page to another triggers the correct callbacks'](assert) {
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Moving from one page to another triggers the correct callbacks'](
+      assert
+    ) {
       assert.expect(3);
 
       this.router.map(function() {
@@ -868,7 +1027,7 @@ moduleFor(
       this.add('model:menu_item', MenuItem);
 
       this.addTemplate('home', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{model.id}}</p>');
+      this.addTemplate('special', '<p>{{this.model.id}}</p>');
 
       return this.visit('/')
         .then(() => {
@@ -884,7 +1043,44 @@ moduleFor(
         });
     }
 
-    ['@test Nested callbacks are not exited when moving to siblings'](assert) {
+    ['@feature(EMBER_ROUTING_MODEL_ARG) Moving from one page to another triggers the correct callbacks'](
+      assert
+    ) {
+      assert.expect(3);
+
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+        this.route('special', { path: '/specials/:menu_item_id' });
+      });
+
+      let MenuItem = EmberObject.extend();
+      MenuItem.reopenClass({
+        find(id) {
+          return MenuItem.create({ id: id });
+        },
+      });
+      this.add('model:menu_item', MenuItem);
+
+      this.addTemplate('home', '<h3>Home</h3>');
+      this.addTemplate('special', '<p>{{@model.id}}</p>');
+
+      return this.visit('/')
+        .then(() => {
+          this.assertText('Home', 'The app is now in the initial state');
+
+          let promiseContext = MenuItem.create({ id: 1 });
+
+          return this.visit('/specials/1', promiseContext);
+        })
+        .then(() => {
+          assert.equal(this.currentURL, '/specials/1');
+          this.assertText('1', 'The app is now transitioned');
+        });
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Nested callbacks are not exited when moving to siblings'](
+      assert
+    ) {
       let rootSetup = 0;
       let rootRender = 0;
       let rootModel = 0;
@@ -947,7 +1143,7 @@ moduleFor(
       );
 
       this.addTemplate('root.index', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{model.id}}</p>');
+      this.addTemplate('special', '<p>{{this.model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
       return this.visit('/').then(() => {
@@ -980,7 +1176,105 @@ moduleFor(
       });
     }
 
-    ['@test Events are triggered on the controller if a matching action name is implemented'](
+    ['@feature(EMBER_ROUTING_MODEL_ARG) Nested callbacks are not exited when moving to siblings'](
+      assert
+    ) {
+      let rootSetup = 0;
+      let rootRender = 0;
+      let rootModel = 0;
+      let rootSerialize = 0;
+      let menuItem;
+      let rootElement;
+
+      let MenuItem = EmberObject.extend();
+      MenuItem.reopenClass({
+        find(id) {
+          menuItem = MenuItem.create({ id: id });
+          return menuItem;
+        },
+      });
+
+      this.router.map(function() {
+        this.route('root', { path: '/' }, function() {
+          this.route('special', {
+            path: '/specials/:menu_item_id',
+            resetNamespace: true,
+          });
+        });
+      });
+
+      this.add(
+        'route:root',
+        Route.extend({
+          model() {
+            rootModel++;
+            return this._super(...arguments);
+          },
+
+          setupController() {
+            rootSetup++;
+          },
+
+          renderTemplate() {
+            rootRender++;
+          },
+
+          serialize() {
+            rootSerialize++;
+            return this._super(...arguments);
+          },
+        })
+      );
+
+      this.add('route:loading', Route.extend({}));
+      this.add('route:home', Route.extend({}));
+      this.add(
+        'route:special',
+        Route.extend({
+          model({ menu_item_id }) {
+            return MenuItem.find(menu_item_id);
+          },
+          setupController(controller, model) {
+            set(controller, 'model', model);
+          },
+        })
+      );
+
+      this.addTemplate('root.index', '<h3>Home</h3>');
+      this.addTemplate('special', '<p>{{@model.id}}</p>');
+      this.addTemplate('loading', '<p>LOADING!</p>');
+
+      return this.visit('/').then(() => {
+        rootElement = document.getElementById('qunit-fixture');
+
+        assert.equal(
+          getTextOf(rootElement.querySelector('h3')),
+          'Home',
+          'The app is now in the initial state'
+        );
+        assert.equal(rootSetup, 1, 'The root setup was triggered');
+        assert.equal(rootRender, 1, 'The root render was triggered');
+        assert.equal(rootSerialize, 0, 'The root serialize was not called');
+        assert.equal(rootModel, 1, 'The root model was called');
+
+        let router = this.applicationInstance.lookup('router:main');
+        let menuItem = MenuItem.create({ id: 1 });
+
+        return router.transitionTo('special', menuItem).then(function() {
+          assert.equal(rootSetup, 1, 'The root setup was not triggered again');
+          assert.equal(rootRender, 1, 'The root render was not triggered again');
+          assert.equal(rootSerialize, 0, 'The root serialize was not called');
+
+          // TODO: Should this be changed?
+          assert.equal(rootModel, 1, 'The root model was called again');
+
+          assert.deepEqual(router.location.path, '/specials/1');
+          assert.equal(router.currentPath, 'root.special');
+        });
+      });
+    }
+
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events are triggered on the controller if a matching action name is implemented'](
       assert
     ) {
       let done = assert.async();
@@ -1007,7 +1301,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('home', '<a {{action "showStuff" model}}>{{name}}</a>');
+      this.addTemplate('home', '<a {{action "showStuff" this.model}}>{{this.name}}</a>');
       this.add(
         'controller:home',
         Controller.extend({
@@ -1021,15 +1315,66 @@ moduleFor(
         })
       );
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
-    ['@test Events are triggered on the current state when defined in `actions` object'](assert) {
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Events are triggered on the controller if a matching action name is implemented'](
+      assert
+    ) {
+      let done = assert.async();
+
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+      });
+
+      let model = { name: 'Tom Dale' };
+      let stateIsNotCalled = true;
+
+      this.add(
+        'route:home',
+        Route.extend({
+          model() {
+            return model;
+          },
+
+          actions: {
+            showStuff() {
+              stateIsNotCalled = false;
+            },
+          },
+        })
+      );
+
+      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{this.name}}</a>');
+      this.add(
+        'controller:home',
+        Controller.extend({
+          actions: {
+            showStuff(context) {
+              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
+              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
+              done();
+            },
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
+    }
+
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events are triggered on the current state when defined in `actions` object'](
+      assert
+    ) {
       let done = assert.async();
 
       this.router.map(function() {
@@ -1056,17 +1401,56 @@ moduleFor(
       });
 
       this.add('route:home', HomeRoute);
-      this.addTemplate('home', '<a {{action "showStuff" model}}>{{model.name}}</a>');
+      this.addTemplate('home', '<a {{action "showStuff" this.model}}>{{this.model.name}}</a>');
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
-    ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Events are triggered on the current state when defined in `actions` object'](
+      assert
+    ) {
+      let done = assert.async();
+
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+      });
+
+      let model = { name: 'Tom Dale' };
+      let HomeRoute = Route.extend({
+        model() {
+          return model;
+        },
+
+        actions: {
+          showStuff(obj) {
+            assert.ok(this instanceof HomeRoute, 'the handler is an App.HomeRoute');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
+            done();
+          },
+        },
+      });
+
+      this.add('route:home', HomeRoute);
+      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{@model.name}}</a>');
+
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
+    }
+
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events defined in `actions` object are triggered on the current state when routes are nested'](
       assert
     ) {
       let done = assert.async();
@@ -1102,14 +1486,63 @@ moduleFor(
         })
       );
 
-      this.addTemplate('root.index', '<a {{action "showStuff" model}}>{{model.name}}</a>');
+      this.addTemplate(
+        'root.index',
+        '<a {{action "showStuff" this.model}}>{{this.model.name}}</a>'
+      );
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Events defined in `actions` object are triggered on the current state when routes are nested'](
+      assert
+    ) {
+      let done = assert.async();
+
+      this.router.map(function() {
+        this.route('root', { path: '/' }, function() {
+          this.route('index', { path: '/' });
+        });
       });
+
+      let model = { name: 'Tom Dale' };
+
+      let RootRoute = Route.extend({
+        actions: {
+          showStuff(obj) {
+            assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
+            done();
+          },
+        },
+      });
+      this.add('route:root', RootRoute);
+      this.add(
+        'route:root.index',
+        Route.extend({
+          model() {
+            return model;
+          },
+        })
+      );
+
+      this.addTemplate('root.index', '<a {{action "showStuff" @model}}>{{@model.name}}</a>');
+
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
     ['@test Events can be handled by inherited event handlers'](assert) {
@@ -1162,7 +1595,7 @@ moduleFor(
       });
     }
 
-    ['@test Actions are not triggered on the controller if a matching action name is implemented as a method'](
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Actions are not triggered on the controller if a matching action name is implemented as a method'](
       assert
     ) {
       let done = assert.async();
@@ -1191,7 +1624,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('home', '<a {{action "showStuff" model}}>{{name}}</a>');
+      this.addTemplate('home', '<a {{action "showStuff" this.model}}>{{this.name}}</a>');
 
       this.add(
         'controller:home',
@@ -1203,15 +1636,64 @@ moduleFor(
         })
       );
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
-    ['@test actions can be triggered with multiple arguments'](assert) {
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Actions are not triggered on the controller if a matching action name is implemented as a method'](
+      assert
+    ) {
+      let done = assert.async();
+
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+      });
+
+      let model = { name: 'Tom Dale' };
+      let stateIsNotCalled = true;
+
+      this.add(
+        'route:home',
+        Route.extend({
+          model() {
+            return model;
+          },
+
+          actions: {
+            showStuff(context) {
+              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
+              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
+              done();
+            },
+          },
+        })
+      );
+
+      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{this.name}}</a>');
+
+      this.add(
+        'controller:home',
+        Controller.extend({
+          showStuff() {
+            stateIsNotCalled = false;
+            assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
+    }
+
+    async ['@test actions can be triggered with multiple arguments'](assert) {
       let done = assert.async();
       this.router.map(function() {
         this.route('root', { path: '/' }, function() {
@@ -1253,12 +1735,12 @@ moduleFor(
 
       this.addTemplate('root.index', '<a {{action "showStuff" model1 model2}}>{{model1.name}}</a>');
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
     ['@test transitioning multiple times in a single run loop only sets the URL once'](assert) {
@@ -2273,7 +2755,9 @@ moduleFor(
       });
     }
 
-    ["@test The template is not re-rendered when the route's context changes"](assert) {
+    ["@feature(!EMBER_ROUTING_MODEL_ARG) The template is not re-rendered when the route's context changes"](
+      assert
+    ) {
       this.router.map(function() {
         this.route('page', { path: '/page/:name' });
       });
@@ -2297,7 +2781,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('page', '<p>{{model.name}}{{foo-bar}}</p>');
+      this.addTemplate('page', '<p>{{this.model.name}}{{foo-bar}}</p>');
 
       let rootElement = document.getElementById('qunit-fixture');
       return this.visit('/page/first')
@@ -2318,6 +2802,55 @@ moduleFor(
           assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
           assert.equal(insertionCount, 1, 'view should still have inserted only once');
         });
+    }
+
+    async ["@feature(EMBER_ROUTING_MODEL_ARG) The template is not re-rendered when the route's model changes"](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('page', { path: '/page/:name' });
+      });
+
+      this.add(
+        'route:page',
+        Route.extend({
+          model(params) {
+            return EmberObject.create({ name: params.name });
+          },
+        })
+      );
+
+      let insertionCount = 0;
+      this.add(
+        'component:foo-bar',
+        Component.extend({
+          didInsertElement() {
+            insertionCount += 1;
+          },
+        })
+      );
+
+      this.addTemplate('page', '<p>{{@model.name}}{{foo-bar}}</p>');
+
+      let rootElement = document.getElementById('qunit-fixture');
+
+      await this.visit('/page/first');
+
+      assert.ok(true, '/page/first has been handled');
+      assert.equal(getTextOf(rootElement.querySelector('p')), 'first');
+      assert.equal(insertionCount, 1);
+
+      await this.visit('/page/second');
+
+      assert.ok(true, '/page/second has been handled');
+      assert.equal(getTextOf(rootElement.querySelector('p')), 'second');
+      assert.equal(insertionCount, 1, 'view should have inserted only once');
+      let router = this.applicationInstance.lookup('router:main');
+
+      await run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
+
+      assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
+      assert.equal(insertionCount, 1, 'view should still have inserted only once');
     }
 
     ['@test The template is not re-rendered when two routes present the exact same template & controller'](
@@ -2402,7 +2935,6 @@ moduleFor(
 
     ['@test ApplicationRoute with model does not proxy the currentPath'](assert) {
       let model = {};
-      let currentPath;
 
       this.router.map(function() {
         this.route('index', { path: '/' });
@@ -2417,19 +2949,9 @@ moduleFor(
         })
       );
 
-      this.add(
-        'controller:application',
-        Controller.extend({
-          currentPathDidChange: observer('currentPath', function() {
-            expectDeprecation(() => {
-              currentPath = this.currentPath;
-            }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-          }),
-        })
-      );
-
       return this.visit('/').then(() => {
-        assert.equal(currentPath, 'index', 'currentPath is index');
+        let routerService = this.applicationInstance.lookup('service:router');
+        assert.equal(routerService.currentRouteName, 'index', 'currentPath is index');
         assert.equal(
           'currentPath' in model,
           false,
@@ -2822,7 +3344,7 @@ moduleFor(
 
       let deprecation = /You attempted to override the "willTransition" method which is deprecated\./;
 
-      return expectDeprecation(() => {
+      return expectDeprecationAsync(() => {
         return this.visit('/').then(() => {
           this.handleURLAborts(assert, '/nork', deprecation);
           this.handleURLAborts(assert, '/about', deprecation);
@@ -2917,34 +3439,32 @@ moduleFor(
       });
     }
 
-    ['@test `didTransition` event fires on the router'](assert) {
+    async ['@test `didTransition` event fires on the router'](assert) {
       assert.expect(3);
 
       this.router.map(function() {
         this.route('nork');
       });
 
-      return this.visit('/')
-        .then(() => {
-          let router = this.applicationInstance.lookup('router:main');
-          router.one('didTransition', function() {
-            assert.ok(true, 'didTransition fired on initial routing');
-          });
-          this.visit('/');
-        })
-        .then(() => {
-          let router = this.applicationInstance.lookup('router:main');
-          router.one('didTransition', function() {
-            assert.ok(true, 'didTransition fired on the router');
-            assert.equal(
-              router.get('url'),
-              '/nork',
-              'The url property is updated by the time didTransition fires'
-            );
-          });
+      await this.visit('/');
 
-          return this.visit('/nork');
-        });
+      let router = this.applicationInstance.lookup('router:main');
+      router.one('didTransition', function() {
+        assert.ok(true, 'didTransition fired on initial routing');
+      });
+
+      await this.visit('/');
+
+      router.one('didTransition', function() {
+        assert.ok(true, 'didTransition fired on the router');
+        assert.equal(
+          router.get('url'),
+          '/nork',
+          'The url property is updated by the time didTransition fires'
+        );
+      });
+
+      await this.visit('/nork');
     }
 
     ['@test `activate` event fires on the route'](assert) {
@@ -3281,7 +3801,7 @@ moduleFor(
       });
     }
 
-    ['@test rejecting the model hooks promise with a non-error prints the `message` property'](
+    async ['@test rejecting the model hooks promise with a non-error prints the `message` property'](
       assert
     ) {
       assert.expect(5);
@@ -3319,10 +3839,8 @@ moduleFor(
         })
       );
 
-      return assert.throws(
-        () => {
-          return this.visit('/');
-        },
+      await assert.rejects(
+        this.visit('/'),
         function(err) {
           assert.equal(err.message, rejectedMessage);
           return true;
@@ -3331,7 +3849,7 @@ moduleFor(
       );
     }
 
-    ['@test rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property'](
+    async ['@test rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property'](
       assert
     ) {
       assert.expect(5);
@@ -3367,9 +3885,9 @@ moduleFor(
         })
       );
 
-      assert.throws(
-        () => this.visit('/'),
-        function(err) {
+      await assert.rejects(
+        this.visit('/'),
+        function({ errorThrown: err }) {
           assert.equal(err.message, rejectedMessage);
           return true;
         },
@@ -3377,7 +3895,7 @@ moduleFor(
       );
     }
 
-    ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
+    async ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
       assert.expect(2);
       this.router.map(function() {
         this.route('wowzers', { path: '/' });
@@ -3400,10 +3918,10 @@ moduleFor(
         })
       );
 
-      return assert.throws(() => this.visit('/'));
+      await assert.rejects(this.visit('/'));
     }
 
-    ['@test rejecting the model hooks promise with a string shows a good error'](assert) {
+    async ['@test rejecting the model hooks promise with a string shows a good error'](assert) {
       assert.expect(3);
       let rejectedMessage = 'Supercalifragilisticexpialidocious';
 
@@ -3433,7 +3951,7 @@ moduleFor(
         })
       );
 
-      assert.throws(() => this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
+      await assert.rejects(this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
     }
 
     ["@test willLeave, willChangeContext, willChangeModel actions don't fire unless feature flag enabled"](
@@ -3472,7 +3990,7 @@ moduleFor(
       return this.visit('/about');
     }
 
-    ['@test Errors in transitionTo within redirect hook are logged'](assert) {
+    async ['@test Errors in transitionTo within redirect hook are logged'](assert) {
       assert.expect(4);
       let actual = [];
 
@@ -3495,7 +4013,7 @@ moduleFor(
         actual.push(arguments);
       };
 
-      assert.throws(() => this.visit('/'), /More context objects were passed/);
+      await assert.rejects(this.visit('/'), /More context objects were passed/);
 
       assert.equal(actual.length, 1, 'the error is only logged once');
       assert.equal(actual[0][0], 'Error while processing route: yondo', 'source route is printed');
@@ -3585,7 +4103,7 @@ moduleFor(
         });
     }
 
-    ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
+    async ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
       this.router.map(function() {
         this.route('boom');
       });
@@ -3598,10 +4116,10 @@ moduleFor(
         })
       );
 
-      return assert.throws(() => this.visit('/boom'), /\bboom\b/);
+      await assert.rejects(this.visit('/boom'), /\bboom\b/);
     }
 
-    ['@test Exception during initialization of initial route is not swallowed'](assert) {
+    async ['@test Exception during initialization of initial route is not swallowed'](assert) {
       this.router.map(function() {
         this.route('boom', { path: '/' });
       });
@@ -3613,7 +4131,8 @@ moduleFor(
           },
         })
       );
-      return assert.throws(() => this.visit('/'), /\bboom\b/);
+
+      await assert.rejects(this.visit('/'), /\bboom\b/);
     }
 
     ['@test {{outlet}} works when created after initial render'](assert) {
@@ -4038,7 +4557,7 @@ moduleFor(
       });
     }
 
-    ['@test Doesnt swallow exception thrown from willTransition'](assert) {
+    async ['@test Doesnt swallow exception thrown from willTransition'](assert) {
       assert.expect(1);
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('index', 'index');
@@ -4060,15 +4579,12 @@ moduleFor(
         })
       );
 
-      return this.visit('/').then(() => {
-        return assert.throws(
-          () => {
-            return this.visit('/other');
-          },
-          /boom/,
-          'expected an exception but none was thrown'
-        );
-      });
+      await this.visit('/');
+      await assert.rejects(
+        this.visit('/other'),
+        /boom/,
+        'expected an exception but none was thrown'
+      );
     }
 
     ['@test Exception if outlet name is undefined in render and disconnectOutlet']() {
@@ -4108,7 +4624,9 @@ moduleFor(
       assert.expect(2);
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -4140,11 +4658,13 @@ moduleFor(
       });
     }
 
-    ['@test Defining a Route#serialize method in an Engine throws an error'](assert) {
+    async ['@test Defining a Route#serialize method in an Engine throws an error'](assert) {
       assert.expect(1);
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -4157,16 +4677,20 @@ moduleFor(
         this.mount('blog');
       });
 
-      return this.visit('/').then(() => {
-        let router = this.applicationInstance.lookup('router:main');
-        let PostRoute = Route.extend({ serialize() {} });
-        this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
+      await this.visit('/');
 
-        assert.throws(
-          () => router.transitionTo('blog.post'),
-          /Defining a custom serialize method on an Engine route is not supported/
+      let router = this.applicationInstance.lookup('router:main');
+      let PostRoute = Route.extend({ serialize() {} });
+      this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
+
+      try {
+        // TODO: for some reason this doesn't work with assert.reject
+        await router.transitionTo('blog.post');
+      } catch (e) {
+        assert.ok(
+          e.message.match(/Defining a custom serialize method on an Engine route is not supported/)
         );
-      });
+      }
     }
 
     ['@test App.destroy does not leave undestroyed views after clearing engines'](assert) {
@@ -4174,7 +4698,9 @@ moduleFor(
 
       let engineInstance;
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
       let EngineIndexRoute = Route.extend({
         init() {

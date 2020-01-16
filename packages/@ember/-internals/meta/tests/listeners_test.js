@@ -18,24 +18,52 @@ moduleFor(
     }
 
     ['@test inheritance'](assert) {
+      let matching;
       let target = {};
       let parent = {};
       let parentMeta = meta(parent);
       parentMeta.addToListeners('hello', target, 'm', 0);
 
-      let child = Object.create(parent);
-      let m = meta(child);
+      let child1 = Object.create(parent);
+      let m1 = meta(child1);
 
-      let matching = m.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-      assert.equal(matching[0], target);
-      assert.equal(matching[1], 'm');
-      assert.equal(matching[2], 0);
-      m.removeFromListeners('hello', target, 'm');
-      matching = m.matchingListeners('hello');
-      assert.equal(matching, undefined);
+      let child2 = Object.create(parent);
+      let m2 = meta(child2);
+
+      let child3 = Object.create(parent);
+      let m3 = meta(child3);
+
+      m3.removeFromListeners('hello', target, 'm');
+
+      matching = m3.matchingListeners('hello');
+      assert.deepEqual(matching, undefined, 'no listeners for child3');
+
+      m3.addToListeners('hello', target, 'm', 0);
+
+      matching = m3.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child1');
+
+      m3.removeFromListeners('hello', target, 'm');
+
+      matching = m3.matchingListeners('hello');
+      assert.deepEqual(matching, undefined, 'no listeners for child3');
+
+      matching = m1.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child1');
+
+      matching = m2.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child2');
+
+      m1.removeFromListeners('hello', target, 'm');
+
+      matching = m1.matchingListeners('hello');
+      assert.equal(matching, undefined, 'listener removed from child1');
+
+      matching = m2.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child2');
+
       matching = parentMeta.matchingListeners('hello');
-      assert.equal(matching.length, 3);
+      assert.deepEqual(matching, [target, 'm', false], 'listener still present for parent');
     }
 
     ['@test deduplication'](assert) {
@@ -170,6 +198,34 @@ moduleFor(
         counters.reopensAfterFlatten,
         3,
         'one reopen call after mutating parents and flattening out of order'
+      );
+    }
+
+    '@test removed listeners are removed from the underlying structure GH#1112213'(assert) {
+      // this is using private API to confirm the underlying data structure is properly maintained
+      // and should be changed to match the data structure as needed
+
+      class Class1 {}
+      let class1Meta = meta(Class1.prototype);
+      class1Meta.addToListeners('hello', null, 'm', 0);
+
+      let instance1 = new Class1();
+      let m1 = meta(instance1);
+
+      function listenerFunc() {}
+
+      m1.removeFromListeners('hello', null, 'm', 0);
+
+      m1.addToListeners('stringListener', null, 'm', 0);
+      m1.addToListeners('functionListener', null, listenerFunc, 0);
+
+      m1.removeFromListeners('functionListener', null, listenerFunc, 0);
+      m1.removeFromListeners('stringListener', null, 'm', 0);
+
+      assert.equal(
+        m1.flattenedListeners().length,
+        1,
+        'instance listeners correctly removed, inherited listeners remain'
       );
     }
   }

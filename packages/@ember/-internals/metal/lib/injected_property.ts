@@ -1,5 +1,5 @@
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_MODULE_UNIFICATION, EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
@@ -98,11 +98,6 @@ export default function inject(
   });
 
   if (calledAsDecorator) {
-    assert(
-      'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag. If you are using inject in a classic class, add parenthesis to it: inject()',
-      Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
-    );
-
     return decorator(args[0], args[1], args[2]);
   } else {
     return decorator;

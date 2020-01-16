@@ -1,30 +1,75 @@
 /**
 @module ember
 */
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { Opaque, Option } from '@glimmer/interfaces';
-import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { Tag, VersionedPathReference } from '@glimmer/reference';
+import { DEBUG } from '@glimmer/env';
+import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
   CurriedComponentDefinition,
   curry,
+  EMPTY_ARGS,
   UNDEFINED_REFERENCE,
-  VM,
 } from '@glimmer/runtime';
-import * as WireFormat from '@glimmer/wire-format';
-import { MountDefinition } from '../component-managers/mount';
-import Environment from '../environment';
+import { Tag } from '@glimmer/validator';
+import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
+import { EmberVMEnvironment } from '../environment';
 
 export function mountHelper(
-  vm: VM,
-  args: Arguments
+  args: VMArguments,
+  vm: VM
 ): VersionedPathReference<CurriedComponentDefinition | null> {
-  let env = vm.env as Environment;
+  let env = vm.env as EmberVMEnvironment;
   let nameRef = args.positional.at(0);
-  let modelRef = args.named.has('model') ? args.named.get('model') : undefined;
-  return new DynamicEngineReference(nameRef, env, modelRef);
+  let captured: Option<CapturedArguments> = null;
+
+  assert(
+    'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+    args.positional.length === 1
+  );
+
+  if (DEBUG && args.named) {
+    let keys = args.named.names;
+    let extra = keys.filter(k => k !== 'model');
+
+    assert(
+      'You can only pass a `model` argument to the {{mount}} helper, ' +
+        'e.g. {{mount "profile-engine" model=this.profile}}. ' +
+        `You passed ${extra.join(',')}.`,
+      extra.length === 0
+    );
+  }
+
+  // TODO: the functionality to create a proper CapturedArgument should be
+  // exported by glimmer, or that it should provide an overload for `curry`
+  // that takes `PreparedArguments`
+  if (args.named.has('model')) {
+    assert('[BUG] this should already be checked by the macro', args.named.length === 1);
+
+    let named = args.named.capture();
+    let { tag } = named;
+
+    // TODO delete me after EMBER_ROUTING_MODEL_ARG has shipped
+    if (DEBUG && MODEL_ARG_NAME !== 'model') {
+      assert('[BUG] named._map is not null', named['_map'] === null);
+      named.names = [MODEL_ARG_NAME];
+    }
+
+    captured = {
+      tag,
+      positional: EMPTY_ARGS.positional,
+      named,
+      length: 1,
+      value() {
+        return {
+          named: this.named.value(),
+          positional: this.positional.value(),
+        };
+      },
+    };
+  }
+
+  return new DynamicEngineReference(nameRef, env, captured);
 }
 
 /**
@@ -67,44 +112,22 @@ export function mountHelper(
   @for Ember.Templates.helpers
   @public
 */
-export function mountMacro(
-  _name: string,
-  params: Option<WireFormat.Core.Params>,
-  hash: Option<WireFormat.Core.Hash>,
-  builder: OpcodeBuilder<OwnedTemplateMeta>
-) {
-  assert(
-    'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-    params!.length === 1
-  );
 
-  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
-  builder.dynamicComponent(expr, null, [], null, false, null, null);
-  return true;
-}
-
-class DynamicEngineReference {
+class DynamicEngineReference implements VersionedPathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
-  public nameRef: VersionedPathReference<any | null | undefined>;
-  public modelRef: VersionedPathReference<Opaque> | undefined;
-  public env: Environment;
-  private _lastName: string | null;
-  private _lastDef: CurriedComponentDefinition | null;
+  private _lastName: Option<string> = null;
+  private _lastDef: Option<CurriedComponentDefinition> = null;
+
   constructor(
-    nameRef: VersionedPathReference<any | undefined | null>,
-    env: Environment,
-    modelRef: VersionedPathReference<Opaque> | undefined
+    public nameRef: VersionedPathReference<any | undefined | null>,
+    public env: EmberVMEnvironment,
+    public args: Option<CapturedArguments>
   ) {
     this.tag = nameRef.tag;
-    this.nameRef = nameRef;
-    this.modelRef = modelRef;
-    this.env = env;
-    this._lastName = null;
-    this._lastDef = null;
   }
 
-  value() {
-    let { env, nameRef, modelRef } = this;
+  value(): Option<CurriedComponentDefinition> {
+    let { env, nameRef, args } = this;
     let name = nameRef.value();
 
     if (typeof name === 'string') {
@@ -114,15 +137,15 @@ class DynamicEngineReference {
 
       assert(
         `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-        env.owner.hasRegistration(`engine:${name}`)
+        env.extra.owner.hasRegistration(`engine:${name}`)
       );
 
-      if (!env.owner.hasRegistration(`engine:${name}`)) {
+      if (!env.extra.owner.hasRegistration(`engine:${name}`)) {
         return null;
       }
 
       this._lastName = name;
-      this._lastDef = curry(new MountDefinition(name, modelRef));
+      this._lastDef = curry(new MountDefinition(name), args);
 
       return this._lastDef;
     } else {

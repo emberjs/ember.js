@@ -47,7 +47,7 @@ function buildDocs() {
 
 function setDifference(setA, setB) {
   let difference = new Set(setA);
-  for (var elem of setB) {
+  for (let elem of setB) {
     difference.delete(elem);
   }
   return difference;
