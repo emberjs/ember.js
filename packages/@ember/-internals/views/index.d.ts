@@ -9,7 +9,7 @@ export interface StaticTemplateMeta {
 }
 
 export interface OwnedTemplateMeta extends StaticTemplateMeta {
-  ownerId: string;
+  owner: Owner;
   moduleName: string;
   managerId?: string;
 }

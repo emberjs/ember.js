@@ -1,4 +1,3 @@
-import { getOwnerById } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import {
@@ -56,17 +55,14 @@ function refineBlockSyntax(
 
   assert(
     `A component or helper named "${name}" could not be found`,
-    getOwnerById((context.meta.referrer as OwnedTemplateMeta).ownerId).hasRegistration(
-      `helper:${name}`
-    )
+    (context.meta.referrer as OwnedTemplateMeta).owner.hasRegistration(`helper:${name}`)
   );
 
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
     !(() => {
       const resolver = context.resolver['inner']['resolver'];
-      const { moduleName } = context.meta.referrer as OwnedTemplateMeta;
-      const owner = getOwnerById((context.meta.referrer as OwnedTemplateMeta).ownerId);
+      const { moduleName, owner } = context.meta.referrer as OwnedTemplateMeta;
       if (name === 'component' || resolver['builtInHelpers'][name]) {
         return true;
       }

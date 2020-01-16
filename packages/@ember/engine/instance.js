@@ -11,6 +11,7 @@ import {
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
+import { guidFor } from '@ember/-internals/utils';
 import { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 /**
@@ -35,6 +36,9 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
   init() {
     this._super(...arguments);
+
+    // Ensure the guid gets setup for this instance
+    guidFor(this);
 
     let base = this.base;
 
