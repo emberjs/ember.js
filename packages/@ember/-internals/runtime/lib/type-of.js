@@ -8,6 +8,7 @@ const TYPE_MAP = {
   '[object Number]': 'number',
   '[object String]': 'string',
   '[object Function]': 'function',
+  '[object AsyncFunction]': 'function',
   '[object Array]': 'array',
   '[object Date]': 'date',
   '[object RegExp]': 'regexp',
