@@ -1,5 +1,20 @@
 # Changelog
 
+
+## v0.46.0 (2020-01-16)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`
+  * [#1009](https://github.com/glimmerjs/glimmer-vm/pull/1009) [BUGFIX] Don't serialize template metas in the JIT constant pool ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* `@glimmer/bundle-compiler`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/low-level`, `@glimmer/object-reference`, `@glimmer/object`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/validator`
+  * [#1005](https://github.com/glimmerjs/glimmer-vm/pull/1005) Replace imports from own package with relative imports ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
 ## v0.45.3 (2020-01-06)
 
 #### :bug: Bug Fix
