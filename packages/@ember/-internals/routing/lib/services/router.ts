@@ -125,7 +125,7 @@ export default class RouterService extends Service {
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
      @method replaceWith
-     @param {String} routeNameOrUrl the name of the route or a URL of the desiered  destination 
+     @param {String} routeNameOrUrl the name of the route or a URL of the desired  destination 
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route i.e. param passed to destination route in form of object
      @param {Object} [options] optional hash with a queryParams property
