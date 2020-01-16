@@ -113,7 +113,7 @@ export default class RouterService extends Service {
   }
 
   /**
-     Similar to transitionTo, but instead of adding the destination to the browser's URL history,
+     Similar to `transitionTo`, but instead of adding the destination to the browser's URL history,
      it replaces the entry for the current route.
      When the user clicks the "back" button in the browser, there will be fewer steps.
      This is most commonly used to manage redirects in a way that does not cause confusing additions
