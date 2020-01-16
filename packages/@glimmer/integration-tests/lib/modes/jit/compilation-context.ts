@@ -10,13 +10,13 @@ import {
   AnnotatedModuleLocator,
   CompileTimeComponent,
 } from '@glimmer/interfaces';
-import { Constants, HeapImpl, RuntimeProgramImpl } from '@glimmer/program';
+import { JitConstants, HeapImpl, RuntimeProgramImpl } from '@glimmer/program';
 import { TestJitRegistry } from './registry';
 import { compileStd, unwrapTemplate } from '@glimmer/opcode-compiler';
 import TestJitRuntimeResolver from './resolver';
 
 export class TestJitCompilationContext implements WholeProgramCompilationContext {
-  readonly constants = new Constants();
+  readonly constants = new JitConstants();
   readonly resolverDelegate: JitCompileTimeLookup;
   readonly heap = new HeapImpl();
   readonly mode = CompileMode.jit;

@@ -48,7 +48,7 @@ import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
-import { RuntimeProgramImpl, Constants, HeapImpl } from '@glimmer/program';
+import { RuntimeProgramImpl, JitConstants, HeapImpl } from '@glimmer/program';
 
 export function isScopeReference(s: ScopeSlot): s is VersionedPathReference {
   if (s === null || Array.isArray(s)) return false;
@@ -666,7 +666,7 @@ export function JitRuntime<R, E>(
 ): JitRuntimeContext<R, E> {
   let env = new EnvironmentImpl(options, delegate);
 
-  let constants = new Constants();
+  let constants = new JitConstants();
   let heap = new HeapImpl();
   let program = new RuntimeProgramImpl(constants, heap);
 

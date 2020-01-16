@@ -138,7 +138,9 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
   }
 }
 
-export class Constants extends WriteOnlyConstants implements RuntimeConstants {
+export class JitConstants extends WriteOnlyConstants implements RuntimeConstants {
+  protected metas: unknown[] = [];
+
   constructor(pool?: ConstantPool) {
     super();
 
@@ -151,6 +153,15 @@ export class Constants extends WriteOnlyConstants implements RuntimeConstants {
     }
 
     this.others = [];
+  }
+
+  templateMeta(meta: unknown): number {
+    let index = this.metas.indexOf(meta);
+    if (index > -1) {
+      return index;
+    }
+
+    return this.metas.push(meta) - 1;
   }
 
   getNumber(value: number): number {
@@ -177,8 +188,8 @@ export class Constants extends WriteOnlyConstants implements RuntimeConstants {
     return (this.arrays as number[][])[value];
   }
 
-  getTemplateMeta<T>(s: number): T {
-    return JSON.parse(this.strings[s]) as T;
+  getTemplateMeta<T>(m: number): T {
+    return this.metas[m] as T;
   }
 
   getOther<T>(value: number): T {
