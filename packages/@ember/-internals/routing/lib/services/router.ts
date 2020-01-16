@@ -113,9 +113,11 @@ export default class RouterService extends Service {
   }
 
   /**
-Replace current route (URL) in history to  desired destination route. instead of adding the desired  Route to Route history,The route may be either a single route or route path:
-The major functional difference found between transitionTo and replaceWith is that on using transitionTo to navigate to new page, you can go Back to previsious route,Whereas in replaceWith this functionality 
-is not possible due to the replacing mechanism
+     Similar to transitionTo, but instead of adding the destination to the browser's URL history,
+     it replaces the entry for the current route.
+     When the user clicks the "back" button in the browser, there will be fewer steps.
+     This is most commonly used to manage redirects in a way that does not cause confusing additions
+     to the user's browsing history.
      See [replaceWith](/api/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
 
      Calling `replaceWith` from the Router service will cause default query parameter values to be included in the URL.
