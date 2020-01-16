@@ -1,6 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { Factory, FactoryClass, getOwnerById, LookupOptions, Owner } from '@ember/-internals/owner';
+import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import {
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
@@ -387,7 +387,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   private _lookupHelper(_name: string, meta: OwnedTemplateMeta): Option<Helper> {
     assert(
       `You attempted to overwrite the built-in helper "${_name}" which is not allowed. Please rename the helper.`,
-      !(this.builtInHelpers[_name] && getOwnerById(meta.ownerId).hasRegistration(`helper:${_name}`))
+      !(this.builtInHelpers[_name] && meta.owner.hasRegistration(`helper:${_name}`))
     );
 
     const helper = this.builtInHelpers[_name];
@@ -396,7 +396,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     }
 
     const { moduleName } = meta;
-    let owner = getOwnerById(meta.ownerId);
+    let owner = meta.owner;
 
     let name = _name;
     let namespace = undefined;
@@ -434,7 +434,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
-    let owner = getOwnerById(meta.ownerId);
+    let owner = meta.owner;
     let templateFactory = lookupPartial(name, owner);
     let template = templateFactory(owner);
 
@@ -445,7 +445,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     let builtin = this.builtInModifiers[name];
 
     if (builtin === undefined) {
-      let owner = getOwnerById(meta.ownerId);
+      let owner = meta.owner;
       let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
       if (modifier !== undefined) {
         let managerFactory = getModifierManager<ModifierManagerDelegate<unknown>>(modifier.class);
@@ -476,7 +476,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   ): Option<ComponentDefinition> {
     let name = _name;
     let namespace = undefined;
-    let owner = getOwnerById(meta.ownerId);
+    let owner = meta.owner;
     let { moduleName } = meta;
 
     if (EMBER_MODULE_UNIFICATION) {

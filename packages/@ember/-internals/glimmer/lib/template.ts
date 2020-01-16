@@ -1,5 +1,4 @@
 import { Owner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils';
 import { OwnedTemplateMeta, StaticTemplateMeta } from '@ember/-internals/views';
 import { SerializedTemplateWithLazyBlock, Template } from '@glimmer/interfaces';
 import { templateFactory } from '@glimmer/opcode-compiler';
@@ -32,11 +31,10 @@ export default function template(json: StaticTemplate): Factory {
 
   let factory = ((owner: Owner) => {
     let result = cache.get(owner);
-    let ownerId = guidFor(owner);
 
     if (result === undefined) {
       counters.cacheMiss++;
-      result = glimmerFactory.create(Object.assign({ ownerId }, meta));
+      result = glimmerFactory.create(Object.assign({ owner }, meta));
       cache.set(owner, result);
     } else {
       counters.cacheHit++;
