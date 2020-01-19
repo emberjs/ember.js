@@ -2,7 +2,7 @@ import { expect } from 'chai';
 <% if (testType == 'integration') { %>import { describe, it } from 'mocha';
 import { setupRenderingTest } from 'ember-mocha';
 import { render } from '@ember/test-helpers';
-import hbs from 'htmlbars-inline-precompile';
+<%= hbsImportStatement %>
 
 describe('<%= friendlyTestName %>', function() {
   setupRenderingTest();
