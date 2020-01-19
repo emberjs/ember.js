@@ -1528,7 +1528,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
 
     export default class PostsRoute extends Route {
-      renderTemplate(controller, model){
+      renderTemplate(controller, model) {
         this.render('posts', {    // the template to render, referenced by name
           into: 'application',    // the template to render into, referenced by name
           outlet: 'anOutletName', // the outlet inside `options.into` to render into.
@@ -1602,20 +1602,8 @@ class Route extends EmberObject implements IRoute {
     @since 1.0.0
     @public
   */
-  render(_name?: string, options?: PartialRenderOptions) {
-    let name;
-    let isDefaultRender = arguments.length === 0;
-    if (!isDefaultRender) {
-      if (typeof _name === 'object' && !options) {
-        name = this.templateName || this.routeName;
-        options = _name;
-      } else {
-        assert('The name in the given arguments is undefined or empty string', !isEmpty(_name));
-        name = _name;
-      }
-    }
-
-    let renderOptions = buildRenderOptions(this, isDefaultRender, name, options);
+  render(name?: string, options?: PartialRenderOptions) {
+    let renderOptions = buildRenderOptions(this, name, options);
     ROUTE_CONNECTIONS.get(this).push(renderOptions);
     once(this._router, '_setOutlets');
   }
@@ -1736,8 +1724,6 @@ class Route extends EmberObject implements IRoute {
         once(this._router, '_setOutlets');
       }
     }
-
-    ROUTE_CONNECTIONS.set(this, connections);
   }
 
   willDestroy() {
@@ -1824,10 +1810,23 @@ function routeInfoFor(route: Route, routeInfos: InternalRouteInfo<Route>[], offs
 
 function buildRenderOptions(
   route: Route,
-  isDefaultRender: boolean,
-  _name: string,
+  nameOrOptions?: string | PartialRenderOptions,
   options?: PartialRenderOptions
 ): RenderOptions {
+  let isDefaultRender = !nameOrOptions && !options;
+  let _name;
+  if (!isDefaultRender) {
+    if (typeof nameOrOptions === 'object' && !options) {
+      _name = route.templateName || route.routeName;
+      options = nameOrOptions;
+    } else {
+      assert(
+        'The name in the given arguments is undefined or empty string',
+        !isEmpty(nameOrOptions)
+      );
+      _name = nameOrOptions!;
+    }
+  }
   assert(
     'You passed undefined as the outlet name.',
     isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)

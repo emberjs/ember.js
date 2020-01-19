@@ -1,6 +1,6 @@
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
@@ -85,9 +85,10 @@ interface NestedOutletState {
   [key: string]: OutletState;
 }
 
-interface OutletState {
-  render: RenderOutletState;
+interface OutletState<T extends RenderOutletState = RenderOutletState> {
+  render: T;
   outlets: NestedOutletState;
+  wasUsed?: boolean;
 }
 
 interface EngineInstance extends Owner {
@@ -302,14 +303,6 @@ class EmberRouter extends EmberObject {
         }
       }
 
-      _triggerWillChangeContext() {
-        return router;
-      }
-
-      _triggerWillLeave() {
-        return router;
-      }
-
       replaceURL(url: string) {
         if (location.replaceURL) {
           let doReplaceURL = () => {
@@ -438,30 +431,28 @@ class EmberRouter extends EmberObject {
     }
 
     let routeInfos = this._routerMicrolib.currentRouteInfos;
-    let route: Route | undefined;
-    let defaultParentState: OutletState;
-    let liveRoutes = null;
-
     if (!routeInfos) {
       return;
     }
 
+    let defaultParentState: OutletState | undefined;
+    let liveRoutes = null;
+
     for (let i = 0; i < routeInfos.length; i++) {
-      route = routeInfos[i].route;
+      let route = routeInfos[i].route!;
       let connections = ROUTE_CONNECTIONS.get(route!);
       let ownState: OutletState;
-      for (let j = 0; j < connections.length; j++) {
-        let appended = appendLiveRoute(liveRoutes!, defaultParentState!, connections[j]);
-        liveRoutes = appended.liveRoutes;
-        if (
-          appended.ownState.render.name === route!.routeName ||
-          appended.ownState.render.outlet === 'main'
-        ) {
-          ownState = appended.ownState;
-        }
-      }
       if (connections.length === 0) {
-        ownState = representEmptyRoute(liveRoutes!, defaultParentState! as OutletState, route!);
+        ownState = representEmptyRoute(liveRoutes, defaultParentState, route);
+      } else {
+        for (let j = 0; j < connections.length; j++) {
+          let appended = appendLiveRoute(liveRoutes, defaultParentState, connections[j]);
+          liveRoutes = appended.liveRoutes;
+          let { name, outlet } = appended.ownState.render;
+          if (name === route.routeName || outlet === 'main') {
+            ownState = appended.ownState;
+          }
+        }
       }
       defaultParentState = ownState!;
     }
@@ -477,8 +468,8 @@ class EmberRouter extends EmberObject {
 
     if (!this._toplevelView) {
       let owner = getOwner(this);
-      let OutletView = owner.factoryFor('view:-outlet')!;
-      this._toplevelView = OutletView.create() as OutletView;
+      let OutletView = owner.factoryFor<OutletView, FactoryClass>('view:-outlet')!;
+      this._toplevelView = OutletView.create();
       this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
       let instance: any = owner.lookup('-application-instance:main');
       instance.didCreateRootView(this._toplevelView);
@@ -1640,17 +1631,17 @@ function forEachQueryParam(
   }
 }
 
-function findLiveRoute(liveRoutes: OutletState, name: string) {
+function findLiveRoute(liveRoutes: OutletState | null, name: string) {
   if (!liveRoutes) {
     return;
   }
   let stack = [liveRoutes];
   while (stack.length > 0) {
-    let test = stack.shift();
-    if (test!.render.name === name) {
+    let test = stack.shift()!;
+    if (test.render.name === name) {
       return test;
     }
-    let outlets = test!.outlets;
+    let outlets = test.outlets;
     for (let outletName in outlets) {
       stack.push(outlets[outletName]);
     }
@@ -1660,40 +1651,40 @@ function findLiveRoute(liveRoutes: OutletState, name: string) {
 }
 
 function appendLiveRoute(
-  liveRoutes: OutletState,
-  defaultParentState: OutletState,
+  liveRoutes: OutletState | null,
+  defaultParentState: OutletState | undefined,
   renderOptions: RenderOptions
 ) {
-  let target;
-  let myState = {
+  let ownState: OutletState = {
     render: renderOptions,
     outlets: Object.create(null),
     wasUsed: false,
   };
+  let target: OutletState | undefined;
   if (renderOptions.into) {
     target = findLiveRoute(liveRoutes, renderOptions.into);
   } else {
     target = defaultParentState;
   }
   if (target) {
-    set(target.outlets, renderOptions.outlet, myState);
+    set(target.outlets, renderOptions.outlet, ownState);
   } else {
-    liveRoutes = myState as any;
+    liveRoutes = ownState;
   }
 
   return {
     liveRoutes,
-    ownState: myState,
+    ownState,
   };
 }
 
 function representEmptyRoute(
-  liveRoutes: OutletState,
-  defaultParentState: OutletState,
-  route: Route
-) {
+  liveRoutes: OutletState | null,
+  defaultParentState: OutletState | undefined,
+  { routeName }: Route
+): OutletState {
   // the route didn't render anything
-  let alreadyAppended = findLiveRoute(liveRoutes, route.routeName);
+  let alreadyAppended = findLiveRoute(liveRoutes, routeName);
   if (alreadyAppended) {
     // But some other route has already rendered our default
     // template, so that becomes the default target for any
@@ -1703,14 +1694,14 @@ function representEmptyRoute(
     // Create an entry to represent our default template name,
     // just so other routes can target it and inherit its place
     // in the outlet hierarchy.
-    defaultParentState.outlets.main = {
+    defaultParentState!.outlets.main = {
       render: {
-        name: route.routeName,
+        name: routeName,
         outlet: 'main',
       },
       outlets: {},
     };
-    return defaultParentState;
+    return defaultParentState!;
   }
 }
 
