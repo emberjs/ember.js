@@ -1,8 +1,10 @@
 # Ember Changelog
 
-### v3.16.0-beta.1 (December 9, 2019)
+### v3.16.0 (January 20, 2020)
 
 - [#18436](https://github.com/emberjs/ember.js/pull/18436) [DEPRECATION] Deprecate globals resolver per [RFC #331](https://github.com/emberjs/rfcs/blob/master/text/0331-deprecate-globals-resolver.md).
+- [#18668](https://github.com/emberjs/ember.js/pull/18668) [BUGFIX] Fix some scenarios where the "backtracking assertion" would be thrown by consuming tags after fully getting values
+- [#18651](https://github.com/emberjs/ember.js/pull/18651) [BUGFIX] Async functions were incorrectly treated as falsey in template conditionals
 
 ### v3.15.0 (December 9, 2019)
 
