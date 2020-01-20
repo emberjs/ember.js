@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.17.0-beta.1 (January 20, 2020)
+
+- [#18688](https://github.com/emberjs/ember.js/pull/18688) / [#18621](https://github.com/emberjs/ember.js/pull/18621) Updates Glimmer-VM to v0.46
+
 ### v3.16.0 (January 20, 2020)
 
 - [#18436](https://github.com/emberjs/ember.js/pull/18436) [DEPRECATION] Deprecate globals resolver per [RFC #331](https://github.com/emberjs/rfcs/blob/master/text/0331-deprecate-globals-resolver.md).
