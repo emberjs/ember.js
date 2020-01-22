@@ -140,8 +140,10 @@ class MonomorphicTagImpl implements MonomorphicTag {
   private lastValue = INITIAL;
 
   private isUpdating = false;
-  private subtag: Tag | null = null;
   private subtags: Tag[] | null = null;
+
+  private subtag: Tag | null = null;
+  private subtagCachedValue: Revision | null = null;
 
   [TYPE]: MonomorphicTagType;
 
@@ -176,10 +178,24 @@ class MonomorphicTagImpl implements MonomorphicTag {
       }
 
       try {
-        let { subtags, subtag, revision } = this;
+        let {
+          subtags,
+          subtag,
+          subtagCachedValue,
+          lastValue,
+          revision
+        } = this;
 
         if (subtag !== null) {
-          revision = Math.max(revision, subtag[COMPUTE]());
+          let subtagValue = subtag[COMPUTE]();
+
+          if (subtagValue === subtagCachedValue) {
+            revision = Math.max(revision, lastValue);
+          } else {
+            // Clear the temporary cache
+            this.subtagCachedValue = null;
+            revision = Math.max(revision, subtagValue);
+          }
         }
 
         if (subtags !== null) {
@@ -198,27 +214,37 @@ class MonomorphicTagImpl implements MonomorphicTag {
     return this.lastValue;
   }
 
-  static update(_tag: UpdatableTag, subtag: Tag) {
+  static update(_tag: UpdatableTag, _subtag: Tag) {
     if (DEBUG && _tag[TYPE] !== MonomorphicTagTypes.Updatable) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
 
     // TODO: TS 3.7 should allow us to do this via assertion
     let tag = _tag as MonomorphicTagImpl;
+    let subtag = _subtag as MonomorphicTagImpl;
 
     if (subtag === CONSTANT_TAG) {
       tag.subtag = null;
     } else {
-      if (
-        DEBUG &&
-        tag.lastChecked === $REVISION &&
-        (subtag as MonomorphicTagImpl)[COMPUTE]() > tag.lastValue
-      ) {
-        throw new Error(
-          'BUG: attempted to update a tag with a tag that has a more recent revision as its value'
-        );
-      }
-
+      // There are two different possibilities when updating a subtag:
+      //
+      // 1. subtag[COMPUTE]() <= tag[COMPUTE]();
+      // 2. subtag[COMPUTE]() > tag[COMPUTE]();
+      //
+      // The first possibility is completely fine within our caching model, but
+      // the second possibility presents a problem. If the parent tag has
+      // already been read, then it's value is cached and will not update to
+      // reflect the subtag's greater value. Next time the cache is busted, the
+      // subtag's value _will_ be read, and it's value will be _greater_ than
+      // the saved snapshot of the parent, causing the resulting calculation to
+      // be rerun erroneously.
+      //
+      // In order to prevent this, when we first update to a new subtag we store
+      // its computed value, and then check against that computed value on
+      // subsequent updates. If its value hasn't changed, then we return the
+      // parent's previous value. Once the subtag changes for the first time,
+      // we clear the cache and everything is finally in sync with the parent.
+      tag.subtagCachedValue = subtag[COMPUTE]();
       tag.subtag = subtag;
     }
   }
