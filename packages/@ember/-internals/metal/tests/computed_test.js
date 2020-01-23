@@ -1042,3 +1042,186 @@ moduleFor(
     }
   }
 );
+
+class LazyObject {
+  value = 123;
+
+  @computed('_value')
+  get value() {
+    return get(this, '_value');
+  }
+
+  set value(value) {
+    set(this, '_value', value);
+  }
+
+  static create() {
+    let obj = new LazyObject();
+
+    // ensure a tag exists for the value computed
+    get(obj, 'value');
+
+    return obj;
+  }
+}
+
+moduleFor(
+  'computed - lazy dependencies',
+  class extends AbstractTestCase {
+    '@test computed properties with lazy dependencies work as expected'(assert) {
+      let calledCount = 0;
+      let lazyObject = LazyObject.create();
+
+      class ObjectWithLazyDep {
+        @computed('lazyObject.value')
+        get someProp() {
+          return ++calledCount;
+        }
+
+        @computed('otherProp')
+        get lazyObject() {
+          return lazyObject;
+        }
+      }
+
+      let obj = new ObjectWithLazyDep();
+
+      // Get someProp and setup the lazy dependency
+      assert.equal(obj.someProp, 1, 'called the first time');
+      assert.equal(obj.someProp, 1, 'returned cached value the second time');
+
+      // Finish the lazy dependency
+      assert.equal(obj.lazyObject.value, 123, 'lazyObject returns expected value');
+      assert.equal(
+        obj.someProp,
+        1,
+        'someProp was not dirtied by propB being calculated for the first time'
+      );
+
+      set(lazyObject, 'value', 456);
+      assert.equal(obj.someProp, 2, 'someProp dirtied by lazyObject.value changing');
+
+      set(lazyObject, 'value', 789);
+      assert.equal(
+        obj.someProp,
+        3,
+        'someProp still dirtied by otherProp when lazyObject.value is dirty'
+      );
+    }
+
+    '@test computed properties with lazy dependencies do not dirty until dependencies have been read at least once'(
+      assert
+    ) {
+      let calledCount = 0;
+      let lazyObject = LazyObject.create();
+
+      class ObjectWithLazyDep {
+        @computed('lazyObject.value')
+        get someProp() {
+          return ++calledCount;
+        }
+
+        @computed('otherProp')
+        get lazyObject() {
+          return lazyObject;
+        }
+      }
+
+      let obj = new ObjectWithLazyDep();
+
+      assert.equal(obj.someProp, 1, 'called the first time');
+      assert.equal(obj.someProp, 1, 'returned cached value the second time');
+
+      // dirty the object value before the dependency has been finished
+      set(lazyObject, 'value', 456);
+
+      assert.equal(obj.lazyObject.value, 456, 'propB returns expected value');
+      assert.equal(
+        obj.someProp,
+        1,
+        'someProp was not dirtied by propB being dirtied before it has been calculated'
+      );
+    }
+
+    '@test computed properties with lazy dependencies work correctly if lazy dependency is more recent'(
+      assert
+    ) {
+      let calledCount = 0;
+      let lazyObject = LazyObject.create();
+
+      class ObjectWithLazyDep {
+        @computed('lazyObject.value')
+        get someProp() {
+          return ++calledCount;
+        }
+
+        @computed('otherProp')
+        get lazyObject() {
+          return lazyObject;
+        }
+      }
+
+      let obj = new ObjectWithLazyDep();
+
+      set(lazyObject, 'value', 456);
+
+      assert.equal(obj.someProp, 1, 'called the first time');
+      assert.equal(obj.someProp, 1, 'returned cached value the second time');
+
+      assert.equal(obj.lazyObject.value, 456, 'lazyObject returns expected value');
+
+      assert.equal(
+        obj.someProp,
+        1,
+        'someProp was not dirtied by lazyObject being dirtied before it has been calculated'
+      );
+    }
+  }
+);
+
+moduleFor(
+  'computed - observer interop',
+  class extends AbstractTestCase {
+    async '@test observers that do not consume computed properties still work'(assert) {
+      assert.expect(2);
+
+      class Foo {
+        otherProp = 123;
+
+        @computed('otherProp')
+        get someProp() {
+          return this.otherProp;
+        }
+      }
+
+      let foo = new Foo();
+
+      addObserver(
+        foo,
+        'otherProp',
+        foo,
+        () => assert.ok(true, 'otherProp observer called when it was changed'),
+        false
+      );
+
+      addObserver(
+        foo,
+        'someProp',
+        foo,
+        () => assert.ok(false, 'someProp observer called when it was not changed'),
+        false
+      );
+
+      set(foo, 'otherProp', 456);
+
+      await runLoopSettled();
+
+      assert.equal(get(foo, 'someProp'), 456, '');
+
+      addObserver(foo, 'anotherProp', foo, () => {}, false);
+      set(foo, 'anotherProp', 123);
+
+      await runLoopSettled();
+    }
+  }
+);
