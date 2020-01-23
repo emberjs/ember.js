@@ -17,7 +17,7 @@ import {
   CompileTimeComponent,
 } from '@glimmer/interfaces';
 
-import { label, serializable } from '../operands';
+import { label, templateMeta } from '../operands';
 import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
 import { meta } from './shared';
@@ -256,7 +256,7 @@ export function InvokeDynamicComponent(
     body: () => {
       return [
         op(Op.JumpUnless, label('ELSE')),
-        op(Op.ResolveDynamicComponent, serializable(meta.referrer)),
+        op(Op.ResolveDynamicComponent, templateMeta(meta.referrer)),
         op(Op.PushDynamicComponentInstance),
         InvokeComponent({
           capabilities: true,
@@ -452,7 +452,7 @@ export function curryComponent(
     op('SimpleArgs', { params, hash, atNames }),
     op(Op.CaptureArgs),
     op('Expr', definition),
-    op(Op.CurryComponent, serializable(referrer)),
+    op(Op.CurryComponent, templateMeta(referrer)),
     op(MachineOp.PopFrame),
     op(Op.Fetch, $v0),
   ];

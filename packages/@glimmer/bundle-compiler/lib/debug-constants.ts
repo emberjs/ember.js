@@ -32,8 +32,12 @@ export default class DebugConstants extends WriteOnlyConstants implements Runtim
     return ({ handle: s } as any) as T;
   }
 
-  getTemplateMeta(s: number): unknown {
+  getSerializable(s: number): unknown {
     return JSON.parse(this.strings[s]);
+  }
+
+  getTemplateMeta(m: number): unknown {
+    return this.getSerializable(m);
   }
 
   getOther(s: number): unknown {

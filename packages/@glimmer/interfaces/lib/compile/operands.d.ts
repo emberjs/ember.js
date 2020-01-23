@@ -48,6 +48,11 @@ export interface SerializableOperand {
   value: unknown;
 }
 
+export interface TemplateMetaOperand {
+  type: 'template-meta';
+  value: unknown;
+}
+
 export interface OtherOperand {
   type: 'other';
   value: unknown;
@@ -99,6 +104,7 @@ export type NonlabelBuilderOperand =
   | ArrayOperand
   | StringArrayOperand
   | SerializableOperand
+  | TemplateMetaOperand
   | OtherOperand
   | StdlibOperand
   | LookupHandleOperand
