@@ -211,6 +211,8 @@ function constant(
     case 'string-array':
       return constants.stringArray(operand.value);
     case 'serializable':
+      return constants.serializable(operand.value);
+    case 'template-meta':
       return constants.templateMeta(operand.value);
     case 'other':
       // TODO: Bad cast

@@ -14,6 +14,7 @@ import {
   PrimitiveType,
   SerializableOperand,
   StringArrayOperand,
+  TemplateMetaOperand,
   WireFormat,
   NonlabelBuilderOperand,
 } from '@glimmer/interfaces';
@@ -38,6 +39,10 @@ export function strArray(value: string[]): StringArrayOperand {
 
 export function serializable(value: unknown): SerializableOperand {
   return { type: 'serializable', value };
+}
+
+export function templateMeta(value: unknown): TemplateMetaOperand {
+  return { type: 'template-meta', value };
 }
 
 export function other(value: unknown): OtherOperand {
