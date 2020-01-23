@@ -60,7 +60,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     return (this.arrays as number[][]).push(values) - 1;
   }
 
-  templateMeta(value: unknown): number {
+  serializable(value: unknown): number {
     let str = JSON.stringify(value);
     let index = this.strings.indexOf(str);
     if (index > -1) {
@@ -68,6 +68,10 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     }
 
     return this.strings.push(str) - 1;
+  }
+
+  templateMeta(value: unknown): number {
+    return this.serializable(value);
   }
 
   number(number: number): number {
@@ -129,8 +133,12 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
     return (this.arrays as number[][])[value];
   }
 
-  getTemplateMeta<T>(s: number): T {
+  getSerializable<T>(s: number): T {
     return JSON.parse(this.strings[s]) as T;
+  }
+
+  getTemplateMeta<T>(m: number): T {
+    return this.getSerializable(m);
   }
 
   getOther<T>(value: number): T {
@@ -186,6 +194,10 @@ export class JitConstants extends WriteOnlyConstants implements RuntimeConstants
 
   getArray(value: number): number[] {
     return (this.arrays as number[][])[value];
+  }
+
+  getSerializable<T>(s: number): T {
+    return JSON.parse(this.strings[s]) as T;
   }
 
   getTemplateMeta<T>(m: number): T {
