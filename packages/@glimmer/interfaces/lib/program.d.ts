@@ -102,6 +102,7 @@ export interface CompileTimeConstants {
   string(value: string): number;
   stringArray(strings: string[]): number;
   array(values: number[]): number;
+  serializable(value: unknown): number;
   templateMeta(value: unknown): number;
   number(value: number): number;
   other(value: unknown): number;
@@ -121,6 +122,7 @@ export interface RuntimeConstants {
   getString(handle: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
+  getSerializable(handle: number): unknown;
   getTemplateMeta(s: number): unknown;
   getOther(s: number): unknown;
 }

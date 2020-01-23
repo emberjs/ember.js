@@ -18,7 +18,8 @@ export interface DebugConstants {
   getString(value: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
-  getTemplateMeta(s: number): unknown;
+  getSerializable(s: number): unknown;
+  getTemplateMeta(m: number): unknown;
 }
 
 interface LazyDebugConstants {
