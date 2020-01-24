@@ -50,13 +50,7 @@ export interface Tagged {
  *
  * @param tag
  */
-export function value(tag: Tag): Revision {
-  if (DEBUG) {
-    // compute to cache the latest value, which will prevent us from doing
-    // invalid updates later on.
-    tag[COMPUTE]();
-  }
-
+export function value(_tag: Tag): Revision {
   return $REVISION;
 }
 
@@ -71,26 +65,8 @@ export function value(tag: Tag): Revision {
  * @param snapshot
  */
 export function validate(tag: Tag, snapshot: Revision) {
-  if (DEBUG) {
-    IS_VALIDATING = true;
-  }
-
-  let isValid = snapshot >= tag[COMPUTE]();
-
-  if (DEBUG) {
-    IS_VALIDATING = false;
-
-    if (isValid) {
-      // compute to cache the latest value, which will prevent us from doing
-      // invalid updates later on.
-      tag[COMPUTE]();
-    }
-  }
-
-  return isValid;
+  return snapshot >= tag[COMPUTE]();
 }
-
-let IS_VALIDATING: boolean | undefined;
 
 //////////
 
@@ -140,8 +116,10 @@ class MonomorphicTagImpl implements MonomorphicTag {
   private lastValue = INITIAL;
 
   private isUpdating = false;
-  private subtag: Tag | null = null;
   private subtags: Tag[] | null = null;
+
+  private subtag: Tag | null = null;
+  private subtagBufferCache: Revision | null = null;
 
   [TYPE]: MonomorphicTagType;
 
@@ -160,26 +138,21 @@ class MonomorphicTagImpl implements MonomorphicTag {
       this.lastChecked = ++$REVISION;
     } else if (lastChecked !== $REVISION) {
       this.isUpdating = true;
-
-      if (DEBUG) {
-        // In DEBUG, we don't cache while validating only, because it is valid
-        // update a tag between calling `validate()` and `value()`. Once you
-        // call `value()` on a tag, its revision is effectively locked in, and
-        // if you attempt to update it to a tag that is more recent it could
-        // break assumptions in our system. This is why the assertion exists in
-        // the static `update()` method below.
-        if (!IS_VALIDATING) {
-          this.lastChecked = $REVISION;
-        }
-      } else {
-        this.lastChecked = $REVISION;
-      }
+      this.lastChecked = $REVISION;
 
       try {
-        let { subtags, subtag, revision } = this;
+        let { subtags, subtag, subtagBufferCache, lastValue, revision } = this;
 
         if (subtag !== null) {
-          revision = Math.max(revision, subtag[COMPUTE]());
+          let subtagValue = subtag[COMPUTE]();
+
+          if (subtagValue === subtagBufferCache) {
+            revision = Math.max(revision, lastValue);
+          } else {
+            // Clear the temporary buffer cache
+            this.subtagBufferCache = null;
+            revision = Math.max(revision, subtagValue);
+          }
         }
 
         if (subtags !== null) {
@@ -198,27 +171,37 @@ class MonomorphicTagImpl implements MonomorphicTag {
     return this.lastValue;
   }
 
-  static update(_tag: UpdatableTag, subtag: Tag) {
+  static update(_tag: UpdatableTag, _subtag: Tag) {
     if (DEBUG && _tag[TYPE] !== MonomorphicTagTypes.Updatable) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
 
     // TODO: TS 3.7 should allow us to do this via assertion
     let tag = _tag as MonomorphicTagImpl;
+    let subtag = _subtag as MonomorphicTagImpl;
 
     if (subtag === CONSTANT_TAG) {
       tag.subtag = null;
     } else {
-      if (
-        DEBUG &&
-        tag.lastChecked === $REVISION &&
-        (subtag as MonomorphicTagImpl)[COMPUTE]() > tag.lastValue
-      ) {
-        throw new Error(
-          'BUG: attempted to update a tag with a tag that has a more recent revision as its value'
-        );
-      }
-
+      // There are two different possibilities when updating a subtag:
+      //
+      // 1. subtag[COMPUTE]() <= tag[COMPUTE]();
+      // 2. subtag[COMPUTE]() > tag[COMPUTE]();
+      //
+      // The first possibility is completely fine within our caching model, but
+      // the second possibility presents a problem. If the parent tag has
+      // already been read, then it's value is cached and will not update to
+      // reflect the subtag's greater value. Next time the cache is busted, the
+      // subtag's value _will_ be read, and it's value will be _greater_ than
+      // the saved snapshot of the parent, causing the resulting calculation to
+      // be rerun erroneously.
+      //
+      // In order to prevent this, when we first update to a new subtag we store
+      // its computed value, and then check against that computed value on
+      // subsequent updates. If its value hasn't changed, then we return the
+      // parent's previous value. Once the subtag changes for the first time,
+      // we clear the cache and everything is finally in sync with the parent.
+      tag.subtagBufferCache = subtag[COMPUTE]();
       tag.subtag = subtag;
     }
   }
