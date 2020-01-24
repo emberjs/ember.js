@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.47.1 (2020-01-24)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1012](https://github.com/glimmerjs/glimmer-vm/pull/1012) [BUGFIX] Converts partial meta to template meta in constants pool ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.47.0 (2020-01-24)
 
 #### :boom: Breaking Change
