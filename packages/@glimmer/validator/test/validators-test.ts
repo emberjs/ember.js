@@ -74,91 +74,49 @@ module('@glimmer/validator: validators', () => {
       assert.ok(validate(tag, snapshot));
     });
 
+    test('it correctly buffers updates when subtag has a less recent value', assert => {
+      let tag = createUpdatableTag();
+      let subtag = createUpdatableTag();
+
+      // First, we dirty the parent tag so it is more recent than the subtag
+      dirty(tag);
+
+      // Then, we get a snapshot of the parent
+      let snapshot = value(tag);
+
+      // Now, we update the parent tag with the subtag, and revalidate it
+      update(tag as any, subtag);
+
+      assert.ok(validate(tag, snapshot), 'tag is still valid after being updated');
+
+      // Finally, dirty the subtag one final time to bust the buffer cache
+      dirty(subtag);
+
+      assert.notOk(validate(tag, snapshot), 'tag is invalid after subtag is dirtied again');
+    });
+
+    test('it correctly buffers updates when subtag has a more recent value', assert => {
+      let tag = createUpdatableTag();
+      let subtag = createUpdatableTag();
+
+      // First, we get a snapshot of the parent
+      let snapshot = value(tag);
+
+      // Then we dirty the currently unrelated subtag
+      dirty(subtag);
+
+      // Now, we update the parent tag with the subtag, and revalidate it
+      update(tag as any, subtag);
+
+      assert.ok(validate(tag, snapshot), 'tag is still valid after being updated');
+
+      // Finally, dirty the subtag one final time to bust the buffer cache
+      dirty(subtag);
+
+      assert.notOk(validate(tag, snapshot), 'tag is invalid after subtag is dirtied again');
+    });
+
     if (DEBUG) {
-      test('it throws an error when updating a tag that has been validated with a tag that is more recent', assert => {
-        let tag = createUpdatableTag();
-        let subtag = createUpdatableTag();
-
-        // First, we get a snapshot of the parent
-        let snapshot = value(tag);
-
-        // Then we dirty the currently unrelated subtag
-        dirty(subtag);
-
-        // Then we validate the parent tag. This should "lock in" the tag, because it
-        // means we are verifying that whatever calculation it represents has not changed
-        assert.ok(validate(tag, snapshot));
-
-        // Now, we attempt to update the parent with the subtag. The parent has been locked
-        // in, but the subtag has a more recent value, which means we have backflowed. This
-        // should throw an error.
-        assert.throws(
-          () => update(tag as any, subtag),
-          /Error: BUG: attempted to update a tag with a tag that has a more recent revision as its value/
-        );
-      });
-
-      test('it throws an error when updating a tag that has been invalidated AND whose value has been read with a tag that is more recent', assert => {
-        let tag = createUpdatableTag();
-        let subtag = createUpdatableTag();
-
-        // First, we get a snapshot of the parent
-        let snapshot = value(tag);
-
-        // Then we dirty the parent so it is out of date
-        dirty(tag);
-
-        // Then we dirty the currently unrelated subtag, so it has a more recent value
-        dirty(subtag);
-
-        // Then we attempt validate the parent tag. The validation will fail, and will
-        // NOT lock in the parent value just yet.
-        assert.notOk(validate(tag, snapshot));
-
-        // Then we get the parent tag's value, which does lock in the value.
-        snapshot = value(tag);
-
-        // Now, we attempt to update the parent with the subtag. The parent has been locked
-        // in, but the subtag has a more recent value, which means we have backflowed. This
-        // should throw an error.
-        assert.throws(
-          () => update(tag as any, subtag),
-          /Error: BUG: attempted to update a tag with a tag that has a more recent revision as its value/
-        );
-      });
-
-      test('does not throw an error when updating a tag that has been invalidated AND whose value has NOT been read with a tag that is more recent', assert => {
-        let tag = createUpdatableTag();
-        let subtag = createUpdatableTag();
-
-        // First, we get a snapshot of the parent
-        let snapshot = value(tag);
-
-        // Then we dirty the parent so it is out of date
-        dirty(tag);
-
-        // Then we dirty the currently unrelated subtag, so it has a more recent value
-        dirty(subtag);
-
-        // Then we attempt validate the parent tag. The validation will fail, and will
-        // NOT lock in the parent value just yet.
-        assert.notOk(validate(tag, snapshot));
-
-        // Now we update the parent to the new subtag, BEFORE its value has been
-        // calculated. Since we know the value hasn't been calculated or locked into
-        // the cache, this update is valid.
-        update(tag as any, subtag);
-
-        // Then we get the parent tag's value, which does lock in the value.
-        snapshot = value(tag);
-
-        // Do an unrelated bump (something else in the system changed)
-        bump();
-
-        // Caches were fully busted, but the value was still correct.
-        assert.ok(validate(tag, snapshot));
-      });
-
       test('does not allow cycles on tags that have not been marked with ALLOW_CYCLES', assert => {
         let tag = createUpdatableTag();
         let subtag = createUpdatableTag();
