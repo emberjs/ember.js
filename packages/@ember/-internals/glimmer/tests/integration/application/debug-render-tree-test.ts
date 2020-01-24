@@ -944,7 +944,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async '@feature(EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) templateOnlyComponent()'() {
+      async '@test templateOnlyComponent()'() {
         this.addTemplate(
           'application',
           strip`
@@ -1017,7 +1017,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async '@feature(EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) templateOnlyComponent() + setComponentTemplate()'() {
+      async '@test templateOnlyComponent() + setComponentTemplate()'() {
         this.addTemplate(
           'application',
           strip`

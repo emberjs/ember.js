@@ -2,7 +2,6 @@
 
 const chalk = require('chalk');
 const path = require('path');
-const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
@@ -11,11 +10,6 @@ const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
 
 const OCTANE = has('octane');
-
-// TODO: this should be reading from the @ember/canary-features module
-// need to refactor broccoli/features.js to be able to work more similarly
-// to https://github.com/emberjs/data/pull/6231
-const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 
 // intentionally avoiding use-edition-detector
 module.exports = {
@@ -75,8 +69,6 @@ module.exports = {
 
     this.skippedJsFiles = new Set();
     this.savedLocals = {};
-
-    this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = EMBER_GLIMMER_SET_COMPONENT_TEMPLATE || isOctane;
   },
 
   install(options) {
@@ -85,20 +77,6 @@ module.exports = {
     // what's passed to us literally if the user didn't override it.
     if (options.componentClass === '--no-component-class') {
       options.componentClass = '';
-    }
-
-    if (!this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-      if (options.componentClass !== '@ember/component') {
-        throw new SilentError(
-          'Usage of --component-class argument to `ember generate component` is only available on canary'
-        );
-      }
-
-      if (options.componentStructure !== 'classic') {
-        throw new SilentError(
-          'Usage of --component-structure argument to `ember generate component` is only available on canary'
-        );
-      }
     }
 
     return this._super.install.apply(this, arguments);
@@ -147,10 +125,7 @@ module.exports = {
           return 'template';
         },
       };
-    } else if (
-      !this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE ||
-      commandOptions.componentStructure === 'classic'
-    ) {
+    } else if (commandOptions.componentStructure === 'classic') {
       return {
         __path__() {
           return 'components';
@@ -162,10 +137,7 @@ module.exports = {
           return options.dasherizedModuleName;
         },
       };
-    } else if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      commandOptions.componentStructure === 'flat'
-    ) {
+    } else if (commandOptions.componentStructure === 'flat') {
       return {
         __path__() {
           return 'components';
@@ -177,10 +149,7 @@ module.exports = {
           return options.dasherizedModuleName;
         },
       };
-    } else if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      commandOptions.componentStructure === 'nested'
-    ) {
+    } else if (commandOptions.componentStructure === 'nested') {
       return {
         __path__() {
           return `components/${options.dasherizedModuleName}`;
@@ -201,7 +170,7 @@ module.exports = {
   files() {
     let files = this._super.files.apply(this, arguments);
 
-    if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && this.options.componentClass === '') {
+    if (this.options.componentClass === '') {
       files = files.filter(file => {
         if (file.endsWith('.js')) {
           this.skippedJsFiles.add(file);
@@ -242,11 +211,7 @@ module.exports = {
       }
     }
 
-    let componentClass = this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
-      ? options.componentClass
-      : '@ember/component';
-
-    switch (componentClass) {
+    switch (options.componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
         if (templatePath) {

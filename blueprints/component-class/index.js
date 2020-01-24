@@ -1,7 +1,6 @@
 'use strict';
 
 const path = require('path');
-const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
@@ -10,11 +9,6 @@ const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
 
 const OCTANE = has('octane');
-
-// TODO: this should be reading from the @ember/canary-features module
-// need to refactor broccoli/features.js to be able to work more similarly
-// to https://github.com/emberjs/data/pull/6231
-const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 
 // intentionally avoiding use-edition-detector
 module.exports = {
@@ -68,17 +62,9 @@ module.exports = {
         }
       }
     });
-
-    this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = EMBER_GLIMMER_SET_COMPONENT_TEMPLATE || isOctane;
   },
 
   install() {
-    if (!this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-      throw new SilentError(
-        'Usage of `ember generate component-class` is only available on canary'
-      );
-    }
-
     return this._super.install.apply(this, arguments);
   },
 

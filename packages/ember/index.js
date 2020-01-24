@@ -7,7 +7,7 @@ import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
 import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import { FEATURES, isEnabled, EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
+import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
@@ -526,11 +526,9 @@ Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = capabilities;
 Ember._setModifierManager = setModifierManager;
 Ember._modifierManagerCapabilities = modifierCapabilities;
-if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-  Ember._getComponentTemplate = getComponentTemplate;
-  Ember._setComponentTemplate = setComponentTemplate;
-  Ember._templateOnlyComponent = templateOnlyComponent;
-}
+Ember._getComponentTemplate = getComponentTemplate;
+Ember._setComponentTemplate = setComponentTemplate;
+Ember._templateOnlyComponent = templateOnlyComponent;
 Ember._captureRenderTree = captureRenderTree;
 Ember.Handlebars = {
   template,
