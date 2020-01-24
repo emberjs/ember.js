@@ -26,7 +26,7 @@ export default class TestJitRuntimeResolver implements JitRuntimeResolver {
 
   compilable(locator: AnnotatedModuleLocator): Template {
     let compile = (source: string) => {
-      return createTemplate<AnnotatedModuleLocator>(source).create();
+      return createTemplate(source).create();
     };
 
     let handle = this.lookup('template-source', locator.module)!;
