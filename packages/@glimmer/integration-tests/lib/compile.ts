@@ -28,14 +28,20 @@ export function preprocess(
   return factory.create(meta || DEFAULT_TEST_META);
 }
 
-export function createTemplate<Locator>(
+export function createTemplate(
   templateSource: string,
-  options?: PrecompileOptions
-): TemplateFactory<Locator> {
-  let wrapper: SerializedTemplateWithLazyBlock<Locator> = JSON.parse(
+  options?: PrecompileOptions,
+  runtimeMeta?: unknown
+): TemplateFactory<AnnotatedModuleLocator> {
+  let wrapper: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator> = JSON.parse(
     rawPrecompile(templateSource, options)
   );
-  return templateFactory<Locator>(wrapper);
+
+  if (runtimeMeta) {
+    wrapper.meta.meta = runtimeMeta;
+  }
+
+  return templateFactory<AnnotatedModuleLocator>(wrapper);
 }
 
 export interface TestCompileOptions extends PrecompileOptions {

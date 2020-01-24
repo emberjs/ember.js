@@ -28,6 +28,13 @@ export interface Lookup {
 export type LookupType = keyof Lookup;
 export type LookupValue = Lookup[LookupType];
 
+// This is used to replicate a requirement of Ember's template referrers, which
+// assign the `owner` to the template meta. The requirement is that the template
+// metas should not be serialized, and this prevents serialization by adding a
+// circular reference to the template meta.
+const CIRCULAR_OBJECT: { inner: { outer?: object } } = { inner: {} };
+CIRCULAR_OBJECT.inner.outer = CIRCULAR_OBJECT;
+
 export class TypedRegistry<T> {
   private byName: { [key: string]: number } = dict<number>();
   private byHandle: { [key: number]: T } = dict<T>();
@@ -101,7 +108,7 @@ export class TestJitRegistry {
       return this.resolve<Template>(compilableHandle);
     }
 
-    let factory = createTemplate<AnnotatedModuleLocator>(source);
+    let factory = createTemplate(source, undefined, CIRCULAR_OBJECT);
     let template = factory.create();
 
     this.register('compilable', templateName, template);
@@ -168,7 +175,7 @@ export class TestJitRegistry {
     // structure.
     let template = unwrapTemplate(
       this.customCompilableTemplate(templateHandle, name, source => {
-        let factory = createTemplate<AnnotatedModuleLocator>(source);
+        let factory = createTemplate(source, undefined, CIRCULAR_OBJECT);
         return factory.create();
       })
     );

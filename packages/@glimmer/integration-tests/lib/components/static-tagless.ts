@@ -1,11 +1,6 @@
 import { BasicComponentManager } from './basic';
 import { TestComponentDefinitionState } from './test-component';
-import {
-  ComponentCapabilities,
-  CompilableProgram,
-  AnnotatedModuleLocator,
-  Option,
-} from '@glimmer/interfaces';
+import { ComponentCapabilities, CompilableProgram, Option } from '@glimmer/interfaces';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
 import { createTemplate } from '../compile';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
@@ -25,7 +20,7 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
     return unwrapTemplate(
       resolver.registry.customCompilableTemplate(handle, name, source =>
-        createTemplate<AnnotatedModuleLocator>(source).create()
+        createTemplate(source).create()
       )
     ).asLayout();
   }
