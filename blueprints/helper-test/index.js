@@ -2,6 +2,7 @@
 
 const stringUtils = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
+const semver = require('semver');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
@@ -76,17 +77,33 @@ module.exports = useTestFrameworkDetector({
       dasherizedModulePrefix = stringUtils.dasherize(options.project.config().modulePrefix);
     }
 
+    let hbsImportStatement = this._useNamedHbsImport()
+      ? "import { hbs } from 'ember-cli-htmlbars';"
+      : "import hbs from 'htmlbars-inline-precompile';";
+
     return {
-      friendlyTestName: friendlyTestName,
-      dasherizedModulePrefix: dasherizedModulePrefix,
-      testType: testType,
+      testType,
+      friendlyTestName,
+      dasherizedModulePrefix,
+      hbsImportStatement,
     };
+  },
+
+  _useNamedHbsImport() {
+    let htmlbarsAddon = this.project.addons.find(a => a.name === 'ember-cli-htmlbars');
+
+    if (htmlbarsAddon && semver.gte(htmlbarsAddon.pkg.version, '4.0.0-alpha.1')) {
+      return true;
+    }
+
+    return false;
   },
 
   afterInstall: function(options) {
     if (
       !options.dryRun &&
       options.testType === 'integration' &&
+      !this._useNamedHbsImport() &&
       isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
     ) {
       return this.addPackagesToProject([
