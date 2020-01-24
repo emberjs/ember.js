@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.47.0 (2020-01-24)
+
+#### :boom: Breaking Change
+* `@glimmer/bundle-compiler`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`
+  * [#1011](https://github.com/glimmerjs/glimmer-vm/pull/1011) [PERF] Splits out template metas and serializables in constant pool ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/validator`
+  * [#1010](https://github.com/glimmerjs/glimmer-vm/pull/1010) [BUGFIX] Makes UpdatableTag updates lazy ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
 
 ## v0.46.0 (2020-01-16)
 
