@@ -50,13 +50,7 @@ export interface Tagged {
  *
  * @param tag
  */
-export function value(tag: Tag): Revision {
-  if (DEBUG) {
-    // compute to cache the latest value, which will prevent us from doing
-    // invalid updates later on.
-    tag[COMPUTE]();
-  }
-
+export function value(_tag: Tag): Revision {
   return $REVISION;
 }
 
@@ -71,26 +65,8 @@ export function value(tag: Tag): Revision {
  * @param snapshot
  */
 export function validate(tag: Tag, snapshot: Revision) {
-  if (DEBUG) {
-    IS_VALIDATING = true;
-  }
-
-  let isValid = snapshot >= tag[COMPUTE]();
-
-  if (DEBUG) {
-    IS_VALIDATING = false;
-
-    if (isValid) {
-      // compute to cache the latest value, which will prevent us from doing
-      // invalid updates later on.
-      tag[COMPUTE]();
-    }
-  }
-
-  return isValid;
+  return snapshot >= tag[COMPUTE]();
 }
-
-let IS_VALIDATING: boolean | undefined;
 
 //////////
 
@@ -143,7 +119,7 @@ class MonomorphicTagImpl implements MonomorphicTag {
   private subtags: Tag[] | null = null;
 
   private subtag: Tag | null = null;
-  private subtagCachedValue: Revision | null = null;
+  private subtagBufferCache: Revision | null = null;
 
   [TYPE]: MonomorphicTagType;
 
@@ -162,38 +138,19 @@ class MonomorphicTagImpl implements MonomorphicTag {
       this.lastChecked = ++$REVISION;
     } else if (lastChecked !== $REVISION) {
       this.isUpdating = true;
-
-      if (DEBUG) {
-        // In DEBUG, we don't cache while validating only, because it is valid
-        // update a tag between calling `validate()` and `value()`. Once you
-        // call `value()` on a tag, its revision is effectively locked in, and
-        // if you attempt to update it to a tag that is more recent it could
-        // break assumptions in our system. This is why the assertion exists in
-        // the static `update()` method below.
-        if (!IS_VALIDATING) {
-          this.lastChecked = $REVISION;
-        }
-      } else {
-        this.lastChecked = $REVISION;
-      }
+      this.lastChecked = $REVISION;
 
       try {
-        let {
-          subtags,
-          subtag,
-          subtagCachedValue,
-          lastValue,
-          revision
-        } = this;
+        let { subtags, subtag, subtagBufferCache, lastValue, revision } = this;
 
         if (subtag !== null) {
           let subtagValue = subtag[COMPUTE]();
 
-          if (subtagValue === subtagCachedValue) {
+          if (subtagValue === subtagBufferCache) {
             revision = Math.max(revision, lastValue);
           } else {
-            // Clear the temporary cache
-            this.subtagCachedValue = null;
+            // Clear the temporary buffer cache
+            this.subtagBufferCache = null;
             revision = Math.max(revision, subtagValue);
           }
         }
@@ -244,7 +201,7 @@ class MonomorphicTagImpl implements MonomorphicTag {
       // subsequent updates. If its value hasn't changed, then we return the
       // parent's previous value. Once the subtag changes for the first time,
       // we clear the cache and everything is finally in sync with the parent.
-      tag.subtagCachedValue = subtag[COMPUTE]();
+      tag.subtagBufferCache = subtag[COMPUTE]();
       tag.subtag = subtag;
     }
   }
