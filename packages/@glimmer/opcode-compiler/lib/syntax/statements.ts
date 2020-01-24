@@ -7,7 +7,7 @@ import {
   HighLevelResolutionOpcode,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
-import { serializable, strArray, arr } from '../opcode-builder/operands';
+import { templateMeta, strArray, arr } from '../opcode-builder/operands';
 import { InvokeStaticComponent, InvokeComponent } from '../opcode-builder/helpers/components';
 import { ReplayableIf } from '../opcode-builder/helpers/conditional';
 import { YieldBlock } from '../opcode-builder/helpers/blocks';
@@ -136,7 +136,7 @@ STATEMENTS.add(SexpOpcodes.Partial, ([, name, evalInfo], meta) =>
       return [
         op(
           Op.InvokePartial,
-          serializable(meta.referrer),
+          templateMeta(meta.referrer),
           strArray(meta.evalSymbols!),
           arr(evalInfo)
         ),
