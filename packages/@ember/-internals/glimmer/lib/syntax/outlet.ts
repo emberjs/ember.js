@@ -1,4 +1,3 @@
-import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Dict, Option, unsafe, VM, VMArguments } from '@glimmer/interfaces';
 import {
@@ -140,7 +139,7 @@ class OutletComponentReference
     let definition = null;
 
     if (state !== null) {
-      let args = EMBER_ROUTING_MODEL_ARG ? makeArgs(this.outletRef, this.env) : null;
+      let args = makeArgs(this.outletRef, this.env);
 
       definition = curry(new OutletComponentDefinition(state), args);
     }

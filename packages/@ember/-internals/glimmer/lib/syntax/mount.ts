@@ -12,7 +12,7 @@ import {
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { Tag } from '@glimmer/validator';
-import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
+import { MountDefinition } from '../component-managers/mount';
 import { EmberVMEnvironment } from '../environment';
 
 export function mountHelper(
@@ -48,12 +48,6 @@ export function mountHelper(
 
     let named = args.named.capture();
     let { tag } = named;
-
-    // TODO delete me after EMBER_ROUTING_MODEL_ARG has shipped
-    if (DEBUG && MODEL_ARG_NAME !== 'model') {
-      assert('[BUG] named._map is not null', named['_map'] === null);
-      named.names = [MODEL_ARG_NAME];
-    }
 
     captured = {
       tag,

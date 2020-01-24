@@ -1,7 +1,6 @@
 import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Test from '../lib/test';
 
-import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { A as emberA } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
 import { jQueryDisabled } from '@ember/-internals/views';
@@ -18,29 +17,16 @@ moduleFor(
       runTask(() => {
         this.createApplication();
 
-        if (EMBER_ROUTING_MODEL_ARG) {
-          this.addTemplate(
-            'people',
-            `
-            <div>
-              {{#each @model as |person|}}
-                <div class="name">{{person.firstName}}</div>
-              {{/each}}
-            </div>
-            `
-          );
-        } else {
-          this.addTemplate(
-            'people',
-            `
-            <div>
-              {{#each this.model as |person|}}
-                <div class="name">{{person.firstName}}</div>
-              {{/each}}
-            </div>
-            `
-          );
-        }
+        this.addTemplate(
+          'people',
+          `
+          <div>
+            {{#each @model as |person|}}
+              <div class="name">{{person.firstName}}</div>
+            {{/each}}
+          </div>
+          `
+        );
 
         this.router.map(function() {
           this.route('people', { path: '/' });
