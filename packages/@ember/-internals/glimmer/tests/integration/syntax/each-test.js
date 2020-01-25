@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { get, set, notifyPropertyChange } from '@ember/-internals/metal';
+import { get, set, notifyPropertyChange, computed } from '@ember/-internals/metal';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 
@@ -1085,6 +1085,25 @@ moduleFor(
         list: wrapped,
         delegate: ArrayProxy.create({ content: wrapped }),
       };
+    }
+  }
+);
+
+moduleFor(
+  'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
+  class extends EachTest {
+    createList(items) {
+      let wrapped = emberA(items);
+      let proxy = ArrayProxy.extend({
+        arrangedContent: computed('wrappedItems.[]', function() {
+          // Slice the items to ensure that updates must be propogated
+          return this.wrappedItems.slice();
+        }),
+      }).create({
+        wrappedItems: wrapped,
+      });
+
+      return { list: proxy, delegate: wrapped };
     }
   }
 );
