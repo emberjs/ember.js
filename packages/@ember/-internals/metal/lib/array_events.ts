@@ -32,7 +32,8 @@ export function arrayContentDidChange<T extends { length: number }>(
   array: T,
   startIdx: number,
   removeAmt: number,
-  addAmt: number
+  addAmt: number,
+  notify = true
 ): T {
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
@@ -50,11 +51,13 @@ export function arrayContentDidChange<T extends { length: number }>(
 
   let meta = peekMeta(array);
 
-  if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
-    notifyPropertyChange(array, 'length', meta);
-  }
+  if (notify) {
+    if (addAmt < 0 || removeAmt < 0 || addAmt - removeAmt !== 0) {
+      notifyPropertyChange(array, 'length', meta);
+    }
 
-  notifyPropertyChange(array, '[]', meta);
+    notifyPropertyChange(array, '[]', meta);
+  }
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
