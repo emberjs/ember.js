@@ -1113,11 +1113,9 @@ if (DEBUG) {
     for (key in proto) {
       desc = descriptorForProperty(proto, key);
       if (desc && DEBUG_INJECTION_FUNCTIONS.has(desc._getter)) {
-        let { namespace, source, type, name } = DEBUG_INJECTION_FUNCTIONS.get(desc._getter);
+        let { type, name } = DEBUG_INJECTION_FUNCTIONS.get(desc._getter);
 
         injections[key] = {
-          namespace,
-          source,
           specifier: `${type}:${name || key}`,
         };
       }

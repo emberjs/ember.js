@@ -1,6 +1,5 @@
 import { Factory, LookupOptions, Owner, OWNER, setOwner } from '@ember/-internals/owner';
 import { dictionary, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
@@ -141,11 +140,10 @@ export default class Container {
    let twitter2 = container.lookup('api:twitter', { singleton: false });
     twitter === twitter2; //=> false
    ```
-    @private
+   @private
    @method lookup
    @param {String} fullName
    @param {Object} [options]
-   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
   lookup(fullName: string, options: LookupOptions): any {
@@ -210,27 +208,15 @@ export default class Container {
    @method factoryFor
    @param {String} fullName
    @param {Object} [options]
-   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  factoryFor<T, C>(fullName: string, options: LookupOptions = {}): Factory<T, C> | undefined {
+  factoryFor<T, C>(fullName: string): Factory<T, C> | undefined {
     if (this.isDestroyed) {
       throw new Error(`Can not call \`.factoryFor\` after the owner has been destroyed`);
     }
     let normalizedName = this.registry.normalize(fullName);
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
-    assert(
-      'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to factoryFor',
-      EMBER_MODULE_UNIFICATION || !options.namespace
-    );
-
-    if (options.source || options.namespace) {
-      normalizedName = this.registry.expandLocalLookup(fullName, options);
-      if (!normalizedName) {
-        return;
-      }
-    }
 
     return factoryFor<T, C>(this, normalizedName, fullName) as Factory<T, C> | undefined;
   }
@@ -281,28 +267,14 @@ function isInstantiatable(container: Container, fullName: string) {
 }
 
 function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
-  assert(
-    'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to lookup',
-    EMBER_MODULE_UNIFICATION || !options.namespace
-  );
-
-  let normalizedName = fullName;
-
-  if (options.source || options.namespace) {
-    normalizedName = container.registry.expandLocalLookup(fullName, options);
-    if (!normalizedName) {
-      return;
-    }
-  }
-
   if (options.singleton !== false) {
-    let cached = container.cache[normalizedName];
+    let cached = container.cache[fullName];
     if (cached !== undefined) {
       return cached;
     }
   }
 
-  return instantiateFactory(container, normalizedName, fullName, options);
+  return instantiateFactory(container, fullName, options);
 }
 
 function factoryFor<T, C>(container: Container, normalizedName: string, fullName: string) {
@@ -387,13 +359,8 @@ function isFactoryInstance(
   );
 }
 
-function instantiateFactory(
-  container: Container,
-  normalizedName: string,
-  fullName: string,
-  options: FactoryOptions
-) {
-  let factoryManager = factoryFor(container, normalizedName, fullName);
+function instantiateFactory(container: Container, fullName: string, options: FactoryOptions) {
+  let factoryManager = factoryFor(container, fullName, fullName);
 
   if (factoryManager === undefined) {
     return;
@@ -402,7 +369,7 @@ function instantiateFactory(
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    let instance = (container.cache[normalizedName] = factoryManager.create());
+    let instance = (container.cache[fullName] = factoryManager.create());
 
     // if this lookup happened _during_ destruction (emits a deprecation, but
     // is still possible) ensure that it gets destroyed
@@ -451,13 +418,9 @@ function processInjections(
   }
 
   for (let i = 0; i < injections.length; i++) {
-    let { property, specifier, source } = injections[i];
+    let { property, specifier } = injections[i];
 
-    if (source) {
-      hash[property] = lookup(container, specifier, { source });
-    } else {
-      hash[property] = lookup(container, specifier);
-    }
+    hash[property] = lookup(container, specifier);
 
     if (!result.isDynamic) {
       result.isDynamic = !isSingleton(container, specifier);
@@ -530,8 +493,6 @@ function resetMember(container: Container, fullName: string) {
 }
 
 export interface LazyInjection {
-  namespace: string | undefined;
-  source: string | undefined;
   specifier: string;
 }
 

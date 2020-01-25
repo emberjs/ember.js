@@ -2,21 +2,14 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert, deprecate } from '@ember/debug';
 import { PARTIALS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import {
-  ComponentDefinition,
-  Helper,
-  JitRuntimeResolver,
-  Option,
-  PartialDefinition,
-} from '@glimmer/interfaces';
-import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
+import { ComponentDefinition, Helper, JitRuntimeResolver, Option } from '@glimmer/interfaces';
+import { PartialDefinition } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { CurlyComponentDefinition } from './component-managers/curly';
@@ -58,13 +51,6 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-function makeOptions(moduleName: string, namespace?: string): LookupOptions {
-  return {
-    source: moduleName !== undefined ? `template:${moduleName}` : undefined,
-    namespace,
-  };
-}
-
 function componentFor(
   name: string,
   owner: Owner,
@@ -78,44 +64,6 @@ function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<
   let templateFullName = `template:components/${name}`;
 
   return owner.lookup(templateFullName, options) || null;
-}
-
-function lookupModuleUnificationComponentPair(
-  owner: Owner,
-  name: string,
-  options?: LookupOptions
-): Option<LookupResult> {
-  let localComponent = componentFor(name, owner, options);
-  let localLayout = layoutFor(name, owner, options);
-
-  let globalComponent = componentFor(name, owner);
-  let globalLayout = layoutFor(name, owner);
-
-  // TODO: we shouldn't have to recheck fallback, we should have a lookup that doesn't fallback
-  if (
-    localComponent !== null &&
-    globalComponent !== null &&
-    globalComponent.class === localComponent.class
-  ) {
-    localComponent = null;
-  }
-  // TODO: Remove this when the MU feature flag is removed
-  if (
-    localLayout !== null &&
-    globalLayout !== null &&
-    unwrapTemplate(localLayout).referrer.moduleName ===
-      unwrapTemplate(globalLayout).referrer.moduleName
-  ) {
-    localLayout = null;
-  }
-
-  if (localComponent !== null || localLayout !== null) {
-    return { component: localComponent, layout: localLayout } as LookupResult;
-  } else if (globalComponent !== null || globalLayout !== null) {
-    return { component: globalComponent, layout: globalLayout } as LookupResult;
-  } else {
-    return null;
-  }
 }
 
 type LookupResult =
@@ -154,26 +102,6 @@ function lookupComponentPair(
   } else {
     return { component, layout } as LookupResult;
   }
-}
-
-function lookupComponent(owner: Owner, name: string, options: LookupOptions): Option<LookupResult> {
-  if (options.source || options.namespace) {
-    if (EMBER_MODULE_UNIFICATION) {
-      return lookupModuleUnificationComponentPair(owner, name, options);
-    }
-
-    let pair = lookupComponentPair(owner, name, options);
-
-    if (pair !== null) {
-      return pair;
-    }
-  }
-
-  if (EMBER_MODULE_UNIFICATION) {
-    return lookupModuleUnificationComponentPair(owner, name);
-  }
-
-  return lookupComponentPair(owner, name);
 }
 
 let lookupPartial: { templateName: string; owner: Owner } | any;
@@ -386,33 +314,18 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     return handle;
   }
 
-  private _lookupHelper(_name: string, meta: OwnedTemplateMeta): Option<Helper> {
+  private _lookupHelper(name: string, meta: OwnedTemplateMeta): Option<Helper> {
     assert(
-      `You attempted to overwrite the built-in helper "${_name}" which is not allowed. Please rename the helper.`,
-      !(this.builtInHelpers[_name] && meta.owner.hasRegistration(`helper:${_name}`))
+      `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
+      !(this.builtInHelpers[name] && meta.owner.hasRegistration(`helper:${name}`))
     );
 
-    const helper = this.builtInHelpers[_name];
+    const helper = this.builtInHelpers[name];
     if (helper !== undefined) {
       return helper;
     }
 
-    const { moduleName } = meta;
-    let owner = meta.owner;
-
-    let name = _name;
-    let namespace = undefined;
-    if (EMBER_MODULE_UNIFICATION) {
-      const parsed = this._parseNameForNamespace(_name);
-      name = parsed.name;
-      namespace = parsed.namespace;
-    }
-
-    const options: LookupOptions = makeOptions(moduleName, namespace);
-
-    const factory =
-      owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
-
+    const factory = meta.owner.factoryFor(`helper:${name}`);
     if (!isHelperFactory(factory)) {
       return null;
     }
@@ -464,33 +377,12 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     return builtin;
   }
 
-  private _parseNameForNamespace(_name: string) {
-    let name = _name;
-    let namespace = undefined;
-    let namespaceDelimiterOffset = _name.indexOf('::');
-    if (namespaceDelimiterOffset !== -1) {
-      name = _name.slice(namespaceDelimiterOffset + 2);
-      namespace = _name.slice(0, namespaceDelimiterOffset);
-    }
-
-    return { name, namespace };
-  }
-
   private _lookupComponentDefinition(
-    _name: string,
+    name: string,
     meta: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
-    let name = _name;
-    let namespace = undefined;
     let owner = meta.owner;
-    let { moduleName } = meta;
-
-    if (EMBER_MODULE_UNIFICATION) {
-      const parsed = this._parseNameForNamespace(_name);
-      name = parsed.name;
-      namespace = parsed.namespace;
-    }
-    let pair = lookupComponent(owner, name, makeOptions(moduleName, namespace));
+    let pair = lookupComponentPair(owner, name);
     if (pair === null) {
       return null;
     }

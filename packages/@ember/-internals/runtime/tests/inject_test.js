@@ -32,13 +32,9 @@ moduleFor(
           {
             foo: {
               specifier: 'foo:bar',
-              source: undefined,
-              namespace: undefined,
             },
             bar: {
               specifier: 'quux:bar',
-              source: undefined,
-              namespace: undefined,
             },
           },
           'should return injected container keys'
