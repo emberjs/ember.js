@@ -21,6 +21,17 @@ import { InternalTransition as Transition } from 'router_js';
 
 let originalConsoleError;
 
+function handleURLRejectsWith(context, assert, path, expectedReason) {
+  return context
+    .visit(path)
+    .then(() => {
+      assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
+    })
+    .catch(reason => {
+      assert.equal(reason.message, expectedReason);
+    });
+}
+
 moduleFor(
   'Basic Routing - Decoupled from global resolver',
   class extends ApplicationTestCase {
@@ -40,10 +51,6 @@ moduleFor(
     teardown() {
       super.teardown();
       console.error = originalConsoleError;
-    }
-
-    getController(name) {
-      return this.applicationInstance.lookup(`controller:${name}`);
     }
 
     handleURLAborts(assert, path, deprecated) {
@@ -76,20 +83,9 @@ moduleFor(
     get currentPath() {
       let currentPath;
       expectDeprecation(() => {
-        currentPath = this.getController('application').get('currentPath');
+        currentPath = this.applicationInstance.lookup('controller:application').get('currentPath');
       }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
       return currentPath;
-    }
-
-    handleURLRejectsWith(context, assert, path, expectedReason) {
-      return context
-        .visit(path)
-        .then(() => {
-          assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
-        })
-        .catch(reason => {
-          assert.equal(reason.message, expectedReason);
-        });
     }
 
     async ['@test warn on URLs not included in the route set'](assert) {
@@ -949,7 +945,7 @@ moduleFor(
         })
       );
 
-      runTask(() => this.handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
+      runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
 
       resolve(menuItem);
     }
@@ -1000,7 +996,7 @@ moduleFor(
       );
 
       let promise = runTask(() =>
-        this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error')
+        handleURLRejectsWith(this, assert, '/specials/1', 'Setup error')
       );
 
       resolve(menuItem);
