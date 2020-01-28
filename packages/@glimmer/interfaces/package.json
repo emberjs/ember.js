@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/interfaces",
-  "version": "0.47.2",
+  "version": "0.47.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/interfaces",
   "dependencies": {
     "@simple-dom/interface": "^1.4.0"
