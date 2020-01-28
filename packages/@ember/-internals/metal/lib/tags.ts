@@ -7,7 +7,6 @@ import {
   toString,
 } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
-import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -55,12 +54,6 @@ export const CUSTOM_TAG_FOR = symbol('CUSTOM_TAG_FOR');
 // This is exported for `@tracked`, but should otherwise be avoided. Use `tagForObject`.
 export const SELF_TAG: string = symbol('SELF_TAG');
 
-let SEEN_TAGS: WeakSet<Tag> | undefined;
-
-if (DEBUG) {
-  SEEN_TAGS = new WeakSet();
-}
-
 export function tagForProperty(obj: unknown, propertyKey: string | symbol): Tag {
   if (!isObject(obj)) {
     return CONSTANT_TAG;
@@ -72,11 +65,10 @@ export function tagForProperty(obj: unknown, propertyKey: string | symbol): Tag 
 
   let tag = tagFor(obj, propertyKey);
 
-  if (DEBUG && !SEEN_TAGS!.has(tag)) {
-    SEEN_TAGS!.add(tag);
+  if (DEBUG) {
+    setupMandatorySetter!(tag, obj, propertyKey);
 
-    setupMandatorySetter!(obj, propertyKey);
-
+    // TODO: Replace this with something more first class for tracking tags in DEBUG
     (tag as any)._propertyKey = propertyKey;
   }
 

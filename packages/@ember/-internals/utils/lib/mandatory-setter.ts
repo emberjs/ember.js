@@ -1,8 +1,12 @@
 import { assert } from '@ember/debug';
+import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
+import { Tag } from '@glimmer/validator';
 import lookupDescriptor from './lookup-descriptor';
 
-export let setupMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
+export let setupMandatorySetter:
+  | ((tag: Tag, obj: object, keyName: string | symbol) => void)
+  | undefined;
 export let teardownMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
 export let setWithMandatorySetter:
   | ((obj: object, keyName: string | symbol, value: any) => void)
@@ -11,6 +15,8 @@ export let setWithMandatorySetter:
 type PropertyDescriptorWithMeta = PropertyDescriptor & { hadOwnProperty?: boolean };
 
 if (DEBUG) {
+  let SEEN_TAGS = new WeakSet();
+
   let MANDATORY_SETTERS: WeakMap<
     object,
     // @ts-ignore
@@ -21,7 +27,13 @@ if (DEBUG) {
     return Object.prototype.propertyIsEnumerable.call(obj, key);
   };
 
-  setupMandatorySetter = function(obj: object, keyName: string | symbol) {
+  setupMandatorySetter = function(tag: Tag, obj: object, keyName: string | symbol) {
+    if (SEEN_TAGS.has(tag)) {
+      return;
+    }
+
+    SEEN_TAGS!.add(tag);
+
     let desc = (lookupDescriptor(obj, keyName) as PropertyDescriptorWithMeta) || {};
 
     if (desc.get || desc.set) {
