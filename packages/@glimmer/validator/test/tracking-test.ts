@@ -135,9 +135,12 @@ module('@glimmer/validator: tracking', () => {
     test('it can receive an initializer', assert => {
       class Foo {
         foo = 123;
+        bar = 456;
       }
 
-      let { getter } = trackedData<Foo, keyof Foo>('foo', () => 456);
+      let { getter } = trackedData<Foo, keyof Foo>('foo', function(this: Foo) {
+        return this.bar;
+      });
 
       let foo = new Foo();
 
@@ -148,9 +151,12 @@ module('@glimmer/validator: tracking', () => {
     test('it tracks changes to the storage cell', assert => {
       class Foo {
         foo = 123;
+        bar = 456;
       }
 
-      let { getter, setter } = trackedData<Foo, keyof Foo>('foo', () => 456);
+      let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function(this: Foo) {
+        return this.bar;
+      });
 
       let foo = new Foo();
       let tag = track(() => {
@@ -172,9 +178,12 @@ module('@glimmer/validator: tracking', () => {
 
       class Foo {
         foo = 123;
+        bar = 456;
       }
 
-      let { setter } = trackedData<Foo, keyof Foo>('foo', () => 456);
+      let { setter } = trackedData<Foo, keyof Foo>('foo', function(this: Foo) {
+        return this.bar;
+      });
 
       let foo = new Foo();
       setter(foo, 789);
