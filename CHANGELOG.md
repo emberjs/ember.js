@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.47.3 (2020-01-28)
+
+#### :bug: Bug Fix
+* `@glimmer/bundle-compiler`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/low-level`, `@glimmer/node`, `@glimmer/object-reference`, `@glimmer/object`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1017](https://github.com/glimmerjs/glimmer-vm/pull/1017) Fix publishing issues in v0.47.2 ([@chancancode](https://github.com/chancancode))
+
+#### Committers: 1
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+
 ## v0.47.2 (2020-01-28)
 
 #### :bug: Bug Fix
