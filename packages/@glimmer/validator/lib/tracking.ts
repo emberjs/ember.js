@@ -103,7 +103,7 @@ export type Setter<T, K extends keyof T> = (self: T, value: T[K]) => void;
 
 export function trackedData<T extends object, K extends keyof T>(
   key: K,
-  initializer?: () => T[K]
+  initializer?: (this: T) => T[K]
 ): { getter: Getter<T, K>; setter: Setter<T, K> } {
   let values = new WeakMap<T, T[K]>();
   let hasInitializer = typeof initializer === 'function';
@@ -115,7 +115,7 @@ export function trackedData<T extends object, K extends keyof T>(
 
     // If the field has never been initialized, we should initialize it
     if (hasInitializer && !values.has(self)) {
-      value = initializer!();
+      value = initializer!.call(self);
       values.set(self, value);
     } else {
       value = values.get(self);
