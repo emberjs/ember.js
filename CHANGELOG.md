@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.47.2 (2020-01-28)
+
+#### :bug: Bug Fix
+* `@glimmer/validator`
+  * [#1015](https://github.com/glimmerjs/glimmer-vm/pull/1015) Ensure tracked initializers have access to `this` ([@chancancode](https://github.com/chancancode))
+
+#### Committers: 1
+
 ## v0.47.1 (2020-01-24)
 
 #### :bug: Bug Fix
