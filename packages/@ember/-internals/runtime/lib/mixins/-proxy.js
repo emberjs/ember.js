@@ -63,10 +63,12 @@ export default Mixin.create({
   }),
 
   [CUSTOM_TAG_FOR](key) {
+    let tag = createTagForProperty(this, key);
+
     if (key in this) {
-      return createTagForProperty(this, key);
+      return tag;
     } else {
-      return combine(getChainTagsForKey(this, `content.${key}`));
+      return combine([tag, ...getChainTagsForKey(this, `content.${key}`)]);
     }
   },
 

@@ -338,5 +338,33 @@ moduleFor(
         observe: observer('foo', function() {}),
       }).create();
     }
+
+    async '@test custom proxies should be able to notify property changes manually'(assert) {
+      let proxy = ObjectProxy.extend({
+        locals: { foo: 123 },
+
+        unknownProperty(key) {
+          return this.locals[key];
+        },
+
+        setUnknownProperty(key, value) {
+          this.locals[key] = value;
+          this.notifyPropertyChange(key);
+        },
+      }).create();
+
+      let count = 0;
+
+      proxy.addObserver('foo', function() {
+        count++;
+      });
+
+      proxy.set('foo', 456);
+      await runLoopSettled();
+
+      assert.equal(count, 1);
+      assert.equal(proxy.get('foo'), 456);
+      assert.equal(proxy.get('locals.foo'), 456);
+    }
   }
 );

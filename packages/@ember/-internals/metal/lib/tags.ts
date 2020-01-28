@@ -32,7 +32,7 @@ export function createTagForProperty(object: object, propertyKey: string | symbo
   let newTag = createUpdatableTag();
 
   if (DEBUG) {
-    setupMandatorySetter!(object, propertyKey);
+    setupMandatorySetter!(newTag, object, propertyKey);
 
     (newTag as any)._propertyKey = propertyKey;
   }
