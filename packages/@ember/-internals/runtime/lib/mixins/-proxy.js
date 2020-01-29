@@ -10,12 +10,12 @@ import {
   Mixin,
   tagForObject,
   computed,
-  UNKNOWN_PROPERTY_TAG,
+  CUSTOM_TAG_FOR,
   getChainTagsForKey,
 } from '@ember/-internals/metal';
 import { setProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { combine, update } from '@glimmer/validator';
+import { combine, update, tagFor } from '@glimmer/validator';
 
 export function contentFor(proxy) {
   let content = get(proxy, 'content');
@@ -57,8 +57,12 @@ export default Mixin.create({
     return Boolean(get(this, 'content'));
   }),
 
-  [UNKNOWN_PROPERTY_TAG](key) {
-    return combine(getChainTagsForKey(this, `content.${key}`));
+  [CUSTOM_TAG_FOR](key) {
+    if (key in this) {
+      return tagFor(this, key);
+    } else {
+      return combine(getChainTagsForKey(this, `content.${key}`));
+    }
   },
 
   unknownProperty(key) {

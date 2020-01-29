@@ -3,6 +3,7 @@ import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { set, get } from '@ember/-internals/metal';
 
 import { Component } from '../../utils/helpers';
+import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Helpers test: {{get}}',
@@ -615,6 +616,32 @@ moduleFor(
       });
 
       assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
+    }
+
+    '@test should be able to get an object value with a path from this.args in a glimmer component'() {
+      class PersonComponent extends GlimmerishComponent {
+        options = ['first', 'last', 'age'];
+      }
+
+      this.registerComponent('person-wrapper', {
+        ComponentClass: PersonComponent,
+        template: '{{#each this.options as |option|}}{{get this.args option}}{{/each}}',
+      });
+
+      this.render('<PersonWrapper @first={{first}} @last={{last}} @age={{age}}/>', {
+        first: 'miguel',
+        last: 'andrade',
+      });
+
+      this.assertText('miguelandrade');
+
+      runTask(() => this.rerender());
+
+      this.assertText('miguelandrade');
+
+      runTask(() => set(this.context, 'age', 30));
+
+      this.assertText('miguelandrade30');
     }
   }
 );

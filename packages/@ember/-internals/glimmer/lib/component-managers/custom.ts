@@ -1,4 +1,4 @@
-import { ARGS_PROXY_TAGS } from '@ember/-internals/metal';
+import { CUSTOM_TAG_FOR } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
@@ -187,34 +187,41 @@ export default class CustomComponentManager<ComponentInstance>
   ): CustomComponentState<ComponentInstance> {
     const { delegate } = definition;
     const capturedArgs = args.capture();
+    const namedArgs = capturedArgs.named;
 
     let value;
     let namedArgsProxy = {};
 
     if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
+      let getTag = (key: string) => {
+        return namedArgs.get(key).tag;
+      };
+
       if (HAS_NATIVE_PROXY) {
         let handler: ProxyHandler<{}> = {
           get(_target, prop) {
-            if (capturedArgs.named.has(prop as string)) {
-              let ref = capturedArgs.named.get(prop as string);
+            if (namedArgs.has(prop as string)) {
+              let ref = namedArgs.get(prop as string);
               consume(ref.tag);
 
               return ref.value();
+            } else if (prop === CUSTOM_TAG_FOR) {
+              return getTag;
             }
           },
 
           has(_target, prop) {
-            return capturedArgs.named.has(prop as string);
+            return namedArgs.has(prop as string);
           },
 
           ownKeys(_target) {
-            return capturedArgs.named.names;
+            return namedArgs.names;
           },
 
           getOwnPropertyDescriptor(_target, prop) {
             assert(
               'args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys()',
-              capturedArgs.named.has(prop as string)
+              namedArgs.has(prop as string)
             );
 
             return {
@@ -238,12 +245,18 @@ export default class CustomComponentManager<ComponentInstance>
 
         namedArgsProxy = new Proxy(namedArgsProxy, handler);
       } else {
-        capturedArgs.named.names.forEach(name => {
+        Object.defineProperty(namedArgsProxy, CUSTOM_TAG_FOR, {
+          configurable: false,
+          enumerable: false,
+          value: getTag,
+        });
+
+        namedArgs.names.forEach(name => {
           Object.defineProperty(namedArgsProxy, name, {
             enumerable: true,
             configurable: true,
             get() {
-              let ref = capturedArgs.named.get(name);
+              let ref = namedArgs.get(name);
               consume(ref.tag);
 
               return ref.value();
@@ -251,8 +264,6 @@ export default class CustomComponentManager<ComponentInstance>
           });
         });
       }
-
-      ARGS_PROXY_TAGS.set(namedArgsProxy, capturedArgs.named);
 
       value = {
         named: namedArgsProxy,
