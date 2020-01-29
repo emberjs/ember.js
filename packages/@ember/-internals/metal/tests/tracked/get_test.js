@@ -26,7 +26,8 @@ moduleFor(
 
     '@test should get a @tracked path'() {
       class Key {
-        @tracked value = 'value';
+        key = 'some-key';
+        @tracked value = `value for ${this.key}`;
       }
 
       class Path {
@@ -39,7 +40,7 @@ moduleFor(
 
       let obj = new Obj();
 
-      this.assert.equal(get(obj, 'path.key.value'), 'value');
+      this.assert.equal(get(obj, 'path.key.value'), 'value for some-key');
     }
 
     ['@test should get arbitrary properties on an object']() {
