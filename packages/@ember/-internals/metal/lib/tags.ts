@@ -50,7 +50,7 @@ if (DEBUG) {
 
 /////////
 
-export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
+export const CUSTOM_TAG_FOR = symbol('CUSTOM_TAG_FOR');
 
 // This is exported for `@tracked`, but should otherwise be avoided. Use `tagForObject`.
 export const SELF_TAG: string = symbol('SELF_TAG');
@@ -66,8 +66,8 @@ export function tagForProperty(obj: unknown, propertyKey: string | symbol): Tag 
     return CONSTANT_TAG;
   }
 
-  if (!(propertyKey in obj) && typeof obj[UNKNOWN_PROPERTY_TAG] === 'function') {
-    return obj[UNKNOWN_PROPERTY_TAG](propertyKey);
+  if (typeof obj[CUSTOM_TAG_FOR] === 'function') {
+    return obj[CUSTOM_TAG_FOR](propertyKey);
   }
 
   let tag = tagFor(obj, propertyKey);
