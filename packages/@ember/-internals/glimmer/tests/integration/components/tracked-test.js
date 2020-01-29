@@ -1,6 +1,6 @@
 import { Object as EmberObject, A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
 import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
-import { computed, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { computed, get, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -565,6 +565,50 @@ if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
         this.assertText('hello world!');
 
         runTask(() => foo.set('text', 'hello!'));
+        this.assertText('hello!');
+      }
+
+      '@test args can be accessed with get()'() {
+        class TestComponent extends GlimmerishComponent {
+          get text() {
+            return get(this, 'args.text');
+          }
+        }
+
+        this.registerComponent('test', {
+          ComponentClass: TestComponent,
+          template: '<p>{{this.text}}</p>',
+        });
+
+        this.render('<Test @text={{this.text}}/>', {
+          text: 'hello!',
+        });
+
+        this.assertText('hello!');
+
+        runTask(() => this.context.set('text', 'hello world!'));
+        this.assertText('hello world!');
+
+        runTask(() => this.context.set('text', 'hello!'));
+        this.assertText('hello!');
+      }
+
+      '@test args can be accessed with get() if no value is passed'() {
+        class TestComponent extends GlimmerishComponent {
+          get text() {
+            return get(this, 'args.text') || 'hello!';
+          }
+        }
+
+        this.registerComponent('test', {
+          ComponentClass: TestComponent,
+          template: '<p>{{this.text}}</p>',
+        });
+
+        this.render('<Test/>', {
+          text: 'hello!',
+        });
+
         this.assertText('hello!');
       }
 
