@@ -44,6 +44,43 @@ moduleFor(
       assert.equal(validate(tag, snapshot), true);
     }
 
+    [`@test autotracking should work with initializers`](assert) {
+      class Tracked {
+        @tracked first = `first: ${this.second}`;
+        @tracked second = 'second';
+      }
+
+      let obj = new Tracked();
+
+      let tag = track(() => obj.first);
+      let snapshot = value(tag);
+
+      assert.equal(obj.first, 'first: second', 'The value initializes correctly');
+      assert.equal(validate(tag, snapshot), true);
+
+      snapshot = value(tag);
+      assert.equal(validate(tag, snapshot), true);
+
+      obj.second = '2nd';
+
+      // See: https://github.com/glimmerjs/glimmer-vm/pull/1018
+      // assert.equal(validate(tag, snapshot), true);
+
+      assert.equal(obj.first, 'first: second', 'The value stays the same once initialized');
+      snapshot = value(tag);
+
+      assert.equal(validate(tag, snapshot), true);
+
+      obj.first = 'FIRST!!!';
+
+      assert.equal(validate(tag, snapshot), false);
+
+      assert.equal(obj.first, 'FIRST!!!');
+      snapshot = value(tag);
+
+      assert.equal(validate(tag, snapshot), true);
+    }
+
     [`@test autotracking should work with native getters`](assert) {
       class Tracked {
         @tracked first = undefined;
