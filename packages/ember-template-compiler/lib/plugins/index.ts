@@ -1,3 +1,4 @@
+import AssertAgainstNamedBlocks from './assert-against-named-blocks';
 import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertLocalVariableShadowingHelperInvocation from './assert-local-variable-shadowing-helper-invocation';
@@ -16,6 +17,7 @@ import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
 
+import { EMBER_NAMED_BLOCKS } from '@ember/canary-features';
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 
@@ -43,6 +45,10 @@ const transforms: Array<APluginFunc> = [
 
 if (SEND_ACTION) {
   transforms.push(DeprecateSendAction);
+}
+
+if (!EMBER_NAMED_BLOCKS) {
+  transforms.push(AssertAgainstNamedBlocks);
 }
 
 export default Object.freeze(transforms);
