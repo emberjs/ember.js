@@ -1,15 +1,15 @@
 {
   "name": "@glimmer/node",
-  "version": "0.47.3",
+  "version": "0.47.4",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/node",
   "dependencies": {
-    "@glimmer/runtime": "^0.47.3",
-    "@glimmer/interfaces": "^0.47.3",
+    "@glimmer/runtime": "^0.47.4",
+    "@glimmer/interfaces": "^0.47.4",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
-    "@glimmer/compiler": "^0.47.3"
+    "@glimmer/compiler": "^0.47.4"
   }
 }

@@ -1,13 +1,13 @@
 {
   "name": "@glimmer/object",
-  "version": "0.47.3",
+  "version": "0.47.4",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/object",
   "dependencies": {
-    "@glimmer/interfaces": "^0.47.3",
-    "@glimmer/object-reference": "^0.47.3",
-    "@glimmer/reference": "^0.47.3",
-    "@glimmer/validator": "^0.47.3",
-    "@glimmer/util": "^0.47.3"
+    "@glimmer/interfaces": "^0.47.4",
+    "@glimmer/object-reference": "^0.47.4",
+    "@glimmer/reference": "^0.47.4",
+    "@glimmer/validator": "^0.47.4",
+    "@glimmer/util": "^0.47.4"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31"
