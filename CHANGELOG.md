@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.17.0-beta.2 (January 29, 2020)
+
+- [#18691](https://github.com/emberjs/ember.js/pull/18691) [BUGFIX] Updated blueprints for component and helper tests to output the correct hbs import statement 
+- [#18694](https://github.com/emberjs/ember.js/pull/18694) [BUGFIX] Ensure tag updates are buffered, remove error message 
+- [#18709](https://github.com/emberjs/ember.js/pull/18709) [BUGFIX] Fix `this` in `@tracked` initializer
+
 ### v3.17.0-beta.1 (January 20, 2020)
 
 - [#18688](https://github.com/emberjs/ember.js/pull/18688) / [#18621](https://github.com/emberjs/ember.js/pull/18621) Updates Glimmer-VM to v0.46
