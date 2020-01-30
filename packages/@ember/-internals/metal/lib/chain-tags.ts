@@ -14,8 +14,6 @@ import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
 import { tagForProperty } from './tags';
 
-export const ARGS_PROXY_TAGS = new WeakMap();
-
 export function finishLazyChains(obj: any, key: string, value: any) {
   let meta = peekMeta(obj);
   let lazyTags = meta !== null ? meta.readableLazyChainsFor(key) : undefined;
@@ -147,40 +145,6 @@ export function getChainTagsForKey(obj: any, path: string) {
       chainTags.push(tagForProperty(current, '[]'));
 
       break;
-    }
-
-    // If the segment is linking to an args proxy, we need to manually access
-    // the tags for the args, since they are direct references and don't have a
-    // tagForProperty. We then continue chaining like normal after it, since
-    // you could chain off an arg if it were an object, for instance.
-    if (segment === 'args' && ARGS_PROXY_TAGS.has(current.args)) {
-      assert(
-        `When watching the 'args' on a GlimmerComponent, you must watch a value on the args. You cannot watch the object itself, as it never changes.`,
-        segmentEnd !== pathLength
-      );
-
-      lastSegmentEnd = segmentEnd + 1;
-      segmentEnd = path.indexOf('.', lastSegmentEnd);
-
-      if (segmentEnd === -1) {
-        segmentEnd = pathLength;
-      }
-
-      segment = path.slice(lastSegmentEnd, segmentEnd)!;
-
-      let namedArgs = ARGS_PROXY_TAGS.get(current.args);
-      let ref = namedArgs.get(segment);
-
-      chainTags.push(ref.tag);
-
-      // We still need to break if we're at the end of the path.
-      if (segmentEnd === pathLength) {
-        break;
-      }
-
-      // Otherwise, set the current value and then continue to the next segment
-      current = ref.value();
-      continue;
     }
 
     // TODO: Assert that current[segment] isn't an undecorated, non-MANDATORY_SETTER/dependentKeyCompat getter
