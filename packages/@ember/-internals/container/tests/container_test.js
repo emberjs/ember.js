@@ -680,9 +680,9 @@ moduleFor(
     [`@test assert when calling lookup after destroy on a container`](assert) {
       let registry = new Registry();
       let container = registry.container();
-      let Component = factory();
-      registry.register('component:foo-bar', Component);
-      let instance = container.lookup('component:foo-bar');
+      registry.register('service:foo', factory());
+
+      let instance = container.lookup('service:foo');
       assert.ok(instance, 'precond lookup successful');
 
       runTask(() => {
@@ -690,17 +690,17 @@ moduleFor(
         container.finalizeDestroy();
       });
 
-      expectAssertion(() => {
-        container.lookup('component:foo-bar');
-      });
+      assert.throws(() => {
+        container.lookup('service:foo');
+      }, /Can not call `.lookup` after the owner has been destroyed/);
     }
 
     [`@test assert when calling factoryFor after destroy on a container`](assert) {
       let registry = new Registry();
       let container = registry.container();
-      let Component = factory();
-      registry.register('component:foo-bar', Component);
-      let instance = container.factoryFor('component:foo-bar');
+      registry.register('service:foo', factory());
+
+      let instance = container.lookup('service:foo');
       assert.ok(instance, 'precond lookup successful');
 
       runTask(() => {
@@ -708,9 +708,9 @@ moduleFor(
         container.finalizeDestroy();
       });
 
-      expectAssertion(() => {
-        container.factoryFor('component:foo-bar');
-      });
+      assert.throws(() => {
+        container.factoryFor('service:foo');
+      }, /Can not call `.factoryFor` after the owner has been destroyed/);
     }
 
     // this is skipped until templates and the glimmer environment do not require `OWNER` to be
@@ -734,6 +734,94 @@ moduleFor(
       // note: _guid and isDestroyed are being set in the `factory` constructor
       // not via registry/container shenanigans
       assert.deepEqual(Object.keys(instance), []);
+    }
+
+    '@test instantiating via container.lookup during destruction emits a deprecation'(assert) {
+      let registry = new Registry();
+      let container = registry.container();
+      class Service extends factory() {
+        destroy() {
+          expectDeprecation(() => {
+            container.lookup('service:other');
+          }, /Instantiating a new instance of service:other while the owner is being destroyed is deprecated/);
+        }
+      }
+      registry.register('service:foo', Service);
+      registry.register('service:other', factory());
+      let instance = container.lookup('service:foo');
+      assert.ok(instance, 'precond lookup successful');
+
+      runTask(() => {
+        container.destroy();
+        container.finalizeDestroy();
+      });
+    }
+
+    '@test instantiating via container.lookup during destruction enqueues destruction'(assert) {
+      let registry = new Registry();
+      let container = registry.container();
+      let otherInstance;
+      class Service extends factory() {
+        destroy() {
+          expectDeprecation(() => {
+            otherInstance = container.lookup('service:other');
+          }, /Instantiating a new instance of service:other while the owner is being destroyed is deprecated/);
+
+          assert.ok(otherInstance.isDestroyed, 'service:other was destroyed');
+        }
+      }
+      registry.register('service:foo', Service);
+      registry.register('service:other', factory());
+      let instance = container.lookup('service:foo');
+      assert.ok(instance, 'precond lookup successful');
+
+      runTask(() => {
+        container.destroy();
+        container.finalizeDestroy();
+      });
+    }
+
+    '@test instantiating via container.factoryFor().create() during destruction emits a deprecation'(
+      assert
+    ) {
+      let registry = new Registry();
+      let container = registry.container();
+      class Service extends factory() {
+        destroy() {
+          expectDeprecation(() => {
+            let Factory = container.factoryFor('service:other');
+            Factory.create();
+          }, /Instantiating a new instance of service:other while the owner is being destroyed is deprecated/);
+        }
+      }
+      registry.register('service:foo', Service);
+      registry.register('service:other', factory());
+      let instance = container.lookup('service:foo');
+      assert.ok(instance, 'precond lookup successful');
+
+      runTask(() => {
+        container.destroy();
+        container.finalizeDestroy();
+      });
+    }
+
+    '@test instantiating via container.factoryFor().create() after destruction throws an error'(
+      assert
+    ) {
+      let registry = new Registry();
+      let container = registry.container();
+      registry.register('service:foo', factory());
+      registry.register('service:other', factory());
+      let Factory = container.factoryFor('service:other');
+
+      runTask(() => {
+        container.destroy();
+        container.finalizeDestroy();
+      });
+
+      assert.throws(() => {
+        Factory.create();
+      }, /Can not create new instances after the owner has been destroyed \(you attempted to create service:other\)/);
     }
   }
 );
