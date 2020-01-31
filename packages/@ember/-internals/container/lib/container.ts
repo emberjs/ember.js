@@ -1,7 +1,7 @@
 import { Factory, LookupOptions, Owner, OWNER, setOwner } from '@ember/-internals/owner';
 import { dictionary, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry, Injection } from './registry';
@@ -149,7 +149,9 @@ export default class Container {
    @return {any}
    */
   lookup(fullName: string, options: LookupOptions): any {
-    assert('expected container not to be destroyed', !this.isDestroyed);
+    if (this.isDestroyed) {
+      throw new Error(`Can not call \`.lookup\` after the owner has been destroyed`);
+    }
     assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
   }
@@ -161,8 +163,9 @@ export default class Container {
    @method destroy
    */
   destroy(): void {
-    destroyDestroyables(this);
     this.isDestroying = true;
+
+    destroyDestroyables(this);
   }
 
   finalizeDestroy(): void {
@@ -211,7 +214,9 @@ export default class Container {
    @return {any}
    */
   factoryFor<T, C>(fullName: string, options: LookupOptions = {}): Factory<T, C> | undefined {
-    assert('expected container not to be destroyed', !this.isDestroyed);
+    if (this.isDestroyed) {
+      throw new Error(`Can not call \`.factoryFor\` after the owner has been destroyed`);
+    }
     let normalizedName = this.registry.normalize(fullName);
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
@@ -397,7 +402,17 @@ function instantiateFactory(
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    return (container.cache[normalizedName] = factoryManager.create());
+    let instance = (container.cache[normalizedName] = factoryManager.create());
+
+    // if this lookup happened _during_ destruction (emits a deprecation, but
+    // is still possible) ensure that it gets destroyed
+    if (container.isDestroying) {
+      if (typeof instance.destroy === 'function') {
+        instance.destroy();
+      }
+    }
+
+    return instance;
   }
 
   // SomeClass { singleton: false, instantiate: true }
@@ -561,6 +576,22 @@ class FactoryManager<T, C> {
   }
 
   create(options?: { [prop: string]: any }) {
+    let { container } = this;
+
+    if (container.isDestroyed) {
+      throw new Error(
+        `Can not create new instances after the owner has been destroyed (you attempted to create ${this.fullName})`
+      );
+    }
+
+    if (DEBUG) {
+      deprecate(
+        `Instantiating a new instance of ${this.fullName} while the owner is being destroyed is deprecated.`,
+        !container.isDestroying,
+        { id: 'container.lookup-on-destroy', until: '3.20.0' }
+      );
+    }
+
     let injectionsCache = this.injections;
     if (injectionsCache === undefined) {
       let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
