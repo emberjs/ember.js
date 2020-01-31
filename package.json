@@ -50,7 +50,7 @@
     "@babel/helper-module-imports": "^7.0.0",
     "@babel/plugin-transform-block-scoping": "^7.6.2",
     "@babel/plugin-transform-object-assign": "^7.2.0",
-    "@ember/edition-utils": "^1.1.1",
+    "@ember/edition-utils": "^1.2.0",
     "babel-plugin-debug-macros": "^0.3.3",
     "babel-plugin-filter-imports": "^4.0.0",
     "broccoli-concat": "^3.7.4",
