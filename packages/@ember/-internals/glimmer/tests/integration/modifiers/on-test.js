@@ -374,13 +374,14 @@ moduleFor(
       this.assertCounts({ adds: 1, removes: 1 });
     }
 
-    '@test it respects boolean attributes'() {
+    '@test it respects valueless attributes'() {
       this.render(
         `
-        <input id='autofocus' autofocus {{on "input" this.callback}} />
-        <input id='readonly' readonly {{on "input" this.callback}} />
-        <input id='required' required {{on "input" this.callback}} />
-        <button id='disabled' disabled {{on "click" this.callback}}>Click Me</button> />
+        <input id='autofocus' autofocus {{on 'input' this.callback}} />
+        <input id='readonly' readonly {{on 'input' this.callback}} />
+        <input id='required' required {{on 'input' this.callback}} />
+        <button id='disabled' disabled {{on 'click' this.callback}}></button>
+        <video controls {{on 'canplay' this.callback once=true}}></video>
       `,
         {
           callback() {},
@@ -391,6 +392,7 @@ moduleFor(
       this.assert.equal(this.$('#readonly').prop('readOnly'), true, 'input is readonly');
       this.assert.equal(this.$('#required').prop('required'), true, 'input is required');
       this.assert.equal(this.$('#disabled').prop('disabled'), true, 'button is disabled');
+      this.assert.equal(this.$('video').prop('controls'), true, 'video has controls');
     }
   }
 );
