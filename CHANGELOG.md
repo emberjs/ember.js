@@ -19,6 +19,14 @@
 
 - [#18688](https://github.com/emberjs/ember.js/pull/18688) / [#18621](https://github.com/emberjs/ember.js/pull/18621) Updates Glimmer-VM to v0.46
 
+### v3.16.1 (January 31, 2020)
+
+- [#18691](https://github.com/emberjs/ember.js/pull/18691) [BUGFIX] Updated `component` and `helper` blueprints to use `import { hbs } from 'ember-cli-htmlbars'`.
+- [#18698](https://github.com/emberjs/ember.js/pull/18698) [BUGFIX] Ensure tag updates are buffered
+- [#18713](https://github.com/emberjs/ember.js/pull/18713) [BUGFIX] Update `@glimmer/syntax` to ensure that using `<Title />`, `<Script />`, and `<Style />` does not error.
+- [#18717](https://github.com/emberjs/ember.js/pull/18717) [BUGFIX] Ensure instantiation cannot happen after destruction.
+- [#18720](https://github.com/emberjs/ember.js/pull/18720) [BUGFIX] Ensure correct `@ember/edition-utils` is used (1.2.0).
+
 ### v3.16.0 (January 20, 2020)
 
 - [#18436](https://github.com/emberjs/ember.js/pull/18436) [DEPRECATION] Deprecate globals resolver per [RFC #331](https://github.com/emberjs/rfcs/blob/master/text/0331-deprecate-globals-resolver.md).
