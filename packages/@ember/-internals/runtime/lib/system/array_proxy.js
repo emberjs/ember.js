@@ -11,11 +11,14 @@ import {
   removeArrayObserver,
   replace,
   getChainTagsForKey,
+  tagForProperty,
+  arrayContentDidChange,
+  arrayContentWillChange,
 } from '@ember/-internals/metal';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
-import { combine, validate, value } from '@glimmer/reference';
+import { combine, update, validate, value } from '@glimmer/reference';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
@@ -109,6 +112,12 @@ export default class ArrayProxy extends EmberObject {
     this._arrangedContentRevision = value(this._arrangedContentTag);
 
     this._addArrangedContentArrayObserver();
+
+    update(tagForProperty(this, '[]'), combine(getChainTagsForKey(this, 'arrangedContent.[]')));
+    update(
+      tagForProperty(this, 'length'),
+      combine(getChainTagsForKey(this, 'arrangedContent.length'))
+    );
   }
 
   willDestroy() {
@@ -316,4 +325,14 @@ ArrayProxy.reopen(MutableArray, {
     @public
   */
   arrangedContent: alias('content'),
+
+  // Array proxies don't need to notify when they change since their `[]` tag is
+  // already dependent on the `[]` tag of `arrangedContent`
+  arrayContentWillChange(startIdx, removeAmt, addAmt) {
+    return arrayContentWillChange(this, startIdx, removeAmt, addAmt, false);
+  },
+
+  arrayContentDidChange(startIdx, removeAmt, addAmt) {
+    return arrayContentDidChange(this, startIdx, removeAmt, addAmt, false);
+  },
 });

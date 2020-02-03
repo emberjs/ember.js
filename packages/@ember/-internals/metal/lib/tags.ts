@@ -5,18 +5,27 @@ import { DEBUG } from '@glimmer/env';
 import { CONSTANT_TAG, createUpdatableTag, dirty, Tag } from '@glimmer/reference';
 import { assertTagNotConsumed } from './tracked';
 
-export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
+export const CUSTOM_TAG_FOR = symbol('CUSTOM_TAG_FOR');
 
 export function tagForProperty(object: any, propertyKey: string | symbol, _meta?: Meta): Tag {
   let objectType = typeof object;
   if (objectType !== 'function' && (objectType !== 'object' || object === null)) {
     return CONSTANT_TAG;
   }
-  let meta = _meta === undefined ? metaFor(object) : _meta;
 
-  if (!(propertyKey in object) && typeof object[UNKNOWN_PROPERTY_TAG] === 'function') {
-    return object[UNKNOWN_PROPERTY_TAG](propertyKey);
+  if (typeof object[CUSTOM_TAG_FOR] === 'function') {
+    return object[CUSTOM_TAG_FOR](propertyKey);
   }
+
+  return createTagForProperty(object, propertyKey);
+}
+
+export function createTagForProperty(
+  object: object,
+  propertyKey: string | symbol,
+  _meta?: Meta
+): Tag {
+  let meta = _meta === undefined ? metaFor(object) : _meta;
 
   let tags = meta.writableTags();
   let tag = tags[propertyKey];
@@ -27,7 +36,7 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
   let newTag = createUpdatableTag();
 
   if (DEBUG) {
-    setupMandatorySetter!(object, propertyKey);
+    setupMandatorySetter!(newTag, object, propertyKey);
 
     (newTag as any)._propertyKey = propertyKey;
   }

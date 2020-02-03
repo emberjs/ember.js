@@ -44,7 +44,7 @@ export {
   isClassicDecorator,
   setClassicDecorator,
 } from './lib/descriptor_map';
-export { getChainTagsForKey, ARGS_PROXY_TAGS } from './lib/chain-tags';
+export { getChainTagsForKey } from './lib/chain-tags';
 export { default as libraries, Libraries } from './lib/libraries';
 export { default as getProperties } from './lib/get_properties';
 export { default as setProperties } from './lib/set_properties';
@@ -53,7 +53,13 @@ export { default as expandProperties } from './lib/expand_properties';
 export { addObserver, activateObserver, removeObserver, flushAsyncObservers } from './lib/observer';
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
-export { tagForProperty, tagFor, markObjectAsDirty, UNKNOWN_PROPERTY_TAG } from './lib/tags';
+export {
+  tagForProperty,
+  createTagForProperty,
+  tagFor,
+  markObjectAsDirty,
+  CUSTOM_TAG_FOR,
+} from './lib/tags';
 export {
   consume,
   Tracker,

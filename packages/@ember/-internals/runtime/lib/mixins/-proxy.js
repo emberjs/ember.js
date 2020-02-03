@@ -9,8 +9,9 @@ import {
   defineProperty,
   Mixin,
   tagFor,
+  createTagForProperty,
   computed,
-  UNKNOWN_PROPERTY_TAG,
+  CUSTOM_TAG_FOR,
   getChainTagsForKey,
 } from '@ember/-internals/metal';
 import { setProxy } from '@ember/-internals/utils';
@@ -61,8 +62,14 @@ export default Mixin.create({
     return Boolean(get(this, 'content'));
   }),
 
-  [UNKNOWN_PROPERTY_TAG](key) {
-    return combine(getChainTagsForKey(this, `content.${key}`));
+  [CUSTOM_TAG_FOR](key) {
+    let tag = createTagForProperty(this, key);
+
+    if (key in this) {
+      return tag;
+    } else {
+      return combine([tag, ...getChainTagsForKey(this, `content.${key}`)]);
+    }
   },
 
   unknownProperty(key) {
