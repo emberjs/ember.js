@@ -53,7 +53,13 @@ export { default as expandProperties } from './lib/expand_properties';
 export { addObserver, activateObserver, removeObserver, flushAsyncObservers } from './lib/observer';
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
-export { tagForProperty, createTagForProperty, tagFor, markObjectAsDirty, CUSTOM_TAG_FOR } from './lib/tags';
+export {
+  tagForProperty,
+  createTagForProperty,
+  tagFor,
+  markObjectAsDirty,
+  CUSTOM_TAG_FOR,
+} from './lib/tags';
 export {
   consume,
   Tracker,

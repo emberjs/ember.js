@@ -20,7 +20,11 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
   return createTagForProperty(object, propertyKey);
 }
 
-export function createTagForProperty(object: object, propertyKey: string | symbol, _meta?: Meta): Tag {
+export function createTagForProperty(
+  object: object,
+  propertyKey: string | symbol,
+  _meta?: Meta
+): Tag {
   let meta = _meta === undefined ? metaFor(object) : _meta;
 
   let tags = meta.writableTags();
