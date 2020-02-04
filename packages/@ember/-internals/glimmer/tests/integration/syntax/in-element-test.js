@@ -47,8 +47,41 @@ moduleFor(
       equalTokens(someElement, 'Whoop!');
     }
 
-    ['@test allows insertBefore=null']() {
+    ['@test it appends to the extenal element by default']() {
       let someElement = document.createElement('div');
+      someElement.appendChild(document.createTextNode('foo '));
+
+      this.render(
+        strip`
+          {{#-in-element someElement}}
+            {{text}}
+          {{/-in-element}}
+        `,
+        {
+          someElement,
+          text: 'bar',
+        }
+      );
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'foo bar');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'text', 'bar!!'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'foo bar!!');
+
+      runTask(() => set(this.context, 'text', 'bar'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'foo bar');
+    }
+
+    ['@test allows appending to the external element with insertBefore=null']() {
+      let someElement = document.createElement('div');
+      someElement.appendChild(document.createTextNode('foo '));
 
       this.render(
         strip`
@@ -58,24 +91,56 @@ moduleFor(
         `,
         {
           someElement,
-          text: 'Whoop!',
+          text: 'bar',
         }
       );
 
       equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'Whoop!');
+      equalTokens(someElement, 'foo bar');
 
       this.assertStableRerender();
 
-      runTask(() => set(this.context, 'text', 'Huzzah!!'));
+      runTask(() => set(this.context, 'text', 'bar!!'));
 
       equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'Huzzah!!');
+      equalTokens(someElement, 'foo bar!!');
 
-      runTask(() => set(this.context, 'text', 'Whoop!'));
+      runTask(() => set(this.context, 'text', 'bar'));
 
       equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'Whoop!');
+      equalTokens(someElement, 'foo bar');
+    }
+
+    ['@test allows clearing the external element with insertBefore=undefined']() {
+      let someElement = document.createElement('div');
+      someElement.appendChild(document.createTextNode('foo '));
+
+      this.render(
+        strip`
+          {{#-in-element someElement insertBefore=undefined}}
+            {{text}}
+          {{/-in-element}}
+        `,
+        {
+          someElement,
+          text: 'bar',
+        }
+      );
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'bar');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'text', 'bar!!'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'bar!!');
+
+      runTask(() => set(this.context, 'text', 'bar'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'bar');
     }
 
     ['@test does not allow insertBefore=non-null-value']() {
@@ -93,7 +158,7 @@ moduleFor(
             text: 'Whoop!',
           }
         );
-      }, /Can only pass a null literal to insertBefore in -in-element, received:/);
+      }, /Can only pass a null or undefined literals to insertBefore in -in-element, received:/);
     }
 
     ['@test components are cleaned up properly'](assert) {
