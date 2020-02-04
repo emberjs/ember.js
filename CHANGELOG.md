@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v3.17.0-beta.3 (February 3, 2020)
+
+- [#18703](https://github.com/emberjs/ember.js/pull/18703) [BUGFIX] Correctly links ArrayProxy tags to `arrangedContent`
+- [#18707](https://github.com/emberjs/ember.js/pull/18707) [BUGFIX] Fixes tag chaining on Proxy mixins
+- [#18708](https://github.com/emberjs/ember.js/pull/18708) [BUGFIX] Ensures the arg proxy works with `get`
+- [#18717](https://github.com/emberjs/ember.js/pull/18717) [BUGFIX] Ensure instantiation cannot happen after destruction.
+- [#18720](https://github.com/emberjs/ember.js/pull/18720) [BUGFIX] Update minimum @ember/edition-utils to 1.2.0.
+- [#18714](https://github.com/emberjs/ember.js/pull/18714) Update glimmer packages to 0.47.4.
+
 ### v3.17.0-beta.2 (January 29, 2020)
 
 - [#18691](https://github.com/emberjs/ember.js/pull/18691) [BUGFIX] Updated blueprints for component and helper tests to output the correct hbs import statement 
