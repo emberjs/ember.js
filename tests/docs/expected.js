@@ -107,6 +107,7 @@ module.exports = {
     'buildChildEngineInstance',
     'buildInstance',
     'buildRegistry',
+    'buildRouteInfoMetadata',
     'cache',
     'cacheFor',
     'camelize',

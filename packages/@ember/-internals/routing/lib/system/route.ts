@@ -1792,8 +1792,10 @@ class Route extends EmberObject implements IRoute {
       }
     }
     ```
-
+    @method buildRouteInfoMetadata
     @return any
+    @since 3.10.0
+    @public
    */
   buildRouteInfoMetadata() {}
 }
