@@ -550,7 +550,10 @@ export default class Printer {
 }
 
 function unreachable(node: never, parentNodeType: string): never {
+  let { loc, type } = (node as any) as Node;
   throw new Error(
-    `Non-exhaustive node narrowing ${((node as any) as Node).type} for parent ${parentNodeType}`
+    `Non-exhaustive node narrowing ${type} @ location: ${JSON.stringify(
+      loc
+    )} for parent ${parentNodeType}`
   );
 }
