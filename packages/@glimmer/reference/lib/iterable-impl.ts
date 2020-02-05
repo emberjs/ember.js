@@ -1,8 +1,8 @@
 import { AbstractIterable, IterationItem, OpaqueIterator, OpaqueIterationItem } from './iterable';
 import { Tag } from '@glimmer/validator';
 import { Option, Dict } from '@glimmer/interfaces';
-import { EMPTY_ARRAY, isObject } from '@glimmer/util';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { EMPTY_ARRAY, isObject, debugToString } from '@glimmer/util';
+import { DEBUG } from '@glimmer/env';
 import { IterationItemReference, TemplateReferenceEnvironment } from './template';
 import { VersionedPathReference } from './reference';
 
@@ -178,7 +178,7 @@ export class IterableImpl
   valueReferenceFor(item: IterationItem<unknown, unknown>): IterationItemReference<unknown> {
     let { parentRef, env } = this;
 
-    return new IterationItemReference(parentRef, item.value, item.key, env);
+    return new IterationItemReference(parentRef, item.value, item.memo, env);
   }
 
   updateValueReference(
@@ -191,7 +191,12 @@ export class IterableImpl
   memoReferenceFor(item: IterationItem<unknown, unknown>): IterationItemReference<unknown> {
     let { parentRef, env } = this;
 
-    return new IterationItemReference(parentRef, item.memo, item.key, env);
+    return new IterationItemReference(
+      parentRef,
+      item.memo,
+      DEBUG ? `(key: ${debugToString!(item.key)}` : '',
+      env
+    );
   }
 
   updateMemoReference(

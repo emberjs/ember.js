@@ -172,5 +172,13 @@ module('@glimmer/reference: IterableImpl', () => {
 
       assert.deepEqual(target.toKeys(), ['a', 'b']);
     });
+
+    test('it works with dictionaries', assert => {
+      let arr = [Object.create(null), Object.create(null)];
+      let { target } = initialize(arr);
+
+      assert.deepEqual(target.toValues(), arr);
+      assert.deepEqual(target.toKeys(), arr);
+    });
   });
 });
