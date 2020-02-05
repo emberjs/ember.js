@@ -118,7 +118,7 @@ export default class Printer {
         return this.ElementModifierStatement(node);
     }
 
-    return unreachable(node);
+    return unreachable(node, 'Node');
   }
 
   Expression(expression: Expression): void {
@@ -134,7 +134,7 @@ export default class Printer {
       case 'SubExpression':
         return this.SubExpression(expression);
     }
-    return unreachable(expression);
+    return unreachable(expression, 'Expression');
   }
 
   Literal(literal: Literal) {
@@ -150,7 +150,7 @@ export default class Printer {
       case 'NullLiteral':
         return this.NullLiteral(literal);
     }
-    return unreachable(literal);
+    return unreachable(literal, 'Literal');
   }
 
   TopLevelStatement(statement: TopLevelStatement) {
@@ -176,7 +176,7 @@ export default class Printer {
         // should have element
         return this.AttrNode(statement);
     }
-    unreachable(statement);
+    unreachable(statement, 'TopLevelStatement');
   }
 
   Block(block: Block | Program | Template): void {
@@ -549,6 +549,11 @@ export default class Printer {
   }
 }
 
-function unreachable(node: never): never {
-  throw new Error(`Non-exhaustive node narrowing ${((node as any) as Node).type}`);
+function unreachable(node: never, parentNodeType: string): never {
+  let { loc, type } = (node as any) as Node;
+  throw new Error(
+    `Non-exhaustive node narrowing ${type} @ location: ${JSON.stringify(
+      loc
+    )} for parent ${parentNodeType}`
+  );
 }
