@@ -1,5 +1,5 @@
 import { ComponentInstanceState, CapturedArguments, Option } from '@glimmer/interfaces';
-import { dict, isDict, symbol } from '@glimmer/util';
+import { dict, isDict, symbol, debugToString } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   Tag,
@@ -298,7 +298,7 @@ export class IterationItemReference<T = unknown> implements TemplatePathReferenc
     private env: TemplateReferenceEnvironment
   ) {
     if (DEBUG) {
-      env.setTemplatePathDebugContext(this, String(itemKey), parentReference);
+      env.setTemplatePathDebugContext(this, debugToString!(itemKey), parentReference);
     }
   }
 
