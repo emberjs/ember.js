@@ -342,7 +342,7 @@ test('Modifier', function(assert) {
           { nodeType: 'PathExpression', key: null },
         ]);
 
-        assert.deepEqual(Array.from(path.parents()).map(it => it.node.type), [
+        assert.deepEqual(Array.from(path.parents()).map(it => (it as Path<AST.Node>).node.type), [
           'ElementModifierStatement',
           'ElementNode',
           'Template',
