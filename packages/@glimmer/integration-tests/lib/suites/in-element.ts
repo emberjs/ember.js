@@ -283,6 +283,28 @@ export class InElementSuite extends RenderTest {
   }
 
   @test
+  'Inside the current constructing element'() {
+    this.render(
+      stripTight`
+        Before
+        {{#in-element this.element insertBefore=null}}
+          {{this.foo}}
+        {{/in-element}}
+        After
+      `,
+      {
+        element: this.element,
+        foo: 'Yippie!',
+      }
+    );
+
+    this.assertHTML('BeforeYippie!<!---->After');
+    this.assertStableRerender();
+
+    this.renderResult!.destroy();
+  }
+
+  @test
   Multiple() {
     let firstElement = this.delegate.createElement('div');
     let secondElement = this.delegate.createElement('div');
