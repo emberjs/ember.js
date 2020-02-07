@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.47.4 (2020-01-30)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1019](https://github.com/glimmerjs/glimmer-vm/pull/1019) Update simple-html-tokenizer to at least 0.5.9. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
 ## v0.47.3 (2020-01-28)
 
 #### :bug: Bug Fix
