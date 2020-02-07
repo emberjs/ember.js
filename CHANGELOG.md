@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.47.5 (2020-02-07)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#1021](https://github.com/glimmerjs/glimmer-vm/pull/1021) chore: improve error for unrecachable statements ([@lifeart](https://github.com/lifeart))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1023](https://github.com/glimmerjs/glimmer-vm/pull/1023) Avoid double-clearing `{{in-element}}` ([@chancancode](https://github.com/chancancode))
+
+#### Committers: 2
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+
 ## v0.47.4 (2020-01-30)
 
 #### :bug: Bug Fix
