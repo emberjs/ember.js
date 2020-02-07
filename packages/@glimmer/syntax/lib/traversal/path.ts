@@ -14,4 +14,12 @@ export default class Path<N extends Node> {
   get parentNode(): Node | null {
     return this.parent ? this.parent.node : null;
   }
+
+  *parents(): IterableIterator<Path<Node>> {
+    let path: Path<Node> = this;
+    while (path.parent) {
+      path = path.parent;
+      yield path;
+    }
+  }
 }

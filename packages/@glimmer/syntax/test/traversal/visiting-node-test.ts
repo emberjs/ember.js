@@ -328,7 +328,7 @@ test('Helper', function(assert) {
 });
 
 test('Modifier', function(assert) {
-  assert.expect(2);
+  assert.expect(3);
 
   let ast = parse(`<div {{foo}}></div>`);
 
@@ -340,6 +340,12 @@ test('Modifier', function(assert) {
           { nodeType: 'ElementNode', key: 'modifiers' },
           { nodeType: 'ElementModifierStatement', key: 'path' },
           { nodeType: 'PathExpression', key: null },
+        ]);
+
+        assert.deepEqual(Array.from(path.parents()).map(it => it.node.type), [
+          'ElementModifierStatement',
+          'ElementNode',
+          'Template',
         ]);
 
         assert.strictEqual((path.parent!.node as AST.ElementModifierStatement).path, node);
