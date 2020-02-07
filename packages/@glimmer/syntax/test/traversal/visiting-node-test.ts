@@ -328,7 +328,9 @@ test('Helper', function(assert) {
 });
 
 test('Modifier', function(assert) {
-  assert.expect(3);
+  let hasSymbol = typeof Symbol !== 'undefined';
+
+  assert.expect(hasSymbol ? 3 : 2);
 
   let ast = parse(`<div {{foo}}></div>`);
 
@@ -342,11 +344,13 @@ test('Modifier', function(assert) {
           { nodeType: 'PathExpression', key: null },
         ]);
 
-        assert.deepEqual(Array.from(path.parents()).map(it => (it as Path<AST.Node>).node.type), [
-          'ElementModifierStatement',
-          'ElementNode',
-          'Template',
-        ]);
+        if (hasSymbol) {
+          assert.deepEqual(Array.from(path.parents()).map(it => (it as Path<AST.Node>).node.type), [
+            'ElementModifierStatement',
+            'ElementNode',
+            'Template',
+          ]);
+        }
 
         assert.strictEqual((path.parent!.node as AST.ElementModifierStatement).path, node);
       }
