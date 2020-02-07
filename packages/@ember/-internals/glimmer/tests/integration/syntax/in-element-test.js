@@ -228,5 +228,31 @@ moduleFor(
 
       assert.deepEqual(hooks, ['didInsertElement', 'willDestroyElement']);
     }
+
+    ['@test appending to the root element should not cause double clearing  are cleaned up properly']() {
+      this.render(
+        strip`
+          Before
+          {{#-in-element this.rootElement insertBefore=null}}
+            {{this.text}}
+          {{/-in-element}}
+          After
+        `,
+        {
+          rootElement: this.element,
+          text: 'Whoop!',
+        }
+      );
+
+      equalTokens(this.element, 'BeforeWhoop!<!---->After');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'text', 'Huzzah!'));
+
+      equalTokens(this.element, 'BeforeHuzzah!<!---->After');
+
+      // teardown happens in afterEach and should not cause double-clearing error
+    }
   }
 );
