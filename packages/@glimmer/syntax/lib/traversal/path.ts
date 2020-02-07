@@ -15,28 +15,28 @@ export default class Path<N extends Node> {
     return this.parent ? this.parent.node : null;
   }
 
-  parents(): PathParentsIterable {
-    return new PathParentsIterable(this);
+  parents(): Iterable<Path<Node> | null> {
+    return {
+      [Symbol.iterator]: () => {
+        return new PathParentsIterator(this);
+      },
+    };
   }
 }
 
-class PathParentsIterable implements Iterable<Path<Node>> {
+class PathParentsIterator implements Iterator<Path<Node> | null> {
   path: Path<Node>;
 
   constructor(path: Path<Node>) {
     this.path = path;
   }
 
-  [Symbol.iterator]() {
-    let next: () => IteratorResult<Path<Node>, undefined> = () => {
-      if (this.path.parent) {
-        this.path = this.path.parent;
-        return { done: false, value: this.path };
-      } else {
-        return { done: true, value: undefined };
-      }
-    };
-
-    return { next };
+  next() {
+    if (this.path.parent) {
+      this.path = this.path.parent;
+      return { done: false, value: this.path };
+    } else {
+      return { done: true, value: null };
+    }
   }
 }
