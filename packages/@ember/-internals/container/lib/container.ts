@@ -1,7 +1,7 @@
 import { Factory, LookupOptions, Owner, OWNER, setOwner } from '@ember/-internals/owner';
 import { dictionary, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry, Injection } from './registry';
@@ -581,14 +581,6 @@ class FactoryManager<T, C> {
     if (container.isDestroyed) {
       throw new Error(
         `Can not create new instances after the owner has been destroyed (you attempted to create ${this.fullName})`
-      );
-    }
-
-    if (DEBUG) {
-      deprecate(
-        `Instantiating a new instance of ${this.fullName} while the owner is being destroyed is deprecated.`,
-        !container.isDestroying,
-        { id: 'container.lookup-on-destroy', until: '3.20.0' }
       );
     }
 
