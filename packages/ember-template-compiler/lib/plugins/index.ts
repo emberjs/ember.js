@@ -5,6 +5,7 @@ import AssertLocalVariableShadowingHelperInvocation from './assert-local-variabl
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
 import AssertSplattributeExpressions from './assert-splattribute-expression';
 import DeprecateSendAction from './deprecate-send-action';
+import SafeIntegersBugfix from './safe-integers-bugfix';
 import TransformActionSyntax from './transform-action-syntax';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformComponentInvocation from './transform-component-invocation';
@@ -41,6 +42,7 @@ const transforms: Array<APluginFunc> = [
   AssertSplattributeExpressions,
   TransformEachTrackArray,
   TransformWrapMountAndOutlet,
+  SafeIntegersBugfix,
 ];
 
 if (SEND_ACTION) {

@@ -23,6 +23,7 @@ import InternalComponentManager, {
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
+import { default as parseIntHelper } from './helpers/-i';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as trackArray } from './helpers/-track-array';
@@ -250,6 +251,7 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   unless: inlineUnless,
   '-hash': hash,
   '-each-in': eachIn,
+  '-i': parseIntHelper,
   '-input-type': inputTypeHelper,
   '-normalize-class': normalizeClassHelper,
   '-track-array': trackArray,
