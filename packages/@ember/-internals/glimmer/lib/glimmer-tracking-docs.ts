@@ -98,6 +98,38 @@
   }
   ```
 
+  `tracked` can also be used with the classic Ember object model in a similar
+  manner to classic computed properties:
+
+  ```javascript
+  import EmberObject from '@ember/object';
+  import { tracked } from '@glimmer/tracking';
+
+  const Entry = EmberObject.extend({
+    name: tracked(),
+    phoneNumber: tracked()
+  });
+  ```
+
+  Often this is unnecessary, but to ensure robust auto-tracking behavior it is
+  advisable to mark tracked state appropriately wherever possible.
+
+  This form of `tracked` also accepts an optional configuration object
+  containing either an initial `value` or an `initializer` function (but not
+  both).
+
+  ```javascript
+  import EmberObject from '@ember/object';
+  import { tracked } from '@glimmer/tracking';
+
+  const Entry = EmberObject.extend({
+    name: tracked({ value: 'Zoey' }),
+    favoriteSongs: tracked({
+      initializer: () => ['Raspberry Beret', 'Time After Time']
+    })
+  });
+  ```
+
   @method tracked
   @static
   @for @glimmer/tracking
