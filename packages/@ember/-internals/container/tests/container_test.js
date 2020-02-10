@@ -736,6 +736,28 @@ moduleFor(
       assert.deepEqual(Object.keys(instance), []);
     }
 
+    '@test instantiating via container.lookup during destruction enqueues destruction'(assert) {
+      let registry = new Registry();
+      let container = registry.container();
+      let otherInstance;
+      class Service extends factory() {
+        destroy() {
+          otherInstance = container.lookup('service:other');
+
+          assert.ok(otherInstance.isDestroyed, 'service:other was destroyed');
+        }
+      }
+      registry.register('service:foo', Service);
+      registry.register('service:other', factory());
+      let instance = container.lookup('service:foo');
+      assert.ok(instance, 'precond lookup successful');
+
+      runTask(() => {
+        container.destroy();
+        container.finalizeDestroy();
+      });
+    }
+
     '@test instantiating via container.factoryFor().create() after destruction throws an error'(
       assert
     ) {
