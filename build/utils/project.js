@@ -95,7 +95,7 @@ class Package {
   }
 
   savePackageJSON() {
-    fs.writeFileSync(this.packageJSONPath, JSON.stringify(this.pkg, null, 2));
+    fs.writeFileSync(this.packageJSONPath, JSON.stringify(this.pkg, null, 2) + '\n');
   }
 }
 
