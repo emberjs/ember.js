@@ -21,7 +21,7 @@
 
 ### v3.16.2 (February 10, 2020)
 
-- [#18721](https://github.com/emberjs/ember.js/pull/18721) [BUGFIX release] Backport autotracking bugfixes
+- [#18721](https://github.com/emberjs/ember.js/pull/18721) [BUGFIX] Backport autotracking bugfixes
 - [#18729](https://github.com/emberjs/ember.js/pull/18729) [BUGFIX] Remove deprecation for instantiation of new singleton instances (e.g. a service) during teardown (originally added in 3.16.1 by [#18717](https://github.com/emberjs/ember.js/pull/18717)).
 
 ### v3.16.1 (January 31, 2020)
