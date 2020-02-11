@@ -4,7 +4,7 @@ import { CompilerBuffer } from '../template';
 
 export const enum OpcodeSize {
   ARG_SHIFT = 8,
-  MAX_SIZE = 0xffffffff,
+  MAX_SIZE = 0x7fffffff,
   TYPE_SIZE = 0b11111111,
   TYPE_MASK = 0b00000000000000000000000011111111,
   OPERAND_LEN_MASK = 0b00000000000000000000001100000000,

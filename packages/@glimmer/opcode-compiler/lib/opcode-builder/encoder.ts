@@ -11,7 +11,6 @@ import {
   HighLevelBuilderOpcode,
   BuilderOp,
   MachineOp,
-  PrimitiveType,
   SingleBuilderOperand,
   SingleBuilderOperands,
   Encoder,
@@ -29,11 +28,20 @@ import {
   EncoderError,
   HandleResult,
   CompileErrorOp,
+  PrimitiveType,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
-import { Stack, dict, expect } from '@glimmer/util';
+import {
+  Stack,
+  dict,
+  expect,
+  encodeImmediate,
+  exhausted,
+  unreachable,
+  encodeHandle,
+  HandleConstants,
+} from '@glimmer/util';
 import { commit } from '../compiler';
-import { num } from './operands';
 
 export type OpcodeBuilderLabels = Labels<InstructionEncoder>;
 
@@ -204,8 +212,6 @@ function constant(
   }
 
   switch (operand.type) {
-    case 'number':
-      return constants.number(operand.value);
     case 'array':
       return constants.array(operand.value);
     case 'string-array':
@@ -220,13 +226,29 @@ function constant(
     case 'stdlib':
       return operand;
     case 'primitive': {
-      let { primitive, type } = operand.value;
-      let encoded = constant(constants, primitive);
-      return sizeImmediate(constants, (encoded << 3) | type, primitive);
+      switch (operand.value.type) {
+        case PrimitiveType.STRING:
+          return encodeHandle(
+            constants.string(operand.value.primitive),
+            HandleConstants.STRING_MAX_INDEX,
+            HandleConstants.STRING_MAX_HANDLE
+          );
+        case PrimitiveType.NUMBER:
+          return encodeHandle(
+            constants.number(operand.value.primitive),
+            HandleConstants.NUMBER_MAX_INDEX,
+            HandleConstants.NUMBER_MAX_HANDLE
+          );
+        case PrimitiveType.IMMEDIATE:
+          return encodeImmediate(operand.value.primitive);
+        default:
+          return exhausted(operand.value);
+      }
     }
-
+    case 'lookup':
+      throw unreachable('lookup not reachable');
     default:
-      throw new Error(`Exhausted ${operand}`);
+      return exhausted(operand);
   }
 }
 
@@ -267,22 +289,4 @@ function isResolutionOpcode(op: AllOpcode): op is HighLevelResolutionOpcode {
 
 function isErrorOpcode(op: AllOpcode): op is ErrorOpcode {
   return op === 'Error';
-}
-
-function sizeImmediate(
-  constants: CompileTimeConstants,
-  shifted: number,
-  primitive: SingleBuilderOperand
-) {
-  if (shifted >= OpcodeSize.MAX_SIZE || shifted < 0) {
-    if (typeof primitive !== 'number') {
-      throw new Error(
-        "This condition should only be possible if the primitive isn't already a constant"
-      );
-    }
-
-    return (constant(constants, num(primitive as number)) << 3) | PrimitiveType.BIG_NUM;
-  }
-
-  return shifted;
 }

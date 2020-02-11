@@ -21,6 +21,7 @@ export {
 export { assign, fillNulls, values } from './lib/object-utils';
 export * from './lib/platform-utils';
 export * from './lib/string';
+export * from './lib/immediate';
 
 export { default as debugToString } from './lib/debug-to-string';
 

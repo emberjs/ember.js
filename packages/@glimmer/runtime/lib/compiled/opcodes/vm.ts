@@ -1,7 +1,7 @@
-import { PrimitiveType, CompilableTemplate, Option, Op } from '@glimmer/interfaces';
+import { CompilableTemplate, Option, Op } from '@glimmer/interfaces';
 import { isModified, ReferenceCache } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst, Revision, Tag, value, validate } from '@glimmer/validator';
-import { initializeGuid, assert } from '@glimmer/util';
+import { initializeGuid, assert, isHandle, HandleConstants, decodeHandle } from '@glimmer/util';
 import {
   CheckNumber,
   check,
@@ -34,28 +34,17 @@ APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
-  let flag = primitive & 7; // 111
-  let value = primitive >> 3;
-
-  switch (flag) {
-    case PrimitiveType.NUMBER:
-      stack.push(value);
-      break;
-    case PrimitiveType.FLOAT:
-      stack.push(vm[CONSTANTS].getNumber(value));
-      break;
-    case PrimitiveType.STRING:
-      stack.push(vm[CONSTANTS].getString(value));
-      break;
-    case PrimitiveType.BOOLEAN_OR_VOID:
-      stack.pushRaw(primitive);
-      break;
-    case PrimitiveType.NEGATIVE:
-      stack.push(vm[CONSTANTS].getNumber(value));
-      break;
-    case PrimitiveType.BIG_NUM:
-      stack.push(vm[CONSTANTS].getNumber(value));
-      break;
+  if (isHandle(primitive)) {
+    let value: string | number;
+    if (primitive > HandleConstants.NUMBER_MAX_HANDLE) {
+      value = vm[CONSTANTS].getString(decodeHandle(primitive, HandleConstants.STRING_MAX_HANDLE));
+    } else {
+      value = vm[CONSTANTS].getNumber(decodeHandle(primitive, HandleConstants.NUMBER_MAX_HANDLE));
+    }
+    stack.pushJs(value);
+  } else {
+    // is already an encoded immediate
+    stack.pushRaw(primitive);
   }
 });
 

@@ -2,7 +2,6 @@ import {
   CompileTimeConstants,
   Recast,
   RuntimeOp,
-  PrimitiveType,
   HandleResolver,
   Dict,
   Maybe,
@@ -12,6 +11,7 @@ import { Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { opcodeMetadata, Primitive } from '@glimmer/debug';
 import { RuntimeOpImpl } from '@glimmer/program';
+import { decodeImmediate, isHandle, HandleConstants, decodeHandle } from '@glimmer/util';
 
 export interface DebugConstants {
   getNumber(value: number): number;
@@ -195,31 +195,11 @@ function decodeRegister(register: Register): string {
 }
 
 function decodePrimitive(primitive: number, constants: DebugConstants): Primitive {
-  let flag = primitive & 7; // 111
-  let value = primitive >> 3;
-
-  switch (flag) {
-    case PrimitiveType.NUMBER:
-      return value;
-    case PrimitiveType.FLOAT:
-      return constants.getNumber(value);
-    case PrimitiveType.STRING:
-      return constants.getString(value);
-    case PrimitiveType.BOOLEAN_OR_VOID:
-      switch (value) {
-        case 0:
-          return false;
-        case 1:
-          return true;
-        case 2:
-          return null;
-        case 3:
-          return undefined;
-      }
-    case PrimitiveType.NEGATIVE:
-    case PrimitiveType.BIG_NUM:
-      return constants.getNumber(value);
-    default:
-      throw new Error('unreachable');
+  if (isHandle(primitive)) {
+    if (primitive > HandleConstants.NUMBER_MAX_HANDLE) {
+      return constants.getString(decodeHandle(primitive, HandleConstants.STRING_MAX_HANDLE));
+    }
+    return constants.getNumber(decodeHandle(primitive, HandleConstants.NUMBER_MAX_HANDLE));
   }
+  return decodeImmediate(primitive);
 }

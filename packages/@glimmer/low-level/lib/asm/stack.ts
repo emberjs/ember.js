@@ -40,11 +40,3 @@ export class Stack {
     return this.vec.length;
   }
 }
-
-export const enum PrimitiveType {
-  NUMBER = 0b000,
-  FLOAT = 0b001,
-  STRING = 0b010,
-  BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE = 0b100,
-}

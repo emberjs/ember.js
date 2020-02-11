@@ -1032,6 +1032,34 @@ export class InitialRenderSuite extends RenderTest {
   }
 
   @test
+  'Integer powers of 2'() {
+    let ints = [];
+    let i = Number.MAX_SAFE_INTEGER;
+    while (i > 1) {
+      ints.push(i);
+      i = Math.round(i / 2);
+    }
+    i = Number.MIN_SAFE_INTEGER;
+    while (i < -1) {
+      ints.push(i);
+      i = Math.round(i / 2);
+    }
+    this.registerHelper('testing', ([id]) => id);
+    this.render(ints.map(i => `{{${i}}}`).join('-'));
+    this.assertHTML(ints.map(i => `${i}`).join('-'));
+    this.assertStableRerender();
+  }
+
+  @test
+  'odd integers'() {
+    this.render(
+      '{{4294967296}} {{4294967295}} {{4294967294}} {{536870913}} {{536870912}} {{536870911}} {{268435455}}'
+    );
+    this.assertHTML('4294967296 4294967295 4294967294 536870913 536870912 536870911 268435455');
+    this.assertStableRerender();
+  }
+
+  @test
   'Constant float numbers can render'() {
     this.registerHelper('testing', ([id]) => id);
     this.render('<div>{{testing 0.123}}</div>');

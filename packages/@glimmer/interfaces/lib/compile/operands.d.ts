@@ -13,19 +13,9 @@ import {
 } from './encoder';
 
 export const enum PrimitiveType {
-  NUMBER = 0b000,
-  FLOAT = 0b001,
-  STRING = 0b010,
-  // 0=false 1=true 2=null 3=undefined
-  BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE = 0b100,
-  BIG_NUM = 0b101,
-}
-
-// For numbers that don't fit inside the operand size
-export interface NumberOperand {
-  type: 'number';
-  value: number;
+  IMMEDIATE = 0,
+  STRING = 1,
+  NUMBER = 2,
 }
 
 export interface ArrayOperand {
@@ -91,16 +81,32 @@ export interface InlineBlockOperand {
   value: WireFormat.SerializedInlineBlock;
 }
 
-export interface PrimitiveOperand {
+export interface PrimitiveOperand<TValue extends PrimitiveOperandValue = PrimitiveOperandValue> {
   type: 'primitive';
-  value: {
-    type: PrimitiveType;
-    primitive: NonlabelBuilderOperand;
-  };
+  value: TValue;
+}
+
+export type PrimitiveOperandValue =
+  | PrimitiveOperandStringValue
+  | PrimitiveOperandNumberValue
+  | PrimitiveOperandImmediateValue;
+
+export interface PrimitiveOperandStringValue {
+  type: PrimitiveType.STRING;
+  primitive: string;
+}
+
+export interface PrimitiveOperandNumberValue {
+  type: PrimitiveType.NUMBER;
+  primitive: number;
+}
+
+export interface PrimitiveOperandImmediateValue {
+  type: PrimitiveType.IMMEDIATE;
+  primitive: number | boolean | null | undefined;
 }
 
 export type NonlabelBuilderOperand =
-  | NumberOperand
   | ArrayOperand
   | StringArrayOperand
   | SerializableOperand

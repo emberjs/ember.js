@@ -1,12 +1,16 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { PrimitiveType } from '@glimmer/interfaces';
-import { unreachable } from '@glimmer/util';
+import {
+  decodeImmediate,
+  isSmallInt,
+  encodeImmediate,
+  encodeHandle,
+  decodeHandle,
+  isHandle,
+} from '@glimmer/util';
 import { Stack as WasmStack } from '@glimmer/low-level';
 import { MachineRegister, $sp, $fp } from '@glimmer/vm';
 import { LowLevelRegisters, initializeRegistersWithSP } from './low-level';
 import { REGISTERS } from '../symbols';
-
-const MAX_SMI = 0xfffffff;
 
 export class InnerStack {
   constructor(private inner = new WasmStack(), private js: unknown[] = []) {}
@@ -26,7 +30,11 @@ export class InnerStack {
   }
 
   sliceInner<T = unknown>(start: number, end: number): T[] {
-    let out = [];
+    let out: T[] = [];
+
+    if (start === -1) {
+      return out;
+    }
 
     for (let i = start; i < end; i++) {
       out.push(this.get(i));
@@ -40,17 +48,30 @@ export class InnerStack {
   }
 
   write(pos: number, value: unknown): void {
-    if (isImmediate(value)) {
-      this.writeRaw(pos, encodeImmediate(value));
-    } else {
-      this.writeJs(pos, value);
+    switch (typeof value) {
+      case 'boolean':
+      case 'undefined':
+        this.writeRaw(pos, encodeImmediate(value));
+        break;
+      case 'number':
+        if (isSmallInt(value)) {
+          this.writeRaw(pos, encodeImmediate(value));
+          break;
+        }
+      case 'object':
+        if (value === null) {
+          this.writeRaw(pos, encodeImmediate(value));
+          break;
+        }
+      default:
+        this.writeJs(pos, value);
     }
   }
 
-  private writeJs(pos: number, value: unknown): void {
+  writeJs(pos: number, value: unknown): void {
     let idx = this.js.length;
     this.js.push(value);
-    this.inner.writeRaw(pos, ~idx);
+    this.inner.writeRaw(pos, encodeHandle(idx));
   }
 
   writeRaw(pos: number, value: number) {
@@ -59,11 +80,10 @@ export class InnerStack {
 
   get<T>(pos: number): T {
     let value = this.inner.getRaw(pos);
-
-    if (value < 0) {
-      return this.js[~value] as T;
+    if (isHandle(value)) {
+      return this.js[decodeHandle(value)] as T;
     } else {
-      return decodeImmediate(value) as any;
+      return (decodeImmediate(value) as unknown) as T;
     }
   }
 
@@ -81,7 +101,7 @@ export interface EvaluationStack {
   [REGISTERS]: LowLevelRegisters;
 
   push(value: unknown): void;
-  pushNull(): void;
+  pushJs(value: unknown): void;
   pushRaw(value: number): void;
   dup(position?: MachineRegister): void;
   copy(from: number, to: number): void;
@@ -122,12 +142,12 @@ export default class EvaluationStackImpl implements EvaluationStack {
     this.stack.write(++this[REGISTERS][$sp], value);
   }
 
-  pushRaw(value: number): void {
-    this.stack.writeRaw(++this[REGISTERS][$sp], value);
+  pushJs(value: unknown): void {
+    this.stack.writeJs(++this[REGISTERS][$sp], value);
   }
 
-  pushNull(): void {
-    this.stack.write(++this[REGISTERS][$sp], null);
+  pushRaw(value: number): void {
+    this.stack.writeRaw(++this[REGISTERS][$sp], value);
   }
 
   dup(position = this[REGISTERS][$sp]): void {
@@ -177,94 +197,5 @@ export default class EvaluationStackImpl implements EvaluationStack {
   toArray() {
     console.log(this[REGISTERS]);
     return this.stack.sliceInner(this[REGISTERS][$fp], this[REGISTERS][$sp] + 1);
-  }
-}
-
-function isImmediate(value: unknown): value is number | boolean | null | undefined {
-  let type = typeof value;
-
-  if (value === null || value === undefined) return true;
-
-  switch (type) {
-    case 'boolean':
-    case 'undefined':
-      return true;
-    case 'number':
-      // not an integer
-      if ((value as number) % 1 !== 0) return false;
-
-      let abs = Math.abs(value as number);
-
-      // too big
-      if (abs > MAX_SMI) return false;
-
-      return true;
-    default:
-      return false;
-  }
-}
-
-export const enum Type {
-  NUMBER = 0b000,
-  FLOAT = 0b001,
-  STRING = 0b010,
-  BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE = 0b100,
-}
-
-export const enum Immediates {
-  False = (0 << 3) | Type.BOOLEAN_OR_VOID,
-  True = (1 << 3) | Type.BOOLEAN_OR_VOID,
-  Null = (2 << 3) | Type.BOOLEAN_OR_VOID,
-  Undef = (3 << 3) | Type.BOOLEAN_OR_VOID,
-}
-
-function encodeSmi(primitive: number) {
-  if (primitive < 0) {
-    return (Math.abs(primitive) << 3) | PrimitiveType.NEGATIVE;
-  } else {
-    return (primitive << 3) | PrimitiveType.NUMBER;
-  }
-}
-
-function encodeImmediate(primitive: number | boolean | null | undefined): number {
-  switch (typeof primitive) {
-    case 'number':
-      return encodeSmi(primitive as number);
-    case 'boolean':
-      return primitive ? Immediates.True : Immediates.False;
-    case 'object':
-      // assume null
-      return Immediates.Null;
-    case 'undefined':
-      return Immediates.Undef;
-    default:
-      throw unreachable();
-  }
-}
-
-function decodeSmi(smi: number): number {
-  switch (smi & 0b111) {
-    case PrimitiveType.NUMBER:
-      return smi >> 3;
-    case PrimitiveType.NEGATIVE:
-      return -(smi >> 3);
-    default:
-      throw unreachable();
-  }
-}
-
-function decodeImmediate(immediate: number): number | boolean | null | undefined {
-  switch (immediate) {
-    case Immediates.False:
-      return false;
-    case Immediates.True:
-      return true;
-    case Immediates.Null:
-      return null;
-    case Immediates.Undef:
-      return undefined;
-    default:
-      return decodeSmi(immediate);
   }
 }
