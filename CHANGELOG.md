@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.17.0-beta.4 (February 10, 2020)
+
+- [#18727](https://github.com/emberjs/ember.js/pull/18727) [BUGFIX] Avoid breaking {{-in-element}} usage
+- [#18728](https://github.com/emberjs/ember.js/pull/18728) [BUGFIX] Fix `{{#-in-element}}` double-clearing issue
+- [#18729](https://github.com/emberjs/ember.js/pull/18729) [BUGFIX] Remove deprecation for instantiation of new singleton instances (e.g. a service) during teardown (originally added in 3.16.1 by [#18717](https://github.com/emberjs/ember.js/pull/18717)).
+
 ### v3.17.0-beta.3 (February 3, 2020)
 
 - [#18703](https://github.com/emberjs/ember.js/pull/18703) [BUGFIX] Correctly links ArrayProxy tags to `arrangedContent`
