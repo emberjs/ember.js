@@ -50,12 +50,12 @@ export type StdlibPlaceholder = [number, StdlibOperand];
 const PAGE_SIZE = 0x100000;
 
 export class RuntimeHeapImpl implements RuntimeHeap {
-  private heap: Uint32Array;
+  private heap: Int32Array;
   private table: number[];
 
   constructor(serializedHeap: SerializedHeap) {
     let { buffer, table } = serializedHeap;
-    this.heap = new Uint32Array(buffer);
+    this.heap = new Int32Array(buffer);
     this.table = table;
   }
 
@@ -105,7 +105,7 @@ export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
  * over them as you will have a bad memory access exception.
  */
 export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
-  private heap: Uint32Array;
+  private heap: Int32Array;
   private placeholders: Placeholder[] = [];
   private stdlibs: StdlibPlaceholder[] = [];
   private table: number[];
@@ -114,7 +114,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   private capacity = PAGE_SIZE;
 
   constructor() {
-    this.heap = new Uint32Array(PAGE_SIZE);
+    this.heap = new Int32Array(PAGE_SIZE);
     this.table = [];
   }
 
@@ -126,7 +126,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   private sizeCheck() {
     if (this.capacity === 0) {
       let heap = slice(this.heap, 0, this.offset);
-      this.heap = new Uint32Array(heap.length + PAGE_SIZE);
+      this.heap = new Int32Array(heap.length + PAGE_SIZE);
       this.heap.set(heap, 0);
       this.capacity = PAGE_SIZE;
     }
@@ -321,12 +321,12 @@ export function hydrateProgram(artifacts: CompilerArtifacts): RuntimeProgram {
   return new RuntimeProgramImpl(constants, heap);
 }
 
-function slice(arr: Uint32Array, start: number, end: number): Uint32Array {
+function slice(arr: Int32Array, start: number, end: number): Int32Array {
   if (arr.slice !== undefined) {
     return arr.slice(start, end);
   }
 
-  let ret = new Uint32Array(end);
+  let ret = new Int32Array(end);
 
   for (; start < end; start++) {
     ret[start] = arr[start];
