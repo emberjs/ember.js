@@ -22,6 +22,8 @@ export { assign, fillNulls, values } from './lib/object-utils';
 export * from './lib/platform-utils';
 export * from './lib/string';
 
+export { default as debugToString } from './lib/debug-to-string';
+
 export type FIXME<T, S extends string> = T & S | T;
 
 export function assertNever(value: never, desc = 'unexpected unreachable branch'): void {
