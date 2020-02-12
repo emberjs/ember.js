@@ -14,6 +14,19 @@ export let setWithMandatorySetter:
 
 type PropertyDescriptorWithMeta = PropertyDescriptor & { hadOwnProperty?: boolean };
 
+function isElementKey(key: string | number | symbol) {
+  return typeof key === 'number' ? isPositiveInt(key) : isStringInt(key as string);
+}
+
+function isStringInt(str: string) {
+  let num = parseInt(str, 10);
+  return isPositiveInt(num) && str === String(num);
+}
+
+function isPositiveInt(num: number) {
+  return num >= 0 && num % 1 === 0;
+}
+
 if (DEBUG) {
   let SEEN_TAGS = new WeakSet();
 
@@ -33,6 +46,10 @@ if (DEBUG) {
     }
 
     SEEN_TAGS!.add(tag);
+
+    if (Array.isArray(obj) && isElementKey(keyName)) {
+      return;
+    }
 
     let desc = (lookupDescriptor(obj, keyName) as PropertyDescriptorWithMeta) || {};
 
