@@ -1,7 +1,7 @@
 import * as AST from './types/nodes';
 import { Option, Dict } from '@glimmer/interfaces';
 import { deprecate, assign } from '@glimmer/util';
-import { DEVMODE } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { StringLiteral, BooleanLiteral, NumberLiteral } from './types/handlebars-ast';
 
 // Statements
@@ -47,7 +47,7 @@ function buildBlock(
   let elseBlock: Option<AST.Block> | undefined;
 
   if (_defaultBlock.type === 'Template') {
-    if (DEVMODE) {
+    if (LOCAL_DEBUG) {
       deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     }
 
@@ -57,7 +57,7 @@ function buildBlock(
   }
 
   if (_elseBlock !== undefined && _elseBlock !== null && _elseBlock.type === 'Template') {
-    if (DEVMODE) {
+    if (LOCAL_DEBUG) {
       deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     }
 

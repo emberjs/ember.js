@@ -1,7 +1,7 @@
 'use strict';
 
 const babel = require('broccoli-babel-transpiler');
-const debugMacros = require('babel-plugin-debug-macros').default;
+const debugMacros = require('babel-plugin-debug-macros');
 
 const PRODUCTION = process.env.EMBER_ENV === 'production';
 
@@ -21,16 +21,14 @@ module.exports = function transpileToES5(inputNode, modules = false) {
     plugins.push([
       debugMacros,
       {
-        envFlags: {
-          source: '@glimmer/env',
-          flags: {
-            DEBUG: true,
+        flags: [
+          {
+            source: '@glimmer/env',
+            flags: {
+              DEBUG: true,
+            },
           },
-        },
-        debugTools: {
-          // Need to upgrade the plugin debug macro
-          source: '@glimmer/dummy-util-not-a-real-thing',
-        },
+        ],
       },
     ]);
   }

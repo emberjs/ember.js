@@ -2,7 +2,7 @@
 
 const babel = require('broccoli-babel-transpiler');
 const stripGlimmerUtils = require('babel-plugin-strip-glimmer-utils');
-const debugMacros = require('babel-plugin-debug-macros').default;
+const debugMacros = require('babel-plugin-debug-macros');
 const nuke = require('babel-plugin-nukable-import');
 const nameResolver = require('amd-name-resolver').moduleResolve;
 
@@ -34,14 +34,17 @@ function stripFlags(glimmerUtils) {
   glimmerUtils.push([
     debugMacros,
     {
-      envFlags: {
-        source: '@glimmer/local-debug-flags',
-        flags: {
-          DEBUG: process.env.EMBER_ENV !== 'production',
-          DEVMODE: process.env.EMBER_ENV !== 'production',
+      flags: [
+        {
+          source: '@glimmer/local-debug-flags',
+          flags: {
+            LOCAL_DEBUG: process.env.EMBER_ENV !== 'production',
+            LOCAL_SHOULD_LOG: process.env.EMBER_ENV !== 'production',
+          },
         },
-      },
+      ],
       debugTools: {
+        isDebug: process.env.EMBER_ENV !== 'production',
         source: '@glimmer/util',
       },
       externalizeHelpers: {

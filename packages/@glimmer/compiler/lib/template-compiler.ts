@@ -5,7 +5,7 @@ import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
 import { getAttrNamespace } from './utils';
 import { SymbolAllocator } from './allocate-symbols';
 import { Processor, InputOps, AllocateSymbolsOps, Ops, SourceLocation } from './compiler-ops';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { ExpressionContext } from '@glimmer/interfaces';
 import { locationToOffset } from './location';
 
@@ -34,7 +34,7 @@ export default class TemplateCompiler implements Processor<InputOps> {
 
     let out = JavaScriptCompiler.process(ops, allocationLocations, ast.symbols!, options);
 
-    if (DEBUG) {
+    if (LOCAL_SHOULD_LOG) {
       console.log(`Template ->`, out);
     }
 

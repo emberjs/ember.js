@@ -51,10 +51,17 @@
         label: 'Disable TSLint',
         tooltip: 'Do not include any TSLint tests',
       });
+
       QUnit.config.urlConfig.push({
-        id: 'glimmer_logging',
-        label: 'Enable Glimmer Logging',
-        tooltip: 'Enable Glimmer Logging',
+        id: 'disable_local_debug',
+        label: 'Disable LOCAL_DEBUG (runs like prod)',
+        tooltip: 'Disable LOCAL_DEBUG (runs like prod)',
+      });
+
+      QUnit.config.urlConfig.push({
+        id: 'enable_local_should_log',
+        label: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
+        tooltip: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
       });
 
       QUnit.config.urlConfig.push({

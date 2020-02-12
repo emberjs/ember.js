@@ -34,7 +34,7 @@
     "@simple-dom/interface": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",
-    "babel-plugin-debug-macros": "^0.1.11",
+    "babel-plugin-debug-macros": "^0.3.3",
     "handlebars": "^4.5.1",
     "simple-html-tokenizer": "^0.5.9"
   },
