@@ -10,149 +10,61 @@ import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 
-const EMPTY = Object.freeze({});
+moduleFor(
+  'Static content tests',
+  class extends RenderingTestCase {
+    ['@test it can render a static text node']() {
+      this.render('hello');
+      let text1 = this.assertTextNode(this.firstChild, 'hello');
 
-const LITERALS = [
-  ['foo', 'foo', '"foo"'],
-  [undefined, EMPTY],
-  [null, EMPTY],
-  [true, 'true'],
-  [false, 'false'],
-  [0, '0'],
-  [-0, '0', '-0'],
-  [1, '1'],
-  [-1, '-1'],
-  [0.0, '0', '0.0'],
-  [0.5, '0.5', '0.5'],
-  [0.5, '0.5', '0.500000000000000000000000000000'],
+      runTask(() => this.rerender());
 
-  // Kris Selden: that is a good one because it is above that 3 bit area,
-  // but the shifted < 0 check doesn't return true:
-  // https://github.com/glimmerjs/glimmer-vm/blob/761e78b2bef5de8b9b19ae5fb296380c21959ef8/packages/%40glimmer/opcode-compiler/lib/opcode-builder/encoder.ts#L277
-  [536870912, '536870912'],
+      let text2 = this.assertTextNode(this.firstChild, 'hello');
 
-  // Kris Selden: various other 10000000 and 1111111 combos
-  [4294967296, '4294967296'],
-  [4294967295, '4294967295'],
-  [4294967294, '4294967294'],
-  [536870913, '536870913'],
-  [536870911, '536870911'],
-  [268435455, '268435455'],
-];
+      this.assertSameNode(text1, text2);
+    }
 
-let i = Number.MAX_SAFE_INTEGER;
+    ['@test it can render a static element']() {
+      this.render('<p>hello</p>');
+      let p1 = this.assertElement(this.firstChild, { tagName: 'p' });
+      let text1 = this.assertTextNode(this.firstChild.firstChild, 'hello');
 
-while (i > 1) {
-  LITERALS.push([i, `${i}`, `${i}`]);
-  i = Math.round(i / 2);
-}
+      runTask(() => this.rerender());
 
-i = Number.MIN_SAFE_INTEGER;
+      let p2 = this.assertElement(this.firstChild, { tagName: 'p' });
+      let text2 = this.assertTextNode(this.firstChild.firstChild, 'hello');
 
-while (i < -1) {
-  LITERALS.push([i, `${i}`, `${i}`]);
-  i = Math.round(i / 2);
-}
+      this.assertSameNode(p1, p2);
+      this.assertSameNode(text1, text2);
+    }
 
-class StaticContentTest extends RenderingTestCase {
-  ['@test it can render a static text node']() {
-    this.render('hello');
-    let text1 = this.assertTextNode(this.firstChild, 'hello');
+    ['@test it can render a static template']() {
+      let template = `
+      <div class="header">
+        <h1>Welcome to Ember.js</h1>
+      </div>
+      <div class="body">
+        <h2>Why you should use Ember.js?</h2>
+        <ol>
+          <li>It's great</li>
+          <li>It's awesome</li>
+          <li>It's Ember.js</li>
+        </ol>
+      </div>
+      <div class="footer">
+        Ember.js is free, open source and always will be.
+      </div>
+    `;
 
-    runTask(() => this.rerender());
+      this.render(template);
+      this.assertHTML(template);
 
-    let text2 = this.assertTextNode(this.firstChild, 'hello');
+      runTask(() => this.rerender());
 
-    this.assertSameNode(text1, text2);
+      this.assertHTML(template);
+    }
   }
-
-  ['@test it can render a static element']() {
-    this.render('<p>hello</p>');
-    let p1 = this.assertElement(this.firstChild, { tagName: 'p' });
-    let text1 = this.assertTextNode(this.firstChild.firstChild, 'hello');
-
-    runTask(() => this.rerender());
-
-    let p2 = this.assertElement(this.firstChild, { tagName: 'p' });
-    let text2 = this.assertTextNode(this.firstChild.firstChild, 'hello');
-
-    this.assertSameNode(p1, p2);
-    this.assertSameNode(text1, text2);
-  }
-
-  ['@test it can render a static template']() {
-    let template = `
-    <div class="header">
-      <h1>Welcome to Ember.js</h1>
-    </div>
-    <div class="body">
-      <h2>Why you should use Ember.js?</h2>
-      <ol>
-        <li>It's great</li>
-        <li>It's awesome</li>
-        <li>It's Ember.js</li>
-      </ol>
-    </div>
-    <div class="footer">
-      Ember.js is free, open source and always will be.
-    </div>
-  `;
-
-    this.render(template);
-    this.assertHTML(template);
-
-    runTask(() => this.rerender());
-
-    this.assertHTML(template);
-  }
-}
-
-class StaticContentTestGenerator {
-  constructor(cases, tag = '@test') {
-    this.cases = cases;
-    this.tag = tag;
-  }
-
-  generate([value, expected, label]) {
-    let tag = this.tag;
-    label = label || value;
-
-    return {
-      [`${tag} rendering {{${label}}}`]() {
-        this.render(`{{${label}}}`);
-
-        if (expected === EMPTY) {
-          this.assertHTML('');
-        } else {
-          this.assertHTML(expected);
-        }
-
-        this.assertStableRerender();
-      },
-
-      [`${tag} rendering {{to-js ${label}}}`](assert) {
-        this.registerHelper('to-js', ([actual]) => {
-          assert.strictEqual(actual, value);
-          return actual;
-        });
-
-        this.render(`{{to-js ${label}}}`);
-
-        if (expected === EMPTY) {
-          this.assertHTML('');
-        } else {
-          this.assertHTML(expected);
-        }
-
-        this.assertStableRerender();
-      },
-    };
-  }
-}
-
-applyMixins(StaticContentTest, new StaticContentTestGenerator(LITERALS));
-
-moduleFor('Static content tests', StaticContentTest);
+);
 
 class DynamicContentTest extends RenderingTestCase {
   /* abstract */
@@ -676,7 +588,9 @@ class DynamicContentTest extends RenderingTestCase {
   }
 }
 
-class DynamicContentTestGenerator {
+const EMPTY = {};
+
+class ContentTestGenerator {
   constructor(cases, tag = '@test') {
     this.cases = cases;
     this.tag = tag;
@@ -725,8 +639,18 @@ class DynamicContentTestGenerator {
   }
 }
 
-const SharedContentTestCases = new DynamicContentTestGenerator([
-  ...LITERALS,
+const SharedContentTestCases = new ContentTestGenerator([
+  ['foo', 'foo'],
+  [0, '0'],
+  [-0, '0', '-0'],
+  [1, '1'],
+  [-1, '-1'],
+  [0.0, '0', '0.0'],
+  [0.5, '0.5'],
+  [undefined, EMPTY],
+  [null, EMPTY],
+  [true, 'true'],
+  [false, 'false'],
   [NaN, 'NaN'],
   [new Date(2000, 0, 1), String(new Date(2000, 0, 1)), 'a Date object'],
   [Infinity, 'Infinity'],
@@ -755,7 +679,7 @@ const SharedContentTestCases = new DynamicContentTestGenerator([
   ['<b>Max</b><b>James</b>', '<b>Max</b><b>James</b>'],
 ]);
 
-let GlimmerContentTestCases = new DynamicContentTestGenerator([
+let GlimmerContentTestCases = new ContentTestGenerator([
   [Object.create(null), EMPTY, 'an object with no toString'],
 ]);
 
