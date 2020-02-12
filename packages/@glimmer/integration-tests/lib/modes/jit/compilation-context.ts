@@ -1,36 +1,14 @@
 import {
-  WholeProgramCompilationContext,
   CompileTimeResolverDelegate,
-  CompileMode,
-  STDLib,
-  RuntimeProgram,
   ComponentCapabilities,
   Option,
   ComponentDefinition,
   AnnotatedModuleLocator,
   CompileTimeComponent,
 } from '@glimmer/interfaces';
-import { JitConstants, HeapImpl, RuntimeProgramImpl } from '@glimmer/program';
 import { TestJitRegistry } from './registry';
-import { compileStd, unwrapTemplate } from '@glimmer/opcode-compiler';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import TestJitRuntimeResolver from './resolver';
-
-export class TestJitCompilationContext implements WholeProgramCompilationContext {
-  readonly constants = new JitConstants();
-  readonly resolverDelegate: JitCompileTimeLookup;
-  readonly heap = new HeapImpl();
-  readonly mode = CompileMode.jit;
-  readonly stdlib: STDLib;
-
-  constructor(runtimeResolver: TestJitRuntimeResolver, registry: TestJitRegistry) {
-    this.stdlib = compileStd(this);
-    this.resolverDelegate = new JitCompileTimeLookup(runtimeResolver, registry);
-  }
-
-  program(): RuntimeProgram {
-    return new RuntimeProgramImpl(this.constants, this.heap);
-  }
-}
 
 export default class JitCompileTimeLookup implements CompileTimeResolverDelegate {
   constructor(private resolver: TestJitRuntimeResolver, private registry: TestJitRegistry) {}
