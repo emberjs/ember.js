@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.47.7 (2020-02-12)
+
+#### :bug: Bug Fix
+* `@glimmer/util`
+  * [#1030](https://github.com/glimmerjs/glimmer-vm/pull/1030) Add @glimmer/env to @glimmer/util's package.json. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+## v0.47.6 (2020-02-11)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#1024](https://github.com/glimmerjs/glimmer-vm/pull/1024) Add `parents()` generator method to the `Path` class ([@Turbo87](https://github.com/Turbo87))
+
+#### :bug: Bug Fix
+* `@glimmer/reference`, `@glimmer/util`
+  * [#1022](https://github.com/glimmerjs/glimmer-vm/pull/1022) [BUGFIX] Ensure Iterables work with dictionaries ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
 ## v0.47.5 (2020-02-07)
 
 #### :rocket: Enhancement
