@@ -5,6 +5,7 @@
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/util",
   "license": "MIT",
   "dependencies": {
+    "@glimmer/env": "0.1.7",
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
