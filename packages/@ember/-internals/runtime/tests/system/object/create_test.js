@@ -1,5 +1,5 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { computed, Mixin, observer } from '@ember/-internals/metal';
+import { computed, Mixin, observer, addObserver, destroy } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -46,6 +46,43 @@ moduleFor(
         assert.ok(!descriptor.set, 'Mandatory setter was not setup');
 
         o.destroy();
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test does not sets up separate mandatory setters on getters'](assert) {
+      if (DEBUG) {
+        let MyClass = EmberObject.extend({
+          get foo() {
+            return 'bar';
+          },
+          fooDidChange: observer('foo', function() {}),
+        });
+
+        let o = MyClass.create({});
+        assert.equal(o.get('foo'), 'bar');
+
+        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+        assert.ok(!descriptor, 'Mandatory setter was not setup');
+
+        // cleanup
+        o.destroy();
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test does not sets up separate mandatory setters on arrays'](assert) {
+      if (DEBUG) {
+        let arr = [123];
+
+        addObserver(arr, 0, function() {});
+
+        let descriptor = Object.getOwnPropertyDescriptor(arr, 0);
+        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        destroy(arr);
       } else {
         assert.expect(0);
       }
