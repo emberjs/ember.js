@@ -28,12 +28,11 @@ export { normalizeProperty } from './lib/dom/props';
 export { DefaultDynamicScope } from './lib/dynamic-scope';
 export {
   AotRuntime,
-  default as EnvironmentImpl,
-  CustomJitRuntime,
-  JitRuntimeFromProgram,
   JitRuntime,
   EnvironmentDelegate,
   ScopeImpl,
+  JitProgramCompilationContext,
+  JitSyntaxCompilationContext,
   inTransaction,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
