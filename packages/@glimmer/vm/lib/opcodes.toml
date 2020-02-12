@@ -168,7 +168,7 @@ is bound *and* has at least one specified formal
 parameter, and FALSE otherwise.
 """
 operand-stack = [
-  ["block?"],
+  ["block?", "scope?", "symbol-table?"],
   ["bool"]
 ]
 
