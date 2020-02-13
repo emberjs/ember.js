@@ -5,7 +5,7 @@ import { recordStackSize, opcodeMetadata } from '@glimmer/debug';
 import { $pc, $sp, $ra, $fp } from '@glimmer/vm';
 import { Tag } from '@glimmer/validator';
 import { RuntimeOp, Op, JitOrAotBlock, Maybe, Dict } from '@glimmer/interfaces';
-import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
 import { debug, logOpcode } from '@glimmer/opcode-compiler';
 import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
@@ -66,10 +66,10 @@ export class AppendOpcodes {
     let params: Maybe<Dict> = undefined;
     let opName: string | undefined = undefined;
 
-    if (DEBUG) {
+    if (LOCAL_SHOULD_LOG) {
       let pos = vm[INNER_VM].fetchRegister($pc) - opcode.size;
 
-      [opName, params] = debug(vm[CONSTANTS], vm.runtime.resolver, opcode, opcode.isMachine);
+      [opName, params] = debug(vm[CONSTANTS], vm.runtime.resolver, opcode, opcode.isMachine)!;
 
       // console.log(`${typePos(vm['pc'])}.`);
       console.log(`${pos}. ${logOpcode(opName, params)}`);
@@ -84,7 +84,7 @@ export class AppendOpcodes {
 
     let sp: number;
 
-    if (DEVMODE) {
+    if (LOCAL_DEBUG) {
       sp = vm.fetchValue($sp);
     }
 
@@ -104,7 +104,7 @@ export class AppendOpcodes {
   debugAfter(vm: VM<JitOrAotBlock>, pre: DebugState) {
     let { sp, type, isMachine, pc } = pre;
 
-    if (DEBUG) {
+    if (LOCAL_DEBUG) {
       let meta = opcodeMetadata(type, isMachine);
       let actualChange = vm.fetchValue($sp) - sp!;
       if (
@@ -121,35 +121,37 @@ export class AppendOpcodes {
         );
       }
 
-      console.log(
-        '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
-        'color: orange',
-        vm[INNER_VM].registers[$pc],
-        vm[INNER_VM].registers[$ra],
-        vm[INNER_VM].registers[$fp],
-        vm[INNER_VM].registers[$sp],
-        vm['s0'],
-        vm['s1'],
-        vm['t0'],
-        vm['t1'],
-        vm['v0']
-      );
-      console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
-      console.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
-      console.log('%c -> destructor stack', 'color: violet', vm[DESTRUCTOR_STACK].toArray());
-      if (vm[STACKS].scope.current === null) {
-        console.log('%c -> scope', 'color: green', 'null');
-      } else {
+      if (LOCAL_SHOULD_LOG) {
         console.log(
-          '%c -> scope',
-          'color: green',
-          vm.scope().slots.map(s => (isScopeReference(s) ? s.value() : s))
+          '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
+          'color: orange',
+          vm[INNER_VM].registers[$pc],
+          vm[INNER_VM].registers[$ra],
+          vm[INNER_VM].registers[$fp],
+          vm[INNER_VM].registers[$sp],
+          vm['s0'],
+          vm['s1'],
+          vm['t0'],
+          vm['t1'],
+          vm['v0']
         );
+        console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
+        console.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
+        console.log('%c -> destructor stack', 'color: violet', vm[DESTRUCTOR_STACK].toArray());
+        if (vm[STACKS].scope.current === null) {
+          console.log('%c -> scope', 'color: green', 'null');
+        } else {
+          console.log(
+            '%c -> scope',
+            'color: green',
+            vm.scope().slots.map(s => (isScopeReference(s) ? s.value() : s))
+          );
+        }
+
+        console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK].current!.element);
+
+        console.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
       }
-
-      console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK].current!.element);
-
-      console.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
     }
   }
 

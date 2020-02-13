@@ -9,7 +9,7 @@ import {
   TemplateCompilationContext,
   HandleResult,
 } from '@glimmer/interfaces';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { namedBlocks, expectString } from './utils';
 import { extractHandle } from './template';
 
@@ -58,7 +58,7 @@ export function commit(heap: CompileTimeHeap, scopeSize: number, buffer: Compile
 
 export let debugCompiler: (context: TemplateCompilationContext, handle: HandleResult) => void;
 
-if (DEBUG) {
+if (LOCAL_SHOULD_LOG) {
   debugCompiler = (context: TemplateCompilationContext, result: HandleResult) => {
     let handle = extractHandle(result);
     let { heap } = context.syntax.program;

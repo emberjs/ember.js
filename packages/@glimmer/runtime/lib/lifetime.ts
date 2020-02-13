@@ -1,5 +1,5 @@
 import { takeAssociated, peekAssociated, snapshot, destructor, LINKED } from '@glimmer/util';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { clear } from './bounds';
 import { BlockOpcode } from './vm/update';
 import { Option, Bounds, Environment } from '@glimmer/interfaces';
@@ -22,8 +22,7 @@ export function asyncReset(parent: object, env: Environment) {
 }
 
 export function legacySyncDestroy(parent: object, env: Environment) {
-  // NOTE: This is LOCAL_DEBUG really, but we need to update it everywhere
-  if (DEBUG) {
+  if (LOCAL_SHOULD_LOG) {
     console.log('legacySyncDestroy', parent, LINKED.get(parent));
   }
 
@@ -31,7 +30,7 @@ export function legacySyncDestroy(parent: object, env: Environment) {
 }
 
 export function asyncDestroy(parent: object, env: Environment) {
-  if (DEBUG) {
+  if (LOCAL_SHOULD_LOG) {
     console.log('asyncDestroy', parent, LINKED.get(parent));
   }
 
@@ -39,7 +38,7 @@ export function asyncDestroy(parent: object, env: Environment) {
 }
 
 export function detach(parent: BlockOpcode, env: Environment) {
-  if (DEBUG) {
+  if (LOCAL_SHOULD_LOG) {
     console.log('asyncClear', parent, LINKED.get(parent));
   }
 
@@ -49,7 +48,7 @@ export function detach(parent: BlockOpcode, env: Environment) {
 }
 
 export function detachChildren(parent: Bounds, env: Environment): Option<SimpleNode> {
-  if (DEBUG) {
+  if (LOCAL_SHOULD_LOG) {
     console.log('asyncClear', parent, LINKED.get(parent));
   }
 

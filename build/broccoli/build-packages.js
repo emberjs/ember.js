@@ -9,7 +9,7 @@ const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 const transpileToES5 = require('./transpile-to-es5');
 const writePackageJSON = require('./write-package-json');
 const writeLicense = require('./write-license');
-const debugMacros = require('babel-plugin-debug-macros').default;
+const debugMacros = require('babel-plugin-debug-macros');
 
 const Project = require('../utils/project');
 const project = Project.from('packages');
@@ -155,14 +155,17 @@ function transpileCommonJS(pkgName, esVersion, tree) {
       [
         debugMacros,
         {
-          envFlags: {
-            source: '@glimmer/local-debug-flags',
-            flags: {
-              DEVMODE: process.env.EMBER_ENV !== 'production',
-              DEBUG: false,
+          flags: [
+            {
+              source: '@glimmer/local-debug-flags',
+              flags: {
+                LOCAL_DEBUG: false,
+                LOCAL_SHOULD_LOG: false,
+              },
             },
-          },
+          ],
           debugTools: {
+            isDebug: false,
             source: '@glimmer/util',
           },
           externalizeHelpers: {

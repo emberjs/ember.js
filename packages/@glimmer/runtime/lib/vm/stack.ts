@@ -1,4 +1,4 @@
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { PrimitiveType } from '@glimmer/interfaces';
 import { unreachable } from '@glimmer/util';
 import { Stack as WasmStack } from '@glimmer/low-level';
@@ -113,7 +113,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
   constructor(private stack: InnerStack, registers: LowLevelRegisters) {
     this[REGISTERS] = registers;
 
-    if (DEBUG) {
+    if (LOCAL_DEBUG) {
       Object.seal(this);
     }
   }

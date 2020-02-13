@@ -8,7 +8,7 @@ import {
 } from '@glimmer/interfaces';
 import { APPEND_OPCODES } from '../opcodes';
 import VM from './append';
-import { DEVMODE } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { MachineRegister, $pc, $ra, $fp, $sp } from '@glimmer/vm';
 import { assert } from '@glimmer/util';
 
@@ -139,7 +139,7 @@ export default class LowLevelVM {
   }
 
   evaluateOuter(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
-    if (DEVMODE) {
+    if (LOCAL_DEBUG) {
       let {
         externs: { debugBefore, debugAfter },
       } = this;

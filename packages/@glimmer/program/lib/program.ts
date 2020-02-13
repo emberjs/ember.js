@@ -8,7 +8,7 @@ import {
   RuntimeProgram,
   CompilerArtifacts,
 } from '@glimmer/interfaces';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { RuntimeConstantsImpl } from './constants';
 import { RuntimeOpImpl } from './opcode';
 import { assert } from '@glimmer/util';
@@ -150,7 +150,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   }
 
   finishMalloc(handle: number, scopeSize: number): void {
-    if (DEBUG) {
+    if (LOCAL_DEBUG) {
       let start = this.table[handle];
       let finish = this.offset;
       let instructionSize = finish - start;
@@ -336,7 +336,7 @@ function slice(arr: Uint32Array, start: number, end: number): Uint32Array {
 }
 
 function sizeof(table: number[], handle: number) {
-  if (DEBUG) {
+  if (LOCAL_DEBUG) {
     return table[handle + Size.SIZE_OFFSET];
   } else {
     return -1;

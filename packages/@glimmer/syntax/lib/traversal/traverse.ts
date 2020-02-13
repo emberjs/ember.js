@@ -6,7 +6,7 @@ import {
 } from './errors';
 import * as AST from '../types/nodes';
 import { deprecate } from '@glimmer/util';
-import { DEVMODE } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { NodeHandler, NodeVisitor, KeyHandler, NodeTraversal, KeyTraversal } from './visitor';
 import Path from './path';
 
@@ -65,7 +65,7 @@ function getNodeHandler<N extends AST.Node>(
 ): NodeTraversal<N> | NodeTraversal<AST.Node> | undefined {
   if (nodeType === 'Template' || nodeType === 'Block') {
     if (visitor.Program) {
-      if (DEVMODE) {
+      if (LOCAL_DEBUG) {
         deprecate(`TODO`);
       }
 

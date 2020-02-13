@@ -9,7 +9,7 @@ import {
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
 import { Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { opcodeMetadata, Primitive } from '@glimmer/debug';
 import { RuntimeOpImpl } from '@glimmer/program';
 
@@ -27,7 +27,7 @@ interface LazyDebugConstants {
 }
 
 export function debugSlice(context: TemplateCompilationContext, start: number, end: number) {
-  if (DEBUG) {
+  if (LOCAL_SHOULD_LOG) {
     (console as any).group(`%c${start}:${end}`, 'color: #999');
 
     let heap = context.syntax.program.heap;
@@ -41,7 +41,7 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
         context.syntax.program.resolverDelegate,
         opcode,
         opcode.isMachine
-      );
+      )!;
       console.log(`${i}. ${logOpcode(name, params)}`);
       _size = opcode.size;
     }
@@ -51,19 +51,21 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
 }
 
 export function logOpcode(type: string, params: Maybe<Dict>): string | void {
-  let out = type;
+  if (LOCAL_SHOULD_LOG) {
+    let out = type;
 
-  if (params) {
-    let args = Object.keys(params)
-      .map(p => ` ${p}=${json(params[p])}`)
-      .join('');
-    out += args;
+    if (params) {
+      let args = Object.keys(params)
+        .map(p => ` ${p}=${json(params[p])}`)
+        .join('');
+      out += args;
+    }
+    return `(${out})`;
   }
-  return `(${out})`;
 }
 
 function json(param: unknown) {
-  if (DEBUG) {
+  if (LOCAL_SHOULD_LOG) {
     if (typeof param === 'function') {
       return '<function>';
     }
@@ -88,7 +90,75 @@ function json(param: unknown) {
   }
 }
 
-export function opcodeOperand(opcode: RuntimeOp, index: number): number {
+export function debug(
+  c: DebugConstants,
+  resolver: HandleResolver,
+  op: RuntimeOp,
+  isMachine: 0 | 1
+): [string, Dict] | undefined {
+  if (LOCAL_SHOULD_LOG) {
+    let metadata = opcodeMetadata(op.type, isMachine);
+
+    if (!metadata) {
+      throw new Error(`Missing Opcode Metadata for ${op}`);
+    }
+
+    let out = Object.create(null);
+
+    metadata.ops.forEach((operand, index: number) => {
+      let actualOperand = opcodeOperand(op, index);
+
+      switch (operand.type) {
+        case 'u32':
+        case 'i32':
+        case 'meta':
+          out[operand.name] = actualOperand;
+          break;
+        case 'handle':
+          out[operand.name] = resolver.resolve(actualOperand);
+          break;
+        case 'str':
+          out[operand.name] = c.getString(actualOperand);
+          break;
+        case 'option-str':
+          out[operand.name] = actualOperand ? c.getString(actualOperand) : null;
+          break;
+        case 'str-array':
+          out[operand.name] = c.getStringArray(actualOperand);
+          break;
+        case 'array':
+          out[operand.name] = c.getArray(actualOperand);
+          break;
+        case 'bool':
+          out[operand.name] = !!actualOperand;
+          break;
+        case 'primitive':
+          out[operand.name] = decodePrimitive(actualOperand, c);
+          break;
+        case 'register':
+          out[operand.name] = decodeRegister(actualOperand);
+          break;
+        case 'unknown':
+          out[operand.name] = (c as Recast<DebugConstants, LazyDebugConstants>).getOther(
+            actualOperand
+          );
+          break;
+        case 'symbol-table':
+        case 'scope':
+          out[operand.name] = `<scope ${actualOperand}>`;
+          break;
+        default:
+          throw new Error(`Unexpected operand type ${operand.type} for debug output`);
+      }
+    });
+
+    return [metadata.name, out];
+  }
+
+  return undefined;
+}
+
+function opcodeOperand(opcode: RuntimeOp, index: number): number {
   switch (index) {
     case 0:
       return opcode.op1;
@@ -99,70 +169,6 @@ export function opcodeOperand(opcode: RuntimeOp, index: number): number {
     default:
       throw new Error(`Unexpected operand index (must be 0-2)`);
   }
-}
-
-export function debug(
-  c: DebugConstants,
-  resolver: HandleResolver,
-  op: RuntimeOp,
-  isMachine: 0 | 1
-): [string, Dict] {
-  let metadata = opcodeMetadata(op.type, isMachine);
-
-  if (!metadata) {
-    throw new Error(`Missing Opcode Metadata for ${op}`);
-  }
-
-  let out = Object.create(null);
-
-  metadata.ops.forEach((operand, index: number) => {
-    let actualOperand = opcodeOperand(op, index);
-
-    switch (operand.type) {
-      case 'u32':
-      case 'i32':
-      case 'meta':
-        out[operand.name] = actualOperand;
-        break;
-      case 'handle':
-        out[operand.name] = resolver.resolve(actualOperand);
-        break;
-      case 'str':
-        out[operand.name] = c.getString(actualOperand);
-        break;
-      case 'option-str':
-        out[operand.name] = actualOperand ? c.getString(actualOperand) : null;
-        break;
-      case 'str-array':
-        out[operand.name] = c.getStringArray(actualOperand);
-        break;
-      case 'array':
-        out[operand.name] = c.getArray(actualOperand);
-        break;
-      case 'bool':
-        out[operand.name] = !!actualOperand;
-        break;
-      case 'primitive':
-        out[operand.name] = decodePrimitive(actualOperand, c);
-        break;
-      case 'register':
-        out[operand.name] = decodeRegister(actualOperand);
-        break;
-      case 'unknown':
-        out[operand.name] = (c as Recast<DebugConstants, LazyDebugConstants>).getOther(
-          actualOperand
-        );
-        break;
-      case 'symbol-table':
-      case 'scope':
-        out[operand.name] = `<scope ${actualOperand}>`;
-        break;
-      default:
-        throw new Error(`Unexpected operand type ${operand.type} for debug output`);
-    }
-  });
-
-  return [metadata.name, out];
 }
 
 function decodeRegister(register: Register): string {
