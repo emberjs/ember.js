@@ -55,6 +55,7 @@ export interface AllocateSymbolsOps {
   staticArg: string;
   dynamicArg: string;
   staticAttr: [string, Option<string>];
+  staticComponentAttr: [string, Option<string>];
   componentAttr: [string, Option<string>];
   dynamicAttr: [string, Option<string>];
   trustingComponentAttr: [string, Option<string>];
@@ -92,6 +93,7 @@ export interface JavaScriptCompilerOps {
   flushElement: AST.ElementNode;
 
   staticAttr: [string, Option<string>];
+  staticComponentAttr: [string, Option<string>];
   componentAttr: [string, Option<string>];
   dynamicAttr: [string, Option<string>];
   trustingComponentAttr: [string, Option<string>];
