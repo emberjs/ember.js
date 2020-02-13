@@ -222,6 +222,7 @@ module.exports = {
       parserOptions: {
         project: './tsconfig.json',
         sourceType: 'module',
+        tsconfigRootDir: __dirname,
       },
       rules: {
         'node/no-extraneous-import': 'off',
