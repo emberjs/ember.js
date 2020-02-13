@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.47.8 (2020-02-13)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/low-level`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1027](https://github.com/glimmerjs/glimmer-vm/pull/1027) [BUGFIX] Fix immediate encoding ([@krisselden](https://github.com/krisselden))
+
+#### :house: Internal
+* Other
+  * [#1033](https://github.com/glimmerjs/glimmer-vm/pull/1033) Specify tsconfigRootDir in parserOptions for TS files. ([@rwjblue](https://github.com/rwjblue))
+  * [#1032](https://github.com/glimmerjs/glimmer-vm/pull/1032) Fix TravisCI configuration. ([@rwjblue](https://github.com/rwjblue))
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/local-debug-flags`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/vm`
+  * [#1031](https://github.com/glimmerjs/glimmer-vm/pull/1031) [BUGFIX] Update HasBlockParams metadata ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
 ## v0.47.7 (2020-02-12)
 
 #### :bug: Bug Fix
