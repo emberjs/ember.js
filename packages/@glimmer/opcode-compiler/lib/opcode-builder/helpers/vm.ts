@@ -1,4 +1,4 @@
-import { num, prim, strArray } from '../operands';
+import { prim, strArray } from '../operands';
 import { $v0 } from '@glimmer/vm';
 import {
   Option,
@@ -7,12 +7,13 @@ import {
   BuilderOp,
   CompileActions,
   PrimitiveType,
-  SingleBuilderOperand,
   StatementCompileActions,
   ExpressionCompileActions,
   WireFormat,
+  PrimitiveOperand,
 } from '@glimmer/interfaces';
 import { op } from '../encoder';
+import { isSmallInt } from '@glimmer/util';
 
 export type StatementBlock = () => StatementCompileActions;
 export type Primitive = undefined | null | boolean | number | string;
@@ -36,45 +37,28 @@ export function PushPrimitiveReference(value: Primitive): CompileActions {
  *
  * @param value A JavaScript primitive (undefined, null, boolean, number or string)
  */
-export function PushPrimitive(_primitive: Primitive): BuilderOp {
-  let type: PrimitiveType = PrimitiveType.NUMBER;
-  let p: SingleBuilderOperand;
-  switch (typeof _primitive) {
+export function PushPrimitive(primitive: Primitive): BuilderOp {
+  let p: PrimitiveOperand;
+  switch (typeof primitive) {
     case 'number':
-      if ((_primitive as number) % 1 === 0) {
-        if ((_primitive as number) > -1) {
-          p = _primitive;
-        } else {
-          p = num(_primitive);
-          type = PrimitiveType.NEGATIVE;
-        }
+      if (isSmallInt(primitive)) {
+        p = prim(primitive, PrimitiveType.IMMEDIATE);
       } else {
-        p = num(_primitive);
-        type = PrimitiveType.FLOAT;
+        p = prim(primitive, PrimitiveType.NUMBER);
       }
       break;
     case 'string':
-      p = _primitive;
-      type = PrimitiveType.STRING;
+      p = prim(primitive, PrimitiveType.STRING);
       break;
     case 'boolean':
-      p = _primitive;
-      type = PrimitiveType.BOOLEAN_OR_VOID;
-      break;
-    case 'object':
-      // assume null
-      p = 2;
-      type = PrimitiveType.BOOLEAN_OR_VOID;
-      break;
+    case 'object': // assume null
     case 'undefined':
-      p = 3;
-      type = PrimitiveType.BOOLEAN_OR_VOID;
+      p = prim(primitive, PrimitiveType.IMMEDIATE);
       break;
     default:
       throw new Error('Invalid primitive passed to pushPrimitive');
   }
-
-  return op(Op.Primitive, prim(p, type));
+  return op(Op.Primitive, p);
 }
 
 /**
