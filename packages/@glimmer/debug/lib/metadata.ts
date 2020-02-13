@@ -192,7 +192,7 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
 
   out = out.match(/^\s*?\n?([\s\S]*?)\n?\s*$/)![1];
 
-  let min = Number.MAX_SAFE_INTEGER;
+  let min = 9007199254740991; // Number.MAX_SAFE_INTEGER isn't available on IE11
 
   for (let line of out.split('\n')) {
     let leading = line.match(/^\s*/)![0].length;
