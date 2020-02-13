@@ -8,9 +8,6 @@ language: node_js
 node_js:
   - 8
 
-matrix:
-  fast_finish: true
-
 cache: yarn
 
 before_install:
@@ -18,6 +15,7 @@ before_install:
   - export PATH="$HOME/.yarn/bin:$PATH"
 
 jobs:
+  fast_finish: true
   include:
     - name: Tests (Chrome)
 
