@@ -35,6 +35,7 @@ export const enum SexpOpcodes {
   TrustingDynamicAttr = 20,
   TrustingComponentAttr = 21,
   Debugger = 22,
+  StaticComponentAttr = 23,
 
   // Expressions
 
@@ -69,6 +70,7 @@ export interface SexpOpcodeMap {
 
   [SexpOpcodes.DynamicArg]: Statements.DynamicArg;
   [SexpOpcodes.StaticArg]: Statements.StaticArg;
+  [SexpOpcodes.StaticComponentAttr]: Statements.StaticComponentAttr;
   [SexpOpcodes.TrustingDynamicAttr]: Statements.TrustingAttr;
   [SexpOpcodes.TrustingComponentAttr]: Statements.TrustingComponentAttr;
   [SexpOpcodes.Debugger]: Statements.Debugger;
@@ -175,6 +177,12 @@ export namespace Statements {
   export type FlushElement = [SexpOpcodes.FlushElement];
   export type CloseElement = [SexpOpcodes.CloseElement];
   export type StaticAttr = [SexpOpcodes.StaticAttr, string, string, Option<string>];
+  export type StaticComponentAttr = [
+    SexpOpcodes.StaticComponentAttr,
+    string,
+    string,
+    Option<string>
+  ];
   export type DynamicAttr = [SexpOpcodes.DynamicAttr, string, Expression, Option<string>];
   export type ComponentAttr = [SexpOpcodes.ComponentAttr, string, Expression, Option<string>];
   export type AttrSplat = [SexpOpcodes.AttrSplat, YieldTo];
@@ -204,6 +212,7 @@ export namespace Statements {
     | FlushElement
     | CloseElement
     | StaticAttr
+    | StaticComponentAttr
     | DynamicAttr
     | ComponentAttr
     | AttrSplat
@@ -217,6 +226,7 @@ export namespace Statements {
 
   export type Attribute =
     | Statements.StaticAttr
+    | Statements.StaticComponentAttr
     | Statements.DynamicAttr
     | Statements.ComponentAttr
     | Statements.TrustingComponentAttr

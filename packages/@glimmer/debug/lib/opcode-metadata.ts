@@ -587,6 +587,29 @@ METADATA[Op.StaticAttr] = {
   check: true,
 };
 
+METADATA[Op.StaticComponentAttr] = {
+  name: 'StaticComponentAttr',
+  mnemonic: 'apnd_csattr',
+  before: null,
+  stackChange: 0,
+  ops: [
+    {
+      name: 'name',
+      type: 'str',
+    },
+    {
+      name: 'value',
+      type: 'str',
+    },
+    {
+      name: 'namespace',
+      type: 'option-str',
+    },
+  ],
+  operands: 3,
+  check: true,
+};
+
 METADATA[Op.DynamicAttr] = {
   name: 'DynamicAttr',
   mnemonic: 'apnd_dynattr',

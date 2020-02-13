@@ -15,6 +15,7 @@ export function isAttribute(val: Statement): val is Statements.Attribute {
     val[0] === SexpOpcodes.DynamicAttr ||
     val[0] === SexpOpcodes.TrustingDynamicAttr ||
     val[0] === SexpOpcodes.ComponentAttr ||
+    val[0] === SexpOpcodes.StaticComponentAttr ||
     val[0] === SexpOpcodes.TrustingComponentAttr ||
     val[0] === SexpOpcodes.AttrSplat ||
     val[0] === SexpOpcodes.Modifier

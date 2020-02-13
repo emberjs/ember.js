@@ -176,8 +176,13 @@ export default class TemplateCompiler implements Processor<InputOps> {
 
       if (isStatic && name === '...attributes') {
         this.opcode(['attrSplat'], action);
-      } else if (isStatic && !isComponent) {
-        this.opcode(['staticAttr', [name, namespace]], action);
+      } else if (isStatic) {
+        this.opcode(
+          isComponent
+            ? ['staticComponentAttr', [name, namespace]]
+            : ['staticAttr', [name, namespace]],
+          action
+        );
       } else if (isTrusting) {
         this.opcode(
           isComponent

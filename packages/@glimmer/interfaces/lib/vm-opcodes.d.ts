@@ -104,4 +104,5 @@ export const enum Op {
   ResolveMaybeLocal = 105,
   Debugger = 106,
   Size = 107,
+  StaticComponentAttr = 108,
 }
