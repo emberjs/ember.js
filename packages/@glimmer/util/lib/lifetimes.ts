@@ -9,7 +9,7 @@ import {
   ChildrenSymbol,
 } from '@glimmer/interfaces';
 import { LinkedList, LinkedListNode } from './list-utils';
-import { DEVMODE } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { symbol } from './platform-utils';
 
 export const LINKED: WeakMap<object, Set<Drop>> = new WeakMap();
@@ -249,6 +249,6 @@ export function printDrop(inner: Drop) {
   console.groupEnd();
 }
 
-if (DEVMODE && typeof window !== 'undefined') {
+if (LOCAL_DEBUG && typeof window !== 'undefined') {
   (window as any).PRINT_DROP = printDropTree;
 }

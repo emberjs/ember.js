@@ -264,7 +264,7 @@ METADATA[Op.HasBlockParams] = {
   name: 'HasBlockParams',
   mnemonic: 'hasparamsload',
   before: null,
-  stackChange: 0,
+  stackChange: -2,
   ops: [],
   operands: 0,
   check: true,

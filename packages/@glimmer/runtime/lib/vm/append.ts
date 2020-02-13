@@ -22,7 +22,7 @@ import {
   LiveBlock,
   ElementBuilder,
 } from '@glimmer/interfaces';
-import { DEBUG } from '@glimmer/local-debug-flags';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
 import { PathReference, ReferenceIterator, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -521,7 +521,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   /// EXECUTION
 
   execute(initialize?: (vm: this) => void): RenderResult {
-    if (DEBUG) {
+    if (LOCAL_SHOULD_LOG) {
       console.log(`EXECUTING FROM ${this[INNER_VM].fetchRegister($pc)}`);
     }
 
