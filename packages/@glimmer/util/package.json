@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/util",
-  "version": "0.47.7",
+  "version": "0.47.8",
   "description": "Common utilities used in Glimmer",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/util",
   "license": "MIT",
@@ -9,8 +9,8 @@
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "^0.47.7",
-    "@glimmer/interfaces": "^0.47.7",
+    "@glimmer/local-debug-flags": "^0.47.8",
+    "@glimmer/interfaces": "^0.47.8",
     "@types/qunit": "^2.0.31",
     "@simple-dom/interface": "^1.4.0"
   },

@@ -1,9 +1,9 @@
 {
   "name": "@glimmer/encoder",
-  "version": "0.47.7",
+  "version": "0.47.8",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/encoder",
   "dependencies": {
-    "@glimmer/interfaces": "^0.47.7",
-    "@glimmer/vm": "^0.47.7"
+    "@glimmer/interfaces": "^0.47.8",
+    "@glimmer/vm": "^0.47.8"
   }
 }

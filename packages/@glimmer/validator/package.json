@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/validator",
-  "version": "0.47.7",
+  "version": "0.47.8",
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "license": "MIT",
   "dependencies": {
