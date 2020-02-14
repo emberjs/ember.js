@@ -74,6 +74,7 @@ import { UpdateDynamicAttributeOpcode } from './dom';
 import { ConditionalReference } from '../../references';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { DEBUG } from '@glimmer/env';
+import { PrimitiveReference } from '@glimmer/runtime';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -411,15 +412,27 @@ APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _nam
   );
 });
 
-interface DeferredAttribute {
-  value: VersionedReference<unknown>;
+APPEND_OPCODES.add(Op.StaticComponentAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
+  let name = vm[CONSTANTS].getString(_name);
+  let value = vm[CONSTANTS].getString(_value);
+  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
+
+  check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setStaticAttribute(
+    name,
+    value,
+    namespace
+  );
+});
+
+type DeferredAttribute = {
+  value: string | VersionedReference<unknown>;
   namespace: Option<string>;
-  trusting: boolean;
-}
+  trusting?: boolean;
+};
 
 export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
-  private classes: VersionedReference<unknown>[] = [];
+  private classes: (string | VersionedReference<unknown>)[] = [];
   private modifiers: [ModifierManager<unknown>, unknown][] = [];
 
   setAttribute(
@@ -437,46 +450,94 @@ export class ComponentElementOperations implements ElementOperations {
     this.attributes[name] = deferred;
   }
 
+  setStaticAttribute(name: string, value: string, namespace: Option<string>): void {
+    let deferred = { value, namespace };
+
+    if (name === 'class') {
+      this.classes.push(value);
+    }
+
+    this.attributes[name] = deferred;
+  }
+
   addModifier<S>(manager: ModifierManager<S>, state: S): void {
     this.modifiers.push([manager, state]);
   }
 
   flush(vm: InternalVM<JitOrAotBlock>): [ModifierManager<unknown>, unknown][] {
+    let type: DeferredAttribute | undefined;
+    let attributes = this.attributes;
+
     for (let name in this.attributes) {
-      let attr = this.attributes[name];
-      let { value: reference, namespace, trusting } = attr;
-
-      if (name === 'class') {
-        reference = new ClassListReference(this.classes);
-      }
-
       if (name === 'type') {
+        type = attributes[name];
         continue;
       }
 
-      let attribute = vm
-        .elements()
-        .setDynamicAttribute(name, reference.value(), trusting, namespace);
-
-      if (!isConst(reference)) {
-        vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
+      let attr = this.attributes[name];
+      if (name === 'class') {
+        setDeferredAttr(vm, 'class', mergeClasses(this.classes), attr.namespace, attr.trusting);
+      } else {
+        setDeferredAttr(vm, name, attr.value, attr.namespace, attr.trusting);
       }
     }
 
-    if ('type' in this.attributes) {
-      let type = this.attributes.type;
-      let { value: reference, namespace, trusting } = type;
-
-      let attribute = vm
-        .elements()
-        .setDynamicAttribute('type', reference.value(), trusting, namespace);
-
-      if (!isConst(reference)) {
-        vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
-      }
+    if (type !== undefined) {
+      setDeferredAttr(vm, 'type', type.value, type.namespace, type.trusting);
     }
 
     return this.modifiers;
+  }
+}
+
+function mergeClasses(
+  classes: (string | VersionedReference<unknown>)[]
+): string | VersionedReference<unknown> {
+  if (classes.length === 0) {
+    return '';
+  }
+  if (classes.length === 1) {
+    return classes[0];
+  }
+  if (allStringClasses(classes)) {
+    return classes.join(' ');
+  }
+  return makeClassList(classes);
+}
+
+function makeClassList(classes: (string | VersionedReference<unknown>)[]) {
+  for (let i = 0; i < classes.length; i++) {
+    const value = classes[i];
+    if (typeof value === 'string') {
+      classes[i] = PrimitiveReference.create(value);
+    }
+  }
+  return new ClassListReference(classes as VersionedReference<unknown>[]);
+}
+
+function allStringClasses(classes: (string | VersionedReference<unknown>)[]): classes is string[] {
+  for (let i = 0; i < classes.length; i++) {
+    if (typeof classes[i] !== 'string') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function setDeferredAttr(
+  vm: InternalVM<JitOrAotBlock>,
+  name: string,
+  value: string | VersionedReference<unknown>,
+  namespace: Option<string>,
+  trusting = false
+) {
+  if (typeof value === 'string') {
+    vm.elements().setStaticAttribute(name, value, namespace);
+  } else {
+    let attribute = vm.elements().setDynamicAttribute(name, value.value(), trusting, namespace);
+    if (!isConst(value)) {
+      vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute));
+    }
   }
 }
 

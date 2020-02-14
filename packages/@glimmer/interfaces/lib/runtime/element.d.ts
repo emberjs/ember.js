@@ -8,4 +8,6 @@ export interface ElementOperations {
     trusting: boolean,
     namespace: Option<string>
   ): void;
+
+  setStaticAttribute(name: string, value: string, namespace: Option<string>): void;
 }

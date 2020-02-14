@@ -342,6 +342,11 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
     this.push([SexpOpcodes.StaticAttr, name, value, namespace]);
   }
 
+  staticComponentAttr([name, namespace]: [string, Option<string>]) {
+    let value = this.popValue<string>();
+    this.push([SexpOpcodes.StaticComponentAttr, name, value, namespace]);
+  }
+
   dynamicAttr([name, namespace]: [string, Option<string>]) {
     let value = this.popValue<Expression>();
     this.push([SexpOpcodes.DynamicAttr, name, value, namespace]);

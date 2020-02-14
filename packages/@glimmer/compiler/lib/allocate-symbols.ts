@@ -198,6 +198,10 @@ export class SymbolAllocator implements Processor<AllocateSymbolsOps> {
     return ['staticAttr', [name, ns]];
   }
 
+  staticComponentAttr([name, ns]: [string, Option<string>]) {
+    return ['staticComponentAttr', [name, ns]];
+  }
+
   trustingAttr([name, ns]: [string, Option<string>]) {
     return ['trustingAttr', [name, ns]];
   }
@@ -211,7 +215,7 @@ export class SymbolAllocator implements Processor<AllocateSymbolsOps> {
   }
 
   trustingComponentAttr([name, ns]: [string, Option<string>]) {
-    return ['trustedComponentAttr', [name, ns]];
+    return ['trustingComponentAttr', [name, ns]];
   }
 
   append(trusted: boolean) {

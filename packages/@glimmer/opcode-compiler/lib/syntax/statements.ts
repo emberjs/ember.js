@@ -50,6 +50,10 @@ STATEMENTS.add(SexpOpcodes.StaticAttr, ([, name, value, namespace]) =>
   op(Op.StaticAttr, name, value, namespace)
 );
 
+STATEMENTS.add(SexpOpcodes.StaticComponentAttr, ([, name, value, namespace]) =>
+  op(Op.StaticComponentAttr, name, value, namespace)
+);
+
 STATEMENTS.add(SexpOpcodes.DynamicAttr, ([, name, value, namespace]) => [
   op('Expr', value),
   op(Op.DynamicAttr, name, false, namespace),
