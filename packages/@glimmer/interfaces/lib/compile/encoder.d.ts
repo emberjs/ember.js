@@ -1,22 +1,13 @@
 import { CompileTimeConstants, CompileTimeHeap } from '../program';
 import { Dict, Option } from '../core';
+import { SingleBuilderOperand, BuilderHandleThunk, SingleBuilderOperands } from './operands';
 import {
-  EncoderOperands,
-  BuilderOperand,
-  SingleBuilderOperand,
-  BuilderHandleThunk,
-  SingleBuilderOperands,
-} from './operands';
-import {
-  STDLib,
-  ContainingMetadata,
   NamedBlocks,
   CompilableBlock,
   CompilableProgram,
   CompilableTemplate,
   HandleResult,
 } from '../template';
-import { CompileTimeResolverDelegate } from '../serialize';
 import { Op, MachineOp } from '../vm-opcodes';
 import * as WireFormat from './wire-format';
 import ComponentCapabilities from '../component-capabilities';

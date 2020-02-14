@@ -1,16 +1,7 @@
 import { Option } from '../core';
 import * as WireFormat from './wire-format';
-import { NamedBlocks, HandleResult } from '../template';
-import {
-  HighLevelCompileOp,
-  HighLevelBuilderOp,
-  HighLevelBuilderOpcode,
-  BuilderOp,
-  HighLevelCompileOpcode,
-  CompileActions,
-  ArgsOptions,
-  EncoderError,
-} from './encoder';
+import { HandleResult } from '../template';
+import { HighLevelBuilderOp, CompileActions, ArgsOptions } from './encoder';
 
 export const enum PrimitiveType {
   IMMEDIATE = 0,
