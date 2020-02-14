@@ -71,10 +71,9 @@ import {
 } from './-debug-strip';
 import { ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
-import { ConditionalReference } from '../../references';
+import { ConditionalReference, PrimitiveReference } from '../../references';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { DEBUG } from '@glimmer/env';
-import { PrimitiveReference } from '@glimmer/runtime';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
