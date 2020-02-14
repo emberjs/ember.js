@@ -47,6 +47,9 @@ export default class WireFormatDebugger {
         case Op.StaticAttr:
           return ['static-attr', opcode[1], opcode[2], opcode[3]];
 
+        case Op.StaticComponentAttr:
+          return ['static-component-attr', opcode[1], opcode[2], opcode[3]];
+
         case Op.DynamicAttr:
           return ['dynamic-attr', opcode[1], this.formatOpcode(opcode[2]), opcode[3]];
 
