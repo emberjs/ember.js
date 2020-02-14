@@ -1,4 +1,3 @@
-import { GlimmerDOMOperations } from './changes';
 import {
   Namespace,
   SimpleDocumentFragment,

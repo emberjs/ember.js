@@ -1,6 +1,5 @@
-import { Option } from './core';
 import { STDLib, ContainingMetadata, HandleResult } from './template';
-import { StdlibOperand, CompileMode, Encoder, Macros, EncoderError } from './compile';
+import { StdlibOperand, CompileMode, Encoder, Macros } from './compile';
 import { Op } from './vm-opcodes';
 import { CompileTimeResolverDelegate } from './serialize';
 

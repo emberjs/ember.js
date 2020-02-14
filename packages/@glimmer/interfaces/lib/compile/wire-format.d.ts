@@ -1,5 +1,4 @@
 import { Dict, Option } from '../core';
-import { SourceLocation } from 'acorn';
 
 export type TupleSyntax = Statement | TupleExpression;
 
