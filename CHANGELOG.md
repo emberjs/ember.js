@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.47.9 (2020-02-14)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/wire-format`
+  * [#1035](https://github.com/glimmerjs/glimmer-vm/pull/1035) Fix static component attributes ([@krisselden](https://github.com/krisselden))
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1034](https://github.com/glimmerjs/glimmer-vm/pull/1034) Fixes {{has-block}} when used with curried components as a variable ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* `@glimmer/debug`, `@glimmer/integration-tests`
+  * [#1036](https://github.com/glimmerjs/glimmer-vm/pull/1036) IE11 doesn't support Number.MAX_SAFE_INTEGER / Number.MIN_SAFE_INTEGER ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.47.8 (2020-02-13)
 
 #### :bug: Bug Fix
