@@ -6,11 +6,11 @@
   "license": "MIT",
   "dependencies": {
     "@glimmer/env": "0.1.7",
+    "@glimmer/interfaces": "^0.47.9",
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.47.9",
-    "@glimmer/interfaces": "^0.47.9",
     "@types/qunit": "^2.0.31",
     "@simple-dom/interface": "^1.4.0"
   },
