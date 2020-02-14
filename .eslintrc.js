@@ -16,6 +16,7 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier', 'qunit'],
   settings: {
     node: {
+      allowModules: ['@glimmer/debug', '@glimmer/local-debug-flags'],
       tryExtensions: ['.js', '.ts', '.d.ts'],
     },
   },
