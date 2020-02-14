@@ -4,7 +4,7 @@ import {
   VersionedReference,
   IteratorDelegate,
 } from '@glimmer/reference';
-import { AttributeOperation } from '@glimmer/runtime';
+import { AttributeOperation } from '../dom/attributes';
 import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentDefinitionState, ComponentInstanceState } from '../components';
 import { ComponentManager } from '../components/component-manager';

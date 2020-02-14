@@ -1,9 +1,15 @@
-import { Dict, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
+import {
+  Dict,
+  Environment,
+  Option,
+  ElementBuilder,
+  AttributeOperation,
+  AttributeCursor,
+} from '@glimmer/interfaces';
 import { AttrNamespace, Namespace, SimpleElement } from '@simple-dom/interface';
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
-import { Attribute, AttributeOperation } from './index';
 
 export function dynamicAttribute(
   element: SimpleElement,
@@ -29,7 +35,7 @@ export function dynamicAttribute(
 function buildDynamicAttribute(
   tagName: string,
   name: string,
-  attribute: Attribute
+  attribute: AttributeCursor
 ): DynamicAttribute {
   if (requiresSanitization(tagName, name)) {
     return new SafeDynamicAttribute(attribute);
@@ -41,7 +47,7 @@ function buildDynamicAttribute(
 function buildDynamicProperty(
   tagName: string,
   name: string,
-  attribute: Attribute
+  attribute: AttributeCursor
 ): DynamicAttribute {
   if (requiresSanitization(tagName, name)) {
     return new SafeDynamicProperty(name, attribute);
@@ -59,7 +65,7 @@ function buildDynamicProperty(
 }
 
 export abstract class DynamicAttribute implements AttributeOperation {
-  constructor(public attribute: Attribute) {}
+  constructor(public attribute: AttributeCursor) {}
 
   abstract set(dom: ElementBuilder, value: unknown, env: Environment): void;
   abstract update(value: unknown, env: Environment): void;
@@ -88,7 +94,7 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
 }
 
 export class DefaultDynamicProperty extends DynamicAttribute {
-  constructor(private normalizedName: string, attribute: Attribute) {
+  constructor(private normalizedName: string, attribute: AttributeCursor) {
     super(attribute);
   }
 
