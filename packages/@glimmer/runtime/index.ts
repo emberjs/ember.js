@@ -62,7 +62,6 @@ export {
   CapturedNamedArgumentsImpl,
   CapturedPositionalArgumentsImpl,
 } from './lib/vm/arguments';
-export { AttributeOperation } from './lib/vm/attributes';
 export {
   DynamicAttribute,
   dynamicAttribute,
