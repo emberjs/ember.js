@@ -1,11 +1,6 @@
 import { Environment } from './environment';
 import { RuntimeHeap, RuntimeConstants, RuntimeOp } from '../program';
-import {
-  RuntimeResolverDelegate,
-  RuntimeResolver,
-  JitRuntimeResolver,
-  AotRuntimeResolver,
-} from '../serialize';
+import { RuntimeResolver, JitRuntimeResolver, AotRuntimeResolver } from '../serialize';
 
 /**
   The Runtime is the set of static structures that contain the compiled
