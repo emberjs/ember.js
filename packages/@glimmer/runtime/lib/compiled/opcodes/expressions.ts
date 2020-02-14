@@ -2,7 +2,7 @@ import { Option, Op, JitScopeBlock, AotScopeBlock, VM as PublicVM } from '@glimm
 import { VersionedPathReference } from '@glimmer/reference';
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
-import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
+import { FALSE_REFERENCE, TRUE_REFERENCE, UNDEFINED_REFERENCE } from '../../references';
 import { ConcatReference } from '../expressions/concat';
 import { assert } from '@glimmer/util';
 import { check, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
@@ -105,9 +105,19 @@ APPEND_OPCODES.add(Op.JitSpreadBlock, vm => {
   }
 });
 
-APPEND_OPCODES.add(Op.HasBlock, vm =>
-  vm.stack.push(vm.stack.pop() ? TRUE_REFERENCE : FALSE_REFERENCE)
-);
+APPEND_OPCODES.add(Op.HasBlock, vm => {
+  let block = vm.stack.pop();
+
+  // TODO: We check if the block is null or UNDEFINED_REFERENCE here, but it should
+  // really only check if the block is null. The UNDEFINED_REFERENCE use case is for
+  // when we try to invoke a curry-component directly as a variable:
+  //
+  // <Foo as |bar|>{{bar}}</Foo>
+  //
+  // This code path does not work the same way as most components. In the future,
+  // we should make sure that it does, so things are setup correctly.
+  vm.stack.push(block === null || block === UNDEFINED_REFERENCE ? FALSE_REFERENCE : TRUE_REFERENCE);
+});
 
 APPEND_OPCODES.add(Op.HasBlockParams, vm => {
   // FIXME(mmun): should only need to push the symbol table
