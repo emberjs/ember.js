@@ -262,4 +262,70 @@ export class HasBlockSuite extends RenderTest {
     this.assertComponent('', { 'data-has-block': 'false' });
     this.assertStableRerender();
   }
+
+  @test({ kind: 'glimmer' })
+  'has-block works within a yielded curried component invoked within mustaches'() {
+    this.registerComponent(
+      'Glimmer',
+      'ComponentWithHasBlock',
+      `<div data-has-block="{{has-block}}" ...attributes></div>`
+    );
+
+    this.registerComponent('Glimmer', 'Yielder', `{{yield (component 'ComponentWithHasBlock')}}`);
+
+    this.registerComponent(
+      'Glimmer',
+      'TestComponent',
+      `<Yielder as |componentWithHasBlock|>{{componentWithHasBlock}}</Yielder>`
+    );
+
+    this.render(`<TestComponent />`);
+
+    this.assertComponent('', { 'data-has-block': 'false' });
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'glimmer' })
+  'has-block works within a yielded curried component invoked with angle bracket invocation (falsy)'() {
+    this.registerComponent(
+      'Glimmer',
+      'ComponentWithHasBlock',
+      `<div data-has-block="{{has-block}}" ...attributes></div>`
+    );
+
+    this.registerComponent('Glimmer', 'Yielder', `{{yield (component 'ComponentWithHasBlock')}}`);
+
+    this.registerComponent(
+      'Glimmer',
+      'TestComponent',
+      `<Yielder as |componentWithHasBlock|><componentWithHasBlock/></Yielder>`
+    );
+
+    this.render(`<TestComponent />`);
+
+    this.assertComponent('', { 'data-has-block': 'false' });
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'glimmer' })
+  'has-block works within a yielded curried component invoked with angle bracket invocation (truthy)'() {
+    this.registerComponent(
+      'Glimmer',
+      'ComponentWithHasBlock',
+      `<div data-has-block="{{has-block}}" ...attributes></div>`
+    );
+
+    this.registerComponent('Glimmer', 'Yielder', `{{yield (component 'ComponentWithHasBlock')}}`);
+
+    this.registerComponent(
+      'Glimmer',
+      'TestComponent',
+      `<Yielder as |componentWithHasBlock|><componentWithHasBlock></componentWithHasBlock></Yielder>`
+    );
+
+    this.render(`<TestComponent />`);
+
+    this.assertComponent('', { 'data-has-block': 'true' });
+    this.assertStableRerender();
+  }
 }
