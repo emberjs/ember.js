@@ -29,7 +29,7 @@ const IDENTITY: KeyFor = item => {
 
 function keyForPath(path: string, getPath: (item: unknown, path: string) => any): KeyFor {
   if (DEBUG && path[0] === '@') {
-    throw new Error(`invalid keypath: '${keyForPath}'`);
+    throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
   }
   return uniqueKeyFor(item => getPath(item, path));
 }
