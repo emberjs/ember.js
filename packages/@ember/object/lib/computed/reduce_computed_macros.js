@@ -1176,8 +1176,8 @@ export function setDiff(setAProperty, setBProperty) {
   );
 
   return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function() {
-    let setA = this.get(setAProperty);
-    let setB = this.get(setBProperty);
+    let setA = get(this, setAProperty);
+    let setB = get(this, setBProperty);
 
     if (!isArray(setA)) {
       return emberA();
