@@ -56,16 +56,9 @@
 
 import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
-import { SymbolTable, ProgramSymbolTable } from './tier1/symbol-table';
+import { ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
-import {
-  ResolvedLayout,
-  STDLib,
-  CompilableProgram,
-  CompileTime,
-  Template,
-  HandleResult,
-} from './template';
+import { CompilableProgram, Template, HandleResult } from './template';
 import { SyntaxCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';

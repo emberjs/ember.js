@@ -5,12 +5,11 @@ import ComponentCapabilities from '../component-capabilities';
 import { ComponentDefinitionState, PreparedArguments, ComponentInstanceState } from '../components';
 import { Destroyable, Option, SymbolDestroyable } from '../core';
 import { Bounds } from '../dom/bounds';
-import { SyntaxCompilationContext } from '../program';
 import { VMArguments } from '../runtime/arguments';
 import { ElementOperations } from '../runtime/element';
 import { DynamicScope, Environment } from '../runtime/environment';
 import { RuntimeResolverDelegate, JitRuntimeResolver, RuntimeResolver } from '../serialize';
-import { CompilableProgram, CompilableTemplate, Template } from '../template';
+import { CompilableProgram, Template } from '../template';
 import { ProgramSymbolTable } from '../tier1/symbol-table';
 
 export interface ComponentManager<
