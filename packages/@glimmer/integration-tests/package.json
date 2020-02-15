@@ -5,6 +5,7 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/integration-tests",
   "dependencies": {
     "@glimmer/reference": "^0.47.9",
+    "@glimmer/runtime": "^0.47.9",
     "@glimmer/validator": "^0.47.9",
     "@glimmer/compiler": "^0.47.9",
     "@glimmer/util": "^0.47.9",
