@@ -125,3 +125,13 @@ export interface RuntimeConstants {
   getTemplateMeta(s: number): unknown;
   getOther(s: number): unknown;
 }
+
+export interface JitProgramCompilationContext extends WholeProgramCompilationContext {
+  readonly constants: CompileTimeConstants & RuntimeConstants;
+  readonly heap: CompileTimeHeap & RuntimeHeap;
+}
+
+export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
+  readonly program: JitProgramCompilationContext;
+  readonly macros: Macros;
+}

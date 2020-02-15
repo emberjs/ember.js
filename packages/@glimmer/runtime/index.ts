@@ -34,7 +34,6 @@ export {
   JitRuntime,
   EnvironmentDelegate,
   ScopeImpl,
-  JitSyntaxCompilationContext,
   inTransaction,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
