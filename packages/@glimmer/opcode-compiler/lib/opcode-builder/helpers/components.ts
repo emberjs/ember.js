@@ -30,7 +30,7 @@ import { UNHANDLED, NONE } from '../../syntax/concat';
 import { compilableBlock } from '../../compilable-template';
 import { NamedBlocksImpl } from '../../utils';
 import { MacroContext } from '../../syntax/macros';
-import { MINIMAL_CAPABILITIES } from '@glimmer/runtime';
+import { MINIMAL_CAPABILITIES } from '../delegate';
 
 export type Block = () => CompileActions;
 

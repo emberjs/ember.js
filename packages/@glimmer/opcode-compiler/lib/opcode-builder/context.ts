@@ -2,6 +2,7 @@ import {
   ContainingMetadata,
   SyntaxCompilationContext,
   TemplateCompilationContext,
+  JitSyntaxCompilationContext,
   WholeProgramCompilationContext,
   CompileMode,
 } from '@glimmer/interfaces';
@@ -9,7 +10,6 @@ import { EncoderImpl } from './encoder';
 import { MacrosImpl } from '../syntax/macros';
 import { ProgramCompilationContext, JitProgramCompilationContext } from '../program-context';
 import { DefaultCompileTimeResolverDelegate, ResolverDelegate } from './delegate';
-import { JitSyntaxCompilationContext } from '@glimmer/runtime';
 
 export function syntaxCompilationContext(
   program: WholeProgramCompilationContext,
