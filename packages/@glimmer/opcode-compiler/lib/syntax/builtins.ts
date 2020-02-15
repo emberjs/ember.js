@@ -5,7 +5,7 @@ import {
   MacroBlocks,
   MacroInlines,
 } from '@glimmer/interfaces';
-import { invokeStaticBlock, invokeStaticBlockWithStack } from '../../index';
+import { InvokeStaticBlock, InvokeStaticBlockWithStack } from '../opcode-builder/helpers/blocks';
 import { assert, unwrap } from '@glimmer/util';
 import { $fp, $sp } from '@glimmer/vm';
 import { op, error } from '../opcode-builder/encoder';
@@ -38,12 +38,12 @@ export function populateBuiltins(
       },
 
       ifTrue() {
-        return invokeStaticBlock(unwrap(blocks.get('default')));
+        return InvokeStaticBlock(unwrap(blocks.get('default')));
       },
 
       ifFalse() {
         if (blocks.has('else')) {
-          return invokeStaticBlock(blocks.get('else')!);
+          return InvokeStaticBlock(blocks.get('else')!);
         } else {
           return NONE;
         }
@@ -66,14 +66,14 @@ export function populateBuiltins(
 
       ifTrue() {
         if (blocks.has('else')) {
-          return invokeStaticBlock(blocks.get('else')!);
+          return InvokeStaticBlock(blocks.get('else')!);
         } else {
           return NONE;
         }
       },
 
       ifFalse() {
-        return invokeStaticBlock(unwrap(blocks.get('default')));
+        return InvokeStaticBlock(unwrap(blocks.get('default')));
       },
     });
   });
@@ -92,12 +92,12 @@ export function populateBuiltins(
       },
 
       ifTrue() {
-        return invokeStaticBlockWithStack(unwrap(blocks.get('default')), 1);
+        return InvokeStaticBlockWithStack(unwrap(blocks.get('default')), 1);
       },
 
       ifFalse() {
         if (blocks.has('else')) {
-          return invokeStaticBlock(blocks.get('else')!);
+          return InvokeStaticBlock(blocks.get('else')!);
         } else {
           return NONE;
         }
@@ -111,7 +111,7 @@ export function populateBuiltins(
     }
 
     let { count, actions } = CompilePositional(params);
-    return [actions, invokeStaticBlockWithStack(blocks.get('default')!, count)];
+    return [actions, InvokeStaticBlockWithStack(blocks.get('default')!, count)];
   });
 
   blocks.add('each', (params, hash, blocks) => {
@@ -141,7 +141,7 @@ export function populateBuiltins(
           op('Label', 'ITER'),
           op(Op.Iterate, label('BREAK')),
           op('Label', 'BODY'),
-          invokeStaticBlockWithStack(unwrap(blocks.get('default')), 2),
+          InvokeStaticBlockWithStack(unwrap(blocks.get('default')), 2),
           op(Op.Pop, 2),
           op(MachineOp.Jump, label('FINALLY')),
           op('Label', 'BREAK'),
@@ -152,7 +152,7 @@ export function populateBuiltins(
         ];
 
         if (blocks.has('else')) {
-          out.push(invokeStaticBlock(blocks.get('else')!));
+          out.push(InvokeStaticBlock(blocks.get('else')!));
         }
 
         return out;
@@ -188,7 +188,7 @@ export function populateBuiltins(
       ifTrue() {
         return [
           op(Op.PushRemoteElement),
-          invokeStaticBlock(unwrap(blocks.get('default'))),
+          InvokeStaticBlock(unwrap(blocks.get('default'))),
           op(Op.PopRemoteElement),
         ];
       },
@@ -204,11 +204,11 @@ export function populateBuiltins(
       return [
         actions,
         DynamicScope(names, () => {
-          return invokeStaticBlock(unwrap(blocks.get('default')));
+          return InvokeStaticBlock(unwrap(blocks.get('default')));
         }),
       ];
     } else {
-      return invokeStaticBlock(unwrap(blocks.get('default')));
+      return InvokeStaticBlock(unwrap(blocks.get('default')));
     }
   });
 
