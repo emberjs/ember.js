@@ -29,10 +29,6 @@ import {
   SyntaxCompilationContext,
   RuntimeConstants,
   RuntimeHeap,
-  WholeProgramCompilationContext,
-  CompileTimeConstants,
-  CompileTimeHeap,
-  Macros,
   Option,
 } from '@glimmer/interfaces';
 import {
@@ -629,16 +625,6 @@ export function AotRuntime(
     resolver: new DefaultRuntimeResolver(resolver),
     program: RuntimeProgramImpl.hydrate(program),
   };
-}
-
-export interface JitProgramCompilationContext extends WholeProgramCompilationContext {
-  readonly constants: CompileTimeConstants & RuntimeConstants;
-  readonly heap: CompileTimeHeap & RuntimeHeap;
-}
-
-export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
-  readonly program: JitProgramCompilationContext;
-  readonly macros: Macros;
 }
 
 // TODO: There are a lot of variants here. Some are here for transitional purposes
