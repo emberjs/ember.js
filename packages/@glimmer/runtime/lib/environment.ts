@@ -17,7 +17,6 @@ import {
   WithCreateInstance,
   ResolvedValue,
   RuntimeResolverDelegate,
-  RuntimeProgram,
   ModifierManager,
   Template,
   AotRuntimeResolver,
@@ -25,11 +24,14 @@ import {
   JitRuntimeContext,
   AotRuntimeContext,
   JitRuntimeResolver,
-  RuntimeResolver,
   SyntaxCompilationContext,
   RuntimeConstants,
   RuntimeHeap,
+  Macros,
   Option,
+  CompileTimeConstants,
+  CompileTimeHeap,
+  WholeProgramCompilationContext,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -44,7 +46,7 @@ import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
-import { RuntimeProgramImpl, JitConstants, HeapImpl } from '@glimmer/program';
+import { RuntimeProgramImpl } from '@glimmer/program';
 
 export function isScopeReference(s: ScopeSlot): s is VersionedPathReference {
   if (s === null || Array.isArray(s)) return false;
@@ -258,8 +260,8 @@ function defaultDelegateFn(delegateFn: Function | undefined, delegateDefault: Fu
 export class EnvironmentImpl<Extra> implements Environment<Extra> {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
-  protected updateOperations: GlimmerTreeChanges;
-  protected appendOperations: GlimmerTreeConstruction;
+  protected appendOperations!: GlimmerTreeConstruction;
+  protected updateOperations?: GlimmerTreeChanges;
 
   // Delegate methods and values
   public extra = this.delegate.extra!;
@@ -276,14 +278,14 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   public toIterator = defaultDelegateFn(this.delegate.toIterator, defaultToIterator);
 
   constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate<Extra>) {
-    if (options.appendOperations && options.updateOperations) {
+    if (options.appendOperations) {
       this.appendOperations = options.appendOperations;
       this.updateOperations = options.updateOperations;
     } else if (options.document) {
       this.appendOperations = new DOMTreeConstruction(options.document);
       this.updateOperations = new DOMChangesImpl(options.document);
-    } else {
-      throw new Error('you must pass a document or append and update operations to a new runtime');
+    } else if (DEBUG) {
+      throw new Error('you must pass document or appendOperations to a new runtime');
     }
   }
 
@@ -317,8 +319,12 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   getAppendOperations(): GlimmerTreeConstruction {
     return this.appendOperations;
   }
+
   getDOM(): GlimmerTreeChanges {
-    return this.updateOperations;
+    return expect(
+      this.updateOperations,
+      'Attempted to get DOM updateOperations, but they were not provided by the environment. You may be attempting to rerender in an environment which does not support rerendering, such as SSR.'
+    );
   }
 
   begin() {
@@ -627,54 +633,26 @@ export function AotRuntime(
   };
 }
 
-// TODO: There are a lot of variants here. Some are here for transitional purposes
-// and some might be GCable once the design stabilizes.
-export function CustomJitRuntime(
-  resolver: RuntimeResolver,
-  context: SyntaxCompilationContext & {
-    program: { constants: RuntimeConstants; heap: RuntimeHeap };
-  },
-  env: Environment
-): JitRuntimeContext {
-  let program = new RuntimeProgramImpl(context.program.constants, context.program.heap);
+export interface JitProgramCompilationContext extends WholeProgramCompilationContext {
+  readonly constants: CompileTimeConstants & RuntimeConstants;
+  readonly heap: CompileTimeHeap & RuntimeHeap;
+}
 
-  return {
-    env,
-    resolver: new DefaultRuntimeResolver(resolver),
-    program,
-  };
+export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
+  readonly program: JitProgramCompilationContext;
+  readonly macros: Macros;
 }
 
 export function JitRuntime<R, E>(
   options: EnvironmentOptions,
-  resolver: RuntimeResolverDelegate<R> = {},
-  delegate: EnvironmentDelegate<E> = {}
+  delegate: EnvironmentDelegate<E> = {},
+  context: JitSyntaxCompilationContext,
+  resolver: RuntimeResolverDelegate<R> = {}
 ): JitRuntimeContext<R, E> {
-  let env = new EnvironmentImpl(options, delegate);
-
-  let constants = new JitConstants();
-  let heap = new HeapImpl();
-  let program = new RuntimeProgramImpl(constants, heap);
-
   return {
-    env,
+    env: new EnvironmentImpl(options, delegate),
+    program: new RuntimeProgramImpl(context.program.constants, context.program.heap),
     resolver: new DefaultRuntimeResolver(resolver),
-    program,
-  };
-}
-
-export function JitRuntimeFromProgram<R, E>(
-  options: EnvironmentOptions,
-  program: RuntimeProgram,
-  resolver: RuntimeResolverDelegate<R> = {},
-  delegate: EnvironmentDelegate<E> = {}
-): JitRuntimeContext<R, E> {
-  let env = new EnvironmentImpl(options, delegate);
-
-  return {
-    env,
-    resolver: new DefaultRuntimeResolver(resolver),
-    program,
   };
 }
 

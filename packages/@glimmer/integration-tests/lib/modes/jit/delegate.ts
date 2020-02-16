@@ -10,7 +10,7 @@ import {
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { TestJitRegistry } from './registry';
-import { getDynamicVar, clientBuilder, JitRuntimeFromProgram } from '@glimmer/runtime';
+import { getDynamicVar, clientBuilder, JitRuntime } from '@glimmer/runtime';
 import {
   registerInternalHelper,
   registerStaticTaglessComponent,
@@ -20,7 +20,7 @@ import {
   registerHelper,
 } from './register';
 import { TestMacros } from '../../compile/macros';
-import { TestJitCompilationContext } from './compilation-context';
+import JitCompileTimeLookup from './compilation-context';
 import TestJitRuntimeResolver from './resolver';
 import RenderDelegate from '../../render-delegate';
 import { ComponentKind, ComponentTypes } from '../../components';
@@ -31,6 +31,7 @@ import { TestModifierConstructor } from '../../modifiers';
 import { UserHelper } from '../../helpers';
 import { UpdatableRootReference, ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
+import { JitContext } from '@glimmer/opcode-compiler';
 
 export interface JitTestDelegateContext {
   runtime: JitRuntimeContext;
@@ -43,10 +44,9 @@ export function JitDelegateContext(
   registry: TestJitRegistry
 ): JitTestDelegateContext {
   registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
-  let context = new TestJitCompilationContext(resolver, registry);
-  let runtime = JitRuntimeFromProgram({ document: doc }, context.program(), resolver);
-  let syntax = { program: context, macros: new TestMacros() };
-  return { runtime, syntax };
+  let context = JitContext(new JitCompileTimeLookup(resolver, registry), new TestMacros());
+  let runtime = JitRuntime({ document: doc }, {}, context, resolver);
+  return { runtime, syntax: context };
 }
 
 export class JitRenderDelegate implements RenderDelegate {
