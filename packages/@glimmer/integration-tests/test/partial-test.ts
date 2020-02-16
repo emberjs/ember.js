@@ -1,9 +1,4 @@
-import {
-  RenderResult,
-  RichIteratorResult,
-  SyntaxCompilationContext,
-  Template,
-} from '@glimmer/interfaces';
+import { RenderResult, RichIteratorResult, Template } from '@glimmer/interfaces';
 import { UpdatableRootReference } from '@glimmer/object-reference';
 import { clientBuilder, renderJitMain } from '@glimmer/runtime';
 import {
@@ -19,7 +14,6 @@ import {
   registerPartial,
   strip,
   TestContext,
-  TestMacros,
 } from '..';
 import { SimpleNode } from '@simple-dom/interface';
 import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
@@ -41,13 +35,12 @@ function render(template: Template, state = {}) {
   context.env.begin();
   let cursor = { element: context.root, nextSibling: null };
 
-  let syntax: SyntaxCompilationContext = { program: context.program, macros: new TestMacros() };
   let compilable = unwrapTemplate(template).asLayout();
-  let handle = compilable.compile(syntax);
+  let handle = compilable.compile(context.syntax);
 
   let templateIterator = renderJitMain(
     context.runtime,
-    syntax,
+    context.syntax,
     self,
     clientBuilder(context.env, cursor),
     unwrapHandle(handle)

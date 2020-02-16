@@ -2,23 +2,22 @@ import TestJitRuntimeResolver from './resolver';
 import { TestJitRegistry } from './registry';
 import {
   SyntaxCompilationContext,
-  WholeProgramCompilationContext,
   JitRuntimeContext,
   Environment,
   Dict,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
-import { EnvironmentDelegate, JitRuntimeFromProgram } from '@glimmer/runtime';
+import { EnvironmentDelegate, JitRuntime } from '@glimmer/runtime';
 import { registerHelper } from './register';
-import { TestJitCompilationContext } from './compilation-context';
+import JitCompileTimeLookup from './compilation-context';
 import { TestMacros } from '../../compile/macros';
 import { assign } from '@glimmer/util';
+import { JitContext } from '@glimmer/opcode-compiler';
 
 export interface TestContext extends Dict {
   resolver: TestJitRuntimeResolver;
   registry: TestJitRegistry;
   syntax: SyntaxCompilationContext;
-  program: WholeProgramCompilationContext;
   doc: SimpleDocument;
   root: SimpleElement;
   runtime: JitRuntimeContext;
@@ -30,25 +29,27 @@ export function JitTestContext(delegate: EnvironmentDelegate = {}): TestContext 
   let registry = resolver.registry;
   registerHelper(registry, 'hash', (_positional, named) => named);
 
-  let context = new TestJitCompilationContext(resolver, registry);
-  let syntax: SyntaxCompilationContext = { program: context, macros: new TestMacros() };
+  let context = JitContext(new JitCompileTimeLookup(resolver, registry), new TestMacros());
   let doc = document as SimpleDocument;
 
-  let runtime = JitRuntimeFromProgram(
+  let runtime = JitRuntime(
     { document: document as SimpleDocument },
-    context.program(),
-    resolver,
-    assign(
-      {
-        toBool: emberToBool,
-      },
-      delegate
-    )
+    assign({ toBool: emberToBool }, delegate),
+    context,
+    resolver
   );
 
   let root = document.getElementById('qunit-fixture')! as SimpleElement;
 
-  return { resolver, registry, program: context, syntax, doc, root, runtime, env: runtime.env };
+  return {
+    resolver,
+    registry,
+    syntax: context,
+    doc,
+    root,
+    runtime,
+    env: runtime.env,
+  };
 }
 
 export function emberToBool(value: any): boolean {
