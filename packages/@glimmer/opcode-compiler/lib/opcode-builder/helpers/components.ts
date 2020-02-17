@@ -25,12 +25,13 @@ import { YieldBlock, PushSymbolTable, InvokeStaticBlock, PushYieldableBlock } fr
 import { Replayable } from './conditional';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { op } from '../encoder';
-import { ATTRS_BLOCK } from '../../syntax/compilers';
 import { UNHANDLED, NONE } from '../../syntax/concat';
 import { compilableBlock } from '../../compilable-template';
 import { NamedBlocksImpl } from '../../utils';
 import { MacroContext } from '../../syntax/macros';
 import { MINIMAL_CAPABILITIES } from '../delegate';
+
+export const ATTRS_BLOCK = '&attrs';
 
 export type Block = () => CompileActions;
 
