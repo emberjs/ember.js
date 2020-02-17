@@ -1,4 +1,4 @@
-import { debugSlice } from './debug';
+import { debugSlice } from '@glimmer/debug';
 import {
   CompilerBuffer,
   CompileTimeHeap,
@@ -10,8 +10,8 @@ import {
   HandleResult,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { extractHandle } from '@glimmer/util';
 import { namedBlocks, expectString } from './utils';
-import { extractHandle } from './template';
 
 export function compileInline(
   sexp: Statements.Append,

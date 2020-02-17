@@ -20,20 +20,9 @@ export { meta } from './lib/opcode-builder/helpers/shared';
 
 export { StdLib } from './lib/opcode-builder/stdlib';
 
-export { PartialDefinition } from './lib/partial-template';
+export { PartialDefinitionImpl } from './lib/partial-template';
 
-export {
-  default as templateFactory,
-  TemplateFactory,
-  Component,
-  unwrapTemplate,
-  unwrapHandle,
-  isOkHandle,
-  isErrHandle,
-  extractHandle,
-} from './lib/template';
-
-export { debug, debugSlice, logOpcode } from './lib/debug';
+export { default as templateFactory, TemplateFactory, Component } from './lib/template';
 
 export { WrappedBuilder } from './lib/wrapped-component';
 

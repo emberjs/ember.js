@@ -7,7 +7,7 @@ import {
   CompileTimeComponent,
 } from '@glimmer/interfaces';
 import { TestJitRegistry } from './registry';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { unwrapTemplate } from '@glimmer/util';
 import TestJitRuntimeResolver from './resolver';
 
 export default class JitCompileTimeLookup implements CompileTimeResolverDelegate {

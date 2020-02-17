@@ -17,7 +17,7 @@ import {
   ElementBuilder,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { expect } from '@glimmer/util';
+import { expect, unwrapHandle } from '@glimmer/util';
 import { capabilityFlagsFrom } from './capabilities';
 import { hasStaticLayoutCapability } from './compiled/opcodes/component';
 import { resolveComponent } from './component/resolve';
@@ -26,7 +26,6 @@ import { AotVM, InternalVM, JitVM } from './vm/append';
 import { NewElementBuilder } from './vm/element-builder';
 import { DefaultDynamicScope } from './dynamic-scope';
 import { UNDEFINED_REFERENCE } from './references';
-import { unwrapHandle } from '@glimmer/opcode-compiler';
 
 class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
   constructor(private vm: InternalVM<C>) {}

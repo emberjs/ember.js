@@ -16,7 +16,7 @@ import {
   TestContext,
 } from '..';
 import { SimpleNode } from '@simple-dom/interface';
-import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 
 let context: TestContext;
 let result: RenderResult;

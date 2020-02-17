@@ -3,7 +3,7 @@ import { TestComponentDefinitionState } from './test-component';
 import { ComponentCapabilities, CompilableProgram, Option } from '@glimmer/interfaces';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
 import { createTemplate } from '../compile';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { unwrapTemplate } from '@glimmer/util';
 
 export class StaticTaglessComponentManager extends BasicComponentManager {
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
