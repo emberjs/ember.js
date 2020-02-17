@@ -49,43 +49,17 @@ export const enum SexpOpcodes {
   Concat = 32,
 }
 
-export interface SexpOpcodeMap {
-  [index: number]: TupleSyntax;
+export type StatementSexpOpcode = Statement[0];
+export type StatementSexpOpcodeMap = {
+  [TSexpOpcode in Statement[0]]: Extract<Statement, { 0: TSexpOpcode }>;
+};
+export type ExpressionSexpOpcode = TupleExpression[0];
+export type ExpressionSexpOpcodeMap = {
+  [TSexpOpcode in TupleExpression[0]]: Extract<TupleExpression, { 0: TSexpOpcode }>;
+};
 
-  [SexpOpcodes.Append]: Statements.Append;
-  [SexpOpcodes.Comment]: Statements.Comment;
-  [SexpOpcodes.Modifier]: Statements.Modifier;
-  [SexpOpcodes.Block]: Statements.Block;
-  [SexpOpcodes.Component]: Statements.Component;
-  [SexpOpcodes.OpenElement]: Statements.OpenElement;
-  [SexpOpcodes.FlushElement]: Statements.FlushElement;
-  [SexpOpcodes.CloseElement]: Statements.CloseElement;
-  [SexpOpcodes.StaticAttr]: Statements.StaticAttr;
-  [SexpOpcodes.DynamicAttr]: Statements.DynamicAttr;
-  [SexpOpcodes.ComponentAttr]: Statements.ComponentAttr;
-  [SexpOpcodes.AttrSplat]: Statements.AttrSplat;
-  [SexpOpcodes.Yield]: Statements.Yield;
-  [SexpOpcodes.Partial]: Statements.Partial;
-
-  [SexpOpcodes.DynamicArg]: Statements.DynamicArg;
-  [SexpOpcodes.StaticArg]: Statements.StaticArg;
-  [SexpOpcodes.StaticComponentAttr]: Statements.StaticComponentAttr;
-  [SexpOpcodes.TrustingDynamicAttr]: Statements.TrustingAttr;
-  [SexpOpcodes.TrustingComponentAttr]: Statements.TrustingComponentAttr;
-  [SexpOpcodes.Debugger]: Statements.Debugger;
-
-  // Expressions
-
-  [SexpOpcodes.GetSymbol]: Expressions.GetSymbol;
-  [SexpOpcodes.GetFree]: Expressions.GetFree;
-  [SexpOpcodes.GetContextualFree]: Expressions.GetContextualFree;
-  [SexpOpcodes.GetPath]: Expressions.GetPath;
-  [SexpOpcodes.HasBlock]: Expressions.HasBlock;
-  [SexpOpcodes.HasBlockParams]: Expressions.HasBlockParams;
-  [SexpOpcodes.Undefined]: Expressions.Undefined;
-  [SexpOpcodes.Call]: Expressions.Helper;
-  [SexpOpcodes.Concat]: Expressions.Concat;
-}
+export interface SexpOpcodeMap extends ExpressionSexpOpcodeMap, StatementSexpOpcodeMap {}
+export type SexpOpcode = keyof SexpOpcodeMap;
 
 export namespace Core {
   export type Expression = Expressions.Expression;

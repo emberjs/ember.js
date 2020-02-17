@@ -1,9 +1,11 @@
-import { ExpressionCompilers } from './compilers';
+import { Compilers } from './compilers';
 import {
   SexpOpcodes,
   ResolveHandle,
   Op,
   Expressions,
+  ExpressionSexpOpcode,
+  ExpressionCompileActions,
   ContainingMetadata,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
@@ -11,7 +13,7 @@ import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { curryComponent } from '../opcode-builder/helpers/components';
 import { expectString } from '../utils';
 
-export const EXPRESSIONS = new ExpressionCompilers();
+export const EXPRESSIONS = new Compilers<ExpressionSexpOpcode, ExpressionCompileActions>();
 
 EXPRESSIONS.add(SexpOpcodes.Concat, ([, parts]) => {
   let out = [];

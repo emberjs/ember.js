@@ -1,10 +1,12 @@
-import { StatementCompilers } from './compilers';
+import { Compilers } from './compilers';
 import {
   SexpOpcodes,
   Op,
   ResolveHandle,
   MachineOp,
   HighLevelResolutionOpcode,
+  StatementSexpOpcode,
+  StatementCompileActions,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
 import { templateMeta, strArray, arr } from '../opcode-builder/operands';
@@ -15,7 +17,7 @@ import { EMPTY_ARRAY } from '@glimmer/util';
 import { $sp } from '@glimmer/vm';
 import { expectString } from '../utils';
 
-export const STATEMENTS = new StatementCompilers();
+export const STATEMENTS = new Compilers<StatementSexpOpcode, StatementCompileActions>();
 
 STATEMENTS.add(SexpOpcodes.Comment, sexp => op(Op.Comment, sexp[1]));
 STATEMENTS.add(SexpOpcodes.CloseElement, () => op(Op.CloseElement));
