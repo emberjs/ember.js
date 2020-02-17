@@ -1,7 +1,7 @@
-import { templateFactory, unwrapTemplate } from '@glimmer/opcode-compiler';
 import { precompile } from '@glimmer/compiler';
 import { SerializedTemplateWithLazyBlock, AnnotatedModuleLocator } from '@glimmer/interfaces';
-import { assign } from '@glimmer/util';
+import { assign, unwrapTemplate } from '@glimmer/util';
+import { templateFactory } from '@glimmer/opcode-compiler';
 
 let serializedTemplate: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator>;
 let serializedTemplateNoId: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator>;

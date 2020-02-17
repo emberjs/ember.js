@@ -39,7 +39,7 @@ import {
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
-import { assert, dict, expect, Option, unreachable, symbol } from '@glimmer/util';
+import { assert, dict, expect, Option, unreachable, symbol, unwrapTemplate } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {
   Capability,
@@ -72,7 +72,6 @@ import {
 import { ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { ConditionalReference, PrimitiveReference } from '../../references';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { DEBUG } from '@glimmer/env';
 
 /**

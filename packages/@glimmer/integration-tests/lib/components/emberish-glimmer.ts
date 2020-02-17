@@ -18,12 +18,11 @@ import {
   Invocation,
   Destroyable,
 } from '@glimmer/interfaces';
-import { keys, assign } from '@glimmer/util';
+import { keys, assign, unwrapTemplate } from '@glimmer/util';
 import { BASIC_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
 import { EmberishCurlyComponentFactory } from './emberish-curly';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };

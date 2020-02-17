@@ -12,6 +12,7 @@ import {
   ComponentManager,
   ComponentCapabilities,
   ComponentDefinition,
+  PartialDefinition,
 } from '@glimmer/interfaces';
 import {
   EmberishCurlyComponent,
@@ -28,7 +29,7 @@ import {
   TestModifierDefinitionState,
   TestModifierManager,
 } from '../../modifiers';
-import { PartialDefinition } from '@glimmer/opcode-compiler';
+import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import TestJitRuntimeResolver from './resolver';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { TestComponentDefinitionState } from '../../components/test-component';
@@ -186,7 +187,7 @@ export function registerPartial(
   name: string,
   source: string
 ): PartialDefinition {
-  let definition = new PartialDefinition(name, preprocess(source));
+  let definition = new PartialDefinitionImpl(name, preprocess(source));
   registry.register('partial', name, definition);
   return definition;
 }

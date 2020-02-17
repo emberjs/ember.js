@@ -7,11 +7,12 @@ import {
   Maybe,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
-import { Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { opcodeMetadata, Primitive } from '@glimmer/debug';
 import { RuntimeOpImpl } from '@glimmer/program';
+import { Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
 import { decodeImmediate, isHandle, HandleConstants, decodeHandle } from '@glimmer/util';
+import { opcodeMetadata } from './opcode-metadata';
+import { Primitive } from './stack-check';
 
 export interface DebugConstants {
   getNumber(value: number): number;

@@ -38,7 +38,7 @@ import {
 } from '..';
 import { Namespace, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert, module, test } from './support';
-import { unwrapHandle } from '@glimmer/opcode-compiler';
+import { unwrapHandle } from '@glimmer/util';
 
 const SVG_NAMESPACE = Namespace.SVG;
 const XLINK_NAMESPACE = Namespace.XLink;
