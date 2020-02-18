@@ -7,7 +7,6 @@
   "dependencies": {
     "@glimmer/env": "0.1.7",
     "@glimmer/low-level": "^0.47.9",
-    "@glimmer/opcode-compiler": "^0.47.9",
     "@glimmer/util": "^0.47.9",
     "@glimmer/reference": "^0.47.9",
     "@glimmer/validator": "^0.47.9",

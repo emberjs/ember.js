@@ -3,10 +3,11 @@ import {
   Template,
   SyntaxCompilationContext,
   HandleResult,
+  PartialDefinition,
 } from '@glimmer/interfaces';
-import { unwrapTemplate } from './template';
+import { unwrapTemplate } from '@glimmer/util';
 
-export class PartialDefinition {
+export class PartialDefinitionImpl implements PartialDefinition {
   constructor(
     public name: string, // for debugging
     private template: Template

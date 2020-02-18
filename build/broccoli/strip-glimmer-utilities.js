@@ -53,6 +53,13 @@ function stripFlags(glimmerUtils) {
     },
   ]);
 
+  glimmerUtils.push([
+    nuke,
+    {
+      source: '@glimmer/debug',
+      delegate: removeLogging,
+    },
+  ]);
   glimmerUtils.push([nuke, { source: '@glimmer/debug' }]);
   glimmerUtils.push([nuke, { source: '@glimmer/vm/lib/-debug-strip' }]);
   glimmerUtils.push([nuke, { source: '@glimmer/runtime/lib/compiled/opcodes/-debug-strip' }]);
@@ -62,13 +69,6 @@ function stripFlags(glimmerUtils) {
     {
       source: '@glimmer/vm',
       delegate: removeMetaData,
-    },
-  ]);
-  glimmerUtils.push([
-    nuke,
-    {
-      source: '@glimmer/opcode-compiler',
-      delegate: removeLogging,
     },
   ]);
 }

@@ -3,7 +3,7 @@ import { VersionedPathReference } from '@glimmer/reference';
 import { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import { preprocess } from '../../compile';
 import { renderJitMain, renderSync } from '@glimmer/runtime';
-import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 
 export function renderTemplate(
   src: string,

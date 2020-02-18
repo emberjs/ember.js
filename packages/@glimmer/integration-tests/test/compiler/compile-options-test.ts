@@ -1,8 +1,7 @@
 import { precompile } from '@glimmer/compiler';
 import { preprocess, DEFAULT_TEST_META } from '../..';
 import { module } from '../support';
-import { assign } from '@glimmer/util';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { assign, unwrapTemplate } from '@glimmer/util';
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
   test('moduleName option is passed into meta', assert => {

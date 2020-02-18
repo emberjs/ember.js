@@ -13,7 +13,7 @@ import {
 } from '@glimmer/interfaces';
 import { dict } from '@glimmer/util';
 import { createTemplate } from '../../compile';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { unwrapTemplate } from '@glimmer/util';
 
 export interface Lookup {
   helper: GlimmerHelper;

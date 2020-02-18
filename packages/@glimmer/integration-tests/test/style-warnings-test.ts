@@ -25,7 +25,7 @@ import {
   equalTokens,
   registerModifier,
 } from '..';
-import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 
 let context: TestContext;
 let root: SimpleElement;
