@@ -7,12 +7,11 @@ import {
   SyntaxCompilationContext,
   Dict,
 } from '@glimmer/interfaces';
-import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 import EmberObject from '@glimmer/object';
 import { CLASS_META, setProperty as set, UpdatableRootReference } from '@glimmer/object-reference';
 import { bump } from '@glimmer/validator';
 import { clientBuilder, renderJitMain } from '@glimmer/runtime';
-import { assign, dict, unwrap } from '@glimmer/util';
+import { assign, dict, unwrap, unwrapTemplate, unwrapHandle } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 import { assert } from './support';
 import {

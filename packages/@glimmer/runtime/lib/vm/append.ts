@@ -50,6 +50,8 @@ import {
   Register,
   SyscallRegister,
 } from '@glimmer/vm';
+import { CheckNumber, check } from '@glimmer/debug';
+import { unwrapHandle } from '@glimmer/util';
 import { combineSlice } from '../utils/tags';
 import { DidModifyOpcode, JumpIfNotModifiedOpcode, LabelOpcode } from '../compiled/opcodes/vm';
 import { ScopeImpl } from '../environment';
@@ -68,8 +70,6 @@ import {
   TryOpcode,
   VMState,
 } from './update';
-import { CheckNumber, check } from '@glimmer/debug';
-import { unwrapHandle } from '@glimmer/opcode-compiler';
 
 /**
  * This interface is used by internal opcodes, and is more stable than

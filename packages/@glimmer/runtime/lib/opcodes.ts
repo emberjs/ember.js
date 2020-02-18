@@ -7,7 +7,7 @@ import { Tag } from '@glimmer/validator';
 import { RuntimeOp, Op, JitOrAotBlock, Maybe, Dict } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
-import { debug, logOpcode } from '@glimmer/opcode-compiler';
+import { debug, logOpcode } from '@glimmer/debug';
 import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
 import { InternalVM, InternalJitVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';

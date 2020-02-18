@@ -6,11 +6,8 @@ import {
   SerializedTemplateWithLazyBlock,
   Template,
   TemplateOk,
-  HandleResult,
-  OkHandle,
-  ErrHandle,
 } from '@glimmer/interfaces';
-import { assign } from '@glimmer/util';
+import { assign, unwrapTemplate } from '@glimmer/util';
 import { compilable } from './compilable-template';
 import { WrappedBuilder } from './wrapped-component';
 
@@ -126,39 +123,4 @@ export function Component(serialized: string, envMeta?: {}): CompilableProgram {
 
   let template = unwrapTemplate(factory.create(envMeta));
   return template.asLayout();
-}
-
-export function unwrapTemplate<M>(template: Template<M>): TemplateOk<M> {
-  if (template.result === 'error') {
-    throw new Error(
-      `Compile Error: ${template.problem} @ ${template.span.start}..${template.span.end}`
-    );
-  }
-
-  return template;
-}
-
-export function unwrapHandle(handle: HandleResult): number {
-  if (typeof handle === 'number') {
-    return handle;
-  } else {
-    let error = handle.errors[0];
-    throw new Error(`Compile Error: ${error.problem} @ ${error.span.start}..${error.span.end}`);
-  }
-}
-
-export function extractHandle(handle: HandleResult): number {
-  if (typeof handle === 'number') {
-    return handle;
-  } else {
-    return handle.handle;
-  }
-}
-
-export function isOkHandle(handle: HandleResult): handle is OkHandle {
-  return typeof handle === 'number';
-}
-
-export function isErrHandle(handle: HandleResult): handle is ErrHandle {
-  return typeof handle === 'number';
 }
