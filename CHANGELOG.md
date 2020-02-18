@@ -29,6 +29,10 @@
 
 - [#18688](https://github.com/emberjs/ember.js/pull/18688) / [#18621](https://github.com/emberjs/ember.js/pull/18621) Updates Glimmer-VM to v0.46
 
+### v3.16.3 (February 18, 2020)
+
+- [#18730](https://github.com/emberjs/ember.js/pull/18730) Workaround for the Glimmer VM bug which encodes/decodes integer literals correctly.
+
 ### v3.16.2 (February 10, 2020)
 
 - [#18721](https://github.com/emberjs/ember.js/pull/18721) [BUGFIX] Backport autotracking bugfixes
