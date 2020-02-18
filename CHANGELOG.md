@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.17.0-beta.5 (February 18, 2020)
+
+- [#18730](https://github.com/emberjs/ember.js/pull/18730) Workaround for the Glimmer VM bug which encodes/decodes integer literals correctly.
+
 ### v3.17.0-beta.4 (February 10, 2020)
 
 - [#18727](https://github.com/emberjs/ember.js/pull/18727) [BUGFIX] Avoid breaking {{-in-element}} usage
