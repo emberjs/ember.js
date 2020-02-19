@@ -226,7 +226,6 @@ module.exports = {
         tsconfigRootDir: __dirname,
       },
       rules: {
-        'node/no-extraneous-import': 'off',
         'node/no-unsupported-features/es-syntax': 'off',
         'node/no-unsupported-features/node-builtins': 'off',
 
@@ -284,6 +283,23 @@ module.exports = {
         'prefer-rest-params': 'off',
         'prefer-spread': 'off',
         'spaced-comment': 'off',
+      },
+    },
+    {
+      // these packages need to be fixed to avoid these warnings, but in the
+      // meantime we should not regress the other packages
+      files: [
+        // @glimmer/interfaces should not import for any other @glimmer package
+        // but it currently imports from @glimmer/reference and @glimmer/validator
+        'packages/@glimmer/interfaces/**/*.ts',
+
+        // this specific test imports from @glimmer/runtime (causing a cyclic
+        // dependency), it should either be refactored to use the interfaces
+        // directly (instead of the impls) or moved into @glimmer/runtime
+        'packages/@glimmer/reference/test/template-test.ts',
+      ],
+      rules: {
+        'node/no-extraneous-import': 'warn',
       },
     },
   ],

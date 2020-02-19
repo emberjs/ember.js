@@ -5,6 +5,7 @@
   "dependencies": {
     "@glimmer/runtime": "^0.47.9",
     "@glimmer/interfaces": "^0.47.9",
+    "@glimmer/util": "^0.47.9",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/interface": "^1.4.0"
   },
