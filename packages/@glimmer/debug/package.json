@@ -5,6 +5,9 @@
   "private": true,
   "dependencies": {
     "@glimmer/interfaces": "^0.47.9",
+    "@glimmer/program": "^0.47.9",
+    "@glimmer/util": "^0.47.9",
+    "@glimmer/vm": "^0.47.9",
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
