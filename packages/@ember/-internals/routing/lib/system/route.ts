@@ -1055,7 +1055,7 @@ class Route extends EmberObject implements IRoute {
     called almost at the same time, but they have an important
     distinction when calling `this.transitionTo` to a child route
     of the current route. From `afterModel`, this new transition
-    invalidates the current transition, causing `beforeModel`, 
+    invalidates the current transition, causing `beforeModel`,
     `model`, and `afterModel` hooks to be called again. But the
     same transition started from `redirect` does _not_ invalidate
     the current transition. In other words, by the time the `redirect`
