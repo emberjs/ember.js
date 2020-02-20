@@ -41,7 +41,7 @@ export interface Constructor<T = unknown, Prototype = T> {
   prototype: Prototype;
 }
 
-export function module(name: string): (klass: (typeof TestCase) & Constructor) => void {
+export function module(name: string): (klass: typeof TestCase & Constructor) => void {
   return function(klass: typeof TestCase & Constructor) {
     QUnit.module(name);
 

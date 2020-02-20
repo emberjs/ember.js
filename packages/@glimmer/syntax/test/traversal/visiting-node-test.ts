@@ -345,11 +345,10 @@ test('Modifier', function(assert) {
         ]);
 
         if (hasSymbol) {
-          assert.deepEqual(Array.from(path.parents()).map(it => (it as Path<AST.Node>).node.type), [
-            'ElementModifierStatement',
-            'ElementNode',
-            'Template',
-          ]);
+          assert.deepEqual(
+            Array.from(path.parents()).map(it => (it as Path<AST.Node>).node.type),
+            ['ElementModifierStatement', 'ElementNode', 'Template']
+          );
         }
 
         assert.strictEqual((path.parent!.node as AST.ElementModifierStatement).path, node);

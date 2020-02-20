@@ -2600,7 +2600,10 @@ module('[jit] integration - Updating', hooks => {
     );
 
     object = {
-      list: [{ name: 'Martin Muñoz', class: 'mmun' }, { name: 'Kris Selden', class: 'krisselden' }],
+      list: [
+        { name: 'Martin Muñoz', class: 'mmun' },
+        { name: 'Kris Selden', class: 'krisselden' },
+      ],
     };
     rerender(object);
     assertStableNodes('mmun', 0, 'after changing the list entries, but with stable keys');
@@ -2630,7 +2633,10 @@ module('[jit] integration - Updating', hooks => {
     );
 
     object = {
-      list: [{ name: 'Martin Muñoz', class: 'mmun' }, { name: 'Matthew Beale', class: 'mixonic' }],
+      list: [
+        { name: 'Martin Muñoz', class: 'mmun' },
+        { name: 'Matthew Beale', class: 'mixonic' },
+      ],
     };
 
     rerender(object);

@@ -59,7 +59,10 @@ test('HTML text content', 'content', s`content`);
 
 test('Text curlies', '<div>{{title}}<span>{{title}}</span></div>', [
   '<div>',
-  [[Append, '^title'], ['<span>', [[Append, '^title']]]],
+  [
+    [Append, '^title'],
+    ['<span>', [[Append, '^title']]],
+  ],
 ]);
 
 test(

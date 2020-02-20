@@ -26,7 +26,7 @@ export * from './lib/template';
 
 export { default as debugToString } from './lib/debug-to-string';
 
-export type FIXME<T, S extends string> = T & S | T;
+export type FIXME<T, S extends string> = (T & S) | T;
 
 export function assertNever(value: never, desc = 'unexpected unreachable branch'): void {
   console.log('unreachable', value);
