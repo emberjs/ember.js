@@ -22,7 +22,10 @@ QUnit.module('[glimmer-compiler] TemplateVisitor');
 
 test('empty', function() {
   let input = '';
-  actionsEqual(input, [['startProgram', [0, []]], ['endProgram', [0]]]);
+  actionsEqual(input, [
+    ['startProgram', [0, []]],
+    ['endProgram', [0]],
+  ]);
 });
 
 test('basic', function() {
@@ -125,12 +128,19 @@ test('nested blocks', function() {
 
 test('comment', function() {
   let input = '<!-- some comment -->';
-  actionsEqual(input, [['startProgram', [0, []]], ['comment', [0, 1]], ['endProgram', [0]]]);
+  actionsEqual(input, [
+    ['startProgram', [0, []]],
+    ['comment', [0, 1]],
+    ['endProgram', [0]],
+  ]);
 });
 
 test('handlebars comment', function() {
   let input = '{{! some comment }}';
-  actionsEqual(input, [['startProgram', [0, []]], ['endProgram', [0]]]);
+  actionsEqual(input, [
+    ['startProgram', [0, []]],
+    ['endProgram', [0]],
+  ]);
 });
 
 test('handlebars comment in element space', function() {

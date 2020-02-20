@@ -114,14 +114,20 @@ function initialize(
 }
 
 QUnit.test('They provide a sequence of references with keys', assert => {
-  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+  let arr = [
+    { key: 'a', name: 'Yehuda' },
+    { key: 'b', name: 'Godfrey' },
+  ];
   let { target } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
 });
 
 QUnit.test('When re-iterated via mutation, the original references are updated', assert => {
-  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+  let arr = [
+    { key: 'a', name: 'Yehuda' },
+    { key: 'b', name: 'Godfrey' },
+  ];
   let { target, artifacts } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
@@ -146,7 +152,10 @@ QUnit.test('When re-iterated via mutation, the original references are updated',
 });
 
 QUnit.test('When re-iterated via deep mutation, the original references are updated', assert => {
-  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+  let arr = [
+    { key: 'a', name: 'Yehuda' },
+    { key: 'b', name: 'Godfrey' },
+  ];
   let { target, artifacts } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
@@ -181,7 +190,10 @@ QUnit.test('When re-iterated via deep mutation, the original references are upda
 });
 
 QUnit.test('When re-iterated via replacement, the original references are updated', assert => {
-  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+  let arr = [
+    { key: 'a', name: 'Yehuda' },
+    { key: 'b', name: 'Godfrey' },
+  ];
   let { target, reference, artifacts } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
@@ -194,11 +206,17 @@ QUnit.test('When re-iterated via replacement, the original references are update
 
   assert.deepEqual(target.toValues(), arr);
 
-  reference.update([{ key: 'a', name: 'Tom' }, { key: 'b', name: 'Stef ' }]);
+  reference.update([
+    { key: 'a', name: 'Tom' },
+    { key: 'b', name: 'Stef ' },
+  ]);
 
   sync(target, artifacts);
 
-  assert.deepEqual(target.toValues(), [{ key: 'a', name: 'Tom' }, { key: 'b', name: 'Stef ' }]);
+  assert.deepEqual(target.toValues(), [
+    { key: 'a', name: 'Tom' },
+    { key: 'b', name: 'Stef ' },
+  ]);
 
   arr = arr.slice();
   arr.push({ key: 'c', name: 'Godhuda' });
@@ -498,7 +516,10 @@ QUnit.test('When re-iterated via swap #12, the original references are updated',
     shuffleArray(newArr);
     let semiArr = [].concat(
       newArr.slice(0, 5) as any,
-      [{ key: '11', name: 'i-11' }, { key: '12', name: 'i-12' }] as any
+      [
+        { key: '11', name: 'i-11' },
+        { key: '12', name: 'i-12' },
+      ] as any
     );
     reference.update(semiArr);
     target.cleanHistory();
