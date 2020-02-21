@@ -785,11 +785,12 @@ class Route extends EmberObject implements IRoute {
     ```
 
     @method transitionTo
-    @param {String} name the name of the route or a URL
-    @param {...Object} models the model(s) or identifier(s) to be used while
+    @param {String} [name] the name of the route or a URL.
+    @param {...Object} [models] the model(s) or identifier(s) to be used while
       transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
-      containing a mapping of query parameters
+      containing a mapping of query parameters. May be supplied as the only
+      parameter to trigger a query-parameter-only transition.
     @return {Transition} the transition object associated with this
       attempted transition
     @since 1.0.0
