@@ -23,7 +23,7 @@ export default function installProtocolForURL(environment: EmberEnvironmentDeleg
     // URL globally provided, likely from FastBoot's sandbox
     nodeURL = URL;
     environment.protocolForURL = nodeProtocolForURL;
-  } else if (typeof module !== undefined && typeof module.require === 'function') {
+  } else if (typeof module !== 'undefined' && typeof module.require === 'function') {
     // Otherwise, we need to fall back to our own URL parsing.
     // Global `require` is shadowed by Ember's loader so we have to use the fully
     // qualified `module.require`.
