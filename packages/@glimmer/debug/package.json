@@ -11,7 +11,7 @@
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
-    "@types/qunit": "^2.0.31",
-    "toml": "^2.3.3"
+    "@types/qunit": "^2.9.0",
+    "toml": "^3.0.0"
   }
 }

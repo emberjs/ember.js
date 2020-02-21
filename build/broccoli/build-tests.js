@@ -51,7 +51,7 @@ function transpileNodeTestsToCommonJS(jsTree) {
 
   return babel(testTree, {
     sourceMaps: 'inline',
-    plugins: ['transform-es2015-modules-commonjs'],
+    plugins: ['@babel/plugin-transform-modules-commonjs'],
   });
 }
 

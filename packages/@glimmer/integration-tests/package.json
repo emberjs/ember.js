@@ -24,6 +24,6 @@
     "simple-html-tokenizer": "^0.5.9"
   },
   "devDependencies": {
-    "@types/qunit": "^2.0.31"
+    "@types/qunit": "^2.9.0"
   }
 }

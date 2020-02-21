@@ -10,7 +10,7 @@
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
-    "@types/qunit": "^2.0.31",
+    "@types/qunit": "^2.9.0",
     "@glimmer/compiler": "^0.47.9"
   }
 }
