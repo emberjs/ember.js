@@ -8,20 +8,28 @@ import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export function extractRouteArgs(args: any[]) {
+export function extractRouteArgs(args: unknown[]) {
   args = args.slice();
   let possibleQueryParams = args[args.length - 1];
 
   let queryParams;
-  if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
-    queryParams = args.pop().queryParams;
+  if (possibleQueryParams && (possibleQueryParams as object).hasOwnProperty('queryParams')) {
+    // SAFETY: this cast is safe because we have just checked whether
+    // `possibleQueryParams` -- defined as the last item in args -- both exists
+    // and has the property `queryParams`. If either of these invariants change,
+    // ***this is unsafe and should be changed***.
+    queryParams = (args.pop() as { queryParams: object }).queryParams;
   } else {
     queryParams = {};
   }
 
-  let routeName = args.shift();
+  // UNSAFE: these are simply assumed as the existing behavior of the system.
+  // However, this could break if upstream refactors change it, and the types
+  // here would not be able to tell us; we would lie to everything downstream.
+  let routeName = args.shift() as string | undefined;
+  let models = args as {}[];
 
-  return { routeName, models: args, queryParams };
+  return { routeName, models, queryParams };
 }
 
 export function getActiveTargetName(router: Router<Route>) {
@@ -181,7 +189,7 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
 
   @private
 */
-export function resemblesURL(str: string) {
+export function resemblesURL(str: unknown): str is string {
   return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 

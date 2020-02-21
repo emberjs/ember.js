@@ -517,7 +517,7 @@ class EmberRouter extends EmberObject {
     @public
   */
   transitionTo(...args: unknown[]) {
-    if (resemblesURL(args[0] as string)) {
+    if (resemblesURL(args[0])) {
       assert(
         `A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`,
         !this.isDestroying && !this.isDestroyed
@@ -818,9 +818,9 @@ class EmberRouter extends EmberObject {
   }
 
   _doTransition(
-    _targetRouteName: string,
+    _targetRouteName: string | undefined,
     models: {}[],
-    _queryParams: QueryParam,
+    _queryParams: {},
     _keepDefaultQueryParamValues?: boolean
   ) {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
