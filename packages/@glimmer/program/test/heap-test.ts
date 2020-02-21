@@ -34,7 +34,7 @@ QUnit.test('Can grow', assert => {
   serialized = heap.capture(stdlib, Number.MAX_SAFE_INTEGER);
   serializedHeap = new Int32Array(serialized.buffer);
 
-  if (serializedHeap.slice) {
+  if (typeof serializedHeap.slice === 'function') {
     assert.equal(serializedHeap.length, size * 2);
   } else {
     // IE11 only gives you a buffer with residents in the slots
