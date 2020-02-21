@@ -64,7 +64,7 @@
     "broccoli-plugin": "^3.1.0",
     "broccoli-rollup": "^4.1.1",
     "broccoli-source": "^3.0.0",
-    "broccoli-typescript-compiler": "^4.2.0",
+    "broccoli-typescript-compiler": "^5.0.0",
     "chalk": "^3.0.0",
     "dag-map": "^2.0.2",
     "ember-cli": "~3.16.0",
@@ -90,7 +90,7 @@
     "semver": "^6.3.0",
     "testem-failure-only-reporter": "^0.0.1",
     "toml": "^3.0.0",
-    "typescript": "3.5.3"
+    "typescript": "3.7.5"
   },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",

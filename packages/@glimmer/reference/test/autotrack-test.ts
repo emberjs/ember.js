@@ -179,11 +179,11 @@ QUnit.test('can request a tag from an instance of a frozen class', assert => {
 });
 
 QUnit.test('can track a computed property', assert => {
-  class TrackedCell<T> {
+  class TrackedCell<T = unknown> {
     constructor(public value: T) {}
   }
 
-  tracked(TrackedCell, 'value');
+  tracked<TrackedCell, 'value'>(TrackedCell, 'value');
 
   let firstName = new TrackedCell('Tom');
   let count = new TrackedCell(0);
