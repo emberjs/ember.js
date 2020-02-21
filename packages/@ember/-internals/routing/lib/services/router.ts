@@ -4,7 +4,7 @@ import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { Transition } from 'router_js';
-import EmberRouter from '../system/router';
+import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
 let freezeRouteInfo: Function;
@@ -119,9 +119,11 @@ export default class RouterService extends Service {
        attempted transition
      @public
    */
-  transitionTo(...args: string[]) {
+  transitionTo(...args: (string | object)[]) {
     if (resemblesURL(args[0])) {
-      return this._router._doURLTransition('transitionTo', args[0]);
+      // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
+      // in 3.6+, so it can be removed when TS is upgraded.
+      return this._router._doURLTransition('transitionTo', args[0] as string);
     }
 
     let { routeName, models, queryParams } = extractRouteArgs(args);
@@ -297,16 +299,30 @@ export default class RouterService extends Service {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
-    if (!routerMicrolib.isActiveIntent(routeName, models)) {
+    // UNSAFE: casting `routeName as string` here encodes the existing
+    // assumption but may be wrong: `extractRouteArgs` correctly returns it as
+    // `string | undefined`. There may be bugs if `isActiveIntent` does
+    // not correctly account for `undefined` values for `routeName`. Spoilers:
+    // it *does not* account for this being `undefined`.
+    if (!routerMicrolib.isActiveIntent(routeName as string, models)) {
       return false;
     }
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
       this._router._prepareQueryParams(
-        routeName,
+        // UNSAFE: casting `routeName as string` here encodes the existing
+        // assumption but may be wrong: `extractRouteArgs` correctly returns it
+        // as `string | undefined`. There may be bugs if `_prepareQueryParams`
+        // does not correctly account for `undefined` values for `routeName`.
+        //  Spoilers: under the hood this currently uses router.js APIs which
+        // *do not* account for this being `undefined`.
+        routeName as string,
         models,
-        queryParams,
+        // UNSAFE: downstream consumers treat this as `QueryParam`, which the
+        // type system here *correctly* reports as incorrect, because it may be
+        // just an empty object.
+        queryParams as QueryParam,
         true /* fromRouterService */
       );
       return shallowEqual(queryParams, routerMicrolib.state!.queryParams);
