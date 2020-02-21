@@ -1361,66 +1361,69 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test GH#18732 hasBlock works within a yielded curried component invoked within mustaches'](assert) {
+    ['@test GH#18732 hasBlock works within a yielded curried component invoked within mustaches']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>'
+        template: '<div>{{hasBlock}}</div>',
       });
-  
+
       this.registerComponent('yielding-component', {
         ComponentClass: Component.extend(),
-        template: '{{yield (component "component-with-has-block")}}'
+        template: '{{yield (component "component-with-has-block")}}',
       });
-  
+
       this.registerComponent('test-component', {
         ComponentClass: Component.extend(),
-        template: '{{#yielding-component as |componentWithHasBlock|}}{{componentWithHasBlock}}{{/yielding-component}}'
+        template:
+          '{{#yielding-component as |componentWithHasBlock|}}{{componentWithHasBlock}}{{/yielding-component}}',
       });
-  
+
       this.render('{{test-component}}');
-      
+
       this.assertText('false');
     }
-  
+
     ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (falsy)']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>'
+        template: '<div>{{hasBlock}}</div>',
       });
-  
+
       this.registerComponent('yielding-component', {
         ComponentClass: Component.extend(),
-        template: '{{yield (component "component-with-has-block")}}'
+        template: '{{yield (component "component-with-has-block")}}',
       });
-  
+
       this.registerComponent('test-component', {
         ComponentClass: Component.extend(),
-        template: '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock/>{{/yielding-component}}'
+        template:
+          '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock/>{{/yielding-component}}',
       });
-  
+
       this.render('{{test-component}}');
-      
+
       this.assertText('false');
     }
-  
+
     ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (truthy)']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>'
+        template: '<div>{{hasBlock}}</div>',
       });
-  
+
       this.registerComponent('yielding-component', {
         ComponentClass: Component.extend(),
-        template: '{{yield (component "component-with-has-block")}}'
+        template: '{{yield (component "component-with-has-block")}}',
       });
-  
+
       this.registerComponent('test-component', {
         ComponentClass: Component.extend(),
-        template: '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock></componentWithHasBlock>{{/yielding-component}}'
+        template:
+          '{{#yielding-component as |componentWithHasBlock|}}<componentWithHasBlock></componentWithHasBlock>{{/yielding-component}}',
       });
-  
+
       this.render('{{test-component}}');
-      
+
       this.assertText('true');
     }
   }
