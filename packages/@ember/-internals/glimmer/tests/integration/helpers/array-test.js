@@ -285,5 +285,15 @@ moduleFor(
 
       this.assert.deepEqual(captured, ['Tom', 'Godfrey']);
     }
+
+    ['@test GH18693 properties in hash can be accessed from the array']() {
+      this.render(strip`
+        {{#each (array (hash some="thing")) as |item|}}
+          {{item.some}}
+        {{/each}}`
+      );
+
+      this.assertText('thing');
+    }
   }
 );
