@@ -276,7 +276,10 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
     } else if (inverse === null) {
       namedBlocks = [['default'], [blocks[template]]];
     } else {
-      namedBlocks = [['default', 'else'], [blocks[template], blocks[inverse]]];
+      namedBlocks = [
+        ['default', 'else'],
+        [blocks[template], blocks[inverse]],
+      ];
     }
 
     // assert(head[]);

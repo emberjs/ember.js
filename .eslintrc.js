@@ -20,6 +20,7 @@ module.exports = {
       tryExtensions: ['.js', '.ts', '.d.ts'],
     },
   },
+  ignorePatterns: ['dist', 'ts-dist', 'node_modules', 'tmp'],
   rules: {
     // disabled because we still have a few commented tests
     'qunit/no-commented-tests': 'off',
@@ -186,6 +187,12 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'error',
   },
   overrides: [
+    {
+      files: ['**/*.d.ts'],
+      rules: {
+        'no-useless-constructor': 'off',
+      },
+    },
     // node files
     {
       files: [
