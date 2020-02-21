@@ -92,7 +92,8 @@ export default class RouterService extends Service {
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
      In the following example we use the Router service to navigate to a route with a
-     specific model from a Component.
+     specific model from a Component in the first action, and in the second we trigger
+     a query-params only transition.
 
      ```app/components/example.js
      import Component from '@glimmer/component';
@@ -105,6 +106,13 @@ export default class RouterService extends Service {
        @action
        goToComments(post) {
          this.router.transitionTo('comments', post);
+       }
+
+       @action
+       fetchMoreComments(latestComment) {
+         this.router.transitionTo({
+           queryParams: { commentsAfter: latestComment }
+         });
        }
      }
      ```
