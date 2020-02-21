@@ -210,7 +210,7 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
 }
 
 export const META_KIND = tuple('METADATA', 'MACHINE_METADATA');
-export type META_KIND = (typeof META_KIND)[number];
+export type META_KIND = typeof META_KIND[number];
 
 export function buildSingleMeta(
   kind: META_KIND,

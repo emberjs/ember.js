@@ -5,8 +5,6 @@ import {
   CompileMode,
   Op,
   MachineOp,
-  CompileBlockOp,
-  CompileInlineOp,
   StatementCompileActions,
   InvokeStaticOp,
   DynamicComponentOp,
@@ -61,13 +59,16 @@ function compileOp(
   }
 }
 
-function CompileBlockOp(context: TemplateCompilationContext, op: CompileBlockOp) {
+function CompileBlockOp(
+  context: TemplateCompilationContext,
+  op: import('@glimmer/interfaces').CompileBlockOp
+) {
   return compileBlock(op.op1, context);
 }
 
 function CompileInlineOp(
   context: TemplateCompilationContext,
-  op: CompileInlineOp
+  op: import('@glimmer/interfaces').CompileInlineOp
 ): StatementCompileActions {
   let { inline, ifUnhandled } = op.op1;
 

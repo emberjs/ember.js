@@ -129,9 +129,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         strip,
       };
     } else {
-      let { path, params, hash } = acceptCallNodes(this, rawMustache as HBS.MustacheStatement & {
-        path: HBS.PathExpression;
-      });
+      let { path, params, hash } = acceptCallNodes(
+        this,
+        rawMustache as HBS.MustacheStatement & {
+          path: HBS.PathExpression;
+        }
+      );
       mustache = b.mustache(path, params, hash, !escaped, loc, strip);
     }
 

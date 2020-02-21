@@ -10,6 +10,6 @@
     "@glimmer/util": "^0.47.9"
   },
   "devDependencies": {
-    "@types/qunit": "^2.0.31"
+    "@types/qunit": "^2.9.0"
   }
 }

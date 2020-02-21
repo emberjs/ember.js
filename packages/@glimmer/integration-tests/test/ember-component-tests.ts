@@ -1416,7 +1416,7 @@ QUnit.test('Custom element with element modifier', function(assert) {
 });
 
 QUnit.test('Curly component hooks (with attrs)', assert => {
-  let instance: NonBlock & HookedComponent | undefined;
+  let instance: (NonBlock & HookedComponent) | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
@@ -1469,7 +1469,7 @@ QUnit.test('Curly component hooks (with attrs)', assert => {
 });
 
 QUnit.test('Curly component hooks (attrs as self props)', function() {
-  let instance: NonBlock & HookedComponent | undefined;
+  let instance: (NonBlock & HookedComponent) | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
@@ -1602,7 +1602,7 @@ QUnit.test('Setting class attributeBinding does not clobber ember-view', assert 
 });
 
 QUnit.test('Curly component hooks (force recompute)', assert => {
-  let instance: NonBlock & HookedComponent | undefined;
+  let instance: (NonBlock & HookedComponent) | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
@@ -1653,7 +1653,7 @@ QUnit.test('Curly component hooks (force recompute)', assert => {
 });
 
 QUnit.test('Glimmer component hooks', assert => {
-  let instance: NonBlock & HookedComponent | undefined;
+  let instance: (NonBlock & HookedComponent) | undefined;
 
   class NonBlock extends EmberishGlimmerComponent {
     constructor(args: EmberishGlimmerArgs) {
@@ -1707,7 +1707,7 @@ QUnit.test('Glimmer component hooks', assert => {
 });
 
 QUnit.test('Glimmer component hooks (force recompute)', assert => {
-  let instance: NonBlock & HookedComponent | undefined;
+  let instance: (NonBlock & HookedComponent) | undefined;
 
   class NonBlock extends EmberishGlimmerComponent {
     constructor(args: EmberishGlimmerArgs) {

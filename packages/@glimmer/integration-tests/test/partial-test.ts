@@ -124,13 +124,23 @@ QUnit.test('static partial with local reference', () => {
   let template = compile(`{{#each qualities key='id' as |quality|}}{{partial 'test'}}. {{/each}}`);
 
   registerPartial(context.registry, 'test', `You {{quality.value}}`);
-  render(template, { qualities: [{ id: 1, value: 'smaht' }, { id: 2, value: 'loyal' }] });
+  render(template, {
+    qualities: [
+      { id: 1, value: 'smaht' },
+      { id: 2, value: 'loyal' },
+    ],
+  });
 
   rerender(null, { assertStable: true });
 
   equalTokens(context.root, `You smaht. You loyal. `);
   rerender(
-    { qualities: [{ id: 1, value: 'smaht' }, { id: 2, value: 'loyal' }] },
+    {
+      qualities: [
+        { id: 1, value: 'smaht' },
+        { id: 2, value: 'loyal' },
+      ],
+    },
     { assertStable: true }
   );
   equalTokens(context.root, `You smaht. You loyal. `);
@@ -654,14 +664,23 @@ QUnit.test('dynamic partial with local reference', () => {
   registerPartial(context.registry, 'test', `You {{quality.value}}`);
   render(template, {
     name: 'test',
-    qualities: [{ id: 1, value: 'smaht' }, { id: 2, value: 'loyal' }],
+    qualities: [
+      { id: 1, value: 'smaht' },
+      { id: 2, value: 'loyal' },
+    ],
   });
 
   rerender(null, { assertStable: true });
 
   equalTokens(context.root, `You smaht. You loyal. `);
   rerender(
-    { name: 'test', qualities: [{ id: 1, value: 'smaht' }, { id: 2, value: 'loyal' }] },
+    {
+      name: 'test',
+      qualities: [
+        { id: 1, value: 'smaht' },
+        { id: 2, value: 'loyal' },
+      ],
+    },
     { assertStable: true }
   );
   equalTokens(context.root, `You smaht. You loyal. `);

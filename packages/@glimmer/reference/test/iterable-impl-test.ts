@@ -27,14 +27,20 @@ function initialize(
 module('@glimmer/reference: IterableImpl', () => {
   module('native arrays', () => {
     test('it correctly iterates native arrays', assert => {
-      let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
       let { target } = initialize(arr);
 
       assert.deepEqual(target.toValues(), arr);
     });
 
     test('it correctly synchronizes native arrays when changed', assert => {
-      let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
       let { target, artifacts } = initialize(arr);
 
       assert.deepEqual(target.toValues(), arr);
@@ -96,7 +102,10 @@ module('@glimmer/reference: IterableImpl', () => {
 
   module('keys', () => {
     test('@identity works', assert => {
-      let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
       let { target } = initialize(arr);
 
       assert.deepEqual(target.toKeys(), arr);
@@ -153,21 +162,30 @@ module('@glimmer/reference: IterableImpl', () => {
     });
 
     test('@key works', assert => {
-      let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
       let { target } = initialize(arr, '@key');
 
       assert.deepEqual(target.toKeys(), [0, 1]);
     });
 
     test('@index works', assert => {
-      let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
       let { target } = initialize(arr, '@index');
 
       assert.deepEqual(target.toKeys(), ['0', '1']);
     });
 
     test('paths work', assert => {
-      let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
       let { target } = initialize(arr, 'key');
 
       assert.deepEqual(target.toKeys(), ['a', 'b']);

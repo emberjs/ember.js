@@ -10,6 +10,6 @@
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.47.9",
-    "@types/qunit": "^2.0.31"
+    "@types/qunit": "^2.9.0"
   }
 }

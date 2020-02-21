@@ -4,8 +4,20 @@ import { Dict } from '@glimmer/interfaces';
 const test = QUnit.test;
 
 const cases: Dict<[string, number | null][]> = {
-  'hello world': [['0:0', 0], ['0:5', 5], ['0:11', 11], ['0:12', null], ['1:0', null]],
-  'hello world\n': [['0:0', 0], ['0:5', 5], ['0:11', 11], ['0:12', null], ['1:0', null]],
+  'hello world': [
+    ['0:0', 0],
+    ['0:5', 5],
+    ['0:11', 11],
+    ['0:12', null],
+    ['1:0', null],
+  ],
+  'hello world\n': [
+    ['0:0', 0],
+    ['0:5', 5],
+    ['0:11', 11],
+    ['0:12', null],
+    ['1:0', null],
+  ],
   'hello world\n\n': [
     ['0:0', 0],
     ['0:5', 5],
