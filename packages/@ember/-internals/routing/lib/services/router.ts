@@ -1,5 +1,7 @@
+import { getOwner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
+import EmberError from '@ember/error';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
@@ -120,16 +122,40 @@ export default class RouterService extends Service {
      @public
    */
   transitionTo(...args: string[]) {
-    if (resemblesURL(args[0])) {
-      return this._router._doURLTransition('transitionTo', args[0]);
-    }
-
     let { routeName, models, queryParams } = extractRouteArgs(args);
+    routeName = this._prefixRouteName(routeName);
+
+    if (resemblesURL(routeName)) {
+      return this._router._doURLTransition('transitionTo', routeName);
+    }
 
     let transition = this._router._doTransition(routeName, models, queryParams, true);
     transition['_keepDefaultQueryParamValues'] = true;
 
     return transition;
+  }
+
+  /*
+    Returns a route name which is prefixed based on the mount point
+
+    @private
+  */
+  _prefixRouteName(routeName: string) {
+    let owner = getOwner(this);
+    let prefix = owner.mountPoint;
+
+    // only alter the routeName if it's actually referencing a route.
+    if (owner.routable && typeof routeName === 'string') {
+      if (resemblesURL(routeName)) {
+        throw new EmberError(
+          'Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.'
+        );
+      } else {
+        routeName = `${prefix}.${routeName}`;
+      }
+    }
+
+    return routeName;
   }
 
   /**
