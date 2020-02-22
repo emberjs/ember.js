@@ -202,22 +202,30 @@ moduleFor(
     }
 
     ['@test GH18211 input checked attribute, without a value, works with the action helper']() {
-      this.render(`<input type="checkbox" checked {{action "someAction"}}>`, { actions: { someAction() {} } });
+      this.render(`<input type="checkbox" checked {{action "someAction"}}>`, {
+        actions: { someAction() {} },
+      });
       this.assertPropertyHasValue('checked', true);
     }
 
     ['@test GH18211 input checked attribute, with a value, works with the action helper']() {
-      this.render(`<input type="checkbox" checked={{true}} {{action "someAction"}}>`, { actions: { someAction() {} } });
+      this.render(`<input type="checkbox" checked={{true}} {{action "someAction"}}>`, {
+        actions: { someAction() {} },
+      });
       this.assertPropertyHasValue('checked', true);
     }
-    
+
     ['@test GH18211 input checked attribute, without a value, works with attributes with values']() {
-      this.render(`<input type="checkbox" checked click={{action "someAction"}}>`, { actions: { someAction() {} } });
+      this.render(`<input type="checkbox" checked click={{action "someAction"}}>`, {
+        actions: { someAction() {} },
+      });
       this.assertPropertyHasValue('checked', true);
     }
 
     ['@test GH18211 input checked attribute, without a value, works with event attributes']() {
-      this.render(`<input type="checkbox" checked onclick={{action "someAction"}}>`, { actions: { someAction() {} } });
+      this.render(`<input type="checkbox" checked onclick={{action "someAction"}}>`, {
+        actions: { someAction() {} },
+      });
       this.assertPropertyHasValue('checked', true);
     }
 
