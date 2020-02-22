@@ -464,6 +464,16 @@ export default class RouterService extends Service {
     }
     ```
 
+    `routeDidChange` will be called after any `Route`'s
+    [didTransition](/ember/release/classes/Route/events/didTransition?anchor=didTransition)
+    action has been fired.
+    The updates of properties
+    [currentURL](/ember/release/classes/RouterService/properties/currentURL?anchor=currentURL),
+    [currentRouteName](/ember/release/classes/RouterService/properties/currentURL?anchor=currentRouteName)
+    and
+    [currentRoute](/ember/release/classes/RouterService/properties/currentURL?anchor=currentRoute)
+    are completed at the time `routeDidChange` is called.
+
     @event routeDidChange
     @param {Transition} transition
     @public
