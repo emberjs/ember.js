@@ -98,6 +98,17 @@
   }
   ```
 
+  It's important to note that setting tracked properties will always trigger an
+  update, even if the property is set to the same value as it was before.
+
+  ```js
+  let entry = new Entry('Pizza Palace', 5551234);
+
+  // if entry was used when rendering, this would cause a rerender, even though
+  // the name is being set to the same value as it was before
+  entry.name = entry.name;
+  ```
+
   `tracked` can also be used with the classic Ember object model in a similar
   manner to classic computed properties:
 
