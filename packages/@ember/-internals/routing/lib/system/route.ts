@@ -1054,17 +1054,14 @@ class Route extends EmberObject implements IRoute {
 
     `redirect` and `afterModel` behave very similarly and are
     called almost at the same time, but they have an important
-    distinction in the case that, from one of these hooks, a
-    redirect into a child route of this route occurs: redirects
-    from `afterModel` essentially invalidate the current attempt
-    to enter this route, and will result in this route's `beforeModel`,
-    `model`, and `afterModel` hooks being fired again within
-    the new, redirecting transition. Redirects that occur within
-    the `redirect` hook, on the other hand, will _not_ cause
-    these hooks to be fired again the second time around; in
-    other words, by the time the `redirect` hook has been called,
-    both the resolved model and attempted entry into this route
-    are considered to be fully validated.
+    distinction when calling `this.transitionTo` to a child route
+    of the current route. From `afterModel`, this new transition
+    invalidates the current transition, causing `beforeModel`,
+    `model`, and `afterModel` hooks to be called again. But the
+    same transition started from `redirect` does _not_ invalidate
+    the current transition. In other words, by the time the `redirect`
+    hook has been called, both the resolved model and the attempted
+    entry into this route are considered fully validated.
 
     @method redirect
     @param {Object} model the model for this route
