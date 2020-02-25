@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.17.0-beta.6 (February 24, 2020)
+
+- [#18742](https://github.com/emberjs/ember.js/pull/18742) [BUGFIX] Fix setDiff computed macro used within glimmer component
+- [#18743](https://github.com/emberjs/ember.js/pull/18743) / [#18762](https://github.com/emberjs/ember.js/pull/18762) [BUGFIX] Upgrades Glimmer VM to 0.47.9, fixes ignored `checked` attribute on `input`, fixes using `array` and `hash` helper together
+
 ### v3.17.0-beta.5 (February 18, 2020)
 
 - [#18730](https://github.com/emberjs/ember.js/pull/18730) Workaround for the Glimmer VM bug which encodes/decodes integer literals correctly.
