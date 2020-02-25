@@ -1049,8 +1049,8 @@ class Route extends EmberObject implements IRoute {
   /**
     A hook you can implement to optionally redirect to another route.
 
-    If you call `this.transitionTo` from inside of this hook, this route
-    will not be entered in favor of the other hook.
+    Calling `this.transitionTo` from inside of the `redirect` hook will
+    abort the current transition (into the route that has implemented `redirect`).
 
     `redirect` and `afterModel` behave very similarly and are
     called almost at the same time, but they have an important
