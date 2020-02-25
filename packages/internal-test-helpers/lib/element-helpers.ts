@@ -1,6 +1,6 @@
 import { getContext } from './test-context';
 
-export function getElement(): Element {
+export function getElement(): HTMLElement {
   let context = getContext();
   if (!context) {
     throw new Error('Test context is not set up.');

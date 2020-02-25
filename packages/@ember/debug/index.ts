@@ -5,21 +5,38 @@ import _deprecate, { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
 import { isTesting } from './lib/testing';
 import _warn, { WarnFunc } from './lib/warn';
 
+export { leakTracker } from './lib/leak-tracker';
 export { registerHandler as registerWarnHandler } from './lib/warn';
 export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
 export { isTesting, setTesting } from './lib/testing';
 export { default as captureRenderTree } from './lib/capture-render-tree';
 
-export type DebugFunctionType =
-  | 'assert'
-  | 'info'
-  | 'warn'
-  | 'debug'
-  | 'deprecate'
-  | 'debugSeal'
-  | 'debugFreeze'
-  | 'runInDebug'
-  | 'deprecateFunc';
+export interface DebugAssertMapping {
+  assert: AssertFunc;
+  info: InfoFunc;
+  warn: WarnFunc;
+  debug: DebugFunc;
+  deprecate: DeprecateFunc;
+}
+
+export type DebugAssertType = keyof DebugAssertMapping;
+export type DebugAssertArgsMapping = {
+  [T in DebugAssertType]: DebugAssertMapping[T] extends (...args: infer TArgs) => void
+    ? TArgs
+    : never;
+};
+export type DebugAssertFunction = DebugAssertMapping[DebugAssertType];
+export type DebugAssertArgs = DebugAssertArgsMapping[DebugAssertType];
+export type GenericDebugAssertArgs = [DebugAssertArgs[0], DebugAssertArgs[1]?, DebugAssertArgs[2]?];
+
+export interface DebugFunctionMapping extends DebugAssertMapping {
+  debugSeal: DebugSealFunc;
+  debugFreeze: DebugFreezeFunc;
+  runInDebug: RunInDebugFunc;
+  deprecateFunc: DeprecateFuncFunc;
+}
+export type DebugFunctionType = keyof DebugFunctionMapping;
+export type DebugFunction = DebugFunctionMapping[DebugFunctionType];
 
 export type AssertFunc = (desc: string, test?: boolean) => void;
 export type DebugFunc = (message: string) => void;
@@ -27,35 +44,20 @@ export type DebugSealFunc = (obj: object) => void;
 export type DebugFreezeFunc = (obj: object) => void;
 export type InfoFunc = (message: string, options: object) => void;
 export type RunInDebugFunc = (func: () => void) => void;
-export type DeprecateFuncFunc = (
+export type DeprecateFuncFunc = <TFunc extends Function>(
   message: string,
   options: DeprecationOptions,
-  func: Function
-) => Function;
+  func: TFunc
+) => TFunc;
 
-export type GetDebugFunction = {
-  (type: 'assert'): AssertFunc;
-  (type: 'info'): InfoFunc;
-  (type: 'warn'): WarnFunc;
-  (type: 'debug'): DebugFunc;
-  (type: 'debugSeal'): DebugSealFunc;
-  (type: 'debugFreeze'): DebugFreezeFunc;
-  (type: 'deprecateFunc'): DeprecateFuncFunc;
-  (type: 'deprecate'): DeprecateFunc;
-  (type: 'runInDebug'): RunInDebugFunc;
-};
+export type GetDebugFunction = <TFuncType extends DebugFunctionType>(
+  type: TFuncType
+) => DebugFunctionMapping[TFuncType];
 
-export type SetDebugFunction = {
-  (type: 'assert', func: AssertFunc): AssertFunc;
-  (type: 'info', func: InfoFunc): InfoFunc;
-  (type: 'warn', func: WarnFunc): WarnFunc;
-  (type: 'debug', func: DebugFunc): DebugFunc;
-  (type: 'debugSeal', func: DebugSealFunc): DebugSealFunc;
-  (type: 'debugFreeze', func: DebugFreezeFunc): DebugFreezeFunc;
-  (type: 'deprecateFunc', func: DeprecateFuncFunc): DeprecateFuncFunc;
-  (type: 'deprecate', func: DeprecateFunc): DeprecateFunc;
-  (type: 'runInDebug', func: RunInDebugFunc): RunInDebugFunc;
-};
+export type SetDebugFunction = <TFuncType extends DebugFunctionType>(
+  type: TFuncType,
+  func: DebugFunctionMapping[TFuncType]
+) => DebugFunctionMapping[TFuncType];
 
 // These are the default production build versions:
 const noop = () => {};
@@ -68,15 +70,16 @@ let deprecate: DeprecateFunc = noop;
 let debugSeal: DebugSealFunc = noop;
 let debugFreeze: DebugFreezeFunc = noop;
 let runInDebug: RunInDebugFunc = noop;
-let setDebugFunction: SetDebugFunction = noop as any;
-let getDebugFunction: GetDebugFunction = noop as any;
+
+let setDebugFunction = noop as SetDebugFunction;
+let getDebugFunction = noop as GetDebugFunction;
 
 let deprecateFunc: DeprecateFuncFunc = function() {
   return arguments[arguments.length - 1];
 };
 
 if (DEBUG) {
-  setDebugFunction = function(type: DebugFunctionType, callback: Function) {
+  setDebugFunction = ((type: DebugFunctionType, callback: DebugFunction) => {
     switch (type) {
       case 'assert':
         return (assert = callback as AssertFunc);
@@ -97,9 +100,9 @@ if (DEBUG) {
       case 'deprecateFunc':
         return (deprecateFunc = callback as DeprecateFuncFunc);
     }
-  } as any;
+  }) as SetDebugFunction;
 
-  getDebugFunction = function(type: DebugFunctionType) {
+  getDebugFunction = ((type: DebugFunctionType) => {
     switch (type) {
       case 'assert':
         return assert;
@@ -119,8 +122,14 @@ if (DEBUG) {
         return runInDebug;
       case 'deprecateFunc':
         return deprecateFunc;
+      default:
+        return exhausted(type);
     }
-  } as any;
+  }) as GetDebugFunction;
+}
+
+function exhausted(type: never): never {
+  throw new Error(`invalid debug function type ${type}`);
 }
 
 /**
@@ -241,21 +250,23 @@ if (DEBUG) {
     @return {Function} A new function that wraps the original function with a deprecation warning
     @private
   */
-  setDebugFunction('deprecateFunc', function deprecateFunc(...args: any[]) {
+  setDebugFunction('deprecateFunc', function deprecateFunc(
+    ...args: [string, DeprecationOptions, Function] | [string, Function]
+  ): Function {
     if (args.length === 3) {
-      let [message, options, func] = args as [string, DeprecationOptions, (...args: any[]) => any];
-      return function(this: any, ...args: any[]) {
+      let [message, options, func] = args;
+      return function(this: unknown) {
         deprecate(message, false, options);
-        return func.apply(this, args);
+        return func.apply(this, arguments);
       };
     } else {
       let [message, func] = args;
-      return function(this: any) {
+      return function(this: unknown) {
         deprecate(message);
         return func.apply(this, arguments);
       };
     }
-  });
+  } as DeprecateFuncFunc);
 
   /**
    @module @ember/debug

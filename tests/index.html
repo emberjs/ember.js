@@ -57,7 +57,6 @@
           EmberENV.__test_hook_count__ += object;
         });
 
-
         // Handle extending prototypes
         EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
 
@@ -95,21 +94,17 @@
 
     <script>
       (function() {
-        if (QUnit.urlParams.forceskip) {
-          QUnit.skip = function(string, callback) {
-            string = "SKIPPED: " + string;
-            return QUnit.test(string, callback);
-          };
-        } else {
-          var skip = QUnit.skip;
-          QUnit.skip = function(string, callback) {
-            string = "SKIPPED: " + string;
-            return skip(string, callback);
-          }
-        }
+        const createQUnitAdapter = window.Ember.__loader.require('internal-test-helpers/lib/setup-qunit')['default'];
+        const adapter = createQUnitAdapter({
+          moduleNames: () => Object.keys(Ember.__loader.registry),
+          loadModule: name => Ember.__loader.require(name),
+          params: QUnit.urlParams
+        });
 
-        var setupQUnit = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
-        setupQUnit();
+        adapter.setupAssert(QUnit.assert);
+
+        QUnit.skip = adapter.wrapSkip(QUnit.skip);
+        QUnit.module = adapter.wrapModule(QUnit.module);
 
         // Tests should time out after 15 seconds
         QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;
@@ -126,62 +121,48 @@
           QUnit.config.reorder = false;
         }
 
-        var testsTotal, testsPassed, testsFailed, testsRunning;
-
         QUnit.begin(function() {
-          testsRunning = true;
-          testsTotal = testsPassed = testsFailed = 0;
-
+          adapter.onBegin();
           if (QUnit.urlParams.hideskipped) {
             $('#qunit-tests').addClass('hideskipped');
           }
         });
 
         QUnit.testDone(function(results) {
-          testsTotal++;
-
-          if (results.failed) {
-            testsFailed++;
-          } else {
-            testsPassed++;
-          }
+          adapter.onTestDone(results);
         });
 
         QUnit.done(function(result) {
-          console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
-          testsRunning = false;
+          adapter.onDone(result);
         });
 
         window.addEventListener('beforeunload', function (e) {
-          if (testsRunning) {
+          if (adapter.isRunning()) {
             debugger
-
             // Cancel the event
             e.preventDefault();
             // Chrome requires returnValue to be set
             e.returnValue = '';
           }
         });
+
+        adapter.loadTests();
+
+        const { leakTest } = adapter;
+        if (leakTest === undefined) {
+          return;
+        }
+        const memModuleName = 'Leak Tracking';
+        const memTestName = 'Check no container leaks';
+        // prevent filtering
+        leakTest.validTest = true;
+        // prevent reorder
+        sessionStorage.removeItem(`qunit-test-${memModuleName}-${memTestName}`);
+        QUnit.module(memModuleName, () => {
+          QUnit.test(memTestName, leakTest);
+        });
       })();
     </script>
-
-    <script>
-      var packages     = QUnit.urlParams.package;
-      packages = (packages && packages.split(',')) || [".*"];
-      var packageRegexp   = new RegExp('^('+packages.join('|')+')/');
-
-      var skipPackages = QUnit.urlParams.skipPackage;
-      skipPackages = (skipPackages && skipPackages.split(',')) || [];
-      var skipPackageRegexp   = new RegExp('^('+skipPackages.join('|')+')/');
-
-      for (var moduleName in Ember.__loader.registry) {
-        if (!moduleName.match(packageRegexp))   { continue; }
-        if (moduleName.match(skipPackageRegexp)) { continue; }
-
-        if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
-      }
-    </script>
-
   </head>
 <body>
   <div id="qunit"></div>

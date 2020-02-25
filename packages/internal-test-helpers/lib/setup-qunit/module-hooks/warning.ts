@@ -1,18 +1,19 @@
-import DebugAssert from './debug';
 import { callWithStub, DebugEnv, Message } from './utils';
+import DebugAssert from './utils/debug';
 
+type Block = () => void;
 type ExpectNoWarningFunc = (func?: (() => void) | undefined) => void;
-type ExpectWarningFunc = (
-  func: (() => void) | undefined | Message,
-  expectedMessage: Message
-) => void;
+type ExpectWarningFunc = {
+  (block?: Block, expectedMessage?: Message): void;
+  (expectedMessage?: Message): void;
+};
 type IgnoreWarningFunc = (func: () => void) => void;
 
 declare global {
   interface Window {
-    expectNoWarning: ExpectNoWarningFunc | null;
-    expectWarning: ExpectWarningFunc | null;
-    ignoreWarning: IgnoreWarningFunc | null;
+    expectNoWarning?: ExpectNoWarningFunc;
+    expectWarning?: ExpectWarningFunc;
+    ignoreWarning?: IgnoreWarningFunc;
   }
 }
 
@@ -30,7 +31,7 @@ export function setupWarningHelpers(hooks: NestedHooks, env: DebugEnv) {
   });
 }
 
-class WarningAssert extends DebugAssert {
+class WarningAssert extends DebugAssert<'warn'> {
   constructor(env: DebugEnv) {
     super('warn', env);
   }
@@ -72,16 +73,19 @@ class WarningAssert extends DebugAssert {
     // expectWarning(/* optionalStringOrRegex */);
     // Ember.warn("Times definitely be changin'");
     //
-    let expectWarning: ExpectWarningFunc = (func, message) => {
-      let actualFunc: (() => void) | undefined;
-      if (typeof func !== 'function') {
-        message = func as Message;
-        actualFunc = undefined;
-      } else {
-        actualFunc = func;
-      }
+    let expectWarning: ExpectWarningFunc = (
+      messageOrBlock?: Message | Block,
+      maybeMessage?: Message
+    ) => {
+      const message =
+        maybeMessage === undefined
+          ? typeof messageOrBlock === 'string'
+            ? messageOrBlock
+            : undefined
+          : maybeMessage;
+      const func = typeof messageOrBlock === 'function' ? messageOrBlock : undefined;
 
-      this.runExpectation(actualFunc, tracker => {
+      this.runExpectation(func, tracker => {
         if (tracker.isExpectingNoCalls()) {
           throw new Error('expectWarning was called after expectNoWarning was called!');
         }
@@ -94,16 +98,16 @@ class WarningAssert extends DebugAssert {
       callWithStub(this.env, 'warn', func);
     };
 
-    window.expectNoWarning = expectNoWarning;
-    window.expectWarning = expectWarning;
-    window.ignoreWarning = ignoreWarning;
+    self.expectNoWarning = expectNoWarning;
+    self.expectWarning = expectWarning;
+    self.ignoreWarning = ignoreWarning;
   }
 
   restore() {
     super.restore();
-    window.expectWarning = null;
-    window.expectNoWarning = null;
-    window.ignoreWarning = null;
+    delete self.expectWarning;
+    delete self.expectNoWarning;
+    delete self.ignoreWarning;
   }
 }
 

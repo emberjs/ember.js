@@ -47,6 +47,15 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     runDestroy(this.application);
 
     super.teardown();
+
+    let descriptor = Object.getOwnPropertyDescriptor(this, 'application');
+    if (descriptor && descriptor.value) {
+      this.application = undefined;
+    }
+    descriptor = Object.getOwnPropertyDescriptor(this, 'applicationInstance');
+    if (descriptor && descriptor.value) {
+      this.applicationInstance = undefined;
+    }
   }
 
   get applicationOptions() {
