@@ -89,6 +89,8 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(count, 1);
+
+      tom.destroy();
     }
 
     '@test it does not work with sync observers'(assert) {
@@ -120,6 +122,8 @@ moduleFor(
       tom.firstName = 'Thomas';
 
       assert.equal(count, 0);
+
+      tom.destroy();
     }
   }
 );

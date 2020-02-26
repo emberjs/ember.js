@@ -2,6 +2,7 @@ import {
   alias,
   computed,
   defineProperty,
+  destroy,
   get,
   set,
   addObserver,
@@ -27,7 +28,11 @@ moduleFor(
     }
 
     afterEach() {
-      obj = null;
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+        return runLoopSettled();
+      }
     }
 
     ['@test should proxy get to alt key'](assert) {

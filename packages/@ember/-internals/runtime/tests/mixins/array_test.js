@@ -118,6 +118,11 @@ moduleFor(
 
       assert.equal(obj._count, 1, 'should have invoked');
     }
+
+    afterEach() {
+      obj.destroy();
+      obj = undefined;
+    }
   }
 );
 
@@ -141,7 +146,8 @@ moduleFor(
     }
 
     afterEach() {
-      obj = null;
+      obj.destroy();
+      obj = undefined;
     }
 
     async ['@test should notify observers when call with no params'](assert) {
@@ -272,6 +278,7 @@ moduleFor(
     }
 
     afterEach() {
+      ary.destroy();
       ary = null;
     }
 
@@ -376,6 +383,8 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(count, 2, 'observers should be called twice');
+
+      obj.destroy();
     }
   }
 );

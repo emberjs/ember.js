@@ -179,7 +179,7 @@ let allExports = [
   ['platform.defineProperty', null, { value: true }],
   ['platform.hasPropertyAccessors', null, { value: true }],
   ['defineProperty', '@ember/-internals/metal'],
-  ['destroy', '@ember/-internals/meta', 'deleteMeta'],
+  ['destroy', '@ember/-internals/metal', 'destroy'],
   ['libraries', '@ember/-internals/metal'],
   ['getProperties', '@ember/-internals/metal'],
   ['setProperties', '@ember/-internals/metal'],

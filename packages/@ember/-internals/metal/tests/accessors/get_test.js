@@ -1,6 +1,11 @@
 import { ENV } from '@ember/-internals/environment';
 import { Object as EmberObject } from '@ember/-internals/runtime';
+<<<<<<< HEAD
 import { get, set, track, getWithDefault, Mixin, observer, computed } from '../..';
+=======
+import { destroy } from '@ember/-internals/metal';
+import { get, set, getWithDefault, Mixin, observer, computed } from '../..';
+>>>>>>> d4d6abd5d... [BUGFIX release] Fix observer leaks
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 
@@ -195,6 +200,8 @@ moduleFor(
         'foo',
         'should return the set value, not false'
       );
+
+      run(() => destroy(baseObject));
     }
   }
 );
@@ -331,6 +338,8 @@ moduleFor(
         'foo',
         'should return the set value, not false'
       );
+
+      run(() => destroy(baseObject));
     }
 
     ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {

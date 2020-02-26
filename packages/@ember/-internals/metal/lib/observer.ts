@@ -15,8 +15,8 @@ interface ActiveObserver {
 }
 
 const SYNC_DEFAULT = !ENV._DEFAULT_ASYNC_OBSERVERS;
-const SYNC_OBSERVERS: Map<object, Map<string, ActiveObserver>> = new Map();
-const ASYNC_OBSERVERS: Map<object, Map<string, ActiveObserver>> = new Map();
+export const SYNC_OBSERVERS: Map<object, Map<string, ActiveObserver>> = new Map();
+export const ASYNC_OBSERVERS: Map<object, Map<string, ActiveObserver>> = new Map();
 
 /**
 @module @ember/object
@@ -153,15 +153,16 @@ export function revalidateObservers(target: object) {
 let lastKnownRevision = 0;
 
 export function flushAsyncObservers(shouldSchedule = true) {
-  if (lastKnownRevision === value(CURRENT_TAG)) {
+  let currentRevision = value(CURRENT_TAG);
+  if (lastKnownRevision === currentRevision) {
     return;
   }
-
-  lastKnownRevision = value(CURRENT_TAG);
+  lastKnownRevision = currentRevision;
 
   ASYNC_OBSERVERS.forEach((activeObservers, target) => {
     let meta = peekMeta(target);
 
+    // if observer target is destroyed remove observers
     if (meta && (meta.isSourceDestroying() || meta.isMetaDestroyed())) {
       ASYNC_OBSERVERS.delete(target);
       return;
@@ -171,7 +172,7 @@ export function flushAsyncObservers(shouldSchedule = true) {
       if (!validate(observer.tag, observer.lastRevision)) {
         let sendObserver = () => {
           try {
-            sendEvent(target, eventName, [target, observer.path]);
+            sendEvent(target, eventName, [target, observer.path], undefined, meta);
           } finally {
             observer.tag = combine(getChainTagsForKey(target, observer.path));
             observer.lastRevision = value(observer.tag);
@@ -205,7 +206,7 @@ export function flushSyncObservers() {
       if (!observer.suspended && !validate(observer.tag, observer.lastRevision)) {
         try {
           observer.suspended = true;
-          sendEvent(target, eventName, [target, observer.path]);
+          sendEvent(target, eventName, [target, observer.path], undefined, meta);
         } finally {
           observer.tag = combine(getChainTagsForKey(target, observer.path));
           observer.lastRevision = value(observer.tag);
@@ -228,4 +229,9 @@ export function setObserverSuspended(target: object, property: string, suspended
   if (observer) {
     observer.suspended = suspended;
   }
+}
+
+export function destroyObservers(target: object) {
+  if (SYNC_OBSERVERS.size > 0) SYNC_OBSERVERS.delete(target);
+  if (ASYNC_OBSERVERS.size > 0) ASYNC_OBSERVERS.delete(target);
 }
