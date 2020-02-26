@@ -11,14 +11,14 @@ import {
   removeArrayObserver,
   replace,
   getChainTagsForKey,
-  tagForProperty,
+  CUSTOM_TAG_FOR,
   arrayContentDidChange,
-  arrayContentWillChange,
+  createTagForProperty,
 } from '@ember/-internals/metal';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
-import { combine, update, validate, value } from '@glimmer/reference';
+import { combine, validate, value } from '@glimmer/reference';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
@@ -106,18 +106,24 @@ export default class ArrayProxy extends EmberObject {
     this._length = 0;
 
     this._arrangedContent = null;
-
     this._arrangedContentIsUpdating = false;
-    this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
-    this._arrangedContentRevision = value(this._arrangedContentTag);
+    this._arrangedContentTag = null;
+    this._arrangedContentRevision = null;
+  }
 
-    this._addArrangedContentArrayObserver();
+  [PROPERTY_DID_CHANGE]() {
+    this._revalidate();
+  }
 
-    update(tagForProperty(this, '[]'), combine(getChainTagsForKey(this, 'arrangedContent.[]')));
-    update(
-      tagForProperty(this, 'length'),
-      combine(getChainTagsForKey(this, 'arrangedContent.length'))
-    );
+  [CUSTOM_TAG_FOR](key) {
+    if (key === '[]' || key === 'length') {
+      // revalidate eagerly if we're being tracked, since we no longer will
+      // be able to later on due to backtracking re-render assertion
+      this._revalidate();
+      return combine(getChainTagsForKey(this, `arrangedContent.${key}`));
+    }
+
+    return createTagForProperty(this, key);
   }
 
   willDestroy() {
@@ -236,10 +242,6 @@ export default class ArrayProxy extends EmberObject {
     }
   }
 
-  [PROPERTY_DID_CHANGE]() {
-    this._revalidate();
-  }
-
   _updateArrangedContentArray() {
     let oldLength = this._objects === null ? 0 : this._objects.length;
     let arrangedContent = get(this, 'arrangedContent');
@@ -301,13 +303,21 @@ export default class ArrayProxy extends EmberObject {
   }
 
   _revalidate() {
+    if (this._arrangedContentIsUpdating === true) return;
+
     if (
-      !this._arrangedContentIsUpdating &&
+      this._arrangedContentTag === null ||
       !validate(this._arrangedContentTag, this._arrangedContentRevision)
     ) {
-      this._arrangedContentIsUpdating = true;
-      this._updateArrangedContentArray();
-      this._arrangedContentIsUpdating = false;
+      if (this._arrangedContentTag === null) {
+        // This is the first time the proxy has been setup, only add the observer
+        // don't trigger any events
+        this._addArrangedContentArrayObserver();
+      } else {
+        this._arrangedContentIsUpdating = true;
+        this._updateArrangedContentArray();
+        this._arrangedContentIsUpdating = false;
+      }
 
       this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
       this._arrangedContentRevision = value(this._arrangedContentTag);
@@ -328,10 +338,6 @@ ArrayProxy.reopen(MutableArray, {
 
   // Array proxies don't need to notify when they change since their `[]` tag is
   // already dependent on the `[]` tag of `arrangedContent`
-  arrayContentWillChange(startIdx, removeAmt, addAmt) {
-    return arrayContentWillChange(this, startIdx, removeAmt, addAmt, false);
-  },
-
   arrayContentDidChange(startIdx, removeAmt, addAmt) {
     return arrayContentDidChange(this, startIdx, removeAmt, addAmt, false);
   },

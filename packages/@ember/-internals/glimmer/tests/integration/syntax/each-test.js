@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { get, set, notifyPropertyChange, computed } from '@ember/-internals/metal';
+import { get, set, notifyPropertyChange, computed, on } from '@ember/-internals/metal';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 
@@ -1102,6 +1102,22 @@ moduleFor(
       }).create({
         wrappedItems: wrapped,
       });
+
+      return { list: proxy, delegate: wrapped };
+    }
+  }
+);
+
+moduleFor(
+  'Syntax test: {{#each}} with array proxies, content is updated after init',
+  class extends EachTest {
+    createList(items) {
+      let wrapped = emberA(items);
+      let proxy = ArrayProxy.extend({
+        setup: on('init', function() {
+          this.set('content', emberA(wrapped));
+        }),
+      }).create();
 
       return { list: proxy, delegate: wrapped };
     }
