@@ -15,7 +15,7 @@ import {
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { schedule } from '@ember/runloop';
-import { meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
+import { meta, peekMeta } from '@ember/-internals/meta';
 import {
   PROXY_CONTENT,
   sendEvent,
@@ -24,6 +24,7 @@ import {
   applyMixin,
   defineProperty,
   descriptorForProperty,
+  destroy,
   classToString,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
@@ -542,16 +543,10 @@ class CoreObject {
     @public
   */
   destroy() {
-    let m = peekMeta(this);
-    if (m.isSourceDestroying()) {
+    if (destroy(this)) {
+      schedule('actions', this, this.willDestroy);
       return;
     }
-
-    m.setSourceDestroying();
-
-    schedule('actions', this, this.willDestroy);
-    schedule('destroy', this, this._scheduledDestroy, m);
-
     return this;
   }
 
@@ -562,21 +557,6 @@ class CoreObject {
     @public
   */
   willDestroy() {}
-
-  /**
-    Invoked by the run loop to actually destroy the object. This is
-    scheduled for execution by the `destroy` method.
-
-    @private
-    @method _scheduledDestroy
-  */
-  _scheduledDestroy(m) {
-    if (m.isSourceDestroyed()) {
-      return;
-    }
-    deleteMeta(this);
-    m.setSourceDestroyed();
-  }
 
   /**
     Returns a string representation which attempts to provide more information

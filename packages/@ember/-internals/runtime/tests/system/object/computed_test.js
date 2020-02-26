@@ -272,7 +272,7 @@ moduleFor(
         baz: computed(K),
       });
 
-      MyClass.create(); // force apply mixins
+      MyClass.create().destroy(); // force apply mixins
 
       list = [];
 
@@ -356,6 +356,9 @@ moduleFor(
 
       assert.equal(obj1.get('name'), '1');
       assert.equal(obj2.get('name'), '2');
+
+      obj1.destroy();
+      obj2.destroy();
     }
 
     ['@test can declare dependent keys with .property()'](assert) {

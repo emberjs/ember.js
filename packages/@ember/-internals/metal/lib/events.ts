@@ -124,8 +124,7 @@ export function sendEvent(
 ) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
-    actions =
-      typeof meta === 'object' && meta !== null ? meta.matchingListeners(eventName) : undefined;
+    actions = meta !== null ? meta.matchingListeners(eventName) : undefined;
   }
 
   if (actions === undefined || actions.length === 0) {

@@ -202,6 +202,8 @@ moduleFor(
       assert.equal(cCalled, 2, 'expected observer `colors.content.length` to be called TWICE');
       assert.equal(dCalled, 2, 'expected observer `colors.[]` to be called TWICE');
       assert.equal(eCalled, 2, 'expected observer `colors.content.[]` to be called TWICE');
+
+      obj.destroy();
     }
   }
 );
