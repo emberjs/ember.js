@@ -363,6 +363,9 @@ moduleFor(
         assert.equal(someEventBase, 1);
         assert.equal(someEventA, 1);
         assert.equal(someEventB, 0);
+
+        a.destroy();
+        b.destroy();
       });
     }
 
@@ -529,6 +532,8 @@ moduleFor(
           'B onSomeEvent event arg',
           'D onSomeEvent after super.onSomeEvent',
         ]);
+
+        d.destroy();
       });
     }
   }

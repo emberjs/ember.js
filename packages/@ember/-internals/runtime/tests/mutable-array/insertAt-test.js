@@ -39,6 +39,8 @@ class InsertAtTests extends AbstractTestCase {
       1,
       'should have notified lastObject did change once'
     );
+
+    obj.destroy();
   }
 
   '@test [].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception'() {
@@ -78,6 +80,8 @@ class InsertAtTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject'
     );
+
+    obj.destroy();
   }
 
   async '@test [A].insertAt(1, X) => [A,X] + notify'() {
@@ -111,6 +115,8 @@ class InsertAtTests extends AbstractTestCase {
       false,
       'should NOT have notified firstObject'
     );
+
+    obj.destroy();
   }
 
   '@test [A].insertAt(200,X) => OUT_OF_RANGE exception'() {
@@ -150,6 +156,8 @@ class InsertAtTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].insertAt(1,X) => [A,X,B,C] + notify'() {
@@ -194,6 +202,8 @@ class InsertAtTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].insertAt(3,X) => [A,B,C,X] + notify'() {
@@ -227,6 +237,8 @@ class InsertAtTests extends AbstractTestCase {
       false,
       'should NOT have notified firstObject'
     );
+
+    obj.destroy();
   }
 }
 

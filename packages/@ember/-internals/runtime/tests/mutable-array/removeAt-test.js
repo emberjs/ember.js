@@ -33,6 +33,8 @@ class RemoveAtTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   '@test removeAt([], 200) => OUT_OF_RANGE_EXCEPTION exception'() {
@@ -70,6 +72,8 @@ class RemoveAtTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject'
     );
+
+    obj.destroy();
   }
 
   async '@test removeAt([A,B], 1) => [A] + notify'() {
@@ -102,6 +106,8 @@ class RemoveAtTests extends AbstractTestCase {
       false,
       'should NOT have notified firstObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test removeAt([A,B,C], 1) => [A,C] + notify'() {
@@ -134,6 +140,8 @@ class RemoveAtTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test removeAt([A,B,C,D], 1,2) => [A,D] + notify'() {
@@ -166,6 +174,8 @@ class RemoveAtTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C,D].removeAt(1,2) => [A,D] + notify'() {
@@ -199,6 +209,8 @@ class RemoveAtTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 }
 

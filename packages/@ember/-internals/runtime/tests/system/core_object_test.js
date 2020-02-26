@@ -129,6 +129,8 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(callCount, 1);
+
+      test.destroy();
     }
   }
 );

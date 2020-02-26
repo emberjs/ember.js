@@ -5,6 +5,7 @@ import { setupAssertionHelpers } from './assertion';
 import { setupContainersCheck } from './containers';
 import { setupDeprecationHelpers } from './deprecation';
 import { setupNamespacesCheck } from './namespaces';
+import { setupObserversCheck } from './observers';
 import { setupRunLoopCheck } from './run-loop';
 import { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
@@ -36,6 +37,7 @@ export default function setupQUnit() {
     return originalModule(name, function(hooks) {
       setupContainersCheck(hooks);
       setupNamespacesCheck(hooks);
+      setupObserversCheck(hooks);
       setupRunLoopCheck(hooks);
       setupAssertionHelpers(hooks, env);
       setupDeprecationHelpers(hooks, env);

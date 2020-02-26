@@ -240,6 +240,8 @@ moduleFor(
       assert.equal(last, 'Tomhuda Katzdale');
       assert.equal(get(content2, 'firstName'), 'Tomhuda');
       assert.equal(get(content2, 'lastName'), 'Katzdale');
+
+      proxy.destroy();
     }
 
     async ['@test set and get should work with paths'](assert) {
@@ -261,6 +263,8 @@ moduleFor(
       assert.equal(count, 1);
       assert.equal(proxy.get('foo.bar'), 'bye');
       assert.equal(proxy.get('content.foo.bar'), 'bye');
+
+      proxy.destroy();
     }
 
     async ['@test should transition between watched and unwatched strategies'](assert) {
@@ -334,9 +338,11 @@ moduleFor(
     ) {
       assert.expect(0);
 
-      ObjectProxy.extend({
+      let obj = ObjectProxy.extend({
         observe: observer('foo', function() {}),
       }).create();
+
+      obj.destroy();
     }
 
     async '@test custom proxies should be able to notify property changes manually'(assert) {
@@ -365,6 +371,8 @@ moduleFor(
       assert.equal(count, 1);
       assert.equal(proxy.get('foo'), 456);
       assert.equal(proxy.get('locals.foo'), 456);
+
+      proxy.destroy();
     }
   }
 );

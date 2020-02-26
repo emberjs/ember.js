@@ -2024,6 +2024,8 @@ moduleFor(
         ['D', 'C', 'B', 'A'],
         'we now sort obj by thing'
       );
+
+      obj2.destroy();
     }
   }
 );

@@ -136,7 +136,7 @@ moduleFor(
 
       objs.c = C.create();
 
-      LongLivedObject.create();
+      let longLived = LongLivedObject.create();
 
       for (let obj in objs) {
         objs[obj].destroy();
@@ -146,6 +146,8 @@ moduleFor(
 
       assert.equal(shouldNotChange, 0, 'destroyed graph objs should not see change in willDestroy');
       assert.equal(shouldChange, 1, 'long lived should see change in willDestroy');
+
+      longLived.destroy();
     }
   }
 );
