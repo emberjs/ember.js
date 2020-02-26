@@ -1,6 +1,10 @@
 import { Meta, peekMeta } from '@ember/-internals/meta';
 import { symbol } from '@ember/-internals/utils';
-import { flushSyncObservers } from './observer';
+import {
+  flushSyncObservers,
+  resumeObserverDeactivation,
+  suspendedObserverDeactivation,
+} from './observer';
 import { markObjectAsDirty } from './tags';
 
 /**
@@ -54,6 +58,7 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null)
 */
 function beginPropertyChanges(): void {
   deferred++;
+  suspendedObserverDeactivation();
 }
 
 /**
@@ -64,6 +69,7 @@ function endPropertyChanges(): void {
   deferred--;
   if (deferred <= 0) {
     flushSyncObservers();
+    resumeObserverDeactivation();
   }
 }
 
