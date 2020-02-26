@@ -156,6 +156,10 @@ export class Meta {
   }
 
   destroy() {
+    if (DEBUG) {
+      counters!.deleteCalls++;
+    }
+
     if (this.isMetaDestroyed()) {
       return;
     }
@@ -645,34 +649,6 @@ export function peekMeta(obj: object): Meta | null {
   }
 
   return null;
-}
-
-/**
-  Tears down the meta on an object so that it can be garbage collected.
-  Multiple calls will have no effect.
-
-  @method deleteMeta
-  @for Ember
-  @param {Object} obj  the object to destroy
-  @return {void}
-  @private
-*/
-export function deleteMeta(obj: object) {
-  assert('Cannot call `deleteMeta` on null', obj !== null);
-  assert('Cannot call `deleteMeta` on undefined', obj !== undefined);
-  assert(
-    `Cannot call \`deleteMeta\` on ${typeof obj}`,
-    typeof obj === 'object' || typeof obj === 'function'
-  );
-
-  if (DEBUG) {
-    counters!.deleteCalls++;
-  }
-
-  let meta = peekMeta(obj);
-  if (meta !== null) {
-    meta.destroy();
-  }
 }
 
 /**

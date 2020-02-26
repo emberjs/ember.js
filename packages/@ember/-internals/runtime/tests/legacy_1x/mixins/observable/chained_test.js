@@ -68,6 +68,13 @@ moduleFor(
         0,
         'observer did not fire after removing changing property on a removed object'
       );
+
+      family.destroy();
+      momma.destroy();
+      child1.destroy();
+      child2.destroy();
+      child3.destroy();
+      child4.destroy();
     }
   }
 );

@@ -44,6 +44,8 @@ moduleFor(
 
         descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
         assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        o.destroy();
       } else {
         assert.expect(0);
       }

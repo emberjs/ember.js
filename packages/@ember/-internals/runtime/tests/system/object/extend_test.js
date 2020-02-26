@@ -150,6 +150,8 @@ moduleFor(
       await runLoopSettled();
 
       assert.deepEqual(seen, [1, 2]);
+
+      child.destroy();
     }
   }
 );
