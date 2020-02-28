@@ -569,7 +569,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     configurable: true,
     enumerable: false,
     get() {
-      hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
+      return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
     },
   }),
 
