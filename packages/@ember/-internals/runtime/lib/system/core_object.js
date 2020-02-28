@@ -38,6 +38,11 @@ const reopen = Mixin.prototype.reopen;
 const wasApplied = new WeakSet();
 
 const factoryMap = new WeakMap();
+let debugOwnerMap;
+
+if (DEBUG) {
+  debugOwnerMap = new WeakMap();
+}
 
 const prototypeMixinMap = new WeakMap();
 
@@ -283,19 +288,13 @@ class CoreObject {
     assert(
       `An EmberObject based class, ${this.constructor}, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
       (() => {
-        if (passedFromCreate === PASSED_FROM_CREATE) {
-          return true;
-        }
+        let owner = debugOwnerMap.get(this.constructor);
+        debugOwnerMap.delete(this.constructor);
 
-        if (initFactory === undefined) {
-          return false;
-        }
-
-        if (passedFromCreate === initFactory.owner) {
-          return true;
-        }
-
-        return false;
+        return (
+          passedFromCreate !== undefined &&
+          (passedFromCreate === PASSED_FROM_CREATE || passedFromCreate === owner)
+        );
       })()
     );
 
@@ -762,11 +761,15 @@ class CoreObject {
         owner = getOwner(props);
       }
 
-      if (owner === undefined) {
-        // fallback to passing the special PASSED_FROM_CREATE symbol
-        // to avoid an error when folks call things like Controller.extend().create()
-        // we should do a subsequent deprecation pass to ensure this isn't allowed
-        owner = PASSED_FROM_CREATE;
+      if (DEBUG) {
+        if (owner === undefined) {
+          // fallback to passing the special PASSED_FROM_CREATE symbol
+          // to avoid an error when folks call things like Controller.extend().create()
+          // we should do a subsequent deprecation pass to ensure this isn't allowed
+          owner = PASSED_FROM_CREATE;
+        } else {
+          debugOwnerMap.set(this, owner);
+        }
       }
 
       instance = new C(owner);
