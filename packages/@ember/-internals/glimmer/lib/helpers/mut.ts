@@ -75,12 +75,6 @@ import { Tag } from '@glimmer/validator';
   </button>
   ```
 
-  You can also use the `value` option:
-
-  ```handlebars
-  <input value={{name}} oninput={{fn (mut name) value="target.value"}}>
-  ```
-
   @method mut
   @param {Object} [attr] the "two-way" attribute that can be modified.
   @for Ember.Templates.helpers
