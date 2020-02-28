@@ -58,6 +58,7 @@ function generateTestsFor(packageName) {
   }
 
   testFunctions.push(() => run('package=' + packageName));
+  testFunctions.push(() => run('package=' + packageName + '&edition=classic'));
   testFunctions.push(() => run('package=' + packageName + '&prebuilt=true'));
   testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
 
@@ -84,6 +85,7 @@ function generateEachPackageTests() {
 
 function generateStandardTests() {
   testFunctions.push(() => run(''));
+  testFunctions.push(() => run('edition=classic'));
   testFunctions.push(() => run('enableoptionalfeatures=true'));
 }
 
