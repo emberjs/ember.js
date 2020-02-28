@@ -1,6 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import {
   destroy,
+  changeProperties,
   addObserver,
   removeObserver,
   notifyPropertyChange,
@@ -984,6 +985,121 @@ moduleFor(
       destroy(otherBeer);
       destroy(yetAnotherBeer);
       destroy(itsMyLastBeer);
+    }
+  }
+);
+
+moduleFor(
+  'changeProperties',
+  class extends AbstractTestCase {
+    afterEach() {
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+        return runLoopSettled();
+      }
+    }
+
+    '@test observers added/removed during changeProperties should do the right thing.'(assert) {
+      obj = {
+        foo: 0,
+      };
+      function Observer() {
+        this.didChangeCount = 0;
+      }
+      Observer.prototype = {
+        add() {
+          addObserver(obj, 'foo', this, 'didChange');
+        },
+        remove() {
+          removeObserver(obj, 'foo', this, 'didChange');
+        },
+        didChange() {
+          this.didChangeCount++;
+        },
+      };
+      let addedBeforeFirstChangeObserver = new Observer();
+      let addedAfterFirstChangeObserver = new Observer();
+      let addedAfterLastChangeObserver = new Observer();
+      let removedBeforeFirstChangeObserver = new Observer();
+      let removedBeforeLastChangeObserver = new Observer();
+      let removedAfterLastChangeObserver = new Observer();
+      removedBeforeFirstChangeObserver.add();
+      removedBeforeLastChangeObserver.add();
+      removedAfterLastChangeObserver.add();
+      changeProperties(function() {
+        removedBeforeFirstChangeObserver.remove();
+        addedBeforeFirstChangeObserver.add();
+
+        set(obj, 'foo', 1);
+
+        assert.equal(
+          addedBeforeFirstChangeObserver.didChangeCount,
+          0,
+          'addObserver called before the first change is deferred'
+        );
+
+        addedAfterFirstChangeObserver.add();
+        removedBeforeLastChangeObserver.remove();
+
+        set(obj, 'foo', 2);
+
+        assert.equal(
+          addedAfterFirstChangeObserver.didChangeCount,
+          0,
+          'addObserver called after the first change is deferred'
+        );
+
+        addedAfterLastChangeObserver.add();
+        removedAfterLastChangeObserver.remove();
+      });
+
+      assert.equal(
+        removedBeforeFirstChangeObserver.didChangeCount,
+        0,
+        'removeObserver called before the first change sees none'
+      );
+      assert.equal(
+        addedBeforeFirstChangeObserver.didChangeCount,
+        1,
+        'addObserver called before the first change sees only 1'
+      );
+      assert.equal(
+        addedAfterFirstChangeObserver.didChangeCount,
+        1,
+        'addObserver called after the first change sees 1'
+      );
+      assert.equal(
+        addedAfterLastChangeObserver.didChangeCount,
+        1,
+        'addObserver called after the last change sees 1'
+      );
+      assert.equal(
+        removedBeforeLastChangeObserver.didChangeCount,
+        0,
+        'removeObserver called before the last change sees none'
+      );
+      assert.equal(
+        removedAfterLastChangeObserver.didChangeCount,
+        0,
+        'removeObserver called after the last change sees none'
+      );
+    }
+
+    '@test calling changeProperties while executing deferred observers works correctly'(assert) {
+      obj = { foo: 0 };
+      let fooDidChange = 0;
+
+      addObserver(obj, 'foo', () => {
+        fooDidChange++;
+        changeProperties(() => {});
+      });
+
+      changeProperties(() => {
+        set(obj, 'foo', 1);
+      });
+
+      assert.equal(fooDidChange, 1);
     }
   }
 );

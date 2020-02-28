@@ -107,7 +107,15 @@ export function activateObserver(target: object, eventName: string, sync = false
   }
 }
 
+let DEACTIVATE_SUSPENDED = false;
+let SCHEDULED_DEACTIVATE: [object, string, boolean][] = [];
+
 export function deactivateObserver(target: object, eventName: string, sync = false) {
+  if (DEACTIVATE_SUSPENDED === true) {
+    SCHEDULED_DEACTIVATE.push([target, eventName, sync]);
+    return;
+  }
+
   let observerMap = sync === true ? SYNC_OBSERVERS : ASYNC_OBSERVERS;
 
   let activeObservers = observerMap.get(target);
@@ -125,6 +133,20 @@ export function deactivateObserver(target: object, eventName: string, sync = fal
       }
     }
   }
+}
+
+export function suspendedObserverDeactivation() {
+  DEACTIVATE_SUSPENDED = true;
+}
+
+export function resumeObserverDeactivation() {
+  DEACTIVATE_SUSPENDED = false;
+
+  for (let [target, eventName, sync] of SCHEDULED_DEACTIVATE) {
+    deactivateObserver(target, eventName, sync);
+  }
+
+  SCHEDULED_DEACTIVATE = [];
 }
 
 /**
