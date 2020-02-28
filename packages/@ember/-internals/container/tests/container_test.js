@@ -1,6 +1,7 @@
 import { OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
+import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
@@ -499,6 +500,18 @@ moduleFor(
       let result = container.ownerInjection();
 
       assert.equal(result[OWNER], owner, 'owner is properly included');
+    }
+
+    ['@test ownerInjection should be usable to create a service for testing'](assert) {
+      assert.expect(0);
+
+      let owner = {};
+      let registry = new Registry();
+      let container = registry.container({ owner });
+
+      let result = container.ownerInjection();
+
+      Service.create(result);
     }
 
     ['@test lookup passes options through to expandlocallookup'](assert) {
