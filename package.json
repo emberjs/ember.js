@@ -146,7 +146,7 @@
     "tslint": "^5.20.1"
   },
   "engines": {
-    "node": "8.* || 10.* || >= 12.*"
+    "node": "10.* || >= 12.*"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
