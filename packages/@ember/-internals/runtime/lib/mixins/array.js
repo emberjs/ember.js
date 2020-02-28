@@ -870,7 +870,27 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     Note that in addition to a callback, you can pass an optional target object
     that will be set as `this` on the context. This is a good way to give your
-    iterator function access to the current object.
+    iterator function access to the current object. For example:
+
+    ```javascript
+    function isAdultAndEngineer(person) {
+      return person.age > 18 && this.engineering;
+    }
+
+    class AdultsCollection {
+      engineering = false;
+
+      constructor(opts = {}) {
+        super(...arguments);
+
+        this.engineering = opts.engineering;
+        this.people = Ember.A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
+      }
+    }
+
+    const collection = new AdultsCollection({ engineering: true });
+    collection.people.filter(isAdultAndEngineer, { target: collection });
+    ```
 
     @method filter
     @param {Function} callback The callback to execute
