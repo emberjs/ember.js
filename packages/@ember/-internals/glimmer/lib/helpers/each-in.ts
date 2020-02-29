@@ -94,6 +94,11 @@ import { combine, createUpdatableTag, Tag, update } from '@glimmer/validator';
   has previously seen an object from the `@developers` array with a matching
   name, its DOM elements will be re-used.
 
+  There are two special values for `key`:
+
+    * `@index` - The index of the item in the array.
+    * `@identity` - The item in the array itself.
+
   ### {{else}} condition
 
   `{{#each}}` can have a matching `{{else}}`. The contents of this block will render
