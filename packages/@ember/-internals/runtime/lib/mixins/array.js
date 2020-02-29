@@ -888,7 +888,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
       }
     }
 
-    const collection = new AdultsCollection({ engineering: true });
+    let collection = new AdultsCollection({ engineering: true });
     collection.people.filter(isAdultAndEngineer, { target: collection });
     ```
 
