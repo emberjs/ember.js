@@ -35,6 +35,24 @@ function escapeChar(chr: keyof typeof escape) {
   return escape[chr];
 }
 
+/**
+  Escapes the passed string, making it safe for use in templates.
+  
+  Replaces &, <, >, ", ', `, = in the string with the HTML-entity equivalents.
+  SafeString values created with `htmlSafe` are left untouched.
+
+  ```javascript
+  import { escapeExpression } from '@ember/template';
+
+  escapeExpression('<div>someString</div>')
+  ```
+
+  @method escapeExpression
+  @for @ember/template
+  @static
+  @return {String} An escaped string, safe for use in templates.
+  @public
+*/
 export function escapeExpression(string: any): string {
   if (typeof string !== 'string') {
     // don't escape SafeStrings, since they're already safe
