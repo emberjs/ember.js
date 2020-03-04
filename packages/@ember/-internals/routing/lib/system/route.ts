@@ -543,14 +543,13 @@ class Route extends EmberObject implements IRoute {
     not executed when the model for the route changes.
 
     ```app/routes/application.js
-    import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      collectAnalytics: on('activate', function(){
+    export default class ApplicationRoute extends Route {
+      activate() {
         collectAnalytics();
-      })
-    });
+      }
+    };
     ```
 
     @event activate
@@ -563,14 +562,13 @@ class Route extends EmberObject implements IRoute {
     route. It is not executed when the model for the route changes.
 
     ```app/routes/index.js
-    import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      trackPageLeaveAnalytics: on('deactivate', function(){
+    export default class IndexRoute extends Route {
+      deactivate() {
         trackPageLeaveAnalytics();
-      })
-    });
+      }
+    };
     ```
 
     @event deactivate
