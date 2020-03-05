@@ -1,38 +1,20 @@
 # Ember Changelog
 
-### v3.17.0-beta.6 (February 24, 2020)
+### v3.17.0 (March 4, 2020)
 
+- [#18688](https://github.com/emberjs/ember.js/pull/18688) / [#18621](https://github.com/emberjs/ember.js/pull/18621) / [#18714](https://github.com/emberjs/ember.js/pull/18714) / [#18743](https://github.com/emberjs/ember.js/pull/18743) / [#18762](https://github.com/emberjs/ember.js/pull/18762) Upgrades Glimmer VM to 0.47.9, fixes ignored `checked` attribute on `input`, fixes using `array` and `hash` helper together
+- [#18741](https://github.com/emberjs/ember.js/pull/18741) [BUGFIX] Don't setup mandatory setters on array indexes
+- [#18767](https://github.com/emberjs/ember.js/pull/18767) [BUGFIX] Fix observer leaks
+- [#18770](https://github.com/emberjs/ember.js/pull/18770) [BUGFIX] Make ArrayProxy Lazy 
+- [#18780](https://github.com/emberjs/ember.js/pull/18780) [BUGFIX] Fix ownerInjection when used to create services directly
 - [#18742](https://github.com/emberjs/ember.js/pull/18742) [BUGFIX] Fix setDiff computed macro used within glimmer component
-- [#18743](https://github.com/emberjs/ember.js/pull/18743) / [#18762](https://github.com/emberjs/ember.js/pull/18762) [BUGFIX] Upgrades Glimmer VM to 0.47.9, fixes ignored `checked` attribute on `input`, fixes using `array` and `hash` helper together
-
-### v3.17.0-beta.5 (February 18, 2020)
-
-- [#18730](https://github.com/emberjs/ember.js/pull/18730) Workaround for the Glimmer VM bug which encodes/decodes integer literals correctly.
-
-### v3.17.0-beta.4 (February 10, 2020)
-
 - [#18727](https://github.com/emberjs/ember.js/pull/18727) [BUGFIX] Avoid breaking {{-in-element}} usage
 - [#18728](https://github.com/emberjs/ember.js/pull/18728) [BUGFIX] Fix `{{#-in-element}}` double-clearing issue
-- [#18729](https://github.com/emberjs/ember.js/pull/18729) [BUGFIX] Remove deprecation for instantiation of new singleton instances (e.g. a service) during teardown (originally added in 3.16.1 by [#18717](https://github.com/emberjs/ember.js/pull/18717)).
-
-### v3.17.0-beta.3 (February 3, 2020)
-
 - [#18703](https://github.com/emberjs/ember.js/pull/18703) [BUGFIX] Correctly links ArrayProxy tags to `arrangedContent`
 - [#18707](https://github.com/emberjs/ember.js/pull/18707) [BUGFIX] Fixes tag chaining on Proxy mixins
 - [#18708](https://github.com/emberjs/ember.js/pull/18708) [BUGFIX] Ensures the arg proxy works with `get`
-- [#18717](https://github.com/emberjs/ember.js/pull/18717) [BUGFIX] Ensure instantiation cannot happen after destruction.
-- [#18720](https://github.com/emberjs/ember.js/pull/18720) [BUGFIX] Update minimum @ember/edition-utils to 1.2.0.
-- [#18714](https://github.com/emberjs/ember.js/pull/18714) Update glimmer packages to 0.47.4.
-
-### v3.17.0-beta.2 (January 29, 2020)
-
-- [#18691](https://github.com/emberjs/ember.js/pull/18691) [BUGFIX] Updated blueprints for component and helper tests to output the correct hbs import statement 
 - [#18694](https://github.com/emberjs/ember.js/pull/18694) [BUGFIX] Ensure tag updates are buffered, remove error message 
 - [#18709](https://github.com/emberjs/ember.js/pull/18709) [BUGFIX] Fix `this` in `@tracked` initializer
-
-### v3.17.0-beta.1 (January 20, 2020)
-
-- [#18688](https://github.com/emberjs/ember.js/pull/18688) / [#18621](https://github.com/emberjs/ember.js/pull/18621) Updates Glimmer-VM to v0.46
 
 ### v3.16.3 (February 18, 2020)
 
