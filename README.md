@@ -18,7 +18,7 @@
 * [**Stable & Secure**](https://emberjs.com/releases/) - With regular LTS Releases and 30 weeks of security fixes, you can rely on Ember.js to care about the stability and security of your app.
 * [**Modern**](https://blog.emberjs.com/2019/02/11/coming-soon-in-ember-octane-part-1.html) - Use modern JavaScript features that you're already familiar with like classes, decorators, & generators.
 * [**Documented**](https://guides.emberjs.com) - Rely on top-notch documentation for each Ember version and a team that is focused on the documentation and learning experience.
-* [**Component-Based**](https://octane-guides-preview.emberjs.com/release/components/component-basics/) - Any HTML is valid component! Start with valid, semantic HTML and layer in the app functionality that you need- giving your team the space for specialized markup experts.
+* [**Component-Based**](https://guides.emberjs.com/release/components/introducing-components/) - Any HTML is a valid component! Start with valid, semantic HTML and layer in the app functionality that you need- giving your team the space for specialized markup experts.
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
 * [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is a powerful data management tool.
 * [**Flexible**](https://guides.emberjs.com/release/models/customizing-adapters/) Use _**any**_ backend stack with your Ember apps, thanks to the flexibility of adapters and serializers.
