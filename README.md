@@ -18,7 +18,7 @@
 * [**Stable & Secure**](https://emberjs.com/releases/) - LTS Releases, 30 weeks of security fixes
 * [**Modern**](https://blog.emberjs.com/2019/02/11/coming-soon-in-ember-octane-part-1.html) - Classes, Decorators, optional TypeScript, Generators
 * [**Documented**](https://guides.emberjs.com) - We have amazing documentation for each Ember version
-* [**Component-Based**](https://octane-guides-preview.emberjs.com/release/components/component-basics/) - Any HTML is valid component!
+* [**Component-Based**](https://octane-guides-preview.emberjs.com/release/components/component-basics/) - Any HTML is valid component! Start with valid, semantic HTML and layer in the app functionality that you need- giving your team the space for specialized markup experts.
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
 * [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is most powerful data management tool.
 * [**Autotracked**](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
