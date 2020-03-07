@@ -14,7 +14,7 @@
 
 **Ember** is 
 
-* [**Immortal**](https://en.wikipedia.org/wiki/Ember.js) - bulding amazing apps with bleeding edge technologies 8+ years.
+* [**Timeless**](https://en.wikipedia.org/wiki/Ember.js) - There are apps that used the first version of Ember almost a decade ago, and have successfully used Ember this entire time.
 * [**Stable & Secure**](https://emberjs.com/releases/) - LTS Releases, 30 weeks of security fixes
 * [**Modern**](https://blog.emberjs.com/2019/02/11/coming-soon-in-ember-octane-part-1.html) - Classes, Decorators, optional TypeScript, Generators
 * [**Documented**](https://guides.emberjs.com) - We have amazing documentation for each Ember version
@@ -45,4 +45,3 @@ Cross-browser testing provided by:
 
 
 <a href="https://www.browserstack.com/automate/public-build/N0RzTStiOEVmUmFIOHZESHZ0SHc2ZnRtWkdId1VTYjBBNmdUbFdGQjhJMD0tLXlnakFXc2lFVk54YlFJeTZpMElGSGc9PQ==--587563c31781ae54de26452a7d27bd451607b000"><img src='https://www.browserstack.com/automate/badge.svg?badge_key=N0RzTStiOEVmUmFIOHZESHZ0SHc2ZnRtWkdId1VTYjBBNmdUbFdGQjhJMD0tLXlnakFXc2lFVk54YlFJeTZpMElGSGc9PQ==--587563c31781ae54de26452a7d27bd451607b000'/></a>
-
