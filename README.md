@@ -47,4 +47,4 @@ See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTI
 Cross-browser testing provided by:
 
 
-<a href="https://www.browserstack.com/automate/public-build/N0RzTStiOEVmUmFIOHZESHZ0SHc2ZnRtWkdId1VTYjBBNmdUbFdGQjhJMD0tLXlnakFXc2lFVk54YlFJeTZpMElGSGc9PQ==--587563c31781ae54de26452a7d27bd451607b000"><img src='https://www.browserstack.com/automate/badge.svg?badge_key=N0RzTStiOEVmUmFIOHZESHZ0SHc2ZnRtWkdId1VTYjBBNmdUbFdGQjhJMD0tLXlnakFXc2lFVk54YlFJeTZpMElGSGc9PQ==--587563c31781ae54de26452a7d27bd451607b000'/></a>
+<a href="https://www.browserstack.com/automate/public-build/N0RzTStiOEVmUmFIOHZESHZ0SHc2ZnRtWkdId1VTYjBBNmdUbFdGQjhJMD0tLXlnakFXc2lFVk54YlFJeTZpMElGSGc9PQ==--587563c31781ae54de26452a7d27bd451607b000"><img alt="browser stack" src='https://www.browserstack.com/automate/badge.svg?badge_key=N0RzTStiOEVmUmFIOHZESHZ0SHc2ZnRtWkdId1VTYjBBNmdUbFdGQjhJMD0tLXlnakFXc2lFVk54YlFJeTZpMElGSGc9PQ==--587563c31781ae54de26452a7d27bd451607b000'/></a>
