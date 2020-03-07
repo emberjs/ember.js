@@ -22,7 +22,7 @@
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
 * [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is a powerful data management tool.
 * [**Flexible**](https://guides.emberjs.com/release/models/customizing-adapters/) Use _**any**_ backend stack with your Ember apps, thanks to the flexibility of adapters and serializers.
-* [**Autotracked**](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
+* [**Autotracked (Ember's reactivity model)**](https://guides.emberjs.com/release/in-depth-topics/autotracking-in-depth/) - Ember makes it easier to decide what to automatically update, and when. 
 * [**Bytecode Templates**](https://yehudakatz.com/2017/04/05/the-glimmer-vm-boots-fast-and-stays-fast/) and other compile-time optimizations.
 * [**Zero config addons**](https://emberobserver.com/) - thousands of addons and the ability to [search by source code](https://emberobserver.com/code-search?codeQuery=task)
 
