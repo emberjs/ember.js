@@ -16,7 +16,7 @@
 
 * [**Timeless**](https://en.wikipedia.org/wiki/Ember.js) - There are apps that used the first version of Ember almost a decade ago, and have successfully used Ember this entire time.
 * [**Stable & Secure**](https://emberjs.com/releases/) - With regular LTS Releases and 30 weeks of security fixes, you can rely on Ember.js to care about the stability and security of your app.
-* [**Modern**](https://blog.emberjs.com/2019/02/11/coming-soon-in-ember-octane-part-1.html) - Classes, Decorators, optional TypeScript, Generators
+* [**Modern**](https://blog.emberjs.com/2019/02/11/coming-soon-in-ember-octane-part-1.html) - Use modern JavaScript features that you're already familiar with like classes, decorators, & generators.
 * [**Documented**](https://guides.emberjs.com) - Rely on top-notch documentation for each Ember version and a team that is focused on the documentation and learning experience.
 * [**Component-Based**](https://octane-guides-preview.emberjs.com/release/components/component-basics/) - Any HTML is valid component! Start with valid, semantic HTML and layer in the app functionality that you need- giving your team the space for specialized markup experts.
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
