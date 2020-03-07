@@ -27,8 +27,8 @@ With Ember, you get all of these things:
 * [**Flexibility**](https://guides.emberjs.com/release/models/customizing-adapters/) Use _**any**_ backend stack with your Ember apps, thanks to the flexibility of adapters and serializers.
 * [**Autotracking**](https://guides.emberjs.com/release/in-depth-topics/autotracking-in-depth/) - Ember's reactivity model makes it easier to decide what to automatically update, and when. 
 * [**Bytecode Templates**](https://yehudakatz.com/2017/04/05/the-glimmer-vm-boots-fast-and-stays-fast/) and other compile-time optimizations.
-* [**Zero config apps**](https://guides.emberjs.com/release/configuring-ember/) - With strong defaults, you may never need to configure anything in your app, but the options are there if you need it!
-* [**Quality addon ecosystem**](https://emberobserver.com/) - high-quality, rated addons with the ability to [search by source code](https://emberobserver.com/code-search?codeQuery=task). Many require no additional configuration, making it easier than ever to supercharge your apps.
+* [**Zero Config Apps**](https://guides.emberjs.com/release/configuring-ember/) - With strong defaults, you may never need to configure anything in your app, but the options are there if you need it!
+* [**Quality Addon Ecosystem**](https://emberobserver.com/) - high-quality, rated addons with the ability to [search by source code](https://emberobserver.com/code-search?codeQuery=task). Many require no additional configuration, making it easier than ever to supercharge your apps.
 
 
 
