@@ -20,7 +20,8 @@
 * [**Documented**](https://guides.emberjs.com) - Rely on top-notch documentation for each Ember version and a team that is focused on the documentation and learning experience.
 * [**Component-Based**](https://octane-guides-preview.emberjs.com/release/components/component-basics/) - Any HTML is valid component! Start with valid, semantic HTML and layer in the app functionality that you need- giving your team the space for specialized markup experts.
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
-* [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is most powerful data management tool.
+* [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is a powerful data management tool.
+* [**Flexible**](https://guides.emberjs.com/release/models/customizing-adapters/) Use _**any**_ backend stack with your Ember apps, thanks to the flexibility of adapters and serializers.
 * [**Autotracked**](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
 * [**Bytecode Templates**](https://yehudakatz.com/2017/04/05/the-glimmer-vm-boots-fast-and-stays-fast/) and other compile-time optimizations.
 * [**Zero config addons**](https://emberobserver.com/) - thousands of addons and the ability to [search by source code](https://emberobserver.com/code-search?codeQuery=task)
