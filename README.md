@@ -20,7 +20,7 @@
 * [**Modern**](https://guides.emberjs.com/release/upgrading/current-edition/) - Use modern JavaScript features that you're already familiar with like classes, decorators, & generators.
 * [**Documented**](https://guides.emberjs.com) - Rely on top-notch documentation for each Ember version and a team that is focused on the documentation and learning experience.
 * [**Component-Based**](https://guides.emberjs.com/release/components/introducing-components/) - Any HTML is a valid component! Start with valid, semantic HTML and layer in the app functionality that you need- giving your team the space for specialized markup experts.
-* [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
+* [**Routed**](https://guides.emberjs.com/release/routing/) - Ember routes respect URLs while layering in extra functionality like rendering templates, loading data models, handling actions, and conditionally redirecting. 
 * [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is a powerful data management tool.
 * [**Flexible**](https://guides.emberjs.com/release/models/customizing-adapters/) Use _**any**_ backend stack with your Ember apps, thanks to the flexibility of adapters and serializers.
 * [**Autotracked (Ember's reactivity model)**](https://guides.emberjs.com/release/in-depth-topics/autotracking-in-depth/) - Ember makes it easier to decide what to automatically update, and when. 
