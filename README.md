@@ -32,6 +32,8 @@ With Ember, you get all of these things:
 
 
 
+Find out more: 
+
 - [Website](https://emberjs.com)
 - [Guides](https://guides.emberjs.com)
 - [API](https://emberjs.com/api)
