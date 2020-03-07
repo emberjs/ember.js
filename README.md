@@ -14,6 +14,7 @@
 
 **Ember** is 
 
+* [**A Welcoming Community**](https://emberjs.com/community/) - Get the help you need, when you need it.
 * [**Timeless**](https://en.wikipedia.org/wiki/Ember.js) - There are apps that used the first version of Ember almost a decade ago, and have successfully used Ember this entire time.
 * [**Reliable & Secure**](https://emberjs.com/releases/) - With regular LTS Releases and 30 weeks of security fixes, you can rely on Ember.js to care about the stability and security of your app.
 * [**Modern**](https://guides.emberjs.com/release/upgrading/current-edition/) - Use modern JavaScript features that you're already familiar with like classes, decorators, & generators.
