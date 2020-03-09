@@ -19,7 +19,7 @@ With Ember, you get all of these things:
 * [**A Welcoming Community**](https://emberjs.com/community/) - Get the help you need, when you need it.
 * [**An Enduring Foundation for your Apps**](https://en.wikipedia.org/wiki/Ember.js) - There are apps that used the first version of Ember almost a decade ago, and successfully still use Ember today.
 * [**Reliability & Security**](https://emberjs.com/releases/) - With regular LTS Releases and 30 weeks of security fixes, you can rely on Ember.js to care about the stability [and security](https://emberjs.com/security/) of your app.
-* [**Modern JavaScript**](https://guides.emberjs.com/release/upgrading/current-edition/) - Use modern JavaScript features that you're already familiar with like classes, decorators, & generators.
+* [**Modern JavaScript**](https://guides.emberjs.com/release/upgrading/current-edition/) - Use modern JavaScript features that you're already familiar with like classes, decorators and generators.
 * [**Documentation**](https://guides.emberjs.com) - Rely on top-notch documentation for each Ember version and a team that is focused on the documentation and learning experience.
 * [**HTML-first Components**](https://guides.emberjs.com/release/components/introducing-components/) - Start with valid, semantic HTML in your components, and layer in the functionality that you need, as you need it.
 * [**Routing**](https://guides.emberjs.com/release/routing/) - Ember routes respect URLs while layering in extra functionality like rendering templates, loading data models, handling actions, and conditionally redirecting. 
