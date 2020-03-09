@@ -68,12 +68,16 @@ export class EmberishCurlyComponent {
     return c;
   }
 
+  init() {}
+
   constructor() {
     this._guid = `${GUID++}`;
+    this.init();
   }
 
   set(key: string, value: unknown) {
     (this as any)[key] = value;
+    dirty(this.dirtinessTag);
   }
 
   setProperties(dict: Dict) {
@@ -161,7 +165,6 @@ export class EmberishCurlyComponentManager
     args: VMArguments
   ): Option<PreparedArguments> {
     const { positionalParams } = state.ComponentClass || EmberishCurlyComponent;
-
     if (typeof positionalParams === 'string') {
       if (args.named.has(positionalParams)) {
         if (args.positional.length === 0) {
