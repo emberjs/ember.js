@@ -376,17 +376,17 @@ QUnit.test('dynamic attribute bindings', assert => {
 
   assertEmberishElement('div', { style: 'color: red;' }, `Hello. It's me.`);
 
-  fooBarInstance.style = 'color: green;';
+  fooBarInstance.set('style', 'color: green;');
   rerender();
 
   assertEmberishElement('div', { style: 'color: green;' }, `Hello. It's me.`);
 
-  fooBarInstance.style = null;
+  fooBarInstance.set('style', null);
   rerender();
 
   assertEmberishElement('div', {}, `Hello. It's me.`);
 
-  fooBarInstance.style = 'color: red;';
+  fooBarInstance.set('style', 'color: red;');
   rerender();
 
   assertEmberishElement('div', { style: 'color: red;' }, `Hello. It's me.`);
@@ -851,7 +851,7 @@ QUnit.test(
 
 QUnit.test('static arbitrary number of positional parameters', function() {
   class SampleComponent extends EmberishCurlyComponent {
-    static positionalParams = ['names'];
+    static positionalParams = 'names';
   }
 
   registerEmberishCurlyComponent(
@@ -948,7 +948,7 @@ QUnit.test('can use hash parameter instead of positional param', function() {
 
 QUnit.test('dynamic arbitrary number of positional parameters', function() {
   class SampleComponent extends EmberishCurlyComponent {
-    static positionalParams = ['n'];
+    static positionalParams = 'n';
   }
 
   registerEmberishCurlyComponent(
@@ -1393,18 +1393,6 @@ QUnit.test(`Ensure components can be invoked`, function() {
 
   appendViewFor('<Outer />');
   equalsElement(view.element, 'div', {}, 'hi!');
-});
-
-QUnit.test(`Glimmer component with element modifier`, function(assert) {
-  registerEmberishGlimmerComponent(context.registry, 'NonBlock', null, `  <div>In layout</div>  `);
-
-  assert.throws(
-    () => {
-      appendViewFor('<NonBlock {{action}} />');
-    },
-    new Error('Compile Error: Element modifiers are not allowed in components'),
-    'should throw error'
-  );
 });
 
 QUnit.test('Custom element with element modifier', function(assert) {
@@ -2014,7 +2002,7 @@ QUnit.test('deeply nested destructions', function(assert) {
   );
 
   appendViewFor(
-    `{{#each list key='@primitive' as |item|}}<DestroyMe1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</DestroyMe1>{{/each}}`,
+    `{{#each list key='@identity' as |item|}}<DestroyMe1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</DestroyMe1>{{/each}}`,
     { list: [1, 2, 3, 4, 5] }
   );
 
