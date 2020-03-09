@@ -46,4 +46,4 @@ See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTI
 
 ---
 
-Cross-browser testing provided by <a href="http://browserstack.com">Browserstack</a>. Thank you!
+Cross-browser testing provided by <a href="http://browserstack.com">Browserstack</a>.
