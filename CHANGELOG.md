@@ -1,5 +1,56 @@
 # Changelog
 
+## v0.48.0 (2020-03-11)
+
+#### :boom: Breaking Change
+* `@glimmer/program`, `@glimmer/reference`
+  * [#1053](https://github.com/glimmerjs/glimmer-vm/pull/1053) Upgrade TypeScript version to 3.7.5 ([@krisselden](https://github.com/krisselden))
+* `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1047](https://github.com/glimmerjs/glimmer-vm/pull/1047) Remove runtime dep on opcode-compiler ([@krisselden](https://github.com/krisselden))
+* `@glimmer/integration-tests`, `@glimmer/reference`, `@glimmer/runtime`
+  * [#1028](https://github.com/glimmerjs/glimmer-vm/pull/1028) Simplifies `JitRuntime`, `JitContext`, `Environment` setup ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1044](https://github.com/glimmerjs/glimmer-vm/pull/1044) Remove `@glimmer/opcode-compiler` dependency on `@glimmer/runtime` ([@krisselden](https://github.com/krisselden))
+* `@glimmer/interfaces`, `@glimmer/runtime`
+  * [#1043](https://github.com/glimmerjs/glimmer-vm/pull/1043) Fix `@glimmer/interfaces` dependency on `@glimmer/runtime` ([@krisselden](https://github.com/krisselden))
+
+#### :bug: Bug Fix
+* `@glimmer/debug`, `@glimmer/node`, `@glimmer/object-reference`, `@glimmer/program`, `@glimmer/reference`
+  * [#1049](https://github.com/glimmerjs/glimmer-vm/pull/1049) Enable eslint-plugin-node's no-extraneous-import rule (mostly). ([@rwjblue](https://github.com/rwjblue))
+* `@glimmer/runtime`
+  * [#1041](https://github.com/glimmerjs/glimmer-vm/pull/1041) runtime: Add missing `@glimmer/opcode-compiler` dependency ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/util`
+  * [#1040](https://github.com/glimmerjs/glimmer-vm/pull/1040) util: Promote `@glimmer/interfaces` to non-dev dependency ([@Turbo87](https://github.com/Turbo87))
+
+#### :memo: Documentation
+* [#984](https://github.com/glimmerjs/glimmer-vm/pull/984) Remove obsolete BREAKING.md file ([@Turbo87](https://github.com/Turbo87))
+
+#### :house: Internal
+* `@glimmer/integration-tests`
+  * [#1055](https://github.com/glimmerjs/glimmer-vm/pull/1055) bugfix: -test not -tests ([@chadhietala](https://github.com/chadhietala))
+  * [#991](https://github.com/glimmerjs/glimmer-vm/pull/991) Add a set of "chaos monkey" tests for rehydration. ([@rwjblue](https://github.com/rwjblue))
+  * [#1045](https://github.com/glimmerjs/glimmer-vm/pull/1045) integration-tests: Add missing `@glimmer/runtime` dependency ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/integration-tests`, `@glimmer/node`, `@glimmer/object`, `@glimmer/opcode-compiler`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`
+  * [#1050](https://github.com/glimmerjs/glimmer-vm/pull/1050) Remove unused and update eslint and prettier. ([@krisselden](https://github.com/krisselden))
+* Other
+  * [#1048](https://github.com/glimmerjs/glimmer-vm/pull/1048) [CLEANUP] Remove long deprecated emberjs-build usage ([@krisselden](https://github.com/krisselden))
+  * [#1042](https://github.com/glimmerjs/glimmer-vm/pull/1042)  ESLint: Enable `node/no-unpublished-import` rule  ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/interfaces`, `@glimmer/opcode-compiler`
+  * [#1046](https://github.com/glimmerjs/glimmer-vm/pull/1046) Fix TS performance regression in compiler types ([@krisselden](https://github.com/krisselden))
+* `@glimmer/bundle-compiler`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/low-level`, `@glimmer/object-reference`, `@glimmer/object`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`
+  * [#1039](https://github.com/glimmerjs/glimmer-vm/pull/1039) Add `.npmignore` files to each public package with a `test` folder ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/runtime`, `@glimmer/syntax`
+  * [#1038](https://github.com/glimmerjs/glimmer-vm/pull/1038) Replace imports from own package with relative imports  ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/interfaces`
+  * [#1037](https://github.com/glimmerjs/glimmer-vm/pull/1037) interfaces: Remove unused imports ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 5
+- Chad Hietala ([@chadhietala](https://github.com/chadhietala))
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
 ## v0.47.9 (2020-02-14)
 
 #### :bug: Bug Fix
