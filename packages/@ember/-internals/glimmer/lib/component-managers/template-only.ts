@@ -7,8 +7,8 @@ import {
   VMArguments,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { NULL_REFERENCE } from '@glimmer/runtime';
+import { unwrapTemplate } from '@glimmer/util';
 import { CONSTANT_TAG, createTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';

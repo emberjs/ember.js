@@ -15,8 +15,7 @@ import {
   RenderResult,
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
-import { JitContext, unwrapHandle, unwrapTemplate } from '@glimmer/opcode-compiler';
-import { RuntimeProgramImpl } from '@glimmer/program';
+import { JitContext } from '@glimmer/opcode-compiler';
 import { VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -26,11 +25,12 @@ import {
   DOMTreeConstruction,
   inTransaction,
   IteratorResult,
-  JitRuntimeFromProgram,
+  JitRuntime,
   JitSyntaxCompilationContext,
   renderJitMain,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
+import { unwrapHandle, unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, runInAutotrackingTransaction, validate, value } from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -282,27 +282,21 @@ export abstract class Renderer {
     let runtimeResolver = (this._runtimeResolver = new RuntimeResolver(env.isInteractive));
     let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
 
-    this._context = JitContext(compileTimeResolver);
+    let context = (this._context = JitContext(compileTimeResolver));
 
-    populateMacros(this._context.macros);
-
-    let program = new RuntimeProgramImpl(
-      this._context.program.constants,
-      this._context.program.heap
-    );
+    populateMacros(context.macros);
 
     let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
-
-    this._runtime = JitRuntimeFromProgram(
+    this._runtime = JitRuntime(
       {
         appendOperations: env.hasDOM
           ? new DOMTreeConstruction(document)
           : new NodeDOMTreeConstruction(document),
         updateOperations: new DOMChanges(document),
       },
-      program,
-      runtimeResolver,
-      runtimeEnvironmentDelegate
+      runtimeEnvironmentDelegate,
+      context,
+      runtimeResolver
     );
   }
 

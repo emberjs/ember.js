@@ -15,8 +15,8 @@ import {
   VMArguments,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
+import { unwrapTemplate } from '@glimmer/util';
 import { consume, createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
