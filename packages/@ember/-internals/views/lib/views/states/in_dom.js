@@ -25,8 +25,10 @@ const inDOM = assign({}, hasElement, {
         get() {
           return elementId;
         },
-        set() {
-          throw new EmberError("Changing a view's elementId after creation is not allowed");
+        set(value) {
+          if (value !== elementId) {
+            throw new EmberError("Changing a view's elementId after creation is not allowed");
+          }
         },
       });
     }
