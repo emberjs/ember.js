@@ -9,8 +9,8 @@ import {
   Option,
   VMArguments,
 } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { EMPTY_ARGS } from '@glimmer/runtime';
+import { unwrapTemplate } from '@glimmer/util';
 import { DIRTY_TAG } from '../component';
 import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';

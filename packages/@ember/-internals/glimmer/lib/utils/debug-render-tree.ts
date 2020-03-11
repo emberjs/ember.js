@@ -1,8 +1,7 @@
 import { assert } from '@ember/debug';
 import { Bounds, CapturedArguments, Option } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { VersionedPathReference } from '@glimmer/reference';
-import { expect, Stack } from '@glimmer/util';
+import { expect, Stack, unwrapTemplate } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { OwnedTemplate } from '../template';
 

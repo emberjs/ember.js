@@ -21,10 +21,9 @@ import {
   WithJitDynamicLayout,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
-import { EMPTY_ARRAY } from '@glimmer/util';
+import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import { combine, Tag, validate, value } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';

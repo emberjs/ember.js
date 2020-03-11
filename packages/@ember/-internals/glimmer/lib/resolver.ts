@@ -12,9 +12,16 @@ import { PARTIALS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import { ComponentDefinition, Helper, JitRuntimeResolver, Option } from '@glimmer/interfaces';
-import { PartialDefinition, unwrapTemplate } from '@glimmer/opcode-compiler';
+import {
+  ComponentDefinition,
+  Helper,
+  JitRuntimeResolver,
+  Option,
+  PartialDefinition,
+} from '@glimmer/interfaces';
+import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
+import { unwrapTemplate } from '@glimmer/util';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
 import InternalComponentManager, {
@@ -23,7 +30,6 @@ import InternalComponentManager, {
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
-import { default as parseIntHelper } from './helpers/-i';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as trackArray } from './helpers/-track-array';
@@ -251,7 +257,6 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   unless: inlineUnless,
   '-hash': hash,
   '-each-in': eachIn,
-  '-i': parseIntHelper,
   '-input-type': inputTypeHelper,
   '-normalize-class': normalizeClassHelper,
   '-track-array': trackArray,
@@ -440,7 +445,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     let templateFactory = lookupPartial(name, owner);
     let template = templateFactory(owner);
 
-    return new PartialDefinition(name, template);
+    return new PartialDefinitionImpl(name, template);
   }
 
   private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
