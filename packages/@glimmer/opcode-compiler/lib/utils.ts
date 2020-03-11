@@ -5,6 +5,8 @@ import {
   WireFormat,
   ContainingMetadata,
   CompileErrorOp,
+  Expressions,
+  SexpOpcodes,
 } from '@glimmer/interfaces';
 import { dict, assign } from '@glimmer/util';
 import { compilableBlock } from './compilable-template';
@@ -74,22 +76,41 @@ export function expectString(
     return error(`${desc}, but there were no free variables in the template`, 0, 0);
   }
 
-  if (!Array.isArray(expr) || expr[0] !== WireFormat.SexpOpcodes.GetPath) {
+  if (!Array.isArray(expr)) {
     throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
   }
 
-  if (expr[2].length !== 0) {
-    throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
-  }
-
-  if (
-    expr[1][0] === WireFormat.SexpOpcodes.GetContextualFree ||
-    expr[1][0] === WireFormat.SexpOpcodes.GetFree
-  ) {
-    let head = expr[1][1];
-
-    return meta.upvars[head];
+  if (isGet(expr)) {
+    let name = simplePathName(expr, meta);
+    if (name !== null) return name;
   }
 
   throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
+}
+
+export function simplePathName(
+  opcode: Expressions.GetPath | Expressions.Get,
+  meta: ContainingMetadata
+): Option<string> {
+  if (opcode.length === 3 && opcode[2].length > 0) {
+    return null;
+  }
+
+  if (isGetFree(opcode)) {
+    return meta.upvars![opcode[1]];
+  }
+
+  return null;
+}
+
+export function isGet(
+  opcode: Expressions.TupleExpression
+): opcode is Expressions.Get | Expressions.GetPath {
+  return opcode.length >= 2 && opcode[0] >= SexpOpcodes.GetSymbol;
+}
+
+function isGetFree(
+  opcode: Expressions.Get | Expressions.GetPath
+): opcode is Expressions.GetFree | Expressions.GetContextualFree {
+  return opcode[0] >= SexpOpcodes.GetFree;
 }

@@ -7,6 +7,7 @@ import {
   ExpressionSexpOpcode,
   ExpressionCompileActions,
   ContainingMetadata,
+  ExpressionContext,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
 import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
@@ -27,8 +28,11 @@ EXPRESSIONS.add(SexpOpcodes.Concat, ([, parts]) => {
   return out;
 });
 
-EXPRESSIONS.add(SexpOpcodes.Call, ([, start, offset, name, params, hash], meta) => {
+EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
   // TODO: triage this in the WF compiler
+  let start = 0;
+  let offset = 0;
+
   if (isComponent(name, meta)) {
     if (!params || params.length === 0) {
       return op('Error', {
@@ -67,19 +71,21 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, start, offset, name, params, hash], meta) 
   });
 });
 
+function isGetContextualFree(
+  opcode: Expressions.TupleExpression
+): opcode is Expressions.GetContextualFree {
+  return opcode[0] >= SexpOpcodes.GetContextualFreeStart;
+}
+
 function isComponent(expr: Expressions.Expression, meta: ContainingMetadata): boolean {
   if (!Array.isArray(expr)) {
     return false;
   }
 
-  if (expr[0] === SexpOpcodes.GetPath) {
+  if (isGetContextualFree(expr)) {
     let head = expr[1];
 
-    if (
-      head[0] === SexpOpcodes.GetContextualFree &&
-      meta.upvars &&
-      meta.upvars[head[1]] === 'component'
-    ) {
+    if (meta.upvars && meta.upvars[head] === 'component') {
       return true;
     } else {
       return false;
@@ -89,17 +95,52 @@ function isComponent(expr: Expressions.Expression, meta: ContainingMetadata): bo
   return false;
 }
 
-EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, head]) => [op(Op.GetVariable, head)]);
-
-EXPRESSIONS.add(SexpOpcodes.GetPath, ([, head, tail]) => {
-  return [op('Expr', head), ...tail.map(p => op(Op.GetProperty, p))];
-});
-
-EXPRESSIONS.add(SexpOpcodes.GetFree, ([, head]) => op('ResolveFree', head));
-
-EXPRESSIONS.add(SexpOpcodes.GetContextualFree, ([, head, context]) =>
-  op('ResolveContextualFree', { freeVar: head, context })
+EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, sym, path]) => withPath(op(Op.GetVariable, sym), path));
+EXPRESSIONS.add(SexpOpcodes.GetFree, ([, sym, path]) => withPath(op('ResolveFree', sym), path));
+EXPRESSIONS.add(SexpOpcodes.GetFreeInAppendSingleId, ([, sym, path]) =>
+  withPath(
+    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.AppendSingleId }),
+    path
+  )
 );
+EXPRESSIONS.add(SexpOpcodes.GetFreeInExpression, ([, sym, path]) =>
+  withPath(
+    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.Expression }),
+    path
+  )
+);
+EXPRESSIONS.add(SexpOpcodes.GetFreeInCallHead, ([, sym, path]) =>
+  withPath(op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.CallHead }), path)
+);
+EXPRESSIONS.add(SexpOpcodes.GetFreeInBlockHead, ([, sym, path]) =>
+  withPath(
+    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.BlockHead }),
+    path
+  )
+);
+EXPRESSIONS.add(SexpOpcodes.GetFreeInModifierHead, ([, sym, path]) =>
+  withPath(
+    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.ModifierHead }),
+    path
+  )
+);
+EXPRESSIONS.add(SexpOpcodes.GetFreeInComponentHead, ([, sym, path]) =>
+  withPath(
+    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.ComponentHead }),
+    path
+  )
+);
+
+function withPath(expr: ExpressionCompileActions, path?: string[]) {
+  if (path === undefined || path.length === 0) return expr;
+  if (!Array.isArray(expr)) expr = [expr];
+
+  for (let i = 0; i < path.length; i++) {
+    expr.push(op(Op.GetProperty, path[i]));
+  }
+
+  return expr;
+}
 
 EXPRESSIONS.add(SexpOpcodes.Undefined, () => PushPrimitiveReference(undefined));
 EXPRESSIONS.add(SexpOpcodes.HasBlock, ([, block]) => {

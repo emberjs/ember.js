@@ -26,8 +26,6 @@ export interface InputOps {
   comment: [AST.CommentStatement];
 }
 
-// type Location = ['loc', [null, [number, number], [number, number]]];
-
 export interface AllocateSymbolsOps {
   startProgram: AST.Template;
   endProgram: void;
