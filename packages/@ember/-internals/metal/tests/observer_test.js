@@ -990,7 +990,7 @@ moduleFor(
 );
 
 moduleFor(
-  'changeProperties',
+  'changeProperties - sync observers',
   class extends AbstractTestCase {
     afterEach() {
       if (obj !== undefined) {
@@ -1009,10 +1009,10 @@ moduleFor(
       }
       Observer.prototype = {
         add() {
-          addObserver(obj, 'foo', this, 'didChange');
+          addObserver(obj, 'foo', this, 'didChange', true);
         },
         remove() {
-          removeObserver(obj, 'foo', this, 'didChange');
+          removeObserver(obj, 'foo', this, 'didChange', true);
         },
         didChange() {
           this.didChangeCount++;
@@ -1090,10 +1090,16 @@ moduleFor(
       obj = { foo: 0 };
       let fooDidChange = 0;
 
-      addObserver(obj, 'foo', () => {
-        fooDidChange++;
-        changeProperties(() => {});
-      });
+      addObserver(
+        obj,
+        'foo',
+        () => {
+          fooDidChange++;
+          changeProperties(() => {});
+        },
+        undefined,
+        true
+      );
 
       changeProperties(() => {
         set(obj, 'foo', 1);

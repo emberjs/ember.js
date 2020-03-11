@@ -13,7 +13,12 @@ moduleFor(
       return super.createApplication(options, Application.extend());
     }
 
-    ['@test The helper becomes the body of the component']() {
+    ['@test The helper becomes the body of the component'](assert) {
+      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+        assert.expect(0);
+        return;
+      }
+
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
@@ -26,8 +31,14 @@ moduleFor(
       });
     }
 
-    ['@test The helper becomes the body of the component (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;)']() {
-      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+    ['@test The helper becomes the body of the component (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;)'](
+      assert
+    ) {
+      if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+        assert.expect(0);
+        return;
+      }
+
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
