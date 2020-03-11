@@ -15,9 +15,9 @@ import {
   WithDynamicTagName,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
+import { unwrapTemplate } from '@glimmer/util';
 import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
 
 import { SimpleElement } from '@simple-dom/interface';
