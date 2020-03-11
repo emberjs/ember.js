@@ -1,6 +1,6 @@
 import { Factory, Owner } from '@ember/-internals/owner';
 import { ComponentDefinition, WithJitStaticLayout } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { unwrapTemplate } from '@glimmer/util';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractComponentManager from './abstract';
