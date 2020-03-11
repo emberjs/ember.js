@@ -109,6 +109,39 @@ moduleFor(
       }
     }
 
+    ['@test elementId is stable when other values change']() {
+      let changingArg = 'arbitrary value';
+      let parentInstance;
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          init() {
+            this._super(...arguments);
+            parentInstance = this;
+          },
+          changingArg: changingArg,
+        }),
+        template: '{{quux-baz elementId="stable-id" changingArg=this.changingArg}}',
+      });
+
+      this.registerComponent('quux-baz', {
+        ComponentClass: Component.extend({}),
+        template: '{{changingArg}}',
+      });
+
+      this.render('{{foo-bar}}');
+      this.assertComponentElement(this.firstChild.firstChild, {
+        attrs: { id: 'stable-id' },
+        content: 'arbitrary value',
+      });
+
+      changingArg = 'a different value';
+      runTask(() => set(parentInstance, 'changingArg', changingArg));
+      this.assertComponentElement(this.firstChild.firstChild, {
+        attrs: { id: 'stable-id' },
+        content: changingArg,
+      });
+    }
+
     ['@test can specify template with `layoutName` property']() {
       let FooBarComponent = Component.extend({
         elementId: 'blahzorz',
