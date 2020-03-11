@@ -775,7 +775,7 @@ class UpdatingTest extends RenderTest {
 
     assertHandleError(assert, result, {
       problem: 'Unexpected Helper helo',
-      span: { start: 2, end: 6 },
+      span: { start: 0, end: 0 },
     });
   }
 

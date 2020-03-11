@@ -24,7 +24,7 @@ export default class WireFormatDebugger {
     if (Array.isArray(opcode)) {
       switch (opcode[0]) {
         case Op.Append:
-          return ['append', this.formatOpcode(opcode[1]), opcode[2]];
+          return ['append', this.formatOpcode(opcode[1]), this.formatOpcode(opcode[2])];
 
         case Op.Block:
           return [
@@ -94,7 +94,7 @@ export default class WireFormatDebugger {
         case Op.Component:
           return [
             'component',
-            opcode[1],
+            this.formatOpcode(opcode[1]),
             this.formatAttrs(opcode[2]),
             this.formatHash(opcode[3]),
             this.formatBlocks(opcode[4]),
@@ -110,10 +110,10 @@ export default class WireFormatDebugger {
         //   ];
 
         case Op.HasBlock:
-          return ['has-block', opcode[1]];
+          return ['has-block', this.formatOpcode(opcode[1])];
 
         case Op.HasBlockParams:
-          return ['has-block-params', opcode[1]];
+          return ['has-block-params', this.formatOpcode(opcode[1])];
 
         case Op.Undefined:
           return ['undefined'];
