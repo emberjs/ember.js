@@ -1,4 +1,4 @@
-import { Dict, Option, ExpressionContext } from '@glimmer/interfaces';
+import { Dict, Option } from '@glimmer/interfaces';
 import { dict, assertNever, expect } from '@glimmer/util';
 
 export type BuilderParams = BuilderExpression[];
@@ -106,7 +106,7 @@ export type NormalizedStatement =
 export function normalizeStatement(statement: BuilderStatement): NormalizedStatement {
   if (Array.isArray(statement)) {
     if (statementIsExpression(statement)) {
-      return normalizeAppendExpression(statement, ExpressionContext.AppendSingleId);
+      return normalizeAppendExpression(statement);
     } else if (isSugaryArrayStatement(statement)) {
       return normalizeSugaryArrayStatement(statement);
     } else {
@@ -223,11 +223,7 @@ function normalizeVerboseStatement(statement: VerboseStatement): NormalizedState
     }
 
     case Builder.Append: {
-      return normalizeAppendExpression(
-        statement[1],
-        ExpressionContext.AppendSingleId,
-        statement[2]
-      );
+      return normalizeAppendExpression(statement[1], statement[2]);
     }
 
     case Builder.Modifier: {
@@ -588,7 +584,6 @@ export type NormalizedExpression =
 
 export function normalizeAppendExpression(
   expression: BuilderExpression,
-  _context: ExpressionContext,
   forceTrusted = false
 ): AppendExpr | AppendPath {
   if (expression === null || expression === undefined) {

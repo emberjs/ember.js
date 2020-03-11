@@ -15,6 +15,7 @@ import {
   Expressions,
   ExpressionContext,
 } from '@glimmer/interfaces';
+import { expressionContextOp } from './builder';
 
 export type str = string;
 import Core = WireFormat.Core;
@@ -236,11 +237,11 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
   /// Statements
 
   text(content: string) {
-    this.push([SexpOpcodes.Append, 1, 0, 0, content]);
+    this.push([SexpOpcodes.Append, 1, content]);
   }
 
   append(trusted: boolean) {
-    this.push([SexpOpcodes.Append, +trusted, 0, 0, this.popValue<Expression>()]);
+    this.push([SexpOpcodes.Append, +trusted, this.popValue<Expression>()]);
   }
 
   comment(value: string) {
@@ -251,7 +252,7 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
     let name = this.popValue<Expression>();
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
-    this.push([SexpOpcodes.Modifier, 0, 0, name, params, hash]);
+    this.push([SexpOpcodes.Modifier, name, params, hash]);
   }
 
   block([template, inverse]: [number, Option<number>]) {
@@ -424,9 +425,9 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
     }
   }
 
-  getPath(rest: string[]) {
-    let head = this.popValue<Expressions.Get>();
-    this.pushValue<Expressions.GetPath>([SexpOpcodes.GetPath, head, rest]);
+  getPath(path: string[]) {
+    let [op, sym] = this.popValue<Expressions.Get>();
+    this.pushValue<Expressions.GetPath>([op, sym, path]);
   }
 
   getSymbol(head: number) {
@@ -438,7 +439,7 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
   }
 
   getFreeWithContext([head, context]: [number, ExpressionContext]) {
-    this.pushValue<Expressions.GetContextualFree>([SexpOpcodes.GetContextualFree, head, context]);
+    this.pushValue<Expressions.GetContextualFree>([expressionContextOp(context), head]);
   }
 
   concat() {
@@ -446,18 +447,11 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
   }
 
   helper() {
-    let { value: head, location } = this.popLocatedValue<Expression>();
+    let { value: head } = this.popLocatedValue<Expression>();
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.pushValue<Expressions.Helper>([
-      SexpOpcodes.Call,
-      start(location),
-      end(location),
-      head,
-      params,
-      hash,
-    ]);
+    this.pushValue<Expressions.Helper>([SexpOpcodes.Call, head, params, hash]);
   }
 
   /// Stack Management Opcodes
@@ -535,21 +529,5 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
 
   popValue<T extends StackValue>(): T {
     return this.popLocatedValue<T>().value;
-  }
-}
-
-function start(location: Option<SourceLocation>): number {
-  if (location) {
-    return location.start;
-  } else {
-    return -1;
-  }
-}
-
-function end(location: Option<SourceLocation>): number {
-  if (location) {
-    return location.end - location.start;
-  } else {
-    return -1;
   }
 }

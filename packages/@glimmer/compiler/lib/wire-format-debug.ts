@@ -5,7 +5,7 @@ import {
   SerializedInlineBlock,
   SerializedTemplateBlock,
 } from '@glimmer/interfaces';
-import { dict, assertNever } from '@glimmer/util';
+import { dict, exhausted } from '@glimmer/util';
 
 export default class WireFormatDebugger {
   constructor(private program: SerializedTemplateBlock, _parameters?: number[]) {}
@@ -87,8 +87,8 @@ export default class WireFormatDebugger {
           return [
             'modifier',
             this.formatOpcode(opcode[1]),
-            this.formatParams(opcode[4]),
-            this.formatHash(opcode[5]),
+            this.formatParams(opcode[2]),
+            this.formatHash(opcode[3]),
           ];
 
         case Op.Component:
@@ -109,18 +109,6 @@ export default class WireFormatDebugger {
         //     this.formatBlocks(opcode[4]),
         //   ];
 
-        case Op.GetSymbol:
-          return ['get-symbol', this.program.symbols[opcode[1]], opcode[1]];
-
-        case Op.GetFree:
-          return ['get-free', this.program.upvars[opcode[1]]];
-
-        case Op.GetContextualFree:
-          return ['get-contextual-free', this.program.upvars[opcode[1]], opcode[2]];
-
-        case Op.GetPath:
-          return ['get-path', this.formatOpcode(opcode[1]), opcode[2]];
-
         case Op.HasBlock:
           return ['has-block', opcode[1]];
 
@@ -133,17 +121,50 @@ export default class WireFormatDebugger {
         case Op.Call:
           return [
             'call',
-            this.formatOpcode(opcode[3]),
-            this.formatParams(opcode[4]),
-            this.formatHash(opcode[5]),
+            this.formatOpcode(opcode[1]),
+            this.formatParams(opcode[2]),
+            this.formatHash(opcode[3]),
           ];
 
         case Op.Concat:
           return ['concat', this.formatParams(opcode[1] as WireFormat.Core.Params)];
 
         default: {
-          let opName = opcode[0];
-          throw assertNever(opName, `unexpected ${opName}`);
+          let [op, sym, path] = opcode;
+          let opName: string;
+          let varName: string;
+          if (op === Op.GetSymbol) {
+            varName = this.program.symbols[sym];
+            opName = 'get-symbol';
+          } else {
+            varName = this.program.upvars[sym];
+            switch (op) {
+              case Op.GetFree:
+                opName = 'get-free';
+                break;
+              case Op.GetFreeInAppendSingleId:
+                opName = 'get-free-in-append-single-id';
+                break;
+              case Op.GetFreeInBlockHead:
+                opName = 'get-free-in-block-head';
+                break;
+              case Op.GetFreeInCallHead:
+                opName = 'get-free-in-call-head';
+                break;
+              case Op.GetFreeInComponentHead:
+                opName = 'get-free-in-component-head';
+                break;
+              case Op.GetFreeInExpression:
+                opName = 'get-free-in-expression';
+                break;
+              case Op.GetFreeInModifierHead:
+                opName = 'get-free-in-modifier-head';
+                break;
+              default:
+                return exhausted(op);
+            }
+          }
+          return path ? [opName, varName, path] : [opName, varName];
         }
       }
     } else {

@@ -24,7 +24,7 @@ STATEMENTS.add(SexpOpcodes.CloseElement, () => op(Op.CloseElement));
 STATEMENTS.add(SexpOpcodes.FlushElement, () => op(Op.FlushElement));
 
 STATEMENTS.add(SexpOpcodes.Modifier, (sexp, meta) => {
-  let [, , , name, params, hash] = sexp;
+  let [, name, params, hash] = sexp;
 
   let stringName = expectString(name, meta, 'Expected modifier head to be a string');
 
@@ -162,7 +162,7 @@ STATEMENTS.add(SexpOpcodes.Debugger, ([, evalInfo], meta) =>
 );
 
 STATEMENTS.add(SexpOpcodes.Append, sexp => {
-  let [, trusted, , , value] = sexp;
+  let [, trusted, value] = sexp;
 
   if (typeof value === 'string' && trusted) {
     return op(Op.Text, value);

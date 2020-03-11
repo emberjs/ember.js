@@ -38,15 +38,24 @@ export const enum SexpOpcodes {
 
   // Expressions
 
-  GetSymbol = 24,
-  GetFree = 25,
-  GetContextualFree = 26,
-  GetPath = 27,
-  HasBlock = 28,
-  HasBlockParams = 29,
-  Undefined = 30,
-  Call = 31,
-  Concat = 32,
+  HasBlock = 24,
+  HasBlockParams = 25,
+  Undefined = 26,
+  Call = 27,
+  Concat = 28,
+
+  // GetPath
+  GetSymbol = 32, // GetPath + 0-2,
+  GetFree = 33,
+  GetFreeInAppendSingleId = 34, // GetContextualFree + 0-5
+  GetFreeInExpression = 35,
+  GetFreeInCallHead = 36,
+  GetFreeInBlockHead = 37,
+  GetFreeInModifierHead = 38,
+  GetFreeInComponentHead = 39,
+
+  GetPathStart = GetSymbol,
+  GetContextualFreeStart = GetFreeInAppendSingleId,
 }
 
 export type StatementSexpOpcode = Statement[0];
@@ -76,19 +85,19 @@ export namespace Core {
 export const enum ExpressionContext {
   // An `Append` is a single identifier that is contained inside a curly (either in a
   // content curly or an attribute curly)
-  AppendSingleId = 'AppendSingleId',
+  AppendSingleId = 0,
   // An `Expression` is evaluated into a value (e.g. `person.name` in `(call person.name)`
   // or `person.name` in `@name={{person.name}}`). This represents a syntactic position
   // that must evaluate as an expression by virtue of its position in the syntax.
-  Expression = 'Expression',
+  Expression = 1,
   // A `CallHead` is the head of an expression that is definitely a call
-  CallHead = 'CallHead',
+  CallHead = 2,
   // A `BlockHead` is the head of an expression that is definitely a block
-  BlockHead = 'BlockHead',
+  BlockHead = 3,
   // A `ModifierHead` is the head of an expression that is definitely a modifir
-  ModifierHead = 'ModifierHead',
+  ModifierHead = 4,
   // A `ComponentHead` is the head of an expression that is definitely a component
-  ComponentHead = 'ComponentHead',
+  ComponentHead = 5,
 }
 
 export namespace Expressions {
@@ -98,16 +107,45 @@ export namespace Expressions {
 
   export type GetSymbol = [SexpOpcodes.GetSymbol, number];
   export type GetFree = [SexpOpcodes.GetFree, number];
-  export type GetContextualFree = [SexpOpcodes.GetContextualFree, number, ExpressionContext];
-  export type GetPath = [SexpOpcodes.GetPath, Get, Path];
+  export type GetFreeInAppendSingleId = [SexpOpcodes.GetFreeInAppendSingleId, number];
+  export type GetFreeInExpression = [SexpOpcodes.GetFreeInExpression, number];
+  export type GetFreeInCallHead = [SexpOpcodes.GetFreeInCallHead, number];
+  export type GetFreeInBlockHead = [SexpOpcodes.GetFreeInBlockHead, number];
+  export type GetFreeInModifierHead = [SexpOpcodes.GetFreeInModifierHead, number];
+  export type GetFreeInComponentHead = [SexpOpcodes.GetFreeInComponentHead, number];
+
+  export type GetContextualFree =
+    | GetFreeInAppendSingleId
+    | GetFreeInExpression
+    | GetFreeInCallHead
+    | GetFreeInBlockHead
+    | GetFreeInModifierHead
+    | GetFreeInComponentHead;
+  export type Get = GetSymbol | GetFree | GetContextualFree;
+
+  export type GetPathSymbol = [SexpOpcodes.GetSymbol, number, Path];
+  export type GetPathFree = [SexpOpcodes.GetFree, number, Path];
+  export type GetPathFreeInAppendSingleId = [SexpOpcodes.GetFreeInAppendSingleId, number, Path];
+  export type GetPathFreeInExpression = [SexpOpcodes.GetFreeInExpression, number, Path];
+  export type GetPathFreeInCallHead = [SexpOpcodes.GetFreeInCallHead, number, Path];
+  export type GetPathFreeInBlockHead = [SexpOpcodes.GetFreeInBlockHead, number, Path];
+  export type GetPathFreeInModifierHead = [SexpOpcodes.GetFreeInModifierHead, number, Path];
+  export type GetPathFreeInComponentHead = [SexpOpcodes.GetFreeInComponentHead, number, Path];
+
+  export type GetPathContextualFree =
+    | GetPathFreeInAppendSingleId
+    | GetPathFreeInExpression
+    | GetPathFreeInCallHead
+    | GetPathFreeInBlockHead
+    | GetPathFreeInModifierHead
+    | GetPathFreeInComponentHead;
+  export type GetPath = GetPathSymbol | GetPathFree | GetPathContextualFree;
 
   export type Value = string | number | boolean | null;
   export type Undefined = [SexpOpcodes.Undefined];
 
   export type TupleExpression =
-    | GetSymbol
-    | GetFree
-    | GetContextualFree
+    | Get
     | GetPath
     | Concat
     | HasBlock
@@ -116,13 +154,11 @@ export namespace Expressions {
     | Undefined;
 
   export type Expression = TupleExpression | Value;
-  export type Get = GetSymbol | GetFree | GetContextualFree;
 
   type Recursive<T> = T;
 
   export interface Concat extends Recursive<[SexpOpcodes.Concat, Core.ConcatParams]> {}
-  export interface Helper
-    extends Recursive<[SexpOpcodes.Call, number, number, Expression, Option<Params>, Hash]> {}
+  export interface Helper extends Recursive<[SexpOpcodes.Call, Expression, Option<Params>, Hash]> {}
   export interface HasBlock extends Recursive<[SexpOpcodes.HasBlock, Expression]> {}
   export interface HasBlockParams extends Recursive<[SexpOpcodes.HasBlockParams, Expression]> {}
 }
@@ -139,11 +175,9 @@ export namespace Statements {
   export type Blocks = Core.Blocks;
   export type Path = Core.Path;
 
-  // Statement = [op, flags, start, offset, ...args]
-
-  export type Append = [SexpOpcodes.Append, number, number, number, Expression];
+  export type Append = [SexpOpcodes.Append, number, Expression];
   export type Comment = [SexpOpcodes.Comment, string];
-  export type Modifier = [SexpOpcodes.Modifier, number, number, Expression, Params, Hash];
+  export type Modifier = [SexpOpcodes.Modifier, Expression, Params, Hash];
   export type Block = [SexpOpcodes.Block, Expression, Option<Params>, Hash, Blocks];
   export type Component = [SexpOpcodes.Component, Expression, Attribute[], Hash, Blocks];
   export type OpenElement = [SexpOpcodes.OpenElement, string, boolean];
