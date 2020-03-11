@@ -514,7 +514,7 @@ export function buildVar(
       op = Op.GetSymbol;
       sym = getSymbolForVar(head.kind, symbols, head.name);
   }
-  return (path === undefined ? [op, sym] : [op, sym, path]) as
+  return (path === undefined || path.length === 0 ? [op, sym] : [op, sym, path]) as
     | Expressions.Get
     | Expressions.GetPath;
 }
