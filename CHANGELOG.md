@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.12.3 (March 12, 2020)
+
+- [#18809](https://github.com/emberjs/ember.js/pull/18809) [BUGFIX] Do not error (RE: `elementId` changing) if `elementId` is not changed
+
 ### v3.12.2 (December 4, 2019)
 
 - [#18576](https://github.com/emberjs/ember.js/pull/18576) [BUGFIX] Fix leftover `const` expressions in legacy builds
