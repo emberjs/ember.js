@@ -1,21 +1,26 @@
-export default class Cache<T, V> {
+export default class Cache<
+  T,
+  V extends object | number | string | boolean | bigint | symbol | null
+> {
   public size = 0;
   public misses = 0;
   public hits = 0;
+  private store: Map<T, V>;
 
-  constructor(private limit: number, private func: (obj: T) => V, private store?: any) {
-    this.store = store || new Map();
+  constructor(private limit: number, private func: (obj: T) => V, store?: Map<T, V>) {
+    this.store = store || new Map<T, V>();
   }
 
   get(key: T): V {
-    if (this.store.has(key)) {
+    let value = this.store.get(key);
+    if (value !== undefined) {
       this.hits++;
-
-      return this.store.get(key);
     } else {
       this.misses++;
-      return this.set(key, this.func(key));
+      value = this.set(key, this.func(key));
     }
+
+    return value;
   }
 
   set(key: T, value: V) {
