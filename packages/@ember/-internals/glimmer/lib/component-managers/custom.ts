@@ -396,6 +396,10 @@ export default class CustomComponentManager<ComponentInstance>
 }
 const CUSTOM_COMPONENT_MANAGER = new CustomComponentManager();
 
+type Finalizer = () => void;
+// tslint:disable-next-line:no-empty
+function NOOP() {}
+
 /**
  * Stores internal state about a component instance after it's been created.
  */
@@ -405,7 +409,8 @@ export class CustomComponentState<ComponentInstance> {
     public component: ComponentInstance,
     public args: CapturedArguments,
     public env: EmberVMEnvironment,
-    public namedArgsProxy?: {}
+    public namedArgsProxy?: {},
+    public finalizer: Finalizer
   ) {}
 
   destroy() {
@@ -414,6 +419,12 @@ export class CustomComponentState<ComponentInstance> {
     if (hasDestructors(delegate)) {
       delegate.destroyComponent(component);
     }
+  }
+
+  finalize() {
+    let { finalizer } = this;
+    finalizer();
+    this.finalizer = NOOP;
   }
 }
 
