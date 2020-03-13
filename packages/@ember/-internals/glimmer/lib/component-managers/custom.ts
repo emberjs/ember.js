@@ -149,6 +149,10 @@ export function initialRenderInstrumentDetails(component: any): any {
   return { object: `<${component.constructor.name}:${guidFor(component)}:gc>`, initialRender: true };
 }
 
+export function rerenderInstrumentDetails(component: any): any {
+  return { object: `<${component.constructor.name}:${guidFor(component)}:gc>`, initialRender: false };
+}
+
 /**
   The CustomComponentManager allows addons to provide custom component
   implementations that integrate seamlessly into Ember. This is accomplished
@@ -306,6 +310,8 @@ export default class CustomComponentManager<ComponentInstance>
 
     let value;
 
+    bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
+
     if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
       value = {
         named: namedArgsProxy!,
@@ -394,6 +400,8 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   didUpdateLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
+    bucket.finalize();
+
     if (ENV._DEBUG_RENDER_TREE) {
       bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
     }
