@@ -1,6 +1,6 @@
 import { CUSTOM_TAG_FOR } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
+import { guidFor, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -18,6 +18,7 @@ import {
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import { unwrapTemplate } from '@glimmer/util';
 import { consume, createTag, isConst, Tag } from '@glimmer/validator';
+import { _instrumentStart } from '@ember/instrumentation';
 
 import { ENV } from '@ember/-internals/environment';
 import { EmberVMEnvironment } from '../environment';
@@ -142,6 +143,10 @@ export interface ManagerDelegateWithDestructors<ComponentInstance>
 export interface ComponentArguments {
   positional: unknown[];
   named: Dict<unknown>;
+}
+
+export function initialRenderInstrumentDetails(component: any): any {
+  return { object: `<${component.constructor.name}:${guidFor(component)}:gc>`, initialRender: true };
 }
 
 /**
@@ -275,7 +280,9 @@ export default class CustomComponentManager<ComponentInstance>
 
     const component = delegate.createComponent(definition.ComponentClass.class, value);
 
-    let bucket = new CustomComponentState(delegate, component, capturedArgs, env, namedArgsProxy);
+    let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
+
+    let bucket = new CustomComponentState(delegate, component, capturedArgs, env, namedArgsProxy, finalizer);
 
     if (ENV._DEBUG_RENDER_TREE) {
       env.extra.debugRenderTree.create(bucket, {
@@ -379,6 +386,8 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   didRenderLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
+    bucket.finalize();
+
     if (ENV._DEBUG_RENDER_TREE) {
       bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
     }
