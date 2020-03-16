@@ -1,3 +1,5 @@
+// The type `V` is just anything but `undefined`, so the `Cache.get` can be optimised
+// since a call to `Map.has` is not needed anymore
 export default class Cache<
   T,
   V extends object | number | string | boolean | bigint | symbol | null
