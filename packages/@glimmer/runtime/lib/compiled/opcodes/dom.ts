@@ -1,5 +1,5 @@
 import { Reference, ReferenceCache, VersionedReference } from '@glimmer/reference';
-import { Revision, Tag, isConst, isConstTag, value, validate } from '@glimmer/validator';
+import { Revision, Tag, isConst, isConstTag, valueForTag, validateTag } from '@glimmer/validator';
 import { check, CheckString, CheckElement, CheckOption, CheckNode } from '@glimmer/debug';
 import { Op, Option, ModifierManager } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
@@ -134,15 +134,15 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
     private modifier: ModifierInstanceState
   ) {
     super();
-    this.lastUpdated = value(tag);
+    this.lastUpdated = valueForTag(tag);
   }
 
   evaluate(vm: UpdatingVM) {
     let { manager, modifier, tag, lastUpdated } = this;
 
-    if (!validate(tag, lastUpdated)) {
+    if (!validateTag(tag, lastUpdated)) {
       vm.env.scheduleUpdateModifier(modifier, manager);
-      this.lastUpdated = value(tag);
+      this.lastUpdated = valueForTag(tag);
     }
   }
 }
@@ -178,14 +178,14 @@ export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
     super();
     let { tag } = reference;
     this.tag = tag;
-    this.lastRevision = value(tag);
+    this.lastRevision = valueForTag(tag);
   }
 
   evaluate(vm: UpdatingVM) {
     let { attribute, reference, tag } = this;
-    if (!validate(tag, this.lastRevision)) {
+    if (!validateTag(tag, this.lastRevision)) {
       attribute.update(reference.value(), vm.env);
-      this.lastRevision = value(tag);
+      this.lastRevision = valueForTag(tag);
     }
   }
 }

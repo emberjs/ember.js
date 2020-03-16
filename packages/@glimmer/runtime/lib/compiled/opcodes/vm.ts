@@ -1,6 +1,6 @@
 import { CompilableTemplate, Option, Op } from '@glimmer/interfaces';
 import { isModified, ReferenceCache } from '@glimmer/reference';
-import { CONSTANT_TAG, isConst, Revision, Tag, value, validate } from '@glimmer/validator';
+import { CONSTANT_TAG, isConst, Revision, Tag, valueForTag, validateTag } from '@glimmer/validator';
 import { initializeGuid, assert, isHandle, HandleConstants, decodeHandle } from '@glimmer/util';
 import {
   CheckNumber,
@@ -252,19 +252,19 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
   constructor(tag: Tag, private target: LabelOpcode) {
     super();
     this.tag = tag;
-    this.lastRevision = value(tag);
+    this.lastRevision = valueForTag(tag);
   }
 
   evaluate(vm: UpdatingVM) {
     let { tag, target, lastRevision } = this;
 
-    if (!vm.alwaysRevalidate && validate(tag, lastRevision)) {
+    if (!vm.alwaysRevalidate && validateTag(tag, lastRevision)) {
       vm.goto(target);
     }
   }
 
   didModify() {
-    this.lastRevision = value(this.tag);
+    this.lastRevision = valueForTag(this.tag);
   }
 }
 

@@ -12,7 +12,7 @@ export {
   createUpdatableTag,
   CurrentTag,
   CURRENT_TAG,
-  dirty,
+  dirtyTag,
   DirtyableTag,
   EntityTag,
   EntityTagged,
@@ -23,9 +23,9 @@ export {
   Tag,
   Tagged,
   UpdatableTag,
-  update,
-  validate,
-  value,
+  updateTag,
+  validateTag,
+  valueForTag,
   VolatileTag,
   VOLATILE_TAG,
   VOLATILE,
@@ -33,7 +33,18 @@ export {
 
 export { dirtyTagFor, tagFor, setPropertyDidChange } from './lib/meta';
 
-export { consume, EPOCH, isTracking, track, trackedData, untrack } from './lib/tracking';
+export {
+  beginTrackFrame,
+  endTrackFrame,
+  consumeTag,
+  EPOCH,
+  isTracking,
+  track,
+  trackedData,
+  memoizeTracked,
+  untrack,
+  isConstMemo,
+} from './lib/tracking';
 
 export {
   setAutotrackingTransactionEnv,

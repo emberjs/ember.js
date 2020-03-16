@@ -6,14 +6,14 @@ import {
   combine,
   createUpdatableTag,
   UpdatableTag,
-  dirty,
-  update,
+  dirtyTag,
+  updateTag,
   track,
   Revision,
   isConst,
   isConstTag,
-  value,
-  validate,
+  valueForTag,
+  validateTag,
 } from '@glimmer/validator';
 import { VersionedPathReference } from './reference';
 import { DEBUG } from '@glimmer/env';
@@ -160,15 +160,15 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
       // If the args are constant, and the first computation is constant, then
       // the helper itself is constant and will never update.
       tag = this.tag = CONSTANT_TAG;
-      this.computeRevision = value(tag);
+      this.computeRevision = valueForTag(tag);
     } else {
       let valueTag = (this.valueTag = createUpdatableTag());
       tag = this.tag = combine([args.tag, valueTag]);
 
       if (computeTag !== null) {
         // We computed once, so setup the cache state correctly
-        update(valueTag, computeTag);
-        this.computeRevision = value(tag);
+        updateTag(valueTag, computeTag);
+        this.computeRevision = valueForTag(tag);
       }
     }
   }
@@ -182,10 +182,10 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
   value(): T {
     let { tag, computeRevision } = this;
 
-    if (computeRevision === null || !validate(tag, computeRevision)) {
+    if (computeRevision === null || !validateTag(tag, computeRevision)) {
       this.compute();
-      update(this.valueTag!, this.computeTag!);
-      this.computeRevision = value(tag);
+      updateTag(this.valueTag!, this.computeTag!);
+      this.computeRevision = valueForTag(tag);
     }
 
     return this.computeValue!;
@@ -225,7 +225,7 @@ export class PropertyReference implements TemplatePathReference {
   value() {
     let { tag, lastRevision, lastValue, parentReference, valueTag, propertyKey } = this;
 
-    if (lastRevision === null || !validate(tag, lastRevision)) {
+    if (lastRevision === null || !validateTag(tag, lastRevision)) {
       let parentValue = parentReference.value();
 
       if (isDict(parentValue)) {
@@ -233,13 +233,13 @@ export class PropertyReference implements TemplatePathReference {
           lastValue = this.env.getPath(parentValue, propertyKey);
         }, DEBUG && this.env.getTemplatePathDebugContext(this));
 
-        update(valueTag, combined);
+        updateTag(valueTag, combined);
       } else {
         lastValue = undefined;
       }
 
       this.lastValue = lastValue;
-      this.lastRevision = value(tag);
+      this.lastRevision = valueForTag(tag);
     }
 
     return lastValue;
@@ -307,7 +307,7 @@ export class IterationItemReference<T = unknown> implements TemplatePathReferenc
   }
 
   update(value: T) {
-    dirty(this.tag);
+    dirtyTag(this.tag);
     this.itemValue = value;
   }
 

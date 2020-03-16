@@ -22,7 +22,7 @@ import {
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
 import { VersionedPathReference, PathReference } from '@glimmer/reference';
-import { combine, createTag, dirty, DirtyableTag, Tag } from '@glimmer/validator';
+import { combine, createTag, dirtyTag, DirtyableTag, Tag } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { PrimitiveReference } from '@glimmer/runtime';
@@ -78,7 +78,7 @@ export class EmberishCurlyComponent {
 
   set(key: string, value: unknown) {
     (this as any)[key] = value;
-    dirty(this.dirtinessTag);
+    dirtyTag(this.dirtinessTag);
   }
 
   setProperties(dict: Dict) {
@@ -87,11 +87,11 @@ export class EmberishCurlyComponent {
     }
 
     SELF_REF.get(this)!.dirty();
-    dirty(this.dirtinessTag);
+    dirtyTag(this.dirtinessTag);
   }
 
   recompute() {
-    dirty(this.dirtinessTag);
+    dirtyTag(this.dirtinessTag);
   }
 
   destroy() {}
