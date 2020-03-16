@@ -1,5 +1,11 @@
 import { DEBUG } from '@glimmer/env';
-import { dirty, createUpdatableTag, UpdatableTag, CONSTANT_TAG, ConstantTag } from './validators';
+import {
+  dirtyTag,
+  createUpdatableTag,
+  UpdatableTag,
+  CONSTANT_TAG,
+  ConstantTag,
+} from './validators';
 import { assertTagNotConsumed } from './debug';
 
 export let propertyDidChange = function() {};
@@ -33,7 +39,7 @@ export function dirtyTagFor<T>(obj: T, key: keyof T | string | symbol): void {
         assertTagNotConsumed!(propertyTag, obj, key);
       }
 
-      dirty(propertyTag);
+      dirtyTag(propertyTag);
       propertyDidChange();
     }
   } else {

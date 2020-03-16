@@ -3,20 +3,24 @@ import { module, test } from './-utils';
 import { DEBUG } from '@glimmer/env';
 
 import {
-  consume,
+  consumeTag,
   createTag,
+  beginTrackFrame,
+  endTrackFrame,
   deprecateMutationsInAutotrackingTransaction,
-  dirty,
+  dirtyTag,
   dirtyTagFor,
   isTracking,
+  isConstMemo,
   runInAutotrackingTransaction,
   setPropertyDidChange,
   tagFor,
   track,
+  memoizeTracked,
   trackedData,
   untrack,
-  validate,
-  value,
+  validateTag,
+  valueForTag,
 } from '..';
 
 module('@glimmer/validator: tracking', () => {
@@ -26,17 +30,17 @@ module('@glimmer/validator: tracking', () => {
       let tag2 = createTag();
 
       let combined = track(() => {
-        consume(tag1);
-        consume(tag2);
+        consumeTag(tag1);
+        consumeTag(tag2);
       });
 
-      let snapshot = value(combined);
-      dirty(tag1);
-      assert.notOk(validate(combined, snapshot));
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
 
-      snapshot = value(combined);
-      dirty(tag2);
-      assert.notOk(validate(combined, snapshot));
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(combined, snapshot));
     });
 
     test('it ignores tags consumed within an untrack frame', assert => {
@@ -44,20 +48,20 @@ module('@glimmer/validator: tracking', () => {
       let tag2 = createTag();
 
       let combined = track(() => {
-        consume(tag1);
+        consumeTag(tag1);
 
         untrack(() => {
-          consume(tag2);
+          consumeTag(tag2);
         });
       });
 
-      let snapshot = value(combined);
-      dirty(tag1);
-      assert.notOk(validate(combined, snapshot));
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
 
-      snapshot = value(combined);
-      dirty(tag2);
-      assert.ok(validate(combined, snapshot));
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.ok(validateTag(combined, snapshot));
     });
 
     test('it does not automatically consume tags in nested tracking frames', assert => {
@@ -65,20 +69,20 @@ module('@glimmer/validator: tracking', () => {
       let tag2 = createTag();
 
       let combined = track(() => {
-        consume(tag1);
+        consumeTag(tag1);
 
         track(() => {
-          consume(tag2);
+          consumeTag(tag2);
         });
       });
 
-      let snapshot = value(combined);
-      dirty(tag1);
-      assert.notOk(validate(combined, snapshot));
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
 
-      snapshot = value(combined);
-      dirty(tag2);
-      assert.ok(validate(combined, snapshot));
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.ok(validateTag(combined, snapshot));
     });
 
     test('it works for nested tags', assert => {
@@ -86,22 +90,22 @@ module('@glimmer/validator: tracking', () => {
       let tag2 = createTag();
 
       let combined = track(() => {
-        consume(tag1);
+        consumeTag(tag1);
 
         let tag3 = track(() => {
-          consume(tag2);
+          consumeTag(tag2);
         });
 
-        consume(tag3);
+        consumeTag(tag3);
       });
 
-      let snapshot = value(combined);
-      dirty(tag1);
-      assert.notOk(validate(combined, snapshot));
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
 
-      snapshot = value(combined);
-      dirty(tag2);
-      assert.notOk(validate(combined, snapshot));
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(combined, snapshot));
     });
 
     test('isTracking works within a track and untrack frame', assert => {
@@ -115,6 +119,253 @@ module('@glimmer/validator: tracking', () => {
         });
       });
     });
+  });
+
+  module('manual track frames', () => {
+    test('it combines tags that are consumed within a track frame', assert => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag1);
+      consumeTag(tag2);
+
+      let combined = endTrackFrame();
+
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
+
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(combined, snapshot));
+    });
+
+    test('it ignores tags consumed within an untrack frame', assert => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag1);
+
+      untrack(() => {
+        consumeTag(tag2);
+      });
+
+      let combined = endTrackFrame();
+
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
+
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.ok(validateTag(combined, snapshot));
+    });
+
+    test('it does not automatically consume tags in nested tracking frames', assert => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag1);
+
+      // begin inner track frame
+      beginTrackFrame();
+
+      consumeTag(tag2);
+
+      // end inner track frame
+      endTrackFrame();
+
+      let combined = endTrackFrame();
+
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
+
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.ok(validateTag(combined, snapshot));
+    });
+
+    test('it works for nested tags', assert => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag1);
+
+      // begin inner track frame
+      beginTrackFrame();
+
+      consumeTag(tag2);
+
+      // end inner track frame
+      let tag3 = endTrackFrame();
+
+      consumeTag(tag3);
+
+      let combined = endTrackFrame();
+
+      let snapshot = valueForTag(combined);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(combined, snapshot));
+
+      snapshot = valueForTag(combined);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(combined, snapshot));
+    });
+
+    test('isTracking works within a track', assert => {
+      assert.notOk(isTracking());
+
+      beginTrackFrame();
+
+      assert.ok(isTracking());
+
+      endTrackFrame();
+    });
+
+    test('asserts if track frame was ended without one existing', assert => {
+      assert.throws(
+        () => endTrackFrame(),
+        /attempted to close a tracking frame, but one was not open/
+      );
+    });
+  });
+
+  module('memoizeTracked', () => {
+    test('it memoizes based on tags that are consumed within a track frame', assert => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let count = 0;
+
+      let fn = memoizeTracked(() => {
+        consumeTag(tag1);
+        consumeTag(tag2);
+
+        return ++count;
+      });
+
+      assert.equal(fn(), 1, 'called correctly the first time');
+      assert.equal(fn(), 1, 'memoized result returned second time');
+
+      dirtyTag(tag1);
+      assert.equal(fn(), 2, 'cache busted when tag1 dirtied');
+      assert.equal(fn(), 2, 'memoized result returned when nothing dirtied');
+
+      dirtyTag(tag2);
+      assert.equal(fn(), 3, 'cache busted when tag2 dirtied');
+      assert.equal(fn(), 3, 'memoized result returned when nothing dirtied');
+    });
+
+    test('it ignores tags consumed within an untrack frame', assert => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let count = 0;
+
+      let fn = memoizeTracked(() => {
+        consumeTag(tag1);
+
+        untrack(() => consumeTag(tag2));
+
+        return ++count;
+      });
+
+      assert.equal(fn(), 1, 'called correctly the first time');
+      assert.equal(fn(), 1, 'memoized result returned second time');
+
+      dirtyTag(tag1);
+      assert.equal(fn(), 2, 'cache busted when tag1 dirtied');
+      assert.equal(fn(), 2, 'memoized result returned when nothing dirtied');
+
+      dirtyTag(tag2);
+      assert.equal(fn(), 2, 'cache not busted when tag2 dirtied');
+    });
+
+    test('nested memoizations work, and automatically propogate', assert => {
+      let innerTag = createTag();
+      let outerTag = createTag();
+
+      let innerCount = 0;
+      let outerCount = 0;
+
+      let innerFn = memoizeTracked(() => {
+        consumeTag(innerTag);
+
+        return ++innerCount;
+      });
+
+      let outerFn = memoizeTracked(() => {
+        consumeTag(outerTag);
+
+        return [++outerCount, innerFn()];
+      });
+
+      assert.deepEqual(outerFn(), [1, 1], 'both functions called correctly the first time');
+      assert.deepEqual(outerFn(), [1, 1], 'memoized result returned correctly');
+
+      dirtyTag(outerTag);
+
+      assert.deepEqual(outerFn(), [2, 1], 'outer result updated, inner result still memoized');
+      assert.deepEqual(outerFn(), [2, 1], 'memoized result returned correctly');
+
+      dirtyTag(innerTag);
+
+      assert.deepEqual(outerFn(), [3, 2], 'both inner and outer result updated');
+      assert.deepEqual(outerFn(), [3, 2], 'memoized result returned correctly');
+    });
+
+    test('isTracking works within a memoized function and untrack frame', assert => {
+      assert.expect(3);
+      assert.notOk(isTracking());
+
+      let fn = memoizeTracked(() => {
+        assert.ok(isTracking());
+
+        untrack(() => {
+          assert.notOk(isTracking());
+        });
+      });
+
+      fn();
+    });
+
+    test('isConstMemo allows users to check if a memoized function is constant', assert => {
+      let tag = createTag();
+
+      let constFn = memoizeTracked(() => {
+        // do nothing;
+      });
+
+      let nonConstFn = memoizeTracked(() => {
+        consumeTag(tag);
+      });
+
+      constFn();
+      nonConstFn();
+
+      assert.ok(isConstMemo(constFn), 'constant function returns true');
+      assert.notOk(isConstMemo(nonConstFn), 'non-constant function returns false');
+    });
+
+    if (DEBUG) {
+      test('isConstMemo throws an error in DEBUG mode if users attempt to check a function before it has been called', assert => {
+        let fn = memoizeTracked(() => {
+          // do nothing;
+        });
+
+        assert.throws(
+          () => isConstMemo(fn),
+          /Error: Attempted to call `isConstMemo` on a memoized function/
+        );
+      });
+    }
   });
 
   module('trackedData', () => {
@@ -163,10 +414,10 @@ module('@glimmer/validator: tracking', () => {
         assert.equal(getter(foo), 456, 'value is set correctly');
       });
 
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       setter(foo, 789);
-      assert.notOk(validate(tag, snapshot));
+      assert.notOk(validateTag(tag, snapshot));
     });
 
     test('it calls propertyDidChange', assert => {
@@ -201,8 +452,8 @@ module('@glimmer/validator: tracking', () => {
         assert.throws(() => {
           runInAutotrackingTransaction!(() => {
             track(() => {
-              consume(tag);
-              dirty(tag);
+              consumeTag(tag);
+              dirtyTag(tag);
             });
           });
         }, /Error: You attempted to update `\(an unknown tag\)`/);
@@ -214,11 +465,11 @@ module('@glimmer/validator: tracking', () => {
         assert.throws(() => {
           runInAutotrackingTransaction!(() => {
             track(() => {
-              consume(tag);
+              consumeTag(tag);
             });
 
             track(() => {
-              dirty(tag);
+              dirtyTag(tag);
             });
           });
         }, /Error: You attempted to update `\(an unknown tag\)`/);
@@ -230,11 +481,11 @@ module('@glimmer/validator: tracking', () => {
 
         runInAutotrackingTransaction!(() => {
           untrack(() => {
-            consume(tag);
+            consumeTag(tag);
           });
 
           track(() => {
-            dirty(tag);
+            dirtyTag(tag);
           });
         });
       });
@@ -245,11 +496,11 @@ module('@glimmer/validator: tracking', () => {
         assert.throws(() => {
           runInAutotrackingTransaction!(() => {
             track(() => {
-              consume(tag);
+              consumeTag(tag);
             });
 
             untrack(() => {
-              dirty(tag);
+              dirtyTag(tag);
             });
           });
         }, /Error: You attempted to update `\(an unknown tag\)`/);
@@ -266,8 +517,8 @@ module('@glimmer/validator: tracking', () => {
         runInAutotrackingTransaction!(() => {
           track(() => {
             deprecateMutationsInAutotrackingTransaction!(() => {
-              consume(tag);
-              dirty(tag);
+              consumeTag(tag);
+              dirtyTag(tag);
             });
           });
         });
@@ -282,8 +533,8 @@ module('@glimmer/validator: tracking', () => {
           runInAutotrackingTransaction!(() => {
             deprecateMutationsInAutotrackingTransaction!(() => {
               track(() => {
-                consume(tag);
-                dirty(tag);
+                consumeTag(tag);
+                dirtyTag(tag);
               });
             });
           });
@@ -298,7 +549,7 @@ module('@glimmer/validator: tracking', () => {
           runInAutotrackingTransaction!(() => {
             deprecateMutationsInAutotrackingTransaction!(() => {
               track(() => {
-                consume(tagFor(foo, 'bar'));
+                consumeTag(tagFor(foo, 'bar'));
                 dirtyTagFor(foo, 'bar');
               });
             });
