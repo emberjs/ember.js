@@ -618,7 +618,7 @@ moduleFor(
 );
 
 moduleFor(
-  'Syntax test: {{#each-in}} with ES6 Maps',
+  'Syntax test: {{#each-in}} with ES6 Maps and Sets',
   class extends EachInTest {
     createHash(pojo) {
       let map = new Map();
@@ -671,6 +671,44 @@ moduleFor(
         <li>three: qux</li>
       </ul>
     `);
+    }
+
+    [`@test it supports native ES6 Sets`]() {
+      let nativeSet = new Set();
+      nativeSet.add('foo');
+      nativeSet.add('bar');
+
+      this.render(
+        strip`
+          <ul>
+            {{#each-in set key="@identity" as |key value|}}
+              <li>{{key}}: {{value}}</li>
+            {{/each-in}}
+          </ul>
+        `,
+        { set: nativeSet }
+      );
+
+      this.assertHTML(strip`
+        <ul>
+          <li>0: foo</li>
+          <li>1: bar</li>
+        </ul>
+      `);
+
+      this.assertStableRerender();
+
+      runTask(() => {
+        let nativeSet = new Set();
+        nativeSet.add('qux');
+        set(this.context, 'set', nativeSet);
+      });
+
+      this.assertHTML(strip`
+        <ul>
+          <li>0: qux</li>
+        </ul>
+      `);
     }
   }
 );

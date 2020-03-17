@@ -192,12 +192,18 @@ abstract class NativeIterator<T = unknown> implements IteratorDelegate {
   static from<T>(this: NativeIteratorConstructor<T>, iterable: Iterable<T>) {
     let iterator = iterable[Symbol.iterator]();
     let result = iterator.next();
-    let { done } = result;
+    let { done, value } = result;
 
-    if (done) {
+    if (done === true) {
       return null;
-    } else {
+    } else if (Array.isArray(value) && value.length === 2) {
+      // This check is for MapLike iterators, to see if the value is map-like.
+      // If so, return the iterator as expected. ArrayLike iterators will still
+      // return an array iterator, since we use `this`.
       return new this(iterator, result);
+    } else {
+      // It's not map-like, return an array iterator instead.
+      return new ArrayLikeNativeIterator(iterator, result);
     }
   }
 
