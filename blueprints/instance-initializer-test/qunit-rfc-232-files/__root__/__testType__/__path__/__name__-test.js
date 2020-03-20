@@ -19,7 +19,7 @@ module('<%= friendlyTestName %>', function(hooks) {
     <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
   });
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   test('it works', async function(assert) {
     await this.instance.boot();
 

@@ -4,7 +4,7 @@ import EmberObject from '@ember/object';
 import <%= classifiedModuleName %>Mixin from '<%= dasherizedPackageName %>/mixins/<%= dasherizedModuleName %>';
 
 describe('<%= friendlyTestName %>', function() {
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   it('works', function() {
     let <%= classifiedModuleName %>Object = EmberObject.extend(<%= classifiedModuleName %>Mixin);
     let subject = <%= classifiedModuleName %>Object.create();
