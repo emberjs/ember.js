@@ -136,16 +136,6 @@ moduleFor(
       }, /Custom modifier managers must define their capabilities/);
     }
 
-    '@test modifier capabilities require a version'() {
-      expectDeprecation(() => {
-        modifierCapabilities();
-      }, /Modifier manager capabilities now require you to pass a valid version when being generated/);
-
-      expectDeprecation(() => {
-        modifierCapabilities('aoeu');
-      }, /Modifier manager capabilities now require you to pass a valid version when being generated/);
-    }
-
     '@test associates manager even through an inheritance structure'(assert) {
       assert.expect(5);
       let ModifierClass = setModifierManager(
