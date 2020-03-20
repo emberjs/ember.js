@@ -45,12 +45,6 @@ moduleFor(
       }
     }
 
-    '@test Ember._setComputedDecorator is deprecated'() {
-      expectDeprecation(() => {
-        Ember._setComputedDecorator;
-      }, 'Please migrate from Ember._setComputedDecorator to Ember._setClassicDecorator');
-    }
-
     ['@test Ember.Resolver is present (but deprecated)'](assert) {
       expectDeprecation(() => {
         assert.strictEqual(Ember.Resolver, Resolver, 'Ember.Resolver exists');
