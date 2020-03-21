@@ -1,9 +1,7 @@
 import { expect } from 'chai';
 import { describeModule, it } from 'ember-mocha';
 
-describeModule(
-  'service:<%= dasherizedModuleName %>',
-  '<%= friendlyTestDescription %>',
+describeModule('service:<%= dasherizedModuleName %>', '<%= friendlyTestDescription %>',
   {
     // Specify the other units that are required for this test.
     // needs: ['service:foo']
