@@ -1,6 +1,6 @@
 import { LinkedList, ListNode, Option, symbol } from '@glimmer/util';
 import { Tag } from '@glimmer/validator';
-import { VersionedPathReference as PathReference } from './reference';
+import { VersionedPathReference as PathReference } from '..';
 
 export interface IterationItem<T, U> {
   key: unknown;

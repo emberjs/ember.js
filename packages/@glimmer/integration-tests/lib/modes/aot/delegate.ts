@@ -22,7 +22,7 @@ import {
   DynamicScope,
 } from '@glimmer/interfaces';
 import { WrappedBuilder, PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import { PathReference, UpdatableRootReference, StableState } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import {
   clientBuilder,
   getDynamicVar,
@@ -65,6 +65,7 @@ import AotRuntimeResolverImpl from './resolver';
 import { TestMacros } from '../../compile/macros';
 import AotCompilerDelegate from './compiler-delegate';
 import { preprocess } from '../../compile';
+import { UpdatableRootReference, StableState } from '../../reference';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 

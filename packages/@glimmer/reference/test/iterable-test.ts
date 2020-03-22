@@ -1,10 +1,4 @@
-import {
-  AbstractIterable,
-  Iterator,
-  IterationItem,
-  IterationArtifacts,
-  UpdatableRootReference,
-} from '..';
+import { AbstractIterable, Iterator, IterationItem, IterationArtifacts } from '..';
 import { Tag } from '@glimmer/validator';
 
 import { Option } from '@glimmer/util';
@@ -16,6 +10,8 @@ import {
   getInitialArray,
   Target,
 } from './utils/iterator';
+
+import { VolatileReference } from './utils/reference';
 
 QUnit.module('Reference iterables');
 
@@ -67,13 +63,13 @@ class TestIterable
       unknown,
       unknown,
       IterationItem<unknown, unknown>,
-      UpdatableRootReference<unknown>,
-      UpdatableRootReference<unknown>
+      VolatileReference<unknown>,
+      VolatileReference<unknown>
     > {
   public tag: Tag;
-  private arrayRef: UpdatableRootReference<TestItem[]>;
+  private arrayRef: VolatileReference<TestItem[]>;
 
-  constructor(arrayRef: UpdatableRootReference<TestItem[]>) {
+  constructor(arrayRef: VolatileReference<TestItem[]>) {
     this.tag = arrayRef.tag;
     this.arrayRef = arrayRef;
   }
@@ -82,19 +78,19 @@ class TestIterable
     return new TestIterator(this.arrayRef.value());
   }
 
-  valueReferenceFor(item: TestIterationItem): UpdatableRootReference<unknown> {
-    return new UpdatableRootReference(item.value);
+  valueReferenceFor(item: TestIterationItem): VolatileReference<unknown> {
+    return new VolatileReference(item.value);
   }
 
-  updateValueReference(reference: UpdatableRootReference<unknown>, item: TestIterationItem) {
+  updateValueReference(reference: VolatileReference<unknown>, item: TestIterationItem) {
     reference.update(item.value);
   }
 
-  memoReferenceFor(item: TestIterationItem): UpdatableRootReference<unknown> {
-    return new UpdatableRootReference(item.memo);
+  memoReferenceFor(item: TestIterationItem): VolatileReference<unknown> {
+    return new VolatileReference(item.memo);
   }
 
-  updateMemoReference(reference: UpdatableRootReference<unknown>, item: TestIterationItem) {
+  updateMemoReference(reference: VolatileReference<unknown>, item: TestIterationItem) {
     reference.update(item.memo);
   }
 }
@@ -104,9 +100,9 @@ function initialize(
 ): {
   artifacts: IterationArtifacts;
   target: Target;
-  reference: UpdatableRootReference<TestItem[]>;
+  reference: VolatileReference<TestItem[]>;
 } {
-  let reference = new UpdatableRootReference(arr);
+  let reference = new VolatileReference(arr);
   let iterable = new TestIterable(reference);
   let { target, artifacts } = utilInitialize(iterable);
 

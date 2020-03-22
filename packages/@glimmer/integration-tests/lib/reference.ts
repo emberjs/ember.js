@@ -1,4 +1,4 @@
-import { RootReference, TemplateReferenceEnvironment } from './template';
+import { RootReference, TemplateReferenceEnvironment } from '@glimmer/reference';
 import { createUpdatableTag, dirty, UpdatableTag } from '@glimmer/validator';
 import { Dict } from '@glimmer/interfaces';
 
