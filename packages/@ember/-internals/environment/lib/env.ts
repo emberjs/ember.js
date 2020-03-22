@@ -1,4 +1,3 @@
-import { deprecate } from '@ember/debug';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import global from './global';
@@ -106,8 +105,7 @@ export const ENV = {
 
     This has to be set before the ember JavaScript code is evaluated. This is
     usually done by setting `window.EmberENV = { _DEBUG_RENDER_TREE: true };`
-    or `window.ENV = { _DEBUG_RENDER_TREE: true };` before the "vendor"
-    `<script>` tag in `index.html`.
+    before the "vendor" `<script>` tag in `index.html`.
 
     Setting the flag after Ember is already loaded will not work correctly. It
     may appear to work somewhat, but fundamentally broken.
@@ -183,20 +181,6 @@ export const ENV = {
   },
 };
 
-let providedEnv = global.EmberENV;
-if (providedEnv === undefined) {
-  providedEnv = global.ENV;
-
-  deprecate(
-    "Configuring Ember's boot options via `window.ENV` is deprecated, please migrate to `window.EmberENV` instead.",
-    providedEnv === undefined,
-    {
-      id: 'ember-environment.window.env',
-      until: '3.17.0',
-    }
-  );
-}
-
 (EmberENV => {
   if (typeof EmberENV !== 'object' || EmberENV === null) return;
 
@@ -256,7 +240,7 @@ if (providedEnv === undefined) {
   if (DEBUG) {
     ENV._DEBUG_RENDER_TREE = true;
   }
-})(providedEnv);
+})(global.EmberENV);
 
 export function getENV() {
   return ENV;
