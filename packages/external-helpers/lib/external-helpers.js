@@ -1,6 +1,11 @@
+/* globals Reflect */
+
 import { DEBUG } from '@glimmer/env';
 
 const setPrototypeOf = Object.setPrototypeOf;
+const getPrototypeOf = Object.getPrototypeOf;
+
+const hasReflectConstruct = typeof Reflect === 'object' && typeof Reflect.construct === 'function';
 
 const nativeWrapperCache = new Map();
 
@@ -116,4 +121,75 @@ export function objectDestructuringEmpty(obj) {
   if (DEBUG && (obj === null || obj === undefined)) {
     throw new TypeError('Cannot destructure undefined');
   }
+}
+
+/*
+  Differs from default implementation by checking for _any_ `Reflect.construct`
+  (the default implementation tries to ensure that `Reflect.construct` is truly
+  the native one).
+
+  Original source: https://github.com/babel/babel/blob/v7.9.2/packages/babel-helpers/src/helpers.js#L738-L757
+*/
+export function createSuper(Derived) {
+  return function() {
+    let Super = getPrototypeOf(Derived);
+    let result;
+
+    if (hasReflectConstruct) {
+      // NOTE: This doesn't work if this.__proto__.constructor has been modified.
+      let NewTarget = getPrototypeOf(this).constructor;
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return possibleConstructorReturn(this, result);
+  };
+}
+
+/*
+  Does not differ from default implementation.
+*/
+function arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  let arr2 = new Array(len);
+  for (let i = 0; i < len; i++) {
+    arr2[i] = arr[i];
+  }
+
+  return arr2;
+}
+
+/*
+  Does not differ from default implementation.
+*/
+function unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === 'string') return arrayLikeToArray(o, minLen);
+  let n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === 'Object' && o.constructor) n = o.constructor.name;
+  if (n === 'Map' || n === 'Set') return Array.from(n);
+  if (n === 'Arguments' || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))
+    return arrayLikeToArray(o, minLen);
+}
+
+/*
+  Does not differ from default implementation.
+*/
+export function createForOfIteratorHelperLoose(o) {
+  let i = 0;
+  if (typeof Symbol === 'undefined' || o[Symbol.iterator] == null) {
+    // Fallback for engines without symbol support
+    if (Array.isArray(o) || (o = unsupportedIterableToArray(o)))
+      return function() {
+        if (i >= o.length) return { done: true };
+        return { done: false, value: o[i++] };
+      };
+    throw new TypeError(
+      'Invalid attempt to iterate non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.'
+    );
+  }
+  i = o[Symbol.iterator]();
+  return i.next.bind(i);
 }
