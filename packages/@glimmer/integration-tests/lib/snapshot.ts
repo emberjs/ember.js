@@ -22,9 +22,8 @@ export function equalTokens(
   let fragTokens = generateTokens(testFragment);
   let htmlTokens = generateTokens(testHTML);
 
-  // let msg = "Expected: " + htmlTokens.html + "; Actual: " + fragTokens.html;
-
-  // if (message) { msg += " (" + message + ")"; }
+  cleanEmberIds(fragTokens.tokens);
+  cleanEmberIds(htmlTokens.tokens);
 
   let equiv = QUnit.equiv(fragTokens.tokens, htmlTokens.tokens);
 
@@ -44,6 +43,18 @@ export function equalTokens(
   }
 
   // QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
+}
+
+function cleanEmberIds(tokens: Token[]) {
+  let id = 0;
+
+  tokens.forEach(token => {
+    let idAttr = 'attributes' in token && token.attributes.filter(a => a[0] === 'id')[0];
+
+    if (idAttr) {
+      idAttr[1] = idAttr[1].replace(/ember(\d+|\*)/, `ember${++id}`);
+    }
+  });
 }
 
 function isMarker(node: SimpleNode) {

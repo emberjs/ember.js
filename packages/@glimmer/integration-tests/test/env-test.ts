@@ -1,9 +1,10 @@
-import { JitTestContext } from '..';
+import { EnvironmentImpl } from '@glimmer/runtime';
+import { SimpleDocument } from '@simple-dom/interface';
 
-QUnit.module('env');
+QUnit.module('[integration] env');
 
 QUnit.test('assert against nested transactions', assert => {
-  let env = JitTestContext().env;
+  let env = new EnvironmentImpl({ document: document as SimpleDocument }, {});
   env.begin();
   assert.throws(
     () => env.begin(),
@@ -12,7 +13,7 @@ QUnit.test('assert against nested transactions', assert => {
 });
 
 QUnit.test('ensure commit cleans up when it can', assert => {
-  let env = JitTestContext().env;
+  let env = new EnvironmentImpl({ document: document as SimpleDocument }, {});
   env.begin();
 
   // ghetto stub
