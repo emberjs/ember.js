@@ -1,12 +1,14 @@
 import { module, test } from './utils/qunit';
 
-import { IterableImpl, IterationArtifacts, UpdatableRootReference } from '..';
+import { IterableImpl, IterationArtifacts } from '..';
 import { symbol } from '@glimmer/util';
 
 import { initialize as utilInitialize, sync, Target } from './utils/iterator';
 
 import { TestEnv } from './utils/template';
 import objectValues from './utils/platform';
+
+import { VolatileReference } from './utils/reference';
 
 function initialize(
   arr: unknown,
@@ -15,9 +17,9 @@ function initialize(
 ): {
   artifacts: IterationArtifacts;
   target: Target;
-  reference: UpdatableRootReference<unknown>;
+  reference: VolatileReference<unknown>;
 } {
-  let reference = new UpdatableRootReference(arr);
+  let reference = new VolatileReference(arr);
   let iterable = new IterableImpl(reference, key, env);
   let { target, artifacts } = utilInitialize(iterable);
 

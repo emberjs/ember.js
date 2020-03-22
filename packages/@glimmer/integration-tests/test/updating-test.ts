@@ -1,5 +1,4 @@
 import { Option, HandleResult, ErrHandle, EncoderError } from '@glimmer/interfaces';
-import { UpdatableRootReference } from '@glimmer/reference';
 import { ConstReference } from '@glimmer/reference';
 import { RenderTest, test, jitSuite, JitRenderDelegate } from '..';
 import { PrimitiveReference, SafeString } from '@glimmer/runtime';
@@ -9,6 +8,7 @@ import {
   getElementsByTagName,
   stripTight,
   trimLines,
+  UpdatableRootReference,
 } from '..';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert } from './support';

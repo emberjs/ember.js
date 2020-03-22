@@ -1,10 +1,10 @@
 import { preprocess } from '../compile';
 import { JitRuntimeContext, SyntaxCompilationContext, Template, Option } from '@glimmer/interfaces';
 import { assertElement, firstElementChild } from '../dom/simple-utils';
-import { UpdatableRootReference } from '@glimmer/reference';
 import { renderJitMain, clientBuilder } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 import { assign, unwrapTemplate, unwrapHandle } from '@glimmer/util';
+import { UpdatableRootReference } from '../reference';
 
 export class EmberishRootView {
   private template: Template;
