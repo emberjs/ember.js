@@ -1,13 +1,13 @@
 import { IRenderTest, Count, RenderTest } from '../render-test';
-import RenderDelegate from '../render-delegate';
+import RenderDelegate, { RenderDelegateOptions } from '../render-delegate';
 import { JitRenderDelegate } from '../modes/jit/delegate';
-import { SimpleDocument } from '@simple-dom/interface';
 import { keys } from '@glimmer/util';
 import { DeclaredComponentKind } from '../test-decorator';
 import { ComponentKind } from '../components';
 import { AotRenderDelegate } from '../modes/aot/delegate';
 import { NodeRenderDelegate } from '../modes/node/env';
 import { JitSerializationDelegate, AotSerializationDelegate } from '../suites/custom-dom-helper';
+import { EnvironmentDelegate } from '@glimmer/runtime';
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
   suiteName: string;
@@ -16,7 +16,7 @@ export interface RenderTestConstructor<D extends RenderDelegate, T extends IRend
 
 export function jitSuite<T extends IRenderTest>(
   klass: RenderTestConstructor<RenderDelegate, T>,
-  options = { componentModule: false }
+  options?: { componentModule?: boolean; env?: EnvironmentDelegate }
 ): void {
   return suite(klass, JitRenderDelegate, options);
 }
@@ -70,7 +70,7 @@ export function aotSerializeSuite<T extends IRenderTest>(
 export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
   readonly isEager: boolean;
   readonly style: string;
-  new (doc?: SimpleDocument): Delegate;
+  new (options?: RenderDelegateOptions): Delegate;
 }
 
 export function componentSuite<D extends RenderDelegate>(
@@ -83,7 +83,7 @@ export function componentSuite<D extends RenderDelegate>(
 export function suite<D extends RenderDelegate>(
   klass: RenderTestConstructor<D, IRenderTest>,
   Delegate: RenderDelegateConstructor<D>,
-  options = { componentModule: false }
+  options: { componentModule?: boolean; env?: EnvironmentDelegate } = {}
 ): void {
   let suiteName = klass.suiteName;
 
@@ -96,16 +96,27 @@ export function suite<D extends RenderDelegate>(
       );
     }
   } else {
-    QUnit.module(`[integration] ${Delegate.style} :: ${suiteName}`);
+    let instance: IRenderTest | null = null;
+    QUnit.module(`[integration] ${Delegate.style} :: ${suiteName}`, {
+      beforeEach() {
+        instance = new klass(new Delegate({ env: options.env }));
+        if (instance.beforeEach) instance.beforeEach();
+      },
+
+      afterEach() {
+        if (instance!.afterEach) instance!.afterEach();
+        instance = null;
+      },
+    });
 
     for (let prop in klass.prototype) {
       const test = klass.prototype[prop];
 
       if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
+        // eslint-disable-next-line no-loop-func
         QUnit.test(prop, assert => {
-          let instance = new klass(new Delegate());
-          test.call(instance, assert, instance.count);
-          instance.count.assert();
+          test.call(instance!, assert, instance!.count);
+          instance!.count.assert();
         });
       }
     }

@@ -4,9 +4,6 @@ import {
   test,
   EmberishCurlyComponent,
   EmberishCurlyComponentFactory,
-  JitTestContext,
-  TestContext,
-  registerEmberishCurlyComponent,
   EmberishRootView,
 } from '..';
 
@@ -86,33 +83,21 @@ class EmberInputRangeComponent extends EmberishCurlyComponent {
 }
 
 abstract class EmberComponentRangeTests extends RangeTests {
-  context!: TestContext;
   view!: EmberishRootView;
-
-  setup() {
-    this.context = JitTestContext();
-  }
 
   abstract component(): EmberishCurlyComponentFactory;
 
-  appendViewFor(template: string, state: Object = {}) {
-    this.view = new EmberishRootView(this.context.runtime, this.context.syntax, template, state);
-
-    this.context.env.begin();
-    this.view.appendTo('#qunit-fixture');
-    this.context.env.commit();
-  }
-
   renderRange(value: number): void {
-    registerEmberishCurlyComponent(this.context.registry, 'range-input', this.component(), '');
-    this.appendViewFor(`{{range-input max=max min=min value=value}}`, {
+    this.registerComponent('Curly', 'range-input', '', this.component());
+    this.render(`{{range-input max=max min=min value=value}}`, {
       max: this.max,
       min: this.min,
       value,
     });
   }
+
   assertRangeValue(value: number): void {
-    let attr = (this.view.element as any)['value'];
+    let attr = (this.element.firstChild as any)['value'];
     this.assert.equal(attr, value.toString());
   }
 }

@@ -8,7 +8,6 @@ export * from './lib/markers';
 export * from './lib/modes/aot/delegate';
 export * from './lib/modes/jit/delegate';
 export * from './lib/modes/jit/register';
-export * from './lib/modes/jit/test-context';
 export * from './lib/modes/node/env';
 export * from './lib/modes/rehydration/delegate';
 export * from './lib/render-test';

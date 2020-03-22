@@ -1,4 +1,4 @@
-import { Dict, Maybe, Option, RenderResult } from '@glimmer/interfaces';
+import { Dict, Maybe, Option, RenderResult, Helper } from '@glimmer/interfaces';
 import { UpdatableRootReference } from '@glimmer/reference';
 import { bump, isConst } from '@glimmer/validator';
 import { clearElement, dict, expect, assign } from '@glimmer/util';
@@ -21,6 +21,8 @@ import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from '.
 export interface IRenderTest {
   readonly count: Count;
   testType: ComponentKind;
+  beforeEach?(): void;
+  afterEach?(): void;
 }
 
 export class Count {
@@ -56,8 +58,16 @@ export class RenderTest implements IRenderTest {
     this.delegate.registerHelper(name, helper);
   }
 
+  registerInternalHelper(name: string, helper: Helper) {
+    this.delegate.registerInternalHelper(name, helper);
+  }
+
   registerModifier(name: string, ModifierClass: TestModifierConstructor) {
     this.delegate.registerModifier(name, ModifierClass);
+  }
+
+  registerPartial(name: string, content: string) {
+    this.delegate.registerPartial(name, content);
   }
 
   registerComponent<K extends ComponentKind>(
@@ -345,7 +355,12 @@ export class RenderTest implements IRenderTest {
   }
 
   render(template: string | ComponentBlueprint, properties: Dict<unknown> = {}): void {
-    QUnit.assert.ok(true, `Rendering ${template} with ${JSON.stringify(properties)}`);
+    try {
+      QUnit.assert.ok(true, `Rendering ${template} with ${JSON.stringify(properties)}`);
+    } catch {
+      // couldn't stringify, possibly has a circular dependency
+    }
+
     if (typeof template === 'object') {
       let blueprint = template as ComponentBlueprint;
       template = this.buildComponent(blueprint);
@@ -363,7 +378,12 @@ export class RenderTest implements IRenderTest {
   }
 
   rerender(properties: Dict<unknown> = {}): void {
-    QUnit.assert.ok(true, `rerender ${JSON.stringify(properties)}`);
+    try {
+      QUnit.assert.ok(true, `rerender ${JSON.stringify(properties)}`);
+    } catch {
+      // couldn't stringify, possibly has a circular dependency
+    }
+
     this.setProperties(properties);
 
     let self = this.delegate.getSelf(this.context);
@@ -377,6 +397,12 @@ export class RenderTest implements IRenderTest {
     result.env.begin();
     result.rerender();
     result.env.commit();
+  }
+
+  destroy(): void {
+    let result = expect(this.renderResult, 'the test should call render() before destroy()');
+
+    result.destroy();
   }
 
   protected set(key: string, value: unknown): void {
@@ -428,8 +454,12 @@ export class RenderTest implements IRenderTest {
     this.assertStableNodes();
   }
 
-  protected assertHTML(html: string, message?: string) {
-    equalTokens(this.element, html, message ? `${html} (${message})` : html);
+  protected assertHTML(html: string, elementOrMessage?: SimpleElement | string, message?: string) {
+    if (typeof elementOrMessage === 'object') {
+      equalTokens(elementOrMessage || this.element, html, message ? `${html} (${message})` : html);
+    } else {
+      equalTokens(this.element, html, elementOrMessage ? `${html} (${elementOrMessage})` : html);
+    }
     this.takeSnapshot();
   }
 
