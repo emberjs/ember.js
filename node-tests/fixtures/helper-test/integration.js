@@ -5,7 +5,7 @@ moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {
   integration: true
 });
 
-// Replace this with your real tests.
+// TODO: Replace this with your real tests.
 test('it renders', function(assert) {
   this.set('inputValue', '1234');
 
