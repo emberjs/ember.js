@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ember</title>
+    <link rel="stylesheet" href="./qunit/qunit.css">
+    <style type="text/css">
+      #qunit-tests.hideskipped li.skipped {
+        display: none;
+      }
+    </style>
+    <script src="./polyfill.js"></script>
+    <script src="./qunit/qunit.js"></script>
+    <script src="/testem.js"></script>
+
+    <script type="text/javascript">
+      window.loadScript = function(url) {
+        document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
+      };
+    </script>
+
+    <script type="text/javascript">
+      // Load custom version of jQuery if possible
+      var jQueryVersion = QUnit.urlParams.jquery;
+      if (jQueryVersion && jQueryVersion !== 'none') {
+        loadScript('https://code.jquery.com/jquery-'+jQueryVersion+'.js');
+      }
+      // Close the script tag to make sure document.write happens
+    </script>
+
+    <script type="text/javascript">
+      // Fallback to default jQuery
+      if (jQueryVersion !== 'none' && !window.jQuery) {
+        loadScript('./jquery/jquery.js');
+      }
+      // Close the script tag to make sure document.write happens
+    </script>
+
+    <script>
+      (function() {
+        window.EmberENV = window.EmberENV || {};
+
+        // Determine edition, and apply correct EmberENV settings
+        var edition = QUnit.urlParams.edition || 'octane';
+
+        if (edition === 'octane') {
+          EmberENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+          EmberENV._APPLICATION_TEMPLATE_WRAPPER = false;
+          EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
+        }
+
+        // Test for "hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"
+        EmberENV.EMBER_LOAD_HOOKS = EmberENV.EMBER_LOAD_HOOKS || {};
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
+        EmberENV.__test_hook_count__ = 0;
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
+          EmberENV.__test_hook_count__ += object;
+        });
+
+
+        // Handle extending prototypes
+        EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
+
+        // Handle testing feature flags
+        if (QUnit.urlParams.enableoptionalfeatures) {
+          EmberENV.ENABLE_OPTIONAL_FEATURES = true;
+        }
+
+        EmberENV['RAISE_ON_DEPRECATION'] = true;
+
+        if (QUnit.urlParams.debugrendertree) {
+          EmberENV['_DEBUG_RENDER_TREE'] = true;
+        }
+      })();
+    </script>
+
+    <script>
+      if (QUnit.urlParams.prebuilt) {
+        loadScript('../ember.debug.js');
+      } else {
+        loadScript('./ember.js');
+      }
+      loadScript('./ember-testing.js');
+    </script>
+
+    <script type="text/javascript">
+      var setTesting = Ember.__loader.require('@ember/debug')['setTesting'];
+      setTesting(true);
+    </script>
+
+    <script>
+      loadScript('../ember-template-compiler.js');
+      loadScript('./ember-tests.js');
+    </script>
+
+    <script>
+      (function() {
+        if (QUnit.urlParams.forceskip) {
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return QUnit.test(string, callback);
+          };
+        } else {
+          var skip = QUnit.skip;
+          QUnit.skip = function(string, callback) {
+            string = "SKIPPED: " + string;
+            return skip(string, callback);
+          }
+        }
+
+        var setupQUnit = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
+        setupQUnit();
+
+        // Tests should time out after 15 seconds
+        QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;
+        // Hide skipped tests
+        QUnit.config.urlConfig.push({ id: 'hideskipped', label: "Hide skipped tests"});
+        // Handle testing feature flags
+        QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
+        // Handle extending prototypes
+        QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
+
+        QUnit.config.urlConfig.push('forceskip');
+
+        if (QUnit.config.seed) {
+          QUnit.config.reorder = false;
+        }
+
+        var testsTotal, testsPassed, testsFailed, testsRunning;
+
+        QUnit.begin(function() {
+          testsRunning = true;
+          testsTotal = testsPassed = testsFailed = 0;
+
+          if (QUnit.urlParams.hideskipped) {
+            $('#qunit-tests').addClass('hideskipped');
+          }
+        });
+
+        QUnit.testDone(function(results) {
+          testsTotal++;
+
+          if (results.failed) {
+            testsFailed++;
+          } else {
+            testsPassed++;
+          }
+        });
+
+        QUnit.done(function(result) {
+          console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
+          testsRunning = false;
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+          if (testsRunning) {
+            debugger
+
+            // Cancel the event
+            e.preventDefault();
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+          }
+        });
+      })();
+    </script>
+
+    <script>
+      var packages     = QUnit.urlParams.package;
+      packages = (packages && packages.split(',')) || [".*"];
+      var packageRegexp   = new RegExp('^('+packages.join('|')+')/');
+
+      var skipPackages = QUnit.urlParams.skipPackage;
+      skipPackages = (skipPackages && skipPackages.split(',')) || [];
+      var skipPackageRegexp   = new RegExp('^('+skipPackages.join('|')+')/');
+
+      for (var moduleName in Ember.__loader.registry) {
+        if (!moduleName.match(packageRegexp))   { continue; }
+        if (moduleName.match(skipPackageRegexp)) { continue; }
+
+        if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
+      }
+    </script>
+
+  </head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+</body>
+</html>

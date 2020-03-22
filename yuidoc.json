@@ -1,0 +1,19 @@
+{
+  "name": "The Ember API",
+  "description": "The Ember API: a framework for building ambitious web applications",
+  "url": "https://emberjs.com/",
+  "options": {
+    "extension": ".js,.ts",
+    "paths": [
+      "packages/ember/lib",
+      "packages/ember-debug/lib",
+      "packages/ember-testing/lib",
+      "node_modules/rsvp/lib",
+      "packages/@ember",
+      "packages/@ember/-internals"
+    ],
+    "exclude": "vendor",
+    "outdir":   "docs",
+    "preprocessor": "bin/feature-flag-yuidoc-filter"
+  }
+}

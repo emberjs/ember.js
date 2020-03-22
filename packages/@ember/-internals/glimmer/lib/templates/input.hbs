@@ -1,0 +1,7 @@
+{{~#let (component '-checkbox') (component '-text-field') as |Checkbox TextField|~}}
+  {{~#if this.isCheckbox~}}
+    <Checkbox @target={{this.caller}} @__ARGS__={{@__ARGS__}} ...attributes />
+  {{~else~}}
+    <TextField @target={{this.caller}} @__ARGS__={{@__ARGS__}} ...attributes />
+  {{~/if~}}
+{{~/let~}}

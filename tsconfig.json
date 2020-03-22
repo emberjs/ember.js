@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": "packages",
+    "rootDir": "packages",
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "strict": true,
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "newLine": "LF",
+    "noEmit": true,
+    "allowJs": false,
+
+    // TODO: remove this once router_js types have been fixed
+    // https://github.com/tildeio/router.js/issues/290
+    "skipLibCheck": true,
+
+    "paths": {
+      "@glimmer/*": ["../node_modules/@glimmer/*"]
+    }
+  },
+
+  "include": [
+    "packages/**/*.ts",
+  ],
+
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+  ]
+}
