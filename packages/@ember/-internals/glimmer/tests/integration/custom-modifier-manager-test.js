@@ -103,49 +103,6 @@ moduleFor(
       runTask(() => set(this.context, 'truthy', true));
     }
 
-    '@test requires modifier capabilities'() {
-      class WithoutCapabilities extends CustomModifierManager {
-        constructor(owner) {
-          super(owner);
-          this.capabilities = undefined;
-        }
-      }
-
-      let ModifierClass = setModifierManager(
-        owner => {
-          return new WithoutCapabilities(owner);
-        },
-        EmberObject.extend({
-          didInsertElement() {},
-          didUpdate() {},
-          willDestroyElement() {},
-        })
-      );
-
-      this.registerModifier(
-        'foo-bar',
-        ModifierClass.extend({
-          didUpdate() {},
-          didInsertElement() {},
-          willDestroyElement() {},
-        })
-      );
-
-      expectDeprecation(() => {
-        this.render('<h1 {{foo-bar truthy}}>hello world</h1>');
-      }, /Custom modifier managers must define their capabilities/);
-    }
-
-    '@test modifier capabilities require a version'() {
-      expectDeprecation(() => {
-        modifierCapabilities();
-      }, /Modifier manager capabilities now require you to pass a valid version when being generated/);
-
-      expectDeprecation(() => {
-        modifierCapabilities('aoeu');
-      }, /Modifier manager capabilities now require you to pass a valid version when being generated/);
-    }
-
     '@test associates manager even through an inheritance structure'(assert) {
       assert.expect(5);
       let ModifierClass = setModifierManager(

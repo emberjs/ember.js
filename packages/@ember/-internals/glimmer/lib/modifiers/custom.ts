@@ -1,6 +1,6 @@
 import { Factory } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
 import {
@@ -33,19 +33,6 @@ export function capabilities(
   managerAPI: string,
   optionalFeatures: OptionalCapabilities = {}
 ): Capabilities {
-  if (managerAPI !== '3.13') {
-    managerAPI = '3.13';
-
-    deprecate(
-      'Modifier manager capabilities now require you to pass a valid version when being generated. Valid versions include: 3.13',
-      false,
-      {
-        until: '3.17.0',
-        id: 'implicit-modifier-manager-capabilities',
-      }
-    );
-  }
-
   assert('Invalid modifier manager compatibility specified', managerAPI === '3.13');
 
   return {
@@ -144,19 +131,6 @@ class InteractiveCustomModifierManager<ModifierInstance>
     const capturedArgs = args.capture();
 
     let instance = definition.delegate.createModifier(ModifierClass, capturedArgs.value());
-
-    if (delegate.capabilities === undefined) {
-      delegate.capabilities = capabilities('3.13');
-
-      deprecate(
-        'Custom modifier managers must define their capabilities using the capabilities() helper function',
-        false,
-        {
-          until: '3.17.0',
-          id: 'implicit-modifier-manager-capabilities',
-        }
-      );
-    }
 
     return new CustomModifierState(element, delegate, instance, capturedArgs);
   }
