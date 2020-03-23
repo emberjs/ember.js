@@ -17,7 +17,6 @@ export { ConstReference } from './lib/const';
 export { ListItem, END } from './lib/iterable';
 
 export * from './lib/template';
-export * from './lib/state';
 
 export {
   IterationItem,

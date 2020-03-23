@@ -1,4 +1,4 @@
-import { PathReference, UpdatableRootReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { combine, createUpdatableTag, UpdatableTag, Tag } from '@glimmer/validator';
 import {
   Dict,
@@ -23,6 +23,7 @@ import { BASIC_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
 import { EmberishCurlyComponentFactory } from './emberish-curly';
+import { UpdatableRootReference } from '../reference';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };

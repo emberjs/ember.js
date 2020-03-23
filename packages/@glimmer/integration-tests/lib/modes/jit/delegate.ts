@@ -46,11 +46,12 @@ import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
 import { EmberishGlimmerComponentFactory } from '../../components/emberish-glimmer';
 import { TestModifierConstructor } from '../../modifiers';
 import { UserHelper } from '../../helpers';
-import { UpdatableRootReference, ConstReference } from '@glimmer/reference';
+import { ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 import { JitContext } from '@glimmer/opcode-compiler';
 import { preprocess } from '../../compile';
 import { unwrapTemplate } from '@glimmer/util';
+import { UpdatableRootReference } from '../../reference';
 
 export interface JitTestDelegateContext {
   runtime: JitRuntimeContext;

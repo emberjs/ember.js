@@ -8,7 +8,6 @@ import {
   Helper,
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
-import { UpdatableRootReference } from '@glimmer/reference';
 import createHTMLDocument from '@simple-dom/document';
 import {
   SimpleDocument,
@@ -35,6 +34,7 @@ import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import TestJitRuntimeResolver from '../jit/resolver';
 import { debugRehydration, DebugRehydrationBuilder } from './builder';
+import { UpdatableRootReference } from '../../reference';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];

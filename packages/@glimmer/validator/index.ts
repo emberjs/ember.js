@@ -10,6 +10,7 @@ export {
   createCombinatorTag,
   createTag,
   createUpdatableTag,
+  CurrentTag,
   CURRENT_TAG,
   dirty,
   DirtyableTag,
@@ -25,6 +26,7 @@ export {
   update,
   validate,
   value,
+  VolatileTag,
   VOLATILE_TAG,
   VOLATILE,
 } from './lib/validators';
