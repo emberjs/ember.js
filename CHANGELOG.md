@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v3.16.4 (March 22, 2020)
+
+- [#18741](https://github.com/emberjs/ember.js/pull/18741) [BUGFIX] Don't setup mandatory setters on array indexes
+- [#18742](https://github.com/emberjs/ember.js/pull/18742) [BUGFIX] Fix `setDiff` computed macro used within glimmer component
+- [#18767](https://github.com/emberjs/ember.js/pull/18767) [BUGFIX] Fix `observer` leaks.
+- [#18780](https://github.com/emberjs/ember.js/pull/18780) [BUGFIX] Fix `owner.ownerInjection()` when used to create services directly
+- [#18810](https://github.com/emberjs/ember.js/pull/18810) [BUGFIX] Do not error (RE: elementId changing) if elementId is not changed
+
+
 ### v3.16.3 (February 18, 2020)
 
 - [#18730](https://github.com/emberjs/ember.js/pull/18730) Workaround for the Glimmer VM bug which encodes/decodes integer literals correctly.
