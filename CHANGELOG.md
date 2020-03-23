@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.18.0-beta.3 (March 23, 2020)
+
+- [#18831](https://github.com/emberjs/ember.js/pull/18831) [BUGFIX] Fix transpilation issues (e.g. `_createSuper` is not a function) when used with Babel 7.9.0+.
+
 ### v3.18.0-beta.2 (March 16, 2020)
 
 - [#18807](https://github.com/emberjs/ember.js/pull/18807) [BUGFIX] Do not error (RE: `elementId` changing) if `elementId` is not changed
