@@ -4,7 +4,7 @@ import { SimpleDocument } from '@simple-dom/interface';
 import { JitRenderDelegate } from '../jit/delegate';
 import { AotRenderDelegate } from '../aot/delegate';
 import { RenderTest } from '../../render-test';
-import RenderDelegate from '../../render-delegate';
+import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
 import { toInnerHTML, assertElement } from '../../dom/simple-utils';
 
 export interface NodeEnvironmentOptions {
@@ -16,16 +16,18 @@ export interface NodeEnvironmentOptions {
 export class NodeJitRenderDelegate extends JitRenderDelegate {
   static style = 'node jit';
 
-  constructor() {
-    super(createHTMLDocument());
+  constructor(options: RenderDelegateOptions = {}) {
+    options.doc = options.doc || createHTMLDocument();
+    super(options);
   }
 }
 
 export class NodeAotRenderDelegate extends AotRenderDelegate {
   static style = 'node aot';
 
-  constructor() {
-    super(createHTMLDocument());
+  constructor(options: RenderDelegateOptions = {}) {
+    options.doc = options.doc || createHTMLDocument();
+    super(options);
   }
 }
 
@@ -54,7 +56,8 @@ export class AbstractNodeTest extends RenderTest {
 }
 
 export class NodeRenderDelegate extends AotRenderDelegate {
-  constructor(doc: SimpleDocument = createHTMLDocument()) {
-    super(doc);
+  constructor(options: RenderDelegateOptions = {}) {
+    options.doc = options.doc ?? createHTMLDocument();
+    super(options);
   }
 }

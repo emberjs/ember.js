@@ -21,7 +21,7 @@ import {
   ElementBuilder,
   DynamicScope,
 } from '@glimmer/interfaces';
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import { WrappedBuilder, PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import { PathReference, UpdatableRootReference, StableState } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -32,7 +32,13 @@ import {
   AotRuntime,
 } from '@glimmer/runtime';
 import { assert, assign, expect, Option } from '@glimmer/util';
-import { SimpleElement, SimpleDocument } from '@simple-dom/interface';
+import {
+  SimpleElement,
+  SimpleDocument,
+  SimpleText,
+  ElementNamespace,
+  SimpleDocumentFragment,
+} from '@simple-dom/interface';
 import { BasicComponent, BasicComponentManager } from '../../components/basic';
 import {
   EmberishCurlyComponent,
@@ -58,6 +64,7 @@ import {
 import AotRuntimeResolverImpl from './resolver';
 import { TestMacros } from '../../compile/macros';
 import AotCompilerDelegate from './compiler-delegate';
+import { preprocess } from '../../compile';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -97,14 +104,9 @@ export class AotRenderDelegate implements RenderDelegate {
   public constants!: DebugConstants;
   private doc: SimpleDocument;
 
-  constructor(doc?: SimpleDocument) {
+  constructor(options?: { doc?: SimpleDocument }) {
     this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
-    this.doc = doc || (document as SimpleDocument);
-  }
-
-  private registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
-    this.registry.register(name, 'helper', { default: helper });
-    return helper;
+    this.doc = options?.doc || (document as SimpleDocument);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
@@ -117,6 +119,18 @@ export class AotRenderDelegate implements RenderDelegate {
 
   createElement(tagName: string): SimpleElement {
     return this.doc.createElement(tagName);
+  }
+
+  createTextNode(content: string): SimpleText {
+    return this.doc.createTextNode(content);
+  }
+
+  createElementNS(namespace: ElementNamespace, tagName: string): SimpleElement {
+    return this.doc.createElementNS(namespace, tagName);
+  }
+
+  createDocumentFragment(): SimpleDocumentFragment {
+    return this.doc.createDocumentFragment();
   }
 
   registerComponent(
@@ -160,6 +174,15 @@ export class AotRenderDelegate implements RenderDelegate {
   registerHelper(name: string, helper: UserHelper): void {
     let glimmerHelper: GlimmerHelper = args => new HelperReference(helper, args);
     this.registry.register(name, 'helper', { default: glimmerHelper });
+  }
+
+  registerInternalHelper(name: string, helper: GlimmerHelper) {
+    this.registry.register(name, 'helper', { default: helper });
+  }
+
+  registerPartial(name: string, source: string) {
+    let definition = new PartialDefinitionImpl(name, preprocess(source));
+    this.registry.register(name, 'partial', { default: definition });
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {

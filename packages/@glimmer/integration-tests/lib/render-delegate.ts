@@ -1,14 +1,36 @@
 import { DebugConstants } from '@glimmer/bundle-compiler';
-import { SimpleElement } from '@simple-dom/interface';
+import {
+  SimpleElement,
+  SimpleText,
+  ElementNamespace,
+  SimpleDocumentFragment,
+  SimpleDocument,
+} from '@simple-dom/interface';
 import { ComponentKind, ComponentTypes } from './components';
 import { UserHelper } from './helpers';
-import { Dict, RenderResult, Environment, Cursor, ElementBuilder } from '@glimmer/interfaces';
+import {
+  Dict,
+  RenderResult,
+  Environment,
+  Cursor,
+  ElementBuilder,
+  Helper,
+} from '@glimmer/interfaces';
 import { UpdatableRootReference, ConstReference } from '@glimmer/reference';
+import { EnvironmentDelegate } from '@glimmer/runtime';
+
+export interface RenderDelegateOptions {
+  doc?: SimpleDocument;
+  env?: EnvironmentDelegate;
+}
 
 export default interface RenderDelegate {
   constants?: DebugConstants;
   getInitialElement(): SimpleElement;
   createElement(tagName: string): SimpleElement;
+  createTextNode(content: string): SimpleText;
+  createElementNS(namespace: ElementNamespace, tagName: string): SimpleElement;
+  createDocumentFragment(): SimpleDocumentFragment;
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
     type: K,
     testType: L,
@@ -17,6 +39,8 @@ export default interface RenderDelegate {
     Class?: ComponentTypes[K]
   ): void;
   registerHelper(name: string, helper: UserHelper): void;
+  registerInternalHelper(name: string, helper: Helper): void;
+  registerPartial(name: string, content: string): void;
   registerModifier(name: string, klass: unknown): void;
   renderTemplate(
     template: string,
