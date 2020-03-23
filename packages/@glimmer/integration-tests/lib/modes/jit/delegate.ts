@@ -7,10 +7,24 @@ import {
   Dict,
   RenderResult,
   Option,
+  Helper,
+  HandleResult,
 } from '@glimmer/interfaces';
-import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import {
+  SimpleDocument,
+  SimpleElement,
+  ElementNamespace,
+  SimpleText,
+  SimpleDocumentFragment,
+} from '@simple-dom/interface';
 import { TestJitRegistry } from './registry';
-import { getDynamicVar, clientBuilder, JitRuntime } from '@glimmer/runtime';
+import {
+  getDynamicVar,
+  clientBuilder,
+  JitRuntime,
+  EnvironmentDelegate,
+  CurriedComponentDefinition,
+} from '@glimmer/runtime';
 import {
   registerInternalHelper,
   registerStaticTaglessComponent,
@@ -18,11 +32,14 @@ import {
   registerEmberishGlimmerComponent,
   registerModifier,
   registerHelper,
+  registerPartial,
+  registerTemplate,
+  componentHelper,
 } from './register';
 import { TestMacros } from '../../compile/macros';
 import JitCompileTimeLookup from './compilation-context';
 import TestJitRuntimeResolver from './resolver';
-import RenderDelegate from '../../render-delegate';
+import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { BasicComponentFactory } from '../../components/basic';
 import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
@@ -32,6 +49,8 @@ import { UserHelper } from '../../helpers';
 import { UpdatableRootReference, ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 import { JitContext } from '@glimmer/opcode-compiler';
+import { preprocess } from '../../compile';
+import { unwrapTemplate } from '@glimmer/util';
 
 export interface JitTestDelegateContext {
   runtime: JitRuntimeContext;
@@ -41,11 +60,12 @@ export interface JitTestDelegateContext {
 export function JitDelegateContext(
   doc: SimpleDocument,
   resolver: TestJitRuntimeResolver,
-  registry: TestJitRegistry
+  registry: TestJitRegistry,
+  env: EnvironmentDelegate = {}
 ): JitTestDelegateContext {
   registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
   let context = JitContext(new JitCompileTimeLookup(resolver, registry), new TestMacros());
-  let runtime = JitRuntime({ document: doc }, {}, context, resolver);
+  let runtime = JitRuntime({ document: doc }, env, context, resolver);
   return { runtime, syntax: context };
 }
 
@@ -57,13 +77,17 @@ export class JitRenderDelegate implements RenderDelegate {
   private registry: TestJitRegistry = this.resolver.registry;
   private context: JitTestDelegateContext;
   private self: Option<UpdatableRootReference> = null;
+  private doc: SimpleDocument;
+  private env: EnvironmentDelegate;
 
-  constructor(private doc: SimpleDocument = document as SimpleDocument) {
+  constructor(options?: RenderDelegateOptions) {
+    this.doc = options?.doc ?? (document as SimpleDocument);
+    this.env = options?.env ?? {};
     this.context = this.getContext();
   }
 
   getContext(): JitTestDelegateContext {
-    return JitDelegateContext(this.doc, this.resolver, this.registry);
+    return JitDelegateContext(this.doc, this.resolver, this.registry, this.env);
   }
 
   getInitialElement(): SimpleElement {
@@ -78,11 +102,41 @@ export class JitRenderDelegate implements RenderDelegate {
     return this.doc.createElement(tagName);
   }
 
-  registerComponent<K extends ComponentKind, L extends ComponentKind>(
+  createTextNode(content: string): SimpleText {
+    return this.doc.createTextNode(content);
+  }
+
+  createElementNS(namespace: ElementNamespace, tagName: string): SimpleElement {
+    return this.doc.createElementNS(namespace, tagName);
+  }
+
+  createDocumentFragment(): SimpleDocumentFragment {
+    return this.doc.createDocumentFragment();
+  }
+
+  createCurriedComponent(name: string): Option<CurriedComponentDefinition> {
+    return componentHelper(this.resolver, this.registry, name);
+  }
+
+  registerComponent<K extends 'Basic' | 'Fragment' | 'Glimmer', L extends ComponentKind>(
     type: K,
     _testType: L,
     name: string,
     layout: string,
+    Class?: ComponentTypes[K]
+  ): void;
+  registerComponent<K extends 'Curly' | 'Dynamic', L extends ComponentKind>(
+    type: K,
+    _testType: L,
+    name: string,
+    layout: Option<string>,
+    Class?: ComponentTypes[K]
+  ): void;
+  registerComponent<K extends ComponentKind, L extends ComponentKind>(
+    type: K,
+    _testType: L,
+    name: string,
+    layout: Option<string>,
     Class?: ComponentTypes[K]
   ) {
     switch (type) {
@@ -92,7 +146,7 @@ export class JitRenderDelegate implements RenderDelegate {
           this.registry,
           name,
           Class as BasicComponentFactory,
-          layout
+          layout!
         );
       case 'Curly':
       case 'Dynamic':
@@ -107,7 +161,7 @@ export class JitRenderDelegate implements RenderDelegate {
           this.registry,
           name,
           (Class as any) as EmberishGlimmerComponentFactory,
-          layout
+          layout!
         );
     }
   }
@@ -120,8 +174,20 @@ export class JitRenderDelegate implements RenderDelegate {
     registerHelper(this.registry, name, helper);
   }
 
+  registerInternalHelper(name: string, helper: Helper) {
+    registerInternalHelper(this.registry, name, helper);
+  }
+
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
     return clientBuilder(env, cursor);
+  }
+
+  registerPartial(name: string, content: string) {
+    registerPartial(this.registry, name, content);
+  }
+
+  registerTemplate(name: string, content: string) {
+    return registerTemplate(this.registry, name, content);
   }
 
   getSelf(context: unknown): UpdatableRootReference | ConstReference {
@@ -130,6 +196,14 @@ export class JitRenderDelegate implements RenderDelegate {
     }
 
     return this.self;
+  }
+
+  compileTemplate(template: string): HandleResult {
+    let compiled = preprocess(template);
+
+    return unwrapTemplate(compiled)
+      .asLayout()
+      .compile(this.context.syntax);
   }
 
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {

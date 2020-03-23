@@ -1,5 +1,4 @@
 import { RenderTest } from '../render-test';
-import { setProperty as set } from '@glimmer/object-reference';
 import { test } from '../test-decorator';
 import { equalsElement } from '../dom/assertions';
 import { stripTight } from '../test-helpers/strings';
@@ -384,7 +383,7 @@ export class InElementSuite extends RenderTest {
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
 
-    set(roots[0], 'value', 'qux!');
+    roots[0].value = 'qux!';
     this.rerender();
     equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
     equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
@@ -392,7 +391,7 @@ export class InElementSuite extends RenderTest {
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
 
-    set(roots[1], 'value', 'derp');
+    roots[1].value = 'derp';
     this.rerender();
     equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
     equalsElement(roots[1].element, 'div', {}, '<p>derp</p>');
@@ -400,8 +399,8 @@ export class InElementSuite extends RenderTest {
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
 
-    set(roots[0], 'value', 'foo');
-    set(roots[1], 'value', 'bar');
+    roots[0].value = 'foo';
+    roots[1].value = 'bar';
     this.rerender();
     equalsElement(roots[0].element, 'div', {}, '<p>foo</p>');
     equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');

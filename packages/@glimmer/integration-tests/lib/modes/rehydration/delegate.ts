@@ -5,18 +5,32 @@ import {
   Environment,
   RenderResult,
   Option,
+  Helper,
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
 import { UpdatableRootReference } from '@glimmer/reference';
 import createHTMLDocument from '@simple-dom/document';
-import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import {
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+  ElementNamespace,
+  SimpleDocumentFragment,
+} from '@simple-dom/interface';
 import { ComponentKind } from '../../components';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
 import { UserHelper } from '../../helpers';
 import { TestModifierConstructor } from '../../modifiers';
 import RenderDelegate from '../../render-delegate';
 import { JitDelegateContext, JitTestDelegateContext } from '../jit/delegate';
-import { registerComponent, registerHelper, registerModifier } from '../jit/register';
+import {
+  registerComponent,
+  registerHelper,
+  registerModifier,
+  registerPartial,
+  registerInternalHelper,
+} from '../jit/register';
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import TestJitRuntimeResolver from '../jit/resolver';
@@ -64,6 +78,18 @@ export class RehydrationDelegate implements RenderDelegate {
 
   createElement(tagName: string): SimpleElement {
     return this.clientDoc.createElement(tagName);
+  }
+
+  createTextNode(content: string): SimpleText {
+    return this.clientDoc.createTextNode(content);
+  }
+
+  createElementNS(namespace: ElementNamespace, tagName: string): SimpleElement {
+    return this.clientDoc.createElementNS(namespace, tagName);
+  }
+
+  createDocumentFragment(): SimpleDocumentFragment {
+    return this.clientDoc.createDocumentFragment();
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
@@ -143,6 +169,16 @@ export class RehydrationDelegate implements RenderDelegate {
   registerHelper(name: string, helper: UserHelper): void {
     registerHelper(this.clientRegistry, name, helper);
     registerHelper(this.serverRegistry, name, helper);
+  }
+
+  registerInternalHelper(name: string, helper: Helper) {
+    registerInternalHelper(this.clientRegistry, name, helper);
+    registerInternalHelper(this.serverRegistry, name, helper);
+  }
+
+  registerPartial(name: string, content: string) {
+    registerPartial(this.clientRegistry, name, content);
+    registerPartial(this.serverRegistry, name, content);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {

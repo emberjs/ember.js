@@ -1,300 +1,88 @@
-import {
-  AnnotatedModuleLocator,
-  Option,
-  RenderResult,
-  RichIteratorResult,
-  TemplateOk,
-  HandleResult,
-  ErrHandle,
-  EncoderError,
-} from '@glimmer/interfaces';
-import { UpdatableRootReference } from '@glimmer/object-reference';
+import { Option, HandleResult, ErrHandle, EncoderError } from '@glimmer/interfaces';
+import { UpdatableRootReference } from '@glimmer/reference';
 import { ConstReference } from '@glimmer/reference';
-import { bump } from '@glimmer/validator';
-import {
-  clientBuilder,
-  PrimitiveReference,
-  SafeString,
-  UNDEFINED_REFERENCE,
-  renderJitMain,
-} from '@glimmer/runtime';
+import { RenderTest, test, jitSuite, JitRenderDelegate } from '..';
+import { PrimitiveReference, SafeString } from '@glimmer/runtime';
 import {
   assertNodeTagName,
-  equalTokens,
   getElementByClassName,
   getElementsByTagName,
   stripTight,
-  toTextContent,
   trimLines,
-  registerInternalHelper,
-  registerPartial,
-  registerHelper,
-  preprocess,
-  registerModifier,
-  registerBasicComponent,
-  JitTestContext,
-  TestContext,
-  BasicComponent,
 } from '..';
-import { Namespace, SimpleElement, SimpleNode } from '@simple-dom/interface';
-import { assert, module, test } from './support';
-import { unwrapHandle } from '@glimmer/util';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { assert } from './support';
+import { expect } from '@glimmer/util';
 
-const SVG_NAMESPACE = Namespace.SVG;
-const XLINK_NAMESPACE = Namespace.XLink;
-const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+function makeSafeString(value: string): SafeString {
+  return new SafeStringImpl(value);
+}
 
-let self: UpdatableRootReference<any>;
-let result: RenderResult;
-
-let context: TestContext;
-
-function compile(template: string): TemplateOk<AnnotatedModuleLocator> {
-  let compiled = preprocess(template);
-
-  if (compiled.result === 'error') {
-    throw new Error(
-      `Compile Error: ${compiled.problem} @ ${compiled.span.start}..${compiled.span.end}`
-    );
-  } else {
-    return compiled;
+class SafeStringImpl implements SafeString {
+  constructor(private string: string) {}
+  toHTML() {
+    return this.string;
+  }
+  toString() {
+    return this.string;
   }
 }
 
-function commonSetup() {
-  context = JitTestContext();
-}
+class UpdatingTest extends RenderTest {
+  static suiteName = 'Updating';
 
-function assertProperty<T, K extends keyof T, V extends T[K]>(
-  obj: T | null,
-  key: K,
-  value: V
-): void {
-  QUnit.assert.notStrictEqual(obj, null);
-  if (obj !== null) {
-    QUnit.assert.equal(obj[key], value);
+  delegate!: JitRenderDelegate;
+
+  @test
+  'updating a single curly'() {
+    this.render('<div><p>{{this.value}}</p></div>', { value: 'hello world' });
+    this.assertHTML('<div><p>hello world</p></div>', 'Initial render');
+    this.assertStableRerender();
+
+    this.rerender({ value: 'goodbye world' });
+    this.assertHTML('<div><p>goodbye world</p></div>', 'After updating and dirtying');
+    this.assertStableNodes();
   }
-}
 
-function compileTemplate(template: TemplateOk<AnnotatedModuleLocator>): HandleResult {
-  return template.asLayout().compile(context.syntax);
-}
+  @test
+  'updating a single curly with siblings'() {
+    this.render('<div>hello {{this.value}}world</div>', { value: 'brave new ' });
+    this.assertHTML('<div>hello brave new world</div>');
+    this.assertStableRerender();
 
-function render(template: TemplateOk<AnnotatedModuleLocator>, state = {}): RenderResult {
-  self = new UpdatableRootReference(state);
-  context.env.begin();
-  let cursor = { element: context.root, nextSibling: null };
+    this.rerender({ value: 'another ' });
+    this.assertHTML('<div>hello another world</div>');
+    this.assertStableNodes();
 
-  let handle = template.asLayout().compile(context.syntax);
+    this.rerender({ value: 'brave new ' });
+    this.assertHTML('<div>hello brave new world</div>');
+    this.assertStableNodes();
+  }
 
-  let templateIterator = renderJitMain(
-    context.runtime,
-    context.syntax,
-    self,
-    clientBuilder(context.env, cursor),
-    unwrapHandle(handle)
-  );
+  @test
+  'null and undefined produces empty text nodes'() {
+    this.render('<div><p>{{this.v1}}</p><p>{{this.v2}}</p></div>', {
+      v1: null,
+      v2: undefined,
+    });
+    this.assertHTML('<div><p></p><p></p></div>', 'Initial render');
+    this.assertStableRerender();
 
-  let iteratorResult: RichIteratorResult<null, RenderResult>;
-  do {
-    iteratorResult = templateIterator.next();
-  } while (!iteratorResult.done);
+    this.rerender({ v1: 'hello' });
+    this.assertHTML('<div><p>hello</p><p></p></div>', 'After updating and dirtying');
+    this.assertStableRerender();
 
-  result = iteratorResult.value;
-  context.env.commit();
-  assertInvariants(QUnit.assert, result);
-  return result;
-}
+    this.rerender({ v2: 'world' });
+    this.assertHTML('<div><p>hello</p><p>world</p></div>', 'After updating and dirtying');
+    this.assertStableRerender();
 
-function rerender(state: any = null) {
-  if (state !== null) self.update(state);
-  bump();
-  context.env.begin();
-  result.rerender();
-  context.env.commit();
-}
+    this.rerender({ v1: null, v2: undefined });
+    this.assertHTML('<div><p></p><p></p></div>', 'Initial render');
+    this.assertStableRerender();
+  }
 
-function getNodeByClassName(className: string) {
-  let itemNode = getElementByClassName(context.root, className);
-  // let itemNode = context.root.querySelector(`.${className}`);
-  assert.ok(itemNode, "Expected node with class='" + className + "'");
-  return itemNode;
-}
-
-function getFirstChildOfNode(className: string) {
-  let itemNode = getNodeByClassName(className);
-  assert.ok(
-    itemNode,
-    "Expected child node of node with class='" + className + "', but no parent node found"
-  );
-
-  let childNode = itemNode && itemNode.firstChild;
-  assert.ok(
-    childNode,
-    "Expected child node of node with class='" + className + "', but not child node found"
-  );
-
-  return childNode;
-}
-
-function assertInvariants(assert: Assert, result: RenderResult, msg?: string) {
-  assert.strictEqual(
-    result.firstNode(),
-    context.root.firstChild,
-    `The firstNode of the result is the same as the context.root's firstChild${
-      msg ? ': ' + msg : ''
-    }`
-  );
-  assert.strictEqual(
-    result.lastNode(),
-    context.root.lastChild,
-    `The lastNode of the result is the same as the context.root's lastChild${msg ? ': ' + msg : ''}`
-  );
-}
-
-module('[jit] integration - Updating', hooks => {
-  hooks.beforeEach(() => commonSetup());
-
-  test('updating a single curly', assert => {
-    let object = { value: 'hello world' };
-    let template = compile('<div><p>{{value}}</p></div>');
-    render(template, object);
-    let valueNode: Node | null | undefined;
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      if (assertNodeTagName(context.root.firstChild.firstChild, 'p')) {
-        valueNode = context.root.firstChild.firstChild.firstChild;
-      }
-    }
-
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
-
-    rerender();
-
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
-
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      if (assertNodeTagName(context.root.firstChild.firstChild, 'p')) {
-        assert.strictEqual(
-          context.root.firstChild.firstChild.firstChild,
-          valueNode,
-          'The text node was not blown away'
-        );
-      }
-    }
-
-    object.value = 'goodbye world';
-    rerender();
-
-    equalTokens(context.root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      if (assertNodeTagName(context.root.firstChild.firstChild, 'p')) {
-        assert.strictEqual(
-          context.root.firstChild.firstChild.firstChild,
-          valueNode,
-          'The text node was not blown away'
-        );
-      }
-    }
-  });
-
-  test('updating a single curly with siblings', () => {
-    let value = 'brave new ';
-    let state = { value };
-    let template = compile('<div>hello {{value}}world</div>');
-    render(template, state);
-
-    function assertText(text1: string, text2: string, text3: string) {
-      if (assertNodeTagName(context.root.firstChild, 'div')) {
-        assertProperty(context.root.firstChild.firstChild, 'textContent', text1);
-        assertProperty(context.root.firstChild.childNodes[1], 'textContent', text2);
-        assertProperty(context.root.firstChild.lastChild, 'textContent', text3);
-      }
-    }
-
-    assertText('hello ', 'brave new ', 'world');
-
-    rerender();
-
-    assertText('hello ', 'brave new ', 'world');
-
-    state.value = 'another ';
-    rerender();
-
-    assertText('hello ', 'another ', 'world');
-
-    rerender({ value });
-
-    assertText('hello ', 'brave new ', 'world');
-  });
-
-  test('null and undefined produces empty text nodes', assert => {
-    let object = { v1: null as string | null, v2: undefined as string | undefined };
-    let template = compile('<div><p>{{v1}}</p><p>{{v2}}</p></div>');
-    render(template, object);
-
-    let valueNode1: Node | null;
-    let valueNode2: Node | null;
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p') &&
-      assertNodeTagName(context.root.firstChild.lastChild, 'p')
-    ) {
-      valueNode1 = context.root.firstChild.firstChild.firstChild;
-      valueNode2 = context.root.firstChild.lastChild.firstChild;
-    }
-
-    function assertStable() {
-      if (
-        assertNodeTagName(context.root.firstChild, 'div') &&
-        assertNodeTagName(context.root.firstChild.firstChild, 'p') &&
-        assertNodeTagName(context.root.firstChild.lastChild, 'p')
-      ) {
-        assert.equal(
-          context.root.firstChild.firstChild.firstChild,
-          valueNode1,
-          'The text node was not blown away'
-        );
-        assert.equal(
-          context.root.firstChild.lastChild.firstChild,
-          valueNode2,
-          'The text node was not blown away'
-        );
-      }
-    }
-
-    equalTokens(context.root, '<div><p></p><p></p></div>', 'Initial render');
-
-    rerender();
-
-    equalTokens(context.root, '<div><p></p><p></p></div>', 'no change');
-
-    assertStable();
-
-    object.v1 = 'hello';
-
-    rerender();
-
-    equalTokens(context.root, '<div><p>hello</p><p></p></div>', 'After updating and dirtying');
-
-    assertStable();
-
-    object.v2 = 'world';
-    rerender();
-
-    equalTokens(context.root, '<div><p>hello</p><p>world</p></div>', 'After updating and dirtying');
-
-    assertStable();
-
-    object.v1 = null;
-    object.v2 = undefined;
-    rerender();
-
-    equalTokens(context.root, '<div><p></p><p></p></div>', 'Reset');
-
-    assertStable();
-  });
-
-  test('weird paths', () => {
+  @test
+  'weird paths'() {
     let state = {
       '': 'empty string',
       '1': '1',
@@ -309,76 +97,54 @@ module('[jit] integration - Updating', hooks => {
 
     state.nested = state;
 
-    function assertTextContent(expected: string) {
-      if (assertNodeTagName(context.root.firstChild, 'div')) {
-        assertProperty(context.root.firstChild, 'textContent', expected);
-      }
-    }
+    this.render(
+      stripTight`
+        <div>
+          [{{[]}}]
+          [{{[1]}}]
+          [{{[undefined]}}]
+          [{{[null]}}]
+          [{{[true]}}]
+          [{{[false]}}]
+          [{{[this]}}]
+          [{{[foo.bar]}}]
 
-    let template = compile(stripTight`
+          [{{nested.[]}}]
+          [{{nested.[1]}}]
+          [{{nested.[undefined]}}]
+          [{{nested.[null]}}]
+          [{{nested.[true]}}]
+          [{{nested.[false]}}]
+          [{{nested.[this]}}]
+          [{{nested.[foo.bar]}}]
+        </div>
+      `,
+      state
+    );
+
+    this.assertHTML(stripTight`
       <div>
-        [{{[]}}]
-        [{{[1]}}]
-        [{{[undefined]}}]
-        [{{[null]}}]
-        [{{[true]}}]
-        [{{[false]}}]
-        [{{[this]}}]
-        [{{[foo.bar]}}]
+        [empty string]
+        [1]
+        [undefined]
+        [null]
+        [true]
+        [false]
+        [this]
+        [foo.bar]
 
-        [{{nested.[]}}]
-        [{{nested.[1]}}]
-        [{{nested.[undefined]}}]
-        [{{nested.[null]}}]
-        [{{nested.[true]}}]
-        [{{nested.[false]}}]
-        [{{nested.[this]}}]
-        [{{nested.[foo.bar]}}]
+        [empty string]
+        [1]
+        [undefined]
+        [null]
+        [true]
+        [false]
+        [this]
+        [foo.bar]
       </div>
     `);
-    render(template, state);
 
-    assertTextContent(stripTight`
-      [empty string]
-      [1]
-      [undefined]
-      [null]
-      [true]
-      [false]
-      [this]
-      [foo.bar]
-
-      [empty string]
-      [1]
-      [undefined]
-      [null]
-      [true]
-      [false]
-      [this]
-      [foo.bar]
-    `);
-
-    rerender();
-
-    assertTextContent(stripTight`
-      [empty string]
-      [1]
-      [undefined]
-      [null]
-      [true]
-      [false]
-      [this]
-      [foo.bar]
-
-      [empty string]
-      [1]
-      [undefined]
-      [null]
-      [true]
-      [false]
-      [this]
-      [foo.bar]
-    `);
+    this.assertStableRerender();
 
     state[''] = 'EMPTY STRING';
     state['1'] = 'ONE';
@@ -388,26 +154,28 @@ module('[jit] integration - Updating', hooks => {
     state['false'] = 'FALSE';
     state['this'] = 'THIS';
     state['foo.bar'] = 'FOO.BAR';
-    rerender();
+    this.rerender(state);
 
-    assertTextContent(stripTight`
-      [EMPTY STRING]
-      [ONE]
-      [UNDEFINED]
-      [NULL]
-      [TRUE]
-      [FALSE]
-      [THIS]
-      [FOO.BAR]
+    this.assertHTML(stripTight`
+      <div>
+        [EMPTY STRING]
+        [ONE]
+        [UNDEFINED]
+        [NULL]
+        [TRUE]
+        [FALSE]
+        [THIS]
+        [FOO.BAR]
 
-      [EMPTY STRING]
-      [ONE]
-      [UNDEFINED]
-      [NULL]
-      [TRUE]
-      [FALSE]
-      [THIS]
-      [FOO.BAR]
+        [EMPTY STRING]
+        [ONE]
+        [UNDEFINED]
+        [NULL]
+        [TRUE]
+        [FALSE]
+        [THIS]
+        [FOO.BAR]
+      </div>
     `);
 
     state = {
@@ -423,176 +191,115 @@ module('[jit] integration - Updating', hooks => {
     };
     state.nested = state;
 
-    rerender(state);
+    this.rerender(state);
 
-    assertTextContent(stripTight`
-      [empty string]
-      [1]
-      [undefined]
-      [null]
-      [true]
-      [false]
-      [this]
-      [foo.bar]
+    this.assertHTML(stripTight`
+      <div>
+        [empty string]
+        [1]
+        [undefined]
+        [null]
+        [true]
+        [false]
+        [this]
+        [foo.bar]
 
-      [empty string]
-      [1]
-      [undefined]
-      [null]
-      [true]
-      [false]
-      [this]
-      [foo.bar]
+        [empty string]
+        [1]
+        [undefined]
+        [null]
+        [true]
+        [false]
+        [this]
+        [foo.bar]
+      </div>
     `);
-  });
+  }
 
-  test('updating a single trusting curly', assert => {
-    let value = '<p>hello world</p>';
-    let object = { value };
-    let template = compile('<div>{{{value}}}</div>');
-    render(template, object);
-    let valueNode: Node | null | undefined;
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      valueNode = context.root.firstChild.firstChild.firstChild;
-    }
+  @test
+  'updating a single trusting curly'() {
+    this.render('<div>{{{this.value}}}</div>', { value: '<p>hello world</p>' });
 
-    equalTokens(context.root, `<div>${value}</div>`, 'Initial render');
+    this.assertHTML(`<div><p>hello world</p></div>`, 'Initial render');
+    this.assertStableRerender();
 
-    rerender();
+    this.rerender({ value: '<span>goodbye world</span>' });
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was not blown away'
-      );
-    }
+    this.assertHTML(`<div><span>goodbye world</span></div>`, 'Initial render');
+    this.assertStableRerender();
 
-    object.value = '<span>goodbye world</span>';
-    rerender();
+    this.rerender({
+      value: 'a <span>good man</span> is hard to <b>find</b>',
+    });
 
-    equalTokens(context.root, `<div>${object.value}</div>`, 'After updating and dirtying');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'span')
-    ) {
-      assert.notStrictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was blown away'
-      );
-    }
+    this.assertHTML(`<div>a <span>good man</span> is hard to <b>find</b></div>`, 'more complex');
+    this.assertStableRerender();
+  }
 
-    object.value = 'a <span>good man</span> is hard to <b>fund</b>';
-    rerender();
+  @test
+  'updating a single trusting curly with siblings'() {
+    this.render('<div>hello {{{this.value}}}world</div>', {
+      value: '<b>brave new </b>',
+    });
 
-    equalTokens(
-      context.root,
-      `<div>${object.value}</div>`,
-      'After updating with many nodes and dirtying'
-    );
+    this.assertHTML('<div>hello <b>brave new </b>world</div>', 'Initial render');
+    this.assertStableRerender();
 
-    rerender({ value });
+    this.rerender({ value: 'big <b>wide</b> ' });
+    this.assertHTML('<div>hello big <b>wide</b> world</div>', 'Initial render');
+    this.assertStableRerender();
 
-    equalTokens(context.root, `<div>${value}</div>`, 'no change');
-  });
+    this.rerender({ value: 'another ' });
+    this.assertHTML('<div>hello another world</div>', 'Initial render');
+    this.assertStableRerender();
 
-  test('updating a single trusting curly with siblings', () => {
-    let value = '<b>brave new </b>';
-    let state = { value };
-    let template = compile('<div>hello {{{value}}}world</div>');
-    render(template, state);
+    this.rerender({ value: '<b>brave new </b>' });
+    this.assertHTML('<div>hello <b>brave new </b>world</div>', 'Initial render');
+    this.assertStableRerender();
+  }
 
-    equalTokens(context.root, '<div>hello <b>brave new </b>world</div>', 'Initial render');
+  @test
+  'updating a single trusting curly with previous sibling'() {
+    this.render('<div>hello {{{this.value}}}</div>', {
+      value: '<b>brave new </b>',
+    });
 
-    rerender();
+    this.assertHTML('<div>hello <b>brave new </b></div>', 'Initial render');
+    this.assertStableRerender();
 
-    equalTokens(context.root, '<div>hello <b>brave new </b>world</div>', 'rerender');
+    this.rerender({ value: 'another ' });
+    this.assertHTML('<div>hello another </div>');
+    this.assertStableRerender();
 
-    state.value = 'big <b>wide</b> ';
-    rerender();
-
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assertProperty(context.root.firstChild.firstChild, 'textContent', 'hello ');
-      assertProperty(context.root.firstChild.childNodes[1], 'textContent', 'big ');
-      assertProperty(context.root.firstChild.childNodes[2], 'textContent', 'wide');
-      assertProperty(context.root.firstChild.childNodes[3], 'textContent', ' ');
-      assertProperty(context.root.firstChild.lastChild, 'textContent', 'world');
-    }
-
-    state.value = 'another ';
-    rerender();
-
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assertProperty(context.root.firstChild.firstChild, 'textContent', 'hello ');
-      assertProperty(context.root.firstChild.childNodes[1], 'textContent', 'another ');
-      assertProperty(context.root.firstChild.lastChild, 'textContent', 'world');
-    }
-
-    rerender({ value });
-
-    equalTokens(context.root, '<div>hello <b>brave new </b>world</div>', 'rerender');
-  });
-
-  test('updating a single trusting curly with previous sibling', () => {
-    let value = '<b>brave new </b>';
-    let state = { value };
-    let template = compile('<div>hello {{{value}}}</div>');
-    render(template, state);
-
-    equalTokens(context.root, '<div>hello <b>brave new </b></div>', 'Initial render');
-
-    rerender();
-
-    equalTokens(context.root, '<div>hello <b>brave new </b></div>', 'rerender');
-
-    state.value = 'another ';
-    rerender();
-
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assertProperty(context.root.firstChild.firstChild, 'textContent', 'hello ');
-      assertProperty(context.root.firstChild.lastChild, 'textContent', 'another ');
-    }
-
-    rerender({ value });
-
-    equalTokens(context.root, '<div>hello <b>brave new </b></div>', 'rerender');
-  });
+    this.rerender({ value: '<b>brave new </b>' });
+    this.assertHTML('<div>hello <b>brave new </b></div>');
+    this.assertStableNodes();
+  }
 
   // This is to catch a regression about not caching lastValue correctly
-  test('Cycling between two values in a trusting curly', () => {
+  @test
+  'Cycling between two values in a trusting curly'() {
     let a = '<p>A</p>';
     let b = '<p>B</p>';
 
-    let object = { value: a };
-    let template = compile('<div>{{{value}}}</div>');
-    render(template, object);
+    this.render('<div>{{{this.value}}}</div>', { value: a });
 
-    equalTokens(context.root, '<div><p>A</p></div>', 'Initial render');
+    this.assertHTML('<div><p>A</p></div>', 'Initial render');
 
-    object.value = b;
-    rerender();
-    equalTokens(context.root, '<div><p>B</p></div>', 'Updating');
+    this.rerender({ value: b });
+    this.assertHTML('<div><p>B</p></div>', 'Updating');
 
     // Change it back
-    object.value = a;
-    rerender();
-    equalTokens(context.root, '<div><p>A</p></div>', 'Updating');
+    this.rerender({ value: a });
+    this.assertHTML('<div><p>A</p></div>', 'Updating');
 
     // Change it back
-    object.value = b;
-    rerender();
-    equalTokens(context.root, '<div><p>B</p></div>', 'Updating');
-  });
+    this.rerender({ value: b });
+    this.assertHTML('<div><p>B</p></div>', 'Updating');
+  }
 
-  test('updating a curly with a safe and unsafe string', assert => {
+  @test
+  'updating a curly with a safe and unsafe string'() {
     interface SafeString {
       string: string;
       toHTML(): string;
@@ -609,629 +316,125 @@ module('[jit] integration - Updating', hooks => {
       },
     };
     let unsafeString = '<b>Big old world!</b>';
-    let object: { value: SafeString | string } = {
+
+    this.render('<div>{{this.value}}</div>', {
       value: safeString,
-    };
-    let template = compile('<div>{{value}}</div>');
-    render(template, object);
-    let valueNode: Node | null | undefined;
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      valueNode = context.root.firstChild.firstChild.firstChild;
-    }
+    });
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
+    this.assertHTML('<div><p>hello world</p></div>', 'Initial render');
+    this.assertStableRerender();
 
-    rerender();
+    this.rerender({ value: unsafeString });
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
-
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was not blown away'
-      );
-    }
-
-    object.value = unsafeString;
-    rerender();
-
-    equalTokens(
-      context.root,
+    this.assertHTML(
       '<div>&lt;b&gt;Big old world!&lt;/b&gt;</div>',
       'After replacing with unsafe string'
     );
 
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assert.notStrictEqual(
-        context.root.firstChild.firstChild,
-        valueNode,
-        'The text node was blown away'
-      );
-    }
-
-    object.value = safeString;
-    rerender();
-
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'original input causes no problem');
-  });
-
-  function makeSafeString(value: string): SafeString {
-    return new SafeStringImpl(value);
+    this.rerender({ value: safeString });
+    this.assertHTML('<div><p>hello world</p></div>', 'Initial render');
+    this.assertStableRerender();
   }
 
-  class SafeStringImpl implements SafeString {
-    constructor(private string: string) {}
-    toHTML() {
-      return this.string;
-    }
-    toString() {
-      return this.string;
-    }
-  }
-
-  // Test cases to matrix:
-  // const helper returns const SafeString
-  // non-const
-  // safe string
-  // unsafe string
-  // swapping between safe and unsafe
-  // swapping between unsafe and safe
-
-  function makeElement(tag: string, content: string): SimpleElement {
-    let el = context.doc.createElement(tag);
-    el.appendChild(context.doc.createTextNode(content));
-    return el;
-  }
-
-  function makeSVGElement(tag: string, content: string): SimpleElement {
-    let el = context.doc.createElementNS(SVG_NAMESPACE, tag);
-    el.appendChild(context.doc.createTextNode(content));
-    return el;
-  }
-
-  function makeFragment(nodes: SimpleNode[]) {
-    let frag = context.doc.createDocumentFragment();
-    nodes.forEach(node => frag.appendChild(node));
-    return frag;
-  }
-
-  type ContentValue =
-    | string
-    | SafeString
-    | null
-    | undefined
-    | number
-    | boolean
-    | Element
-    | DocumentFragment;
-
-  interface ContentTestCase {
-    name: string;
-    template: string;
-    values: Array<{
-      input: ContentValue | ((isHTML: boolean) => ContentValue) | { toString(): string };
-      expected: string | ((isHTML: boolean) => string);
-      description: string;
-    }>;
-  }
-
-  function isInputFunction(value: any): value is (isHTML: boolean) => unknown {
-    return typeof value === 'function';
-  }
-
-  function generateContentTestCase(tc: ContentTestCase): void {
-    [
-      {
-        name: 'HTML context, as the only child',
-        isHTML: true,
-        before: '<div>',
-        after: '</div>',
-      },
-      {
-        name: 'HTML context, as a sibling to adjecent text nodes',
-        isHTML: true,
-        before: '<div>before',
-        after: 'after</div>',
-      },
-      {
-        name: 'HTML context, as a sibling to adjecent elements',
-        isHTML: true,
-        before: '<div><b>before</b>',
-        after: '<b>after</b></div>',
-      },
-      {
-        name: 'SVG foreignObject context, as the only child',
-        isHTML: true,
-        before: '<svg><foreignObject>',
-        after: '</foreignObject></svg>',
-      },
-      {
-        name: 'SVG foreignObject context, as a sibling to adjecent text nodes',
-        isHTML: true,
-        before: '<svg><foreignObject>before',
-        after: 'after</foreignObject></svg>',
-      },
-      {
-        name: 'SVG foreignObject context, as a sibling to adjecent elements',
-        isHTML: true,
-        before: '<svg><foreignObject><b>before</b>',
-        after: '<b>after</b></foreignObject></svg>',
-      },
-      {
-        name: 'SVG context, as the only child',
-        isHTML: false,
-        before: '<svg><text>',
-        after: '</text></svg>',
-      },
-      {
-        name: 'SVG context, as a sibling to adjecent text nodes',
-        isHTML: false,
-        before: '<svg><text>before',
-        after: 'after</text></svg>',
-      },
-      {
-        name: 'SVG context, as a sibling to adjecent elements',
-        isHTML: false,
-        before: '<svg><text><text>before</text>',
-        after: '<text>after</text></text></svg>',
-      },
-    ].forEach(wrapper => {
-      test(`updating ${tc.name} produces expected result in ${wrapper.name}`, () => {
-        let template = compile(wrapper.before + tc.template + wrapper.after);
-        let state = {
-          value: undefined as unknown,
-        };
-        tc.values.forEach(({ input: _input, expected: _expected, description }, index) => {
-          let input: unknown;
-          let expected: string;
-
-          if (isInputFunction(_input)) {
-            input = _input(wrapper.isHTML);
-          } else {
-            input = _input;
-          }
-
-          if (typeof _expected === 'function') {
-            expected = _expected(wrapper.isHTML);
-          } else {
-            expected = _expected;
-          }
-
-          state.value = input;
-
-          if (index === 0) {
-            render(template, state);
-            equalTokens(
-              context.root,
-              wrapper.before + expected + wrapper.after,
-              `expected initial render (${description})`
-            );
-          } else {
-            rerender();
-            equalTokens(
-              context.root,
-              wrapper.before + expected + wrapper.after,
-              `expected updated render (${description})`
-            );
-          }
-        });
-      });
-    });
-  }
-
-  generateContentTestCase({
-    name: 'double curlies',
-    template: '{{value}}',
-    values: [
-      {
-        input: 'hello',
-        expected: 'hello',
-        description: 'plain string',
-      },
-      {
-        input: '<b>hello</b>',
-        expected: '&lt;b&gt;hello&lt;/b&gt;',
-        description: 'string containing HTML',
-      },
-      {
-        input: null,
-        expected: '',
-        description: 'null literal',
-      },
-      {
-        input: undefined,
-        expected: '',
-        description: 'undefined literal',
-      },
-      {
-        input: '',
-        expected: '',
-        description: 'empty string',
-      },
-      {
-        input: ' ',
-        expected: ' ',
-        description: 'blank string',
-      },
-      {
-        input: isHTML => makeSafeString(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
-        expected: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
-        description: 'safe string containing HTML',
-      },
-      {
-        input: makeSafeString(''),
-        expected: '<!---->',
-        description: 'empty safe string',
-      },
-      {
-        input: makeSafeString(' '),
-        expected: ' ',
-        description: 'blank safe string',
-      },
-      {
-        input: isHTML => (isHTML ? makeElement('p', 'hello') : makeSVGElement('text', 'hello')),
-        expected: isHTML => (isHTML ? '<p>hello</p>' : '<text>hello</text>'),
-        description: 'DOM node containing an element with text',
-      },
-      {
-        input: isHTML => {
-          if (isHTML) {
-            return makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]);
-          } else {
-            return makeFragment([makeSVGElement('text', 'one'), makeSVGElement('text', 'two')]);
-          }
-        },
-        expected: isHTML => (isHTML ? '<p>one</p><p>two</p>' : '<text>one</text><text>two</text>'),
-        description: 'DOM fragment containing multiple nodes',
-      },
-      {
-        input: 'not modified',
-        expected: 'not modified',
-        description: 'plain string (not modified, first render)',
-      },
-      {
-        input: 'not modified',
-        expected: 'not modified',
-        description: 'plain string (not modified, second render)',
-      },
-      {
-        input: 0,
-        expected: '0',
-        description: 'number literal (0)',
-      },
-      {
-        input: true,
-        expected: 'true',
-        description: 'boolean literal (true)',
-      },
-      {
-        input: {
-          toString() {
-            return 'I am an Object';
-          },
-        },
-        expected: 'I am an Object',
-        description: 'object with a toString function',
-      },
-      {
-        input: 'hello',
-        expected: 'hello',
-        description: 'reset',
-      },
-    ],
-  });
-
-  generateContentTestCase({
-    name: 'triple curlies',
-    template: '{{{value}}}',
-    values: [
-      {
-        input: 'hello',
-        expected: 'hello',
-        description: 'plain string',
-      },
-      {
-        input: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
-        expected: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
-        description: 'string containing HTML',
-      },
-      {
-        input: null,
-        expected: '<!--->',
-        description: 'null literal',
-      },
-      {
-        input: undefined,
-        expected: '<!--->',
-        description: 'undefined literal',
-      },
-      {
-        input: '',
-        expected: '<!--->',
-        description: 'empty string',
-      },
-      {
-        input: ' ',
-        expected: ' ',
-        description: 'blank string',
-      },
-      {
-        input: isHTML => makeSafeString(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
-        expected: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
-        description: 'safe string containing HTML',
-      },
-      {
-        input: makeSafeString(''),
-        expected: '<!---->',
-        description: 'empty safe string',
-      },
-      {
-        input: makeSafeString(' '),
-        expected: ' ',
-        description: 'blank safe string',
-      },
-      {
-        input: isHTML => (isHTML ? makeElement('p', 'hello') : makeSVGElement('text', 'hello')),
-        expected: isHTML => (isHTML ? '<p>hello</p>' : '<text>hello</text>'),
-        description: 'DOM node containing an element with text',
-      },
-      {
-        input: isHTML => {
-          if (isHTML) {
-            return makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]);
-          } else {
-            return makeFragment([makeSVGElement('text', 'one'), makeSVGElement('text', 'two')]);
-          }
-        },
-        expected: isHTML => (isHTML ? '<p>one</p><p>two</p>' : '<text>one</text><text>two</text>'),
-        description: 'DOM fragment containing multiple nodes',
-      },
-      {
-        input: 'not modified',
-        expected: 'not modified',
-        description: 'plain string (not modified, first render)',
-      },
-      {
-        input: 'not modified',
-        expected: 'not modified',
-        description: 'plain string (not modified, second render)',
-      },
-      {
-        input: 0,
-        expected: '0',
-        description: 'number literal (0)',
-      },
-      {
-        input: true,
-        expected: 'true',
-        description: 'boolean literal (true)',
-      },
-      {
-        input: {
-          toString() {
-            return 'I am an Object';
-          },
-        },
-        expected: 'I am an Object',
-        description: 'object with a toString function',
-      },
-      {
-        input: 'hello',
-        expected: 'hello',
-        description: 'reset',
-      },
-    ],
-  });
-
-  test('updating a triple curly with a safe and unsafe string', assert => {
+  @test
+  'updating a triple curly with a safe and unsafe string'() {
     let safeString = makeSafeString('<p>hello world</p>');
     let unsafeString = '<b>Big old world!</b>';
-    let object: { value: string | SafeString } = {
+
+    this.render('<div>{{{this.value}}}</div>', {
       value: safeString,
-    };
-    let template = compile('<div>{{{value}}}</div>');
-    render(template, object);
+    });
 
-    let valueNode: Node | null | undefined;
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      valueNode = context.root.firstChild.firstChild.firstChild;
-    }
+    this.assertHTML('<div><p>hello world</p></div>', 'Initial render');
+    this.assertStableRerender();
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
+    this.rerender({
+      value: unsafeString,
+    });
 
-    rerender();
+    this.assertHTML('<div><b>Big old world!</b></div>', 'Normal strings may contain HTML');
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The nodes were not blown away'
-      );
-    }
+    this.rerender({
+      value: safeString,
+    });
 
-    object.value = unsafeString;
-    rerender();
-
-    equalTokens(
-      context.root,
-      '<div><b>Big old world!</b></div>',
-      'Normal strings may contain HTML'
-    );
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'b')
-    ) {
-      assert.notStrictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The nodes were blown away'
-      );
-    }
-
-    object.value = safeString;
-    rerender();
-
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'original input causes no problem');
-  });
-
-  test('triple curlies with empty string initial value', () => {
-    let input = {
-      value: '',
-    };
-    let template = compile('<div>{{{value}}}</div>');
-
-    render(template, input);
-
-    equalTokens(context.root, '<div><!----></div>', 'Initial render');
-
-    rerender();
-
-    equalTokens(context.root, '<div><!----></div>', 'no change');
-
-    input.value = '<b>Bold and spicy</b>';
-    rerender();
-
-    equalTokens(context.root, '<div><b>Bold and spicy</b></div>', 'markup is updated');
-
-    input.value = '';
-    rerender();
-
-    equalTokens(context.root, '<div><!----></div>', 'back to empty string');
-  });
-
-  class ValueReference<T> extends ConstReference<T> {
-    get(): PrimitiveReference<undefined> {
-      return UNDEFINED_REFERENCE;
-    }
+    this.assertHTML('<div><p>hello world</p></div>', 'original input causes no problem');
   }
 
-  test('double curlies with const SafeString', assert => {
-    let rawString = '<b>bold</b> and spicy';
-
-    registerInternalHelper(context.registry, 'const-foobar', () => {
-      return new ValueReference<unknown>(makeSafeString(rawString));
+  @test
+  'triple curlies with empty string initial value'() {
+    this.render('<div>{{{this.value}}}</div>', {
+      value: '',
     });
 
-    let template = compile('<div>{{const-foobar}}</div>');
-    let input = {};
+    this.assertHTML('<div><!----></div>', 'Initial render');
+    this.assertStableRerender();
 
-    render(template, input);
-    let valueNode: Node | null | undefined;
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      valueNode = context.root.firstChild.firstChild;
-    }
-
-    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'initial render');
-
-    rerender();
-
-    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'no change');
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild,
-        valueNode,
-        'The nodes were not blown away'
-      );
-    }
-  });
-
-  test('double curlies with const Node', assert => {
-    let rawString = '<b>bold</b> and spicy';
-
-    registerInternalHelper(context.registry, 'const-foobar', () => {
-      return new ValueReference<unknown>(context.doc.createTextNode(rawString));
+    this.rerender({
+      value: '<b>Bold and spicy</b>',
     });
 
-    let template = compile('<div>{{const-foobar}}</div>');
-    let input = {};
+    this.assertHTML('<div><b>Bold and spicy</b></div>', 'markup is updated');
 
-    render(template, input);
-    let valueNode: Node | null | undefined;
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      valueNode = context.root.firstChild.firstChild;
-    }
+    this.rerender({ value: '' });
 
-    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
+    this.assertHTML('<div><!----></div>', 'back to empty string');
+  }
 
-    rerender();
-
-    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'no change');
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild,
-        valueNode,
-        'The node was not blown away'
-      );
-    }
-  });
-
-  test('triple curlies with const SafeString', assert => {
+  @test
+  'double curlies with const SafeString'() {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(context.registry, 'const-foobar', () => {
-      return new ValueReference<unknown>(makeSafeString(rawString));
+    this.registerInternalHelper('const-foobar', () => {
+      return new ConstReference(makeSafeString(rawString));
     });
 
-    let template = compile('<div>{{{const-foobar}}}</div>');
-    let input = {};
+    this.render('<div>{{const-foobar}}</div>', {});
+    this.assertHTML('<div><b>bold</b> and spicy</div>', 'initial render');
+    this.assertStableRerender();
+  }
 
-    render(template, input);
-    let valueNode: Node | null | undefined;
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      valueNode = context.root.firstChild.firstChild;
-    }
-
-    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'initial render');
-
-    rerender();
-
-    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'no change');
-
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild,
-        valueNode,
-        'The nodes were not blown away'
-      );
-    }
-  });
-
-  test('triple curlies with const Node', assert => {
+  @test
+  'double curlies with const Node'() {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(context.registry, 'const-foobar', () => {
-      return new ValueReference<unknown>(context.doc.createTextNode(rawString));
+    this.registerInternalHelper('const-foobar', () => {
+      return new ConstReference(this.delegate.createTextNode(rawString));
     });
 
-    let template = compile('<div>{{{const-foobar}}}</div>');
-    let input = {};
+    this.render('<div>{{const-foobar}}</div>');
+    this.assertHTML('<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
+    this.assertStableRerender();
+  }
 
-    render(template, input);
-    let valueNode = context.root.firstChild;
+  @test
+  'triple curlies with const SafeString'() {
+    let rawString = '<b>bold</b> and spicy';
 
-    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
+    this.registerInternalHelper('const-foobar', () => {
+      return new ConstReference(makeSafeString(rawString));
+    });
 
-    rerender();
+    this.render('<div>{{{const-foobar}}}</div>');
+    this.assertHTML('<div><b>bold</b> and spicy</div>', 'initial render');
+    this.assertStableRerender();
+  }
 
-    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'no change');
-    assert.strictEqual(context.root.firstChild, valueNode, 'The node was not blown away');
-  });
+  @test
+  'triple curlies with const Node'() {
+    let rawString = '<b>bold</b> and spicy';
 
-  test('helpers can add destroyables', assert => {
+    this.registerInternalHelper('const-foobar', () => {
+      return new ConstReference(this.delegate.createTextNode(rawString));
+    });
+
+    this.render('<div>{{{const-foobar}}}</div>');
+    this.assertHTML('<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
+    this.assertStableRerender();
+  }
+
+  @test
+  'helpers can add destroyables'() {
     let destroyable = {
       count: 0,
       destroy(this: { count: number }) {
@@ -1239,107 +442,29 @@ module('[jit] integration - Updating', hooks => {
       },
     };
 
-    registerInternalHelper(context.registry, 'destroy-me', (_args, vm) => {
+    this.registerInternalHelper('destroy-me', (_args, vm) => {
       vm.associateDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
 
-    let template = compile('<div>{{destroy-me}}</div>');
+    this.render('<div>{{destroy-me}}</div>', {});
 
-    render(template, {});
-
-    equalTokens(context.root, '<div>destroy me!</div>', 'initial render');
+    this.assertHTML('<div>destroy me!</div>', 'initial render');
     assert.strictEqual(destroyable.count, 0, 'not destroyed');
 
-    rerender();
+    this.rerender();
 
-    equalTokens(context.root, '<div>destroy me!</div>', 'no change');
+    this.assertHTML('<div>destroy me!</div>', 'no change');
     assert.strictEqual(destroyable.count, 0, 'not destroyed');
 
-    result.destroy();
+    this.destroy();
 
     assert.strictEqual(destroyable.count, 1, 'is destroyed');
-  });
+  }
 
-  test(`helpers passed as arguments to {{#if}} are not torn down when switching between blocks`, assert => {
-    let options = {
-      template: '{{#if (stateful-foo)}}Yes{{/if}}',
-      truthyValue: true,
-      falsyValue: false,
-    };
+  //////////
 
-    testStatefulHelper(assert, options);
-  });
-
-  test(`helpers passed as arguments to {{#unless}} are not torn down when switching between blocks`, assert => {
-    let options = {
-      template: '{{#unless (stateful-foo)}}Yes{{/unless}}',
-      truthyValue: false,
-      falsyValue: true,
-    };
-
-    testStatefulHelper(assert, options);
-  });
-
-  test(`helpers passed as arguments to {{#with}} are not torn down when switching between blocks`, assert => {
-    let options = {
-      template: '{{#with (stateful-foo) as |unused|}}Yes{{/with}}',
-      truthyValue: {},
-      falsyValue: null,
-    };
-
-    testStatefulHelper(assert, options);
-  });
-
-  test(`helpers passed as arguments to {{#each}} are not torn down when switching between blocks`, assert => {
-    let options = {
-      template: '{{#each (stateful-foo) key="@index" as |unused|}}Yes{{/each}}',
-      truthyValue: [1],
-      falsyValue: null,
-    };
-
-    testStatefulHelper(assert, options);
-  });
-
-  test(`helpers passed as arguments to {{partial}} are not torn down when switching between blocks`, assert => {
-    registerPartial(context.registry, 'yasss', 'Yes');
-    registerPartial(context.registry, 'noooo', '');
-
-    let options = {
-      template: '{{partial (stateful-foo)}}',
-      truthyValue: 'yasss',
-      falsyValue: 'noooo',
-    };
-
-    testStatefulHelper(assert, options);
-  });
-
-  test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    registerBasicComponent(context.registry, 'XYasss', BasicComponent, '<div>Yes</div>');
-
-    let options = {
-      template: '{{component (stateful-foo)}}',
-      truthyValue: 'XYasss',
-      falsyValue: null,
-    };
-
-    testStatefulHelper(assert, options);
-  });
-
-  test(`helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks`, assert => {
-    let externalElement = context.doc.createElement('div');
-
-    let options = {
-      template: '{{#in-element (stateful-foo)}}Yes{{/in-element}}',
-      truthyValue: externalElement,
-      falsyValue: null,
-      element: externalElement,
-    };
-
-    testStatefulHelper(assert, options);
-  });
-
-  function testStatefulHelper<T, U>(
+  testStatefulHelper<T, U>(
     assert: typeof QUnit.assert,
     arg1: {
       template: string;
@@ -1348,12 +473,12 @@ module('[jit] integration - Updating', hooks => {
       element?: SimpleElement;
     }
   ) {
-    let { template, truthyValue, falsyValue, element = context.root } = arg1;
+    let { template, truthyValue, falsyValue, element } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
     let reference: UpdatableRootReference<T | U> | undefined;
 
-    registerInternalHelper(context.registry, 'stateful-foo', (_args, vm) => {
+    this.registerInternalHelper('stateful-foo', (_args, vm) => {
       didCreate++;
 
       vm.associateDestroyable({
@@ -1368,326 +493,303 @@ module('[jit] integration - Updating', hooks => {
     assert.strictEqual(didCreate, 0, 'didCreate: before render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: before render');
 
-    render(compile(template), {});
+    this.render(template, {});
 
-    assert.equal(toTextContent(element), 'Yes', 'initial render');
+    this.assertHTML('Yes', element, 'initial render');
     assert.strictEqual(didCreate, 1, 'didCreate: after initial render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after initial render');
 
-    rerender();
+    this.rerender();
 
-    assert.equal(toTextContent(element), 'Yes', 'after no-op re-render');
+    this.assertHTML('Yes', element, 'after no-op re-render');
     assert.strictEqual(didCreate, 1, 'didCreate: after no-op re-render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
 
     reference!.update(falsyValue);
-    rerender();
+    this.rerender();
 
-    assert.strictEqual(toTextContent(element), '', 'after switching to falsy');
+    this.assertHTML(element ? '' : '<!---->', element, 'after switching to falsy');
     assert.strictEqual(didCreate, 1, 'didCreate: after switching to falsy');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
     reference!.update(truthyValue);
-    rerender();
+    this.rerender();
 
-    assert.equal(toTextContent(element), 'Yes', 'after reset');
+    this.assertHTML('Yes', element, 'after reset');
     assert.strictEqual(didCreate, 1, 'didCreate: after reset');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after reset');
   }
 
-  test('updating a curly with this', assert => {
-    let object = { value: 'hello world' };
-    let template = compile('<div><p>{{this.value}}</p></div>');
-    render(template, object);
+  @test
+  'helpers passed as arguments to {{#if}} are not torn down when switching between blocks'() {
+    let options = {
+      template: '{{#if (stateful-foo)}}Yes{{/if}}',
+      truthyValue: true,
+      falsyValue: false,
+    };
 
-    let valueNode: Node | null | undefined;
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      valueNode = context.root.firstChild.firstChild.firstChild;
-    }
+    this.testStatefulHelper(assert, options);
+  }
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
+  @test
+  'helpers passed as arguments to {{#unless}} are not torn down when switching between blocks'() {
+    let options = {
+      template: '{{#unless (stateful-foo)}}Yes{{/unless}}',
+      truthyValue: false,
+      falsyValue: true,
+    };
 
-    rerender();
+    this.testStatefulHelper(assert, options);
+  }
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was not blown away'
-      );
-    }
+  @test
+  'helpers passed as arguments to {{#with}} are not torn down when switching between blocks'() {
+    let options = {
+      template: '{{#with (stateful-foo) as |unused|}}Yes{{/with}}',
+      truthyValue: {},
+      falsyValue: null,
+    };
 
-    object.value = 'goodbye world';
-    rerender();
+    this.testStatefulHelper(assert, options);
+  }
 
-    equalTokens(context.root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was not blown away'
-      );
-    }
-  });
+  @test
+  'helpers passed as arguments to {{#each}} are not torn down when switching between blocks'() {
+    let options = {
+      template: '{{#each (stateful-foo) key="@index" as |unused|}}Yes{{/each}}',
+      truthyValue: [1],
+      falsyValue: null,
+    };
 
-  test('a simple implementation of a dirtying rerender', assert => {
-    let object = { condition: true, value: 'hello world' };
-    let template = compile(
-      '<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>'
+    this.testStatefulHelper(assert, options);
+  }
+
+  @test
+  'helpers passed as arguments to {{partial}} are not torn down when switching between blocks'() {
+    this.registerPartial('yasss', 'Yes');
+    this.registerPartial('noooo', '');
+
+    let options = {
+      template: '{{partial (stateful-foo)}}',
+      truthyValue: 'yasss',
+      falsyValue: 'noooo',
+    };
+
+    this.testStatefulHelper(assert, options);
+  }
+
+  @test
+  'helpers passed as arguments to {{component}} are not torn down when switching between blocks'() {
+    this.registerComponent('Glimmer', 'XYasss', 'Yes');
+
+    let options = {
+      template: '{{component (stateful-foo)}}',
+      truthyValue: 'XYasss',
+      falsyValue: null,
+    };
+
+    this.testStatefulHelper(assert, options);
+  }
+
+  @test
+  'helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks'() {
+    let externalElement = this.delegate.createElement('div');
+
+    let options = {
+      template: '{{#in-element (stateful-foo)}}Yes{{/in-element}}',
+      truthyValue: externalElement,
+      falsyValue: null,
+      element: externalElement,
+    };
+
+    this.testStatefulHelper(assert, options);
+  }
+
+  @test
+  'updating a curly with this'() {
+    this.render('<div><p>{{this.value}}</p></div>', { value: 'hello world' });
+
+    this.assertHTML('<div><p>hello world</p></div>');
+    this.assertStableRerender();
+
+    this.rerender({ value: 'goodbye world' });
+
+    this.assertHTML('<div><p>goodbye world</p></div>');
+  }
+
+  @test
+  'a simple implementation of a dirtying rerender'() {
+    this.render(
+      '<div>{{#if this.condition}}<p>{{this.value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>',
+      {
+        condition: true,
+        value: 'hello world',
+      }
     );
-    render(template, object);
-    let valueNode: Node | null | undefined;
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      valueNode = context.root.firstChild.firstChild.firstChild;
-    }
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
-
-    rerender();
-
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'After dirtying but not updating');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was not blown away'
-      );
-    }
+    this.assertHTML('<div><p>hello world</p></div>', 'Initial render');
+    this.assertStableRerender();
 
     // Even though the #if was stable, a dirty child node is updated
-    object.value = 'goodbye world';
-    rerender();
-    equalTokens(context.root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.strictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was not blown away'
-      );
-    }
+    this.rerender({ value: 'goodbye world' });
+    this.assertStableNodes();
 
-    object.condition = false;
-    rerender();
-    equalTokens(context.root, '<div><p>Nothing</p></div>', 'And then dirtying');
-    if (
-      assertNodeTagName(context.root.firstChild, 'div') &&
-      assertNodeTagName(context.root.firstChild.firstChild, 'p')
-    ) {
-      assert.notStrictEqual(
-        context.root.firstChild.firstChild.firstChild,
-        valueNode,
-        'The text node was not blown away'
-      );
-    }
-  });
+    this.rerender({ condition: false });
+    this.assertHTML('<div><p>Nothing</p></div>', 'And then dirtying');
+    this.assertStableNodes();
+  }
 
-  test('The if helper should consider an empty array falsy', function() {
-    let object: any = { condition: [], value: 'hello world' };
-    let template = compile(
-      '<div>{{#if condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>'
-    );
-    render(template, object);
-
-    equalTokens(context.root, '<div><p>Nothing</p></div>');
-
-    object.condition.push('thing');
-    rerender();
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
-    object.condition.pop();
-    rerender();
-    equalTokens(context.root, '<div><p>Nothing</p></div>');
-  });
-
-  test('a simple implementation of a dirtying rerender without else', () => {
-    let object = { condition: true, value: 'hello world' };
-    let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
-    render(template, object);
-
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
-
-    object.condition = false;
-
-    rerender();
-    equalTokens(
-      context.root,
-      '<div><!----></div>',
-      'If the condition is false, the morph becomes empty'
+  @test
+  'The if helper should consider an empty array truthy'() {
+    this.render(
+      '<div>{{#if this.condition}}<p>{{this.value}}</p>{{else}}<p>Nothing</p>{{/if}}</div>',
+      { condition: [], value: 'hello world' }
     );
 
-    object.condition = true;
+    this.assertHTML('<div><p>hello world</p></div>');
 
-    rerender();
-    equalTokens(
-      context.root,
+    this.rerender({ condition: ['thing'] });
+    this.assertHTML('<div><p>hello world</p></div>', 'after updating array');
+
+    this.rerender({ condition: [] });
+    this.assertHTML('<div><p>hello world</p></div>', 'back to empty array');
+  }
+
+  @test
+  'a simple implementation of a dirtying rerender without else'() {
+    this.render('<div>{{#if this.condition}}<p>{{this.value}}</p>{{/if}}</div>', {
+      condition: true,
+      value: 'hello world',
+    });
+
+    this.assertHTML('<div><p>hello world</p></div>', 'Initial render');
+
+    this.rerender({ condition: false });
+    this.assertHTML('<div><!----></div>', 'If the condition is false, the morph becomes empty');
+
+    this.rerender({ condition: true });
+    this.assertHTML(
       '<div><p>hello world</p></div>',
       'If the condition is true, the morph repopulates'
     );
-  });
+  }
 
-  test('The unless helper without else', function() {
-    let object: any = { condition: true, value: 'hello world' };
-    let template = compile('<div>{{#unless condition}}<p>{{value}}</p>{{/unless}}</div>');
-    render(template, object);
+  @test
+  'The unless helper without else'() {
+    this.render('<div>{{#unless this.condition}}<p>{{this.value}}</p>{{/unless}}</div>', {
+      condition: true,
+      value: 'hello world',
+    });
 
-    equalTokens(context.root, '<div><!----></div>', 'Initial render');
+    this.assertHTML('<div><!----></div>', 'Initial render');
 
-    object.condition = false;
-    rerender();
-    equalTokens(
-      context.root,
+    this.rerender({ condition: false });
+    this.assertHTML(
       '<div><p>hello world</p></div>',
       'If the condition is false, the morph becomes populated'
     );
-    object.condition = true;
-    rerender();
-    equalTokens(
-      context.root,
-      '<div><!----></div>',
-      'If the condition is true, the morph unpopulated'
-    );
-  });
 
-  test('The unless helper with else', function() {
-    let object: any = { condition: true, value: 'hello world' };
-    let template = compile(
-      '<div>{{#unless condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>'
+    this.rerender({ condition: true });
+    this.assertHTML('<div><!----></div>', 'If the condition is true, the morph unpopulated');
+  }
+
+  @test
+  'The unless helper with else'() {
+    this.render(
+      '<div>{{#unless this.condition}}<p>{{this.value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>',
+      { condition: true, value: 'hello world' }
     );
 
-    render(template, object);
+    this.assertHTML('<div><p>Nothing</p></div>', 'Initial render');
 
-    equalTokens(context.root, '<div><p>Nothing</p></div>', 'Initial render');
-
-    object.condition = false;
-    rerender();
-    equalTokens(
-      context.root,
+    this.rerender({ condition: false });
+    this.assertHTML(
       '<div><p>hello world</p></div>',
       'If the condition is false, the default renders'
     );
-    object.condition = true;
-    rerender();
-    equalTokens(
-      context.root,
-      '<div><p>Nothing</p></div>',
-      'If the condition is true, the else renders'
-    );
-  });
 
-  test('The unless helper should consider an empty array falsy', function() {
-    let object: any = { condition: [], value: 'hello world' };
-    let template = compile(
-      '<div>{{#unless condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>'
+    this.rerender({ condition: true });
+    this.assertHTML('<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
+  }
+
+  @test
+  'The unless helper should consider an empty array truthy'() {
+    this.render(
+      '<div>{{#unless this.condition}}<p>{{this.value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>',
+      { condition: [], value: 'hello world' }
     );
 
-    render(template, object);
+    this.assertHTML('<div><p>Nothing</p></div>', 'Initial render');
 
-    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
+    this.rerender({ condition: [1] });
+    this.assertHTML('<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
 
-    object.condition.push(1);
-    rerender();
-    equalTokens(
-      context.root,
-      '<div><p>Nothing</p></div>',
-      'If the condition is true, the else renders'
-    );
+    this.rerender({ condition: [] });
+    this.assertHTML('<div><p>Nothing</p></div>', 'If the condition is false, the else renders');
+  }
 
-    object.condition.pop();
-    rerender();
-    equalTokens(
-      context.root,
-      '<div><p>hello world</p></div>',
-      'If the condition is false, the default renders'
-    );
-  });
+  @test
+  'a conditional that is false on the first run'() {
+    this.render('<div>{{#if this.condition}}<p>{{this.value}}</p>{{/if}}</div>', {
+      condition: false,
+      value: 'hello world',
+    });
 
-  test('a conditional that is false on the first run', () => {
-    let object = { condition: false, value: 'hello world' };
-    let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
-    render(template, object);
+    this.assertHTML('<div><!----></div>', 'Initial render');
 
-    equalTokens(context.root, '<div><!----></div>', 'Initial render');
-
-    object.condition = true;
-
-    rerender();
-    equalTokens(
-      context.root,
+    this.rerender({ condition: true });
+    this.assertHTML(
       '<div><p>hello world</p></div>',
       'If the condition is true, the morph populates'
     );
 
-    object.condition = false;
+    this.rerender({ condition: false });
+    this.assertHTML('<div><!----></div>', 'If the condition is false, the morph is empty');
+  }
 
-    rerender();
-    equalTokens(
-      context.root,
-      '<div><!----></div>',
-      'If the condition is false, the morph is empty'
-    );
-  });
+  @test
+  'block arguments'() {
+    const person = { name: { first: 'Godfrey', last: 'Chan' } };
 
-  test('block arguments', () => {
-    let template = compile('<div>{{#with person.name.first as |f|}}{{f}}{{/with}}</div>');
+    this.render('<div>{{#with person.name.first as |f|}}{{f}}{{/with}}</div>', {
+      person,
+    });
 
-    let object = { person: { name: { first: 'Godfrey', last: 'Chan' } } };
-    render(template, object);
+    this.assertHTML('<div>Godfrey</div>', 'Initial render');
 
-    equalTokens(context.root, '<div>Godfrey</div>', 'Initial render');
+    person.name.first = 'Godfreak';
+    this.rerender();
 
-    object.person.name.first = 'Godfreak';
-    rerender();
+    this.assertHTML('<div>Godfreak</div>', 'After updating');
 
-    equalTokens(context.root, '<div>Godfreak</div>', 'After updating');
+    this.rerender({ person: { name: { first: 'Godfrey', last: 'Chan' } } });
 
-    rerender({ person: { name: { first: 'Godfrey', last: 'Chan' } } });
+    this.assertHTML('<div>Godfrey</div>', 'After reset');
+  }
 
-    equalTokens(context.root, '<div>Godfrey</div>', 'After reset');
-  });
+  @test
+  'missing helper'() {
+    this.registerHelper('hello', () => 'hello');
 
-  test('missing helper', () => {
-    registerHelper(context.registry, 'hello', () => 'hello');
-
-    let template = compile(trimLines`
-      {{helo world}}
-    `);
-
-    let result = compileTemplate(template);
+    let result = this.delegate.compileTemplate('{{helo world}}');
 
     assertHandleError(assert, result, {
       problem: 'Unexpected Helper helo',
       span: { start: 2, end: 6 },
     });
-  });
+  }
 
-  test('block arguments should have higher presedence than helpers', () => {
-    registerHelper(context.registry, 'foo', () => 'foo-helper');
-    registerHelper(context.registry, 'bar', () => 'bar-helper');
-    registerHelper(context.registry, 'echo', args => args[0]);
+  @test
+  'block arguments should have higher presedence than helpers'() {
+    this.registerHelper('foo', () => 'foo-helper');
+    this.registerHelper('bar', () => 'bar-helper');
+    this.registerHelper('echo', args => args[0]);
 
-    let template = compile(trimLines`
+    let template = trimLines`
       <div>
         foo: "{{foo}}";
         bar: "{{bar}}";
-        value: "{{value}}";
+        value: "{{this.value}}";
         echo foo: "{{echo foo}}";
         echo bar: "{{echo bar}}";
         echo value: "{{echo value}}";
@@ -1697,7 +799,7 @@ module('[jit] integration - Updating', hooks => {
         {{#with value as |foo|}}
           foo: "{{foo}}";
           bar: "{{bar}}";
-          value: "{{value}}";
+          value: "{{this.value}}";
           echo foo: "{{echo foo}}";
           echo bar: "{{echo bar}}";
           echo value: "{{echo value}}";
@@ -1707,7 +809,7 @@ module('[jit] integration - Updating', hooks => {
           {{#with foo as |bar|}}
             foo: "{{foo}}";
             bar: "{{bar}}";
-            value: "{{value}}";
+            value: "{{this.value}}";
             echo foo: "{{echo foo}}";
             echo bar: "{{echo bar}}";
             echo value: "{{echo value}}";
@@ -1719,19 +821,17 @@ module('[jit] integration - Updating', hooks => {
         {{#with value as |bar|}}
           foo: "{{foo}}";
           bar: "{{bar}}";
-          value: "{{value}}";
+          value: "{{this.value}}";
           echo foo: "{{echo foo}}";
           echo bar: "{{echo bar}}";
           echo value: "{{echo value}}";
         {{/with}}
       </div>
-    `);
+    `;
 
-    let object = { foo: 'foo-value', bar: 'bar-value', value: 'value-value' };
-    render(template, object);
+    this.render(template, { foo: 'foo-value', bar: 'bar-value', value: 'value-value' });
 
-    equalTokens(
-      context.root,
+    this.assertHTML(
       trimLines`
       <div>
         foo: "foo-helper";
@@ -1771,54 +871,11 @@ module('[jit] integration - Updating', hooks => {
       'Initial render'
     );
 
-    rerender();
+    this.assertStableRerender();
 
-    equalTokens(
-      context.root,
-      trimLines`
-      <div>
-        foo: "foo-helper";
-        bar: "bar-helper";
-        value: "value-value";
-        echo foo: "foo-value";
-        echo bar: "bar-value";
-        echo value: "value-value";
+    this.rerender({ value: 'NEW-VALUE' });
 
-        -----
-
-        foo: "value-value";
-        bar: "bar-helper";
-        value: "value-value";
-        echo foo: "value-value";
-        echo bar: "bar-value";
-        echo value: "value-value";
-
-        -----
-
-        foo: "value-value";
-        bar: "value-value";
-        value: "value-value";
-        echo foo: "value-value";
-        echo bar: "value-value";
-        echo value: "value-value";
-
-        -----
-
-        foo: "foo-helper";
-        bar: "value-value";
-        value: "value-value";
-        echo foo: "foo-value";
-        echo bar: "value-value";
-        echo value: "value-value";
-      </div>`,
-      'After no-op re-render'
-    );
-
-    object.value = 'NEW-VALUE';
-    rerender();
-
-    equalTokens(
-      context.root,
+    this.assertHTML(
       trimLines`
       <div>
         foo: "foo-helper";
@@ -1858,10 +915,9 @@ module('[jit] integration - Updating', hooks => {
       'After update'
     );
 
-    rerender({ foo: 'foo-value', bar: 'bar-value', value: 'value-value' });
+    this.rerender({ foo: 'foo-value', bar: 'bar-value', value: 'value-value' });
 
-    equalTokens(
-      context.root,
+    this.assertHTML(
       trimLines`
       <div>
         foo: "foo-helper";
@@ -1900,72 +956,70 @@ module('[jit] integration - Updating', hooks => {
       </div>`,
       'After reset'
     );
-  });
+  }
 
-  test('block arguments (ensure balanced push/pop)', () => {
-    let template = compile('<div>{{#with person.name.first as |f|}}{{f}}{{/with}}{{f}}</div>');
+  @test
+  'block arguments (ensure balanced push/pop)'() {
+    let person = { name: { first: 'Godfrey', last: 'Chan' } };
+    this.render('<div>{{#with person.name.first as |f|}}{{f}}{{/with}}{{f}}</div>', {
+      person,
+      f: 'Outer',
+    });
 
-    let object = { person: { name: { first: 'Godfrey', last: 'Chan' } }, f: 'Outer' };
-    render(template, object);
+    this.assertHTML('<div>GodfreyOuter</div>', 'Initial render');
 
-    equalTokens(context.root, '<div>GodfreyOuter</div>', 'Initial render');
+    person.name.first = 'Godfreak';
+    this.rerender({ person });
 
-    object.person.name.first = 'Godfreak';
-    rerender();
+    this.assertHTML('<div>GodfreakOuter</div>', 'After updating');
+  }
 
-    equalTokens(context.root, '<div>GodfreakOuter</div>', 'After updating');
-  });
+  @test
+  'block arguments cannot be accessed through {{this}}'() {
+    this.registerHelper('noop', params => params[0]);
 
-  test('block arguments cannot be accessed through {{this}}', () => {
-    registerHelper(context.registry, 'noop', params => params[0]);
+    this.render(
+      stripTight`
+        <div>
+          [{{#with person as |name|}}{{this.name}}{{/with}}]
+          [{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}]
+          [{{#with person as |name|}}{{#with (noop this.name) as |test|}}{{test}}{{/with}}{{/with}}]
+        </div>
+      `,
+      { person: 'Yehuda', name: 'Godfrey' }
+    );
 
-    let template = compile(stripTight`
-      <div>
-        [{{#with person as |name|}}{{this.name}}{{/with}}]
-        [{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}]
-        [{{#with person as |name|}}{{#with (noop this.name) as |test|}}{{test}}{{/with}}{{/with}}]
-      </div>`);
+    this.assertHTML('<div>[Godfrey][Godfrey][Godfrey]</div>', 'Initial render');
+    this.assertStableRerender();
 
-    let object = { person: 'Yehuda', name: 'Godfrey' };
-    render(template, object);
+    this.rerender({ name: 'Godfreak' });
+    this.assertHTML('<div>[Godfreak][Godfreak][Godfreak]</div>', 'After update');
 
-    equalTokens(context.root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'Initial render');
+    this.rerender({ name: 'Godfrey' });
+    this.assertHTML('<div>[Godfrey][Godfrey][Godfrey]</div>', 'After reset');
+  }
 
-    rerender();
+  @test
+  'The with helper should consider an empty array truthy'() {
+    this.render('<div>{{#with condition as |c|}}{{c.length}}{{/with}}</div>', {
+      condition: [],
+    });
 
-    equalTokens(context.root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'Initial render');
+    this.assertHTML('<div>0</div>', 'Initial render');
 
-    object.name = 'Godfreak';
-    rerender();
+    this.rerender({
+      condition: [1],
+    });
 
-    equalTokens(context.root, '<div>[Godfreak][Godfreak][Godfreak]</div>', 'After update');
+    this.assertHTML('<div>1</div>', 'After updating');
+  }
 
-    object.name = 'Godfrey';
-    rerender();
+  @test
+  'block helpers whose template has a morph at the edge'() {
+    this.render('{{#identity}}{{this.value}}{{/identity}}', { value: 'hello world' });
+    this.assertHTML('hello world');
 
-    equalTokens(context.root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'After reset');
-  });
-
-  test('The with helper should consider an empty array falsy', () => {
-    let object = { condition: [] as number[] };
-    let template = compile('<div>{{#with condition as |c|}}{{c.length}}{{/with}}</div>');
-    render(template, object);
-
-    equalTokens(context.root, '<div><!----></div>', 'Initial render');
-
-    object.condition.push(1);
-    rerender();
-
-    equalTokens(context.root, '<div>1</div>', 'After updating');
-  });
-
-  test('block helpers whose template has a morph at the edge', assert => {
-    let template = compile('{{#identity}}{{value}}{{/identity}}');
-    let object = { value: 'hello world' };
-    render(template, object);
-
-    equalTokens(context.root, 'hello world');
-    let firstNode = result.firstNode();
+    let firstNode = this.element.firstChild;
     assert.notStrictEqual(firstNode, null, 'first node should have rendered');
     if (firstNode !== null) {
       assert.equal(firstNode.nodeType, 3, 'the first node of the helper should be a text node');
@@ -1973,37 +1027,35 @@ module('[jit] integration - Updating', hooks => {
 
       assert.strictEqual(firstNode.nextSibling, null, 'there should only be one nodes');
     }
-  });
+  }
 
-  test("clean content doesn't get blown away", assert => {
-    let template = compile('<div>{{value}}</div>');
-    let object = { value: 'hello' };
-    render(template, object);
+  @test
+  "clean content doesn't get blown away"() {
+    this.render('<div>{{this.value}}</div>', { value: 'hello' });
 
-    let firstNode: Option<SimpleNode> = result.firstNode();
+    let firstNode: Option<SimpleNode> = this.element.firstChild;
     let textNode: Node | null;
     if (assertNodeTagName(firstNode, 'div')) {
       textNode = firstNode.firstChild;
       assert.equal(textNode && textNode.nodeValue, 'hello');
     }
 
-    object.value = 'goodbye';
-    rerender();
+    this.rerender({ value: 'goodbye' });
 
-    equalTokens(context.root, '<div>goodbye</div>');
+    this.assertHTML('<div>goodbye</div>');
 
-    object.value = 'hello';
-    rerender();
+    this.rerender({ value: 'hello' });
 
-    firstNode = context.root.firstChild;
+    firstNode = this.element.firstChild;
     if (assertNodeTagName(firstNode, 'div')) {
       textNode = firstNode.firstChild;
       assert.equal(textNode && textNode.nodeValue, 'hello');
     }
-  });
+  }
 
-  test('helper calls follow the normal dirtying rules', () => {
-    registerHelper(context.registry, 'capitalize', function(params) {
+  @test
+  'helper calls follow the normal dirtying rules'() {
+    this.registerHelper('capitalize', function(params) {
       let value = params[0];
       if (value !== null && value !== undefined && typeof value === 'string') {
         return value.toUpperCase();
@@ -2011,335 +1063,207 @@ module('[jit] integration - Updating', hooks => {
       return;
     });
 
-    let template = compile('<div>{{capitalize value}}</div>');
-    let object = { value: 'hello' };
-    render(template, object);
+    this.render('<div>{{capitalize value}}</div>', { value: 'hello' });
+    this.assertHTML('<div>HELLO</div>');
 
-    let div = result.firstNode();
-    if (assertNodeTagName(div, 'div')) {
-      assertProperty(div.firstChild, 'nodeValue', 'HELLO');
-    }
+    this.rerender({
+      value: 'goodbye',
+    });
 
-    object.value = 'goodbye';
-    rerender();
-
-    equalTokens(context.root, '<div>GOODBYE</div>');
-
-    rerender();
-
-    equalTokens(context.root, '<div>GOODBYE</div>');
+    this.assertHTML('<div>GOODBYE</div>');
+    this.assertStableRerender();
 
     // Checks normalized value, not raw value
-    object.value = 'GoOdByE';
-    rerender();
+    this.rerender({
+      value: 'GoOdByE',
+    });
+    this.assertHTML('<div>GOODBYE</div>');
+    this.assertStableNodes();
+  }
 
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      assertProperty(context.root.firstChild.firstChild, 'nodeValue', 'GOODBYE');
-    }
-  });
+  @test
+  'class attribute follow the normal dirtying rules'() {
+    this.render("<div class='{{this.value}}'>hello</div>", { value: 'world' });
 
-  test('class attribute follow the normal dirtying rules', () => {
-    let template = compile("<div class='{{value}}'>hello</div>");
-    let object = { value: 'world' };
+    this.assertHTML("<div class='world'>hello</div>", 'Initial render');
 
-    render(template, object);
+    this.rerender({
+      value: 'universe',
+    });
 
-    equalTokens(context.root, "<div class='world'>hello</div>", 'Initial render');
+    this.assertHTML("<div class='universe'>hello</div>", 'Revalidating without dirtying');
+    this.assertStableRerender();
 
-    object.value = 'universe';
-    rerender();
+    this.rerender({
+      value: 'world',
+    });
 
-    equalTokens(context.root, "<div class='universe'>hello</div>", 'Revalidating without dirtying');
+    this.assertHTML("<div class='world'>hello</div>", 'Revalidating after dirtying');
+  }
 
-    rerender();
+  @test
+  'class attribute w/ concat follow the normal dirtying rules'() {
+    this.render("<div class='hello {{this.value}}'>hello</div>", { value: 'world' });
 
-    equalTokens(context.root, "<div class='universe'>hello</div>", 'Revalidating after dirtying');
+    this.assertHTML("<div class='hello world'>hello</div>");
+    this.assertStableRerender();
 
-    object.value = 'world';
-    rerender();
+    this.rerender({ value: 'universe' });
+    this.assertHTML("<div class='hello universe'>hello</div>");
 
-    equalTokens(context.root, "<div class='world'>hello</div>", 'Revalidating after dirtying');
-  });
+    this.rerender({ value: null });
+    this.assertHTML("<div class='hello '>hello</div>");
 
-  test('class attribute w/ concat follow the normal dirtying rules', () => {
-    let template = compile("<div class='hello {{value}}'>hello</div>");
-    let object = { value: 'world' as string | null };
-    render(template, object);
+    this.rerender({ value: 'world' });
+    this.assertHTML("<div class='hello world'>hello</div>");
+  }
 
-    equalTokens(context.root, "<div class='hello world'>hello</div>");
+  @test
+  'class attribute is removed if the binding becomes null or undefined'() {
+    this.render('<div class={{this.value}}>hello</div>', { value: 'foo' });
 
-    rerender();
+    this.assertHTML("<div class='foo'>hello</div>");
+    this.assertStableRerender();
 
-    equalTokens(context.root, "<div class='hello world'>hello</div>");
+    this.rerender({ value: null });
+    this.assertHTML('<div>hello</div>');
 
-    object.value = 'universe';
-    rerender();
+    this.rerender({ value: 0 });
+    this.assertHTML("<div class='0'>hello</div>");
 
-    equalTokens(context.root, "<div class='hello universe'>hello</div>");
+    this.rerender({ value: undefined });
+    this.assertHTML('<div>hello</div>');
 
-    object.value = null;
-    rerender();
+    this.rerender({ value: 'foo' });
+    this.assertHTML("<div class='foo'>hello</div>");
+  }
 
-    equalTokens(context.root, "<div class='hello '>hello</div>");
+  @test
+  'attribute nodes follow the normal dirtying rules'() {
+    this.render("<div data-value='{{this.value}}'>hello</div>", { value: 'world' });
+    this.assertHTML("<div data-value='world'>hello</div>", 'Initial render');
 
-    object.value = 'world';
-    rerender();
+    this.rerender({ value: 'universe' });
+    this.assertHTML("<div data-value='universe'>hello</div>", 'Revalidating without dirtying');
+    this.assertStableRerender();
 
-    equalTokens(context.root, "<div class='hello world'>hello</div>");
-  });
+    this.rerender({ value: null });
+    this.assertHTML('<div>hello</div>', 'Revalidating after dirtying');
 
-  test('class attribute is removed if the binding becomes null or undefined', () => {
-    let template = compile('<div class={{value}}>hello</div>');
-    let object: { value: any } = { value: 'foo' };
-    render(template, object);
+    this.rerender({ value: 'world' });
+    this.assertHTML("<div data-value='world'>hello</div>", 'Revalidating after dirtying');
+  }
 
-    equalTokens(context.root, "<div class='foo'>hello</div>");
+  @test
+  'attribute nodes w/ concat follow the normal dirtying rules'() {
+    this.render("<div data-value='hello {{this.value}}'>hello</div>", { value: 'world' });
+    this.assertHTML("<div data-value='hello world'>hello</div>");
+    this.assertStableRerender();
 
-    rerender();
+    this.rerender({ value: 'universe' });
+    this.assertHTML("<div data-value='hello universe'>hello</div>");
 
-    equalTokens(context.root, "<div class='foo'>hello</div>");
+    this.rerender({ value: null });
+    this.assertHTML("<div data-value='hello '>hello</div>");
 
-    object.value = null;
-    rerender();
+    this.rerender({ value: 'world' });
+    this.assertHTML("<div data-value='hello world'>hello</div>");
+  }
 
-    equalTokens(context.root, '<div>hello</div>');
-
-    object.value = 0;
-    rerender();
-
-    equalTokens(context.root, "<div class='0'>hello</div>");
-
-    object.value = undefined;
-    rerender();
-
-    equalTokens(context.root, '<div>hello</div>');
-
-    object.value = 'foo';
-    rerender();
-
-    equalTokens(context.root, "<div class='foo'>hello</div>");
-  });
-
-  test('attribute nodes follow the normal dirtying rules', () => {
-    let template = compile("<div data-value='{{value}}'>hello</div>");
-    let object = { value: 'world' as string | null };
-
-    render(template, object);
-
-    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Initial render');
-
-    object.value = 'universe';
-    rerender();
-
-    equalTokens(
-      context.root,
-      "<div data-value='universe'>hello</div>",
-      'Revalidating without dirtying'
-    );
-
-    rerender();
-
-    equalTokens(
-      context.root,
-      "<div data-value='universe'>hello</div>",
-      'Revalidating after dirtying'
-    );
-
-    object.value = null;
-    rerender();
-
-    equalTokens(context.root, '<div>hello</div>', 'Revalidating after dirtying');
-
-    object.value = 'world';
-    rerender();
-
-    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Revalidating after dirtying');
-  });
-
-  test('attribute nodes w/ concat follow the normal dirtying rules', () => {
-    let template = compile("<div data-value='hello {{value}}'>hello</div>");
-    let object = { value: 'world' as string | null };
-    render(template, object);
-
-    equalTokens(context.root, "<div data-value='hello world'>hello</div>");
-
-    rerender();
-
-    equalTokens(context.root, "<div data-value='hello world'>hello</div>");
-
-    object.value = 'universe';
-    rerender();
-
-    equalTokens(context.root, "<div data-value='hello universe'>hello</div>");
-
-    object.value = null;
-    rerender();
-
-    equalTokens(context.root, "<div data-value='hello '>hello</div>");
-
-    object.value = 'world';
-    rerender();
-
-    equalTokens(context.root, "<div data-value='hello world'>hello</div>");
-  });
-
-  test('attributes values are normalized correctly', () => {
-    let template = compile('<div data-value={{value}}>hello</div>');
-    let object = {
+  @test
+  'attributes values are normalized correctly'() {
+    this.render('<div data-value={{this.value}}>hello</div>', {
       value: {
         toString() {
           return 'world';
         },
       },
-    };
+    });
 
-    render(template, object);
+    this.assertHTML("<div data-value='world'>hello</div>", 'Initial render');
+    this.assertStableRerender();
 
-    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Initial render');
+    this.rerender({ value: 123 });
 
-    rerender();
+    this.assertHTML("<div data-value='123'>hello</div>", 'Revalidating without dirtying');
+    this.assertStableRerender();
 
-    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Initial render');
+    this.rerender({ value: false });
 
-    object.value = 123;
-    rerender();
+    this.assertHTML('<div>hello</div>', 'Revalidating after dirtying');
+    this.assertStableRerender();
 
-    equalTokens(context.root, "<div data-value='123'>hello</div>", 'Revalidating without dirtying');
-
-    rerender();
-
-    equalTokens(context.root, "<div data-value='123'>hello</div>", 'Revalidating after dirtying');
-
-    object.value = false;
-    rerender();
-
-    equalTokens(context.root, '<div>hello</div>', 'Revalidating after dirtying');
-
-    rerender();
-
-    equalTokens(context.root, '<div>hello</div>', 'Revalidating after dirtying');
-
-    object.value = {
-      toString() {
-        return 'world';
+    this.rerender({
+      value: {
+        toString() {
+          return 'world';
+        },
       },
-    };
-    rerender();
+    });
 
-    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Revalidating after dirtying');
-  });
+    this.assertHTML("<div data-value='world'>hello</div>", 'Revalidating after dirtying');
+  }
 
-  test('namespaced attribute nodes follow the normal dirtying rules', () => {
-    let template = compile("<div xml:lang='{{lang}}'>hello</div>");
-    let object = { lang: 'en-us' };
+  @test
+  'namespaced attribute nodes follow the normal dirtying rules'() {
+    this.render("<div xml:lang='{{this.lang}}'>hello</div>", { lang: 'en-us' });
 
-    render(template, object);
+    this.assertHTML("<div xml:lang='en-us'>hello</div>", 'Initial render');
 
-    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'Initial render');
+    this.rerender({ lang: 'en-uk' });
 
-    object.lang = 'en-uk';
-    rerender();
+    this.assertHTML("<div xml:lang='en-uk'>hello</div>", 'Revalidating without dirtying');
+    this.assertStableRerender();
+  }
 
-    equalTokens(context.root, "<div xml:lang='en-uk'>hello</div>", 'Revalidating without dirtying');
+  @test
+  'namespaced attribute nodes w/ concat follow the normal dirtying rules'() {
+    this.render("<div xml:lang='en-{{this.locale}}'>hello</div>", { locale: 'us' });
 
-    rerender();
+    this.assertHTML("<div xml:lang='en-us'>hello</div>", 'Initial render');
+    this.assertStableRerender();
 
-    equalTokens(context.root, "<div xml:lang='en-uk'>hello</div>", 'Revalidating after dirtying');
-  });
+    this.rerender({ locale: 'uk' });
+    this.assertHTML("<div xml:lang='en-uk'>hello</div>", 'After update');
 
-  test('namespaced attribute nodes w/ concat follow the normal dirtying rules', () => {
-    let template = compile("<div xml:lang='en-{{locale}}'>hello</div>");
-    let object = { locale: 'us' as string | null };
+    this.rerender({ locale: null });
+    this.assertHTML("<div xml:lang='en-'>hello</div>", 'After updating to null');
 
-    render(template, object);
+    this.rerender({ locale: 'us' });
+    this.assertHTML("<div xml:lang='en-us'>hello</div>", 'After reset');
+  }
 
-    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'Initial render');
+  @test
+  'non-standard namespaced attribute nodes follow the normal dirtying rules'() {
+    this.render("<div epub:type='{{type}}'>hello</div>", { type: 'dedication' });
+    this.assertHTML("<div epub:type='dedication'>hello</div>", 'Initial render');
 
-    rerender();
+    this.rerender({ type: 'backmatter' });
+    this.assertHTML("<div epub:type='backmatter'>hello</div>", 'Revalidating without dirtying');
+    this.assertStableRerender();
+  }
 
-    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'No-op rerender');
+  @test
+  'non-standard namespaced attribute nodes w/ concat follow the normal dirtying rules'() {
+    this.render("<div epub:type='dedication {{type}}'>hello</div>", { type: 'backmatter' });
 
-    object.locale = 'uk';
-    rerender();
+    this.assertHTML("<div epub:type='dedication backmatter'>hello</div>", 'Initial render');
+    this.assertStableRerender();
 
-    equalTokens(context.root, "<div xml:lang='en-uk'>hello</div>", 'After update');
+    this.rerender({ type: 'index' });
+    this.assertHTML("<div epub:type='dedication index'>hello</div>", 'After update');
 
-    object.locale = null;
-    rerender();
+    this.rerender({ type: null });
+    this.assertHTML("<div epub:type='dedication '>hello</div>", 'After updating to null');
 
-    equalTokens(context.root, "<div xml:lang='en-'>hello</div>", 'After updating to null');
+    this.rerender({ type: 'backmatter' });
+    this.assertHTML("<div epub:type='dedication backmatter'>hello</div>", 'After reset');
+  }
 
-    object.locale = 'us';
-    rerender();
-
-    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'After reset');
-  });
-
-  test('non-standard namespaced attribute nodes follow the normal dirtying rules', () => {
-    let template = compile("<div epub:type='{{type}}'>hello</div>");
-    let object = { type: 'dedication' };
-
-    render(template, object);
-
-    equalTokens(context.root, "<div epub:type='dedication'>hello</div>", 'Initial render');
-
-    object.type = 'backmatter';
-    rerender();
-
-    equalTokens(
-      context.root,
-      "<div epub:type='backmatter'>hello</div>",
-      'Revalidating without dirtying'
-    );
-
-    rerender();
-
-    equalTokens(
-      context.root,
-      "<div epub:type='backmatter'>hello</div>",
-      'Revalidating after dirtying'
-    );
-  });
-
-  test('non-standard namespaced attribute nodes w/ concat follow the normal dirtying rules', () => {
-    let template = compile("<div epub:type='dedication {{type}}'>hello</div>");
-    let object = { type: 'backmatter' as string | null };
-
-    render(template, object);
-
-    equalTokens(
-      context.root,
-      "<div epub:type='dedication backmatter'>hello</div>",
-      'Initial render'
-    );
-
-    rerender();
-
-    equalTokens(
-      context.root,
-      "<div epub:type='dedication backmatter'>hello</div>",
-      'No-op rerender'
-    );
-
-    object.type = 'index';
-    rerender();
-
-    equalTokens(context.root, "<div epub:type='dedication index'>hello</div>", 'After update');
-
-    object.type = null;
-    rerender();
-
-    equalTokens(context.root, "<div epub:type='dedication '>hello</div>", 'After updating to null');
-
-    object.type = 'backmatter';
-    rerender();
-
-    equalTokens(context.root, "<div epub:type='dedication backmatter'>hello</div>", 'After reset');
-  });
-
-  test('<option selected> is normalized and updated correctly', assert => {
-    function assertSelected(expectedSelected: string[], label: string) {
-      let options = getElementsByTagName(context.root, 'option');
+  @test
+  '<option selected> is normalized and updated correctly'() {
+    let assertSelected = (expectedSelected: string[], label: string) => {
+      let options = getElementsByTagName(this.element, 'option');
       let actualSelected = [];
       for (let i = 0; i < options.length; i++) {
         let option = options[i];
@@ -2351,9 +1275,9 @@ module('[jit] integration - Updating', hooks => {
       }
 
       assert.deepEqual(actualSelected, expectedSelected, label);
-    }
+    };
 
-    let template = compile(`
+    let template = stripTight`
       <select multiple>
         <option>0</option>
         <option selected={{one}}>1</option>
@@ -2361,19 +1285,18 @@ module('[jit] integration - Updating', hooks => {
         <option selected={{three}}>3</option>
         <option selected={{four}}>4</option>
         <option selected={{five}}>5</option>
-      </select>`);
+      </select>
+    `;
 
-    let object = {
+    this.render(template, {
       one: true,
-      two: 'is-true' as string | boolean,
-      three: undefined as undefined | null | boolean,
-      four: null as undefined | null | string,
+      two: 'is-true',
+      three: undefined,
+      four: null,
       five: false,
-    };
+    });
 
-    render(template, object);
-
-    let expectedInitialTokens = `
+    let expectedInitialTokens = stripTight`
       <select multiple="">
         <option>0</option>
         <option>1</option>
@@ -2383,124 +1306,196 @@ module('[jit] integration - Updating', hooks => {
         <option>5</option>
       </select>`;
 
-    equalTokens(context.root, expectedInitialTokens, 'initial render tokens');
+    this.assertHTML(expectedInitialTokens, 'initial render tokens');
     assertSelected(['1', '2'], 'selection after initial render');
 
-    rerender();
+    this.rerender();
 
     assertSelected(['1', '2'], 'selection after no-op re-render');
 
-    object.one = false;
-    object.two = false;
-    rerender();
+    this.rerender({
+      one: false,
+      two: false,
+    });
 
     assertSelected([], 'selection after update to all falsey');
 
-    object.three = true;
-    object.four = 'asdf';
-    rerender();
+    this.rerender({
+      three: true,
+      four: 'asdf',
+    });
 
     assertSelected(['3', '4'], 'selection after update 3 & 4 to truthy');
 
-    object.three = null;
-    object.four = undefined;
-    rerender();
+    this.rerender({
+      three: null,
+      four: undefined,
+    });
 
     assertSelected([], 'selection after update 3 & 4 back to falsey');
-  });
+  }
 
-  test('top-level bounds are correct when swapping order', assert => {
-    let template = compile("{{#each list key='key' as |item|}}{{item.name}}{{/each}}");
+  assertInvariants(msg?: string) {
+    let result = expect(this.renderResult, 'must render before asserting invariants');
 
-    let tom = { key: '1', name: 'Tom Dale', class: 'tomdale' };
-    let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
-    let object = { list: [tom, yehuda] };
+    assert.strictEqual(
+      result.firstNode(),
+      this.element.firstChild,
+      `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`
+    );
+    assert.strictEqual(
+      result.lastNode(),
+      this.element.lastChild,
+      `The lastNode of the result is the same as the roots's lastChild${msg ? ': ' + msg : ''}`
+    );
+  }
 
-    render(template, object);
-    assertInvariants(assert, result, 'initial render');
+  getNodeByClassName(className: string) {
+    let itemNode = getElementByClassName(this.element, className);
+    assert.ok(itemNode, "Expected node with class='" + className + "'");
+    return itemNode;
+  }
 
-    rerender();
-    assertInvariants(assert, result, 'after no-op rerender');
-
-    object = { list: [yehuda, tom] };
-    rerender(object);
-    assertInvariants(assert, result, 'after reordering');
-
-    object = { list: [tom] };
-    rerender(object);
-    assertInvariants(assert, result, 'after deleting from the front');
-
-    object = { list: [] };
-    rerender(object);
-    assertInvariants(assert, result, 'after emptying the list');
-  });
-
-  test('top-level bounds are correct when toggling conditionals', assert => {
-    let template = compile('{{#if item}}{{item.name}}{{/if}}');
-
-    let tom = { name: 'Tom Dale' };
-    let yehuda = { name: 'Yehuda Katz' };
-    let object = { item: tom as typeof tom | null };
-
-    render(template, object);
-    assertInvariants(assert, result, 'initial render');
-
-    rerender();
-    assertInvariants(assert, result, 'after no-op rerender');
-
-    object = { item: yehuda };
-    rerender(object);
-    assertInvariants(assert, result, 'after replacement');
-
-    object = { item: null };
-    rerender(object);
-    assertInvariants(assert, result, 'after nulling');
-  });
-
-  test('top-level bounds are correct when changing innerHTML', assert => {
-    let template = compile('{{{html}}}');
-
-    let object = { html: '<b>inner</b>-<b>before</b>' };
-
-    render(template, object);
-    assertInvariants(assert, result, 'initial render');
-
-    rerender();
-    assertInvariants(assert, result, 'after no-op rerender');
-
-    object = { html: '<p>inner-after</p>' };
-    rerender(object);
-    assertInvariants(assert, result, 'after replacement');
-
-    object = { html: '' };
-    rerender(object);
-    assertInvariants(assert, result, 'after emptying');
-  });
-
-  testEachHelper(
-    'An implementation of #each using block params',
-    "<ul>{{#each list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>"
-  );
-
-  test('The each helper with empty string items', assert => {
-    let template = compile(
-      `<ul>{{#each list key='@identity' as |item|}}<li>{{item}}</li>{{/each}}</ul>`
+  getFirstChildOfNode(className: string) {
+    let itemNode = this.getNodeByClassName(className);
+    assert.ok(
+      itemNode,
+      "Expected child node of node with class='" + className + "', but no parent node found"
     );
 
-    let object = { list: [''] };
-    render(template, object);
+    let childNode = itemNode && itemNode.firstChild;
+    assert.ok(
+      childNode,
+      "Expected child node of node with class='" + className + "', but not child node found"
+    );
 
-    let items = getElementsByTagName(context.root, 'li');
+    return childNode;
+  }
+
+  @test
+  'top-level bounds are correct when swapping order'() {
+    let tom = { key: '1', name: 'Tom Dale', class: 'tomdale' };
+    let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
+
+    this.render("{{#each list key='key' as |item|}}{{item.name}}{{/each}}", {
+      list: [tom, yehuda],
+    });
+    this.assertInvariants('initial render');
+
+    this.rerender();
+    this.assertInvariants('after no-op rerender');
+
+    this.rerender({ list: [yehuda, tom] });
+    this.assertInvariants('after reordering');
+
+    this.rerender({ list: [tom] });
+    this.assertInvariants('after deleting from the front');
+
+    this.rerender({ list: [] });
+    this.assertInvariants('after emptying the list');
+  }
+
+  @test
+  'top-level bounds are correct when toggling conditionals'() {
+    let tom = { name: 'Tom Dale' };
+    let yehuda = { name: 'Yehuda Katz' };
+
+    this.render('{{#if item}}{{item.name}}{{/if}}', { item: tom });
+    this.assertInvariants('initial render');
+
+    this.rerender();
+    this.assertInvariants('after no-op rerender');
+
+    this.rerender({ item: yehuda });
+    this.assertInvariants('after replacement');
+
+    this.rerender({ item: null });
+    this.assertInvariants('after nulling');
+  }
+
+  @test
+  'top-level bounds are correct when changing innerHTML'() {
+    this.render('{{{this.html}}}', { html: '<b>inner</b>-<b>before</b>' });
+    this.assertInvariants('initial render');
+
+    this.rerender();
+    this.assertInvariants('after no-op rerender');
+
+    this.rerender({ html: '<p>inner-after</p>' });
+    this.assertInvariants('after replacement');
+
+    this.rerender({ html: '' });
+    this.assertInvariants('after emptying');
+  }
+
+  @test
+  'An implementation of #each using block params'() {
+    let tom = { key: '1', name: 'Tom Dale', class: 'tomdale' };
+    let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
+
+    this.render(
+      "<ul>{{#each list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>",
+      { list: [tom, yehuda] }
+    );
+
+    let itemNode = this.getNodeByClassName('tomdale');
+    let nameNode = this.getFirstChildOfNode('tomdale');
+
+    let assertStableNodes = (className: string, message: string) => {
+      assert.strictEqual(
+        this.getNodeByClassName(className),
+        itemNode,
+        'The item node has not changed ' + message
+      );
+      assert.strictEqual(
+        this.getFirstChildOfNode(className),
+        nameNode,
+        'The name node has not changed ' + message
+      );
+    };
+
+    this.assertHTML(
+      "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
+      'Initial render'
+    );
+
+    this.rerender();
+    assertStableNodes('tomdale', 'after no-op rerender');
+    this.assertHTML(
+      "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
+      'After no-op re-render'
+    );
+
+    this.rerender();
+    assertStableNodes('tomdale', 'after non-dirty rerender');
+    this.assertHTML(
+      "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
+      'After non-dirty re-render'
+    );
+
+    this.rerender({ list: [yehuda, tom] });
+    assertStableNodes('tomdale', 'after changing the list order');
+    this.assertHTML(
+      "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>",
+      'After changing the list order'
+    );
+  }
+
+  @test
+  'The each helper with empty string items'() {
+    this.render(`<ul>{{#each list key='@identity' as |item|}}<li>{{item}}</li>{{/each}}</ul>`, {
+      list: [''],
+    });
+
+    let items = getElementsByTagName(this.element, 'li');
     let lastNode = items[items.length - 1];
 
-    equalTokens(context.root, '<ul><li></li></ul>', 'Initial render');
+    this.assertHTML('<ul><li></li></ul>', 'Initial render');
 
-    object = { list: ['first!', ''] };
-    rerender(object);
+    this.rerender({ list: ['first!', ''] });
+    this.assertHTML('<ul><li>first!</li><li></li></ul>', 'After prepending list item');
 
-    equalTokens(context.root, '<ul><li>first!</li><li></li></ul>', 'After prepending list item');
-
-    let newItems = getElementsByTagName(context.root, 'li');
+    let newItems = getElementsByTagName(this.element, 'li');
     let newLastNode = newItems[newItems.length - 1];
 
     assert.strictEqual(
@@ -2508,123 +1503,116 @@ module('[jit] integration - Updating', hooks => {
       lastNode,
       'The last node has not changed after prepending to list'
     );
-  });
+  }
 
-  test('The each helper with else', assert => {
-    let object = { list: [] as any[] };
-    let template = compile(
-      `<ul>{{#each list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`
+  @test
+  'The each helper with else'() {
+    this.render(
+      `<ul>{{#each list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`,
+      {
+        list: [],
+      }
     );
 
-    render(template, object);
+    let itemNode = this.getNodeByClassName('none');
+    let textNode = this.getFirstChildOfNode('none');
 
-    let itemNode = getNodeByClassName('none');
-    let textNode = getFirstChildOfNode('none');
-
-    equalTokens(context.root, `<ul><li class="none">none</li></none`);
-
-    rerender(object);
-    assertStableNodes('none', 'after no-op rerender');
-
-    object = { list: [{ name: 'Foo Bar', class: 'foobar' }] };
-    rerender(object);
-
-    equalTokens(context.root, '<ul><li class="foobar">Foo Bar</li></ul>');
-
-    object = { list: [] };
-    rerender(object);
-
-    equalTokens(context.root, '<ul><li class="none">none</li></ul>');
-
-    function assertStableNodes(className: string, message: string) {
+    let assertStableNodes = (className: string, message: string) => {
       assert.strictEqual(
-        getNodeByClassName(className),
+        this.getNodeByClassName(className),
         itemNode,
         'The item node has not changed ' + message
       );
       assert.strictEqual(
-        getFirstChildOfNode(className),
+        this.getFirstChildOfNode(className),
         textNode,
         'The text node has not changed ' + message
       );
-    }
-  });
+    };
 
-  test('The each helper yields the index of the current item current item when using the @index key', assert => {
+    this.assertHTML(`<ul><li class="none">none</li></none`);
+
+    this.rerender();
+    assertStableNodes('none', 'after no-op rerender');
+
+    this.rerender({ list: [{ name: 'Foo Bar', class: 'foobar' }] });
+    this.assertHTML('<ul><li class="foobar">Foo Bar</li></ul>');
+
+    this.rerender({ list: [] });
+    this.assertHTML('<ul><li class="none">none</li></ul>');
+  }
+
+  @test
+  'The each helper yields the index of the current item current item when using the @index key'() {
     let tom = { name: 'Tom Dale', class: 'tomdale' };
     let yehuda = { name: 'Yehuda Katz', class: 'wycats' };
-    let object = { list: [tom, yehuda] };
-    let template = compile(
-      "<ul>{{#each list key='@index' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>"
+
+    this.render(
+      "<ul>{{#each list key='@index' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>",
+      { list: [tom, yehuda] }
     );
 
-    render(template, object);
+    let itemNode = this.getNodeByClassName('tomdale');
+    let indexNode = this.getNodeByClassName('index-0');
+    let nameNode = this.getFirstChildOfNode('tomdale');
 
-    let itemNode = getNodeByClassName('tomdale');
-    let indexNode = getNodeByClassName('index-0');
-    let nameNode = getFirstChildOfNode('tomdale');
+    let assertStableNodes = (className: string, index: number, message: string) => {
+      assert.strictEqual(
+        this.getNodeByClassName(className),
+        itemNode,
+        'The item node has not changed ' + message
+      );
+      assert.strictEqual(
+        this.getNodeByClassName(`index-${index}`),
+        indexNode,
+        'The index node has not changed ' + message
+      );
+      assert.strictEqual(
+        this.getFirstChildOfNode(className),
+        nameNode,
+        'The name node has not changed ' + message
+      );
+    };
 
-    equalTokens(
-      context.root,
+    this.assertHTML(
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'Initial render'
     );
+    this.assertStableRerender();
+    this.assertStableRerender();
 
-    rerender();
-    assertStableNodes('tomdale', 0, 'after no-op rerender');
-    equalTokens(
-      context.root,
-      "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
-      'After no-op render'
-    );
-
-    rerender();
-    assertStableNodes('tomdale', 0, 'after non-dirty rerender');
-    equalTokens(
-      context.root,
-      "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
-      'After non-dirty render'
-    );
-
-    object = { list: [yehuda, tom] };
-    rerender(object);
-    equalTokens(
-      context.root,
+    this.rerender({ list: [yehuda, tom] });
+    this.assertHTML(
       "<ul><li class='wycats'>Yehuda Katz<p class='index-0'>0</p></li><li class='tomdale'>Tom Dale<p class='index-1'>1</p></li></ul>",
       'After changing list order'
     );
     assert.strictEqual(
-      getNodeByClassName(`index-0`),
+      this.getNodeByClassName(`index-0`),
       indexNode,
       'The index node has not changed after changing list order'
     );
 
-    object = {
+    this.rerender({
       list: [
         { name: 'Martin Muñoz', class: 'mmun' },
         { name: 'Kris Selden', class: 'krisselden' },
       ],
-    };
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after changing the list entries, but with stable keys');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       `<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='krisselden'>Kris Selden<p class='index-1'>1</p></li></ul>`,
       `After changing the list entries, but with stable keys`
     );
 
-    object = {
+    this.rerender({
       list: [
         { name: 'Martin Muñoz', class: 'mmun' },
         { name: 'Kristoph Selden', class: 'krisselden' },
         { name: 'Matthew Beale', class: 'mixonic' },
       ],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after adding an additional entry');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='krisselden'>Kristoph Selden<p class='index-1'>1</p></li>
@@ -2632,33 +1620,27 @@ module('[jit] integration - Updating', hooks => {
       `After adding an additional entry`
     );
 
-    object = {
+    this.rerender({
       list: [
         { name: 'Martin Muñoz', class: 'mmun' },
         { name: 'Matthew Beale', class: 'mixonic' },
       ],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after removing the middle entry');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='mixonic'>Matthew Beale<p class='index-1'>1</p></li></ul>",
       'after removing the middle entry'
     );
 
-    object = {
+    this.rerender({
       list: [
         { name: 'Martin Muñoz', class: 'mmun' },
         { name: 'Stefan Penner', class: 'stefanpenner' },
         { name: 'Robert Jackson', class: 'rwjblue' },
       ],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after adding two more entries');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2667,32 +1649,26 @@ module('[jit] integration - Updating', hooks => {
     );
 
     // New node for stability check
-    itemNode = getNodeByClassName('rwjblue');
-    nameNode = getFirstChildOfNode('rwjblue');
-    indexNode = getNodeByClassName('index-2');
+    itemNode = this.getNodeByClassName('rwjblue');
+    nameNode = this.getFirstChildOfNode('rwjblue');
+    indexNode = this.getNodeByClassName('index-2');
 
-    object = {
+    this.rerender({
       list: [{ name: 'Robert Jackson', class: 'rwjblue' }],
-    };
-
-    rerender(object);
-    equalTokens(
-      context.root,
+    });
+    this.assertHTML(
       "<ul><li class='rwjblue'>Robert Jackson<p class='index-0'>0</p></li></ul>",
       'After removing two entries'
     );
 
-    object = {
+    this.rerender({
       list: [
         { name: 'Martin Muñoz', class: 'mmun' },
         { name: 'Stefan Penner', class: 'stefanpenner' },
         { name: 'Robert Jackson', class: 'rwjblue' },
       ],
-    };
-
-    rerender(object);
-    equalTokens(
-      context.root,
+    });
+    this.assertHTML(
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2701,128 +1677,101 @@ module('[jit] integration - Updating', hooks => {
     );
 
     // New node for stability check
-    itemNode = getNodeByClassName('mmun');
-    nameNode = getFirstChildOfNode('mmun');
-    indexNode = getNodeByClassName('index-0');
+    itemNode = this.getNodeByClassName('mmun');
+    nameNode = this.getFirstChildOfNode('mmun');
+    indexNode = this.getNodeByClassName('index-0');
 
-    object = {
+    this.rerender({
       list: [{ name: 'Martin Muñoz', class: 'mmun' }],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after removing from the back');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li></ul>",
       'After removing from the back'
     );
 
-    object = { list: [] };
-
-    rerender(object);
-    if (assertNodeTagName(context.root.firstChild, 'ul')) {
+    this.rerender({ list: [] });
+    if (assertNodeTagName(this.element.firstChild, 'ul')) {
       assert.strictEqual(
-        context.root.firstChild.firstChild && context.root.firstChild.firstChild.nodeType,
+        this.element.firstChild!.firstChild && this.element.firstChild!.firstChild.nodeType,
         8,
         "there are no li's after removing the remaining entry"
       );
-      equalTokens(context.root, '<ul><!----></ul>', 'After removing the remaining entries');
+      this.assertHTML('<ul><!----></ul>', 'After removing the remaining entries');
     }
+  }
 
-    function assertStableNodes(className: string, index: number, message: string) {
+  @test
+  'The each helper yields the index of the current item when using a non-@index key'() {
+    let tom = { key: '1', name: 'Tom Dale', class: 'tomdale' };
+    let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
+
+    this.render(
+      "<ul>{{#each list key='key' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>",
+      { list: [tom, yehuda] }
+    );
+
+    let itemNode = this.getNodeByClassName('tomdale');
+    let indexNode = this.getNodeByClassName('index-0');
+    let nameNode = this.getFirstChildOfNode('tomdale');
+
+    let assertStableNodes = (className: string, index: number, message: string) => {
       assert.strictEqual(
-        getNodeByClassName(className),
+        this.getNodeByClassName(className),
         itemNode,
         'The item node has not changed ' + message
       );
       assert.strictEqual(
-        getNodeByClassName(`index-${index}`),
+        this.getNodeByClassName(`index-${index}`),
         indexNode,
         'The index node has not changed ' + message
       );
       assert.strictEqual(
-        getFirstChildOfNode(className),
+        this.getFirstChildOfNode(className),
         nameNode,
         'The name node has not changed ' + message
       );
-    }
-  });
+    };
 
-  test('The each helper yields the index of the current item when using a non-@index key', assert => {
-    let tom = { key: '1', name: 'Tom Dale', class: 'tomdale' };
-    let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
-    let object = { list: [tom, yehuda] };
-    let template = compile(
-      "<ul>{{#each list key='key' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>"
-    );
-
-    render(template, object);
-
-    let itemNode = getNodeByClassName('tomdale');
-    let indexNode = getNodeByClassName('index-0');
-    let nameNode = getFirstChildOfNode('tomdale');
-
-    equalTokens(
-      context.root,
+    this.assertHTML(
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'Initial render'
     );
+    this.assertStableRerender();
+    this.assertStableRerender();
 
-    rerender();
-    assertStableNodes('tomdale', 0, 'after no-op rerender');
-    equalTokens(
-      context.root,
-      "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
-      'After no-op render'
-    );
-
-    rerender();
-    assertStableNodes('tomdale', 0, 'after non-dirty rerender');
-    equalTokens(
-      context.root,
-      "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
-      'After non-dirty render'
-    );
-
-    object = { list: [yehuda, tom] };
-    rerender(object);
-    equalTokens(
-      context.root,
+    this.rerender({ list: [yehuda, tom] });
+    this.assertHTML(
       "<ul><li class='wycats'>Yehuda Katz<p class='index-0'>0</p></li><li class='tomdale'>Tom Dale<p class='index-1'>1</p></li></ul>",
       'After changing list order'
     );
     assert.strictEqual(
-      getNodeByClassName('index-1'),
+      this.getNodeByClassName('index-1'),
       indexNode,
       'The index node has been moved after changing list order'
     );
 
-    object = {
+    this.rerender({
       list: [
         { key: '1', name: 'Martin Muñoz', class: 'mmun' },
         { key: '2', name: 'Kris Selden', class: 'krisselden' },
       ],
-    };
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after changing the list entries, but with stable keys');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       `<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='krisselden'>Kris Selden<p class='index-1'>1</p></li></ul>`,
       `After changing the list entries, but with stable keys`
     );
 
-    object = {
+    this.rerender({
       list: [
         { key: '1', name: 'Martin Muñoz', class: 'mmun' },
         { key: '2', name: 'Kristoph Selden', class: 'krisselden' },
         { key: '3', name: 'Matthew Beale', class: 'mixonic' },
       ],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after adding an additional entry');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='krisselden'>Kristoph Selden<p class='index-1'>1</p></li>
@@ -2830,33 +1779,27 @@ module('[jit] integration - Updating', hooks => {
       `After adding an additional entry`
     );
 
-    object = {
+    this.rerender({
       list: [
         { key: '1', name: 'Martin Muñoz', class: 'mmun' },
         { key: '3', name: 'Matthew Beale', class: 'mixonic' },
       ],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after removing the middle entry');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='mixonic'>Matthew Beale<p class='index-1'>1</p></li></ul>",
       'after removing the middle entry'
     );
 
-    object = {
+    this.rerender({
       list: [
         { key: '1', name: 'Martin Muñoz', class: 'mmun' },
         { key: '4', name: 'Stefan Penner', class: 'stefanpenner' },
         { key: '5', name: 'Robert Jackson', class: 'rwjblue' },
       ],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after adding two more entries');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2865,34 +1808,28 @@ module('[jit] integration - Updating', hooks => {
     );
 
     // New node for stability check
-    itemNode = getNodeByClassName('rwjblue');
-    nameNode = getFirstChildOfNode('rwjblue');
-    indexNode = getNodeByClassName('index-2');
+    itemNode = this.getNodeByClassName('rwjblue');
+    nameNode = this.getFirstChildOfNode('rwjblue');
+    indexNode = this.getNodeByClassName('index-2');
 
-    object = {
+    this.rerender({
       list: [{ key: '5', name: 'Robert Jackson', class: 'rwjblue' }],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('rwjblue', 0, 'after removing two entries');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       "<ul><li class='rwjblue'>Robert Jackson<p class='index-0'>0</p></li></ul>",
       'After removing two entries'
     );
 
-    object = {
+    this.rerender({
       list: [
         { key: '1', name: 'Martin Muñoz', class: 'mmun' },
         { key: '4', name: 'Stefan Penner', class: 'stefanpenner' },
         { key: '5', name: 'Robert Jackson', class: 'rwjblue' },
       ],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('rwjblue', 2, 'after adding back entries');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2901,714 +1838,34 @@ module('[jit] integration - Updating', hooks => {
     );
 
     // New node for stability check
-    itemNode = getNodeByClassName('mmun');
-    nameNode = getFirstChildOfNode('mmun');
-    indexNode = getNodeByClassName('index-0');
+    itemNode = this.getNodeByClassName('mmun');
+    nameNode = this.getFirstChildOfNode('mmun');
+    indexNode = this.getNodeByClassName('index-0');
 
-    object = {
+    this.rerender({
       list: [{ key: '1', name: 'Martin Muñoz', class: 'mmun' }],
-    };
-
-    rerender(object);
+    });
     assertStableNodes('mmun', 0, 'after removing from the back');
-    equalTokens(
-      context.root,
+    this.assertHTML(
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li></ul>",
       'After removing from the back'
     );
 
-    object = { list: [] };
-
-    rerender(object);
-    if (assertNodeTagName(context.root.firstChild, 'ul')) {
+    this.rerender({ list: [] });
+    if (assertNodeTagName(this.element.firstChild, 'ul')) {
       assert.strictEqual(
-        context.root.firstChild.firstChild && context.root.firstChild.firstChild.nodeType,
+        this.element.firstChild!.firstChild && this.element.firstChild!.firstChild.nodeType,
         8,
         "there are no li's after removing the remaining entry"
       );
     }
-    equalTokens(context.root, '<ul><!----></ul>', 'After removing the remaining entries');
-
-    function assertStableNodes(className: string, index: number, message: string) {
-      assert.strictEqual(
-        getNodeByClassName(className),
-        itemNode,
-        'The item node has not changed ' + message
-      );
-      assert.strictEqual(
-        getNodeByClassName(`index-${index}`),
-        indexNode,
-        'The index node has not changed ' + message
-      );
-      assert.strictEqual(
-        getFirstChildOfNode(className),
-        nameNode,
-        'The name node has not changed ' + message
-      );
-    }
-  });
+    this.assertHTML('<ul><!----></ul>', 'After removing the remaining entries');
+  }
 
   // TODO: port https://github.com/emberjs/ember.js/pull/14082
+}
 
-  function testEachHelper(testName: string, templateSource: string, testMethod = QUnit.test) {
-    testMethod(testName, assert => {
-      let template = compile(templateSource);
-      let tom = { key: '1', name: 'Tom Dale', class: 'tomdale' };
-      let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
-      let object = { list: [tom, yehuda] };
-
-      render(template, object);
-
-      let itemNode = getNodeByClassName('tomdale');
-      let nameNode = getFirstChildOfNode('tomdale');
-
-      equalTokens(
-        context.root,
-        "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
-        'Initial render'
-      );
-
-      rerender();
-      assertStableNodes('tomdale', 'after no-op rerender');
-      equalTokens(
-        context.root,
-        "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
-        'After no-op re-render'
-      );
-
-      rerender();
-      assertStableNodes('tomdale', 'after non-dirty rerender');
-      equalTokens(
-        context.root,
-        "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
-        'After non-dirty re-render'
-      );
-
-      object = { list: [yehuda, tom] };
-      rerender(object);
-      assertStableNodes('tomdale', 'after changing the list order');
-      equalTokens(
-        context.root,
-        "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>",
-        'After changing the list order'
-      );
-
-      function assertStableNodes(className: string, message: string) {
-        assert.strictEqual(
-          getNodeByClassName(className),
-          itemNode,
-          'The item node has not changed ' + message
-        );
-        assert.strictEqual(
-          getFirstChildOfNode(className),
-          nameNode,
-          'The name node has not changed ' + message
-        );
-      }
-    });
-  }
-});
-
-QUnit.module('integration - Updating SVG', hooks => {
-  hooks.beforeEach(() => commonSetup());
-
-  test('HTML namespace from context.root element is continued to child templates', assert => {
-    let object = { hasCircle: true };
-    let template = compile('<svg>{{#if hasCircle}}<circle />{{/if}}</svg>');
-    render(template, object);
-
-    function assertNamespaces() {
-      if (assertNodeTagName(context.root.firstChild, 'svg')) {
-        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (assertNodeTagName(context.root.firstChild.firstChild, 'circle')) {
-          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-        }
-      }
-    }
-
-    equalTokens(context.root, '<svg><circle /></svg>');
-    assertNamespaces();
-
-    rerender();
-
-    equalTokens(context.root, '<svg><circle /></svg>');
-    assertNamespaces();
-
-    object.hasCircle = false;
-    rerender();
-
-    equalTokens(context.root, '<svg><!----></svg>');
-
-    rerender({ hasCircle: true });
-
-    equalTokens(context.root, '<svg><circle /></svg>');
-    assertNamespaces();
-  });
-
-  test('context.root <foreignObject> tag is SVG namespaced', assert => {
-    let object = { hasForeignObject: true };
-    let template = compile(
-      '{{#if hasForeignObject}}<foreignObject><div></div></foreignObject>{{/if}}'
-    );
-
-    let parent = context.root;
-    let svg = context.doc.createElementNS(SVG_NAMESPACE, 'svg');
-    context.root.appendChild(svg);
-    context.root = svg as any;
-
-    render(template, object);
-
-    function assertNamespaces() {
-      if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
-        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (assertNodeTagName(svg.firstChild.firstChild, 'div')) {
-          assert.equal(svg.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
-        }
-      }
-    }
-
-    equalTokens(parent, '<svg><foreignObject><div></div></foreignObject></svg>');
-    assertNamespaces();
-
-    rerender();
-
-    equalTokens(parent, '<svg><foreignObject><div></div></foreignObject></svg>');
-    assertNamespaces();
-
-    object.hasForeignObject = false;
-    rerender();
-
-    equalTokens(parent, '<svg><!----></svg>');
-
-    rerender({ hasForeignObject: true });
-
-    equalTokens(parent, '<svg><foreignObject><div></div></foreignObject></svg>');
-    assertNamespaces();
-  });
-
-  test('elements nested inside <foreignObject> have an XHTML namespace', assert => {
-    let object = { hasDiv: true };
-    let template = compile(
-      '<svg><foreignObject>{{#if hasDiv}}<div></div>{{/if}}</foreignObject></svg>'
-    );
-    render(template, object);
-
-    function assertNamespaces() {
-      if (assertNodeTagName(context.root.firstChild, 'svg')) {
-        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (assertNodeTagName(context.root.firstChild.firstChild, 'foreignObject')) {
-          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-          if (assertNodeTagName(context.root.firstChild.firstChild.firstChild, 'div')) {
-            assert.equal(
-              context.root.firstChild.firstChild.firstChild.namespaceURI,
-              XHTML_NAMESPACE
-            );
-          }
-        }
-      }
-    }
-
-    equalTokens(context.root, '<svg><foreignObject><div></div></foreignObject></svg>');
-    assertNamespaces();
-
-    rerender();
-
-    equalTokens(context.root, '<svg><foreignObject><div></div></foreignObject></svg>');
-    assertNamespaces();
-
-    object.hasDiv = false;
-    rerender();
-
-    equalTokens(context.root, '<svg><foreignObject><!----></foreignObject></svg>');
-
-    rerender({ hasDiv: true });
-
-    equalTokens(context.root, '<svg><foreignObject><div></div></foreignObject></svg>');
-    assertNamespaces();
-  });
-
-  test('Namespaced attribute with a quoted expression', assert => {
-    let title = 'svg-title';
-    let state = { title };
-    let template = compile('<svg xlink:title="{{title}}">content</svg>');
-    render(template, state);
-
-    function assertNamespaces() {
-      if (assertNodeTagName(context.root.firstChild, 'svg')) {
-        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-        let attr = context.root.firstChild.attributes[0];
-        assert.equal(attr.namespaceURI, XLINK_NAMESPACE);
-      }
-    }
-
-    equalTokens(context.root, `<svg xlink:title="${title}">content</svg>`);
-    assertNamespaces();
-
-    rerender();
-
-    equalTokens(context.root, `<svg xlink:title="${title}">content</svg>`);
-    assertNamespaces();
-
-    state.title = 'mmun';
-    rerender();
-
-    equalTokens(context.root, `<svg xlink:title="${state.title}">content</svg>`);
-    assertNamespaces();
-
-    rerender({ title });
-
-    equalTokens(context.root, `<svg xlink:title="${title}">content</svg>`);
-    assertNamespaces();
-  });
-
-  test('<svg> tag and expression as sibling', assert => {
-    let name = 'svg-title';
-    let state: { name: string | null } = { name };
-    let template = compile('<svg></svg>{{name}}');
-    render(template, state);
-
-    function assertNamespace() {
-      if (assertNodeTagName(context.root.firstChild, 'svg')) {
-        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-      }
-    }
-
-    equalTokens(context.root, `<svg></svg>${name}`);
-    assertNamespace();
-
-    rerender();
-
-    equalTokens(context.root, `<svg></svg>${name}`);
-    assertNamespace();
-
-    state.name = null;
-    rerender();
-
-    equalTokens(context.root, `<svg></svg>`);
-    assertNamespace();
-
-    rerender({ name });
-
-    equalTokens(context.root, `<svg></svg>${name}`);
-    assertNamespace();
-  });
-
-  test('<svg> tag and unsafe expression as sibling', assert => {
-    let name = '<i>Biff</i>';
-    let state = { name };
-    let template = compile('<svg></svg>{{{name}}}');
-    render(template, state);
-
-    function assertNamespaces() {
-      if (assertNodeTagName(context.root.firstChild, 'svg')) {
-        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-      }
-      if (state.name === name && assertNodeTagName(context.root.lastChild, 'i')) {
-        assert.equal(context.root.lastChild.namespaceURI, XHTML_NAMESPACE);
-      }
-    }
-
-    equalTokens(context.root, `<svg></svg>${name}`);
-    assertNamespaces();
-
-    rerender();
-
-    equalTokens(context.root, `<svg></svg>${name}`);
-    assertNamespaces();
-
-    state.name = 'ef4';
-    rerender();
-
-    equalTokens(context.root, `<svg></svg>${state.name}`);
-    assertNamespaces();
-
-    rerender({ name });
-
-    equalTokens(context.root, `<svg></svg>${name}`);
-    assertNamespaces();
-  });
-
-  test('unsafe expression nested inside a namespace', assert => {
-    let content = '<path></path>';
-    let state = { content };
-    let template = compile('<svg>{{{content}}}</svg><div></div>');
-    render(template, state);
-
-    function assertNamespaces(callback: (svg: SimpleElement) => void) {
-      if (assertNodeTagName(context.root.firstChild, 'svg')) {
-        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-        callback(context.root.firstChild as SimpleElement);
-      }
-      if (assertNodeTagName(context.root.lastChild, 'div')) {
-        assert.equal(context.root.lastChild.namespaceURI, XHTML_NAMESPACE);
-      }
-    }
-
-    equalTokens(context.root, `<svg>${content}</svg><div></div>`);
-    assertNamespaces(svg => {
-      if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(
-          svg.firstChild.namespaceURI,
-          SVG_NAMESPACE,
-          'initial render path has SVG namespace'
-        );
-      }
-    });
-
-    rerender();
-
-    equalTokens(context.root, `<svg>${content}</svg><div></div>`);
-    assertNamespaces(svg => {
-      if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'path has SVG namespace');
-      }
-    });
-
-    state.content = '<foreignObject><span></span></foreignObject>';
-    rerender();
-
-    equalTokens(context.root, `<svg>${state.content}</svg><div></div>`);
-    assertNamespaces(svg => {
-      if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
-        assert.equal(
-          svg.firstChild.namespaceURI,
-          SVG_NAMESPACE,
-          'initial render path has SVG namespace'
-        );
-        if (assertNodeTagName(svg.firstChild.firstChild, 'span')) {
-          assert.equal(
-            svg.firstChild.firstChild.namespaceURI,
-            XHTML_NAMESPACE,
-            'span has XHTML NS'
-          );
-        }
-      }
-    });
-
-    state.content = '<path></path><circle></circle>';
-    rerender();
-
-    equalTokens(context.root, `<svg>${state.content}</svg><div></div>`);
-    assertNamespaces(svg => {
-      if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(
-          svg.firstChild.namespaceURI,
-          SVG_NAMESPACE,
-          'initial render path has SVG namespace'
-        );
-      }
-      if (assertNodeTagName(svg.lastChild, 'circle')) {
-        assert.equal(
-          svg.lastChild.namespaceURI,
-          SVG_NAMESPACE,
-          'initial render path has SVG namespace'
-        );
-      }
-    });
-
-    rerender({ content });
-
-    equalTokens(context.root, `<svg>${content}</svg><div></div>`);
-    assertNamespaces(svg => {
-      if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(
-          svg.firstChild.namespaceURI,
-          SVG_NAMESPACE,
-          'initial render path has SVG namespace'
-        );
-      }
-    });
-  });
-
-  test('expression nested inside a namespace', assert => {
-    let content = 'Milly';
-    let state = { content };
-    let template = compile('<div><svg>{{content}}</svg></div>');
-    render(template, state);
-
-    function assertNamespaces() {
-      if (assertNodeTagName(context.root.firstChild, 'div')) {
-        assert.equal(context.root.firstChild.namespaceURI, XHTML_NAMESPACE);
-        if (assertNodeTagName(context.root.firstChild.firstChild, 'svg')) {
-          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-        }
-      }
-    }
-
-    equalTokens(context.root, `<div><svg>${content}</svg></div>`);
-    assertNamespaces();
-
-    rerender();
-
-    equalTokens(context.root, `<div><svg>${content}</svg></div>`);
-    assertNamespaces();
-
-    state.content = 'Moe';
-    rerender();
-
-    equalTokens(context.root, `<div><svg>${state.content}</svg></div>`);
-    assertNamespaces();
-
-    rerender({ content });
-
-    equalTokens(context.root, `<div><svg>${content}</svg></div>`);
-    assertNamespaces();
-  });
-
-  test('expression nested inside a namespaced context.root element', assert => {
-    let content = 'Maurice';
-    let state: { content: string | null } = { content };
-    let template = compile('<svg>{{content}}</svg>');
-    render(template, state);
-
-    function assertSvg(callback?: (svg: SVGSVGElement) => void) {
-      if (assertNodeTagName(context.root.firstChild, 'svg')) {
-        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (callback) callback(context.root.firstChild);
-      }
-    }
-
-    equalTokens(context.root, `<svg>${content}</svg>`);
-    assertSvg();
-
-    rerender();
-
-    equalTokens(context.root, `<svg>${content}</svg>`);
-    assertSvg();
-
-    state.content = null;
-    rerender();
-
-    assertSvg(svg => {
-      assert.strictEqual(svg.firstChild && svg.firstChild.textContent, '');
-    });
-
-    rerender({ content });
-
-    equalTokens(context.root, `<svg>${content}</svg>`);
-    assertSvg();
-  });
-
-  test('HTML namespace is created in child templates', assert => {
-    let isTrue = true;
-    let state = { isTrue };
-    let template = compile('{{#if isTrue}}<svg></svg>{{else}}<div><svg></svg></div>{{/if}}');
-    render(template, state);
-    function assertNamespaces(isTrue: boolean) {
-      if (isTrue) {
-        if (assertNodeTagName(context.root.firstChild, 'svg')) {
-          assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
-        }
-      } else {
-        if (assertNodeTagName(context.root.firstChild, 'div')) {
-          assert.equal(context.root.firstChild.namespaceURI, XHTML_NAMESPACE);
-          if (assertNodeTagName(context.root.firstChild.firstChild, 'svg')) {
-            assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-          }
-        }
-      }
-    }
-
-    equalTokens(context.root, `<svg></svg>`);
-    assertNamespaces(true);
-
-    rerender();
-
-    equalTokens(context.root, `<svg></svg>`);
-    assertNamespaces(true);
-
-    state.isTrue = false;
-    rerender();
-
-    equalTokens(context.root, `<div><svg></svg></div>`);
-    assertNamespaces(false);
-
-    rerender({ isTrue });
-
-    equalTokens(context.root, `<svg></svg>`);
-    assertNamespaces(true);
-  });
-
-  test('HTML namespace is continued to child templates', assert => {
-    let isTrue = true;
-    let state = { isTrue };
-    let template = compile('<div><svg>{{#if isTrue}}<circle />{{/if}}</svg></div>');
-    render(template, state);
-
-    function assertNamespaces(isTrue: boolean) {
-      if (assertNodeTagName(context.root.firstChild, 'div')) {
-        assert.equal(context.root.firstChild.namespaceURI, XHTML_NAMESPACE);
-        if (assertNodeTagName(context.root.firstChild.firstChild, 'svg')) {
-          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-          if (
-            isTrue &&
-            assertNodeTagName(context.root.firstChild.firstChild.firstChild, 'circle')
-          ) {
-            assert.equal(context.root.firstChild.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-          }
-        }
-      }
-    }
-
-    equalTokens(context.root, `<div><svg><circle /></svg></div>`);
-
-    assertNamespaces(true);
-
-    rerender();
-
-    equalTokens(context.root, `<div><svg><circle /></svg></div>`);
-    assertNamespaces(true);
-
-    state.isTrue = false;
-    rerender();
-
-    equalTokens(context.root, `<div><svg><!----></svg></div>`);
-    assertNamespaces(false);
-
-    rerender({ isTrue });
-
-    equalTokens(context.root, `<div><svg><circle /></svg></div>`);
-    assertNamespaces(true);
-  });
-});
-
-QUnit.module('integration - Updating Element Modifiers', hooks => {
-  hooks.beforeEach(() => commonSetup());
-
-  test('Updating a element modifier', assert => {
-    let { manager } = registerModifier(context.registry, 'foo');
-
-    let template = compile('<div><div {{foo bar baz=fizz}}></div></div>');
-    let input = {
-      bar: 'Super Metroid',
-    };
-
-    render(template, input);
-
-    let valueNode: Node | null | undefined;
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      valueNode = context.root.firstChild.firstChild;
-    }
-
-    equalTokens(
-      context.root,
-      '<div><div data-modifier="installed - Super Metroid"></div></div>',
-      'initial render'
-    );
-    assert.equal(manager.installedElements.length, 1);
-    assert.equal(valueNode, manager.installedElements[0]);
-    assert.equal(manager.updatedElements.length, 0);
-    assert.equal(manager.destroyedModifiers.length, 0);
-
-    rerender();
-
-    equalTokens(
-      context.root,
-      '<div><div data-modifier="updated - Super Metroid"></div></div>',
-      'modifier updated'
-    );
-    assert.equal(manager.installedElements.length, 1);
-    assert.equal(valueNode, manager.installedElements[0]);
-    assert.equal(manager.updatedElements.length, 1);
-    assert.equal(valueNode, manager.updatedElements[0]);
-    assert.equal(manager.destroyedModifiers.length, 0);
-
-    input.bar = 'Super Mario';
-
-    rerender();
-
-    equalTokens(
-      context.root,
-      '<div><div data-modifier="updated - Super Mario"></div></div>',
-      'no change'
-    );
-    assert.equal(manager.installedElements.length, 1);
-    assert.equal(valueNode, manager.installedElements[0]);
-    assert.equal(manager.updatedElements.length, 2);
-    assert.equal(valueNode, manager.updatedElements[1]);
-    assert.equal(manager.destroyedModifiers.length, 0);
-  });
-
-  test("Const input doesn't trigger update in a element modifier", assert => {
-    let { manager } = registerModifier(context.registry, 'foo');
-
-    let template = compile('<div><div {{foo "bar"}}></div></div>');
-    let input = {};
-
-    render(template, input);
-
-    let valueNode: Node | null | undefined;
-    if (assertNodeTagName(context.root.firstChild, 'div')) {
-      valueNode = context.root.firstChild.firstChild;
-    }
-
-    equalTokens(
-      context.root,
-      '<div><div data-modifier="installed - bar"></div></div>',
-      'initial render'
-    );
-    assert.equal(manager.installedElements.length, 1);
-    assert.equal(valueNode, manager.installedElements[0]);
-    assert.equal(manager.updatedElements.length, 0);
-    assert.equal(manager.destroyedModifiers.length, 0);
-
-    rerender();
-
-    equalTokens(
-      context.root,
-      '<div><div data-modifier="installed - bar"></div></div>',
-      'no change'
-    );
-    assert.equal(manager.installedElements.length, 1);
-    assert.equal(valueNode, manager.installedElements[0]);
-    assert.equal(manager.updatedElements.length, 0);
-    assert.equal(manager.destroyedModifiers.length, 0);
-  });
-
-  test('Destructor is triggered on element modifiers', assert => {
-    let { manager } = registerModifier(context.registry, 'foo');
-
-    let template = compile('{{#if bar}}<div {{foo bar}}></div>{{else}}<div></div>{{/if}}');
-    let input = {
-      bar: true,
-    };
-
-    render(template, input);
-
-    let valueNode = context.root.firstChild;
-
-    equalTokens(context.root, '<div data-modifier="installed - true"></div>', 'initial render');
-    assert.equal(manager.installedElements.length, 1);
-    assert.equal(valueNode, manager.installedElements[0]);
-    assert.equal(manager.updatedElements.length, 0);
-    assert.equal(manager.destroyedModifiers.length, 0);
-
-    rerender();
-
-    equalTokens(context.root, '<div data-modifier="updated - true"></div>', 'modifier updated');
-    assert.equal(manager.installedElements.length, 1);
-    assert.equal(valueNode, manager.installedElements[0]);
-    assert.equal(manager.updatedElements.length, 1);
-    assert.equal(manager.destroyedModifiers.length, 0);
-
-    input.bar = false;
-    rerender();
-
-    equalTokens(context.root, '<div></div>', 'no more modifier');
-    assert.equal(manager.destroyedModifiers.length, 1);
-
-    input.bar = true;
-    rerender();
-
-    equalTokens(
-      context.root,
-      '<div data-modifier="installed - true"></div>',
-      'back to default render'
-    );
-    assert.equal(manager.installedElements.length, 2);
-    assert.equal(manager.destroyedModifiers.length, 1);
-  });
-});
+jitSuite(UpdatingTest);
 
 function assertHandleError(
   assert: typeof QUnit.assert,
