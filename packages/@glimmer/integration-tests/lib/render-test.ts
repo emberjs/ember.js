@@ -1,5 +1,4 @@
 import { Dict, Maybe, Option, RenderResult, Helper } from '@glimmer/interfaces';
-import { UpdatableRootReference } from '@glimmer/reference';
 import { bump, isConst } from '@glimmer/validator';
 import { clearElement, dict, expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
@@ -17,6 +16,7 @@ import { UserHelper } from './helpers';
 import { TestModifierConstructor } from './modifiers';
 import RenderDelegate from './render-delegate';
 import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from './snapshot';
+import { UpdatableRootReference } from './reference';
 
 export interface IRenderTest {
   readonly count: Count;

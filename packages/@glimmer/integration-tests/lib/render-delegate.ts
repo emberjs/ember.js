@@ -16,8 +16,9 @@ import {
   ElementBuilder,
   Helper,
 } from '@glimmer/interfaces';
-import { UpdatableRootReference, ConstReference } from '@glimmer/reference';
+import { ConstReference } from '@glimmer/reference';
 import { EnvironmentDelegate } from '@glimmer/runtime';
+import { UpdatableRootReference } from './reference';
 
 export interface RenderDelegateOptions {
   doc?: SimpleDocument;

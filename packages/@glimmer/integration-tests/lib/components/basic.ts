@@ -11,8 +11,9 @@ import {
 } from '@glimmer/interfaces';
 import { TestComponentDefinitionState } from './test-component';
 import { unreachable, expect, unwrapTemplate } from '@glimmer/util';
-import { VersionedPathReference, UpdatableRootReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
 import { Tag, CONSTANT_TAG } from '@glimmer/validator';
+import { UpdatableRootReference } from '../reference';
 
 export interface BasicComponentFactory {
   new (): BasicComponent;

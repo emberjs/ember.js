@@ -21,7 +21,7 @@ import {
   JitRuntimeResolver,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
-import { VersionedPathReference, UpdatableRootReference, PathReference } from '@glimmer/reference';
+import { VersionedPathReference, PathReference } from '@glimmer/reference';
 import { combine, createTag, dirty, DirtyableTag, Tag } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
@@ -29,6 +29,7 @@ import { PrimitiveReference } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
 import { TestJitRegistry } from '../modes/jit/registry';
+import { UpdatableRootReference } from '../reference';
 
 export interface EmberishCurlyComponentFactory
   extends TestComponentConstructor<EmberishCurlyComponent> {

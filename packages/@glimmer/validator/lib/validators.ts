@@ -251,7 +251,7 @@ export function isConstTag(tag: Tag): tag is ConstantTag {
 
 //////////
 
-class VolatileTag implements Tag {
+export class VolatileTag implements Tag {
   [COMPUTE]() {
     return VOLATILE;
   }
@@ -261,7 +261,7 @@ export const VOLATILE_TAG = new VolatileTag();
 
 //////////
 
-class CurrentTag implements CurrentTag {
+export class CurrentTag implements CurrentTag {
   [COMPUTE]() {
     return $REVISION;
   }
