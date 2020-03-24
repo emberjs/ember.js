@@ -232,7 +232,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;
 
-    vm.execute(vm => {
+    let result = vm.execute(vm => {
       tryOpcode = vm.iterate(memo, item);
       map.set(key, tryOpcode);
       vm.pushUpdating(new LinkedList<UpdatingOpcode>());
@@ -241,6 +241,8 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     });
 
     updating.insertBefore(tryOpcode!, reference);
+
+    associate(opcode, result.drop);
 
     this.didInsert = true;
   }
