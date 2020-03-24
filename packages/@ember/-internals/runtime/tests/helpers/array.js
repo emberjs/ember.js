@@ -314,7 +314,7 @@ export function runArrayTests(name, Tests, ...types) {
           moduleFor(`EmberArray: ${name}`, Tests, EmberArrayHelpers);
           break;
         case 'MutableArray':
-          moduleFor(`MutableArray: ${name}`, Tests, EmberArrayHelpers);
+          moduleFor(`MutableArray: ${name}`, Tests, MutableArrayHelpers);
           break;
         case 'CopyableArray':
           moduleFor(`CopyableArray: ${name}`, Tests, CopyableArray);
@@ -323,7 +323,7 @@ export function runArrayTests(name, Tests, ...types) {
           moduleFor(`CopyableNativeArray: ${name}`, Tests, CopyableNativeArray);
           break;
         case 'NativeArray':
-          moduleFor(`NativeArray: ${name}`, Tests, EmberArrayHelpers);
+          moduleFor(`NativeArray: ${name}`, Tests, NativeArrayHelpers);
           break;
       }
     });

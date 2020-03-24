@@ -69,6 +69,31 @@ moduleFor(
       this.assertText('123');
     }
 
+    '@test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion'() {
+      class LoaderComponent extends GlimmerishComponent {
+        get data() {
+          if (!this._data) {
+            this._data = ArrayProxy.create({
+              content: A(),
+            });
+
+            this._data.content.pushObjects([1, 2, 3]);
+          }
+
+          return this._data;
+        }
+      }
+
+      this.registerComponent('loader', {
+        ComponentClass: LoaderComponent,
+        template: '{{#each this.data as |item|}}{{item}}{{/each}}',
+      });
+
+      this.render('<Loader/>');
+
+      this.assertText('123');
+    }
+
     '@test tracked properties that are uninitialized do not throw an error'() {
       let CountComponent = Component.extend({
         count: tracked(),

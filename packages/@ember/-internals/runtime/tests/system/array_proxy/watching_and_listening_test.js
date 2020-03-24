@@ -38,6 +38,12 @@ moduleFor(
       let content2 = A();
       let proxy = ArrayProxy.create({ content: content1 });
 
+      assert.deepEqual(sortedListenersFor(content1, '@array:before'), []);
+      assert.deepEqual(sortedListenersFor(content1, '@array:change'), []);
+
+      // setup proxy
+      proxy.length;
+
       assert.deepEqual(sortedListenersFor(content1, '@array:before'), [
         '_arrangedContentArrayWillChange',
       ]);
