@@ -8,5 +8,8 @@
     "@glimmer/wire-format": "^0.50.0",
     "@glimmer/interfaces": "^0.50.0",
     "@simple-dom/interface": "^1.4.0"
+  },
+  "devDependencies": {
+    "@glimmer/local-debug-flags": "^0.50.0"
   }
 }
