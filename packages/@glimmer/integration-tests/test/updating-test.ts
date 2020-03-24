@@ -1,6 +1,6 @@
 import { Option, HandleResult, ErrHandle, EncoderError } from '@glimmer/interfaces';
 import { ConstReference } from '@glimmer/reference';
-import { RenderTest, test, jitSuite, JitRenderDelegate } from '..';
+import { RenderTest, test, jitSuite, JitRenderDelegate, EmberishGlimmerComponent } from '..';
 import { PrimitiveReference, SafeString } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -1860,6 +1860,41 @@ class UpdatingTest extends RenderTest {
       );
     }
     this.assertHTML('<ul><!----></ul>', 'After removing the remaining entries');
+  }
+
+  @test
+  'The each helper items destroy correctly (new and updated items)'() {
+    let destroyCount = 0;
+
+    this.registerComponent(
+      'Glimmer',
+      'DestroyableComponent',
+      '{{@item}}',
+      class extends EmberishGlimmerComponent {
+        destroy() {
+          destroyCount++;
+        }
+      }
+    );
+
+    this.render(
+      stripTight`
+        {{#each this.list as |item|}}
+          <div><DestroyableComponent @item={{item}}/></div>
+        {{/each}}
+      `,
+      {
+        list: ['initial'],
+      }
+    );
+
+    this.assertHTML(`<div>initial</div>`);
+
+    this.rerender({ list: ['initial', 'update'] });
+    this.assertHTML(`<div>initial</div><div>update</div>`);
+
+    this.rerender({ list: [] });
+    assert.equal(destroyCount, 2, 'both list items were correctly destroyed');
   }
 
   // TODO: port https://github.com/emberjs/ember.js/pull/14082
