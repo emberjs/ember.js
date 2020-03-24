@@ -1,12 +1,12 @@
 {
   "name": "@glimmer/compiler",
-  "version": "0.48.0",
+  "version": "0.49.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/compiler",
   "dependencies": {
-    "@glimmer/syntax": "^0.48.0",
-    "@glimmer/util": "^0.48.0",
-    "@glimmer/wire-format": "^0.48.0",
-    "@glimmer/interfaces": "^0.48.0",
+    "@glimmer/syntax": "^0.49.0",
+    "@glimmer/util": "^0.49.0",
+    "@glimmer/wire-format": "^0.49.0",
+    "@glimmer/interfaces": "^0.49.0",
     "@simple-dom/interface": "^1.4.0"
   }
 }
