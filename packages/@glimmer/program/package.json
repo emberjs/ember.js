@@ -6,5 +6,8 @@
     "@glimmer/util": "^0.50.0",
     "@glimmer/interfaces": "^0.50.0",
     "@glimmer/encoder": "^0.50.0"
+  },
+  "devDependencies": {
+    "@glimmer/local-debug-flags": "^0.50.0"
   }
 }

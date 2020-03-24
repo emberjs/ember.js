@@ -1,0 +1,10 @@
+{
+  "name": "local-linker",
+  "keywords": [
+    "ember-addon"
+  ],
+  "dependencies": {
+    "fs-extra": "*",
+    "symlink-or-copy": "*"
+  }
+}
