@@ -221,11 +221,20 @@ const _glimmerTrees = new Map();
 function rollupGlimmerPackage(pkg) {
   let name = pkg.name;
   let tree = _glimmerTrees.get(name);
+
+  // @glimmer/debug and @glimmer/local-debug-flags are external dependencies,
+  // but exist in dev-dependencies because they are fully removed before
+  // publishing. Including them here allows Rollup to work for local builds.
+  let externalDeps = (pkg.dependencies || []).concat([
+    '@glimmer/debug',
+    '@glimmer/local-debug-flags',
+  ]);
+
   if (tree === undefined) {
     tree = new Rollup(pkg.module.dir, {
       rollup: {
         input: pkg.module.base,
-        external: pkg.dependencies,
+        external: externalDeps,
         output: {
           file: name + '.js',
           format: 'es',
@@ -240,10 +249,6 @@ function rollupGlimmerPackage(pkg) {
 
 function glimmerTrees(entries) {
   let seen = new Set();
-
-  // glimmer runtime has dependency on this even though it is only in tests
-  seen.add('@glimmer/object');
-  seen.add('@glimmer/object-reference');
 
   let trees = [];
   let queue = Array.isArray(entries) ? entries.slice() : [entries];
