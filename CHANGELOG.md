@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.16.6
+
+- [#18835](https://github.com/emberjs/ember.js/pull/18835) [BUGFIX] Make `ArrayProxy` Lazy.
+
 ### v3.16.5 (March 23, 2020)
 
 - [#18831](https://github.com/emberjs/ember.js/pull/18831) [BUGFIX] Fix transpilation issues (e.g. `_createSuper` is not a function) when used with Babel 7.9.0+.
