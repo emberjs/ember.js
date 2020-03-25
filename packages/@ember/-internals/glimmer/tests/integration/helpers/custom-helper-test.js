@@ -122,6 +122,48 @@ moduleFor(
       assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
     }
 
+    ['@test class-based helper lifecycle'](assert) {
+      let hooks = [];
+      let helper;
+
+      this.registerHelper('hello-world', {
+        init() {
+          this._super(...arguments);
+          hooks.push('init');
+          helper = this;
+        },
+        compute() {
+          hooks.push('compute');
+        },
+        willDestroy() {
+          hooks.push('willDestroy'),
+          this._super();
+        },
+        destroy() {
+          hooks.push('destroy');
+          this._super();
+        },
+      });
+
+      this.render('{{#if this.show}}{{hello-world}}{{/if}}', {
+        show: true,
+      });
+
+      assert.deepEqual(hooks, ['init', 'compute']);
+
+      runTask(() => this.rerender());
+
+      assert.deepEqual(hooks, ['init', 'compute']);
+
+      runTask(() => helper.recompute());
+
+      assert.deepEqual(hooks, ['init', 'compute', 'compute']);
+
+      runTask(() => set(this.context, 'show', false));
+
+      assert.deepEqual(hooks, ['init', 'compute', 'compute', 'destroy', 'willDestroy']);
+    }
+
     ['@test class-based helper with static arguments can recompute a new value'](assert) {
       let destroyCount = 0;
       let computeCount = 0;

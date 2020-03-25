@@ -32,14 +32,14 @@ export interface SimpleHelper<T = unknown> {
 
 export function isHelperFactory(
   helper: any | undefined | null
-): helper is SimpleHelperFactory | ClassHelperFactory {
+): helper is Factory<SimpleHelper | HelperInstance, HelperFactory<SimpleHelper | HelperInstance>> {
   return (
     typeof helper === 'object' && helper !== null && helper.class && helper.class.isHelperFactory
   );
 }
 
-export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is SimpleHelper {
-  return (helper as any).destroy === undefined;
+export function isClassHelper(helper: SimpleHelper | HelperInstance): helper is HelperInstance {
+  return (helper as any).destroy !== undefined;
 }
 
 /**

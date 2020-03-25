@@ -28,7 +28,7 @@ import InternalComponentManager, {
   InternalComponentDefinition,
 } from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
-import { isHelperFactory, isSimpleHelper } from './helper';
+import { isClassHelper, isHelperFactory } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -425,8 +425,12 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     return (args, vm) => {
       const helper = factory.create();
 
-      if (!isSimpleHelper(helper)) {
-        vm.associateDestroyable(helper);
+      if (isClassHelper(helper)) {
+        vm.associateDestroyable({
+          destroy() {
+            helper.destroy();
+          },
+        });
       } else if (DEBUG) {
         // Bind to null in case someone accidentally passed an unbound function
         // in, and attempts use `this` on it.
