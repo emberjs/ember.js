@@ -5,7 +5,7 @@ import { CapturedArguments, Environment } from '@glimmer/interfaces';
 import { HelperRootReference, RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { consume, deprecateMutationsInAutotrackingTransaction } from '@glimmer/validator';
-import { HelperInstance, isSimpleHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
+import { HelperInstance, isClassHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
 
 export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T> {
   constructor(
@@ -40,9 +40,7 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
     };
 
     if (DEBUG) {
-      let debugName = isSimpleHelper(helper)
-        ? getDebugName!(helper.compute)
-        : getDebugName!(helper);
+      let debugName = isClassHelper(helper) ? getDebugName!(helper) : getDebugName!(helper.compute);
 
       super(fnWrapper, args, env, debugName);
     } else {
