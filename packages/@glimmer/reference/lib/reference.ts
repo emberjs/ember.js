@@ -1,5 +1,5 @@
 import { Option, symbol } from '@glimmer/util';
-import { Revision, Tag, Tagged, value, validate } from '@glimmer/validator';
+import { Revision, Tag, Tagged, valueForTag, validateTag } from '@glimmer/validator';
 
 export interface Reference<T> {
   value(): T;
@@ -28,9 +28,9 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
   value(): T {
     let { tag, lastRevision, lastValue } = this;
 
-    if (lastRevision === null || !validate(tag, lastRevision)) {
+    if (lastRevision === null || !validateTag(tag, lastRevision)) {
       lastValue = this.lastValue = this.compute();
-      this.lastRevision = value(tag);
+      this.lastRevision = valueForTag(tag);
     }
 
     return lastValue as T;
@@ -74,11 +74,11 @@ export class ReferenceCache<T> implements Tagged {
     let { reference, lastRevision } = this;
     let tag = reference.tag;
 
-    if (validate(tag, lastRevision as number)) return NOT_MODIFIED;
+    if (validateTag(tag, lastRevision as number)) return NOT_MODIFIED;
 
     let { lastValue } = this;
     let currentValue = reference.value();
-    this.lastRevision = value(tag);
+    this.lastRevision = valueForTag(tag);
 
     if (currentValue === lastValue) return NOT_MODIFIED;
     this.lastValue = currentValue;
@@ -90,7 +90,7 @@ export class ReferenceCache<T> implements Tagged {
     let { reference } = this;
 
     let currentValue = (this.lastValue = reference.value());
-    this.lastRevision = value(reference.tag);
+    this.lastRevision = valueForTag(reference.tag);
     this.initialized = true;
 
     return currentValue;

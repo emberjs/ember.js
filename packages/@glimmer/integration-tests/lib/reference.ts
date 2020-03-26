@@ -1,5 +1,5 @@
 import { RootReference, TemplateReferenceEnvironment } from '@glimmer/reference';
-import { createUpdatableTag, dirty, UpdatableTag } from '@glimmer/validator';
+import { createUpdatableTag, dirtyTag, UpdatableTag } from '@glimmer/validator';
 import { Dict } from '@glimmer/interfaces';
 
 /**
@@ -21,18 +21,18 @@ export class UpdatableRootReference<T = unknown> extends RootReference<T> {
     let { inner } = this;
 
     if (value !== inner) {
-      dirty(this.tag);
+      dirtyTag(this.tag);
       this.inner = value;
     }
   }
 
   forceUpdate(value: T) {
-    dirty(this.tag);
+    dirtyTag(this.tag);
     this.inner = value;
   }
 
   dirty() {
-    dirty(this.tag);
+    dirtyTag(this.tag);
   }
 
   getDebugPath() {

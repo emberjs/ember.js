@@ -1,6 +1,13 @@
 import { module, test } from './utils/qunit';
 
-import { CONSTANT_TAG, createTag, consume, dirty, value, validate } from '@glimmer/validator';
+import {
+  CONSTANT_TAG,
+  createTag,
+  consumeTag,
+  dirtyTag,
+  valueForTag,
+  validateTag,
+} from '@glimmer/validator';
 
 import {
   ComponentRootReference,
@@ -81,7 +88,7 @@ module('@glimmer/reference: template', () => {
       let tag = createTag();
       let ref = new HelperRootReference(
         () => {
-          consume(tag);
+          consumeTag(tag);
           return 123;
         },
         EMPTY_ARGS,
@@ -152,12 +159,12 @@ module('@glimmer/reference: template', () => {
         _foo: 123,
 
         get foo() {
-          consume(tag);
+          consumeTag(tag);
           return this._foo;
         },
 
         set foo(value) {
-          dirty(tag);
+          dirtyTag(tag);
           this._foo = value;
         },
       };
@@ -167,12 +174,12 @@ module('@glimmer/reference: template', () => {
       let fooRef = ref.get('foo');
       assert.equal(fooRef.value(), component.foo);
 
-      let snapshot = value(fooRef.tag);
-      assert.equal(validate(fooRef.tag, snapshot), true);
+      let snapshot = valueForTag(fooRef.tag);
+      assert.equal(validateTag(fooRef.tag, snapshot), true);
 
       component.foo = 234;
 
-      assert.equal(validate(fooRef.tag, snapshot), false);
+      assert.equal(validateTag(fooRef.tag, snapshot), false);
     });
 
     test('it correctly caches values', assert => {

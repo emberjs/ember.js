@@ -50,7 +50,7 @@ export interface Tagged {
  *
  * @param tag
  */
-export function value(_tag: Tag): Revision {
+export function valueForTag(_tag: Tag): Revision {
   return $REVISION;
 }
 
@@ -64,7 +64,7 @@ export function value(_tag: Tag): Revision {
  * @param tag
  * @param snapshot
  */
-export function validate(tag: Tag, snapshot: Revision) {
+export function validateTag(tag: Tag, snapshot: Revision) {
   return snapshot >= tag[COMPUTE]();
 }
 
@@ -171,7 +171,7 @@ class MonomorphicTagImpl implements MonomorphicTag {
     return this.lastValue;
   }
 
-  static update(_tag: UpdatableTag, _subtag: Tag) {
+  static updateTag(_tag: UpdatableTag, _subtag: Tag) {
     if (DEBUG && _tag[TYPE] !== MonomorphicTagTypes.Updatable) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
@@ -206,7 +206,7 @@ class MonomorphicTagImpl implements MonomorphicTag {
     }
   }
 
-  static dirty(tag: DirtyableTag | UpdatableTag) {
+  static dirtyTag(tag: DirtyableTag | UpdatableTag) {
     if (
       DEBUG &&
       !(tag[TYPE] === MonomorphicTagTypes.Updatable || tag[TYPE] === MonomorphicTagTypes.Dirtyable)
@@ -224,8 +224,8 @@ class MonomorphicTagImpl implements MonomorphicTag {
   }
 }
 
-export const dirty = MonomorphicTagImpl.dirty;
-export const update = MonomorphicTagImpl.update;
+export const dirtyTag = MonomorphicTagImpl.dirtyTag;
+export const updateTag = MonomorphicTagImpl.updateTag;
 
 //////////
 
