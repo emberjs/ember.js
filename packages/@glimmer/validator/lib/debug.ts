@@ -3,7 +3,6 @@ import { DEBUG } from '@glimmer/env';
 
 interface AutotrackingTransactionSourceData {
   context?: string;
-  error: Error;
 }
 
 export let runInAutotrackingTransaction:
@@ -22,7 +21,7 @@ export let assertTagNotConsumed:
   | undefined
   | (<T>(tag: Tag, obj?: T, keyName?: keyof T | string | symbol, forceHardError?: boolean) => void);
 
-export let markTagAsConsumed: undefined | ((_tag: Tag, sourceError: Error) => void);
+export let markTagAsConsumed: undefined | ((_tag: Tag) => void);
 
 if (DEBUG) {
   let DEPRECATE_IN_AUTOTRACKING_TRANSACTION = false;
@@ -145,25 +144,16 @@ if (DEBUG) {
       message.push(`\`${String(keyName)}\` was first used:\n\n${sourceData.context}`);
     }
 
-    if (sourceData.error.stack) {
-      let sourceStack = sourceData.error.stack;
-      let thirdIndex = nthIndex(sourceStack, '\n', 3);
-      sourceStack = sourceStack.substr(thirdIndex);
-
-      message.push(`Stack trace for the first usage: ${sourceStack}`);
-    }
-
     message.push(`Stack trace for the update:`);
 
     return message.join('\n\n');
   };
 
-  markTagAsConsumed = (_tag: Tag, sourceError: Error) => {
+  markTagAsConsumed = (_tag: Tag) => {
     if (!AUTOTRACKING_TRANSACTION || AUTOTRACKING_TRANSACTION.has(_tag)) return;
 
     AUTOTRACKING_TRANSACTION.set(_tag, {
       context: debuggingContexts!.map(c => c.replace(/^/gm, '  ').replace(/^ /, '-')).join('\n\n'),
-      error: sourceError,
     });
 
     // We need to mark the tag and all of its subtags as consumed, so we need to
@@ -172,11 +162,11 @@ if (DEBUG) {
     let tag = _tag as any;
 
     if (tag.subtag) {
-      markTagAsConsumed!(tag.subtag, sourceError);
+      markTagAsConsumed!(tag.subtag);
     }
 
     if (tag.subtags) {
-      tag.subtags.forEach((tag: Tag) => markTagAsConsumed!(tag, sourceError));
+      tag.subtags.forEach((tag: Tag) => markTagAsConsumed!(tag));
     }
   };
 
