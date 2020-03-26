@@ -15,9 +15,9 @@ import {
 } from '@glimmer/interfaces';
 import {
   combine,
-  value,
-  update,
-  validate,
+  valueForTag,
+  updateTag,
+  validateTag,
   createUpdatableTag,
   Tag,
   UpdatableTag,
@@ -171,7 +171,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   didInitializeChildren() {
-    update(this._tag, combineSlice(this.children));
+    updateTag(this._tag, combineSlice(this.children));
   }
 
   evaluate(vm: UpdatingVM) {
@@ -315,17 +315,17 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 
   didInitializeChildren(listDidChange = true) {
-    this.lastIterated = value(this.artifacts.tag);
+    this.lastIterated = valueForTag(this.artifacts.tag);
 
     if (listDidChange) {
-      update(this._tag, combineSlice(this.children));
+      updateTag(this._tag, combineSlice(this.children));
     }
   }
 
   evaluate(vm: UpdatingVM) {
     let { artifacts, lastIterated } = this;
 
-    if (!validate(artifacts.tag, lastIterated)) {
+    if (!validateTag(artifacts.tag, lastIterated)) {
       let { bounds } = this;
       let { dom } = vm;
 

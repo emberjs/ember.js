@@ -6,8 +6,8 @@ import {
   UpdatableTag,
   createTag,
   createUpdatableTag,
-  dirty,
-  update,
+  dirtyTag,
+  updateTag,
 } from '@glimmer/validator';
 import { dict } from '@glimmer/util';
 
@@ -24,7 +24,7 @@ class UpdatableRootReference<T> implements Reference<T> {
   }
 
   update(content: T) {
-    dirty(this._tag);
+    dirtyTag(this._tag);
     return (this.content = content);
   }
 }
@@ -43,7 +43,7 @@ class TaggedDict<T> {
   }
 
   set(key: string, value: T) {
-    dirty(this._tag);
+    dirtyTag(this._tag);
     return (this.data[key] = value);
   }
 }
@@ -125,7 +125,7 @@ QUnit.test('CachedReference caches nested computation correctly', assert => {
 
       let dict = parent.value();
 
-      update(_tag, dict.tag);
+      updateTag(_tag, dict.tag);
 
       return dict.get(key);
     }

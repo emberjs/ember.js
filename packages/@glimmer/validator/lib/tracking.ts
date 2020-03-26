@@ -1,24 +1,18 @@
 import { DEBUG } from '@glimmer/env';
-import { Tag, combine, createTag, dirty, CONSTANT_TAG } from './validators';
+import {
+  Tag,
+  combine,
+  createTag,
+  dirtyTag,
+  CONSTANT_TAG,
+  validateTag,
+  Revision,
+  valueForTag,
+} from './validators';
 import { tagFor, dirtyTagFor } from './meta';
 import { markTagAsConsumed, runInAutotrackingTransaction, assertTagNotConsumed } from './debug';
 
 type Option<T> = T | null;
-
-/**
- * Whenever a tracked computed property is entered, the current tracker is
- * saved off and a new tracker is replaced.
- *
- * Any tracked properties consumed are added to the current tracker.
- *
- * When a tracked computed property is exited, the tracker's tags are
- * combined and added to the parent tracker.
- *
- * The consequence is that each tracked computed property has a tag
- * that corresponds to the tracked properties consumed inside of
- * itself, including child tracked computed properties.
- */
-let CURRENT_TRACKER: Option<Tracker> = null;
 
 /**
  * An object that that tracks @tracked properties that were consumed.
@@ -52,13 +46,132 @@ class Tracker {
   }
 }
 
+/**
+ * Whenever a tracked computed property is entered, the current tracker is
+ * saved off and a new tracker is replaced.
+ *
+ * Any tracked properties consumed are added to the current tracker.
+ *
+ * When a tracked computed property is exited, the tracker's tags are
+ * combined and added to the parent tracker.
+ *
+ * The consequence is that each tracked computed property has a tag
+ * that corresponds to the tracked properties consumed inside of
+ * itself, including child tracked computed properties.
+ */
+let CURRENT_TRACKER: Option<Tracker> = null;
+
+const OPEN_TRACK_FRAMES: Tracker[] = [];
+
+export function beginTrackFrame(): void {
+  if (CURRENT_TRACKER !== null) {
+    OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
+  }
+
+  CURRENT_TRACKER = new Tracker();
+}
+
+export function endTrackFrame(): Tag {
+  let current = CURRENT_TRACKER;
+
+  if (DEBUG && !CURRENT_TRACKER) {
+    throw new Error('attempted to close a tracking frame, but one was not open');
+  }
+
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.length > 0 ? OPEN_TRACK_FRAMES.pop()! : null;
+
+  return current!.combine();
+}
+
+//////////
+
+const IS_CONST_MAP: WeakMap<object, boolean | undefined> = new WeakMap();
+
+export function memoizeTracked<T>(cb: () => T, context?: string | false): () => T;
+export function memoizeTracked<T, U>(cb: (a1: U) => T, context?: string | false): (a1: U) => T;
+export function memoizeTracked<T, U, V, W>(
+  cb: (a1: U, a2: V, a3: W) => T,
+  context?: string | false
+): (a1: U, a2: V, a3: W) => T;
+export function memoizeTracked<T, U, V, W, X>(
+  cb: (a1: U, a2: V, a3: W, a4: X) => T,
+  context?: string | false
+): (a1: U, a2: V, a3: W, a4: X) => T;
+export function memoizeTracked<T, U, V, W, X, Y>(
+  cb: (a1: U, a2: V, a3: W, a4: X, a5: Y) => T,
+  context?: string | false
+): (a1: U, a2: V, a3: W, a4: X, a5: Y) => T;
+export function memoizeTracked<T, U, V, W, X, Y, Z>(
+  cb: (a1: U, a2: V, a3: W, a4: X, a5: Y, a6: Z) => T,
+  context?: string | false
+): (a1: U, a2: V, a3: W, a4: X, a5: Y, a6: Z) => T;
+
+export function memoizeTracked<T>(
+  callback: (...args: unknown[]) => T,
+  debuggingContext?: string | false
+) {
+  let lastValue: T | undefined;
+  let tag: Tag;
+  let snapshot: Revision;
+
+  let memoized = (...args: unknown[]): T => {
+    if (!tag || !validateTag(tag, snapshot)) {
+      beginTrackFrame();
+
+      try {
+        if (DEBUG) {
+          runInAutotrackingTransaction!(() => (lastValue = callback(...args)), debuggingContext);
+        } else {
+          lastValue = callback(...args);
+        }
+      } finally {
+        tag = endTrackFrame();
+        snapshot = valueForTag(tag);
+        consumeTag(tag);
+
+        // If the final tag is constant, then we know for sure that this
+        // memoized function can never change. There are times when this
+        // information is useful externally (i.e. in the append VM, it tells us
+        // whether or not to emit opcodes) so we expose it via a metadata weakmap.
+        if (tag === CONSTANT_TAG) {
+          IS_CONST_MAP.set(memoized, true);
+        } else if (DEBUG) {
+          // In DEBUG, set the value to false explicitly. This way we can throw
+          // if someone attempts to call `isConst(memoized)` before running
+          // `memoized()` at least once.
+          IS_CONST_MAP.set(memoized, false);
+        }
+      }
+    } else {
+      consumeTag(tag);
+    }
+
+    return lastValue!;
+  };
+
+  if (DEBUG) {
+    IS_CONST_MAP.set(memoized, undefined);
+  }
+
+  return memoized;
+}
+
+export function isConstMemo(memoized: Function) {
+  if (DEBUG && IS_CONST_MAP.has(memoized) && IS_CONST_MAP.get(memoized) === undefined) {
+    throw new Error(
+      'Attempted to call `isConstMemo` on a memoized function, but the function has not been run at least once yet. You cannot know if a memoized function is constant or not until it has been run at least once. Call the function, then pass it to `isConstMemo`.'
+    );
+  }
+
+  return IS_CONST_MAP.get(memoized) === true;
+}
+
 //////////
 
 export function track(callback: () => void, debuggingContext?: string | false): Tag {
-  let parent = CURRENT_TRACKER;
-  let current = new Tracker();
+  beginTrackFrame();
 
-  CURRENT_TRACKER = current;
+  let tag;
 
   try {
     if (DEBUG) {
@@ -67,13 +180,13 @@ export function track(callback: () => void, debuggingContext?: string | false): 
       callback();
     }
   } finally {
-    CURRENT_TRACKER = parent;
+    tag = endTrackFrame();
   }
 
-  return current.combine();
+  return tag;
 }
 
-export function consume(tag: Tag) {
+export function consumeTag(tag: Tag) {
   if (CURRENT_TRACKER !== null) {
     CURRENT_TRACKER.add(tag);
   }
@@ -109,7 +222,7 @@ export function trackedData<T extends object, K extends keyof T>(
   let hasInitializer = typeof initializer === 'function';
 
   function getter(self: T) {
-    consume(tagFor(self, key));
+    consumeTag(tagFor(self, key));
 
     let value;
 
@@ -129,7 +242,7 @@ export function trackedData<T extends object, K extends keyof T>(
       assertTagNotConsumed!(tagFor(self, key), self, key, true);
     }
 
-    dirty(EPOCH);
+    dirtyTag(EPOCH);
     dirtyTagFor(self, key);
     values.set(self, value);
   }
