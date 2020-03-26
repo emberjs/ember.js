@@ -17,7 +17,7 @@ import {
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
-import { combine, validate, value, tagFor } from '@glimmer/validator';
+import { combine, validateTag, valueForTag, tagFor } from '@glimmer/validator';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
@@ -306,7 +306,7 @@ export default class ArrayProxy extends EmberObject {
 
     if (
       this._arrangedContentTag === null ||
-      !validate(this._arrangedContentTag, this._arrangedContentRevision)
+      !validateTag(this._arrangedContentTag, this._arrangedContentRevision)
     ) {
       if (this._arrangedContentTag === null) {
         // This is the first time the proxy has been setup, only add the observer
@@ -319,7 +319,7 @@ export default class ArrayProxy extends EmberObject {
       }
 
       this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
-      this._arrangedContentRevision = value(this._arrangedContentTag);
+      this._arrangedContentRevision = valueForTag(this._arrangedContentTag);
     }
   }
 }

@@ -136,7 +136,7 @@ moduleFor(
           hooks.push('compute');
         },
         willDestroy() {
-          hooks.push('willDestroy'),
+          hooks.push('willDestroy');
           this._super();
         },
         destroy() {

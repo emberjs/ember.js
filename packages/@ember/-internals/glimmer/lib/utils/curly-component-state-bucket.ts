@@ -1,7 +1,7 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { ComponentRootReference, VersionedReference } from '@glimmer/reference';
-import { Revision, value } from '@glimmer/validator';
+import { Revision, valueForTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import { Renderer } from '../renderer';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
@@ -51,7 +51,7 @@ export default class ComponentStateBucket {
     public hasWrappedElement: boolean
   ) {
     this.classRef = null;
-    this.argsRevision = args === null ? 0 : value(args.tag);
+    this.argsRevision = args === null ? 0 : valueForTag(args.tag);
     this.rootRef = new ComponentRootReference(component, environment);
   }
 

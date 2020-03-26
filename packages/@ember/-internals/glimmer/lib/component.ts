@@ -15,7 +15,7 @@ import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
-import { createTag, dirty } from '@glimmer/validator';
+import { createTag, dirtyTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
@@ -774,7 +774,7 @@ const Component = CoreView.extend(
     },
 
     rerender() {
-      dirty(this[DIRTY_TAG]);
+      dirtyTag(this[DIRTY_TAG]);
       this._super();
     },
 

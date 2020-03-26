@@ -4,14 +4,14 @@ import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import {
   combine,
-  consume,
+  consumeTag,
   Tag,
   track,
   untrack,
   UpdatableTag,
-  update,
-  validate,
-  value as tagValue,
+  updateTag,
+  validateTag,
+  valueForTag,
 } from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import {
@@ -608,7 +608,7 @@ export class ComputedProperty extends ComputedDescriptor {
 
     let ret;
 
-    if (cache.has(keyName) && validate(propertyTag, getLastRevisionFor(obj, keyName))) {
+    if (cache.has(keyName) && validateTag(propertyTag, getLastRevisionFor(obj, keyName))) {
       ret = cache.get(keyName);
     } else {
       // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
@@ -638,22 +638,22 @@ export class ComputedProperty extends ComputedDescriptor {
       }
 
       if (upstreamTag !== undefined) {
-        update(propertyTag!, upstreamTag);
+        updateTag(propertyTag!, upstreamTag);
       }
 
-      setLastRevisionFor(obj, keyName, tagValue(propertyTag));
+      setLastRevisionFor(obj, keyName, valueForTag(propertyTag));
 
       cache.set(keyName, ret);
 
       finishLazyChains(obj, keyName, ret);
     }
 
-    consume(propertyTag!);
+    consumeTag(propertyTag!);
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
     if (Array.isArray(ret) || isEmberArray(ret)) {
-      consume(tagForProperty(ret, '[]'));
+      consumeTag(tagForProperty(ret, '[]'));
     }
 
     return ret;
@@ -683,10 +683,10 @@ export class ComputedProperty extends ComputedDescriptor {
       let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
       if (this._dependentKeys !== undefined) {
-        update(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys)));
+        updateTag(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys)));
       }
 
-      setLastRevisionFor(obj, keyName, tagValue(propertyTag));
+      setLastRevisionFor(obj, keyName, valueForTag(propertyTag));
     } finally {
       endPropertyChanges();
     }

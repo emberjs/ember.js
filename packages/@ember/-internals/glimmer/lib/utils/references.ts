@@ -4,7 +4,7 @@ import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Environment } from '@glimmer/interfaces';
 import { HelperRootReference, RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
-import { consume, deprecateMutationsInAutotrackingTransaction } from '@glimmer/validator';
+import { consumeTag, deprecateMutationsInAutotrackingTransaction } from '@glimmer/validator';
 import { HelperInstance, isClassHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
 
 export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T> {
@@ -33,7 +33,7 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
       }
 
       if (helper[RECOMPUTE_TAG]) {
-        consume(helper[RECOMPUTE_TAG]);
+        consumeTag(helper[RECOMPUTE_TAG]);
       }
 
       return ret!;

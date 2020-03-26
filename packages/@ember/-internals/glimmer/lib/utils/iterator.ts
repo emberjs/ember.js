@@ -3,7 +3,7 @@ import { _contentFor } from '@ember/-internals/runtime';
 import { EmberArray, HAS_NATIVE_SYMBOL, isEmberArray, isObject } from '@ember/-internals/utils';
 import { Option } from '@glimmer/interfaces';
 import { IteratorDelegate } from '@glimmer/reference';
-import { consume, isTracking } from '@glimmer/validator';
+import { consumeTag, isTracking } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
 
 export default function toIterator(iterable: unknown): Option<IteratorDelegate> {
@@ -131,10 +131,10 @@ class ObjectIterator extends BoundedIterator {
         // Add the tag of the returned value if it is an array, since arrays
         // should always cause updates if they are consumed and then changed
         if (isTracking()) {
-          consume(tagForProperty(obj, key));
+          consumeTag(tagForProperty(obj, key));
 
           if (Array.isArray(value) || isEmberArray(value)) {
-            consume(tagForProperty(value, '[]'));
+            consumeTag(tagForProperty(value, '[]'));
           }
         }
 

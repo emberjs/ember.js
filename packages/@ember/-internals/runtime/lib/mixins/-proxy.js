@@ -16,11 +16,11 @@ import {
 import { setProxy, setupMandatorySetter } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { combine, update, tagFor } from '@glimmer/validator';
+import { combine, updateTag, tagFor } from '@glimmer/validator';
 
 export function contentFor(proxy) {
   let content = get(proxy, 'content');
-  update(tagForObject(proxy), tagForObject(content));
+  updateTag(tagForObject(proxy), tagForObject(content));
   return content;
 }
 

@@ -17,7 +17,7 @@ import {
 } from '@glimmer/interfaces';
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import { unwrapTemplate } from '@glimmer/util';
-import { consume, createTag, isConst, Tag } from '@glimmer/validator';
+import { consumeTag, createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
 import { EmberVMEnvironment } from '../environment';
@@ -202,7 +202,7 @@ export default class CustomComponentManager<ComponentInstance>
           get(_target, prop) {
             if (namedArgs.has(prop as string)) {
               let ref = namedArgs.get(prop as string);
-              consume(ref.tag);
+              consumeTag(ref.tag);
 
               return ref.value();
             } else if (prop === CUSTOM_TAG_FOR) {
@@ -257,7 +257,7 @@ export default class CustomComponentManager<ComponentInstance>
             configurable: true,
             get() {
               let ref = namedArgs.get(name);
-              consume(ref.tag);
+              consumeTag(ref.tag);
 
               return ref.value();
             },
