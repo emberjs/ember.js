@@ -25,7 +25,7 @@ class Tracker {
     this.tags.add(tag);
 
     if (DEBUG) {
-      markTagAsConsumed!(tag, new Error());
+      markTagAsConsumed!(tag);
     }
 
     this.last = tag;
