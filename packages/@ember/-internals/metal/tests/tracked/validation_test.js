@@ -10,7 +10,7 @@ import {
 
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { track, value, validate } from '@glimmer/validator';
+import { track, valueForTag, validateTag } from '@glimmer/validator';
 
 moduleFor(
   '@tracked get validation',
@@ -26,22 +26,22 @@ moduleFor(
       let obj = new Tracked('Tom', 'Dale');
 
       let tag = track(() => obj.first);
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       assert.equal(obj.first, 'Tom', 'The full name starts correct');
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
-      snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       obj.first = 'Thomas';
 
-      assert.equal(validate(tag, snapshot), false);
+      assert.equal(validateTag(tag, snapshot), false);
 
       assert.equal(obj.first, 'Thomas');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
     }
 
     [`@test autotracking should work with initializers`](assert) {
@@ -53,13 +53,13 @@ moduleFor(
       let obj = new Tracked();
 
       let tag = track(() => obj.first);
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       assert.equal(obj.first, 'first: second', 'The value initializes correctly');
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
-      snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       obj.second = '2nd';
 
@@ -67,18 +67,18 @@ moduleFor(
       // assert.equal(validate(tag, snapshot), true);
 
       assert.equal(obj.first, 'first: second', 'The value stays the same once initialized');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
       obj.first = 'FIRST!!!';
 
-      assert.equal(validate(tag, snapshot), false);
+      assert.equal(validateTag(tag, snapshot), false);
 
       assert.equal(obj.first, 'FIRST!!!');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
     }
 
     [`@test autotracking should work with native getters`](assert) {
@@ -98,22 +98,22 @@ moduleFor(
       let obj = new Tracked('Tom', 'Dale');
 
       let tag = track(() => obj.full);
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
-      snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       obj.first = 'Thomas';
 
-      assert.equal(validate(tag, snapshot), false);
+      assert.equal(validateTag(tag, snapshot), false);
 
       assert.equal(obj.full, 'Thomas Dale');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
     }
 
     [`@test autotracking should work with native setters`](assert) {
@@ -140,24 +140,24 @@ moduleFor(
       let obj = new Tracked('Tom', 'Dale');
 
       let tag = track(() => obj.full);
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
-      snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       obj.full = 'Melanie Sumner';
 
-      assert.equal(validate(tag, snapshot), false);
+      assert.equal(validateTag(tag, snapshot), false);
 
       assert.equal(obj.full, 'Melanie Sumner');
       assert.equal(obj.first, 'Melanie');
       assert.equal(obj.last, 'Sumner');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
     }
 
     [`@test interaction with Ember object model (tracked property depending on Ember property)`](
@@ -180,25 +180,25 @@ moduleFor(
       let tag = track(() => obj.full);
       assert.equal(obj.full, 'Tom Dale');
 
-      let snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      let snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       set(tom, 'first', 'Thomas');
-      assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember set');
+      assert.equal(validateTag(tag, snapshot), false, 'invalid after setting with Ember set');
 
       assert.equal(obj.full, 'Thomas Dale');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
       set(obj, 'name', { first: 'Ricardo', last: 'Mendes' });
 
-      assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember set');
+      assert.equal(validateTag(tag, snapshot), false, 'invalid after setting with Ember set');
 
       assert.equal(obj.full, 'Ricardo Mendes');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
     }
 
     [`@test interaction with Ember object model (Ember computed property depending on tracked property)`](
@@ -236,16 +236,20 @@ moduleFor(
       let full = get(obj, 'full');
       assert.equal(full, 'Tom Dale');
 
-      let snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      let snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       tom.first = 'Thomas';
-      assert.equal(validate(tag, snapshot), false, 'invalid after setting with tracked properties');
+      assert.equal(
+        validateTag(tag, snapshot),
+        false,
+        'invalid after setting with tracked properties'
+      );
 
       assert.equal(get(obj, 'full'), 'Thomas Dale');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
     }
 
     ['@test interaction with the Ember object model (paths going through tracked properties)'](
@@ -293,23 +297,23 @@ moduleFor(
       let full = get(obj, 'full');
       assert.equal(full, 'Tom Dale');
 
-      let snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      let snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       set(tom, 'first', 'Thomas');
-      assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember.set');
+      assert.equal(validateTag(tag, snapshot), false, 'invalid after setting with Ember.set');
 
       assert.equal(get(obj, 'full'), 'Thomas Dale');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
       tom = contact.name = new EmberName('T', 'Dale');
-      assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember.set');
+      assert.equal(validateTag(tag, snapshot), false, 'invalid after setting with Ember.set');
 
       assert.equal(get(obj, 'full'), 'T Dale');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
       set(tom, 'first', 'Tizzle');
-      assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember.set');
+      assert.equal(validateTag(tag, snapshot), false, 'invalid after setting with Ember.set');
 
       assert.equal(get(obj, 'full'), 'Tizzle Dale');
     }
@@ -323,15 +327,15 @@ moduleFor(
       let array;
 
       let tag = track(() => (array = get(obj, 'array')));
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       assert.deepEqual(array, []);
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
       array.push(1);
       notifyPropertyChange(array, '[]');
       assert.equal(
-        validate(tag, snapshot),
+        validateTag(tag, snapshot),
         false,
         'invalid after pushing an object and notifying on the array'
       );
@@ -346,15 +350,15 @@ moduleFor(
       let array;
 
       let tag = track(() => (array = obj.array));
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       assert.deepEqual(array, []);
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
       array.push(1);
       notifyPropertyChange(array, '[]');
       assert.equal(
-        validate(tag, snapshot),
+        validateTag(tag, snapshot),
         false,
         'invalid after pushing an object and notifying on the array'
       );
@@ -371,13 +375,13 @@ moduleFor(
       let emberArray;
 
       let tag = track(() => (emberArray = get(obj, 'emberArray')));
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
       notifyPropertyChange(emberArray, '[]');
       assert.equal(
-        validate(tag, snapshot),
+        validateTag(tag, snapshot),
         false,
         'invalid after setting a property on the object'
       );
@@ -394,13 +398,13 @@ moduleFor(
       let emberArray;
 
       let tag = track(() => (emberArray = obj.emberArray));
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
       notifyPropertyChange(emberArray, '[]');
       assert.equal(
-        validate(tag, snapshot),
+        validateTag(tag, snapshot),
         false,
         'invalid after setting a property on the object'
       );

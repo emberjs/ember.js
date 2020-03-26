@@ -7,7 +7,7 @@ import {
   tagForProperty,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import { consume, track, UpdatableTag, update } from '@glimmer/validator';
+import { consumeTag, track, UpdatableTag, updateTag } from '@glimmer/validator';
 
 let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
@@ -21,8 +21,8 @@ let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDesc
         ret = originalGet!.call(this);
       });
 
-      update(propertyTag, tag);
-      consume(tag);
+      updateTag(propertyTag, tag);
+      consumeTag(tag);
 
       return ret;
     };

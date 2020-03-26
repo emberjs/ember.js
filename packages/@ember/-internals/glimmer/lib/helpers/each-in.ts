@@ -6,7 +6,7 @@ import { _contentFor } from '@ember/-internals/runtime';
 import { isProxy } from '@ember/-internals/utils';
 import { VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { combine, createUpdatableTag, Tag, update } from '@glimmer/validator';
+import { combine, createUpdatableTag, Tag, updateTag } from '@glimmer/validator';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -168,7 +168,7 @@ class EachInReference implements VersionedPathReference {
       iterable = _contentFor(iterable);
     }
 
-    update(this.valueTag, tag);
+    updateTag(this.valueTag, tag);
 
     return new EachInWrapper(iterable);
   }

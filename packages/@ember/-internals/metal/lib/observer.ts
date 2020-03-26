@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import { schedule } from '@ember/runloop';
-import { combine, CURRENT_TAG, Tag, validate, value } from '@glimmer/validator';
+import { combine, CURRENT_TAG, Tag, validateTag, valueForTag } from '@glimmer/validator';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
@@ -101,7 +101,7 @@ export function activateObserver(target: object, eventName: string, sync = false
       count: 1,
       path,
       tag,
-      lastRevision: value(tag),
+      lastRevision: valueForTag(tag),
       suspended: false,
     });
   }
@@ -160,14 +160,14 @@ export function revalidateObservers(target: object) {
   if (ASYNC_OBSERVERS.has(target)) {
     ASYNC_OBSERVERS.get(target)!.forEach(observer => {
       observer.tag = combine(getChainTagsForKey(target, observer.path));
-      observer.lastRevision = value(observer.tag);
+      observer.lastRevision = valueForTag(observer.tag);
     });
   }
 
   if (SYNC_OBSERVERS.has(target)) {
     SYNC_OBSERVERS.get(target)!.forEach(observer => {
       observer.tag = combine(getChainTagsForKey(target, observer.path));
-      observer.lastRevision = value(observer.tag);
+      observer.lastRevision = valueForTag(observer.tag);
     });
   }
 }
@@ -175,7 +175,7 @@ export function revalidateObservers(target: object) {
 let lastKnownRevision = 0;
 
 export function flushAsyncObservers(shouldSchedule = true) {
-  let currentRevision = value(CURRENT_TAG);
+  let currentRevision = valueForTag(CURRENT_TAG);
   if (lastKnownRevision === currentRevision) {
     return;
   }
@@ -191,13 +191,13 @@ export function flushAsyncObservers(shouldSchedule = true) {
     }
 
     activeObservers.forEach((observer, eventName) => {
-      if (!validate(observer.tag, observer.lastRevision)) {
+      if (!validateTag(observer.tag, observer.lastRevision)) {
         let sendObserver = () => {
           try {
             sendEvent(target, eventName, [target, observer.path], undefined, meta);
           } finally {
             observer.tag = combine(getChainTagsForKey(target, observer.path));
-            observer.lastRevision = value(observer.tag);
+            observer.lastRevision = valueForTag(observer.tag);
           }
         };
 
@@ -225,13 +225,13 @@ export function flushSyncObservers() {
     }
 
     activeObservers.forEach((observer, eventName) => {
-      if (!observer.suspended && !validate(observer.tag, observer.lastRevision)) {
+      if (!observer.suspended && !validateTag(observer.tag, observer.lastRevision)) {
         try {
           observer.suspended = true;
           sendEvent(target, eventName, [target, observer.path], undefined, meta);
         } finally {
           observer.tag = combine(getChainTagsForKey(target, observer.path));
-          observer.lastRevision = value(observer.tag);
+          observer.lastRevision = valueForTag(observer.tag);
           observer.suspended = false;
         }
       }

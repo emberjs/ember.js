@@ -10,7 +10,7 @@ import {
   Tag,
   track,
   untrack,
-  update,
+  updateTag,
 } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import debugRenderMessage from '../utils/debug-render-message';
@@ -177,7 +177,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
         DEBUG && debugRenderMessage!(`(instance of a \`${getDebugName!(modifier)}\` modifier)`)
       );
 
-      update(tag, combinedTrackingTag);
+      updateTag(tag, combinedTrackingTag);
     }
   }
 
@@ -192,7 +192,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
         () => delegate.updateModifier(modifier, args.value()),
         DEBUG && debugRenderMessage!(`(instance of a \`${getDebugName!(modifier)}\` modifier)`)
       );
-      update(tag, combinedTrackingTag);
+      updateTag(tag, combinedTrackingTag);
     }
   }
 

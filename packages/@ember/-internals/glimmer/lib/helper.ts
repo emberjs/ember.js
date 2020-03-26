@@ -7,7 +7,7 @@ import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { Dict } from '@glimmer/interfaces';
-import { createTag, dirty } from '@glimmer/validator';
+import { createTag, dirtyTag } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -122,7 +122,7 @@ let Helper = FrameworkObject.extend({
     @since 1.13.0
   */
   recompute() {
-    join(() => dirty(this[RECOMPUTE_TAG]));
+    join(() => dirtyTag(this[RECOMPUTE_TAG]));
   },
 
   /**

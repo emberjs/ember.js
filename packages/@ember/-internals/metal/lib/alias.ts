@@ -4,12 +4,12 @@ import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import {
   combine,
-  consume,
+  consumeTag,
   untrack,
   UpdatableTag,
-  update,
-  validate,
-  value,
+  updateTag,
+  validateTag,
+  valueForTag,
 } from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKey } from './chain-tags';
 import { getLastRevisionFor, setLastRevisionFor } from './computed_cache';
@@ -90,13 +90,13 @@ export class AliasedProperty extends ComputedDescriptor {
 
     let lastRevision = getLastRevisionFor(obj, keyName);
 
-    if (!validate(propertyTag, lastRevision)) {
-      update(propertyTag, combine(getChainTagsForKey(obj, this.altKey)));
-      setLastRevisionFor(obj, keyName, value(propertyTag));
+    if (!validateTag(propertyTag, lastRevision)) {
+      updateTag(propertyTag, combine(getChainTagsForKey(obj, this.altKey)));
+      setLastRevisionFor(obj, keyName, valueForTag(propertyTag));
       finishLazyChains(obj, keyName, ret);
     }
 
-    consume(propertyTag);
+    consumeTag(propertyTag);
 
     return ret;
   }
