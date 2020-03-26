@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.50.0 (2020-03-26)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1060](https://github.com/glimmerjs/glimmer-vm/pull/1060)  [FEAT] Adds `memoizeTracked` ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.48.0 (2020-03-11)
 
 #### :boom: Breaking Change
