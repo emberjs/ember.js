@@ -1,7 +1,7 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { defineProperty, tracked, nativeDescDecorator } from '../..';
 
-import { track, value, validate } from '@glimmer/validator';
+import { track, valueForTag, validateTag } from '@glimmer/validator';
 
 moduleFor(
   '@tracked decorator - classic classes',
@@ -35,24 +35,24 @@ moduleFor(
       obj.last = 'Dale';
 
       let tag = track(() => obj.full);
-      let snapshot = value(tag);
+      let snapshot = valueForTag(tag);
 
       assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
 
-      snapshot = value(tag);
-      assert.equal(validate(tag, snapshot), true);
+      snapshot = valueForTag(tag);
+      assert.equal(validateTag(tag, snapshot), true);
 
       obj.full = 'Melanie Sumner';
 
-      assert.equal(validate(tag, snapshot), false);
+      assert.equal(validateTag(tag, snapshot), false);
 
       assert.equal(obj.full, 'Melanie Sumner');
       assert.equal(obj.first, 'Melanie');
       assert.equal(obj.last, 'Sumner');
-      snapshot = value(tag);
+      snapshot = valueForTag(tag);
 
-      assert.equal(validate(tag, snapshot), true);
+      assert.equal(validateTag(tag, snapshot), true);
     }
 
     [`@test can pass a default value to the tracked decorator`](assert) {

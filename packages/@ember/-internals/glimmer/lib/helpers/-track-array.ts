@@ -4,7 +4,7 @@
 import { tagForProperty } from '@ember/-internals/metal';
 import { VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { combine, createUpdatableTag, Tag, update } from '@glimmer/validator';
+import { combine, createUpdatableTag, Tag, updateTag } from '@glimmer/validator';
 
 /**
   This reference is used to get the `[]` tag of iterables, so we can trigger
@@ -24,7 +24,7 @@ class TrackArrayReference implements VersionedPathReference {
 
     let tag = tagForProperty(iterable, '[]');
 
-    update(this.valueTag, tag);
+    updateTag(this.valueTag, tag);
 
     return iterable;
   }

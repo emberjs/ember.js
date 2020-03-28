@@ -6,8 +6,8 @@ import {
   combine,
   createUpdatableTag,
   Tag,
-  update,
-  validate,
+  updateTag,
+  validateTag,
 } from '@glimmer/validator';
 import { objectAt } from './array';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
@@ -32,7 +32,7 @@ export function finishLazyChains(obj: any, key: string, value: any) {
   for (let path in lazyTags) {
     let tag = lazyTags[path];
 
-    update(tag, combine(getChainTagsForKey(value, path)));
+    updateTag(tag, combine(getChainTagsForKey(value, path)));
 
     delete lazyTags[path];
   }
@@ -193,7 +193,7 @@ export function getChainTagsForKey(obj: any, path: string) {
       // it will update that lazy chain.
       let lastRevision = getLastRevisionFor(current, segment);
 
-      if (validate(propertyTag, lastRevision)) {
+      if (validateTag(propertyTag, lastRevision)) {
         current = peekCacheFor(current).get(segment);
       } else {
         let lazyChains = metaFor(current).writableLazyChainsFor(segment);

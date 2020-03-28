@@ -31,7 +31,12 @@ import {
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { unwrapHandle, unwrapTemplate } from '@glimmer/util';
-import { CURRENT_TAG, runInAutotrackingTransaction, validate, value } from '@glimmer/validator';
+import {
+  CURRENT_TAG,
+  runInAutotrackingTransaction,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import CompileTimeResolver from './compile-time-lookup';
@@ -461,7 +466,7 @@ export abstract class Renderer {
           }
         }
 
-        this._lastRevision = value(CURRENT_TAG);
+        this._lastRevision = valueForTag(CURRENT_TAG);
       });
     } while (roots.length > initialRootsLength);
 
@@ -495,7 +500,7 @@ export abstract class Renderer {
       completedWithoutError = true;
     } finally {
       if (!completedWithoutError) {
-        this._lastRevision = value(CURRENT_TAG);
+        this._lastRevision = valueForTag(CURRENT_TAG);
       }
       this._inRenderTransaction = false;
     }
@@ -523,7 +528,9 @@ export abstract class Renderer {
   }
 
   _isValid() {
-    return this._destroyed || this._roots.length === 0 || validate(CURRENT_TAG, this._lastRevision);
+    return (
+      this._destroyed || this._roots.length === 0 || validateTag(CURRENT_TAG, this._lastRevision)
+    );
   }
 
   _revalidate() {

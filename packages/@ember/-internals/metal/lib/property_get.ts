@@ -5,7 +5,7 @@ import { HAS_NATIVE_PROXY, isEmberArray, isProxy, symbol } from '@ember/-interna
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
-  consume,
+  consumeTag,
   deprecateMutationsInAutotrackingTransaction,
   isTracking,
 } from '@glimmer/validator';
@@ -131,18 +131,18 @@ export function get(obj: object, keyName: string): any {
   }
 
   if (isObjectLike && isTracking()) {
-    consume(tagForProperty(obj, keyName));
+    consumeTag(tagForProperty(obj, keyName));
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
     if (Array.isArray(value) || isEmberArray(value)) {
-      consume(tagForProperty(value, '[]'));
+      consumeTag(tagForProperty(value, '[]'));
     }
 
     // Add the value of the content if the value is a proxy. This is because
     // content changes the truthiness/falsiness of the proxy.
     if (isProxy(value)) {
-      consume(tagForProperty(value, 'content'));
+      consumeTag(tagForProperty(value, 'content'));
     }
   }
 

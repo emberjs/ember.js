@@ -24,7 +24,7 @@ import {
 import { RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
-import { combine, Tag, validate, value } from '@glimmer/validator';
+import { combine, Tag, validateTag, valueForTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
 import { EmberVMEnvironment } from '../environment';
@@ -419,10 +419,10 @@ export default class CurlyComponentManager
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
-    if (args && !validate(args.tag, argsRevision)) {
+    if (args && !validateTag(args.tag, argsRevision)) {
       let props = processComponentArgs(args!);
 
-      bucket.argsRevision = value(args!.tag);
+      bucket.argsRevision = valueForTag(args!.tag);
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
