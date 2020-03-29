@@ -3251,10 +3251,10 @@ ember-cli-version-checker@^4.1.0:
     semver "^6.3.0"
     silent-error "^1.1.1"
 
-ember-cli-yuidoc@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-yuidoc/-/ember-cli-yuidoc-0.9.0.tgz#acf9344959fdcc9313a4ef3783a9466e7634fd45"
-  integrity sha512-Eupu3YOnBFPgOUhm6Zask0SSYF/p+qxM9R5B4ayy0UGewQRS6YJ0bh+4CDDqiAAh/tHbK8X/zAmP/sJDjuzoMQ==
+ember-cli-yuidoc@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-yuidoc/-/ember-cli-yuidoc-0.9.1.tgz#bc2171eb160b02ad5f4078e83e3648b95628ced9"
+  integrity sha512-4pb3OKXhHCeUux6a7SDKziLDWdDciJwzmUld3Fumt60RLcH/nIk5lPdI0o+UXJ9NfP+WcSvvpWWroFmWqWAWWA==
   dependencies:
     broccoli-caching-writer "~2.0.4"
     broccoli-merge-trees "^1.1.1"
