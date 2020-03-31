@@ -1496,6 +1496,42 @@ moduleFor(
       this.assertText('In layout - someProp: wycats');
     }
 
+    ['@test mutating an array from within component should not trigger `didReceiveAttrs`'](assert) {
+      let didReceiveAttrsCount = 0;
+
+      this.registerComponent('non-block', {
+        ComponentClass: Component.extend({
+          didReceiveAttrs() {
+            this._super(...arguments);
+            didReceiveAttrsCount++;
+          },
+
+          actions: {
+            click() {
+              this.model = this.model.replace(0, 1, ['foo']);
+            },
+          },
+        }),
+        template: `
+          <button {{action "click"}}>foobar</button>
+          <br>
+          <ul>
+            {{#each @model as |item|}}
+              <li>{{item}}</li>
+            {{/each}}
+          </ul>
+        `,
+      });
+
+      this.render('{{non-block model=model}}', {
+        model: emberA([1, 2, 3]),
+      });
+
+      runTask(() => this.$('button').click());
+
+      assert.equal(didReceiveAttrsCount, 1, '`didReceiveAttrs` only called once');
+    }
+
     ['@test this.attrs.foo === attrs.foo === @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
