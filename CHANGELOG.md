@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.18.0-beta.4 (March 31, 2020)
+
+- [#18837](https://github.com/emberjs/ember.js/pull/18837) [BUGFIX] Fix `willDestroy` on class helpers
+- [#18838](https://github.com/emberjs/ember.js/pull/18838) [BUGFIX] Ensure destructors (e.g. `will-destroy` modifier, `@ember/component`s with `willDestroyElement`, etc) fire when used within an `{{#each}}` block.
+
 ### v3.18.0-beta.3 (March 23, 2020)
 
 - [#18831](https://github.com/emberjs/ember.js/pull/18831) [BUGFIX] Fix transpilation issues (e.g. `_createSuper` is not a function) when used with Babel 7.9.0+.
