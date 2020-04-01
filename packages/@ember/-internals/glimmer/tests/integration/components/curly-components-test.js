@@ -1496,6 +1496,59 @@ moduleFor(
       this.assertText('In layout - someProp: wycats');
     }
 
+    ['@test setting a value for a computed property then later getting the value for that property works'](
+      assert
+    ) {
+      let componentInstance = null;
+
+      this.registerComponent('non-block', {
+        ComponentClass: Component.extend({
+          counter: computed({
+            set(key, value) {
+              return value;
+            },
+          }),
+
+          init() {
+            this._super(...arguments);
+            componentInstance = this;
+          },
+
+          actions: {
+            click() {
+              let currentCounter = this.get('counter');
+
+              assert.equal(currentCounter, 0, 'the current `counter` value is correct');
+
+              let newCounter = currentCounter + 1;
+              this.set('counter', newCounter);
+
+              assert.equal(
+                this.get('counter'),
+                newCounter,
+                "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
+              );
+            },
+          },
+        }),
+        template: `
+          <button {{action "click"}}>foobar</button>
+        `,
+      });
+
+      this.render(`{{non-block counter=counter}}`, {
+        counter: 0,
+      });
+
+      runTask(() => this.$('button').click());
+
+      assert.equal(
+        componentInstance.get('counter'),
+        1,
+        '`counter` incremented on click on the component and is not `undefined`'
+      );
+    }
+
     ['@test this.attrs.foo === attrs.foo === @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
