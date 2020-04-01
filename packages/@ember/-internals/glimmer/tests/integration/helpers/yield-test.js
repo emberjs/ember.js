@@ -115,7 +115,7 @@ moduleFor(
       this.assertText('Hello');
     }
 
-    ['@test simple curlies inside of a yielded clock should work when the yield is nested inside of another view']() {
+    ['@test simple curlies inside of a yielded block should work when the yield is nested inside of another view']() {
       this.registerComponent('kiwi-comp', {
         template: '{{#if falsy}}{{else}}{{yield}}{{/if}}',
       });
