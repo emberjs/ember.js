@@ -1532,6 +1532,39 @@ moduleFor(
       assert.equal(didReceiveAttrsCount, 1, '`didReceiveAttrs` only called once');
     }
 
+    ['@test mutating an object from within component should not trigger `didReceiveAttrs`'](
+      assert
+    ) {
+      let didReceiveAttrsCount = 0;
+
+      this.registerComponent('non-block', {
+        ComponentClass: Component.extend({
+          didReceiveAttrs() {
+            this._super(...arguments);
+            didReceiveAttrsCount++;
+          },
+
+          actions: {
+            click() {
+              this.set('model.foo', 'baz');
+            },
+          },
+        }),
+        template: `
+          <button {{action "click"}}>foobar</button>
+          {{model.foo}}
+        `,
+      });
+
+      this.render('{{non-block model=model}}', {
+        model: { foo: 'bar' },
+      });
+
+      runTask(() => this.$('button').click());
+
+      assert.equal(didReceiveAttrsCount, 1, '`didReceiveAttrs` only called once');
+    }
+
     ['@test this.attrs.foo === attrs.foo === @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
