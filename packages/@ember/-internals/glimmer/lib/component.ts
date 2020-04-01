@@ -778,7 +778,7 @@ const Component = CoreView.extend(
       this._super();
     },
 
-    [PROPERTY_DID_CHANGE](key: string) {
+    [PROPERTY_DID_CHANGE](key: string, value?: unknown) {
       if (this[IS_DISPATCHING_ATTRS]) {
         return;
       }
@@ -787,7 +787,7 @@ const Component = CoreView.extend(
       let reference = args !== undefined ? args[key] : undefined;
 
       if (reference !== undefined && reference[UPDATE] !== undefined) {
-        reference[UPDATE](get(this, key));
+        reference[UPDATE](arguments.length === 2 ? value : get(this, key));
       }
     },
 
