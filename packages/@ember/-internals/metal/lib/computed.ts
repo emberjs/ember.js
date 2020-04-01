@@ -255,7 +255,6 @@ function noop(): void {}
 export class ComputedProperty extends ComputedDescriptor {
   private _volatile = false;
   private _readOnly = false;
-  private _suspended: any = undefined;
   private _hasConfig = false;
 
   _getter?: ComputedPropertyGetter = undefined;
@@ -676,6 +675,7 @@ export class ComputedProperty extends ComputedDescriptor {
 
     try {
       beginPropertyChanges();
+
       ret = this._set(obj, keyName, value);
 
       finishLazyChains(obj, keyName, ret);
@@ -721,17 +721,7 @@ export class ComputedProperty extends ComputedDescriptor {
     return this._setter!.call(obj, keyName, value);
   }
 
-  setWithSuspend(obj: object, keyName: string, value: any): any {
-    let oldSuspended = this._suspended;
-    this._suspended = obj;
-    try {
-      return this._set(obj, keyName, value);
-    } finally {
-      this._suspended = oldSuspended;
-    }
-  }
-
-  _set(obj: object, keyName: string, value: any): any {
+  _set(obj: object, keyName: string, value: unknown): any {
     let cache = getCacheFor(obj);
     let hadCachedValue = cache.has(keyName);
     let cachedValue = cache.get(keyName);
@@ -755,7 +745,7 @@ export class ComputedProperty extends ComputedDescriptor {
 
     cache.set(keyName, ret);
 
-    notifyPropertyChange(obj, keyName, meta);
+    notifyPropertyChange(obj, keyName, meta, value);
 
     return ret;
   }
