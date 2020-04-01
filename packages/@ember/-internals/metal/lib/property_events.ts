@@ -28,12 +28,18 @@ let deferred = 0;
   @for @ember/object
   @param {Object} obj The object with the property that will change
   @param {String} keyName The property key (or path) that will change.
-  @param {Meta} meta The objects meta.
+  @param {Meta} [_meta] The objects meta.
+  @param {unknown} [value] The new value to set for the property
   @return {void}
   @since 3.1.0
   @public
 */
-function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null): void {
+function notifyPropertyChange(
+  obj: object,
+  keyName: string,
+  _meta?: Meta | null,
+  value?: unknown
+): void {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
@@ -47,7 +53,14 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null)
   }
 
   if (PROPERTY_DID_CHANGE in obj) {
-    obj[PROPERTY_DID_CHANGE](keyName);
+    // we need to check the arguments length here; there's a check in `PROPERTY_DID_CHANGE`
+    // that checks its arguments length, so we have to explicitly not call this with `value`
+    // if it is not passed to `notifyPropertyChange`
+    if (arguments.length === 4) {
+      obj[PROPERTY_DID_CHANGE](keyName, value);
+    } else {
+      obj[PROPERTY_DID_CHANGE](keyName);
+    }
   }
 }
 
