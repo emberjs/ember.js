@@ -19,6 +19,10 @@
 - [#18774](https://github.com/emberjs/ember.js/pull/18774) [BUGFIX] Suspend observer deactivation during property changes
 - [#18785](https://github.com/emberjs/ember.js/pull/18785) Drop Node 8 support.
 
+### v3.17.3 (April 2, 2020)
+
+- [#18857](https://github.com/emberjs/ember.js/pull/18857) Pass value through to `PROPERTY_DID_CHANGE` to avoid calling `get` when setting values for computed props
+
 ### v3.17.2 (March 26, 2020)
 
 - [#18837](https://github.com/emberjs/ember.js/pull/18837) [BUGFIX] Fix `willDestroy` on class based helpers.
