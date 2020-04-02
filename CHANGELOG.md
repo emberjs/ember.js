@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.16.7-beta.1
+
+- [#18854](https://github.com/emberjs/ember.js/pull/18854) Pass value through to `PROPERTY_DID_CHANGE` to avoid calling `get` when setting values for computed props
+
 ### v3.16.6
 
 - [#18835](https://github.com/emberjs/ember.js/pull/18835) [BUGFIX] Make `ArrayProxy` Lazy.
