@@ -1,3 +1,14 @@
+## v0.50.1 (2020-04-03)
+
+#### :bug: Bug Fix
+* `@glimmer/validator`
+  * [#1066](https://github.com/glimmerjs/glimmer-vm/pull/1066) Improve development build performance (remove the `Error` instances created for autotracking transactions) ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 # Changelog
 
 ## v0.50.0 (2020-03-26)
