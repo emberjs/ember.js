@@ -312,6 +312,78 @@ export class EmberishComponentTests extends RenderTest {
     this.assertStableRerender();
   }
 
+  // LOCKS
+  @test({ kind: 'curly' })
+  'yields named block'() {
+    class FooBar extends EmberishCurlyComponent {
+      [index: string]: unknown;
+
+      constructor() {
+        super();
+      }
+    }
+    this.registerComponent('Curly', 'FooBar', 'Hello{{yield to="baz"}}world!', FooBar);
+
+    this.render(`<FooBar><:baz> my </:baz></FooBar>`);
+
+    this.assertComponent('Hello my world!');
+    this.assertStableRerender();
+  }
+
+  // LOCKS
+  @test({ kind: 'curly' })
+  'implicit default named block'() {
+    class FooBar extends EmberishCurlyComponent {
+      [index: string]: unknown;
+
+      constructor() {
+        super();
+      }
+    }
+    this.registerComponent('Curly', 'FooBar', 'Hello{{yield}}world!', FooBar);
+
+    this.render(`<FooBar> my </FooBar>`);
+
+    this.assertComponent('Hello my world!');
+    this.assertStableRerender();
+  }
+
+  // LOCKS
+  @test({ kind: 'curly' })
+  'explicit default named block'() {
+    class FooBar extends EmberishCurlyComponent {
+      [index: string]: unknown;
+
+      constructor() {
+        super();
+      }
+    }
+    this.registerComponent('Curly', 'FooBar', 'Hello{{yield to="default"}}world!', FooBar);
+
+    this.render(`<FooBar as |baz|><:default> my </:default></FooBar>`);
+
+    this.assertComponent('Hello my world!');
+    this.assertStableRerender();
+  }
+
+  // LOCKS
+  @test({ kind: 'curly' })
+  'else named block'() {
+    class FooBar extends EmberishCurlyComponent {
+      [index: string]: unknown;
+
+      constructor() {
+        super();
+      }
+    }
+    this.registerComponent('Curly', 'FooBar', 'Hello{{yield to="inverse"}}world!', FooBar);
+
+    this.render(`<FooBar><:else> my </:else></FooBar>`);
+
+    this.assertComponent('Hello my world!');
+    this.assertStableRerender();
+  }
+
   @test({ kind: 'curly' })
   'invoking wrapped layout via angle brackets - invocation attributes merges classes'() {
     class FooBar extends EmberishCurlyComponent {
