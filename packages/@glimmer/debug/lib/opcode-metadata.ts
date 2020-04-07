@@ -1041,12 +1041,12 @@ METADATA[Op.PushArgs] = {
       type: 'str-array',
     },
     {
-      name: 'positionalCount',
-      type: 'u32',
+      name: 'block-names',
+      type: 'str-array',
     },
     {
-      name: 'synthetic',
-      type: 'bool',
+      name: 'flags',
+      type: 'u32',
     },
   ],
   operands: 3,

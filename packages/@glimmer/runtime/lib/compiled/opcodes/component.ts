@@ -1,4 +1,4 @@
-¬import {
+import {
   check,
   CheckFunction,
   CheckHandle,
@@ -773,7 +773,6 @@ APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
   for (let name of blocks.names) {
     bindBlock(`&${name}`, name, state, blocks, vm);
   }
-
 });
 
 // Dynamic Invocation Only
