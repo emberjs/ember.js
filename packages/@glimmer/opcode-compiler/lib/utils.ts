@@ -38,6 +38,14 @@ export class NamedBlocksImpl implements NamedBlocks {
     }
   }
 
+  get names() {
+    if (this.blocks != null) {
+      return Object.keys(this.blocks);
+    } else {
+      return null;
+    }
+  }
+
   get hasAny(): boolean {
     return this.blocks !== null;
   }

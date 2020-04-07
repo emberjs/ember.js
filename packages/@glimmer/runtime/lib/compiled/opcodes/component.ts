@@ -1,4 +1,4 @@
-import {
+¬import {
   check,
   CheckFunction,
   CheckHandle,
@@ -39,7 +39,16 @@ import {
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
-import { assert, dict, expect, Option, unreachable, symbol, unwrapTemplate } from '@glimmer/util';
+import {
+  assert,
+  dict,
+  expect,
+  Option,
+  unreachable,
+  symbol,
+  unwrapTemplate,
+  EMPTY_ARRAY,
+} from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {
   Capability,
@@ -226,17 +235,23 @@ APPEND_OPCODES.add(Op.PushCurriedComponent, vm => {
   stack.push(definition);
 });
 
-APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
+APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: _blockNames, op3: flags }) => {
   let stack = vm.stack;
   let names = vm[CONSTANTS].getStringArray(_names);
 
+  // 10110101010 [X][X][X][X]
   let positionalCount = flags >> 4;
+  // 10110101010 [X][X][X][X]
   let atNames = flags & 0b1000;
-  let blockNames: string[] = [];
+  // let blockNames: string[] = [];
 
-  if (flags & 0b0100) blockNames.push('main');
-  if (flags & 0b0010) blockNames.push('else');
-  if (flags & 0b0001) blockNames.push('attrs');
+  // there are blocks
+
+  let blockNames = flags & 0b0111 ? vm[CONSTANTS].getStringArray(_blockNames) : EMPTY_ARRAY;
+
+  // if (flags & 0b0100) blockNames.push('main');
+  // if (flags & 0b0010) blockNames.push('else');
+  // if (flags & 0b0001) blockNames.push('attrs');
 
   vm[ARGS].setup(stack, names, blockNames, positionalCount, !!atNames);
   stack.push(vm[ARGS]);
@@ -755,9 +770,10 @@ APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
   let { blocks } = check(vm.stack.peek(), CheckArguments);
 
-  bindBlock('&attrs', 'attrs', state, blocks, vm);
-  bindBlock('&else', 'else', state, blocks, vm);
-  bindBlock('&default', 'main', state, blocks, vm);
+  for (let name of blocks.names) {
+    bindBlock(`&${name}`, name, state, blocks, vm);
+  }
+
 });
 
 // Dynamic Invocation Only
