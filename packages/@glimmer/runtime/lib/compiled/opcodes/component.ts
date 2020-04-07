@@ -239,19 +239,9 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: _blockNames, op3: flags
   let stack = vm.stack;
   let names = vm[CONSTANTS].getStringArray(_names);
 
-  // 10110101010 [X][X][X][X]
   let positionalCount = flags >> 4;
-  // 10110101010 [X][X][X][X]
   let atNames = flags & 0b1000;
-  // let blockNames: string[] = [];
-
-  // there are blocks
-
   let blockNames = flags & 0b0111 ? vm[CONSTANTS].getStringArray(_blockNames) : EMPTY_ARRAY;
-
-  // if (flags & 0b0100) blockNames.push('main');
-  // if (flags & 0b0010) blockNames.push('else');
-  // if (flags & 0b0001) blockNames.push('attrs');
 
   vm[ARGS].setup(stack, names, blockNames, positionalCount, !!atNames);
   stack.push(vm[ARGS]);
