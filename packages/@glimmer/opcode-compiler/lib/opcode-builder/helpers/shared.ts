@@ -30,17 +30,24 @@ export function CompileArgs({
 }: ArgsOptions): StatementCompileActions {
   let out: StatementCompileActions = [];
 
-  if (blocks.hasAny) {
-    out.push(PushYieldableBlock(blocks.get('default')));
-    out.push(PushYieldableBlock(blocks.get('else')));
-    out.push(PushYieldableBlock(blocks.get('attrs')));
+  let blockNames: string[] = ((blocks as any) as { names: string[] }).names;
+  for (let i = 0; i < blockNames.length; i++) {
+    out.push(PushYieldableBlock(blocks.get(blockNames[i])));
   }
+
+  //if (blocks.hasAny) {
+  //  out.push(PushYieldableBlock(blocks.get('default')));
+  //  out.push(PushYieldableBlock(blocks.get('else')));
+  //  out.push(PushYieldableBlock(blocks.get('attrs')));
+  //}
 
   let { count, actions } = CompilePositional(params);
 
   out.push(actions);
 
   let flags = count << 4;
+
+  // 10110101010 [X][X][X][X]
 
   if (atNames) flags |= 0b1000;
 
@@ -58,7 +65,7 @@ export function CompileArgs({
     }
   }
 
-  out.push(op(Op.PushArgs, strArray(names), flags));
+  out.push(op(Op.PushArgs, strArray(names), strArray(blockNames), flags));
 
   return out;
 }
