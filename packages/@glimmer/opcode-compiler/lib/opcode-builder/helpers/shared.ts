@@ -35,19 +35,11 @@ export function CompileArgs({
     out.push(PushYieldableBlock(blocks.get(blockNames[i])));
   }
 
-  //if (blocks.hasAny) {
-  //  out.push(PushYieldableBlock(blocks.get('default')));
-  //  out.push(PushYieldableBlock(blocks.get('else')));
-  //  out.push(PushYieldableBlock(blocks.get('attrs')));
-  //}
-
   let { count, actions } = CompilePositional(params);
 
   out.push(actions);
 
   let flags = count << 4;
-
-  // 10110101010 [X][X][X][X]
 
   if (atNames) flags |= 0b1000;
 
