@@ -10,6 +10,7 @@ import {
   CheckUnknown,
   wrap,
   CheckOption,
+  CheckOr,
 } from '@glimmer/debug';
 import {
   CapturedArguments,
@@ -23,6 +24,7 @@ import {
   Helper,
   CapturedArgumentsValue,
   Option,
+  JitScopeBlock,
 } from '@glimmer/interfaces';
 import { VersionedPathReference, Reference } from '@glimmer/reference';
 import { Tag, COMPUTE } from '@glimmer/validator';
@@ -34,6 +36,7 @@ import {
   VMArgumentsImpl,
 } from '../../vm/arguments';
 import { ComponentInstance, ComponentElementOperations } from './component';
+import { UNDEFINED_REFERENCE } from '../../references';
 
 export const CheckTag: Checker<Tag> = CheckInterface({
   [COMPUTE]: CheckFunction,
@@ -71,6 +74,20 @@ class CheckCapturedArgumentsValue implements Checker<() => CapturedArgumentsValu
     return `SafeString`;
   }
 }
+
+export class UndefinedReferenceChecker implements Checker<Reference> {
+  type!: Reference;
+
+  validate(value: unknown): value is Reference {
+    return value === UNDEFINED_REFERENCE;
+  }
+
+  expected(): string {
+    return `UNDEFINED_REFERENCE`;
+  }
+}
+
+export const CheckUndefinedReference = new UndefinedReferenceChecker();
 
 export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
   tag: CheckTag,
@@ -119,4 +136,10 @@ export const CheckFinishedComponentInstance: Checker<ComponentInstance> = CheckI
 export const CheckCompilableBlock: Checker<CompilableBlock> = CheckInterface({
   compile: CheckFunction,
   symbolTable: CheckBlockSymbolTable,
+});
+
+export const CheckScopeBlock: Checker<JitScopeBlock> = CheckInterface({
+  0: CheckOr(CheckHandle, CheckCompilableBlock),
+  1: CheckScope,
+  2: CheckBlockSymbolTable,
 });

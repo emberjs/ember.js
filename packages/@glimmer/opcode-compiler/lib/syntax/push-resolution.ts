@@ -141,7 +141,7 @@ export function compileSimpleArgs(
     }
   }
 
-  out.push(op(Op.PushArgs, strArray(names), flags));
+  out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_ARRAY), flags));
 
   return out;
 }
