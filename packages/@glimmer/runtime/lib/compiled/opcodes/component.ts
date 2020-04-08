@@ -746,13 +746,9 @@ function bindBlock<C extends JitOrAotBlock>(
   vm: InternalVM<C>
 ) {
   let symbol = state.table.symbols.indexOf(symbolName);
-
   let block = blocks.get(blockName);
 
-  if (symbol !== -1) {
-    vm.scope().bindBlock(symbol + 1, block);
-  }
-
+  if (symbol !== -1) vm.scope().bindBlock(symbol + 1, block);
   if (state.lookup) state.lookup[symbolName] = block;
 }
 
