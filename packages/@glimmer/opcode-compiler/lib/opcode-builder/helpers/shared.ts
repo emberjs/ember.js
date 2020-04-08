@@ -30,7 +30,7 @@ export function CompileArgs({
 }: ArgsOptions): StatementCompileActions {
   let out: StatementCompileActions = [];
 
-  let blockNames: string[] = ((blocks as any) as { names: string[] }).names;
+  let blockNames: string[] = blocks.names;
   for (let i = 0; i < blockNames.length; i++) {
     out.push(PushYieldableBlock(blocks.get(blockNames[i])));
   }
