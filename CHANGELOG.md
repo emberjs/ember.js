@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.18.0-beta.5 (April 7, 2020)
+
+- [#18857](https://github.com/emberjs/ember.js/pull/18857) [BUGFIX] Pass value through to `PROPERTY_DID_CHANGE` to avoid calling `get` when setting values for computed props
+- [#18861](https://github.com/emberjs/ember.js/pull/18861) [BUGFIX] Update glimmer-vm to 0.50.1 to improve dev time performance.
+
 ### v3.18.0-beta.4 (March 31, 2020)
 
 - [#18837](https://github.com/emberjs/ember.js/pull/18837) [BUGFIX] Fix `willDestroy` on class helpers
