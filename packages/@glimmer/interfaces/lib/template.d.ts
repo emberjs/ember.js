@@ -94,6 +94,7 @@ export interface NamedBlocks {
   has(name: string): boolean;
   with(name: string, block: Option<CompilableBlock>): NamedBlocks;
   hasAny: boolean;
+  names: string[];
 }
 
 export interface ContainingMetadata {
