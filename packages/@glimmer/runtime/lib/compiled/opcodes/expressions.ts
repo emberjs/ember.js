@@ -123,7 +123,15 @@ function isUndefinedReference(input: JitScopeBlock | Reference): input is Refere
 }
 
 APPEND_OPCODES.add(Op.HasBlock, vm => {
-  let block = vm.stack.pop();
+  let stack = vm.stack.pop();
+
+  if (!Array.isArray(stack)) {
+    return vm.stack.push(FALSE_REFERENCE);
+  }
+
+  let [_block, scope] = stack;
+  check(_block, CheckMaybe(CheckOr(CheckHandle, CheckCompilableBlock)));
+  check(scope, CheckMaybe(CheckScope));
 
   // TODO: We check if the block is null or UNDEFINED_REFERENCE here, but it should
   // really only check if the block is null. The UNDEFINED_REFERENCE use case is for
@@ -133,13 +141,15 @@ APPEND_OPCODES.add(Op.HasBlock, vm => {
   //
   // This code path does not work the same way as most components. In the future,
   // we should make sure that it does, so things are setup correctly.
-  vm.stack.push(block === null || block === UNDEFINED_REFERENCE ? FALSE_REFERENCE : TRUE_REFERENCE);
+  // let hasBlock = block !== null && block !== UNDEFINED_REFERENCE;
+  vm.stack.push(TRUE_REFERENCE);
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, vm => {
   // FIXME(mmun): should only need to push the symbol table
   let block = vm.stack.pop();
   let scope = vm.stack.pop();
+
   check(block, CheckMaybe(CheckOr(CheckHandle, CheckCompilableBlock)));
   check(scope, CheckMaybe(CheckScope));
   let table = check(vm.stack.pop(), CheckMaybe(CheckBlockSymbolTable));
