@@ -12,6 +12,7 @@
     "@glimmer/reference": "^0.50.0"
   },
   "devDependencies": {
+    "@glimmer/debug": "^0.50.0",
     "@glimmer/local-debug-flags": "^0.50.0"
   }
 }
