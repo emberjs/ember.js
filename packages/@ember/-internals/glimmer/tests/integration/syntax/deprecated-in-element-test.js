@@ -3,10 +3,14 @@ import { moduleFor, RenderingTestCase, strip, equalTokens, runTask } from 'inter
 import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 
+const deprecationMessage = /The use of the private `{{-in-element}}` is deprecated, please refactor to the public `{{in-element}}`/;
+
 moduleFor(
   '{{-in-element}}',
   class extends RenderingTestCase {
     ['@test allows rendering into an external element']() {
+      expectDeprecation(deprecationMessage);
+
       let someElement = document.createElement('div');
 
       this.render(
@@ -38,6 +42,8 @@ moduleFor(
     }
 
     ['@test it appends to the external element by default']() {
+      expectDeprecation(deprecationMessage);
+
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
 
@@ -70,6 +76,8 @@ moduleFor(
     }
 
     ['@test allows appending to the external element with insertBefore=null']() {
+      expectDeprecation(deprecationMessage);
+
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
 
@@ -102,6 +110,8 @@ moduleFor(
     }
 
     ['@test allows clearing the external element with insertBefore=undefined']() {
+      expectDeprecation(deprecationMessage);
+
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
 
@@ -134,6 +144,8 @@ moduleFor(
     }
 
     ['@test does not allow insertBefore=non-null-value']() {
+      expectDeprecation(deprecationMessage);
+
       let someElement = document.createElement('div');
 
       expectAssertion(() => {
@@ -152,6 +164,8 @@ moduleFor(
     }
 
     ['@test components are cleaned up properly'](assert) {
+      expectDeprecation(deprecationMessage);
+
       let hooks = [];
 
       let someElement = document.createElement('div');
@@ -220,6 +234,8 @@ moduleFor(
     }
 
     ['@test appending to the root element should not cause double clearing']() {
+      expectDeprecation(deprecationMessage);
+
       this.render(
         strip`
           Before

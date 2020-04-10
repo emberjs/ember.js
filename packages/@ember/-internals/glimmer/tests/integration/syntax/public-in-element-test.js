@@ -37,7 +37,7 @@ moduleFor(
       equalTokens(someElement, 'Whoop!');
     }
 
-    ['@test it replaces the external element\'s content by default']() {
+    ["@test it replaces the external element's content by default"]() {
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
 

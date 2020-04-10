@@ -1,5 +1,7 @@
-import { assert } from '@ember/debug';
+import { StaticTemplateMeta } from '@ember/-internals/views';
+import { assert, deprecate } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import calculateLocationDisplay from '../system/calculate-location-display';
 import { isPath } from './utils';
 
 /**
@@ -7,17 +9,10 @@ import { isPath } from './utils';
 */
 
 /**
-  glimmer-vm has made the `in-element` API public from its perspective (in
-  https://github.com/glimmerjs/glimmer-vm/pull/619) so in glimmer-vm the
-  correct keyword to use is `in-element`, however Ember is still working through
-  its form of `in-element` (see https://github.com/emberjs/rfcs/pull/287).
+  A Glimmer2 AST transformation that handles the public `{{in-element}}` as per RFC287, and deprecates but still
+  continues support for the private `{{-in-element}}`.
 
-  There are enough usages of the pre-existing private API (`{{-in-element`) in
-  the wild that we need to transform `{{-in-element` into `{{in-element` during
-  template transpilation, but since RFC#287 is not landed and enabled by default we _also_ need
-  to prevent folks from starting to use `{{in-element` "for realz".
-
-  Tranforms:
+  Transforms:
 
   ```handlebars
   {{#-in-element someElement}}
@@ -33,10 +28,12 @@ import { isPath } from './utils';
   {{/in-element}}
   ```
 
-  And issues a build time assertion for:
+  And issues a deprecation message.
+
+  Issues a build time assertion for:
 
   ```handlebars
-  {{#in-element someElement}}
+  {{#in-element insertBefore="some-none-null-value"}}
     {{modal-display text=text}}
   {{/in-element}}
   ```
@@ -45,6 +42,7 @@ import { isPath } from './utils';
   @class TransformInElement
 */
 export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin {
+  let { moduleName } = env.meta as StaticTemplateMeta;
   let { builders: b } = env.syntax;
   let cursorCount = 0;
 
@@ -67,6 +65,16 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
             );
           }
         } else if (node.path.original === '-in-element') {
+          let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
+          deprecate(
+            `The use of the private \`{{-in-element}}\` is deprecated, please refactor to the public \`{{in-element}}\`. ${sourceInformation}`,
+            false,
+            {
+              id: 'glimmer.private-in-element',
+              until: '4.0.0',
+            }
+          );
+
           node.path.original = 'in-element';
           node.path.parts = ['in-element'];
 
@@ -80,7 +88,8 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
               `Can only pass a null or undefined literals to insertBefore in -in-element, received: ${JSON.stringify(
                 insertBeforePair.value
               )}`,
-              insertBeforePair.value.type === 'NullLiteral' || insertBeforePair.value.type === 'UndefinedLiteral'
+              insertBeforePair.value.type === 'NullLiteral' ||
+                insertBeforePair.value.type === 'UndefinedLiteral'
             );
 
             needsInsertBefore = false;
