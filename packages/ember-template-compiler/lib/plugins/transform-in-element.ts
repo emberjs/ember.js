@@ -33,7 +33,7 @@ import { isPath } from './utils';
   Issues a build time assertion for:
 
   ```handlebars
-  {{#in-element insertBefore="some-none-null-value"}}
+  {{#in-element someElement insertBefore="some-none-null-value"}}
     {{modal-display text=text}}
   {{/in-element}}
   ```
@@ -54,16 +54,16 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
         if (!isPath(node.path)) return;
 
         if (node.path.original === 'in-element') {
-          let insertBeforePair = node.hash.pairs.find(pair => pair.key === 'insertBefore');
-          if (insertBeforePair) {
-            assert(
-              `Can only pass null to insertBefore in in-element, received: ${JSON.stringify(
-                insertBeforePair.value
-              )}`,
-              insertBeforePair.value.type === 'NullLiteral' ||
-                insertBeforePair.value.type === 'UndefinedLiteral'
-            );
-          }
+          node.hash.pairs.forEach(pair => {
+            if (pair.key === 'insertBefore') {
+              assert(
+                `Can only pass null to insertBefore in in-element, received: ${JSON.stringify(
+                  pair.value
+                )}`,
+                pair.value.type === 'NullLiteral' || pair.value.type === 'UndefinedLiteral'
+              );
+            }
+          });
         } else if (node.path.original === '-in-element') {
           let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
           deprecate(
@@ -81,19 +81,19 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
           // replicate special hash arguments added here:
           // https://github.com/glimmerjs/glimmer-vm/blob/ba9b37d44b85fa1385eeeea71910ff5798198c8e/packages/%40glimmer/syntax/lib/parser/handlebars-node-visitors.ts#L340-L363
           let needsInsertBefore = true;
-          let { hash } = node;
-          let insertBeforePair = hash.pairs.find(pair => pair.key === 'insertBefore');
-          if (insertBeforePair) {
-            assert(
-              `Can only pass a null or undefined literals to insertBefore in -in-element, received: ${JSON.stringify(
-                insertBeforePair.value
-              )}`,
-              insertBeforePair.value.type === 'NullLiteral' ||
-                insertBeforePair.value.type === 'UndefinedLiteral'
-            );
+          let hash = node.hash;
+          hash.pairs.forEach(pair => {
+            if (pair.key === 'insertBefore') {
+              assert(
+                `Can only pass a null or undefined literals to insertBefore in -in-element, received: ${JSON.stringify(
+                  pair.value
+                )}`,
+                pair.value.type === 'NullLiteral' || pair.value.type === 'UndefinedLiteral'
+              );
 
-            needsInsertBefore = false;
-          }
+              needsInsertBefore = false;
+            }
+          });
 
           let guid = b.literal('StringLiteral', `%cursor:${cursorCount++}%`);
           let guidPair = b.pair('guid', guid);
