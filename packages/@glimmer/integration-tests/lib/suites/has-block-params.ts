@@ -1,5 +1,6 @@
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
+import { EmberishGlimmerComponent } from '../components';
 
 export class HasBlockParamsHelperSuite extends RenderTest {
   static suiteName = 'has-block-params';
@@ -13,6 +14,20 @@ export class HasBlockParamsHelperSuite extends RenderTest {
     });
 
     this.assertComponent('No');
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'curly' })
+  'has-block-params from within a yielded + invoked curried component'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+    }
+    this.registerComponent('Glimmer', 'TestHarness', '{{yield (component "Foo")}}', TestHarness);
+    this.registerComponent('Glimmer', 'Foo', '{{#if (has-block-params)}}Yes{{else}}No{{/if}}');
+
+    this.render('<TestHarness as |Foo|>{{Foo}}</TestHarness>');
+
+    this.assertHTML('No');
     this.assertStableRerender();
   }
 
