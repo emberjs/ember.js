@@ -17,7 +17,7 @@ module.exports = {
   settings: {
     node: {
       allowModules: ['@glimmer/debug', '@glimmer/local-debug-flags'],
-      tryExtensions: ['.js', '.ts', '.d.ts'],
+      tryExtensions: ['.js', '.ts', '.d.ts', '.json'],
     },
   },
   ignorePatterns: ['dist', 'ts-dist', 'node_modules', 'tmp'],
