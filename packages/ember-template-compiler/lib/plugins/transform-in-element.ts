@@ -1,7 +1,5 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
-import calculateLocationDisplay from '../system/calculate-location-display';
 import { isPath } from './utils';
 
 /**
@@ -44,10 +42,9 @@ import { isPath } from './utils';
   ```
 
   @private
-  @class TransformHasBlockSyntax
+  @class TransformInElement
 */
 export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta as StaticTemplateMeta;
   let { builders: b } = env.syntax;
   let cursorCount = 0;
 
@@ -59,7 +56,16 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
         if (!isPath(node.path)) return;
 
         if (node.path.original === 'in-element') {
-          assert(assertMessage(moduleName, node));
+          let insertBeforePair = node.hash.pairs.find(pair => pair.key === 'insertBefore');
+          if (insertBeforePair) {
+            assert(
+              `Can only pass null to insertBefore in in-element, received: ${JSON.stringify(
+                insertBeforePair.value
+              )}`,
+              insertBeforePair.value.type === 'NullLiteral' ||
+                insertBeforePair.value.type === 'UndefinedLiteral'
+            );
+          }
         } else if (node.path.original === '-in-element') {
           node.path.original = 'in-element';
           node.path.parts = ['in-element'];
@@ -67,19 +73,18 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
           // replicate special hash arguments added here:
           // https://github.com/glimmerjs/glimmer-vm/blob/ba9b37d44b85fa1385eeeea71910ff5798198c8e/packages/%40glimmer/syntax/lib/parser/handlebars-node-visitors.ts#L340-L363
           let needsInsertBefore = true;
-          let hash = node.hash;
-          hash.pairs.forEach(pair => {
-            if (pair.key === 'insertBefore') {
-              assert(
-                `Can only pass a null or undefined literals to insertBefore in -in-element, received: ${JSON.stringify(
-                  pair.value
-                )}`,
-                pair.value.type === 'NullLiteral' || pair.value.type === 'UndefinedLiteral'
-              );
+          let { hash } = node;
+          let insertBeforePair = hash.pairs.find(pair => pair.key === 'insertBefore');
+          if (insertBeforePair) {
+            assert(
+              `Can only pass a null or undefined literals to insertBefore in -in-element, received: ${JSON.stringify(
+                insertBeforePair.value
+              )}`,
+              insertBeforePair.value.type === 'NullLiteral' || insertBeforePair.value.type === 'UndefinedLiteral'
+            );
 
-              needsInsertBefore = false;
-            }
-          });
+            needsInsertBefore = false;
+          }
 
           let guid = b.literal('StringLiteral', `%cursor:${cursorCount++}%`);
           let guidPair = b.pair('guid', guid);
@@ -95,10 +100,4 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
       },
     },
   };
-}
-
-function assertMessage(moduleName: string, node: AST.BlockStatement) {
-  let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
-
-  return `The {{in-element}} helper cannot be used. ${sourceInformation}`;
 }

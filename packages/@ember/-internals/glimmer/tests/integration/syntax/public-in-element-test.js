@@ -4,26 +4,16 @@ import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
-  '{{-in-element}}',
+  '{{in-element}}',
   class extends RenderingTestCase {
-    ['@test using {{#in-element whatever}} asserts']() {
-      // the in-element keyword is not yet public API this test should be removed
-      // once https://github.com/emberjs/rfcs/pull/287 lands and is enabled
-
-      let el = document.createElement('div');
-      expectAssertion(() => {
-        this.render(strip`{{#in-element el}}{{/in-element}}`, { el });
-      }, /The {{in-element}} helper cannot be used. \('-top-level' @ L1:C0\)/);
-    }
-
     ['@test allows rendering into an external element']() {
       let someElement = document.createElement('div');
 
       this.render(
         strip`
-          {{#-in-element someElement}}
+          {{#in-element someElement}}
             {{text}}
-          {{/-in-element}}
+          {{/in-element}}
         `,
         {
           someElement,
@@ -47,79 +37,15 @@ moduleFor(
       equalTokens(someElement, 'Whoop!');
     }
 
-    ['@test it appends to the extenal element by default']() {
+    ['@test it replaces the external element\'s content by default']() {
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
 
       this.render(
         strip`
-          {{#-in-element someElement}}
+          {{#in-element someElement insertBefore=undefined}}
             {{text}}
-          {{/-in-element}}
-        `,
-        {
-          someElement,
-          text: 'bar',
-        }
-      );
-
-      equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'foo bar');
-
-      this.assertStableRerender();
-
-      runTask(() => set(this.context, 'text', 'bar!!'));
-
-      equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'foo bar!!');
-
-      runTask(() => set(this.context, 'text', 'bar'));
-
-      equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'foo bar');
-    }
-
-    ['@test allows appending to the external element with insertBefore=null']() {
-      let someElement = document.createElement('div');
-      someElement.appendChild(document.createTextNode('foo '));
-
-      this.render(
-        strip`
-          {{#-in-element someElement insertBefore=null}}
-            {{text}}
-          {{/-in-element}}
-        `,
-        {
-          someElement,
-          text: 'bar',
-        }
-      );
-
-      equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'foo bar');
-
-      this.assertStableRerender();
-
-      runTask(() => set(this.context, 'text', 'bar!!'));
-
-      equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'foo bar!!');
-
-      runTask(() => set(this.context, 'text', 'bar'));
-
-      equalTokens(this.element, '<!---->');
-      equalTokens(someElement, 'foo bar');
-    }
-
-    ['@test allows clearing the external element with insertBefore=undefined']() {
-      let someElement = document.createElement('div');
-      someElement.appendChild(document.createTextNode('foo '));
-
-      this.render(
-        strip`
-          {{#-in-element someElement insertBefore=undefined}}
-            {{text}}
-          {{/-in-element}}
+          {{/in-element}}
         `,
         {
           someElement,
@@ -143,22 +69,54 @@ moduleFor(
       equalTokens(someElement, 'bar');
     }
 
+    ['@test allows appending to the external element with insertBefore=null']() {
+      let someElement = document.createElement('div');
+      someElement.appendChild(document.createTextNode('foo '));
+
+      this.render(
+        strip`
+          {{#in-element someElement insertBefore=null}}
+            {{text}}
+          {{/in-element}}
+        `,
+        {
+          someElement,
+          text: 'bar',
+        }
+      );
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'foo bar');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'text', 'bar!!'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'foo bar!!');
+
+      runTask(() => set(this.context, 'text', 'bar'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'foo bar');
+    }
+
     ['@test does not allow insertBefore=non-null-value']() {
       let someElement = document.createElement('div');
 
       expectAssertion(() => {
         this.render(
           strip`
-            {{#-in-element someElement insertBefore=".foo"}}
+            {{#in-element someElement insertBefore=".foo"}}
               {{text}}
-            {{/-in-element}}
+            {{/in-element}}
           `,
           {
             someElement,
             text: 'Whoop!',
           }
         );
-      }, /Can only pass a null or undefined literals to insertBefore in -in-element, received:/);
+      }, /Can only pass null to insertBefore in in-element, received:/);
     }
 
     ['@test components are cleaned up properly'](assert) {
@@ -183,9 +141,9 @@ moduleFor(
       this.render(
         strip`
           {{#if showModal}}
-            {{#-in-element someElement}}
+            {{#in-element someElement}}
               {{modal-display text=text}}
-            {{/-in-element}}
+            {{/in-element}}
           {{/if}}
         `,
         {
@@ -229,13 +187,13 @@ moduleFor(
       assert.deepEqual(hooks, ['didInsertElement', 'willDestroyElement']);
     }
 
-    ['@test appending to the root element should not cause double clearing  are cleaned up properly']() {
+    ['@test appending to the root element should not cause double clearing']() {
       this.render(
         strip`
           Before
-          {{#-in-element this.rootElement insertBefore=null}}
+          {{#in-element this.rootElement insertBefore=null}}
             {{this.text}}
-          {{/-in-element}}
+          {{/in-element}}
           After
         `,
         {
