@@ -123,26 +123,14 @@ function isUndefinedReference(input: JitScopeBlock | Reference): input is Refere
 }
 
 APPEND_OPCODES.add(Op.HasBlock, vm => {
-  let stack = vm.stack.pop();
+  let { stack } = vm;
+  let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
-  if (!Array.isArray(stack)) {
-    return vm.stack.push(FALSE_REFERENCE);
+  if (block && !isUndefinedReference(block)) {
+    stack.push(TRUE_REFERENCE);
+  } else {
+    stack.push(FALSE_REFERENCE);
   }
-
-  let [_block, scope] = stack;
-  check(_block, CheckMaybe(CheckOr(CheckHandle, CheckCompilableBlock)));
-  check(scope, CheckMaybe(CheckScope));
-
-  // TODO: We check if the block is null or UNDEFINED_REFERENCE here, but it should
-  // really only check if the block is null. The UNDEFINED_REFERENCE use case is for
-  // when we try to invoke a curry-component directly as a variable:
-  //
-  // <Foo as |bar|>{{bar}}</Foo>
-  //
-  // This code path does not work the same way as most components. In the future,
-  // we should make sure that it does, so things are setup correctly.
-  // let hasBlock = block !== null && block !== UNDEFINED_REFERENCE;
-  vm.stack.push(TRUE_REFERENCE);
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, vm => {
