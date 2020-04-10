@@ -13,7 +13,6 @@ import {
   CheckOr,
   CheckMaybe,
 } from '@glimmer/debug';
-import { stackAssert } from './assert';
 import {
   CheckArguments,
   CheckPathReference,
