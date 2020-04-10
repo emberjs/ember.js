@@ -462,9 +462,14 @@ export class CapturedNamedArgumentsImpl implements CapturedNamedArguments {
   }
 }
 
+function toSymbolName(name: string): string {
+  return `&${name}`;
+}
+
 export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArguments<C> {
   private stack!: EvaluationStack;
   private internalValues: Option<number[]> = null;
+  private _symbolNames: Option<string[]> = null;
 
   public internalTag: Option<Tag> = null;
   public names: string[] = EMPTY_ARRAY;
@@ -477,6 +482,7 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
     this.names = EMPTY_ARRAY;
     this.base = base;
     this.length = 0;
+    this._symbolNames = null;
 
     this.internalTag = CONSTANT_TAG;
     this.internalValues = EMPTY_ARRAY;
@@ -487,6 +493,7 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
     this.names = names;
     this.base = base;
     this.length = length;
+    this._symbolNames = null;
 
     if (length === 0) {
       this.internalTag = CONSTANT_TAG;
@@ -533,6 +540,16 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
 
   capture(): CapturedBlockArguments {
     return new CapturedBlockArgumentsImpl(this.names, this.values);
+  }
+
+  get symbolNames(): string[] {
+    let symbolNames = this._symbolNames;
+
+    if (symbolNames === null) {
+      symbolNames = this._symbolNames = this.names.map(toSymbolName);
+    }
+
+    return symbolNames;
   }
 }
 

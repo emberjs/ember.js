@@ -756,8 +756,8 @@ APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
   let { blocks } = check(vm.stack.peek(), CheckArguments);
 
-  for (let name of blocks.names) {
-    bindBlock(`&${name}`, name, state, blocks, vm);
+  for (let i = 0; i < blocks.names.length; i++) {
+    bindBlock(blocks.symbolNames[i], blocks.names[i], state, blocks, vm);
   }
 });
 
