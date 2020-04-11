@@ -119,6 +119,30 @@ module('@glimmer/validator: tracking', () => {
         });
       });
     });
+
+    test('nested tracks work', assert => {
+      assert.notOk(isTracking());
+
+      track(() => {
+        assert.ok(isTracking());
+
+        untrack(() => {
+          assert.notOk(isTracking());
+        });
+      });
+    });
+
+    test('nested tracks and untracks work', assert => {
+      track(() => {
+        track(() => {
+          untrack(() => {
+            track(() => {
+              assert.ok(isTracking(), 'tracking');
+            });
+          });
+        });
+      });
+    });
   });
 
   module('manual track frames', () => {
