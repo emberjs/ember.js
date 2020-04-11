@@ -6,7 +6,7 @@ import { set } from '@ember/-internals/metal';
 moduleFor(
   '{{in-element}}',
   class extends RenderingTestCase {
-    ['@test allows rendering into an external element']() {
+    ['@feature(EMBER_GLIMMER_IN_ELEMENT) allows rendering into an external element']() {
       let someElement = document.createElement('div');
 
       this.render(
@@ -37,7 +37,7 @@ moduleFor(
       equalTokens(someElement, 'Whoop!');
     }
 
-    ["@test it replaces the external element's content by default"]() {
+    ["@feature(EMBER_GLIMMER_IN_ELEMENT) it replaces the external element's content by default"]() {
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
 
@@ -69,7 +69,7 @@ moduleFor(
       equalTokens(someElement, 'bar');
     }
 
-    ['@test allows appending to the external element with insertBefore=null']() {
+    ['@feature(EMBER_GLIMMER_IN_ELEMENT) allows appending to the external element with insertBefore=null']() {
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
 
@@ -101,7 +101,7 @@ moduleFor(
       equalTokens(someElement, 'foo bar');
     }
 
-    ['@test does not allow insertBefore=non-null-value']() {
+    ['@feature(EMBER_GLIMMER_IN_ELEMENT) does not allow insertBefore=non-null-value']() {
       let someElement = document.createElement('div');
 
       expectAssertion(() => {
@@ -119,7 +119,7 @@ moduleFor(
       }, /Can only pass null to insertBefore in in-element, received:/);
     }
 
-    ['@test components are cleaned up properly'](assert) {
+    ['@feature(EMBER_GLIMMER_IN_ELEMENT) components are cleaned up properly'](assert) {
       let hooks = [];
 
       let someElement = document.createElement('div');
@@ -187,7 +187,7 @@ moduleFor(
       assert.deepEqual(hooks, ['didInsertElement', 'willDestroyElement']);
     }
 
-    ['@test appending to the root element should not cause double clearing']() {
+    ['@feature(EMBER_GLIMMER_IN_ELEMENT) appending to the root element should not cause double clearing']() {
       this.render(
         strip`
           Before

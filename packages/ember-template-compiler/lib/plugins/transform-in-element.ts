@@ -1,4 +1,5 @@
 import { StaticTemplateMeta } from '@ember/-internals/views';
+import { EMBER_GLIMMER_IN_ELEMENT } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
@@ -54,26 +55,32 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
         if (!isPath(node.path)) return;
 
         if (node.path.original === 'in-element') {
-          node.hash.pairs.forEach(pair => {
-            if (pair.key === 'insertBefore') {
-              assert(
-                `Can only pass null to insertBefore in in-element, received: ${JSON.stringify(
-                  pair.value
-                )}`,
-                pair.value.type === 'NullLiteral' || pair.value.type === 'UndefinedLiteral'
-              );
-            }
-          });
+          if (EMBER_GLIMMER_IN_ELEMENT) {
+            node.hash.pairs.forEach(pair => {
+              if (pair.key === 'insertBefore') {
+                assert(
+                  `Can only pass null to insertBefore in in-element, received: ${JSON.stringify(
+                    pair.value
+                  )}`,
+                  pair.value.type === 'NullLiteral' || pair.value.type === 'UndefinedLiteral'
+                );
+              }
+            });
+          } else {
+            assert(assertMessage(moduleName, node));
+          }
         } else if (node.path.original === '-in-element') {
-          let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
-          deprecate(
-            `The use of the private \`{{-in-element}}\` is deprecated, please refactor to the public \`{{in-element}}\`. ${sourceInformation}`,
-            false,
-            {
-              id: 'glimmer.private-in-element',
-              until: '4.0.0',
-            }
-          );
+          if (EMBER_GLIMMER_IN_ELEMENT) {
+            let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
+            deprecate(
+              `The use of the private \`{{-in-element}}\` is deprecated, please refactor to the public \`{{in-element}}\`. ${sourceInformation}`,
+              false,
+              {
+                id: 'glimmer.private-in-element',
+                until: '4.0.0',
+              }
+            );
+          }
 
           node.path.original = 'in-element';
           node.path.parts = ['in-element'];
@@ -109,4 +116,10 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
       },
     },
   };
+}
+
+function assertMessage(moduleName: string, node: AST.BlockStatement) {
+  let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
+
+  return `The {{in-element}} helper cannot be used. ${sourceInformation}`;
 }
