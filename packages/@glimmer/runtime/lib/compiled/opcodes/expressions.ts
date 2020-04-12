@@ -1,18 +1,26 @@
 import { Option, Op, JitScopeBlock, AotScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
+import { VersionedPathReference, Reference } from '@glimmer/reference';
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE, UNDEFINED_REFERENCE } from '../../references';
 import { ConcatReference } from '../expressions/concat';
 import { assert } from '@glimmer/util';
-import { check, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
-import { stackAssert } from './assert';
+import {
+  check,
+  CheckOption,
+  CheckHandle,
+  CheckBlockSymbolTable,
+  CheckOr,
+  CheckMaybe,
+} from '@glimmer/debug';
 import {
   CheckArguments,
   CheckPathReference,
   CheckCompilableBlock,
   CheckScope,
   CheckHelper,
+  CheckUndefinedReference,
+  CheckScopeBlock,
 } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 
@@ -92,9 +100,9 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
 
 APPEND_OPCODES.add(Op.JitSpreadBlock, vm => {
   let { stack } = vm;
-  let block = stack.pop<JitScopeBlock>();
+  let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
-  if (block) {
+  if (block && !isUndefinedReference(block)) {
     stack.push(block[2]);
     stack.push(block[1]);
     stack.push(block[0]);
@@ -105,32 +113,33 @@ APPEND_OPCODES.add(Op.JitSpreadBlock, vm => {
   }
 });
 
-APPEND_OPCODES.add(Op.HasBlock, vm => {
-  let block = vm.stack.pop();
+function isUndefinedReference(input: JitScopeBlock | Reference): input is Reference {
+  assert(
+    Array.isArray(input) || input === UNDEFINED_REFERENCE,
+    'a reference other than UNDEFINED_REFERENCE is illegal here'
+  );
+  return input === UNDEFINED_REFERENCE;
+}
 
-  // TODO: We check if the block is null or UNDEFINED_REFERENCE here, but it should
-  // really only check if the block is null. The UNDEFINED_REFERENCE use case is for
-  // when we try to invoke a curry-component directly as a variable:
-  //
-  // <Foo as |bar|>{{bar}}</Foo>
-  //
-  // This code path does not work the same way as most components. In the future,
-  // we should make sure that it does, so things are setup correctly.
-  vm.stack.push(block === null || block === UNDEFINED_REFERENCE ? FALSE_REFERENCE : TRUE_REFERENCE);
+APPEND_OPCODES.add(Op.HasBlock, vm => {
+  let { stack } = vm;
+  let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
+
+  if (block && !isUndefinedReference(block)) {
+    stack.push(TRUE_REFERENCE);
+  } else {
+    stack.push(FALSE_REFERENCE);
+  }
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, vm => {
   // FIXME(mmun): should only need to push the symbol table
   let block = vm.stack.pop();
   let scope = vm.stack.pop();
-  check(block, CheckOption(CheckOr(CheckHandle, CheckCompilableBlock)));
-  check(scope, CheckOption(CheckScope));
-  let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
-  assert(
-    table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)),
-    stackAssert('Option<BlockSymbolTable>', table)
-  );
+  check(block, CheckMaybe(CheckOr(CheckHandle, CheckCompilableBlock)));
+  check(scope, CheckMaybe(CheckScope));
+  let table = check(vm.stack.pop(), CheckMaybe(CheckBlockSymbolTable));
 
   let hasBlockParams = table && table.parameters.length;
   vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
