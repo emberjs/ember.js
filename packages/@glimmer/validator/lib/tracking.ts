@@ -61,12 +61,10 @@ class Tracker {
  */
 let CURRENT_TRACKER: Option<Tracker> = null;
 
-const OPEN_TRACK_FRAMES: Tracker[] = [];
+const OPEN_TRACK_FRAMES: Option<Tracker>[] = [];
 
 export function beginTrackFrame(): void {
-  if (CURRENT_TRACKER !== null) {
-    OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
-  }
+  OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
   CURRENT_TRACKER = new Tracker();
 }
@@ -74,11 +72,11 @@ export function beginTrackFrame(): void {
 export function endTrackFrame(): Tag {
   let current = CURRENT_TRACKER;
 
-  if (DEBUG && !CURRENT_TRACKER) {
+  if (DEBUG && OPEN_TRACK_FRAMES.length === 0) {
     throw new Error('attempted to close a tracking frame, but one was not open');
   }
 
-  CURRENT_TRACKER = OPEN_TRACK_FRAMES.length > 0 ? OPEN_TRACK_FRAMES.pop()! : null;
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
 
   return current!.combine();
 }
@@ -197,13 +195,13 @@ export function isTracking() {
 }
 
 export function untrack(callback: () => void) {
-  let parent = CURRENT_TRACKER;
+  OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
   CURRENT_TRACKER = null;
 
   try {
     callback();
   } finally {
-    CURRENT_TRACKER = parent;
+    CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
   }
 }
 
