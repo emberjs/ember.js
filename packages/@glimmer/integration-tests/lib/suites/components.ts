@@ -558,6 +558,27 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'glimmer',
   })
+  'invoking dynamic component (path) via angle brackets with named block'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+    }
+    this.registerComponent(
+      'Glimmer',
+      'TestHarness',
+      '<this.Foo><:bar>Stuff!</:bar></this.Foo>',
+      TestHarness
+    );
+    this.registerComponent('Glimmer', 'Foo', '{{yield to="bar"}}');
+
+    this.render('<TestHarness @Foo={{component "Foo"}} />');
+
+    this.assertHTML(`Stuff!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
   'invoking dynamic component (path) via angle brackets does not support implicit `this` fallback'() {
     class TestHarness extends EmberishGlimmerComponent {
       public stuff: any;

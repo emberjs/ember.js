@@ -708,7 +708,7 @@ operand-stack = [
 
 [syscall.argsload]
 
-format = ["PushArgs", "names:str-array", "positionalCount:u32", "synthetic:bool"]
+format = ["PushArgs", "names:str-array", "block-names:str-array", "flags:u32"]
 operation = "Push a user representation of args onto the stack."
 operand-stack = [
   ["Reference..."],

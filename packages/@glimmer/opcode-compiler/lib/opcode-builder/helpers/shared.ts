@@ -30,10 +30,9 @@ export function CompileArgs({
 }: ArgsOptions): StatementCompileActions {
   let out: StatementCompileActions = [];
 
-  if (blocks.hasAny) {
-    out.push(PushYieldableBlock(blocks.get('default')));
-    out.push(PushYieldableBlock(blocks.get('else')));
-    out.push(PushYieldableBlock(blocks.get('attrs')));
+  let blockNames: string[] = blocks.names;
+  for (let i = 0; i < blockNames.length; i++) {
+    out.push(PushYieldableBlock(blocks.get(blockNames[i])));
   }
 
   let { count, actions } = CompilePositional(params);
@@ -58,7 +57,7 @@ export function CompileArgs({
     }
   }
 
-  out.push(op(Op.PushArgs, strArray(names), flags));
+  out.push(op(Op.PushArgs, strArray(names), strArray(blockNames), flags));
 
   return out;
 }

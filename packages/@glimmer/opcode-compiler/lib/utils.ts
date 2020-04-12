@@ -15,7 +15,11 @@ interface NamedBlocksDict {
 }
 
 export class NamedBlocksImpl implements NamedBlocks {
-  constructor(private blocks: Option<NamedBlocksDict>) {}
+  public names: string[];
+
+  constructor(private blocks: Option<NamedBlocksDict>) {
+    this.names = blocks ? Object.keys(blocks) : [];
+  }
 
   get(name: string): Option<CompilableBlock> {
     if (!this.blocks) return null;

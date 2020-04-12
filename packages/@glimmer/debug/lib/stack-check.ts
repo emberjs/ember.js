@@ -103,6 +103,21 @@ class OptionChecker<T> implements Checker<Option<T>> {
   }
 }
 
+class MaybeChecker<T> implements Checker<Maybe<T>> {
+  type!: Maybe<T>;
+
+  constructor(private checker: Checker<T>) {}
+
+  validate(value: unknown): value is Maybe<T> {
+    if (value === null || value === undefined) return true;
+    return this.checker.validate(value);
+  }
+
+  expected(): string {
+    return `${this.checker.expected()} or null or undefined`;
+  }
+}
+
 class OrChecker<T, U> implements Checker<T | U> {
   type!: T | U;
 
@@ -215,7 +230,7 @@ export function CheckOption<T>(checker: Checker<T>): Checker<Option<T>> {
 }
 
 export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
-  return new OptionChecker(checker, undefined);
+  return new MaybeChecker(checker);
 }
 
 export function CheckInterface<
