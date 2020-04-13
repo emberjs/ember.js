@@ -1,5 +1,13 @@
 import { Object as EmberObject, A } from '@ember/-internals/runtime';
-import { get, set, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import {
+  get,
+  set,
+  tracked,
+  nativeDescDecorator as descriptor,
+  track,
+  untrack,
+  isTracking,
+} from '@ember/-internals/metal';
 import Service, { inject } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
@@ -378,6 +386,30 @@ moduleFor(
       expectAssertion(() => {
         this.render('{{hello-world this.model}}', { model: new Person() });
       }, expectedMessage);
+    }
+
+    '@test nested tracks work'(assert) {
+      assert.notOk(isTracking());
+
+      track(() => {
+        assert.ok(isTracking());
+
+        untrack(() => {
+          assert.notOk(isTracking());
+        });
+      });
+    }
+
+    '@test nested tracks and untracks work'(assert) {
+      track(() => {
+        track(() => {
+          untrack(() => {
+            track(() => {
+              assert.ok(isTracking(), 'tracking');
+            });
+          });
+        });
+      });
     }
   }
 );
