@@ -284,7 +284,7 @@ export abstract class Renderer {
     this._builder = builder;
 
     // resolver is exposed for tests
-    let runtimeResolver = (this._runtimeResolver = new RuntimeResolver(env.isInteractive));
+    let runtimeResolver = (this._runtimeResolver = new RuntimeResolver(owner, env.isInteractive));
     let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
 
     let context = (this._context = JitContext(compileTimeResolver));

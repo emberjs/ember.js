@@ -309,13 +309,13 @@ moduleFor(
     '@test asserts when callback is undefined'() {
       expectAssertion(() => {
         this.render(`<button {{on 'click' this.foo}}>Click Me</button>`);
-      }, /You must pass a function as the second argument to the `on` modifier/);
+      }, /You must pass a function as the second argument to the `on` modifier, you passed undefined. While rendering:\n\nthis.foo/);
     }
 
     '@test asserts when callback is null'() {
       expectAssertion(() => {
         this.render(`<button {{on 'click' this.foo}}>Click Me</button>`, { foo: null });
-      }, /You must pass a function as the second argument to the `on` modifier/);
+      }, /You must pass a function as the second argument to the `on` modifier, you passed null. While rendering:\n\nthis.foo/);
     }
 
     '@test asserts if the provided callback accesses `this` without being bound prior to passing to on'(
