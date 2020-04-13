@@ -85,9 +85,8 @@ function fn({ positional }: CapturedArguments) {
   if (DEBUG && typeof callbackRef[INVOKE] !== 'function') {
     let callback = callbackRef.value();
 
-    const debug = (<any>callbackRef).debug && (<any>callbackRef).debug();
     assert(
-      `You must pass a function as the \`fn\` helpers first argument, you passed ${debug} to \`fn\` but it was ${callback}`,
+      `You must pass a function as the \`fn\` helpers first argument, you passed ${callback}`,
       typeof callback === 'function'
     );
   }
