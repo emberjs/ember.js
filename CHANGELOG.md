@@ -1,3 +1,20 @@
+## v0.50.2 (2020-04-13)
+
+#### :bug: Bug Fix
+* `@glimmer/validator`
+  * [#1069](https://github.com/glimmerjs/glimmer-vm/pull/1069) Ensure tracking frames do not get unbalanced ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#1068](https://github.com/glimmerjs/glimmer-vm/pull/1068) Fix issue when using named blocks with wrapped components (e.g. `@ember/component`) ([@locks](https://github.com/locks))
+
+#### :house: Internal
+* `@glimmer/compiler`, `@glimmer/opcode-compiler`, `@glimmer/program`
+  * [#1064](https://github.com/glimmerjs/glimmer-vm/pull/1064) Add dev time addon to enable easier local linking (e.g. to test in Glimmer.js or Ember.js from a local dev server). ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Ricardo Mendes ([@locks](https://github.com/locks))
+
+
 ## v0.50.1 (2020-04-03)
 
 #### :bug: Bug Fix
