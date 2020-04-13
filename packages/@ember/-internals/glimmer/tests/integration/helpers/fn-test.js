@@ -127,7 +127,7 @@ moduleFor(
           arg1: 'foo',
           arg2: 'bar',
         });
-      }, /You must pass a function as the `fn` helpers first argument, you passed null/);
+      }, /You must pass a function as the `fn` helpers first argument, you passed this.myFunc to `fn` but it was null/);
     }
 
     '@test asserts if the provided function accesses `this` without being bound prior to passing to fn'(
