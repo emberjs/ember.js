@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/bundle-compiler",
-  "version": "0.50.1",
+  "version": "0.50.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/bundle-compiler",
   "dependencies": {
     "@glimmer/syntax": "^0.50.0",
