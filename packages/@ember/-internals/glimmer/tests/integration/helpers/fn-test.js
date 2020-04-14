@@ -120,14 +120,34 @@ moduleFor(
       assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
     }
 
-    '@test asserts if the first argument is not a function'() {
+    '@test asserts if no argument given'() {
+      expectAssertion(() => {
+        this.render(`{{invoke (fn)}}`, {
+          myFunc: null,
+          arg1: 'foo',
+          arg2: 'bar',
+        });
+      }, /You must pass a function as the `fn` helpers first argument./);
+    }
+
+    '@test asserts if the first argument is undefined'() {
+      expectAssertion(() => {
+        this.render(`{{invoke (fn this.myFunc this.arg1 this.arg2)}}`, {
+          myFunc: undefined,
+          arg1: 'foo',
+          arg2: 'bar',
+        });
+      }, /You must pass a function as the `fn` helpers first argument, you passed undefined. While rendering:\n\nthis.myFunc/);
+    }
+
+    '@test asserts if the first argument is null'() {
       expectAssertion(() => {
         this.render(`{{invoke (fn this.myFunc this.arg1 this.arg2)}}`, {
           myFunc: null,
           arg1: 'foo',
           arg2: 'bar',
         });
-      }, /You must pass a function as the `fn` helpers first argument, you passed null/);
+      }, /You must pass a function as the `fn` helpers first argument, you passed null. While rendering:\n\nthis.myFunc/);
     }
 
     '@test asserts if the provided function accesses `this` without being bound prior to passing to fn'(

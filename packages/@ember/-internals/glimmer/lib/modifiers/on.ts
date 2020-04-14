@@ -1,8 +1,11 @@
+import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Destroyable, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { expect } from '@glimmer/util';
 import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
+import { Renderer } from '../renderer';
 import buildUntouchableThis from '../utils/untouchable-this';
 
 const untouchableContext = buildUntouchableThis('`on` modifier');
@@ -48,6 +51,7 @@ const SUPPORTS_EVENT_OPTIONS = (() => {
 
 export class OnModifierState {
   public tag: Tag;
+  public owner: Owner;
   public element: Element;
   public args: CapturedArguments;
   public eventName!: string;
@@ -59,7 +63,8 @@ export class OnModifierState {
   public options?: AddEventListenerOptions;
   public shouldUpdate = true;
 
-  constructor(element: Element, args: CapturedArguments) {
+  constructor(owner: Owner, element: Element, args: CapturedArguments) {
+    this.owner = owner;
     this.element = element;
     this.args = args;
     this.tag = args.tag;
@@ -101,11 +106,31 @@ export class OnModifierState {
       this.shouldUpdate = true;
     }
 
-    assert(
-      'You must pass a function as the second argument to the `on` modifier',
-      args.positional.at(1) !== undefined && typeof args.positional.at(1).value() === 'function'
-    );
-    let userProvidedCallback = args.positional.at(1).value() as EventListener;
+    let userProvidedCallbackReference = args.positional.at(1);
+
+    if (DEBUG) {
+      assert(
+        `You must pass a function as the second argument to the \`on\` modifier.`,
+        args.positional.at(1) !== undefined
+      );
+
+      // hardcoding `renderer:-dom` here because we guard for `this.isInteractive` before instantiating OnModifierState, it can never be created when the renderer is `renderer:-inert`
+      let renderer = expect(
+        this.owner.lookup<Renderer>('renderer:-dom'),
+        `BUG: owner is missing renderer:-dom`
+      );
+      let stack = renderer.debugRenderTree.logRenderStackForPath(userProvidedCallbackReference);
+
+      let value = userProvidedCallbackReference.value();
+      assert(
+        `You must pass a function as the second argument to the \`on\` modifier, you passed ${
+          value === null ? 'null' : typeof value
+        }. While rendering:\n\n${stack}`,
+        typeof value === 'function'
+      );
+    }
+
+    let userProvidedCallback = userProvidedCallbackReference.value() as EventListener;
     if (userProvidedCallback !== this.userProvidedCallback) {
       this.userProvidedCallback = userProvidedCallback;
       this.shouldUpdate = true;
@@ -303,9 +328,11 @@ function addEventListener(
 export default class OnModifierManager implements ModifierManager<OnModifierState | null, unknown> {
   public SUPPORTS_EVENT_OPTIONS: boolean = SUPPORTS_EVENT_OPTIONS;
   public isInteractive: boolean;
+  private owner: Owner;
 
-  constructor(isInteractive: boolean) {
+  constructor(owner: Owner, isInteractive: boolean) {
     this.isInteractive = isInteractive;
+    this.owner = owner;
   }
 
   get counters() {
@@ -319,7 +346,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
 
     const capturedArgs = args.capture();
 
-    return new OnModifierState(<Element>element, capturedArgs);
+    return new OnModifierState(this.owner, <Element>element, capturedArgs);
   }
 
   getTag(state: OnModifierState | null): Tag {
