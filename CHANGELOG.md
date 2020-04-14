@@ -1,6 +1,7 @@
 # Ember Changelog
 
 ### v3.18.0 (April 14, 2020)
+
 - [#18869](https://github.com/emberjs/ember.js/pull/18869) / [#18861](https://github.com/emberjs/ember.js/pull/18861) / [#18811](https://github.com/emberjs/ember.js/pull/18811) [BUGFIX] Update to glimmer-vm 0.50.2.
 - [#18807](https://github.com/emberjs/ember.js/pull/18807) [BUGFIX] Do not error (RE: `elementId` changing) if `elementId` is not changed
 - [#18774](https://github.com/emberjs/ember.js/pull/18774) [BUGFIX] Suspend observer deactivation during property changes
