@@ -1,26 +1,8 @@
 # Ember Changelog
 
-### v3.18.0-beta.5 (April 7, 2020)
-
-- [#18857](https://github.com/emberjs/ember.js/pull/18857) [BUGFIX] Pass value through to `PROPERTY_DID_CHANGE` to avoid calling `get` when setting values for computed props
-- [#18861](https://github.com/emberjs/ember.js/pull/18861) [BUGFIX] Update glimmer-vm to 0.50.1 to improve dev time performance.
-
-### v3.18.0-beta.4 (March 31, 2020)
-
-- [#18837](https://github.com/emberjs/ember.js/pull/18837) [BUGFIX] Fix `willDestroy` on class helpers
-- [#18838](https://github.com/emberjs/ember.js/pull/18838) [BUGFIX] Ensure destructors (e.g. `will-destroy` modifier, `@ember/component`s with `willDestroyElement`, etc) fire when used within an `{{#each}}` block.
-
-### v3.18.0-beta.3 (March 23, 2020)
-
-- [#18831](https://github.com/emberjs/ember.js/pull/18831) [BUGFIX] Fix transpilation issues (e.g. `_createSuper` is not a function) when used with Babel 7.9.0+.
-
-### v3.18.0-beta.2 (March 16, 2020)
-
+### v3.18.0 (April 14, 2020)
+- [#18869](https://github.com/emberjs/ember.js/pull/18869) / [#18861](https://github.com/emberjs/ember.js/pull/18861) / [#18811](https://github.com/emberjs/ember.js/pull/18811) [BUGFIX] Update to glimmer-vm 0.50.2.
 - [#18807](https://github.com/emberjs/ember.js/pull/18807) [BUGFIX] Do not error (RE: `elementId` changing) if `elementId` is not changed
-- [#18811](https://github.com/emberjs/ember.js/pull/18811) [BUGFIX] Upgrade to latest glimmer-vm
-
-### v3.18.0-beta.1 (March 5, 2020)
-
 - [#18774](https://github.com/emberjs/ember.js/pull/18774) [BUGFIX] Suspend observer deactivation during property changes
 - [#18785](https://github.com/emberjs/ember.js/pull/18785) Drop Node 8 support.
 
