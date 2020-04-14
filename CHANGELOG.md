@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v3.19.0-beta.1 (April 14, 2020)
+
+- [#18828](https://github.com/emberjs/ember.js/pull/18828) [BUGFIX] Prepend 'TODO: ' to 'Replace this with your real tests' comments in generated tests
+- [#18353](https://github.com/emberjs/ember.js/pull/18353) [BUGFIX] Improve `fn` & `on` undefined callback message
+- [#18824](https://github.com/emberjs/ember.js/pull/18824) [CLEANUP] Remove deprecated private `window.ENV`
+- [#18826](https://github.com/emberjs/ember.js/pull/18826) [CLEANUP] Remove deprecated private `_setComputedDecorator`
+- [#18832](https://github.com/emberjs/ember.js/pull/18832) [CLEANUP] Remove deprecated private`implicit-modifier-manager-capabilities`
+- [#18839](https://github.com/emberjs/ember.js/pull/18839) [CLEANUP] Updates the VM and autotracking APIs
+
 ### v3.18.0 (April 14, 2020)
 
 - [#18869](https://github.com/emberjs/ember.js/pull/18869) / [#18861](https://github.com/emberjs/ember.js/pull/18861) / [#18811](https://github.com/emberjs/ember.js/pull/18811) [BUGFIX] Update to glimmer-vm 0.50.2.
