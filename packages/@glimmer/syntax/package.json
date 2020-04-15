@@ -3,7 +3,7 @@
   "version": "0.50.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/syntax",
   "dependencies": {
-    "handlebars": "^4.5.1",
+    "handlebars": "^4.7.4",
     "@glimmer/interfaces": "^0.50.0",
     "@glimmer/util": "^0.50.0",
     "simple-html-tokenizer": "^0.5.9"
