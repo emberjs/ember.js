@@ -1,3 +1,13 @@
+## v0.50.3 (2020-04-15)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1071](https://github.com/glimmerjs/glimmer-vm/pull/1071) Bump minimum `handlebars.js` version to 4.7.4 (fixes security alert for `optimist`) ([@dcyriller](https://github.com/dcyriller))
+
+#### Committers: 1
+- Cyrille David ([@dcyriller](https://github.com/dcyriller))
+
+
 ## v0.50.2 (2020-04-13)
 
 #### :bug: Bug Fix
