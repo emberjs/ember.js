@@ -131,7 +131,11 @@ export class NewElementBuilder implements ElementBuilder {
     return this[CURSOR_STACK].current!.nextSibling;
   }
 
-  block(): LiveBlock {
+  get hasBlocks() {
+    return this.blockStack.size > 0;
+  }
+
+  protected block(): LiveBlock {
     return expect(this.blockStack.current, 'Expected a current live block');
   }
 
