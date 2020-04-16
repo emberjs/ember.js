@@ -976,19 +976,6 @@ moduleFor(
     async ['@feature(!EMBER_ROUTING_MODEL_ARG) it emits a useful backtracking re-render assertion message'](
       assert
     ) {
-      // When application-template-wrapper optional feature is set to `false`
-      // (and therefore does not add a wrapping `<div>` for the application
-      // template) throwing during component `constructor`/`init` causes
-      // follow-on errors when the ApplicationInstance instance is destroyed
-      // (when the render roots are being cleared).
-      //
-      // TODO: remove this guard, and fix the associated failures when clearing
-      // on application instance instance destruction
-      if (!ENV._APPLICATION_TEMPLATE_WRAPPER) {
-        assert.expect(0);
-        return;
-      }
-
       this.router.map(function() {
         this.route('routeWithError');
       });
@@ -1040,19 +1027,6 @@ moduleFor(
     async ['@feature(EMBER_ROUTING_MODEL_ARG) it emits a useful backtracking re-render assertion message'](
       assert
     ) {
-      // When application-template-wrapper optional feature is set to `false`
-      // (and therefore does not add a wrapping `<div>` for the application
-      // template) throwing during component `constructor`/`init` causes
-      // follow-on errors when the ApplicationInstance instance is destroyed
-      // (when the render roots are being cleared).
-      //
-      // TODO: remove this guard, and fix the associated failures when clearing
-      // on application instance instance destruction
-      if (!ENV._APPLICATION_TEMPLATE_WRAPPER) {
-        assert.expect(0);
-        return;
-      }
-
       this.router.map(function() {
         this.route('routeWithError');
       });
