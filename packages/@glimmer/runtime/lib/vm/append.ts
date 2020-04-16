@@ -19,7 +19,6 @@ import {
   VM as PublicVM,
   JitRuntimeContext,
   AotRuntimeContext,
-  LiveBlock,
   ElementBuilder,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
@@ -163,10 +162,6 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
   get stack(): EvaluationStack {
     return this[INNER_VM].stack as EvaluationStack;
-  }
-
-  currentBlock(): LiveBlock {
-    return this.elements().block();
   }
 
   /* Registers */
@@ -529,9 +524,19 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
     let result: RichIteratorResult<null, RenderResult>;
 
-    while (true) {
-      result = this.next();
-      if (result.done) break;
+    try {
+      while (true) {
+        result = this.next();
+        if (result.done) break;
+      }
+    } finally {
+      // If any existing blocks are open, due to an error or something like
+      // that, we need to close them all and clean things up properly.
+      let elements = this.elements();
+
+      while (elements.hasBlocks) {
+        elements.popBlock();
+      }
     }
 
     return result.value;
