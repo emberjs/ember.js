@@ -121,7 +121,7 @@
   Which outputs an input whose value is already bound to `model.name` and `placeholder`
   is "Username".
 
-  When yielding the component without the hash helper use the `component` helper.
+  When yielding the component without the `hash` helper use the `component` helper.
   For example, below is a `full-name` component template:
 
   ```handlebars
