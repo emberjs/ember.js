@@ -1,3 +1,13 @@
+## v0.50.4 (2020-04-16)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`
+  * [#1073](https://github.com/glimmerjs/glimmer-vm/pull/1073) Ensure errors during component creation do not cause secondary errors during DOM cleanup ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.50.3 (2020-04-15)
 
 #### :bug: Bug Fix
