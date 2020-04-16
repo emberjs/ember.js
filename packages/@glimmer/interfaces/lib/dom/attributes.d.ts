@@ -90,7 +90,7 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
   constructing: Option<SimpleElement>;
   element: SimpleElement;
 
-  block(): LiveBlock;
+  hasBlocks: boolean;
   debugBlocks(): LiveBlock[];
 
   pushSimpleBlock(): LiveBlock;
