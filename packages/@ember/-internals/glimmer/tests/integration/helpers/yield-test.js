@@ -7,7 +7,7 @@ import { Component } from '../../utils/helpers';
 moduleFor(
   'Helpers test: {{yield}} helper',
   class extends RenderingTestCase {
-    ['@test can yield to block']() {
+    ['@test can yield to a default block']() {
       this.registerComponent('yield-comp', {
         template: '[In layout:] {{yield}}',
       });
@@ -24,6 +24,33 @@ moduleFor(
 
       runTask(() => set(this.context, 'object', { title: 'Seattle' }));
       this.assertText('[In layout:] [In Block:] Seattle');
+    }
+
+    ['@feature(EMBER_NAMED_BLOCKS) can yield to a named block']() {
+      // This test fails when the default Ember component backing class is used:
+      this.registerComponent('yield-comp', {
+        template: '[In layout:] {{yield to="block"}}',
+
+        // It passes with no backing class:
+        // ComponentClass: null,
+
+        // And it passes using `GlimmerishComponent`:
+        // ComponentClass: require('../../utils/glimmerish-component').default,
+      });
+
+      this.render('<YieldComp><:block>[In block:] {{object.title}}</:block></YieldComp>', {
+        object: { title: 'Seattle' },
+      });
+
+      this.assertText('[In layout:] [In block:] Seattle');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'object.title', 'Vancouver'));
+      this.assertText('[In layout:] [In block:] Vancouver');
+
+      runTask(() => set(this.context, 'object', { title: 'Seattle' }));
+      this.assertText('[In layout:] [In block:] Seattle');
     }
 
     ['@test templates should yield to block inside a nested component']() {
@@ -88,7 +115,7 @@ moduleFor(
       this.assertText('Hello');
     }
 
-    ['@test simple curlies inside of a yielded clock should work when the yield is nested inside of another view']() {
+    ['@test simple curlies inside of a yielded block should work when the yield is nested inside of another view']() {
       this.registerComponent('kiwi-comp', {
         template: '{{#if falsy}}{{else}}{{yield}}{{/if}}',
       });

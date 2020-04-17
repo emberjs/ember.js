@@ -210,12 +210,12 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   public componentDefinitionCount = 0;
   public helperDefinitionCount = 0;
 
-  constructor(isInteractive: boolean) {
+  constructor(owner: Owner, isInteractive: boolean) {
     this.isInteractive = isInteractive;
 
     this.builtInModifiers = {
       action: { manager: new ActionModifierManager(), state: null },
-      on: { manager: new OnModifierManager(isInteractive), state: null },
+      on: { manager: new OnModifierManager(owner, isInteractive), state: null },
     };
   }
 

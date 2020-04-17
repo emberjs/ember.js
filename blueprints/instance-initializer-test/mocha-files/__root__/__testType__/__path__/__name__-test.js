@@ -20,7 +20,7 @@ describe('<%= friendlyTestName %>', function() {
     destroyApp(application);
   });
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   it('works', function() {
     initialize(appInstance);
 

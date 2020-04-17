@@ -6,7 +6,7 @@ import { render } from '@ember/test-helpers';
 module('<%= friendlyTestName %>', function(hooks) {
   setupRenderingTest(hooks);
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   test('it renders', async function(assert) {
     this.set('inputValue', '1234');
 
@@ -21,7 +21,7 @@ import { setupTest } from 'ember-qunit';
 module('<%= friendlyTestName %>', function(hooks) {
   setupTest(hooks);
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   test('it works', function(assert) {
     let result = <%= camelizedModuleName %>([42]);
     assert.ok(result);

@@ -1,23 +1,24 @@
 # Ember Changelog
 
-### v3.18.0-beta.4 (March 31, 2020)
+### v3.19.0-beta.1 (April 14, 2020)
 
-- [#18837](https://github.com/emberjs/ember.js/pull/18837) [BUGFIX] Fix `willDestroy` on class helpers
-- [#18838](https://github.com/emberjs/ember.js/pull/18838) [BUGFIX] Ensure destructors (e.g. `will-destroy` modifier, `@ember/component`s with `willDestroyElement`, etc) fire when used within an `{{#each}}` block.
+- [#18828](https://github.com/emberjs/ember.js/pull/18828) [BUGFIX] Prepend 'TODO: ' to 'Replace this with your real tests' comments in generated tests
+- [#18353](https://github.com/emberjs/ember.js/pull/18353) [BUGFIX] Improve `fn` & `on` undefined callback message
+- [#18824](https://github.com/emberjs/ember.js/pull/18824) [CLEANUP] Remove deprecated private `window.ENV`
+- [#18826](https://github.com/emberjs/ember.js/pull/18826) [CLEANUP] Remove deprecated private `_setComputedDecorator`
+- [#18832](https://github.com/emberjs/ember.js/pull/18832) [CLEANUP] Remove deprecated private`implicit-modifier-manager-capabilities`
+- [#18839](https://github.com/emberjs/ember.js/pull/18839) [CLEANUP] Updates the VM and autotracking APIs
 
-### v3.18.0-beta.3 (March 23, 2020)
+### v3.18.0 (April 14, 2020)
 
-- [#18831](https://github.com/emberjs/ember.js/pull/18831) [BUGFIX] Fix transpilation issues (e.g. `_createSuper` is not a function) when used with Babel 7.9.0+.
-
-### v3.18.0-beta.2 (March 16, 2020)
-
+- [#18869](https://github.com/emberjs/ember.js/pull/18869) / [#18861](https://github.com/emberjs/ember.js/pull/18861) / [#18811](https://github.com/emberjs/ember.js/pull/18811) [BUGFIX] Update to glimmer-vm 0.50.2.
 - [#18807](https://github.com/emberjs/ember.js/pull/18807) [BUGFIX] Do not error (RE: `elementId` changing) if `elementId` is not changed
-- [#18811](https://github.com/emberjs/ember.js/pull/18811) [BUGFIX] Upgrade to latest glimmer-vm
-
-### v3.18.0-beta.1 (March 5, 2020)
-
 - [#18774](https://github.com/emberjs/ember.js/pull/18774) [BUGFIX] Suspend observer deactivation during property changes
 - [#18785](https://github.com/emberjs/ember.js/pull/18785) Drop Node 8 support.
+
+### v3.17.3 (April 2, 2020)
+
+- [#18857](https://github.com/emberjs/ember.js/pull/18857) Pass value through to `PROPERTY_DID_CHANGE` to avoid calling `get` when setting values for computed props
 
 ### v3.17.2 (March 26, 2020)
 
@@ -45,7 +46,11 @@
 - [#18694](https://github.com/emberjs/ember.js/pull/18694) [BUGFIX] Ensure tag updates are buffered, remove error message 
 - [#18709](https://github.com/emberjs/ember.js/pull/18709) [BUGFIX] Fix `this` in `@tracked` initializer
 
-### v3.16.6
+### v3.16.7 (April 13, 2020)
+
+- [#18854](https://github.com/emberjs/ember.js/pull/18854) Pass value through to `PROPERTY_DID_CHANGE` to avoid calling `get` when setting values for computed props
+
+### v3.16.6 (March 24, 2020)
 
 - [#18835](https://github.com/emberjs/ember.js/pull/18835) [BUGFIX] Make `ArrayProxy` Lazy.
 

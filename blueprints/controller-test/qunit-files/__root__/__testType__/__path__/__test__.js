@@ -5,7 +5,7 @@ moduleFor('controller:<%= dasherizedModuleName %>', '<%= friendlyTestDescription
   // needs: ['controller:foo']
 });
 
-// Replace this with your real tests.
+// TODO: Replace this with your real tests.
 test('it exists', function(assert) {
   let controller = this.subject();
   assert.ok(controller);

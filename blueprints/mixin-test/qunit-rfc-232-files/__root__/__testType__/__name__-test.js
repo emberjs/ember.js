@@ -3,7 +3,7 @@ import <%= classifiedModuleName %>Mixin from '<%= projectName %>/mixins/<%= dash
 import { module, test } from 'qunit';
 
 module('<%= friendlyTestName %>', function() {
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   test('it works', function (assert) {
     let <%= classifiedModuleName %>Object = EmberObject.extend(<%= classifiedModuleName %>Mixin);
     let subject = <%= classifiedModuleName %>Object.create();
