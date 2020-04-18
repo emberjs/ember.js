@@ -23,6 +23,7 @@ module.exports = {
     'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
     'no-var': 'error',
+    'no-prototype-builtins': 'off',
     'prettier/prettier': 'error',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
