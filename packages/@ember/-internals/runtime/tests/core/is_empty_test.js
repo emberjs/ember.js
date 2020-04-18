@@ -1,5 +1,6 @@
 import { isEmpty } from '@ember/-internals/metal';
 import ArrayProxy from '../../lib/system/array_proxy';
+import ObjectProxy from '../../lib/system/object_proxy';
 import { A as emberA } from '../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -10,6 +11,17 @@ moduleFor(
       let arrayProxy = ArrayProxy.create({ content: emberA() });
 
       assert.equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
+    }
+
+    ['@test Ember.isEmpty nested proxies'](assert) {
+      let arrayProxy = ArrayProxy.create({ content: emberA([]) });
+      let objectProxy = ObjectProxy.create({ content: arrayProxy });
+
+      assert.equal(
+        true,
+        isEmpty(objectProxy),
+        'for an ArrayProxy inside ObjectProxy that has empty content'
+      );
     }
   }
 );
