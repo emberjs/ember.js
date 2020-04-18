@@ -12,7 +12,7 @@ moduleFor(
       this.registerHelper('if', () => 'Nope');
       expectAssertion(() => {
         this.render(`{{if foo 'LOL'}}`, { foo: true });
-      }, /You attempted to overwrite the built-in helper \"if\" which is not allowed. Please rename the helper./);
+      }, /You attempted to overwrite the built-in helper "if" which is not allowed. Please rename the helper./);
     }
 
     ['@test it can resolve custom simple helpers with or without dashes']() {

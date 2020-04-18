@@ -198,7 +198,7 @@ moduleFor(
 
       assert.throws(() => {
         container.lookup('controller:foo');
-      }, /Failed to create an instance of \'controller:foo\'/);
+      }, /Failed to create an instance of 'controller:foo'/);
     }
 
     ['@test Injecting a failed lookup raises an error']() {

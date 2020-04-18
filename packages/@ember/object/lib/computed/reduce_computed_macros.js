@@ -14,7 +14,7 @@ import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-in
 function reduceMacro(dependentKey, callback, initialValue, name) {
   assert(
     `Dependent key passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
-    !/[\[\]\{\}]/g.test(dependentKey)
+    !/[[\]{}]/g.test(dependentKey)
   );
 
   return computed(`${dependentKey}.[]`, function() {
@@ -49,7 +49,7 @@ function arrayMacro(dependentKey, additionalDependentKeys, callback) {
 function multiArrayMacro(_dependentKeys, callback, name) {
   assert(
     `Dependent keys passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
-    _dependentKeys.every(dependentKey => !/[\[\]\{\}]/g.test(dependentKey))
+    _dependentKeys.every(dependentKey => !/[[\]{}]/g.test(dependentKey))
   );
   let dependentKeys = _dependentKeys.map(key => `${key}.[]`);
 
@@ -527,7 +527,7 @@ export function mapBy(dependentKey, propertyKey) {
   );
   assert(
     `Dependent key passed to \`computed.mapBy\` shouldn't contain brace expanding pattern.`,
-    !/[\[\]\{\}]/g.test(dependentKey)
+    !/[[\]{}]/g.test(dependentKey)
   );
 
   return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));
@@ -751,7 +751,7 @@ export function filterBy(dependentKey, propertyKey, value) {
 
   assert(
     `Dependent key passed to \`computed.filterBy\` shouldn't contain brace expanding pattern.`,
-    !/[\[\]\{\}]/g.test(dependentKey)
+    !/[[\]{}]/g.test(dependentKey)
   );
 
   let callback;
@@ -919,7 +919,7 @@ export function uniqBy(dependentKey, propertyKey) {
 
   assert(
     `Dependent key passed to \`computed.uniqBy\` shouldn't contain brace expanding pattern.`,
-    !/[\[\]\{\}]/g.test(dependentKey)
+    !/[[\]{}]/g.test(dependentKey)
   );
 
   return computed(`${dependentKey}.[]`, function() {
@@ -1172,7 +1172,7 @@ export function setDiff(setAProperty, setBProperty) {
   assert('`computed.setDiff` requires exactly two dependent arrays.', arguments.length === 2);
   assert(
     `Dependent keys passed to \`computed.setDiff\` shouldn't contain brace expanding pattern.`,
-    !/[\[\]\{\}]/g.test(setAProperty) && !/[\[\]\{\}]/g.test(setBProperty)
+    !/[[\]{}]/g.test(setAProperty) && !/[[\]{}]/g.test(setBProperty)
   );
 
   return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function() {

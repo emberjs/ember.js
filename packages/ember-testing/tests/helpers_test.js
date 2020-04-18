@@ -217,7 +217,7 @@ if (!jQueryDisabled) {
         assertNoHelpers(assert, this.application, helpers);
       }
 
-      [`@test Ember.Application#removeTestHelpers resets the helperContainer\'s original values`](
+      [`@test Ember.Application#removeTestHelpers resets the helperContainer's original values`](
         assert
       ) {
         let helpers = { visit: 'snazzleflabber' };

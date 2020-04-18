@@ -8,7 +8,7 @@ moduleFor(
   'Helpers test: {{hash}}',
   class extends RenderingTestCase {
     ['@test returns a hash with the right key-value']() {
-      this.render(`{{#with (hash name=\"Sergio\") as |person|}}{{person.name}}{{/with}}`);
+      this.render(`{{#with (hash name="Sergio") as |person|}}{{person.name}}{{/with}}`);
 
       this.assertText('Sergio');
 
