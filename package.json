@@ -81,7 +81,7 @@
     "@glimmer/opcode-compiler": "^0.50.2",
     "@glimmer/program": "^0.50.2",
     "@glimmer/reference": "^0.50.2",
-    "@glimmer/runtime": "^0.50.2",
+    "@glimmer/runtime": "^0.50.4",
     "@glimmer/validator": "^0.50.2",
     "@simple-dom/document": "^1.4.0",
     "@types/qunit": "^2.5.4",

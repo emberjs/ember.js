@@ -866,22 +866,30 @@
     "@glimmer/interfaces" "^0.50.2"
     "@glimmer/vm" "^0.50.2"
 
+"@glimmer/encoder@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/encoder/-/encoder-0.50.4.tgz#8f566cbee21de88518ec18dcd6ac3dbdc8d9b5c8"
+  integrity sha512-5fzxsmI9ja23bTLaLUk0ZucX2PFl/BEs8LqzWQZLILkxtTok5jnmnKsDBJG/HvTJtkgvnRiiw8EprpjIfCcLRQ==
+  dependencies:
+    "@glimmer/interfaces" "^0.50.4"
+    "@glimmer/vm" "^0.50.4"
+
 "@glimmer/env@0.1.7", "@glimmer/env@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"
   integrity sha1-/S0rVakCnGs3psk16MiHGucN+gc=
 
-"@glimmer/interfaces@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.50.2.tgz#5637beb45242b9c23b1b82b404ad085f1827ce16"
-  integrity sha512-SbrEspWDHQ6j0DI0inYpg29SMlfEEUS895apZWxMzC2RyGHy5SKmZJ4xjishaq7A0E1AaTfDKYnE/wfWrQZSsw==
+"@glimmer/interfaces@^0.50.2", "@glimmer/interfaces@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.50.4.tgz#b92c92bce4afb2488f1335a2ac095c686d96812c"
+  integrity sha512-Unca/P41yhOTK9EVSoFdnKoAs5IY2NbXrBEhXhD5E+Sp76pux+4YknxD+sOuAynaxAcarUcj37u95ZO8TGGC1w==
   dependencies:
     "@simple-dom/interface" "^1.4.0"
 
-"@glimmer/low-level@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.50.2.tgz#8c2b803d5082634c5cf58cbc29760263a8d3d122"
-  integrity sha512-cCUoyo8XaIzPYLvayc7LEcSJiOrecEfC1LPekFwNkEDq7v5nhVMP5qsen87ReF7kc6GENhYThvguxfBRpl973g==
+"@glimmer/low-level@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.50.4.tgz#fe261282f119f96abe109abf3846b74897b7a411"
+  integrity sha512-2sK1Hl5he8E9+HHizQfkKj75RE+QCA3FfaUIg/MNrw4Ucsgfq8A7W7cwfoDmkDZ1hUPVbT4hfYEYC/lOZyUggw==
 
 "@glimmer/node@^0.50.2":
   version "0.50.2"
@@ -907,39 +915,39 @@
     "@glimmer/vm" "^0.50.2"
     "@glimmer/wire-format" "^0.50.2"
 
-"@glimmer/program@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/program/-/program-0.50.2.tgz#f09876ca9618f04ff7e4c3c7e7280e5125eed841"
-  integrity sha512-pU1NTSow34gNxJqLw1gdXTbLO/IhA3KWZdM4hweBdzSlNWdNvSFcvyS0xVo1FOwBVzVDsS87dzZ08gR8nAx0UA==
+"@glimmer/program@^0.50.2", "@glimmer/program@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/program/-/program-0.50.4.tgz#29d5b3f9725da9e4e40c43bf874337ceddf7c0dc"
+  integrity sha512-YqTyAsd8TBxkc8irifog4THtpmi/Djtt20y30m7gNW6LWOkbbLtTXCo+HiCDv5+fA1UfoaBJhLfcFQkekEhKUw==
   dependencies:
-    "@glimmer/encoder" "^0.50.2"
-    "@glimmer/interfaces" "^0.50.2"
-    "@glimmer/util" "^0.50.2"
+    "@glimmer/encoder" "^0.50.4"
+    "@glimmer/interfaces" "^0.50.4"
+    "@glimmer/util" "^0.50.4"
 
-"@glimmer/reference@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.50.2.tgz#5ea84b358e2b231b1556f516c3e9471294610901"
-  integrity sha512-SwaXnGT4SlPk52hwFGhMO70yAdE2ZjXFBlmQaDpUAzTw7zdYn/0MT9CYkQRaJyheDp5b8B7JNBp1jXpj2PaqKQ==
+"@glimmer/reference@^0.50.2", "@glimmer/reference@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.50.4.tgz#e68bd5a1b89f197916410520cacceca40384f0e6"
+  integrity sha512-GXVLwZ64Z1eQHl1MATaWCfW/4W/FoZk/VcqY474/en+Tp8NsSJ0R3SRM8pu8W8B8fG6gvc1xihHguP9tlFZ53Q==
   dependencies:
     "@glimmer/env" "^0.1.7"
-    "@glimmer/interfaces" "^0.50.2"
-    "@glimmer/util" "^0.50.2"
-    "@glimmer/validator" "^0.50.2"
+    "@glimmer/interfaces" "^0.50.4"
+    "@glimmer/util" "^0.50.4"
+    "@glimmer/validator" "^0.50.4"
 
-"@glimmer/runtime@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.50.2.tgz#163ad25771edbfbef02faedb9c859d27e180d250"
-  integrity sha512-TOhNZdCE7rYiw7wcMye618mJAM9KC8S7jdg9MRlC+Tpk7qsTSpsnbhQ7Kjb4VZY+3Cayy9CDLw9IMolGw2jpyA==
+"@glimmer/runtime@^0.50.2", "@glimmer/runtime@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.50.4.tgz#238419192df94c15daf6335de02bac005fa6cd1e"
+  integrity sha512-XWBI9B6NHZ4bE/pwvZez3XMsfKJsn2ZPtdnRTgcXvwTPrXyYQV/CjjdBUkhgmo0a5S42AyGDtrHPPCyyY9yTXA==
   dependencies:
     "@glimmer/env" "0.1.7"
-    "@glimmer/interfaces" "^0.50.2"
-    "@glimmer/low-level" "^0.50.2"
-    "@glimmer/program" "^0.50.2"
-    "@glimmer/reference" "^0.50.2"
-    "@glimmer/util" "^0.50.2"
-    "@glimmer/validator" "^0.50.2"
-    "@glimmer/vm" "^0.50.2"
-    "@glimmer/wire-format" "^0.50.2"
+    "@glimmer/interfaces" "^0.50.4"
+    "@glimmer/low-level" "^0.50.4"
+    "@glimmer/program" "^0.50.4"
+    "@glimmer/reference" "^0.50.4"
+    "@glimmer/util" "^0.50.4"
+    "@glimmer/validator" "^0.50.4"
+    "@glimmer/vm" "^0.50.4"
+    "@glimmer/wire-format" "^0.50.4"
     "@simple-dom/interface" "^1.4.0"
 
 "@glimmer/syntax@^0.50.2":
@@ -952,37 +960,37 @@
     handlebars "^4.5.1"
     simple-html-tokenizer "^0.5.9"
 
-"@glimmer/util@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.50.2.tgz#1519064c2722143871964a183ceb825b5c24f5d3"
-  integrity sha512-FG3gWONYZWUBwZojvuYdPALu6DWKzc2QGBzb6zBgY5vO2otAqLsi8WlfGP8ekkFsEHUtlPGeUAOqr+lSox+DQw==
+"@glimmer/util@^0.50.2", "@glimmer/util@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.50.4.tgz#94a6a6a049c5c8af6e88f951d94a27d200700278"
+  integrity sha512-lKKGe5rbuSHRPBp4JdSyOVW4AvU/LONEtxuGsSVh0KltSR8zuEYPBjLIwe54g4Gumj9om5yg6zC/WNozKOjdzA==
   dependencies:
     "@glimmer/env" "0.1.7"
-    "@glimmer/interfaces" "^0.50.2"
+    "@glimmer/interfaces" "^0.50.4"
     "@simple-dom/interface" "^1.4.0"
 
-"@glimmer/validator@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/validator/-/validator-0.50.2.tgz#9890334954e2c01aa785f89a34259db341e7ee68"
-  integrity sha512-3xqrZtA1PaAQuu5kSVVXEFYFvkjbHcNRyKrdJVNfZO5iWBI1/Nq+/L6efD1B1RVq/Mlgpg2eTdJAdaN7UDxbwg==
+"@glimmer/validator@^0.50.2", "@glimmer/validator@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/validator/-/validator-0.50.4.tgz#13ca5e10f44cb2f472c37a83c4a7784d7b2453ef"
+  integrity sha512-gJ9ogqZlvLRU5Y1qduu7VCVX5emBN5jPzL5Z/w4YfUAm8tvHFqezOdqWzgkW1vX04veSAf91M2aoJhqn+peS4Q==
   dependencies:
     "@glimmer/env" "^0.1.7"
 
-"@glimmer/vm@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/vm/-/vm-0.50.2.tgz#96e50cc1e061891106d96d2f1cbf3e7a277047f2"
-  integrity sha512-IKEuZAHCundjv8I85MTCYMYI2CkthuzqJLemCK7fRoR8IlpEQnIK7n1JNa8YSbunjjsy8skqkqpOU44c8bK0BQ==
+"@glimmer/vm@^0.50.2", "@glimmer/vm@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/vm/-/vm-0.50.4.tgz#4e4311117e2902893380cacbca7381aa2ee01388"
+  integrity sha512-KZBX/GUJ5xJ4fyQLB2XHA9Fm0aI+i5fg1H6rU8huxMurZ41E+JtjzytQeshWbiI8S8krlb3RnbaW9YgsHmRW4g==
   dependencies:
-    "@glimmer/interfaces" "^0.50.2"
-    "@glimmer/util" "^0.50.2"
+    "@glimmer/interfaces" "^0.50.4"
+    "@glimmer/util" "^0.50.4"
 
-"@glimmer/wire-format@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.50.2.tgz#ed9cbf6aa2bbd8e8e0d9c6bb2058c07f0e22fa09"
-  integrity sha512-s/LvxjKymntagFoH4g/61lArnZrd4TaCWBPfWu5JAQR1daVeXuJ1Tyc3pi+ZFiEzJ+EhQOY54gDrFJFBnlL7hQ==
+"@glimmer/wire-format@^0.50.2", "@glimmer/wire-format@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.50.4.tgz#654c90c8b5e5c6e7a78285007071c3ca28ecaf4d"
+  integrity sha512-WlH1YIKFgUpA1Y3YYU5Qwrdr787sEJWsjElLUOp4dBDMI6EfbErW+aNb2MsU96OIjnb3tSnVV4PySLpaMwojKg==
   dependencies:
-    "@glimmer/interfaces" "^0.50.2"
-    "@glimmer/util" "^0.50.2"
+    "@glimmer/interfaces" "^0.50.4"
+    "@glimmer/util" "^0.50.4"
 
 "@simple-dom/document@^1.4.0":
   version "1.4.0"
@@ -2115,19 +2123,6 @@ broccoli-plugin@^1.0.0, broccoli-plugin@^1.1.0, broccoli-plugin@^1.2.0, broccoli
     quick-temp "^0.1.3"
     rimraf "^2.3.4"
     symlink-or-copy "^1.1.8"
-
-broccoli-plugin@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/broccoli-plugin/-/broccoli-plugin-4.0.2.tgz#a16c1f839bc95cc9975437e58864a395e518b447"
-  integrity sha512-wMytvn+I0ELNGLmLouZ7GpiMEHZ3pqKvHOWE7AgV4vdcnXm9FKwk1N2xGrGI+lKVxdejQvjxAJ2HCQJ/STrEjg==
-  dependencies:
-    broccoli-node-api "^1.6.0"
-    broccoli-output-wrapper "^3.2.1"
-    fs-merger "^3.0.1"
-    promise-map-series "^0.2.1"
-    quick-temp "^0.1.3"
-    rimraf "^3.0.0"
-    symlink-or-copy "^1.3.0"
 
 broccoli-plugin@^4.0.2:
   version "4.0.2"
@@ -6296,11 +6291,6 @@ minimist@0.0.8:
   integrity sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0=
 
 minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
-
-minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
