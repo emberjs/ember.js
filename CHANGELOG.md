@@ -1,3 +1,12 @@
+## v0.51.0 (2020-04-20)
+
+#### :boom: Breaking Change
+* [#1075](https://github.com/glimmerjs/glimmer-vm/pull/1075) Update main key in package json to reference es2017 bundles ([@chiragpat](https://github.com/chiragpat))
+
+#### Committers: 1
+- Chirag Patel ([@chiragpat](https://github.com/chiragpat))
+
+
 ## v0.50.4 (2020-04-16)
 
 #### :bug: Bug Fix
