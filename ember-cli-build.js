@@ -56,7 +56,7 @@ module.exports = function() {
       ['types'],
     ];
   } else {
-    matrix = [['amd', 'es5'], ['commonjs', 'es5'], ['modules', 'es2017'], ['types']];
+    matrix = [['amd', 'es5'], ['commonjs', 'es2017'], ['modules', 'es2017'], ['types']];
   }
 
   // Third, build our module/ES combinations for each package.
