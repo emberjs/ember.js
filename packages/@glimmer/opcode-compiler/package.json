@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/opcode-compiler",
-  "version": "0.50.4",
+  "version": "0.51.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/opcode-compiler",
   "dependencies": {
     "@glimmer/util": "^0.50.0",
