@@ -961,10 +961,10 @@
     "@glimmer/interfaces" "^0.50.2"
     "@simple-dom/interface" "^1.4.0"
 
-"@glimmer/validator@^0.50.2":
-  version "0.50.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/validator/-/validator-0.50.2.tgz#9890334954e2c01aa785f89a34259db341e7ee68"
-  integrity sha512-3xqrZtA1PaAQuu5kSVVXEFYFvkjbHcNRyKrdJVNfZO5iWBI1/Nq+/L6efD1B1RVq/Mlgpg2eTdJAdaN7UDxbwg==
+"@glimmer/validator@^0.50.2", "@glimmer/validator@^0.50.4":
+  version "0.50.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/validator/-/validator-0.50.4.tgz#13ca5e10f44cb2f472c37a83c4a7784d7b2453ef"
+  integrity sha512-gJ9ogqZlvLRU5Y1qduu7VCVX5emBN5jPzL5Z/w4YfUAm8tvHFqezOdqWzgkW1vX04veSAf91M2aoJhqn+peS4Q==
   dependencies:
     "@glimmer/env" "^0.1.7"
 
@@ -2115,19 +2115,6 @@ broccoli-plugin@^1.0.0, broccoli-plugin@^1.1.0, broccoli-plugin@^1.2.0, broccoli
     quick-temp "^0.1.3"
     rimraf "^2.3.4"
     symlink-or-copy "^1.1.8"
-
-broccoli-plugin@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/broccoli-plugin/-/broccoli-plugin-4.0.2.tgz#a16c1f839bc95cc9975437e58864a395e518b447"
-  integrity sha512-wMytvn+I0ELNGLmLouZ7GpiMEHZ3pqKvHOWE7AgV4vdcnXm9FKwk1N2xGrGI+lKVxdejQvjxAJ2HCQJ/STrEjg==
-  dependencies:
-    broccoli-node-api "^1.6.0"
-    broccoli-output-wrapper "^3.2.1"
-    fs-merger "^3.0.1"
-    promise-map-series "^0.2.1"
-    quick-temp "^0.1.3"
-    rimraf "^3.0.0"
-    symlink-or-copy "^1.3.0"
 
 broccoli-plugin@^4.0.2:
   version "4.0.2"
@@ -6296,11 +6283,6 @@ minimist@0.0.8:
   integrity sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0=
 
 minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
-
-minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
