@@ -74,7 +74,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.9.0",
-    "@glimmer/compiler": "^0.50.2",
+    "@glimmer/compiler": "^0.50.4",
     "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "^0.50.2",
     "@glimmer/node": "^0.50.4",
