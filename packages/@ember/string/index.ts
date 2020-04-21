@@ -109,6 +109,7 @@ function _fmt(str: string, formats: any[]) {
   @param {Array} formats Optional array of parameters to interpolate into string.
   @return {String} formatted string
   @public
+  @deprecated
 */
 export function loc(str: string, formats: any[]): string {
   if (!Array.isArray(formats) || arguments.length > 2) {
@@ -140,6 +141,7 @@ export function loc(str: string, formats: any[]): string {
   @param {String} str The string to split
   @return {Array} array containing the split strings
   @public
+  @deprecated
 */
 export function w(str: string): string[] {
   return str.split(/\s+/);
@@ -161,6 +163,7 @@ export function w(str: string): string[] {
   @param {String} str The string to decamelize.
   @return {String} the decamelized string.
   @public
+  @deprecated
 */
 export function decamelize(str: string): string {
   return DECAMELIZE_CACHE.get(str);
@@ -183,6 +186,7 @@ export function decamelize(str: string): string {
   @param {String} str The string to dasherize.
   @return {String} the dasherized string.
   @public
+  @deprecated
 */
 export function dasherize(str: string): string {
   return STRING_DASHERIZE_CACHE.get(str);
@@ -206,6 +210,7 @@ export function dasherize(str: string): string {
   @param {String} str The string to camelize.
   @return {String} the camelized string.
   @public
+  @deprecated
 */
 export function camelize(str: string): string {
   return CAMELIZE_CACHE.get(str);
@@ -228,6 +233,7 @@ export function camelize(str: string): string {
   @param {String} str the string to classify
   @return {String} the classified string
   @public
+  @deprecated
 */
 export function classify(str: string): string {
   return CLASSIFY_CACHE.get(str);
@@ -251,6 +257,7 @@ export function classify(str: string): string {
   @param {String} str The string to underscore.
   @return {String} the underscored string.
   @public
+  @deprecated
 */
 export function underscore(str: string): string {
   return UNDERSCORE_CACHE.get(str);
@@ -273,6 +280,7 @@ export function underscore(str: string): string {
   @param {String} str The string to capitalize.
   @return {String} The capitalized string.
   @public
+  @deprecated
 */
 export function capitalize(str: string): string {
   return CAPITALIZE_CACHE.get(str);
@@ -287,6 +295,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     w: {
       configurable: true,
@@ -304,6 +313,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     loc: {
       configurable: true,
@@ -321,6 +331,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     camelize: {
       configurable: true,
@@ -338,6 +349,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     decamelize: {
       configurable: true,
@@ -355,6 +367,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     dasherize: {
       configurable: true,
@@ -372,6 +385,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     underscore: {
       configurable: true,
@@ -389,6 +403,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     classify: {
       configurable: true,
@@ -406,6 +421,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     capitalize: {
       configurable: true,
