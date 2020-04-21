@@ -45,7 +45,7 @@ export default function setupQUnit() {
 
       callback(hooks);
     });
-  };
+  } as typeof QUnit.module;
 
   QUnit.assert.rejects = async function(
     promise: Promise<any>,

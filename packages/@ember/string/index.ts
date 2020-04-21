@@ -7,6 +7,7 @@ export { getStrings as _getStrings, setStrings as _setStrings } from './lib/stri
 import { ENV } from '@ember/-internals/environment';
 import { Cache } from '@ember/-internals/utils';
 import { getString } from './lib/string_registry';
+import { deprecate } from '@ember/debug';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 
@@ -65,6 +66,22 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, str =>
   str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase()
 );
 
+export function deprecateEmberStringUtil(name: string, fn: Function, opts = {}) {
+  return function() {
+    deprecate(
+      opts.message ||
+        `Ember.String namespace is deprecated. Please, use ${name} from '@ember/string' instead.`,
+      true,
+      opts.options || {
+        id: 'ember-string.namespace',
+        until: '3.5.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-string-namespace',
+      }
+    );
+    return fn(...arguments);
+  };
+}
+
 /**
   Defines string helper methods including string formatting and localization.
   Unless `EmberENV.EXTEND_PROTOTYPES.String` is `false` these methods will also be
@@ -109,6 +126,7 @@ function _fmt(str: string, formats: any[]) {
   @param {Array} formats Optional array of parameters to interpolate into string.
   @return {String} formatted string
   @public
+  @deprecated
 */
 export function loc(str: string, formats: any[]): string {
   if (!Array.isArray(formats) || arguments.length > 2) {
@@ -140,6 +158,7 @@ export function loc(str: string, formats: any[]): string {
   @param {String} str The string to split
   @return {Array} array containing the split strings
   @public
+  @deprecated
 */
 export function w(str: string): string[] {
   return str.split(/\s+/);
@@ -161,6 +180,7 @@ export function w(str: string): string[] {
   @param {String} str The string to decamelize.
   @return {String} the decamelized string.
   @public
+  @deprecated
 */
 export function decamelize(str: string): string {
   return DECAMELIZE_CACHE.get(str);
@@ -183,6 +203,7 @@ export function decamelize(str: string): string {
   @param {String} str The string to dasherize.
   @return {String} the dasherized string.
   @public
+  @deprecated
 */
 export function dasherize(str: string): string {
   return STRING_DASHERIZE_CACHE.get(str);
@@ -206,6 +227,7 @@ export function dasherize(str: string): string {
   @param {String} str The string to camelize.
   @return {String} the camelized string.
   @public
+  @deprecated
 */
 export function camelize(str: string): string {
   return CAMELIZE_CACHE.get(str);
@@ -228,6 +250,7 @@ export function camelize(str: string): string {
   @param {String} str the string to classify
   @return {String} the classified string
   @public
+  @deprecated
 */
 export function classify(str: string): string {
   return CLASSIFY_CACHE.get(str);
@@ -251,6 +274,7 @@ export function classify(str: string): string {
   @param {String} str The string to underscore.
   @return {String} the underscored string.
   @public
+  @deprecated
 */
 export function underscore(str: string): string {
   return UNDERSCORE_CACHE.get(str);
@@ -273,9 +297,26 @@ export function underscore(str: string): string {
   @param {String} str The string to capitalize.
   @return {String} The capitalized string.
   @public
+  @deprecated
 */
 export function capitalize(str: string): string {
   return CAPITALIZE_CACHE.get(str);
+}
+
+function deprecateEmberStringPrototypeExtension(
+  name: string,
+  fn: (utility: string, ...options: any) => string | string[],
+  message: string = `String prototype extensions are deprecated. Please, us ${name} from '@ember/string' instead.`
+) {
+  return function(this: string) {
+    deprecate(message, false, {
+      id: 'ember-string.prototype_extensions',
+      until: '4.0.0',
+      url: 'https://emberjs.com/deprecations/v3.x/#toc_ember-string-prototype-extensions',
+    });
+
+    return fn(this, ...arguments);
+  };
 }
 
 if (ENV.EXTEND_PROTOTYPES.String) {
@@ -287,14 +328,13 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     w: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return w(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('w', w),
     },
 
     /**
@@ -304,14 +344,17 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     loc: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value(this: string, ...args: any[]) {
-        return loc(this, args);
-      },
+      value: deprecateEmberStringPrototypeExtension(
+        'loc',
+        loc,
+        '`loc` is deprecated. Please, use an i18n addon instead. See https://emberobserver.com/categories/internationalization for a list of them.'
+      ),
     },
 
     /**
@@ -321,14 +364,13 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     camelize: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return camelize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('camelize', camelize),
     },
 
     /**
@@ -338,14 +380,13 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     decamelize: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return decamelize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('decamelize', decamelize),
     },
 
     /**
@@ -355,14 +396,13 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     dasherize: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return dasherize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('dasherize', dasherize),
     },
 
     /**
@@ -372,14 +412,13 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     underscore: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return underscore(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('underscore', underscore),
     },
 
     /**
@@ -389,14 +428,13 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     classify: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return classify(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('classify', classify),
     },
 
     /**
@@ -406,14 +444,13 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     capitalize: {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return capitalize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('capitalize', capitalize),
     },
   });
 }

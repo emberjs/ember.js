@@ -134,7 +134,7 @@
     "prettier": "^1.18.2",
     "puppeteer": "^1.20.0",
     "qunit": "^2.9.3",
-    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.2.4",
     "route-recognizer": "^0.3.4",
     "router_js": "^6.2.5",
