@@ -7,6 +7,7 @@ export { getStrings as _getStrings, setStrings as _setStrings } from './lib/stri
 import { ENV } from '@ember/-internals/environment';
 import { Cache } from '@ember/-internals/utils';
 import { getString } from './lib/string_registry';
+import { deprecate } from '@ember/debug';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 
@@ -64,6 +65,22 @@ const STRING_DECAMELIZE_REGEXP = /([a-z\d])([A-Z])/g;
 const DECAMELIZE_CACHE = new Cache<string, string>(1000, str =>
   str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase()
 );
+
+export function deprecateEmberStringUtil(name: string, fn: Function, opts = {}) {
+  return function() {
+    deprecate(
+      opts.message ||
+        `Ember.String namespace is deprecated. Please, use ${name} from '@ember/string' instead.`,
+      true,
+      opts.options || {
+        id: 'ember-string.namespace',
+        until: '3.5.0',
+        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-string-namespace',
+      }
+    );
+    return fn(...arguments);
+  };
+}
 
 /**
   Defines string helper methods including string formatting and localization.
@@ -286,6 +303,22 @@ export function capitalize(str: string): string {
   return CAPITALIZE_CACHE.get(str);
 }
 
+function deprecateEmberStringPrototypeExtension(
+  name: string,
+  fn: (utility: string, ...options: any) => string | string[],
+  message: string = `String prototype extensions are deprecated. Please, us ${name} from '@ember/string' instead.`
+) {
+  return function(this: string) {
+    deprecate(message, false, {
+      id: 'ember-string.prototype_extensions',
+      until: '4.0.0',
+      url: 'https://emberjs.com/deprecations/v3.x/#toc_ember-string-prototype-extensions',
+    });
+
+    return fn(this, ...arguments);
+  };
+}
+
 if (ENV.EXTEND_PROTOTYPES.String) {
   Object.defineProperties(String.prototype, {
     /**
@@ -301,9 +334,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return w(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('w', w),
     },
 
     /**
@@ -319,9 +350,11 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value(this: string, ...args: any[]) {
-        return loc(this, args);
-      },
+      value: deprecateEmberStringPrototypeExtension(
+        'loc',
+        loc,
+        '`loc` is deprecated. Please, use an i18n addon instead. See https://emberobserver.com/categories/internationalization for a list of them.'
+      ),
     },
 
     /**
@@ -337,9 +370,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return camelize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('camelize', camelize),
     },
 
     /**
@@ -355,9 +386,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return decamelize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('decamelize', decamelize),
     },
 
     /**
@@ -373,9 +402,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return dasherize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('dasherize', dasherize),
     },
 
     /**
@@ -391,9 +418,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return underscore(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('underscore', underscore),
     },
 
     /**
@@ -409,9 +434,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return classify(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('classify', classify),
     },
 
     /**
@@ -427,9 +450,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return capitalize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('capitalize', capitalize),
     },
   });
 }
