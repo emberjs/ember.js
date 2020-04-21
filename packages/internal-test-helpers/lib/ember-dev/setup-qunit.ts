@@ -33,7 +33,7 @@ export default function setupQUnit() {
 
   let originalModule = QUnit.module;
 
-  QUnit.module = function(name: string, callback: any) {
+  const wrappedModule = function(name: string, callback: any) {
     return originalModule(name, function(hooks) {
       setupContainersCheck(hooks);
       setupNamespacesCheck(hooks);
@@ -46,6 +46,8 @@ export default function setupQUnit() {
       callback(hooks);
     });
   };
+  wrappedModule.only = wrappedModule;
+  QUnit.module = wrappedModule;
 
   QUnit.assert.rejects = async function(
     promise: Promise<any>,
