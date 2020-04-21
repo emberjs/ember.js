@@ -406,16 +406,34 @@ if (LOGGER) {
 
 // ****@ember/-internals/runtime****
 Ember.A = A;
+
+function deprecateStringNamespace(fn) {
+  return function() {
+    deprecate(
+      `Importing ${fn.name} \`@ember/string\` without the addon installed is deprecated`,
+      false,
+      {
+        id: 'ember-string.namespace',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-namespace',
+      }
+    );
+
+    fn(...arguments);
+  };
+}
+
 Ember.String = {
-  loc,
-  w,
-  dasherize,
-  decamelize,
-  camelize,
-  classify,
-  underscore,
-  capitalize,
+  loc: deprecateStringNamespace(loc),
+  w: deprecateStringNamespace(w),
+  dasherize: deprecateStringNamespace(dasherize),
+  decamelize: deprecateStringNamespace(decamelize),
+  camelize: deprecateStringNamespace(camelize),
+  classify: deprecateStringNamespace(classify),
+  underscore: deprecateStringNamespace(underscore),
+  capitalize: deprecateStringNamespace(capitalize),
 };
+
 Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
 Ember._ContainerProxyMixin = ContainerProxyMixin;
@@ -577,11 +595,30 @@ Ember.HTMLBars = {
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function() {
+    deprecate(
+      'Using string extensions is deprecated, please import htmlSafe from `@ember/template` instead.',
+      false,
+      {
+        id: 'ember-string.prototype_extensions',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-prototype_extensions',
+      }
+    );
+
     return htmlSafe(this);
   };
 }
-Ember.String.htmlSafe = htmlSafe;
-Ember.String.isHTMLSafe = isHTMLSafe;
+function deprecateStringHTMLSafe(fn, ...args) {
+  deprecate('This is deprecated, please import utilities from `@ember/template` instead.', false, {
+    id: 'ember-string.html_safe',
+    until: '4.0.0',
+    url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-html_safe',
+  });
+
+  fn(...args);
+}
+Ember.String.htmlSafe = deprecateStringHTMLSafe(htmlSafe);
+Ember.String.isHTMLSafe = deprecateStringHTMLSafe(isHTMLSafe);
 
 /**
   Global hash of shared templates. This will automatically be populated
