@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-Test test 
+Test test bnew test
 /*
  * This script generates the template a changelog by comparing a current version
  * with master. Run this, copy what's logged into the `CHANGELOG.md` and update
