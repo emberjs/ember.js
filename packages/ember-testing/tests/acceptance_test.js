@@ -63,7 +63,7 @@ if (!jQueryDisabled) {
           <div class="posts-view">
             <a class="dummy-link"></a>
             <div id="comments-link">
-              {{#link-to \'comments\'}}Comments{{/link-to}}
+              {{#link-to 'comments'}}Comments{{/link-to}}
             </div>
           </div>
         `

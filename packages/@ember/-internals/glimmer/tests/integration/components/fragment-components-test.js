@@ -244,7 +244,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
-      }, /You cannot access this.\$\(\) on a component with `tagName: \'\'` specified/);
+      }, /You cannot access this.\$\(\) on a component with `tagName: ''` specified/);
     }
 
     ['@test renders a contained view with omitted start tag and tagless parent view context']() {

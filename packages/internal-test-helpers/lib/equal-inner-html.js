@@ -18,7 +18,7 @@ function normalizeInnerHTML(actualHTML) {
     actualHTML = actualHTML
       .replace(/ xmlns="[^"]+"/, '')
       .replace(
-        /<([^ >]+) [^\/>]*\/>/gi,
+        /<([^ >]+) [^/>]*\/>/gi,
         (tag, tagName) => `${tag.slice(0, tag.length - 3)}></${tagName}>`
       );
   }

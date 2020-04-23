@@ -917,7 +917,7 @@ moduleFor(
             array2: emberA([3, 4, 5]),
           });
         },
-        /\`computed\.setDiff\` requires exactly two dependent arrays/,
+        /`computed\.setDiff` requires exactly two dependent arrays/,
         'setDiff requires two dependent arrays'
       );
 
@@ -931,7 +931,7 @@ moduleFor(
             array3: emberA([7]),
           });
         },
-        /\`computed\.setDiff\` requires exactly two dependent arrays/,
+        /`computed\.setDiff` requires exactly two dependent arrays/,
         'setDiff requires two dependent arrays'
       );
     }

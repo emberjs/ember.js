@@ -97,7 +97,7 @@ export default Mixin.create({
     let content = contentFor(this);
 
     assert(
-      `Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`,
+      `Cannot delegate set('${key}', ${value}) to the 'content' property of object proxy ${this}: its 'content' is undefined.`,
       content
     );
 

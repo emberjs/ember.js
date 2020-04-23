@@ -21,7 +21,6 @@ module.exports = {
     'no-new-wrappers': 'error',
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
-    'no-useless-escape': 'off', // TODO: bring this back
     'no-var': 'error',
     'no-prototype-builtins': 'off',
     'prettier/prettier': 'error',

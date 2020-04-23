@@ -1020,7 +1020,7 @@ moduleFor(
 
       assert.throws(() => {
         set(obj, 'bar', 'newBar');
-      }, /Cannot set read\-only property "bar" on object:/);
+      }, /Cannot set read-only property "bar" on object:/);
 
       assert.equal(get(obj, 'bar'), 'barValue');
     }

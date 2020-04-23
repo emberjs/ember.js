@@ -115,8 +115,8 @@ if (DEBUG) {
           // Chrome
           stack = error.stack
             .replace(/^\s+at\s+/gm, '')
-            .replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2')
-            .replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)')
+            .replace(/^([^(]+?)([\n$])/gm, '{anonymous}($1)$2')
+            .replace(/^Object.<anonymous>\s*\(([^)]+)\)/gm, '{anonymous}($1)')
             .split('\n');
           stack.shift();
         } else {
