@@ -78,7 +78,7 @@
     "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "^0.50.4",
     "@glimmer/node": "^0.50.4",
-    "@glimmer/opcode-compiler": "^0.50.4",
+    "@glimmer/opcode-compiler": "^0.51.0",
     "@glimmer/program": "^0.50.4",
     "@glimmer/reference": "^0.50.4",
     "@glimmer/runtime": "^0.50.4",
