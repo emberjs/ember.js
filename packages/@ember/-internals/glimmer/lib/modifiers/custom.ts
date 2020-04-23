@@ -141,6 +141,12 @@ class InteractiveCustomModifierManager<ModifierInstance>
 
   install(state: CustomModifierState<ModifierInstance>) {
     let { element, args, delegate, modifier, tag } = state;
+
+    assert(
+      'Custom modifier managers must define their capabilities using the capabilities() helper function',
+      typeof delegate.capabilities === 'object' && delegate.capabilities !== null
+    );
+
     let { capabilities } = delegate;
 
     if (capabilities.disableAutoTracking === true) {
