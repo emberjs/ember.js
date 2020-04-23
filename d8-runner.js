@@ -37,7 +37,7 @@
 //
 // begin MISC setup;
 
-/* globals load, print, Promise */
+/* globals load, print */
 
 const global = new Function('return this;')();
 global.self = global;
