@@ -77,7 +77,7 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
               false,
               {
                 id: 'glimmer.private-in-element',
-                until: '4.0.0',
+                until: '3.25.0',
               }
             );
           }
