@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.16.8
+
+- [#18879](https://github.com/emberjs/ember.js/pull/18879) Ensure errors thrown during component construction do not cause (unrelated) errors during application teardown (fixes a common issue when using `setupOnerror` with components asserting during `constructor`/`init`/`didInssertElement`).
+
 ### v3.16.7
 
 - [#18854](https://github.com/emberjs/ember.js/pull/18854) Pass value through to `PROPERTY_DID_CHANGE` to avoid calling `get` when setting values for computed props
