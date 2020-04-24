@@ -1,6 +1,6 @@
 function setProperties(object, properties) {
   for (let key in properties) {
-    if (properties.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(properties, key)) {
       object[key] = properties[key];
     }
   }

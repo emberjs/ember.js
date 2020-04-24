@@ -16,13 +16,13 @@ export function getTemplates() {
 }
 
 export function getTemplate(name: string): Factory | void {
-  if (TEMPLATES.hasOwnProperty(name)) {
+  if (Object.prototype.hasOwnProperty.call(TEMPLATES, name)) {
     return TEMPLATES[name];
   }
 }
 
 export function hasTemplate(name: string): boolean {
-  return TEMPLATES.hasOwnProperty(name);
+  return Object.prototype.hasOwnProperty.call(TEMPLATES, name);
 }
 
 export function setTemplate(name: string, template: Factory): Factory {

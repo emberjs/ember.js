@@ -17,7 +17,7 @@ let classes = [
 
       defineProperty(object, key, desc);
 
-      assert.ok(object.hasOwnProperty(key));
+      assert.ok(Object.prototype.hasOwnProperty.call(object, key));
     }
 
     set(key, value) {
@@ -47,7 +47,7 @@ let classes = [
 
       defineProperty(proto, key, desc);
 
-      assert.ok(proto.hasOwnProperty(key));
+      assert.ok(Object.prototype.hasOwnProperty.call(proto, key));
     }
 
     set(key, value) {

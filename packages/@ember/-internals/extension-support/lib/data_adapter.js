@@ -382,7 +382,7 @@ export default EmberObject.extend({
 
     namespaces.forEach(namespace => {
       for (let key in namespace) {
-        if (!namespace.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(namespace, key)) {
           continue;
         }
         // Even though we will filter again in `getModelTypes`,

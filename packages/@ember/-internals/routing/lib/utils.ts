@@ -13,7 +13,10 @@ export function extractRouteArgs(args: unknown[]) {
   let possibleQueryParams = args[args.length - 1];
 
   let queryParams;
-  if (possibleQueryParams && (possibleQueryParams as object).hasOwnProperty('queryParams')) {
+  if (
+    possibleQueryParams &&
+    Object.prototype.hasOwnProperty.call(possibleQueryParams, 'queryParams')
+  ) {
     // SAFETY: this cast is safe because we have just checked whether
     // `possibleQueryParams` -- defined as the last item in args -- both exists
     // and has the property `queryParams`. If either of these invariants change,
@@ -168,7 +171,7 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
   }
 
   for (let key in desc) {
-    if (!desc.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(desc, key)) {
       return;
     }
 
@@ -223,7 +226,7 @@ export function shallowEqual(a: {}, b: {}) {
   let aCount = 0;
   let bCount = 0;
   for (k in a) {
-    if (a.hasOwnProperty(k)) {
+    if (Object.prototype.hasOwnProperty.call(a, k)) {
       if (a[k] !== b[k]) {
         return false;
       }
@@ -232,7 +235,7 @@ export function shallowEqual(a: {}, b: {}) {
   }
 
   for (k in b) {
-    if (b.hasOwnProperty(k)) {
+    if (Object.prototype.hasOwnProperty.call(b, k)) {
       bCount++;
     }
   }

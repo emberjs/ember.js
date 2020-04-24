@@ -1621,7 +1621,7 @@ function forEachQueryParam(
   let qpCache = router._queryParamsFor(routeInfos);
 
   for (let key in queryParams) {
-    if (!queryParams.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(queryParams, key)) {
       continue;
     }
     let value = queryParams[key];

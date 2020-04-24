@@ -246,7 +246,7 @@ function applyMergedProperties(
   let hasFunction = false;
 
   for (let prop in value) {
-    if (!value.hasOwnProperty(prop)) {
+    if (!Object.prototype.hasOwnProperty.call(value, prop)) {
       continue;
     }
 
@@ -341,7 +341,7 @@ function mergeMixins(
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
       for (key in props) {
-        if (!props.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(props, key)) {
           continue;
         }
         keys.push(key);
@@ -349,7 +349,7 @@ function mergeMixins(
       }
 
       // manually copy toString() because some JS engines do not enumerate it
-      if (props.hasOwnProperty('toString')) {
+      if (Object.prototype.hasOwnProperty.call(props, 'toString')) {
         base.toString = props.toString;
       }
     } else if (currentMixin.mixins) {
@@ -450,7 +450,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
 
   for (let i = 0; i < keys.length; i++) {
     key = keys[i];
-    if (key === 'constructor' || !values.hasOwnProperty(key)) {
+    if (key === 'constructor' || !Object.prototype.hasOwnProperty.call(values, key)) {
       continue;
     }
 

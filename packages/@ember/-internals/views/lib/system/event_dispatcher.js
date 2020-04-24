@@ -223,7 +223,7 @@ export default EmberObject.extend({
     }
 
     for (let event in events) {
-      if (events.hasOwnProperty(event)) {
+      if (Object.prototype.hasOwnProperty.call(events, event)) {
         this.setupHandler(rootElement, event, events[event]);
       }
     }

@@ -97,7 +97,7 @@ moduleFor(
       deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
 
       for (let prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
+        if (Object.prototype.hasOwnProperty.call(obj, prop)) {
           assert.notEqual(prop, 'baz');
         }
       }

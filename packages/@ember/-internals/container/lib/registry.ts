@@ -710,7 +710,7 @@ if (DEBUG) {
     let injections: Injection[] = [];
 
     for (let key in hash) {
-      if (hash.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(hash, key)) {
         let { specifier, source, namespace } = hash[key];
         assert(
           `Expected a proper full name, given '${specifier}'`,

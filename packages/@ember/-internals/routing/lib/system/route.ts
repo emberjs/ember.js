@@ -1427,7 +1427,7 @@ class Route extends EmberObject implements IRoute {
     // resolved parent contexts on the current transitionEvent.
     if (transition !== undefined && transition !== null) {
       let modelLookupName = (route && route.routeName) || name;
-      if (transition.resolvedModels.hasOwnProperty(modelLookupName!)) {
+      if (Object.prototype.hasOwnProperty.call(transition.resolvedModels, modelLookupName!)) {
         return transition.resolvedModels[modelLookupName!];
       }
     }
@@ -1990,7 +1990,7 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
   // first loop over all controller qps, merging them with any matching route qps
   // into a new empty object to avoid mutating.
   for (let cqpName in controllerQP) {
-    if (!controllerQP.hasOwnProperty(cqpName)) {
+    if (!Object.prototype.hasOwnProperty.call(controllerQP, cqpName)) {
       continue;
     }
 
@@ -2006,7 +2006,10 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
   // loop over all route qps, skipping those that were merged in the first pass
   // because they also appear in controller qps
   for (let rqpName in routeQP) {
-    if (!routeQP.hasOwnProperty(rqpName) || keysAlreadyMergedOrSkippable[rqpName]) {
+    if (
+      !Object.prototype.hasOwnProperty.call(routeQP, rqpName) ||
+      keysAlreadyMergedOrSkippable[rqpName]
+    ) {
       continue;
     }
 
@@ -2301,7 +2304,7 @@ Route.reopen(ActionHandler, Evented, {
     let propertyNames = [];
 
     for (let propName in combinedQueryParameterConfiguration) {
-      if (!combinedQueryParameterConfiguration.hasOwnProperty(propName)) {
+      if (!Object.prototype.hasOwnProperty.call(combinedQueryParameterConfiguration, propName)) {
         continue;
       }
 

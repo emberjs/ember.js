@@ -18,13 +18,13 @@ moduleFor(
       let newObj = {};
 
       for (let key in obj) {
-        if (!obj.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
           continue;
         }
 
         assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
         assert.ok(key in newObj, 'should have key');
-        assert.ok(newObj.hasOwnProperty(key), 'should have key');
+        assert.ok(Object.prototype.hasOwnProperty.call(newObj, key), 'should have key');
         assert.equal(get(newObj, key), obj[key], 'should set value');
       }
     }

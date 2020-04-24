@@ -16,7 +16,7 @@ class LoggingApplicationTestCase extends ApplicationTestCase {
     this._originalLogger = console.info;
 
     console.info = (_, { fullName }) => {
-      if (!this.logs.hasOwnProperty(fullName)) {
+      if (!Object.prototype.hasOwnProperty.call(this.logs, fullName)) {
         this.logs[fullName] = 0;
       }
       /* eslint-ensable no-console */

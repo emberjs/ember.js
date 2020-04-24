@@ -38,7 +38,7 @@ moduleFor(
       obj.toString();
 
       assert.notOk(
-        obj.hasOwnProperty('toString'),
+        Object.prototype.hasOwnProperty.call(obj, 'toString'),
         'Calling toString() should not create a toString class property'
       );
     }
