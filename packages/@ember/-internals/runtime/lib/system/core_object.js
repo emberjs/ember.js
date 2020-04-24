@@ -331,9 +331,10 @@ class CoreObject {
     // alerts 'Name is Steve'.
     ```
 
-    NOTE: If you do override `init` for a framework class like `Ember.View`,
-    be sure to call `this._super(...arguments)` in your
-    `init` declaration! If you don't, Ember may not have an opportunity to
+    NOTE: If you do override `init` for a framework class like `Component`
+    from `@ember/component`, be sure to call `this._super(...arguments)`
+    in your `init` declaration!
+    If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
     application.
 
@@ -351,7 +352,7 @@ class CoreObject {
     in the superclass. However, there are some cases where it is preferable
     to build up a property's value by combining the superclass' property
     value with the subclass' value. An example of this in use within Ember
-    is the `classNames` property of `Ember.View`.
+    is the `classNames` property of `Component` from `@ember/component`.
 
     Here is some sample code showing the difference between a concatenated
     property and a normal one:
