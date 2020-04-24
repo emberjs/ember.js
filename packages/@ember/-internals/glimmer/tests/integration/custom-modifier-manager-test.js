@@ -36,6 +36,24 @@ class CustomModifierManager {
 moduleFor(
   'Basic Custom Modifier Manager',
   class extends ModifierManagerTest {
+    '@test throws a useful error when missing capabilities'() {
+      this.registerModifier(
+        'foo-bar',
+        setModifierManager(() => {
+          return {
+            createModifier() {},
+            installModifier() {},
+            updateModifier() {},
+            destroyModifier() {},
+          };
+        }, {})
+      );
+
+      expectAssertion(() => {
+        this.render('<h1 {{foo-bar}}>hello world</h1>');
+      }, /Custom modifier managers must define their capabilities/);
+    }
+
     '@test can register a custom element modifier and render it'(assert) {
       let ModifierClass = setModifierManager(
         owner => {
