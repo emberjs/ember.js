@@ -122,7 +122,7 @@ function setupAction(target, key, actionFn) {
     target.constructor.proto();
   }
 
-  if (!target.hasOwnProperty('actions')) {
+  if (!Object.prototype.hasOwnProperty.call(target, 'actions')) {
     let parentActions = target.actions;
     // we need to assign because of the way mixins copy actions down when inheriting
     target.actions = parentActions ? assign({}, parentActions) : {};

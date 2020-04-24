@@ -23,7 +23,7 @@ moduleFor(
       };
 
       for (let key in obj) {
-        if (!obj.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
           continue;
         }
         assert.equal(get(obj, key), obj[key], key);
@@ -216,7 +216,7 @@ moduleFor(
       };
 
       for (let key in obj) {
-        if (!obj.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
           continue;
         }
         assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);

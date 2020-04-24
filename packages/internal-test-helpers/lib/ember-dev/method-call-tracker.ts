@@ -128,7 +128,8 @@ export default class MethodCallTracker {
 
           for (j = 0; j < expectedOptionList.length; j++) {
             matchesOptionList =
-              matchesOptionList && actual[2].hasOwnProperty(expectedOptionList[j]);
+              matchesOptionList &&
+              Object.prototype.hasOwnProperty.call(actual[2], expectedOptionList[j]);
           }
         }
 

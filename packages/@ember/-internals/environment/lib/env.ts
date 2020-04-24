@@ -186,7 +186,7 @@ export const ENV = {
 
   for (let flag in EmberENV) {
     if (
-      !EmberENV.hasOwnProperty(flag) ||
+      !Object.prototype.hasOwnProperty.call(EmberENV, flag) ||
       flag === 'EXTEND_PROTOTYPES' ||
       flag === 'EMBER_LOAD_HOOKS'
     )
@@ -222,7 +222,7 @@ export const ENV = {
   let { EMBER_LOAD_HOOKS } = EmberENV;
   if (typeof EMBER_LOAD_HOOKS === 'object' && EMBER_LOAD_HOOKS !== null) {
     for (let hookName in EMBER_LOAD_HOOKS) {
-      if (!EMBER_LOAD_HOOKS.hasOwnProperty(hookName)) continue;
+      if (!Object.prototype.hasOwnProperty.call(EMBER_LOAD_HOOKS, hookName)) continue;
       let hooks = EMBER_LOAD_HOOKS[hookName];
       if (Array.isArray(hooks)) {
         ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter(hook => typeof hook === 'function');
@@ -232,7 +232,7 @@ export const ENV = {
   let { FEATURES } = EmberENV;
   if (typeof FEATURES === 'object' && FEATURES !== null) {
     for (let feature in FEATURES) {
-      if (!FEATURES.hasOwnProperty(feature)) continue;
+      if (!Object.prototype.hasOwnProperty.call(FEATURES, feature)) continue;
       ENV.FEATURES[feature] = FEATURES[feature] === true;
     }
   }
