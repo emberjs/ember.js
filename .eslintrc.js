@@ -22,7 +22,6 @@ module.exports = {
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-var': 'error',
-    'no-prototype-builtins': 'off',
     'prettier/prettier': 'error',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
