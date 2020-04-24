@@ -24,7 +24,6 @@ module.exports = {
     'no-var': 'error',
     'no-prototype-builtins': 'off',
     'prettier/prettier': 'error',
-    'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
     'disable-features/disable-async-await': 'error',
     'disable-features/disable-generator-functions': 'error',
