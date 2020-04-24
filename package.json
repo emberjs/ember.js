@@ -53,7 +53,7 @@
     "@ember/edition-utils": "^1.2.0",
     "babel-plugin-debug-macros": "^0.3.3",
     "babel-plugin-filter-imports": "^4.0.0",
-    "broccoli-concat": "^3.7.4",
+    "broccoli-concat": "^4.2.4",
     "broccoli-debug": "^0.6.4",
     "broccoli-funnel": "^2.0.2",
     "broccoli-merge-trees": "^4.2.0",
