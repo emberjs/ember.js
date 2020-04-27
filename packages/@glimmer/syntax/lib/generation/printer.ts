@@ -72,7 +72,7 @@ export default class Printer {
     if (this.options.override !== undefined) {
       let result = this.options.override(node, this.options);
       if (typeof result === 'string') {
-        if (ensureLeadingWhitespace && NON_WHITESPACE.test(result[0])) {
+        if (ensureLeadingWhitespace && result !== '' && NON_WHITESPACE.test(result[0])) {
           result = ` ${result}`;
         }
 

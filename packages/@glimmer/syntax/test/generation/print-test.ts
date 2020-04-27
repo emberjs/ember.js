@@ -149,4 +149,22 @@ QUnit.module('[glimmer-syntax] Code generation - override', function() {
 
     assert.equal(actual, `{{foo-bar baz="ZOMG!!!!"}}`);
   });
+
+  test('maintains proper spacing when overriding empty hash', function(assert) {
+    let ast = parse(`{{foo-bar derp blah=baz}}`);
+
+    let actual = print(ast, {
+      entityEncoding: 'transformed',
+
+      override(ast) {
+        if (ast.type === 'Hash') {
+          return '';
+        }
+
+        return;
+      },
+    });
+
+    assert.equal(actual, `{{foo-bar derp}}`);
+  });
 });
