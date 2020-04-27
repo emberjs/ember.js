@@ -1,3 +1,17 @@
+## v0.51.1 (2020-04-27)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1079](https://github.com/glimmerjs/glimmer-vm/pull/1079) Ensure overriding with an empty Hash does not add extra whitespace. ([@rwjblue](https://github.com/rwjblue))
+
+#### :house: Internal
+* `@glimmer/bundle-compiler`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/integration-tests`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1078](https://github.com/glimmerjs/glimmer-vm/pull/1078) Fix package.json versions. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.51.0 (2020-04-20)
 
 #### :boom: Breaking Change
