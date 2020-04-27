@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.19.0-beta.2 (April 27, 2020)
+
+- [#18913](https://github.com/emberjs/ember.js/pull/18913) [BUGFIX] Update to glimmer-vm 0.51.0.
+- [#18919](https://github.com/emberjs/ember.js/pull/18919) [BUGFIX] Add error for modifier manager without capabilities. 
+
 ### v3.19.0-beta.1 (April 14, 2020)
 
 - [#18828](https://github.com/emberjs/ember.js/pull/18828) [BUGFIX] Prepend 'TODO: ' to 'Replace this with your real tests' comments in generated tests
