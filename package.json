@@ -1,6 +1,6 @@
 {
   "name": "glimmer-engine",
-  "version": "0.50.0",
+  "version": "0.51.0",
   "private": true,
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "repository": {
@@ -86,7 +86,7 @@
     "qunit-tap": "^1.5.1",
     "release-it": "^13.5.1",
     "release-it-lerna-changelog": "^2.1.2",
-    "release-it-yarn-workspaces": "^1.3.0",
+    "release-it-yarn-workspaces": "^1.3.1",
     "rimraf": "^2.7.1",
     "rollup": "^1.31.1",
     "rollup-plugin-sourcemaps": "^0.5.0",
@@ -126,6 +126,7 @@
             "packages/*/*/package.json"
           ],
           "versionUpdates": [
+            "package.json",
             "packages/*/*/package.json"
           ]
         }

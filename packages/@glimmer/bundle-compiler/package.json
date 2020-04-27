@@ -3,15 +3,15 @@
   "version": "0.51.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/bundle-compiler",
   "dependencies": {
-    "@glimmer/syntax": "^0.50.0",
-    "@glimmer/util": "^0.50.0",
-    "@glimmer/wire-format": "^0.50.0",
-    "@glimmer/interfaces": "^0.50.0",
-    "@glimmer/program": "^0.50.0",
-    "@glimmer/compiler": "^0.50.0",
-    "@glimmer/opcode-compiler": "^0.50.0"
+    "@glimmer/syntax": "^0.51.0",
+    "@glimmer/util": "^0.51.0",
+    "@glimmer/wire-format": "^0.51.0",
+    "@glimmer/interfaces": "^0.51.0",
+    "@glimmer/program": "^0.51.0",
+    "@glimmer/compiler": "^0.51.0",
+    "@glimmer/opcode-compiler": "^0.51.0"
   },
   "devDependencies": {
-    "@glimmer/runtime": "^0.50.0"
+    "@glimmer/runtime": "^0.51.0"
   }
 }

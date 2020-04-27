@@ -3,11 +3,11 @@
   "version": "0.51.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
   "dependencies": {
-    "@glimmer/util": "^0.50.0",
-    "@glimmer/interfaces": "^0.50.0",
-    "@glimmer/encoder": "^0.50.0"
+    "@glimmer/util": "^0.51.0",
+    "@glimmer/interfaces": "^0.51.0",
+    "@glimmer/encoder": "^0.51.0"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "^0.50.0"
+    "@glimmer/local-debug-flags": "^0.51.0"
   }
 }
