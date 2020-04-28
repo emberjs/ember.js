@@ -73,7 +73,7 @@
     "silent-error": "^1.1.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
     "@glimmer/compiler": "^0.51.0",
     "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "^0.51.0",
