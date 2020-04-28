@@ -14,12 +14,12 @@ export const enum SexpOpcodes {
   // Statements
   Append = 1,
   TrustingAppend = 2,
-  Comment = 2,
-  Modifier = 3,
-  StrictModifier = 4,
-  Block = 5,
-  StrictBlock = 6,
-  Component = 7,
+  Comment = 3,
+  Modifier = 4,
+  StrictModifier = 5,
+  Block = 6,
+  StrictBlock = 7,
+  Component = 8,
 
   OpenElement = 10,
   OpenElementWithSplat = 11,
@@ -42,7 +42,6 @@ export const enum SexpOpcodes {
   Debugger = 26,
 
   // Expressions
-
   HasBlock = 27,
   HasBlockParams = 28,
   Undefined = 29,
@@ -180,8 +179,8 @@ export namespace Statements {
   export type Blocks = Core.Blocks;
   export type Path = Core.Path;
 
-  // make Append into Append and TrustingAppend again and 2 entry tuple
-  export type Append = [SexpOpcodes.Append, number, Expression];
+  export type Append = [SexpOpcodes.Append, Expression];
+  export type TrustingAppend = [SexpOpcodes.TrustingAppend, Expression];
   export type Comment = [SexpOpcodes.Comment, string];
   export type Modifier = [SexpOpcodes.Modifier, Expression, Params, Hash];
   export type Block = [SexpOpcodes.Block, Expression, Option<Params>, Hash, Blocks];
@@ -220,6 +219,7 @@ export namespace Statements {
    */
   export type Statement =
     | Append
+    | TrustingAppend
     | Comment
     | Modifier
     | Block

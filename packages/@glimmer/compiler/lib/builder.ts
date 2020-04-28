@@ -190,8 +190,7 @@ export function buildStatement(
     case HeadKind.AppendPath: {
       return [
         [
-          Op.Append,
-          +normalized.trusted,
+          normalized.trusted ? Op.TrustingAppend : Op.Append,
           buildPath(normalized.path, ExpressionContext.AppendSingleId, symbols),
         ],
       ];
@@ -200,8 +199,7 @@ export function buildStatement(
     case HeadKind.AppendExpr: {
       return [
         [
-          Op.Append,
-          +normalized.trusted,
+          normalized.trusted ? Op.TrustingAppend : Op.Append,
           buildExpression(normalized.expr, ExpressionContext.Expression, symbols),
         ],
       ];
@@ -213,11 +211,13 @@ export function buildStatement(
       let builtHash: WireFormat.Core.Hash = hash ? buildHash(hash, symbols) : null;
       let builtExpr: WireFormat.Expression = buildPath(path, ExpressionContext.CallHead, symbols);
 
-      return [[Op.Append, +trusted, [Op.Call, builtExpr, builtParams, builtHash]]];
+      return [
+        [trusted ? Op.TrustingAppend : Op.Append, [Op.Call, builtExpr, builtParams, builtHash]],
+      ];
     }
 
     case HeadKind.Literal: {
-      return [[Op.Append, 1, normalized.value]];
+      return [[Op.TrustingAppend, normalized.value]];
     }
 
     case HeadKind.Comment: {

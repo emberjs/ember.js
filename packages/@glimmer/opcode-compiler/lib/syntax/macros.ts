@@ -115,7 +115,7 @@ export class Inlines implements MacroInlines {
     sexp: AppendSyntax,
     context: TemplateCompilationContext
   ): StatementCompileActions | Unhandled {
-    let [, , value] = sexp;
+    let [, value] = sexp;
 
     // TODO: Fix this so that expression macros can return
     // things like components, so that {{component foo}}
