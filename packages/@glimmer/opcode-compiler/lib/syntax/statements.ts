@@ -162,11 +162,7 @@ STATEMENTS.add(SexpOpcodes.Debugger, ([, evalInfo], meta) =>
 );
 
 STATEMENTS.add(SexpOpcodes.Append, sexp => {
-  let [, trusted, value] = sexp;
-
-  if (typeof value === 'string' && trusted) {
-    return op(Op.Text, value);
-  }
+  let [, value] = sexp;
 
   return op('CompileInline', {
     inline: sexp,
@@ -175,11 +171,30 @@ STATEMENTS.add(SexpOpcodes.Append, sexp => {
       op(HighLevelResolutionOpcode.Expr, value),
       op(MachineOp.InvokeStatic, {
         type: 'stdlib',
-        value: trusted ? 'trusting-append' : 'cautious-append',
+        value: 'cautious-append',
       }),
       op(MachineOp.PopFrame),
     ],
   });
+});
+
+STATEMENTS.add(SexpOpcodes.TrustingAppend, sexp => {
+  let [, value] = sexp;
+
+  if (typeof value === 'string') {
+    return op(Op.Text, value);
+  }
+  // macro was ignoring trusting flag doesn't seem like {{{}}} should
+  // even be passed to macros, there is no {{{component}}}
+  return [
+    op(MachineOp.PushFrame),
+    op(HighLevelResolutionOpcode.Expr, value),
+    op(MachineOp.InvokeStatic, {
+      type: 'stdlib',
+      value: 'trusting-append',
+    }),
+    op(MachineOp.PopFrame),
+  ];
 });
 
 STATEMENTS.add(SexpOpcodes.Block, sexp => {

@@ -237,11 +237,14 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
   /// Statements
 
   text(content: string) {
-    this.push([SexpOpcodes.Append, 1, content]);
+    this.push([SexpOpcodes.TrustingAppend, content]);
   }
 
   append(trusted: boolean) {
-    this.push([SexpOpcodes.Append, +trusted, this.popValue<Expression>()]);
+    this.push([
+      trusted ? SexpOpcodes.TrustingAppend : SexpOpcodes.Append,
+      this.popValue<Expression>(),
+    ]);
   }
 
   comment(value: string) {

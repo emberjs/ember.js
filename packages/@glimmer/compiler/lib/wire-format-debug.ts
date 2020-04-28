@@ -24,7 +24,9 @@ export default class WireFormatDebugger {
     if (Array.isArray(opcode)) {
       switch (opcode[0]) {
         case Op.Append:
-          return ['append', this.formatOpcode(opcode[1]), this.formatOpcode(opcode[2])];
+          return ['append', this.formatOpcode(opcode[1])];
+        case Op.TrustingAppend:
+          return ['trusting-append', this.formatOpcode(opcode[1])];
 
         case Op.Block:
           return [
