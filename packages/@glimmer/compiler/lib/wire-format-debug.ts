@@ -38,7 +38,10 @@ export default class WireFormatDebugger {
           ];
 
         case Op.OpenElement:
-          return ['open-element', opcode[1], opcode[2]];
+          return ['open-element', opcode[1]];
+
+        case Op.OpenElementWithSplat:
+          return ['open-element-with-splat', opcode[1]];
 
         case Op.CloseElement:
           return ['close-element'];
