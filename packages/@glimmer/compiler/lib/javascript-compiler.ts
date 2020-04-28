@@ -310,7 +310,7 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
         `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
       );
     } else {
-      this.push([SexpOpcodes.OpenElement, tag, simple]);
+      this.push([SexpOpcodes.OpenElement, tag, simple ? 1 : 0]);
     }
   }
 
