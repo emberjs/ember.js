@@ -1,7 +1,7 @@
 import { WireFormat, Option, Dict, Expressions, ExpressionContext } from '@glimmer/interfaces';
 
 import Op = WireFormat.SexpOpcodes;
-import { dict, assertNever, assert, values } from '@glimmer/util';
+import { dict, assertNever, assert, values, exhausted } from '@glimmer/util';
 import {
   BuilderStatement,
   BuilderComment,
@@ -192,8 +192,6 @@ export function buildStatement(
         [
           Op.Append,
           +normalized.trusted,
-          0,
-          0,
           buildPath(normalized.path, ExpressionContext.AppendSingleId, symbols),
         ],
       ];
@@ -204,8 +202,6 @@ export function buildStatement(
         [
           Op.Append,
           +normalized.trusted,
-          0,
-          0,
           buildExpression(normalized.expr, ExpressionContext.Expression, symbols),
         ],
       ];
@@ -217,11 +213,11 @@ export function buildStatement(
       let builtHash: WireFormat.Core.Hash = hash ? buildHash(hash, symbols) : null;
       let builtExpr: WireFormat.Expression = buildPath(path, ExpressionContext.CallHead, symbols);
 
-      return [[Op.Append, +trusted, 0, 0, [Op.Call, 0, 0, builtExpr, builtParams, builtHash]]];
+      return [[Op.Append, +trusted, [Op.Call, builtExpr, builtParams, builtHash]]];
     }
 
     case HeadKind.Literal: {
-      return [[Op.Append, 1, 0, 0, normalized.value]];
+      return [[Op.Append, 1, normalized.value]];
     }
 
     case HeadKind.Comment: {
@@ -443,7 +439,7 @@ export function buildExpression(
       let builtHash = buildHash(expr.hash, symbols);
       let builtExpr = buildPath(expr.path, ExpressionContext.CallHead, symbols);
 
-      return [Op.Call, 0, 0, builtExpr, builtParams, builtHash];
+      return [Op.Call, builtExpr, builtParams, builtHash];
     }
 
     case ExpressionKind.HasBlock: {
@@ -477,34 +473,87 @@ export function buildExpression(
     }
   }
 }
+
 export function buildPath(
   path: Path,
   context: ExpressionContext,
   symbols: Symbols
 ): Expressions.GetPath {
   if (path.tail.length === 0) {
-    return [Op.GetPath, buildVar(path.variable, context, symbols), path.tail];
+    return buildVar(path.variable, context, symbols, path.tail);
   } else {
-    return [Op.GetPath, buildVar(path.variable, ExpressionContext.Expression, symbols), path.tail];
+    return buildVar(path.variable, ExpressionContext.Expression, symbols, path.tail);
   }
 }
 
 export function buildVar(
   head: Variable,
   context: ExpressionContext,
+  symbols: Symbols,
+  path: string[]
+): Expressions.GetPath;
+export function buildVar(
+  head: Variable,
+  context: ExpressionContext,
   symbols: Symbols
-): Expressions.GetSymbol | Expressions.GetFree | Expressions.GetContextualFree {
+): Expressions.Get;
+export function buildVar(
+  head: Variable,
+  context: ExpressionContext,
+  symbols: Symbols,
+  path?: string[]
+): Expressions.GetPath | Expressions.Get {
+  let op: Expressions.Get[0] = Op.GetSymbol;
+  let sym: number;
   switch (head.kind) {
     case VariableKind.Free:
-      return [Op.GetContextualFree, symbols.freeVar(head.name), context];
+      op = expressionContextOp(context);
+      sym = symbols.freeVar(head.name);
+      break;
+    default:
+      op = Op.GetSymbol;
+      sym = getSymbolForVar(head.kind, symbols, head.name);
+  }
+  return (path === undefined || path.length === 0 ? [op, sym] : [op, sym, path]) as
+    | Expressions.Get
+    | Expressions.GetPath;
+}
+
+function getSymbolForVar(
+  kind: Exclude<VariableKind, VariableKind.Free>,
+  symbols: Symbols,
+  name: string
+) {
+  switch (kind) {
     case VariableKind.Arg:
-      return [Op.GetSymbol, symbols.arg(head.name)];
+      return symbols.arg(name);
     case VariableKind.Block:
-      return [Op.GetSymbol, symbols.block(head.name)];
+      return symbols.block(name);
     case VariableKind.Local:
-      return [Op.GetSymbol, symbols.local(head.name)];
+      return symbols.local(name);
     case VariableKind.This:
-      return [Op.GetSymbol, symbols.this()];
+      return symbols.this();
+    default:
+      return exhausted(kind);
+  }
+}
+
+export function expressionContextOp(context: ExpressionContext) {
+  switch (context) {
+    case ExpressionContext.AppendSingleId:
+      return Op.GetFreeInAppendSingleId;
+    case ExpressionContext.Expression:
+      return Op.GetFreeInExpression;
+    case ExpressionContext.CallHead:
+      return Op.GetFreeInCallHead;
+    case ExpressionContext.BlockHead:
+      return Op.GetFreeInBlockHead;
+    case ExpressionContext.ModifierHead:
+      return Op.GetFreeInModifierHead;
+    case ExpressionContext.ComponentHead:
+      return Op.GetFreeInComponentHead;
+    default:
+      return exhausted(context);
   }
 }
 
