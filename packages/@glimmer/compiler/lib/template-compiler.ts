@@ -261,17 +261,23 @@ export default class TemplateCompiler implements Processor<InputOps> {
 
   private argPath(head: string, rest: string[], loc: AST.BaseNode) {
     this.opcode(['getArg', head], loc);
-    this.opcode(['getPath', rest], loc);
+    if (rest.length > 0) {
+      this.opcode(['getPath', rest], loc);
+    }
   }
 
   private varPath(head: string, rest: string[], context: ExpressionContext, loc: AST.BaseNode) {
     this.opcode(['getVar', [head, context]], loc);
-    this.opcode(['getPath', rest], loc);
+    if (rest.length > 0) {
+      this.opcode(['getPath', rest], loc);
+    }
   }
 
   private thisPath(rest: string[], loc: AST.BaseNode) {
     this.opcode(['getThis'], loc);
-    this.opcode(['getPath', rest], loc);
+    if (rest.length > 0) {
+      this.opcode(['getPath', rest], loc);
+    }
   }
 
   private expression(path: AST.Expression, context: ExpressionContext, expr: AST.Node) {
@@ -339,14 +345,13 @@ export default class TemplateCompiler implements Processor<InputOps> {
   }
 
   private path(expr: AST.PathExpression, context: ExpressionContext) {
-    let [head, ...rest] = expr.parts;
-
+    let { parts } = expr;
     if (expr.data) {
-      this.argPath(`@${head}`, rest, expr);
+      this.argPath(`@${parts[0]}`, parts.slice(1), expr);
     } else if (expr.this) {
-      this.thisPath(expr.parts, expr);
+      this.thisPath(parts, expr);
     } else {
-      this.varPath(head, rest, context, expr);
+      this.varPath(parts[0], parts.slice(1), context, expr);
     }
   }
 
