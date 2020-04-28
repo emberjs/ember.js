@@ -185,7 +185,8 @@ export namespace Statements {
   export type Modifier = [SexpOpcodes.Modifier, Expression, Params, Hash];
   export type Block = [SexpOpcodes.Block, Expression, Option<Params>, Hash, Blocks];
   export type Component = [SexpOpcodes.Component, Expression, Attribute[], Hash, Blocks];
-  export type OpenElement = [SexpOpcodes.OpenElement, string, 0 | 1];
+  export type OpenElement = [SexpOpcodes.OpenElement, string];
+  export type OpenElementWithSplat = [SexpOpcodes.OpenElementWithSplat, string];
   export type FlushElement = [SexpOpcodes.FlushElement];
   export type CloseElement = [SexpOpcodes.CloseElement];
   // TODO [SexpOpcodes.StaticAttr, string, string, Option<string>] to [SexpOpcodes.StaticAttr, string, string, string?]
@@ -225,6 +226,7 @@ export namespace Statements {
     | Block
     | Component
     | OpenElement
+    | OpenElementWithSplat
     | FlushElement
     | CloseElement
     | StaticAttr
