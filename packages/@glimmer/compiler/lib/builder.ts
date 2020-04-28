@@ -278,7 +278,7 @@ function buildElement(
   { name, attrs, block }: NormalizedElement,
   symbols: Symbols
 ): WireFormat.Statement[] {
-  let out: WireFormat.Statement[] = [[Op.OpenElement, name, !hasSplat(attrs)]];
+  let out: WireFormat.Statement[] = [[Op.OpenElement, name, hasSplat(attrs) ? 0 : 1]];
   if (attrs) {
     let { attributes, args } = buildAttrs(attrs, symbols);
     out.push(...attributes);
