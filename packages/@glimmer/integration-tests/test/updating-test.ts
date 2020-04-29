@@ -1863,7 +1863,7 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
-  'The each helper items destroy correctly (new and updated items)'() {
+  '{{each}} items destroy correctly when destroying the whole list (new and updated items)'() {
     let destroyCount = 0;
 
     this.registerComponent(
@@ -1895,6 +1895,41 @@ class UpdatingTest extends RenderTest {
 
     this.rerender({ list: [] });
     assert.equal(destroyCount, 2, 'both list items were correctly destroyed');
+  }
+
+  @test
+  '{{each}} items destroy correctly if they were added after initial render'() {
+    let destroyCount = 0;
+
+    this.registerComponent(
+      'Glimmer',
+      'DestroyableComponent',
+      '{{@item}}',
+      class extends EmberishGlimmerComponent {
+        destroy() {
+          destroyCount++;
+        }
+      }
+    );
+
+    this.render(
+      stripTight`
+        {{#each this.list as |item|}}
+          <div><DestroyableComponent @item={{item}}/></div>
+        {{/each}}
+      `,
+      {
+        list: ['initial'],
+      }
+    );
+
+    this.assertHTML(`<div>initial</div>`);
+
+    this.rerender({ list: ['initial', 'update'] });
+    this.assertHTML(`<div>initial</div><div>update</div>`);
+
+    this.rerender({ list: ['initial'] });
+    assert.equal(destroyCount, 1, 'new list item was correctly destroyed');
   }
 
   // TODO: port https://github.com/emberjs/ember.js/pull/14082
