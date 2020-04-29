@@ -110,8 +110,8 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
 
   enterList(offset: number): void;
   exitList(): void;
-  iterate(memo: PathReference<unknown>, item: PathReference<unknown>): TryOpcode;
-  enterItem(key: unknown, opcode: TryOpcode): void;
+  enterItem(memo: PathReference<unknown>, item: PathReference<unknown>): TryOpcode;
+  registerItem(key: unknown, opcode: TryOpcode): void;
 
   pushRootScope(size: number): PartialScope<C>;
   pushChildScope(): void;
@@ -363,7 +363,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     this.didEnter(tryOpcode);
   }
 
-  iterate(
+  enterItem(
     memo: VersionedPathReference<unknown>,
     value: VersionedPathReference<unknown>
   ): TryOpcode {
@@ -378,12 +378,14 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     // this.ip = end + 4;
     // this.frames.push(ip);
 
-    return new TryOpcode(state, this.runtime, block, new LinkedList<UpdatingOpcode>());
+    let opcode = new TryOpcode(state, this.runtime, block, new LinkedList<UpdatingOpcode>());
+    this.didEnter(opcode);
+
+    return opcode;
   }
 
-  enterItem(key: string, opcode: TryOpcode) {
+  registerItem(key: string, opcode: TryOpcode) {
     this.listBlock().map.set(key, opcode);
-    this.didEnter(opcode);
   }
 
   enterList(offset: number) {
