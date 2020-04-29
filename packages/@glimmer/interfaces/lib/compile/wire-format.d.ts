@@ -172,6 +172,23 @@ export type Get = Expressions.Get;
 
 export type TupleExpression = Expressions.TupleExpression;
 
+export const enum WellKnownAttrName {
+  class = 0,
+  id = 1,
+  value = 2,
+  name = 3,
+  type = 4,
+  style = 5,
+  href = 6,
+}
+
+export const enum WellKnownTagName {
+  div = 0,
+  span = 1,
+  p = 2,
+  a = 3,
+}
+
 export namespace Statements {
   export type Expression = Expressions.Expression;
   export type Params = Core.Params;
@@ -185,33 +202,46 @@ export namespace Statements {
   export type Modifier = [SexpOpcodes.Modifier, Expression, Params, Hash];
   export type Block = [SexpOpcodes.Block, Expression, Option<Params>, Hash, Blocks];
   export type Component = [SexpOpcodes.Component, Expression, Attribute[], Hash, Blocks];
-  export type OpenElement = [SexpOpcodes.OpenElement, string];
-  export type OpenElementWithSplat = [SexpOpcodes.OpenElementWithSplat, string];
+  export type OpenElement = [SexpOpcodes.OpenElement, string | WellKnownTagName];
+  export type OpenElementWithSplat = [SexpOpcodes.OpenElementWithSplat, string | WellKnownTagName];
   export type FlushElement = [SexpOpcodes.FlushElement];
   export type CloseElement = [SexpOpcodes.CloseElement];
-  // TODO [SexpOpcodes.StaticAttr, string, string, Option<string>] to [SexpOpcodes.StaticAttr, string, string, string?]
-  export type StaticAttr = [SexpOpcodes.StaticAttr, string, string, Option<string>];
+  export type StaticAttr = [SexpOpcodes.StaticAttr, string | WellKnownAttrName, string, string?];
   export type StaticComponentAttr = [
     SexpOpcodes.StaticComponentAttr,
+    string | WellKnownAttrName,
     string,
-    string,
-    Option<string>
+    string?
   ];
-  // TODO to [SexpOpcodes.DynamicAttr, string, Expression, string?]
-  export type DynamicAttr = [SexpOpcodes.DynamicAttr, string, Expression, Option<string>];
-  // TODO  to [SexpOpcodes.StaticAttr, string, Expression, string?]
-  export type ComponentAttr = [SexpOpcodes.ComponentAttr, string, Expression, Option<string>];
+  export type DynamicAttr = [
+    SexpOpcodes.DynamicAttr,
+    string | WellKnownAttrName,
+    Expression,
+    string?
+  ];
+  export type ComponentAttr = [
+    SexpOpcodes.ComponentAttr,
+    string | WellKnownAttrName,
+    Expression,
+    string?
+  ];
   export type AttrSplat = [SexpOpcodes.AttrSplat, YieldTo];
   export type Yield = [SexpOpcodes.Yield, YieldTo, Option<Params>];
   export type Partial = [SexpOpcodes.Partial, Expression, Core.EvalInfo];
   export type DynamicArg = [SexpOpcodes.DynamicArg, string, Expression];
   export type StaticArg = [SexpOpcodes.StaticArg, string, Expression];
-  export type TrustingAttr = [SexpOpcodes.TrustingDynamicAttr, string, Expression, string];
+
+  export type TrustingAttr = [
+    SexpOpcodes.TrustingDynamicAttr,
+    string | WellKnownAttrName,
+    Expression,
+    string?
+  ];
   export type TrustingComponentAttr = [
     SexpOpcodes.TrustingComponentAttr,
-    string,
+    string | WellKnownAttrName,
     Expression,
-    string
+    string?
   ];
   export type Debugger = [SexpOpcodes.Debugger, Core.EvalInfo];
 

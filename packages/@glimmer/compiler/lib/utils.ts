@@ -1,4 +1,4 @@
-import { Dict, Option } from '@glimmer/interfaces';
+import { Dict, Option, WellKnownTagName, WellKnownAttrName } from '@glimmer/interfaces';
 
 export function processOpcodes(compiler: any, opcodes: any) {
   for (let i = 0, l = opcodes.length; i < l; i++) {
@@ -47,4 +47,49 @@ const WHITELIST: Dict<string | undefined> = {
 
 export function getAttrNamespace(attrName: string): Option<string> {
   return WHITELIST[attrName] || null;
+}
+
+const DEFLATE_TAG_TABLE: {
+  [tagName: string]: WellKnownTagName | undefined;
+} = {
+  div: WellKnownTagName.div,
+  span: WellKnownTagName.span,
+  p: WellKnownTagName.p,
+  a: WellKnownTagName.a,
+};
+
+const INFLATE_TAG_TABLE: {
+  [I in WellKnownTagName]: string;
+} = ['div', 'span', 'p', 'a'];
+
+export function deflateTagName(tagName: string): string | WellKnownTagName {
+  return DEFLATE_TAG_TABLE[tagName] ?? tagName;
+}
+
+export function inflateTagName(tagName: string | WellKnownTagName) {
+  return typeof tagName === 'string' ? tagName : INFLATE_TAG_TABLE[tagName];
+}
+
+const DEFLATE_ATTR_TABLE: {
+  [tagName: string]: WellKnownAttrName | undefined;
+} = {
+  class: WellKnownAttrName.class,
+  id: WellKnownAttrName.id,
+  value: WellKnownAttrName.value,
+  name: WellKnownAttrName.name,
+  type: WellKnownAttrName.type,
+  style: WellKnownAttrName.style,
+  href: WellKnownAttrName.href,
+};
+
+const INFLATE_ATTR_TABLE: {
+  [I in WellKnownAttrName]: string;
+} = ['class', 'id', 'value', 'name', 'type', 'style', 'href'];
+
+export function deflateAttrName(attrName: string): string | WellKnownAttrName {
+  return DEFLATE_ATTR_TABLE[attrName] ?? attrName;
+}
+
+export function inflateAttrName(attrName: string | WellKnownAttrName) {
+  return typeof attrName === 'string' ? attrName : INFLATE_ATTR_TABLE[attrName];
 }

@@ -402,9 +402,9 @@ export function buildAttributeValue(
       if (val === false) {
         return [];
       } else if (val === true) {
-        return [[Op.StaticAttr, name, '', namespace]];
+        return [[Op.StaticAttr, name, '', namespace ?? undefined]];
       } else if (typeof val === 'string') {
-        return [[Op.StaticAttr, name, val, namespace]];
+        return [[Op.StaticAttr, name, val, namespace ?? undefined]];
       } else {
         throw new Error(`Unexpected/unimplemented literal attribute ${JSON.stringify(val)}`);
       }
@@ -416,7 +416,7 @@ export function buildAttributeValue(
           Op.DynamicAttr,
           name,
           buildExpression(value, ExpressionContext.AppendSingleId, symbols),
-          namespace,
+          namespace ?? undefined,
         ],
       ];
   }
