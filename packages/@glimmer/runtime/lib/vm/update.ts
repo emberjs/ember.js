@@ -233,11 +233,9 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     let tryOpcode: Option<TryOpcode> = null;
 
     let result = vm.execute(vm => {
-      tryOpcode = vm.iterate(memo, item);
+      vm.pushUpdating();
+      tryOpcode = vm.enterItem(memo, item);
       map.set(key, tryOpcode);
-      vm.pushUpdating(new LinkedList<UpdatingOpcode>());
-      vm.updateWith(tryOpcode);
-      vm.pushUpdating(tryOpcode.children);
     });
 
     updating.insertBefore(tryOpcode!, reference);
