@@ -7,6 +7,8 @@ import {
   HighLevelResolutionOpcode,
   StatementSexpOpcode,
   StatementCompileActions,
+  WellKnownAttrName,
+  WellKnownTagName,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
 import { templateMeta, strArray, arr } from '../opcode-builder/operands';
@@ -18,6 +20,21 @@ import { $sp } from '@glimmer/vm';
 import { expectString } from '../utils';
 
 export const STATEMENTS = new Compilers<StatementSexpOpcode, StatementCompileActions>();
+
+const INFLATE_ATTR_TABLE: {
+  [I in WellKnownAttrName]: string;
+} = ['class', 'id', 'value', 'name', 'type', 'style', 'href'];
+const INFLATE_TAG_TABLE: {
+  [I in WellKnownTagName]: string;
+} = ['div', 'span', 'p', 'a'];
+
+export function inflateTagName(tagName: string | WellKnownTagName) {
+  return typeof tagName === 'string' ? tagName : INFLATE_TAG_TABLE[tagName];
+}
+
+export function inflateAttrName(attrName: string | WellKnownAttrName) {
+  return typeof attrName === 'string' ? attrName : INFLATE_ATTR_TABLE[attrName];
+}
 
 STATEMENTS.add(SexpOpcodes.Comment, sexp => op(Op.Comment, sexp[1]));
 STATEMENTS.add(SexpOpcodes.CloseElement, () => op(Op.CloseElement));
@@ -49,39 +66,39 @@ STATEMENTS.add(SexpOpcodes.Modifier, (sexp, meta) => {
 });
 
 STATEMENTS.add(SexpOpcodes.StaticAttr, ([, name, value, namespace]) =>
-  op(Op.StaticAttr, name, value, namespace)
+  op(Op.StaticAttr, inflateAttrName(name), value, namespace ?? null)
 );
 
 STATEMENTS.add(SexpOpcodes.StaticComponentAttr, ([, name, value, namespace]) =>
-  op(Op.StaticComponentAttr, name, value, namespace)
+  op(Op.StaticComponentAttr, inflateAttrName(name), value, namespace ?? null)
 );
 
 STATEMENTS.add(SexpOpcodes.DynamicAttr, ([, name, value, namespace]) => [
   op('Expr', value),
-  op(Op.DynamicAttr, name, false, namespace),
+  op(Op.DynamicAttr, inflateAttrName(name), false, namespace ?? null),
 ]);
 
 STATEMENTS.add(SexpOpcodes.TrustingDynamicAttr, ([, name, value, namespace]) => [
   op('Expr', value),
-  op(Op.DynamicAttr, name, true, namespace),
+  op(Op.DynamicAttr, inflateAttrName(name), true, namespace ?? null),
 ]);
 
 STATEMENTS.add(SexpOpcodes.ComponentAttr, ([, name, value, namespace]) => [
   op('Expr', value),
-  op(Op.ComponentAttr, name, false, namespace),
+  op(Op.ComponentAttr, inflateAttrName(name), false, namespace ?? null),
 ]);
 
 STATEMENTS.add(SexpOpcodes.TrustingComponentAttr, ([, name, value, namespace]) => [
   op('Expr', value),
-  op(Op.ComponentAttr, name, true, namespace),
+  op(Op.ComponentAttr, inflateAttrName(name), true, namespace ?? null),
 ]);
 
 STATEMENTS.add(SexpOpcodes.OpenElement, ([, tag]) => {
-  return op(Op.OpenElement, tag);
+  return op(Op.OpenElement, inflateTagName(tag));
 });
 
 STATEMENTS.add(SexpOpcodes.OpenElementWithSplat, ([, tag]) => {
-  return [op(Op.PutComponentOperations), op(Op.OpenElement, tag)];
+  return [op(Op.PutComponentOperations), op(Op.OpenElement, inflateTagName(tag))];
 });
 
 STATEMENTS.add(SexpOpcodes.Component, ([, tag, attrs, args, blocks]) => {
