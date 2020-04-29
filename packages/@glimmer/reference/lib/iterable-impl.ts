@@ -124,7 +124,7 @@ function uniqueKeyFor(keyFor: KeyFor) {
 
   return (value: unknown, memo: unknown) => {
     let key = keyFor(value, memo);
-    let count = seen.get(value) || 0;
+    let count = seen.get(key) || 0;
 
     seen.set(key, count + 1);
 

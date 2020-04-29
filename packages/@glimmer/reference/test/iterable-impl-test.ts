@@ -163,6 +163,22 @@ module('@glimmer/reference: IterableImpl', () => {
       assert.equal(keys1[0], keys2[1]);
     });
 
+    test('@identity works with multiple null values', assert => {
+      let arr: any[] = [null];
+      let { target, artifacts } = initialize(arr);
+
+      let keys1 = target.toKeys();
+
+      arr.push(null);
+      sync(target, artifacts);
+
+      let keys2 = target.toKeys();
+
+      assert.equal(keys2.length, 2);
+      assert.equal(keys1[0], keys2[0]);
+      assert.notEqual(keys1[0], keys2[1]);
+    });
+
     test('@key works', assert => {
       let arr = [
         { key: 'a', name: 'Yehuda' },
