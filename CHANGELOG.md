@@ -1,3 +1,25 @@
+## v0.52.0 (2020-05-01)
+
+#### :boom: Breaking Change
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`
+  * [#1056](https://github.com/glimmerjs/glimmer-vm/pull/1056) Reduce template size increase ([@krisselden](https://github.com/krisselden))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1080](https://github.com/glimmerjs/glimmer-vm/pull/1080) Ensure destructors run for items added to an `{{#each` after initial render ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/reference`
+  * [#1081](https://github.com/glimmerjs/glimmer-vm/pull/1081) Fix key uniqueness implementation ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* `@glimmer/integration-tests`
+  * [#1070](https://github.com/glimmerjs/glimmer-vm/pull/1070) Add a previously failing test for destroyables not being called on items added to an `{{#each` after initial render ([@scottmessinger](https://github.com/scottmessinger))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+- Scott Ames-Messinger ([@scottmessinger](https://github.com/scottmessinger))
+
+
 ## v0.51.1 (2020-04-27)
 
 #### :bug: Bug Fix
