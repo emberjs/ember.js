@@ -90,12 +90,12 @@ export interface JavaScriptCompilerOps {
   closeDynamicComponent: AST.ElementNode;
   flushElement: AST.ElementNode;
 
-  staticAttr: [string, Option<string>];
-  staticComponentAttr: [string, Option<string>];
-  componentAttr: [string, Option<string>];
-  dynamicAttr: [string, Option<string>];
-  trustingComponentAttr: [string, Option<string>];
-  trustingAttr: [string, Option<string>];
+  staticAttr: [string, string?];
+  staticComponentAttr: [string, string?];
+  componentAttr: [string, string?];
+  dynamicAttr: [string, string?];
+  trustingComponentAttr: [string, string?];
+  trustingAttr: [string, string?];
 
   helper: void;
   modifier: void;

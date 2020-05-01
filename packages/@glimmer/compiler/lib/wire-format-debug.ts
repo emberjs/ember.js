@@ -6,6 +6,7 @@ import {
   SerializedTemplateBlock,
 } from '@glimmer/interfaces';
 import { dict, exhausted } from '@glimmer/util';
+import { inflateAttrName, inflateTagName } from './utils';
 
 export default class WireFormatDebugger {
   constructor(private program: SerializedTemplateBlock, _parameters?: number[]) {}
@@ -24,7 +25,9 @@ export default class WireFormatDebugger {
     if (Array.isArray(opcode)) {
       switch (opcode[0]) {
         case Op.Append:
-          return ['append', this.formatOpcode(opcode[1]), this.formatOpcode(opcode[2])];
+          return ['append', this.formatOpcode(opcode[1])];
+        case Op.TrustingAppend:
+          return ['trusting-append', this.formatOpcode(opcode[1])];
 
         case Op.Block:
           return [
@@ -36,7 +39,10 @@ export default class WireFormatDebugger {
           ];
 
         case Op.OpenElement:
-          return ['open-element', opcode[1], opcode[2]];
+          return ['open-element', inflateTagName(opcode[1])];
+
+        case Op.OpenElementWithSplat:
+          return ['open-element-with-splat', inflateTagName(opcode[1])];
 
         case Op.CloseElement:
           return ['close-element'];
@@ -45,16 +51,26 @@ export default class WireFormatDebugger {
           return ['flush-element'];
 
         case Op.StaticAttr:
-          return ['static-attr', opcode[1], opcode[2], opcode[3]];
+          return ['static-attr', inflateAttrName(opcode[1]), opcode[2], opcode[3]];
 
         case Op.StaticComponentAttr:
-          return ['static-component-attr', opcode[1], opcode[2], opcode[3]];
+          return ['static-component-attr', inflateAttrName(opcode[1]), opcode[2], opcode[3]];
 
         case Op.DynamicAttr:
-          return ['dynamic-attr', opcode[1], this.formatOpcode(opcode[2]), opcode[3]];
+          return [
+            'dynamic-attr',
+            inflateAttrName(opcode[1]),
+            this.formatOpcode(opcode[2]),
+            opcode[3],
+          ];
 
         case Op.ComponentAttr:
-          return ['component-attr', opcode[1], this.formatOpcode(opcode[2]), opcode[3]];
+          return [
+            'component-attr',
+            inflateAttrName(opcode[1]),
+            this.formatOpcode(opcode[2]),
+            opcode[3],
+          ];
 
         case Op.AttrSplat:
           return ['attr-splat'];
@@ -72,10 +88,20 @@ export default class WireFormatDebugger {
           return ['static-arg', opcode[1], this.formatOpcode(opcode[2])];
 
         case Op.TrustingDynamicAttr:
-          return ['trusting-dynamic-attr', opcode[1], this.formatOpcode(opcode[2]), opcode[3]];
+          return [
+            'trusting-dynamic-attr',
+            inflateAttrName(opcode[1]),
+            this.formatOpcode(opcode[2]),
+            opcode[3],
+          ];
 
         case Op.TrustingComponentAttr:
-          return ['trusting-component-attr', opcode[1], this.formatOpcode(opcode[2]), opcode[3]];
+          return [
+            'trusting-component-attr',
+            inflateAttrName(opcode[1]),
+            this.formatOpcode(opcode[2]),
+            opcode[3],
+          ];
 
         case Op.Debugger:
           return ['debugger', opcode[1]];
