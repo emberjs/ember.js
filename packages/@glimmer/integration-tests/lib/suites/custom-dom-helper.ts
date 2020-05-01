@@ -28,10 +28,10 @@ export class CompilationTests extends RenderTest {
   'generates id in node'() {
     let template = precompile('hello');
     let obj = JSON.parse(template);
-    this.assert.equal(obj.id, 'jbRFW0XF', 'short sha of template source');
+    this.assert.equal(obj.id, '0Y7kYkMz', 'short sha of template source');
     template = precompile('hello', { meta: { moduleName: 'template/hello' } });
     obj = JSON.parse(template);
-    this.assert.equal(obj.id, 'djhwYnFp', 'short sha of template source and meta');
+    this.assert.equal(obj.id, '3eCW+B6N', 'short sha of template source and meta');
   }
 }
 
