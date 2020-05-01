@@ -1893,8 +1893,11 @@ class UpdatingTest extends RenderTest {
     this.rerender({ list: ['initial', 'update'] });
     this.assertHTML(`<div>initial</div><div>update</div>`);
 
+    this.rerender({ list: ['initial'] });
+    assert.equal(destroyCount, 1, 'destroy was called for removed item');
+
     this.rerender({ list: [] });
-    assert.equal(destroyCount, 2, 'both list items were correctly destroyed');
+    assert.equal(destroyCount, 2, 'remaining list item was correctly destroyed');
   }
 
   @test
