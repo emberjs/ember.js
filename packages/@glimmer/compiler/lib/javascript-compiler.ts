@@ -19,6 +19,7 @@ import { expressionContextOp } from './builder';
 
 export type str = string;
 import Core = WireFormat.Core;
+import { deflateAttrName } from './utils';
 export type Params = WireFormat.Core.Params;
 export type ConcatParams = WireFormat.Core.ConcatParams;
 export type Hash = WireFormat.Core.Hash;
@@ -237,11 +238,14 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
   /// Statements
 
   text(content: string) {
-    this.push([SexpOpcodes.Append, 1, content]);
+    this.push([SexpOpcodes.TrustingAppend, content]);
   }
 
   append(trusted: boolean) {
-    this.push([SexpOpcodes.Append, +trusted, this.popValue<Expression>()]);
+    this.push([
+      trusted ? SexpOpcodes.TrustingAppend : SexpOpcodes.Append,
+      this.popValue<Expression>(),
+    ]);
   }
 
   comment(value: string) {
@@ -310,7 +314,7 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
         `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
       );
     } else {
-      this.push([SexpOpcodes.OpenElement, tag, simple]);
+      this.push(simple ? [SexpOpcodes.OpenElement, tag] : [SexpOpcodes.OpenElementWithSplat, tag]);
     }
   }
 
@@ -341,34 +345,58 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
     this.push([SexpOpcodes.CloseElement]);
   }
 
-  staticAttr([name, namespace]: [string, Option<string>]) {
+  staticAttr([name, namespace]: [string, string?]) {
     let value = this.popValue<string>();
-    this.push([SexpOpcodes.StaticAttr, name, value, namespace]);
+    let op: Statements.StaticAttr = [SexpOpcodes.StaticAttr, deflateAttrName(name), value];
+    if (namespace) op.push(namespace);
+    this.push(op);
   }
 
-  staticComponentAttr([name, namespace]: [string, Option<string>]) {
+  staticComponentAttr([name, namespace]: [string, string?]) {
     let value = this.popValue<string>();
-    this.push([SexpOpcodes.StaticComponentAttr, name, value, namespace]);
+    let op: Statements.StaticComponentAttr = [
+      SexpOpcodes.StaticComponentAttr,
+      deflateAttrName(name),
+      value,
+    ];
+    if (namespace) op.push(namespace);
+    this.push(op);
   }
 
-  dynamicAttr([name, namespace]: [string, Option<string>]) {
+  dynamicAttr([name, namespace]: [string, string?]) {
     let value = this.popValue<Expression>();
-    this.push([SexpOpcodes.DynamicAttr, name, value, namespace]);
+    let op: Statements.DynamicAttr = [SexpOpcodes.DynamicAttr, deflateAttrName(name), value];
+    if (namespace) op.push(namespace);
+    this.push(op);
   }
 
-  componentAttr([name, namespace]: [string, Option<string>]) {
+  componentAttr([name, namespace]: [string, string?]) {
     let value = this.popValue<Expression>();
-    this.push([SexpOpcodes.ComponentAttr, name, value, namespace]);
+    let op: Statements.ComponentAttr = [SexpOpcodes.ComponentAttr, deflateAttrName(name), value];
+    if (namespace) op.push(namespace);
+    this.push(op);
   }
 
-  trustingAttr([name, namespace]: [string, Option<string>]) {
+  trustingAttr([name, namespace]: [string, string?]) {
     let value = this.popValue<Expression>();
-    this.push([SexpOpcodes.TrustingDynamicAttr, name, value, namespace!]);
+    let op: Statements.TrustingAttr = [
+      SexpOpcodes.TrustingDynamicAttr,
+      deflateAttrName(name),
+      value,
+    ];
+    if (namespace) op.push(namespace);
+    this.push(op);
   }
 
-  trustingComponentAttr([name, namespace]: [string, Option<string>]) {
+  trustingComponentAttr([name, namespace]: [string, string?]) {
     let value = this.popValue<Expression>();
-    this.push([SexpOpcodes.TrustingComponentAttr, name, value, namespace!]);
+    let op: Statements.TrustingComponentAttr = [
+      SexpOpcodes.TrustingComponentAttr,
+      deflateAttrName(name),
+      value,
+    ];
+    if (namespace) op.push(namespace);
+    this.push(op);
   }
 
   staticArg(name: str) {

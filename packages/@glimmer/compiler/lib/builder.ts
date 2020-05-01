@@ -190,8 +190,7 @@ export function buildStatement(
     case HeadKind.AppendPath: {
       return [
         [
-          Op.Append,
-          +normalized.trusted,
+          normalized.trusted ? Op.TrustingAppend : Op.Append,
           buildPath(normalized.path, ExpressionContext.AppendSingleId, symbols),
         ],
       ];
@@ -200,8 +199,7 @@ export function buildStatement(
     case HeadKind.AppendExpr: {
       return [
         [
-          Op.Append,
-          +normalized.trusted,
+          normalized.trusted ? Op.TrustingAppend : Op.Append,
           buildExpression(normalized.expr, ExpressionContext.Expression, symbols),
         ],
       ];
@@ -213,11 +211,13 @@ export function buildStatement(
       let builtHash: WireFormat.Core.Hash = hash ? buildHash(hash, symbols) : null;
       let builtExpr: WireFormat.Expression = buildPath(path, ExpressionContext.CallHead, symbols);
 
-      return [[Op.Append, +trusted, [Op.Call, builtExpr, builtParams, builtHash]]];
+      return [
+        [trusted ? Op.TrustingAppend : Op.Append, [Op.Call, builtExpr, builtParams, builtHash]],
+      ];
     }
 
     case HeadKind.Literal: {
-      return [[Op.Append, 1, normalized.value]];
+      return [[Op.TrustingAppend, normalized.value]];
     }
 
     case HeadKind.Comment: {
@@ -278,7 +278,9 @@ function buildElement(
   { name, attrs, block }: NormalizedElement,
   symbols: Symbols
 ): WireFormat.Statement[] {
-  let out: WireFormat.Statement[] = [[Op.OpenElement, name, !hasSplat(attrs)]];
+  let out: WireFormat.Statement[] = [
+    hasSplat(attrs) ? [Op.OpenElementWithSplat, name] : [Op.OpenElement, name],
+  ];
   if (attrs) {
     let { attributes, args } = buildAttrs(attrs, symbols);
     out.push(...attributes);
@@ -400,9 +402,9 @@ export function buildAttributeValue(
       if (val === false) {
         return [];
       } else if (val === true) {
-        return [[Op.StaticAttr, name, '', namespace]];
+        return [[Op.StaticAttr, name, '', namespace ?? undefined]];
       } else if (typeof val === 'string') {
-        return [[Op.StaticAttr, name, val, namespace]];
+        return [[Op.StaticAttr, name, val, namespace ?? undefined]];
       } else {
         throw new Error(`Unexpected/unimplemented literal attribute ${JSON.stringify(val)}`);
       }
@@ -414,7 +416,7 @@ export function buildAttributeValue(
           Op.DynamicAttr,
           name,
           buildExpression(value, ExpressionContext.AppendSingleId, symbols),
-          namespace,
+          namespace ?? undefined,
         ],
       ];
   }
