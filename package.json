@@ -57,7 +57,7 @@
     "broccoli-debug": "^0.6.4",
     "broccoli-funnel": "^2.0.2",
     "broccoli-merge-trees": "^4.2.0",
-    "chalk": "^3.0.0",
+    "chalk": "^4.0.0",
     "ember-cli-babel": "^7.18.0",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-is-package-missing": "^1.0.0",
