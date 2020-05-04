@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.19-0.beta.3 (May 4, 2020)
+
+- [#18941](https://github.com/emberjs/ember.js/pull/18941) [BUGFIX] Update rendering engine to latest version.
+  - Reduce template size growth to near 3.16 levels (still ~ 3% higher than 3.16)
+  - Ensures destroyable items added to an `{{#each` after initial render are invoked properly
+  - Fixes an issue with key collisions in `{{#each`
+
 ### v3.19.0-beta.2 (April 27, 2020)
 
 - [#18913](https://github.com/emberjs/ember.js/pull/18913) [BUGFIX] Update to glimmer-vm 0.51.0.
