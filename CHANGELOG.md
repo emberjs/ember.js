@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.18.1 (May 4, 2020)
+
+- [#18941](https://github.com/emberjs/ember.js/pull/18941) [BUGFIX] Update rendering engine to latest version.
+  - Reduce template size growth to near 3.16 levels (still ~ 3% higher than 3.16)
+  - Ensures destroyable items added to an `{{#each` after initial render are invoked properly
+  - Fixes an issue with key collisions in `{{#each`
+
 ### v3.18.0 (April 14, 2020)
 - [#18869](https://github.com/emberjs/ember.js/pull/18869) / [#18861](https://github.com/emberjs/ember.js/pull/18861) / [#18811](https://github.com/emberjs/ember.js/pull/18811) [BUGFIX] Update to glimmer-vm 0.50.2.
 - [#18807](https://github.com/emberjs/ember.js/pull/18807) [BUGFIX] Do not error (RE: `elementId` changing) if `elementId` is not changed
