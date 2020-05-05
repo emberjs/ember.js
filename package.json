@@ -141,7 +141,7 @@
     "rsvp": "^4.8.5",
     "serve-static": "^1.14.1",
     "simple-dom": "^1.4.0",
-    "testem": "^3.0.2",
+    "testem": "^3.1.0",
     "testem-failure-only-reporter": "^0.0.1",
     "tslint": "^5.20.1"
   },

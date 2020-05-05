@@ -8657,10 +8657,10 @@ testem@^2.14.0, testem@^2.9.2:
     tmp "0.0.33"
     xmldom "^0.1.19"
 
-testem@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.0.2.tgz#9100d09e73c3271e5201a141dbd3f0d31e71add2"
-  integrity sha512-mUcPL7MZtmg3UUkOe6sIFXoY1ysv06qxQ7VEKnAHIAiKbf21DOdAJzVqR9YsOZcvennP9gKAUbL/607z9RQt/g==
+testem@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.1.0.tgz#d27ec0b5593706c5cb005d8829b5abd329c86c16"
+  integrity sha512-wmPMqwocl9sU7kk32+fRpYFQVwL2XO6PszYF3IPIi6exw3zXb879Ulw4NQrkybdNtTS8yj9yv2lEuvYgpulbaw==
   dependencies:
     backbone "^1.1.2"
     bluebird "^3.4.6"
