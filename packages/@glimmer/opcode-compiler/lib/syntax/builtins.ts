@@ -167,6 +167,8 @@ export function populateBuiltins(
 
     return ReplayableIf({
       args() {
+        assert(hash !== null, '[BUG] `{{#in-element}}` should have non-empty hash');
+
         let [keys, values] = hash!;
 
         let actions: StatementCompileActions = [];
