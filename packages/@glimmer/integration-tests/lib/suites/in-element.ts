@@ -1,3 +1,5 @@
+import { AST } from '@glimmer/syntax';
+import { assign } from '@glimmer/util';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { equalsElement } from '../dom/assertions';
@@ -7,6 +9,41 @@ import { EmberishCurlyComponent } from '../components/emberish-curly';
 
 export class InElementSuite extends RenderTest {
   static suiteName = '#in-element';
+
+  @test
+  'It works with AST transforms'() {
+    this.registerPlugin(env => ({
+      name: 'maybe-in-element',
+      visitor: {
+        BlockStatement(node: AST.BlockStatement) {
+          let b = env.syntax.builders;
+          let { path, ...rest } = node;
+          if (path.type !== 'SubExpression' && path.original === 'maybe-in-element') {
+            return assign({ path: b.path('in-element', path.loc) }, rest);
+          } else {
+            return node;
+          }
+        },
+      },
+    }));
+
+    let externalElement = this.delegate.createElement('div');
+    this.render('{{#maybe-in-element externalElement}}[{{foo}}]{{/maybe-in-element}}', {
+      externalElement,
+      foo: 'Yippie!',
+    });
+
+    equalsElement(externalElement, 'div', {}, '[Yippie!]');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'Double Yups!' });
+    equalsElement(externalElement, 'div', {}, '[Double Yups!]');
+    this.assertStableNodes();
+
+    this.rerender({ foo: 'Yippie!' });
+    equalsElement(externalElement, 'div', {}, '[Yippie!]');
+    this.assertStableNodes();
+  }
 
   @test
   'Renders curlies into external element'() {
