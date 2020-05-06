@@ -6,6 +6,7 @@
   "dependencies": {
     "@glimmer/reference": "^0.52.0",
     "@glimmer/runtime": "^0.52.0",
+    "@glimmer/syntax": "^0.52.0",
     "@glimmer/validator": "^0.52.0",
     "@glimmer/compiler": "^0.52.0",
     "@glimmer/util": "^0.52.0",
