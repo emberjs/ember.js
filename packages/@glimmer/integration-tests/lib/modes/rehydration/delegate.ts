@@ -1,3 +1,4 @@
+import { PrecompileOptions } from '@glimmer/compiler';
 import {
   Cursor,
   Dict,
@@ -8,6 +9,7 @@ import {
   Helper,
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
+import { ASTPluginBuilder } from '@glimmer/syntax';
 import createHTMLDocument from '@simple-dom/document';
 import {
   SimpleDocument,
@@ -43,6 +45,8 @@ export interface RehydrationStats {
 export class RehydrationDelegate implements RenderDelegate {
   static readonly isEager = false;
   static readonly style = 'rehydration';
+
+  private plugins: ASTPluginBuilder[] = [];
 
   public clientEnv: JitTestDelegateContext;
   public serverEnv: JitTestDelegateContext;
@@ -113,7 +117,8 @@ export class RehydrationDelegate implements RenderDelegate {
       template,
       this.serverEnv,
       this.getSelf(context),
-      this.getElementBuilder(this.serverEnv.runtime.env, cursor)
+      this.getElementBuilder(this.serverEnv.runtime.env, cursor),
+      this.precompileOptions
     );
 
     takeSnapshot();
@@ -139,7 +144,13 @@ export class RehydrationDelegate implements RenderDelegate {
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor) as DebugRehydrationBuilder;
-    let result = renderTemplate(template, this.clientEnv, this.getSelf(context), builder);
+    let result = renderTemplate(
+      template,
+      this.clientEnv,
+      this.getSelf(context),
+      builder,
+      this.precompileOptions
+    );
 
     this.rehydrationStats = {
       clearedNodes: builder['clearedNodes'],
@@ -159,6 +170,10 @@ export class RehydrationDelegate implements RenderDelegate {
     qunitFixture().appendChild(element);
 
     return this.renderClientSide(template, context, element);
+  }
+
+  registerPlugin(plugin: ASTPluginBuilder): void {
+    this.plugins.push(plugin);
   }
 
   registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
@@ -184,6 +199,14 @@ export class RehydrationDelegate implements RenderDelegate {
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
     registerModifier(this.clientRegistry, name, ModifierClass);
     registerModifier(this.serverRegistry, name, ModifierClass);
+  }
+
+  private get precompileOptions(): PrecompileOptions {
+    return {
+      plugins: {
+        ast: this.plugins,
+      },
+    };
   }
 }
 

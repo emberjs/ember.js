@@ -21,9 +21,10 @@ export const DEFAULT_TEST_META: AnnotatedModuleLocator = Object.freeze({
 // out of the test environment.
 export function preprocess(
   template: string,
-  meta?: AnnotatedModuleLocator
+  meta?: AnnotatedModuleLocator,
+  options?: PrecompileOptions
 ): Template<AnnotatedModuleLocator> {
-  let wrapper = JSON.parse(rawPrecompile(template));
+  let wrapper = JSON.parse(rawPrecompile(template, options));
   let factory = templateFactory<AnnotatedModuleLocator>(wrapper);
   return factory.create(meta || DEFAULT_TEST_META);
 }
