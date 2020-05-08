@@ -1,4 +1,5 @@
 import { Dict, Maybe, Option, RenderResult, Helper } from '@glimmer/interfaces';
+import { ASTPluginBuilder } from '@glimmer/syntax';
 import { bump, isConst } from '@glimmer/validator';
 import { clearElement, dict, expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
@@ -54,19 +55,23 @@ export class RenderTest implements IRenderTest {
     this.element = delegate.getInitialElement();
   }
 
-  registerHelper(name: string, helper: UserHelper) {
+  registerPlugin(plugin: ASTPluginBuilder): void {
+    this.delegate.registerPlugin(plugin);
+  }
+
+  registerHelper(name: string, helper: UserHelper): void {
     this.delegate.registerHelper(name, helper);
   }
 
-  registerInternalHelper(name: string, helper: Helper) {
+  registerInternalHelper(name: string, helper: Helper): void {
     this.delegate.registerInternalHelper(name, helper);
   }
 
-  registerModifier(name: string, ModifierClass: TestModifierConstructor) {
+  registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
     this.delegate.registerModifier(name, ModifierClass);
   }
 
-  registerPartial(name: string, content: string) {
+  registerPartial(name: string, content: string): void {
     this.delegate.registerPartial(name, content);
   }
 
@@ -75,7 +80,7 @@ export class RenderTest implements IRenderTest {
     name: string,
     layout: string,
     Class?: ComponentTypes[K]
-  ) {
+  ): void {
     this.delegate.registerComponent(type, this.testType, name, layout, Class);
   }
 

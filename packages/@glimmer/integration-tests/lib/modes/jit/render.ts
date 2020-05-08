@@ -1,4 +1,5 @@
 import { JitTestDelegateContext } from './delegate';
+import { PrecompileOptions } from '@glimmer/compiler';
 import { VersionedPathReference } from '@glimmer/reference';
 import { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import { preprocess } from '../../compile';
@@ -9,9 +10,10 @@ export function renderTemplate(
   src: string,
   { runtime, syntax }: JitTestDelegateContext,
   self: VersionedPathReference,
-  builder: ElementBuilder
+  builder: ElementBuilder,
+  options?: PrecompileOptions
 ): RenderResult {
-  let template = preprocess(src);
+  let template = preprocess(src, undefined, options);
   let handle = unwrapTemplate(template)
     .asLayout()
     .compile(syntax);

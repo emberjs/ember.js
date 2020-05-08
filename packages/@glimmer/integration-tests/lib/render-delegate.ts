@@ -6,6 +6,7 @@ import {
   SimpleDocumentFragment,
   SimpleDocument,
 } from '@simple-dom/interface';
+import { ASTPluginBuilder } from '@glimmer/syntax';
 import { ComponentKind, ComponentTypes } from './components';
 import { UserHelper } from './helpers';
 import {
@@ -39,6 +40,7 @@ export default interface RenderDelegate {
     layout: string,
     Class?: ComponentTypes[K]
   ): void;
+  registerPlugin(plugin: ASTPluginBuilder): void;
   registerHelper(name: string, helper: UserHelper): void;
   registerInternalHelper(name: string, helper: Helper): void;
   registerPartial(name: string, content: string): void;
