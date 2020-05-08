@@ -1,3 +1,13 @@
+## v0.52.1 (2020-05-08)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/syntax`
+  * [#1086](https://github.com/glimmerjs/glimmer-vm/pull/1086) [BUGFIX] Process in-element in compiler not parser ([@gitKrystan](https://github.com/gitKrystan))
+
+#### Committers: 1
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
+
+
 ## v0.52.0 (2020-05-01)
 
 #### :boom: Breaking Change
