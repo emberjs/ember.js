@@ -45,7 +45,6 @@ import { isPath } from './utils';
 export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin {
   let { moduleName } = env.meta as StaticTemplateMeta;
   let { builders: b } = env.syntax;
-  let cursorCount = 0;
 
   return {
     name: 'transform-in-element',
@@ -101,10 +100,6 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
               needsInsertBefore = false;
             }
           });
-
-          let guid = b.literal('StringLiteral', `%cursor:${cursorCount++}%`);
-          let guidPair = b.pair('guid', guid);
-          hash.pairs.unshift(guidPair);
 
           // Maintain compatibility with previous -in-element behavior (defaults to append, not clear)
           if (needsInsertBefore) {
