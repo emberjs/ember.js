@@ -18,8 +18,6 @@ function isTrustedValue(value: any) {
   return value.escaped !== undefined && !value.escaped;
 }
 
-export const THIS = 0;
-
 export default class TemplateCompiler implements Processor<InputOps> {
   static compile(ast: AST.Template, source: string, options?: CompileOptions): Template {
     let templateVisitor = new TemplateVisitor();
@@ -49,6 +47,12 @@ export default class TemplateCompiler implements Processor<InputOps> {
   private locations: Option<SourceLocation>[] = [];
   private includeMeta = true;
 
+  private cursorCount = 0;
+
+  cursor() {
+    return `%cursor:${this.cursorCount++}%`;
+  }
+
   process(
     actions: Action[]
   ): { opcodes: readonly Ops<AllocateSymbolsOps>[]; locations: readonly Option<SourceLocation>[] } {
@@ -62,6 +66,7 @@ export default class TemplateCompiler implements Processor<InputOps> {
   }
 
   startProgram([program]: [AST.Template]) {
+    this.cursorCount = 0;
     this.opcode(['startProgram', program], program);
   }
 
@@ -242,7 +247,12 @@ export default class TemplateCompiler implements Processor<InputOps> {
   }
 
   block([action /*, index, count*/]: [AST.BlockStatement]) {
-    this.prepareHelper(action, 'block');
+    if (isInElement(action)) {
+      this.prepareHelper(action, 'in-element');
+    } else {
+      this.prepareHelper(action, 'block');
+    }
+
     let templateId = this.templateIds.pop()!;
     let inverseId = action.inverse === null ? null : this.templateIds.pop()!;
     this.expression(action.path, ExpressionContext.BlockHead, action);
@@ -403,12 +413,12 @@ export default class TemplateCompiler implements Processor<InputOps> {
     this.opcode(['helper'], call);
   }
 
-  prepareHelper(expr: AST.Call, context: string) {
+  prepareHelper(expr: AST.Call, context: 'helper' | 'modifier' | 'block' | 'in-element') {
     assertIsSimplePath(expr.path, expr.loc, context);
 
     let { params, hash } = expr;
 
-    this.prepareHash(hash);
+    this.prepareHash(hash, context);
     this.prepareParams(params);
   }
 
@@ -428,23 +438,51 @@ export default class TemplateCompiler implements Processor<InputOps> {
     this.opcode(['prepareArray', params.length], null);
   }
 
-  prepareHash(hash: AST.Hash) {
+  prepareHash(hash: AST.Hash, context: 'helper' | 'modifier' | 'block' | 'in-element') {
     let pairs = hash.pairs;
+    let length = pairs.length;
 
-    if (!pairs.length) {
-      this.opcode(['literal', null], null);
-      return;
-    }
+    let isInElement = context === 'in-element';
+    let hasInsertBefore = false;
 
-    for (let i = pairs.length - 1; i >= 0; i--) {
+    for (let i = length - 1; i >= 0; i--) {
       let { key, value } = pairs[i];
+
+      if (isInElement) {
+        if (key === 'guid') {
+          throw new SyntaxError(
+            `Cannot pass \`guid\` to \`{{#in-element}}\` on line ${value.loc.start.line}.`,
+            value.loc
+          );
+        }
+
+        if (key === 'insertBefore') {
+          hasInsertBefore = true;
+        }
+      }
 
       assert(this[value.type], `Unimplemented ${value.type} on TemplateCompiler`);
       this[value.type](value as any);
-      this.opcode(['literal', key], null);
+      this.opcode(['literal', key]);
     }
 
-    this.opcode(['prepareObject', pairs.length], null);
+    if (isInElement) {
+      if (!hasInsertBefore) {
+        this.opcode(['literal', undefined]);
+        this.opcode(['literal', 'insertBefore']);
+        length++;
+      }
+
+      this.opcode(['literal', this.cursor()]);
+      this.opcode(['literal', 'guid']);
+      length++;
+    }
+
+    if (length === 0) {
+      this.opcode(['literal', null]);
+    } else {
+      this.opcode(['prepareObject', length]);
+    }
   }
 
   prepareAttributeValue(value: AST.AttrNode['value']): value is AST.TextNode {
@@ -573,6 +611,12 @@ function isCall(node: AST.Node | AST.Call): node is AST.Call {
 
 function isPath(node: AST.Node | AST.PathExpression): node is AST.PathExpression {
   return node.type === 'PathExpression';
+}
+
+function isInElement(
+  node: AST.BlockStatement
+): node is AST.BlockStatement & { path: AST.PathExpression } {
+  return isPath(node.path) && node.path.original === 'in-element';
 }
 
 function destructureDynamicComponent(element: AST.ElementNode): Option<AST.PathExpression> {

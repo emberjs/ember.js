@@ -13,12 +13,6 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   abstract beginAttributeValue(quoted: boolean): void;
   abstract finishAttributeValue(): void;
 
-  cursorCount = 0;
-
-  cursor() {
-    return `%cursor:${this.cursorCount++}%`;
-  }
-
   private get isTopLevel() {
     return this.elementStack.length === 0;
   }
@@ -28,8 +22,6 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   Program(program: HBS.Program): AST.Template | AST.Block;
   Program(program: HBS.Program): AST.Block | AST.Template {
     let body: AST.Statement[] = [];
-    this.cursorCount = 0;
-
     let node;
 
     if (this.isTopLevel) {
@@ -85,10 +77,6 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let { path, params, hash } = acceptCallNodes(this, block);
     let program = this.Program(block.program);
     let inverse = block.inverse ? this.Program(block.inverse) : null;
-
-    if (path.original === 'in-element') {
-      hash = addInElementHash(this.cursor(), hash, block.loc);
-    }
 
     let node = b.block(
       path,
@@ -442,31 +430,6 @@ function addElementModifier(element: Tag<'StartTag'>, mustache: AST.MustacheStat
 
   let modifier = b.elementModifier(path, params, hash, loc);
   element.modifiers.push(modifier);
-}
-
-function addInElementHash(cursor: string, hash: AST.Hash, loc: AST.SourceLocation) {
-  let hasInsertBefore = false;
-  hash.pairs.forEach(pair => {
-    if (pair.key === 'guid') {
-      throw new SyntaxError('Cannot pass `guid` from user space', loc);
-    }
-
-    if (pair.key === 'insertBefore') {
-      hasInsertBefore = true;
-    }
-  });
-
-  let guid = b.literal('StringLiteral', cursor);
-  let guidPair = b.pair('guid', guid);
-  hash.pairs.unshift(guidPair);
-
-  if (!hasInsertBefore) {
-    let undefinedLiteral = b.literal('UndefinedLiteral', undefined);
-    let beforeSibling = b.pair('insertBefore', undefinedLiteral);
-    hash.pairs.push(beforeSibling);
-  }
-
-  return hash;
 }
 
 function appendDynamicAttributeValuePart(attribute: Attribute, part: AST.MustacheStatement) {

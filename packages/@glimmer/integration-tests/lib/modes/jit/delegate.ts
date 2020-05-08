@@ -1,3 +1,4 @@
+import { PrecompileOptions } from '@glimmer/compiler';
 import {
   JitRuntimeContext,
   SyntaxCompilationContext,
@@ -36,6 +37,7 @@ import {
   registerTemplate,
   componentHelper,
 } from './register';
+import { ASTPluginBuilder } from '@glimmer/syntax';
 import { TestMacros } from '../../compile/macros';
 import JitCompileTimeLookup from './compilation-context';
 import TestJitRuntimeResolver from './resolver';
@@ -74,6 +76,7 @@ export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
   static style = 'jit';
 
+  private plugins: ASTPluginBuilder[] = [];
   private resolver: TestJitRuntimeResolver = new TestJitRuntimeResolver();
   private registry: TestJitRegistry = this.resolver.registry;
   private context: JitTestDelegateContext;
@@ -117,6 +120,10 @@ export class JitRenderDelegate implements RenderDelegate {
 
   createCurriedComponent(name: string): Option<CurriedComponentDefinition> {
     return componentHelper(this.resolver, this.registry, name);
+  }
+
+  registerPlugin(plugin: ASTPluginBuilder): void {
+    this.plugins.push(plugin);
   }
 
   registerComponent<K extends 'Basic' | 'Fragment' | 'Glimmer', L extends ComponentKind>(
@@ -200,7 +207,7 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   compileTemplate(template: string): HandleResult {
-    let compiled = preprocess(template);
+    let compiled = preprocess(template, undefined, this.precompileOptions);
 
     return unwrapTemplate(compiled)
       .asLayout()
@@ -214,8 +221,17 @@ export class JitRenderDelegate implements RenderDelegate {
       template,
       this.context,
       this.getSelf(context),
-      this.getElementBuilder(this.context.runtime.env, cursor)
+      this.getElementBuilder(this.context.runtime.env, cursor),
+      this.precompileOptions
     );
+  }
+
+  private get precompileOptions(): PrecompileOptions {
+    return {
+      plugins: {
+        ast: this.plugins,
+      },
+    };
   }
 }
 

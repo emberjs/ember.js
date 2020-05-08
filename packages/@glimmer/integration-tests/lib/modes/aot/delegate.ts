@@ -1,3 +1,4 @@
+import { PrecompileOptions } from '@glimmer/compiler';
 import {
   BundleCompiler,
   DebugConstants,
@@ -31,6 +32,7 @@ import {
   renderSync,
   AotRuntime,
 } from '@glimmer/runtime';
+import { ASTPluginBuilder } from '@glimmer/syntax';
 import { assert, assign, expect, Option } from '@glimmer/util';
 import {
   SimpleElement,
@@ -99,6 +101,7 @@ export class AotRenderDelegate implements RenderDelegate {
   static readonly isEager = true;
   static style = 'aot';
 
+  private plugins: ASTPluginBuilder[] = [];
   protected registry = new AotCompilerRegistry();
   protected compileTimeModules = new Modules();
   protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
@@ -132,6 +135,10 @@ export class AotRenderDelegate implements RenderDelegate {
 
   createDocumentFragment(): SimpleDocumentFragment {
     return this.doc.createDocumentFragment();
+  }
+
+  registerPlugin(plugin: ASTPluginBuilder): void {
+    this.plugins.push(plugin);
   }
 
   registerComponent(
@@ -182,7 +189,10 @@ export class AotRenderDelegate implements RenderDelegate {
   }
 
   registerPartial(name: string, source: string) {
-    let definition = new PartialDefinitionImpl(name, preprocess(source));
+    let definition = new PartialDefinitionImpl(
+      name,
+      preprocess(source, undefined, this.precompileOptions)
+    );
     this.registry.register(name, 'partial', { default: definition });
   }
 
@@ -190,6 +200,14 @@ export class AotRenderDelegate implements RenderDelegate {
     let state = new TestModifierDefinitionState(ModifierClass);
     let manager = new TestModifierManager();
     this.registry.register(name, 'modifier', { default: { manager, state } });
+  }
+
+  private get precompileOptions(): PrecompileOptions {
+    return {
+      plugins: {
+        ast: this.plugins,
+      },
+    };
   }
 
   private addRegisteredComponents(bundleCompiler: BundleCompiler): void {
@@ -256,7 +274,7 @@ export class AotRenderDelegate implements RenderDelegate {
   }
 
   private getBundleCompiler(): BundleCompiler {
-    let { compiler, constants } = getBundleCompiler(this.registry);
+    let { compiler, constants } = getBundleCompiler(this.registry, this.plugins);
     this.constants = constants;
 
     return compiler;
@@ -320,13 +338,15 @@ export class AotRenderDelegate implements RenderDelegate {
 }
 
 function getBundleCompiler(
-  registry: AotCompilerRegistry
+  registry: AotCompilerRegistry,
+  plugins?: ASTPluginBuilder[]
 ): { compiler: BundleCompiler; constants: DebugConstants } {
   let delegate: AotCompilerDelegate = new AotCompilerDelegate(registry);
   let constants = new DebugConstants();
   let compiler = new BundleCompiler(delegate, {
     macros: new TestMacros(),
     constants,
+    plugins,
   });
   return { constants, compiler };
 }
