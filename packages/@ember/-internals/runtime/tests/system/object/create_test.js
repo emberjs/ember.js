@@ -1,5 +1,5 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { computed, Mixin, observer, addObserver, destroy } from '@ember/-internals/metal';
+import { computed, Mixin, observer, addObserver, destroy, alias } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -28,7 +28,7 @@ moduleFor(
       assert.equal(o.get('foo'), 'bar');
     }
 
-    ['@test sets up mandatory setters for watched simple properties'](assert) {
+    ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
       if (DEBUG) {
         let MyClass = EmberObject.extend({
           foo: null,
@@ -38,6 +38,54 @@ moduleFor(
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
         assert.equal(o.get('foo'), 'bar');
+
+        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+        assert.ok(descriptor.set, 'Mandatory setter was setup');
+
+        descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
+        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        o.destroy();
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
+      if (DEBUG) {
+        let MyClass = EmberObject.extend({
+          foo: null,
+          bar: null,
+          fooAlias: computed('foo', function() {
+            return this.foo;
+          }),
+        });
+
+        let o = MyClass.create({ foo: 'bar', bar: 'baz' });
+        assert.equal(o.get('fooAlias'), 'bar');
+
+        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+        assert.ok(descriptor.set, 'Mandatory setter was setup');
+
+        descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
+        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        o.destroy();
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test sets up mandatory setters for simple properties watched with aliases'](assert) {
+      if (DEBUG) {
+        let MyClass = EmberObject.extend({
+          foo: null,
+          bar: null,
+          fooAlias: alias('foo'),
+        });
+
+        let o = MyClass.create({ foo: 'bar', bar: 'baz' });
+        assert.equal(o.get('fooAlias'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');

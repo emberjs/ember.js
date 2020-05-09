@@ -58,7 +58,7 @@ export default Mixin.create({
     return Boolean(get(this, 'content'));
   }),
 
-  [CUSTOM_TAG_FOR](key) {
+  [CUSTOM_TAG_FOR](key, addMandatorySetter) {
     let tag = tagFor(this, key);
 
     if (DEBUG) {
@@ -67,13 +67,13 @@ export default Mixin.create({
     }
 
     if (key in this) {
-      if (DEBUG) {
+      if (DEBUG && addMandatorySetter) {
         setupMandatorySetter(tag, this, key);
       }
 
       return tag;
     } else {
-      return combine([tag, ...getChainTagsForKey(this, `content.${key}`)]);
+      return combine([tag, ...getChainTagsForKey(this, `content.${key}`, addMandatorySetter)]);
     }
   },
 

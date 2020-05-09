@@ -95,7 +95,7 @@ export function activateObserver(target: object, eventName: string, sync = false
     activeObservers.get(eventName)!.count++;
   } else {
     let [path] = eventName.split(':');
-    let tag = combine(getChainTagsForKey(target, path));
+    let tag = combine(getChainTagsForKey(target, path, true));
 
     activeObservers.set(eventName, {
       count: 1,
@@ -159,14 +159,14 @@ export function resumeObserverDeactivation() {
 export function revalidateObservers(target: object) {
   if (ASYNC_OBSERVERS.has(target)) {
     ASYNC_OBSERVERS.get(target)!.forEach(observer => {
-      observer.tag = combine(getChainTagsForKey(target, observer.path));
+      observer.tag = combine(getChainTagsForKey(target, observer.path, true));
       observer.lastRevision = valueForTag(observer.tag);
     });
   }
 
   if (SYNC_OBSERVERS.has(target)) {
     SYNC_OBSERVERS.get(target)!.forEach(observer => {
-      observer.tag = combine(getChainTagsForKey(target, observer.path));
+      observer.tag = combine(getChainTagsForKey(target, observer.path, true));
       observer.lastRevision = valueForTag(observer.tag);
     });
   }
@@ -196,7 +196,7 @@ export function flushAsyncObservers(shouldSchedule = true) {
           try {
             sendEvent(target, eventName, [target, observer.path], undefined, meta);
           } finally {
-            observer.tag = combine(getChainTagsForKey(target, observer.path));
+            observer.tag = combine(getChainTagsForKey(target, observer.path, true));
             observer.lastRevision = valueForTag(observer.tag);
           }
         };
@@ -230,7 +230,7 @@ export function flushSyncObservers() {
           observer.suspended = true;
           sendEvent(target, eventName, [target, observer.path], undefined, meta);
         } finally {
-          observer.tag = combine(getChainTagsForKey(target, observer.path));
+          observer.tag = combine(getChainTagsForKey(target, observer.path, true));
           observer.lastRevision = valueForTag(observer.tag);
           observer.suspended = false;
         }

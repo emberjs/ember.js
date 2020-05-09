@@ -2788,16 +2788,6 @@ moduleFor(
 
       this.assertText('initial value - initial value');
 
-      if (DEBUG) {
-        let message = /You attempted to update .*, but it is being tracked by a tracking context/;
-
-        expectAssertion(() => {
-          component.bar = 'foo-bar';
-        }, message);
-
-        this.assertText('initial value - initial value');
-      }
-
       runTask(() => {
         component.set('bar', 'updated value');
       });
