@@ -387,6 +387,16 @@ const Application = Engine.extend({
     @return {ApplicationInstance} the application instance
   */
   buildInstance(options = {}) {
+    assert(
+      'You cannot build new instances of this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert(
+      'You cannot build new instances of this application since it is being destroyed',
+      !this.isDestroying
+    );
+
     options.base = this;
     options.application = this;
     return ApplicationInstance.create(options);
@@ -516,7 +526,7 @@ const Application = Engine.extend({
     @method domReady
   */
   domReady() {
-    if (this.isDestroyed) {
+    if (this.isDestroying || this.isDestroyed) {
       return;
     }
 
@@ -560,10 +570,19 @@ const Application = Engine.extend({
       'You must call deferReadiness on an instance of Application',
       this instanceof Application
     );
+
+    assert('You cannot defer readiness since application has already destroyed', !this.isDestroyed);
+
     assert(
-      'You cannot defer readiness since the `ready()` hook has already been called.',
+      'You cannot defer readiness since the application is being destroyed',
+      !this.isDestroying
+    );
+
+    assert(
+      'You cannot defer readiness since the `ready()` hook has already been called',
       this._readinessDeferrals > 0
     );
+
     this._readinessDeferrals++;
   },
 
@@ -581,6 +600,22 @@ const Application = Engine.extend({
       'You must call advanceReadiness on an instance of Application',
       this instanceof Application
     );
+
+    assert(
+      'You cannot advance readiness since application has already destroyed',
+      !this.isDestroyed
+    );
+
+    assert(
+      'You cannot advance readiness since the application is being destroyed',
+      !this.isDestroying
+    );
+
+    assert(
+      'You cannot advance readiness since the `ready()` hook has already been called',
+      this._readinessDeferrals > 0
+    );
+
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
@@ -605,6 +640,13 @@ const Application = Engine.extend({
     @return {Promise<Application,Error>}
   */
   boot() {
+    assert(
+      'You cannot boot this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert('You cannot boot this application since it is being destroyed', !this.isDestroying);
+
     if (this._bootPromise) {
       return this._bootPromise;
     }
@@ -633,7 +675,7 @@ const Application = Engine.extend({
     @private
   */
   _bootSync() {
-    if (this._booted) {
+    if (this._booted || this.isDestroying || this.isDestroyed) {
       return;
     }
 
@@ -731,6 +773,13 @@ const Application = Engine.extend({
   */
   reset() {
     assert(
+      'You cannot reset this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert('You cannot reset this application since it is being destroyed', !this.isDestroying);
+
+    assert(
       `Calling reset() on instances of \`Application\` is not
             supported when globals mode is disabled; call \`visit()\` to
             create new \`ApplicationInstance\`s and dispose them
@@ -759,6 +808,10 @@ const Application = Engine.extend({
     @method didBecomeReady
   */
   didBecomeReady() {
+    if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
     try {
       // TODO: Is this still needed for _globalsMode = false?
       if (!isTesting()) {
@@ -819,10 +872,8 @@ const Application = Engine.extend({
   // This method must be moved to the application instance object
   willDestroy() {
     this._super(...arguments);
+
     setNamespaceSearchDisabled(false);
-    this._booted = false;
-    this._bootPromise = null;
-    this._bootResolver = null;
 
     if (_loaded.application === this) {
       _loaded.application = undefined;
@@ -1032,6 +1083,13 @@ const Application = Engine.extend({
     @return {Promise<ApplicationInstance, Error>}
   */
   visit(url, options) {
+    assert(
+      'You cannot visit this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert('You cannot visit this application since it is being destroyed', !this.isDestroying);
+
     return this.boot().then(() => {
       let instance = this.buildInstance();
 
