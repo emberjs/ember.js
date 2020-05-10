@@ -1,6 +1,6 @@
 import { Dict, Maybe, Option, RenderResult, Helper } from '@glimmer/interfaces';
 import { ASTPluginBuilder } from '@glimmer/syntax';
-import { bump, isConst } from '@glimmer/validator';
+import { bump, isConstTagged } from '@glimmer/validator';
 import { clearElement, dict, expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import {
@@ -393,7 +393,7 @@ export class RenderTest implements IRenderTest {
 
     let self = this.delegate.getSelf(this.context);
 
-    if (!isConst(self)) {
+    if (!isConstTagged(self)) {
       (self as UpdatableRootReference).forceUpdate(this.context);
     }
 
