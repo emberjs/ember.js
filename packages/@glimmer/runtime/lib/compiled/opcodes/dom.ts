@@ -1,5 +1,12 @@
 import { Reference, ReferenceCache, VersionedReference } from '@glimmer/reference';
-import { Revision, Tag, isConst, isConstTag, valueForTag, validateTag } from '@glimmer/validator';
+import {
+  Revision,
+  Tag,
+  isConstTagged,
+  isConstTag,
+  valueForTag,
+  validateTag,
+} from '@glimmer/validator';
 import { check, CheckString, CheckElement, CheckOption, CheckNode } from '@glimmer/debug';
 import { Op, Option, ModifierManager } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
@@ -43,7 +50,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let insertBefore: Maybe<SimpleNode>;
   let guid = guidRef.value() as string;
 
-  if (isConst(elementRef)) {
+  if (isConstTagged(elementRef)) {
     element = check(elementRef.value(), CheckElement);
   } else {
     let cache = new ReferenceCache(elementRef as Reference<SimpleElement>);
@@ -52,7 +59,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   }
 
   if (insertBeforeRef.value() !== undefined) {
-    if (isConst(insertBeforeRef)) {
+    if (isConstTagged(insertBeforeRef)) {
       insertBefore = check(insertBeforeRef.value(), CheckOption(CheckNode));
     } else {
       let cache = new ReferenceCache(insertBeforeRef as Reference<Option<SimpleNode>>);
@@ -163,7 +170,7 @@ APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _names
 
   let attribute = vm.elements().setDynamicAttribute(name, value, !!trusting, namespace);
 
-  if (!isConst(reference)) {
+  if (!isConstTagged(reference)) {
     vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
   }
 });

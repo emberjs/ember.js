@@ -241,7 +241,7 @@ export function createUpdatableTag(): UpdatableTag {
 
 export const CONSTANT_TAG = new MonomorphicTagImpl(MonomorphicTagTypes.Constant) as ConstantTag;
 
-export function isConst({ tag }: Tagged): boolean {
+export function isConstTagged({ tag }: Tagged): boolean {
   return tag === CONSTANT_TAG;
 }
 

@@ -38,7 +38,7 @@ import {
   ModifierManager,
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
-import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
+import { CONSTANT_TAG, isConstTagged, isConstTag, Tag } from '@glimmer/validator';
 import {
   assert,
   dict,
@@ -538,7 +538,7 @@ function setDeferredAttr(
     vm.elements().setStaticAttribute(name, value, namespace);
   } else {
     let attribute = vm.elements().setDynamicAttribute(name, value.value(), trusting, namespace);
-    if (!isConst(value)) {
+    if (!isConstTagged(value)) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute));
     }
   }

@@ -10,7 +10,7 @@ import {
   updateTag,
   track,
   Revision,
-  isConst,
+  isConstTagged,
   isConstTag,
   valueForTag,
   validateTag,
@@ -150,7 +150,7 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
       this.didSetupDebugContext = true;
     }
 
-    if (isConst(args)) {
+    if (isConstTagged(args)) {
       this.compute();
     }
 
