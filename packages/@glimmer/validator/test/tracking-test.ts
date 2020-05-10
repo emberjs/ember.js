@@ -16,7 +16,7 @@ import {
   setPropertyDidChange,
   tagFor,
   track,
-  memoizeTracked,
+  memo,
   trackedData,
   untrack,
   validateTag,
@@ -263,13 +263,13 @@ module('@glimmer/validator: tracking', () => {
     });
   });
 
-  module('memoizeTracked', () => {
+  module('memo', () => {
     test('it memoizes based on tags that are consumed within a track frame', assert => {
       let tag1 = createTag();
       let tag2 = createTag();
       let count = 0;
 
-      let fn = memoizeTracked(() => {
+      let fn = memo(() => {
         consumeTag(tag1);
         consumeTag(tag2);
 
@@ -293,7 +293,7 @@ module('@glimmer/validator: tracking', () => {
       let tag2 = createTag();
       let count = 0;
 
-      let fn = memoizeTracked(() => {
+      let fn = memo(() => {
         consumeTag(tag1);
 
         untrack(() => consumeTag(tag2));
@@ -319,13 +319,13 @@ module('@glimmer/validator: tracking', () => {
       let innerCount = 0;
       let outerCount = 0;
 
-      let innerFn = memoizeTracked(() => {
+      let innerFn = memo(() => {
         consumeTag(innerTag);
 
         return ++innerCount;
       });
 
-      let outerFn = memoizeTracked(() => {
+      let outerFn = memo(() => {
         consumeTag(outerTag);
 
         return [++outerCount, innerFn()];
@@ -349,7 +349,7 @@ module('@glimmer/validator: tracking', () => {
       assert.expect(3);
       assert.notOk(isTracking());
 
-      let fn = memoizeTracked(() => {
+      let fn = memo(() => {
         assert.ok(isTracking());
 
         untrack(() => {
@@ -363,11 +363,11 @@ module('@glimmer/validator: tracking', () => {
     test('isConstMemo allows users to check if a memoized function is constant', assert => {
       let tag = createTag();
 
-      let constFn = memoizeTracked(() => {
+      let constFn = memo(() => {
         // do nothing;
       });
 
-      let nonConstFn = memoizeTracked(() => {
+      let nonConstFn = memo(() => {
         consumeTag(tag);
       });
 
@@ -380,7 +380,7 @@ module('@glimmer/validator: tracking', () => {
 
     if (DEBUG) {
       test('isConstMemo throws an error in DEBUG mode if users attempt to check a function before it has been called', assert => {
-        let fn = memoizeTracked(() => {
+        let fn = memo(() => {
           // do nothing;
         });
 

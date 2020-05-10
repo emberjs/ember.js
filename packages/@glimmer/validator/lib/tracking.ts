@@ -85,29 +85,26 @@ export function endTrackFrame(): Tag {
 
 const IS_CONST_MAP: WeakMap<object, boolean | undefined> = new WeakMap();
 
-export function memoizeTracked<T>(cb: () => T, context?: string | false): () => T;
-export function memoizeTracked<T, U>(cb: (a1: U) => T, context?: string | false): (a1: U) => T;
-export function memoizeTracked<T, U, V, W>(
+export function memo<T>(cb: () => T, context?: string | false): () => T;
+export function memo<T, U>(cb: (a1: U) => T, context?: string | false): (a1: U) => T;
+export function memo<T, U, V, W>(
   cb: (a1: U, a2: V, a3: W) => T,
   context?: string | false
 ): (a1: U, a2: V, a3: W) => T;
-export function memoizeTracked<T, U, V, W, X>(
+export function memo<T, U, V, W, X>(
   cb: (a1: U, a2: V, a3: W, a4: X) => T,
   context?: string | false
 ): (a1: U, a2: V, a3: W, a4: X) => T;
-export function memoizeTracked<T, U, V, W, X, Y>(
+export function memo<T, U, V, W, X, Y>(
   cb: (a1: U, a2: V, a3: W, a4: X, a5: Y) => T,
   context?: string | false
 ): (a1: U, a2: V, a3: W, a4: X, a5: Y) => T;
-export function memoizeTracked<T, U, V, W, X, Y, Z>(
+export function memo<T, U, V, W, X, Y, Z>(
   cb: (a1: U, a2: V, a3: W, a4: X, a5: Y, a6: Z) => T,
   context?: string | false
 ): (a1: U, a2: V, a3: W, a4: X, a5: Y, a6: Z) => T;
 
-export function memoizeTracked<T>(
-  callback: (...args: unknown[]) => T,
-  debuggingContext?: string | false
-) {
+export function memo<T>(callback: (...args: unknown[]) => T, debuggingContext?: string | false) {
   let lastValue: T | undefined;
   let tag: Tag;
   let snapshot: Revision;
