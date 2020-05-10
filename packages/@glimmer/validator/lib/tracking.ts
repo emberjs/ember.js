@@ -1,14 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  Tag,
-  combine,
-  createTag,
-  dirtyTag,
-  CONSTANT_TAG,
-  validateTag,
-  Revision,
-  valueForTag,
-} from './validators';
+import { Tag, combine, CONSTANT_TAG, validateTag, Revision, valueForTag } from './validators';
 import { tagFor, dirtyTagFor } from './meta';
 import { markTagAsConsumed, runInAutotrackingTransaction, assertTagNotConsumed } from './debug';
 
