@@ -40,7 +40,7 @@ export {
   isTracking,
   track,
   trackedData,
-  memoizeTracked,
+  memo,
   untrack,
   isConstMemo,
 } from './lib/tracking';
