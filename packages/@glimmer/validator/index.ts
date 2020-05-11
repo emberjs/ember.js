@@ -37,7 +37,6 @@ export {
   beginTrackFrame,
   endTrackFrame,
   consumeTag,
-  EPOCH,
   isTracking,
   track,
   trackedData,
