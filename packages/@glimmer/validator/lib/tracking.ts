@@ -1,14 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  Tag,
-  combine,
-  createTag,
-  dirtyTag,
-  CONSTANT_TAG,
-  validateTag,
-  Revision,
-  valueForTag,
-} from './validators';
+import { Tag, combine, CONSTANT_TAG, validateTag, Revision, valueForTag } from './validators';
 import { tagFor, dirtyTagFor } from './meta';
 import { markTagAsConsumed, runInAutotrackingTransaction, assertTagNotConsumed } from './debug';
 
@@ -207,8 +198,6 @@ export function untrack(callback: () => void) {
 
 //////////
 
-export const EPOCH = createTag();
-
 export type Getter<T, K extends keyof T> = (self: T) => T[K] | undefined;
 export type Setter<T, K extends keyof T> = (self: T, value: T[K]) => void;
 
@@ -240,7 +229,6 @@ export function trackedData<T extends object, K extends keyof T>(
       assertTagNotConsumed!(tagFor(self, key), self, key, true);
     }
 
-    dirtyTag(EPOCH);
     dirtyTagFor(self, key);
     values.set(self, value);
   }
