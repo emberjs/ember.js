@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.19.0-beta.4 (May 12, 2020)
+
+- [#18958](https://github.com/emberjs/ember.js/pull/18958) [BUGFIX] Ensure AST transforms using `in-element` work properly.
+- [#18960](https://github.com/emberjs/ember.js/pull/18960) [BUGFIX] More assertions for Application lifecycle methods
+
 ### v3.19-0.beta.3 (May 4, 2020)
 
 - [#18941](https://github.com/emberjs/ember.js/pull/18941) [BUGFIX] Update rendering engine to latest version.
