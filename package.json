@@ -124,7 +124,7 @@
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fs-extra": "^9.0.0",
-    "git-repo-info": "^2.1.0",
+    "git-repo-info": "^2.1.1",
     "github": "^0.2.3",
     "glob": "^7.1.4",
     "html-differ": "^1.4.0",
