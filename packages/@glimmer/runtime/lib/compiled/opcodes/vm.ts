@@ -1,6 +1,13 @@
 import { CompilableTemplate, Option, Op } from '@glimmer/interfaces';
 import { isModified, ReferenceCache } from '@glimmer/reference';
-import { CONSTANT_TAG, isConst, Revision, Tag, valueForTag, validateTag } from '@glimmer/validator';
+import {
+  CONSTANT_TAG,
+  isConstTagged,
+  Revision,
+  Tag,
+  valueForTag,
+  validateTag,
+} from '@glimmer/validator';
 import { initializeGuid, assert, isHandle, HandleConstants, decodeHandle } from '@glimmer/util';
 import {
   CheckNumber,
@@ -160,7 +167,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
-  if (isConst(reference)) {
+  if (isConstTagged(reference)) {
     if (reference.value()) {
       vm.goto(target);
     }
@@ -178,7 +185,7 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
-  if (isConst(reference)) {
+  if (isConstTagged(reference)) {
     if (!reference.value()) {
       vm.goto(target);
     }
@@ -204,7 +211,7 @@ APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
 APPEND_OPCODES.add(Op.AssertSame, vm => {
   let reference = check(vm.stack.peek(), CheckReference);
 
-  if (!isConst(reference)) {
+  if (!isConstTagged(reference)) {
     vm.updateWith(Assert.initialize(new ReferenceCache(reference)));
   }
 });

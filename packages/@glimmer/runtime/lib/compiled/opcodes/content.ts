@@ -1,5 +1,5 @@
 import { Reference } from '@glimmer/reference';
-import { Tag, isConst } from '@glimmer/validator';
+import { Tag, isConstTagged } from '@glimmer/validator';
 import {
   check,
   CheckString,
@@ -77,7 +77,7 @@ APPEND_OPCODES.add(Op.AppendText, vm => {
 
   let node = vm.elements().appendDynamicText(value);
 
-  if (!isConst(reference)) {
+  if (!isConstTagged(reference)) {
     vm.updateWith(new DynamicTextContent(node, reference, value));
   }
 });

@@ -17,7 +17,7 @@ export {
   EntityTag,
   EntityTagged,
   INITIAL,
-  isConst,
+  isConstTagged,
   isConstTag,
   Revision,
   Tag,
@@ -39,11 +39,16 @@ export {
   consumeTag,
   isTracking,
   track,
-  trackedData,
   memo,
   untrack,
   isConstMemo,
+  Cache,
+  createCache,
+  isConst,
+  getValue,
 } from './lib/tracking';
+
+export { trackedData } from './lib/tracked-data';
 
 export {
   setAutotrackingTransactionEnv,

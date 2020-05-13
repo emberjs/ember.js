@@ -1,7 +1,16 @@
 import { DEBUG } from '@glimmer/env';
-import { Tag, combine, CONSTANT_TAG, validateTag, Revision, valueForTag } from './validators';
-import { tagFor, dirtyTagFor } from './meta';
-import { markTagAsConsumed, runInAutotrackingTransaction, assertTagNotConsumed } from './debug';
+import {
+  Tag,
+  combine,
+  CONSTANT_TAG,
+  validateTag,
+  Revision,
+  valueForTag,
+  isConstTag,
+} from './validators';
+
+import { markTagAsConsumed, runInAutotrackingTransaction } from './debug';
+import { symbol } from './utils';
 
 type Option<T> = T | null;
 
@@ -72,88 +81,155 @@ export function endTrackFrame(): Tag {
   return current!.combine();
 }
 
+export function isTracking() {
+  return CURRENT_TRACKER !== null;
+}
+
+export function consumeTag(tag: Tag) {
+  if (CURRENT_TRACKER !== null) {
+    CURRENT_TRACKER.add(tag);
+  }
+}
+
 //////////
 
-const IS_CONST_MAP: WeakMap<object, boolean | undefined> = new WeakMap();
+const CACHE_KEY: unique symbol = symbol('CACHE_KEY');
 
-export function memo<T>(cb: () => T, context?: string | false): () => T;
-export function memo<T, U>(cb: (a1: U) => T, context?: string | false): (a1: U) => T;
-export function memo<T, U, V, W>(
-  cb: (a1: U, a2: V, a3: W) => T,
-  context?: string | false
-): (a1: U, a2: V, a3: W) => T;
-export function memo<T, U, V, W, X>(
-  cb: (a1: U, a2: V, a3: W, a4: X) => T,
-  context?: string | false
-): (a1: U, a2: V, a3: W, a4: X) => T;
-export function memo<T, U, V, W, X, Y>(
-  cb: (a1: U, a2: V, a3: W, a4: X, a5: Y) => T,
-  context?: string | false
-): (a1: U, a2: V, a3: W, a4: X, a5: Y) => T;
-export function memo<T, U, V, W, X, Y, Z>(
-  cb: (a1: U, a2: V, a3: W, a4: X, a5: Y, a6: Z) => T,
-  context?: string | false
-): (a1: U, a2: V, a3: W, a4: X, a5: Y, a6: Z) => T;
+interface Memo {
+  [CACHE_KEY]: Cache;
+}
 
-export function memo<T>(callback: (...args: unknown[]) => T, debuggingContext?: string | false) {
-  let lastValue: T | undefined;
-  let tag: Tag;
-  let snapshot: Revision;
+export function memo<T>(callback: () => T, debuggingContext?: string | false) {
+  let cache = createCache(callback, debuggingContext);
 
-  let memoized = (...args: unknown[]): T => {
-    if (!tag || !validateTag(tag, snapshot)) {
-      beginTrackFrame();
+  let memoized = () => getValue(cache);
 
-      try {
-        if (DEBUG) {
-          runInAutotrackingTransaction!(() => (lastValue = callback(...args)), debuggingContext);
-        } else {
-          lastValue = callback(...args);
-        }
-      } finally {
-        tag = endTrackFrame();
-        snapshot = valueForTag(tag);
-        consumeTag(tag);
-
-        // If the final tag is constant, then we know for sure that this
-        // memoized function can never change. There are times when this
-        // information is useful externally (i.e. in the append VM, it tells us
-        // whether or not to emit opcodes) so we expose it via a metadata weakmap.
-        if (tag === CONSTANT_TAG) {
-          IS_CONST_MAP.set(memoized, true);
-        } else if (DEBUG) {
-          // In DEBUG, set the value to false explicitly. This way we can throw
-          // if someone attempts to call `isConst(memoized)` before running
-          // `memoized()` at least once.
-          IS_CONST_MAP.set(memoized, false);
-        }
-      }
-    } else {
-      consumeTag(tag);
-    }
-
-    return lastValue!;
-  };
-
-  if (DEBUG) {
-    IS_CONST_MAP.set(memoized, undefined);
-  }
+  ((memoized as unknown) as Memo)[CACHE_KEY] = cache;
 
   return memoized;
 }
 
-export function isConstMemo(memoized: Function) {
-  if (DEBUG && IS_CONST_MAP.has(memoized) && IS_CONST_MAP.get(memoized) === undefined) {
-    throw new Error(
-      'Attempted to call `isConstMemo` on a memoized function, but the function has not been run at least once yet. You cannot know if a memoized function is constant or not until it has been run at least once. Call the function, then pass it to `isConstMemo`.'
-    );
-  }
+export function isConstMemo(fn: Function | Memo) {
+  return isMemo(fn) ? isConst(fn[CACHE_KEY]) : false;
+}
 
-  return IS_CONST_MAP.get(memoized) === true;
+function isMemo(fn: Function | Memo): fn is Memo {
+  return CACHE_KEY in fn;
 }
 
 //////////
 
+// public interface
+export interface Cache<T = unknown> {
+  [CACHE_KEY]: T;
+}
+
+const FN: unique symbol = symbol('FN');
+const LAST_VALUE: unique symbol = symbol('LAST_VALUE');
+const TAG: unique symbol = symbol('TAG');
+const SNAPSHOT: unique symbol = symbol('SNAPSHOT');
+const DEBUG_LABEL: unique symbol = symbol('DEBUG_LABEL');
+
+interface InternalCache<T = unknown> {
+  [FN]: (...args: unknown[]) => T;
+  [LAST_VALUE]: T | undefined;
+  [TAG]: Tag | undefined;
+  [SNAPSHOT]: Revision;
+  [DEBUG_LABEL]?: string | false;
+}
+
+export function createCache<T>(fn: () => T, debuggingLabel?: string | false): Cache<T> {
+  if (DEBUG && !(typeof fn === 'function')) {
+    throw new Error(
+      `createCache() must be passed a function as its first parameter. Called with: ${String(fn)}`
+    );
+  }
+
+  let cache: InternalCache<T> = {
+    [FN]: fn,
+    [LAST_VALUE]: undefined,
+    [TAG]: undefined,
+    [SNAPSHOT]: -1,
+  };
+
+  if (DEBUG) {
+    cache[DEBUG_LABEL] = debuggingLabel;
+  }
+
+  return (cache as unknown) as Cache<T>;
+}
+
+export function getValue<T>(cache: Cache<T>): T {
+  assertCache(cache, 'getValue');
+
+  let fn = cache[FN];
+  let tag = cache[TAG];
+  let snapshot = cache[SNAPSHOT];
+
+  if (tag === undefined || !validateTag(tag, snapshot)) {
+    beginTrackFrame();
+
+    try {
+      if (DEBUG) {
+        runInAutotrackingTransaction!(() => (cache[LAST_VALUE] = fn()), cache[DEBUG_LABEL]);
+      } else {
+        cache[LAST_VALUE] = fn();
+      }
+    } finally {
+      tag = endTrackFrame();
+      cache[TAG] = tag;
+      cache[SNAPSHOT] = valueForTag(tag);
+      consumeTag(tag);
+    }
+  } else {
+    consumeTag(tag);
+  }
+
+  return cache[LAST_VALUE]!;
+}
+
+export function isConst(cache: Cache) {
+  assertCache(cache, 'isConst');
+
+  let tag = cache[TAG];
+
+  assertTag(tag, cache);
+
+  return isConstTag(tag);
+}
+
+function assertCache<T>(
+  value: Cache<T> | InternalCache<T>,
+  fnName: string
+): asserts value is InternalCache<T> {
+  if (DEBUG && !(typeof value === 'object' && value !== null && FN in value)) {
+    throw new Error(
+      `${fnName}() can only be used on an instance of a cache created with createCache(). Called with: ${String(
+        value
+      )}`
+    );
+  }
+}
+
+// replace this with `expect` when we can
+function assertTag(tag: Tag | undefined, cache: InternalCache): asserts tag is Tag {
+  if (DEBUG && tag === undefined) {
+    throw new Error(
+      `isConst() can only be used on a cache once getValue() has been called at least once. Called with cache function:\n\n${String(
+        cache[FN]
+      )}`
+    );
+  }
+}
+
+//////////
+
+// Legacy tracking APIs
+
+// track() shouldn't be necessary at all in the VM once the autotracking
+// refactors are merged, and we should generally be moving away from it. It may
+// be necessary in Ember for a while longer, but I think we'll be able to drop
+// it in favor of cache sooner rather than later.
 export function track(callback: () => void, debuggingContext?: string | false): Tag {
   beginTrackFrame();
 
@@ -172,16 +248,10 @@ export function track(callback: () => void, debuggingContext?: string | false): 
   return tag;
 }
 
-export function consumeTag(tag: Tag) {
-  if (CURRENT_TRACKER !== null) {
-    CURRENT_TRACKER.add(tag);
-  }
-}
-
-export function isTracking() {
-  return CURRENT_TRACKER !== null;
-}
-
+// untrack() is currently mainly used to handle places that were previously not
+// tracked, and that tracking now would cause backtracking rerender assertions.
+// I think once we move everyone forward onto modern APIs, we'll probably be
+// able to remove it, but I'm not sure yet.
 export function untrack(callback: () => void) {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
   CURRENT_TRACKER = null;
@@ -191,44 +261,4 @@ export function untrack(callback: () => void) {
   } finally {
     CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
   }
-}
-
-//////////
-
-export type Getter<T, K extends keyof T> = (self: T) => T[K] | undefined;
-export type Setter<T, K extends keyof T> = (self: T, value: T[K]) => void;
-
-export function trackedData<T extends object, K extends keyof T>(
-  key: K,
-  initializer?: (this: T) => T[K]
-): { getter: Getter<T, K>; setter: Setter<T, K> } {
-  let values = new WeakMap<T, T[K]>();
-  let hasInitializer = typeof initializer === 'function';
-
-  function getter(self: T) {
-    consumeTag(tagFor(self, key));
-
-    let value;
-
-    // If the field has never been initialized, we should initialize it
-    if (hasInitializer && !values.has(self)) {
-      value = initializer!.call(self);
-      values.set(self, value);
-    } else {
-      value = values.get(self);
-    }
-
-    return value;
-  }
-
-  function setter(self: T, value: T[K]): void {
-    if (DEBUG) {
-      assertTagNotConsumed!(tagFor(self, key), self, key, true);
-    }
-
-    dirtyTagFor(self, key);
-    values.set(self, value);
-  }
-
-  return { getter, setter };
 }
