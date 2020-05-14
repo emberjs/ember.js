@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - next
+      - 'release-*'
+      - 'v*'
+  pull_request: {}
+  schedule:
+    - cron:  '0 3 * * *' # daily, at 3am
+
+jobs:
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: volta-cli/action@v1
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - run: yarn eslint
+      - run: yarn problems
+
+  test-chrome:
+    name: Chrome
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: volta-cli/action@v1
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - run: yarn test
+
+  test-node:
+    name: Node
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: volta-cli/action@v1
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - run: yarn ember build
+      - run: yarn test:node
+
+  test-browserstack:
+    name: Browserstack
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      BROWSERSTACK_USERNAME: glimmervm1
+      BROWSERSTACK_ACCESS_KEY: 7DFjbGLxYRsXWmc8tzeh
+      # can be removed once https://github.com/kategengler/ember-cli-browserstack/pull/31 lands
+      CI_JOB_ID: ${{ github.run_id }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: volta-cli/action@v1
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - run: yarn browserstack:connect
+      - run: yarn test:browserstack
+      - run: yarn browserstack:results
+      - run: yarn browserstack:disconnect
+
+  test-types:
+    name: Types
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: volta-cli/action@v1
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - run: yarn build
+      - run: yarn test:types
+
+  floating-dependencies:
+    name: Floating Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: volta-cli/action@v1
+        with:
+          node-version: 12.x
+
+      - name: install dependencies
+        run: yarn install --no-lockfile
+
+      - run: yarn test
