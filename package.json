@@ -142,7 +142,7 @@
     "npm": false
   },
   "volta": {
-    "node": "10.16.3",
+    "node": "10.20.1",
     "yarn": "1.22.4"
   },
   "ember-addon": {
