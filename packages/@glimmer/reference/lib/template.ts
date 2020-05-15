@@ -307,8 +307,12 @@ export class IterationItemReference<T = unknown> implements TemplatePathReferenc
   }
 
   update(value: T) {
-    dirtyTag(this.tag);
-    this.itemValue = value;
+    let { itemValue } = this;
+
+    if (value !== itemValue) {
+      dirtyTag(this.tag);
+      this.itemValue = value;
+    }
   }
 
   get(key: string): TemplatePathReference {
