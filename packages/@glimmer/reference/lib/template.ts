@@ -309,6 +309,7 @@ export class IterationItemReference<T = unknown> implements TemplatePathReferenc
   update(value: T) {
     let { itemValue } = this;
 
+    // TODO: refactor this https://github.com/glimmerjs/glimmer-vm/issues/1101
     if (value !== itemValue) {
       dirtyTag(this.tag);
       this.itemValue = value;
