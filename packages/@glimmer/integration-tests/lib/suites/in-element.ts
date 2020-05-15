@@ -6,6 +6,7 @@ import { equalsElement } from '../dom/assertions';
 import { stripTight } from '../test-helpers/strings';
 import { replaceHTML } from '../dom/simple-utils';
 import { EmberishCurlyComponent } from '../components/emberish-curly';
+import { tracked } from '../test-helpers/tracked';
 
 export class InElementSuite extends RenderTest {
   static suiteName = '#in-element';
@@ -388,20 +389,28 @@ export class InElementSuite extends RenderTest {
 
   @test
   'Inside a loop'() {
+    let { delegate } = this;
+
+    class Item {
+      element = delegate.createElement('div');
+
+      @tracked value: string;
+
+      constructor(value: string) {
+        this.value = value;
+      }
+    }
+
     this.testType = 'Dynamic';
     this.registerComponent('Basic', 'FooBar', '<p>{{@value}}</p>');
 
     this.registerHelper('log', ([item]) => console.log(item));
 
-    let roots = [
-      { id: 0, element: this.delegate.createElement('div'), value: 'foo' },
-      { id: 1, element: this.delegate.createElement('div'), value: 'bar' },
-      { id: 2, element: this.delegate.createElement('div'), value: 'baz' },
-    ];
+    let roots = [new Item('foo'), new Item('bar'), new Item('baz')];
 
     this.render(
       stripTight`
-        {{~#each this.roots key="id" as |root|~}}
+        {{~#each this.roots as |root|~}}
           {{~log root~}}
           {{~#in-element root.element ~}}
             <FooBar @value={{root.value}} />
