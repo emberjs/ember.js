@@ -1,5 +1,6 @@
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
+import { tracked } from '../test-helpers/tracked';
 
 export class EachSuite extends RenderTest {
   static suiteName = '#each';
@@ -165,6 +166,38 @@ export class EachSuite extends RenderTest {
   'it renders all items with duplicate key values'() {
     let list = [{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }];
 
+    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`, {
+      list,
+    });
+
+    this.assertHTML('HelloHelloHello');
+    this.assertStableRerender();
+
+    list.forEach(item => (item.text = 'Goodbye'));
+
+    this.rerender({ list });
+    this.assertHTML('GoodbyeGoodbyeGoodbye');
+    this.assertStableNodes();
+
+    list = [{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }];
+
+    this.rerender({ list });
+    this.assertHTML('HelloHelloHello');
+    this.assertStableNodes();
+  }
+
+  @test
+  'it updates items if their key has not changed, and the items are tracked'() {
+    class Item {
+      @tracked public text: string;
+
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+
+    let list = [new Item('Hello'), new Item('Hello'), new Item('Hello')];
+
     this.render(`{{#each list key="@identity" as |item|}}{{item.text}}{{/each}}`, {
       list,
     });
@@ -179,6 +212,24 @@ export class EachSuite extends RenderTest {
     this.assertStableNodes();
 
     list = [{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }];
+
+    this.rerender({ list });
+    this.assertHTML('HelloHelloHello');
+    this.assertStableNodes();
+  }
+
+  @test
+  'it does not update items if their key has not changed, and the items are not tracked'() {
+    let list = [{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }];
+
+    this.render(`{{#each list key="@identity" as |item|}}{{item.text}}{{/each}}`, {
+      list,
+    });
+
+    this.assertHTML('HelloHelloHello');
+    this.assertStableRerender();
+
+    list.forEach(item => (item.text = 'Goodbye'));
 
     this.rerender({ list });
     this.assertHTML('HelloHelloHello');
@@ -243,6 +294,14 @@ export class EachSuite extends RenderTest {
   }
 }
 
-function val(i: number): { val: number } {
-  return { val: i };
+class Val {
+  @tracked val: number;
+
+  constructor(val: number) {
+    this.val = val;
+  }
+}
+
+function val(i: number): Val {
+  return new Val(i);
 }
