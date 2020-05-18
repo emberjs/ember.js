@@ -1,3 +1,37 @@
+## v0.53.0 (2020-05-18)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1090](https://github.com/glimmerjs/glimmer-vm/pull/1090) Implement `@glimmer/tracking/primatives/cache` (see [emberjs/rfcs#615](https://github.com/emberjs/rfcs/blob/master/text/0615-autotracking-memoization.md) for details) ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/validator`
+  * [#1088](https://github.com/glimmerjs/glimmer-vm/pull/1088) Rename `memoizeTracked` to `memo` ([@pzuraq](https://github.com/pzuraq))
+  * [#1089](https://github.com/glimmerjs/glimmer-vm/pull/1089) Remove unused EPOCH tag ([@pzuraq](https://github.com/pzuraq))
+
+#### :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1090](https://github.com/glimmerjs/glimmer-vm/pull/1090) Implement `@glimmer/tracking/primatives/cache` (see [emberjs/rfcs#615](https://github.com/emberjs/rfcs/blob/master/text/0615-autotracking-memoization.md) for details) ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`
+  * [#1102](https://github.com/glimmerjs/glimmer-vm/pull/1102) Add a compile time error when passing arguments to regular HTML elements (e.g. `<a @foo=`) ([@fivetanley](https://github.com/fivetanley))
+* `@glimmer/integration-tests`, `@glimmer/reference`
+  * [#1100](https://github.com/glimmerjs/glimmer-vm/pull/1100) Rerender an `{{#each`s block only when the specific item has changed ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* [#1099](https://github.com/glimmerjs/glimmer-vm/pull/1099) Re-roll yarn.lock. ([@rwjblue](https://github.com/rwjblue))
+* [#1098](https://github.com/glimmerjs/glimmer-vm/pull/1098) Remove .travis.yml ([@rwjblue](https://github.com/rwjblue))
+* [#1096](https://github.com/glimmerjs/glimmer-vm/pull/1096) Add GitHub Actions ([@rwjblue](https://github.com/rwjblue))
+* [#1097](https://github.com/glimmerjs/glimmer-vm/pull/1097) Remove bin/run-qunit.js test script. ([@rwjblue](https://github.com/rwjblue))
+* [#1095](https://github.com/glimmerjs/glimmer-vm/pull/1095) Update release dependencies. ([@rwjblue](https://github.com/rwjblue))
+* [#1094](https://github.com/glimmerjs/glimmer-vm/pull/1094) Update pinned Node version ([@rwjblue](https://github.com/rwjblue))
+* [#1093](https://github.com/glimmerjs/glimmer-vm/pull/1093) Update pinned yarn version to 1.22.4. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Stanley Stuart ([@fivetanley](https://github.com/fivetanley))
+
+
 ## v0.52.1 (2020-05-08)
 
 #### :bug: Bug Fix
