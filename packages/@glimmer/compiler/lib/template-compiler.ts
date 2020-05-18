@@ -134,11 +134,11 @@ export default class TemplateCompiler implements Processor<InputOps> {
           typeAttr = attrs[i];
           continue;
         }
-        this.attribute([attrs[i]], !simple || actionIsComponent);
+        this.attribute([attrs[i]], !simple || actionIsComponent, action);
       }
 
       if (typeAttr) {
-        this.attribute([typeAttr], !simple || actionIsComponent);
+        this.attribute([typeAttr], !simple || actionIsComponent, action);
       }
 
       for (let i = 0; i < action.modifiers.length; i++) {
@@ -161,7 +161,8 @@ export default class TemplateCompiler implements Processor<InputOps> {
     }
   }
 
-  attribute([action]: [AST.AttrNode], isComponent: boolean) {
+  attribute([action]: [AST.AttrNode], isComponent: boolean, elementNode: AST.ElementNode) {
+    assertValidArgumentName(action, isComponent, elementNode);
     let { name, value } = action;
 
     let namespace = getAttrNamespace(name);
@@ -686,6 +687,19 @@ function assertIsSimplePath(path: AST.Expression, loc: AST.SourceLocation, conte
     throw new SyntaxError(
       `\`${path.original}\` is not a valid name for a ${context} on line ${loc.start.line}.`,
       path.loc
+    );
+  }
+}
+
+function assertValidArgumentName(
+  attribute: AST.AttrNode,
+  isComponent: boolean,
+  elementNode: AST.ElementNode
+) {
+  if (!isComponent && attribute.name[0] === '@') {
+    throw new SyntaxError(
+      `${attribute.name} is not a valid attribute name. @arguments are only allowed on components, but the tag for this element (\`${elementNode.tag}\`) is a regular, non-component HTML element.`,
+      attribute.loc
     );
   }
 }
