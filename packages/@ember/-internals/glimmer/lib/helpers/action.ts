@@ -9,7 +9,7 @@ import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { VM, VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { isConst } from '@glimmer/validator';
+import { isConstTagged } from '@glimmer/validator';
 import { UnboundRootReference } from '../utils/references';
 import { INVOKE } from './mut';
 
@@ -299,7 +299,7 @@ export default function(args: VMArguments, vm: VM): UnboundRootReference<Functio
 
   if (typeof action[INVOKE] === 'function') {
     fn = makeClosureAction(action, action, action[INVOKE], processArgs, debugKey);
-  } else if (isConst(target) && isConst(action)) {
+  } else if (isConstTagged(target) && isConstTagged(action)) {
     fn = makeClosureAction(context.value(), target.value(), action.value(), processArgs, debugKey);
   } else {
     fn = makeDynamicClosureAction(context.value(), target, action, processArgs, debugKey);

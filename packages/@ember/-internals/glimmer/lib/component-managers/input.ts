@@ -12,7 +12,7 @@ import {
   VMArguments,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, ConstReference, VersionedPathReference } from '@glimmer/reference';
-import { CONSTANT_TAG, createTag, isConst } from '@glimmer/validator';
+import { CONSTANT_TAG, createTag, isConstTagged } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
 
@@ -70,7 +70,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     _dynamicScope: DynamicScope,
     caller: VersionedPathReference
   ): InputComponentState {
-    assert('caller must be const', isConst(caller));
+    assert('caller must be const', isConstTagged(caller));
 
     let type = args.named.get('type');
 
