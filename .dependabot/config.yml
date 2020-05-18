@@ -1,0 +1,13 @@
+# Create Pull-Requests for NPM updates automatically
+# https://dependabot.com/docs/config-file/
+
+version: 1
+update_configs:
+  # Keep package.json (& lockfiles) up to date.
+  #
+  # Security updates will be created immediately,
+  # other updates monthly, to cut down on repo noise.
+  - package_manager: "javascript"
+    directory: "/"
+    update_schedule: "monthly"
+    
