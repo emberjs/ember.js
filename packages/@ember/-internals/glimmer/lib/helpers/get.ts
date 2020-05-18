@@ -7,7 +7,7 @@ import {
   VersionedPathReference,
 } from '@glimmer/reference';
 import { NULL_REFERENCE } from '@glimmer/runtime';
-import { isConst } from '@glimmer/validator';
+import { isConstTagged } from '@glimmer/validator';
 import { referenceFromParts } from '../utils/references';
 
 /**
@@ -98,7 +98,7 @@ export default function(args: VMArguments, vm: VM) {
   let sourceReference = args.positional.at(0);
   let pathReference = args.positional.at(1);
 
-  if (isConst(pathReference)) {
+  if (isConstTagged(pathReference)) {
     // Since the path is constant, we can create a normal chain of property
     // references. The source reference will update like normal, and all of the
     // child references will update accordingly.
