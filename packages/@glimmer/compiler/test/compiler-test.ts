@@ -55,6 +55,19 @@ function test(desc: string, template: string, ...expectedStatements: BuilderStat
 const Append = Builder.Append;
 const Concat = Builder.Concat;
 
+QUnit.test(
+  '@arguments are on regular non-component/regular HTML nodes throws syntax error',
+  function(assert) {
+    const template = strip`
+    <a @onClick={{action "hi"}}>Link</a>
+  `;
+    assert.throws(
+      () => compile(template),
+      /@onClick is not a valid attribute name. @arguments are only allowed on components, but the tag for this element \(`a`\) is a regular, non-component HTML element/
+    );
+  }
+);
+
 test('HTML text content', 'content', s`content`);
 
 test('Text curlies', '<div>{{title}}<span>{{title}}</span></div>', [
