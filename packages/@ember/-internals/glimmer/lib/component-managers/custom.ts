@@ -17,7 +17,7 @@ import {
 } from '@glimmer/interfaces';
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import { unwrapTemplate } from '@glimmer/util';
-import { consumeTag, createTag, isConst, Tag } from '@glimmer/validator';
+import { consumeTag, createTag, isConstTagged, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
 import { EmberVMEnvironment } from '../environment';
@@ -370,7 +370,7 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   getTag({ args }: CustomComponentState<ComponentInstance>): Tag {
-    if (isConst(args)) {
+    if (isConstTagged(args)) {
       // returning a const tag skips the update hook (VM BUG?)
       return createTag();
     } else {
