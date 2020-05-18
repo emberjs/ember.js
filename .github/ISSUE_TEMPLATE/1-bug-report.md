@@ -28,7 +28,7 @@ A clear and concise description of what you expected to happen.
 
 ### 🌍 Environment
 
-- Ember: 3.18
+- Ember: -
 - Node.js/npm: -
 - OS: -
 - Browser: -
