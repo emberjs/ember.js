@@ -596,5 +596,8 @@ module.exports = {
     'wrapModelType',
     'wrapRecord',
     'yield',
+    'createCache',
+    'getValue',
+    'isConst',
   ],
 };
