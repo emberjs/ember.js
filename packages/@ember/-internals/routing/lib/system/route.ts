@@ -1744,8 +1744,8 @@ class Route extends EmberObject implements IRoute {
 
   /**
     Allows you to produce custom metadata for the route.
-    The return value of this method will be attatched to
-    its corresponding RouteInfoWithAttributes obejct.
+    The return value of this method will be attached to
+    its corresponding RouteInfoWithAttributes object.
 
     Example
 
