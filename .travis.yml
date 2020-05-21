@@ -52,6 +52,21 @@ before_install:
   - npm i -g npm
 
 install:
+  # We are having issues on the lts-3-12 branch, when reusing
+  # the cache from master, `yarn install` correctly patches
+  # `node_modules/@babel/core` to 7.4.5, but fails to remove
+  # `node_modules/@babel/core/node_modules`, which contains
+  # `@babel/types` 7.9.6, which is not what we want and is
+  # inconsistent with the lockfile.
+  #
+  # Since we are not goint to get good cache reuse from
+  # master's builds anyway, and that lts-3-12 gets build so
+  # rarely it is unlikely to have a cache available, the
+  # safest thing to do for now seems to be starting from a
+  # clean `node_modules` folder. We will still benefit from
+  # having the yarn cache folder available to us and therefore
+  # save on network fetches.
+  - rm -rf node_modules
   - yarn install --frozen-lockfile --non-interactive
 
 jobs:
