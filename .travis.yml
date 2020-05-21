@@ -66,6 +66,9 @@ install:
   # clean `node_modules` folder. We will still benefit from
   # having the yarn cache folder available to us and therefore
   # save on network fetches.
+  #
+  # See https://github.com/yarnpkg/yarn/issues/8146
+  #
   - rm -rf node_modules
   - yarn install --frozen-lockfile --non-interactive
 
