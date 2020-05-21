@@ -63,6 +63,7 @@ export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagForObject, markObjectAsDirty, CUSTOM_TAG_FOR } from './lib/tags';
 export { tracked } from './lib/tracked';
+export { createCache, getValue, isConst } from './lib/cache';
 
 export {
   NAMESPACES,
