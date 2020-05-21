@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### v3.12.4 (Unreleased)
+### v3.12.4 (May 21, 2020)
 
 - [#18879](https://github.com/emberjs/ember.js/pull/18879) Ensure errors thrown during component construction do not cause (unrelated) errors during application teardown (fixes a common issue when using `setupOnerror` with components asserting during `constructor`/`init`/`didInssertElement`).
 - [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>.
