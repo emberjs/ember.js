@@ -59,7 +59,7 @@
 - [#18688](https://github.com/emberjs/ember.js/pull/18688) / [#18621](https://github.com/emberjs/ember.js/pull/18621) / [#18714](https://github.com/emberjs/ember.js/pull/18714) / [#18743](https://github.com/emberjs/ember.js/pull/18743) / [#18762](https://github.com/emberjs/ember.js/pull/18762) Upgrades Glimmer VM to 0.47.9, fixes ignored `checked` attribute on `input`, fixes using `array` and `hash` helper together
 - [#18741](https://github.com/emberjs/ember.js/pull/18741) [BUGFIX] Don't setup mandatory setters on array indexes
 - [#18767](https://github.com/emberjs/ember.js/pull/18767) [BUGFIX] Fix observer leaks
-- [#18770](https://github.com/emberjs/ember.js/pull/18770) [BUGFIX] Make ArrayProxy Lazy 
+- [#18770](https://github.com/emberjs/ember.js/pull/18770) [BUGFIX] Make ArrayProxy Lazy
 - [#18780](https://github.com/emberjs/ember.js/pull/18780) [BUGFIX] Fix ownerInjection when used to create services directly
 - [#18742](https://github.com/emberjs/ember.js/pull/18742) [BUGFIX] Fix setDiff computed macro used within glimmer component
 - [#18727](https://github.com/emberjs/ember.js/pull/18727) [BUGFIX] Avoid breaking {{-in-element}} usage
@@ -67,7 +67,7 @@
 - [#18703](https://github.com/emberjs/ember.js/pull/18703) [BUGFIX] Correctly links ArrayProxy tags to `arrangedContent`
 - [#18707](https://github.com/emberjs/ember.js/pull/18707) [BUGFIX] Fixes tag chaining on Proxy mixins
 - [#18708](https://github.com/emberjs/ember.js/pull/18708) [BUGFIX] Ensures the arg proxy works with `get`
-- [#18694](https://github.com/emberjs/ember.js/pull/18694) [BUGFIX] Ensure tag updates are buffered, remove error message 
+- [#18694](https://github.com/emberjs/ember.js/pull/18694) [BUGFIX] Ensure tag updates are buffered, remove error message
 - [#18709](https://github.com/emberjs/ember.js/pull/18709) [BUGFIX] Fix `this` in `@tracked` initializer
 
 ### v3.16.8 (April 24, 2020)
@@ -192,6 +192,11 @@
 - [#18248](https://github.com/emberjs/ember.js/pull/18248) [BUGFIX] Ensures that observers are flushed after CPs are updated
 - [#18217](https://github.com/emberjs/ember.js/pull/18217) [BUGFIX] Adds ability for computed props to depend on args
 - [#18222](https://github.com/emberjs/ember.js/pull/18222) [BUGFIX] Matches assertion behavior for CPs computing after destroy
+
+### v3.12.4 (May 21, 2020)
+
+- [#18879](https://github.com/emberjs/ember.js/pull/18879) Ensure errors thrown during component construction do not cause (unrelated) errors during application teardown (fixes a common issue when using `setupOnerror` with components asserting during `constructor`/`init`/`didInssertElement`).
+- [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>.
 
 ### v3.12.3 (March 12, 2020)
 
