@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.12.4 (Unreleased)
+
+- [#18879](https://github.com/emberjs/ember.js/pull/18879) Ensure errors thrown during component construction do not cause (unrelated) errors during application teardown (fixes a common issue when using `setupOnerror` with components asserting during `constructor`/`init`/`didInssertElement`).
+- [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>.
+
 ### v3.12.3 (March 12, 2020)
 
 - [#18809](https://github.com/emberjs/ember.js/pull/18809) [BUGFIX] Do not error (RE: `elementId` changing) if `elementId` is not changed
@@ -33,11 +38,11 @@
 - [#17941](https://github.com/emberjs/ember.js/pull/17941) / [#17961](https://github.com/emberjs/ember.js/pull/17961) [FEATURE] Implement the [{{fn}} rfc](https://github.com/emberjs/rfcs/blob/master/text/0470-fn-helper.md).
 - [#17960](https://github.com/emberjs/ember.js/pull/17960) / [#18026](https://github.com/emberjs/ember.js/pull/18026) [FEATURE] Implement the [{{on}} modifier RFC](https://github.com/emberjs/rfcs/blob/master/text/0471-on-modifier.md)
 - [#17858](https://github.com/emberjs/ember.js/pull/17858) / [#18026](https://github.com/emberjs/ember.js/pull/18026) [FEATURE] Implement the [Inject Parameter Normalization RFC](https://github.com/emberjs/rfcs/blob/master/text/0451-injection-parameter-normalization.md).
-- [#17910](https://github.com/emberjs/ember.js/pull/17910) [DEPRECATION] Add deprecation for Function.prototype extensions. 
+- [#17910](https://github.com/emberjs/ember.js/pull/17910) [DEPRECATION] Add deprecation for Function.prototype extensions.
 - [#17845](https://github.com/emberjs/ember.js/pull/17845) [CLEANUP] Removes various deprecated APIs
 - [#17843](https://github.com/emberjs/ember.js/pull/17843) [CLEANUP] Remove deprecated intimate apis in the router
 - [#17940](https://github.com/emberjs/ember.js/pull/17940) [CLEANUP] Remove `sync` queue from @ember/runloop.
-- [#18110](https://github.com/emberjs/ember.js/pull/18110) [BUGFIX] Ensure calling `recompute` on a class-based helper causes it to recompute 
+- [#18110](https://github.com/emberjs/ember.js/pull/18110) [BUGFIX] Ensure calling `recompute` on a class-based helper causes it to recompute
 
 ### v3.10.2 (June 18, 2019)
 
@@ -60,7 +65,7 @@
 - [#17974](https://github.com/emberjs/ember.js/pull/17974) [BUGFIX] Ensure inheritable observers on object proxies are string based
 - [#17930](https://github.com/emberjs/ember.js/pull/17930) [BUGFIX] Update assertion for events in tagless component to include method names
 - [#17859](https://github.com/emberjs/ember.js/pull/17859) [BUGFIX] Fixes a regression in the legacy build
-- [#17891](https://github.com/emberjs/ember.js/pull/17891) [BUGFIX] Loosen "engines" restriction for Node versions 
+- [#17891](https://github.com/emberjs/ember.js/pull/17891) [BUGFIX] Loosen "engines" restriction for Node versions
 - [#17900](https://github.com/emberjs/ember.js/pull/17900) [BUGFIX] Fix version for APP_CTRL_ROUTER_PROPS deprecation flag
 - [#17846](https://github.com/emberjs/ember.js/pull/17846) [BUGFIX] Fix issues with template-only components causing errors in subsequent updates.
 - [#17872](https://github.com/emberjs/ember.js/pull/17872) [BUGFIX] Fix issue where `{{link-to}}` is causing unexpected local variable shadowing assertions.
