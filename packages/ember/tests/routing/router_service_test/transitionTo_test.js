@@ -451,6 +451,40 @@ moduleFor(
       });
     }
 
+    ['@test RouterService#transitionTo with aliased query params uses the original provided key also when scoped'](
+      assert
+    ) {
+      assert.expect(1);
+
+      this.add(
+        'route:parent',
+        Route.extend({
+          router: service(),
+          beforeModel() {
+            // in this call `url_sort` will be scoped (`parent.child:url_sort`)
+            // when passed into `_hydrateUnsuppliedQueryParams`
+            this.router.transitionTo('parent.child', {
+              queryParams: { url_sort: 'ASC' },
+            });
+          },
+        })
+      );
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          queryParams: {
+            cont_sort: { as: 'url_sort' },
+          },
+          cont_sort: 'ASC',
+        })
+      );
+
+      return this.visit('/').then(() => {
+        assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+      });
+    }
+
     ['@test RouterService#transitionTo with application query params when redirecting form a different route'](
       assert
     ) {

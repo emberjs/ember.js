@@ -1056,7 +1056,7 @@ class EmberRouter extends EmberObject {
         assert(
           `You passed the \`${presentProp}\` query parameter during a transition into ${qp.route.routeName}, please update to ${qp.urlKey}`,
           (function() {
-            if (qp.urlKey === presentProp) {
+            if (qp.urlKey === presentProp || qp.scopedPropertyName === presentProp) {
               return true;
             }
 
