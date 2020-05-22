@@ -54,19 +54,25 @@ export const CUSTOM_TAG_FOR = symbol('CUSTOM_TAG_FOR');
 // This is exported for `@tracked`, but should otherwise be avoided. Use `tagForObject`.
 export const SELF_TAG: string = symbol('SELF_TAG');
 
-export function tagForProperty(obj: unknown, propertyKey: string | symbol): Tag {
+export function tagForProperty(
+  obj: unknown,
+  propertyKey: string | symbol,
+  addMandatorySetter = false
+): Tag {
   if (!isObject(obj)) {
     return CONSTANT_TAG;
   }
 
   if (typeof obj[CUSTOM_TAG_FOR] === 'function') {
-    return obj[CUSTOM_TAG_FOR](propertyKey);
+    return obj[CUSTOM_TAG_FOR](propertyKey, addMandatorySetter);
   }
 
   let tag = tagFor(obj, propertyKey);
 
   if (DEBUG) {
-    setupMandatorySetter!(tag, obj, propertyKey);
+    if (addMandatorySetter) {
+      setupMandatorySetter!(tag, obj, propertyKey);
+    }
 
     // TODO: Replace this with something more first class for tracking tags in DEBUG
     (tag as any)._propertyKey = propertyKey;

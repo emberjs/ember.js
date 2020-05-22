@@ -114,12 +114,12 @@ export default class ArrayProxy extends EmberObject {
     this._revalidate();
   }
 
-  [CUSTOM_TAG_FOR](key) {
+  [CUSTOM_TAG_FOR](key, addMandatorySetter) {
     if (key === '[]' || key === 'length') {
       // revalidate eagerly if we're being tracked, since we no longer will
       // be able to later on due to backtracking re-render assertion
       this._revalidate();
-      return combine(getChainTagsForKey(this, `arrangedContent.${key}`));
+      return combine(getChainTagsForKey(this, `arrangedContent.${key}`, addMandatorySetter));
     }
 
     return tagFor(this, key);

@@ -38,17 +38,17 @@ export function finishLazyChains(obj: any, key: string, value: any) {
   }
 }
 
-export function getChainTagsForKeys(obj: any, keys: string[]) {
+export function getChainTagsForKeys(obj: any, keys: string[], addMandatorySetter = false) {
   let chainTags: Tag[] = [];
 
   for (let i = 0; i < keys.length; i++) {
-    chainTags.push(...getChainTagsForKey(obj, keys[i]));
+    chainTags.push(...getChainTagsForKey(obj, keys[i], addMandatorySetter));
   }
 
   return chainTags;
 }
 
-export function getChainTagsForKey(obj: any, path: string) {
+export function getChainTagsForKey(obj: any, path: string, addMandatorySetter = false) {
   let chainTags: Tag[] = [];
 
   let current: any = obj;
@@ -137,19 +137,19 @@ export function getChainTagsForKey(obj: any, path: string) {
             typeof item === 'object'
           );
 
-          chainTags.push(tagForProperty(item, segment));
+          chainTags.push(tagForProperty(item, segment, addMandatorySetter));
         }
       }
 
       // Push the tag for the array length itself
-      chainTags.push(tagForProperty(current, '[]'));
+      chainTags.push(tagForProperty(current, '[]', addMandatorySetter));
 
       break;
     }
 
     // TODO: Assert that current[segment] isn't an undecorated, non-MANDATORY_SETTER/dependentKeyCompat getter
 
-    let propertyTag = tagForProperty(current, segment);
+    let propertyTag = tagForProperty(current, segment, addMandatorySetter);
     descriptor = descriptorForProperty(current, segment);
 
     chainTags.push(propertyTag);

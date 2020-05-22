@@ -462,6 +462,37 @@ moduleFor(
 
       this.assertText('Kris Selden');
     }
+
+    '@test does not setup mandatory setter for untracked values'() {
+      let person;
+
+      class Person {
+        constructor(first, last) {
+          person = this;
+          this.first = first;
+          this.last = last;
+        }
+      }
+
+      class PersonComponent extends GlimmerishComponent {
+        person = new Person(this.args.first, this.args.last);
+      }
+
+      this.registerComponent('person-wrapper', {
+        ComponentClass: PersonComponent,
+        template: '{{this.person.first}} {{this.person.last}}',
+      });
+
+      this.render('<PersonWrapper @first={{first}} @last={{last}} />', {
+        first: 'robert',
+        last: 'jackson',
+      });
+
+      this.assertText('robert jackson');
+
+      // check to make sure we can still mutate the person
+      person.first = 'max';
+    }
   }
 );
 

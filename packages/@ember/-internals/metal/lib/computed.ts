@@ -631,7 +631,7 @@ export class ComputedProperty extends ComputedDescriptor {
       }
 
       if (this._dependentKeys !== undefined) {
-        let tag = combine(getChainTagsForKeys(obj, this._dependentKeys));
+        let tag = combine(getChainTagsForKeys(obj, this._dependentKeys, true));
 
         upstreamTag = upstreamTag === undefined ? tag : combine([upstreamTag, tag]);
       }
@@ -683,7 +683,7 @@ export class ComputedProperty extends ComputedDescriptor {
       let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
       if (this._dependentKeys !== undefined) {
-        updateTag(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys)));
+        updateTag(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys, true)));
       }
 
       setLastRevisionFor(obj, keyName, valueForTag(propertyTag));

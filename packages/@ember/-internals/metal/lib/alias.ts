@@ -91,7 +91,7 @@ export class AliasedProperty extends ComputedDescriptor {
     let lastRevision = getLastRevisionFor(obj, keyName);
 
     if (!validateTag(propertyTag, lastRevision)) {
-      updateTag(propertyTag, combine(getChainTagsForKey(obj, this.altKey)));
+      updateTag(propertyTag, combine(getChainTagsForKey(obj, this.altKey, true)));
       setLastRevisionFor(obj, keyName, valueForTag(propertyTag));
       finishLazyChains(obj, keyName, ret);
     }
