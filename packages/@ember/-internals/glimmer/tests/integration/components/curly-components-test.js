@@ -2976,7 +2976,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
-      }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
+      }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
     }
 
     ['@test should toggle visibility with isVisible'](assert) {
