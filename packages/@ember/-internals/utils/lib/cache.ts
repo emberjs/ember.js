@@ -1,9 +1,4 @@
-// The type `V` is just anything but `undefined`, so the `Cache.get` can be optimised
-// since a call to `Map.has` is not needed anymore
-export default class Cache<
-  T,
-  V extends object | number | string | boolean | bigint | symbol | null
-> {
+export default class Cache<T, V> {
   public size = 0;
   public misses = 0;
   public hits = 0;
@@ -15,17 +10,17 @@ export default class Cache<
 
   get(key: T): V {
     let value = this.store.get(key);
-    if (value !== undefined) {
-      this.hits++;
-    } else {
+    if (value === undefined) {
       this.misses++;
       value = this.set(key, this.func(key));
+    } else {
+      this.hits++;
     }
 
     return value;
   }
 
-  set(key: T, value: V) {
+  set(key: T, value: V): V {
     if (this.limit > this.size) {
       this.size++;
       this.store.set(key, value);
@@ -34,7 +29,7 @@ export default class Cache<
     return value;
   }
 
-  purge() {
+  purge(): void {
     this.store.clear();
     this.size = 0;
     this.hits = 0;
