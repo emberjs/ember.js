@@ -1,24 +1,13 @@
 # Ember Changelog
 
-### v3.19.0-beta.4 (May 12, 2020)
+### v3.19.0 (May 26, 2020)
 
+- [#18982](https://github.com/emberjs/ember.js/pull/18982) / [#18913](https://github.com/emberjs/ember.js/pull/18913) [BUGFIX] Update rendering engine to latest version.
+  - Add a compile time error when passing arguments to regular HTML elements (e.g. `<a @foo=`)
+  - Fix: Rerender an `{{#each`s block only when the specific item has changed
 - [#18958](https://github.com/emberjs/ember.js/pull/18958) [BUGFIX] Ensure AST transforms using `in-element` work properly.
 - [#18960](https://github.com/emberjs/ember.js/pull/18960) [BUGFIX] More assertions for Application lifecycle methods
-
-### v3.19-0.beta.3 (May 4, 2020)
-
-- [#18941](https://github.com/emberjs/ember.js/pull/18941) [BUGFIX] Update rendering engine to latest version.
-  - Reduce template size growth to near 3.16 levels (still ~ 3% higher than 3.16)
-  - Ensures destroyable items added to an `{{#each` after initial render are invoked properly
-  - Fixes an issue with key collisions in `{{#each`
-
-### v3.19.0-beta.2 (April 27, 2020)
-
-- [#18913](https://github.com/emberjs/ember.js/pull/18913) [BUGFIX] Update to glimmer-vm 0.51.0.
 - [#18919](https://github.com/emberjs/ember.js/pull/18919) [BUGFIX] Add error for modifier manager without capabilities. 
-
-### v3.19.0-beta.1 (April 14, 2020)
-
 - [#18828](https://github.com/emberjs/ember.js/pull/18828) [BUGFIX] Prepend 'TODO: ' to 'Replace this with your real tests' comments in generated tests
 - [#18353](https://github.com/emberjs/ember.js/pull/18353) [BUGFIX] Improve `fn` & `on` undefined callback message
 - [#18824](https://github.com/emberjs/ember.js/pull/18824) [CLEANUP] Remove deprecated private `window.ENV`
