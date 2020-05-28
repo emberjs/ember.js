@@ -194,6 +194,7 @@ export function getWithDefault<T extends object, K extends Extract<keyof T, stri
     {
       id: 'ember-metal.get-with-default',
       until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-metal-get-with-default',
     }
   );
 

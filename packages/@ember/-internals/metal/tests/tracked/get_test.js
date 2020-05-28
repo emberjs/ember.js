@@ -44,28 +44,30 @@ moduleFor(
     }
 
     ['@test should get arbitrary properties on an object']() {
-      let obj = createObj();
+      expectDeprecation(() => {
+        let obj = createObj();
 
-      for (let key in obj) {
-        this.assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);
-      }
+        for (let key in obj) {
+          this.assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);
+        }
 
-      class Obj {
-        @tracked undef = undefined;
-      }
+        class Obj {
+          @tracked undef = undefined;
+        }
 
-      let obj2 = new Obj();
+        let obj2 = new Obj();
 
-      this.assert.equal(
-        getWithDefault(obj2, 'undef', 'default'),
-        'default',
-        'explicit undefined retrieves the default'
-      );
-      this.assert.equal(
-        getWithDefault(obj2, 'not-present', 'default'),
-        'default',
-        'non-present key retrieves the default'
-      );
+        this.assert.equal(
+          getWithDefault(obj2, 'undef', 'default'),
+          'default',
+          'explicit undefined retrieves the default'
+        );
+        this.assert.equal(
+          getWithDefault(obj2, 'not-present', 'default'),
+          'default',
+          'non-present key retrieves the default'
+        );
+      }, /Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined./);
     }
   }
 );
