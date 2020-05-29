@@ -1,5 +1,6 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
+import { action } from '@ember/object';
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
@@ -630,6 +631,16 @@ moduleFor(
 
     ['@test sends an action with `{{input EVENT=(action "foo")}}` for native DOM events']() {
       this.assertTriggersNativeDOMEvents();
+    }
+
+    ['@test triggers a method with `{{input key-up=this.didTrigger}}`'](assert) {
+      this.render(`{{input key-up=this.didTrigger}}`, {
+        didTrigger: action(function() {
+          assert.ok(true, 'action was triggered');
+        }),
+      });
+
+      this.triggerEvent('keyup', { keyCode: 65 });
     }
   }
 );
