@@ -8,7 +8,7 @@ export type Revision = number;
 
 export const CONSTANT: Revision = 0;
 export const INITIAL: Revision = 1;
-export const VOLATILE: Revision = 9007199254740991; // MAX_INT
+export const VOLATILE: Revision = NaN;
 
 let $REVISION = INITIAL;
 
@@ -42,16 +42,10 @@ export interface Tagged {
  * determine if the tag has changed at all since the time that `value` was
  * called.
  *
- * The current implementation returns the global revision count directly for
- * performance reasons. This is an implementation detail, and should not be
- * relied on directly by users of these APIs. Instead, Revisions should be
- * treated as if they are opaque/unknown, and should only be interacted with via
- * the `value`/`validate` API.
- *
  * @param tag
  */
-export function valueForTag(_tag: Tag): Revision {
-  return $REVISION;
+export function valueForTag(tag: Tag): Revision {
+  return tag[COMPUTE]();
 }
 
 /**
