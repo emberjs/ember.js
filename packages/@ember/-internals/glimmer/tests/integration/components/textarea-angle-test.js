@@ -1,5 +1,6 @@
 import { RenderingTestCase, moduleFor, classes, applyMixins, runTask } from 'internal-test-helpers';
 
+import { action } from '@ember/object';
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
 
@@ -208,6 +209,16 @@ moduleFor(
 
       runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
+    }
+
+    ['@test triggers a method with `<Textarea @key-up={{this.didTrigger}} />`'](assert) {
+      this.render(`<Textarea @key-up={{this.didTrigger}} />`, {
+        didTrigger: action(function() {
+          assert.ok(true, 'action was triggered');
+        }),
+      });
+
+      this.triggerEvent('keyup', { keyCode: 65 });
     }
   }
 );
