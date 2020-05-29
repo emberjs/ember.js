@@ -18,8 +18,10 @@ function K() {
 
 function testWithDefault(assert, expect, x, y, z) {
   assert.equal(get(x, y), expect);
-  assert.equal(getWithDefault(x, y, z), expect);
-  assert.equal(x.getWithDefault(y, z), expect);
+  expectDeprecation(() => {
+    assert.equal(getWithDefault(x, y, z), expect);
+    assert.equal(x.getWithDefault(y, z), expect);
+  }, /Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined./);
 }
 
 moduleFor(

@@ -2,7 +2,7 @@
 @module @ember/object
 */
 import { HAS_NATIVE_PROXY, isEmberArray, isProxy, symbol } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
   consumeTag,
@@ -181,12 +181,23 @@ export function _getPath<T extends object>(root: T, path: string | string[]): an
   @param {Object} defaultValue The value to return if the property value is undefined
   @return {Object} The property value or the defaultValue.
   @public
+  @deprecated
 */
 export function getWithDefault<T extends object, K extends Extract<keyof T, string>>(
   root: T,
   key: K,
   defaultValue: T[K]
 ): T[K] {
+  deprecate(
+    'Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined.',
+    false,
+    {
+      id: 'ember-metal.get-with-default',
+      until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-metal-get-with-default',
+    }
+  );
+
   let value = get(root, key);
 
   if (value === undefined) {

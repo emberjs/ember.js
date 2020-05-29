@@ -207,35 +207,37 @@ moduleFor(
   'getWithDefault',
   class extends AbstractTestCase {
     ['@test should get arbitrary properties on an object'](assert) {
-      let obj = {
-        string: 'string',
-        number: 23,
-        boolTrue: true,
-        boolFalse: false,
-        nullValue: null,
-      };
+      expectDeprecation(() => {
+        let obj = {
+          string: 'string',
+          number: 23,
+          boolTrue: true,
+          boolFalse: false,
+          nullValue: null,
+        };
 
-      for (let key in obj) {
-        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
-          continue;
+        for (let key in obj) {
+          if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+            continue;
+          }
+          assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);
         }
-        assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);
-      }
 
-      obj = {
-        undef: undefined,
-      };
+        obj = {
+          undef: undefined,
+        };
 
-      assert.equal(
-        getWithDefault(obj, 'undef', 'default'),
-        'default',
-        'explicit undefined retrieves the default'
-      );
-      assert.equal(
-        getWithDefault(obj, 'not-present', 'default'),
-        'default',
-        'non-present key retrieves the default'
-      );
+        assert.equal(
+          getWithDefault(obj, 'undef', 'default'),
+          'default',
+          'explicit undefined retrieves the default'
+        );
+        assert.equal(
+          getWithDefault(obj, 'not-present', 'default'),
+          'default',
+          'non-present key retrieves the default'
+        );
+      }, /Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined./);
     }
 
     ['@test should call unknownProperty if defined and value is undefined'](assert) {
@@ -253,24 +255,26 @@ moduleFor(
     }
 
     ['@test if unknownProperty is present, it is called using getFromEmberMetal()/set()'](assert) {
-      let obj = {
-        unknownProperty(key) {
-          if (key === 'foo') {
-            assert.equal(key, 'foo', 'should pass key');
-            return 'FOO';
-          }
-        },
-      };
-      assert.equal(
-        getWithDefault(obj, 'foo', 'fail'),
-        'FOO',
-        'should return value from unknownProperty'
-      );
-      assert.equal(
-        getWithDefault(obj, 'bar', 'default'),
-        'default',
-        'should convert undefined from unknownProperty into default'
-      );
+      expectDeprecation(() => {
+        let obj = {
+          unknownProperty(key) {
+            if (key === 'foo') {
+              assert.equal(key, 'foo', 'should pass key');
+              return 'FOO';
+            }
+          },
+        };
+        assert.equal(
+          getWithDefault(obj, 'foo', 'fail'),
+          'FOO',
+          'should return value from unknownProperty'
+        );
+        assert.equal(
+          getWithDefault(obj, 'bar', 'default'),
+          'default',
+          'should convert undefined from unknownProperty into default'
+        );
+      }, /Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined./);
     }
 
     ['@test if unknownProperty is present, it is called using accessors'](assert) {
@@ -320,23 +324,25 @@ moduleFor(
     ['@test (regression) watched properties on unmodified inherited objects should still return their original value'](
       assert
     ) {
-      let MyMixin = Mixin.create({
-        someProperty: 'foo',
-        propertyDidChange: observer('someProperty', () => {
-          /* nothing to do */
-        }),
-      });
+      expectDeprecation(() => {
+        let MyMixin = Mixin.create({
+          someProperty: 'foo',
+          propertyDidChange: observer('someProperty', () => {
+            /* nothing to do */
+          }),
+        });
 
-      let baseObject = MyMixin.apply({});
-      let theRealObject = Object.create(baseObject);
+        let baseObject = MyMixin.apply({});
+        let theRealObject = Object.create(baseObject);
 
-      assert.equal(
-        getWithDefault(theRealObject, 'someProperty', 'fail'),
-        'foo',
-        'should return the set value, not false'
-      );
+        assert.equal(
+          getWithDefault(theRealObject, 'someProperty', 'fail'),
+          'foo',
+          'should return the set value, not false'
+        );
 
-      run(() => destroy(baseObject));
+        run(() => destroy(baseObject));
+      }, /Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined./);
     }
 
     ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {

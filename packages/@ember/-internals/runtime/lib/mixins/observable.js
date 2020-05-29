@@ -417,6 +417,7 @@ export default Mixin.create({
     @param {Object} defaultValue The value to return if the property value is undefined
     @return {Object} The property value or the defaultValue.
     @public
+    @deprecated
   */
   getWithDefault(keyName, defaultValue) {
     return getWithDefault(this, keyName, defaultValue);
