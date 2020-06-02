@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.20.0-beta.2 (June 2, 2020)
+
+- [#18997](https://github.com/emberjs/ember.js/pull/18997) [BUGFIX] Fix components `<Input>` and `<Textarea>` to work with native class actions correctly.
+
 ### v3.20.0-beta.1 (May 26, 2020)
 
 - [#18926](https://github.com/emberjs/ember.js/pull/18926) / [#18852](https://github.com/emberjs/ember.js/pull/18852) [FEATURE] Implement the [Yieldable Named Blocks](https://github.com/emberjs/rfcs/blob/master/text/0460-yieldable-named-blocks.md) RFC.
