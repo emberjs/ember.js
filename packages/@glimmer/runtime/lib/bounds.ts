@@ -1,4 +1,4 @@
-import { Bounds, Cursor, SymbolDestroyable } from '@glimmer/interfaces';
+import { Bounds, Cursor } from '@glimmer/interfaces';
 import { expect, Option } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
@@ -6,7 +6,7 @@ export class CursorImpl implements Cursor {
   constructor(public element: SimpleElement, public nextSibling: Option<SimpleNode>) {}
 }
 
-export type DestroyableBounds = Bounds & SymbolDestroyable;
+export type DestroyableBounds = Bounds;
 
 export class ConcreteBounds implements Bounds {
   constructor(

@@ -31,14 +31,14 @@ import {
   PathReference,
   END,
 } from '@glimmer/reference';
-import { associate, expect, LinkedList, Option, Stack } from '@glimmer/util';
+import { expect, LinkedList, Option, Stack } from '@glimmer/util';
 import { SimpleComment, SimpleNode } from '@simple-dom/interface';
-import { move as moveBounds } from '../bounds';
-import { asyncReset, detach, legacySyncReset } from '../lifetime';
+import { move as moveBounds, clear } from '../bounds';
 import { combineSlice } from '../utils/tags';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { InternalVM, VmInitCallback, JitVM } from './append';
 import { NewElementBuilder } from './element-builder';
+import { destroy, associateDestroyableChild, destroyChildren } from '../destroyables';
 
 export default class UpdatingVM {
   public env: Environment;
@@ -181,9 +181,8 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   handleException() {
     let { state, bounds, children, prev, next, runtime } = this;
 
-    legacySyncReset(this, runtime.env);
+    destroyChildren(this);
     children.clear();
-    asyncReset(this, runtime.env);
 
     let elementStack = NewElementBuilder.resume(runtime.env, bounds);
     let vm = state.resume(runtime, elementStack);
@@ -196,7 +195,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
       vm.pushUpdating(children);
     });
 
-    associate(this, result.drop);
+    associateDestroyableChild(this, result.drop);
 
     this.prev = prev;
     this.next = next;
@@ -240,7 +239,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
 
     updating.insertBefore(tryOpcode!, reference);
 
-    associate(opcode, result.drop);
+    associateDestroyableChild(opcode, result.drop);
 
     this.didInsert = true;
   }
@@ -275,10 +274,11 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     }
   }
 
-  delete(env: Environment, key: unknown) {
+  delete(_env: Environment, key: unknown) {
     let { map, updating } = this;
     let opcode = map.get(key)!;
-    detach(opcode, env);
+    destroy(opcode);
+    clear(opcode);
     updating.remove(opcode);
     map.delete(key);
 

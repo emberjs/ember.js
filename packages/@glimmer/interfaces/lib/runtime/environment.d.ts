@@ -8,7 +8,7 @@ import { AttributeOperation } from '../dom/attributes';
 import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentInstanceState } from '../components';
 import { ComponentManager } from '../components/component-manager';
-import { Drop, Option } from '../core';
+import { Option } from '../core';
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
 import { ModifierManager } from './modifier';
 
@@ -31,9 +31,6 @@ export interface Environment<Extra = unknown> {
 
   didCreate(component: InternalComponent, manager: InternalComponentManager): void;
   didUpdate(component: unknown, manager: ComponentManager<unknown>): void;
-
-  willDestroy(drop: Drop): void;
-  didDestroy(drop: Drop): void;
 
   scheduleInstallModifier(modifier: unknown, manager: ModifierManager): void;
   scheduleUpdateModifier(modifier: unknown, manager: ModifierManager): void;

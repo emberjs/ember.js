@@ -24,6 +24,7 @@ import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
 import { EmberishCurlyComponentFactory } from './emberish-curly';
 import { UpdatableRootReference } from '../reference';
+import { registerDestructor } from '@glimmer/runtime';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
@@ -136,6 +137,8 @@ export class EmberishGlimmerComponentManager
     component.willInsertElement();
     component.willRender();
 
+    registerDestructor(component, () => component.destroy());
+
     return { args, component };
   }
 
@@ -171,6 +174,8 @@ export class EmberishGlimmerComponentManager
 
   didCreate({ component }: EmberishGlimmerComponentState): void {
     component.didInsertElement();
+    registerDestructor(component, () => component.willDestroyElement(), true);
+
     component.didRender();
   }
 
@@ -192,15 +197,8 @@ export class EmberishGlimmerComponentManager
     component.didRender();
   }
 
-  getDestructor({ component }: EmberishGlimmerComponentState): Destroyable {
-    return {
-      willDestroy() {
-        component.willDestroyElement();
-      },
-      destroy() {
-        component.destroy();
-      },
-    };
+  getDestroyable({ component }: EmberishGlimmerComponentState): Destroyable {
+    return component;
   }
 }
 

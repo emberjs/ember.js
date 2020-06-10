@@ -1,6 +1,6 @@
 import { Environment, DynamicScope } from './environment';
 import { PathReference } from '@glimmer/reference';
-import { SymbolDestroyable, Destroyable } from '../core';
+import { Destroyable } from '../core';
 import { VMArguments } from './arguments';
 
 /**
@@ -13,7 +13,7 @@ export interface VM {
   env: Environment;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference;
-  associateDestroyable(child: SymbolDestroyable | Destroyable): void;
+  associateDestroyable(child: Destroyable): void;
 }
 
 export interface Helper {

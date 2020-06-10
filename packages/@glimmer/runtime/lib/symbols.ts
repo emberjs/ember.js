@@ -5,7 +5,7 @@ import { symbol } from '@glimmer/util';
 // Glimmer's API.
 
 export const INNER_VM: unique symbol = symbol('INNER_VM');
-export const DESTRUCTOR_STACK: unique symbol = symbol('DESTRUCTOR_STACK');
+export const DESTROYABLE_STACK: unique symbol = symbol('DESTROYABLE_STACK');
 export const STACKS: unique symbol = symbol('STACKS');
 export const REGISTERS: unique symbol = symbol('REGISTERS');
 export const HEAP: unique symbol = symbol('HEAP');
