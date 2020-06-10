@@ -84,7 +84,7 @@ export class BasicComponentManager
 
   didUpdate(): void {}
 
-  getDestructor(): null {
+  getDestroyable(): null {
     return null;
   }
 }

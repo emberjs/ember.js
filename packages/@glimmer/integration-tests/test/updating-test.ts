@@ -1,7 +1,7 @@
 import { Option, HandleResult, ErrHandle, EncoderError } from '@glimmer/interfaces';
 import { ConstReference } from '@glimmer/reference';
 import { RenderTest, test, jitSuite, JitRenderDelegate, EmberishGlimmerComponent } from '..';
-import { PrimitiveReference, SafeString } from '@glimmer/runtime';
+import { PrimitiveReference, SafeString, registerDestructor } from '@glimmer/runtime';
 import {
   assertNodeTagName,
   getElementByClassName,
@@ -437,10 +437,11 @@ class UpdatingTest extends RenderTest {
   'helpers can add destroyables'() {
     let destroyable = {
       count: 0,
-      destroy(this: { count: number }) {
-        this.count++;
-      },
     };
+
+    registerDestructor(destroyable, () => {
+      destroyable.count++;
+    });
 
     this.registerInternalHelper('destroy-me', (_args, vm) => {
       vm.associateDestroyable(destroyable);

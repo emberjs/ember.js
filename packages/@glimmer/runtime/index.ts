@@ -78,5 +78,20 @@ export {
   rehydrationBuilder,
   SERIALIZATION_FIRST_NODE_STRING,
 } from './lib/vm/rehydrate-builder';
+export {
+  destroy,
+  registerDestructor,
+  unregisterDestructor,
+  associateDestroyableChild,
+  isDestroying,
+  isDestroyed,
+  setScheduleDestroy,
+  setScheduleDestroyed,
+  enableDestroyableTracking,
+  assertDestroyablesDestroyed,
+  destroyChildren as _destroyChildren,
+  scheduleDestroy as _scheduleDestroy,
+  scheduleDestroyed as _scheduleDestroyed,
+} from './lib/destroyables';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;

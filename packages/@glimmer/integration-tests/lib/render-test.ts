@@ -18,6 +18,7 @@ import { TestModifierConstructor } from './modifiers';
 import RenderDelegate from './render-delegate';
 import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from './snapshot';
 import { UpdatableRootReference } from './reference';
+import { destroy, inTransaction } from '@glimmer/runtime';
 
 export interface IRenderTest {
   readonly count: Count;
@@ -410,7 +411,7 @@ export class RenderTest implements IRenderTest {
   destroy(): void {
     let result = expect(this.renderResult, 'the test should call render() before destroy()');
 
-    result.destroy();
+    inTransaction(result.env, () => destroy(result));
   }
 
   protected set(key: string, value: unknown): void {
