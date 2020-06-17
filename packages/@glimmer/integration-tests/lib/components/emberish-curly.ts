@@ -25,7 +25,7 @@ import { VersionedPathReference, PathReference } from '@glimmer/reference';
 import { combine, createTag, dirtyTag, DirtyableTag, Tag } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
-import { PrimitiveReference } from '@glimmer/runtime';
+import { PrimitiveReference, registerDestructor } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
 import { TestJitRegistry } from '../modes/jit/registry';
@@ -248,6 +248,8 @@ export class EmberishCurlyComponentManager
     component.willInsertElement();
     component.willRender();
 
+    registerDestructor(component, () => component.destroy());
+
     return component;
   }
 
@@ -305,6 +307,8 @@ export class EmberishCurlyComponentManager
 
   didCreate(component: EmberishCurlyComponent): void {
     component.didInsertElement();
+    registerDestructor(component, () => component.willDestroyElement(), true);
+
     component.didRender();
   }
 
@@ -327,14 +331,7 @@ export class EmberishCurlyComponentManager
     component.didRender();
   }
 
-  getDestructor(component: EmberishCurlyComponent): Destroyable {
-    return {
-      willDestroy() {
-        component.willDestroyElement();
-      },
-      destroy() {
-        component.destroy();
-      },
-    };
+  getDestroyable(component: EmberishCurlyComponent): Destroyable {
+    return component;
   }
 }

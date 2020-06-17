@@ -1,6 +1,7 @@
 import { SimpleElement } from '@simple-dom/interface';
 import {
   Dict,
+  Option,
   ModifierManager,
   GlimmerTreeChanges,
   Destroyable,
@@ -9,6 +10,7 @@ import {
   CapturedArguments,
 } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/validator';
+import { registerDestructor } from '@glimmer/runtime';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;
@@ -22,12 +24,7 @@ export interface TestModifierInstance {
 }
 
 export class TestModifierDefinitionState {
-  instance?: TestModifierInstance;
-  constructor(Klass?: TestModifierConstructor) {
-    if (Klass) {
-      this.instance = new Klass();
-    }
-  }
+  constructor(public Klass?: TestModifierConstructor) {}
 }
 
 export class TestModifierManager
@@ -39,46 +36,44 @@ export class TestModifierManager
     _dynamicScope: DynamicScope,
     dom: GlimmerTreeChanges
   ) {
-    return new TestModifier(element, state, args.capture(), dom);
+    let instance = state.Klass ? new state.Klass() : undefined;
+    return new TestModifier(element, instance, args.capture(), dom);
   }
 
   getTag({ args: { tag } }: TestModifier): Tag {
     return tag;
   }
 
-  install({ element, args, state }: TestModifier) {
-    if (state.instance && state.instance.didInsertElement) {
-      state.instance.element = element;
-      state.instance.didInsertElement(args.positional.value(), args.named.value());
+  install({ element, args, instance }: TestModifier) {
+    if (instance && instance.didInsertElement) {
+      instance.element = element;
+      instance.didInsertElement(args.positional.value(), args.named.value());
+    }
+
+    if (instance && instance.willDestroyElement) {
+      registerDestructor(instance, () => instance!.willDestroyElement!(), true);
     }
 
     return;
   }
 
-  update({ args, state }: TestModifier) {
-    if (state.instance && state.instance.didUpdate) {
-      state.instance.didUpdate(args.positional.value(), args.named.value());
+  update({ args, instance }: TestModifier) {
+    if (instance && instance.didUpdate) {
+      instance.didUpdate(args.positional.value(), args.named.value());
     }
 
     return;
   }
 
-  getDestructor(modifier: TestModifier): Destroyable {
-    return {
-      destroy: () => {
-        let { state } = modifier;
-        if (state.instance && state.instance.willDestroyElement) {
-          state.instance.willDestroyElement();
-        }
-      },
-    };
+  getDestroyable(modifier: TestModifier): Option<Destroyable> {
+    return modifier.instance || null;
   }
 }
 
 export class TestModifier {
   constructor(
     public element: SimpleElement,
-    public state: TestModifierDefinitionState,
+    public instance: TestModifierInstance | undefined,
     public args: CapturedArguments,
     public dom: GlimmerTreeChanges
   ) {}

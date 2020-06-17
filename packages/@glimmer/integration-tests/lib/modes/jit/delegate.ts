@@ -52,8 +52,9 @@ import { ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 import { JitContext } from '@glimmer/opcode-compiler';
 import { preprocess } from '../../compile';
-import { unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate, assign } from '@glimmer/util';
 import { UpdatableRootReference } from '../../reference';
+import { BaseEnv } from '../env';
 
 export interface JitTestDelegateContext {
   runtime: JitRuntimeContext;
@@ -86,7 +87,7 @@ export class JitRenderDelegate implements RenderDelegate {
 
   constructor(options?: RenderDelegateOptions) {
     this.doc = options?.doc ?? (document as SimpleDocument);
-    this.env = options?.env ?? {};
+    this.env = assign(options?.env ?? {}, BaseEnv);
     this.context = this.getContext();
   }
 

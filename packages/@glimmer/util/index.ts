@@ -1,14 +1,12 @@
 export { EMPTY_ARRAY } from './lib/array-utils';
 export { default as assert, deprecate } from './lib/assert';
 export { dict, DictSet, isDict, isObject, Set, StackImpl as Stack } from './lib/collections';
-export * from './lib/destroy';
 export * from './lib/dom';
 export { ensureGuid, HasGuid, initializeGuid } from './lib/guid';
 export {
   isSerializationFirstNode,
   SERIALIZATION_FIRST_NODE_STRING,
 } from './lib/is-serialization-first-node';
-export * from './lib/lifetimes';
 export {
   CloneableListNode,
   EMPTY_SLICE,

@@ -6,7 +6,7 @@ import {
   SimpleDocumentFragment,
   AttrNamespace,
 } from '@simple-dom/interface';
-import { Option, DestroySymbol, SymbolDestroyable, Maybe } from '../core';
+import { Option, Maybe } from '../core';
 import { Bounds, Cursor } from './bounds';
 import { ElementOperations, Environment, ModifierManager } from '../runtime';
 import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
@@ -19,7 +19,6 @@ export interface LiveBlock extends Bounds {
   didAppendNode(node: SimpleNode): void;
   didAppendBounds(bounds: Bounds): void;
   finalize(stack: ElementBuilder): void;
-  [DestroySymbol]?(): void;
 }
 
 export interface SimpleLiveBlock extends LiveBlock {
@@ -28,9 +27,7 @@ export interface SimpleLiveBlock extends LiveBlock {
   lastNode(): SimpleNode;
 }
 
-export interface RemoteLiveBlock extends SimpleLiveBlock, SymbolDestroyable {
-  [DestroySymbol](): void;
-}
+export interface RemoteLiveBlock extends SimpleLiveBlock {}
 
 export interface UpdatableBlock extends SimpleLiveBlock {
   reset(env: Environment): Option<SimpleNode>;

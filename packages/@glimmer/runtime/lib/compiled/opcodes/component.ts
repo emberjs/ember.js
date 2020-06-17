@@ -377,7 +377,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
   let { manager, state, capabilities } = check(vm.fetchValue(_state), CheckComponentInstance);
 
-  let d = manager.getDestructor(state);
+  let d = manager.getDestroyable(state);
 
   if (
     DEBUG &&

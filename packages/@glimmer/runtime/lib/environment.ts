@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import {
   Dict,
-  Drop,
   Environment,
   EnvironmentOptions,
   GlimmerTreeChanges,
@@ -41,7 +40,7 @@ import {
   VersionedReference,
   IteratorDelegate,
 } from '@glimmer/reference';
-import { assert, WILL_DROP, DID_DROP, expect, symbol } from '@glimmer/util';
+import { assert, expect, symbol } from '@glimmer/util';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
@@ -174,7 +173,6 @@ class TransactionImpl implements Transaction {
   public createdManagers: WithCreateInstance<unknown>[] = [];
   public updatedComponents: unknown[] = [];
   public updatedManagers: WithCreateInstance<unknown>[] = [];
-  public destructors: Drop[] = [];
 
   didCreate(component: unknown, manager: WithCreateInstance) {
     this.createdComponents.push(component);
@@ -196,14 +194,6 @@ class TransactionImpl implements Transaction {
     this.scheduledUpdateModifierManagers.push(manager);
   }
 
-  willDestroy(d: Drop) {
-    d[WILL_DROP]();
-  }
-
-  didDestroy(d: Drop) {
-    this.destructors.push(d);
-  }
-
   commit() {
     let { createdComponents, createdManagers } = this;
 
@@ -219,12 +209,6 @@ class TransactionImpl implements Transaction {
       let component = updatedComponents[i];
       let manager = updatedManagers[i];
       manager.didUpdate(component);
-    }
-
-    let { destructors } = this;
-
-    for (let i = 0; i < destructors.length; i++) {
-      destructors[i][DID_DROP]();
     }
 
     let { scheduledInstallManagers, scheduledInstallModifiers } = this;
@@ -362,14 +346,6 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     if (this.isInteractive) {
       this.transaction.scheduleUpdateModifier(modifier, manager);
     }
-  }
-
-  willDestroy(d: Drop) {
-    this.transaction.willDestroy(d);
-  }
-
-  didDestroy(d: Drop) {
-    this.transaction.didDestroy(d);
   }
 
   commit() {

@@ -1,5 +1,5 @@
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
-import { SymbolDestroyable, RichIteratorResult } from '../core';
+import { RichIteratorResult } from '../core';
 import { Bounds } from '../dom/bounds';
 import { Environment } from './environment';
 
@@ -7,7 +7,7 @@ export interface ExceptionHandler {
   handleException(): void;
 }
 
-export interface RenderResult extends Bounds, SymbolDestroyable, ExceptionHandler {
+export interface RenderResult extends Bounds, ExceptionHandler {
   readonly env: Environment;
   readonly drop: object;
 
@@ -17,9 +17,6 @@ export interface RenderResult extends Bounds, SymbolDestroyable, ExceptionHandle
 
   firstNode(): SimpleNode;
   lastNode(): SimpleNode;
-
-  // compat, as this is a user-exposed API
-  destroy(): void;
 }
 
 export interface TemplateIterator {

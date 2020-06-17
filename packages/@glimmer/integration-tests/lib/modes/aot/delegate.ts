@@ -31,6 +31,7 @@ import {
   renderAotMain,
   renderSync,
   AotRuntime,
+  EnvironmentDelegate,
 } from '@glimmer/runtime';
 import { ASTPluginBuilder } from '@glimmer/syntax';
 import { assert, assign, expect, Option } from '@glimmer/util';
@@ -51,7 +52,7 @@ import {
   EmberishGlimmerComponentManager,
   EMBERISH_GLIMMER_CAPABILITIES,
 } from '../../components/emberish-glimmer';
-import RenderDelegate from '../../render-delegate';
+import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
 import { TestComponentDefinitionState } from '../../components/test-component';
 import { ComponentKind } from '../../components/types';
 import { BASIC_CAPABILITIES, EMBERISH_CURLY_CAPABILITIES } from '../../components/capabilities';
@@ -68,6 +69,7 @@ import { TestMacros } from '../../compile/macros';
 import AotCompilerDelegate from './compiler-delegate';
 import { preprocess } from '../../compile';
 import { UpdatableRootReference, StableState } from '../../reference';
+import { BaseEnv } from '../env';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -107,9 +109,11 @@ export class AotRenderDelegate implements RenderDelegate {
   protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
   public constants!: DebugConstants;
   private doc: SimpleDocument;
+  private env: EnvironmentDelegate;
 
-  constructor(options?: { doc?: SimpleDocument }) {
+  constructor(options?: RenderDelegateOptions) {
     this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
+    this.env = assign(options?.env ?? {}, BaseEnv);
     this.doc = options?.doc || (document as SimpleDocument);
   }
 
@@ -287,7 +291,7 @@ export class AotRenderDelegate implements RenderDelegate {
   private getRuntimeContext({ table, pool, heap }: BundleCompilationResult): AotRuntimeContext {
     let resolver = new AotRuntimeResolverImpl(table, this.registry.modules, this.symbolTables);
 
-    return AotRuntime({ document: this.doc }, { constants: pool, heap }, resolver);
+    return AotRuntime({ document: this.doc }, { constants: pool, heap }, resolver, this.env);
   }
 
   renderComponent(

@@ -2,7 +2,6 @@ import {
   CompilableBlock,
   CompilableTemplate,
   Destroyable,
-  Drop,
   DynamicScope,
   Environment,
   JitOrAotBlock,
@@ -14,7 +13,6 @@ import {
   RuntimeHeap,
   RuntimeProgram,
   Scope,
-  SymbolDestroyable,
   SyntaxCompilationContext,
   VM as PublicVM,
   JitRuntimeContext,
@@ -24,17 +22,7 @@ import {
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
 import { PathReference, ReferenceIterator, VersionedPathReference } from '@glimmer/reference';
-import {
-  associateDestructor,
-  destructor,
-  expect,
-  isDrop,
-  LinkedList,
-  ListSlice,
-  Option,
-  Stack,
-  assert,
-} from '@glimmer/util';
+import { expect, LinkedList, ListSlice, Option, Stack, assert } from '@glimmer/util';
 import {
   $fp,
   $pc,
@@ -56,7 +44,7 @@ import { DidModifyOpcode, JumpIfNotModifiedOpcode, LabelOpcode } from '../compil
 import { ScopeImpl } from '../environment';
 import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
 import { UNDEFINED_REFERENCE } from '../references';
-import { ARGS, CONSTANTS, DESTRUCTOR_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
+import { ARGS, CONSTANTS, DESTROYABLE_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
 import { VMArgumentsImpl } from './arguments';
 import LowLevelVM from './low-level';
 import RenderResultImpl from './render-result';
@@ -69,6 +57,7 @@ import {
   TryOpcode,
   VMState,
 } from './update';
+import { associateDestroyableChild } from '../destroyables';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -101,7 +90,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
 
   updateWith(opcode: UpdatingOpcode): void;
 
-  associateDestroyable(d: SymbolDestroyable | Destroyable): void;
+  associateDestroyable(d: Destroyable): void;
 
   beginCacheGroup(): void;
   commitCacheGroup(): void;
@@ -155,7 +144,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   private readonly [STACKS] = new Stacks<C>();
   private readonly [HEAP]: RuntimeHeap;
   private readonly destructor: object;
-  private readonly [DESTRUCTOR_STACK] = new Stack<object>();
+  private readonly [DESTROYABLE_STACK] = new Stack<object>();
   readonly [CONSTANTS]: RuntimeConstants;
   readonly [ARGS]: VMArgumentsImpl;
   readonly [INNER_VM]: LowLevelVM;
@@ -310,7 +299,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     );
 
     this.destructor = {};
-    this[DESTRUCTOR_STACK].push(this.destructor);
+    this[DESTROYABLE_STACK].push(this.destructor);
   }
 
   get program(): RuntimeProgram {
@@ -374,10 +363,6 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     let state = this.capture(2);
     let block = this.elements().pushUpdatableBlock();
 
-    // let ip = this.ip;
-    // this.ip = end + 4;
-    // this.frames.push(ip);
-
     let opcode = new TryOpcode(state, this.runtime, block, new LinkedList<UpdatingOpcode>());
     this.didEnter(opcode);
 
@@ -404,14 +389,14 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   }
 
   private didEnter(opcode: BlockOpcode) {
-    this.associateDestructor(destructor(opcode));
-    this[DESTRUCTOR_STACK].push(opcode);
+    this.associateDestroyable(opcode);
+    this[DESTROYABLE_STACK].push(opcode);
     this.updateWith(opcode);
     this.pushUpdating(opcode.children);
   }
 
   exit() {
-    this[DESTRUCTOR_STACK].pop();
+    this[DESTROYABLE_STACK].pop();
     this.elements().popBlock();
     this.popUpdating();
 
@@ -441,14 +426,9 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     return expect(this[STACKS].list.current, 'expected a list block');
   }
 
-  associateDestructor(child: Drop): void {
-    if (!isDrop(child)) return;
-    let parent = expect(this[DESTRUCTOR_STACK].current, 'Expected destructor parent');
-    associateDestructor(parent, child);
-  }
-
-  associateDestroyable(child: SymbolDestroyable | Destroyable): void {
-    this.associateDestructor(destructor(child));
+  associateDestroyable(child: Destroyable): void {
+    let parent = expect(this[DESTROYABLE_STACK].current, 'Expected destructor parent');
+    associateDestroyableChild(parent, child);
   }
 
   tryUpdating(): Option<LinkedList<UpdatingOpcode>> {

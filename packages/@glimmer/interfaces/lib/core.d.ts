@@ -29,29 +29,5 @@ export type RichIteratorResult<Tick, Return> =
       value: Return;
     };
 
-export interface Destroyable {
-  destroy(): void;
-  willDestroy?(): void;
-}
-
-declare const DestroySymbol: unique symbol;
-export type DestroySymbol = typeof DestroySymbol;
-
-export interface SymbolDestroyable {
-  [DestroySymbol](): void;
-}
-
-declare const WillDropSymbol: unique symbol;
-export type WillDropSymbol = typeof WillDropSymbol;
-declare const DidDropSymbol: unique symbol;
-export type DidDropSymbol = typeof DidDropSymbol;
-declare const ChildrenSymbol: unique symbol;
-export type ChildrenSymbol = typeof ChildrenSymbol;
-
-export interface Drop {
-  [WillDropSymbol](): void;
-  [DidDropSymbol](): void;
-
-  // Debug only
-  [ChildrenSymbol]: Iterable<Drop>;
-}
+export type Destroyable = object;
+export type Destructor<T extends Destroyable> = (destroyable: T) => void;
