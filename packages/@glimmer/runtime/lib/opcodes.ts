@@ -8,7 +8,7 @@ import { RuntimeOp, Op, JitOrAotBlock, Maybe, Dict } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
 import { debug, logOpcode } from '@glimmer/debug';
-import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
+import { DESTROYABLE_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
 import { InternalVM, InternalJitVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';
 import { isScopeReference } from './environment';
@@ -137,7 +137,7 @@ export class AppendOpcodes {
         );
         console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
         console.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
-        console.log('%c -> destructor stack', 'color: violet', vm[DESTRUCTOR_STACK].toArray());
+        console.log('%c -> destructor stack', 'color: violet', vm[DESTROYABLE_STACK].toArray());
         if (vm[STACKS].scope.current === null) {
           console.log('%c -> scope', 'color: green', 'null');
         } else {

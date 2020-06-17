@@ -8,7 +8,6 @@ import {
   ComponentInstanceState,
   PreparedArguments,
   Bounds,
-  SymbolDestroyable,
   Destroyable,
   Environment,
 } from '@glimmer/interfaces';
@@ -65,7 +64,7 @@ export class SimpleComponentManager implements ComponentManager {
     throw new Error(`Unimplemented didUpdate in SimpleComponentManager`);
   }
 
-  getDestructor(_state: ComponentInstanceState): Option<SymbolDestroyable | Destroyable> {
+  getDestroyable(_state: ComponentInstanceState): Option<Destroyable> {
     return null;
   }
 }

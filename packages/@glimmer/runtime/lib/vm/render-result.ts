@@ -1,11 +1,10 @@
 import { Environment, RenderResult, LiveBlock } from '@glimmer/interfaces';
-import { associate, DESTROY, LinkedList } from '@glimmer/util';
+import { LinkedList } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { clear } from '../bounds';
-import { inTransaction } from '../environment';
-import { asyncDestroy, legacySyncDestroy } from '../lifetime';
 import { UpdatingOpcode } from '../opcodes';
 import UpdatingVM from './update';
+import { associateDestroyableChild, registerDestructor } from '../destroyables';
 
 export default class RenderResultImpl implements RenderResult {
   constructor(
@@ -14,7 +13,8 @@ export default class RenderResultImpl implements RenderResult {
     private bounds: LiveBlock,
     readonly drop: object
   ) {
-    associate(this, drop);
+    associateDestroyableChild(this, drop);
+    registerDestructor(this, () => clear(this.bounds));
   }
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
@@ -37,17 +37,5 @@ export default class RenderResultImpl implements RenderResult {
 
   handleException() {
     throw 'this should never happen';
-  }
-
-  [DESTROY]() {
-    clear(this.bounds);
-  }
-
-  // compat, as this is a user-exposed API
-  destroy() {
-    inTransaction(this.env, () => {
-      legacySyncDestroy(this, this.env);
-      asyncDestroy(this, this.env);
-    });
   }
 }

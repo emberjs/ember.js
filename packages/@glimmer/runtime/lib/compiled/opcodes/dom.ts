@@ -94,7 +94,7 @@ APPEND_OPCODES.add(Op.CloseElement, vm => {
   if (modifiers) {
     modifiers.forEach(([manager, modifier]) => {
       vm.env.scheduleInstallModifier(modifier, manager);
-      let d = manager.getDestructor(modifier);
+      let d = manager.getDestroyable(modifier);
 
       if (d) {
         vm.associateDestroyable(d);

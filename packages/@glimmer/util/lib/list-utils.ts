@@ -1,6 +1,4 @@
 import { Option } from './platform-utils';
-import { WILL_DROP, DID_DROP, destructor, CHILDREN } from './lifetimes';
-import { Drop } from '@glimmer/interfaces';
 
 export interface LinkedListNode {
   next: Option<LinkedListNode>;
@@ -21,7 +19,7 @@ export class ListNode<T> implements LinkedListNode {
 // themselves T. However, it will always be true, so trust us.
 type trust = any;
 
-export class LinkedList<T extends LinkedListNode> implements Slice<T>, Drop {
+export class LinkedList<T extends LinkedListNode> implements Slice<T> {
   private _head!: Option<T>;
   private _tail!: Option<T>;
 
@@ -95,20 +93,6 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T>, Drop {
     else this._tail = node.prev as trust;
 
     return node;
-  }
-
-  [WILL_DROP]() {
-    this.forEachNode(d => destructor(d)[WILL_DROP]());
-  }
-
-  [DID_DROP]() {
-    this.forEachNode(d => destructor(d)[DID_DROP]());
-  }
-
-  get [CHILDREN](): Iterable<Drop> {
-    let out: Drop[] = [];
-    this.forEachNode(d => out.push(...destructor(d)[CHILDREN]));
-    return out;
   }
 }
 

@@ -4,7 +4,6 @@ import {
   Environment,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
-  SymbolDestroyable,
   ElementBuilder,
   LiveBlock,
   CursorStackSymbol,
@@ -14,7 +13,6 @@ import {
 } from '@glimmer/interfaces';
 import {
   assert,
-  DESTROY,
   expect,
   LinkedList,
   LinkedListNode,
@@ -32,8 +30,8 @@ import {
   SimpleText,
 } from '@simple-dom/interface';
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
-import { detachChildren } from '../lifetime';
 import { DynamicAttribute } from './attributes/dynamic';
+import { registerDestructor, destroy } from '../destroyables';
 
 export interface FirstNode {
   firstNode(): SimpleNode;
@@ -381,7 +379,6 @@ export class NewElementBuilder implements ElementBuilder {
 export class SimpleLiveBlock implements LiveBlock {
   protected first: Option<FirstNode> = null;
   protected last: Option<LastNode> = null;
-  protected destroyables: Option<SymbolDestroyable[]> = null;
   protected nesting = 0;
 
   constructor(private parent: SimpleElement) {}
@@ -444,47 +441,49 @@ export class SimpleLiveBlock implements LiveBlock {
   }
 }
 
-export class RemoteLiveBlock extends SimpleLiveBlock implements SymbolDestroyable {
-  [DESTROY]() {
-    // In general, you only need to clear the root of a hierarchy, and should never
-    // need to clear any child nodes. This is an important constraint that gives us
-    // a strong guarantee that clearing a subtree is a single DOM operation.
-    //
-    // Because remote blocks are not normally physically nested inside of the tree
-    // that they are logically nested inside, we manually clear remote blocks when
-    // a logical parent is cleared.
-    //
-    // HOWEVER, it is currently possible for a remote block to be physically nested
-    // inside of the block it is logically contained inside of. This happens when
-    // the remote block is appended to the end of the application's entire element.
-    //
-    // The problem with that scenario is that Glimmer believes that it owns more of
-    // the DOM than it actually does. The code is attempting to write past the end
-    // of the Glimmer-managed root, but Glimmer isn't aware of that.
-    //
-    // The correct solution to that problem is for Glimmer to be aware of the end
-    // of the bounds that it owns, and once we make that change, this check could
-    // be removed.
-    //
-    // For now, a more targeted fix is to check whether the node was already removed
-    // and avoid clearing the node if it was. In most cases this shouldn't happen,
-    // so this might hide bugs where the code clears nested nodes unnecessarily,
-    // so we should eventually try to do the correct fix.
-    if (this.parentElement() === this.firstNode().parentNode) {
-      clear(this);
-    }
+export class RemoteLiveBlock extends SimpleLiveBlock {
+  constructor(parent: SimpleElement) {
+    super(parent);
+
+    registerDestructor(this, () => {
+      // In general, you only need to clear the root of a hierarchy, and should never
+      // need to clear any child nodes. This is an important constraint that gives us
+      // a strong guarantee that clearing a subtree is a single DOM operation.
+      //
+      // Because remote blocks are not normally physically nested inside of the tree
+      // that they are logically nested inside, we manually clear remote blocks when
+      // a logical parent is cleared.
+      //
+      // HOWEVER, it is currently possible for a remote block to be physically nested
+      // inside of the block it is logically contained inside of. This happens when
+      // the remote block is appended to the end of the application's entire element.
+      //
+      // The problem with that scenario is that Glimmer believes that it owns more of
+      // the DOM than it actually does. The code is attempting to write past the end
+      // of the Glimmer-managed root, but Glimmer isn't aware of that.
+      //
+      // The correct solution to that problem is for Glimmer to be aware of the end
+      // of the bounds that it owns, and once we make that change, this check could
+      // be removed.
+      //
+      // For now, a more targeted fix is to check whether the node was already removed
+      // and avoid clearing the node if it was. In most cases this shouldn't happen,
+      // so this might hide bugs where the code clears nested nodes unnecessarily,
+      // so we should eventually try to do the correct fix.
+      if (this.parentElement() === this.firstNode().parentNode) {
+        clear(this);
+      }
+    });
   }
 }
 
 export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBlock {
-  reset(env: Environment): Option<SimpleNode> {
-    let nextSibling = detachChildren(this, env);
-
-    // let nextSibling = clear(this);
+  reset(): Option<SimpleNode> {
+    destroy(this);
+    let nextSibling = clear(this);
 
     this.first = null;
     this.last = null;
-    this.destroyables = null;
     this.nesting = 0;
 
     return nextSibling;
