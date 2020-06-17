@@ -1,3 +1,17 @@
+## v0.54.0 (2020-06-17)
+
+#### :boom: Breaking Change / :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1110](https://github.com/glimmerjs/glimmer-vm/pull/1110) Implement Destroyables RFC ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/validator`
+  * [#1103](https://github.com/glimmerjs/glimmer-vm/pull/1103) [BUGFIX] Adds an assertion to prevent duplicate validator packages ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.53.0 (2020-05-18)
 
 #### :boom: Breaking Change
