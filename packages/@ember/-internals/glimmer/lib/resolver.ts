@@ -30,6 +30,7 @@ import InternalComponentManager, {
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isClassHelper, isHelperFactory } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
+import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as trackArray } from './helpers/-track-array';
@@ -264,6 +265,7 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   '-mount': mountHelper,
   '-outlet': outletHelper,
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
+  '-in-el-null': inElementNullCheckHelper,
 };
 
 interface IBuiltInModifiers {
