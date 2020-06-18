@@ -55,6 +55,15 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
 
         if (node.path.original === 'in-element') {
           if (EMBER_GLIMMER_IN_ELEMENT) {
+            let originalValue = node.params[0];
+
+            if (originalValue) {
+              let subExpr = b.sexpr('-in-el-null', [originalValue]);
+
+              node.params.shift();
+              node.params.unshift(subExpr);
+            }
+
             node.hash.pairs.forEach(pair => {
               if (pair.key === 'insertBefore') {
                 assert(
