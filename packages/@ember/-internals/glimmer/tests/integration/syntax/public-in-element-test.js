@@ -119,6 +119,42 @@ moduleFor(
       }, /Can only pass null to insertBefore in in-element, received:/);
     }
 
+    ['@feature(EMBER_GLIMMER_IN_ELEMENT) does not allow null as a destination element']() {
+      let someElement = null;
+
+      expectAssertion(() => {
+        this.render(
+          strip`
+            {{#in-element someElement}}
+              {{text}}
+            {{/in-element}}
+          `,
+          {
+            someElement,
+            text: 'Whoop!',
+          }
+        );
+      }, /You cannot pass a null or undefined destination element to in-element/);
+    }
+
+    ['@feature(EMBER_GLIMMER_IN_ELEMENT) does not undefined as a destination element']() {
+      let someElement = undefined;
+
+      expectAssertion(() => {
+        this.render(
+          strip`
+            {{#in-element someElement}}
+              {{text}}
+            {{/in-element}}
+          `,
+          {
+            someElement,
+            text: 'Whoop!',
+          }
+        );
+      }, /You cannot pass a null or undefined destination element to in-element/);
+    }
+
     ['@feature(EMBER_GLIMMER_IN_ELEMENT) components are cleaned up properly'](assert) {
       let hooks = [];
 
