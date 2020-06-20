@@ -102,9 +102,8 @@ function initialize(obj, properties) {
       let isDescriptor = possibleDesc !== undefined;
 
       if (!isDescriptor) {
-        let baseValue = obj[keyName];
-
         if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+          let baseValue = obj[keyName];
           if (baseValue) {
             value = makeArray(baseValue).concat(value);
           } else {
@@ -113,6 +112,7 @@ function initialize(obj, properties) {
         }
 
         if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+          let baseValue = obj[keyName];
           value = assign({}, baseValue, value);
         }
       }
