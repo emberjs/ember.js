@@ -230,6 +230,25 @@ import layout from '../templates/link-to';
   In general, this is not recommended. Instead, you can use the `transition-to` helper together
   with a click event handler on the HTML tag of your choosing.
 
+  ### Supplying query parameters
+
+  If you need to add optional key-value pairs that appear to the right of the ? in a URL,
+  you can use the `query` argument.
+
+  ```handlebars
+  <LinkTo @route='photoGallery' @query={{hash page=1 per_page=20}}>
+    Great Hamster Photos
+  </LinkTo>
+  ```
+
+  This will result in:
+
+  ```html
+  <a href="/hamster-photos?page=1&per_page=20">
+    Great Hamster Photos
+  </a>
+  ```
+
   @for Ember.Templates.components
   @method LinkTo
   @see {LinkComponent}
