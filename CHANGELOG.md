@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.20.0-beta.3 (June 22, 2020)
+
+- [#19021](https://github.com/emberjs/ember.js/pull/19021) [BUGFIX] Disallow null/undefined targets in `in-element`.
+- [#19023](https://github.com/emberjs/ember.js/pull/19023) [BUGFIX] Don't access properties during init unless required to prevent unnecessary rendering invalidations.
+
 ### v3.20.0-beta.2 (June 2, 2020)
 
 - [#18997](https://github.com/emberjs/ember.js/pull/18997) [BUGFIX] Fix components `<Input>` and `<Textarea>` to work with native class actions correctly.
