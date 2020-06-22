@@ -1,6 +1,7 @@
 import { symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { isDestroyed } from '@glimmer/runtime';
 import { UpdatableTag } from '@glimmer/validator';
 
 type ObjMap<T> = { [key: string]: T };
@@ -58,15 +59,6 @@ if (DEBUG) {
 
 export const UNDEFINED = symbol('undefined');
 
-// FLAGS
-const enum MetaFlags {
-  NONE = 0,
-  SOURCE_DESTROYING = 1 << 0,
-  SOURCE_DESTROYED = 1 << 1,
-  META_DESTROYED = 1 << 2,
-  INITIALIZING = 1 << 3,
-}
-
 const enum ListenerKind {
   ADD = 0,
   ONCE = 1,
@@ -96,7 +88,7 @@ let currentListenerVersion = 1;
 export class Meta {
   _descriptors: Map<string, any> | undefined;
   _mixins: any | undefined;
-  _flags: MetaFlags;
+  _isInit: boolean;
   _lazyChains: ObjMap<ObjMap<UpdatableTag>> | undefined;
   source: object;
   proto: object | undefined;
@@ -121,7 +113,7 @@ export class Meta {
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
-    this._flags = MetaFlags.NONE;
+    this._isInit = false;
 
     // used only internally
     this.source = obj;
@@ -140,58 +132,19 @@ export class Meta {
   }
 
   setInitializing() {
-    this._flags |= MetaFlags.INITIALIZING;
+    this._isInit = true;
   }
 
   unsetInitializing() {
-    this._flags ^= MetaFlags.INITIALIZING;
+    this._isInit = false;
   }
 
   isInitializing() {
-    return this._hasFlag(MetaFlags.INITIALIZING);
+    return this._isInit;
   }
 
   isPrototypeMeta(obj: object) {
     return this.proto === this.source && this.source === obj;
-  }
-
-  destroy() {
-    if (DEBUG) {
-      counters!.deleteCalls++;
-    }
-
-    if (this.isMetaDestroyed()) {
-      return;
-    }
-    this.setMetaDestroyed();
-  }
-
-  isSourceDestroying() {
-    return this._hasFlag(MetaFlags.SOURCE_DESTROYING);
-  }
-
-  setSourceDestroying() {
-    this._flags |= MetaFlags.SOURCE_DESTROYING;
-  }
-
-  isSourceDestroyed() {
-    return this._hasFlag(MetaFlags.SOURCE_DESTROYED);
-  }
-
-  setSourceDestroyed() {
-    this._flags |= MetaFlags.SOURCE_DESTROYED;
-  }
-
-  isMetaDestroyed() {
-    return this._hasFlag(MetaFlags.META_DESTROYED);
-  }
-
-  setMetaDestroyed() {
-    this._flags |= MetaFlags.META_DESTROYED;
-  }
-
-  _hasFlag(flag: number) {
-    return (this._flags & flag) === flag;
   }
 
   _getOrCreateOwnMap(key: string) {
@@ -258,12 +211,12 @@ export class Meta {
 
   addMixin(mixin: any) {
     assert(
-      this.isMetaDestroyed()
+      isDestroyed(this.source)
         ? `Cannot add mixins of \`${toString(mixin)}\` on \`${toString(
             this.source
           )}\` call addMixin after it has been destroyed.`
         : '',
-      !this.isMetaDestroyed()
+      !isDestroyed(this.source)
     );
     let set = this._getOrCreateOwnSet('_mixins');
     set.add(mixin);
@@ -294,12 +247,12 @@ export class Meta {
 
   writeDescriptors(subkey: string, value: any) {
     assert(
-      this.isMetaDestroyed()
+      isDestroyed(this.source)
         ? `Cannot update descriptors for \`${subkey}\` on \`${toString(
             this.source
           )}\` after it has been destroyed.`
         : '',
-      !this.isMetaDestroyed()
+      !isDestroyed(this.source)
     );
     let map = this._descriptors || (this._descriptors = new Map());
     map.set(subkey, value);

@@ -1,8 +1,10 @@
 import { ENV } from '@ember/-internals/environment';
 import { get, set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
+import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
-import { warn } from '@ember/debug';
+import { assert, deprecate, warn } from '@ember/debug';
+import { backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { ElementBuilder, Environment, Option } from '@glimmer/interfaces';
 import {
@@ -14,8 +16,11 @@ import {
   DynamicAttribute,
   dynamicAttribute,
   EnvironmentDelegate,
+  setScheduleDestroy,
+  setScheduleDestroyed,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
+import { setAutotrackingTransactionEnv, setPropertyDidChange } from '@glimmer/validator';
 import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { OwnedTemplate } from './template';
@@ -23,6 +28,51 @@ import DebugRenderTree, { PathNodeType } from './utils/debug-render-tree';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
+
+///////////
+
+// Setup global environment
+
+// Autotracking
+
+setPropertyDidChange(() => backburner.ensureInstance());
+
+if (DEBUG) {
+  setAutotrackingTransactionEnv!({
+    assert(message) {
+      assert(message, false);
+    },
+
+    deprecate(message) {
+      deprecate(message, false, {
+        id: 'autotracking.mutation-after-consumption',
+        until: '4.0.0',
+      });
+    },
+
+    debugMessage(obj, keyName) {
+      let dirtyString = keyName
+        ? `\`${keyName}\` on \`${getDebugName!(obj)}\``
+        : `\`${getDebugName!(obj)}\``;
+
+      return `You attempted to update ${dirtyString}, but it had already been used previously in the same computation.  Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.`;
+    },
+  });
+}
+
+// Destruction
+
+setScheduleDestroy((destroyable, destructor) => {
+  schedule('actions', null, destructor, destroyable);
+});
+
+setScheduleDestroyed(finalizeDestructor => {
+  schedule('destroy', null, finalizeDestructor);
+});
+
+///////////
+
+// Define environment delegate
 
 export interface CompilerFactory {
   id: string;

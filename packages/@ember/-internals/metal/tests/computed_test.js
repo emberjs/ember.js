@@ -2,7 +2,6 @@ import { Object as EmberObject } from '@ember/-internals/runtime';
 import {
   computed,
   defineProperty,
-  destroy,
   getCachedValueFor,
   isClassicDecorator,
   isComputed,
@@ -10,8 +9,9 @@ import {
   set,
   addObserver,
 } from '..';
-import { meta as metaFor } from '@ember/-internals/meta';
+import { run } from '@ember/runloop';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { destroy } from '@glimmer/runtime';
 
 let obj, objA, objB, count, func;
 
@@ -605,8 +605,7 @@ moduleFor(
     }
 
     ['@test throws an assertion if an uncached `get` is called after object is destroyed']() {
-      let meta = metaFor(obj);
-      meta.destroy();
+      run(() => destroy(obj));
 
       obj.toString = () => '<custom-obj:here>';
 
@@ -619,7 +618,6 @@ moduleFor(
     ['@test does not throw an assertion if an uncached `get` is called on computed without dependencies after object is destroyed'](
       assert
     ) {
-      let meta = metaFor(obj);
       defineProperty(
         obj,
         'foo',
@@ -628,7 +626,7 @@ moduleFor(
         })
       );
 
-      meta.destroy();
+      run(() => destroy(obj));
 
       assert.equal(get(obj, 'foo'), 'baz', 'CP calculated successfully');
     }

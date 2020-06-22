@@ -269,10 +269,10 @@ class AbstractAppendTest extends RenderingTestCase {
         ['x-child', 'willDestroyElement'],
         ['x-child', 'willClearRender'],
 
-        ['x-child', 'didDestroyElement'],
         ['x-parent', 'didDestroyElement'],
-
         ['x-parent', 'willDestroy'],
+
+        ['x-child', 'didDestroyElement'],
         ['x-child', 'willDestroy'],
       ],
       'destroy'

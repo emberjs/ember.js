@@ -21,6 +21,7 @@ import {
   clientBuilder,
   CurriedComponentDefinition,
   curry,
+  destroy,
   DOMChanges,
   DOMTreeConstruction,
   inTransaction,
@@ -148,7 +149,7 @@ class RootState {
     this.result = undefined;
     this.render = undefined as any;
 
-    if (result) {
+    if (result !== undefined) {
       /*
        Handles these scenarios:
 
@@ -160,7 +161,7 @@ class RootState {
 
        */
 
-      inTransaction(env, () => result!.destroy());
+      inTransaction(env, () => destroy(result!));
     }
   }
 }

@@ -138,6 +138,7 @@ import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import templateOnlyComponent from '@ember/component/template-only';
+import { destroy } from '@glimmer/runtime';
 
 // ****@ember/-internals/environment****
 
@@ -322,7 +323,7 @@ Ember.platform = {
   hasPropertyAccessors: true,
 };
 Ember.defineProperty = metal.defineProperty;
-Ember.destroy = metal.destroy;
+Ember.destroy = destroy;
 Ember.libraries = metal.libraries;
 Ember.getProperties = metal.getProperties;
 Ember.setProperties = metal.setProperties;

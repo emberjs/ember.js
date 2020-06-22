@@ -20,7 +20,7 @@ import {
   PartialDefinition,
 } from '@glimmer/interfaces';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
+import { getDynamicVar, ModifierDefinition, registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
@@ -426,11 +426,11 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
       const helper = factory.create();
 
       if (isClassHelper(helper)) {
-        vm.associateDestroyable({
-          destroy() {
-            helper.destroy();
-          },
-        });
+        let helperDestroyable = {};
+
+        // Do this so that `destroy` gets called correctly
+        registerDestructor(helperDestroyable, () => helper.destroy(), true);
+        vm.associateDestroyable(helperDestroyable);
       } else if (DEBUG) {
         // Bind to null in case someone accidentally passed an unbound function
         // in, and attempts use `this` on it.
