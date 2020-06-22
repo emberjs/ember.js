@@ -6,11 +6,11 @@ import { join } from '@ember/runloop';
 import {
   CapturedNamedArguments,
   CapturedPositionalArguments,
-  Destroyable,
   DynamicScope,
   ModifierManager,
   VMArguments,
 } from '@glimmer/interfaces';
+import { registerDestructor } from '@glimmer/runtime';
 import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../helpers/mut';
@@ -93,6 +93,8 @@ export class ActionState {
     this.dom = dom;
     this.eventName = this.getEventName();
     this.tag = tag;
+
+    registerDestructor(this, () => ActionHelper.unregisterAction(this));
   }
 
   getEventName() {
@@ -178,10 +180,6 @@ export class ActionState {
     });
 
     return shouldBubble;
-  }
-
-  destroy() {
-    ActionHelper.unregisterAction(this);
   }
 }
 
@@ -281,7 +279,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     return actionState.tag;
   }
 
-  getDestructor(modifier: Destroyable) {
-    return modifier;
+  getDestroyable(actionState: ActionState) {
+    return actionState;
   }
 }

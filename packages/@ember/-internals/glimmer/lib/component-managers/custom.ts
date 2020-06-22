@@ -1,3 +1,4 @@
+import { ENV } from '@ember/-internals/environment';
 import { CUSTOM_TAG_FOR } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
@@ -16,10 +17,9 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
+import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { consumeTag, createTag, isConstTagged, Tag } from '@glimmer/validator';
-
-import { ENV } from '@ember/-internals/environment';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -285,6 +285,10 @@ export default class CustomComponentManager<ComponentInstance>
         instance: component,
         template: definition.template,
       });
+
+      registerDestructor(bucket, () => {
+        env.extra.debugRenderTree.willDestroy(bucket);
+      });
     }
 
     return bucket;
@@ -337,28 +341,8 @@ export default class CustomComponentManager<ComponentInstance>
     return new ComponentRootReference(delegate.getContext(component), env);
   }
 
-  getDestructor(state: CustomComponentState<ComponentInstance>): Option<Destroyable> {
-    let destructor: Option<Destroyable> = null;
-
-    if (hasDestructors(state.delegate)) {
-      destructor = state;
-    }
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      let inner = destructor;
-
-      destructor = {
-        destroy() {
-          state.env.extra.debugRenderTree.willDestroy(state);
-
-          if (inner) {
-            inner.destroy();
-          }
-        },
-      };
-    }
-
-    return destructor;
+  getDestroyable(bucket: CustomComponentState<ComponentInstance>): Option<Destroyable> {
+    return bucket;
   }
 
   getCapabilities({
@@ -406,13 +390,9 @@ export class CustomComponentState<ComponentInstance> {
     public args: CapturedArguments,
     public env: EmberVMEnvironment,
     public namedArgsProxy?: {}
-  ) {}
-
-  destroy() {
-    const { delegate, component } = this;
-
+  ) {
     if (hasDestructors(delegate)) {
-      delegate.destroyComponent(component);
+      registerDestructor(this, () => delegate.destroyComponent(component));
     }
   }
 }

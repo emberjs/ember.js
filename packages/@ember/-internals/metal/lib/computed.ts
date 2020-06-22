@@ -2,6 +2,7 @@ import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { inspect, isEmberArray, toString } from '@ember/-internals/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
+import { isDestroyed } from '@glimmer/runtime';
 import {
   combine,
   consumeTag,
@@ -614,7 +615,7 @@ export class ComputedProperty extends ComputedDescriptor {
       // should be allowed, even after the object has been destroyed, which is why we check _dependentKeys.
       assert(
         `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
-        this._dependentKeys === undefined || !metaFor(obj).isMetaDestroyed()
+        this._dependentKeys === undefined || !isDestroyed(obj)
       );
 
       let upstreamTag: Tag | undefined = undefined;

@@ -1,6 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import { schedule } from '@ember/runloop';
+import { registerDestructor } from '@glimmer/runtime';
 import { combine, CURRENT_TAG, Tag, validateTag, valueForTag } from '@glimmer/validator';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
@@ -83,6 +84,7 @@ function getOrCreateActiveObserversFor(target: object, sync: boolean) {
 
   if (!observerMap.has(target)) {
     observerMap.set(target, new Map());
+    registerDestructor(target, () => destroyObservers(target), true);
   }
 
   return observerMap.get(target)!;
@@ -184,12 +186,6 @@ export function flushAsyncObservers(shouldSchedule = true) {
   ASYNC_OBSERVERS.forEach((activeObservers, target) => {
     let meta = peekMeta(target);
 
-    // if observer target is destroyed remove observers
-    if (meta && (meta.isSourceDestroying() || meta.isMetaDestroyed())) {
-      ASYNC_OBSERVERS.delete(target);
-      return;
-    }
-
     activeObservers.forEach((observer, eventName) => {
       if (!validateTag(observer.tag, observer.lastRevision)) {
         let sendObserver = () => {
@@ -218,11 +214,6 @@ export function flushSyncObservers() {
 
   SYNC_OBSERVERS.forEach((activeObservers, target) => {
     let meta = peekMeta(target);
-
-    if (meta && (meta.isSourceDestroying() || meta.isMetaDestroyed())) {
-      SYNC_OBSERVERS.delete(target);
-      return;
-    }
 
     activeObservers.forEach((observer, eventName) => {
       if (!observer.suspended && !validateTag(observer.tag, observer.lastRevision)) {

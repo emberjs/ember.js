@@ -1,51 +1,8 @@
-import { meta as metaFor } from '@ember/-internals/meta';
-import {
-  getDebugName,
-  isObject,
-  setupMandatorySetter,
-  symbol,
-  toString,
-} from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
-import { backburner } from '@ember/runloop';
+import { isObject, setupMandatorySetter, symbol, toString } from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import {
-  CONSTANT_TAG,
-  dirtyTagFor,
-  setAutotrackingTransactionEnv,
-  setPropertyDidChange,
-  Tag,
-  tagFor,
-} from '@glimmer/validator';
-
-/////////
-
-// Setup tracking environment
-
-setPropertyDidChange(() => backburner.ensureInstance());
-
-if (DEBUG) {
-  setAutotrackingTransactionEnv!({
-    assert(message) {
-      assert(message, false);
-    },
-
-    deprecate(message) {
-      deprecate(message, false, {
-        id: 'autotracking.mutation-after-consumption',
-        until: '4.0.0',
-      });
-    },
-
-    debugMessage(obj, keyName) {
-      let dirtyString = keyName
-        ? `\`${keyName}\` on \`${getDebugName!(obj)}\``
-        : `\`${getDebugName!(obj)}\``;
-
-      return `You attempted to update ${dirtyString}, but it had already been used previously in the same computation.  Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.`;
-    },
-  });
-}
+import { isDestroyed } from '@glimmer/runtime';
+import { CONSTANT_TAG, dirtyTagFor, Tag, tagFor } from '@glimmer/validator';
 
 /////////
 
@@ -84,13 +41,11 @@ export function tagForProperty(
 export function tagForObject(obj: unknown | null): Tag {
   if (isObject(obj)) {
     if (DEBUG) {
-      let meta = metaFor(obj);
-
       assert(
-        meta.isMetaDestroyed()
-          ? `Cannot create a new tag for \`${toString(meta.source)}\` after it has been destroyed.`
+        isDestroyed(obj)
+          ? `Cannot create a new tag for \`${toString(obj)}\` after it has been destroyed.`
           : '',
-        !meta.isMetaDestroyed()
+        !isDestroyed(obj)
       );
     }
 

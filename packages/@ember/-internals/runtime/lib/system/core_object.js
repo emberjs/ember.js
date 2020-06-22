@@ -14,8 +14,7 @@ import {
   HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from '@ember/-internals/utils';
-import { schedule } from '@ember/runloop';
-import { meta, peekMeta } from '@ember/-internals/meta';
+import { meta } from '@ember/-internals/meta';
 import {
   PROXY_CONTENT,
   sendEvent,
@@ -24,7 +23,6 @@ import {
   applyMixin,
   defineProperty,
   descriptorForProperty,
-  destroy,
   classToString,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
@@ -32,6 +30,7 @@ import {
 import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/runtime';
 
 const reopen = Mixin.prototype.reopen;
 
@@ -280,6 +279,8 @@ class CoreObject {
       FACTORY_FOR.set(self, initFactory);
     }
 
+    registerDestructor(self, () => self.willDestroy());
+
     // disable chains
     let m = meta(self);
 
@@ -503,7 +504,7 @@ class CoreObject {
     @public
   */
   get isDestroyed() {
-    return peekMeta(this).isSourceDestroyed();
+    return isDestroyed(this);
   }
 
   set isDestroyed(value) {
@@ -521,7 +522,7 @@ class CoreObject {
     @public
   */
   get isDestroying() {
-    return peekMeta(this).isSourceDestroying();
+    return isDestroying(this);
   }
 
   set isDestroying(value) {
@@ -543,10 +544,7 @@ class CoreObject {
     @public
   */
   destroy() {
-    if (destroy(this)) {
-      schedule('actions', this, this.willDestroy);
-      return;
-    }
+    destroy(this);
     return this;
   }
 

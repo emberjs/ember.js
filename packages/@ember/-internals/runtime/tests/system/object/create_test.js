@@ -1,8 +1,9 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { computed, Mixin, observer, addObserver, destroy, alias } from '@ember/-internals/metal';
+import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { destroy } from '@glimmer/runtime';
 
 moduleFor(
   'EmberObject.create',

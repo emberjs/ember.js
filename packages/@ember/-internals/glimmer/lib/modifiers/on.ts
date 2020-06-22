@@ -1,7 +1,8 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Destroyable, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { registerDestructor } from '@glimmer/runtime';
 import { expect } from '@glimmer/util';
 import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
@@ -168,12 +169,6 @@ export class OnModifierState {
         this.callback = userProvidedCallback;
       }
     }
-  }
-
-  destroy() {
-    let { element, eventName, callback, options } = this;
-
-    removeEventListener(element, eventName, callback, options);
   }
 }
 
@@ -368,6 +363,8 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
 
     addEventListener(element, eventName, callback, options);
 
+    registerDestructor(state, () => removeEventListener(element, eventName, callback, options));
+
     state.shouldUpdate = false;
   }
 
@@ -394,7 +391,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     state.shouldUpdate = false;
   }
 
-  getDestructor(state: Destroyable | null) {
+  getDestroyable(state: OnModifierState | null) {
     return state;
   }
 }

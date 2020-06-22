@@ -1,6 +1,7 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { ComponentRootReference, VersionedReference } from '@glimmer/reference';
+import { registerDestructor } from '@glimmer/runtime';
 import { Revision, valueForTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import { Renderer } from '../renderer';
@@ -53,6 +54,9 @@ export default class ComponentStateBucket {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : valueForTag(args.tag);
     this.rootRef = new ComponentRootReference(component, environment);
+
+    registerDestructor(this, () => this.willDestroy(), true);
+    registerDestructor(this, () => this.component.destroy());
   }
 
   willDestroy() {
@@ -71,10 +75,6 @@ export default class ComponentStateBucket {
     }
 
     component.renderer.unregister(component);
-  }
-
-  destroy() {
-    this.component.destroy();
   }
 
   finalize() {

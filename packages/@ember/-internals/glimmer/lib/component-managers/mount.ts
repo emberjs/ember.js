@@ -1,3 +1,7 @@
+import { ENV } from '@ember/-internals/environment';
+import { generateControllerFactory } from '@ember/-internals/routing';
+import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
+import EngineInstance from '@ember/engine/instance';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
@@ -9,13 +13,8 @@ import {
   WithJitDynamicLayout,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
+import { registerDestructor } from '@glimmer/runtime';
 import { CONSTANT_TAG, createTag, isConstTag, Tag } from '@glimmer/validator';
-
-import { generateControllerFactory } from '@ember/-internals/routing';
-import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
-
-import { ENV } from '@ember/-internals/environment';
-import EngineInstance from '@ember/engine/instance';
 import { TemplateFactory } from '../..';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
@@ -119,6 +118,11 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
         // set in getDynamicLayout
         template: undefined,
       });
+
+      registerDestructor(engine, () => {
+        environment.extra.debugRenderTree.willDestroy(controller);
+        environment.extra.debugRenderTree.willDestroy(bucket);
+      });
     }
 
     return bucket;
@@ -142,20 +146,8 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     return tag;
   }
 
-  getDestructor(bucket: EngineState): Option<Destroyable> {
-    let { engine, environment, controller } = bucket;
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      return {
-        destroy() {
-          environment.extra.debugRenderTree.willDestroy(controller);
-          environment.extra.debugRenderTree.willDestroy(bucket);
-          engine.destroy();
-        },
-      };
-    } else {
-      return engine;
-    }
+  getDestroyable(bucket: EngineState): Option<Destroyable> {
+    return bucket.engine;
   }
 
   didRenderLayout(bucket: EngineState, bounds: Bounds): void {

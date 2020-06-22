@@ -1,6 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
 import {
-  destroy,
   changeProperties,
   addObserver,
   removeObserver,
@@ -18,6 +17,7 @@ import {
 } from '..';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
+import { destroy } from '@glimmer/runtime';
 
 function K() {}
 
