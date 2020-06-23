@@ -1,32 +1,15 @@
 'use strict';
 
-const path = require('path');
 const SimpleDOM = require('simple-dom');
 const buildOwner = require('./build-owner');
-
-const distPath = path.join(__dirname, '../../../dist');
-const emberPath = path.join(distPath, 'tests/ember');
-const templateCompilerPath = path.join(distPath, 'ember-template-compiler');
-
-function clearEmber() {
-  delete global.Ember;
-
-  // clear the previously cached version of this module
-  delete require.cache[emberPath + '.js'];
-  delete require.cache[templateCompilerPath + '.js'];
-}
+const { loadEmber, clearEmber } = require('./load-ember');
 
 module.exports = function(hooks) {
   hooks.beforeEach(function() {
-    let precompile = require(templateCompilerPath).precompile;
-    this.compile = function compile(templateString, options) {
-      let templateSpec = precompile(templateString, options);
-      let template = new Function('return ' + templateSpec)();
+    let { Ember, compile } = loadEmber();
 
-      return this.Ember.HTMLBars.template(template);
-    };
-
-    let Ember = (this.Ember = require(emberPath));
+    this.compile = compile;
+    this.Ember = Ember;
 
     Ember.testing = true;
     this.run = Ember.run;
