@@ -1,7 +1,7 @@
 import { symbol, toString } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { isDestroyed } from '@glimmer/runtime';
+import { isDestroyed, isDestroying } from '@glimmer/runtime';
 import { UpdatableTag } from '@glimmer/validator';
 
 type ObjMap<T> = { [key: string]: T };
@@ -129,6 +129,56 @@ export class Meta {
       this._parent = parent = proto === null || proto === objectPrototype ? null : meta(proto);
     }
     return parent;
+  }
+
+  // These methods are here to prevent errors in legacy compat with some addons
+  // that used them as intimate API
+  setSourceDestroying() {
+    deprecate(
+      'setSourceDestroying is deprecated, use the destroy() API to destroy the object directly instead',
+      false,
+      {
+        id: 'meta-destruction-apis',
+        until: '3.25.0',
+      }
+    );
+  }
+
+  setSourceDestroyed() {
+    deprecate(
+      'setSourceDestroyed is deprecated, use the destroy() API to destroy the object directly instead',
+      false,
+      {
+        id: 'meta-destruction-apis',
+        until: '3.25.0',
+      }
+    );
+  }
+
+  isSourceDestroying() {
+    deprecate(
+      'isSourceDestroying is deprecated, use the isDestroying() API to check the object destruction state directly instead',
+      false,
+      {
+        id: 'meta-destruction-apis',
+        until: '3.25.0',
+      }
+    );
+
+    return isDestroying(this.source);
+  }
+
+  isSourceDestroyed() {
+    deprecate(
+      'isSourceDestroyed is deprecated, use the isDestroyed() API to check the object destruction state directly instead',
+      false,
+      {
+        id: 'meta-destruction-apis',
+        until: '3.25.0',
+      }
+    );
+
+    return isDestroyed(this.source);
   }
 
   setInitializing() {
