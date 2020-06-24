@@ -7,7 +7,7 @@ import {
   VMArguments,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { NULL_REFERENCE } from '@glimmer/runtime';
+import { NULL_REFERENCE, registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { CONSTANT_TAG, createTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
@@ -57,6 +57,7 @@ export default class TemplateOnlyComponentManager
   ): Option<DebugStateBucket> {
     if (ENV._DEBUG_RENDER_TREE) {
       let bucket = { environment };
+
       environment.extra.debugRenderTree.create(bucket, {
         type: 'component',
         name: name,
@@ -64,6 +65,11 @@ export default class TemplateOnlyComponentManager
         instance: null,
         template,
       });
+
+      registerDestructor(bucket, () => {
+        bucket.environment.extra.debugRenderTree.willDestroy(bucket!);
+      });
+
       return bucket;
     } else {
       return null;
@@ -84,13 +90,9 @@ export default class TemplateOnlyComponentManager
     }
   }
 
-  getDestructor(bucket: Option<DebugStateBucket>) {
+  getDestroyable(bucket: Option<DebugStateBucket>) {
     if (ENV._DEBUG_RENDER_TREE) {
-      return {
-        destroy() {
-          bucket!.environment.extra.debugRenderTree.willDestroy(bucket!);
-        },
-      };
+      return bucket;
     } else {
       return null;
     }

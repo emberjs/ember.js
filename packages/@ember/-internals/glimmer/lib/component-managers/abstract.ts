@@ -61,5 +61,5 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     // noop
   }
 
-  abstract getDestructor(bucket: T): Option<Destroyable>;
+  abstract getDestroyable(bucket: T): Option<Destroyable>;
 }

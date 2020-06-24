@@ -1,9 +1,10 @@
 import { ENV } from '@ember/-internals/environment';
-import { Mixin, mixin, get, set, destroy } from '@ember/-internals/metal';
+import { Mixin, mixin, get, set } from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
 import Evented from '../../lib/mixins/evented';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
+import { destroy } from '@glimmer/runtime';
 
 moduleFor(
   'Function.prototype.observes() helper',

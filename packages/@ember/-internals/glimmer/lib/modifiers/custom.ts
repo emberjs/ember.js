@@ -3,6 +3,7 @@ import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { registerDestructor } from '@glimmer/runtime';
 import {
   combine,
   CONSTANT_TAG,
@@ -70,11 +71,8 @@ export class CustomModifierState<ModifierInstance> {
     public delegate: ModifierManagerDelegate<ModifierInstance>,
     public modifier: ModifierInstance,
     public args: CapturedArguments
-  ) {}
-
-  destroy() {
-    const { delegate, modifier, args } = this;
-    delegate.destroyModifier(modifier, args.value());
+  ) {
+    registerDestructor(this, () => delegate.destroyModifier(modifier, args.value()));
   }
 }
 
@@ -176,7 +174,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
     }
   }
 
-  getDestructor(state: CustomModifierState<ModifierInstance>) {
+  getDestroyable(state: CustomModifierState<ModifierInstance>) {
     return state;
   }
 }
@@ -195,7 +193,7 @@ class NonInteractiveCustomModifierManager<ModifierInstance>
 
   update() {}
 
-  getDestructor() {
+  getDestroyable() {
     return null;
   }
 }

@@ -16,7 +16,7 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
-import { EMPTY_ARGS } from '@glimmer/runtime';
+import { EMPTY_ARGS, registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
 
@@ -125,6 +125,16 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
         instance: definition.controller,
         template: definition.template,
       });
+
+      registerDestructor(state, () => {
+        state.environment.extra.debugRenderTree.willDestroy(state);
+
+        if (state.engine) {
+          state.environment.extra.debugRenderTree.willDestroy(state.engine);
+        }
+
+        state.environment.extra.debugRenderTree.willDestroy(state.outlet!);
+      });
     }
 
     return state;
@@ -191,19 +201,9 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     }
   }
 
-  getDestructor(state: OutletInstanceState): Option<Destroyable> {
+  getDestroyable(state: OutletInstanceState): Option<Destroyable> {
     if (ENV._DEBUG_RENDER_TREE) {
-      return {
-        destroy() {
-          state.environment.extra.debugRenderTree.willDestroy(state);
-
-          if (state.engine) {
-            state.environment.extra.debugRenderTree.willDestroy(state.engine);
-          }
-
-          state.environment.extra.debugRenderTree.willDestroy(state.outlet!);
-        },
-      };
+      return state;
     } else {
       return null;
     }

@@ -1,5 +1,6 @@
-import { set, get, destroy, observer, mixin, Mixin } from '../..';
+import { set, get, observer, mixin, Mixin } from '../..';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { destroy } from '@glimmer/runtime';
 
 let obj;
 

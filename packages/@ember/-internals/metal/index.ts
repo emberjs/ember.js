@@ -50,7 +50,6 @@ export { default as getProperties } from './lib/get_properties';
 export { default as setProperties } from './lib/set_properties';
 export { default as expandProperties } from './lib/expand_properties';
 
-export { destroy } from './lib/destroy';
 export {
   ASYNC_OBSERVERS,
   SYNC_OBSERVERS,

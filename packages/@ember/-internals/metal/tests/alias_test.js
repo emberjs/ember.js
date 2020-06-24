@@ -2,7 +2,6 @@ import {
   alias,
   computed,
   defineProperty,
-  destroy,
   get,
   set,
   addObserver,
@@ -11,6 +10,7 @@ import {
 } from '..';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { destroy } from '@glimmer/runtime';
 import { valueForTag, validateTag } from '@glimmer/validator';
 
 let obj, count;

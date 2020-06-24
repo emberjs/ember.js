@@ -22,7 +22,7 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { RootReference, VersionedPathReference } from '@glimmer/reference';
-import { PrimitiveReference } from '@glimmer/runtime';
+import { PrimitiveReference, registerDestructor } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import { combine, Tag, validateTag, valueForTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
@@ -331,6 +331,10 @@ export default class CurlyComponentManager
         instance: component,
         template: state.template,
       });
+
+      registerDestructor(bucket, () => {
+        environment.extra.debugRenderTree.willDestroy(bucket);
+      });
     }
 
     return bucket;
@@ -453,20 +457,8 @@ export default class CurlyComponentManager
     }
   }
 
-  getDestructor(bucket: ComponentStateBucket): Option<Destroyable> {
-    if (ENV._DEBUG_RENDER_TREE) {
-      return {
-        willDestroy() {
-          bucket.willDestroy();
-        },
-        destroy() {
-          bucket.environment.extra.debugRenderTree.willDestroy(bucket);
-          bucket.destroy();
-        },
-      };
-    } else {
-      return bucket;
-    }
+  getDestroyable(bucket: ComponentStateBucket): Option<Destroyable> {
+    return bucket;
   }
 }
 

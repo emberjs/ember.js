@@ -12,6 +12,7 @@ import {
   VMArguments,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, ConstReference, VersionedPathReference } from '@glimmer/reference';
+import { registerDestructor } from '@glimmer/runtime';
 import { CONSTANT_TAG, createTag, isConstTagged } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
@@ -89,6 +90,8 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
         instance,
         template: layout,
       });
+
+      registerDestructor(instance, () => env.extra.debugRenderTree.willDestroy(state));
     }
 
     return state;
@@ -128,17 +131,8 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     }
   }
 
-  getDestructor(state: InputComponentState): Destroyable {
-    if (ENV._DEBUG_RENDER_TREE) {
-      return {
-        destroy() {
-          state.env.extra.debugRenderTree.willDestroy(state);
-          state.instance.destroy();
-        },
-      };
-    } else {
-      return state.instance;
-    }
+  getDestroyable(state: InputComponentState): Destroyable {
+    return state.instance;
   }
 }
 
