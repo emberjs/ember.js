@@ -308,7 +308,7 @@ export default class CurlyComponentManager
     // property with both a setter and dependent keys, in that scenario without
     // the sync observer added below the caller's value will never be updated
     //
-    // See GH#18147 / GH#19028 for details.
+    // See GH#18417 / GH#19028 for details.
     let keyName: string, descriptor: ComputedDescriptor;
     if (environment.isInteractive && capturedArgs.names.length > 0) {
       for (let i = 0; i < capturedArgs.names.length; i++) {

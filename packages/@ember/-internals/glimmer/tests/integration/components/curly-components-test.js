@@ -2904,7 +2904,7 @@ moduleFor(
       this.assertText('initial value');
     }
 
-    ['@test GH#18147 - a two way binding flows upstream to a parent component through a CP']() {
+    ['@test GH#18417 - a two way binding flows upstream to a parent component through a CP']() {
       let parent, child;
       let ParentComponent = Component.extend({
         init() {
