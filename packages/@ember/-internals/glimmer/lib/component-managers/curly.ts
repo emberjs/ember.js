@@ -42,6 +42,8 @@ import ComponentStateBucket, { Component } from '../utils/curly-component-state-
 import { processComponentArgs } from '../utils/process-args';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
+import { addObserver, descriptorForProperty, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
+import { ComputedDescriptor } from '@ember/-internals/metal/lib/decorator';
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
@@ -298,6 +300,35 @@ export default class CurlyComponentManager
 
       if (environment.isInteractive) {
         component.trigger('willInsertElement');
+      }
+    }
+
+    // ensure two way binding works when the component has defined a computed
+    // property with both a setter and dependent keys, in that scenario without
+    // the sync observer added below the caller's value will never be updated
+    //
+    // See GH#18147 / GH#19028 for details.
+    let keyName: string, descriptor: ComputedDescriptor;
+    if (environment.isInteractive && capturedArgs.names.length > 0) {
+      for (let i = 0; i < capturedArgs.names.length; i++) {
+        keyName = capturedArgs.names[i];
+        descriptor = descriptorForProperty(component, keyName);
+
+        if (
+          descriptor !== undefined &&
+          descriptor._dependentKeys !== undefined &&
+          descriptor._dependentKeys.length > 0
+        ) {
+          addObserver(
+            component,
+            keyName,
+            () => {
+              component[PROPERTY_DID_CHANGE](keyName);
+            },
+            undefined,
+            true
+          );
+        }
       }
     }
 
