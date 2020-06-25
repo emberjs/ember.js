@@ -1,5 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
+import { addObserver, descriptorForProperty, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
+import { ComputedDescriptor } from '@ember/-internals/metal/lib/decorator';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
@@ -38,12 +40,11 @@ import {
   referenceForKey,
   SimpleClassNameBindingReference,
 } from '../utils/bindings';
+
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
-import { addObserver, descriptorForProperty, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
-import { ComputedDescriptor } from '@ember/-internals/metal/lib/decorator';
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
