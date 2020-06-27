@@ -129,8 +129,8 @@ if (DEBUG) {
           Object.defineProperty(obj, keyName, desc!);
         }
       }
-    } else {
-      obj[keyName] = value;
     }
+
+    obj[keyName] = value;
   };
 }
