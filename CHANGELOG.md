@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.20.0-beta.4 (June 29, 2020)
+
+- [#19025](https://github.com/emberjs/ember.js/pull/19025) [BUGFIX] Updates Glimmer VM to 0.54.0
+
 ### v3.20.0-beta.3 (June 22, 2020)
 
 - [#19021](https://github.com/emberjs/ember.js/pull/19021) [BUGFIX] Disallow null/undefined targets in `in-element`.
