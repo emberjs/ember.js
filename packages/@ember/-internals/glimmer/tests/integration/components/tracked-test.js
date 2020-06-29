@@ -1,6 +1,12 @@
 import { Object as EmberObject, A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
 import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
-import { computed, get, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import {
+  computed,
+  get,
+  set,
+  tracked,
+  nativeDescDecorator as descriptor,
+} from '@ember/-internals/metal';
 import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -492,6 +498,50 @@ moduleFor(
 
       // check to make sure we can still mutate the person
       person.first = 'max';
+    }
+
+    '@test works when EmberObject created during render'() {
+      this.registerComponent('test', {
+        ComponentClass: class extends GlimmerishComponent {},
+        template: '{{@data.length}}',
+      });
+
+      let RecordMeta = new WeakMap();
+      function getRecordMeta(record) {
+        let meta = RecordMeta.get(record);
+        if (meta === undefined) {
+          meta = Object.create(null);
+          RecordMeta.set(record, meta);
+        }
+
+        return meta;
+      }
+
+      // does not reproduce with native JS class only
+      class Person extends EmberObject {
+        get name() {
+          let meta = getRecordMeta(this);
+          let name = get(meta, 'name');
+          return name;
+        }
+        set name(v) {
+          let meta = getRecordMeta(this);
+          set(meta, 'name', v);
+        }
+      }
+
+      class List {
+        get records() {
+          let p = Person.create({ name: 'ye-haw' });
+          return [p];
+        }
+      }
+
+      this.render('<Test @data={{this.data.records}} />', {
+        data: new List(),
+      });
+
+      this.assertText('1');
     }
   }
 );
