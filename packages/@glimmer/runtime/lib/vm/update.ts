@@ -231,7 +231,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;
 
-    let result = vm.execute(vm => {
+    vm.execute(vm => {
       vm.pushUpdating();
       tryOpcode = vm.enterItem(memo, item);
       map.set(key, tryOpcode);
@@ -239,7 +239,13 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
 
     updating.insertBefore(tryOpcode!, reference);
 
-    associateDestroyableChild(opcode, result.drop);
+    // TODO: We ignore the `result` from the updating VM here because it returns
+    // a RenderResultImpl, which doesn't fit into our updating list, and is
+    // difficult to destroy dynamically. This points to the RenderResultImpl
+    // itself being a problematic construct for re-rendering _within_ the VM.
+    // We should refactor this so that we can get a TryOpcode directly instead,
+    // ideally.
+    associateDestroyableChild(opcode, tryOpcode!);
 
     this.didInsert = true;
   }
