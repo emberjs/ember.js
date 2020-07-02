@@ -1,3 +1,13 @@
+## v0.54.1 (2020-07-02)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1113](https://github.com/glimmerjs/glimmer-vm/pull/1113) Fix a memory leak with `{{each}}` ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.54.0 (2020-06-17)
 
 #### :boom: Breaking Change / :rocket: Enhancement
