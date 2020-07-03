@@ -7,8 +7,9 @@ import {
   Tag,
   valueForTag,
   validateTag,
+  INITIAL,
 } from '@glimmer/validator';
-import { initializeGuid, assert, isHandle, HandleConstants, decodeHandle } from '@glimmer/util';
+import { assert, isHandle, HandleConstants, decodeHandle, expect } from '@glimmer/util';
 import {
   CheckNumber,
   check,
@@ -252,21 +253,25 @@ export class Assert extends UpdatingOpcode {
 export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
   public type = 'jump-if-not-modified';
 
-  public tag: Tag;
+  public tag: Tag = CONSTANT_TAG;
 
-  private lastRevision: Revision;
+  private lastRevision: Revision = INITIAL;
+  private target?: number;
 
-  constructor(tag: Tag, private target: LabelOpcode) {
+  constructor(public index: number) {
     super();
+  }
+
+  finalize(tag: Tag, target: number) {
     this.tag = tag;
-    this.lastRevision = valueForTag(tag);
+    this.target = target;
   }
 
   evaluate(vm: UpdatingVM) {
     let { tag, target, lastRevision } = this;
 
     if (!vm.alwaysRevalidate && validateTag(tag, lastRevision)) {
-      vm.goto(target);
+      vm.goto(expect(target, 'VM BUG: Target must be set before attempting to jump'));
     }
   }
 
@@ -287,26 +292,5 @@ export class DidModifyOpcode extends UpdatingOpcode {
 
   evaluate() {
     this.target.didModify();
-  }
-}
-
-export class LabelOpcode implements UpdatingOpcode {
-  public tag: Tag = CONSTANT_TAG;
-  public type = 'label';
-  public label: Option<string> = null;
-  public _guid!: number; // Set by initializeGuid() in the constructor
-
-  prev: any = null;
-  next: any = null;
-
-  constructor(label: string) {
-    initializeGuid(this);
-    this.label = label;
-  }
-
-  evaluate() {}
-
-  inspect(): string {
-    return `${this.label} [${this._guid}]`;
   }
 }

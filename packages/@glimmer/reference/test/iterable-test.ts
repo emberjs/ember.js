@@ -1,530 +1,186 @@
-import { AbstractIterable, Iterator, IterationItem, IterationArtifacts } from '..';
-import { Tag } from '@glimmer/validator';
+import { module, test } from './utils/qunit';
 
-import { Option } from '@glimmer/util';
+import { IterableReference, OpaqueIterationItem, ConstReference } from '..';
+import { symbol } from '@glimmer/util';
 
-import {
-  initialize as utilInitialize,
-  sync,
-  shuffleArray,
-  getInitialArray,
-  Target,
-} from './utils/iterator';
+import { TestEnv } from './utils/template';
+import objectValues from './utils/platform';
 
-import { VolatileReference } from './utils/reference';
+class IterableWrapper {
+  private iterable: IterableReference;
 
-QUnit.module('Reference iterables');
+  constructor(obj: unknown, key = '@identity') {
+    let valueRef = new ConstReference(obj);
+    this.iterable = new IterableReference(valueRef, key, new TestEnv());
+  }
 
-interface TestItem {
-  key: string;
-  name: string;
-}
+  private iterate() {
+    let result: OpaqueIterationItem[] = [];
 
-class TestIterationItem implements IterationItem<unknown, unknown> {
-  public key: string;
-  public value: unknown;
-  public memo: unknown;
+    // bootstrap
+    this.iterable.value();
 
-  constructor(key: string, value: unknown, memo: unknown) {
-    this.key = key;
-    this.value = value;
-    this.memo = memo;
+    while (true) {
+      let item = this.iterable.next();
+
+      if (item === null) break;
+
+      result.push(item);
+    }
+
+    return result;
+  }
+
+  toValues() {
+    return this.iterate().map(i => i.value);
+  }
+
+  toKeys() {
+    return this.iterate().map(i => i.key);
   }
 }
 
-class TestIterator implements Iterator<unknown, unknown> {
-  private array: TestItem[];
-  private position = 0;
-
-  constructor(array: TestItem[]) {
-    this.array = array;
-  }
-
-  isEmpty(): boolean {
-    return this.array.length === 0;
-  }
+module('@glimmer/reference: IterableReference', () => {
+  module('iterator delegates', () => {
+    test('it correctly iterates delegates', assert => {
+      let obj = { a: 'Yehuda', b: 'Godfrey' };
+      let target = new IterableWrapper(obj);
 
-  next(): Option<IterationItem<unknown, unknown>> {
-    let { position, array } = this;
+      assert.deepEqual(target.toValues(), objectValues(obj));
+    });
 
-    if (position >= array.length) return null;
+    test('it correctly synchronizes delegates when changed', assert => {
+      let obj = { a: 'Yehuda', b: 'Godfrey' } as any;
+      let target = new IterableWrapper(obj);
 
-    let value = array[position];
+      assert.deepEqual(target.toValues(), objectValues(obj));
 
-    this.position++;
+      obj.c = 'Rob';
 
-    return new TestIterationItem(value.key, value, position);
-  }
-}
+      assert.deepEqual(target.toValues(), objectValues(obj));
 
-class TestIterable
-  implements
-    AbstractIterable<
-      unknown,
-      unknown,
-      IterationItem<unknown, unknown>,
-      VolatileReference<unknown>,
-      VolatileReference<unknown>
-    > {
-  public tag: Tag;
-  private arrayRef: VolatileReference<TestItem[]>;
+      obj.a = 'Godhuda';
 
-  constructor(arrayRef: VolatileReference<TestItem[]>) {
-    this.tag = arrayRef.tag;
-    this.arrayRef = arrayRef;
-  }
+      assert.deepEqual(target.toValues(), objectValues(obj));
+    });
 
-  iterate(): Iterator<unknown, unknown> {
-    return new TestIterator(this.arrayRef.value());
-  }
+    test('it handles null delegates', assert => {
+      // Passing null will return an empty iterator
+      let target = new IterableWrapper(null);
 
-  valueReferenceFor(item: TestIterationItem): VolatileReference<unknown> {
-    return new VolatileReference(item.value);
-  }
+      assert.deepEqual(target.toValues(), []);
+    });
+  });
 
-  updateValueReference(reference: VolatileReference<unknown>, item: TestIterationItem) {
-    reference.update(item.value);
-  }
+  module('keys', () => {
+    test('@identity works', assert => {
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
+      let target = new IterableWrapper(arr);
 
-  memoReferenceFor(item: TestIterationItem): VolatileReference<unknown> {
-    return new VolatileReference(item.memo);
-  }
+      assert.deepEqual(target.toKeys(), arr);
+    });
 
-  updateMemoReference(reference: VolatileReference<unknown>, item: TestIterationItem) {
-    reference.update(item.memo);
-  }
-}
+    test('@identity works with multiple values that are the same', assert => {
+      let yehuda = { key: 'a', name: 'Yehuda' };
+      let godfrey = { key: 'b', name: 'Godfrey' };
+      let arr = [yehuda, godfrey, godfrey];
 
-function initialize(
-  arr: TestItem[]
-): {
-  artifacts: IterationArtifacts;
-  target: Target;
-  reference: VolatileReference<TestItem[]>;
-} {
-  let reference = new VolatileReference(arr);
-  let iterable = new TestIterable(reference);
-  let { target, artifacts } = utilInitialize(iterable);
+      let target = new IterableWrapper(arr);
 
-  return { reference, target, artifacts };
-}
+      let keys1 = target.toKeys();
 
-QUnit.test('They provide a sequence of references with keys', assert => {
-  let arr = [
-    { key: 'a', name: 'Yehuda' },
-    { key: 'b', name: 'Godfrey' },
-  ];
-  let { target } = initialize(arr);
+      assert.equal(keys1.length, 3);
+      assert.equal(keys1[0], yehuda);
+      assert.equal(keys1[1], godfrey);
 
-  assert.deepEqual(target.toValues(), arr);
-});
+      arr.pop();
+      arr.unshift(godfrey);
 
-QUnit.test('When re-iterated via mutation, the original references are updated', assert => {
-  let arr = [
-    { key: 'a', name: 'Yehuda' },
-    { key: 'b', name: 'Godfrey' },
-  ];
-  let { target, artifacts } = initialize(arr);
+      let keys2 = target.toKeys();
 
-  assert.deepEqual(target.toValues(), arr);
+      assert.equal(keys2.length, 3);
+      assert.equal(keys2[0], godfrey);
+      assert.equal(keys2[1], yehuda);
 
-  arr.reverse();
+      // Test that a unique key was created and is used consistently
+      assert.equal(keys1[2], keys2[2]);
+    });
 
-  sync(target, artifacts);
+    test('@identity works with primitives (except null)', assert => {
+      let arr = [undefined, 123, 'foo', symbol('bar'), true];
+      let target = new IterableWrapper(arr);
 
-  assert.deepEqual(target.toValues(), arr);
+      assert.deepEqual(target.toValues(), arr);
+      assert.deepEqual(target.toKeys(), arr);
+    });
 
-  arr.push({ key: 'c', name: 'Godhuda' });
+    test('@identity works with null', assert => {
+      let arr: any[] = [null];
+      let target = new IterableWrapper(arr);
 
-  sync(target, artifacts);
+      let keys1 = target.toKeys();
 
-  assert.deepEqual(target.toValues(), arr);
+      arr.unshift(undefined);
 
-  arr.shift();
+      let keys2 = target.toKeys();
 
-  sync(target, artifacts);
+      assert.equal(keys1[0], keys2[1]);
+    });
 
-  assert.deepEqual(target.toValues(), arr);
-});
+    test('@identity works with multiple null values', assert => {
+      let arr: any[] = [null];
+      let target = new IterableWrapper(arr);
 
-QUnit.test('When re-iterated via deep mutation, the original references are updated', assert => {
-  let arr = [
-    { key: 'a', name: 'Yehuda' },
-    { key: 'b', name: 'Godfrey' },
-  ];
-  let { target, artifacts } = initialize(arr);
+      let keys1 = target.toKeys();
 
-  assert.deepEqual(target.toValues(), arr);
+      arr.push(null);
 
-  arr[0].key = 'b';
-  arr[0].name = 'Godfrey';
-  arr[1].key = 'a';
-  arr[1].name = 'Yehuda';
+      let keys2 = target.toKeys();
 
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), arr);
-
-  arr[0].name = 'Yehuda';
-  arr[1].name = 'Godfrey';
-
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), arr);
-
-  arr.push({ key: 'c', name: 'Godhuda' });
-
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), arr);
-
-  arr.shift();
-
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via replacement, the original references are updated', assert => {
-  let arr = [
-    { key: 'a', name: 'Yehuda' },
-    { key: 'b', name: 'Godfrey' },
-  ];
-  let { target, reference, artifacts } = initialize(arr);
-
-  assert.deepEqual(target.toValues(), arr);
-
-  arr = arr.slice();
-  arr.reverse();
-  reference.update(arr);
-
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), arr);
-
-  reference.update([
-    { key: 'a', name: 'Tom' },
-    { key: 'b', name: 'Stef ' },
-  ]);
-
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), [
-    { key: 'a', name: 'Tom' },
-    { key: 'b', name: 'Stef ' },
-  ]);
-
-  arr = arr.slice();
-  arr.push({ key: 'c', name: 'Godhuda' });
-  reference.update(arr);
-
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), arr);
-
-  arr = arr.slice();
-  arr.shift();
-  reference.update(arr);
-
-  sync(target, artifacts);
-
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via swap #1, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let a = arr[1];
-  let b = arr[7];
-  arr[7] = a;
-  arr[1] = b;
-
-  reference.update(arr);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'retain:1,move:8,retain:3,retain:4,retain:5,retain:6,retain:7,move:2'
-  );
-  assert.equal(target.historyStats.move, 2, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.deepEqual(target.toValues(), arr, 'the array is correct');
-});
-
-QUnit.test('When re-iterated via swap #2, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let a = arr[0];
-  let b = arr[7];
-  arr[7] = a;
-  arr[0] = b;
-
-  reference.update(arr);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'move:8,retain:2,retain:3,retain:4,retain:5,retain:6,retain:7,move:1',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 2, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via swap #3, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let a = arr[0];
-  let b = arr[6];
-  arr[6] = a;
-  arr[0] = b;
-
-  reference.update(arr);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'move:7,retain:2,retain:3,retain:4,retain:5,retain:6,move:1,retain:8',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 2, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via swap #4, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let a = arr[1];
-  let b = arr[3];
-  let c = arr[4];
-  let d = arr[6];
-  arr[6] = b;
-  arr[4] = a;
-  arr[3] = d;
-  arr[1] = c;
-
-  reference.update(arr);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'retain:1,move:5,retain:3,move:7,move:2,retain:6,move:4,retain:8',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 4, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 4, 'retained nodes count');
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via swap #5, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let a = arr[1];
-  let b = arr[3];
-  arr[3] = a;
-  arr[1] = b;
-  arr.push({ key: '9', name: 'i-9' });
-
-  reference.update(arr);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'retain:1,move:4,retain:3,move:2,retain:5,retain:6,retain:7,retain:8,insert:9',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 2, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.equal(target.historyStats.insert, 1, 'inserted nodes count');
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via swap #6, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let a = arr[1];
-  let b = arr[6];
-  arr[6] = a;
-  arr[1] = b;
-
-  arr.splice(2, 0, { key: '9', name: 'i-9' });
-
-  reference.update(arr);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'retain:1,move:7,insert:9,retain:3,retain:4,retain:5,retain:6,move:2,retain:8',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 2, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.equal(target.historyStats.insert, 1, 'inserted nodes count');
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via swap #7, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  arr.shift();
-  arr.splice(2, 0, { key: '9', name: 'i-9' });
-
-  reference.update(arr);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'retain:3,insert:9,retain:4,retain:5,retain:6,retain:7,retain:8,delete:1',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 0, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.equal(target.historyStats.insert, 1, 'inserted nodes count');
-  assert.equal(target.historyStats.delete, 1, 'deleted nodes count');
-  assert.deepEqual(target.toValues(), arr);
-});
-
-QUnit.test('When re-iterated via swap #8, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let shiftedArray = [arr[7], arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6]];
-
-  reference.update(shiftedArray);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'move:8,retain:2,retain:3,retain:4,retain:5,retain:6,retain:7',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 1, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.equal(target.historyStats.insert, 0, 'inserted nodes count');
-  assert.equal(target.historyStats.delete, 0, 'deleted nodes count');
-  assert.deepEqual(target.toValues(), shiftedArray);
-});
-
-QUnit.test('When re-iterated via swap #9, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  let shiftedArray = [arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7], arr[0]];
-
-  reference.update(shiftedArray);
-
-  target.cleanHistory();
-  sync(target, artifacts);
-
-  assert.equal(
-    target.serializeHistory(),
-    'retain:3,retain:4,retain:5,retain:6,retain:7,retain:8,move:1',
-    'has valid changeset history'
-  );
-  assert.equal(target.historyStats.move, 1, 'moved nodes count');
-  assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.equal(target.historyStats.insert, 0, 'inserted nodes count');
-  assert.equal(target.historyStats.delete, 0, 'deleted nodes count');
-  assert.deepEqual(target.toValues(), shiftedArray);
-});
-
-QUnit.test('When re-iterated via swap #10, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  for (let i = 0; i < 1000; i++) {
-    shuffleArray(arr);
-    reference.update(arr);
-    target.cleanHistory();
-    sync(target, artifacts);
-    let history = target.historyStats;
-    const changedNodes = history.move + history.retain;
-    assert.equal(changedNodes <= arr.length, true, target.serializeHistory());
-    assert.equal(history.insert, 0, 'inserted nodes count');
-    assert.equal(history.delete, 0, 'deleted nodes count');
-    assert.deepEqual(target.toValues(), arr);
-  }
-});
-
-QUnit.test('When re-iterated via swap #11, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  for (let i = 0; i < 1000; i++) {
-    let newArr = arr.slice();
-    shuffleArray(newArr);
-    let semiArr = newArr.slice(0, 5);
-    reference.update(semiArr);
-    target.cleanHistory();
-    sync(target, artifacts);
-    let history = target.historyStats;
-    const changedNodes = history.move + history.retain;
-    assert.equal(changedNodes <= arr.length, true, target.serializeHistory());
-    assert.equal(history.insert <= 3, true, 'inserted nodes count');
-    assert.equal(history.delete <= 3, true, 'deleted nodes count');
-    assert.deepEqual(target.toValues(), semiArr);
-  }
-});
-
-QUnit.test('When re-iterated via swap #12, the original references are updated', assert => {
-  let arr = getInitialArray(8, 1, 'i-');
-  let { target, reference, artifacts } = initialize(arr);
-  assert.deepEqual(target.toValues(), arr);
-
-  for (let i = 0; i < 1000; i++) {
-    let newArr = arr.slice(0);
-    shuffleArray(newArr);
-    let semiArr = [].concat(
-      newArr.slice(0, 5) as any,
-      [
-        { key: '11', name: 'i-11' },
-        { key: '12', name: 'i-12' },
-      ] as any
-    );
-    reference.update(semiArr);
-    target.cleanHistory();
-    sync(target, artifacts);
-    let history = target.historyStats;
-    const changedNodes = history.move + history.retain + history.insert + history.delete;
-    assert.equal(changedNodes <= semiArr.length + 3, true, target.serializeHistory());
-    assert.equal(history.insert <= 3, true, 'inserted nodes count');
-    assert.equal(history.delete <= 3, true, 'deleted nodes count');
-    assert.deepEqual(target.toValues(), semiArr);
-  }
+      assert.equal(keys2.length, 2);
+      assert.equal(keys1[0], keys2[0]);
+      assert.notEqual(keys1[0], keys2[1]);
+    });
+
+    test('@key works', assert => {
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
+      let target = new IterableWrapper(arr, '@key');
+
+      assert.deepEqual(target.toKeys(), [0, 1]);
+    });
+
+    test('@index works', assert => {
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
+      let target = new IterableWrapper(arr, '@index');
+
+      assert.deepEqual(target.toKeys(), ['0', '1']);
+    });
+
+    test('paths work', assert => {
+      let arr = [
+        { key: 'a', name: 'Yehuda' },
+        { key: 'b', name: 'Godfrey' },
+      ];
+      let target = new IterableWrapper(arr, 'key');
+
+      assert.deepEqual(target.toKeys(), ['a', 'b']);
+    });
+
+    test('it works with dictionaries', assert => {
+      let arr = [Object.create(null), Object.create(null)];
+      let target = new IterableWrapper(arr);
+
+      assert.deepEqual(target.toValues(), arr);
+      assert.deepEqual(target.toKeys(), arr);
+    });
+  });
 });
