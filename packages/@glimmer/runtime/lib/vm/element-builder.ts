@@ -11,16 +11,7 @@ import {
   Cursor,
   ModifierManager,
 } from '@glimmer/interfaces';
-import {
-  assert,
-  expect,
-  LinkedList,
-  LinkedListNode,
-  Option,
-  Stack,
-  Maybe,
-  symbol,
-} from '@glimmer/util';
+import { assert, expect, Option, Stack, Maybe, symbol } from '@glimmer/util';
 import {
   AttrNamespace,
   SimpleComment,
@@ -150,7 +141,7 @@ export class NewElementBuilder implements ElementBuilder {
     return this.pushLiveBlock(new UpdatableBlockImpl(this.element));
   }
 
-  pushBlockList(list: LinkedList<LinkedListNode & LiveBlock>): LiveBlockList {
+  pushBlockList(list: LiveBlock[]): LiveBlockList {
     return this.pushLiveBlock(new LiveBlockList(this.element, list));
   }
 
@@ -491,11 +482,8 @@ export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBloc
 }
 
 // FIXME: All the noops in here indicate a modelling problem
-class LiveBlockList implements LiveBlock {
-  constructor(
-    private readonly parent: SimpleElement,
-    private readonly boundList: LinkedList<LinkedListNode & LiveBlock>
-  ) {
+export class LiveBlockList implements LiveBlock {
+  constructor(private readonly parent: SimpleElement, public boundList: LiveBlock[]) {
     this.parent = parent;
     this.boundList = boundList;
   }
@@ -506,7 +494,7 @@ class LiveBlockList implements LiveBlock {
 
   firstNode(): SimpleNode {
     let head = expect(
-      this.boundList.head(),
+      this.boundList[0],
       'cannot call `firstNode()` while `LiveBlockList` is still initializing'
     );
 
@@ -514,8 +502,10 @@ class LiveBlockList implements LiveBlock {
   }
 
   lastNode(): SimpleNode {
+    let boundList = this.boundList;
+
     let tail = expect(
-      this.boundList.tail(),
+      boundList[boundList.length - 1],
       'cannot call `lastNode()` while `LiveBlockList` is still initializing'
     );
 
@@ -537,7 +527,7 @@ class LiveBlockList implements LiveBlock {
   didAppendBounds(_bounds: Bounds) {}
 
   finalize(_stack: ElementBuilder) {
-    assert(this.boundList.head() !== null, 'boundsList cannot be empty');
+    assert(this.boundList.length > 0, 'boundsList cannot be empty');
   }
 }
 

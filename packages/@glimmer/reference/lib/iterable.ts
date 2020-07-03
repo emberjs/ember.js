@@ -1,6 +1,9 @@
-import { LinkedList, ListNode, Option, symbol } from '@glimmer/util';
 import { Tag } from '@glimmer/validator';
-import { VersionedPathReference as PathReference } from '..';
+import { Option, Dict } from '@glimmer/interfaces';
+import { EMPTY_ARRAY, isObject, debugToString, expect } from '@glimmer/util';
+import { DEBUG } from '@glimmer/env';
+import { IterationItemReference, TemplateReferenceEnvironment } from './template';
+import { VersionedPathReference } from './reference';
 
 export interface IterationItem<T, U> {
   key: unknown;
@@ -13,382 +16,262 @@ export interface AbstractIterator<T, U, V extends IterationItem<T, U>> {
   next(): Option<V>;
 }
 
-export interface AbstractIterable<
-  T,
-  U,
-  ItemType extends IterationItem<T, U>,
-  ValueReferenceType extends PathReference<T>,
-  MemoReferenceType extends PathReference<U>
-> {
-  tag: Tag;
-  iterate(): AbstractIterator<T, U, ItemType>;
-
-  valueReferenceFor(item: ItemType): ValueReferenceType;
-  updateValueReference(reference: ValueReferenceType, item: ItemType): void;
-
-  memoReferenceFor(item: ItemType): MemoReferenceType;
-  updateMemoReference(reference: MemoReferenceType, item: ItemType): void;
-}
-
 export type Iterator<T, U> = AbstractIterator<T, U, IterationItem<T, U>>;
-export type Iterable<T, U> = AbstractIterable<
-  T,
-  U,
-  IterationItem<T, U>,
-  PathReference<T>,
-  PathReference<U>
->;
 
 export type OpaqueIterationItem = IterationItem<unknown, unknown>;
 export type OpaqueIterator = AbstractIterator<unknown, unknown, OpaqueIterationItem>;
-export type OpaquePathReference = PathReference<unknown>;
-export type OpaqueIterable = AbstractIterable<
-  unknown,
-  unknown,
-  OpaqueIterationItem,
-  OpaquePathReference,
-  OpaquePathReference
->;
-export type OpaquePathReferenceIterationItem = IterationItem<
-  OpaquePathReference,
-  OpaquePathReference
->;
 
-export class ListItem extends ListNode<OpaquePathReference> implements OpaqueIterationItem {
-  public key: unknown;
-  public memo: OpaquePathReference;
-  public retained = false;
-  public seen = false;
-  private iterable: OpaqueIterable;
+export interface IteratorDelegate {
+  isEmpty(): boolean;
+  next(): { value: unknown; memo: unknown } | null;
+}
 
-  constructor(iterable: OpaqueIterable, result: OpaqueIterationItem) {
-    super(iterable.valueReferenceFor(result));
-    this.key = result.key;
-    this.iterable = iterable;
-    this.memo = iterable.memoReferenceFor(result);
+type KeyFor = (item: unknown, index: unknown) => unknown;
+
+const NULL_IDENTITY = {};
+
+const KEY: KeyFor = (_, index) => index;
+const INDEX: KeyFor = (_, index) => String(index);
+const IDENTITY: KeyFor = item => {
+  if (item === null) {
+    // Returning null as an identity will cause failures since the iterator
+    // can't tell that it's actually supposed to be null
+    return NULL_IDENTITY;
   }
 
-  update(item: OpaqueIterationItem) {
-    this.retained = true;
-    this.iterable.updateValueReference(this.value, item);
-    this.iterable.updateMemoReference(this.memo, item);
-  }
+  return item;
+};
 
-  shouldRemove(): boolean {
-    return !this.retained;
+function keyForPath(path: string, getPath: (item: unknown, path: string) => any): KeyFor {
+  if (DEBUG && path[0] === '@') {
+    throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
   }
+  return uniqueKeyFor(item => getPath(item, path));
+}
 
-  reset() {
-    this.retained = false;
-    this.seen = false;
+function makeKeyFor(key: string, getPath: (item: unknown, path: string) => any) {
+  switch (key) {
+    case '@key':
+      return uniqueKeyFor(KEY);
+    case '@index':
+      return uniqueKeyFor(INDEX);
+    case '@identity':
+      return uniqueKeyFor(IDENTITY);
+    default:
+      return keyForPath(key, getPath);
   }
 }
 
-export class IterationArtifacts {
+class WeakMapWithPrimitives<T> {
+  private _weakMap?: WeakMap<object, T>;
+  private _primitiveMap?: Map<unknown, T>;
+
+  private get weakMap() {
+    if (this._weakMap === undefined) {
+      this._weakMap = new WeakMap();
+    }
+
+    return this._weakMap;
+  }
+
+  private get primitiveMap() {
+    if (this._primitiveMap === undefined) {
+      this._primitiveMap = new Map();
+    }
+
+    return this._primitiveMap;
+  }
+
+  set(key: unknown, value: T) {
+    if (isObject(key) || typeof key === 'function') {
+      this.weakMap.set(key as object, value);
+    } else {
+      this.primitiveMap.set(key, value);
+    }
+  }
+
+  get(key: unknown): T | undefined {
+    if (isObject(key) || typeof key === 'function') {
+      return this.weakMap.get(key as object);
+    } else {
+      return this.primitiveMap.get(key);
+    }
+  }
+}
+
+const IDENTITIES = new WeakMapWithPrimitives<object[]>();
+
+function identityForNthOccurence(value: any, count: number) {
+  let identities = IDENTITIES.get(value);
+
+  if (identities === undefined) {
+    identities = [];
+    IDENTITIES.set(value, identities);
+  }
+
+  let identity = identities[count];
+
+  if (identity === undefined) {
+    identity = { value, count };
+    identities[count] = identity;
+  }
+
+  return identity;
+}
+
+/**
+ * When iterating over a list, it's possible that an item with the same unique
+ * key could be encountered twice:
+ *
+ * ```js
+ * let arr = ['same', 'different', 'same', 'same'];
+ * ```
+ *
+ * In general, we want to treat these items as _unique within the list_. To do
+ * this, we track the occurences of every item as we iterate the list, and when
+ * an item occurs more than once, we generate a new unique key just for that
+ * item, and that occurence within the list. The next time we iterate the list,
+ * and encounter an item for the nth time, we can get the _same_ key, and let
+ * Glimmer know that it should reuse the DOM for the previous nth occurence.
+ */
+function uniqueKeyFor(keyFor: KeyFor) {
+  let seen = new WeakMapWithPrimitives<number>();
+
+  return (value: unknown, memo: unknown) => {
+    let key = keyFor(value, memo);
+    let count = seen.get(key) || 0;
+
+    seen.set(key, count + 1);
+
+    if (count === 0) {
+      return key;
+    }
+
+    return identityForNthOccurence(key, count);
+  };
+}
+
+export class IterableReference {
   public tag: Tag;
 
-  private iterable: OpaqueIterable;
   private iterator: Option<OpaqueIterator> = null;
-  private map = new Map<unknown, ListItem>();
-  private list = new LinkedList<ListItem>();
 
-  constructor(iterable: OpaqueIterable) {
-    this.tag = iterable.tag;
-    this.iterable = iterable;
+  constructor(
+    private parentRef: VersionedPathReference,
+    private key: string,
+    private env: TemplateReferenceEnvironment
+  ) {
+    this.tag = parentRef.tag;
+  }
+
+  value(): boolean {
+    return !this.isEmpty();
   }
 
   isEmpty(): boolean {
-    let iterator = (this.iterator = this.iterable.iterate());
+    let iterator = (this.iterator = this.createIterator());
     return iterator.isEmpty();
   }
 
-  iterate(): OpaqueIterator {
-    let iterator: OpaqueIterator;
-
-    if (this.iterator === null) {
-      iterator = this.iterable.iterate();
-    } else {
-      iterator = this.iterator;
-    }
-
-    this.iterator = null;
-
-    return iterator;
-  }
-
-  advanceToKey(key: unknown, current: ListItem): Option<ListItem> {
-    let seek = current;
-
-    while (seek !== null && seek.key !== key) {
-      seek = this.advanceNode(seek);
-    }
-
-    return seek;
-  }
-
-  has(key: unknown): boolean {
-    return this.map.has(key);
-  }
-
-  get(key: unknown): ListItem {
-    return this.map.get(key)!;
-  }
-
-  wasSeen(key: unknown): boolean {
-    let node = this.map.get(key);
-    return node !== undefined && node.seen;
-  }
-
-  update(item: OpaqueIterationItem): ListItem {
-    let found = this.get(item.key);
-    found.update(item);
-    return found;
-  }
-
-  append(item: OpaqueIterationItem): ListItem {
-    let { map, list, iterable } = this;
-
-    let node = new ListItem(iterable, item);
-    map.set(item.key, node);
-
-    list.append(node);
-    return node;
-  }
-
-  insertBefore(item: OpaqueIterationItem, reference: Option<ListItem>): ListItem {
-    let { map, list, iterable } = this;
-
-    let node = new ListItem(iterable, item);
-    map.set(item.key, node);
-    node.retained = true;
-    list.insertBefore(node, reference);
-    return node;
-  }
-
-  move(item: ListItem, reference: Option<ListItem>): void {
-    let { list } = this;
-    item.retained = true;
-    list.remove(item);
-    list.insertBefore(item, reference);
-  }
-
-  remove(item: ListItem): void {
-    let { list } = this;
-
-    list.remove(item);
-    this.map.delete(item.key);
-  }
-
-  nextNode(item: ListItem): ListItem {
-    return this.list.nextNode(item);
-  }
-
-  advanceNode(item: ListItem): ListItem {
-    item.seen = true;
-    return this.list.nextNode(item);
-  }
-
-  head(): Option<ListItem> {
-    return this.list.head();
-  }
-}
-
-export class ReferenceIterator {
-  public artifacts: IterationArtifacts;
-  private iterator: Option<OpaqueIterator> = null;
-
-  // if anyone needs to construct this object with something other than
-  // an iterable, let @wycats know.
-  constructor(iterable: OpaqueIterable) {
-    let artifacts = new IterationArtifacts(iterable);
-    this.artifacts = artifacts;
-  }
-
-  next(): Option<ListItem> {
-    let { artifacts } = this;
-
-    let iterator = (this.iterator = this.iterator || artifacts.iterate());
-
-    let item = iterator.next();
-
-    if (item === null) return null;
-
-    return artifacts.append(item);
-  }
-}
-
-export interface IteratorSynchronizerDelegate<Env> {
-  retain(env: Env, key: unknown, item: PathReference<unknown>, memo: PathReference<unknown>): void;
-  insert(
-    env: Env,
-    key: unknown,
-    item: PathReference<unknown>,
-    memo: PathReference<unknown>,
-    before: Option<unknown>
-  ): void;
-  move(
-    env: Env,
-    key: unknown,
-    item: PathReference<unknown>,
-    memo: PathReference<unknown>,
-    before: Option<unknown>
-  ): void;
-  delete(env: Env, key: unknown): void;
-  done(env: Env): void;
-}
-
-export interface IteratorSynchronizerOptions<Env> {
-  target: IteratorSynchronizerDelegate<Env>;
-  artifacts: IterationArtifacts;
-  env: Env;
-}
-
-enum Phase {
-  Append,
-  Prune,
-  Done,
-}
-
-export const END = symbol('END');
-
-export class IteratorSynchronizer<Env> {
-  private target: IteratorSynchronizerDelegate<Env>;
-  private iterator: OpaqueIterator;
-  private current: Option<ListItem>;
-  private artifacts: IterationArtifacts;
-  private env: Env;
-
-  constructor({ target, artifacts, env }: IteratorSynchronizerOptions<Env>) {
-    this.target = target;
-    this.artifacts = artifacts;
-    this.iterator = artifacts.iterate();
-    this.current = artifacts.head();
-    this.env = env;
-  }
-
-  sync() {
-    let phase: Phase = Phase.Append;
-
-    while (true) {
-      switch (phase) {
-        case Phase.Append:
-          phase = this.nextAppend();
-          break;
-        case Phase.Prune:
-          phase = this.nextPrune();
-          break;
-        case Phase.Done:
-          this.nextDone();
-          return;
-      }
-    }
-  }
-
-  private advanceToKey(key: unknown) {
-    let { current, artifacts } = this;
-
-    if (current === null) return;
-
-    let next = artifacts.advanceNode(current);
-
-    if (next.key === key) {
-      this.current = artifacts.advanceNode(next);
-      return;
-    }
-
-    let seek = artifacts.advanceToKey(key, current);
-
-    if (seek) {
-      this.move(seek, current);
-      this.current = artifacts.nextNode(current);
-    }
-  }
-
-  private move(item: ListItem, reference: Option<ListItem>) {
-    if (item.next !== reference) {
-      this.artifacts.move(item, reference);
-      this.target.move(this.env, item.key, item.value, item.memo, reference ? reference.key : END);
-    }
-  }
-
-  private nextAppend(): Phase {
-    let { iterator, current, artifacts } = this;
+  next(): Option<OpaqueIterationItem> {
+    let iterator = expect(
+      this.iterator,
+      'VM BUG: Expected an iterator to be created before calling `next`'
+    );
 
     let item = iterator.next();
 
     if (item === null) {
-      return this.startPrune();
+      this.iterator = null;
     }
 
-    let { key } = item;
+    return item;
+  }
 
-    if (current !== null && current.key === key) {
-      this.nextRetain(item, current);
-    } else if (artifacts.has(key)) {
-      this.nextMove(item);
+  private createIterator(): OpaqueIterator {
+    let { parentRef, key, env } = this;
+
+    let iterable = parentRef.value() as { [Symbol.iterator]: any } | null | false;
+
+    let keyFor = makeKeyFor(key, env.getPath);
+
+    if (Array.isArray(iterable)) {
+      return new ArrayIterator(iterable, keyFor);
+    }
+
+    let maybeIterator = env.toIterator(iterable);
+
+    if (maybeIterator === null) {
+      return new ArrayIterator(EMPTY_ARRAY, () => null);
+    }
+
+    return new IteratorWrapper(maybeIterator, keyFor);
+  }
+
+  childRefFor(key: unknown, value: unknown): IterationItemReference<unknown> {
+    let { parentRef, env } = this;
+
+    return new IterationItemReference(
+      parentRef,
+      value,
+      DEBUG ? `(key: ${debugToString!(key)}` : '',
+      env
+    );
+  }
+}
+
+class IteratorWrapper implements OpaqueIterator {
+  constructor(private inner: IteratorDelegate, private keyFor: KeyFor) {}
+
+  isEmpty() {
+    return this.inner.isEmpty();
+  }
+
+  next() {
+    let nextValue = this.inner.next() as OpaqueIterationItem;
+
+    if (nextValue !== null) {
+      nextValue.key = this.keyFor(nextValue.value, nextValue.memo);
+    }
+
+    return nextValue;
+  }
+}
+
+class ArrayIterator implements OpaqueIterator {
+  private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
+  private pos = 0;
+
+  constructor(private iterator: unknown[], private keyFor: KeyFor) {
+    if (iterator.length === 0) {
+      this.current = { kind: 'empty' };
     } else {
-      this.nextInsert(item);
+      this.current = { kind: 'first', value: iterator[this.pos] };
     }
-
-    return Phase.Append;
   }
 
-  private nextRetain(item: OpaqueIterationItem, current: ListItem) {
-    let { artifacts } = this;
-
-    // current = expect(current, 'BUG: current is empty');
-
-    current.update(item);
-    this.current = artifacts.nextNode(current);
-    this.target.retain(this.env, item.key, current.value, current.memo);
+  isEmpty(): boolean {
+    return this.current.kind === 'empty';
   }
 
-  private nextMove(item: OpaqueIterationItem) {
-    let { current, artifacts } = this;
-    let { key } = item;
+  next(): Option<IterationItem<unknown, number>> {
+    let value: unknown;
 
-    let found = artifacts.update(item);
-
-    if (artifacts.wasSeen(key)) {
-      this.move(found, current);
+    let current = this.current;
+    if (current.kind === 'first') {
+      this.current = { kind: 'progress' };
+      value = current.value;
+    } else if (this.pos >= this.iterator.length - 1) {
+      return null;
     } else {
-      this.advanceToKey(key);
-    }
-  }
-
-  private nextInsert(item: OpaqueIterationItem) {
-    let { artifacts, target, current } = this;
-
-    let node = artifacts.insertBefore(item, current);
-    target.insert(this.env, node.key, node.value, node.memo, current ? current.key : null);
-  }
-
-  private startPrune(): Phase {
-    this.current = this.artifacts.head();
-    return Phase.Prune;
-  }
-
-  private nextPrune(): Phase {
-    let { artifacts, target, current } = this;
-
-    if (current === null) {
-      return Phase.Done;
+      value = this.iterator[++this.pos];
     }
 
-    let node = current;
-    this.current = artifacts.nextNode(node);
+    let { keyFor } = this;
 
-    if (node.shouldRemove()) {
-      artifacts.remove(node);
-      target.delete(this.env, node.key);
-    } else {
-      node.reset();
-    }
+    let key = keyFor(value as Dict, this.pos);
+    let memo = this.pos;
 
-    return Phase.Prune;
-  }
-
-  private nextDone() {
-    this.target.done(this.env);
+    return { key, value, memo };
   }
 }
