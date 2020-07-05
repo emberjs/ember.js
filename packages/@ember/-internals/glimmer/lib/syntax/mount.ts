@@ -4,21 +4,20 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import {
   CurriedComponentDefinition,
   curry,
   EMPTY_ARGS,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
-import { Tag } from '@glimmer/validator';
 import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
 import { EmberVMEnvironment } from '../environment';
 
 export function mountHelper(
   args: VMArguments,
   vm: VM
-): VersionedPathReference<CurriedComponentDefinition | null> {
+): PathReference<CurriedComponentDefinition | null> {
   let env = vm.env as EmberVMEnvironment;
   let nameRef = args.positional.at(0);
   let captured: Option<CapturedArguments> = null;
@@ -47,7 +46,6 @@ export function mountHelper(
     assert('[BUG] this should already be checked by the macro', args.named.length === 1);
 
     let named = args.named.capture();
-    let { tag } = named;
 
     // TODO delete me after EMBER_ROUTING_MODEL_ARG has shipped
     if (DEBUG && MODEL_ARG_NAME !== 'model') {
@@ -56,7 +54,6 @@ export function mountHelper(
     }
 
     captured = {
-      tag,
       positional: EMPTY_ARGS.positional,
       named,
       length: 1,
@@ -113,17 +110,18 @@ export function mountHelper(
   @public
 */
 
-class DynamicEngineReference implements VersionedPathReference<Option<CurriedComponentDefinition>> {
-  public tag: Tag;
+class DynamicEngineReference implements PathReference<Option<CurriedComponentDefinition>> {
   private _lastName: Option<string> = null;
   private _lastDef: Option<CurriedComponentDefinition> = null;
 
   constructor(
-    public nameRef: VersionedPathReference<any | undefined | null>,
+    public nameRef: PathReference<any | undefined | null>,
     public env: EmberVMEnvironment,
     public args: Option<CapturedArguments>
-  ) {
-    this.tag = nameRef.tag;
+  ) {}
+
+  isConst() {
+    return false;
   }
 
   value(): Option<CurriedComponentDefinition> {

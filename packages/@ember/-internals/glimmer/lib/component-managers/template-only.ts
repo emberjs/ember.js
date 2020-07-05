@@ -9,7 +9,6 @@ import {
 } from '@glimmer/interfaces';
 import { NULL_REFERENCE, registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
-import { CONSTANT_TAG, createTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -76,18 +75,12 @@ export default class TemplateOnlyComponentManager
     }
   }
 
-  getSelf() {
-    return NULL_REFERENCE;
+  getDebugName({ name }: TemplateOnlyComponentDefinitionState) {
+    return name;
   }
 
-  getTag() {
-    if (ENV._DEBUG_RENDER_TREE) {
-      // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
-    } else {
-      // an outlet has no hooks
-      return CONSTANT_TAG;
-    }
+  getSelf() {
+    return NULL_REFERENCE;
   }
 
   getDestroyable(bucket: Option<DebugStateBucket>) {

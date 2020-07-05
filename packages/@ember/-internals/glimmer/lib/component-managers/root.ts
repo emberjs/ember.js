@@ -11,6 +11,7 @@ import {
 } from '@glimmer/interfaces';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
+import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
 import { DIRTY_TAG } from '../component';
 import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
@@ -27,6 +28,10 @@ class RootComponentManager extends CurlyComponentManager {
   constructor(component: Component) {
     super();
     this.component = component;
+  }
+
+  getDebugName() {
+    return '- While rendering:';
   }
 
   getJitStaticLayout(_state: DefinitionState) {
@@ -69,6 +74,7 @@ class RootComponentManager extends CurlyComponentManager {
       environment,
       component,
       null,
+      CONSTANT_TAG,
       finalizer,
       hasWrappedElement
     );
@@ -82,6 +88,8 @@ class RootComponentManager extends CurlyComponentManager {
         template: state.template!,
       });
     }
+
+    consumeTag(component[DIRTY_TAG]);
 
     return bucket;
   }
@@ -117,9 +125,5 @@ export class RootComponentDefinition implements ComponentDefinition {
       capabilities: ROOT_CAPABILITIES,
       ComponentClass: factory as Factory<any, any>,
     };
-  }
-
-  getTag({ component }: ComponentStateBucket) {
-    return component[DIRTY_TAG];
   }
 }

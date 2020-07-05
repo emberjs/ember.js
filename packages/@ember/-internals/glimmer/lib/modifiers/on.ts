@@ -3,10 +3,8 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, ModifierManager, VMArguments } from '@glimmer/interfaces';
 import { registerDestructor } from '@glimmer/runtime';
-import { expect } from '@glimmer/util';
-import { CONSTANT_TAG, Tag } from '@glimmer/validator';
+import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { Renderer } from '../renderer';
 import buildUntouchableThis from '../utils/untouchable-this';
 
 const untouchableContext = buildUntouchableThis('`on` modifier');
@@ -51,7 +49,7 @@ const SUPPORTS_EVENT_OPTIONS = (() => {
 })();
 
 export class OnModifierState {
-  public tag: Tag;
+  public tag = createUpdatableTag();
   public owner: Owner;
   public element: Element;
   public args: CapturedArguments;
@@ -68,7 +66,6 @@ export class OnModifierState {
     this.owner = owner;
     this.element = element;
     this.args = args;
-    this.tag = args.tag;
   }
 
   updateFromArgs() {
@@ -115,18 +112,11 @@ export class OnModifierState {
         args.positional.at(1) !== undefined
       );
 
-      // hardcoding `renderer:-dom` here because we guard for `this.isInteractive` before instantiating OnModifierState, it can never be created when the renderer is `renderer:-inert`
-      let renderer = expect(
-        this.owner.lookup<Renderer>('renderer:-dom'),
-        `BUG: owner is missing renderer:-dom`
-      );
-      let stack = renderer.debugRenderTree.logRenderStackForPath(userProvidedCallbackReference);
-
       let value = userProvidedCallbackReference.value();
       assert(
         `You must pass a function as the second argument to the \`on\` modifier, you passed ${
           value === null ? 'null' : typeof value
-        }. While rendering:\n\n${stack}`,
+        }. While rendering:\n\n${userProvidedCallbackReference.debugLabel}`,
         typeof value === 'function'
       );
     }
@@ -330,6 +320,10 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     this.owner = owner;
   }
 
+  getDebugName() {
+    return 'on';
+  }
+
   get counters() {
     return { adds, removes };
   }
@@ -344,9 +338,9 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     return new OnModifierState(this.owner, <Element>element, capturedArgs);
   }
 
-  getTag(state: OnModifierState | null): Tag {
+  getTag(state: OnModifierState | null): UpdatableTag | null {
     if (state === null) {
-      return CONSTANT_TAG;
+      return null;
     }
 
     return state.tag;

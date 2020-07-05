@@ -1,9 +1,8 @@
 /**
 @module ember
 */
-import { Environment, VM, VMArguments } from '@glimmer/interfaces';
-import { RootReference, VersionedPathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
+import { VMArguments } from '@glimmer/interfaces';
+import { PathReference } from '@glimmer/reference';
 import { INVOKE, unMut } from './mut';
 
 /**
@@ -121,29 +120,28 @@ import { INVOKE, unMut } from './mut';
   @for Ember.Templates.helpers
   @private
 */
-class ReadonlyReference extends RootReference {
-  public tag: Tag;
-
-  constructor(protected inner: VersionedPathReference, env: Environment) {
-    super(env);
-    this.tag = inner.tag;
-  }
+class ReadonlyReference implements PathReference {
+  constructor(protected inner: PathReference) {}
 
   get [INVOKE](): Function | undefined {
     return this.inner[INVOKE];
+  }
+
+  isConst() {
+    return this.inner.isConst();
   }
 
   value(): unknown {
     return this.inner.value();
   }
 
-  get(key: string): VersionedPathReference {
+  get(key: string): PathReference {
     return this.inner.get(key);
   }
 }
 
-export default function(args: VMArguments, vm: VM) {
+export default function(args: VMArguments) {
   let ref = unMut(args.positional.at(0));
 
-  return new ReadonlyReference(ref, vm.env);
+  return new ReadonlyReference(ref);
 }

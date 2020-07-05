@@ -11,9 +11,8 @@ import {
   PreparedArguments,
   VMArguments,
 } from '@glimmer/interfaces';
-import { ComponentRootReference, ConstReference, VersionedPathReference } from '@glimmer/reference';
+import { ComponentRootReference, ConstReference, PathReference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
-import { CONSTANT_TAG, createTag, isConstTagged } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
 
@@ -34,11 +33,11 @@ const CAPABILITIES: ComponentCapabilities = {
 
 export interface InputComponentState {
   env: EmberVMEnvironment;
-  type: VersionedPathReference;
+  type: PathReference;
   instance: Destroyable;
 }
 
-const EMPTY_POSITIONAL_ARGS: VersionedPathReference[] = [];
+const EMPTY_POSITIONAL_ARGS: PathReference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
@@ -53,7 +52,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
       args.positional.length === 0
     );
 
-    let __ARGS__: Dict<VersionedPathReference> = args.named.capture().map;
+    let __ARGS__: Dict<PathReference> = args.named.capture().map;
 
     return {
       positional: EMPTY_POSITIONAL_ARGS,
@@ -69,9 +68,9 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     { ComponentClass, layout }: InternalDefinitionState,
     args: VMArguments,
     _dynamicScope: DynamicScope,
-    caller: VersionedPathReference
+    caller: PathReference
   ): InputComponentState {
-    assert('caller must be const', isConstTagged(caller));
+    assert('caller must be const', caller.isConst());
 
     let type = args.named.get('type');
 
@@ -97,18 +96,12 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return state;
   }
 
-  getSelf({ env, instance }: InputComponentState): VersionedPathReference {
-    return new ComponentRootReference(instance, env);
+  getDebugName() {
+    return 'input';
   }
 
-  getTag() {
-    if (ENV._DEBUG_RENDER_TREE) {
-      // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
-    } else {
-      // an outlet has no hooks
-      return CONSTANT_TAG;
-    }
+  getSelf({ env, instance }: InputComponentState): PathReference {
+    return new ComponentRootReference(instance, env);
   }
 
   didRenderLayout(state: InputComponentState, bounds: Bounds): void {

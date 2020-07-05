@@ -9,8 +9,7 @@ import {
   PreparedArguments,
   VMArguments,
 } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
+import { PathReference } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
 import { EmberVMEnvironment } from '../environment';
 
@@ -23,16 +22,18 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     return null;
   }
 
+  abstract getDebugName(state: U): string;
+
   abstract create(
     env: EmberVMEnvironment,
     definition: U,
     args: VMArguments,
     dynamicScope: DynamicScope,
-    caller: VersionedPathReference<void | {}>,
+    caller: PathReference<void | {}>,
     hasDefaultBlock: boolean
   ): T;
 
-  abstract getSelf(component: T): VersionedPathReference<unknown>;
+  abstract getSelf(component: T): PathReference<unknown>;
   abstract getCapabilities(state: U): ComponentCapabilities;
 
   didCreateElement(_component: T, _element: SimpleElement, _operations: ElementOperations): void {
@@ -46,8 +47,6 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
   didCreate(_bucket: T): void {
     // noop
   }
-
-  abstract getTag(_bucket: T): Tag;
 
   update(_bucket: T, _dynamicScope: DynamicScope): void {
     // noop

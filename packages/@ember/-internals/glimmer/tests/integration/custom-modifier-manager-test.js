@@ -286,7 +286,7 @@ moduleFor(
       );
 
       let expectedMessage = backtrackingMessageFor('name', 'Person', {
-        renderTree: ['\\(instance of a `MyModifier` modifier\\)'],
+        renderTree: ['\\(instance of a `foo-bar` modifier\\)'],
       });
 
       expectAssertion(() => {

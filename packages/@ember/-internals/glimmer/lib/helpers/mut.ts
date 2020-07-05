@@ -3,9 +3,8 @@
 */
 import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { Environment, VM, VMArguments } from '@glimmer/interfaces';
-import { RootReference, UPDATE_REFERENCED_VALUE, VersionedPathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
+import { VMArguments } from '@glimmer/interfaces';
+import { PathReference, UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the
@@ -83,21 +82,22 @@ import { Tag } from '@glimmer/validator';
 export const INVOKE: unique symbol = symbol('INVOKE') as any;
 const SOURCE: unique symbol = symbol('SOURCE') as any;
 
-class MutReference extends RootReference {
-  public tag: Tag;
-  public [SOURCE]: VersionedPathReference;
+class MutReference implements PathReference {
+  public [SOURCE]: PathReference;
 
-  constructor(protected inner: VersionedPathReference, env: Environment) {
-    super(env);
-    this.tag = inner.tag;
+  constructor(protected inner: PathReference) {
     this[SOURCE] = inner;
   }
 
-  value(): unknown {
+  value() {
     return this.inner.value();
   }
 
-  get(key: string): VersionedPathReference {
+  isConst() {
+    return this.inner.isConst();
+  }
+
+  get(key: string): PathReference {
     return this.inner.get(key);
   }
 
@@ -110,11 +110,11 @@ class MutReference extends RootReference {
   }
 }
 
-export function unMut(ref: VersionedPathReference) {
+export function unMut(ref: PathReference) {
   return ref[SOURCE] || ref;
 }
 
-export default function(args: VMArguments, vm: VM) {
+export default function(args: VMArguments) {
   let rawRef = args.positional.at(0);
 
   if (typeof rawRef[INVOKE] === 'function') {
@@ -135,5 +135,5 @@ export default function(args: VMArguments, vm: VM) {
   // confusing for the second case.
   assert('You can only pass a path to mut', rawRef[UPDATE_REFERENCED_VALUE] !== undefined);
 
-  return new MutReference(rawRef, vm.env);
+  return new MutReference(rawRef);
 }
