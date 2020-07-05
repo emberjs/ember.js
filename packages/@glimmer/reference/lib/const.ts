@@ -1,17 +1,18 @@
-import { CONSTANT_TAG, Tag } from '@glimmer/validator';
-import { VersionedPathReference } from './reference';
+import { PathReference } from './reference';
 import { UNDEFINED_REFERENCE } from './primitive';
 
-export class ConstReference<T = unknown> implements VersionedPathReference<T> {
-  public tag: Tag = CONSTANT_TAG;
-
+export class ConstReference<T = unknown> implements PathReference<T> {
   constructor(protected inner: T) {}
 
-  value(): T {
+  value() {
     return this.inner;
   }
 
-  get(_key: string): VersionedPathReference {
+  isConst() {
+    return true;
+  }
+
+  get(_key: string): PathReference {
     return UNDEFINED_REFERENCE;
   }
 }

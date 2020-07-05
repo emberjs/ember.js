@@ -1,6 +1,5 @@
 import { Option, Recast } from '@glimmer/interfaces';
-import { ConstReference, PathReference, Reference } from '@glimmer/reference';
-import { Tag, track, createUpdatableTag, combine, updateTag } from '@glimmer/validator';
+import { ConstReference, PathReference, Reference, CachedReference } from '@glimmer/reference';
 
 export type Primitive = undefined | null | boolean | number | string;
 
@@ -62,25 +61,18 @@ export const NULL_REFERENCE: PrimitiveReference<null> = new ValueReference(null)
 export const TRUE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(true);
 export const FALSE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(false);
 
-export class ConditionalReference implements Reference<boolean> {
-  public tag: Tag;
-  private _tag = createUpdatableTag();
-
+export class ConditionalReference extends CachedReference<boolean> implements Reference<boolean> {
   constructor(
     private inner: Reference<unknown>,
     private toBool: (value: unknown) => boolean = defaultToBool
   ) {
-    this.tag = combine([inner.tag, this._tag]);
+    super();
   }
 
-  value(): boolean {
-    let ret: boolean;
+  compute() {
     let { toBool, inner } = this;
 
-    let tag = track(() => (ret = toBool(inner.value())));
-    updateTag(this._tag, tag);
-
-    return ret!;
+    return toBool(inner.value());
   }
 }
 

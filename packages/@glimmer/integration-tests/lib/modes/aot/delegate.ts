@@ -68,7 +68,7 @@ import AotRuntimeResolverImpl from './resolver';
 import { TestMacros } from '../../compile/macros';
 import AotCompilerDelegate from './compiler-delegate';
 import { preprocess } from '../../compile';
-import { UpdatableRootReference, StableState } from '../../reference';
+import { UpdatableRootReference } from '../../reference';
 import { BaseEnv } from '../env';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
@@ -180,7 +180,7 @@ export class AotRenderDelegate implements RenderDelegate {
   }
 
   getSelf(context: object): UpdatableRootReference {
-    return StableState(context);
+    return new UpdatableRootReference(context);
   }
 
   registerHelper(name: string, helper: UserHelper): void {

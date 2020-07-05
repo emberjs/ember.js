@@ -1,4 +1,4 @@
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import ComponentCapabilities from '../component-capabilities';
@@ -17,8 +17,9 @@ export interface ComponentManager<
   ComponentDefinitionState = unknown
 > {
   getCapabilities(state: ComponentDefinitionState): ComponentCapabilities;
-  getSelf(state: ComponentInstanceState): VersionedPathReference<unknown>;
+  getSelf(state: ComponentInstanceState): PathReference<unknown>;
   getDestroyable(state: ComponentInstanceState): Option<Destroyable>;
+  getDebugName(state: ComponentDefinitionState): string;
 }
 
 export interface WithPrepareArgs<
@@ -44,13 +45,9 @@ export interface WithCreateInstance<
     state: ComponentDefinitionState,
     args: Option<VMArguments>,
     dynamicScope: Option<DynamicScope>,
-    caller: Option<VersionedPathReference<unknown>>,
+    caller: Option<PathReference<unknown>>,
     hasDefaultBlock: boolean
   ): ComponentInstanceState;
-
-  // Convert the opaque component into a `RevisionTag` that determins when
-  // the component's update hooks need to be called (if at all).
-  getTag(state: ComponentInstanceState): Tag;
 
   // This hook is run after the entire layout has been rendered.
   //

@@ -18,7 +18,7 @@ import {
   Scope,
   BlockArguments,
 } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { Tag, CONSTANT_TAG } from '@glimmer/validator';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
 import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
@@ -27,7 +27,6 @@ import {
   CheckCompilableBlock,
   CheckScope,
 } from '../compiled/opcodes/-debug-strip';
-import { combineTagged } from '../utils/tags';
 import { REGISTERS } from '../symbols';
 import { $sp } from '@glimmer/vm';
 
@@ -90,10 +89,6 @@ export class VMArgumentsImpl implements VMArguments {
     blocks.setup(stack, blocksBase, blocksCount, blockNames);
   }
 
-  get tag(): Tag {
-    return combineTagged([this.positional, this.named]);
-  }
-
   get base(): number {
     return this.blocks.base;
   }
@@ -102,7 +97,7 @@ export class VMArgumentsImpl implements VMArguments {
     return this.positional.length + this.named.length + this.blocks.length * 3;
   }
 
-  at<T extends VersionedPathReference<unknown>>(pos: number): T {
+  at<T extends PathReference<unknown>>(pos: number): T {
     return this.positional.at<T>(pos);
   }
 
@@ -127,7 +122,7 @@ export class VMArgumentsImpl implements VMArguments {
     let positional = this.positional.length === 0 ? EMPTY_POSITIONAL : this.positional.capture();
     let named = this.named.length === 0 ? EMPTY_NAMED : this.named.capture();
 
-    return new CapturedArgumentsImpl(this.tag, positional, named, this.length);
+    return new CapturedArgumentsImpl(positional, named, this.length);
   }
 
   clear(): void {
@@ -142,15 +137,13 @@ export class PositionalArgumentsImpl implements PositionalArguments {
 
   private stack: EvaluationStack = null as any;
 
-  private _tag: Option<Tag> = null;
-  private _references: Option<VersionedPathReference<unknown>[]> = null;
+  private _references: Option<PathReference<unknown>[]> = null;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
     this.base = base;
     this.length = 0;
 
-    this._tag = CONSTANT_TAG;
     this._references = EMPTY_ARRAY;
   }
 
@@ -160,25 +153,13 @@ export class PositionalArgumentsImpl implements PositionalArguments {
     this.length = length;
 
     if (length === 0) {
-      this._tag = CONSTANT_TAG;
       this._references = EMPTY_ARRAY;
     } else {
-      this._tag = null;
       this._references = null;
     }
   }
 
-  get tag(): Tag {
-    let tag = this._tag;
-
-    if (!tag) {
-      tag = this._tag = combineTagged(this.references);
-    }
-
-    return tag;
-  }
-
-  at<T extends VersionedPathReference<unknown>>(position: number): T {
+  at<T extends PathReference<unknown>>(position: number): T {
     let { base, length, stack } = this;
 
     if (position < 0 || position >= length) {
@@ -189,7 +170,7 @@ export class PositionalArgumentsImpl implements PositionalArguments {
   }
 
   capture(): CapturedPositionalArgumentsImpl {
-    return new CapturedPositionalArgumentsImpl(this.tag, this.references);
+    return new CapturedPositionalArgumentsImpl(this.references);
   }
 
   prepend(other: CapturedPositionalArguments) {
@@ -205,20 +186,16 @@ export class PositionalArgumentsImpl implements PositionalArguments {
         stack.set(other.at(i), i, base);
       }
 
-      this._tag = null;
       this._references = null;
     }
   }
 
-  private get references(): VersionedPathReference<unknown>[] {
+  private get references(): PathReference<unknown>[] {
     let references = this._references;
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.slice<VersionedPathReference<unknown>>(
-        base,
-        base + length
-      );
+      references = this._references = stack.slice<PathReference<unknown>>(base, base + length);
     }
 
     return references;
@@ -227,16 +204,12 @@ export class PositionalArgumentsImpl implements PositionalArguments {
 
 export class CapturedPositionalArgumentsImpl implements CapturedPositionalArguments {
   static empty(): CapturedPositionalArguments {
-    return new CapturedPositionalArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY, 0);
+    return new CapturedPositionalArgumentsImpl(EMPTY_ARRAY, 0);
   }
 
-  constructor(
-    public tag: Tag,
-    public references: VersionedPathReference<unknown>[],
-    public length = references.length
-  ) {}
+  constructor(public references: PathReference<unknown>[], public length = references.length) {}
 
-  at<T extends VersionedPathReference<unknown>>(position: number): T {
+  at<T extends PathReference<unknown>>(position: number): T {
     return this.references[position] as T;
   }
 
@@ -244,7 +217,7 @@ export class CapturedPositionalArgumentsImpl implements CapturedPositionalArgume
     return this.references.map(this.valueOf);
   }
 
-  get(name: string): VersionedPathReference<unknown> {
+  get(name: string): PathReference<unknown> {
     let { references, length } = this;
 
     if (name === 'length') {
@@ -260,8 +233,12 @@ export class CapturedPositionalArgumentsImpl implements CapturedPositionalArgume
     }
   }
 
-  private valueOf(this: void, reference: VersionedPathReference<unknown>): unknown {
+  private valueOf(this: void, reference: PathReference<unknown>): unknown {
     return reference.value();
+  }
+
+  isConst() {
+    return false;
   }
 }
 
@@ -271,7 +248,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
   private stack!: EvaluationStack;
 
-  private _references: Option<VersionedPathReference<unknown>[]> = null;
+  private _references: Option<PathReference<unknown>[]> = null;
 
   private _names: Option<string[]> = EMPTY_ARRAY;
   private _atNames: Option<string[]> = EMPTY_ARRAY;
@@ -308,10 +285,6 @@ export class NamedArgumentsImpl implements NamedArguments {
     }
   }
 
-  get tag(): Tag {
-    return combineTagged(this.references);
-  }
-
   get names(): string[] {
     let names = this._names;
 
@@ -336,7 +309,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     return this.names.indexOf(name) !== -1;
   }
 
-  get<T extends VersionedPathReference<unknown>>(name: string, atNames = false): T {
+  get<T extends PathReference<unknown>>(name: string, atNames = false): T {
     let { base, stack } = this;
 
     let names = atNames ? this.atNames : this.names;
@@ -351,7 +324,7 @@ export class NamedArgumentsImpl implements NamedArguments {
   }
 
   capture(): CapturedNamedArguments {
-    return new CapturedNamedArgumentsImpl(this.tag, this.names, this.references);
+    return new CapturedNamedArgumentsImpl(this.names, this.references);
   }
 
   merge(other: CapturedNamedArguments) {
@@ -379,15 +352,12 @@ export class NamedArgumentsImpl implements NamedArguments {
     }
   }
 
-  private get references(): VersionedPathReference<unknown>[] {
+  private get references(): PathReference<unknown>[] {
     let references = this._references;
 
     if (!references) {
       let { base, length, stack } = this;
-      references = this._references = stack.slice<VersionedPathReference<unknown>>(
-        base,
-        base + length
-      );
+      references = this._references = stack.slice<PathReference<unknown>>(base, base + length);
     }
 
     return references;
@@ -404,13 +374,9 @@ export class NamedArgumentsImpl implements NamedArguments {
 
 export class CapturedNamedArgumentsImpl implements CapturedNamedArguments {
   public length: number;
-  private _map: Option<Dict<VersionedPathReference<unknown>>>;
+  private _map: Option<Dict<PathReference<unknown>>>;
 
-  constructor(
-    public tag: Tag,
-    public names: string[],
-    public references: VersionedPathReference<unknown>[]
-  ) {
+  constructor(public names: string[], public references: PathReference<unknown>[]) {
     this.length = names.length;
     this._map = null;
   }
@@ -420,7 +386,7 @@ export class CapturedNamedArgumentsImpl implements CapturedNamedArguments {
 
     if (!map) {
       let { names, references } = this;
-      map = this._map = dict<VersionedPathReference<unknown>>();
+      map = this._map = dict<PathReference<unknown>>();
 
       for (let i = 0; i < names.length; i++) {
         let name = names[i];
@@ -435,7 +401,7 @@ export class CapturedNamedArgumentsImpl implements CapturedNamedArguments {
     return this.names.indexOf(name) !== -1;
   }
 
-  get<T extends VersionedPathReference<unknown>>(name: string): T {
+  get<T extends PathReference<unknown>>(name: string): T {
     let { names, references } = this;
     let idx = names.indexOf(name);
 
@@ -456,6 +422,10 @@ export class CapturedNamedArgumentsImpl implements CapturedNamedArguments {
     }
 
     return out;
+  }
+
+  isConst() {
+    return false;
   }
 }
 
@@ -576,7 +546,6 @@ class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
 
 export class CapturedArgumentsImpl implements CapturedArguments {
   constructor(
-    public tag: Tag,
     public positional: CapturedPositionalArguments,
     public named: CapturedNamedArguments,
     public length: number
@@ -590,6 +559,6 @@ export class CapturedArgumentsImpl implements CapturedArguments {
   }
 }
 
-const EMPTY_NAMED = new CapturedNamedArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
-const EMPTY_POSITIONAL = new CapturedPositionalArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY);
-export const EMPTY_ARGS = new CapturedArgumentsImpl(CONSTANT_TAG, EMPTY_POSITIONAL, EMPTY_NAMED, 0);
+const EMPTY_NAMED = new CapturedNamedArgumentsImpl(EMPTY_ARRAY, EMPTY_ARRAY);
+const EMPTY_POSITIONAL = new CapturedPositionalArgumentsImpl(EMPTY_ARRAY);
+export const EMPTY_ARGS = new CapturedArgumentsImpl(EMPTY_POSITIONAL, EMPTY_NAMED, 0);

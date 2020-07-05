@@ -1,19 +1,16 @@
-import { Reference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
+import { Reference, CachedReference } from '@glimmer/reference';
 import { Option } from '@glimmer/util';
 
-import { combineTagged } from '../utils/tags';
 import { normalizeStringValue } from '../dom/normalize';
 
-export default class ClassListReference implements Reference<Option<string>> {
-  public tag: Tag;
-
+export default class ClassListReference extends CachedReference<Option<string>>
+  implements Reference<Option<string>> {
   constructor(private list: Reference<unknown>[]) {
-    this.tag = combineTagged(list);
+    super();
     this.list = list;
   }
 
-  value(): Option<string> {
+  compute() {
     let ret: string[] = [];
     let { list } = this;
 

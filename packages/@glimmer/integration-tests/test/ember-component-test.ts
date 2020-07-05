@@ -1323,9 +1323,9 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     assertFired(instance, 'didUpdate');
     assertFired(instance, 'didRender', 2);
 
-    this.rerender();
+    this.rerender({ someProp: 'wycats' });
 
-    this.assertEmberishElement('div', 'In layout - someProp: tomdale');
+    this.assertEmberishElement('div', 'In layout - someProp: wycats');
 
     assertFired(instance, 'didReceiveAttrs', 3);
     assertFired(instance, 'willUpdate', 2);
@@ -1376,9 +1376,9 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     assertFired(instance, 'didUpdate');
     assertFired(instance, 'didRender', 2);
 
-    this.rerender();
+    this.rerender({ someProp: 'wycats' });
 
-    this.assertEmberishElement('div', 'In layout - someProp: tomdale');
+    this.assertEmberishElement('div', 'In layout - someProp: wycats');
 
     assertFired(instance, 'didReceiveAttrs', 3);
     assertFired(instance, 'willUpdate', 2);
@@ -1576,12 +1576,12 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     assertFired(instance, 'didUpdate');
     assertFired(instance, 'didRender', 2);
 
-    this.rerender();
+    this.rerender({ someProp: 'wycats' });
 
     assertElementShape(
       assertElement(this.element.firstChild),
       'div',
-      'In layout - someProp: tomdale'
+      'In layout - someProp: wycats'
     );
 
     assertFired(instance, 'didReceiveAttrs', 3);

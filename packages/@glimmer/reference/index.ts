@@ -1,10 +1,6 @@
 export {
-  Reference as BasicReference,
-  PathReference as BasicPathReference,
-  VersionedReference as Reference,
-  VersionedPathReference as PathReference,
-  VersionedReference,
-  VersionedPathReference,
+  Reference,
+  PathReference,
   CachedReference,
   ReferenceCache,
   Validation,
@@ -14,14 +10,16 @@ export {
 
 export { ConstReference } from './lib/const';
 
+export { UNDEFINED_REFERENCE } from './lib/primitive';
+
 export * from './lib/template';
 
 export {
   IterationItem,
   OpaqueIterationItem,
-  Iterator,
   OpaqueIterator,
   AbstractIterator,
   IteratorDelegate,
   IterableReference,
+  NativeIteratorDelegate,
 } from './lib/iterable';

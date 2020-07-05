@@ -1,97 +1,84 @@
-import { Option, symbol } from '@glimmer/util';
-import { Revision, Tag, Tagged, valueForTag, validateTag } from '@glimmer/validator';
+import { symbol, Option } from '@glimmer/util';
+import {
+  Tag,
+  CONSTANT_TAG,
+  Revision,
+  validateTag,
+  valueForTag,
+  track,
+  consumeTag,
+} from '@glimmer/validator';
+import { DEBUG } from '@glimmer/env';
 
-export interface Reference<T> {
+export interface Reference<T = unknown> {
+  debugLabel?: string;
   value(): T;
+  isConst(): boolean;
 }
 
 export default Reference;
 
-export interface PathReference<T> extends Reference<T> {
+export interface PathReference<T = unknown> extends Reference<T> {
   get(key: string): PathReference<unknown>;
 }
 
 //////////
 
-export interface VersionedReference<T = unknown> extends Reference<T>, Tagged {}
-
-export interface VersionedPathReference<T = unknown> extends PathReference<T>, Tagged {
-  get(property: string): VersionedPathReference<unknown>;
-}
-
-export abstract class CachedReference<T> implements VersionedReference<T> {
-  public abstract tag: Tag;
+export abstract class CachedReference<T = unknown> implements Reference<T> {
+  private tag: Option<Tag> = null;
 
   private lastRevision: Option<Revision> = null;
   private lastValue: Option<T> = null;
 
   value(): T {
-    let { tag, lastRevision, lastValue } = this;
+    let { lastRevision, tag } = this;
 
-    if (lastRevision === null || !validateTag(tag, lastRevision)) {
-      lastValue = this.lastValue = this.compute();
+    let lastValue: T;
+
+    if (tag === null || !validateTag(tag, lastRevision!)) {
+      tag = this.tag = track(() => {
+        lastValue = this.lastValue = this.compute();
+      }, DEBUG && (this as any).debugLabel);
       this.lastRevision = valueForTag(tag);
+    } else {
+      lastValue = this.lastValue!;
     }
 
-    return lastValue as T;
+    consumeTag(tag);
+
+    return lastValue! as T;
+  }
+
+  isConst() {
+    if (DEBUG && this.tag === null) {
+      throw new Error(
+        'Attempted to read isConst before the reference was calculated for the first time'
+      );
+    }
+
+    return this.tag === CONSTANT_TAG;
   }
 
   protected abstract compute(): T;
-
-  protected invalidate() {
-    this.lastRevision = null;
-  }
 }
 
 //////////
 
-export class ReferenceCache<T> implements Tagged {
-  public tag: Tag;
+export class ReferenceCache<T> {
+  private reference: Reference<T>;
+  private lastValue: T;
 
-  private reference: VersionedReference<T>;
-  private lastValue: Option<T> = null;
-  private lastRevision: Option<Revision> = null;
-  private initialized = false;
-
-  constructor(reference: VersionedReference<T>) {
-    this.tag = reference.tag;
+  constructor(reference: Reference<T>) {
     this.reference = reference;
-  }
-
-  peek(): T {
-    if (!this.initialized) {
-      return this.initialize();
-    }
-
-    return this.lastValue as T;
+    this.lastValue = reference.value();
   }
 
   revalidate(): Validation<T> {
-    if (!this.initialized) {
-      return this.initialize();
-    }
-
-    let { reference, lastRevision } = this;
-    let tag = reference.tag;
-
-    if (validateTag(tag, lastRevision as number)) return NOT_MODIFIED;
-
     let { lastValue } = this;
-    let currentValue = reference.value();
-    this.lastRevision = valueForTag(tag);
+    let currentValue = this.reference.value();
 
     if (currentValue === lastValue) return NOT_MODIFIED;
     this.lastValue = currentValue;
-
-    return currentValue;
-  }
-
-  private initialize(): T {
-    let { reference } = this;
-
-    let currentValue = (this.lastValue = reference.value());
-    this.lastRevision = valueForTag(reference.tag);
-    this.initialized = true;
 
     return currentValue;
   }

@@ -1,4 +1,4 @@
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { ComponentManager } from './components/component-manager';
 import { Dict } from './core';
 
@@ -15,6 +15,6 @@ export interface ComponentDefinition<
 }
 
 export interface PreparedArguments {
-  positional: Array<VersionedPathReference<unknown>>;
-  named: Dict<VersionedPathReference<unknown>>;
+  positional: Array<PathReference<unknown>>;
+  named: Dict<PathReference<unknown>>;
 }

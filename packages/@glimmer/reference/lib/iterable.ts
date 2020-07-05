@@ -1,9 +1,8 @@
-import { Tag } from '@glimmer/validator';
 import { Option, Dict } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, isObject, debugToString, expect } from '@glimmer/util';
 import { DEBUG } from '@glimmer/env';
 import { IterationItemReference, TemplateReferenceEnvironment } from './template';
-import { VersionedPathReference } from './reference';
+import { PathReference, CachedReference } from './reference';
 
 export interface IterationItem<T, U> {
   key: unknown;
@@ -15,8 +14,6 @@ export interface AbstractIterator<T, U, V extends IterationItem<T, U>> {
   isEmpty(): boolean;
   next(): Option<V>;
 }
-
-export type Iterator<T, U> = AbstractIterator<T, U, IterationItem<T, U>>;
 
 export type OpaqueIterationItem = IterationItem<unknown, unknown>;
 export type OpaqueIterator = AbstractIterator<unknown, unknown, OpaqueIterationItem>;
@@ -151,20 +148,26 @@ function uniqueKeyFor(keyFor: KeyFor) {
   };
 }
 
-export class IterableReference {
-  public tag: Tag;
-
+export class IterableReference extends CachedReference<boolean> {
   private iterator: Option<OpaqueIterator> = null;
 
   constructor(
-    private parentRef: VersionedPathReference,
+    private parentRef: PathReference,
     private key: string,
     private env: TemplateReferenceEnvironment
   ) {
-    this.tag = parentRef.tag;
+    super();
   }
 
-  value(): boolean {
+  isConst() {
+    return false;
+  }
+
+  isDone() {
+    return this.iterator === null;
+  }
+
+  compute(): boolean {
     return !this.isEmpty();
   }
 
@@ -273,5 +276,42 @@ class ArrayIterator implements OpaqueIterator {
     let memo = this.pos;
 
     return { key, value, memo };
+  }
+}
+
+export class NativeIteratorDelegate<T = unknown> implements IteratorDelegate {
+  static from<T>(iterable: Iterable<T>) {
+    let iterator = iterable[Symbol.iterator]();
+    let result = iterator.next();
+    let { done } = result;
+
+    if (done) {
+      return null;
+    } else {
+      return new this(iterator, result);
+    }
+  }
+
+  private position = 0;
+
+  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>) {}
+
+  isEmpty(): false {
+    return false;
+  }
+
+  next() {
+    let { iterable, result } = this;
+
+    let { value, done } = result;
+
+    if (done === true) {
+      return null;
+    }
+
+    let memo = this.position++;
+    this.result = iterable.next();
+
+    return { value, memo };
   }
 }
