@@ -149,7 +149,7 @@ export function InvokeStaticComponent({
     out.push(op(MachineOp.PushFrame), op('SimpleArgs', { params, hash, atNames: true }));
   }
 
-  out.push(op(Op.BeginComponentTransaction));
+  out.push(op(Op.BeginComponentTransaction, $s0));
 
   if (capabilities.dynamicScope) {
     out.push(op(Op.PushDynamicScope));
@@ -389,7 +389,7 @@ export function invokePreparedComponent<T extends CompileActions | StatementComp
   populateLayout: Option<() => T> = null
 ): T {
   let out: StatementCompileActions = [
-    op(Op.BeginComponentTransaction),
+    op(Op.BeginComponentTransaction, $s0),
     op(Op.PushDynamicScope),
 
     op(Op.CreateComponent, (hasBlock as any) | 0, $s0),

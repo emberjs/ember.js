@@ -1,14 +1,9 @@
 import { Option, Dict, Maybe } from '@glimmer/interfaces';
 import { CachedReference, PathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
-import { combineTagged } from '../../utils/tags';
 
 export class ConcatReference extends CachedReference<Option<string>> {
-  public tag: Tag;
-
   constructor(private parts: Array<PathReference<unknown>>) {
     super();
-    this.tag = combineTagged(parts);
   }
 
   protected compute(): Option<string> {

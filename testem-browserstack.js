@@ -64,7 +64,8 @@ module.exports = {
         '--b',
         'firefox',
         '--bv',
-        'latest',
+        // Current breaks browserstack, so pin for now
+        '78',
         '-t',
         '1200',
         '--u',

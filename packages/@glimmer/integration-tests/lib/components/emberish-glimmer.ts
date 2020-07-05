@@ -1,5 +1,5 @@
 import { PathReference } from '@glimmer/reference';
-import { combine, createUpdatableTag, UpdatableTag, Tag } from '@glimmer/validator';
+import { DirtyableTag, createTag, dirtyTag, consumeTag } from '@glimmer/validator';
 import {
   Dict,
   Option,
@@ -43,7 +43,7 @@ function getSelf(obj: EmberishGlimmerComponent): UpdatableRootReference {
 }
 
 export class EmberishGlimmerComponent {
-  public dirtinessTag: UpdatableTag = createUpdatableTag();
+  public dirtinessTag: DirtyableTag = createTag();
   public attrs!: Attrs;
   public element!: Element;
   public bounds!: Bounds;
@@ -62,7 +62,7 @@ export class EmberishGlimmerComponent {
   constructor(_args: EmberishGlimmerArgs) {}
 
   recompute() {
-    getSelf(this).dirty();
+    dirtyTag(this.dirtinessTag);
   }
 
   destroy() {}
@@ -115,6 +115,10 @@ export class EmberishGlimmerComponentManager
     return state.capabilities;
   }
 
+  getDebugName(state: TestComponentDefinitionState) {
+    return state.name;
+  }
+
   prepareArgs(): null {
     return null;
   }
@@ -139,11 +143,9 @@ export class EmberishGlimmerComponentManager
 
     registerDestructor(component, () => component.destroy());
 
-    return { args, component };
-  }
+    consumeTag(component.dirtinessTag);
 
-  getTag({ args: { tag }, component }: EmberishGlimmerComponentState): Tag {
-    return combine([tag, getSelf(component).tag]);
+    return { args, component };
   }
 
   getJitStaticLayout(
@@ -188,6 +190,8 @@ export class EmberishGlimmerComponentManager
     component.didReceiveAttrs({ oldAttrs, newAttrs });
     component.willUpdate();
     component.willRender();
+
+    consumeTag(component.dirtinessTag);
   }
 
   didUpdateLayout(): void {}

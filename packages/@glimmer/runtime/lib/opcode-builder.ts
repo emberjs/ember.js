@@ -1,4 +1,4 @@
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 
 import { Option } from '@glimmer/util';
 
@@ -11,5 +11,5 @@ export interface DynamicComponentDefinition {
     args: VMArguments,
     meta: unknown,
     resolver: RuntimeResolverDelegate
-  ): VersionedPathReference<Option<CurriedComponentDefinition>>;
+  ): PathReference<Option<CurriedComponentDefinition>>;
 }
