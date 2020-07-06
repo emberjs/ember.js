@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.20.0-beta.5 (July 6, 2020)
+
+- [#19034](https://github.com/emberjs/ember.js/pull/19034) [BUGFIX] Disable named blocks; please continue to use the polyfill. 
+
 ### v3.20.0-beta.4 (June 29, 2020)
 
 - [#19025](https://github.com/emberjs/ember.js/pull/19025) [BUGFIX] Updates Glimmer VM to 0.54.0
