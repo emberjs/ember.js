@@ -1,27 +1,13 @@
 # Ember Changelog
 
-### v3.20.0-beta.5 (July 6, 2020)
+### v3.20.0 (July 13, 2020)
 
-- [#19034](https://github.com/emberjs/ember.js/pull/19034) [BUGFIX] Disable named blocks; please continue to use the polyfill. 
-
-### v3.20.0-beta.4 (June 29, 2020)
-
+- [#18867](https://github.com/emberjs/ember.js/pull/18867) / [#18927](https://github.com/emberjs/ember.js/pull/18927) / [#18928](https://github.com/emberjs/ember.js/pull/18928) [FEATURE] [Promote `{{in-element}}` to public API](https://github.com/emberjs/rfcs/blob/master/text/0287-promote-in-element-to-public-api.md) RFC.
 - [#19025](https://github.com/emberjs/ember.js/pull/19025) [BUGFIX] Updates Glimmer VM to 0.54.0
-
-### v3.20.0-beta.3 (June 22, 2020)
-
 - [#19021](https://github.com/emberjs/ember.js/pull/19021) [BUGFIX] Disallow null/undefined targets in `in-element`.
 - [#19023](https://github.com/emberjs/ember.js/pull/19023) [BUGFIX] Don't access properties during init unless required to prevent unnecessary rendering invalidations.
-
-### v3.20.0-beta.2 (June 2, 2020)
-
 - [#18997](https://github.com/emberjs/ember.js/pull/18997) [BUGFIX] Fix components `<Input>` and `<Textarea>` to work with native class actions correctly.
-
-### v3.20.0-beta.1 (May 26, 2020)
-
-- [#18926](https://github.com/emberjs/ember.js/pull/18926) / [#18852](https://github.com/emberjs/ember.js/pull/18852) [FEATURE] Implement the [Yieldable Named Blocks](https://github.com/emberjs/rfcs/blob/master/text/0460-yieldable-named-blocks.md) RFC.
-- [#18867](https://github.com/emberjs/ember.js/pull/18867) / [#18927](https://github.com/emberjs/ember.js/pull/18927) / [#18928](https://github.com/emberjs/ember.js/pull/18928) [FEATURE] [Promote `{{in-element}}` to public API](https://github.com/emberjs/rfcs/blob/master/text/0287-promote-in-element-to-public-api.md) RFC.
-- [#18859](https://github.com/emberjs/ember.js/pull/18859) Fix transitionTo with scoped aliased queryParam.
+- [#18859](https://github.com/emberjs/ember.js/pull/18859) [BUGFIX] Fix transitionTo with scoped aliased queryParam.
 - [#18961](https://github.com/emberjs/ember.js/pull/18961) [BUGFIX] Remove assertions for updating auto-tracked state without Ember.set / this.set
 
 ### v3.19.0 (May 26, 2020)
