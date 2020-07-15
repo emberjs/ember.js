@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.20.1 (July 13, 2020)
+
+- [#19040](https://github.com/emberjs/ember.js/pull/19040) [BUGFIX] Fix a memory leak that occured when changing the array passed to `{{each}}`
+
 ### v3.20.0 (July 13, 2020)
 
 - [#18867](https://github.com/emberjs/ember.js/pull/18867) / [#18927](https://github.com/emberjs/ember.js/pull/18927) / [#18928](https://github.com/emberjs/ember.js/pull/18928) [FEATURE] [Promote `{{in-element}}` to public API](https://github.com/emberjs/rfcs/blob/master/text/0287-promote-in-element-to-public-api.md) RFC.
