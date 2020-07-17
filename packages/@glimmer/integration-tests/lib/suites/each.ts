@@ -1,9 +1,23 @@
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { tracked } from '../test-helpers/tracked';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
+import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
 
 export class EachSuite extends RenderTest {
   static suiteName = '#each';
+
+  beforeEach() {
+    if (LOCAL_DEBUG) {
+      beginTestSteps!();
+    }
+  }
+
+  afterEach() {
+    if (LOCAL_DEBUG) {
+      endTestSteps!();
+    }
+  }
 
   @test
   'basic #each'() {
@@ -291,6 +305,402 @@ export class EachSuite extends RenderTest {
     this.rerender({ otherThing: 'Chad', list: [] });
     this.assertHTML('No thing Chad');
     this.assertStableNodes();
+  }
+
+  @test
+  'When re-iterated via swap #1, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let a = arr[1];
+    let b = arr[7];
+    arr[7] = a;
+    arr[1] = b;
+
+    this.rerender({ arr });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['retain', 1],
+        ['move', 8],
+        ['retain', 3],
+        ['retain', 4],
+        ['retain', 5],
+        ['retain', 6],
+        ['retain', 7],
+        ['move', 2],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #2, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let a = arr[0];
+    let b = arr[7];
+    arr[7] = a;
+    arr[0] = b;
+
+    this.rerender({ arr });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['move', 8],
+        ['retain', 2],
+        ['retain', 3],
+        ['retain', 4],
+        ['retain', 5],
+        ['retain', 6],
+        ['retain', 7],
+        ['move', 1],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #3, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let a = arr[0];
+    let b = arr[6];
+    arr[6] = a;
+    arr[0] = b;
+
+    this.rerender({ arr });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['move', 7],
+        ['retain', 2],
+        ['retain', 3],
+        ['retain', 4],
+        ['retain', 5],
+        ['retain', 6],
+        ['move', 1],
+        ['retain', 8],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #4, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let a = arr[1];
+    let b = arr[3];
+    let c = arr[4];
+    let d = arr[6];
+    arr[6] = b;
+    arr[4] = a;
+    arr[3] = d;
+    arr[1] = c;
+
+    this.rerender({ arr });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['retain', 1],
+        ['move', 5],
+        ['retain', 3],
+        ['move', 7],
+        ['move', 2],
+        ['retain', 6],
+        ['move', 4],
+        ['retain', 8],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #5, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let a = arr[1];
+    let b = arr[3];
+    arr[3] = a;
+    arr[1] = b;
+    arr.push(9);
+
+    this.rerender({ arr });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['retain', 1],
+        ['move', 4],
+        ['retain', 3],
+        ['move', 2],
+        ['retain', 5],
+        ['retain', 6],
+        ['retain', 7],
+        ['retain', 8],
+        ['insert', 9],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #6, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let a = arr[1];
+    let b = arr[6];
+    arr[6] = a;
+    arr[1] = b;
+
+    arr.splice(2, 0, 9);
+
+    this.rerender({ arr });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['retain', 1],
+        ['move', 7],
+        ['insert', 9],
+        ['retain', 3],
+        ['retain', 4],
+        ['retain', 5],
+        ['retain', 6],
+        ['move', 2],
+        ['retain', 8],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #7, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    arr.shift();
+    arr.splice(2, 0, 9);
+
+    this.rerender({ arr });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['retain', 2],
+        ['retain', 3],
+        ['insert', 9],
+        ['retain', 4],
+        ['retain', 5],
+        ['retain', 6],
+        ['retain', 7],
+        ['retain', 8],
+        ['delete', 1],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #8, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let shifted = [8, 1, 2, 3, 4, 5, 6, 7];
+
+    this.rerender({ arr: shifted });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['move', 8],
+        ['move-retain', 1],
+        ['retain', 2],
+        ['retain', 3],
+        ['retain', 4],
+        ['retain', 5],
+        ['retain', 6],
+        ['retain', 7],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #9, the original references are updated'() {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    let shifted = [2, 3, 4, 5, 6, 7, 8, 1];
+
+    this.rerender({ arr: shifted });
+
+    verifySteps!(
+      'list-updates',
+      [
+        ['retain', 2],
+        ['retain', 3],
+        ['retain', 4],
+        ['retain', 5],
+        ['retain', 6],
+        ['retain', 7],
+        ['retain', 8],
+        ['move', 1],
+      ],
+      'list updated correctly'
+    );
+  }
+
+  @test
+  'When re-iterated via swap #10, the original references are updated'(assert: Assert) {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    for (let i = 0; i < 1000; i++) {
+      shuffleArray(arr);
+      this.rerender({ arr });
+
+      // eslint-disable-next-line no-loop-func
+      verifySteps!('list-updates', steps => {
+        let stats = getStepStats(steps as ListStep[]);
+
+        let changedNodes = stats.move + stats.retain;
+        assert.ok(changedNodes <= arr.length, 'changed nodes count');
+        assert.equal(stats.insert, 0, 'inserted nodes count');
+        assert.equal(stats.delete, 0, 'deleted nodes count');
+      });
+
+      this.assertHTML(arr.join(''));
+    }
+  }
+
+  @test
+  'When re-iterated via swap #11, the original references are updated'(assert: Assert) {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    for (let i = 0; i < 1000; i++) {
+      let newArr = arr.slice();
+      shuffleArray(newArr);
+      let semiArr = newArr.slice(0, 5);
+      this.rerender({ arr: semiArr });
+
+      // eslint-disable-next-line no-loop-func
+      verifySteps!('list-updates', steps => {
+        let stats = getStepStats(steps as ListStep[]);
+
+        let changedNodes = stats.move + stats.retain;
+        assert.ok(changedNodes <= arr.length, 'changed nodes count');
+        assert.ok(stats.insert <= 3, 'inserted nodes count');
+        assert.ok(stats.delete <= 3, 'deleted nodes count');
+      });
+
+      this.assertHTML(semiArr.join(''));
+    }
+  }
+
+  @test
+  'When re-iterated via swap #12, the original references are updated'(assert: Assert) {
+    if (!LOCAL_DEBUG) return;
+
+    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
+
+    for (let i = 0; i < 1000; i++) {
+      let newArr = arr.slice();
+      shuffleArray(newArr);
+      let semiArr = newArr.slice(0, 5).concat([11, 12]);
+      this.rerender({ arr: semiArr });
+
+      // eslint-disable-next-line no-loop-func
+      verifySteps!('list-updates', steps => {
+        let stats = getStepStats(steps as ListStep[]);
+
+        let changedNodes = stats.move + stats.retain + stats.insert + stats.delete;
+        assert.ok(changedNodes <= semiArr.length + 3, 'changed nodes count');
+        assert.ok(stats.insert <= 3, 'inserted nodes count');
+        assert.ok(stats.delete <= 3, 'deleted nodes count');
+      });
+
+      this.assertHTML(semiArr.join(''));
+    }
+  }
+
+  @test
+  're-iterating nested arrays works'() {
+    let arr = [
+      [1, 2, 3, 4, 5],
+      [4, 5, 6, 7, 8],
+      [5, 6, 7, 8, 9],
+    ];
+    this.render(`{{#each arr as |sub|}}{{#each sub as |item|}}{{item}}{{/each}}{{/each}}`, { arr });
+
+    for (let i = 0; i < 1000; i++) {
+      for (let sub of arr) {
+        shuffleArray(sub);
+      }
+
+      this.rerender({ arr: arr.map(sub => sub.slice()) });
+
+      this.assertHTML(arr.map(sub => sub.join('')).join(''));
+    }
+  }
+}
+
+type ListStep = ['insert' | 'delete' | 'retain' | 'move', 'move-retain', unknown];
+
+function getStepStats(history: ListStep[]) {
+  let stats = {
+    insert: 0,
+    delete: 0,
+    retain: 0,
+    move: 0,
+    'move-retain': 0,
+  };
+
+  for (let item of history) {
+    stats[item[0]]++;
+  }
+
+  return stats;
+}
+
+function shuffleArray(array: unknown[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
 }
 

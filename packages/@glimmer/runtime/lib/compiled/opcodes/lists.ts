@@ -1,33 +1,26 @@
-import { IterationArtifacts, Reference, ReferenceIterator } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
+import { IterableReference } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckPathReference } from './-debug-strip';
 import { check, CheckInstanceof } from '@glimmer/debug';
 import { Op } from '@glimmer/interfaces';
 
-class IterablePresenceReference implements Reference<boolean> {
-  public tag: Tag;
-  private artifacts: IterationArtifacts;
-
-  constructor(artifacts: IterationArtifacts) {
-    this.tag = artifacts.tag;
-    this.artifacts = artifacts;
-  }
-
-  value(): boolean {
-    return !this.artifacts.isEmpty();
-  }
-}
-
 APPEND_OPCODES.add(Op.PutIterator, vm => {
   let stack = vm.stack;
   let listRef = check(stack.pop(), CheckPathReference);
-  let key = check(stack.pop(), CheckPathReference);
-  let iterable = vm.env.iterableFor(listRef, key.value());
-  let iterator = new ReferenceIterator(iterable);
+  let keyRef = check(stack.pop(), CheckPathReference);
 
-  stack.push(iterator);
-  stack.push(new IterablePresenceReference(iterator.artifacts));
+  let keyValue = keyRef.value();
+  let key = keyValue === null ? '@identity' : String(keyValue);
+
+  let iterableRef = new IterableReference(listRef, key, vm.env);
+
+  // Push the first time to push the iterator onto the stack for iteration
+  stack.push(iterableRef);
+
+  // Push the second time to push it as a reference for presence in general
+  // (e.g whether or not it is empty). This reference will be used to skip
+  // iteration entirely.
+  stack.push(iterableRef);
 });
 
 APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart }) => {
@@ -40,11 +33,12 @@ APPEND_OPCODES.add(Op.ExitList, vm => {
 
 APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
   let stack = vm.stack;
-  let item = check(stack.peek(), CheckInstanceof(ReferenceIterator)).next();
+  let iterable = check(stack.peek(), CheckInstanceof(IterableReference));
+  let item = iterable.next();
 
   if (item) {
-    let tryOpcode = vm.enterItem(item.memo, item.value);
-    vm.registerItem(item.key, tryOpcode);
+    let opcode = vm.enterItem(iterable, item);
+    vm.registerItem(opcode);
   } else {
     vm.goto(breaks);
   }

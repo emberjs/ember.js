@@ -1,9 +1,4 @@
-import {
-  OpaqueIterable,
-  VersionedPathReference,
-  VersionedReference,
-  IteratorDelegate,
-} from '@glimmer/reference';
+import { VersionedPathReference, VersionedReference, IteratorDelegate } from '@glimmer/reference';
 import { AttributeOperation } from '../dom/attributes';
 import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentInstanceState } from '../components';
@@ -48,8 +43,7 @@ export interface Environment<Extra = unknown> {
   ): AttributeOperation;
   getAppendOperations(): GlimmerTreeConstruction;
 
-  // Moving away from these, toward `toIterator` and `toBool` respectively
-  iterableFor(reference: VersionedReference<unknown>, key: unknown): OpaqueIterable;
+  // Moving away from this, toward `toBool`
   toConditionalReference(reference: VersionedReference<unknown>): VersionedReference<boolean>;
 
   toBool(value: unknown): boolean;
