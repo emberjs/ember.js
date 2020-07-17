@@ -14,22 +14,14 @@ export {
 
 export { ConstReference } from './lib/const';
 
-export { ListItem, END } from './lib/iterable';
-
 export * from './lib/template';
 
 export {
   IterationItem,
+  OpaqueIterationItem,
   Iterator,
-  Iterable,
   OpaqueIterator,
-  OpaqueIterable,
   AbstractIterator,
-  AbstractIterable,
-  IterationArtifacts,
-  ReferenceIterator,
-  IteratorSynchronizer,
-  IteratorSynchronizerDelegate,
+  IteratorDelegate,
+  IterableReference,
 } from './lib/iterable';
-
-export * from './lib/iterable-impl';

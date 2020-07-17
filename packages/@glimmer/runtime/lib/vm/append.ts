@@ -21,8 +21,13 @@ import {
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
-import { PathReference, ReferenceIterator, VersionedPathReference } from '@glimmer/reference';
-import { expect, LinkedList, ListSlice, Option, Stack, assert } from '@glimmer/util';
+import {
+  PathReference,
+  VersionedPathReference,
+  IterableReference,
+  OpaqueIterationItem,
+} from '@glimmer/reference';
+import { expect, Option, Stack, assert } from '@glimmer/util';
 import {
   $fp,
   $pc,
@@ -39,8 +44,8 @@ import {
 } from '@glimmer/vm';
 import { CheckNumber, check } from '@glimmer/debug';
 import { unwrapHandle } from '@glimmer/util';
-import { combineSlice } from '../utils/tags';
-import { DidModifyOpcode, JumpIfNotModifiedOpcode, LabelOpcode } from '../compiled/opcodes/vm';
+import { combineFromIndex } from '../utils/tags';
+import { DidModifyOpcode, JumpIfNotModifiedOpcode } from '../compiled/opcodes/vm';
 import { ScopeImpl } from '../environment';
 import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
 import { UNDEFINED_REFERENCE } from '../references';
@@ -56,8 +61,10 @@ import {
   ResumableVMStateImpl,
   TryOpcode,
   VMState,
+  ListItemOpcode,
 } from './update';
 import { associateDestroyableChild } from '../destroyables';
+import { LiveBlockList } from './element-builder';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -99,8 +106,8 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
 
   enterList(offset: number): void;
   exitList(): void;
-  enterItem(memo: PathReference<unknown>, item: PathReference<unknown>): TryOpcode;
-  registerItem(key: unknown, opcode: TryOpcode): void;
+  enterItem(iterableRef: IterableReference, item: OpaqueIterationItem): ListItemOpcode;
+  registerItem(opcode: ListItemOpcode): void;
 
   pushRootScope(size: number): PartialScope<C>;
   pushChildScope(): void;
@@ -122,7 +129,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   referenceForSymbol(symbol: number): PathReference<unknown>;
 
   execute(initialize?: (vm: this) => void): RenderResult;
-  pushUpdating(list?: LinkedList<UpdatingOpcode>): void;
+  pushUpdating(list?: UpdatingOpcode[]): void;
   next(): RichIteratorResult<null, RenderResult>;
 }
 
@@ -135,8 +142,8 @@ export interface InternalJitVM extends InternalVM<CompilableBlock> {
 class Stacks<C extends JitOrAotBlock> {
   readonly scope = new Stack<Scope<C>>();
   readonly dynamicScope = new Stack<DynamicScope>();
-  readonly updating = new Stack<LinkedList<UpdatingOpcode>>();
-  readonly cache = new Stack<Option<UpdatingOpcode>>();
+  readonly updating = new Stack<UpdatingOpcode[]>();
+  readonly cache = new Stack<JumpIfNotModifiedOpcode>();
   readonly list = new Stack<ListBlockOpcode>();
 }
 
@@ -322,27 +329,27 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   abstract capture(args: number, pc?: number): ResumableVMState<InternalVM>;
 
   beginCacheGroup() {
-    this[STACKS].cache.push(this.updating().tail());
+    let opcodes = this.updating();
+    let guard = new JumpIfNotModifiedOpcode(opcodes.length);
+
+    opcodes.push(guard);
+    this[STACKS].cache.push(guard);
   }
 
   commitCacheGroup() {
-    let END = new LabelOpcode('END');
-
     let opcodes = this.updating();
-    let marker = this[STACKS].cache.pop();
-    let head = marker ? opcodes.nextNode(marker) : opcodes.head();
-    let tail = opcodes.tail();
-    let tag = combineSlice(new ListSlice(head, tail));
+    let guard = expect(this[STACKS].cache.pop(), 'VM BUG: Expected a cache group');
 
-    let guard = new JumpIfNotModifiedOpcode(tag, END);
+    let startIndex = guard.index;
 
-    opcodes.insertBefore(guard, head);
-    opcodes.append(new DidModifyOpcode(guard));
-    opcodes.append(END);
+    let tag = combineFromIndex(opcodes, startIndex);
+    opcodes.push(new DidModifyOpcode(guard));
+
+    guard.finalize(tag, opcodes.length);
   }
 
   enter(args: number) {
-    let updating = new LinkedList<UpdatingOpcode>();
+    let updating: UpdatingOpcode[] = [];
 
     let state = this.capture(args);
     let block = this.elements().pushUpdatableBlock();
@@ -353,35 +360,39 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   }
 
   enterItem(
-    memo: VersionedPathReference<unknown>,
-    value: VersionedPathReference<unknown>
-  ): TryOpcode {
-    let stack = this.stack;
-    stack.push(value);
-    stack.push(memo);
+    iterableRef: IterableReference,
+    { key, value, memo }: OpaqueIterationItem
+  ): ListItemOpcode {
+    let { stack } = this;
+
+    let valueRef = iterableRef.childRefFor(key, value);
+    let memoRef = iterableRef.childRefFor(key, memo);
+
+    stack.push(valueRef);
+    stack.push(memoRef);
 
     let state = this.capture(2);
     let block = this.elements().pushUpdatableBlock();
 
-    let opcode = new TryOpcode(state, this.runtime, block, new LinkedList<UpdatingOpcode>());
+    let opcode = new ListItemOpcode(state, this.runtime, block, key, memoRef, valueRef);
     this.didEnter(opcode);
 
     return opcode;
   }
 
-  registerItem(key: string, opcode: TryOpcode) {
-    this.listBlock().map.set(key, opcode);
+  registerItem(opcode: ListItemOpcode) {
+    this.listBlock().initializeChild(opcode);
   }
 
   enterList(offset: number) {
-    let updating = new LinkedList<BlockOpcode>();
+    let updating: ListItemOpcode[] = [];
 
     let addr = this[INNER_VM].target(offset);
     let state = this.capture(0, addr);
-    let list = this.elements().pushBlockList(updating);
-    let artifacts = this.stack.peek<ReferenceIterator>().artifacts;
+    let list = this.elements().pushBlockList(updating) as LiveBlockList;
+    let iterableRef = this.stack.peek<IterableReference>();
 
-    let opcode = new ListBlockOpcode(state, this.runtime, list, updating, artifacts);
+    let opcode = new ListBlockOpcode(state, this.runtime, list, updating, iterableRef);
 
     this[STACKS].list.push(opcode);
 
@@ -400,7 +411,9 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     this.elements().popBlock();
     this.popUpdating();
 
-    let parent = this.updating().tail() as BlockOpcode;
+    let updating = this.updating();
+
+    let parent = updating[updating.length - 1] as BlockOpcode;
 
     parent.didInitializeChildren();
   }
@@ -410,16 +423,16 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     this[STACKS].list.pop();
   }
 
-  pushUpdating(list = new LinkedList<UpdatingOpcode>()): void {
+  pushUpdating(list: UpdatingOpcode[] = []): void {
     this[STACKS].updating.push(list);
   }
 
-  popUpdating(): LinkedList<UpdatingOpcode> {
+  popUpdating(): UpdatingOpcode[] {
     return expect(this[STACKS].updating.pop(), "can't pop an empty stack");
   }
 
   updateWith(opcode: UpdatingOpcode) {
-    this.updating().append(opcode);
+    this.updating().push(opcode);
   }
 
   listBlock(): ListBlockOpcode {
@@ -431,11 +444,11 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     associateDestroyableChild(parent, child);
   }
 
-  tryUpdating(): Option<LinkedList<UpdatingOpcode>> {
+  tryUpdating(): Option<UpdatingOpcode[]> {
     return this[STACKS].updating.current;
   }
 
-  updating(): LinkedList<UpdatingOpcode> {
+  updating(): UpdatingOpcode[] {
     return expect(
       this[STACKS].updating.current,
       'expected updating opcode on the updating opcode stack'

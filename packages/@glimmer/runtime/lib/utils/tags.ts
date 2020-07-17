@@ -1,4 +1,3 @@
-import { Slice, LinkedListNode } from '@glimmer/util';
 import { Tag, Tagged, createCombinatorTag, CONSTANT_TAG } from '@glimmer/validator';
 
 /**
@@ -12,7 +11,7 @@ import { Tag, Tagged, createCombinatorTag, CONSTANT_TAG } from '@glimmer/validat
 export function combineTagged(tagged: ReadonlyArray<Tagged>): Tag {
   let optimized: Tag[] = [];
 
-  for (let i = 0, l = tagged.length; i < l; i++) {
+  for (let i = 0; i < tagged.length; i++) {
     let tag = tagged[i].tag;
     if (tag === CONSTANT_TAG) continue;
     optimized.push(tag);
@@ -21,17 +20,13 @@ export function combineTagged(tagged: ReadonlyArray<Tagged>): Tag {
   return createCombinatorTag(optimized);
 }
 
-export function combineSlice(slice: Slice<Tagged & LinkedListNode>): Tag {
+export function combineFromIndex(tagged: ReadonlyArray<Tagged>, startIndex: number): Tag {
   let optimized: Tag[] = [];
 
-  let node = slice.head();
-
-  while (node !== null) {
-    let tag = node.tag;
-
-    if (tag !== CONSTANT_TAG) optimized.push(tag);
-
-    node = slice.nextNode(node);
+  for (let i = startIndex; i < tagged.length; i++) {
+    let tag = tagged[i].tag;
+    if (tag === CONSTANT_TAG) continue;
+    optimized.push(tag);
   }
 
   return createCombinatorTag(optimized);

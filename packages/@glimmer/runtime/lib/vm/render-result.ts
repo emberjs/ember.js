@@ -1,5 +1,4 @@
 import { Environment, RenderResult, LiveBlock } from '@glimmer/interfaces';
-import { LinkedList } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { clear } from '../bounds';
 import { UpdatingOpcode } from '../opcodes';
@@ -9,7 +8,7 @@ import { associateDestroyableChild, registerDestructor } from '../destroyables';
 export default class RenderResultImpl implements RenderResult {
   constructor(
     public env: Environment,
-    private updating: LinkedList<UpdatingOpcode>,
+    private updating: UpdatingOpcode[],
     private bounds: LiveBlock,
     readonly drop: object
   ) {

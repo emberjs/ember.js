@@ -11,7 +11,6 @@ import { Bounds, Cursor } from './bounds';
 import { ElementOperations, Environment, ModifierManager } from '../runtime';
 import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
 import { Stack } from '../stack';
-import { LinkedList, LinkedListNode } from '../list';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;
@@ -92,7 +91,7 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
 
   pushSimpleBlock(): LiveBlock;
   pushUpdatableBlock(): UpdatableBlock;
-  pushBlockList(list: LinkedList<LinkedListNode & Bounds>): LiveBlock;
+  pushBlockList(list: Bounds[]): LiveBlock;
   popBlock(): LiveBlock;
 
   didAppendBounds(bounds: Bounds): void;
