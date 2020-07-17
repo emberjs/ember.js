@@ -1,3 +1,13 @@
+## v0.55.0 (2020-07-17)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1114](https://github.com/glimmerjs/glimmer-vm/pull/1114) [REFACTOR] Remove LinkedList and simplify iteration ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.54.1 (2020-07-02)
 
 #### :bug: Bug Fix
