@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.21.0-beta.2 (July 20, 2020)
+
+- [#19040](https://github.com/emberjs/ember.js/pull/19040) [BUGFIX] Fix a memory leak that occurred when changing the array passed to `{{each}}`
+- [#19047](https://github.com/emberjs/ember.js/pull/19047) [BUGFIX] Ensure `inject-babel-helpers` plugin can be parallelized
+
 ### v3.21.0-beta.1 (July 13, 2020)
 
 - [#18993](https://github.com/emberjs/ember.js/pull/18993) [DEPRECATION] Deprecate `getWithDefault` per [RFC #554](https://github.com/emberjs/rfcs/blob/master/text/0554-deprecate-getwithdefault.md).
