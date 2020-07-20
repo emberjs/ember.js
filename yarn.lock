@@ -1144,11 +1144,6 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.2.tgz#dc85dde46aa8740bb4aed54b8104250f8f849503"
   integrity sha512-HOtU5KqROKT7qX/itKHuTtt5fV0iXbheQvrgbLNXFJQBY/eh+VS5vmmTAVlo3qIGMsypm0G4N1t2AXjy1ZicaQ==
 
-"@types/node@^10.5.5":
-  version "10.9.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.9.4.tgz#0f4cb2dc7c1de6096055357f70179043c33e9897"
-  integrity sha512-fCHV45gS+m3hH17zgkgADUSi2RR1Vht6wOZ0jyHP8rjiQra9f+mIcgwPQHllmDocYOstIEbKlxbFDYlgrTPYqw==
-
 "@types/node@^9.6.0":
   version "9.6.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-9.6.0.tgz#d3480ee666df9784b1001a1872a2f6ccefb6c2d7"
@@ -7983,12 +7978,10 @@ route-recognizer@^0.3.4:
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.4.tgz#39ab1ffbce1c59e6d2bdca416f0932611e4f3ca3"
   integrity sha512-2+MhsfPhvauN1O8KaXpXAOfR/fwe8dnUXVM+xw7yt40lJRfPVQxV6yryZm0cgRvAj5fMF/mdRZbL2ptwbs5i2g==
 
-router_js@^6.2.5:
-  version "6.2.5"
-  resolved "https://registry.yarnpkg.com/router_js/-/router_js-6.2.5.tgz#b23b70d50548423744e4b1ad236055fcfe8ad3f4"
-  integrity sha512-mvDbwtF/B9bUyawg42aKRWed92lPRQe15bMEu09f2KJfqJYiyjg9mG2Bwof1t0XqJ2z1QeiYgDwFdFL7pyzyZw==
-  dependencies:
-    "@types/node" "^10.5.5"
+router_js@^6.2.6:
+  version "6.2.6"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-6.2.6.tgz#148288fbfa87cb726b8a2f138b07f1fb549ebcb7"
+  integrity sha1-FIKI+/qHy3Jrii8Tiwfx+1SevLc=
 
 rsvp@3.0.14:
   version "3.0.14"
