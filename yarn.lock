@@ -7978,10 +7978,10 @@ route-recognizer@^0.3.4:
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.4.tgz#39ab1ffbce1c59e6d2bdca416f0932611e4f3ca3"
   integrity sha512-2+MhsfPhvauN1O8KaXpXAOfR/fwe8dnUXVM+xw7yt40lJRfPVQxV6yryZm0cgRvAj5fMF/mdRZbL2ptwbs5i2g==
 
-router_js@^6.2.6:
-  version "6.2.6"
-  resolved "https://registry.yarnpkg.com/router_js/-/router_js-6.2.6.tgz#148288fbfa87cb726b8a2f138b07f1fb549ebcb7"
-  integrity sha1-FIKI+/qHy3Jrii8Tiwfx+1SevLc=
+router_js@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-7.0.0.tgz#92eb56141ee2cb59e04271e5f2d685cdfa836c37"
+  integrity sha512-pJ+W6SyPmMkZ/qawWyaDaAue1bXOx4FOuMMpxvYW/1r6Hifpp06+jURFbR8ryZszYopPYKS5OUQnv1izd3iPKA==
 
 rsvp@3.0.14:
   version "3.0.14"
