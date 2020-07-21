@@ -1,18 +1,26 @@
 export {
+  REFERENCE,
   Reference,
-  PathReference,
-  CachedReference,
-  ReferenceCache,
-  Validation,
-  NotModified,
-  isModified,
+  createPrimitiveRef,
+  createConstRef,
+  createUnboundRef,
+  createComputeRef,
+  createDebugAliasRef,
+  createReadOnlyRef,
+  createInvokableRef,
+  isInvokableRef,
+  isConstRef,
+  isUpdatableRef,
+  valueForRef,
+  updateRef,
+  childRefFor,
+  childRefFromParts,
+  ReferenceEnvironment,
+  UNDEFINED_REFERENCE,
+  NULL_REFERENCE,
+  TRUE_REFERENCE,
+  FALSE_REFERENCE,
 } from './lib/reference';
-
-export { ConstReference } from './lib/const';
-
-export { UNDEFINED_REFERENCE } from './lib/primitive';
-
-export * from './lib/template';
 
 export {
   IterationItem,
@@ -20,5 +28,6 @@ export {
   OpaqueIterator,
   AbstractIterator,
   IteratorDelegate,
-  IterableReference,
+  createIteratorRef,
+  createIteratorItemRef,
 } from './lib/iterable';

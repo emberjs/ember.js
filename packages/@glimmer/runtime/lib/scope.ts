@@ -9,13 +9,12 @@ import {
   Scope,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
-import { PathReference } from '@glimmer/reference';
-import { UNDEFINED_REFERENCE } from './references';
+import { Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 export class DynamicScopeImpl implements DynamicScope {
-  private bucket: Dict<PathReference>;
+  private bucket: Dict<Reference>;
 
-  constructor(bucket?: Dict<PathReference>) {
+  constructor(bucket?: Dict<Reference>) {
     if (bucket) {
       this.bucket = assign({}, bucket);
     } else {
@@ -23,11 +22,11 @@ export class DynamicScopeImpl implements DynamicScope {
     }
   }
 
-  get(key: string): PathReference {
+  get(key: string): Reference {
     return this.bucket[key];
   }
 
-  set(key: string, reference: PathReference): PathReference {
+  set(key: string, reference: Reference): Reference {
     return (this.bucket[key] = reference);
   }
 
@@ -36,14 +35,14 @@ export class DynamicScopeImpl implements DynamicScope {
   }
 }
 
-export function isScopeReference(s: ScopeSlot): s is PathReference {
+export function isScopeReference(s: ScopeSlot): s is Reference {
   if (s === null || Array.isArray(s)) return false;
   return true;
 }
 
 export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C> {
-  static root<C extends JitOrAotBlock>(self: PathReference<unknown>, size = 0): PartialScope<C> {
-    let refs: PathReference<unknown>[] = new Array(size + 1);
+  static root<C extends JitOrAotBlock>(self: Reference<unknown>, size = 0): PartialScope<C> {
+    let refs: Reference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
@@ -53,7 +52,7 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
   }
 
   static sized<C extends JitOrAotBlock>(size = 0): Scope<C> {
-    let refs: PathReference<unknown>[] = new Array(size + 1);
+    let refs: Reference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
@@ -69,20 +68,20 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     // named arguments and blocks passed to a layout that uses eval
     private evalScope: Option<Dict<ScopeSlot<C>>>,
     // locals in scope when the partial was invoked
-    private partialMap: Option<Dict<PathReference<unknown>>>
+    private partialMap: Option<Dict<Reference<unknown>>>
   ) {}
 
-  init({ self }: { self: PathReference<unknown> }): this {
+  init({ self }: { self: Reference<unknown> }): this {
     this.slots[0] = self;
     return this;
   }
 
-  getSelf(): PathReference<unknown> {
-    return this.get<PathReference<unknown>>(0);
+  getSelf(): Reference<unknown> {
+    return this.get<Reference<unknown>>(0);
   }
 
-  getSymbol(symbol: number): PathReference<unknown> {
-    return this.get<PathReference<unknown>>(symbol);
+  getSymbol(symbol: number): Reference<unknown> {
+    return this.get<Reference<unknown>>(symbol);
   }
 
   getBlock(symbol: number): Option<ScopeBlock<C>> {
@@ -94,7 +93,7 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     return this.evalScope;
   }
 
-  getPartialMap(): Option<Dict<PathReference<unknown>>> {
+  getPartialMap(): Option<Dict<Reference<unknown>>> {
     return this.partialMap;
   }
 
@@ -102,11 +101,11 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     this.set(symbol, value);
   }
 
-  bindSelf(self: PathReference<unknown>) {
-    this.set<PathReference<unknown>>(0, self);
+  bindSelf(self: Reference<unknown>) {
+    this.set<Reference<unknown>>(0, self);
   }
 
-  bindSymbol(symbol: number, value: PathReference<unknown>) {
+  bindSymbol(symbol: number, value: Reference<unknown>) {
     this.set(symbol, value);
   }
 
@@ -118,7 +117,7 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     this.evalScope = map;
   }
 
-  bindPartialMap(map: Dict<PathReference<unknown>>) {
+  bindPartialMap(map: Dict<Reference<unknown>>) {
     this.partialMap = map;
   }
 

@@ -1,4 +1,4 @@
-import { PathReference } from '@glimmer/reference';
+import { Reference, valueForRef } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { assert, unwrapHandle, decodeHandle } from '@glimmer/util';
 import { check } from '@glimmer/debug';
@@ -11,7 +11,7 @@ APPEND_OPCODES.add(
   (vm, { op1: _meta, op2: _symbols, op3: _evalInfo }) => {
     let { [CONSTANTS]: constants, stack } = vm;
 
-    let name = check(stack.popJs(), CheckReference).value();
+    let name = valueForRef(check(stack.pop(), CheckReference));
     assert(typeof name === 'string', `Could not find a partial named "${String(name)}"`);
 
     let meta = constants.getValue(decodeHandle(_meta));
@@ -34,7 +34,7 @@ APPEND_OPCODES.add(
       partialScope.bindEvalScope(evalScope);
       partialScope.bindSelf(outerScope.getSelf());
 
-      let locals = Object.create(outerScope.getPartialMap()) as Dict<PathReference<unknown>>;
+      let locals = Object.create(outerScope.getPartialMap()) as Dict<Reference>;
 
       for (let i = 0; i < evalInfo.length; i++) {
         let slot = evalInfo[i];

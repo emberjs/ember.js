@@ -1,9 +1,14 @@
 import { Option, Op, JitScopeBlock, AotScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
-import { PathReference, Reference } from '@glimmer/reference';
+import {
+  Reference,
+  childRefFor,
+  UNDEFINED_REFERENCE,
+  TRUE_REFERENCE,
+  FALSE_REFERENCE,
+} from '@glimmer/reference';
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
-import { FALSE_REFERENCE, TRUE_REFERENCE, UNDEFINED_REFERENCE } from '../../references';
-import { ConcatReference } from '../expressions/concat';
+import { createConcatRef } from '../expressions/concat';
 import { assert } from '@glimmer/util';
 import {
   check,
@@ -15,7 +20,7 @@ import {
 } from '@glimmer/debug';
 import {
   CheckArguments,
-  CheckPathReference,
+  CheckReference,
   CheckCompilableBlock,
   CheckScope,
   CheckHelper,
@@ -25,7 +30,7 @@ import {
 import { CONSTANTS } from '../../symbols';
 import { DEBUG } from '@glimmer/env';
 
-export type FunctionExpression<T> = (vm: PublicVM) => PathReference<T>;
+export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
@@ -43,7 +48,7 @@ APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {
 });
 
 APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
-  let expr = check(vm.stack.pop(), CheckPathReference);
+  let expr = check(vm.stack.pop(), CheckReference);
   vm.scope().bindSymbol(symbol, expr);
 });
 
@@ -78,7 +83,7 @@ APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
 
   let ref = locals[name];
   if (ref === undefined) {
-    ref = vm.getSelf().get(name);
+    ref = childRefFor(vm.getSelf(), name);
   }
 
   vm.stack.pushJs(ref);
@@ -90,8 +95,8 @@ APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols }) => {
 
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
   let key = vm[CONSTANTS].getValue<string>(_key);
-  let expr = check(vm.stack.popJs(), CheckPathReference);
-  vm.stack.pushJs(expr.get(key));
+  let expr = check(vm.stack.popJs(), CheckReference);
+  vm.stack.pushJs(childRefFor(expr, key));
 });
 
 APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
@@ -160,12 +165,12 @@ APPEND_OPCODES.add(Op.HasBlockParams, vm => {
 });
 
 APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
-  let out: Array<PathReference<unknown>> = new Array(count);
+  let out: Array<Reference<unknown>> = new Array(count);
 
   for (let i = count; i > 0; i--) {
     let offset = i - 1;
-    out[offset] = check(vm.stack.pop(), CheckPathReference);
+    out[offset] = check(vm.stack.pop(), CheckReference);
   }
 
-  vm.stack.pushJs(new ConcatReference(out));
+  vm.stack.pushJs(createConcatRef(out));
 });

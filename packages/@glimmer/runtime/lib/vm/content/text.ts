@@ -1,6 +1,6 @@
 import { isEmpty, isString } from '../../dom/normalize';
 import { UpdatingOpcode } from '../../opcodes';
-import { Reference } from '@glimmer/reference';
+import { Reference, valueForRef } from '@glimmer/reference';
 import { SimpleText } from '@simple-dom/interface';
 
 export default class DynamicTextContent extends UpdatingOpcode {
@@ -15,7 +15,7 @@ export default class DynamicTextContent extends UpdatingOpcode {
   }
 
   evaluate() {
-    let value = this.reference.value();
+    let value = valueForRef(this.reference);
 
     let { lastValue } = this;
 

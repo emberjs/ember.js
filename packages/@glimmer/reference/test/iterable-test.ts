@@ -1,6 +1,12 @@
 import { module, test } from './utils/qunit';
 
-import { IterableReference, OpaqueIterationItem, UNDEFINED_REFERENCE } from '..';
+import {
+  createIteratorRef,
+  createComputeRef,
+  OpaqueIterationItem,
+  Reference,
+  valueForRef,
+} from '..';
 import { symbol } from '@glimmer/util';
 import { testOverrideGlobalContext, GlobalContext } from '@glimmer/global-context';
 import { VOLATILE_TAG, consumeTag } from '@glimmer/validator';
@@ -8,39 +14,25 @@ import { VOLATILE_TAG, consumeTag } from '@glimmer/validator';
 import { TestContext } from './utils/template';
 import objectValues from './utils/platform';
 
-class VolatileReference<T> {
-  constructor(public inner: T) {}
-
-  isConst() {
-    return false;
-  }
-
-  value() {
-    consumeTag(VOLATILE_TAG);
-    return this.inner;
-  }
-
-  get(_key: string) {
-    return UNDEFINED_REFERENCE;
-  }
-}
-
 class IterableWrapper {
-  private iterable: IterableReference;
+  private iterable: Reference<{ next(): OpaqueIterationItem | null }>;
 
   constructor(obj: unknown, key = '@identity') {
-    let valueRef = new VolatileReference(obj);
-    this.iterable = new IterableReference(valueRef, key);
+    let valueRef = createComputeRef(() => {
+      consumeTag(VOLATILE_TAG);
+      return obj;
+    });
+    this.iterable = createIteratorRef(valueRef, key);
   }
 
   private iterate() {
     let result: OpaqueIterationItem[] = [];
 
     // bootstrap
-    this.iterable.value();
+    let iterator = valueForRef(this.iterable);
 
     while (true) {
-      let item = this.iterable.next();
+      let item = iterator.next();
 
       if (item === null) break;
 

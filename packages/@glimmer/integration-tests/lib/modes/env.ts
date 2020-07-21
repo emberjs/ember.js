@@ -2,6 +2,7 @@ import { EnvironmentDelegate } from '@glimmer/runtime';
 import { Destroyable, Destructor, Dict, Option } from '@glimmer/interfaces';
 import { IteratorDelegate } from '@glimmer/reference';
 import setGlobalContext from '@glimmer/global-context';
+import { consumeTag, tagFor, dirtyTagFor } from '@glimmer/validator';
 
 let scheduledDestroyables: Destroyable[] = [];
 let scheduledDestructors: Destructor<any>[] = [];
@@ -32,14 +33,26 @@ setGlobalContext({
   },
 
   getProp(obj: unknown, key: string): unknown {
+    if (typeof obj === 'object' && obj !== null) {
+      consumeTag(tagFor(obj as object, key));
+    }
+
     return (obj as Dict)[key];
   },
 
   setProp(obj: unknown, key: string, value: unknown): unknown {
+    if (typeof obj === 'object' && obj !== null) {
+      dirtyTagFor(obj as object, key);
+    }
+
     return ((obj as Dict)[key] = value);
   },
 
   getPath(obj: unknown, key: string): unknown {
+    if (typeof obj === 'object' && obj !== null) {
+      consumeTag(tagFor(obj as object, key));
+    }
+
     return (obj as Dict)[key];
   },
 

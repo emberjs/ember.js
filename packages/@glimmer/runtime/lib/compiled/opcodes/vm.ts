@@ -1,5 +1,16 @@
+import { toBool } from '@glimmer/global-context';
 import { CompilableTemplate, Option, Op } from '@glimmer/interfaces';
-import { isModified, ReferenceCache } from '@glimmer/reference';
+import {
+  Reference,
+  valueForRef,
+  isConstRef,
+  createPrimitiveRef,
+  UNDEFINED_REFERENCE,
+  NULL_REFERENCE,
+  TRUE_REFERENCE,
+  FALSE_REFERENCE,
+  createComputeRef,
+} from '@glimmer/reference';
 import {
   CONSTANT_TAG,
   Revision,
@@ -23,7 +34,6 @@ import {
 } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { PrimitiveReference, ConditionalReference } from '../../references';
 import { UpdatingVM } from '../../vm';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
@@ -57,12 +67,22 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
 
 APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
   let stack = vm.stack;
-  stack.pushJs(PrimitiveReference.create(check(stack.pop(), CheckPrimitive)));
-});
+  let value = check(stack.pop(), CheckPrimitive);
+  let ref;
 
-APPEND_OPCODES.add(Op.ReifyU32, vm => {
-  let stack = vm.stack;
-  stack.pushSmallInt(check(check(stack.peekJs(), CheckReference).value(), CheckNumber));
+  if (value === undefined) {
+    ref = UNDEFINED_REFERENCE;
+  } else if (value === null) {
+    ref = NULL_REFERENCE;
+  } else if (value === true) {
+    ref = TRUE_REFERENCE;
+  } else if (value === false) {
+    ref = FALSE_REFERENCE;
+  } else {
+    ref = createPrimitiveRef(value);
+  }
+
+  stack.pushJs(ref);
 });
 
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
@@ -164,39 +184,35 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
   let reference = check(vm.stack.popJs(), CheckReference);
-  let value = Boolean(reference.value());
+  let value = Boolean(valueForRef(reference));
 
-  if (reference.isConst()) {
+  if (isConstRef(reference)) {
     if (value === true) {
       vm.goto(target);
     }
   } else {
-    let cache = new ReferenceCache(reference);
-
     if (value === true) {
       vm.goto(target);
     }
 
-    vm.updateWith(new Assert(cache));
+    vm.updateWith(new Assert(reference));
   }
 });
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
   let reference = check(vm.stack.popJs(), CheckReference);
-  let value = Boolean(reference.value());
+  let value = Boolean(valueForRef(reference));
 
-  if (reference.isConst()) {
+  if (isConstRef(reference)) {
     if (value === false) {
       vm.goto(target);
     }
   } else {
-    let cache = new ReferenceCache(reference);
-
     if (value === false) {
       vm.goto(target);
     }
 
-    vm.updateWith(new Assert(cache));
+    vm.updateWith(new Assert(reference));
   }
 });
 
@@ -211,28 +227,53 @@ APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
 APPEND_OPCODES.add(Op.AssertSame, vm => {
   let reference = check(vm.stack.peekJs(), CheckReference);
 
-  if (!reference.isConst()) {
-    vm.updateWith(new Assert(new ReferenceCache(reference)));
+  if (isConstRef(reference) === false) {
+    vm.updateWith(new Assert(reference));
   }
 });
 
 APPEND_OPCODES.add(Op.ToBoolean, vm => {
   let { stack } = vm;
-  let inner = check(stack.popJs(), CheckReference);
-  stack.pushJs(new ConditionalReference(inner));
+  let valueRef = check(stack.popJs(), CheckReference);
+
+  stack.pushJs(createComputeRef(() => toBool(valueForRef(valueRef))));
 });
 
 export class Assert extends UpdatingOpcode {
   public type = 'assert';
 
-  constructor(private cache: ReferenceCache<unknown>) {
+  private last: unknown;
+
+  constructor(private ref: Reference) {
     super();
+    this.last = valueForRef(ref);
   }
 
   evaluate(vm: UpdatingVM) {
-    let { cache } = this;
+    let { last, ref } = this;
+    let current = valueForRef(ref);
 
-    if (isModified(cache.revalidate())) {
+    if (last !== current) {
+      vm.throw();
+    }
+  }
+}
+
+export class AssertFilter<T, U> extends UpdatingOpcode {
+  public type = 'assert-filter';
+
+  private last: U;
+
+  constructor(private ref: Reference<T>, private filter: (from: T) => U) {
+    super();
+    this.last = filter(valueForRef(ref));
+  }
+
+  evaluate(vm: UpdatingVM) {
+    let { last, ref, filter } = this;
+    let current = filter(valueForRef(ref));
+
+    if (last !== current) {
       vm.throw();
     }
   }

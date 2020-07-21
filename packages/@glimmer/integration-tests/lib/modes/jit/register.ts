@@ -23,7 +23,7 @@ import {
   EMBERISH_GLIMMER_CAPABILITIES,
   EmberishGlimmerComponentManager,
 } from '../../components/emberish-glimmer';
-import { UserHelper, HelperReference } from '../../helpers';
+import { UserHelper, createHelperRef } from '../../helpers';
 import {
   TestModifierConstructor,
   TestModifierDefinitionState,
@@ -148,7 +148,7 @@ export function registerHelper(
   name: string,
   helper: UserHelper
 ): GlimmerHelper {
-  let glimmerHelper: GlimmerHelper = args => new HelperReference(helper, args);
+  let glimmerHelper: GlimmerHelper = args => createHelperRef(helper, args.capture());
   registry.register('helper', name, glimmerHelper);
   return glimmerHelper;
 }

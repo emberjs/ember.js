@@ -3,6 +3,7 @@ import { test } from '../test-decorator';
 import { EmberishGlimmerComponent } from '../components';
 import { stripTight } from '../test-helpers/strings';
 import { EmberishGlimmerArgs } from '../components/emberish-glimmer';
+import { tracked } from '../test-helpers/tracked';
 
 export class FragmentComponents extends RenderTest {
   static suiteName = 'Fragments';
@@ -371,7 +372,7 @@ export class BasicComponents extends RenderTest {
   'invoking dynamic component (named arg) via angle brackets supports args and attributes'() {
     let instance: Foo;
     class Foo extends EmberishGlimmerComponent {
-      public localProperty: string;
+      @tracked localProperty: string;
 
       constructor(args: EmberishGlimmerArgs) {
         super(args);
@@ -495,7 +496,7 @@ export class BasicComponents extends RenderTest {
   'invoking dynamic component (local) via angle brackets supports args, attributes, and blocks'() {
     let instance: Foo;
     class Foo extends EmberishGlimmerComponent {
-      public localProperty: string;
+      @tracked localProperty: string;
 
       constructor(args: EmberishGlimmerArgs) {
         super(args);
@@ -682,7 +683,7 @@ export class BasicComponents extends RenderTest {
     }
 
     class Foo extends EmberishGlimmerComponent {
-      public localProperty: string;
+      @tracked localProperty: string;
 
       constructor(args: EmberishGlimmerArgs) {
         super(args);

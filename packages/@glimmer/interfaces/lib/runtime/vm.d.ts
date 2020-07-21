@@ -1,6 +1,6 @@
 import { Environment } from './environment';
 // eslint-disable-next-line node/no-extraneous-import
-import { PathReference } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
 import { Destroyable } from '../core';
 import { VMArguments } from './arguments';
 import { DynamicScope } from './scope';
@@ -13,10 +13,10 @@ import { DynamicScope } from './scope';
 export interface VM {
   env: Environment;
   dynamicScope(): DynamicScope;
-  getSelf(): PathReference;
+  getSelf(): Reference;
   associateDestroyable(child: Destroyable): void;
 }
 
 export interface Helper {
-  (args: VMArguments, vm: VM): PathReference;
+  (args: VMArguments, vm: VM): Reference;
 }

@@ -27,13 +27,11 @@ import {
   Option,
   JitScopeBlock,
 } from '@glimmer/interfaces';
-import { PathReference, Reference } from '@glimmer/reference';
+import { Reference, REFERENCE, OpaqueIterator, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { Tag, COMPUTE } from '@glimmer/validator';
 import { PartialScopeImpl } from '../../scope';
-import CurryComponentReference from '../../references/curry-component';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { ComponentInstance, ComponentElementOperations } from './component';
-import { UNDEFINED_REFERENCE } from '../../references';
 
 export const CheckTag: Checker<Tag> = CheckInterface({
   [COMPUTE]: CheckFunction,
@@ -43,13 +41,27 @@ export const CheckOperations: Checker<Option<ComponentElementOperations>> = wrap
   CheckOption(CheckInstanceof(ComponentElementOperations))
 );
 
-export const CheckPathReference: Checker<PathReference> = CheckInterface({
-  value: CheckFunction,
-  get: CheckFunction,
-});
+class ReferenceChecker {
+  type!: Reference;
 
-export const CheckReference: Checker<Reference> = CheckInterface({
-  value: CheckFunction,
+  validate(value: unknown): value is Reference {
+    if (typeof value === 'object' && value !== null) {
+      return REFERENCE in value;
+    }
+
+    return true;
+  }
+
+  expected(): string {
+    return `Reference`;
+  }
+}
+
+export const CheckReference: Checker<Reference> = new ReferenceChecker();
+
+export const CheckIterator: Checker<OpaqueIterator> = CheckInterface({
+  next: CheckFunction,
+  isEmpty: CheckFunction,
 });
 
 export const CheckArguments: Checker<VMArgumentsImpl> = wrap(() =>
@@ -66,18 +78,16 @@ export class UndefinedReferenceChecker implements Checker<Reference> {
   }
 
   expected(): string {
-    return `UNDEFINED_REFERENCE`;
+    return `undefined`;
   }
 }
 
 export const CheckUndefinedReference = new UndefinedReferenceChecker();
 
 export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
-  positional: wrap(() => CheckArray(CheckPathReference)),
-  named: wrap(() => CheckDict(CheckPathReference)),
+  positional: wrap(() => CheckArray(CheckReference)),
+  named: wrap(() => CheckDict(CheckReference)),
 });
-
-export const CheckCurryComponent = wrap(() => CheckInstanceof(CurryComponentReference));
 
 export const CheckScope: Checker<Scope<JitOrAotBlock>> = wrap(() =>
   CheckInstanceof(PartialScopeImpl)

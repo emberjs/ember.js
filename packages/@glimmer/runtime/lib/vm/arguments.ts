@@ -3,7 +3,6 @@ import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import {
   Dict,
   Option,
-  unsafe,
   BlockSymbolTable,
   VMArguments,
   CapturedArguments,
@@ -18,17 +17,18 @@ import {
   Scope,
   BlockArguments,
 } from '@glimmer/interfaces';
-import { PathReference, CachedReference, ConstReference } from '@glimmer/reference';
-import { Tag, CONSTANT_TAG } from '@glimmer/validator';
-import { UNDEFINED_REFERENCE } from '../references';
-import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
 import {
-  CheckPathReference,
-  CheckCompilableBlock,
-  CheckScope,
-} from '../compiled/opcodes/-debug-strip';
+  Reference,
+  UNDEFINED_REFERENCE,
+  valueForRef,
+  createDebugAliasRef,
+} from '@glimmer/reference';
+import { Tag, CONSTANT_TAG } from '@glimmer/validator';
+import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
+import { CheckReference, CheckCompilableBlock, CheckScope } from '../compiled/opcodes/-debug-strip';
 import { REGISTERS } from '../symbols';
 import { $sp } from '@glimmer/vm';
+import { DEBUG } from '@glimmer/env';
 
 /*
   The calling convention is:
@@ -97,8 +97,8 @@ export class VMArgumentsImpl implements VMArguments {
     return this.positional.length + this.named.length + this.blocks.length * 3;
   }
 
-  at<T extends PathReference<unknown>>(pos: number): T {
-    return this.positional.at<T>(pos);
+  at(pos: number): Reference {
+    return this.positional.at(pos);
   }
 
   realloc(offset: number) {
@@ -137,7 +137,7 @@ export class PositionalArgumentsImpl implements PositionalArguments {
 
   private stack: EvaluationStack = null as any;
 
-  private _references: Option<PathReference<unknown>[]> = null;
+  private _references: Option<Reference<unknown>[]> = null;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
@@ -159,14 +159,14 @@ export class PositionalArgumentsImpl implements PositionalArguments {
     }
   }
 
-  at<T extends PathReference<unknown>>(position: number): T {
+  at(position: number): Reference {
     let { base, length, stack } = this;
 
     if (position < 0 || position >= length) {
-      return (UNDEFINED_REFERENCE as unsafe) as T;
+      return UNDEFINED_REFERENCE;
     }
 
-    return check(stack.get(position, base), CheckPathReference) as T;
+    return check(stack.get(position, base), CheckReference);
   }
 
   capture(): CapturedPositionalArguments {
@@ -190,12 +190,12 @@ export class PositionalArgumentsImpl implements PositionalArguments {
     }
   }
 
-  private get references(): PathReference<unknown>[] {
+  private get references(): Reference<unknown>[] {
     let references = this._references;
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.slice<PathReference<unknown>>(base, base + length);
+      references = this._references = stack.slice<Reference<unknown>>(base, base + length);
     }
 
     return references;
@@ -208,7 +208,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
   private stack!: EvaluationStack;
 
-  private _references: Option<PathReference<unknown>[]> = null;
+  private _references: Option<Reference<unknown>[]> = null;
 
   private _names: Option<string[]> = EMPTY_ARRAY;
   private _atNames: Option<string[]> = EMPTY_ARRAY;
@@ -269,7 +269,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     return this.names.indexOf(name) !== -1;
   }
 
-  get<T extends PathReference<unknown>>(name: string, atNames = false): T {
+  get(name: string, atNames = false): Reference {
     let { base, stack } = this;
 
     let names = atNames ? this.atNames : this.names;
@@ -277,19 +277,30 @@ export class NamedArgumentsImpl implements NamedArguments {
     let idx = names.indexOf(name);
 
     if (idx === -1) {
-      return (UNDEFINED_REFERENCE as unsafe) as T;
+      return UNDEFINED_REFERENCE;
     }
 
-    return stack.get<T>(idx, base);
+    let ref = stack.get<Reference>(idx, base);
+
+    if (DEBUG) {
+      return createDebugAliasRef!(atNames ? name : `@${name}`, ref);
+    } else {
+      return ref;
+    }
   }
 
   capture(): CapturedNamedArguments {
     let { names, references } = this;
-    let map = dict<PathReference<unknown>>();
+    let map = dict<Reference<unknown>>();
 
     for (let i = 0; i < names.length; i++) {
       let name = names[i];
-      map![name] = references[i];
+
+      if (DEBUG) {
+        map[name] = createDebugAliasRef!(`@${name}`, references[i]);
+      } else {
+        map[name] = references[i];
+      }
     }
 
     return map as CapturedNamedArguments;
@@ -319,12 +330,12 @@ export class NamedArgumentsImpl implements NamedArguments {
     }
   }
 
-  private get references(): PathReference<unknown>[] {
+  private get references(): Reference<unknown>[] {
     let references = this._references;
 
     if (!references) {
       let { base, length, stack } = this;
-      references = this._references = stack.slice<PathReference<unknown>>(base, base + length);
+      references = this._references = stack.slice<Reference<unknown>>(base, base + length);
     }
 
     return references;
@@ -454,7 +465,7 @@ class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
   }
 }
 
-export function createCapturedArgs(named: Dict<PathReference>, positional: PathReference[]) {
+export function createCapturedArgs(named: Dict<Reference>, positional: Reference[]) {
   return {
     named,
     positional,
@@ -465,14 +476,14 @@ export function reifyNamed(named: CapturedNamedArguments) {
   let reified = dict();
 
   for (let key in named) {
-    reified[key] = named[key].value();
+    reified[key] = valueForRef(named[key]);
   }
 
   return reified;
 }
 
 export function reifyPositional(positional: CapturedPositionalArguments) {
-  return positional.map(ref => ref.value());
+  return positional.map(valueForRef);
 }
 
 export function reifyArgs(args: CapturedArguments) {
@@ -480,44 +491,6 @@ export function reifyArgs(args: CapturedArguments) {
     named: reifyNamed(args.named),
     positional: reifyPositional(args.positional),
   };
-}
-
-export class ReifyNamedReference extends CachedReference {
-  constructor(private named: CapturedNamedArguments) {
-    super();
-  }
-
-  compute() {
-    return reifyNamed(this.named);
-  }
-
-  get(key: string) {
-    let ref = this.named[key];
-
-    return ref === undefined ? UNDEFINED_REFERENCE : ref;
-  }
-}
-
-export class ReifyPositionalReference extends CachedReference {
-  constructor(private positional: CapturedPositionalArguments) {
-    super();
-  }
-
-  compute() {
-    return reifyPositional(this.positional);
-  }
-
-  get(key: string) {
-    let ref;
-
-    if (typeof key === 'number') {
-      ref = this.positional[key];
-    } else if (key === 'length') {
-      ref = new ConstReference(this.positional.length);
-    }
-
-    return ref === undefined ? UNDEFINED_REFERENCE : ref;
-  }
 }
 
 export const EMPTY_NAMED = Object.freeze(Object.create(null)) as CapturedNamedArguments;

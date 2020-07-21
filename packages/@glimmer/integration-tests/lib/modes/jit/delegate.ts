@@ -48,12 +48,11 @@ import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
 import { EmberishGlimmerComponentFactory } from '../../components/emberish-glimmer';
 import { TestModifierConstructor } from '../../modifiers';
 import { UserHelper } from '../../helpers';
-import { ConstReference } from '@glimmer/reference';
+import { createConstRef, Reference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 import { JitContext } from '@glimmer/opcode-compiler';
 import { preprocess } from '../../compile';
 import { unwrapTemplate, assign } from '@glimmer/util';
-import { UpdatableRootReference } from '../../reference';
 import { BaseEnv } from '../env';
 
 export interface JitTestDelegateContext {
@@ -81,7 +80,7 @@ export class JitRenderDelegate implements RenderDelegate {
   private resolver: TestJitRuntimeResolver = new TestJitRuntimeResolver();
   private registry: TestJitRegistry = this.resolver.registry;
   private context: JitTestDelegateContext;
-  private self: Option<UpdatableRootReference> = null;
+  private self: Option<Reference> = null;
   private doc: SimpleDocument;
   private env: EnvironmentDelegate;
 
@@ -199,9 +198,9 @@ export class JitRenderDelegate implements RenderDelegate {
     return registerTemplate(this.registry, name, content);
   }
 
-  getSelf(context: unknown): UpdatableRootReference | ConstReference {
+  getSelf(_env: Environment, context: unknown): Reference {
     if (!this.self) {
-      this.self = new UpdatableRootReference(context);
+      this.self = createConstRef(context, 'this');
     }
 
     return this.self;
@@ -218,11 +217,13 @@ export class JitRenderDelegate implements RenderDelegate {
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
     let cursor = { element, nextSibling: null };
 
+    let { env } = this.context.runtime;
+
     return renderTemplate(
       template,
       this.context,
-      this.getSelf(context),
-      this.getElementBuilder(this.context.runtime.env, cursor),
+      this.getSelf(env, context),
+      this.getElementBuilder(env, cursor),
       this.precompileOptions
     );
   }

@@ -1,4 +1,4 @@
-import { PathReference } from '@glimmer/reference';
+import { Reference, createConstRef } from '@glimmer/reference';
 import { DirtyableTag, createTag, dirtyTag, consumeTag } from '@glimmer/validator';
 import {
   Dict,
@@ -23,24 +23,11 @@ import { BASIC_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
 import { EmberishCurlyComponentFactory } from './emberish-curly';
-import { UpdatableRootReference } from '../reference';
 import { registerDestructor, reifyNamed } from '@glimmer/runtime';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
 export type EmberishGlimmerArgs = { attrs: Attrs };
-
-const SELF_REF = new WeakMap<EmberishGlimmerComponent, UpdatableRootReference>();
-
-function getSelf(obj: EmberishGlimmerComponent): UpdatableRootReference {
-  if (SELF_REF.has(obj)) {
-    return SELF_REF.get(obj)!;
-  } else {
-    let ref = new UpdatableRootReference(obj);
-    SELF_REF.set(obj, ref);
-    return ref;
-  }
-}
 
 export class EmberishGlimmerComponent {
   public dirtinessTag: DirtyableTag = createTag();
@@ -96,6 +83,7 @@ export const EMBERISH_GLIMMER_CAPABILITIES = assign({}, BASIC_CAPABILITIES, {
 export interface EmberishGlimmerComponentState {
   args: CapturedNamedArguments;
   component: EmberishGlimmerComponent;
+  selfRef: Reference;
 }
 
 export class EmberishGlimmerComponentManager
@@ -124,11 +112,11 @@ export class EmberishGlimmerComponentManager
   }
 
   create(
-    _environment: Environment,
+    _env: Environment,
     definition: TestComponentDefinitionState,
     _args: VMArguments,
     _dynamicScope: DynamicScope,
-    _callerSelf: PathReference<unknown>,
+    _callerSelf: Reference<unknown>,
     _hasDefaultBlock: boolean
   ): EmberishGlimmerComponentState {
     let args = _args.named.capture();
@@ -145,7 +133,9 @@ export class EmberishGlimmerComponentManager
 
     consumeTag(component.dirtinessTag);
 
-    return { args, component };
+    let selfRef = createConstRef(component, 'this');
+
+    return { args, component, selfRef };
   }
 
   getJitStaticLayout(
@@ -164,8 +154,8 @@ export class EmberishGlimmerComponentManager
     return resolver.getInvocation(locator);
   }
 
-  getSelf({ component }: EmberishGlimmerComponentState): PathReference<unknown> {
-    return getSelf(component);
+  getSelf({ selfRef }: EmberishGlimmerComponentState): Reference<unknown> {
+    return selfRef;
   }
 
   didCreateElement(): void {}

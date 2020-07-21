@@ -1,5 +1,4 @@
 export * from './lib/compile';
-export * from './lib/reference';
 export * from './lib/compile/macros';
 export * from './lib/components';
 export * from './lib/dom/assertions';
@@ -17,3 +16,4 @@ export * from './lib/suites';
 export * from './lib/test-helpers/module';
 export * from './lib/test-helpers/strings';
 export * from './lib/test-helpers/test';
+export * from './lib/test-helpers/tracked';

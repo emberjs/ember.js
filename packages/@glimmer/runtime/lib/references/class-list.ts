@@ -1,24 +1,17 @@
-import { Reference, CachedReference } from '@glimmer/reference';
-import { Option } from '@glimmer/util';
+import { Reference, createComputeRef, valueForRef } from '@glimmer/reference';
 
 import { normalizeStringValue } from '../dom/normalize';
 
-export default class ClassListReference extends CachedReference<Option<string>>
-  implements Reference<Option<string>> {
-  constructor(private list: Reference<unknown>[]) {
-    super();
-    this.list = list;
-  }
-
-  compute() {
+export default function createClassListRef(list: Reference[]) {
+  return createComputeRef(() => {
     let ret: string[] = [];
-    let { list } = this;
 
     for (let i = 0; i < list.length; i++) {
-      let value = normalizeStringValue(list[i].value());
+      let ref = list[i];
+      let value = normalizeStringValue(typeof ref === 'string' ? ref : valueForRef(list[i]));
       if (value) ret.push(value);
     }
 
     return ret.length === 0 ? null : ret.join(' ');
-  }
+  });
 }

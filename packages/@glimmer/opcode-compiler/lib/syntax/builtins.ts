@@ -7,7 +7,7 @@ import {
 } from '@glimmer/interfaces';
 import { InvokeStaticBlock, InvokeStaticBlockWithStack } from '../opcode-builder/helpers/blocks';
 import { assert, unwrap } from '@glimmer/util';
-import { $fp, $sp } from '@glimmer/vm';
+import { $sp, $fp } from '@glimmer/vm';
 import { op, error } from '../opcode-builder/encoder';
 import {
   InvokeDynamicComponent,
@@ -132,12 +132,10 @@ export function populateBuiltins(
 
       body() {
         let out: StatementCompileActions = [
-          op(Op.PutIterator),
-          op(Op.JumpUnless, label('ELSE')),
+          op(Op.EnterList, label('BODY'), label('ELSE')),
           op(MachineOp.PushFrame),
           op(Op.Dup, $fp, 1),
           op(MachineOp.ReturnTo, label('ITER')),
-          op(Op.EnterList, label('BODY')),
           op('Label', 'ITER'),
           op(Op.Iterate, label('BREAK')),
           op('Label', 'BODY'),
@@ -145,8 +143,8 @@ export function populateBuiltins(
           op(Op.Pop, 2),
           op(MachineOp.Jump, label('FINALLY')),
           op('Label', 'BREAK'),
-          op(Op.ExitList),
           op(MachineOp.PopFrame),
+          op(Op.ExitList),
           op(MachineOp.Jump, label('FINALLY')),
           op('Label', 'ELSE'),
         ];

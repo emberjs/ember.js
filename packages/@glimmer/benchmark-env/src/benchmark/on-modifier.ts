@@ -1,5 +1,5 @@
 import { ModifierManager, VMArguments } from '@glimmer/interfaces';
-import { Reference } from '@glimmer/reference';
+import { Reference, valueForRef } from '@glimmer/reference';
 import { createUpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 
@@ -27,8 +27,8 @@ class OnModifierManager implements ModifierManager<OnModifierState, null> {
   }
 
   install(state: OnModifierState) {
-    const name = state.nameRef.value();
-    const listener = state.listenerRef.value();
+    const name = valueForRef(state.nameRef);
+    const listener = valueForRef(state.listenerRef);
     state.element.addEventListener(name, listener);
     state.listener = listener;
     state.name = name;
@@ -36,8 +36,8 @@ class OnModifierManager implements ModifierManager<OnModifierState, null> {
 
   update(state: OnModifierState) {
     const element = state.element;
-    const name = state.nameRef.value();
-    const listener = state.listenerRef.value();
+    const name = valueForRef(state.nameRef);
+    const listener = valueForRef(state.listenerRef);
     if (name !== state.name || listener !== state.listener) {
       element.removeEventListener(state.name!, state.listener!);
       element.addEventListener(name, listener);
