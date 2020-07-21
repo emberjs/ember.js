@@ -21,7 +21,13 @@ import {
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
-import { PathReference, OpaqueIterationItem, IterableReference } from '@glimmer/reference';
+import {
+  Reference,
+  OpaqueIterationItem,
+  OpaqueIterator,
+  createIteratorItemRef,
+  UNDEFINED_REFERENCE,
+} from '@glimmer/reference';
 import { expect, Option, Stack, assert } from '@glimmer/util';
 import {
   $fp,
@@ -46,7 +52,6 @@ import {
 } from '../compiled/opcodes/vm';
 import { PartialScopeImpl } from '../scope';
 import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
-import { UNDEFINED_REFERENCE } from '../references';
 import { ARGS, CONSTANTS, DESTROYABLE_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
 import { VMArgumentsImpl } from './arguments';
 import LowLevelVM from './low-level';
@@ -94,7 +99,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   scope(): Scope<C>;
   elements(): ElementBuilder;
 
-  getSelf(): PathReference<unknown>;
+  getSelf(): Reference;
 
   updateWith(opcode: UpdatingOpcode): void;
 
@@ -105,10 +110,10 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
 
   /// Iteration ///
 
-  enterList(offset: number): void;
+  enterList(iterableRef: Reference<OpaqueIterator>, offset: number): void;
   exitList(): void;
-  enterItem(iterableRef: IterableReference, item: OpaqueIterationItem): ListItemOpcode;
-  registerItem(opcode: ListItemOpcode): void;
+  enterItem(item: OpaqueIterationItem): ListItemOpcode;
+  registerItem(item: ListItemOpcode): void;
 
   pushRootScope(size: number): PartialScope<C>;
   pushChildScope(): void;
@@ -127,7 +132,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   call(handle: number): void;
   pushFrame(): void;
 
-  referenceForSymbol(symbol: number): PathReference<unknown>;
+  referenceForSymbol(symbol: number): Reference;
 
   execute(initialize?: (vm: this) => void): RenderResult;
   pushUpdating(list?: UpdatingOpcode[]): void;
@@ -367,14 +372,11 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     this.didEnter(tryOpcode);
   }
 
-  enterItem(
-    iterableRef: IterableReference,
-    { key, value, memo }: OpaqueIterationItem
-  ): ListItemOpcode {
+  enterItem({ key, value, memo }: OpaqueIterationItem): ListItemOpcode {
     let { stack } = this;
 
-    let valueRef = iterableRef.childRefFor(key, value);
-    let memoRef = iterableRef.childRefFor(key, memo);
+    let valueRef = createIteratorItemRef(value);
+    let memoRef = createIteratorItemRef(memo);
 
     stack.pushJs(valueRef);
     stack.pushJs(memoRef);
@@ -392,13 +394,12 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     this.listBlock().initializeChild(opcode);
   }
 
-  enterList(offset: number) {
+  enterList(iterableRef: Reference<OpaqueIterator>, offset: number) {
     let updating: ListItemOpcode[] = [];
 
     let addr = this[INNER_VM].target(offset);
     let state = this.capture(0, addr);
     let list = this.elements().pushBlockList(updating) as LiveBlockList;
-    let iterableRef = this.stack.peekJs<IterableReference>();
 
     let opcode = new ListBlockOpcode(state, this.runtime, list, updating, iterableRef);
 
@@ -502,11 +503,11 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
   /// SCOPE HELPERS
 
-  getSelf(): PathReference<any> {
+  getSelf(): Reference<any> {
     return this.scope().getSelf();
   }
 
-  referenceForSymbol(symbol: number): PathReference<unknown> {
+  referenceForSymbol(symbol: number): Reference {
     return this.scope().getSymbol(symbol);
   }
 
@@ -572,7 +573,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
     for (let i = names.length - 1; i >= 0; i--) {
       let name = names[i];
-      scope.set(name, this.stack.popJs<PathReference<unknown>>());
+      scope.set(name, this.stack.popJs<Reference<unknown>>());
     }
   }
 }
@@ -597,7 +598,7 @@ export interface MinimalInitOptions {
 }
 
 export interface InitOptions extends MinimalInitOptions {
-  self: PathReference<unknown>;
+  self: Reference;
 }
 
 export class AotVM extends VM<number> implements InternalVM<number> {

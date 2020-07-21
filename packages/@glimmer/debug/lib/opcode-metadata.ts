@@ -587,29 +587,6 @@ METADATA[Op.StaticAttr] = {
   check: true,
 };
 
-METADATA[Op.StaticComponentAttr] = {
-  name: 'StaticComponentAttr',
-  mnemonic: 'apnd_csattr',
-  before: null,
-  stackChange: 0,
-  ops: [
-    {
-      name: 'name',
-      type: 'str',
-    },
-    {
-      name: 'value',
-      type: 'str',
-    },
-    {
-      name: 'namespace',
-      type: 'option-str',
-    },
-  ],
-  operands: 3,
-  check: true,
-};
-
 METADATA[Op.DynamicAttr] = {
   name: 'DynamicAttr',
   mnemonic: 'apnd_dynattr',
@@ -884,30 +861,24 @@ METADATA[Op.EnterList] = {
   name: 'EnterList',
   mnemonic: 'list_start',
   before: null,
-  stackChange: 0,
+  stackChange: null,
   ops: [
     {
       name: 'address',
       type: 'u32',
     },
+    {
+      name: 'address',
+      type: 'u32',
+    },
   ],
-  operands: 1,
+  operands: 2,
   check: true,
 };
 
 METADATA[Op.ExitList] = {
   name: 'ExitList',
   mnemonic: 'list_end',
-  before: null,
-  stackChange: 0,
-  ops: [],
-  operands: 0,
-  check: true,
-};
-
-METADATA[Op.PutIterator] = {
-  name: 'PutIterator',
-  mnemonic: 'toiter',
   before: null,
   stackChange: 0,
   ops: [],
@@ -942,16 +913,6 @@ METADATA[Op.Main] = {
     },
   ],
   operands: 1,
-  check: true,
-};
-
-METADATA[Op.IsComponent] = {
-  name: 'IsComponent',
-  mnemonic: 'iscomponent',
-  before: null,
-  stackChange: 0,
-  ops: [],
-  operands: 0,
   check: true,
 };
 

@@ -1,4 +1,4 @@
-import { PathReference } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
 
 import { Option } from '@glimmer/util';
 
@@ -6,10 +6,7 @@ import { RuntimeResolverDelegate, VMArguments, VM as PublicVM } from '@glimmer/i
 import { CurriedComponentDefinition } from './component/curried-component';
 
 export interface DynamicComponentDefinition {
-  (
-    vm: PublicVM,
-    args: VMArguments,
-    meta: unknown,
-    resolver: RuntimeResolverDelegate
-  ): PathReference<Option<CurriedComponentDefinition>>;
+  (vm: PublicVM, args: VMArguments, meta: unknown, resolver: RuntimeResolverDelegate): Reference<
+    Option<CurriedComponentDefinition>
+  >;
 }

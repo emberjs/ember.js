@@ -1,12 +1,12 @@
 import { DEBUG } from '@glimmer/env';
 import {
   Tag,
-  combine,
   CONSTANT_TAG,
   validateTag,
   Revision,
   valueForTag,
   isConstTag,
+  combine,
 } from './validators';
 
 import {
@@ -265,7 +265,7 @@ export function untrack(callback: () => void) {
   beginUntrackFrame();
 
   try {
-    callback();
+    return callback();
   } finally {
     endUntrackFrame();
   }

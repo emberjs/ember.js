@@ -1,61 +1,84 @@
-import { CapturedArguments, ComponentDefinition, Dict, Maybe } from '@glimmer/interfaces';
-import { Option, symbol } from '@glimmer/util';
+import { CapturedArguments, ComponentDefinition } from '@glimmer/interfaces';
+import { Option, symbol, assert, _WeakSet } from '@glimmer/util';
 import { VMArgumentsImpl } from '../vm/arguments';
+import { capabilityFlagsFrom } from '../capabilities';
+import { ComponentInstance } from '../compiled/opcodes/component';
 
-const CURRIED_COMPONENT_DEFINITION_BRAND: unique symbol = symbol('CURRIED COMPONENT DEFINITION');
+const INNER: unique symbol = symbol('INNER');
+const ARGS: unique symbol = symbol('ARGS');
+
+const CURRIED_COMPONENT_DEFINITIONS = new _WeakSet();
 
 export function isCurriedComponentDefinition(
   definition: unknown
 ): definition is CurriedComponentDefinition {
-  return !!(
-    definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]
-  );
-}
-
-export function isComponentDefinition(
-  definition: Maybe<Dict> | CurriedComponentDefinition
-): definition is CurriedComponentDefinition {
-  return !!(
-    definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]
-  );
+  return CURRIED_COMPONENT_DEFINITIONS.has(definition as object);
 }
 
 export class CurriedComponentDefinition {
-  readonly [CURRIED_COMPONENT_DEFINITION_BRAND] = true;
+  [INNER]: ComponentDefinition | CurriedComponentDefinition;
+  [ARGS]: Option<CapturedArguments>;
 
   /** @internal */
   constructor(
-    protected inner: ComponentDefinition | CurriedComponentDefinition,
-    protected args: Option<CapturedArguments>
-  ) {}
+    inner: ComponentDefinition | CurriedComponentDefinition,
+    args: Option<CapturedArguments>
+  ) {
+    CURRIED_COMPONENT_DEFINITIONS.add(this);
+    this[INNER] = inner;
+    this[ARGS] = args;
+  }
+}
 
-  unwrap(args: VMArgumentsImpl): ComponentDefinition {
-    args.realloc(this.offset);
+function offset(definition: CurriedComponentDefinition): number {
+  let inner = definition[INNER];
+  let args = definition[ARGS];
+  let length = args ? args.positional.length : 0;
+  return isCurriedComponentDefinition(inner) ? length + offset(inner) : length;
+}
 
-    let definition: CurriedComponentDefinition = this;
+function unwrapCurriedComponentDefinition(
+  _definition: CurriedComponentDefinition,
+  args: VMArgumentsImpl
+) {
+  let definition = _definition;
 
-    while (true) {
-      let { args: curriedArgs, inner } = definition;
+  args.realloc(offset(definition));
 
-      if (curriedArgs) {
-        args.positional.prepend(curriedArgs.positional);
-        args.named.merge(curriedArgs.named);
-      }
+  while (true) {
+    let { [ARGS]: curriedArgs, [INNER]: inner } = definition;
 
-      if (!isCurriedComponentDefinition(inner)) {
-        return inner;
-      }
-
-      definition = inner;
+    if (curriedArgs) {
+      args.positional.prepend(curriedArgs.positional);
+      args.named.merge(curriedArgs.named);
     }
-  }
 
-  /** @internal */
-  get offset(): number {
-    let { inner, args } = this;
-    let length = args ? args.positional.length : 0;
-    return isCurriedComponentDefinition(inner) ? length + inner.offset : length;
+    if (!isCurriedComponentDefinition(inner)) {
+      return inner;
+    }
+
+    definition = inner;
   }
+}
+
+export function resolveCurriedComponentDefinition(
+  instance: ComponentInstance,
+  definition: CurriedComponentDefinition,
+  args: VMArgumentsImpl
+): ComponentDefinition {
+  let unwrappedDefinition = (instance.definition = unwrapCurriedComponentDefinition(
+    definition,
+    args
+  ));
+  let { manager, state } = unwrappedDefinition;
+
+  assert(instance.manager === null, 'component instance manager should not be populated yet');
+  assert(instance.capabilities === null, 'component instance manager should not be populated yet');
+
+  instance.manager = manager;
+  instance.capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
+
+  return unwrappedDefinition;
 }
 
 export function curry(

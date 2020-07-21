@@ -1,18 +1,25 @@
 import { Option, HandleResult, ErrHandle, EncoderError } from '@glimmer/interfaces';
-import { ConstReference } from '@glimmer/reference';
-import { RenderTest, test, jitSuite, JitRenderDelegate, EmberishGlimmerComponent } from '..';
-import { PrimitiveReference, SafeString, registerDestructor } from '@glimmer/runtime';
+import { createConstRef, createPrimitiveRef, createComputeRef } from '@glimmer/reference';
+import {
+  RenderTest,
+  test,
+  jitSuite,
+  JitRenderDelegate,
+  EmberishGlimmerComponent,
+  tracked,
+} from '..';
+import { SafeString, registerDestructor } from '@glimmer/runtime';
 import {
   assertNodeTagName,
   getElementByClassName,
   getElementsByTagName,
   stripTight,
   trimLines,
-  UpdatableRootReference,
 } from '..';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert } from './support';
 import { expect } from '@glimmer/util';
+import { createTag, consumeTag, dirtyTag } from '@glimmer/validator';
 
 function makeSafeString(value: string): SafeString {
   return new SafeStringImpl(value);
@@ -386,7 +393,7 @@ class UpdatingTest extends RenderTest {
     let rawString = '<b>bold</b> and spicy';
 
     this.registerInternalHelper('const-foobar', () => {
-      return new ConstReference(makeSafeString(rawString));
+      return createConstRef(makeSafeString(rawString), 'safe-string');
     });
 
     this.render('<div>{{const-foobar}}</div>', {});
@@ -399,7 +406,7 @@ class UpdatingTest extends RenderTest {
     let rawString = '<b>bold</b> and spicy';
 
     this.registerInternalHelper('const-foobar', () => {
-      return new ConstReference(this.delegate.createTextNode(rawString));
+      return createConstRef(this.delegate.createTextNode(rawString), 'text-node');
     });
 
     this.render('<div>{{const-foobar}}</div>');
@@ -412,7 +419,7 @@ class UpdatingTest extends RenderTest {
     let rawString = '<b>bold</b> and spicy';
 
     this.registerInternalHelper('const-foobar', () => {
-      return new ConstReference(makeSafeString(rawString));
+      return createConstRef(makeSafeString(rawString), 'safe-string');
     });
 
     this.render('<div>{{{const-foobar}}}</div>');
@@ -425,7 +432,7 @@ class UpdatingTest extends RenderTest {
     let rawString = '<b>bold</b> and spicy';
 
     this.registerInternalHelper('const-foobar', () => {
-      return new ConstReference(this.delegate.createTextNode(rawString));
+      return createConstRef(this.delegate.createTextNode(rawString), 'text-node');
     });
 
     this.render('<div>{{{const-foobar}}}</div>');
@@ -445,7 +452,7 @@ class UpdatingTest extends RenderTest {
 
     this.registerInternalHelper('destroy-me', (_args, vm) => {
       vm.associateDestroyable(destroyable);
-      return PrimitiveReference.create('destroy me!');
+      return createPrimitiveRef('destroy me!');
     });
 
     this.render('<div>{{destroy-me}}</div>', {});
@@ -477,7 +484,8 @@ class UpdatingTest extends RenderTest {
     let { template, truthyValue, falsyValue, element } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
-    let reference: UpdatableRootReference<T | U> | undefined;
+    let tag = createTag();
+    let currentValue: T | U = truthyValue;
 
     this.registerInternalHelper('stateful-foo', (_args, vm) => {
       didCreate++;
@@ -488,7 +496,10 @@ class UpdatingTest extends RenderTest {
         },
       });
 
-      return (reference = new UpdatableRootReference(truthyValue));
+      return createComputeRef(() => {
+        consumeTag(tag);
+        return currentValue;
+      });
     });
 
     assert.strictEqual(didCreate, 0, 'didCreate: before render');
@@ -506,14 +517,16 @@ class UpdatingTest extends RenderTest {
     assert.strictEqual(didCreate, 1, 'didCreate: after no-op re-render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
 
-    reference!.update(falsyValue);
+    currentValue = falsyValue;
+    dirtyTag(tag);
     this.rerender();
 
     this.assertHTML(element ? '' : '<!---->', element, 'after switching to falsy');
     assert.strictEqual(didCreate, 1, 'didCreate: after switching to falsy');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
-    reference!.update(truthyValue);
+    currentValue = truthyValue;
+    dirtyTag(tag);
     this.rerender();
 
     this.assertHTML('Yes', element, 'after reset');
@@ -750,7 +763,17 @@ class UpdatingTest extends RenderTest {
 
   @test
   'block arguments'() {
-    const person = { name: { first: 'Godfrey', last: 'Chan' } };
+    class Name {
+      constructor(first: string, last: string) {
+        this.first = first;
+        this.last = last;
+      }
+
+      @tracked first = 'Godfrey';
+      @tracked last = 'Godfrey';
+    }
+
+    const person = { name: new Name('Godfrey', 'Chan') };
 
     this.render('<div>{{#with person.name.first as |f|}}{{f}}{{/with}}</div>', {
       person,

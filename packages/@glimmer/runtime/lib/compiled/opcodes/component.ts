@@ -37,7 +37,7 @@ import {
   RuntimeResolver,
   ModifierManager,
 } from '@glimmer/interfaces';
-import { PathReference, Reference } from '@glimmer/reference';
+import { Reference, valueForRef, isConstRef } from '@glimmer/reference';
 
 import {
   assert,
@@ -61,11 +61,12 @@ import {
 import {
   CurriedComponentDefinition,
   isCurriedComponentDefinition,
+  resolveCurriedComponentDefinition,
 } from '../../component/curried-component';
 import { resolveComponent } from '../../component/resolve';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import ClassListReference from '../../references/class-list';
-import CurryComponentReference from '../../references/curry-component';
+import createClassListRef from '../../references/class-list';
+import createCurryComponentRef from '../../references/curry-component';
 import { ARGS, CONSTANTS } from '../../symbols';
 import { UpdatingVM } from '../../vm';
 import { InternalVM } from '../../vm/append';
@@ -77,12 +78,9 @@ import {
   CheckComponentInstance,
   CheckFinishedComponentInstance,
   CheckInvocation,
-  CheckPathReference,
   CheckReference,
 } from './-debug-strip';
-import { ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
-import { ConditionalReference, PrimitiveReference } from '../../references';
 import { DEBUG } from '@glimmer/env';
 
 /**
@@ -135,20 +133,6 @@ export interface PartialComponentDefinition {
   manager: InternalComponentManager;
 }
 
-APPEND_OPCODES.add(Op.IsComponent, vm => {
-  let stack = vm.stack;
-  let ref = check(stack.popJs(), CheckReference);
-
-  stack.pushJs(new ConditionalReference(ref, isCurriedComponentDefinition));
-});
-
-APPEND_OPCODES.add(Op.ContentType, vm => {
-  let stack = vm.stack;
-  let ref = check(stack.peekJs(), CheckReference);
-
-  stack.pushJs(new ContentTypeReference(ref));
-});
-
 APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
 
@@ -158,9 +142,7 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let meta = vm[CONSTANTS].getValue(decodeHandle(_meta));
   let resolver = vm.runtime.resolver;
 
-  vm.loadValue($v0, new CurryComponentReference(definition, resolver, meta, capturedArgs));
-
-  // expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
+  vm.loadValue($v0, createCurryComponentRef(definition, resolver, meta, capturedArgs));
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
@@ -186,8 +168,8 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
 
 APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
-  let component = check(stack.popJs(), CheckPathReference).value() as Maybe<Dict>;
-  let meta = vm[CONSTANTS].getValue(decodeHandle(_meta));
+  let component = valueForRef(check(stack.popJs(), CheckReference)) as Maybe<Dict>;
+  let meta = vm[CONSTANTS].getValue(_meta);
 
   vm.loadValue($t1, null); // Clear the temp register
 
@@ -225,7 +207,7 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, vm => {
 APPEND_OPCODES.add(Op.PushCurriedComponent, vm => {
   let stack = vm.stack;
 
-  let component = check(stack.popJs(), CheckPathReference).value() as Maybe<Dict>;
+  let component = valueForRef(check(stack.popJs(), CheckReference)) as Maybe<Dict>;
   let definition: CurriedComponentDefinition;
 
   if (isCurriedComponentDefinition(component)) {
@@ -323,23 +305,6 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   stack.pushJs(args);
 });
 
-function resolveCurriedComponentDefinition(
-  instance: ComponentInstance,
-  definition: CurriedComponentDefinition,
-  args: VMArgumentsImpl
-): ComponentDefinition {
-  let unwrappedDefinition = (instance.definition = definition.unwrap(args));
-  let { manager, state } = unwrappedDefinition;
-
-  assert(instance.manager === null, 'component instance manager should not be populated yet');
-  assert(instance.capabilities === null, 'component instance manager should not be populated yet');
-
-  instance.manager = manager;
-  instance.capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
-
-  return unwrappedDefinition;
-}
-
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let instance = check(vm.fetchValue(_state), CheckComponentInstance);
   let { definition, manager } = instance;
@@ -364,7 +329,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
     args = check(vm.stack.peekJs(), CheckArguments);
   }
 
-  let self: Option<PathReference<unknown>> = null;
+  let self: Option<Reference> = null;
   if (managerHasCapability(manager, capabilities, Capability.CreateCaller)) {
     self = vm.getSelf();
   }
@@ -507,7 +472,7 @@ export class ComponentElementOperations implements ElementOperations {
   }
 }
 
-function mergeClasses(classes: (string | Reference<unknown>)[]): string | Reference<unknown> {
+function mergeClasses(classes: (string | Reference)[]): string | Reference<unknown> {
   if (classes.length === 0) {
     return '';
   }
@@ -517,17 +482,8 @@ function mergeClasses(classes: (string | Reference<unknown>)[]): string | Refere
   if (allStringClasses(classes)) {
     return classes.join(' ');
   }
-  return makeClassList(classes);
-}
 
-function makeClassList(classes: (string | Reference<unknown>)[]) {
-  for (let i = 0; i < classes.length; i++) {
-    const value = classes[i];
-    if (typeof value === 'string') {
-      classes[i] = PrimitiveReference.create(value);
-    }
-  }
-  return new ClassListReference(classes as Reference<unknown>[]);
+  return createClassListRef(classes as Reference[]);
 }
 
 function allStringClasses(classes: (string | Reference<unknown>)[]): classes is string[] {
@@ -549,8 +505,10 @@ function setDeferredAttr(
   if (typeof value === 'string') {
     vm.elements().setStaticAttribute(name, value, namespace);
   } else {
-    let attribute = vm.elements().setDynamicAttribute(name, value.value(), trusting, namespace);
-    if (!value.isConst()) {
+    let attribute = vm
+      .elements()
+      .setDynamicAttribute(name, valueForRef(value), trusting, namespace);
+    if (!isConstRef(value)) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute));
     }
   }

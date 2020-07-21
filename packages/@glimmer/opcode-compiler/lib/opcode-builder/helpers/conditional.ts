@@ -4,7 +4,7 @@ import { op } from '../encoder';
 
 export type When = (match: number, callback: () => CompileActions) => void;
 
-export function SwitchCases(callback: (when: When) => void): CompileActions {
+export function ContentTypeSwitchCases(callback: (when: When) => void): CompileActions {
   // Setup the switch DSL
   let clauses: Array<{ match: number; label: string; callback: () => CompileActions }> = [];
 
@@ -18,12 +18,7 @@ export function SwitchCases(callback: (when: When) => void): CompileActions {
   callback(when);
 
   // Emit the opcodes for the switch
-  let out: CompileActions = [
-    op(Op.Enter, 2),
-    op(Op.AssertSame),
-    op(Op.ReifyU32),
-    op('StartLabels'),
-  ];
+  let out: CompileActions = [op(Op.Enter, 1), op(Op.ContentType), op('StartLabels')];
 
   // First, emit the jump opcodes. We don't need a jump for the last
   // opcode, since it bleeds directly into its clause.
@@ -36,7 +31,7 @@ export function SwitchCases(callback: (when: When) => void): CompileActions {
   for (let i = clauses.length - 1; i >= 0; i--) {
     let clause = clauses[i];
 
-    out.push(op('Label', clause.label), op(Op.Pop, 2), clause.callback());
+    out.push(op('Label', clause.label), op(Op.Pop, 1), clause.callback());
 
     // The first match is special: it is placed directly before the END
     // label, so no additional jump is needed at the end of it.

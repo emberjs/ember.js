@@ -1,4 +1,4 @@
-import { Reference, PathReference } from '@glimmer/reference';
+import { Reference, createComputeRef, valueForRef } from '@glimmer/reference';
 import { Option } from '@glimmer/util';
 import {
   CapturedArguments,
@@ -13,30 +13,20 @@ import {
   isCurriedComponentDefinition,
 } from '../component/curried-component';
 import { resolveComponent } from '../component/resolve';
-import { UNDEFINED_REFERENCE } from '../references';
 
-export default class CurryComponentReference
-  implements PathReference<Option<CurriedComponentDefinition>> {
-  private lastValue: unknown;
-  private lastDefinition: Option<CurriedComponentDefinition>;
+export default function createCurryComponentRef(
+  inner: Reference,
+  resolver: RuntimeResolver,
+  meta: unknown,
+  args: Option<CapturedArguments>
+) {
+  let lastValue: Maybe<Dict>, lastDefinition: Option<CurriedComponentDefinition>;
 
-  constructor(
-    private inner: Reference<unknown>,
-    private resolver: RuntimeResolver,
-    private meta: unknown,
-    private args: Option<CapturedArguments>
-  ) {
-    this.lastValue = null;
-    this.lastDefinition = null;
-  }
-
-  value(): Option<CurriedComponentDefinition> {
-    let { inner, lastValue } = this;
-
-    let value = inner.value() as Maybe<Dict>;
+  return createComputeRef(() => {
+    let value = valueForRef(inner) as Maybe<Dict>;
 
     if (value === lastValue) {
-      return this.lastDefinition;
+      return lastDefinition;
     }
 
     let definition: Option<CurriedComponentDefinition | ComponentDefinition> = null;
@@ -44,37 +34,27 @@ export default class CurryComponentReference
     if (isCurriedComponentDefinition(value)) {
       definition = value;
     } else if (typeof value === 'string' && value) {
-      let { resolver, meta } = this;
       definition = resolveComponent(resolver, value, meta);
     }
 
-    definition = this.curry(definition);
+    definition = curry(definition, args);
 
-    this.lastValue = value;
-    this.lastDefinition = definition;
+    lastValue = value;
+    lastDefinition = definition;
 
     return definition;
-  }
+  });
+}
 
-  isConst() {
-    return false;
-  }
-
-  get(): PathReference<unknown> {
-    return UNDEFINED_REFERENCE;
-  }
-
-  private curry(
-    definition: Option<CurriedComponentDefinition | ComponentDefinition>
-  ): Option<CurriedComponentDefinition> {
-    let { args } = this;
-
-    if (!args && isCurriedComponentDefinition(definition)) {
-      return definition;
-    } else if (!definition) {
-      return null;
-    } else {
-      return new CurriedComponentDefinition(definition, args);
-    }
+function curry(
+  definition: Option<CurriedComponentDefinition | ComponentDefinition>,
+  args: Option<CapturedArguments>
+): Option<CurriedComponentDefinition> {
+  if (!args && isCurriedComponentDefinition(definition)) {
+    return definition;
+  } else if (!definition) {
+    return null;
+  } else {
+    return new CurriedComponentDefinition(definition, args);
   }
 }

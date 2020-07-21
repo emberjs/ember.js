@@ -176,7 +176,7 @@ operand-stack = [
 
 format = ["Concat", "count:u32"]
 operation = """
-Pop count `PathReference`s off the stack and
+Pop count `Reference`s off the stack and
 construct a new ConcatReference from them (in reverse
 order).
 """
@@ -586,25 +586,17 @@ operand-stack = [
 
 [syscall.list_start]
 
-format = ["EnterList", "address:u32"]
+format = ["EnterList", "address:u32", "address:u32"]
 operation = "Enter a list."
+operand-stack = [
+  ["Reference", "Reference"],
+  ["Reference..."]
+]
 
 [syscall.list_end]
 
 format = "ExitList"
 operation = "Exit the current list."
-
-[syscall.toiter]
-
-format = "PutIterator"
-operation = """
-Convert an operand and key into an iterator and
-presence reference.
-"""
-operand-stack = [
-  ["str", "Reference"],
-  ["ReferenceIterator", "Reference"]
-]
 
 [syscall.iter]
 
@@ -632,15 +624,6 @@ operand-stack = [
   []
 ]
 
-[syscall.iscomponent]
-
-format = "IsComponent"
-operation = "Test whether a reference contains a component definition."
-operand-stack = [
-  ["Reference"],
-  ["Reference"]
-]
-
 [syscall.ctload]
 
 format = "ContentType"
@@ -660,7 +643,7 @@ operand-stack = [
   ["CurriedComponent"]
 ]
 notes = """
-TODO: CurriedComponent is { PathReference, Locator, CapturedArguments }
+TODO: CurriedComponent is { Reference, Locator, CapturedArguments }
 """
 
 [syscall.cmload]

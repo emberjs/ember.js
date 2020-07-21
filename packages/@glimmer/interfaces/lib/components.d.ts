@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-extraneous-import
-import { PathReference } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
 import { ComponentManager } from './components/component-manager';
 import { Dict } from './core';
 
@@ -16,6 +16,6 @@ export interface ComponentDefinition<
 }
 
 export interface PreparedArguments {
-  positional: Array<PathReference<unknown>>;
-  named: Dict<PathReference<unknown>>;
+  positional: Array<Reference>;
+  named: Dict<Reference>;
 }

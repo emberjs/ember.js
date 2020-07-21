@@ -1,15 +1,5 @@
-import { ConstReference, PathReference } from '@glimmer/reference';
-import { normalizeProperty, UNDEFINED_REFERENCE } from '@glimmer/runtime';
-import {
-  assertElement,
-  hasAttribute,
-  jitSuite,
-  suite,
-  RenderTest,
-  test,
-  JitRenderDelegate,
-} from '..';
-import { isDict } from '@glimmer/util';
+import { normalizeProperty } from '@glimmer/runtime';
+import { assertElement, hasAttribute, jitSuite, RenderTest, test } from '..';
 import { Namespace, SimpleElement } from '@simple-dom/interface';
 
 export class AttributesTests extends RenderTest {
@@ -656,24 +646,6 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
   }
 }
 
-class ConstedAttributeTests extends RenderTest {
-  static suiteName = 'const attributes';
-
-  @test
-  'attributes should not be set if not invalidated'() {
-    this.render('<div class={{foo}}></div>', { foo: 'bar' });
-    this.assertHTML('<div class="bar"></div>');
-    this.assertStableRerender();
-
-    (this.element!.firstChild! as any)['setAttribute'] = function() {
-      throw new Error('Should not setAttribute on an unchanged element');
-    };
-
-    this.rerender();
-    this.assertHTML('<div class="bar"></div>');
-  }
-}
-
 jitSuite(
   class extends BoundValuesToSpecialAttributeTests {
     static suiteName = 'a[href] attribute';
@@ -691,22 +663,3 @@ jitSuite(
     protected isSelfClosing = false;
   }
 );
-
-class ConstPathReference<T> extends ConstReference<T> implements PathReference<T> {
-  get(key: string): PathReference<unknown> {
-    let { inner } = this;
-    if (isDict(inner)) {
-      return new ConstPathReference(inner[key] as unknown);
-    } else {
-      return UNDEFINED_REFERENCE;
-    }
-  }
-}
-
-class ConstRenderDelegate extends JitRenderDelegate {
-  getSelf(context: unknown) {
-    return new ConstPathReference(context);
-  }
-}
-
-suite(ConstedAttributeTests, ConstRenderDelegate);

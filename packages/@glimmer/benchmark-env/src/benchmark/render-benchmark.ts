@@ -5,7 +5,7 @@ import {
   ComponentDefinition,
   CompilableProgram,
 } from '@glimmer/interfaces';
-import { ComponentRootReference, PathReference } from '@glimmer/reference';
+import { createConstRef, Reference, childRefFor } from '@glimmer/reference';
 import {
   NewElementBuilder,
   JitRuntime,
@@ -43,11 +43,11 @@ export default async function renderBenchmark(
     const env = runtime.env;
     const cursor = { element, nextSibling: null };
     const treeBuilder = NewElementBuilder.forInitialRender(env, cursor);
-    const rootRef = new ComponentRootReference(root);
+    const rootRef = createConstRef(root, 'this');
 
-    const args: Dict<PathReference> = {};
+    const args: Dict<Reference> = {};
     for (const key of Object.keys(root)) {
-      args[key] = rootRef.get(key);
+      args[key] = childRefFor(rootRef, key);
     }
 
     const result = renderSync(

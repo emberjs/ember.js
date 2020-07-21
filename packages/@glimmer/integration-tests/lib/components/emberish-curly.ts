@@ -21,20 +21,21 @@ import {
   JitRuntimeResolver,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
-import { PathReference } from '@glimmer/reference';
+import {
+  createConstRef,
+  createPrimitiveRef,
+  valueForRef,
+  Reference,
+  childRefFor,
+  createComputeRef,
+} from '@glimmer/reference';
 import { createTag, dirtyTag, DirtyableTag, consumeTag, dirtyTagFor } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
-import {
-  PrimitiveReference,
-  registerDestructor,
-  reifyNamed,
-  ReifyPositionalReference,
-} from '@glimmer/runtime';
+import { registerDestructor, reifyNamed, reifyPositional } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
 import { TestJitRegistry } from '../modes/jit/registry';
-import { UpdatableRootReference } from '../reference';
 
 export interface EmberishCurlyComponentFactory
   extends TestComponentConstructor<EmberishCurlyComponent> {
@@ -110,7 +111,10 @@ export class EmberishCurlyComponent {
   didRender() {}
 }
 
-const SELF_REF = new WeakMap<object, UpdatableRootReference>();
+export interface EmberishCurlyComponentState {
+  component: EmberishCurlyComponent;
+  selfRef: Reference;
+}
 
 export interface EmberishCurlyComponentDefinitionState {
   name: string;
@@ -122,10 +126,10 @@ export interface EmberishCurlyComponentDefinitionState {
 
 export class EmberishCurlyComponentManager
   implements
-    WithDynamicTagName<EmberishCurlyComponent>,
-    WithJitDynamicLayout<EmberishCurlyComponent, TestJitRuntimeResolver>,
+    WithDynamicTagName<EmberishCurlyComponentState>,
+    WithJitDynamicLayout<EmberishCurlyComponentState, TestJitRuntimeResolver>,
     WithAotStaticLayout<
-      EmberishCurlyComponent,
+      EmberishCurlyComponentState,
       EmberishCurlyComponentDefinitionState,
       AotRuntimeResolver
     > {
@@ -146,7 +150,10 @@ export class EmberishCurlyComponentManager
     return resolver.getInvocation(state.locator);
   }
 
-  getJitDynamicLayout({ layout }: EmberishCurlyComponent, resolver: JitRuntimeResolver): Template {
+  getJitDynamicLayout(
+    { component: { layout } }: EmberishCurlyComponentState,
+    resolver: JitRuntimeResolver
+  ): Template {
     if (!this.registry) {
       throw new Error(
         'BUG: Must provide a test registry to component managers when attempting to lookup component layouts dynamically'
@@ -185,7 +192,7 @@ export class EmberishCurlyComponentManager
 
       let named = args.named.capture();
       let positional = args.positional.capture();
-      named[positionalParams] = new ReifyPositionalReference(positional);
+      named[positionalParams] = createComputeRef(() => reifyPositional(positional));
 
       return { positional: EMPTY_ARRAY, named };
     } else if (Array.isArray(positionalParams)) {
@@ -211,15 +218,15 @@ export class EmberishCurlyComponentManager
   }
 
   create(
-    _environment: Environment,
+    _env: Environment,
     state: EmberishCurlyComponentDefinitionState,
     _args: VMArguments,
     dynamicScope: DynamicScope,
-    callerSelf: PathReference,
+    callerSelf: Reference,
     hasDefaultBlock: boolean
-  ): EmberishCurlyComponent {
+  ): EmberishCurlyComponentState {
     let klass = state.ComponentClass || EmberishCurlyComponent;
-    let self = callerSelf.value();
+    let self = valueForRef(callerSelf);
     let args = _args.named.capture();
     let attrs = reifyNamed(args);
     let merged = assign(
@@ -246,7 +253,7 @@ export class EmberishCurlyComponentManager
     if (dyn) {
       for (let i = 0; i < dyn.length; i++) {
         let name = dyn[i];
-        component.set(name, dynamicScope.get(name).value());
+        component.set(name, valueForRef(dynamicScope.get(name)));
       }
     }
 
@@ -259,16 +266,16 @@ export class EmberishCurlyComponentManager
 
     registerDestructor(component, () => component.destroy());
 
-    return component;
+    const selfRef = createConstRef(component, 'this');
+
+    return { component, selfRef };
   }
 
-  getSelf(component: EmberishCurlyComponent): PathReference<unknown> {
-    let ref = new UpdatableRootReference(component);
-    SELF_REF.set(component, ref);
-    return ref;
+  getSelf({ selfRef }: EmberishCurlyComponentState): Reference<unknown> {
+    return selfRef;
   }
 
-  getTagName({ tagName }: EmberishCurlyComponent): Option<string> {
+  getTagName({ component: { tagName } }: EmberishCurlyComponentState): Option<string> {
     if (tagName) {
       return tagName;
     } else if (tagName === null) {
@@ -279,45 +286,39 @@ export class EmberishCurlyComponentManager
   }
 
   didCreateElement(
-    component: EmberishCurlyComponent,
+    { component, selfRef }: EmberishCurlyComponentState,
     element: Element,
     operations: ElementOperations
   ): void {
     component.element = element;
 
-    operations.setAttribute(
-      'id',
-      PrimitiveReference.create(`ember${component._guid}`),
-      false,
-      null
-    );
-    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
+    operations.setAttribute('id', createPrimitiveRef(`ember${component._guid}`), false, null);
+    operations.setAttribute('class', createPrimitiveRef('ember-view'), false, null);
 
     let bindings = component.attributeBindings;
-    let rootRef = SELF_REF.get(component)!;
 
     if (bindings) {
       for (let i = 0; i < bindings.length; i++) {
         let attribute = bindings[i];
-        let reference = rootRef.get(attribute);
+        let reference = childRefFor(selfRef, attribute);
 
         operations.setAttribute(attribute, reference, false, null);
       }
     }
   }
 
-  didRenderLayout(component: EmberishCurlyComponent, bounds: Bounds): void {
+  didRenderLayout({ component }: EmberishCurlyComponentState, bounds: Bounds): void {
     component.bounds = bounds;
   }
 
-  didCreate(component: EmberishCurlyComponent): void {
+  didCreate({ component }: EmberishCurlyComponentState): void {
     component.didInsertElement();
     registerDestructor(component, () => component.willDestroyElement(), true);
 
     component.didRender();
   }
 
-  update(component: EmberishCurlyComponent): void {
+  update({ component }: EmberishCurlyComponentState): void {
     let oldAttrs = component.attrs;
     let newAttrs = reifyNamed(component.args);
     let merged = assign({}, newAttrs, { attrs: newAttrs });
@@ -333,12 +334,12 @@ export class EmberishCurlyComponentManager
 
   didUpdateLayout(): void {}
 
-  didUpdate(component: EmberishCurlyComponent): void {
+  didUpdate({ component }: EmberishCurlyComponentState): void {
     component.didUpdate();
     component.didRender();
   }
 
-  getDestroyable(component: EmberishCurlyComponent): Destroyable {
+  getDestroyable({ component }: EmberishCurlyComponentState): Destroyable {
     return component;
   }
 }

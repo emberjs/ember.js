@@ -12,6 +12,7 @@ export * from './lib/platform-utils';
 export * from './lib/string';
 export * from './lib/immediate';
 export * from './lib/template';
+export { default as _WeakSet } from './lib/weak-set';
 
 export { default as debugToString } from './lib/debug-to-string';
 export { beginTestSteps, endTestSteps, logStep, verifySteps } from './lib/debug-steps';

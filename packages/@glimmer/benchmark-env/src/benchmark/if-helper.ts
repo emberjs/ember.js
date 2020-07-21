@@ -1,34 +1,18 @@
 import { VMArguments } from '@glimmer/interfaces';
-import { Reference, PathReference, CachedReference, PropertyReference } from '@glimmer/reference';
+import { Reference, createComputeRef, valueForRef } from '@glimmer/reference';
 
-class IfHelperReference extends CachedReference<unknown> {
-  condition: Reference;
-  truthyValue: Reference;
-  falsyValue: Reference | undefined;
+export default function ifHelper({ positional }: VMArguments): Reference {
+  let condition = positional.at(0);
+  let truthyValue = positional.at(1);
+  let falsyValue = positional.length > 2 ? positional.at(2) : undefined;
 
-  constructor({ positional }: VMArguments) {
-    super();
-    this.condition = positional.at(0);
-    this.truthyValue = positional.at(1);
-    this.falsyValue = positional.length > 2 ? positional.at(2) : undefined;
-  }
-
-  compute() {
-    const { condition, truthyValue, falsyValue } = this;
+  return createComputeRef(() => {
     let value: unknown;
-    if (condition.value()) {
-      value = truthyValue.value();
+    if (valueForRef(condition)) {
+      value = valueForRef(truthyValue);
     } else if (falsyValue !== undefined) {
-      value = falsyValue.value();
+      value = valueForRef(falsyValue);
     }
     return value;
-  }
-
-  get(key: string): PathReference {
-    return new PropertyReference(this, key);
-  }
-}
-
-export default function ifHelper(args: VMArguments): PathReference {
-  return new IfHelperReference(args);
+  });
 }

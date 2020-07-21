@@ -1,5 +1,5 @@
 import { Op, JitOrAotBlock, Scope } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
+import { Reference, childRefFor, valueForRef } from '@glimmer/reference';
 import { dict, decodeHandle } from '@glimmer/util';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
@@ -31,7 +31,7 @@ export function resetDebuggerCallback() {
 }
 
 class ScopeInspector<C extends JitOrAotBlock> {
-  private locals = dict<PathReference<unknown>>();
+  private locals = dict<Reference>();
 
   constructor(private scope: Scope<C>, symbols: string[], evalInfo: number[]) {
     for (let i = 0; i < evalInfo.length; i++) {
@@ -42,26 +42,26 @@ class ScopeInspector<C extends JitOrAotBlock> {
     }
   }
 
-  get(path: string): PathReference<unknown> {
+  get(path: string): Reference {
     let { scope, locals } = this;
     let parts = path.split('.');
     let [head, ...tail] = path.split('.');
 
     let evalScope = scope.getEvalScope()!;
-    let ref: PathReference<unknown>;
+    let ref: Reference;
 
     if (head === 'this') {
       ref = scope.getSelf();
     } else if (locals[head]) {
       ref = locals[head];
     } else if (head.indexOf('@') === 0 && evalScope[head]) {
-      ref = evalScope[head] as PathReference<unknown>;
+      ref = evalScope[head] as Reference;
     } else {
       ref = this.scope.getSelf();
       tail = parts;
     }
 
-    return tail.reduce((r, part) => r.get(part), ref);
+    return tail.reduce((r, part) => childRefFor(r, part), ref);
   }
 }
 
@@ -69,5 +69,5 @@ APPEND_OPCODES.add(Op.Debugger, (vm, { op1: _symbols, op2: _evalInfo }) => {
   let symbols = vm[CONSTANTS].getArray<string>(_symbols);
   let evalInfo = vm[CONSTANTS].getValue<number[]>(decodeHandle(_evalInfo));
   let inspector = new ScopeInspector(vm.scope(), symbols, evalInfo);
-  callback(vm.getSelf().value(), path => inspector.get(path).value());
+  callback(valueForRef(vm.getSelf()), path => valueForRef(inspector.get(path)));
 });
