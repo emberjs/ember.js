@@ -11,7 +11,7 @@ import { PathReference } from '@glimmer/reference';
 
    ```handlebars
    <MyComponent @people={{array
-     'Tom Dade'
+     'Tom Dale'
      'Yehuda Katz'
      this.myOtherPerson}}
    />
@@ -19,7 +19,7 @@ import { PathReference } from '@glimmer/reference';
     or
    ```handlebars
    {{my-component people=(array
-     'Tom Dade'
+     'Tom Dale'
      'Yehuda Katz'
      this.myOtherPerson)
    }}
@@ -28,7 +28,7 @@ import { PathReference } from '@glimmer/reference';
    Would result in an object such as:
 
    ```js
-   ['Tom Date', 'Yehuda Katz', this.get('myOtherPerson')]
+   ['Tom Dale', 'Yehuda Katz', this.get('myOtherPerson')]
    ```
 
    Where the 3rd item in the array is bound to updates of the `myOtherPerson` property.
