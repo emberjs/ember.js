@@ -252,7 +252,7 @@ NOTE: Partially copied from https://raw.github.com/thoughtbot/factory_girl_rails
 
 # CI (Github Actions) Tests
 
-We use [GitHub Actions](https://github.com/ember.js/ember.js/actions?query=workflow%3ABuild+event%3Apull_request) to test each PR before it is merged.
+We use [GitHub Actions](https://github.com/emberjs/ember.js/actions?query=workflow%3ABuild+event%3Apull_request) to test each PR before it is merged.
 
 When you submit your PR (or later change that code), a CI build will automatically be kicked off.  A note will be added to the PR, and will indicate the current status of the build.
 
