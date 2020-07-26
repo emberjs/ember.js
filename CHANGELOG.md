@@ -1,3 +1,13 @@
+## v0.55.1 (2020-07-26)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1119](https://github.com/glimmerjs/glimmer-vm/pull/1119) Ensure `isDestroying`/`isDestroyed` without children or destructors does not fail `assertDestroyablesDestroyed` ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.55.0 (2020-07-17)
 
 #### :boom: Breaking Change
