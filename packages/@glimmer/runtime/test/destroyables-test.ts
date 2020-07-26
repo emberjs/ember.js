@@ -438,6 +438,28 @@ module('Destroyables', hooks => {
       assertDestroyablesDestroyed!();
     });
 
+    test('checking isDestroying does not trigger assertion', assert => {
+      assert.expect(1);
+      enableDestroyableTracking!();
+
+      let obj = {};
+
+      isDestroying(obj);
+
+      assertDestroyablesDestroyed!();
+    });
+
+    test('checking isDestroyed does not trigger assertion', assert => {
+      assert.expect(1);
+      enableDestroyableTracking!();
+
+      let obj = {};
+
+      isDestroyed(obj);
+
+      assertDestroyablesDestroyed!();
+    });
+
     test('attempting to call assertDestroyablesDestroyed() before calling enableDestroyableTracking() throws', assert => {
       assert.throws(() => {
         assertDestroyablesDestroyed!();
