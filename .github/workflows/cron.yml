@@ -52,5 +52,5 @@ jobs:
 
       - name: Cleanup
         # Always cleanup the cron-* branches
-        if: ${{ success() }} || ${{ failure() }}
+        if: always()
         run: git push https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_TOKEN}}@github.com/${GITHUB_REPOSITORY} --delete cron-${{matrix.branch}}-${{env.SHA}} || true # Don't fail build if cleanup fails
