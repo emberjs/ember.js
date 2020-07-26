@@ -30,6 +30,7 @@ export function clearElementView(element: SimpleElement): void;
 export function clearViewElement(view: unknown): void;
 
 export function addChildView(parent: unknown, child: unknown): void;
+export function removeChildView(parent: unknown, child: unknown): void;
 
 export function isSimpleClick(event: Event): boolean;
 

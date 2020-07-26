@@ -1,4 +1,9 @@
-import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
+import {
+  clearElementView,
+  clearViewElement,
+  getViewElement,
+  removeChildView,
+} from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { ComponentRootReference, VersionedReference } from '@glimmer/reference';
 import { Revision, valueForTag } from '@glimmer/validator';
@@ -22,6 +27,7 @@ export interface Component {
   destroy(): void;
   setProperties(props: { [key: string]: any }): void;
   renderer: Renderer;
+  parentView: Component;
 }
 
 type Finalizer = () => void;
@@ -70,6 +76,7 @@ export default class ComponentStateBucket {
       }
     }
 
+    removeChildView(component.parentView, component);
     component.renderer.unregister(component);
   }
 

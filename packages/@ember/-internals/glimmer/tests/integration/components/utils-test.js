@@ -2,6 +2,7 @@ import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'inte
 
 import Controller from '@ember/controller';
 import {
+  getViewId,
   getRootViews,
   getChildViews,
   getViewBounds,
@@ -254,7 +255,12 @@ moduleFor(
     viewFor(id) {
       let owner = this.applicationInstance;
       let registry = owner.lookup('-view-registry:main');
-      return registry[id];
+
+      for (let view of registry) {
+        if (getViewId(view) === id) {
+          return view;
+        }
+      }
     }
   }
 );

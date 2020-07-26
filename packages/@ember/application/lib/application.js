@@ -2,7 +2,6 @@
 @module @ember/application
 */
 
-import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';
@@ -1146,7 +1145,7 @@ function commonSetupRegistry(registry) {
   registry.register('router:main', Router.extend());
   registry.register('-view-registry:main', {
     create() {
-      return dictionary(null);
+      return new Set();
     },
   });
 

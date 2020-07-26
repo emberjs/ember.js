@@ -66,11 +66,15 @@ class LifeCycleHooksTest extends RenderingTestCase {
   }
 
   assertRegisteredViews(label) {
-    let viewRegistry = this.viewRegistry;
-    let topLevelId = getViewId(this.component);
-    let actual = Object.keys(viewRegistry)
-      .sort()
-      .filter(id => id !== topLevelId);
+    let { viewRegistry, component } = this;
+    let actual = [];
+    viewRegistry.forEach(function(view) {
+      if (component !== view) {
+        actual.push(getViewId(view));
+      }
+    });
+
+    actual.sort();
 
     if (this.isInteractive) {
       let expected = this.componentRegistry.sort();

@@ -21,7 +21,7 @@ export default class RenderingTestCase extends AbstractTestCase {
       bootOptions,
     }));
 
-    owner.register('-view-registry:main', Object.create(null), { instantiate: false });
+    owner.register('-view-registry:main', new Set(), { instantiate: false });
     owner.register('event_dispatcher:main', EventDispatcher);
 
     // TODO: why didn't buildOwner do this for us?

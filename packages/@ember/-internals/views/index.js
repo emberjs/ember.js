@@ -1,6 +1,7 @@
 export { jQuery, jQueryDisabled } from './lib/system/jquery';
 export {
   addChildView,
+  removeChildView,
   isSimpleClick,
   getViewBounds,
   getViewClientRects,

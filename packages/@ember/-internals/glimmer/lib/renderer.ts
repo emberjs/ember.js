@@ -246,13 +246,9 @@ function loopEnd() {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-interface ViewRegistry {
-  [viewId: string]: unknown;
-}
-
 export abstract class Renderer {
   private _rootTemplate: OwnedTemplate;
-  private _viewRegistry: ViewRegistry;
+  private _viewRegistry: Set<Component>;
   private _destinedForDOM: boolean;
   private _roots: RootState[];
   private _removedRoots: RootState[];
@@ -346,16 +342,11 @@ export abstract class Renderer {
   }
 
   register(view: any) {
-    let id = getViewId(view);
-    assert(
-      'Attempted to register a view with an id already in use: ' + id,
-      !this._viewRegistry[id]
-    );
-    this._viewRegistry[id] = view;
+    this._viewRegistry.add(view);
   }
 
   unregister(view: any) {
-    delete this._viewRegistry[getViewId(view)];
+    this._viewRegistry.delete(view);
   }
 
   remove(view: Component) {
