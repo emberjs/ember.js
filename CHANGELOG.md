@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.20.2 (July 26, 2020)
+
+- [#19056](https://github.com/emberjs/ember.js/pull/19056) Update Glimmer rendering engine to 0.54.2. Fixes an issue with (private for now) destroyables work to enable the destroyables polyfill to work more appropriately.
+
 ### v3.21.0-beta.2 (July 20, 2020)
 
 - [#19040](https://github.com/emberjs/ember.js/pull/19040) [BUGFIX] Fix a memory leak that occurred when changing the array passed to `{{each}}`
