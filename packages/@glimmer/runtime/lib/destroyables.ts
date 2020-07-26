@@ -212,11 +212,15 @@ export function setScheduleDestroyed(fn: (fn: () => void) => void) {
 }
 
 export function isDestroying(destroyable: Destroyable) {
-  return getDestroyableMeta(destroyable).state >= DestroyingState.Destroying;
+  let meta = DESTROYABLE_META.get(destroyable);
+
+  return meta === undefined ? false : meta.state >= DestroyingState.Destroying;
 }
 
 export function isDestroyed(destroyable: Destroyable) {
-  return getDestroyableMeta(destroyable).state === DestroyingState.Destroyed;
+  let meta = DESTROYABLE_META.get(destroyable);
+
+  return meta === undefined ? false : meta.state >= DestroyingState.Destroyed;
 }
 
 ////////////
