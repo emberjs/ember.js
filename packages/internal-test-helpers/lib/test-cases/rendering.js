@@ -25,7 +25,6 @@ export default class RenderingTestCase extends AbstractTestCase {
     owner.register('event_dispatcher:main', EventDispatcher);
 
     // TODO: why didn't buildOwner do this for us?
-    owner.inject('view', '_viewRegistry', '-view-registry:main');
     owner.inject('renderer', '_viewRegistry', '-view-registry:main');
 
     this.renderer = this.owner.lookup('renderer:-dom');
