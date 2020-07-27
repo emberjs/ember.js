@@ -360,24 +360,21 @@ export class NamedArgumentsImpl implements NamedArguments {
     if (extras > 0) {
       let { names, length, stack } = this;
       let { names: extraNames } = other;
-
-      if (Object.isFrozen(names) && names.length === 0) {
-        names = [];
-      }
+      let newNames = names.slice();
 
       for (let i = 0; i < extras; i++) {
         let name = extraNames[i];
-        let idx = names.indexOf(name);
+        let idx = newNames.indexOf(name);
 
         if (idx === -1) {
-          length = names.push(name);
+          length = newNames.push(name);
           stack.push(other.references[i]);
         }
       }
 
       this.length = length;
       this._references = null;
-      this._names = names;
+      this._names = newNames;
       this._atNames = null;
     }
   }

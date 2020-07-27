@@ -85,12 +85,7 @@ export interface TemplateCompilationContext {
 
 export type EMPTY_ARRAY = Array<ReadonlyArray<never>>;
 
-export interface ConstantPool {
-  strings: string[];
-  arrays: number[][] | EMPTY_ARRAY;
-  handles: number[];
-  numbers: number[];
-}
+export type ConstantPool = unknown[];
 
 /**
  * Constants are interned values that are referenced as numbers in the program.
