@@ -19,6 +19,10 @@ interface DestroyableMeta<T extends Destroyable> {
   state: DestroyingState;
 }
 
+interface UndestroyedDestroyablesError extends Error {
+  destroyables: object[];
+}
+
 let DESTROYABLE_META:
   | Map<Destroyable, DestroyableMeta<Destroyable>>
   | WeakMap<Destroyable, DestroyableMeta<Destroyable>> = new WeakMap();
@@ -264,9 +268,13 @@ if (DEBUG) {
 
     if (undestroyed.length > 0) {
       let objectsToString = undestroyed.map(debugToString!).join('\n    ');
-      throw new Error(
+      let error = new Error(
         `Some destroyables were not destroyed during this test:\n    ${objectsToString}`
-      );
+      ) as UndestroyedDestroyablesError;
+
+      error.destroyables = undestroyed;
+
+      throw error;
     }
   };
 }
