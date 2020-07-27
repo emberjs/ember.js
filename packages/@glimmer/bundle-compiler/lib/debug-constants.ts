@@ -4,11 +4,11 @@ import { RuntimeConstants } from '@glimmer/interfaces';
 
 export default class DebugConstants extends WriteOnlyConstants implements RuntimeConstants {
   getNumber(value: number): number {
-    return this.numbers[value];
+    return this.values[value] as number;
   }
 
   getString(value: number): string {
-    return this.strings[value];
+    return this.values[value] as string;
   }
 
   getStringArray(value: number): string[] {
@@ -24,7 +24,7 @@ export default class DebugConstants extends WriteOnlyConstants implements Runtim
   }
 
   getArray(value: number): number[] {
-    return (this.arrays as number[][])[value];
+    return this.values[value] as number[];
   }
 
   resolveHandle<T>(s: number): T {
@@ -33,7 +33,7 @@ export default class DebugConstants extends WriteOnlyConstants implements Runtim
   }
 
   getSerializable(s: number): unknown {
-    return JSON.parse(this.strings[s]);
+    return JSON.parse(this.values[s] as string);
   }
 
   getTemplateMeta(m: number): unknown {
@@ -41,6 +41,6 @@ export default class DebugConstants extends WriteOnlyConstants implements Runtim
   }
 
   getOther(s: number): unknown {
-    return this.others[s];
+    return this.values[s];
   }
 }
