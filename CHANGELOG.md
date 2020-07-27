@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.21.0-beta.3 (July 27, 2020)
+
+- [#19048](https://github.com/emberjs/ember.js/pull/19048) [BUGFIX] Update router.js to ensure transition.abort works for query param only transitions.
+- [#19056](https://github.com/emberjs/ember.js/pull/19056) [BUGFIX] Update glimmer-vm to 0.54.2.
+
 ### v3.20.2 (July 26, 2020)
 
 - [#19056](https://github.com/emberjs/ember.js/pull/19056) Update Glimmer rendering engine to 0.54.2. Fixes an issue with (private for now) destroyables work to enable the destroyables polyfill to work more appropriately.
