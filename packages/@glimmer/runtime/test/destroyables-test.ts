@@ -460,6 +460,23 @@ module('Destroyables', hooks => {
       assertDestroyablesDestroyed!();
     });
 
+    test('error thrown attaches destroyables for helpful debugging', assert => {
+      assert.expect(2);
+      enableDestroyableTracking!();
+
+      let obj1 = {};
+      registerDestructor(obj1, () => {});
+
+      let obj2 = {};
+      registerDestructor(obj2, () => {});
+
+      try {
+        assertDestroyablesDestroyed!();
+      } catch (error) {
+        assert.deepEqual(error.destroyables, [obj1, obj2], 'destroyables property');
+      }
+    });
+
     test('attempting to call assertDestroyablesDestroyed() before calling enableDestroyableTracking() throws', assert => {
       assert.throws(() => {
         assertDestroyablesDestroyed!();
