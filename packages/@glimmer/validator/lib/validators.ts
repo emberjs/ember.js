@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { UnionToIntersection, symbol } from './utils';
+import { symbol } from './utils';
 import { assertTagNotConsumed } from './debug';
 
 //////////
@@ -100,17 +100,7 @@ export interface UpdatableTag extends MonomorphicTagBase<MonomorphicTagTypes.Upd
 export interface CombinatorTag extends MonomorphicTagBase<MonomorphicTagTypes.Combinator> {}
 export interface ConstantTag extends MonomorphicTagBase<MonomorphicTagTypes.Constant> {}
 
-interface MonomorphicTagMapping {
-  [MonomorphicTagTypes.Dirtyable]: DirtyableTag;
-  [MonomorphicTagTypes.Updatable]: UpdatableTag;
-  [MonomorphicTagTypes.Combinator]: CombinatorTag;
-  [MonomorphicTagTypes.Constant]: ConstantTag;
-}
-
-type MonomorphicTag = UnionToIntersection<MonomorphicTagMapping[MonomorphicTagTypes]>;
-type MonomorphicTagType = UnionToIntersection<MonomorphicTagTypes>;
-
-class MonomorphicTagImpl implements MonomorphicTag {
+class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
   private revision = INITIAL;
   private lastChecked = INITIAL;
   private lastValue = INITIAL;
@@ -121,10 +111,10 @@ class MonomorphicTagImpl implements MonomorphicTag {
   private subtag: Tag | null = null;
   private subtagBufferCache: Revision | null = null;
 
-  [TYPE]: MonomorphicTagType;
+  [TYPE]: T;
 
-  constructor(type: MonomorphicTagTypes) {
-    this[TYPE] = type as MonomorphicTagType;
+  constructor(type: T) {
+    this[TYPE] = type;
   }
 
   [COMPUTE](): Revision {
@@ -239,7 +229,7 @@ export function createUpdatableTag(): UpdatableTag {
 
 //////////
 
-export const CONSTANT_TAG = new MonomorphicTagImpl(MonomorphicTagTypes.Constant) as ConstantTag;
+export const CONSTANT_TAG: ConstantTag = new MonomorphicTagImpl(MonomorphicTagTypes.Constant);
 
 export function isConstTagged({ tag }: Tagged): boolean {
   return tag === CONSTANT_TAG;
@@ -290,7 +280,7 @@ export function createCombinatorTag(tags: Tag[]): Tag {
     case 1:
       return tags[0];
     default:
-      let tag = new MonomorphicTagImpl(MonomorphicTagTypes.Combinator) as CombinatorTag;
+      let tag: CombinatorTag = new MonomorphicTagImpl(MonomorphicTagTypes.Combinator);
       (tag as any).subtags = tags;
       return tag;
   }
