@@ -1,8 +1,7 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { get, set, observer } from '@ember/-internals/metal';
+import { get, set, observer, track } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
 import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
-import { track } from '@glimmer/validator';
 
 moduleFor(
   'Ember.CoreObject',
@@ -135,15 +134,17 @@ moduleFor(
     }
 
     ['@test native getters/setters do not cause rendering invalidation during init'](assert) {
-      let objectMeta = Object.create(null);
+      assert.expect(1);
 
+      let hiddenValue;
       class TestObject extends CoreObject {
         get hiddenValue() {
-          let v = get(objectMeta, 'hiddenValue');
-          return v !== undefined ? v : false;
+          assert.ok(false, 'should never hit the getter');
+
+          return hiddenValue;
         }
         set hiddenValue(v) {
-          set(objectMeta, 'hiddenValue', v);
+          hiddenValue = v;
         }
       }
 
