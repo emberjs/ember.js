@@ -2,6 +2,7 @@
 @module @ember/object
 */
 
+import { peekMeta } from '@ember/-internals/meta';
 import {
   get,
   getWithDefault,
@@ -15,7 +16,6 @@ import {
   endPropertyChanges,
   addObserver,
   removeObserver,
-  getCachedValueFor,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
@@ -495,6 +495,10 @@ export default Mixin.create({
     @public
   */
   cacheFor(keyName) {
-    return getCachedValueFor(this, keyName);
+    let meta = peekMeta(this);
+
+    if (meta !== null) {
+      return meta.valueFor(keyName);
+    }
   },
 });

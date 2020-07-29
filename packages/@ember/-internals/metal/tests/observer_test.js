@@ -6,7 +6,6 @@ import {
   notifyPropertyChange,
   defineProperty,
   computed,
-  getCachedValueFor,
   Mixin,
   mixin,
   observer,
@@ -18,6 +17,7 @@ import {
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 import { destroy } from '@glimmer/runtime';
+import { meta as metaFor } from '@ember/-internals/meta';
 
 function K() {}
 
@@ -634,7 +634,7 @@ moduleFor(
       });
 
       assert.equal(
-        getCachedValueFor(obj, 'computed'),
+        metaFor(obj).valueFor('computed'),
         undefined,
         'addObserver should not compute CP'
       );

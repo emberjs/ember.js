@@ -1,16 +1,17 @@
 /**
 @module @ember/object
 */
-import { HAS_NATIVE_PROXY, isEmberArray, isProxy, symbol } from '@ember/-internals/utils';
+import { HAS_NATIVE_PROXY, setProxy, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
   consumeTag,
   deprecateMutationsInAutotrackingTransaction,
   isTracking,
+  tagFor,
+  track,
 } from '@glimmer/validator';
 import { isPath } from './path_cache';
-import { tagForProperty } from './tags';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
@@ -92,17 +93,17 @@ export function get(obj: object, keyName: string): any {
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
 
+  return isPath(keyName) ? _getPath(obj, keyName) : _getProp(obj, keyName);
+}
+
+export function _getProp(obj: object, keyName: string) {
   let type = typeof obj;
 
   let isObject = type === 'object';
   let isFunction = type === 'function';
   let isObjectLike = isObject || isFunction;
 
-  if (isPath(keyName)) {
-    return isObjectLike ? _getPath(obj, keyName) : undefined;
-  }
-
-  let value: any;
+  let value: unknown;
 
   if (isObjectLike) {
     if (DEBUG && HAS_NATIVE_PROXY) {
@@ -110,12 +111,9 @@ export function get(obj: object, keyName: string): any {
     } else {
       value = obj[keyName];
     }
-  } else {
-    value = obj[keyName];
-  }
 
-  if (value === undefined) {
     if (
+      value === undefined &&
       isObject &&
       !(keyName in obj) &&
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
@@ -128,22 +126,18 @@ export function get(obj: object, keyName: string): any {
         value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
       }
     }
-  }
 
-  if (isObjectLike && isTracking()) {
-    consumeTag(tagForProperty(obj, keyName));
+    if (isTracking()) {
+      consumeTag(tagFor(obj, keyName));
 
-    // Add the tag of the returned value if it is an array, since arrays
-    // should always cause updates if they are consumed and then changed
-    if (Array.isArray(value) || isEmberArray(value)) {
-      consumeTag(tagForProperty(value, '[]'));
+      if (Array.isArray(value)) {
+        // Add the tag of the returned value if it is an array, since arrays
+        // should always cause updates if they are consumed and then changed
+        consumeTag(tagFor(value, '[]'));
+      }
     }
-
-    // Add the value of the content if the value is a proxy. This is because
-    // content changes the truthiness/falsiness of the proxy.
-    if (isProxy(value)) {
-      consumeTag(tagForProperty(value, 'content'));
-    }
+  } else {
+    value = obj[keyName];
   }
 
   return value;
@@ -158,7 +152,7 @@ export function _getPath<T extends object>(root: T, path: string | string[]): an
       return undefined;
     }
 
-    obj = get(obj, parts[i]);
+    obj = _getProp(obj, parts[i]);
   }
 
   return obj;
@@ -196,3 +190,22 @@ export function getWithDefault<T extends object, K extends Extract<keyof T, stri
 }
 
 export default get;
+
+// Warm it up
+_getProp('foo' as any, 'a');
+_getProp('foo' as any, 1 as any);
+_getProp({}, 'a');
+_getProp({}, 1 as any);
+_getProp({ unkonwnProperty() {} }, 'a');
+_getProp({ unkonwnProperty() {} }, 1 as any);
+
+get({}, 'foo');
+get({}, 'foo.bar');
+
+let fakeProxy = {};
+setProxy(fakeProxy);
+
+track(() => _getProp({}, 'a'));
+track(() => _getProp({}, 1 as any));
+track(() => _getProp({ a: [] }, 'a'));
+track(() => _getProp({ a: fakeProxy }, 'a'));

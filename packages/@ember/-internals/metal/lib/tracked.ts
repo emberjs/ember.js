@@ -1,10 +1,9 @@
-import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, dirtyTagFor, trackedData } from '@glimmer/validator';
+import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
-import { SELF_TAG, tagForProperty } from './tags';
+import { SELF_TAG } from './tags';
 
 /**
   @decorator
@@ -159,8 +158,8 @@ function descriptorForField([_target, key, desc]: [
 
       // Add the tag of the returned value if it is an array, since arrays
       // should always cause updates if they are consumed and then changed
-      if (Array.isArray(value) || isEmberArray(value)) {
-        consumeTag(tagForProperty(value, '[]'));
+      if (Array.isArray(value)) {
+        consumeTag(tagFor(value, '[]'));
       }
 
       return value;

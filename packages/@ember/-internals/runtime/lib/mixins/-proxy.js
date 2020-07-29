@@ -11,12 +11,12 @@ import {
   tagForObject,
   computed,
   CUSTOM_TAG_FOR,
-  getChainTagsForKey,
+  tagForProperty,
 } from '@ember/-internals/metal';
-import { setProxy, setupMandatorySetter } from '@ember/-internals/utils';
+import { setProxy, setupMandatorySetter, isObject } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { combine, updateTag, tagFor } from '@glimmer/validator';
+import { combine, updateTag, tagFor, tagMetaFor } from '@glimmer/validator';
 
 export function contentFor(proxy) {
   let content = get(proxy, 'content');
@@ -59,7 +59,8 @@ export default Mixin.create({
   }),
 
   [CUSTOM_TAG_FOR](key, addMandatorySetter) {
-    let tag = tagFor(this, key);
+    let meta = tagMetaFor(this);
+    let tag = tagFor(this, key, meta);
 
     if (DEBUG) {
       // TODO: Replace this with something more first class for tracking tags in DEBUG
@@ -73,7 +74,15 @@ export default Mixin.create({
 
       return tag;
     } else {
-      return combine([tag, ...getChainTagsForKey(this, `content.${key}`, addMandatorySetter)]);
+      let tags = [tag, tagFor(this, 'content', meta)];
+
+      let content = contentFor(this);
+
+      if (isObject(content)) {
+        tags.push(tagForProperty(content, key, addMandatorySetter));
+      }
+
+      return combine(tags);
     }
   },
 

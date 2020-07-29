@@ -1,9 +1,9 @@
-import { objectAt, tagForProperty } from '@ember/-internals/metal';
+import { objectAt } from '@ember/-internals/metal';
 import { _contentFor } from '@ember/-internals/runtime';
 import { EmberArray, HAS_NATIVE_SYMBOL, isEmberArray, isObject } from '@ember/-internals/utils';
 import { Option } from '@glimmer/interfaces';
 import { IteratorDelegate } from '@glimmer/reference';
-import { consumeTag, isTracking } from '@glimmer/validator';
+import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
 
 export default function toIterator(iterable: unknown): Option<IteratorDelegate> {
@@ -131,10 +131,10 @@ class ObjectIterator extends BoundedIterator {
         // Add the tag of the returned value if it is an array, since arrays
         // should always cause updates if they are consumed and then changed
         if (isTracking()) {
-          consumeTag(tagForProperty(obj, key));
+          consumeTag(tagFor(obj, key));
 
-          if (Array.isArray(value) || isEmberArray(value)) {
-            consumeTag(tagForProperty(value, '[]'));
+          if (Array.isArray(value)) {
+            consumeTag(tagFor(value, '[]'));
           }
         }
 

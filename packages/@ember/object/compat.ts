@@ -4,17 +4,16 @@ import {
   DecoratorPropertyDescriptor,
   isElementDescriptor,
   setClassicDecorator,
-  tagForProperty,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import { consumeTag, track, UpdatableTag, updateTag } from '@glimmer/validator';
+import { consumeTag, tagFor, track, UpdatableTag, updateTag } from '@glimmer/validator';
 
 let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
 
   if (originalGet !== undefined) {
     desc.get = function() {
-      let propertyTag = tagForProperty(this, key) as UpdatableTag;
+      let propertyTag = tagFor(this, key) as UpdatableTag;
       let ret;
 
       let tag = track(() => {
