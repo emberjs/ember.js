@@ -60,6 +60,10 @@ class ObjectIterator extends BoundedIterator {
 }
 
 export class TestEnv implements TemplateReferenceEnvironment {
+  getProp(obj: unknown, path: string) {
+    return (obj as any)[path];
+  }
+
   getPath(obj: unknown, path: string) {
     return (obj as any)[path];
   }

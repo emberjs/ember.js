@@ -48,6 +48,7 @@ export interface TemplatePathReference<T = unknown> extends VersionedPathReferen
  * renderer, and gets `env` passed to it.
  */
 export interface TemplateReferenceEnvironment {
+  getProp(obj: unknown, prop: string): unknown;
   getPath(obj: unknown, path: string): unknown;
   setPath(obj: unknown, path: string, value: unknown): unknown;
 
