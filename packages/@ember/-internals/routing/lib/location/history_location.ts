@@ -77,7 +77,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
     let base = document.querySelector('base');
     let baseURL: string | null = '';
-    if (base) {
+    if (base !== null && base.hasAttribute('href')) {
       baseURL = base.getAttribute('href');
     }
 
