@@ -97,6 +97,42 @@ moduleFor(
       location.initState();
     }
 
+    ['@test <base> with href sets `baseURL`'](assert) {
+      assert.expect(1);
+
+      let base = document.createElement('base');
+      base.setAttribute('href', '/foo/');
+
+      document.head.appendChild(base);
+
+      try {
+        createLocation();
+        location.initState();
+
+        assert.strictEqual(location.get('baseURL'), '/foo/');
+      } finally {
+        document.head.removeChild(base);
+      }
+    }
+
+    ['@test <base> without href is ignored'](assert) {
+      assert.expect(1);
+
+      let base = document.createElement('base');
+      base.setAttribute('target', '_parent');
+
+      document.head.appendChild(base);
+
+      try {
+        createLocation();
+        location.initState();
+
+        assert.strictEqual(location.get('baseURL'), '');
+      } finally {
+        document.head.removeChild(base);
+      }
+    }
+
     ['@test base URL is removed when retrieving the current pathname'](assert) {
       assert.expect(1);
 
