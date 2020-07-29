@@ -1,5 +1,4 @@
 import { peekMeta } from '@ember/-internals/meta';
-import { peekCacheFor } from './computed_cache';
 import { sendEvent } from './events';
 import { notifyPropertyChange } from './property_events';
 
@@ -61,8 +60,7 @@ export function arrayContentDidChange<T extends { length: number }>(
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
-  let cache = peekCacheFor(array);
-  if (cache !== undefined) {
+  if (meta !== null) {
     let length = array.length;
     let addedAmount = addAmt === -1 ? 0 : addAmt;
     let removedAmount = removeAmt === -1 ? 0 : removeAmt;
@@ -70,11 +68,11 @@ export function arrayContentDidChange<T extends { length: number }>(
     let previousLength = length - delta;
 
     let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
-    if (cache.has('firstObject') && normalStartIdx === 0) {
+    if (meta.revisionFor('firstObject') !== undefined && normalStartIdx === 0) {
       notifyPropertyChange(array, 'firstObject', meta);
     }
 
-    if (cache.has('lastObject')) {
+    if (meta.revisionFor('lastObject') !== undefined) {
       let previousLastIndex = previousLength - 1;
       let lastAffectedIndex = normalStartIdx + removedAmount;
       if (previousLastIndex < lastAffectedIndex) {

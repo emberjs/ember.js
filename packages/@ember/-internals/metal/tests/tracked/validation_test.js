@@ -8,7 +8,6 @@ import {
   notifyPropertyChange,
 } from '../..';
 
-import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { track, valueForTag, validateTag } from '@glimmer/validator';
 
@@ -361,52 +360,6 @@ moduleFor(
         validateTag(tag, snapshot),
         false,
         'invalid after pushing an object and notifying on the array'
-      );
-    }
-
-    ['@test ember get interaction with ember arrays'](assert) {
-      class EmberObject {
-        emberArray = {
-          [EMBER_ARRAY]: true,
-        };
-      }
-
-      let obj = new EmberObject();
-      let emberArray;
-
-      let tag = track(() => (emberArray = get(obj, 'emberArray')));
-      let snapshot = valueForTag(tag);
-
-      assert.equal(validateTag(tag, snapshot), true);
-
-      notifyPropertyChange(emberArray, '[]');
-      assert.equal(
-        validateTag(tag, snapshot),
-        false,
-        'invalid after setting a property on the object'
-      );
-    }
-
-    ['@test native get interaction with ember arrays'](assert) {
-      class EmberObject {
-        @tracked emberArray = {
-          [EMBER_ARRAY]: true,
-        };
-      }
-
-      let obj = new EmberObject();
-      let emberArray;
-
-      let tag = track(() => (emberArray = obj.emberArray));
-      let snapshot = valueForTag(tag);
-
-      assert.equal(validateTag(tag, snapshot), true);
-
-      notifyPropertyChange(emberArray, '[]');
-      assert.equal(
-        validateTag(tag, snapshot),
-        false,
-        'invalid after setting a property on the object'
       );
     }
 

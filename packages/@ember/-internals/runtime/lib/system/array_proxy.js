@@ -10,10 +10,11 @@ import {
   addArrayObserver,
   removeArrayObserver,
   replace,
-  getChainTagsForKey,
   CUSTOM_TAG_FOR,
   arrayContentDidChange,
+  tagForProperty,
 } from '@ember/-internals/metal';
+import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
@@ -119,7 +120,17 @@ export default class ArrayProxy extends EmberObject {
       // revalidate eagerly if we're being tracked, since we no longer will
       // be able to later on due to backtracking re-render assertion
       this._revalidate();
-      return combine(getChainTagsForKey(this, `arrangedContent.${key}`, addMandatorySetter));
+      let arrangedContentTag = this._arrangedContentTag;
+      let arrangedContent = get(this, 'arrangedContent');
+
+      if (isObject(arrangedContent)) {
+        return combine([
+          arrangedContentTag,
+          tagForProperty(arrangedContent, key, addMandatorySetter),
+        ]);
+      } else {
+        return arrangedContentTag;
+      }
     }
 
     return tagFor(this, key);
@@ -318,7 +329,7 @@ export default class ArrayProxy extends EmberObject {
         this._arrangedContentIsUpdating = false;
       }
 
-      this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
+      this._arrangedContentTag = tagFor(this, 'arrangedContent');
       this._arrangedContentRevision = valueForTag(this._arrangedContentTag);
     }
   }

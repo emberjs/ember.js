@@ -1,8 +1,8 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
+import { meta as metaFor } from '@ember/-internals/meta';
 import {
   computed,
   defineProperty,
-  getCachedValueFor,
   isClassicDecorator,
   isComputed,
   get,
@@ -434,15 +434,15 @@ moduleFor(
       assert.equal(get(objB, 'foo'), 'bar 2', 'objB third get');
     }
 
-    ['@test getCachedValueFor should return the cached value'](assert) {
-      assert.equal(getCachedValueFor(obj, 'foo'), undefined, 'should not yet be a cached value');
+    ['@test meta.valueFor should return the cached value'](assert) {
+      assert.equal(metaFor(obj).valueFor('foo'), undefined, 'should not yet be a cached value');
 
       get(obj, 'foo');
 
-      assert.equal(getCachedValueFor(obj, 'foo'), 'bar 1', 'should retrieve cached value');
+      assert.equal(metaFor(obj).valueFor('foo'), 'bar 1', 'should retrieve cached value');
     }
 
-    ['@test getCachedValueFor should return falsy cached values'](assert) {
+    ['@test meta.valueFor should return falsy cached values'](assert) {
       defineProperty(
         obj,
         'falsy',
@@ -451,11 +451,11 @@ moduleFor(
         })
       );
 
-      assert.equal(getCachedValueFor(obj, 'falsy'), undefined, 'should not yet be a cached value');
+      assert.equal(metaFor(obj).valueFor('falsy'), undefined, 'should not yet be a cached value');
 
       get(obj, 'falsy');
 
-      assert.equal(getCachedValueFor(obj, 'falsy'), false, 'should retrieve cached value');
+      assert.equal(metaFor(obj).valueFor('falsy'), false, 'should retrieve cached value');
     }
 
     ['@test setting a cached computed property passes the old value as the third argument'](

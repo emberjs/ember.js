@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { get, set } from '@ember/-internals/metal';
+import { _getProp, get, set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
@@ -117,6 +117,7 @@ export class EmberEnvironmentDelegate implements EnvironmentDelegate<EmberEnviro
   public toBool = toBool;
   public toIterator = toIterator;
 
+  public getProp = _getProp;
   public getPath = get;
   public setPath = set;
 
