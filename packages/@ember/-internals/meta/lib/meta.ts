@@ -2,7 +2,7 @@ import { symbol, toString } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { isDestroyed, isDestroying } from '@glimmer/runtime';
-import { UpdatableTag } from '@glimmer/validator';
+import { Revision, UpdatableTag } from '@glimmer/validator';
 
 type ObjMap<T> = { [key: string]: T };
 
@@ -89,7 +89,10 @@ export class Meta {
   _descriptors: Map<string, any> | undefined;
   _mixins: any | undefined;
   _isInit: boolean;
-  _lazyChains: ObjMap<ObjMap<UpdatableTag>> | undefined;
+  _lazyChains: ObjMap<[UpdatableTag, unknown][]> | undefined;
+  _values: ObjMap<unknown> | undefined;
+  _tags: ObjMap<UpdatableTag> | undefined;
+  _revisions: ObjMap<Revision> | undefined;
   source: object;
   proto: object | undefined;
   _parent: Meta | undefined | null;
@@ -100,16 +103,17 @@ export class Meta {
   _flattenedVersion = 0;
 
   // DEBUG
-  _values: any | undefined;
-
   constructor(obj: object) {
     if (DEBUG) {
       counters!.metaInstantiated++;
-      this._values = undefined;
     }
     this._parent = undefined;
     this._descriptors = undefined;
     this._mixins = undefined;
+    this._lazyChains = undefined;
+    this._values = undefined;
+    this._tags = undefined;
+    this._revisions = undefined;
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
@@ -231,21 +235,47 @@ export class Meta {
     return false;
   }
 
-  writableLazyChainsFor(key: string) {
+  valueFor(key: string): unknown {
+    let values = this._values;
+
+    return values !== undefined ? values[key] : undefined;
+  }
+
+  setValueFor(key: string, value: unknown) {
+    let values = this._getOrCreateOwnMap('_values');
+
+    values[key] = value;
+  }
+
+  revisionFor(key: string): Revision | undefined {
+    let revisions = this._revisions;
+
+    return revisions !== undefined ? revisions[key] : undefined;
+  }
+
+  setRevisionFor(key: string, revision: Revision | undefined) {
+    let revisions = this._getOrCreateOwnMap('_revisions');
+
+    revisions[key] = revision;
+  }
+
+  writableLazyChainsFor(key: string): [UpdatableTag, unknown][] {
     if (DEBUG) {
       counters!.writableLazyChainsCalls++;
     }
 
     let lazyChains = this._getOrCreateOwnMap('_lazyChains');
 
-    if (!(key in lazyChains)) {
-      lazyChains[key] = Object.create(null);
+    let chains = lazyChains[key];
+
+    if (chains === undefined) {
+      chains = lazyChains[key] = [];
     }
 
-    return lazyChains[key];
+    return chains;
   }
 
-  readableLazyChainsFor(key: string) {
+  readableLazyChainsFor(key: string): [UpdatableTag, unknown][] | undefined {
     if (DEBUG) {
       counters!.readableLazyChainsCalls++;
     }

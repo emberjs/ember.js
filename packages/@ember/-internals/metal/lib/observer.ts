@@ -2,7 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import { schedule } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/runtime';
-import { combine, CURRENT_TAG, Tag, validateTag, valueForTag } from '@glimmer/validator';
+import { CURRENT_TAG, Tag, tagMetaFor, validateTag, valueForTag } from '@glimmer/validator';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
@@ -97,7 +97,7 @@ export function activateObserver(target: object, eventName: string, sync = false
     activeObservers.get(eventName)!.count++;
   } else {
     let [path] = eventName.split(':');
-    let tag = combine(getChainTagsForKey(target, path, true));
+    let tag = getChainTagsForKey(target, path, tagMetaFor(target), peekMeta(target));
 
     activeObservers.set(eventName, {
       count: 1,
@@ -161,14 +161,24 @@ export function resumeObserverDeactivation() {
 export function revalidateObservers(target: object) {
   if (ASYNC_OBSERVERS.has(target)) {
     ASYNC_OBSERVERS.get(target)!.forEach(observer => {
-      observer.tag = combine(getChainTagsForKey(target, observer.path, true));
+      observer.tag = getChainTagsForKey(
+        target,
+        observer.path,
+        tagMetaFor(target),
+        peekMeta(target)
+      );
       observer.lastRevision = valueForTag(observer.tag);
     });
   }
 
   if (SYNC_OBSERVERS.has(target)) {
     SYNC_OBSERVERS.get(target)!.forEach(observer => {
-      observer.tag = combine(getChainTagsForKey(target, observer.path, true));
+      observer.tag = getChainTagsForKey(
+        target,
+        observer.path,
+        tagMetaFor(target),
+        peekMeta(target)
+      );
       observer.lastRevision = valueForTag(observer.tag);
     });
   }
@@ -192,7 +202,12 @@ export function flushAsyncObservers(shouldSchedule = true) {
           try {
             sendEvent(target, eventName, [target, observer.path], undefined, meta);
           } finally {
-            observer.tag = combine(getChainTagsForKey(target, observer.path, true));
+            observer.tag = getChainTagsForKey(
+              target,
+              observer.path,
+              tagMetaFor(target),
+              peekMeta(target)
+            );
             observer.lastRevision = valueForTag(observer.tag);
           }
         };
@@ -221,7 +236,12 @@ export function flushSyncObservers() {
           observer.suspended = true;
           sendEvent(target, eventName, [target, observer.path], undefined, meta);
         } finally {
-          observer.tag = combine(getChainTagsForKey(target, observer.path, true));
+          observer.tag = getChainTagsForKey(
+            target,
+            observer.path,
+            tagMetaFor(target),
+            peekMeta(target)
+          );
           observer.lastRevision = valueForTag(observer.tag);
           observer.suspended = false;
         }
