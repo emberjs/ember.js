@@ -386,14 +386,62 @@ if (LOGGER) {
 // ****@ember/-internals/runtime****
 Ember.A = A;
 Ember.String = {
-  loc,
-  w,
-  dasherize,
-  decamelize,
-  camelize,
-  classify,
-  underscore,
-  capitalize,
+  loc: (...args) => {
+    deprecate('Ember.String.loc is deprecated. use `import { loc } from "@ember/string"` instead', {
+      id: 'Ember.String.loc',
+      until: '4.0.0',
+    });
+    return loc(...args);
+  },
+  w: (...args) => {
+    deprecate('Ember.String.w is deprecated. use `import { w } from "@ember/string"` instead', {
+      id: 'Ember.String.w',
+      until: '4.0.0',
+    });
+    return w(...args);
+  },
+  dasherize: (...args) => {
+    deprecate('Ember.String.dasherize is deprecated. use `import { dasherize } from "@ember/string"` instead', {
+      id: 'Ember.String.dasherize',
+      until: '4.0.0',
+    });
+    return dasherize(...args);
+  },
+  decamelize: (...args) => {
+    deprecate('Ember.String.decamelize is deprecated. use `import { decamelize } from "@ember/string"` instead', {
+      id: 'Ember.String.decamelize',
+      until: '4.0.0',
+    });
+    return decamelize(...args);
+  },
+  camelize: (...args) => {
+    deprecate('Ember.String.camelize is deprecated. use `import { camelize } from "@ember/string"` instead', {
+      id: 'Ember.String.camelize',
+      until: '4.0.0',
+    });
+    return camelize(...args);
+  },
+  classify: (...args) => {
+    deprecate('Ember.String.classify is deprecated. use `import { classify } from "@ember/string"` instead', {
+      id: 'Ember.String.classify',
+      until: '4.0.0',
+    });
+    return classify(...args);
+  },
+  underscore: (...args) => {
+    deprecate('Ember.String.underscore is deprecated. use `import { underscore } from "@ember/string"` instead', {
+      id: 'Ember.String.underscore',
+      until: '4.0.0',
+    });
+    return underscore(...args);
+  },
+  capitalize: (...args) => {
+    deprecate('Ember.String.capitalize is deprecated. use `import { capitalize } from "@ember/string"` instead', {
+      id: 'Ember.String.capitalize',
+      until: '4.0.0',
+    });
+    return capitalize(...args);
+  },
 };
 Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
