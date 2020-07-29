@@ -253,7 +253,8 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   public protocolForURL = defaultDelegateFn(this.delegate.protocolForURL, defaultGetProtocolForURL);
   public attributeFor = defaultDelegateFn(this.delegate.attributeFor, defaultAttributeFor);
 
-  public getPath = defaultDelegateFn(this.delegate.getPath, defaultGetPath);
+  public getProp = defaultDelegateFn(this.delegate.getProp, defaultGetProp);
+  public getPath = defaultDelegateFn(this.delegate.getPath, defaultGetProp);
   public setPath = defaultDelegateFn(this.delegate.setPath, defaultSetPath);
 
   public toBool = defaultDelegateFn(this.delegate.toBool, defaultToBool);
@@ -370,6 +371,15 @@ export interface EnvironmentDelegate<Extra = undefined> {
   toBool?(value: unknown): boolean;
 
   /**
+   * Hook for specifying how Glimmer should access properties in cases where it
+   * needs to. For instance, accessing an object's values in templates.
+   *
+   * @param obj The object provided to get a value from
+   * @param path The path to get the value from
+   */
+  getProp?(obj: unknown, path: string): unknown;
+
+  /**
    * Hook for specifying how Glimmer should access paths in cases where it needs
    * to. For instance, the `key` value of `{{each}}` loops.
    *
@@ -470,7 +480,7 @@ function defaultAttributeFor(
   return dynamicAttribute(element, attr, namespace);
 }
 
-function defaultGetPath(obj: unknown, key: string): unknown {
+function defaultGetProp(obj: unknown, key: string): unknown {
   return (obj as Dict)[key];
 }
 
