@@ -30,8 +30,6 @@
  `destinationElement`. Passing `null` changes the behaviour to appended at the end
  of any existing content. Any other value than `null` is currently not supported.
 
- ```
-
  @method in-element
  @for Ember.Templates.helpers
  @public
