@@ -20,9 +20,9 @@ export class BundleCompilerEmberTests extends EmberishComponentTests {
       module: 'ui/components/main',
       name: 'default',
     });
-    let { strings } = this.delegate.getConstants();
-    this.assert.equal(strings.indexOf(ALocator), -1);
-    this.assert.equal(strings.indexOf(MainLocator), -1);
+    let values = this.delegate.getConstants();
+    this.assert.equal(values.indexOf(ALocator), -1);
+    this.assert.equal(values.indexOf(MainLocator), -1);
     this.assertHTML('B 1 B 2 B 3 B 4');
     this.assertStableRerender();
   }
@@ -39,9 +39,9 @@ export class BundleCompilerEmberTests extends EmberishComponentTests {
     let MainLocator = JSON.stringify({
       locator: { module: 'ui/components/main', name: 'default' },
     });
-    let { strings } = this.delegate.constants!.toPool();
-    this.assert.equal(strings.indexOf(ALocator), -1);
-    this.assert.equal(strings.indexOf(MainLocator), -1);
+    let values = this.delegate.constants!.toPool();
+    this.assert.equal(values.indexOf(ALocator), -1);
+    this.assert.equal(values.indexOf(MainLocator), -1);
     this.assertHTML('B 1 B 1');
     this.assertStableRerender();
   }
@@ -56,9 +56,9 @@ export class BundleCompilerEmberTests extends EmberishComponentTests {
       module: 'ui/components/main',
       name: 'default',
     });
-    let { strings } = this.delegate.constants!.toPool();
-    this.assert.ok(strings.indexOf(ALocator) > -1, 'Has locator for "A"');
-    this.assert.equal(strings.indexOf(MainLocator), -1);
+    let values = this.delegate.constants!.toPool();
+    this.assert.ok(values.indexOf(ALocator) > -1, 'Has locator for "A"');
+    this.assert.equal(values.indexOf(MainLocator), -1);
     this.assertHTML('B 1');
     this.assertStableRerender();
   }
