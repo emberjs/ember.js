@@ -5,9 +5,6 @@ const buildInfo = require('../broccoli/build-info').buildInfo();
 // To invoke this from the commandline you need the following to env vars to exist:
 //
 // S3_BUCKET_NAME
-// TRAVIS_BRANCH
-// TRAVIS_TAG
-// TRAVIS_COMMIT
 // S3_SECRET_ACCESS_KEY
 // S3_ACCESS_KEY_ID
 //
@@ -21,7 +18,11 @@ if (!buildInfo.isBuildForTag) {
   const S3Publisher = require('ember-publisher');
   const configPath = require('path').join(__dirname, '../config/s3ProjectConfig.js');
 
-  let publisher = new S3Publisher({ projectConfigPath: configPath });
+  let publisher = new S3Publisher({
+    projectConfigPath: configPath,
+    TRAVIS_TAG: buildInfo.tag,
+    TRAVIS_COMMIT: buildInfo.sha,
+  });
 
   publisher.currentBranch = function() {
     return buildInfo.channel;

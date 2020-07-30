@@ -1,11 +1,6 @@
 'use strict';
 
-const {
-  buildVersion,
-  parseTagVersion,
-  buildFromParts,
-  isTagBuild,
-} = require('../../broccoli/build-info');
+const { buildVersion, parseTagVersion, buildFromParts } = require('../../broccoli/build-info');
 
 QUnit.module('buildVersion', () => {
   flatMap(
@@ -53,13 +48,15 @@ QUnit.module('parseTagVersion', () => {
       tag: 'v3.1.1-beta.2',
       expected: '3.1.1-beta.2',
     },
-    {
-      tag: 'some-non-version-tag',
-      expected: undefined,
-    },
   ].forEach(({ tag, expected }) => {
     QUnit.test(JSON.stringify(tag), assert => {
       assert.equal(parseTagVersion(tag), expected);
+    });
+  });
+
+  QUnit.test('parseTagVersion raises on non-semver tags', assert => {
+    assert.throws(() => {
+      parseTagVersion('some-non-version-tag');
     });
   });
 });
@@ -89,93 +86,50 @@ QUnit.module('buildFromParts', () => {
     },
     {
       args: [
-        '3.4.4', // Channel build on CI, tag
+        '3.4.4', // Channel build
         {
           sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
-          branch: '',
-          tag: 'v3.4.4-beta.2',
+          branch: 'beta',
+          tag: null,
         },
-        true,
-        'beta',
       ],
       expected: {
-        tag: 'v3.4.4-beta.2',
+        tag: null,
         branch: 'beta',
         sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
         shortSha: 'f572d396',
         channel: 'beta',
         packageVersion: '3.4.4',
-        tagVersion: '3.4.4-beta.2',
+        tagVersion: null,
         version: '3.4.4-beta+f572d396',
         isBuildForTag: false,
       },
     },
     {
       args: [
-        '3.4.4', // Tag build, CI
+        '3.4.4', // Tag build
         {
           sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
-          branch: '',
+          branch: null,
           tag: 'v3.4.4-beta.2',
         },
-        true,
-        'v3.4.4-beta.2',
       ],
       expected: {
         tag: 'v3.4.4-beta.2',
-        branch: 'v3.4.4-beta.2',
+        branch: null,
         sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
         shortSha: 'f572d396',
-        channel: 'v3-4-4-beta-2',
+        channel: 'tag',
         packageVersion: '3.4.4',
         tagVersion: '3.4.4-beta.2',
         version: '3.4.4-beta.2',
         isBuildForTag: true,
       },
     },
-    {
-      args: [
-        '3.4.4',
-        {
-          sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
-          branch: '',
-          tag: 'some weird tag',
-        },
-        true,
-        'a "funky" branch',
-      ],
-      expected: {
-        tag: 'some weird tag',
-        branch: 'a "funky" branch',
-        sha: 'f572d396fae9206628714fb2ce00f72e94f2258f',
-        shortSha: 'f572d396',
-        channel: 'a--funky--branch',
-        packageVersion: '3.4.4',
-        tagVersion: undefined,
-        version: '3.4.4-a--funky--branch+f572d396',
-        isBuildForTag: false,
-      },
-    },
   ].forEach(({ args, expected }) => {
     QUnit.test(JSON.stringify(args), assert => {
       assert.deepEqual(buildFromParts(...args), expected);
     });
-  });
-});
-
-QUnit.module('isTagBuild', () => {
-  QUnit.test('on CI', assert => {
-    assert.equal(isTagBuild('v3.4.4', 'v3.4.4', true), true);
-    assert.equal(isTagBuild('v3.4.4', 'release', true), false);
-    assert.equal(isTagBuild('v3.4.4-beta.4', 'random-branch', true), false);
-    assert.equal(isTagBuild(null, 'release', true), false);
-  });
-
-  QUnit.test('not on CI', assert => {
-    assert.equal(isTagBuild('v3.4.4', 'release', false), true);
-    assert.equal(isTagBuild('v3.4.4', null, false), true);
-    assert.equal(isTagBuild('v3.4.4-beta.4', 'random-branch', false), true);
-    assert.equal(isTagBuild(null, 'release', false), false);
   });
 });
 
