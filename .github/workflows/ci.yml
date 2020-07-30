@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   push:
@@ -158,7 +158,7 @@ jobs:
   blueprint-test:
     name: Blueprint Tests
     runs-on: ubuntu-latest
-    needs: [basic-test, lint]
+    needs: [lint]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -252,7 +252,7 @@ jobs:
         run: node bin/publish_to_s3.js
         env:
           BUILD_TYPE: alpha
-          OVERRIDE_FEATURES: EMBER_METAL_TRACKED_PROPERTIES
+          OVERRIDE_FEATURES: ''
           S3_BUCKET_NAME: 'builds.emberjs.com'
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY}}
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID}}
