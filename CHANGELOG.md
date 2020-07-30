@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.20.3 (July 30, 2020)
+
+- [#19048](https://github.com/emberjs/ember.js/pull/19048) [BUGFIX] Update `router.js` to ensure `transition.abort` works for query param only transitions
+- [#19059](https://github.com/emberjs/ember.js/pull/19059) [BUGFIX] Prevent `<base target="_parent">` from erroring in `HistoryLocation`
+- [#19060](https://github.com/emberjs/ember.js/pull/19060) [BUGFIX] Update rendering engine to `@glimmer/*` 0.55.1
+- [#19063](https://github.com/emberjs/ember.js/pull/19063) [DOC] Fix missing docs for `{{#in-element}}`
+
 ### v3.20.2 (July 26, 2020)
 
 - [#19056](https://github.com/emberjs/ember.js/pull/19056) Update Glimmer rendering engine to 0.54.2. Fixes an issue with (private for now) destroyables work to enable the destroyables polyfill to work more appropriately.
