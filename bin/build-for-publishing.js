@@ -6,10 +6,10 @@ const path = require('path');
 const execa = require('execa');
 const buildInfo = require('../broccoli/build-info').buildInfo();
 
-function exec(command, args) {
+function exec(command, args, options) {
   // eslint-disable-next-line
   console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
-  let stream = execa(command, args);
+  let stream = execa(command, args, options);
   stream.stdout.pipe(process.stdout);
   return stream;
 }
@@ -56,7 +56,7 @@ Promise.resolve()
   .then(() => {
     updatePackageJSONVersion();
     // ensures that we tag this correctly
-    return exec('auto-dist-tag', ['--write']);
+    return exec('auto-dist-tag', ['--write'], { preferLocal: true });
   })
   .then(() => {
     // do a production build
