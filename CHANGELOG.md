@@ -1,3 +1,21 @@
+## v0.55.2 (2020-07-30)
+
+#### :rocket: Enhancement
+* `@glimmer/bundle-compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/program`, `@glimmer/runtime`
+  * [#1122](https://github.com/glimmerjs/glimmer-vm/pull/1122) [Refactor] Use a map to dedupe constants instead of indexOf ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/runtime`
+  * [#1121](https://github.com/glimmerjs/glimmer-vm/pull/1121) Expose the destroyables on the error thrown by `assertDestroyablesDestroyed` ([@rwjblue](https://github.com/rwjblue))
+
+#### :house: Internal
+* `@glimmer/validator`
+  * [#1120](https://github.com/glimmerjs/glimmer-vm/pull/1120) Fix `MonomorphicTag` type error for downstream consumers ([@dfreeman](https://github.com/dfreeman))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Dan Freeman ([@dfreeman](https://github.com/dfreeman))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.55.1 (2020-07-26)
 
 #### :bug: Bug Fix
