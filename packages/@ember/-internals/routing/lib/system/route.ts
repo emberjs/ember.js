@@ -360,9 +360,9 @@ class Route extends EmberObject implements IRoute {
 
     @method exit
   */
-  exit() {
-    this.deactivate();
-    this.trigger('deactivate');
+  exit(transition?: Transition) {
+    this.deactivate(transition);
+    this.trigger('deactivate', transition);
     this.teardownViews();
   }
 
@@ -384,10 +384,10 @@ class Route extends EmberObject implements IRoute {
 
     @method enter
   */
-  enter() {
+  enter(transition: Transition) {
     ROUTE_CONNECTIONS.set(this, []);
-    this.activate();
-    this.trigger('activate');
+    this.activate(transition);
+    this.trigger('activate', transition);
   }
 
   /**
@@ -596,20 +596,22 @@ class Route extends EmberObject implements IRoute {
     not executed when the model for the route changes.
 
     @method deactivate
+    @param {Transition} transition
     @since 1.0.0
     @public
   */
-  deactivate() {}
+  deactivate(_transition?: Transition) {}
 
   /**
     This hook is executed when the router enters the route. It is not executed
     when the model for the route changes.
 
     @method activate
+    @param {Transition} transition
     @since 1.0.0
     @public
   */
-  activate() {}
+  activate(_transition: Transition) {}
 
   /**
     Transition the application into another route. The route may
