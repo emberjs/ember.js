@@ -12,6 +12,7 @@ import {
   isEnabled,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_CACHE_API,
+  EMBER_DESTROYABLES,
 } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
@@ -138,7 +139,17 @@ import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import templateOnlyComponent from '@ember/component/template-only';
-import { destroy } from '@glimmer/runtime';
+
+import {
+  assertDestroyablesDestroyed,
+  associateDestroyableChild,
+  destroy,
+  enableDestroyableTracking,
+  isDestroying,
+  isDestroyed,
+  registerDestructor,
+  unregisterDestructor,
+} from '@ember/destroyable';
 
 // ****@ember/-internals/environment****
 
@@ -339,6 +350,16 @@ if (EMBER_CACHE_API) {
   Ember._createCache = metal.createCache;
   Ember._cacheGetValue = metal.getValue;
   Ember._cacheIsConst = metal.isConst;
+}
+
+if (EMBER_DESTROYABLES) {
+  Ember._registerDestructor = registerDestructor;
+  Ember._unregisterDestructor = unregisterDestructor;
+  Ember._associateDestroyableChild = associateDestroyableChild;
+  Ember._assertDestroyablesDestroyed = assertDestroyablesDestroyed;
+  Ember._enableDestroyableTracking = enableDestroyableTracking;
+  Ember._isDestroying = isDestroying;
+  Ember._isDestroyed = isDestroyed;
 }
 
 /**
