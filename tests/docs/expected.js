@@ -276,6 +276,7 @@ module.exports = {
     'href',
     'htmlSafe',
     'if',
+    'in-element',
     'includes',
     'incrementProperty',
     'indexOf',
