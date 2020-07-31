@@ -1,46 +1,24 @@
 import { WriteOnlyConstants } from '@glimmer/program';
-import { assert } from '@glimmer/util';
 import { RuntimeConstants } from '@glimmer/interfaces';
 
 export default class DebugConstants extends WriteOnlyConstants implements RuntimeConstants {
-  getNumber(value: number): number {
-    return this.values[value] as number;
+  getValue<T>(handle: number) {
+    return this.values[handle] as T;
   }
 
-  getString(value: number): string {
-    return this.values[value] as string;
-  }
+  getArray<T>(value: number): T[] {
+    let handles = this.getValue(value) as number[];
+    let reified: T[] = new Array(handles.length);
 
-  getStringArray(value: number): string[] {
-    let names = this.getArray(value);
-    let _names: string[] = new Array(names.length);
-
-    for (let i = 0; i < names.length; i++) {
-      let n = names[i];
-      _names[i] = this.getString(n);
+    for (let i = 0; i < handles.length; i++) {
+      let n = handles[i];
+      reified[i] = this.getValue(n);
     }
 
-    return _names;
+    return reified;
   }
 
-  getArray(value: number): number[] {
-    return this.values[value] as number[];
-  }
-
-  resolveHandle<T>(s: number): T {
-    assert(typeof s === 'number', 'Cannot resolve undefined as a handle');
-    return ({ handle: s } as any) as T;
-  }
-
-  getSerializable(s: number): unknown {
-    return JSON.parse(this.values[s] as string);
-  }
-
-  getTemplateMeta(m: number): unknown {
-    return this.getSerializable(m);
-  }
-
-  getOther(s: number): unknown {
-    return this.values[s];
+  getSerializable<T>(s: number): T {
+    return JSON.parse(this.values[s] as string) as T;
   }
 }

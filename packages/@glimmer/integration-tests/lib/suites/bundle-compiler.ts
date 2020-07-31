@@ -45,21 +45,4 @@ export class BundleCompilerEmberTests extends EmberishComponentTests {
     this.assertHTML('B 1 B 1');
     this.assertStableRerender();
   }
-
-  @test({ kind: 'glimmer' })
-  'should serialize the locator with dynamic component helpers'() {
-    this.registerComponent('Glimmer', 'A', '{{component @B foo=@bar}}');
-    this.registerComponent('Glimmer', 'B', 'B {{@foo}}');
-    this.render('<A @bar={{1}} @B={{name}} />', { name: 'B' });
-    let ALocator = JSON.stringify({ module: 'ui/components/A', name: 'default' });
-    let MainLocator = JSON.stringify({
-      module: 'ui/components/main',
-      name: 'default',
-    });
-    let values = this.delegate.constants!.toPool();
-    this.assert.ok(values.indexOf(ALocator) > -1, 'Has locator for "A"');
-    this.assert.equal(values.indexOf(MainLocator), -1);
-    this.assertHTML('B 1');
-    this.assertStableRerender();
-  }
 }

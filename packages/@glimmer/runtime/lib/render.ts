@@ -109,14 +109,14 @@ function renderInvocation<C extends JitOrAotBlock>(
 
   // Push blocks on to the stack, three stack values per block
   for (let i = 0; i < 3 * blockNames.length; i++) {
-    vm.stack.push(null);
+    vm.stack.pushNull();
   }
 
-  vm.stack.push(null);
+  vm.stack.pushNull();
 
   // For each argument, push its backing reference on to the stack
   argList.forEach(([, reference]) => {
-    vm.stack.push(reference);
+    vm.stack.pushJs(reference);
   });
 
   // Configure VM based on blocks and args just pushed on to the stack.
@@ -124,9 +124,9 @@ function renderInvocation<C extends JitOrAotBlock>(
 
   // Needed for the Op.Main opcode: arguments, component invocation object, and
   // component definition.
-  vm.stack.push(vm[ARGS]);
-  vm.stack.push(invocation);
-  vm.stack.push(definition);
+  vm.stack.pushJs(vm[ARGS]);
+  vm.stack.pushJs(invocation);
+  vm.stack.pushJs(definition);
 
   return new TemplateIteratorImpl(vm);
 }
