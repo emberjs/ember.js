@@ -9,7 +9,7 @@ import {
   validateTag,
   INITIAL,
 } from '@glimmer/validator';
-import { assert, isHandle, HandleConstants, decodeHandle, expect } from '@glimmer/util';
+import { assert, decodeHandle, expect, isNonPrimitiveHandle } from '@glimmer/util';
 import {
   CheckNumber,
   check,
@@ -37,33 +37,30 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
 APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
-  vm.stack.push(vm[CONSTANTS].getOther(other));
+  vm.stack.pushJs(vm[CONSTANTS].getValue(decodeHandle(other)));
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
-  if (isHandle(primitive)) {
-    let value: string | number;
-    if (primitive > HandleConstants.NUMBER_MAX_HANDLE) {
-      value = vm[CONSTANTS].getString(decodeHandle(primitive, HandleConstants.STRING_MAX_HANDLE));
-    } else {
-      value = vm[CONSTANTS].getNumber(decodeHandle(primitive, HandleConstants.NUMBER_MAX_HANDLE));
-    }
-    stack.pushJs(value);
+
+  if (isNonPrimitiveHandle(primitive)) {
+    // it is a handle which does not already exist on the stack
+    let value = vm[CONSTANTS].getValue(decodeHandle(primitive));
+    stack.pushJs(value as object);
   } else {
-    // is already an encoded immediate
+    // is already an encoded immediate or primitive handle
     stack.pushRaw(primitive);
   }
 });
 
 APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
   let stack = vm.stack;
-  stack.push(PrimitiveReference.create(check(stack.pop(), CheckPrimitive)));
+  stack.pushJs(PrimitiveReference.create(check(stack.pop(), CheckPrimitive)));
 });
 
 APPEND_OPCODES.add(Op.ReifyU32, vm => {
   let stack = vm.stack;
-  stack.push(check(stack.peek(), CheckReference).value());
+  stack.pushSmallInt(check(check(stack.peekJs(), CheckReference).value(), CheckNumber));
 });
 
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
@@ -84,7 +81,7 @@ APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => {
 });
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
-  let names = vm[CONSTANTS].getArray(_names);
+  let names = vm[CONSTANTS].getArray<string>(_names);
   vm.bindDynamicScope(names);
 });
 
@@ -98,12 +95,12 @@ APPEND_OPCODES.add(Op.Exit, vm => {
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
-  stack.push(vm[CONSTANTS].getSerializable(_table));
+  stack.pushJs(vm[CONSTANTS].getSerializable(_table));
 });
 
 APPEND_OPCODES.add(Op.PushBlockScope, vm => {
   let stack = vm.stack;
-  stack.push(vm.scope());
+  stack.pushJs(vm.scope());
 });
 
 APPEND_OPCODES.add(
@@ -113,12 +110,10 @@ APPEND_OPCODES.add(
     let block = stack.pop<Option<CompilableTemplate> | 0>();
 
     if (block) {
-      stack.push(vm.compile(block));
+      stack.pushSmallInt(vm.compile(block));
     } else {
-      stack.push(null);
+      stack.pushNull();
     }
-
-    check(vm.stack.peek(), CheckOption(CheckNumber));
   },
   'jit'
 );
@@ -127,8 +122,8 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckOption(CheckHandle));
-  let scope = check(stack.pop(), CheckOption(CheckScope));
-  let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
+  let scope = check(stack.popJs(), CheckOption(CheckScope));
+  let table = check(stack.popJs(), CheckOption(CheckBlockSymbolTable));
 
   assert(
     table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)),
@@ -166,7 +161,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 });
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
-  let reference = check(vm.stack.pop(), CheckReference);
+  let reference = check(vm.stack.popJs(), CheckReference);
 
   if (isConstTagged(reference)) {
     if (reference.value()) {
@@ -184,7 +179,7 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 });
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
-  let reference = check(vm.stack.pop(), CheckReference);
+  let reference = check(vm.stack.popJs(), CheckReference);
 
   if (isConstTagged(reference)) {
     if (!reference.value()) {
@@ -202,7 +197,7 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
 });
 
 APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
-  let other = check(vm.stack.peek(), CheckNumber);
+  let other = check(vm.stack.peekSmallInt(), CheckNumber);
 
   if (other === comparison) {
     vm.goto(target);
@@ -210,7 +205,7 @@ APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
 });
 
 APPEND_OPCODES.add(Op.AssertSame, vm => {
-  let reference = check(vm.stack.peek(), CheckReference);
+  let reference = check(vm.stack.peekJs(), CheckReference);
 
   if (!isConstTagged(reference)) {
     vm.updateWith(Assert.initialize(new ReferenceCache(reference)));
@@ -219,7 +214,7 @@ APPEND_OPCODES.add(Op.AssertSame, vm => {
 
 APPEND_OPCODES.add(Op.ToBoolean, vm => {
   let { env, stack } = vm;
-  stack.push(env.toConditionalReference(check(stack.pop(), CheckReference)));
+  stack.pushJs(env.toConditionalReference(check(stack.popJs(), CheckReference)));
 });
 
 export class Assert extends UpdatingOpcode {

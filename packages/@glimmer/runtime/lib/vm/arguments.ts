@@ -215,7 +215,7 @@ export class PositionalArgumentsImpl implements PositionalArguments {
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.sliceArray<VersionedPathReference<unknown>>(
+      references = this._references = stack.slice<VersionedPathReference<unknown>>(
         base,
         base + length
       );
@@ -368,7 +368,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
         if (idx === -1) {
           length = newNames.push(name);
-          stack.push(other.references[i]);
+          stack.pushJs(other.references[i]);
         }
       }
 
@@ -384,7 +384,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
     if (!references) {
       let { base, length, stack } = this;
-      references = this._references = stack.sliceArray<VersionedPathReference<unknown>>(
+      references = this._references = stack.slice<VersionedPathReference<unknown>>(
         base,
         base + length
       );
@@ -506,7 +506,7 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
 
     if (!values) {
       let { base, length, stack } = this;
-      values = this.internalValues = stack.sliceArray<number>(base, base + length * 3);
+      values = this.internalValues = stack.slice<number>(base, base + length * 3);
     }
 
     return values;
@@ -553,7 +553,7 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
 class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
   public length: number;
 
-  constructor(public names: string[], public values: BlockValue[]) {
+  constructor(public names: string[], public values: Option<BlockValue>[]) {
     this.length = names.length;
   }
 

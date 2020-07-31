@@ -25,26 +25,26 @@ import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { expect, Maybe } from '@glimmer/util';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
-  vm.elements().appendText(vm[CONSTANTS].getString(text));
+  vm.elements().appendText(vm[CONSTANTS].getValue(text));
 });
 
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
-  vm.elements().appendComment(vm[CONSTANTS].getString(text));
+  vm.elements().appendComment(vm[CONSTANTS].getValue(text));
 });
 
 APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
-  vm.elements().openElement(vm[CONSTANTS].getString(tag));
+  vm.elements().openElement(vm[CONSTANTS].getValue(tag));
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
-  let tagName = check(check(vm.stack.pop(), CheckReference).value(), CheckString);
+  let tagName = check(check(vm.stack.popJs(), CheckReference).value(), CheckString);
   vm.elements().openElement(tagName);
 });
 
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
-  let elementRef = check(vm.stack.pop(), CheckReference);
-  let insertBeforeRef = check(vm.stack.pop(), CheckReference);
-  let guidRef = check(vm.stack.pop(), CheckReference);
+  let elementRef = check(vm.stack.popJs(), CheckReference);
+  let insertBeforeRef = check(vm.stack.popJs(), CheckReference);
+  let guidRef = check(vm.stack.popJs(), CheckReference);
 
   let element: SimpleElement;
   let insertBefore: Maybe<SimpleNode>;
@@ -106,7 +106,7 @@ APPEND_OPCODES.add(Op.CloseElement, vm => {
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let { manager, state } = vm.runtime.resolver.resolve<ModifierDefinition>(handle);
   let stack = vm.stack;
-  let args = check(stack.pop(), CheckArguments);
+  let args = check(stack.popJs(), CheckArguments);
   let { constructing, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(
@@ -155,18 +155,18 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
 }
 
 APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
-  let name = vm[CONSTANTS].getString(_name);
-  let value = vm[CONSTANTS].getString(_value);
-  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
+  let name = vm[CONSTANTS].getValue<string>(_name);
+  let value = vm[CONSTANTS].getValue<string>(_value);
+  let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
 
   vm.elements().setStaticAttribute(name, value, namespace);
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
-  let name = vm[CONSTANTS].getString(_name);
-  let reference = check(vm.stack.pop(), CheckReference);
+  let name = vm[CONSTANTS].getValue<string>(_name);
+  let reference = check(vm.stack.popJs(), CheckReference);
   let value = reference.value();
-  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
+  let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
 
   let attribute = vm.elements().setDynamicAttribute(name, value, !!trusting, namespace);
 

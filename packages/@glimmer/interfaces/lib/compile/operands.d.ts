@@ -3,12 +3,6 @@ import * as WireFormat from './wire-format';
 import { HandleResult } from '../template';
 import { HighLevelBuilderOp, CompileActions, ArgsOptions } from './encoder';
 
-export const enum PrimitiveType {
-  IMMEDIATE = 0,
-  STRING = 1,
-  NUMBER = 2,
-}
-
 export interface ArrayOperand {
   type: 'array';
   value: number[];
@@ -72,29 +66,14 @@ export interface InlineBlockOperand {
   value: WireFormat.SerializedInlineBlock;
 }
 
-export interface PrimitiveOperand<TValue extends PrimitiveOperandValue = PrimitiveOperandValue> {
+export interface PrimitiveOperand {
   type: 'primitive';
-  value: TValue;
+  value: string | number | boolean | null | undefined;
 }
 
-export type PrimitiveOperandValue =
-  | PrimitiveOperandStringValue
-  | PrimitiveOperandNumberValue
-  | PrimitiveOperandImmediateValue;
-
-export interface PrimitiveOperandStringValue {
-  type: PrimitiveType.STRING;
-  primitive: string;
-}
-
-export interface PrimitiveOperandNumberValue {
-  type: PrimitiveType.NUMBER;
-  primitive: number;
-}
-
-export interface PrimitiveOperandImmediateValue {
-  type: PrimitiveType.IMMEDIATE;
-  primitive: number | boolean | null | undefined;
+export interface ImmediateOperand {
+  type: 'immediate';
+  value: number;
 }
 
 export type NonlabelBuilderOperand =
@@ -106,6 +85,7 @@ export type NonlabelBuilderOperand =
   | StdlibOperand
   | LookupHandleOperand
   | PrimitiveOperand
+  | ImmediateOperand
   | number
   | string
   | boolean
