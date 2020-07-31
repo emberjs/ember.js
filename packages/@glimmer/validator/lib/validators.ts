@@ -100,9 +100,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
   private lastValue = INITIAL;
 
   private isUpdating = false;
-  private subtags: Tag[] | null = null;
-
-  private subtag: Tag | null = null;
+  private subtag: Tag | Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
 
   [TYPE]: T;
@@ -125,24 +123,24 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
       this.lastChecked = $REVISION;
 
       try {
-        let { subtags, subtag, subtagBufferCache, lastValue, revision } = this;
+        let { subtag, revision } = this;
 
         if (subtag !== null) {
-          let subtagValue = subtag[COMPUTE]();
-
-          if (subtagValue === subtagBufferCache) {
-            revision = Math.max(revision, lastValue);
+          if (Array.isArray(subtag)) {
+            for (let i = 0; i < subtag.length; i++) {
+              let value = subtag[i][COMPUTE]();
+              revision = Math.max(value, revision);
+            }
           } else {
-            // Clear the temporary buffer cache
-            this.subtagBufferCache = null;
-            revision = Math.max(revision, subtagValue);
-          }
-        }
+            let subtagValue = subtag[COMPUTE]();
 
-        if (subtags !== null) {
-          for (let i = 0; i < subtags.length; i++) {
-            let value = subtags[i][COMPUTE]();
-            revision = Math.max(value, revision);
+            if (subtagValue === this.subtagBufferCache) {
+              revision = Math.max(revision, this.lastValue);
+            } else {
+              // Clear the temporary buffer cache
+              this.subtagBufferCache = null;
+              revision = Math.max(revision, subtagValue);
+            }
           }
         }
 
@@ -275,7 +273,27 @@ export function createCombinatorTag(tags: Tag[]): Tag {
       return tags[0];
     default:
       let tag: CombinatorTag = new MonomorphicTagImpl(MonomorphicTagTypes.Combinator);
-      (tag as any).subtags = tags;
+      (tag as any).subtag = tags;
       return tag;
   }
 }
+
+// Warm
+
+let tag1 = createUpdatableTag();
+let tag2 = createUpdatableTag();
+let tag3 = createUpdatableTag();
+
+valueForTag(tag1);
+dirtyTag(tag1);
+valueForTag(tag1);
+updateTag(tag1, combine([tag2, tag3]));
+valueForTag(tag1);
+dirtyTag(tag2);
+valueForTag(tag1);
+dirtyTag(tag3);
+valueForTag(tag1);
+updateTag(tag1, tag3);
+valueForTag(tag1);
+dirtyTag(tag3);
+valueForTag(tag1);
