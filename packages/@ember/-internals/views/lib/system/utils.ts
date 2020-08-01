@@ -39,6 +39,9 @@ interface View {
 }
 
 export function registerView(view: View) {
+  if (view.parentView !== null) {
+    addChildView(view.parentView, view);
+  }
   let owner = getOwner(view);
   let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
 
@@ -48,6 +51,8 @@ export function registerView(view: View) {
 }
 
 export function unregisterView(view: View) {
+  removeChildView(view);
+
   let owner = getOwner(view);
   let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
 
@@ -125,7 +130,7 @@ export function clearViewElement(view: View): void {
   VIEW_ELEMENT.delete(view);
 }
 
-const CHILD_VIEW_IDS: WeakMap<View, Set<string>> = new WeakMap();
+const CHILD_VIEWS: WeakMap<View, Set<View>> = new WeakMap();
 
 /**
   @private
@@ -133,40 +138,42 @@ const CHILD_VIEW_IDS: WeakMap<View, Set<string>> = new WeakMap();
   @param {Ember.View} view
 */
 export function getChildViews(view: View) {
-  let owner = getOwner(view);
-  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
-  return collectChildViews(view, registry);
-}
-
-export function initChildViews(view: View): Set<string> {
-  let childViews: Set<string> = new Set();
-  CHILD_VIEW_IDS.set(view, childViews);
-  return childViews;
-}
-
-export function addChildView(parent: View, child: View): void {
-  let childViews = CHILD_VIEW_IDS.get(parent);
-  if (childViews === undefined) {
-    childViews = initChildViews(parent);
-  }
-
-  childViews.add(getViewId(child));
-}
-
-export function collectChildViews(view: View, registry: Dict<View>): View[] {
   let views: View[] = [];
-  let childViews = CHILD_VIEW_IDS.get(view);
+  let childViews = CHILD_VIEWS.get(view);
 
   if (childViews !== undefined) {
-    childViews.forEach((id) => {
-      let view = registry[id];
-      if (view && !view.isDestroying && !view.isDestroyed) {
+    childViews.forEach(view => {
+      if (!view.isDestroying && !view.isDestroyed) {
         views.push(view);
       }
     });
   }
 
   return views;
+}
+
+export function initChildViews(view: View): Set<View> {
+  let childViews: Set<View> = new Set();
+  CHILD_VIEWS.set(view, childViews);
+  return childViews;
+}
+
+export function addChildView(parent: View, child: View): void {
+  let childViews = CHILD_VIEWS.get(parent);
+  if (childViews === undefined) {
+    childViews = initChildViews(parent);
+  }
+
+  childViews.add(child);
+}
+
+function removeChildView(view: View): void {
+  if (view.parentView !== null) {
+    let childViews = CHILD_VIEWS.get(view.parentView);
+    if (childViews !== undefined) {
+      childViews.delete(view);
+    }
+  }
 }
 
 /**

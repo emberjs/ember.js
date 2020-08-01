@@ -2,7 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
+import { setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -307,12 +307,6 @@ export default class CurlyComponentManager
     // We become the new parentView for downstream components, so save our
     // component off on the dynamic scope.
     dynamicScope.view = component;
-
-    // Unless we're the root component, we need to add ourselves to our parent
-    // component's childViews array.
-    if (parentView !== null && parentView !== undefined) {
-      addChildView(parentView, component);
-    }
 
     component.trigger('didReceiveAttrs');
 
