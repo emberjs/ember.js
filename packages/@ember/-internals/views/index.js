@@ -1,5 +1,6 @@
 export { jQuery, jQueryDisabled } from './lib/system/jquery';
 export {
+  VIEW_REGISTRY,
   addChildView,
   isSimpleClick,
   getViewBounds,

@@ -2,7 +2,6 @@
 @module @ember/application
 */
 
-import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';
@@ -15,7 +14,7 @@ import {
 } from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
 import { RSVP } from '@ember/-internals/runtime';
-import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';
+import { EventDispatcher, jQuery, jQueryDisabled, VIEW_REGISTRY } from '@ember/-internals/views';
 import {
   Route,
   Router,
@@ -1146,10 +1145,9 @@ function commonSetupRegistry(registry) {
   registry.register('router:main', Router);
   registry.register('-view-registry:main', {
     create() {
-      return dictionary(null);
+      return VIEW_REGISTRY;
     },
   });
-
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
 

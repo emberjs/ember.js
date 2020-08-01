@@ -10,7 +10,7 @@ import {
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
-import { getViewId, getViewElement, jQueryDisabled } from '@ember/-internals/views';
+import { getViewId, getViewElement, jQueryDisabled, VIEW_REGISTRY } from '@ember/-internals/views';
 import { tryInvoke } from '@ember/-internals/utils';
 
 import { Component } from '../../utils/helpers';
@@ -22,7 +22,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.components = {};
     this.componentRegistry = [];
     this.teardownAssertions = [];
-    this.viewRegistry = this.owner.lookup('-view-registry:main');
+    this.viewRegistry = VIEW_REGISTRY;
   }
 
   afterEach() {

@@ -21,7 +21,6 @@ export default class RenderingTestCase extends AbstractTestCase {
       bootOptions,
     }));
 
-    owner.register('-view-registry:main', Object.create(null), { instantiate: false });
     owner.register('event_dispatcher:main', EventDispatcher);
 
     this.renderer = this.owner.lookup('renderer:-dom');

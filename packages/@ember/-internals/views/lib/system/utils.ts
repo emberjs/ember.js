@@ -1,13 +1,14 @@
 import { Renderer } from '@ember/-internals/glimmer';
-import { getOwner, Owner } from '@ember/-internals/owner';
 /* globals Element */
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { Dict, Option } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 
 /**
 @module ember
 */
+
+export const VIEW_REGISTRY: ViewRegistry = Object.create(null);
 
 export function isSimpleClick(event: MouseEvent) {
   let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
@@ -29,6 +30,10 @@ export function constructStyleDeprecationMessage(affectedStyle: string) {
   );
 }
 
+interface ViewRegistry {
+  [viewId: string]: View;
+}
+
 interface View {
   parentView: Option<View>;
   renderer: Renderer;
@@ -42,35 +47,27 @@ export function registerView(view: View) {
   if (view.parentView !== null) {
     addChildView(view.parentView, view);
   }
-  let owner = getOwner(view);
-  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
 
   let id = getViewId(view);
-  assert('Attempted to register a view with an id already in use: ' + id, !registry[id]);
-  registry[id] = view;
+  assert('Attempted to register a view with an id already in use: ' + id, !VIEW_REGISTRY[id]);
+  VIEW_REGISTRY[id] = view;
 }
 
 export function unregisterView(view: View) {
   removeChildView(view);
 
-  let owner = getOwner(view);
-  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
-
-  delete registry[getViewId(view)];
+  delete VIEW_REGISTRY[getViewId(view)];
 }
 
 /**
   @private
   @method getRootViews
-  @param {Object} owner
 */
-export function getRootViews(owner: Owner): View[] {
-  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
-
+export function getRootViews(): View[] {
   let rootViews: View[] = [];
 
-  Object.keys(registry).forEach((id) => {
-    let view = registry[id];
+  Object.keys(VIEW_REGISTRY).forEach(id => {
+    let view = VIEW_REGISTRY[id];
 
     if (view.parentView === null) {
       rootViews.push(view);

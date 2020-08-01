@@ -22,6 +22,7 @@ export const ViewMixin: any;
 export const ViewStateSupport: any;
 export const TextSupport: any;
 
+export const VIEW_REGISTRY: unknown;
 export function getElementView(element: SimpleElement): unknown;
 export function getViewElement(view: unknown): Option<SimpleElement>;
 export function registerView(view: unknown): Option<SimpleElement>;

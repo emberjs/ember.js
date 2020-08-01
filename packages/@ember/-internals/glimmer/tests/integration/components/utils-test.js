@@ -3,6 +3,7 @@ import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'inte
 import Controller from '@ember/controller';
 import {
   getRootViews,
+  VIEW_REGISTRY,
   getChildViews,
   getViewBounds,
   getViewClientRects,
@@ -252,9 +253,7 @@ moduleFor(
     }
 
     viewFor(id) {
-      let owner = this.applicationInstance;
-      let registry = owner.lookup('-view-registry:main');
-      return registry[id];
+      return VIEW_REGISTRY[id];
     }
   }
 );
