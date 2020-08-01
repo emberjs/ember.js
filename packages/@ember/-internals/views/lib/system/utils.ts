@@ -38,6 +38,22 @@ interface View {
   isDestroyed: boolean;
 }
 
+export function registerView(view: View) {
+  let owner = getOwner(view);
+  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
+
+  let id = getViewId(view);
+  assert('Attempted to register a view with an id already in use: ' + id, !registry[id]);
+  registry[id] = view;
+}
+
+export function unregisterView(view: View) {
+  let owner = getOwner(view);
+  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
+
+  delete registry[getViewId(view)];
+}
+
 /**
   @private
   @method getRootViews

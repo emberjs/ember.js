@@ -14,6 +14,8 @@ export {
   setViewElement,
   clearElementView,
   clearViewElement,
+  registerView,
+  unregisterView,
   constructStyleDeprecationMessage,
 } from './lib/system/utils';
 export { default as EventDispatcher } from './lib/system/event_dispatcher';

@@ -495,8 +495,6 @@ function commonSetupRegistry(registry) {
 
   registry.register('controller:basic', Controller, { instantiate: false });
 
-  registry.injection('renderer', '_viewRegistry', '-view-registry:main');
-
   registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 
   registry.injection('view:-outlet', 'namespace', 'application:main');

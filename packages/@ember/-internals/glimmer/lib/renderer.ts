@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { getOwner, Owner } from '@ember/-internals/owner';
-import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
+import { getViewElement, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import {
@@ -98,7 +98,6 @@ class RootState {
       template !== undefined
     );
 
-    this.id = getViewId(root);
     this.result = undefined;
     this.destroyed = false;
 
@@ -237,13 +236,8 @@ function loopEnd() {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-interface ViewRegistry {
-  [viewId: string]: unknown;
-}
-
 export abstract class Renderer {
   private _rootTemplate: OwnedTemplate;
-  private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
   private _roots: RootState[];
   private _removedRoots: RootState[];
@@ -263,12 +257,10 @@ export abstract class Renderer {
     document: SimpleDocument,
     env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
-    viewRegistry: ViewRegistry,
     destinedForDOM = false,
     builder = clientBuilder
   ) {
     this._rootTemplate = rootTemplate(owner);
-    this._viewRegistry = viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._roots = [];
     this._removedRoots = [];
@@ -336,19 +328,6 @@ export abstract class Renderer {
 
   rerender() {
     this._scheduleRevalidate();
-  }
-
-  register(view: any) {
-    let id = getViewId(view);
-    assert(
-      'Attempted to register a view with an id already in use: ' + id,
-      !this._viewRegistry[id]
-    );
-    this._viewRegistry[id] = view;
-  }
-
-  unregister(view: any) {
-    delete this._viewRegistry[getViewId(view)];
   }
 
   remove(view: Component) {
@@ -532,11 +511,10 @@ export class InertRenderer extends Renderer {
     document: SimpleDocument;
     env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
-    _viewRegistry: any;
     builder: any;
   }) {
-    let { document, env, rootTemplate, _viewRegistry, builder } = props;
-    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, false, builder);
+    let { document, env, rootTemplate, builder } = props;
+    return new this(getOwner(props), document, env, rootTemplate, false, builder);
   }
 
   getElement(_view: unknown): Option<SimpleElement> {
@@ -551,11 +529,10 @@ export class InteractiveRenderer extends Renderer {
     document: SimpleDocument;
     env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
-    _viewRegistry: any;
     builder: any;
   }) {
-    let { document, env, rootTemplate, _viewRegistry, builder } = props;
-    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, true, builder);
+    let { document, env, rootTemplate, builder } = props;
+    return new this(getOwner(props), document, env, rootTemplate, true, builder);
   }
 
   getElement(view: unknown): Option<SimpleElement> {

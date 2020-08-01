@@ -24,9 +24,6 @@ export default class RenderingTestCase extends AbstractTestCase {
     owner.register('-view-registry:main', Object.create(null), { instantiate: false });
     owner.register('event_dispatcher:main', EventDispatcher);
 
-    // TODO: why didn't buildOwner do this for us?
-    owner.inject('renderer', '_viewRegistry', '-view-registry:main');
-
     this.renderer = this.owner.lookup('renderer:-dom');
     this.element = document.querySelector('#qunit-fixture');
     this.component = null;
