@@ -1,5 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { getOwner, Owner } from '@ember/-internals/owner';
+import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
@@ -98,6 +99,7 @@ class RootState {
       template !== undefined
     );
 
+    this.id = guidFor(root);
     this.result = undefined;
     this.destroyed = false;
 
