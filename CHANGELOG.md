@@ -1,3 +1,14 @@
+## v0.55.3 (2020-08-02)
+
+#### :house: Internal
+* `@glimmer/validator`
+  * [#1124](https://github.com/glimmerjs/glimmer-vm/pull/1124) [REFACTOR] Simplify and warm tag computation ([@pzuraq](https://github.com/pzuraq))
+  * [#1108](https://github.com/glimmerjs/glimmer-vm/pull/1108) Remove $REVISION optimization ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.55.2 (2020-07-30)
 
 #### :rocket: Enhancement

@@ -1,10 +1,10 @@
 {
   "name": "@glimmer/dom-change-list",
-  "version": "0.55.2",
+  "version": "0.55.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/dom-change-list",
   "dependencies": {
-    "@glimmer/util": "^0.55.2",
-    "@glimmer/interfaces": "^0.55.2",
+    "@glimmer/util": "^0.55.3",
+    "@glimmer/interfaces": "^0.55.3",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/interface": "^1.4.0"
   },
