@@ -126,9 +126,11 @@ export const BOUNDS = symbol('BOUNDS');
 
   ```app/components/person-profile.js
   import Component from '@ember/component';
-
-  export default Component.extend({
-    displayName: computed('person.title', 'person.firstName', 'person.lastName', function() {
+  import { computed } from '@ember/object';
+  
+  export default class PersonProfile extends Component {
+    @computed('person.{title,firstName,lastName}')
+    get displayName() {
       let { title, firstName, lastName } = this;
 
       if (title) {
@@ -136,8 +138,8 @@ export const BOUNDS = symbol('BOUNDS');
       } else {
         return `${firstName} ${lastName}`;
       }
-    })
-  });
+    }
+  }
   ```
 
   And then use it in the component's template:
@@ -159,9 +161,9 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/emphasized-paragraph.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'em'
-  });
+  export default class EmphasizedParagraph extends Component {
+    tagName = 'em';
+  }
   ```
 
   When invoked, this component would produce output that looks something like
@@ -179,9 +181,9 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNames: ['my-class', 'my-other-class']
-  });
+  export default class MyWidget extends Component {
+    classNames = ['my-class', 'my-other-class'];
+  }
   ```
 
   Invoking this component will produce output that looks like this:
@@ -199,15 +201,17 @@ export const BOUNDS = symbol('BOUNDS');
   import Component from '@ember/component';
   import { computed } from '@ember/object';
 
-  export default Component.extend({
-    classNames: ['my-class', 'my-other-class'],
-    classNameBindings: ['propertyA', 'propertyB'],
+  export default class MyWidget extends Component {
+    classNames = ['my-class', 'my-other-class'];
+    classNameBindings = ['propertyA', 'propertyB'];
 
-    propertyA: 'from-a',
-    propertyB: computed(function() {
+    propertyA = 'from-a';
+    
+    @computed()
+    get propertyB() {
       if (someLogic) { return 'from-b'; }
-    })
-  });
+    }
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -237,11 +241,11 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['hovered'],
+  export default class MyWidget extends Component {
+    classNameBindings = ['hovered'];
 
-    hovered: true
-  });
+    hovered = true;
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -259,11 +263,11 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['awesome:so-very-cool'],
+  export default class MyWidget extends Component {
+    classNameBindings = ['awesome:so-very-cool'];
 
-    awesome: true
-  });
+    awesome = true;
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -278,11 +282,11 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['isUrgent'],
+  export default class MyWidget extends Component {
+    classNameBindings = ['isUrgent'];
 
-    isUrgent: true
-  });
+    isUrgent = true;
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -298,13 +302,13 @@ export const BOUNDS = symbol('BOUNDS');
   import Component from '@ember/component';
   import EmberObject from '@ember/object';
 
-  export default Component.extend({
-    classNameBindings: ['messages.empty'],
+  export default class MyWidget extends Component {
+    classNameBindings = ['messages.empty'];
 
-    messages: EmberObject.create({
+    messages = EmberObject.create({
       empty: true
     })
-  });
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -320,10 +324,10 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['isEnabled:enabled:disabled'],
-    isEnabled: true
-  });
+  export default class MyWidget extends Component {
+    classNameBindings = ['isEnabled:enabled:disabled'];
+    isEnabled = true;
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -344,10 +348,10 @@ export const BOUNDS = symbol('BOUNDS');
   import Component from '@ember/component';
 
   // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
-  export default Component.extend({
-    classNameBindings: ['isEnabled::disabled'],
-    isEnabled: true
-  });
+  export default class MyWidget extends Component {
+    classNameBindings = ['isEnabled::disabled'];
+    isEnabled = true;
+  }
   ```
 
   Invoking this component when the `isEnabled` property is true will produce
@@ -383,12 +387,12 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/my-anchor.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'a',
-    attributeBindings: ['href'],
+  export default class MyAnchor extends Component {
+    tagName = 'a';
+    attributeBindings = ['href'];
 
-    href: 'http://google.com'
-  });
+    href = 'http://google.com';
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -403,11 +407,11 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/components/my-anchor.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'a',
-    attributeBindings: ['url:href'],
+  export default class MyAnchor extends Component {
+    tagName = 'a';
+    attributeBindings = ['url:href'];
 
-    url: 'http://google.com'
+    url = 'http://google.com';
   });
   ```
 
