@@ -673,28 +673,34 @@ export class ComputedProperty extends ComputedDescriptor {
       return this.volatileSet(obj, keyName, value);
     }
 
+    // ensure two way binding works when the component has defined a computed
+    // property with both a setter and dependent keys, in that scenario without
+    // the sync observer added below the caller's value will never be updated
+    //
+    // See GH#18147 / GH#19028 for details.
+    if (
+      this._dependentKeys !== undefined &&
+      this._dependentKeys.length > 0 &&
+      // These two properties are set on Ember.Component
+      typeof obj[PROPERTY_DID_CHANGE] === 'function' &&
+      (obj as any).isComponent &&
+      // ensure that we only run this once, while the component is being instantiated
+      metaFor(obj).isInitializing()
+    ) {
+      addObserver(
+        obj,
+        keyName,
+        () => {
+          obj[PROPERTY_DID_CHANGE](keyName);
+        },
+        undefined,
+        true
+      );
+    }
+
     let ret;
 
     try {
-      if (obj instanceof Ember.Component) {
-        // ensure two way binding works when the component has defined a computed
-        // property with both a setter and dependent keys, in that scenario without
-        // the sync observer added below the caller's value will never be updated
-        //
-        // See GH#18417 / GH#19028 for details.
-        let descriptor: ComputedDescriptor;
-        descriptor = descriptorForProperty(obj, keyName);
-        let meta = metaFor(obj);
-        if (
-          meta.isInitializing() &&
-          descriptor !== undefined &&
-          descriptor._dependentKeys !== undefined &&
-          descriptor._dependentKeys.length > 0
-        ) {
-          addObserver(obj, keyName, obj[PROPERTY_DID_CHANGE].bind(obj, keyName), undefined, true);
-        }
-      }
-
       beginPropertyChanges();
 
       ret = this._set(obj, keyName, value);
