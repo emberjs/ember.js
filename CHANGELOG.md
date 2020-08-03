@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.21.0-beta.4 (August 3, 2020)
+
+- [#19059](https://github.com/emberjs/ember.js/pull/19059) [BUGFIX] Prevent `<base target="_parent">` from erroring in `HistoryLocation`
+- [#19060](https://github.com/emberjs/ember.js/pull/19060) / [#19065](https://github.com/emberjs/ember.js/pull/19065) / [#19072](https://github.com/emberjs/ember.js/pull/19072) [BUGFIX] Update rendering engine to `@glimmer/*` 0.55.3
+- [#19063](https://github.com/emberjs/ember.js/pull/19063) [DOC] Fix missing docs for `{{#in-element}}`
+
 ### v3.21.0-beta.3 (July 27, 2020)
 
 - [#19048](https://github.com/emberjs/ember.js/pull/19048) [BUGFIX] Update router.js to ensure transition.abort works for query param only transitions.
