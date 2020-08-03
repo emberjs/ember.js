@@ -1,4 +1,5 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
+import { addObserver, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { inspect, isEmberArray, toString } from '@ember/-internals/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
@@ -675,6 +676,25 @@ export class ComputedProperty extends ComputedDescriptor {
     let ret;
 
     try {
+      if (obj instanceof Ember.Component) {
+        // ensure two way binding works when the component has defined a computed
+        // property with both a setter and dependent keys, in that scenario without
+        // the sync observer added below the caller's value will never be updated
+        //
+        // See GH#18417 / GH#19028 for details.
+        let descriptor: ComputedDescriptor;
+        descriptor = descriptorForProperty(obj, keyName);
+        let meta = metaFor(obj);
+        if (
+          meta.isInitializing() &&
+          descriptor !== undefined &&
+          descriptor._dependentKeys !== undefined &&
+          descriptor._dependentKeys.length > 0
+        ) {
+          addObserver(obj, keyName, obj[PROPERTY_DID_CHANGE].bind(obj, keyName), undefined, true);
+        }
+      }
+
       beginPropertyChanges();
 
       ret = this._set(obj, keyName, value);
