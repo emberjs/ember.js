@@ -1,9 +1,13 @@
 import { RenderTest } from '../render-test';
-import { setDebuggerCallback } from '@glimmer/runtime';
+import { setDebuggerCallback, resetDebuggerCallback } from '@glimmer/runtime';
 import { test } from '../test-decorator';
 
 export class DebuggerSuite extends RenderTest {
   static suiteName = 'Debugger';
+
+  afterEach() {
+    resetDebuggerCallback();
+  }
 
   @test
   'basic debugger statement'() {
