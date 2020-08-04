@@ -405,7 +405,7 @@ export class InElementSuite extends RenderTest {
     this.testType = 'Dynamic';
     this.registerComponent('Basic', 'FooBar', '<p>{{@value}}</p>');
 
-    this.registerHelper('log', ([item]) => console.log(item));
+    this.registerHelper('log', () => {});
 
     let roots = [new Item('foo'), new Item('bar'), new Item('baz')];
 
