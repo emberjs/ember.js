@@ -88,7 +88,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     };
 
     let removeComponent = instance => {
-      let index = this.componentRegistry.indexOf(instance);
+      let index = this.componentRegistry.indexOf(getViewId(instance));
       this.componentRegistry.splice(index, 1);
 
       delete this.components[name];
