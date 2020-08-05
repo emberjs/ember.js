@@ -84,6 +84,10 @@
 - [#18694](https://github.com/emberjs/ember.js/pull/18694) [BUGFIX] Ensure tag updates are buffered, remove error message
 - [#18709](https://github.com/emberjs/ember.js/pull/18709) [BUGFIX] Fix `this` in `@tracked` initializer
 
+### v3.16.10 (August 5, 2020)
+
+- [#19028](https://github.com/emberjs/ember.js/pull/19028) [BUGFIX] Ensure setter CP's with dependent keys on curly components can be two way bound
+
 ### v3.16.9 (July 29, 2020)
 
 - [#19001](https://github.com/emberjs/ember.js/pull/19001) [BUGFIX] Invoke methods correctly in `TextSupport` `sendAction`
