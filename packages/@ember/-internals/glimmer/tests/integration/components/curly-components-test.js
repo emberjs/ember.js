@@ -2914,6 +2914,84 @@ moduleFor(
       this.assertText('initial value');
     }
 
+    ['@test GH#18417 - a two way binding flows upstream to a parent component through a CP']() {
+      let parent, child;
+      let ParentComponent = Component.extend({
+        init() {
+          this._super(...arguments);
+          parent = this;
+        },
+        string: 'Hello|World',
+      });
+
+      this.registerComponent('parent', {
+        ComponentClass: ParentComponent,
+        template: `{{child value=string}}
+
+        Parent String=<span data-test-parent-value>{{string}}</span>`,
+      });
+
+      let ChildComponent = Component.extend({
+        init() {
+          this._super(...arguments);
+          child = this;
+        },
+
+        a: null, // computed based on passed in value of `string`
+        b: null, // computed based on passed in value of `string`
+
+        value: computed('a', 'b', {
+          get() {
+            return this.a + '|' + this.b;
+          },
+
+          set(key, value) {
+            let vals = value.split('|');
+            set(this, 'a', vals[0]);
+            set(this, 'b', vals[1]);
+            return value;
+          },
+        }),
+      });
+
+      this.registerComponent('child', {
+        ComponentClass: ChildComponent,
+        template: '{{value}}',
+      });
+
+      this.render('{{parent}}');
+
+      this.assert.equal(parent.string, 'Hello|World', 'precond - parent value');
+      this.assert.equal(
+        this.element.querySelector('[data-test-parent-value]').textContent.trim(),
+        'Hello|World',
+        'precond - parent rendered value'
+      );
+
+      runTask(() => {
+        child.set('a', 'Foo');
+      });
+
+      this.assert.equal(parent.string, 'Foo|World', 'parent value updated');
+
+      this.assert.equal(
+        this.element.querySelector('[data-test-parent-value]').textContent.trim(),
+        'Foo|World',
+        'parent updated value rendered'
+      );
+
+      runTask(() => {
+        child.set('a', 'Hello');
+      });
+
+      this.assert.equal(parent.string, 'Hello|World', 'parent value reset');
+      this.assert.equal(
+        this.element.querySelector('[data-test-parent-value]').textContent.trim(),
+        'Hello|World',
+        'parent template reset'
+      );
+    }
+
     ['@test services can be injected into components']() {
       let service;
       this.registerService(
