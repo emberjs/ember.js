@@ -38,6 +38,7 @@ import {
   referenceForKey,
   SimpleClassNameBindingReference,
 } from '../utils/bindings';
+
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 import AbstractManager from './abstract';
