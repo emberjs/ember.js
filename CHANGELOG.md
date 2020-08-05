@@ -1,3 +1,21 @@
+## v0.56.0 (2020-08-05)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1126](https://github.com/glimmerjs/glimmer-vm/pull/1126) [REFACTOR] Expose tagMeta and simplify property lookups ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* Other
+  * [#1129](https://github.com/glimmerjs/glimmer-vm/pull/1129) set more timeouts for browserstack ([@krisselden](https://github.com/krisselden))
+* `@glimmer/integration-tests`
+  * [#1130](https://github.com/glimmerjs/glimmer-vm/pull/1130) [BUGFIX] Reduce test iteration count to prevent timeouts ([@pzuraq](https://github.com/pzuraq))
+  * [#1127](https://github.com/glimmerjs/glimmer-vm/pull/1127) fix test memory leaks ([@krisselden](https://github.com/krisselden))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+
+
 ## v0.55.3 (2020-08-02)
 
 #### :house: Internal
