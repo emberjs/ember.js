@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.21.0-beta.5 (August 5, 2020)
+
+- [#19028](https://github.com/emberjs/ember.js/pull/19028) [BUGFIX] Ensure setter CP's with dependent keys on curly components can be two way bound
+
 ### v3.21.0-beta.4 (August 3, 2020)
 
 - [#19059](https://github.com/emberjs/ember.js/pull/19059) [BUGFIX] Prevent `<base target="_parent">` from erroring in `HistoryLocation`
