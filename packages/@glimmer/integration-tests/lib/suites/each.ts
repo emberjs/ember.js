@@ -586,7 +586,7 @@ export class EachSuite extends RenderTest {
     let arr = [1, 2, 3, 4, 5, 6, 7, 8];
     this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       shuffleArray(arr);
       this.rerender({ arr });
 
@@ -611,7 +611,7 @@ export class EachSuite extends RenderTest {
     let arr = [1, 2, 3, 4, 5, 6, 7, 8];
     this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       let newArr = arr.slice();
       shuffleArray(newArr);
       let semiArr = newArr.slice(0, 5);
@@ -638,7 +638,7 @@ export class EachSuite extends RenderTest {
     let arr = [1, 2, 3, 4, 5, 6, 7, 8];
     this.render(`{{#each arr as |item|}}{{item}}{{/each}}`, { arr });
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       let newArr = arr.slice();
       shuffleArray(newArr);
       let semiArr = newArr.slice(0, 5).concat([11, 12]);
@@ -667,7 +667,7 @@ export class EachSuite extends RenderTest {
     ];
     this.render(`{{#each arr as |sub|}}{{#each sub as |item|}}{{item}}{{/each}}{{/each}}`, { arr });
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       for (let sub of arr) {
         shuffleArray(sub);
       }
