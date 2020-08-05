@@ -49,6 +49,7 @@ export interface Environment<Extra = unknown> {
   toBool(value: unknown): boolean;
   toIterator(value: unknown): Option<IteratorDelegate>;
 
+  getProp(item: unknown, prop: string): unknown;
   getPath(item: unknown, path: string): unknown;
   setPath(item: unknown, path: string, value: unknown): unknown;
 

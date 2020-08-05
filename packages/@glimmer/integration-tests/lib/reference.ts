@@ -45,6 +45,10 @@ const DEFAULT_TEMPLATE_REF_ENV = {
     return null;
   },
 
+  getProp(obj: unknown, key: string) {
+    return (obj as Dict)[key];
+  },
+
   getPath(obj: unknown, key: string) {
     return (obj as Dict)[key];
   },
