@@ -69,7 +69,7 @@
     "chalk": "^3.0.0",
     "dag-map": "^2.0.2",
     "ember-cli": "~3.16.0",
-    "ember-cli-browserstack": "^1.0.1",
+    "ember-cli-browserstack": "^1.1.0",
     "ensure-posix-path": "^1.1.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
@@ -141,7 +141,7 @@
     "npm": false
   },
   "volta": {
-    "node": "10.20.1",
+    "node": "10.22.0",
     "yarn": "1.22.4"
   },
   "ember-addon": {
