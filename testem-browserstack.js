@@ -10,8 +10,12 @@ module.exports = {
   disable_watching: true,
   browser_start_timeout: 2000,
   browser_disconnect_timeout: 120,
+  socket_heartbeat_timeout: 600,
+  socket_server_options: {
+    upgradeTimeout: 30000,
+  },
   timeout: 600,
-  parallel: 4,
+  parallel: 2,
   reporter: FailureOnlyReporterGroupedByBrowser,
   launchers: {
     BS_Chrome_Current: {

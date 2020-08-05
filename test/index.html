@@ -1,119 +1,143 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Glimmer Test Suite</title>
-    <link rel="stylesheet" href="assets/qunit.css" />
-  </head>
-  <body>
-    <script>
-      if (typeof console === 'undefined') {
-        console = {
-          log: function() {},
-          warn: function() {},
-          error: function() {},
-          group: function() {},
-          groupEnd: function() {},
-        };
-      }
-    </script>
 
-    <div id="qunit"></div>
-    <div id="qunit-fixture"></div>
-    <script src="assets/qunit.js"></script>
-    <script src="/testem.js"></script>
-    <script src="assets/loader.js"></script>
-    <script src="assets/vendor.js"></script>
-    <script src="assets/glimmer-vm.js"></script>
-    <script src="assets/tests.js"></script>
-    <script>
-      function getPackagesToTest() {
-        if (QUnit.urlParams.packages) {
-          return QUnit.urlParams.packages.split(',');
-        }
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>Glimmer Test Suite</title>
+  <link rel="stylesheet" href="assets/qunit.css" />
+</head>
 
-      Object.assign = function() {
-        throw new Error(
-          'Unexpected use of Object.assign. Object.assign cannot be used because it is unavailable in IE11. This error was likely caused by using syntax like the spread operator ({ ...obj }) which transpiles to Object.assign. Please use alternate syntax that is compatible with IE11.'
-        );
+<body>
+  <script>
+    if (typeof console === 'undefined') {
+      console = {
+        log: function () { },
+        warn: function () { },
+        error: function () { },
+        group: function () { },
+        groupEnd: function () { },
       };
+    }
+  </script>
 
-      // Recursively merge all the dependencies for this configuration of
-      // packages to ensure that we only inject each dependency once.
-      // Testing dependencies are only injected for the packages being tested.
-      var packagesToTest = getPackagesToTest();
-    </script>
-
-    <script>
-      QUnit.config.urlConfig.push({
-        id: 'notslint',
-        label: 'Disable TSLint',
-        tooltip: 'Do not include any TSLint tests',
-      });
-
-      QUnit.config.urlConfig.push({
-        id: 'disable_local_debug',
-        label: 'Disable LOCAL_DEBUG (runs like prod)',
-        tooltip: 'Disable LOCAL_DEBUG (runs like prod)',
-      });
-
-      QUnit.config.urlConfig.push({
-        id: 'enable_local_should_log',
-        label: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
-        tooltip: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
-      });
-
-      QUnit.config.urlConfig.push({
-        id: 'smoke_tests',
-        label: 'Enable Smoke Tests',
-        tooltip: 'Enable Smoke Tests',
-      });
-
-      // since all of our tests are synchronous, the QUnit
-      // UI never has a chance to rerender / update. This
-      // leads to a very long "white screen" when running
-      // the tests
-      //
-      // this adds a very small amount of async, just to allow
-      // the QUnit UI to rerender once per module completed
-      if (typeof Promise !== 'undefined') {
-        QUnit.moduleDone(function() {
-          return new Promise(function(resolve) {
-            setTimeout(resolve, 0);
-          });
-        });
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="assets/qunit.js"></script>
+  <script src="/testem.js"></script>
+  <script src="assets/loader.js"></script>
+  <script src="assets/vendor.js"></script>
+  <script src="assets/glimmer-vm.js"></script>
+  <script src="assets/tests.js"></script>
+  <script>
+    function getPackagesToTest() {
+      if (QUnit.urlParams.packages) {
+        return QUnit.urlParams.packages.split(',');
       }
+    }
 
-      var SMOKE_TESTS = (function() {
-        let location = typeof window !== 'undefined' && window.location;
-        if (location && /[?&]smoke_tests/.test(window.location.search)) {
-          return true;
+    Object.assign = function () {
+      throw new Error(
+        'Unexpected use of Object.assign. Object.assign cannot be used because it is unavailable in IE11. This error was likely caused by using syntax like the spread operator ({ ...obj }) which transpiles to Object.assign. Please use alternate syntax that is compatible with IE11.'
+      );
+    };
+
+    // Recursively merge all the dependencies for this configuration of
+    // packages to ensure that we only inject each dependency once.
+    // Testing dependencies are only injected for the packages being tested.
+    var packagesToTest = getPackagesToTest();
+  </script>
+
+  <script>
+    QUnit.config.urlConfig.push({
+      id: 'notslint',
+      label: 'Disable TSLint',
+      tooltip: 'Do not include any TSLint tests',
+    });
+
+    QUnit.config.urlConfig.push({
+      id: 'disable_local_debug',
+      label: 'Disable LOCAL_DEBUG (runs like prod)',
+      tooltip: 'Disable LOCAL_DEBUG (runs like prod)',
+    });
+
+    QUnit.config.urlConfig.push({
+      id: 'enable_local_should_log',
+      label: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
+      tooltip: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
+    });
+
+    QUnit.config.urlConfig.push({
+      id: 'smoke_tests',
+      label: 'Enable Smoke Tests',
+      tooltip: 'Enable Smoke Tests',
+    });
+
+    // since all of our tests are synchronous, the QUnit
+    // UI never has a chance to rerender / update. This
+    // leads to a very long "white screen" when running
+    // the tests
+    //
+    // this adds a very small amount of async, just to allow
+    // the QUnit UI to rerender once per module completed
+    (function () {
+      var start = Date.now();
+      QUnit.testDone(function (test) {
+        var gap = Date.now() - start;
+        if (gap > 100) {
+          return {
+            then: function (resolve) {
+              setTimeout(function () {
+                start = Date.now();
+                resolve();
+              }, 10);
+            }
+          };
         }
-        return false;
-      })();
+      });
 
-      var testMatch;
-      var notslint = QUnit.urlParams.notslint;
-
-      if (packagesToTest) {
-        testMatch = new RegExp('^(' + packagesToTest.join('|') + ').*-test$');
-      } else {
-        testMatch = /-test$/;
-      }
-
-      var smokeTestFile = '@glimmer/integration-tests/test/smoke-test';
-
-      if (SMOKE_TESTS) {
-        requireModule(smokeTestFile);
-      } else {
-        Object.keys(requireModule.entries).forEach(function(entry) {
-          if (entry.match(testMatch) && entry !== smokeTestFile) {
-            if (notslint && entry.match(/\.lint-test$/)) return;
-            requireModule(entry);
+      QUnit.moduleDone(function () {
+        // breathe after module
+        return {
+          then: function (resolve) {
+            setTimeout(function () {
+              start = Date.now();
+              resolve();
+            }, 10);
           }
-        });
+        };
+      });
+    })();
+
+    var SMOKE_TESTS = (function () {
+      let location = typeof window !== 'undefined' && window.location;
+      if (location && /[?&]smoke_tests/.test(window.location.search)) {
+        return true;
       }
-    </script>
-  </body>
+      return false;
+    })();
+
+    var testMatch;
+    var notslint = QUnit.urlParams.notslint;
+
+    if (packagesToTest) {
+      testMatch = new RegExp('^(' + packagesToTest.join('|') + ').*-test$');
+    } else {
+      testMatch = /-test$/;
+    }
+
+    var smokeTestFile = '@glimmer/integration-tests/test/smoke-test';
+
+    if (SMOKE_TESTS) {
+      requireModule(smokeTestFile);
+    } else {
+      Object.keys(requireModule.entries).forEach(function (entry) {
+        if (entry.match(testMatch) && entry !== smokeTestFile) {
+          if (notslint && entry.match(/\.lint-test$/)) return;
+          requireModule(entry);
+        }
+      });
+    }
+  </script>
+</body>
+
 </html>
