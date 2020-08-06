@@ -11,15 +11,13 @@
 export { symbol, enumerableSymbol, isInternalSymbol } from './lib/symbol';
 export { default as dictionary } from './lib/dictionary';
 export { default as getDebugName } from './lib/get-debug-name';
-export { default as getOwnPropertyDescriptors } from './lib/get-own-property-descriptors';
 export { uuid, GUID_KEY, generateGuid, guidFor } from './lib/guid';
 export { default as intern } from './lib/intern';
 export {
   checkHasSuper,
   ROOT,
   wrap,
-  getObservers,
-  getListeners,
+  observerListenerMetaFor,
   setObservers,
   setListeners,
 } from './lib/super';

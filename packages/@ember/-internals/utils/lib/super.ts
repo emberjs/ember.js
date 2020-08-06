@@ -36,26 +36,36 @@ function hasSuper(func: Function) {
   return hasSuper;
 }
 
-const OBSERVERS_MAP = new WeakMap();
+class ObserverListenerMeta {
+  listeners?: string[] = undefined;
+  observers?: { paths: string[]; sync: boolean } = undefined;
+}
+
+const OBSERVERS_LISTENERS_MAP = new WeakMap<Function, ObserverListenerMeta>();
+
+function createObserverListenerMetaFor(fn: Function) {
+  let meta = OBSERVERS_LISTENERS_MAP.get(fn);
+
+  if (meta === undefined) {
+    meta = new ObserverListenerMeta();
+    OBSERVERS_LISTENERS_MAP.set(fn, meta);
+  }
+
+  return meta;
+}
+
+export function observerListenerMetaFor(fn: Function) {
+  return OBSERVERS_LISTENERS_MAP.get(fn);
+}
 
 export function setObservers(func: Function, observers: { paths: string[]; sync: boolean }) {
-  OBSERVERS_MAP.set(func, observers);
+  let meta = createObserverListenerMetaFor(func);
+  meta.observers = observers;
 }
 
-export function getObservers(func: Function) {
-  return OBSERVERS_MAP.get(func);
-}
-
-const LISTENERS_MAP = new WeakMap();
-
-export function setListeners(func: Function, listeners?: string[]) {
-  if (listeners) {
-    LISTENERS_MAP.set(func, listeners);
-  }
-}
-
-export function getListeners(func: Function) {
-  return LISTENERS_MAP.get(func);
+export function setListeners(func: Function, listeners: string[]) {
+  let meta = createObserverListenerMetaFor(func);
+  meta.listeners = listeners;
 }
 
 const IS_WRAPPED_FUNCTION_SET = new WeakSet();
@@ -93,8 +103,12 @@ function _wrap(func: Function, superFunc: Function): Function {
   }
 
   IS_WRAPPED_FUNCTION_SET.add(superWrapper);
-  setObservers(superWrapper, getObservers(func));
-  setListeners(superWrapper, getListeners(func));
+
+  let meta = OBSERVERS_LISTENERS_MAP.get(func);
+
+  if (meta !== undefined) {
+    OBSERVERS_LISTENERS_MAP.set(superWrapper, meta);
+  }
 
   return superWrapper;
 }
