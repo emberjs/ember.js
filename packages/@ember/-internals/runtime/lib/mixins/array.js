@@ -1982,7 +1982,7 @@ NativeArray = NativeArray.without(...ignore);
 let A;
 
 if (ENV.EXTEND_PROTOTYPES.Array) {
-  NativeArray.apply(Array.prototype);
+  NativeArray.apply(Array.prototype, true);
 
   A = function(arr) {
     assert(
