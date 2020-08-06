@@ -5,13 +5,8 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { setWithMandatorySetter } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
-import { Decorator } from './decorator';
-import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
+import { Decorator, descriptorForProperty, isClassicDecorator } from './decorator';
 import { revalidateObservers } from './observer';
-
-interface ExtendedObject {
-  didDefineProperty?: (obj: object, keyName: string, value: any) => void;
-}
 
 /**
   NOTE: This is a low-level method used by other parts of the API. You almost
@@ -66,11 +61,9 @@ export function defineProperty(
   keyName: string,
   desc?: Decorator | undefined | null,
   data?: any | undefined | null,
-  meta?: Meta
+  _meta?: Meta
 ): void {
-  if (meta === undefined) {
-    meta = metaFor(obj);
-  }
+  let meta = _meta === undefined ? metaFor(obj) : _meta;
   let previousDesc = descriptorForProperty(obj, keyName, meta);
   let wasDescriptor = previousDesc !== undefined;
 
@@ -78,52 +71,11 @@ export function defineProperty(
     previousDesc.teardown(obj, keyName, meta);
   }
 
-  // used to track if the the property being defined be enumerable
-  let enumerable = true;
-
-  // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
-  // mutating a native object prototype like this should _not_ result in enumerable properties being added (or we have significant
-  // issues with things like deep equality checks from test frameworks, or things like jQuery.extend(true, [], [])).
-  //
-  // this is a hack, and we should stop mutating the array prototype by default 😫
-  if (obj === Array.prototype) {
-    enumerable = false;
-  }
-
-  let value;
   if (isClassicDecorator(desc)) {
-    let propertyDesc;
-
-    if (DEBUG) {
-      propertyDesc = desc!(obj, keyName, undefined, meta, true);
-    } else {
-      propertyDesc = desc!(obj, keyName, undefined, meta);
-    }
-
-    Object.defineProperty(obj, keyName, propertyDesc as PropertyDescriptor);
-
-    // pass the decorator function forward for backwards compat
-    value = desc;
-  } else if (desc === undefined || desc === null) {
-    value = data;
-
-    if (wasDescriptor || enumerable === false) {
-      Object.defineProperty(obj, keyName, {
-        configurable: true,
-        enumerable,
-        writable: true,
-        value,
-      });
-    } else {
-      if (DEBUG) {
-        setWithMandatorySetter!(obj, keyName, data);
-      } else {
-        obj[keyName] = data;
-      }
-    }
+    defineDecorator(obj, keyName, desc!, meta);
+  } else if (desc === null || desc === undefined) {
+    defineValue(obj, keyName, data, wasDescriptor, true);
   } else {
-    value = desc;
-
     // fallback to ES5
     Object.defineProperty(obj, keyName, desc);
   }
@@ -133,10 +85,44 @@ export function defineProperty(
   if (!meta.isPrototypeMeta(obj)) {
     revalidateObservers(obj);
   }
+}
 
-  // The `value` passed to the `didDefineProperty` hook is
-  // either the descriptor or data, whichever was passed.
-  if (typeof (obj as ExtendedObject).didDefineProperty === 'function') {
-    (obj as ExtendedObject).didDefineProperty!(obj, keyName, value);
+export function defineDecorator(obj: object, keyName: string, desc: Decorator, meta: Meta) {
+  let propertyDesc;
+
+  if (DEBUG) {
+    propertyDesc = desc!(obj, keyName, undefined, meta, true);
+  } else {
+    propertyDesc = desc!(obj, keyName, undefined, meta);
   }
+
+  Object.defineProperty(obj, keyName, propertyDesc as PropertyDescriptor);
+
+  // pass the decorator function forward for backwards compat
+  return desc;
+}
+
+export function defineValue(
+  obj: object,
+  keyName: string,
+  value: unknown,
+  wasDescriptor: boolean,
+  enumerable = true
+) {
+  if (wasDescriptor === true || enumerable === false) {
+    Object.defineProperty(obj, keyName, {
+      configurable: true,
+      enumerable,
+      writable: true,
+      value,
+    });
+  } else {
+    if (DEBUG) {
+      setWithMandatorySetter!(obj, keyName, value);
+    } else {
+      obj[keyName] = value;
+    }
+  }
+
+  return value;
 }

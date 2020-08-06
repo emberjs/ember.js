@@ -19,14 +19,12 @@ import {
   ComputedDescriptor,
   Decorator,
   DecoratorPropertyDescriptor,
-  isElementDescriptor,
-  makeComputedDecorator,
-} from './decorator';
-import {
   descriptorForDecorator,
   descriptorForProperty,
   isClassicDecorator,
-} from './descriptor_map';
+  isElementDescriptor,
+  makeComputedDecorator,
+} from './decorator';
 import expandProperties from './expand_properties';
 import { addObserver, setObserverSuspended } from './observer';
 import { defineProperty } from './properties';
@@ -251,8 +249,8 @@ function noop(): void {}
   @public
 */
 export class ComputedProperty extends ComputedDescriptor {
-  protected _volatile = false;
-  protected _readOnly = false;
+  _volatile = false;
+  _readOnly = false;
   protected _hasConfig = false;
 
   _getter?: ComputedPropertyGetter = undefined;
@@ -350,182 +348,6 @@ export class ComputedProperty extends ComputedDescriptor {
     }
   }
 
-  /**
-    Call on a computed property to set it into non-cached mode. When in this
-    mode the computed property will not automatically cache the return value.
-    It also does not automatically fire any change events. You must manually notify
-    any changes if you want to observe this property.
-
-    Dependency keys have no effect on volatile properties as they are for cache
-    invalidation and notification when cached value is invalidated.
-
-    Example:
-
-    ```javascript
-    import { computed } from '@ember/object';
-
-    class CallCounter {
-      _calledCount = 0;
-
-      @computed().volatile()
-      get calledCount() {
-        return this._calledCount++;
-      }
-    }
-    ```
-
-    Classic Class Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    let CallCounter = EmberObject.extend({
-      _calledCount: 0,
-
-      value: computed(function() {
-        return this._calledCount++;
-      }).volatile()
-    });
-    ```
-    @method volatile
-    @deprecated
-    @return {ComputedProperty} this
-    @chainable
-    @public
-  */
-  volatile(): void {
-    deprecate(
-      'Setting a computed property as volatile has been deprecated. Instead, consider using a native getter with native class syntax.',
-      false,
-      {
-        id: 'computed-property.volatile',
-        until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_computed-property-volatile',
-      }
-    );
-
-    this._volatile = true;
-  }
-
-  /**
-    Call on a computed property to set it into read-only mode. When in this
-    mode the computed property will throw an error when set.
-
-    Example:
-
-    ```javascript
-    import { computed, set } from '@ember/object';
-
-    class Person {
-      @computed().readOnly()
-      get guid() {
-        return 'guid-guid-guid';
-      }
-    }
-
-    let person = new Person();
-    set(person, 'guid', 'new-guid'); // will throw an exception
-    ```
-
-    Classic Class Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    let Person = EmberObject.extend({
-      guid: computed(function() {
-        return 'guid-guid-guid';
-      }).readOnly()
-    });
-
-    let person = Person.create();
-    person.set('guid', 'new-guid'); // will throw an exception
-    ```
-
-    @method readOnly
-    @return {ComputedProperty} this
-    @chainable
-    @public
-  */
-  readOnly(): void {
-    this._readOnly = true;
-    assert(
-      'Computed properties that define a setter using the new syntax cannot be read-only',
-      !(this._readOnly && this._setter && this._setter !== this._getter)
-    );
-  }
-
-  /**
-    Sets the dependent keys on this computed property. Pass any number of
-    arguments containing key paths that this computed property depends on.
-
-    Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    class President {
-      constructor(firstName, lastName) {
-        set(this, 'firstName', firstName);
-        set(this, 'lastName', lastName);
-      }
-
-      // Tell Ember that this computed property depends on firstName
-      // and lastName
-      @computed().property('firstName', 'lastName')
-      get fullName() {
-        return `${this.firstName} ${this.lastName}`;
-      }
-    }
-
-    let president = new President('Barack', 'Obama');
-
-    president.fullName; // 'Barack Obama'
-    ```
-
-    Classic Class Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    let President = EmberObject.extend({
-      fullName: computed(function() {
-        return this.get('firstName') + ' ' + this.get('lastName');
-
-        // Tell Ember that this computed property depends on firstName
-        // and lastName
-      }).property('firstName', 'lastName')
-    });
-
-    let president = President.create({
-      firstName: 'Barack',
-      lastName: 'Obama'
-    });
-
-    president.get('fullName'); // 'Barack Obama'
-    ```
-
-    @method property
-    @deprecated
-    @param {String} path* zero or more property paths
-    @return {ComputedProperty} this
-    @chainable
-    @public
-  */
-  property(...passedArgs: string[]): void {
-    deprecate(
-      'Setting dependency keys using the `.property()` modifier has been deprecated. Pass the dependency keys directly to computed as arguments instead. If you are using `.property()` on a computed property macro, consider refactoring your macro to receive additional dependent keys in its initial declaration.',
-      false,
-      {
-        id: 'computed-property.property',
-        until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_computed-property-property',
-      }
-    );
-
-    this._property(...passedArgs);
-  }
-
   _property(...passedArgs: string[]): void {
     let args: string[] = [];
 
@@ -546,53 +368,6 @@ export class ComputedProperty extends ComputedDescriptor {
 
     this._dependentKeys = args;
   }
-
-  /**
-    In some cases, you may want to annotate computed properties with additional
-    metadata about how they function or what values they operate on. For example,
-    computed property functions may close over variables that are then no longer
-    available for introspection. You can pass a hash of these values to a
-    computed property.
-
-    Example:
-
-    ```javascript
-    import { computed } from '@ember/object';
-    import Person from 'my-app/utils/person';
-
-    class Store {
-      @computed().meta({ type: Person })
-      get person() {
-        let personId = this.personId;
-        return Person.create({ id: personId });
-      }
-    }
-    ```
-
-    Classic Class Example:
-
-    ```javascript
-    import { computed } from '@ember/object';
-    import Person from 'my-app/utils/person';
-
-    const Store = EmberObject.extend({
-      person: computed(function() {
-        let personId = this.get('personId');
-        return Person.create({ id: personId });
-      }).meta({ type: Person })
-    });
-    ```
-
-    The hash that you pass to the `meta()` function will be saved on the
-    computed property descriptor under the `_meta` key. Ember runtime
-    exposes a public API for retrieving these values from classes,
-    via the `metaForProperty()` function.
-
-    @method meta
-    @param {Object} meta
-    @chainable
-    @public
-  */
 
   get(obj: object, keyName: string): any {
     if (this._volatile) {
@@ -833,21 +608,230 @@ export type ComputedDecorator = Decorator & PropertyDecorator & ComputedDecorato
 
 // TODO: This class can be svelted once `meta` has been deprecated
 class ComputedDecoratorImpl extends Function {
+  /**
+    Call on a computed property to set it into read-only mode. When in this
+    mode the computed property will throw an error when set.
+
+    Example:
+
+    ```javascript
+    import { computed, set } from '@ember/object';
+
+    class Person {
+      @computed().readOnly()
+      get guid() {
+        return 'guid-guid-guid';
+      }
+    }
+
+    let person = new Person();
+    set(person, 'guid', 'new-guid'); // will throw an exception
+    ```
+
+    Classic Class Example:
+
+    ```javascript
+    import EmberObject, { computed } from '@ember/object';
+
+    let Person = EmberObject.extend({
+      guid: computed(function() {
+        return 'guid-guid-guid';
+      }).readOnly()
+    });
+
+    let person = Person.create();
+    person.set('guid', 'new-guid'); // will throw an exception
+    ```
+
+    @method readOnly
+    @return {ComputedProperty} this
+    @chainable
+    @public
+  */
   readOnly(this: Decorator) {
-    (descriptorForDecorator(this) as ComputedProperty).readOnly();
+    let desc = descriptorForDecorator(this) as ComputedProperty;
+    assert(
+      'Computed properties that define a setter using the new syntax cannot be read-only',
+      !(desc._setter && desc._setter !== desc._getter)
+    );
+    desc._readOnly = true;
     return this;
   }
 
+  /**
+    Call on a computed property to set it into non-cached mode. When in this
+    mode the computed property will not automatically cache the return value.
+    It also does not automatically fire any change events. You must manually notify
+    any changes if you want to observe this property.
+
+    Dependency keys have no effect on volatile properties as they are for cache
+    invalidation and notification when cached value is invalidated.
+
+    Example:
+
+    ```javascript
+    import { computed } from '@ember/object';
+
+    class CallCounter {
+      _calledCount = 0;
+
+      @computed().volatile()
+      get calledCount() {
+        return this._calledCount++;
+      }
+    }
+    ```
+
+    Classic Class Example:
+
+    ```javascript
+    import EmberObject, { computed } from '@ember/object';
+
+    let CallCounter = EmberObject.extend({
+      _calledCount: 0,
+
+      value: computed(function() {
+        return this._calledCount++;
+      }).volatile()
+    });
+    ```
+    @method volatile
+    @deprecated
+    @return {ComputedProperty} this
+    @chainable
+    @public
+  */
   volatile(this: Decorator) {
-    (descriptorForDecorator(this) as ComputedProperty).volatile();
+    deprecate(
+      'Setting a computed property as volatile has been deprecated. Instead, consider using a native getter with native class syntax.',
+      false,
+      {
+        id: 'computed-property.volatile',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_computed-property-volatile',
+      }
+    );
+    (descriptorForDecorator(this) as ComputedProperty)._volatile = true;
     return this;
   }
 
+  /**
+    Sets the dependent keys on this computed property. Pass any number of
+    arguments containing key paths that this computed property depends on.
+
+    Example:
+
+    ```javascript
+    import EmberObject, { computed } from '@ember/object';
+
+    class President {
+      constructor(firstName, lastName) {
+        set(this, 'firstName', firstName);
+        set(this, 'lastName', lastName);
+      }
+
+      // Tell Ember that this computed property depends on firstName
+      // and lastName
+      @computed().property('firstName', 'lastName')
+      get fullName() {
+        return `${this.firstName} ${this.lastName}`;
+      }
+    }
+
+    let president = new President('Barack', 'Obama');
+
+    president.fullName; // 'Barack Obama'
+    ```
+
+    Classic Class Example:
+
+    ```javascript
+    import EmberObject, { computed } from '@ember/object';
+
+    let President = EmberObject.extend({
+      fullName: computed(function() {
+        return this.get('firstName') + ' ' + this.get('lastName');
+
+        // Tell Ember that this computed property depends on firstName
+        // and lastName
+      }).property('firstName', 'lastName')
+    });
+
+    let president = President.create({
+      firstName: 'Barack',
+      lastName: 'Obama'
+    });
+
+    president.get('fullName'); // 'Barack Obama'
+    ```
+
+    @method property
+    @deprecated
+    @param {String} path* zero or more property paths
+    @return {ComputedProperty} this
+    @chainable
+    @public
+  */
   property(this: Decorator, ...keys: string[]) {
-    (descriptorForDecorator(this) as ComputedProperty).property(...keys);
+    deprecate(
+      'Setting dependency keys using the `.property()` modifier has been deprecated. Pass the dependency keys directly to computed as arguments instead. If you are using `.property()` on a computed property macro, consider refactoring your macro to receive additional dependent keys in its initial declaration.',
+      false,
+      {
+        id: 'computed-property.property',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_computed-property-property',
+      }
+    );
+    (descriptorForDecorator(this) as ComputedProperty)._property(...keys);
     return this;
   }
 
+  /**
+    In some cases, you may want to annotate computed properties with additional
+    metadata about how they function or what values they operate on. For example,
+    computed property functions may close over variables that are then no longer
+    available for introspection. You can pass a hash of these values to a
+    computed property.
+
+    Example:
+
+    ```javascript
+    import { computed } from '@ember/object';
+    import Person from 'my-app/utils/person';
+
+    class Store {
+      @computed().meta({ type: Person })
+      get person() {
+        let personId = this.personId;
+        return Person.create({ id: personId });
+      }
+    }
+    ```
+
+    Classic Class Example:
+
+    ```javascript
+    import { computed } from '@ember/object';
+    import Person from 'my-app/utils/person';
+
+    const Store = EmberObject.extend({
+      person: computed(function() {
+        let personId = this.get('personId');
+        return Person.create({ id: personId });
+      }).meta({ type: Person })
+    });
+    ```
+
+    The hash that you pass to the `meta()` function will be saved on the
+    computed property descriptor under the `_meta` key. Ember runtime
+    exposes a public API for retrieving these values from classes,
+    via the `metaForProperty()` function.
+
+    @method meta
+    @param {Object} meta
+    @chainable
+    @public
+  */
   meta(this: Decorator, meta?: any): any {
     let prop = descriptorForDecorator(this) as ComputedProperty;
 
@@ -861,12 +845,12 @@ class ComputedDecoratorImpl extends Function {
 
   // TODO: Remove this when we can provide alternatives in the ecosystem to
   // addons such as ember-macro-helpers that use it.
-  get _getter(this: Decorator) {
+  get _getter() {
     return (descriptorForDecorator(this) as ComputedProperty)._getter;
   }
 
   // TODO: Refactor this, this is an internal API only
-  set enumerable(this: Decorator, value: boolean) {
+  set enumerable(value: boolean) {
     (descriptorForDecorator(this) as ComputedProperty).enumerable = value;
   }
 }

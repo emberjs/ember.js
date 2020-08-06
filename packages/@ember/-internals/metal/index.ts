@@ -38,13 +38,11 @@ export {
   DecoratorPropertyDescriptor,
   isElementDescriptor,
   nativeDescDecorator,
-} from './lib/decorator';
-export {
   descriptorForDecorator,
   descriptorForProperty,
   isClassicDecorator,
   setClassicDecorator,
-} from './lib/descriptor_map';
+} from './lib/decorator';
 export { default as libraries, Libraries } from './lib/libraries';
 export { default as getProperties } from './lib/get_properties';
 export { default as setProperties } from './lib/set_properties';

@@ -4,18 +4,16 @@
 import { ENV } from '@ember/-internals/environment';
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
-  getListeners,
-  getObservers,
-  getOwnPropertyDescriptors,
   guidFor,
   makeArray,
+  observerListenerMetaFor,
   ROOT,
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { ALIAS_METHOD } from '@ember/deprecated-features';
-import { assign } from '@ember/polyfills';
+import { _WeakSet, assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   ComputedDecorator,
@@ -23,76 +21,37 @@ import {
   ComputedPropertyGetter,
   ComputedPropertySetter,
 } from './computed';
-import { makeComputedDecorator, nativeDescDecorator } from './decorator';
 import {
+  ComputedDescriptor,
   descriptorForDecorator,
   descriptorForProperty,
-  isClassicDecorator,
-} from './descriptor_map';
+  makeComputedDecorator,
+  nativeDescDecorator,
+} from './decorator';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
 import { classToString, setUnprocessedMixins } from './namespace_search';
-import { addObserver, removeObserver } from './observer';
-import { defineProperty } from './properties';
+import { addObserver, removeObserver, revalidateObservers } from './observer';
+import { defineDecorator, defineValue } from './properties';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
-function isMethod(obj: any): boolean {
-  return (
-    'function' === typeof obj &&
-    obj.isMethod !== false &&
-    obj !== Boolean &&
-    obj !== Object &&
-    obj !== Number &&
-    obj !== Array &&
-    obj !== Date &&
-    obj !== String
-  );
-}
-
-function isAccessor(desc: PropertyDescriptor) {
-  return typeof desc.get === 'function' || typeof desc.set === 'function';
-}
-
 function extractAccessors(properties: { [key: string]: any } | undefined) {
   if (properties !== undefined) {
-    let descriptors = getOwnPropertyDescriptors(properties);
-    let keys = Object.keys(descriptors);
-    let hasAccessors = keys.some(key => isAccessor(descriptors[key]));
+    let keys = Object.keys(properties);
 
-    if (hasAccessors) {
-      let extracted = {};
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
+      let desc = Object.getOwnPropertyDescriptor(properties, key)!;
 
-      keys.forEach(key => {
-        let descriptor = descriptors[key];
-
-        if (isAccessor(descriptor)) {
-          extracted[key] = nativeDescDecorator(descriptor);
-        } else {
-          extracted[key] = properties[key];
-        }
-      });
-
-      return extracted;
+      if (desc.get !== undefined || desc.set !== undefined) {
+        Object.defineProperty(properties, key, { value: nativeDescDecorator(desc) });
+      }
     }
   }
 
   return properties;
-}
-
-const CONTINUE: MixinLike = {};
-
-function mixinProperties<T extends MixinLike>(mixinsMeta: Meta, mixin: T): MixinLike {
-  if (mixin instanceof Mixin) {
-    if (mixinsMeta.hasMixin(mixin)) {
-      return CONTINUE;
-    }
-    mixinsMeta.addMixin(mixin);
-    return mixin.properties!;
-  } else {
-    return mixin; // apply anonymous mixin properties
-  }
 }
 
 function concatenatedMixinProperties(
@@ -110,62 +69,75 @@ function concatenatedMixinProperties(
 }
 
 function giveDecoratorSuper(
-  meta: Meta,
   key: string,
   decorator: ComputedDecorator,
-  values: { [key: string]: any },
-  descs: { [key: string]: any },
-  base: object
+  property: ComputedProperty | true,
+  descs: { [key: string]: any }
 ): ComputedDecorator {
-  let property = descriptorForDecorator(decorator)!;
-  let superProperty;
-
-  if (!(property instanceof ComputedProperty) || property._getter === undefined) {
+  if (property === true) {
     return decorator;
   }
 
-  // Computed properties override methods, and do not call super to them
-  if (values[key] === undefined) {
-    // Find the original descriptor in a parent mixin
-    superProperty = descriptorForDecorator(descs[key]);
-  }
+  let originalGetter = property._getter;
 
-  // If we didn't find the original descriptor in a parent mixin, find
-  // it on the original object.
-  if (!superProperty) {
-    superProperty = descriptorForProperty(base, key, meta);
-  }
-
-  if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
+  if (originalGetter === undefined) {
     return decorator;
   }
 
-  let get = wrap(property._getter!, superProperty._getter!) as ComputedPropertyGetter;
+  let superDesc = descs[key];
+
+  // Check to see if the super property is a decorator first, if so load its descriptor
+  let superProperty: ComputedProperty | true | undefined =
+    typeof superDesc === 'function' ? descriptorForDecorator(superDesc) : superDesc;
+
+  if (superProperty === undefined || superProperty === true) {
+    return decorator;
+  }
+
+  let superGetter = superProperty._getter;
+
+  if (superGetter === undefined) {
+    return decorator;
+  }
+
+  let get = wrap(originalGetter, superGetter) as ComputedPropertyGetter;
   let set;
+  let originalSetter = property._setter;
+  let superSetter = superProperty._setter;
 
-  if (superProperty._setter) {
-    if (property._setter) {
-      set = wrap(property._setter, superProperty._setter) as ComputedPropertySetter;
+  if (superSetter !== undefined) {
+    if (originalSetter !== undefined) {
+      set = wrap(originalSetter, superSetter) as ComputedPropertySetter;
     } else {
       // If the super property has a setter, we default to using it no matter what.
       // This is clearly very broken and weird, but it's what was here so we have
       // to keep it until the next major at least.
       //
       // TODO: Add a deprecation here.
-      set = superProperty._setter;
+      set = superSetter;
     }
   } else {
-    set = property._setter;
+    set = originalSetter;
   }
 
   // only create a new CP if we must
-  if (get !== property._getter || set !== property._setter) {
+  if (get !== originalGetter || set !== originalSetter) {
     // Since multiple mixins may inherit from the same parent, we need
     // to clone the computed property so that other mixins do not receive
     // the wrapped version.
-    let newProperty = Object.create(property);
-    newProperty._getter = get;
-    newProperty._setter = set;
+    let dependentKeys = property._dependentKeys || [];
+    let newProperty = new ComputedProperty([
+      ...dependentKeys,
+      {
+        get,
+        set,
+      },
+    ]);
+
+    newProperty._readOnly = property._readOnly;
+    newProperty._volatile = property._volatile;
+    newProperty._meta = property._meta;
+    newProperty.enumerable = property.enumerable;
 
     return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator;
   }
@@ -174,7 +146,6 @@ function giveDecoratorSuper(
 }
 
 function giveMethodSuper(
-  obj: object,
   key: string,
   method: Function,
   values: { [key: string]: any },
@@ -188,12 +159,6 @@ function giveMethodSuper(
   // Find the original method in a parent mixin
   let superMethod = values[key];
 
-  // If we didn't find the original value in a parent mixin, find it in
-  // the original object
-  if (superMethod === undefined && descriptorForProperty(obj, key) === undefined) {
-    superMethod = obj[key];
-  }
-
   // Only wrap the new method if the original method was a function
   if (typeof superMethod === 'function') {
     return wrap(method, superMethod);
@@ -202,13 +167,8 @@ function giveMethodSuper(
   return method;
 }
 
-function applyConcatenatedProperties(
-  obj: any,
-  key: string,
-  value: any,
-  values: { [key: string]: any }
-) {
-  let baseValue = values[key] || obj[key];
+function applyConcatenatedProperties(key: string, value: any, values: { [key: string]: any }) {
+  let baseValue = values[key];
   let ret = makeArray(baseValue).concat(makeArray(value));
 
   if (DEBUG) {
@@ -224,12 +184,11 @@ function applyConcatenatedProperties(
 }
 
 function applyMergedProperties(
-  obj: { [key: string]: any },
   key: string,
   value: { [key: string]: any },
   values: { [key: string]: any }
 ): { [key: string]: any } {
-  let baseValue = values[key] || obj[key];
+  let baseValue = values[key];
 
   assert(
     `You passed in \`${JSON.stringify(
@@ -245,16 +204,15 @@ function applyMergedProperties(
   let newBase = assign({}, baseValue);
   let hasFunction = false;
 
-  for (let prop in value) {
-    if (!Object.prototype.hasOwnProperty.call(value, prop)) {
-      continue;
-    }
+  let props = Object.keys(value);
 
+  for (let i = 0; i < props.length; i++) {
+    let prop = props[i];
     let propValue = value[prop];
-    if (isMethod(propValue)) {
-      // TODO: support for Computed Properties, etc?
+
+    if (typeof propValue === 'function') {
       hasFunction = true;
-      newBase[prop] = giveMethodSuper(obj, prop, propValue, baseValue, {});
+      newBase[prop] = giveMethodSuper(prop, propValue, baseValue, {});
     } else {
       newBase[prop] = propValue;
     }
@@ -267,56 +225,16 @@ function applyMergedProperties(
   return newBase;
 }
 
-function addNormalizedProperty(
-  base: any,
-  key: string,
-  value: any,
-  meta: Meta,
-  descs: { [key: string]: any },
-  values: { [key: string]: any },
-  concats?: string[],
-  mergings?: string[]
-): void {
-  if (isClassicDecorator(value)) {
-    // Wrap descriptor function to implement _super() if needed
-    descs[key] = giveDecoratorSuper(meta, key, value, values, descs, base);
-    values[key] = undefined;
-  } else {
-    if (
-      (concats && concats.indexOf(key) >= 0) ||
-      key === 'concatenatedProperties' ||
-      key === 'mergedProperties'
-    ) {
-      value = applyConcatenatedProperties(base, key, value, values);
-    } else if (mergings && mergings.indexOf(key) > -1) {
-      value = applyMergedProperties(base, key, value, values);
-    } else if (isMethod(value)) {
-      value = giveMethodSuper(base, key, value, values, descs);
-    }
-
-    descs[key] = undefined;
-    values[key] = value;
-  }
-}
-
-interface HasWillMergeMixin {
-  willMergeMixin?: (props: MixinLike) => void;
-}
-
 function mergeMixins(
   mixins: MixinLike[],
   meta: Meta,
   descs: { [key: string]: object },
   values: { [key: string]: object },
   base: { [key: string]: object },
-  keys: string[]
+  keys: string[],
+  keysWithSuper: string[]
 ): void {
-  let currentMixin, props, key, concats, mergings;
-
-  function removeKeys(keyName: string) {
-    delete descs[keyName];
-    delete values[keyName];
-  }
+  let currentMixin;
 
   for (let i = 0; i < mixins.length; i++) {
     currentMixin = mixins[i];
@@ -327,37 +245,114 @@ function mergeMixins(
         Object.prototype.toString.call(currentMixin) !== '[object Array]'
     );
 
-    props = mixinProperties(meta, currentMixin);
-    if (props === CONTINUE) {
-      continue;
-    }
-
-    if (props) {
-      // remove willMergeMixin after 3.4 as it was used for _actions
-      if ((base as HasWillMergeMixin).willMergeMixin) {
-        (base as HasWillMergeMixin).willMergeMixin!(props);
+    if (MIXINS.has(currentMixin)) {
+      if (meta.hasMixin(currentMixin)) {
+        continue;
       }
-      concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
-      mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
+      meta.addMixin(currentMixin);
 
-      for (key in props) {
-        if (!Object.prototype.hasOwnProperty.call(props, key)) {
-          continue;
+      let { properties, mixins } = currentMixin;
+
+      if (properties !== undefined) {
+        mergeProps(meta, properties, descs, values, base, keys, keysWithSuper);
+      } else if (mixins !== undefined) {
+        mergeMixins(mixins, meta, descs, values, base, keys, keysWithSuper);
+
+        if (currentMixin._without !== undefined) {
+          currentMixin._without.forEach((keyName: string) => {
+            // deleting the key means we won't process the value
+            let index = keys.indexOf(keyName);
+
+            if (index !== -1) {
+              keys.splice(index, 1);
+            }
+          });
         }
-        keys.push(key);
-        addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
       }
+    } else {
+      mergeProps(meta, currentMixin, descs, values, base, keys, keysWithSuper);
+    }
+  }
+}
 
-      // manually copy toString() because some JS engines do not enumerate it
-      if (Object.prototype.hasOwnProperty.call(props, 'toString')) {
-        base.toString = props.toString;
-      }
-    } else if (currentMixin.mixins) {
-      mergeMixins(currentMixin.mixins, meta, descs, values, base, keys);
-      if (currentMixin._without) {
-        currentMixin._without.forEach(removeKeys);
+function mergeProps(
+  meta: Meta,
+  props: { [key: string]: unknown },
+  descs: { [key: string]: unknown },
+  values: { [key: string]: unknown },
+  base: { [key: string]: unknown },
+  keys: string[],
+  keysWithSuper: string[]
+) {
+  let concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
+  let mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
+
+  let propKeys = Object.keys(props);
+
+  for (let i = 0; i < propKeys.length; i++) {
+    let key = propKeys[i];
+    let value = props[key];
+
+    if (value === undefined) continue;
+
+    if (keys.indexOf(key) === -1) {
+      keys.push(key);
+
+      let desc = meta.peekDescriptors(key);
+
+      if (desc === undefined) {
+        // The superclass did not have a CP, which means it may have
+        // observers or listeners on that property.
+        let prev = (values[key] = base[key]);
+
+        if (typeof prev === 'function') {
+          updateObserversAndListeners(base, key, prev, false);
+        }
+      } else {
+        descs[key] = desc;
+
+        // The super desc will be overwritten on descs, so save off the fact that
+        // there was a super so we know to Object.defineProperty when writing
+        // the value
+        keysWithSuper.push(key);
+
+        desc.teardown(base, key, meta);
       }
     }
+
+    let isFunction = typeof value === 'function';
+
+    if (isFunction) {
+      let desc: ComputedDescriptor | undefined | true = descriptorForDecorator(value as Function);
+
+      if (desc !== undefined) {
+        // Wrap descriptor function to implement _super() if needed
+        descs[key] = giveDecoratorSuper(
+          key,
+          value as ComputedDecorator,
+          desc as ComputedProperty,
+          descs
+        );
+        values[key] = undefined;
+
+        continue;
+      }
+    }
+
+    if (
+      (concats && concats.indexOf(key) >= 0) ||
+      key === 'concatenatedProperties' ||
+      key === 'mergedProperties'
+    ) {
+      value = applyConcatenatedProperties(key, value, values);
+    } else if (mergings && mergings.indexOf(key) > -1) {
+      value = applyMergedProperties(key, value as object, values);
+    } else if (isFunction) {
+      value = giveMethodSuper(key, value as Function, values, descs);
+    }
+
+    values[key] = value;
+    descs[key] = undefined;
   }
 }
 
@@ -395,8 +390,11 @@ if (ALIAS_METHOD) {
 }
 
 function updateObserversAndListeners(obj: object, key: string, fn: Function, add: boolean) {
-  let observers = getObservers(fn);
-  let listeners = getListeners(fn);
+  let meta = observerListenerMetaFor(fn);
+
+  if (meta === undefined) return;
+
+  let { observers, listeners } = meta;
 
   if (observers !== undefined) {
     let updateObserver = add ? addObserver : removeObserver;
@@ -415,27 +413,12 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
   }
 }
 
-function replaceObserversAndListeners(
-  obj: object,
-  key: string,
-  prev: Function | null,
-  next: Function | null
-): void {
-  if (typeof prev === 'function') {
-    updateObserversAndListeners(obj, key, prev, false);
-  }
-
-  if (typeof next === 'function') {
-    updateObserversAndListeners(obj, key, next, true);
-  }
-}
-
-export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
-  let descs = {};
-  let values = {};
+export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], _hideKeys = false) {
+  let descs = Object.create(null);
+  let values = Object.create(null);
   let meta = metaFor(obj);
   let keys: string[] = [];
-  let key, value, desc;
+  let keysWithSuper: string[] = [];
 
   (obj as any)._super = ROOT;
 
@@ -446,36 +429,34 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
   // * Set up _super wrapping if necessary
   // * Set up computed property descriptors
   // * Copying `toString` in broken browsers
-  mergeMixins(mixins, meta, descs, values, obj, keys);
+  mergeMixins(mixins, meta, descs, values, obj, keys, keysWithSuper);
 
   for (let i = 0; i < keys.length; i++) {
-    key = keys[i];
-    if (key === 'constructor' || !Object.prototype.hasOwnProperty.call(values, key)) {
-      continue;
-    }
-
-    desc = descs[key];
-    value = values[key];
+    let key = keys[i];
+    let value = values[key];
+    let desc = descs[key];
 
     if (ALIAS_METHOD) {
-      while (value && value instanceof AliasImpl) {
+      while (value !== undefined && isAlias(value)) {
         let followed = followMethodAlias(obj, value, descs, values);
         desc = followed.desc;
         value = followed.value;
       }
     }
 
-    if (desc === undefined && value === undefined) {
-      continue;
-    }
+    if (value !== undefined) {
+      if (typeof value === 'function') {
+        updateObserversAndListeners(obj, key, value, true);
+      }
 
-    if (descriptorForProperty(obj, key) !== undefined) {
-      replaceObserversAndListeners(obj, key, null, value);
-    } else {
-      replaceObserversAndListeners(obj, key, obj[key], value);
+      defineValue(obj, key, value, keysWithSuper.indexOf(key) !== -1, !_hideKeys);
+    } else if (desc !== undefined) {
+      defineDecorator(obj, key, desc, meta);
     }
+  }
 
-    defineProperty(obj, key, desc, value, meta);
+  if (!meta.isPrototypeMeta(obj)) {
+    revalidateObservers(obj);
   }
 
   return obj;
@@ -492,6 +473,8 @@ export function mixin(obj: object, ...args: any[]) {
   applyMixin(obj, args);
   return obj;
 }
+
+const MIXINS = new _WeakSet();
 
 /**
   The `Mixin` class allows you to create mixins, whose properties can be
@@ -582,6 +565,7 @@ export default class Mixin {
   _without: any[] | undefined;
 
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
+    MIXINS.add(this);
     this.properties = extractAccessors(properties);
     this.mixins = buildMixinsArray(mixins);
     this.ownerConstructor = undefined;
@@ -608,7 +592,6 @@ export default class Mixin {
     @public
   */
   static create(...args: any[]): Mixin {
-    // ES6TODO: this relies on a global state?
     setUnprocessedMixins();
     let M = this;
     return new M(args, undefined);
@@ -661,8 +644,13 @@ export default class Mixin {
     @return applied object
     @private
   */
-  apply(obj: object) {
-    return applyMixin(obj, [this]);
+  apply(obj: object, _hideKeys = false) {
+    // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
+    // mutating a native object prototype like this should _not_ result in enumerable properties being added (or we have significant
+    // issues with things like deep equality checks from test frameworks, or things like jQuery.extend(true, [], [])).
+    //
+    // _hideKeys disables enumerablity when applying the mixin. This is a hack, and we should stop mutating the array prototype by default 😫
+    return applyMixin(obj, [this], _hideKeys);
   }
 
   applyPartial(obj: object) {
@@ -679,7 +667,7 @@ export default class Mixin {
     if (typeof obj !== 'object' || obj === null) {
       return false;
     }
-    if (obj instanceof Mixin) {
+    if (MIXINS.has(obj)) {
       return _detect(obj, this);
     }
     let meta = peekMeta(obj);
@@ -719,8 +707,8 @@ function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined 
           Object.prototype.toString.call(x) !== '[object Array]'
       );
 
-      if (x instanceof Mixin) {
-        m[i] = x;
+      if (MIXINS.has(x)) {
+        m[i] = x as Mixin;
       } else {
         m[i] = new Mixin(undefined, x);
       }
@@ -780,9 +768,19 @@ declare class Alias {
 
 let AliasImpl: typeof Alias;
 
+let isAlias: (alias: any) => alias is Alias;
+
 if (ALIAS_METHOD) {
+  const ALIASES = new _WeakSet();
+
+  isAlias = (alias: any): alias is Alias => {
+    return ALIASES.has(alias);
+  };
+
   AliasImpl = class AliasImpl {
-    constructor(public methodName: string) {}
+    constructor(public methodName: string) {
+      ALIASES.add(this);
+    }
   } as typeof Alias;
 }
 
@@ -896,10 +894,9 @@ export function observer(...args: (string | Function | ObserverDefinition)[]) {
   assert('observer called without sync', typeof sync === 'boolean');
 
   let paths: string[] = [];
-  let addWatchedProperty = (path: string) => paths.push(path);
 
   for (let i = 0; i < dependentKeys.length; ++i) {
-    expandProperties(dependentKeys[i] as string, addWatchedProperty);
+    expandProperties(dependentKeys[i] as string, (path: string) => paths.push(path));
   }
 
   setObservers(func as Function, {

@@ -16,10 +16,10 @@ import { finishLazyChains, getChainTagsForKey } from './chain-tags';
 import {
   ComputedDescriptor,
   Decorator,
+  descriptorForDecorator,
   isElementDescriptor,
   makeComputedDecorator,
 } from './decorator';
-import { descriptorForDecorator } from './descriptor_map';
 import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
