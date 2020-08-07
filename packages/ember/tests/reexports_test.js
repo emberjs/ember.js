@@ -25,6 +25,12 @@ moduleFor(
       confirmExport(Ember, assert, 'String.isHTMLSafe', '@ember/-internals/glimmer', 'isHTMLSafe');
     }
 
+    ['@test Ember.String is present (but deprecated)'](assert) {
+      expectDeprecation(() => {
+        assert.strictEqual(Ember.String, Ember.String);
+      }, /Accessing Ember\.String is deprecated/);
+    }
+
     ['@test Ember.EXTEND_PROTOTYPES is present (but deprecated)'](assert) {
       expectDeprecation(() => {
         assert.strictEqual(

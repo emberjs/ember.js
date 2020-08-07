@@ -6,8 +6,8 @@ export { getStrings as _getStrings, setStrings as _setStrings } from './lib/stri
 
 import { ENV } from '@ember/-internals/environment';
 import { Cache } from '@ember/-internals/utils';
-import { getString } from './lib/string_registry';
 import { deprecate } from '@ember/debug';
+import { getString } from './lib/string_registry';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 
@@ -306,7 +306,7 @@ export function capitalize(str: string): string {
 function deprecateEmberStringPrototypeExtension(
   name: string,
   fn: (utility: string, ...options: any) => string | string[],
-  message: string = `String prototype extensions are deprecated. Please, us ${name} from '@ember/string' instead.`
+  message = `String prototype extensions are deprecated. Please, us ${name} from '@ember/string' instead.`
 ) {
   return function(this: string) {
     deprecate(message, false, {
@@ -350,11 +350,19 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: deprecateEmberStringPrototypeExtension(
-        'loc',
-        loc,
-        '`loc` is deprecated. Please, use an i18n addon instead. See https://emberobserver.com/categories/internationalization for a list of them.'
-      ),
+      value: (...args: Parameters<typeof loc>) => {
+        deprecate(
+          '`loc` is deprecated. Please, use an internationalization addon instead. See https://emberobserver.com/categories/internationalization for a list of them.',
+          false,
+          {
+            id: 'ember-string.loc',
+            until: '4.0.0',
+            url: 'TBD: https://emberjs.com/deprecations/v3.x/#toc_ember-string-loc',
+          }
+        );
+
+        return loc(...args);
+      },
     },
 
     /**
