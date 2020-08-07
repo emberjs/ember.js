@@ -7,29 +7,6 @@ import { track } from '@glimmer/validator';
 moduleFor(
   'Ember.CoreObject',
   class extends AbstractTestCase {
-    ['@test throws an error with new (one arg)']() {
-      expectAssertion(() => {
-        new CoreObject({
-          firstName: 'Stef',
-          lastName: 'Penner',
-        });
-      }, /You may have either used `new` instead of `.create\(\)`/);
-    }
-
-    ['@test throws an error with new (> 1 arg)']() {
-      expectAssertion(() => {
-        new CoreObject(
-          {
-            firstName: 'Stef',
-            lastName: 'Penner',
-          },
-          {
-            other: 'name',
-          }
-        );
-      }, /You may have either used `new` instead of `.create\(\)`/);
-    }
-
     ['@test toString should be not be added as a property when calling toString()'](assert) {
       let obj = CoreObject.create({
         firstName: 'Foo',
@@ -106,32 +83,6 @@ moduleFor(
           return undefined;
         },
       }).create(options);
-    }
-
-    async ['@test observed properties are enumerable when set GH#14594'](assert) {
-      let callCount = 0;
-      let Test = CoreObject.extend({
-        myProp: null,
-        anotherProp: undefined,
-        didChangeMyProp: observer('myProp', function() {
-          callCount++;
-        }),
-      });
-
-      let test = Test.create();
-      set(test, 'id', '3');
-      set(test, 'myProp', { id: 1 });
-
-      assert.deepEqual(Object.keys(test).sort(), ['id', 'myProp']);
-
-      set(test, 'anotherProp', 'nice');
-
-      assert.deepEqual(Object.keys(test).sort(), ['anotherProp', 'id', 'myProp']);
-      await runLoopSettled();
-
-      assert.equal(callCount, 1);
-
-      test.destroy();
     }
 
     ['@test native getters/setters do not cause rendering invalidation during init'](assert) {

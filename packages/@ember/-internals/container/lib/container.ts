@@ -542,6 +542,8 @@ declare interface DebugFactory<T, C> extends Factory<T, C> {
 }
 
 export const FACTORY_FOR = new WeakMap<any, FactoryManager<any, any>>();
+export const INIT_FACTORY_FOR = new Map<any, FactoryManager<any, any>>();
+
 class FactoryManager<T, C> {
   readonly container: Container;
   readonly owner: Owner | null;
@@ -576,7 +578,7 @@ class FactoryManager<T, C> {
   }
 
   create(options?: { [prop: string]: any }) {
-    let { container } = this;
+    let { container, class: klass } = this;
 
     if (container.isDestroyed) {
       throw new Error(
@@ -584,18 +586,19 @@ class FactoryManager<T, C> {
       );
     }
 
-    let injectionsCache = this.injections;
-    if (injectionsCache === undefined) {
+    let props = this.injections;
+    if (props === undefined) {
       let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
-      injectionsCache = injections;
+      props = injections || {};
+      setOwner(props, this.owner!);
+
       if (!isDynamic) {
         this.injections = injections;
       }
     }
 
-    let props = injectionsCache;
     if (options !== undefined) {
-      props = assign({}, injectionsCache, options);
+      props = assign({}, props, options);
     }
 
     if (DEBUG) {
@@ -614,35 +617,18 @@ class FactoryManager<T, C> {
       }
 
       validationCache[this.fullName] = true;
-    }
 
-    if (!this.class.create) {
-      throw new Error(
-        `Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or an invalid module export.`
-      );
-    }
-
-    // required to allow access to things like
-    // the customized toString, _debugContainerKey,
-    // owner, etc. without a double extend and without
-    // modifying the objects properties
-    if (typeof this.class._initFactory === 'function') {
-      this.class._initFactory(this);
-    } else {
-      // in the non-EmberObject case we need to still setOwner
-      // this is required for supporting glimmer environment and
-      // template instantiation which rely heavily on
-      // `options[OWNER]` being passed into `create`
-      // TODO: clean this up, and remove in future versions
-      if (options === undefined || props === undefined) {
-        // avoid mutating `props` here since they are the cached injections
-        props = assign({}, props);
+      if (!this.class.create) {
+        throw new Error(
+          `Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or an invalid module export.`
+        );
       }
-      setOwner(props, this.owner!);
     }
 
-    let instance = this.class.create(props);
+    INIT_FACTORY_FOR.set(klass, this);
+    let instance = klass.create(props);
     FACTORY_FOR.set(instance, this);
+    INIT_FACTORY_FOR.delete(klass);
 
     return instance;
   }

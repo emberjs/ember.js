@@ -2,8 +2,8 @@
   @module @ember/object
 */
 
-import { FACTORY_FOR } from '@ember/-internals/container';
-import { getOwner } from '@ember/-internals/owner';
+import { FACTORY_FOR, INIT_FACTORY_FOR } from '@ember/-internals/container';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
 import {
   guidFor,
@@ -35,18 +35,9 @@ import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer
 const reopen = Mixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
-
-const factoryMap = new WeakMap();
-let debugOwnerMap;
-
-if (DEBUG) {
-  debugOwnerMap = new WeakMap();
-}
-
 const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
-const PASSED_FROM_CREATE = DEBUG ? symbol('PASSED_FROM_CREATE') : undefined;
 
 const FRAMEWORK_CLASSES = symbol('FRAMEWORK_CLASS');
 
@@ -211,17 +202,10 @@ function initialize(obj, properties) {
   @public
 */
 class CoreObject {
-  static _initFactory(factory) {
-    factoryMap.set(this, factory);
-  }
-
-  constructor(passedFromCreate) {
-    // pluck off factory
-    let initFactory = factoryMap.get(this.constructor);
-    if (initFactory !== undefined) {
-      factoryMap.delete(this.constructor);
-      FACTORY_FOR.set(this, initFactory);
-    }
+  constructor(owner) {
+    // pluck off factory and set it as the instance factory
+    FACTORY_FOR.set(this, INIT_FACTORY_FOR.get(this.constructor));
+    setOwner(this, owner);
 
     // prepare prototype...
     this.constructor.proto();
@@ -275,8 +259,6 @@ class CoreObject {
           }
         },
       });
-
-      FACTORY_FOR.set(self, initFactory);
     }
 
     registerDestructor(self, () => self.willDestroy());
@@ -285,19 +267,6 @@ class CoreObject {
     let m = meta(self);
 
     m.setInitializing();
-
-    assert(
-      `An EmberObject based class, ${this.constructor}, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
-      (() => {
-        let owner = debugOwnerMap.get(this.constructor);
-        debugOwnerMap.delete(this.constructor);
-
-        return (
-          passedFromCreate !== undefined &&
-          (passedFromCreate === PASSED_FROM_CREATE || passedFromCreate === owner)
-        );
-      })()
-    );
 
     // only return when in debug builds and `self` is the proxy created above
     if (DEBUG && self !== this) {
@@ -752,28 +721,9 @@ class CoreObject {
     let instance;
 
     if (this[FRAMEWORK_CLASSES]) {
-      let initFactory = factoryMap.get(this);
-      let owner;
-      if (initFactory !== undefined) {
-        owner = initFactory.owner;
-      } else if (props !== undefined) {
-        owner = getOwner(props);
-      }
-
-      if (DEBUG) {
-        if (owner === undefined) {
-          // fallback to passing the special PASSED_FROM_CREATE symbol
-          // to avoid an error when folks call things like Controller.extend().create()
-          // we should do a subsequent deprecation pass to ensure this isn't allowed
-          owner = PASSED_FROM_CREATE;
-        } else {
-          debugOwnerMap.set(this, owner);
-        }
-      }
-
-      instance = new C(owner);
+      instance = new C(props !== undefined ? getOwner(props) : undefined);
     } else {
-      instance = DEBUG ? new C(PASSED_FROM_CREATE) : new C();
+      instance = new C();
     }
 
     if (extra === undefined) {
