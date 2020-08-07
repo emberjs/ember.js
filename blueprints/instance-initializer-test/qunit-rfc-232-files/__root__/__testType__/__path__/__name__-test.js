@@ -2,16 +2,17 @@ import Application from '@ember/application';
 
 import { initialize } from '<%= modulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
+import Resolver from 'ember-resolver';
 <% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } else { %>import { run } from '@ember/runloop';<% } %>
 
 module('<%= friendlyTestName %>', function(hooks) {
   hooks.beforeEach(function() {
-    this.TestApplication = Application.extend();
+    this.TestApplication = class TestApplication extends Application {}
     this.TestApplication.instanceInitializer({
       name: 'initializer under test',
       initialize
     });
-    this.application = this.TestApplication.create({ autoboot: false });
+    this.application = this.TestApplication.create({ autoboot: false, Resolver });
     this.instance = this.application.buildInstance();
   });
   hooks.afterEach(function() {
