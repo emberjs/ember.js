@@ -1518,7 +1518,7 @@ moduleFor(
     }
 
     ['@test `activate` event fires on the route'](assert) {
-      assert.expect(2);
+      assert.expect(4);
 
       let eventFired = 0;
 
@@ -1532,13 +1532,15 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.on('activate', function() {
+            this.on('activate', function(transition) {
               assert.equal(++eventFired, 1, 'activate event is fired once');
+              assert.ok(transition, 'transition is passed to activate event');
             });
           },
 
-          activate() {
+          activate(transition) {
             assert.ok(true, 'activate hook is called');
+            assert.ok(transition, 'transition is passed to activate hook');
           },
         })
       );
@@ -1547,7 +1549,7 @@ moduleFor(
     }
 
     ['@test `deactivate` event fires on the route'](assert) {
-      assert.expect(2);
+      assert.expect(4);
 
       let eventFired = 0;
 
@@ -1562,13 +1564,15 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.on('deactivate', function() {
+            this.on('deactivate', function(transition) {
               assert.equal(++eventFired, 1, 'deactivate event is fired once');
+              assert.ok(transition, 'transition is passed');
             });
           },
 
-          deactivate() {
+          deactivate(transition) {
             assert.ok(true, 'deactivate hook is called');
+            assert.ok(transition, 'transition is passed');
           },
         })
       );
