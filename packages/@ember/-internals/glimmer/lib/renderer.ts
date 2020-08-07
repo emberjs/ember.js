@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { Owner, OWNER } from '@ember/-internals/owner';
+import { OWNER, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';

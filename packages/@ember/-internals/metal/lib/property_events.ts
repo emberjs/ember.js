@@ -1,5 +1,5 @@
 import { Meta, peekMeta } from '@ember/-internals/meta';
-import { symbol } from '@ember/-internals/utils';
+import { enumerableSymbol } from '@ember/-internals/utils';
 import {
   flushSyncObservers,
   resumeObserverDeactivation,
@@ -12,7 +12,7 @@ import { markObjectAsDirty } from './tags';
  @private
  */
 
-export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
+export const PROPERTY_DID_CHANGE = enumerableSymbol('PROPERTY_DID_CHANGE');
 
 let deferred = 0;
 

@@ -1,5 +1,5 @@
-import { Factory, LookupOptions, Owner, OWNER, setOwner } from '@ember/-internals/owner';
-import { dictionary, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
+import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
+import { dictionary, HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
@@ -198,7 +198,9 @@ export default class Container {
    @returns { Object }
   */
   ownerInjection() {
-    return { [OWNER]: this.owner };
+    let injection = {};
+    setOwner(injection, this.owner!);
+    return injection;
   }
 
   /**
@@ -266,7 +268,7 @@ function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>) {
     };
 
     let proxy = new Proxy(proxiedManager, validator as any);
-    FACTORY_FOR.set(proxy, manager);
+    // FACTORY_FOR.set(proxy, manager);
   }
 
   return manager;
@@ -541,8 +543,15 @@ declare interface DebugFactory<T, C> extends Factory<T, C> {
   _lazyInjections(): { [key: string]: LazyInjection };
 }
 
-export const FACTORY_FOR = new WeakMap<any, FactoryManager<any, any>>();
-export const INIT_FACTORY_FOR = new Map<any, FactoryManager<any, any>>();
+export const INIT_FACTORY = symbol('INIT_FACTORY');
+
+export function getFactoryFor(obj: any): FactoryManager<any, any> {
+  return obj[INIT_FACTORY];
+}
+
+export function setFactoryFor(obj: any, factory: FactoryManager<any, any>) {
+  obj[INIT_FACTORY] = factory;
+}
 
 class FactoryManager<T, C> {
   readonly container: Container;
@@ -566,7 +575,7 @@ class FactoryManager<T, C> {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
-    FACTORY_FOR.set(this, this);
+    setFactoryFor(this, this);
   }
 
   toString(): string {
@@ -578,7 +587,7 @@ class FactoryManager<T, C> {
   }
 
   create(options?: { [prop: string]: any }) {
-    let { container, class: klass } = this;
+    let { container } = this;
 
     if (container.isDestroyed) {
       throw new Error(
@@ -591,6 +600,7 @@ class FactoryManager<T, C> {
       let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
       props = injections || {};
       setOwner(props, this.owner!);
+      props[INIT_FACTORY as string] = this;
 
       if (!isDynamic) {
         this.injections = injections;
@@ -625,11 +635,6 @@ class FactoryManager<T, C> {
       }
     }
 
-    INIT_FACTORY_FOR.set(klass, this);
-    let instance = klass.create(props);
-    FACTORY_FOR.set(instance, this);
-    INIT_FACTORY_FOR.delete(klass);
-
-    return instance;
+    return this.class.create(props);
   }
 }

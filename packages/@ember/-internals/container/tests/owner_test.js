@@ -16,5 +16,24 @@ moduleFor(
 
       assert.strictEqual(obj[OWNER], owner, 'owner has been set to the OWNER symbol');
     }
+
+    ['@test getOwner deprecates using LEGACY_OWNER'](assert) {
+      let owner = {};
+      let obj = {};
+
+      setOwner(obj, owner);
+
+      let legacyOwner;
+
+      for (let key in obj) {
+        legacyOwner = key;
+      }
+
+      let newObj = { [legacyOwner]: owner };
+
+      expectDeprecation(() => {
+        assert.strictEqual(getOwner(newObj), owner, 'owner has been set');
+      }, /You accessed the owner using `getOwner` on an object/);
+    }
   }
 );

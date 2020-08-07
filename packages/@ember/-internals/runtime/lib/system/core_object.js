@@ -2,14 +2,13 @@
   @module @ember/object
 */
 
-import { FACTORY_FOR, INIT_FACTORY_FOR } from '@ember/-internals/container';
-import { getOwner, setOwner } from '@ember/-internals/owner';
+import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
+import { getOwner, OWNER } from '@ember/-internals/owner';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
 import {
   guidFor,
   getName,
   setName,
-  symbol,
   makeArray,
   HAS_NATIVE_PROXY,
   isInternalSymbol,
@@ -198,8 +197,7 @@ function initialize(obj, properties) {
 class CoreObject {
   constructor(owner) {
     // pluck off factory and set it as the instance factory
-    FACTORY_FOR.set(this, INIT_FACTORY_FOR.get(this.constructor));
-    setOwner(this, owner);
+    this[OWNER] = owner;
 
     // prepare prototype...
     this.constructor.proto();
@@ -562,7 +560,7 @@ class CoreObject {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${getName(this) || FACTORY_FOR.get(this) || this.constructor.toString()}:${guidFor(
+    let ret = `<${getName(this) || getFactoryFor(this) || this.constructor.toString()}:${guidFor(
       this
     )}${extension}>`;
 
@@ -711,7 +709,14 @@ class CoreObject {
     @public
   */
   static create(props, extra) {
-    let instance = new this(props !== undefined ? getOwner(props) : undefined);
+    let instance;
+
+    if (props !== undefined) {
+      instance = new this(getOwner(props));
+      setFactoryFor(instance, getFactoryFor(props));
+    } else {
+      instance = new this();
+    }
 
     if (extra === undefined) {
       initialize(instance, props);

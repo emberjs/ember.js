@@ -2,16 +2,14 @@
 @module @ember/object
 */
 
-import { FACTORY_FOR } from '@ember/-internals/container';
+import { getFactoryFor, INIT_FACTORY } from '@ember/-internals/container';
 import { OWNER, setOwner } from '@ember/-internals/owner';
-import { symbol, setName } from '@ember/-internals/utils';
+import { HAS_NATIVE_SYMBOL, symbol, setName } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-
-const instanceOwner = new WeakMap();
 
 /**
   `EmberObject` is the main base class for all Ember objects. It is a subclass
@@ -25,26 +23,35 @@ const instanceOwner = new WeakMap();
 */
 export default class EmberObject extends CoreObject {
   get _debugContainerKey() {
-    let factory = FACTORY_FOR.get(this);
+    let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
   }
+}
 
-  get [OWNER]() {
-    let owner = instanceOwner.get(this);
+if (!HAS_NATIVE_SYMBOL) {
+  // Allows OWNER and INIT_FACTORY to be non-enumerable in IE11
+  let instanceOwner = new WeakMap();
+  let instanceFactory = new WeakMap();
 
-    if (owner !== undefined) {
-      return owner;
-    }
+  Object.defineProperty(EmberObject.prototype, OWNER, {
+    get() {
+      return instanceOwner.get(this);
+    },
 
-    let factory = FACTORY_FOR.get(this);
-    return factory !== undefined && factory.owner;
-  }
+    set(value) {
+      instanceOwner.set(this, value);
+    },
+  });
 
-  // we need a setter here largely to support
-  // folks calling `owner.ownerInjection()` API
-  set [OWNER](value) {
-    instanceOwner.set(this, value);
-  }
+  Object.defineProperty(EmberObject.prototype, INIT_FACTORY, {
+    get() {
+      return instanceFactory.get(this);
+    },
+
+    set(value) {
+      instanceFactory.set(this, value);
+    },
+  });
 }
 
 setName(EmberObject, 'Ember.Object');
@@ -55,7 +62,7 @@ export let FrameworkObject;
 
 FrameworkObject = class FrameworkObject extends CoreObject {
   get _debugContainerKey() {
-    let factory = FACTORY_FOR.get(this);
+    let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
   }
 

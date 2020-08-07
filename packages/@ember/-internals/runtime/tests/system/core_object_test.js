@@ -1,7 +1,7 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { get, set, observer } from '@ember/-internals/metal';
+import { get, set } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
-import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, buildOwner } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
 
 moduleFor(

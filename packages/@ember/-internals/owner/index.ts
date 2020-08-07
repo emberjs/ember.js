@@ -37,8 +37,10 @@ export interface Owner {
   routable?: boolean;
 }
 
-import { symbol } from '@ember/-internals/utils';
+import { enumerableSymbol, symbol } from '@ember/-internals/utils';
+import { deprecate } from '@ember/debug';
 
+export const LEGACY_OWNER: unique symbol = enumerableSymbol('OWNER') as any;
 export const OWNER: unique symbol = symbol('OWNER') as any;
 
 /**
@@ -86,7 +88,22 @@ export const OWNER: unique symbol = symbol('OWNER') as any;
   @public
 */
 export function getOwner(object: any): Owner {
-  return object[OWNER];
+  let owner = object[OWNER];
+
+  if (owner === undefined) {
+    owner = object[LEGACY_OWNER];
+
+    deprecate(
+      `You accessed the owner using \`getOwner\` on an object, but it was not set on that object with \`setOwner\`. You must use \`setOwner\` to set the owner on all objects. You cannot use Object.assign().`,
+      owner === undefined,
+      {
+        id: 'owner.legacy-owner-injection',
+        until: '3.25.0',
+      }
+    );
+  }
+
+  return owner;
 }
 
 /**
@@ -103,4 +120,5 @@ export function getOwner(object: any): Owner {
 */
 export function setOwner(object: any, owner: Owner): void {
   object[OWNER] = owner;
+  object[LEGACY_OWNER] = owner;
 }

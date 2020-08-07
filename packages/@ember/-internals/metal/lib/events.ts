@@ -146,7 +146,7 @@ export function sendEvent(
     if (!target) {
       target = obj;
     }
-    if ('string' === typeof method) {
+    if (typeof method === 'string' || typeof method === 'symbol') {
       method = target[method] as Function;
     }
 
