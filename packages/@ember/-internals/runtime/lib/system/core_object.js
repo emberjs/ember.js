@@ -39,12 +39,6 @@ const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
-const FRAMEWORK_CLASSES = symbol('FRAMEWORK_CLASS');
-
-export function setFrameworkClass(klass) {
-  klass[FRAMEWORK_CLASSES] = true;
-}
-
 function initialize(obj, properties) {
   let m = meta(obj);
 
@@ -717,14 +711,7 @@ class CoreObject {
     @public
   */
   static create(props, extra) {
-    let C = this;
-    let instance;
-
-    if (this[FRAMEWORK_CLASSES]) {
-      instance = new C(props !== undefined ? getOwner(props) : undefined);
-    } else {
-      instance = new C();
-    }
+    let instance = new this(props !== undefined ? getOwner(props) : undefined);
 
     if (extra === undefined) {
       initialize(instance, props);

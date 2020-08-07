@@ -17,7 +17,6 @@ import {
   ActionHandler,
   Evented,
   Object as EmberObject,
-  setFrameworkClass,
   typeOf,
 } from '@ember/-internals/runtime';
 import { lookupDescriptor } from '@ember/-internals/utils';
@@ -2668,7 +2667,5 @@ if (ROUTER_EVENTS) {
     },
   });
 }
-
-setFrameworkClass(Route);
 
 export default Route;

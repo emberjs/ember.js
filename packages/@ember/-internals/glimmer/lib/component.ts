@@ -1,6 +1,6 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { setFrameworkClass, TargetActionSupport } from '@ember/-internals/runtime';
+import { TargetActionSupport } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import {
   ActionSupport,
@@ -1114,7 +1114,5 @@ Component.reopenClass({
   isComponentFactory: true,
   positionalParams: [],
 });
-
-setFrameworkClass(Component);
 
 export default Component;

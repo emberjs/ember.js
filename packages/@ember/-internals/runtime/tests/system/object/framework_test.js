@@ -1,7 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '../../../index';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
-import { setFrameworkClass } from '../../../lib/system/core_object';
 
 moduleFor(
   'FrameworkObject',
@@ -23,7 +22,6 @@ moduleFor(
           assert.equal(owner, testContext.owner, 'owner was passed properly to the constructor');
         }
       }
-      setFrameworkClass(Model);
       this.owner.register('model:blah', Model);
 
       this.owner.factoryFor('model:blah').create();
