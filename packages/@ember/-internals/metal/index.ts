@@ -1,13 +1,14 @@
 export {
   default as computed,
+  autoComputed,
   isComputed,
   _globalsComputed,
   ComputedProperty,
 } from './lib/computed';
-export { getCacheFor, getCachedValueFor, peekCacheFor } from './lib/computed_cache';
+export { getCachedValueFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
-export { PROXY_CONTENT, _getPath, get, getWithDefault } from './lib/property_get';
+export { PROXY_CONTENT, _getPath, get, getWithDefault, _getProp } from './lib/property_get';
 export { set, trySet } from './lib/property_set';
 export {
   objectAt,
@@ -44,7 +45,6 @@ export {
   isClassicDecorator,
   setClassicDecorator,
 } from './lib/descriptor_map';
-export { getChainTagsForKey } from './lib/chain-tags';
 export { default as libraries, Libraries } from './lib/libraries';
 export { default as getProperties } from './lib/get_properties';
 export { default as setProperties } from './lib/set_properties';

@@ -1,13 +1,12 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { addObserver, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
-import { inspect, isEmberArray, toString } from '@ember/-internals/utils';
+import { inspect, symbol, toString } from '@ember/-internals/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import { isDestroyed } from '@glimmer/runtime';
 import {
-  combine,
   consumeTag,
-  Tag,
+  tagFor,
+  tagMetaFor,
   track,
   untrack,
   UpdatableTag,
@@ -16,13 +15,6 @@ import {
   valueForTag,
 } from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
-import {
-  getCachedValueFor,
-  getCacheFor,
-  getLastRevisionFor,
-  peekCacheFor,
-  setLastRevisionFor,
-} from './computed_cache';
 import {
   ComputedDescriptor,
   Decorator,
@@ -36,11 +28,17 @@ import {
   isClassicDecorator,
 } from './descriptor_map';
 import expandProperties from './expand_properties';
-import { setObserverSuspended } from './observer';
+import { addObserver, setObserverSuspended } from './observer';
 import { defineProperty } from './properties';
-import { beginPropertyChanges, endPropertyChanges, notifyPropertyChange } from './property_events';
+import {
+  beginPropertyChanges,
+  endPropertyChanges,
+  notifyPropertyChange,
+  PROPERTY_DID_CHANGE,
+} from './property_events';
 import { set } from './property_set';
-import { tagForProperty } from './tags';
+
+export const AUTO = symbol('COMPUTED_AUTO');
 
 export type ComputedPropertyGetter = (keyName: string) => any;
 export type ComputedPropertySetter = (keyName: string, value: any, cachedValue?: any) => any;
@@ -255,13 +253,12 @@ function noop(): void {}
   @public
 */
 export class ComputedProperty extends ComputedDescriptor {
-  private _volatile = false;
-  private _readOnly = false;
-  private _hasConfig = false;
+  protected _volatile = false;
+  protected _readOnly = false;
+  protected _hasConfig = false;
 
   _getter?: ComputedPropertyGetter = undefined;
   _setter?: ComputedPropertySetter = undefined;
-  _auto?: boolean;
 
   constructor(args: Array<string | ComputedPropertyConfig>) {
     super();
@@ -604,13 +601,17 @@ export class ComputedProperty extends ComputedDescriptor {
       return this._getter!.call(obj, keyName);
     }
 
-    let cache = getCacheFor(obj);
-    let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
+    let meta = metaFor(obj);
+    let tagMeta = tagMetaFor(obj);
+
+    let propertyTag = tagFor(obj, keyName, tagMeta) as UpdatableTag;
 
     let ret;
 
-    if (cache.has(keyName) && validateTag(propertyTag, getLastRevisionFor(obj, keyName))) {
-      ret = cache.get(keyName);
+    let revision = meta.revisionFor(keyName);
+
+    if (revision !== undefined && validateTag(propertyTag, revision)) {
+      ret = meta.valueFor(keyName);
     } else {
       // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
       // should be allowed, even after the object has been destroyed, which is why we check _dependentKeys.
@@ -619,42 +620,29 @@ export class ComputedProperty extends ComputedDescriptor {
         this._dependentKeys === undefined || !isDestroyed(obj)
       );
 
-      let upstreamTag: Tag | undefined = undefined;
+      let { _getter, _dependentKeys } = this;
 
-      if (this._auto === true) {
-        upstreamTag = track(() => {
-          ret = this._getter!.call(obj, keyName);
-        });
-      } else {
-        // Create a tracker that absorbs any trackable actions inside the CP
-        untrack(() => {
-          ret = this._getter!.call(obj, keyName);
-        });
+      // Create a tracker that absorbs any trackable actions inside the CP
+      untrack(() => {
+        ret = _getter!.call(obj, keyName);
+      });
+
+      if (_dependentKeys !== undefined) {
+        updateTag(propertyTag!, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
       }
 
-      if (this._dependentKeys !== undefined) {
-        let tag = combine(getChainTagsForKeys(obj, this._dependentKeys, true));
+      meta.setValueFor(keyName, ret);
+      meta.setRevisionFor(keyName, valueForTag(propertyTag));
 
-        upstreamTag = upstreamTag === undefined ? tag : combine([upstreamTag, tag]);
-      }
-
-      if (upstreamTag !== undefined) {
-        updateTag(propertyTag!, upstreamTag);
-      }
-
-      setLastRevisionFor(obj, keyName, valueForTag(propertyTag));
-
-      cache.set(keyName, ret);
-
-      finishLazyChains(obj, keyName, ret);
+      finishLazyChains(meta, keyName, ret);
     }
 
     consumeTag(propertyTag!);
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
-    if (Array.isArray(ret) || isEmberArray(ret)) {
-      consumeTag(tagForProperty(ret, '[]'));
+    if (Array.isArray(ret)) {
+      consumeTag(tagFor(ret, '[]'));
     }
 
     return ret;
@@ -673,19 +661,21 @@ export class ComputedProperty extends ComputedDescriptor {
       return this.volatileSet(obj, keyName, value);
     }
 
+    let meta = metaFor(obj);
+
     // ensure two way binding works when the component has defined a computed
     // property with both a setter and dependent keys, in that scenario without
     // the sync observer added below the caller's value will never be updated
     //
     // See GH#18147 / GH#19028 for details.
     if (
+      // ensure that we only run this once, while the component is being instantiated
+      meta.isInitializing() &&
       this._dependentKeys !== undefined &&
       this._dependentKeys.length > 0 &&
       // These two properties are set on Ember.Component
       typeof obj[PROPERTY_DID_CHANGE] === 'function' &&
-      (obj as any).isComponent &&
-      // ensure that we only run this once, while the component is being instantiated
-      metaFor(obj).isInitializing()
+      (obj as any).isComponent
     ) {
       addObserver(
         obj,
@@ -703,17 +693,20 @@ export class ComputedProperty extends ComputedDescriptor {
     try {
       beginPropertyChanges();
 
-      ret = this._set(obj, keyName, value);
+      ret = this._set(obj, keyName, value, meta);
 
-      finishLazyChains(obj, keyName, ret);
+      finishLazyChains(meta, keyName, ret);
 
-      let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
+      let tagMeta = tagMetaFor(obj);
+      let propertyTag = tagFor(obj, keyName, tagMeta) as UpdatableTag;
 
-      if (this._dependentKeys !== undefined) {
-        updateTag(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys, true)));
+      let { _dependentKeys } = this;
+
+      if (_dependentKeys !== undefined) {
+        updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
       }
 
-      setLastRevisionFor(obj, keyName, valueForTag(propertyTag));
+      meta.setRevisionFor(keyName, valueForTag(propertyTag));
     } finally {
       endPropertyChanges();
     }
@@ -738,7 +731,7 @@ export class ComputedProperty extends ComputedDescriptor {
       }
     );
 
-    let cachedValue = getCachedValueFor(obj, keyName);
+    let cachedValue = metaFor(obj).valueFor(keyName);
     defineProperty(obj, keyName, null, cachedValue);
     set(obj, keyName, value);
     return value;
@@ -748,17 +741,17 @@ export class ComputedProperty extends ComputedDescriptor {
     return this._setter!.call(obj, keyName, value);
   }
 
-  _set(obj: object, keyName: string, value: unknown): any {
-    let cache = getCacheFor(obj);
-    let hadCachedValue = cache.has(keyName);
-    let cachedValue = cache.get(keyName);
+  _set(obj: object, keyName: string, value: unknown, meta: Meta): any {
+    let hadCachedValue = meta.revisionFor(keyName) !== undefined;
+    let cachedValue = meta.valueFor(keyName);
 
     let ret;
+    let { _setter } = this;
 
     setObserverSuspended(obj, keyName, true);
 
     try {
-      ret = this._setter!.call(obj, keyName, value, cachedValue);
+      ret = _setter!.call(obj, keyName, value, cachedValue);
     } finally {
       setObserverSuspended(obj, keyName, false);
     }
@@ -768,9 +761,7 @@ export class ComputedProperty extends ComputedDescriptor {
       return ret;
     }
 
-    let meta = metaFor(obj);
-
-    cache.set(keyName, ret);
+    meta.setValueFor(keyName, ret);
 
     notifyPropertyChange(obj, keyName, meta, value);
 
@@ -778,18 +769,65 @@ export class ComputedProperty extends ComputedDescriptor {
   }
 
   /* called before property is overridden */
-  teardown(obj: object, keyName: string, meta?: any): void {
+  teardown(obj: object, keyName: string, meta: Meta): void {
     if (!this._volatile) {
-      let cache = peekCacheFor(obj);
-      if (cache !== undefined) {
-        cache.delete(keyName);
+      if (meta.revisionFor(keyName) !== undefined) {
+        meta.setRevisionFor(keyName, undefined);
+        meta.setValueFor(keyName, undefined);
       }
     }
+
     super.teardown(obj, keyName, meta);
   }
+}
 
-  auto() {
-    this._auto = true;
+class AutoComputedProperty extends ComputedProperty {
+  get(obj: object, keyName: string): any {
+    if (this._volatile) {
+      return this._getter!.call(obj, keyName);
+    }
+
+    let meta = metaFor(obj);
+    let tagMeta = tagMetaFor(obj);
+
+    let propertyTag = tagFor(obj, keyName, tagMeta) as UpdatableTag;
+
+    let ret;
+
+    let revision = meta.revisionFor(keyName);
+
+    if (revision !== undefined && validateTag(propertyTag, revision)) {
+      ret = meta.valueFor(keyName);
+    } else {
+      assert(
+        `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
+        !isDestroyed(obj)
+      );
+
+      let { _getter } = this;
+
+      // Create a tracker that absorbs any trackable actions inside the CP
+      let tag = track(() => {
+        ret = _getter!.call(obj, keyName);
+      });
+
+      updateTag(propertyTag!, tag);
+
+      meta.setValueFor(keyName, ret);
+      meta.setRevisionFor(keyName, valueForTag(propertyTag));
+
+      finishLazyChains(meta, keyName, ret);
+    }
+
+    consumeTag(propertyTag!);
+
+    // Add the tag of the returned value if it is an array, since arrays
+    // should always cause updates if they are consumed and then changed
+    if (Array.isArray(ret)) {
+      consumeTag(tagFor(ret, '[]', tagMeta));
+    }
+
+    return ret;
   }
 }
 
@@ -1007,6 +1045,15 @@ export function computed(
 
   return makeComputedDecorator(
     new ComputedProperty(args as (string | ComputedPropertyConfig)[]),
+    ComputedDecoratorImpl
+  ) as ComputedDecorator;
+}
+
+export function autoComputed(
+  ...config: [ComputedPropertyConfig]
+): ComputedDecorator | DecoratorPropertyDescriptor {
+  return makeComputedDecorator(
+    new AutoComputedProperty(config),
     ComputedDecoratorImpl
   ) as ComputedDecorator;
 }

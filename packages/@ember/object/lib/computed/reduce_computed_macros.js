@@ -3,12 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import {
-  computed,
-  descriptorForDecorator,
-  get,
-  isElementDescriptor,
-} from '@ember/-internals/metal';
+import { computed, autoComputed, get, isElementDescriptor } from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
@@ -1479,7 +1474,7 @@ function customSort(itemsKey, additionalDependentKeys, comparator) {
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
-  let cp = computed(`${itemsKey}.[]`, `${sortPropertiesKey}.[]`, function(key) {
+  let cp = autoComputed(function(key) {
     let sortProperties = get(this, sortPropertiesKey);
 
     assert(
@@ -1501,8 +1496,6 @@ function propertySort(itemsKey, sortPropertiesKey) {
       return sortByNormalizedSortProperties(items, normalizedSortProperties);
     }
   }).readOnly();
-
-  descriptorForDecorator(cp).auto();
 
   return cp;
 }

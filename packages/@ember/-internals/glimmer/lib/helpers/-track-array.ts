@@ -2,9 +2,10 @@
 @module ember
 */
 import { tagForProperty } from '@ember/-internals/metal';
+import { isObject } from '@ember/-internals/utils';
 import { VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { combine, createUpdatableTag, Tag, updateTag } from '@glimmer/validator';
+import { combine, CONSTANT_TAG, createUpdatableTag, Tag, updateTag } from '@glimmer/validator';
 
 /**
   This reference is used to get the `[]` tag of iterables, so we can trigger
@@ -22,7 +23,7 @@ class TrackArrayReference implements VersionedPathReference {
   value(): unknown {
     let iterable = this.inner.value();
 
-    let tag = tagForProperty(iterable, '[]');
+    let tag = isObject(iterable) ? tagForProperty(iterable, '[]') : CONSTANT_TAG;
 
     updateTag(this.valueTag, tag);
 
