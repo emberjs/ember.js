@@ -2,9 +2,8 @@
 @module @ember/object
 */
 
-import { getFactoryFor, INIT_FACTORY } from '@ember/-internals/container';
-import { OWNER, setOwner } from '@ember/-internals/owner';
-import { HAS_NATIVE_SYMBOL, symbol, setName } from '@ember/-internals/utils';
+import { getFactoryFor } from '@ember/-internals/container';
+import { symbol, setName } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
@@ -28,32 +27,6 @@ export default class EmberObject extends CoreObject {
   }
 }
 
-if (!HAS_NATIVE_SYMBOL) {
-  // Allows OWNER and INIT_FACTORY to be non-enumerable in IE11
-  let instanceOwner = new WeakMap();
-  let instanceFactory = new WeakMap();
-
-  Object.defineProperty(EmberObject.prototype, OWNER, {
-    get() {
-      return instanceOwner.get(this);
-    },
-
-    set(value) {
-      instanceOwner.set(this, value);
-    },
-  });
-
-  Object.defineProperty(EmberObject.prototype, INIT_FACTORY, {
-    get() {
-      return instanceFactory.get(this);
-    },
-
-    set(value) {
-      instanceFactory.set(this, value);
-    },
-  });
-}
-
 setName(EmberObject, 'Ember.Object');
 
 Observable.apply(EmberObject.prototype);
@@ -64,12 +37,6 @@ FrameworkObject = class FrameworkObject extends CoreObject {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
-  }
-
-  constructor(owner) {
-    super();
-
-    setOwner(this, owner);
   }
 };
 

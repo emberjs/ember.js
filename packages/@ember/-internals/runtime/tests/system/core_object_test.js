@@ -1,7 +1,7 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { get, set } from '@ember/-internals/metal';
+import { get, set, observer } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
-import { moduleFor, AbstractTestCase, buildOwner } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
 
 moduleFor(
@@ -83,6 +83,32 @@ moduleFor(
           return undefined;
         },
       }).create(options);
+    }
+
+    async ['@test observed properties are enumerable when set GH#14594'](assert) {
+      let callCount = 0;
+      let Test = CoreObject.extend({
+        myProp: null,
+        anotherProp: undefined,
+        didChangeMyProp: observer('myProp', function() {
+          callCount++;
+        }),
+      });
+
+      let test = Test.create();
+      set(test, 'id', '3');
+      set(test, 'myProp', { id: 1 });
+
+      assert.deepEqual(Object.keys(test).sort(), ['id', 'myProp']);
+
+      set(test, 'anotherProp', 'nice');
+
+      assert.deepEqual(Object.keys(test).sort(), ['anotherProp', 'id', 'myProp']);
+      await runLoopSettled();
+
+      assert.equal(callCount, 1);
+
+      test.destroy();
     }
 
     ['@test native getters/setters do not cause rendering invalidation during init'](assert) {

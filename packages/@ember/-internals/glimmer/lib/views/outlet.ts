@@ -1,4 +1,4 @@
-import { OWNER, Owner } from '@ember/-internals/owner';
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { schedule } from '@ember/runloop';
 import { SimpleElement } from '@simple-dom/interface';
@@ -35,7 +35,7 @@ export default class OutletView {
 
   static create(options: any) {
     let { _environment, renderer, template: templateFactory } = options;
-    let owner = options[OWNER];
+    let owner = getOwner(options);
     let template = templateFactory(owner);
     return new OutletView(_environment, renderer, owner, template);
   }

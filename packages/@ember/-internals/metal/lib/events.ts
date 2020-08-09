@@ -146,11 +146,13 @@ export function sendEvent(
     if (!target) {
       target = obj;
     }
-    if (typeof method === 'string' || typeof method === 'symbol') {
-      method = target[method] as Function;
+
+    let type = typeof method;
+    if (type === 'string' || type === 'symbol') {
+      method = target[method as string] as Function;
     }
 
-    method.apply(target, params);
+    (method as Function).apply(target, params);
   }
   return true;
 }

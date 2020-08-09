@@ -40,7 +40,7 @@ export interface Owner {
 import { enumerableSymbol, symbol } from '@ember/-internals/utils';
 import { deprecate } from '@ember/debug';
 
-export const LEGACY_OWNER: unique symbol = enumerableSymbol('OWNER') as any;
+export const LEGACY_OWNER: unique symbol = enumerableSymbol('LEGACY_OWNER') as any;
 export const OWNER: unique symbol = symbol('OWNER') as any;
 
 /**

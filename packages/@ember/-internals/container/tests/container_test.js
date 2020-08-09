@@ -190,13 +190,13 @@ moduleFor(
       assert.equal(container.lookup('doesnot:exist'), undefined);
     }
 
-    ['@test An invalid factory throws an error'](assert) {
+    ['@test An invalid factory throws an error']() {
       let registry = new Registry();
       let container = registry.container();
 
       registry.register('controller:foo', {});
 
-      assert.throws(() => {
+      expectAssertion(() => {
         container.lookup('controller:foo');
       }, /Failed to create an instance of 'controller:foo'/);
     }

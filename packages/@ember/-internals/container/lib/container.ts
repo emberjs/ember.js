@@ -246,7 +246,7 @@ if (DEBUG) {
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
  */
-function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>) {
+function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>): FactoryManager<T, C> {
   if (HAS_NATIVE_PROXY) {
     let validator = {
       set(_obj: T, prop: keyof T) {
@@ -267,8 +267,7 @@ function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>) {
       },
     };
 
-    let proxy = new Proxy(proxiedManager, validator as any);
-    // FACTORY_FOR.set(proxy, manager);
+    return new Proxy(proxiedManager, validator as any) as any;
   }
 
   return manager;
@@ -434,7 +433,7 @@ function instantiateFactory(
 }
 
 interface BuildInjectionsResult {
-  injections: { [key: string]: object } | undefined;
+  injections: { [key: string]: unknown };
   isDynamic: boolean;
 }
 
@@ -448,9 +447,6 @@ function processInjections(
   }
 
   let hash = result.injections;
-  if (hash === undefined) {
-    hash = result.injections = {};
-  }
 
   for (let i = 0; i < injections.length; i++) {
     let { property, specifier, source } = injections[i];
@@ -472,8 +468,12 @@ function buildInjections(
   typeInjections: Injection[],
   injections: Injection[]
 ): BuildInjectionsResult {
+  let injectionsHash = {};
+
+  setOwner(injectionsHash, container.owner!);
+
   let result: BuildInjectionsResult = {
-    injections: undefined,
+    injections: injectionsHash,
     isDynamic: false,
   };
 
@@ -560,7 +560,7 @@ class FactoryManager<T, C> {
   readonly fullName: string;
   readonly normalizedName: string;
   private madeToString: string | undefined;
-  injections: { [key: string]: object } | undefined;
+  injections: { [key: string]: unknown } | undefined;
 
   constructor(
     container: Container,
@@ -598,9 +598,8 @@ class FactoryManager<T, C> {
     let props = this.injections;
     if (props === undefined) {
       let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
-      props = injections || {};
-      setOwner(props, this.owner!);
-      props[INIT_FACTORY as string] = this;
+      setFactoryFor(injections, this);
+      props = injections;
 
       if (!isDynamic) {
         this.injections = injections;
@@ -628,11 +627,10 @@ class FactoryManager<T, C> {
 
       validationCache[this.fullName] = true;
 
-      if (!this.class.create) {
-        throw new Error(
-          `Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or an invalid module export.`
-        );
-      }
+      assert(
+        `Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or an invalid module export.`,
+        typeof this.class.create === 'function'
+      );
     }
 
     return this.class.create(props);

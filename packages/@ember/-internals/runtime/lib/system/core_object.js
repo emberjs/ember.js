@@ -2,8 +2,8 @@
   @module @ember/object
 */
 
-import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
-import { getOwner, OWNER } from '@ember/-internals/owner';
+import { getFactoryFor, setFactoryFor, INIT_FACTORY } from '@ember/-internals/container';
+import { getOwner, LEGACY_OWNER, OWNER } from '@ember/-internals/owner';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
 import {
   guidFor,
@@ -11,6 +11,7 @@ import {
   setName,
   makeArray,
   HAS_NATIVE_PROXY,
+  HAS_NATIVE_SYMBOL,
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
@@ -196,7 +197,9 @@ function initialize(obj, properties) {
 */
 class CoreObject {
   constructor(owner) {
-    // pluck off factory and set it as the instance factory
+    // setOwner has to set both OWNER and LEGACY_OWNER for backwards compatibility, and
+    // LEGACY_OWNER is enumerable, so setting it would add an enumerable property to the object,
+    // so we just set `OWNER` directly here.
     this[OWNER] = owner;
 
     // prepare prototype...
@@ -265,6 +268,10 @@ class CoreObject {
       return self;
     }
   }
+
+  // Empty setter for absorbing setting the LEGACY_OWNER, which should _not_
+  // become an enumerable property, and should not be used in general.
+  set [LEGACY_OWNER](value) {}
 
   reopen(...args) {
     applyMixin(this, args);
@@ -1066,6 +1073,32 @@ if (DEBUG) {
 
     return injections;
   };
+}
+
+if (!HAS_NATIVE_SYMBOL) {
+  // Allows OWNER and INIT_FACTORY to be non-enumerable in IE11
+  let instanceOwner = new WeakMap();
+  let instanceFactory = new WeakMap();
+
+  Object.defineProperty(CoreObject.prototype, OWNER, {
+    get() {
+      return instanceOwner.get(this);
+    },
+
+    set(value) {
+      instanceOwner.set(this, value);
+    },
+  });
+
+  Object.defineProperty(CoreObject.prototype, INIT_FACTORY, {
+    get() {
+      return instanceFactory.get(this);
+    },
+
+    set(value) {
+      instanceFactory.set(this, value);
+    },
+  });
 }
 
 export default CoreObject;

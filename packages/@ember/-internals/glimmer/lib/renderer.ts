@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { OWNER, Owner } from '@ember/-internals/owner';
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
@@ -543,22 +543,15 @@ export abstract class Renderer {
 }
 
 export class InertRenderer extends Renderer {
-  static create({
-    [OWNER]: owner,
-    document,
-    env,
-    rootTemplate,
-    _viewRegistry,
-    builder,
-  }: {
-    [OWNER]: Owner;
+  static create(props: {
     document: SimpleDocument;
     env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
-    return new this(owner, document, env, rootTemplate, _viewRegistry, false, builder);
+    let { document, env, rootTemplate, _viewRegistry, builder } = props;
+    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, false, builder);
   }
 
   getElement(_view: unknown): Option<SimpleElement> {
@@ -569,22 +562,15 @@ export class InertRenderer extends Renderer {
 }
 
 export class InteractiveRenderer extends Renderer {
-  static create({
-    [OWNER]: owner,
-    document,
-    env,
-    rootTemplate,
-    _viewRegistry,
-    builder,
-  }: {
-    [OWNER]: Owner;
+  static create(props: {
     document: SimpleDocument;
     env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
-    return new this(owner, document, env, rootTemplate, _viewRegistry, true, builder);
+    let { document, env, rootTemplate, _viewRegistry, builder } = props;
+    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, true, builder);
   }
 
   getElement(view: unknown): Option<SimpleElement> {

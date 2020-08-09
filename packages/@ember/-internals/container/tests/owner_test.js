@@ -25,6 +25,8 @@ moduleFor(
 
       let legacyOwner;
 
+      // This is not something we expect to happen a lot, but does exist currently
+      // in the wild: https://github.com/hjdivad/ember-m3/pull/822
       for (let key in obj) {
         legacyOwner = key;
       }
