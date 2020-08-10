@@ -122,9 +122,6 @@ import { isPath, trackLocals } from './utils';
   @class TransFormComponentInvocation
 */
 export default function transformComponentInvocation(env: EmberASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
-  let { builders: b } = env.syntax;
-
   let { hasLocal, node } = trackLocals();
 
   let isAttrs = false;
@@ -153,13 +150,13 @@ export default function transformComponentInvocation(env: EmberASTPluginEnvironm
 
       BlockStatement(node: AST.BlockStatement) {
         if (isBlockInvocation(node, hasLocal)) {
-          wrapInComponent(moduleName, node, b);
+          wrapInComponent(env, node);
         }
       },
 
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
         if (!isAttrs && isInlineInvocation(node, hasLocal)) {
-          wrapInComponent(moduleName, node, b);
+          wrapInComponent(env, node);
         }
       },
     },
@@ -220,11 +217,16 @@ function wrapInAssertion(moduleName: string, node: AST.PathExpression, b: Builde
 }
 
 function wrapInComponent(
-  moduleName: string,
-  node: AST.MustacheStatement | AST.BlockStatement,
-  b: Builders
+  env: EmberASTPluginEnvironment,
+  node: AST.MustacheStatement | AST.BlockStatement
 ) {
-  let component = wrapInAssertion(moduleName, node.path as AST.PathExpression, b);
+  let { moduleName } = env.meta;
+  let { builders: b } = env.syntax;
+
+  let component = env.isProduction
+    ? node.path
+    : wrapInAssertion(moduleName, node.path as AST.PathExpression, b);
+
   node.path = b.path('component');
   node.params.unshift(component);
 }
