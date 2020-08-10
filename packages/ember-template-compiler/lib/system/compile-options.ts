@@ -9,11 +9,15 @@ let USER_PLUGINS: PluginFunc[] = [];
 export default function compileOptions(
   _options: Partial<CompileOptions> = {}
 ): EmberPrecompileOptions {
-  let options: EmberPrecompileOptions = assign({ meta: {}, plugins: { ast: [] } }, _options, {
-    customizeComponentName(tagname: string): string {
-      return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
-    },
-  });
+  let options: EmberPrecompileOptions = assign(
+    { meta: {}, isProduction: false, plugins: { ast: [] } },
+    _options,
+    {
+      customizeComponentName(tagname: string): string {
+        return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
+      },
+    }
+  );
 
   // move `moduleName` into `meta` property
   if (options.moduleName) {

@@ -17,10 +17,12 @@ export interface CompileOptions {
   contents?: string;
   moduleName?: string;
   plugins?: Plugins;
+  isProduction?: boolean;
 }
 
 export interface EmberPrecompileOptions {
   customizeComponentName(tag: string): string;
+  isProduction: boolean;
   contents?: string;
   moduleName?: string;
   plugins: Plugins;
