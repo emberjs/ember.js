@@ -1,8 +1,12 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
-import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
-import { setClassicDecorator } from './descriptor_map';
+import {
+  Decorator,
+  DecoratorPropertyDescriptor,
+  isElementDescriptor,
+  setClassicDecorator,
+} from './decorator';
 import { SELF_TAG } from './tags';
 
 /**
