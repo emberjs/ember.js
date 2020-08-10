@@ -1,3 +1,4 @@
+import { getFactoryFor, Registry } from '@ember/-internals/container';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
@@ -218,6 +219,39 @@ moduleFor(
           return undefined;
         },
       }).create(options);
+    }
+
+    ['@test does not create enumerable properties for owner and init factory when created by the container factory'](
+      assert
+    ) {
+      let registry = new Registry();
+      let container = registry.container();
+      container.owner = {};
+
+      registry.register('component:foo-bar', EmberObject);
+
+      let componentFactory = container.factoryFor('component:foo-bar');
+      let instance = componentFactory.create();
+
+      assert.deepEqual(Object.keys(instance), [], 'no enumerable properties were added');
+      assert.equal(getOwner(instance), container.owner, 'owner was defined on the instance');
+      assert.ok(getFactoryFor(instance), 'factory was defined on the instance');
+    }
+
+    ['@test does not create enumerable properties for owner and init factory when looked up on the container'](
+      assert
+    ) {
+      let registry = new Registry();
+      let container = registry.container();
+      container.owner = {};
+
+      registry.register('component:foo-bar', EmberObject);
+
+      let instance = container.lookup('component:foo-bar');
+
+      assert.deepEqual(Object.keys(instance), [], 'no enumerable properties were added');
+      assert.equal(getOwner(instance), container.owner, 'owner was defined on the instance');
+      assert.ok(getFactoryFor(instance), 'factory was defined on the instance');
     }
   }
 );

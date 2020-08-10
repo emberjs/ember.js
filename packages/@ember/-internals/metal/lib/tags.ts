@@ -1,4 +1,10 @@
-import { isObject, setupMandatorySetter, symbol, toString } from '@ember/-internals/utils';
+import {
+  enumerableSymbol,
+  isObject,
+  setupMandatorySetter,
+  symbol,
+  toString,
+} from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { isDestroyed } from '@glimmer/runtime';
@@ -6,10 +12,10 @@ import { CONSTANT_TAG, dirtyTagFor, Tag, tagFor, TagMeta } from '@glimmer/valida
 
 /////////
 
-export const CUSTOM_TAG_FOR = symbol('CUSTOM_TAG_FOR');
+export const CUSTOM_TAG_FOR = enumerableSymbol('CUSTOM_TAG_FOR');
 
 // This is exported for `@tracked`, but should otherwise be avoided. Use `tagForObject`.
-export const SELF_TAG: string = symbol('SELF_TAG');
+export const SELF_TAG: string | symbol = symbol('SELF_TAG');
 
 export function tagForProperty(
   obj: object,

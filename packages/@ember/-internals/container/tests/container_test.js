@@ -190,13 +190,13 @@ moduleFor(
       assert.equal(container.lookup('doesnot:exist'), undefined);
     }
 
-    ['@test An invalid factory throws an error'](assert) {
+    ['@test An invalid factory throws an error']() {
       let registry = new Registry();
       let container = registry.container();
 
       registry.register('controller:foo', {});
 
-      assert.throws(() => {
+      expectAssertion(() => {
         container.lookup('controller:foo');
       }, /Failed to create an instance of 'controller:foo'/);
     }
@@ -664,30 +664,6 @@ moduleFor(
       let instrance = componentFactory.create({ ajax: 'fetch' });
 
       assert.equal(instrance.ajax, 'fetch');
-    }
-
-    ['@test #factoryFor does not add properties to the object being instantiated when _initFactory is present'](
-      assert
-    ) {
-      let registry = new Registry();
-      let container = registry.container();
-
-      class Component {
-        static _initFactory() {}
-        static create(options) {
-          let instance = new this();
-          assign(instance, options);
-          return instance;
-        }
-      }
-      registry.register('component:foo-bar', Component);
-
-      let componentFactory = container.factoryFor('component:foo-bar');
-      let instance = componentFactory.create();
-
-      // note: _guid and isDestroyed are being set in the `factory` constructor
-      // not via registry/container shenanigans
-      assert.deepEqual(Object.keys(instance), []);
     }
 
     [`@test assert when calling lookup after destroy on a container`](assert) {
