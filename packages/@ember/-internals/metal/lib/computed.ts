@@ -1,5 +1,5 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { inspect, symbol, toString } from '@ember/-internals/utils';
+import { inspect, toString } from '@ember/-internals/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import { isDestroyed } from '@glimmer/runtime';
@@ -37,8 +37,6 @@ import {
   PROPERTY_DID_CHANGE,
 } from './property_events';
 import { set } from './property_set';
-
-export const AUTO = symbol('COMPUTED_AUTO');
 
 export type ComputedPropertyGetter = (keyName: string) => any;
 export type ComputedPropertySetter = (keyName: string, value: any, cachedValue?: any) => any;

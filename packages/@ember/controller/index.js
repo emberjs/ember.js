@@ -1,4 +1,4 @@
-import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
+import { FrameworkObject } from '@ember/-internals/runtime';
 import { inject as metalInject } from '@ember/-internals/metal';
 import ControllerMixin from './lib/controller_mixin';
 
@@ -13,8 +13,6 @@ import ControllerMixin from './lib/controller_mixin';
   @public
 */
 const Controller = FrameworkObject.extend(ControllerMixin);
-
-setFrameworkClass(Controller);
 
 /**
   Creates a property that lazily looks up another controller in the container.

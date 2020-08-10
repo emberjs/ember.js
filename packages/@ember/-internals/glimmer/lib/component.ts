@@ -1,7 +1,7 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { setFrameworkClass, TargetActionSupport } from '@ember/-internals/runtime';
-import { symbol } from '@ember/-internals/utils';
+import { TargetActionSupport } from '@ember/-internals/runtime';
+import { enumerableSymbol, symbol } from '@ember/-internals/utils';
 import {
   ActionSupport,
   ChildViewsSupport,
@@ -18,10 +18,11 @@ import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirtyTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
 
+export const ARGS = enumerableSymbol('ARGS');
+export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
+
 export const DIRTY_TAG = symbol('DIRTY_TAG');
-export const ARGS = symbol('ARGS');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
-export const HAS_BLOCK = symbol('HAS_BLOCK');
 export const BOUNDS = symbol('BOUNDS');
 
 /**
@@ -1114,7 +1115,5 @@ Component.reopenClass({
   isComponentFactory: true,
   positionalParams: [],
 });
-
-setFrameworkClass(Component);
 
 export default Component;

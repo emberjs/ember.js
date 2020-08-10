@@ -3,7 +3,7 @@
 */
 
 import { Factory } from '@ember/-internals/owner';
-import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
+import { FrameworkObject } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { Dict } from '@glimmer/interfaces';
@@ -137,8 +137,6 @@ let Helper = FrameworkObject.extend({
 });
 
 Helper.isHelperFactory = true;
-
-setFrameworkClass(Helper);
 
 class Wrapper implements HelperFactory<SimpleHelper> {
   isHelperFactory: true = true;

@@ -1,4 +1,4 @@
-import { FACTORY_FOR } from '@ember/-internals/container';
+import { getFactoryFor } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -111,7 +111,7 @@ export class RootComponentDefinition implements ComponentDefinition {
   constructor(public component: Component) {
     let manager = new RootComponentManager(component);
     this.manager = manager;
-    let factory = FACTORY_FOR.get(component);
+    let factory = getFactoryFor(component);
     this.state = {
       name: factory!.fullName.slice(10),
       capabilities: ROOT_CAPABILITIES,

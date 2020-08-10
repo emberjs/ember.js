@@ -2,16 +2,16 @@
   @module @ember/object
 */
 
-import { FACTORY_FOR } from '@ember/-internals/container';
-import { getOwner } from '@ember/-internals/owner';
+import { getFactoryFor, setFactoryFor, INIT_FACTORY } from '@ember/-internals/container';
+import { getOwner, LEGACY_OWNER, OWNER } from '@ember/-internals/owner';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
 import {
   guidFor,
   getName,
   setName,
-  symbol,
   makeArray,
   HAS_NATIVE_PROXY,
+  HAS_NATIVE_SYMBOL,
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
@@ -35,24 +35,9 @@ import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer
 const reopen = Mixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
-
-const factoryMap = new WeakMap();
-let debugOwnerMap;
-
-if (DEBUG) {
-  debugOwnerMap = new WeakMap();
-}
-
 const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
-const PASSED_FROM_CREATE = DEBUG ? symbol('PASSED_FROM_CREATE') : undefined;
-
-const FRAMEWORK_CLASSES = symbol('FRAMEWORK_CLASS');
-
-export function setFrameworkClass(klass) {
-  klass[FRAMEWORK_CLASSES] = true;
-}
 
 function initialize(obj, properties) {
   let m = meta(obj);
@@ -211,17 +196,11 @@ function initialize(obj, properties) {
   @public
 */
 class CoreObject {
-  static _initFactory(factory) {
-    factoryMap.set(this, factory);
-  }
-
-  constructor(passedFromCreate) {
-    // pluck off factory
-    let initFactory = factoryMap.get(this.constructor);
-    if (initFactory !== undefined) {
-      factoryMap.delete(this.constructor);
-      FACTORY_FOR.set(this, initFactory);
-    }
+  constructor(owner) {
+    // setOwner has to set both OWNER and LEGACY_OWNER for backwards compatibility, and
+    // LEGACY_OWNER is enumerable, so setting it would add an enumerable property to the object,
+    // so we just set `OWNER` directly here.
+    this[OWNER] = owner;
 
     // prepare prototype...
     this.constructor.proto();
@@ -275,8 +254,6 @@ class CoreObject {
           }
         },
       });
-
-      FACTORY_FOR.set(self, initFactory);
     }
 
     registerDestructor(self, () => self.willDestroy());
@@ -286,24 +263,15 @@ class CoreObject {
 
     m.setInitializing();
 
-    assert(
-      `An EmberObject based class, ${this.constructor}, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
-      (() => {
-        let owner = debugOwnerMap.get(this.constructor);
-        debugOwnerMap.delete(this.constructor);
-
-        return (
-          passedFromCreate !== undefined &&
-          (passedFromCreate === PASSED_FROM_CREATE || passedFromCreate === owner)
-        );
-      })()
-    );
-
     // only return when in debug builds and `self` is the proxy created above
     if (DEBUG && self !== this) {
       return self;
     }
   }
+
+  // Empty setter for absorbing setting the LEGACY_OWNER, which should _not_
+  // become an enumerable property, and should not be used in general.
+  set [LEGACY_OWNER](value) {}
 
   reopen(...args) {
     applyMixin(this, args);
@@ -599,7 +567,7 @@ class CoreObject {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${getName(this) || FACTORY_FOR.get(this) || this.constructor.toString()}:${guidFor(
+    let ret = `<${getName(this) || getFactoryFor(this) || this.constructor.toString()}:${guidFor(
       this
     )}${extension}>`;
 
@@ -748,32 +716,13 @@ class CoreObject {
     @public
   */
   static create(props, extra) {
-    let C = this;
     let instance;
 
-    if (this[FRAMEWORK_CLASSES]) {
-      let initFactory = factoryMap.get(this);
-      let owner;
-      if (initFactory !== undefined) {
-        owner = initFactory.owner;
-      } else if (props !== undefined) {
-        owner = getOwner(props);
-      }
-
-      if (DEBUG) {
-        if (owner === undefined) {
-          // fallback to passing the special PASSED_FROM_CREATE symbol
-          // to avoid an error when folks call things like Controller.extend().create()
-          // we should do a subsequent deprecation pass to ensure this isn't allowed
-          owner = PASSED_FROM_CREATE;
-        } else {
-          debugOwnerMap.set(this, owner);
-        }
-      }
-
-      instance = new C(owner);
+    if (props !== undefined) {
+      instance = new this(getOwner(props));
+      setFactoryFor(instance, getFactoryFor(props));
     } else {
-      instance = DEBUG ? new C(PASSED_FROM_CREATE) : new C();
+      instance = new this();
     }
 
     if (extra === undefined) {
@@ -1124,6 +1073,32 @@ if (DEBUG) {
 
     return injections;
   };
+}
+
+if (!HAS_NATIVE_SYMBOL) {
+  // Allows OWNER and INIT_FACTORY to be non-enumerable in IE11
+  let instanceOwner = new WeakMap();
+  let instanceFactory = new WeakMap();
+
+  Object.defineProperty(CoreObject.prototype, OWNER, {
+    get() {
+      return instanceOwner.get(this);
+    },
+
+    set(value) {
+      instanceOwner.set(this, value);
+    },
+  });
+
+  Object.defineProperty(CoreObject.prototype, INIT_FACTORY, {
+    get() {
+      return instanceFactory.get(this);
+    },
+
+    set(value) {
+      instanceFactory.set(this, value);
+    },
+  });
 }
 
 export default CoreObject;

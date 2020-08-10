@@ -97,7 +97,6 @@ import {
   CoreObject,
   NativeArray,
   A,
-  setFrameworkClass,
 } from '@ember/-internals/runtime';
 import {
   Checkbox,
@@ -401,7 +400,6 @@ Ember._ContainerProxyMixin = ContainerProxyMixin;
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
-Ember._setFrameworkClass = setFrameworkClass;
 
 /**
 @module ember

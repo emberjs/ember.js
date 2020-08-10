@@ -1,4 +1,4 @@
-import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
+import { FrameworkObject } from '@ember/-internals/runtime';
 import { inject as metalInject } from '@ember/-internals/metal';
 
 /**
@@ -68,7 +68,5 @@ const Service = FrameworkObject.extend();
 Service.reopenClass({
   isServiceFactory: true,
 });
-
-setFrameworkClass(Service);
 
 export default Service;
