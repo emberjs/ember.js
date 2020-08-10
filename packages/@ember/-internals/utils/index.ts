@@ -8,7 +8,7 @@
  Utility methods that are needed in < 80% of cases should be placed
  elsewhere (so they can be lazily evaluated / parsed).
 */
-export { default as symbol, isInternalSymbol } from './lib/symbol';
+export { symbol, enumerableSymbol, isInternalSymbol } from './lib/symbol';
 export { default as dictionary } from './lib/dictionary';
 export { default as getDebugName } from './lib/get-debug-name';
 export { default as getOwnPropertyDescriptors } from './lib/get-own-property-descriptors';

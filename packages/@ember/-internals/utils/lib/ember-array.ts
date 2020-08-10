@@ -1,4 +1,4 @@
-import symbol from './symbol';
+import { symbol } from './symbol';
 
 export const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
