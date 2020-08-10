@@ -1,8 +1,7 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
-import { Builders } from '../types';
+import { Builders, EmberASTPluginEnvironment } from '../types';
 import { isPath, isSubExpression } from './utils';
 
 function isInlineLinkTo(node: AST.MustacheStatement): boolean {
@@ -18,7 +17,7 @@ function isQueryParams(node: AST.Expression): node is AST.SubExpression {
 }
 
 function transformInlineLinkToIntoBlockForm(
-  env: ASTPluginEnvironment,
+  env: EmberASTPluginEnvironment,
   node: AST.MustacheStatement
 ): AST.BlockStatement {
   let { builders: b } = env.syntax;
@@ -39,11 +38,11 @@ function transformInlineLinkToIntoBlockForm(
 }
 
 function transformPositionalLinkToIntoNamedArguments(
-  env: ASTPluginEnvironment,
+  env: EmberASTPluginEnvironment,
   node: AST.BlockStatement
 ): AST.BlockStatement {
   let { builders: b } = env.syntax;
-  let { moduleName } = env.meta as StaticTemplateMeta;
+  let { moduleName } = env.meta;
   let {
     params,
     hash: { pairs },
@@ -181,7 +180,7 @@ function buildStatement(b: Builders, content: AST.Node, escaped: boolean, loc: A
   }
 }
 
-export default function transformLinkTo(env: ASTPluginEnvironment): ASTPlugin {
+export default function transformLinkTo(env: EmberASTPluginEnvironment): ASTPlugin {
   return {
     name: 'transform-link-to',
 

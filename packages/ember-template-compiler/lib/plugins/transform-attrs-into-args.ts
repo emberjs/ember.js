@@ -1,4 +1,5 @@
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
+import { EmberASTPluginEnvironment } from '../types';
 
 /**
  @module ember
@@ -24,7 +25,7 @@ import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
   @class TransformAttrsToProps
 */
 
-export default function transformAttrsIntoArgs(env: ASTPluginEnvironment): ASTPlugin {
+export default function transformAttrsIntoArgs(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
   let stack: string[][] = [[]];

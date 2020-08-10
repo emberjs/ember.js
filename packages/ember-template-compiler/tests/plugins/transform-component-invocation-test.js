@@ -1,4 +1,4 @@
-import { compile } from '../../index';
+import { compile, precompile } from '../../index';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -25,6 +25,21 @@ moduleFor(
       ].forEach((layout, i) => {
         compile(layout, { moduleName: `example-${i}` });
       });
+    }
+
+    '@test production compilation results in smaller template size'(assert) {
+      let layout = `{{this.modal open}}`;
+
+      let debugOutput = precompile(layout, { moduleName: `example.hbs` });
+      let prodOutput = precompile(layout, { isProduction: true, moduleName: `example.hbs` });
+
+      assert.notStrictEqual(
+        prodOutput,
+        debugOutput,
+        'expected output to differ between prod and non-prod'
+      );
+
+      assert.ok(prodOutput.length < debugOutput.length, 'prod output is smaller');
     }
   }
 );

@@ -1,7 +1,7 @@
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
-import { Builders } from '../types';
+import { AST, ASTPlugin } from '@glimmer/syntax';
+import { Builders, EmberASTPluginEnvironment } from '../types';
 
-export default function transformOldClassBindingSyntax(env: ASTPluginEnvironment): ASTPlugin {
+export default function transformOldClassBindingSyntax(env: EmberASTPluginEnvironment): ASTPlugin {
   let b = env.syntax.builders;
 
   return {

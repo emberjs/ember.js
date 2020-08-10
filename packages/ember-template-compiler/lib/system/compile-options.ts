@@ -1,30 +1,23 @@
 import { assign } from '@ember/polyfills';
-import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
-import PLUGINS, { APluginFunc } from '../plugins/index';
+import PLUGINS from '../plugins/index';
+import { CompileOptions, EmberPrecompileOptions, PluginFunc } from '../types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
-type PluginFunc = APluginFunc & {
-  __raw?: LegacyPluginClass | undefined;
-};
 let USER_PLUGINS: PluginFunc[] = [];
 
-interface Plugins {
-  ast: PluginFunc[];
-}
-
-export interface CompileOptions {
-  meta?: any;
-  moduleName?: string | undefined;
-  plugins?: Plugins | undefined;
-}
-
-export default function compileOptions(_options: Partial<CompileOptions> = {}): PrecompileOptions {
-  let options = assign({ meta: {} }, _options, {
-    customizeComponentName(tagname: string): string {
-      return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
-    },
-  });
+export default function compileOptions(
+  _options: Partial<CompileOptions> = {}
+): EmberPrecompileOptions {
+  let options: EmberPrecompileOptions = assign(
+    { meta: {}, isProduction: false, plugins: { ast: [] } },
+    _options,
+    {
+      customizeComponentName(tagname: string): string {
+        return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
+      },
+    }
+  );
 
   // move `moduleName` into `meta` property
   if (options.moduleName) {
@@ -32,13 +25,13 @@ export default function compileOptions(_options: Partial<CompileOptions> = {}): 
     meta.moduleName = options.moduleName;
   }
 
-  if (!options.plugins) {
+  if (!_options.plugins) {
     options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
   } else {
     let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
     let providedPlugins = options.plugins.ast.map(plugin => wrapLegacyPluginIfNeeded(plugin));
     let pluginsToAdd = potententialPugins.filter(plugin => {
-      return options.plugins!.ast.indexOf(plugin) === -1;
+      return options.plugins.ast.indexOf(plugin) === -1;
     });
     options.plugins.ast = providedPlugins.concat(pluginsToAdd);
   }

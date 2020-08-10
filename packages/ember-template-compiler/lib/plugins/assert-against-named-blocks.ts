@@ -1,7 +1,7 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { EmberASTPluginEnvironment } from '../types';
 
 /**
  @module ember
@@ -13,8 +13,8 @@ import calculateLocationDisplay from '../system/calculate-location-display';
   @private
   @class AssertAgainstNamedBlocks
 */
-export default function assertAgainstNamedBlocks(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta as StaticTemplateMeta;
+export default function assertAgainstNamedBlocks(env: EmberASTPluginEnvironment): ASTPlugin {
+  let { moduleName } = env.meta;
 
   return {
     name: 'assert-against-named-blocks',

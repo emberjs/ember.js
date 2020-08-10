@@ -33,7 +33,7 @@ function ast(template: string): AST.Program {
 
   options.plugins!.ast!.push(extractProgram);
 
-  precompile(template, options);
+  precompile(template, options as any);
 
   return program!;
 }
