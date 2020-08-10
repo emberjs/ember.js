@@ -1,7 +1,6 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
-import { Builders } from '../types';
+import { Builders, EmberASTPluginEnvironment } from '../types';
 import { isPath, trackLocals } from './utils';
 
 /**
@@ -122,8 +121,8 @@ import { isPath, trackLocals } from './utils';
   @private
   @class TransFormComponentInvocation
 */
-export default function transformComponentInvocation(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta as StaticTemplateMeta;
+export default function transformComponentInvocation(env: EmberASTPluginEnvironment): ASTPlugin {
+  let { moduleName } = env.meta;
   let { builders: b } = env.syntax;
 
   let { hasLocal, node } = trackLocals();

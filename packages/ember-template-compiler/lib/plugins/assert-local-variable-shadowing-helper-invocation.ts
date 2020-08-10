@@ -1,13 +1,13 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { EmberASTPluginEnvironment } from '../types';
 import { isPath, trackLocals } from './utils';
 
 export default function assertLocalVariableShadowingHelperInvocation(
-  env: ASTPluginEnvironment
+  env: EmberASTPluginEnvironment
 ): ASTPlugin {
-  let { moduleName } = env.meta as StaticTemplateMeta;
+  let { moduleName } = env.meta;
   let { hasLocal, node } = trackLocals();
 
   return {

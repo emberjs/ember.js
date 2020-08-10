@@ -1,4 +1,5 @@
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
+import { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 /**
@@ -21,7 +22,7 @@ import { isPath } from './utils';
   @private
   @class TransformHasBlockSyntax
 */
-export default function transformEachTrackArray(env: ASTPluginEnvironment): ASTPlugin {
+export default function transformEachTrackArray(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
   return {

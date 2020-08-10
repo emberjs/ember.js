@@ -1,11 +1,11 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
-export default function errorOnInputWithContent(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta as StaticTemplateMeta;
+export default function errorOnInputWithContent(env: EmberASTPluginEnvironment): ASTPlugin {
+  let { moduleName } = env.meta;
 
   return {
     name: 'assert-input-helper-without-block',

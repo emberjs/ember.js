@@ -19,12 +19,9 @@ import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
 
 import { EMBER_NAMED_BLOCKS } from '@ember/canary-features';
 import { SEND_ACTION } from '@ember/deprecated-features';
-import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
-
-export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
 
 // order of plugins is important
-const transforms: Array<APluginFunc> = [
+const transforms = [
   TransformComponentInvocation,
   TransformOldClassBindingSyntax,
   TransformQuotedBindingsIntoJustBindings,

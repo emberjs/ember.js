@@ -2,7 +2,7 @@
 @module ember
 */
 import require, { has } from 'require';
-import { CompileOptions } from './compile-options';
+import { CompileOptions } from '../types';
 import precompile from './precompile';
 
 // FIXME
