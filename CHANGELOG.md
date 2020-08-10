@@ -25,6 +25,17 @@
 - [#18993](https://github.com/emberjs/ember.js/pull/18993) [DEPRECATION] Deprecate `getWithDefault` per [RFC #554](https://github.com/emberjs/rfcs/blob/master/text/0554-deprecate-getwithdefault.md).
 - [#17571](https://github.com/emberjs/ember.js/pull/17571) [BUGFIX] Avoid tampering `queryParam` argument in RouterService#isActive 
 
+### v3.20.4 (August 11, 2020)
+
+- [#19047](https://github.com/emberjs/ember.js/pull/19047) Ensure `inject-babel-helpers` plugin can be parallelized
+- [#19089](https://github.com/emberjs/ember.js/pull/19089) Update rendering engine to improve immediate encoding performance
+- [#19082](https://github.com/emberjs/ember.js/pull/19082) Simplify mixin application
+- [#19088](https://github.com/emberjs/ember.js/pull/19088) Simplify factory instantiation from the container
+- [#19028](https://github.com/emberjs/ember.js/pull/19028) Ensure setter CP's with dependent keys on curly components can be two way bound
+- [#19077](https://github.com/emberjs/ember.js/pull/19077) Simplify `get` and improve `computed` caching scheme.
+- [#19065](https://github.com/emberjs/ember.js/pull/19065) / [#19072](https://github.com/emberjs/ember.js/pull/19072) - Updates GlimmerVM to improve internal destroyable system and improve tag / revision computation.
+- [#19081](https://github.com/emberjs/ember.js/pull/19081) Reduces template compilation size in production builds.
+
 ### v3.20.3 (July 30, 2020)
 
 - [#19048](https://github.com/emberjs/ember.js/pull/19048) [BUGFIX] Update `router.js` to ensure `transition.abort` works for query param only transitions
