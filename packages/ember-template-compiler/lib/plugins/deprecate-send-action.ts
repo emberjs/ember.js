@@ -1,8 +1,8 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 const EVENTS = [
@@ -16,9 +16,9 @@ const EVENTS = [
   'key-down',
 ];
 
-export default function deprecateSendAction(env: ASTPluginEnvironment): ASTPlugin | undefined {
+export default function deprecateSendAction(env: EmberASTPluginEnvironment): ASTPlugin {
   if (SEND_ACTION) {
-    let { moduleName } = env.meta as StaticTemplateMeta;
+    let { moduleName } = env.meta;
 
     let deprecationMessage = (node: AST.Node, eventName: string, actionName: string) => {
       let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
@@ -83,5 +83,9 @@ export default function deprecateSendAction(env: ASTPluginEnvironment): ASTPlugi
       },
     };
   }
-  return;
+
+  return {
+    name: 'deprecate-send-action',
+    visitor: {},
+  };
 }

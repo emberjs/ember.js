@@ -1,5 +1,5 @@
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
-import { Builders } from '../types';
+import { AST, ASTPlugin } from '@glimmer/syntax';
+import { Builders, EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 /**
@@ -27,7 +27,7 @@ import { isPath } from './utils';
   @class TransformActionSyntax
 */
 
-export default function transformActionSyntax({ syntax }: ASTPluginEnvironment): ASTPlugin {
+export default function transformActionSyntax({ syntax }: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = syntax;
 
   return {
