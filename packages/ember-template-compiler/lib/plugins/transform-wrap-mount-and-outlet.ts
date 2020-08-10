@@ -1,4 +1,5 @@
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
+import { EmberASTPluginEnvironment } from '../types';
 import { isPath, trackLocals } from './utils';
 
 /**
@@ -33,7 +34,7 @@ import { isPath, trackLocals } from './utils';
   @private
   @class TransformHasBlockSyntax
 */
-export default function transformWrapMountAndOutlet(env: ASTPluginEnvironment): ASTPlugin {
+export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
   let { hasLocal, node } = trackLocals();

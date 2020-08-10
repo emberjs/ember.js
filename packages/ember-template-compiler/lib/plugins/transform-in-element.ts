@@ -1,8 +1,8 @@
-import { StaticTemplateMeta } from '@ember/-internals/views';
 import { EMBER_GLIMMER_IN_ELEMENT } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
-import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 /**
@@ -42,8 +42,8 @@ import { isPath } from './utils';
   @private
   @class TransformInElement
 */
-export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta as StaticTemplateMeta;
+export default function transformInElement(env: EmberASTPluginEnvironment): ASTPlugin {
+  let { moduleName } = env.meta;
   let { builders: b } = env.syntax;
 
   return {
@@ -57,7 +57,7 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
           if (EMBER_GLIMMER_IN_ELEMENT) {
             let originalValue = node.params[0];
 
-            if (originalValue) {
+            if (originalValue && !env.isProduction) {
               let subExpr = b.sexpr('-in-el-null', [originalValue]);
 
               node.params.shift();
