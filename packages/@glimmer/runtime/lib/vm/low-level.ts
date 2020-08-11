@@ -32,9 +32,14 @@ export function initializeRegistersWithPC(pc: number): LowLevelRegisters {
 }
 
 export interface Stack {
-  push(value: number): void;
+  pushJs(value: unknown): void;
+  pushSmallInt(value: number): void;
+  pushTrue(): void;
+  pushFalse(): void;
+  pushNull(): void;
+  pushUndefined(): void;
   get(position: number): number;
-  pop(): number;
+  popSmallInt(): number;
 }
 
 export interface Externs {
@@ -68,8 +73,8 @@ export default class LowLevelVM {
 
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
-    this.stack.push(this.registers[$ra]);
-    this.stack.push(this.registers[$fp]);
+    this.stack.pushSmallInt(this.registers[$ra]);
+    this.stack.pushSmallInt(this.registers[$fp]);
     this.registers[$fp] = this.registers[$sp] - 1;
   }
 
@@ -81,11 +86,11 @@ export default class LowLevelVM {
   }
 
   pushSmallFrame() {
-    this.stack.push(this.registers[$ra]);
+    this.stack.pushSmallInt(this.registers[$ra]);
   }
 
   popSmallFrame() {
-    this.registers[$ra] = this.stack.pop();
+    this.registers[$ra] = this.stack.popSmallInt();
   }
 
   // Jump to an address in `program`
@@ -168,7 +173,7 @@ export default class LowLevelVM {
       case MachineOp.InvokeStatic:
         return this.call(opcode.op1);
       case MachineOp.InvokeVirtual:
-        return this.call(this.stack.pop());
+        return this.call(this.stack.popSmallInt());
       case MachineOp.Jump:
         return this.goto(opcode.op1);
       case MachineOp.Return:

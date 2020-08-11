@@ -1,6 +1,6 @@
 import { VersionedPathReference } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
-import { assert, unwrapHandle } from '@glimmer/util';
+import { assert, unwrapHandle, decodeHandle } from '@glimmer/util';
 import { check } from '@glimmer/debug';
 import { Op, Dict, PartialDefinition } from '@glimmer/interfaces';
 import { CheckReference } from './-debug-strip';
@@ -11,12 +11,12 @@ APPEND_OPCODES.add(
   (vm, { op1: _meta, op2: _symbols, op3: _evalInfo }) => {
     let { [CONSTANTS]: constants, stack } = vm;
 
-    let name = check(stack.pop(), CheckReference).value();
+    let name = check(stack.popJs(), CheckReference).value();
     assert(typeof name === 'string', `Could not find a partial named "${String(name)}"`);
 
-    let meta = constants.getTemplateMeta(_meta);
-    let outerSymbols = constants.getStringArray(_symbols);
-    let evalInfo = constants.getArray(_evalInfo);
+    let meta = constants.getValue(decodeHandle(_meta));
+    let outerSymbols = constants.getArray<string>(_symbols);
+    let evalInfo = constants.getValue<number[]>(decodeHandle(_evalInfo));
 
     let handle = vm.runtime.resolver.lookupPartial(name as string, meta);
 

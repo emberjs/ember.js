@@ -14,11 +14,7 @@ import {
   StringArrayOperand,
   TemplateMetaOperand,
   WireFormat,
-  PrimitiveType,
-  PrimitiveOperandValue,
-  PrimitiveOperandNumberValue,
-  PrimitiveOperandStringValue,
-  PrimitiveOperandImmediateValue,
+  ImmediateOperand,
 } from '@glimmer/interfaces';
 
 export function arr(value: number[]): ArrayOperand {
@@ -67,27 +63,10 @@ export function lookup(kind: 'helper', value: string): LookupHandleOperand {
   return { type: 'lookup', value: { kind, value } };
 }
 
-export function prim(
-  operand: string,
-  type: PrimitiveType.STRING
-): PrimitiveOperand<PrimitiveOperandStringValue>;
-export function prim(
-  operand: number,
-  type: PrimitiveType.NUMBER
-): PrimitiveOperand<PrimitiveOperandNumberValue>;
-export function prim(
-  operand: number | boolean | null | undefined,
-  type: PrimitiveType.IMMEDIATE
-): PrimitiveOperand<PrimitiveOperandImmediateValue>;
-export function prim(
-  operand: string | number | boolean | null | undefined,
-  type: PrimitiveType
-): PrimitiveOperand {
-  return {
-    type: 'primitive',
-    value: {
-      primitive: operand,
-      type,
-    } as PrimitiveOperandValue,
-  };
+export function immediate(value: number): ImmediateOperand {
+  return { type: 'immediate', value };
+}
+
+export function prim(value: string | number | boolean | null | undefined): PrimitiveOperand {
+  return { type: 'primitive', value };
 }

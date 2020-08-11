@@ -93,13 +93,9 @@ export type ConstantPool = unknown[];
  * together with the program.
  */
 export interface CompileTimeConstants {
-  string(value: string): number;
-  stringArray(strings: string[]): number;
-  array(values: number[]): number;
+  value(value: unknown): number;
+  array(values: unknown[]): number;
   serializable(value: unknown): number;
-  templateMeta(value: unknown): number;
-  number(value: number): number;
-  other(value: unknown): number;
   toPool(): ConstantPool;
 }
 
@@ -112,13 +108,9 @@ export interface CompileTimeLazyConstants extends CompileTimeConstants {
 }
 
 export interface RuntimeConstants {
-  getNumber(value: number): number;
-  getString(handle: number): string;
-  getStringArray(value: number): string[];
-  getArray(value: number): number[];
-  getSerializable(handle: number): unknown;
-  getTemplateMeta(s: number): unknown;
-  getOther(s: number): unknown;
+  getValue<T>(handle: number): T;
+  getArray<T>(handle: number): T[];
+  getSerializable<T>(handle: number): T;
 }
 
 export interface JitProgramCompilationContext extends WholeProgramCompilationContext {

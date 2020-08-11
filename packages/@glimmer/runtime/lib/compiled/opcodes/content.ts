@@ -52,7 +52,7 @@ export class ContentTypeReference implements Reference<ContentType> {
 }
 
 APPEND_OPCODES.add(Op.AppendHTML, vm => {
-  let reference = check(vm.stack.pop(), CheckPathReference);
+  let reference = check(vm.stack.popJs(), CheckPathReference);
 
   let rawValue = reference.value();
   let value = isEmpty(rawValue) ? '' : String(rawValue);
@@ -61,7 +61,7 @@ APPEND_OPCODES.add(Op.AppendHTML, vm => {
 });
 
 APPEND_OPCODES.add(Op.AppendSafeHTML, vm => {
-  let reference = check(vm.stack.pop(), CheckPathReference);
+  let reference = check(vm.stack.popJs(), CheckPathReference);
 
   let rawValue = check(reference.value(), CheckSafeString).toHTML();
   let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
@@ -70,7 +70,7 @@ APPEND_OPCODES.add(Op.AppendSafeHTML, vm => {
 });
 
 APPEND_OPCODES.add(Op.AppendText, vm => {
-  let reference = check(vm.stack.pop(), CheckPathReference);
+  let reference = check(vm.stack.popJs(), CheckPathReference);
 
   let rawValue = reference.value();
   let value = isEmpty(rawValue) ? '' : String(rawValue);
@@ -83,7 +83,7 @@ APPEND_OPCODES.add(Op.AppendText, vm => {
 });
 
 APPEND_OPCODES.add(Op.AppendDocumentFragment, vm => {
-  let reference = check(vm.stack.pop(), CheckPathReference);
+  let reference = check(vm.stack.popJs(), CheckPathReference);
 
   let value = check(reference.value(), CheckDocumentFragment);
 
@@ -91,7 +91,7 @@ APPEND_OPCODES.add(Op.AppendDocumentFragment, vm => {
 });
 
 APPEND_OPCODES.add(Op.AppendNode, vm => {
-  let reference = check(vm.stack.pop(), CheckPathReference);
+  let reference = check(vm.stack.popJs(), CheckPathReference);
 
   let value = check(reference.value(), CheckNode);
 
