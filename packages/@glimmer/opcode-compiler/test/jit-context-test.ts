@@ -8,6 +8,6 @@ QUnit.test('Jit template metas are not not stringified and parsed', assert => {
   let { constants } = context.program;
 
   let meta = {};
-  let handle = constants.templateMeta(meta);
-  assert.equal(constants.getTemplateMeta(handle), meta, 'Meta is not serialized');
+  let handle = constants.value(meta);
+  assert.equal(constants.getValue(handle), meta, 'Meta is not serialized');
 });

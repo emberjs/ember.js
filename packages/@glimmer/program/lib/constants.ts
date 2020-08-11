@@ -1,15 +1,19 @@
 import { CompileTimeConstants, ConstantPool, RuntimeConstants } from '@glimmer/interfaces';
+import { assert, constants } from '@glimmer/util';
 
-export const WELL_KNOWN_EMPTY_ARRAY_POSITION = 0;
-const WELL_KNOW_EMPTY_ARRAY = Object.freeze([]);
+const WELL_KNOWN_EMPTY_ARRAY: unknown = Object.freeze([]);
+const STARTER_CONSTANTS = constants(WELL_KNOWN_EMPTY_ARRAY);
+const WELL_KNOWN_EMPTY_ARRAY_POSITION: number = STARTER_CONSTANTS.indexOf(WELL_KNOWN_EMPTY_ARRAY);
 
 export class WriteOnlyConstants implements CompileTimeConstants {
   // `0` means NULL
 
-  protected values: unknown[] = [WELL_KNOW_EMPTY_ARRAY];
-  protected indexMap: Map<unknown, number> = new Map();
+  protected values: unknown[] = STARTER_CONSTANTS.slice();
+  protected indexMap: Map<unknown, number> = new Map(
+    this.values.map((value, index) => [value, index])
+  );
 
-  protected value(value: unknown) {
+  value(value: unknown) {
     let indexMap = this.indexMap;
     let index = indexMap.get(value);
 
@@ -21,44 +25,24 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     return index;
   }
 
-  other(other: unknown): number {
-    return this.value(other);
-  }
-
-  string(value: string): number {
-    return this.value(value);
-  }
-
-  stringArray(strings: string[]): number {
-    let _strings: number[] = new Array(strings.length);
-
-    for (let i = 0; i < strings.length; i++) {
-      _strings[i] = this.string(strings[i]);
-    }
-
-    return this.array(_strings);
-  }
-
-  array(values: number[]): number {
+  array(values: unknown[]): number {
     if (values.length === 0) {
       return WELL_KNOWN_EMPTY_ARRAY_POSITION;
     }
 
-    return this.value(values);
+    let handles: number[] = new Array(values.length);
+
+    for (let i = 0; i < values.length; i++) {
+      handles[i] = this.value(values[i]);
+    }
+
+    return this.value(handles);
   }
 
   serializable(value: unknown): number {
     let str = JSON.stringify(value);
 
     return this.value(str);
-  }
-
-  templateMeta(value: unknown): number {
-    return this.serializable(value);
-  }
-
-  number(number: number): number {
-    return this.value(number);
   }
 
   toPool(): ConstantPool {
@@ -73,93 +57,61 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
     this.values = pool;
   }
 
-  getString(value: number): string {
-    return this.values[value] as string;
+  getValue<T>(handle: number) {
+    return this.values[handle] as T;
   }
 
-  getNumber(value: number): number {
-    return this.values[value] as number;
-  }
+  getArray<T>(value: number): T[] {
+    let handles = this.getValue(value) as number[];
+    let reified: T[] = new Array(handles.length);
 
-  getStringArray(value: number): string[] {
-    let names = this.getArray(value);
-    let _names: string[] = new Array(names.length);
-
-    for (let i = 0; i < names.length; i++) {
-      let n = names[i];
-      _names[i] = this.getString(n);
+    for (let i = 0; i < handles.length; i++) {
+      let n = handles[i];
+      reified[i] = this.getValue(n);
     }
 
-    return _names;
-  }
-
-  getArray(value: number): number[] {
-    return this.values[value] as number[];
+    return reified;
   }
 
   getSerializable<T>(s: number): T {
     return JSON.parse(this.values[s] as string) as T;
   }
-
-  getTemplateMeta<T>(m: number): T {
-    return this.getSerializable(m);
-  }
-
-  getOther<T>(value: number): T {
-    return this.values[value] as T;
-  }
 }
 
 export class JitConstants extends WriteOnlyConstants implements RuntimeConstants {
-  protected reifiedStringArrs: string[][] = [WELL_KNOW_EMPTY_ARRAY as any];
+  protected reifiedArrs: { [key: number]: unknown[] } = {
+    [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],
+  };
 
   templateMeta(meta: unknown): number {
     return this.value(meta);
   }
 
   getValue<T>(index: number) {
+    assert(index > 0, `cannot get value for handle: ${index}`);
+
     return this.values[index] as T;
   }
 
-  getNumber(value: number): number {
-    return this.getValue(value);
-  }
-
-  getString(value: number): string {
-    return this.getValue(value);
-  }
-
-  getStringArray(value: number): string[] {
-    let reifiedStringArrs = this.reifiedStringArrs;
-    let reified = reifiedStringArrs[value];
+  getArray<T>(index: number): T[] {
+    let reifiedArrs = this.reifiedArrs;
+    let reified = reifiedArrs[index] as T[];
 
     if (reified === undefined) {
-      let names = this.getArray(value);
+      let names: number[] = this.getValue(index);
       reified = new Array(names.length);
 
       for (let i = 0; i < names.length; i++) {
         reified[i] = this.getValue(names[i]);
       }
 
-      reifiedStringArrs[value] = reified;
+      reifiedArrs[index] = reified;
     }
 
     return reified;
   }
 
-  getArray(value: number): number[] {
-    return this.getValue(value);
-  }
-
   getSerializable<T>(s: number): T {
     return JSON.parse(this.getValue(s)) as T;
-  }
-
-  getTemplateMeta<T>(m: number): T {
-    return this.getValue(m);
-  }
-
-  getOther<T>(value: number): T {
-    return this.getValue(value);
   }
 }

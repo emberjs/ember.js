@@ -28,7 +28,6 @@ import {
   EncoderError,
   HandleResult,
   CompileErrorOp,
-  PrimitiveType,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
 import {
@@ -39,7 +38,6 @@ import {
   exhausted,
   unreachable,
   encodeHandle,
-  HandleConstants,
 } from '@glimmer/util';
 import { commit } from '../compiler';
 
@@ -204,7 +202,7 @@ function constant(
   }
 
   if (typeof operand === 'string') {
-    return constants.string(operand);
+    return constants.value(operand);
   }
 
   if (operand === null) {
@@ -212,39 +210,19 @@ function constant(
   }
 
   switch (operand.type) {
-    case 'array':
-      return constants.array(operand.value);
     case 'string-array':
-      return constants.stringArray(operand.value);
+      return constants.array(operand.value);
     case 'serializable':
       return constants.serializable(operand.value);
-    case 'template-meta':
-      return constants.templateMeta(operand.value);
-    case 'other':
-      // TODO: Bad cast
-      return constants.other(operand.value);
     case 'stdlib':
       return operand;
-    case 'primitive': {
-      switch (operand.value.type) {
-        case PrimitiveType.STRING:
-          return encodeHandle(
-            constants.string(operand.value.primitive),
-            HandleConstants.STRING_MAX_INDEX,
-            HandleConstants.STRING_MAX_HANDLE
-          );
-        case PrimitiveType.NUMBER:
-          return encodeHandle(
-            constants.number(operand.value.primitive),
-            HandleConstants.NUMBER_MAX_INDEX,
-            HandleConstants.NUMBER_MAX_HANDLE
-          );
-        case PrimitiveType.IMMEDIATE:
-          return encodeImmediate(operand.value.primitive);
-        default:
-          return exhausted(operand.value);
-      }
-    }
+    case 'immediate':
+      return encodeImmediate(operand.value);
+    case 'primitive':
+    case 'template-meta':
+    case 'array':
+    case 'other':
+      return encodeHandle(constants.value(operand.value));
     case 'lookup':
       throw unreachable('lookup not reachable');
     default:

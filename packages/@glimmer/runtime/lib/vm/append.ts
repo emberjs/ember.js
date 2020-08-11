@@ -115,7 +115,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   pushScope(scope: Scope<C>): void;
 
   dynamicScope(): DynamicScope;
-  bindDynamicScope(names: number[]): void;
+  bindDynamicScope(names: string[]): void;
   pushDynamicScope(): void;
   popDynamicScope(): void;
 
@@ -174,7 +174,9 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
   // Fetch a value from a register onto the stack
   fetch(register: SyscallRegister): void {
-    this.stack.push(this.fetchValue(register));
+    let value = this.fetchValue(register);
+
+    this.stack.pushJs(value);
   }
 
   // Load a value from the stack into a register
@@ -368,8 +370,8 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     let valueRef = iterableRef.childRefFor(key, value);
     let memoRef = iterableRef.childRefFor(key, memo);
 
-    stack.push(valueRef);
-    stack.push(memoRef);
+    stack.pushJs(valueRef);
+    stack.pushJs(memoRef);
 
     let state = this.capture(2);
     let block = this.elements().pushUpdatableBlock();
@@ -390,7 +392,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     let addr = this[INNER_VM].target(offset);
     let state = this.capture(0, addr);
     let list = this.elements().pushBlockList(updating) as LiveBlockList;
-    let iterableRef = this.stack.peek<IterableReference>();
+    let iterableRef = this.stack.peekJs<IterableReference>();
 
     let opcode = new ListBlockOpcode(state, this.runtime, list, updating, iterableRef);
 
@@ -561,12 +563,12 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     return result;
   }
 
-  bindDynamicScope(names: number[]) {
+  bindDynamicScope(names: string[]) {
     let scope = this.dynamicScope();
 
     for (let i = names.length - 1; i >= 0; i--) {
-      let name = this[CONSTANTS].getString(names[i]);
-      scope.set(name, this.stack.pop<VersionedPathReference<unknown>>());
+      let name = names[i];
+      scope.set(name, this.stack.popJs<VersionedPathReference<unknown>>());
     }
   }
 }

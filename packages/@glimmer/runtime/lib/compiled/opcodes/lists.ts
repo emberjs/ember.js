@@ -6,8 +6,8 @@ import { Op } from '@glimmer/interfaces';
 
 APPEND_OPCODES.add(Op.PutIterator, vm => {
   let stack = vm.stack;
-  let listRef = check(stack.pop(), CheckPathReference);
-  let keyRef = check(stack.pop(), CheckPathReference);
+  let listRef = check(stack.popJs(), CheckPathReference);
+  let keyRef = check(stack.popJs(), CheckPathReference);
 
   let keyValue = keyRef.value();
   let key = keyValue === null ? '@identity' : String(keyValue);
@@ -15,12 +15,12 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
   let iterableRef = new IterableReference(listRef, key, vm.env);
 
   // Push the first time to push the iterator onto the stack for iteration
-  stack.push(iterableRef);
+  stack.pushJs(iterableRef);
 
   // Push the second time to push it as a reference for presence in general
   // (e.g whether or not it is empty). This reference will be used to skip
   // iteration entirely.
-  stack.push(iterableRef);
+  stack.pushJs(iterableRef);
 });
 
 APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart }) => {
@@ -33,7 +33,7 @@ APPEND_OPCODES.add(Op.ExitList, vm => {
 
 APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
   let stack = vm.stack;
-  let iterable = check(stack.peek(), CheckInstanceof(IterableReference));
+  let iterable = check(stack.peekJs(), CheckInstanceof(IterableReference));
   let item = iterable.next();
 
   if (item) {

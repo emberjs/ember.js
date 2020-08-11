@@ -1,6 +1,6 @@
 import { Op, JitOrAotBlock, Scope } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { dict } from '@glimmer/util';
+import { dict, decodeHandle } from '@glimmer/util';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
 
@@ -66,8 +66,8 @@ class ScopeInspector<C extends JitOrAotBlock> {
 }
 
 APPEND_OPCODES.add(Op.Debugger, (vm, { op1: _symbols, op2: _evalInfo }) => {
-  let symbols = vm[CONSTANTS].getStringArray(_symbols);
-  let evalInfo = vm[CONSTANTS].getArray(_evalInfo);
+  let symbols = vm[CONSTANTS].getArray<string>(_symbols);
+  let evalInfo = vm[CONSTANTS].getValue<number[]>(decodeHandle(_evalInfo));
   let inspector = new ScopeInspector(vm.scope(), symbols, evalInfo);
   callback(vm.getSelf().value(), path => inspector.get(path).value());
 });
