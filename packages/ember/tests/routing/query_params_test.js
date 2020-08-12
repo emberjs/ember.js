@@ -628,6 +628,39 @@ moduleFor(
       assert.equal(indexModelCount, 2, 'index model hook ran again due to refreshModel');
     }
 
+    async ['@test refreshModel does not force `replaceWith` to add a history entry'](assert) {
+      // Default to `omg` being empty
+      this.setSingleQPController('index', 'omg', null);
+
+      this.add(
+        'route:index',
+        Route.extend({
+          queryParams: {
+            omg: {
+              refreshModel: true,
+            },
+          },
+
+          model(params) {
+            return params;
+          },
+
+          afterModel({ omg }) {
+            // Pretend that we need the `model` state to compute the query param value
+            if (!omg) {
+              this.replaceWith({
+                queryParams: {
+                  omg: 'lol',
+                },
+              });
+            }
+          },
+        })
+      );
+
+      await this.visit('/');
+    }
+
     async ['@test multiple QP value changes only cause a single model refresh'](assert) {
       assert.expect(2);
 
