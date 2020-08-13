@@ -1,4 +1,5 @@
 import { Environment } from './environment';
+// eslint-disable-next-line node/no-extraneous-import
 import { PathReference } from '@glimmer/reference';
 import { Destroyable } from '../core';
 import { VMArguments } from './arguments';

@@ -18,12 +18,16 @@ export type TagMeta = Map<PropertyKey, UpdatableTag>;
 
 const TRACKED_TAGS = new WeakMap<object, TagMeta>();
 
-export function dirtyTagFor<T extends object>(obj: T, key: keyof T | string | symbol): void {
+export function dirtyTagFor<T extends object>(
+  obj: T,
+  key: keyof T | string | symbol,
+  meta?: TagMeta
+): void {
   if (DEBUG && !isObjectLike(obj)) {
     throw new Error(`BUG: Can't update a tag for a primitive`);
   }
 
-  let tags = TRACKED_TAGS.get(obj);
+  let tags = meta === undefined ? TRACKED_TAGS.get(obj) : meta;
 
   // No tags have been setup for this object yet, return
   if (tags === undefined) return;

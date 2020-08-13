@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-extraneous-import
 import { Reference } from '@glimmer/reference';
 import { Option } from '../core';
 
