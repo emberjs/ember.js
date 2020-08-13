@@ -10,6 +10,7 @@ import {
   UNDEFINED_REFERENCE,
 } from '..';
 import { TestEnv } from './utils/template';
+// eslint-disable-next-line node/no-extraneous-import
 import { EMPTY_ARGS, EMPTY_NAMED, createCapturedArgs } from '@glimmer/runtime';
 
 module('@glimmer/reference: template', () => {

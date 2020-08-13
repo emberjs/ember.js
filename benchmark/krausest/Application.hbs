@@ -1,0 +1,6 @@
+<div class="container">
+  <table class="table table-hover table-striped test-data"><tbody>
+    {{#each this.items as |item|}}<Row @select={{this.select}} @item={{item}}/>{{/each}}
+  </tbody></table>
+  <span className="preloadicon glyphicon glyphicon-remove" aria-hidden="true"></span>
+</div>

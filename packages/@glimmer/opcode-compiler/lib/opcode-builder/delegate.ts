@@ -3,7 +3,6 @@ import {
   ComponentCapabilities,
   Option,
   CompileTimeComponent,
-  CompilableProgram,
 } from '@glimmer/interfaces';
 
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
@@ -41,8 +40,6 @@ export interface ResolverDelegate<R = unknown> {
   lookupModifier?(name: string, referrer: R): Option<number> | void;
   lookupComponent?(name: string, referrer: R): Option<CompileTimeComponent> | void;
   lookupPartial?(name: string, referrer: R): Option<number> | void;
-
-  compile?(source: string, name: string, wrapped: boolean): CompilableProgram;
 
   // For debugging
   resolve?(handle: number): R;

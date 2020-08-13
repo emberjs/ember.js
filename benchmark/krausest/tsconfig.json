@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "target": "ES2019",
+    "moduleResolution": "node",
+    "module": "es2015",
+    "typeRoots": [],
+    "types": [],
+    "baseUrl": ".",
+    "noEmit": true,
+    "paths": {
+      "@glimmer/*": ["../../dist/@glimmer/*"]
+    }
+  },
+  "files": ["index.js"]
+}
