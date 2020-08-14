@@ -4,8 +4,8 @@ import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import { Transition } from 'router_js';
 import { consumeTag, tagFor } from '@glimmer/validator';
+import { Transition } from 'router_js';
 import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
