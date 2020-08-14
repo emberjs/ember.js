@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import Service, { inject as service } from '@ember/service';
 
 moduleFor(
   'Router Service - isActive',
@@ -31,6 +32,42 @@ moduleFor(
         .then(() => {
           assert.ok(this.routerService.isActive('dynamic', dynamicModel));
         });
+    }
+
+    async ['@test RouterService#isActive entangles with route transitions'](assert) {
+      assert.expect(6);
+
+      this.add(
+        `service:foo`,
+        class extends Service {
+          @service router;
+
+          get isChildActive() {
+            return this.router.isActive('parent.child');
+          }
+
+          get isSisterActive() {
+            return this.router.isActive('parent.sister');
+          }
+        }
+      );
+
+      await this.visit('/');
+
+      let fooService = this.applicationInstance.lookup('service:foo');
+
+      assert.equal(fooService.isChildActive, false);
+      assert.equal(fooService.isSisterActive, false);
+
+      await this.routerService.transitionTo('parent.child');
+
+      assert.equal(fooService.isChildActive, true);
+      assert.equal(fooService.isSisterActive, false);
+
+      await this.routerService.transitionTo('parent.sister');
+
+      assert.equal(fooService.isChildActive, false);
+      assert.equal(fooService.isSisterActive, true);
     }
 
     ['@test RouterService#isActive does not eagerly instantiate controller for query params'](
