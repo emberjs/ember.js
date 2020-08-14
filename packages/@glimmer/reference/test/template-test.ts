@@ -10,12 +10,7 @@ import {
   UNDEFINED_REFERENCE,
 } from '..';
 import { TestEnv } from './utils/template';
-import {
-  EMPTY_ARGS,
-  CapturedNamedArgumentsImpl,
-  CapturedPositionalArgumentsImpl,
-  CapturedArgumentsImpl,
-} from '@glimmer/runtime';
+import { EMPTY_ARGS, EMPTY_NAMED, createCapturedArgs } from '@glimmer/runtime';
 
 module('@glimmer/reference: template', () => {
   module('ComponentRootReference', () => {
@@ -47,7 +42,7 @@ module('@glimmer/reference: template', () => {
     test('non-constant helper values are non-constant if arguments are not constant', assert => {
       let tag = createTag();
 
-      const EMPTY_POSITIONAL = new CapturedPositionalArgumentsImpl([
+      const MUTABLE_ARGS = createCapturedArgs(EMPTY_NAMED, [
         {
           value() {
             consumeTag(tag);
@@ -61,11 +56,9 @@ module('@glimmer/reference: template', () => {
           },
         },
       ]);
-      const EMPTY_NAMED = new CapturedNamedArgumentsImpl([], []);
-      const MUTABLE_ARGS = new CapturedArgumentsImpl(EMPTY_POSITIONAL, EMPTY_NAMED, 0);
 
       let ref = new HelperRootReference(
-        args => args.positional.at(0).value(),
+        args => args.positional[0].value(),
         MUTABLE_ARGS,
         new TestEnv()
       );

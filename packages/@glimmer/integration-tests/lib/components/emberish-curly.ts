@@ -25,7 +25,12 @@ import { PathReference } from '@glimmer/reference';
 import { createTag, dirtyTag, DirtyableTag, consumeTag, dirtyTagFor } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
-import { PrimitiveReference, registerDestructor } from '@glimmer/runtime';
+import {
+  PrimitiveReference,
+  registerDestructor,
+  reifyNamed,
+  ReifyPositionalReference,
+} from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
 import { TestJitRegistry } from '../modes/jit/registry';
@@ -178,12 +183,13 @@ export class EmberishCurlyComponentManager
         }
       }
 
-      let named = assign({}, args.named.capture().map);
-      named[positionalParams] = args.positional.capture();
+      let named = args.named.capture();
+      let positional = args.positional.capture();
+      named[positionalParams] = new ReifyPositionalReference(positional);
 
       return { positional: EMPTY_ARRAY, named };
     } else if (Array.isArray(positionalParams)) {
-      let named = assign({}, args.named.capture().map);
+      let named = assign({}, args.named.capture());
       let count = Math.min(positionalParams.length, args.positional.length);
 
       for (let i = 0; i < count; i++) {
@@ -215,7 +221,7 @@ export class EmberishCurlyComponentManager
     let klass = state.ComponentClass || EmberishCurlyComponent;
     let self = callerSelf.value();
     let args = _args.named.capture();
-    let attrs = args.value();
+    let attrs = reifyNamed(args);
     let merged = assign(
       {},
       attrs,
@@ -313,7 +319,7 @@ export class EmberishCurlyComponentManager
 
   update(component: EmberishCurlyComponent): void {
     let oldAttrs = component.attrs;
-    let newAttrs = component.args.value();
+    let newAttrs = reifyNamed(component.args);
     let merged = assign({}, newAttrs, { attrs: newAttrs });
 
     consumeTag(component.dirtinessTag);
