@@ -191,6 +191,33 @@ class ArrayChecker<T> implements Checker<T[]> {
   }
 }
 
+class DictChecker<T> implements Checker<Dict<T>> {
+  type!: Dict<T>;
+
+  constructor(private checker: Checker<T>) {}
+
+  validate(value: unknown): value is Dict<T> {
+    let isDict =
+      typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === null;
+
+    if (!isDict) return false;
+
+    let { checker } = this;
+
+    for (let key in value as Dict) {
+      if (!checker.validate((value as Dict)[key])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  expected(): string {
+    return `a primitive`;
+  }
+}
+
 class OpaqueChecker implements Checker<unknown> {
   type: unknown;
 
@@ -242,6 +269,10 @@ export function CheckInterface<
 
 export function CheckArray<T>(obj: Checker<T>): Checker<T[]> {
   return new ArrayChecker(obj);
+}
+
+export function CheckDict<T>(obj: Checker<T>): Checker<Dict<T>> {
+  return new DictChecker(obj);
 }
 
 export function check<T>(value: unknown, checker: Checker<T>): T {

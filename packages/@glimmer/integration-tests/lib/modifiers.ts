@@ -10,7 +10,7 @@ import {
   CapturedArguments,
 } from '@glimmer/interfaces';
 import { UpdatableTag, createUpdatableTag } from '@glimmer/validator';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor, reifyPositional, reifyNamed } from '@glimmer/runtime';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;
@@ -50,8 +50,8 @@ export class TestModifierManager
 
   install({ element, args, instance }: TestModifier) {
     // Do this eagerly to ensure they are tracked
-    let positional = args.positional.value();
-    let named = args.named.value();
+    let positional = reifyPositional(args.positional);
+    let named = reifyNamed(args.named);
 
     if (instance && instance.didInsertElement) {
       instance.element = element;
@@ -65,8 +65,8 @@ export class TestModifierManager
 
   update({ args, instance }: TestModifier) {
     // Do this eagerly to ensure they are tracked
-    let positional = args.positional.value();
-    let named = args.named.value();
+    let positional = reifyPositional(args.positional);
+    let named = reifyNamed(args.named);
 
     if (instance && instance.didUpdate) {
       instance.didUpdate(positional, named);

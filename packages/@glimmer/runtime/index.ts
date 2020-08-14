@@ -57,9 +57,14 @@ export { SafeString } from './lib/upsert';
 export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
 export {
   EMPTY_ARGS,
-  CapturedArgumentsImpl,
-  CapturedNamedArgumentsImpl,
-  CapturedPositionalArgumentsImpl,
+  EMPTY_NAMED,
+  EMPTY_POSITIONAL,
+  createCapturedArgs,
+  reifyArgs,
+  reifyNamed,
+  reifyPositional,
+  ReifyNamedReference,
+  ReifyPositionalReference,
 } from './lib/vm/arguments';
 export {
   DynamicAttribute,
