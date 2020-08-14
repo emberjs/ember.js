@@ -2,6 +2,7 @@ import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { valueForRef } from '@glimmer/reference';
 import { registerDestructor, reifyNamed } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
@@ -96,9 +97,9 @@ export class OnModifierState {
 
     assert(
       'You must pass a valid DOM event name as the first argument to the `on` modifier',
-      args.positional[0] !== undefined && typeof args.positional[0].value() === 'string'
+      args.positional[0] !== undefined && typeof valueForRef(args.positional[0]) === 'string'
     );
-    let eventName = args.positional[0].value() as string;
+    let eventName = valueForRef(args.positional[0]) as string;
     if (eventName !== this.eventName) {
       this.eventName = eventName;
       this.shouldUpdate = true;
@@ -112,7 +113,7 @@ export class OnModifierState {
         args.positional[1] !== undefined
       );
 
-      let value = userProvidedCallbackReference.value();
+      let value = valueForRef(userProvidedCallbackReference);
       assert(
         `You must pass a function as the second argument to the \`on\` modifier, you passed ${
           value === null ? 'null' : typeof value
@@ -121,7 +122,7 @@ export class OnModifierState {
       );
     }
 
-    let userProvidedCallback = userProvidedCallbackReference.value() as EventListener;
+    let userProvidedCallback = valueForRef(userProvidedCallbackReference) as EventListener;
     if (userProvidedCallback !== this.userProvidedCallback) {
       this.userProvidedCallback = userProvidedCallback;
       this.shouldUpdate = true;

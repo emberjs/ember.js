@@ -3,39 +3,9 @@
 */
 
 import { assert } from '@ember/debug';
-import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
-import { HelperRootReference } from '@glimmer/reference';
-import toBool from '../utils/to-bool';
-
-function ifHelper({ positional }: CapturedArguments) {
-  assert(
-    'The inline form of the `if` helper expects two or three arguments, e.g. `{{if trialExpired "Expired" expiryDate}}`.',
-    positional.length === 3 || positional.length === 2
-  );
-
-  let [condition, truthyValue, falsyValue] = positional;
-
-  if (toBool(condition.value()) === true) {
-    return truthyValue.value();
-  } else {
-    return falsyValue !== undefined ? falsyValue.value() : undefined;
-  }
-}
-
-function unless({ positional }: CapturedArguments) {
-  assert(
-    'The inline form of the `unless` helper expects two or three arguments, e.g. `{{unless isFirstLogin "Welcome back!"}}`.',
-    positional.length === 3 || positional.length === 2
-  );
-
-  let [condition, falsyValue, truthyValue] = positional;
-
-  if (toBool(condition.value()) === true) {
-    return truthyValue !== undefined ? truthyValue.value() : undefined;
-  } else {
-    return falsyValue.value();
-  }
-}
+import { toBool } from '@glimmer/global-context';
+import { VMArguments } from '@glimmer/interfaces';
+import { createComputeRef, valueForRef } from '@glimmer/reference';
 
 /**
   The `if` helper allows you to conditionally render one of two branches,
@@ -129,7 +99,26 @@ function unless({ positional }: CapturedArguments) {
   @public
 */
 export function inlineIf(args: VMArguments) {
-  return new HelperRootReference(ifHelper, args.capture());
+  let positional = args.positional.capture();
+
+  return createComputeRef(
+    () => {
+      assert(
+        'The inline form of the `if` helper expects two or three arguments, e.g. `{{if trialExpired "Expired" expiryDate}}`.',
+        positional.length === 3 || positional.length === 2
+      );
+
+      let [condition, truthyValue, falsyValue] = positional;
+
+      if (toBool(valueForRef(condition)) === true) {
+        return valueForRef(truthyValue);
+      } else {
+        return falsyValue !== undefined ? valueForRef(falsyValue) : undefined;
+      }
+    },
+    null,
+    'if'
+  );
 }
 
 /**
@@ -218,5 +207,24 @@ export function inlineIf(args: VMArguments) {
   @public
 */
 export function inlineUnless(args: VMArguments) {
-  return new HelperRootReference(unless, args.capture());
+  let positional = args.positional.capture();
+
+  return createComputeRef(
+    () => {
+      assert(
+        'The inline form of the `unless` helper expects two or three arguments, e.g. `{{unless isFirstLogin "Welcome back!"}}`.',
+        positional.length === 3 || positional.length === 2
+      );
+
+      let [condition, falsyValue, truthyValue] = positional;
+
+      if (toBool(valueForRef(condition)) === true) {
+        return truthyValue !== undefined ? valueForRef(truthyValue) : undefined;
+      } else {
+        return valueForRef(falsyValue);
+      }
+    },
+    null,
+    'unless'
+  );
 }

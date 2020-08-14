@@ -11,7 +11,7 @@ import {
   PreparedArguments,
   VMArguments,
 } from '@glimmer/interfaces';
-import { ComponentRootReference, ConstReference, PathReference } from '@glimmer/reference';
+import { createConstRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { EmberVMEnvironment } from '../environment';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
@@ -33,11 +33,11 @@ const CAPABILITIES: ComponentCapabilities = {
 
 export interface InputComponentState {
   env: EmberVMEnvironment;
-  type: PathReference;
+  type: Reference;
   instance: Destroyable;
 }
 
-const EMPTY_POSITIONAL_ARGS: PathReference[] = [];
+const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
@@ -52,12 +52,12 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
       args.positional.length === 0
     );
 
-    let __ARGS__: Dict<PathReference> = args.named.capture();
+    let __ARGS__: Dict<Reference> = args.named.capture();
 
     return {
       positional: EMPTY_POSITIONAL_ARGS,
       named: {
-        __ARGS__: new ConstReference(__ARGS__),
+        __ARGS__: createConstRef(__ARGS__, 'args'),
         type: args.named.get('type'),
       },
     };
@@ -68,15 +68,15 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     { ComponentClass, layout }: InternalDefinitionState,
     args: VMArguments,
     _dynamicScope: DynamicScope,
-    caller: PathReference
+    caller: Reference
   ): InputComponentState {
-    assert('caller must be const', caller.isConst());
+    assert('caller must be const', isConstRef(caller));
 
     let type = args.named.get('type');
 
     let instance = ComponentClass.create({
-      caller: caller.value(),
-      type: type.value(),
+      caller: valueForRef(caller),
+      type: valueForRef(type),
     });
 
     let state = { env, type, instance };
@@ -100,8 +100,8 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return 'input';
   }
 
-  getSelf({ instance }: InputComponentState): PathReference {
-    return new ComponentRootReference(instance);
+  getSelf({ instance }: InputComponentState): Reference {
+    return createConstRef(instance, 'this');
   }
 
   didRenderLayout(state: InputComponentState, bounds: Bounds): void {
@@ -111,7 +111,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   }
 
   update(state: InputComponentState): void {
-    set(state.instance, 'type', state.type.value());
+    set(state.instance, 'type', valueForRef(state.type));
 
     if (ENV._DEBUG_RENDER_TREE) {
       state.env.extra.debugRenderTree.update(state);

@@ -1,5 +1,5 @@
-import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
-import { HelperRootReference } from '@glimmer/reference';
+import { VMArguments } from '@glimmer/interfaces';
+import { createComputeRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 
 const isEmpty = (value: any): boolean => {
@@ -39,12 +39,15 @@ const normalizeTextValue = (value: any): string => {
   @for Ember.Templates.helpers
   @since 1.13.0
 */
-function concat({ positional }: CapturedArguments) {
-  return reifyPositional(positional)
-    .map(normalizeTextValue)
-    .join('');
-}
-
 export default function(args: VMArguments) {
-  return new HelperRootReference(concat, args.capture());
+  let captured = args.positional.capture();
+
+  return createComputeRef(
+    () =>
+      reifyPositional(captured)
+        .map(normalizeTextValue)
+        .join(''),
+    null,
+    'concat'
+  );
 }

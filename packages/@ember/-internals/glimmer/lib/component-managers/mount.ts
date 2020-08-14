@@ -10,7 +10,7 @@ import {
   VMArguments,
   WithJitDynamicLayout,
 } from '@glimmer/interfaces';
-import { ComponentRootReference, PathReference } from '@glimmer/reference';
+import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { TemplateFactory } from '../..';
 import { EmberVMEnvironment } from '../environment';
@@ -20,9 +20,9 @@ import AbstractManager from './abstract';
 interface EngineState {
   engine: EngineInstance;
   controller: any;
-  self: ComponentRootReference<any>;
+  self: Reference;
   environment: EmberVMEnvironment;
-  modelRef?: PathReference<unknown>;
+  modelRef?: Reference;
 }
 
 interface EngineDefinitionState {
@@ -74,7 +74,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     let applicationFactory = engine.factoryFor(`controller:application`);
     let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
     let controller: any;
-    let self: ComponentRootReference<any>;
+    let self: Reference;
     let bucket: EngineState;
     let modelRef;
 
@@ -84,12 +84,12 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
     if (modelRef === undefined) {
       controller = controllerFactory.create();
-      self = new ComponentRootReference(controller);
+      self = createConstRef(controller, 'this');
       bucket = { engine, controller, self, environment };
     } else {
-      let model = modelRef.value();
+      let model = valueForRef(modelRef);
       controller = controllerFactory.create({ model });
-      self = new ComponentRootReference(controller);
+      self = createConstRef(controller, 'this');
       bucket = { engine, controller, self, modelRef, environment };
     }
 
@@ -124,7 +124,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     return name;
   }
 
-  getSelf({ self }: EngineState): PathReference<unknown> {
+  getSelf({ self }: EngineState): Reference {
     return self;
   }
 
@@ -143,7 +143,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     let { controller, environment, modelRef } = bucket;
 
     if (modelRef !== undefined) {
-      controller.set('model', modelRef!.value());
+      controller.set('model', valueForRef(modelRef!));
     }
 
     if (ENV._DEBUG_RENDER_TREE) {

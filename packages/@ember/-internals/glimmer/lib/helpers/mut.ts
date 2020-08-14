@@ -1,10 +1,9 @@
 /**
 @module ember
 */
-import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { VMArguments } from '@glimmer/interfaces';
-import { PathReference, UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
+import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the
@@ -79,47 +78,9 @@ import { PathReference, UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
   @for Ember.Templates.helpers
   @public
 */
-export const INVOKE: unique symbol = symbol('INVOKE') as any;
-const SOURCE: unique symbol = symbol('SOURCE') as any;
-
-class MutReference implements PathReference {
-  public [SOURCE]: PathReference;
-
-  constructor(protected inner: PathReference) {
-    this[SOURCE] = inner;
-  }
-
-  value() {
-    return this.inner.value();
-  }
-
-  isConst() {
-    return this.inner.isConst();
-  }
-
-  get(key: string): PathReference {
-    return this.inner.get(key);
-  }
-
-  [UPDATE_REFERENCED_VALUE](value: unknown) {
-    return this.inner[UPDATE_REFERENCED_VALUE](value);
-  }
-
-  [INVOKE](value: unknown) {
-    return this.inner[UPDATE_REFERENCED_VALUE](value);
-  }
-}
-
-export function unMut(ref: PathReference) {
-  return ref[SOURCE] || ref;
-}
 
 export default function(args: VMArguments) {
-  let rawRef = args.positional.at(0);
-
-  if (typeof rawRef[INVOKE] === 'function') {
-    return rawRef;
-  }
+  let ref = args.positional.at(0);
 
   // TODO: Improve this error message. This covers at least two distinct
   // cases:
@@ -133,7 +94,7 @@ export default function(args: VMArguments) {
   //
   // This message is alright for the first case, but could be quite
   // confusing for the second case.
-  assert('You can only pass a path to mut', rawRef[UPDATE_REFERENCED_VALUE] !== undefined);
+  assert('You can only pass a path to mut', isUpdatableRef(ref));
 
-  return new MutReference(rawRef);
+  return createInvokableRef(ref);
 }

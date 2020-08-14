@@ -1,11 +1,13 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { schedule } from '@ember/runloop';
+import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
 import { OwnedTemplate } from '../template';
-import { OutletState, RootOutletReference } from '../utils/outlet';
+import { OutletState } from '../utils/outlet';
 
 export interface BootEnvironment {
   hasDOM: boolean;
@@ -40,7 +42,7 @@ export default class OutletView {
     return new OutletView(_environment, renderer, owner, template);
   }
 
-  public ref: RootOutletReference;
+  private ref: Reference;
   public state: OutletDefinitionState;
 
   constructor(
@@ -49,7 +51,8 @@ export default class OutletView {
     public owner: Owner,
     public template: OwnedTemplate
   ) {
-    let ref = (this.ref = new RootOutletReference({
+    let outletStateTag = createTag();
+    let outletState: OutletState = {
       outlets: { main: undefined },
       render: {
         owner: owner,
@@ -60,7 +63,19 @@ export default class OutletView {
         model: undefined,
         template,
       },
-    }));
+    };
+
+    let ref = (this.ref = createComputeRef(
+      () => {
+        consumeTag(outletStateTag);
+        return outletState;
+      },
+      (state: OutletState) => {
+        dirtyTag(outletStateTag);
+        outletState.outlets.main = state;
+      }
+    ));
+
     this.state = {
       ref,
       name: TOP_LEVEL_NAME,
@@ -88,7 +103,7 @@ export default class OutletView {
   }
 
   setOutletState(state: OutletState) {
-    this.ref.update(state);
+    updateRef(this.ref, state);
   }
 
   destroy() {

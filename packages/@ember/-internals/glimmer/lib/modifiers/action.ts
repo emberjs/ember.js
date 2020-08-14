@@ -3,6 +3,7 @@ import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import {
   CapturedNamedArguments,
   CapturedPositionalArguments,
@@ -10,10 +11,11 @@ import {
   ModifierManager,
   VMArguments,
 } from '@glimmer/interfaces';
+import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { createUpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { INVOKE } from '../helpers/mut';
+import { INVOKE } from '../helpers/action';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -92,35 +94,35 @@ export class ActionState {
   }
 
   getEventName() {
-    let onRef = this.namedArgs.on;
+    let { on } = this.namedArgs;
 
-    return onRef !== undefined ? onRef.value() : 'click';
+    return on !== undefined ? valueForRef(on) : 'click';
   }
 
   getActionArgs() {
     let result = new Array(this.actionArgs.length);
 
     for (let i = 0; i < this.actionArgs.length; i++) {
-      result[i] = this.actionArgs[i].value();
+      result[i] = valueForRef(this.actionArgs[i]);
     }
 
     return result;
   }
 
-  getTarget() {
+  getTarget(): any {
     let { implicitTarget, namedArgs } = this;
     let { target } = namedArgs;
 
-    return target !== undefined ? target.value() : implicitTarget.value();
+    return target !== undefined ? valueForRef(target) : valueForRef(implicitTarget);
   }
 
   handler(event: Event): boolean {
     let { actionName, namedArgs } = this;
     let { bubbles, preventDefault, allowedKeys } = namedArgs;
 
-    let bubblesVal = bubbles !== undefined ? bubbles.value() : undefined;
-    let preventDefaultVal = preventDefault !== undefined ? preventDefault.value() : undefined;
-    let allowedKeysVal = allowedKeys !== undefined ? allowedKeys.value() : undefined;
+    let bubblesVal = bubbles !== undefined ? valueForRef(bubbles) : undefined;
+    let preventDefaultVal = preventDefault !== undefined ? valueForRef(preventDefault) : undefined;
+    let allowedKeysVal = allowedKeys !== undefined ? valueForRef(allowedKeys) : undefined;
 
     let target = this.getTarget();
 
@@ -146,8 +148,25 @@ export class ActionState {
         name: null,
       };
       if (typeof actionName[INVOKE] === 'function') {
+        deprecate(
+          `Usage of the private INVOKE API to make an object callable via action or fn is no longer supported. Please update to pass in a callback function instead. Received: ${String(
+            actionName
+          )}`,
+          false,
+          {
+            until: '3.25.0',
+            id: 'actions.custom-invoke-invokable',
+          }
+        );
+
         flaggedInstrument('interaction.ember-action', payload, () => {
           actionName[INVOKE].apply(actionName, args);
+        });
+        return;
+      }
+      if (isInvokableRef(actionName)) {
+        flaggedInstrument('interaction.ember-action', payload, () => {
+          updateRef(actionName, args[0]);
         });
         return;
       }
@@ -228,23 +247,28 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       implicitTarget = positional[0];
       actionNameRef = positional[1];
 
-      if (actionNameRef[INVOKE]) {
+      if (isInvokableRef(actionNameRef)) {
         actionName = actionNameRef;
       } else {
-        let actionLabel = actionNameRef.propertyKey;
-        actionName = actionNameRef.value();
+        actionName = valueForRef(actionNameRef);
 
-        assert(
-          'You specified a quoteless path, `' +
-            actionLabel +
-            '`, to the ' +
-            '{{action}} helper which did not resolve to an action name (a ' +
-            'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
-            '{{action "' +
-            actionLabel +
-            '"}}).',
-          typeof actionName === 'string' || typeof actionName === 'function'
-        );
+        if (DEBUG) {
+          let actionPath = actionNameRef.debugLabel;
+          let actionPathParts = actionPath.split('.');
+          let actionLabel = actionPathParts[actionPathParts.length - 1];
+
+          assert(
+            'You specified a quoteless path, `' +
+              actionPath +
+              '`, to the ' +
+              '{{action}} helper which did not resolve to an action name (a ' +
+              'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
+              '{{action "' +
+              actionLabel +
+              '"}}).',
+            typeof actionName === 'string' || typeof actionName === 'function'
+          );
+        }
       }
     }
 
@@ -261,8 +285,8 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     let { positional } = actionState;
     let actionNameRef = positional[1];
 
-    if (!actionNameRef[INVOKE]) {
-      actionState.actionName = actionNameRef.value();
+    if (!isInvokableRef(actionNameRef)) {
+      actionState.actionName = valueForRef(actionNameRef);
     }
 
     actionState.eventName = actionState.getEventName();

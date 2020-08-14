@@ -4,7 +4,7 @@
 
 import { getFactoryFor, setFactoryFor, INIT_FACTORY } from '@ember/-internals/container';
 import { getOwner, LEGACY_OWNER, OWNER } from '@ember/-internals/owner';
-import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
+import { assign } from '@ember/polyfills';
 import {
   guidFor,
   getName,
@@ -30,6 +30,7 @@ import {
 import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/runtime';
 
 const reopen = Mixin.prototype.reopen;

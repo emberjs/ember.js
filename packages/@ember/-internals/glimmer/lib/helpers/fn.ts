@@ -1,10 +1,9 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
-import { HelperRootReference } from '@glimmer/reference';
+import { VMArguments } from '@glimmer/interfaces';
+import { createComputeRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import buildUntouchableThis from '../utils/untouchable-this';
-import { INVOKE } from './mut';
 
 const context = buildUntouchableThis('`fn` helper');
 
@@ -80,38 +79,41 @@ const context = buildUntouchableThis('`fn` helper');
   @since 3.11.0
 */
 
-function fn({ positional }: CapturedArguments) {
-  let callbackRef = positional[0];
-
-  assert(
-    `You must pass a function as the \`fn\` helpers first argument.`,
-    callbackRef !== undefined
-  );
-
-  if (DEBUG && typeof callbackRef[INVOKE] !== 'function') {
-    let callback = callbackRef.value();
-
-    assert(
-      `You must pass a function as the \`fn\` helpers first argument, you passed ${
-        callback === null ? 'null' : typeof callback
-      }. While rendering:\n\n${callbackRef.debugLabel}`,
-      typeof callback === 'function'
-    );
-  }
-
-  return (...invocationArgs: unknown[]) => {
-    let [fn, ...args] = reifyPositional(positional);
-
-    if (typeof callbackRef[INVOKE] === 'function') {
-      // references with the INVOKE symbol expect the function behind
-      // the symbol to be bound to the reference
-      return callbackRef[INVOKE](...args, ...invocationArgs);
-    } else {
-      return (fn as Function).call(context, ...args, ...invocationArgs);
-    }
-  };
-}
-
 export default function(args: VMArguments) {
-  return new HelperRootReference(fn, args.capture());
+  let positional = args.positional.capture();
+
+  return createComputeRef(
+    () => {
+      let callbackRef = positional[0];
+
+      assert(
+        `You must pass a function as the \`fn\` helpers first argument.`,
+        callbackRef !== undefined
+      );
+
+      if (DEBUG && !isInvokableRef(callbackRef)) {
+        let callback = valueForRef(callbackRef);
+
+        assert(
+          `You must pass a function as the \`fn\` helpers first argument, you passed ${
+            callback === null ? 'null' : typeof callback
+          }. While rendering:\n\n${callbackRef.debugLabel}`,
+          typeof callback === 'function'
+        );
+      }
+
+      return (...invocationArgs: unknown[]) => {
+        let [fn, ...args] = reifyPositional(positional);
+
+        if (isInvokableRef(callbackRef)) {
+          let value = args[0] || invocationArgs[0];
+          return updateRef(callbackRef, value);
+        } else {
+          return (fn as Function).call(context, ...args, ...invocationArgs);
+        }
+      };
+    },
+    null,
+    'fn'
+  );
 }

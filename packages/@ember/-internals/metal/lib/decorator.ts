@@ -1,6 +1,6 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
-import { _WeakSet as WeakSet } from '@ember/polyfills';
+import { _WeakSet as WeakSet } from '@glimmer/util';
 
 export type DecoratorPropertyDescriptor = PropertyDescriptor & { initializer?: any } | undefined;
 

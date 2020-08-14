@@ -21,8 +21,14 @@ import {
   WithJitDynamicLayout,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { PathReference, RootReference } from '@glimmer/reference';
-import { PrimitiveReference, registerDestructor, ReifyPositionalReference } from '@glimmer/runtime';
+import {
+  childRefFor,
+  createComputeRef,
+  createPrimitiveRef,
+  Reference,
+  valueForRef,
+} from '@glimmer/reference';
+import { registerDestructor, reifyPositional } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import {
   beginTrackFrame,
@@ -40,17 +46,19 @@ import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { Factory as TemplateFactory, isTemplateFactory, OwnedTemplate } from '../template';
 import {
-  AttributeBinding,
-  ClassNameBinding,
+  createClassNameBindingRef,
+  createSimpleClassNameBindingRef,
+  installAttributeBinding,
   installIsVisibleBinding,
-  referenceForKey,
-  SimpleClassNameBindingReference,
+  parseAttributeBinding,
 } from '../utils/bindings';
 
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
+
+const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
@@ -69,7 +77,7 @@ function aliasIdToElementId(args: VMArguments, props: any) {
 function applyAttributeBindings(
   attributeBindings: Array<string>,
   component: Component,
-  rootRef: RootReference<Component>,
+  rootRef: Reference<Component>,
   operations: ElementOperations
 ) {
   let seen: string[] = [];
@@ -77,12 +85,12 @@ function applyAttributeBindings(
 
   while (i !== -1) {
     let binding = attributeBindings[i];
-    let parsed: [string, string, boolean] = AttributeBinding.parse(binding);
+    let parsed: [string, string, boolean] = parseAttributeBinding(binding);
     let attribute = parsed[1];
 
     if (seen.indexOf(attribute) === -1) {
       seen.push(attribute);
-      AttributeBinding.install(component, rootRef, parsed, operations);
+      installAttributeBinding(component, rootRef, parsed, operations);
     }
 
     i--;
@@ -90,7 +98,7 @@ function applyAttributeBindings(
 
   if (seen.indexOf('id') === -1) {
     let id = component.elementId ? component.elementId : guidFor(component);
-    operations.setAttribute('id', PrimitiveReference.create(id), false, null);
+    operations.setAttribute('id', createPrimitiveRef(id), false, null);
   }
 
   if (
@@ -103,7 +111,7 @@ function applyAttributeBindings(
 }
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
-const EMPTY_POSITIONAL_ARGS: PathReference[] = [];
+const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
@@ -174,7 +182,7 @@ export default class CurlyComponentManager
         positional: EMPTY_POSITIONAL_ARGS,
         named: {
           ...rest,
-          ...(__ARGS__.value() as { [key: string]: PathReference<unknown> }),
+          ...(valueForRef(__ARGS__) as { [key: string]: Reference }),
         },
       };
 
@@ -199,7 +207,10 @@ export default class CurlyComponentManager
         `You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`,
         !args.named.has(positionalParams)
       );
-      named = { [positionalParams]: new ReifyPositionalReference(args.positional.capture()) };
+      let captured = args.positional.capture();
+      named = {
+        [positionalParams]: createComputeRef(() => reifyPositional(captured)),
+      };
       assign(named, args.named.capture());
     } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
       const count = Math.min(positionalParams.length, args.positional.length);
@@ -234,7 +245,7 @@ export default class CurlyComponentManager
     state: DefinitionState,
     args: VMArguments,
     dynamicScope: DynamicScope,
-    callerSelfRef: PathReference,
+    callerSelfRef: Reference,
     hasBlock: boolean
   ): ComponentStateBucket {
     // Get the nearest concrete component instance from the scope. "Virtual"
@@ -266,7 +277,7 @@ export default class CurlyComponentManager
 
     // Save the current `this` context of the template as the component's
     // `_target`, so bubbled actions are routed to the right place.
-    props._target = callerSelfRef.value();
+    props._target = valueForRef(callerSelfRef);
 
     // static layout asserts CurriedDefinition
     if (state.template) {
@@ -363,7 +374,7 @@ export default class CurlyComponentManager
     return name;
   }
 
-  getSelf({ rootRef }: ComponentStateBucket): PathReference {
+  getSelf({ rootRef }: ComponentStateBucket): Reference {
     return rootRef;
   }
 
@@ -381,32 +392,32 @@ export default class CurlyComponentManager
       applyAttributeBindings(attributeBindings, component, rootRef, operations);
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
-      operations.setAttribute('id', PrimitiveReference.create(id), false, null);
+      operations.setAttribute('id', createPrimitiveRef(id), false, null);
       if (EMBER_COMPONENT_IS_VISIBLE) {
         installIsVisibleBinding!(rootRef, operations);
       }
     }
 
     if (classRef) {
-      const ref = new SimpleClassNameBindingReference(classRef, classRef['propertyKey']);
+      const ref = createSimpleClassNameBindingRef(classRef);
       operations.setAttribute('class', ref, false, null);
     }
 
     if (classNames && classNames.length) {
       classNames.forEach((name: string) => {
-        operations.setAttribute('class', PrimitiveReference.create(name), false, null);
+        operations.setAttribute('class', createPrimitiveRef(name), false, null);
       });
     }
 
     if (classNameBindings && classNameBindings.length) {
       classNameBindings.forEach((binding: string) => {
-        ClassNameBinding.install(element, rootRef, binding, operations);
+        createClassNameBindingRef(rootRef, binding, operations);
       });
     }
-    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
+    operations.setAttribute('class', EMBER_VIEW_REF, false, null);
 
     if ('ariaRole' in component) {
-      operations.setAttribute('role', referenceForKey(rootRef, 'ariaRole'), false, null);
+      operations.setAttribute('role', childRefFor(rootRef, 'ariaRole'), false, null);
     }
 
     component._transitionTo('hasElement');

@@ -13,8 +13,9 @@ import {
 } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { ALIAS_METHOD } from '@ember/deprecated-features';
-import { _WeakSet, assign } from '@ember/polyfills';
+import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
+import { _WeakSet } from '@glimmer/util';
 import {
   ComputedDecorator,
   ComputedProperty,

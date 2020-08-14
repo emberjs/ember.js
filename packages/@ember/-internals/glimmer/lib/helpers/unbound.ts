@@ -4,7 +4,7 @@
 
 import { assert } from '@ember/debug';
 import { VMArguments } from '@glimmer/interfaces';
-import { UnboundRootReference } from '../utils/references';
+import { createUnboundRef, valueForRef } from '@glimmer/reference';
 
 /**
   The `{{unbound}}` helper disconnects the one-way binding of a property,
@@ -40,5 +40,5 @@ export default function(args: VMArguments) {
     args.positional.length === 1 && args.named.length === 0
   );
 
-  return new UnboundRootReference(args.positional.at(0).value());
+  return createUnboundRef(valueForRef(args.positional.at(0)), '(resurt of an `unbound` helper)');
 }

@@ -7,9 +7,10 @@ import {
   ElementOperations,
   Option,
   PreparedArguments,
+  VM,
   VMArguments,
 } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
 import { EmberVMEnvironment } from '../environment';
 
@@ -18,7 +19,7 @@ import { EmberVMEnvironment } from '../environment';
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
 
 export default abstract class AbstractManager<T, U> implements ComponentManager<T, U> {
-  prepareArgs(_state: U, _args: VMArguments): Option<PreparedArguments> {
+  prepareArgs(_state: U, _args: VMArguments, _vm: VM): Option<PreparedArguments> {
     return null;
   }
 
@@ -29,11 +30,11 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     definition: U,
     args: VMArguments,
     dynamicScope: DynamicScope,
-    caller: PathReference<void | {}>,
+    caller: Reference<void | {}>,
     hasDefaultBlock: boolean
   ): T;
 
-  abstract getSelf(component: T): PathReference<unknown>;
+  abstract getSelf(component: T): Reference;
   abstract getCapabilities(state: U): ComponentCapabilities;
 
   didCreateElement(_component: T, _element: SimpleElement, _operations: ElementOperations): void {

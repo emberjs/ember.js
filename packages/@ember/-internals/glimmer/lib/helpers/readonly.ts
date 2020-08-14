@@ -2,8 +2,7 @@
 @module ember
 */
 import { VMArguments } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
-import { INVOKE, unMut } from './mut';
+import { createReadOnlyRef } from '@glimmer/reference';
 
 /**
   The `readonly` helper let's you specify that a binding is one-way only,
@@ -120,28 +119,6 @@ import { INVOKE, unMut } from './mut';
   @for Ember.Templates.helpers
   @private
 */
-class ReadonlyReference implements PathReference {
-  constructor(protected inner: PathReference) {}
-
-  get [INVOKE](): Function | undefined {
-    return this.inner[INVOKE];
-  }
-
-  isConst() {
-    return this.inner.isConst();
-  }
-
-  value(): unknown {
-    return this.inner.value();
-  }
-
-  get(key: string): PathReference {
-    return this.inner.get(key);
-  }
-}
-
 export default function(args: VMArguments) {
-  let ref = unMut(args.positional.at(0));
-
-  return new ReadonlyReference(ref);
+  return createReadOnlyRef(args.positional.at(0));
 }

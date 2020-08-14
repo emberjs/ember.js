@@ -1,18 +1,24 @@
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
-import { ConstReference, PathReference, Reference, RootReference } from '@glimmer/reference';
+import { Option, VM, VMArguments } from '@glimmer/interfaces';
+import {
+  childRefFromParts,
+  createComputeRef,
+  createDebugAliasRef,
+  createPrimitiveRef,
+  Reference,
+  valueForRef,
+} from '@glimmer/reference';
 import {
   createCapturedArgs,
   CurriedComponentDefinition,
   curry,
   EMPTY_POSITIONAL,
-  UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
-import { OutletReference, OutletState } from '../utils/outlet';
+import { OutletState } from '../utils/outlet';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -66,87 +72,48 @@ export function outletHelper(args: VMArguments, vm: VM) {
   let nameRef: Reference<string>;
 
   if (args.positional.length === 0) {
-    nameRef = new ConstReference('main');
+    nameRef = createPrimitiveRef('main');
   } else {
-    nameRef = args.positional.at<PathReference<string>>(0);
+    nameRef = args.positional.at(0);
   }
 
-  return new OutletComponentReference(new OutletReference(scope.outletState, nameRef));
+  let outletRef = createComputeRef(() => {
+    let state = valueForRef(scope.get('outletState'));
+    let outlets = state !== undefined ? state.outlets : undefined;
+
+    return outlets !== undefined ? outlets[valueForRef(nameRef)] : undefined;
+  });
+
+  let lastState: Option<OutletDefinitionState> = null;
+  let definition: Option<CurriedComponentDefinition> = null;
+
+  return createComputeRef(() => {
+    let state = stateFor(outletRef);
+
+    if (!validate(state, lastState)) {
+      lastState = state;
+
+      if (state !== null) {
+        let named = dict<Reference>();
+        named.model = childRefFromParts(outletRef, ['render', 'model']);
+
+        if (DEBUG) {
+          named.model = createDebugAliasRef!('@model', named.model);
+        }
+
+        let args = createCapturedArgs(named, EMPTY_POSITIONAL);
+        definition = curry(new OutletComponentDefinition(state), args);
+      } else {
+        definition = null;
+      }
+    }
+
+    return definition;
+  });
 }
 
-class OutletModelReference extends RootReference {
-  constructor(private parent: PathReference<OutletState | undefined>) {
-    super();
-
-    if (DEBUG) {
-      this.debugLabel = '@model';
-    }
-  }
-
-  isConst() {
-    return false;
-  }
-
-  compute(): unknown {
-    let state = this.parent.value();
-
-    if (state === undefined) {
-      return undefined;
-    }
-
-    let { render } = state;
-
-    if (render === undefined) {
-      return undefined;
-    }
-
-    return render.model as unknown;
-  }
-}
-
-class OutletComponentReference implements PathReference<CurriedComponentDefinition | null> {
-  private definition: Option<CurriedComponentDefinition> = null;
-  private lastState: Option<OutletDefinitionState> = null;
-
-  constructor(private outletRef: PathReference<OutletState | undefined>) {}
-
-  isConst() {
-    return false;
-  }
-
-  value(): CurriedComponentDefinition | null {
-    let state = stateFor(this.outletRef);
-    if (validate(state, this.lastState)) {
-      return this.definition;
-    }
-    this.lastState = state;
-
-    let definition = null;
-
-    if (state !== null) {
-      let args = makeArgs(this.outletRef);
-
-      definition = curry(new OutletComponentDefinition(state), args);
-    }
-
-    return (this.definition = definition);
-  }
-
-  get(_key: string) {
-    return UNDEFINED_REFERENCE;
-  }
-}
-
-function makeArgs(outletRef: PathReference<OutletState | undefined>): CapturedArguments {
-  let modelRef = new OutletModelReference(outletRef);
-  let named = dict<PathReference>();
-  named.model = modelRef;
-
-  return createCapturedArgs(named, EMPTY_POSITIONAL);
-}
-
-function stateFor(ref: PathReference<OutletState | undefined>): OutletDefinitionState | null {
-  let outlet = ref.value();
+function stateFor(ref: Reference<OutletState | undefined>): OutletDefinitionState | null {
+  let outlet = valueForRef(ref);
   if (outlet === undefined) return null;
   let render = outlet.render;
   if (render === undefined) return null;

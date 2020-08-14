@@ -13,7 +13,7 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
+import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirtyTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
@@ -787,8 +787,8 @@ const Component = CoreView.extend(
       let args = this[ARGS];
       let reference = args !== undefined ? args[key] : undefined;
 
-      if (reference !== undefined && reference[UPDATE_REFERENCED_VALUE] !== undefined) {
-        reference[UPDATE_REFERENCED_VALUE](arguments.length === 2 ? value : get(this, key));
+      if (reference !== undefined && isUpdatableRef(reference)) {
+        updateRef(reference, arguments.length === 2 ? value : get(this, key));
       }
     },
 

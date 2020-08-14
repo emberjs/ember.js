@@ -459,44 +459,6 @@ moduleFor(
       });
     }
 
-    ['@test should apply classes of the dasherized property name when bound property specified is true']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar class=this.model.someTruth}}', {
-        model: { someTruth: true },
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view some-truth') },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view some-truth') },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'model.someTruth', false));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view') },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'model', { someTruth: true }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view some-truth') },
-        content: 'hello',
-      });
-    }
-
     ['@test class property on components can be dynamic']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 

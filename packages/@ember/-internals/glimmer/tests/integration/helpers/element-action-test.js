@@ -1356,7 +1356,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render('{{example-component}}');
-      }, 'You specified a quoteless path, `ohNoeNotValid`, to the {{action}} helper ' + 'which did not resolve to an action name (a string). ' + 'Perhaps you meant to use a quoted actionName? (e.g. {{action "ohNoeNotValid"}}).');
+      }, 'You specified a quoteless path, `this.ohNoeNotValid`, to the {{action}} helper ' + 'which did not resolve to an action name (a string). ' + 'Perhaps you meant to use a quoted actionName? (e.g. {{action "ohNoeNotValid"}}).');
     }
 
     ['@test allows multiple actions on a single element']() {

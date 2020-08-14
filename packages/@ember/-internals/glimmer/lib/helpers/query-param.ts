@@ -4,8 +4,8 @@
 import { QueryParams } from '@ember/-internals/routing';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
-import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
-import { HelperRootReference } from '@glimmer/reference';
+import { VMArguments } from '@glimmer/interfaces';
+import { createComputeRef } from '@glimmer/reference';
 import { reifyNamed } from '@glimmer/runtime';
 
 /**
@@ -29,16 +29,15 @@ import { reifyNamed } from '@glimmer/runtime';
   @return {Object} A `QueryParams` object for `{{link-to}}`
   @public
 */
-function queryParams({ positional, named }: CapturedArguments) {
-  // tslint:disable-next-line:max-line-length
-  assert(
-    "The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='foo') as opposed to just (query-params 'foo')",
-    positional.length === 0
-  );
-
-  return new QueryParams(assign({}, reifyNamed(named) as any));
-}
-
 export default function(args: VMArguments) {
-  return new HelperRootReference(queryParams, args.capture());
+  let { positional, named } = args.capture();
+
+  return createComputeRef(() => {
+    assert(
+      "The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='foo') as opposed to just (query-params 'foo')",
+      positional.length === 0
+    );
+
+    return new QueryParams(assign({}, reifyNamed(named) as any));
+  });
 }
