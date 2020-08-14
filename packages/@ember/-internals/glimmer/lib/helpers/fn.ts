@@ -2,6 +2,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
+import { reifyPositional } from '@glimmer/runtime';
 import buildUntouchableThis from '../utils/untouchable-this';
 import { INVOKE } from './mut';
 
@@ -80,7 +81,7 @@ const context = buildUntouchableThis('`fn` helper');
 */
 
 function fn({ positional }: CapturedArguments) {
-  let callbackRef = positional.at(0);
+  let callbackRef = positional[0];
 
   assert(
     `You must pass a function as the \`fn\` helpers first argument.`,
@@ -99,7 +100,7 @@ function fn({ positional }: CapturedArguments) {
   }
 
   return (...invocationArgs: unknown[]) => {
-    let [fn, ...args] = positional.value();
+    let [fn, ...args] = reifyPositional(positional);
 
     if (typeof callbackRef[INVOKE] === 'function') {
       // references with the INVOKE symbol expect the function behind

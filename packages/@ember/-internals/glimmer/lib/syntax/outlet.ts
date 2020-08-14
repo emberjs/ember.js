@@ -1,11 +1,11 @@
-import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Dict, Option, unsafe, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
 import { ConstReference, PathReference, Reference, RootReference } from '@glimmer/reference';
 import {
+  createCapturedArgs,
   CurriedComponentDefinition,
   curry,
-  EMPTY_ARGS,
+  EMPTY_POSITIONAL,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
@@ -131,7 +131,7 @@ class OutletComponentReference implements PathReference<CurriedComponentDefiniti
     let definition = null;
 
     if (state !== null) {
-      let args = EMBER_ROUTING_MODEL_ARG ? makeArgs(this.outletRef, this.env) : null;
+      let args = makeArgs(this.outletRef, this.env);
 
       definition = curry(new OutletComponentDefinition(state), args);
     }
@@ -149,41 +149,10 @@ function makeArgs(
   env: EmberVMEnvironment
 ): CapturedArguments {
   let modelRef = new OutletModelReference(outletRef, env);
-  let map = dict<PathReference>();
-  map.model = modelRef;
+  let named = dict<PathReference>();
+  named.model = modelRef;
 
-  // TODO: the functionailty to create a proper CapturedArgument should be
-  // exported by glimmer, or that it should provide an overload for `curry`
-  // that takes `PreparedArguments`
-  return {
-    positional: EMPTY_ARGS.positional,
-    named: {
-      isConst() {
-        return false;
-      },
-      map,
-      names: ['model'],
-      references: [modelRef],
-      length: 1,
-      has(key: string): boolean {
-        return key === 'model';
-      },
-      get<T extends PathReference>(key: string): T {
-        return (key === 'model' ? modelRef : UNDEFINED_REFERENCE) as unsafe;
-      },
-      value(): Dict<unknown> {
-        let model = modelRef.value();
-        return { model };
-      },
-    },
-    length: 1,
-    value() {
-      return {
-        named: this.named.value(),
-        positional: this.positional.value(),
-      };
-    },
-  };
+  return createCapturedArgs(named, EMPTY_POSITIONAL);
 }
 
 function stateFor(ref: PathReference<OutletState | undefined>): OutletDefinitionState | null {

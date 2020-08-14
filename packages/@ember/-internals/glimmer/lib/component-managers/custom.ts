@@ -17,7 +17,7 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor, reifyArgs, reifyPositional } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { track } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
@@ -194,31 +194,33 @@ export default class CustomComponentManager<ComponentInstance>
 
     if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
       let getTag = (key: string) => {
-        return track(() => namedArgs.get(key).value());
+        return track(() => namedArgs[key].value());
       };
 
       if (HAS_NATIVE_PROXY) {
         let handler: ProxyHandler<{}> = {
           get(_target, prop) {
-            if (namedArgs.has(prop as string)) {
-              return namedArgs.get(prop as string).value();
+            let ref = namedArgs[prop as string];
+
+            if (ref !== undefined) {
+              return ref.value();
             } else if (prop === CUSTOM_TAG_FOR) {
               return getTag;
             }
           },
 
           has(_target, prop) {
-            return namedArgs.has(prop as string);
+            return namedArgs[prop as string] !== undefined;
           },
 
           ownKeys(_target) {
-            return namedArgs.names;
+            return Object.keys(namedArgs);
           },
 
           getOwnPropertyDescriptor(_target, prop) {
             assert(
               'args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys()',
-              namedArgs.has(prop as string)
+              namedArgs[prop as string] !== undefined
             );
 
             return {
@@ -248,12 +250,12 @@ export default class CustomComponentManager<ComponentInstance>
           value: getTag,
         });
 
-        namedArgs.names.forEach(name => {
+        Object.keys(namedArgs).forEach(name => {
           Object.defineProperty(namedArgsProxy, name, {
             enumerable: true,
             configurable: true,
             get() {
-              return namedArgs.get(name).value();
+              return namedArgs[name].value();
             },
           });
         });
@@ -261,10 +263,10 @@ export default class CustomComponentManager<ComponentInstance>
 
       value = {
         named: namedArgsProxy,
-        positional: capturedArgs.positional.value(),
+        positional: reifyPositional(capturedArgs.positional),
       };
     } else {
-      value = capturedArgs.value();
+      value = reifyArgs(capturedArgs);
     }
 
     const component = delegate.createComponent(definition.ComponentClass.class, value);
@@ -304,10 +306,10 @@ export default class CustomComponentManager<ComponentInstance>
     if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
       value = {
         named: namedArgsProxy!,
-        positional: args.positional.value(),
+        positional: reifyPositional(args.positional),
       };
     } else {
-      value = args.value();
+      value = reifyArgs(args);
     }
 
     if (hasUpdateHook(delegate)) {

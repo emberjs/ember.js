@@ -286,7 +286,7 @@ export default function(args: VMArguments, vm: VM): UnboundRootReference<Functio
   // pos[0] is the context (or `this`)
   // pos[1] is the action name or function
   // Anything else is an action argument.
-  let [context, action, ...restArgs] = capturedArgs.references;
+  let [context, action, ...restArgs] = capturedArgs;
 
   // TODO: Is there a better way of doing this?
   let debugKey: string | undefined = (action as any).propertyKey;

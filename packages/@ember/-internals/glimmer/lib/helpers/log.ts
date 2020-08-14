@@ -1,5 +1,6 @@
 import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
+import { reifyPositional } from '@glimmer/runtime';
 /**
 @module ember
 */
@@ -19,7 +20,7 @@ import { HelperRootReference } from '@glimmer/reference';
 */
 function log({ positional }: CapturedArguments) {
   /* eslint-disable no-console */
-  console.log(...positional.value());
+  console.log(...reifyPositional(positional));
   /* eslint-enable no-console */
 }
 

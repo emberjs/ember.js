@@ -1,5 +1,6 @@
 import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
+import { reifyPositional } from '@glimmer/runtime';
 
 const isEmpty = (value: any): boolean => {
   return value === null || value === undefined || typeof value.toString !== 'function';
@@ -39,8 +40,7 @@ const normalizeTextValue = (value: any): string => {
   @since 1.13.0
 */
 function concat({ positional }: CapturedArguments) {
-  return positional
-    .value()
+  return reifyPositional(positional)
     .map(normalizeTextValue)
     .join('');
 }

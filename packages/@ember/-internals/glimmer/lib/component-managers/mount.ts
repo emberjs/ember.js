@@ -1,8 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { generateControllerFactory } from '@ember/-internals/routing';
-import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import EngineInstance from '@ember/engine/instance';
-import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   ComponentCapabilities,
@@ -46,11 +44,6 @@ const CAPABILITIES = {
   willDestroy: false,
 };
 
-// TODO
-// This "disables" the "@model" feature by making the arg untypable syntatically
-// Delete this when EMBER_ROUTING_MODEL_ARG has shipped
-export const MODEL_ARG_NAME = EMBER_ROUTING_MODEL_ARG || !DEBUG ? 'model' : ' untypable model arg ';
-
 class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
   implements WithJitDynamicLayout<EngineState, RuntimeResolver> {
   getJitDynamicLayout(state: EngineState, _: RuntimeResolver) {
@@ -85,8 +78,8 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     let bucket: EngineState;
     let modelRef;
 
-    if (args.named.has(MODEL_ARG_NAME)) {
-      modelRef = args.named.get(MODEL_ARG_NAME);
+    if (args.named.has('model')) {
+      modelRef = args.named.get('model');
     }
 
     if (modelRef === undefined) {

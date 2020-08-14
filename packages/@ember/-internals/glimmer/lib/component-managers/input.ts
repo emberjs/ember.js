@@ -52,7 +52,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
       args.positional.length === 0
     );
 
-    let __ARGS__: Dict<PathReference> = args.named.capture().map;
+    let __ARGS__: Dict<PathReference> = args.named.capture();
 
     return {
       positional: EMPTY_POSITIONAL_ARGS,

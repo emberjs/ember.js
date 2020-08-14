@@ -2,7 +2,7 @@ import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, ModifierManager, VMArguments } from '@glimmer/interfaces';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor, reifyNamed } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import buildUntouchableThis from '../utils/untouchable-this';
@@ -71,7 +71,7 @@ export class OnModifierState {
   updateFromArgs() {
     let { args } = this;
 
-    let { once, passive, capture }: AddEventListenerOptions = args.named.value();
+    let { once, passive, capture }: AddEventListenerOptions = reifyNamed(args.named);
     if (once !== this.once) {
       this.once = once;
       this.shouldUpdate = true;
@@ -96,20 +96,20 @@ export class OnModifierState {
 
     assert(
       'You must pass a valid DOM event name as the first argument to the `on` modifier',
-      args.positional.at(0) !== undefined && typeof args.positional.at(0).value() === 'string'
+      args.positional[0] !== undefined && typeof args.positional[0].value() === 'string'
     );
-    let eventName = args.positional.at(0).value() as string;
+    let eventName = args.positional[0].value() as string;
     if (eventName !== this.eventName) {
       this.eventName = eventName;
       this.shouldUpdate = true;
     }
 
-    let userProvidedCallbackReference = args.positional.at(1);
+    let userProvidedCallbackReference = args.positional[1];
 
     if (DEBUG) {
       assert(
         `You must pass a function as the second argument to the \`on\` modifier.`,
-        args.positional.at(1) !== undefined
+        args.positional[1] !== undefined
       );
 
       let value = userProvidedCallbackReference.value();
