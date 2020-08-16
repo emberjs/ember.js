@@ -31,9 +31,7 @@ setName(EmberObject, 'Ember.Object');
 
 Observable.apply(EmberObject.prototype);
 
-export let FrameworkObject;
-
-FrameworkObject = class FrameworkObject extends CoreObject {
+export class FrameworkObject extends CoreObject {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
