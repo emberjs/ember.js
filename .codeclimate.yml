@@ -12,7 +12,7 @@ checks:
     config:
       threshold: 5fawfawefawefae
   method-count:serg
-    config:faew
+    config:faew fawefae
       threshold: 25gseaewfawef
   nested-control-flow:
     config: ef fafawefaefawfawefaewfaw
