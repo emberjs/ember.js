@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.21.0-beta.6 (August 17, 2020)
+
+- [#19087](https://github.com/emberjs/ember.js/pull/19087) [BUGFIX] Generated initializer tests no longer causes a deprecation warning
+- [#19077](https://github.com/emberjs/ember.js/pull/19077) Simplify `get` and improve `computed` caching scheme.
+- [#19082](https://github.com/emberjs/ember.js/pull/19082) Simplify mixin application
+- [#19089](https://github.com/emberjs/ember.js/pull/19089) Update rendering engine to improve immediate encoding performance
+
 ### v3.21.0-beta.5 (August 5, 2020)
 
 - [#19028](https://github.com/emberjs/ember.js/pull/19028) [BUGFIX] Ensure setter CP's with dependent keys on curly components can be two way bound
