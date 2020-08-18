@@ -1,3 +1,13 @@
+## v0.57.0 (2020-08-18)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`, `@glimmer/vm`
+  * [#1115](https://github.com/glimmerjs/glimmer-vm/pull/1115) [REFACTOR] Converts VM to use tracking internally ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.56.1 (2020-08-11)
 
 #### :house: Internal
