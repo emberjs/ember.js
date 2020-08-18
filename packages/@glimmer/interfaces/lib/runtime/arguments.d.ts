@@ -1,20 +1,18 @@
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { Tag } from '@glimmer/validator';
 import { Dict, Option } from '../core';
 import { ScopeBlock, JitOrAotBlock } from './scope';
 
 export interface VMArguments {
-  tag: Tag;
   length: number;
   positional: PositionalArguments;
   named: NamedArguments;
 
-  at<T extends VersionedPathReference<unknown>>(pos: number): T;
+  at<T extends PathReference<unknown>>(pos: number): T;
   capture(): CapturedArguments;
 }
 
 export interface CapturedArguments {
-  tag: Tag;
   length: number;
   positional: CapturedPositionalArguments;
   named: CapturedNamedArguments;
@@ -27,26 +25,23 @@ export interface CapturedArgumentsValue {
 }
 
 export interface PositionalArguments {
-  tag: Tag;
   length: number;
-  at<T extends VersionedPathReference<unknown>>(position: number): T;
+  at<T extends PathReference<unknown>>(position: number): T;
   capture(): CapturedPositionalArguments;
 }
 
-export interface CapturedPositionalArguments extends VersionedPathReference<unknown[]> {
-  tag: Tag;
+export interface CapturedPositionalArguments extends PathReference<unknown[]> {
   length: number;
-  references: VersionedPathReference<unknown>[];
-  at<T extends unknown>(position: number): VersionedPathReference<T>;
+  references: PathReference<unknown>[];
+  at<T extends unknown>(position: number): PathReference<T>;
   value(): unknown[];
 }
 
 export interface NamedArguments {
-  tag: Tag;
   names: string[];
   length: number;
   has(name: string): boolean;
-  get<T extends VersionedPathReference<unknown>>(name: string): T;
+  get<T extends PathReference<unknown>>(name: string): T;
   capture(): CapturedNamedArguments;
 }
 
@@ -65,13 +60,12 @@ export interface CapturedBlockArguments {
   get(name: string): Option<ScopeBlock>;
 }
 
-export interface CapturedNamedArguments extends VersionedPathReference<Dict<unknown>> {
-  tag: Tag;
-  map: Dict<VersionedPathReference<unknown>>;
+export interface CapturedNamedArguments extends PathReference<Dict<unknown>> {
+  map: Dict<PathReference<unknown>>;
   names: string[];
   length: number;
-  references: VersionedPathReference<unknown>[];
+  references: PathReference<unknown>[];
   has(name: string): boolean;
-  get<T extends VersionedPathReference<unknown>>(name: string): T;
+  get<T extends PathReference<unknown>>(name: string): T;
   value(): Dict<unknown>;
 }

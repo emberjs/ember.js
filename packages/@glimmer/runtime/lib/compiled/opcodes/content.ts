@@ -1,5 +1,4 @@
 import { Reference } from '@glimmer/reference';
-import { Tag, isConstTagged } from '@glimmer/validator';
 import {
   check,
   CheckString,
@@ -26,10 +25,10 @@ export class IsCurriedComponentDefinitionReference extends ConditionalReference 
 }
 
 export class ContentTypeReference implements Reference<ContentType> {
-  public tag: Tag;
+  constructor(private inner: Reference<unknown>) {}
 
-  constructor(private inner: Reference<unknown>) {
-    this.tag = inner.tag;
+  isConst() {
+    return false;
   }
 
   value(): ContentType {
@@ -77,7 +76,7 @@ APPEND_OPCODES.add(Op.AppendText, vm => {
 
   let node = vm.elements().appendDynamicText(value);
 
-  if (!isConstTagged(reference)) {
+  if (!reference.isConst()) {
     vm.updateWith(new DynamicTextContent(node, reference, value));
   }
 });

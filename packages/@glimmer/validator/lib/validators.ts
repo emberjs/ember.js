@@ -26,14 +26,6 @@ export interface EntityTag<T> {
 
 export interface Tag extends EntityTag<Revision> {}
 
-export interface EntityTagged<T> {
-  tag: EntityTag<T>;
-}
-
-export interface Tagged {
-  tag: Tag;
-}
-
 //////////
 
 /**
@@ -223,10 +215,6 @@ export function createUpdatableTag(): UpdatableTag {
 
 export const CONSTANT_TAG: ConstantTag = new MonomorphicTagImpl(MonomorphicTagTypes.Constant);
 
-export function isConstTagged({ tag }: Tagged): boolean {
-  return tag === CONSTANT_TAG;
-}
-
 export function isConstTag(tag: Tag): tag is ConstantTag {
   return tag === CONSTANT_TAG;
 }
@@ -254,18 +242,6 @@ export const CURRENT_TAG = new CurrentTag();
 //////////
 
 export function combine(tags: Tag[]): Tag {
-  let optimized: Tag[] = [];
-
-  for (let i = 0, l = tags.length; i < l; i++) {
-    let tag = tags[i];
-    if (tag === CONSTANT_TAG) continue;
-    optimized.push(tag);
-  }
-
-  return createCombinatorTag(optimized);
-}
-
-export function createCombinatorTag(tags: Tag[]): Tag {
   switch (tags.length) {
     case 0:
       return CONSTANT_TAG;

@@ -9,7 +9,12 @@ import {
   isConstTag,
 } from './validators';
 
-import { markTagAsConsumed, runInAutotrackingTransaction } from './debug';
+import {
+  markTagAsConsumed,
+  beginTrackingTransaction,
+  endTrackingTransaction,
+  resetTrackingTransaction,
+} from './debug';
 import { symbol } from './utils';
 
 type Option<T> = T | null;
@@ -22,6 +27,8 @@ class Tracker {
   private last: Option<Tag> = null;
 
   add(tag: Tag) {
+    if (tag === CONSTANT_TAG) return;
+
     this.tags.add(tag);
 
     if (DEBUG) {
@@ -63,22 +70,56 @@ let CURRENT_TRACKER: Option<Tracker> = null;
 
 const OPEN_TRACK_FRAMES: Option<Tracker>[] = [];
 
-export function beginTrackFrame(): void {
+export function beginTrackFrame(debuggingContext?: string | false): void {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
   CURRENT_TRACKER = new Tracker();
+
+  if (DEBUG) {
+    beginTrackingTransaction!(debuggingContext);
+  }
 }
 
 export function endTrackFrame(): Tag {
   let current = CURRENT_TRACKER;
 
-  if (DEBUG && OPEN_TRACK_FRAMES.length === 0) {
-    throw new Error('attempted to close a tracking frame, but one was not open');
+  if (DEBUG) {
+    if (OPEN_TRACK_FRAMES.length === 0) {
+      throw new Error('attempted to close a tracking frame, but one was not open');
+    }
+
+    endTrackingTransaction!();
   }
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
 
   return current!.combine();
+}
+
+export function beginUntrackFrame() {
+  OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
+  CURRENT_TRACKER = null;
+}
+
+export function endUntrackFrame() {
+  if (DEBUG && OPEN_TRACK_FRAMES.length === 0) {
+    throw new Error('attempted to close a tracking frame, but one was not open');
+  }
+
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
+}
+
+// This function is only for handling errors and resetting to a valid state
+export function resetTracking() {
+  while (OPEN_TRACK_FRAMES.length > 0) {
+    OPEN_TRACK_FRAMES.pop();
+  }
+
+  CURRENT_TRACKER = null;
+
+  if (DEBUG) {
+    resetTrackingTransaction!();
+  }
 }
 
 export function isTracking() {
@@ -94,30 +135,6 @@ export function consumeTag(tag: Tag) {
 //////////
 
 const CACHE_KEY: unique symbol = symbol('CACHE_KEY');
-
-interface Memo {
-  [CACHE_KEY]: Cache;
-}
-
-export function memo<T>(callback: () => T, debuggingContext?: string | false) {
-  let cache = createCache(callback, debuggingContext);
-
-  let memoized = () => getValue(cache);
-
-  ((memoized as unknown) as Memo)[CACHE_KEY] = cache;
-
-  return memoized;
-}
-
-export function isConstMemo(fn: Function | Memo) {
-  return isMemo(fn) ? isConst(fn[CACHE_KEY]) : false;
-}
-
-function isMemo(fn: Function | Memo): fn is Memo {
-  return CACHE_KEY in fn;
-}
-
-//////////
 
 // public interface
 export interface Cache<T = unknown> {
@@ -170,11 +187,7 @@ export function getValue<T>(cache: Cache<T>): T {
     beginTrackFrame();
 
     try {
-      if (DEBUG) {
-        runInAutotrackingTransaction!(() => (cache[LAST_VALUE] = fn()), cache[DEBUG_LABEL]);
-      } else {
-        cache[LAST_VALUE] = fn();
-      }
+      cache[LAST_VALUE] = fn();
     } finally {
       tag = endTrackFrame();
       cache[TAG] = tag;
@@ -230,17 +243,13 @@ function assertTag(tag: Tag | undefined, cache: InternalCache): asserts tag is T
 // refactors are merged, and we should generally be moving away from it. It may
 // be necessary in Ember for a while longer, but I think we'll be able to drop
 // it in favor of cache sooner rather than later.
-export function track(callback: () => void, debuggingContext?: string | false): Tag {
-  beginTrackFrame();
+export function track(callback: () => void, debugLabel?: string | false): Tag {
+  beginTrackFrame(debugLabel);
 
   let tag;
 
   try {
-    if (DEBUG) {
-      runInAutotrackingTransaction!(callback, debuggingContext);
-    } else {
-      callback();
-    }
+    callback();
   } finally {
     tag = endTrackFrame();
   }
@@ -253,12 +262,11 @@ export function track(callback: () => void, debuggingContext?: string | false): 
 // I think once we move everyone forward onto modern APIs, we'll probably be
 // able to remove it, but I'm not sure yet.
 export function untrack(callback: () => void) {
-  OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
-  CURRENT_TRACKER = null;
+  beginUntrackFrame();
 
   try {
     callback();
   } finally {
-    CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
+    endUntrackFrame();
   }
 }

@@ -1,5 +1,5 @@
 import { Op, JitOrAotBlock, Scope } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { dict, decodeHandle } from '@glimmer/util';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
@@ -31,7 +31,7 @@ export function resetDebuggerCallback() {
 }
 
 class ScopeInspector<C extends JitOrAotBlock> {
-  private locals = dict<VersionedPathReference<unknown>>();
+  private locals = dict<PathReference<unknown>>();
 
   constructor(private scope: Scope<C>, symbols: string[], evalInfo: number[]) {
     for (let i = 0; i < evalInfo.length; i++) {
@@ -42,20 +42,20 @@ class ScopeInspector<C extends JitOrAotBlock> {
     }
   }
 
-  get(path: string): VersionedPathReference<unknown> {
+  get(path: string): PathReference<unknown> {
     let { scope, locals } = this;
     let parts = path.split('.');
     let [head, ...tail] = path.split('.');
 
     let evalScope = scope.getEvalScope()!;
-    let ref: VersionedPathReference<unknown>;
+    let ref: PathReference<unknown>;
 
     if (head === 'this') {
       ref = scope.getSelf();
     } else if (locals[head]) {
       ref = locals[head];
     } else if (head.indexOf('@') === 0 && evalScope[head]) {
-      ref = evalScope[head] as VersionedPathReference<unknown>;
+      ref = evalScope[head] as PathReference<unknown>;
     } else {
       ref = this.scope.getSelf();
       tail = parts;

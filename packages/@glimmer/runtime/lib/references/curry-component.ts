@@ -1,5 +1,4 @@
 import { Reference, PathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
 import { Option } from '@glimmer/util';
 import {
   CapturedArguments,
@@ -18,7 +17,6 @@ import { UNDEFINED_REFERENCE } from '../references';
 
 export default class CurryComponentReference
   implements PathReference<Option<CurriedComponentDefinition>> {
-  public tag: Tag;
   private lastValue: unknown;
   private lastDefinition: Option<CurriedComponentDefinition>;
 
@@ -28,7 +26,6 @@ export default class CurryComponentReference
     private meta: unknown,
     private args: Option<CapturedArguments>
   ) {
-    this.tag = inner.tag;
     this.lastValue = null;
     this.lastDefinition = null;
   }
@@ -57,6 +54,10 @@ export default class CurryComponentReference
     this.lastDefinition = definition;
 
     return definition;
+  }
+
+  isConst() {
+    return false;
   }
 
   get(): PathReference<unknown> {

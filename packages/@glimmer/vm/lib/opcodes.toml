@@ -176,7 +176,7 @@ operand-stack = [
 
 format = ["Concat", "count:u32"]
 operation = """
-Pop count `VersionedPathReference`s off the stack and
+Pop count `PathReference`s off the stack and
 construct a new ConcatReference from them (in reverse
 order).
 """
@@ -660,7 +660,7 @@ operand-stack = [
   ["CurriedComponent"]
 ]
 notes = """
-TODO: CurriedComponent is { VersionedPathReference, Locator, CapturedArguments }
+TODO: CurriedComponent is { PathReference, Locator, CapturedArguments }
 """
 
 [syscall.cmload]

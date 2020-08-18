@@ -9,7 +9,7 @@ import {
   VMArguments,
   CapturedArguments,
 } from '@glimmer/interfaces';
-import { Tag } from '@glimmer/validator';
+import { UpdatableTag, createUpdatableTag } from '@glimmer/validator';
 import { registerDestructor } from '@glimmer/runtime';
 
 export interface TestModifierConstructor {
@@ -40,29 +40,37 @@ export class TestModifierManager
     return new TestModifier(element, instance, args.capture(), dom);
   }
 
-  getTag({ args: { tag } }: TestModifier): Tag {
+  getTag({ tag }: TestModifier): UpdatableTag {
     return tag;
   }
 
+  getDebugName() {
+    return '<unknown>';
+  }
+
   install({ element, args, instance }: TestModifier) {
+    // Do this eagerly to ensure they are tracked
+    let positional = args.positional.value();
+    let named = args.named.value();
+
     if (instance && instance.didInsertElement) {
       instance.element = element;
-      instance.didInsertElement(args.positional.value(), args.named.value());
+      instance.didInsertElement(positional, named);
     }
 
     if (instance && instance.willDestroyElement) {
       registerDestructor(instance, () => instance!.willDestroyElement!(), true);
     }
-
-    return;
   }
 
   update({ args, instance }: TestModifier) {
-    if (instance && instance.didUpdate) {
-      instance.didUpdate(args.positional.value(), args.named.value());
-    }
+    // Do this eagerly to ensure they are tracked
+    let positional = args.positional.value();
+    let named = args.named.value();
 
-    return;
+    if (instance && instance.didUpdate) {
+      instance.didUpdate(positional, named);
+    }
   }
 
   getDestroyable(modifier: TestModifier): Option<Destroyable> {
@@ -71,6 +79,8 @@ export class TestModifierManager
 }
 
 export class TestModifier {
+  public tag = createUpdatableTag();
+
   constructor(
     public element: SimpleElement,
     public instance: TestModifierInstance | undefined,

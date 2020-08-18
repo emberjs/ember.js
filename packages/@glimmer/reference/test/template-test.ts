@@ -1,20 +1,13 @@
 import { module, test } from './utils/qunit';
 
-import {
-  CONSTANT_TAG,
-  createTag,
-  consumeTag,
-  dirtyTag,
-  valueForTag,
-  validateTag,
-} from '@glimmer/validator';
+import { createTag, consumeTag, dirtyTag } from '@glimmer/validator';
 
 import {
   ComponentRootReference,
   HelperRootReference,
   PropertyReference,
   IterationItemReference,
-  TemplatePathReference,
+  UNDEFINED_REFERENCE,
 } from '..';
 import { TestEnv } from './utils/template';
 import {
@@ -26,12 +19,11 @@ import {
 
 module('@glimmer/reference: template', () => {
   module('ComponentRootReference', () => {
-    test('it creates a constant reference with the component as the value', assert => {
+    test('it creates a reference with the component as the value', assert => {
       let component = {};
       let ref = new ComponentRootReference(component, new TestEnv());
 
       assert.equal(ref.value(), component);
-      assert.equal(ref.tag, CONSTANT_TAG);
     });
 
     test('it creates PropertyReferences when chained', assert => {
@@ -42,49 +34,47 @@ module('@glimmer/reference: template', () => {
       assert.ok(propRef instanceof PropertyReference);
       assert.equal(propRef.value(), 'bar');
     });
-
-    test('it calls setTemplatePathDebugContext on the first `get`', assert => {
-      let count = 0;
-
-      let component = { foo: 'bar' };
-      let ref = new ComponentRootReference(
-        component,
-        new (class extends TestEnv {
-          setTemplatePathDebugContext(_ref: TemplatePathReference, key: string) {
-            if (count === 0) {
-              count++;
-              assert.equal(ref, _ref);
-              assert.equal(key, 'this');
-            }
-          }
-        })()
-      );
-
-      ref.get('foo');
-    });
   });
 
   module('HelperRootReference', () => {
-    test('it calculates the helper value on initialization and creates a constant reference if the helper is constant', assert => {
+    test('constant helper values are constant', assert => {
       let ref = new HelperRootReference(() => 123, EMPTY_ARGS, new TestEnv());
 
-      assert.equal(ref.value(), 123);
-      assert.equal(ref.tag, CONSTANT_TAG);
+      assert.equal(ref.value(), 123, 'value is calculated correctly');
+      assert.ok(ref.isConst(), 'value is constant');
     });
 
-    test('it calculates the helper value on initialization and creates a non-constant reference if the args can change', assert => {
+    test('non-constant helper values are non-constant if arguments are not constant', assert => {
       let tag = createTag();
-      const EMPTY_NAMED = new CapturedNamedArgumentsImpl(CONSTANT_TAG, [], []);
-      const EMPTY_POSITIONAL = new CapturedPositionalArgumentsImpl(CONSTANT_TAG, []);
-      const MUTABLE_ARGS = new CapturedArgumentsImpl(tag, EMPTY_POSITIONAL, EMPTY_NAMED, 0);
 
-      let ref = new HelperRootReference(() => 123, MUTABLE_ARGS, new TestEnv());
+      const EMPTY_POSITIONAL = new CapturedPositionalArgumentsImpl([
+        {
+          value() {
+            consumeTag(tag);
+            return 123;
+          },
+          get() {
+            return UNDEFINED_REFERENCE;
+          },
+          isConst() {
+            return false;
+          },
+        },
+      ]);
+      const EMPTY_NAMED = new CapturedNamedArgumentsImpl([], []);
+      const MUTABLE_ARGS = new CapturedArgumentsImpl(EMPTY_POSITIONAL, EMPTY_NAMED, 0);
 
-      assert.equal(ref.value(), 123);
-      assert.notEqual(ref.tag, CONSTANT_TAG);
+      let ref = new HelperRootReference(
+        args => args.positional.at(0).value(),
+        MUTABLE_ARGS,
+        new TestEnv()
+      );
+
+      assert.equal(ref.value(), 123, 'value is calculated correctly');
+      assert.notOk(ref.isConst(), 'value is not constant');
     });
 
-    test('it calculates the helper value on initialization and creates a non-constant reference if the helper can change', assert => {
+    test('non-constant helper values are non-constant if helper is not constant', assert => {
       let tag = createTag();
       let ref = new HelperRootReference(
         () => {
@@ -95,8 +85,8 @@ module('@glimmer/reference: template', () => {
         new TestEnv()
       );
 
-      assert.equal(ref.value(), 123);
-      assert.notEqual(ref.tag, CONSTANT_TAG);
+      assert.equal(ref.value(), 123, 'value is calculated correctly');
+      assert.notOk(ref.isConst(), 'value is not constant');
     });
 
     test('it creates PropertyReferences when chained', assert => {
@@ -105,36 +95,6 @@ module('@glimmer/reference: template', () => {
 
       assert.ok(propRef instanceof PropertyReference);
       assert.equal(propRef.value(), 'bar');
-    });
-
-    test('it calls setTemplatePathDebugContext on initialization', assert => {
-      const myHelper = () => 123;
-
-      new HelperRootReference(
-        myHelper,
-        EMPTY_ARGS,
-        new (class extends TestEnv {
-          setTemplatePathDebugContext(ref: TemplatePathReference, key: string) {
-            assert.ok(ref instanceof HelperRootReference);
-            assert.ok(key.match(/result of a `.*` helper/));
-          }
-        })()
-      );
-    });
-
-    test('it calls getTemplatePathDebugContext on when computing', assert => {
-      const myHelper = () => 123;
-
-      new HelperRootReference(
-        myHelper,
-        EMPTY_ARGS,
-        new (class extends TestEnv {
-          getTemplatePathDebugContext(ref: TemplatePathReference) {
-            assert.ok(ref instanceof HelperRootReference);
-            return '';
-          }
-        })()
-      );
     });
   });
 
@@ -154,11 +114,13 @@ module('@glimmer/reference: template', () => {
 
     test('it tracks access', assert => {
       let tag = createTag();
+      let count = 0;
 
       let component = {
         _foo: 123,
 
         get foo() {
+          count++;
           consumeTag(tag);
           return this._foo;
         },
@@ -172,14 +134,16 @@ module('@glimmer/reference: template', () => {
       let ref = new ComponentRootReference(component, new TestEnv());
 
       let fooRef = ref.get('foo');
-      assert.equal(fooRef.value(), component.foo);
+      assert.equal(fooRef.value(), 123, 'gets the value correctly');
+      assert.equal(count, 1, 'getter is actually called');
 
-      let snapshot = valueForTag(fooRef.tag);
-      assert.equal(validateTag(fooRef.tag, snapshot), true);
+      assert.equal(fooRef.value(), 123, 'gets the value correctly');
+      assert.equal(count, 1, 'getter is not called again');
 
       component.foo = 234;
 
-      assert.equal(validateTag(fooRef.tag, snapshot), false);
+      assert.equal(fooRef.value(), 234, 'gets the value correctly');
+      assert.equal(count, 2, 'getter is called again after update');
     });
 
     test('it correctly caches values', assert => {
@@ -202,12 +166,12 @@ module('@glimmer/reference: template', () => {
       assert.equal(count, 1);
     });
 
-    test('it calls getPath', assert => {
+    test('it calls getProp', assert => {
       let component = {};
       let ref = new ComponentRootReference(
         component,
         new (class extends TestEnv {
-          getPath(obj: unknown, key: string) {
+          getProp(obj: unknown, key: string) {
             assert.equal(obj, component);
             assert.equal(key, 'foo');
 
@@ -219,50 +183,6 @@ module('@glimmer/reference: template', () => {
       let fooRef = ref.get('foo');
       assert.equal(fooRef.value(), 123);
     });
-
-    test('it calls setTemplatePathDebugContext on initialization', assert => {
-      let count = 0;
-
-      let component = { foo: 'bar' };
-      let ref = new ComponentRootReference(
-        component,
-        new (class extends TestEnv {
-          setTemplatePathDebugContext(
-            childRef: TemplatePathReference,
-            key: string,
-            parentRef: TemplatePathReference
-          ) {
-            if (count === 1) {
-              assert.ok(childRef instanceof PropertyReference);
-              assert.equal(key, 'foo');
-              assert.equal(ref, parentRef);
-            }
-
-            count++;
-          }
-        })()
-      );
-
-      ref.get('foo');
-    });
-
-    test('it calls getTemplatePathDebugContext on when computing', assert => {
-      let component = {};
-      let ref = new ComponentRootReference(
-        component,
-        new (class extends TestEnv {
-          getTemplatePathDebugContext(childRef: TemplatePathReference) {
-            assert.equal(childRef, fooRef);
-
-            return '';
-          }
-        })()
-      );
-
-      let fooRef = ref.get('foo');
-
-      fooRef.value();
-    });
   });
 
   module('IterationItemReference', () => {
@@ -273,27 +193,6 @@ module('@glimmer/reference: template', () => {
 
       assert.ok(propRef instanceof PropertyReference);
       assert.equal(propRef.value(), 'bar');
-    });
-
-    test('it correctly calls setTemplatePathDebugContext', assert => {
-      let componentRef = new ComponentRootReference({}, new TestEnv());
-
-      new IterationItemReference(
-        componentRef,
-        { foo: 'bar' },
-        1,
-        new (class extends TestEnv {
-          setTemplatePathDebugContext(
-            childRef: TemplatePathReference,
-            key: string,
-            parentRef: TemplatePathReference
-          ) {
-            assert.ok(childRef instanceof IterationItemReference);
-            assert.equal(key, 1);
-            assert.equal(componentRef, parentRef);
-          }
-        })()
-      );
     });
   });
 });

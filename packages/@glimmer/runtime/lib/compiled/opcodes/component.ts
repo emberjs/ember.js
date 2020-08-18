@@ -37,8 +37,8 @@ import {
   RuntimeResolver,
   ModifierManager,
 } from '@glimmer/interfaces';
-import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
-import { CONSTANT_TAG, isConstTagged, isConstTag, Tag } from '@glimmer/validator';
+import { PathReference, Reference } from '@glimmer/reference';
+
 import {
   assert,
   dict,
@@ -364,7 +364,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
     args = check(vm.stack.peekJs(), CheckArguments);
   }
 
-  let self: Option<VersionedPathReference<unknown>> = null;
+  let self: Option<PathReference<unknown>> = null;
   if (managerHasCapability(manager, capabilities, Capability.CreateCaller)) {
     self = vm.getSelf();
   }
@@ -375,10 +375,8 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   // only transition at exactly one place.
   instance.state = state;
 
-  let tag = manager.getTag(state);
-
-  if (managerHasCapability(manager, capabilities, Capability.UpdateHook) && !isConstTag(tag)) {
-    vm.updateWith(new UpdateComponentOpcode(tag, state, manager, dynamicScope));
+  if (managerHasCapability(manager, capabilities, Capability.UpdateHook)) {
+    vm.updateWith(new UpdateComponentOpcode(state, manager, dynamicScope));
   }
 });
 
@@ -401,8 +399,16 @@ APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
   if (d) vm.associateDestroyable(d);
 });
 
-APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {
-  vm.beginCacheGroup();
+APPEND_OPCODES.add(Op.BeginComponentTransaction, (vm, { op1: _state }) => {
+  let name;
+
+  if (DEBUG) {
+    let { definition, manager } = check(vm.fetchValue(_state), CheckComponentInstance);
+
+    name = manager.getDebugName(definition.state);
+  }
+
+  vm.beginCacheGroup(name);
   vm.elements().pushSimpleBlock();
 });
 
@@ -436,19 +442,19 @@ APPEND_OPCODES.add(Op.StaticComponentAttr, (vm, { op1: _name, op2: _value, op3: 
 });
 
 type DeferredAttribute = {
-  value: string | VersionedReference<unknown>;
+  value: string | Reference<unknown>;
   namespace: Option<string>;
   trusting?: boolean;
 };
 
 export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
-  private classes: (string | VersionedReference<unknown>)[] = [];
+  private classes: (string | Reference<unknown>)[] = [];
   private modifiers: [ModifierManager<unknown>, unknown][] = [];
 
   setAttribute(
     name: string,
-    value: VersionedReference<unknown>,
+    value: Reference<unknown>,
     trusting: boolean,
     namespace: Option<string>
   ) {
@@ -501,9 +507,7 @@ export class ComponentElementOperations implements ElementOperations {
   }
 }
 
-function mergeClasses(
-  classes: (string | VersionedReference<unknown>)[]
-): string | VersionedReference<unknown> {
+function mergeClasses(classes: (string | Reference<unknown>)[]): string | Reference<unknown> {
   if (classes.length === 0) {
     return '';
   }
@@ -516,17 +520,17 @@ function mergeClasses(
   return makeClassList(classes);
 }
 
-function makeClassList(classes: (string | VersionedReference<unknown>)[]) {
+function makeClassList(classes: (string | Reference<unknown>)[]) {
   for (let i = 0; i < classes.length; i++) {
     const value = classes[i];
     if (typeof value === 'string') {
       classes[i] = PrimitiveReference.create(value);
     }
   }
-  return new ClassListReference(classes as VersionedReference<unknown>[]);
+  return new ClassListReference(classes as Reference<unknown>[]);
 }
 
-function allStringClasses(classes: (string | VersionedReference<unknown>)[]): classes is string[] {
+function allStringClasses(classes: (string | Reference<unknown>)[]): classes is string[] {
   for (let i = 0; i < classes.length; i++) {
     if (typeof classes[i] !== 'string') {
       return false;
@@ -538,7 +542,7 @@ function allStringClasses(classes: (string | VersionedReference<unknown>)[]): cl
 function setDeferredAttr(
   vm: InternalVM<JitOrAotBlock>,
   name: string,
-  value: string | VersionedReference<unknown>,
+  value: string | Reference<unknown>,
   namespace: Option<string>,
   trusting = false
 ) {
@@ -546,7 +550,7 @@ function setDeferredAttr(
     vm.elements().setStaticAttribute(name, value, namespace);
   } else {
     let attribute = vm.elements().setDynamicAttribute(name, value.value(), trusting, namespace);
-    if (!isConstTagged(value)) {
+    if (!value.isConst()) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute));
     }
   }
@@ -816,7 +820,6 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
   public type = 'update-component';
 
   constructor(
-    public tag: Tag,
     private component: ComponentInstanceState,
     private manager: WithUpdateHook,
     private dynamicScope: Option<DynamicScope>
@@ -833,7 +836,6 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
 export class DidUpdateLayoutOpcode extends UpdatingOpcode {
   public type = 'did-update-layout';
-  public tag: Tag = CONSTANT_TAG;
 
   constructor(
     private manager: WithCreateInstance,
