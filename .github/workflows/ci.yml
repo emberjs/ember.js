@@ -24,6 +24,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: linting
@@ -37,6 +41,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build
@@ -63,6 +71,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build
@@ -86,6 +98,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build
@@ -105,6 +121,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build
@@ -125,6 +145,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - uses: actions/download-artifact@v1
@@ -145,6 +169,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build
@@ -164,6 +192,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - uses: actions/download-artifact@v1
@@ -182,6 +214,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - uses: actions/download-artifact@v1
@@ -202,6 +238,10 @@ jobs:
         with:
           node-version: 10.x
           registry-url: 'https://registry.npmjs.org'
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build for publish
@@ -222,6 +262,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build for publish
@@ -244,6 +288,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build for publish
