@@ -1,7 +1,7 @@
 import { Dict, Maybe, Option, RenderResult, Helper } from '@glimmer/interfaces';
 import { ASTPluginBuilder } from '@glimmer/syntax';
-import { bump, isConstTagged } from '@glimmer/validator';
-import { clearElement, dict, expect, assign } from '@glimmer/util';
+import { dirtyTagFor } from '@glimmer/validator';
+import { clearElement, dict, expect } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import {
   ComponentBlueprint,
@@ -17,7 +17,6 @@ import { UserHelper } from './helpers';
 import { TestModifierConstructor } from './modifiers';
 import RenderDelegate from './render-delegate';
 import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from './snapshot';
-import { UpdatableRootReference } from './reference';
 import { destroy, inTransaction } from '@glimmer/runtime';
 
 export interface IRenderTest {
@@ -392,12 +391,6 @@ export class RenderTest implements IRenderTest {
 
     this.setProperties(properties);
 
-    let self = this.delegate.getSelf(this.context);
-
-    if (!isConstTagged(self)) {
-      (self as UpdatableRootReference).forceUpdate(this.context);
-    }
-
     let result = expect(this.renderResult, 'the test should call render() before rerender()');
 
     try {
@@ -416,11 +409,13 @@ export class RenderTest implements IRenderTest {
 
   protected set(key: string, value: unknown): void {
     this.context[key] = value;
+    dirtyTagFor(this.context, key);
   }
 
   protected setProperties(properties: Dict<unknown>): void {
-    assign(this.context, properties);
-    bump();
+    for (let key in properties) {
+      this.set(key, properties[key]);
+    }
   }
 
   protected takeSnapshot(): NodesSnapshot {

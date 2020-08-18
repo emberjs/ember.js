@@ -1,7 +1,7 @@
 import { VMArguments } from './arguments';
 import { DynamicScope } from './environment';
 import { GlimmerTreeChanges } from '../dom/changes';
-import { Tag } from '@glimmer/validator';
+import { Tag, UpdatableTag } from '@glimmer/validator';
 import { Option, Destroyable } from '../core';
 import { SimpleElement } from '@simple-dom/interface';
 
@@ -20,7 +20,9 @@ export interface ModifierManager<
 
   // Convert the opaque modifier into a `RevisionTag` that determins when
   // the modifier's update hooks need to be called (if at all).
-  getTag(modifier: ModifierInstanceState): Tag;
+  getTag(modifier: ModifierInstanceState): Option<UpdatableTag>;
+
+  getDebugName(Modifier: ModifierInstanceState): string;
 
   // At initial render, the modifier gets a chance to install itself on the
   // element it is managing. It can also return a bucket of state that

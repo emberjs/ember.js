@@ -2,12 +2,14 @@ import { CompilableTemplate, Option, Op } from '@glimmer/interfaces';
 import { isModified, ReferenceCache } from '@glimmer/reference';
 import {
   CONSTANT_TAG,
-  isConstTagged,
   Revision,
   Tag,
   valueForTag,
   validateTag,
   INITIAL,
+  beginTrackFrame,
+  endTrackFrame,
+  consumeTag,
 } from '@glimmer/validator';
 import { assert, decodeHandle, expect, isNonPrimitiveHandle } from '@glimmer/util';
 import {
@@ -162,15 +164,16 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
   let reference = check(vm.stack.popJs(), CheckReference);
+  let value = Boolean(reference.value());
 
-  if (isConstTagged(reference)) {
-    if (reference.value()) {
+  if (reference.isConst()) {
+    if (value === true) {
       vm.goto(target);
     }
   } else {
     let cache = new ReferenceCache(reference);
 
-    if (cache.peek()) {
+    if (value === true) {
       vm.goto(target);
     }
 
@@ -180,15 +183,16 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
   let reference = check(vm.stack.popJs(), CheckReference);
+  let value = Boolean(reference.value());
 
-  if (isConstTagged(reference)) {
-    if (!reference.value()) {
+  if (reference.isConst()) {
+    if (value === false) {
       vm.goto(target);
     }
   } else {
     let cache = new ReferenceCache(reference);
 
-    if (!cache.peek()) {
+    if (value === false) {
       vm.goto(target);
     }
 
@@ -207,8 +211,8 @@ APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
 APPEND_OPCODES.add(Op.AssertSame, vm => {
   let reference = check(vm.stack.peekJs(), CheckReference);
 
-  if (!isConstTagged(reference)) {
-    vm.updateWith(Assert.initialize(new ReferenceCache(reference)));
+  if (!reference.isConst()) {
+    vm.updateWith(new Assert(new ReferenceCache(reference)));
   }
 });
 
@@ -218,22 +222,10 @@ APPEND_OPCODES.add(Op.ToBoolean, vm => {
 });
 
 export class Assert extends UpdatingOpcode {
-  static initialize(cache: ReferenceCache<unknown>): Assert {
-    let assert = new Assert(cache);
-    cache.peek();
-    return assert;
-  }
-
   public type = 'assert';
 
-  public tag: Tag;
-
-  private cache: ReferenceCache<unknown>;
-
-  constructor(cache: ReferenceCache<unknown>) {
+  constructor(private cache: ReferenceCache<unknown>) {
     super();
-    this.tag = cache.tag;
-    this.cache = cache;
   }
 
   evaluate(vm: UpdatingVM) {
@@ -248,44 +240,52 @@ export class Assert extends UpdatingOpcode {
 export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
   public type = 'jump-if-not-modified';
 
-  public tag: Tag = CONSTANT_TAG;
-
+  private tag: Tag = CONSTANT_TAG;
   private lastRevision: Revision = INITIAL;
   private target?: number;
 
-  constructor(public index: number) {
-    super();
-  }
-
   finalize(tag: Tag, target: number) {
-    this.tag = tag;
     this.target = target;
+    this.didModify(tag);
   }
 
   evaluate(vm: UpdatingVM) {
     let { tag, target, lastRevision } = this;
 
     if (!vm.alwaysRevalidate && validateTag(tag, lastRevision)) {
+      consumeTag(tag);
       vm.goto(expect(target, 'VM BUG: Target must be set before attempting to jump'));
     }
   }
 
-  didModify() {
+  didModify(tag: Tag) {
+    this.tag = tag;
     this.lastRevision = valueForTag(this.tag);
+    consumeTag(tag);
   }
 }
 
-export class DidModifyOpcode extends UpdatingOpcode {
-  public type = 'did-modify';
+export class BeginTrackFrameOpcode extends UpdatingOpcode {
+  public type = 'begin-track-frame';
 
-  public tag: Tag;
-
-  constructor(private target: JumpIfNotModifiedOpcode) {
+  constructor(private debugLabel?: string) {
     super();
-    this.tag = CONSTANT_TAG;
   }
 
   evaluate() {
-    this.target.didModify();
+    beginTrackFrame(this.debugLabel);
+  }
+}
+
+export class EndTrackFrameOpcode extends UpdatingOpcode {
+  public type = 'end-track-frame';
+
+  constructor(private target: JumpIfNotModifiedOpcode) {
+    super();
+  }
+
+  evaluate() {
+    let tag = endTrackFrame();
+    this.target.didModify(tag);
   }
 }

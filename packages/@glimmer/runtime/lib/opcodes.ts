@@ -3,7 +3,6 @@ import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { Option, initializeGuid, fillNulls, assert } from '@glimmer/util';
 import { recordStackSize, opcodeMetadata } from '@glimmer/debug';
 import { $pc, $sp, $ra, $fp } from '@glimmer/vm';
-import { Tag } from '@glimmer/validator';
 import { RuntimeOp, Op, JitOrAotBlock, Maybe, Dict } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
@@ -186,7 +185,5 @@ export abstract class AbstractOpcode {
 }
 
 export abstract class UpdatingOpcode extends AbstractOpcode {
-  public abstract tag: Tag;
-
   abstract evaluate(vm: UpdatingVM): void;
 }

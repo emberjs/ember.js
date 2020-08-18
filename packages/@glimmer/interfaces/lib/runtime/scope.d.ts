@@ -1,5 +1,5 @@
 import { CompilableBlock } from '../template';
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { Option, Dict } from '../core';
 import { BlockSymbolTable } from '../tier1/symbol-table';
 
@@ -7,11 +7,11 @@ export type JitOrAotBlock = CompilableBlock | number;
 
 export type JitScopeBlock = [CompilableBlock, Scope<CompilableBlock>, BlockSymbolTable];
 export type JitBlockValue = JitScopeBlock[0 | 1 | 2];
-export type JitScopeSlot = Option<VersionedPathReference<unknown>> | Option<JitScopeBlock>;
+export type JitScopeSlot = Option<PathReference<unknown>> | Option<JitScopeBlock>;
 
 export type AotScopeBlock = [number, Scope<number>, BlockSymbolTable];
 export type AotBlockValue = AotScopeBlock[0 | 1 | 2];
-export type AotScopeSlot = Option<VersionedPathReference<unknown>> | Option<AotScopeBlock>;
+export type AotScopeSlot = Option<PathReference<unknown>> | Option<AotScopeBlock>;
 
 export type ScopeBlock<C extends JitOrAotBlock = JitOrAotBlock> = C extends CompilableBlock
   ? JitScopeBlock
@@ -22,24 +22,24 @@ export type BlockValue<C extends JitOrAotBlock = JitOrAotBlock> = C extends Comp
   : AotBlockValue;
 
 export type ScopeSlot<C extends JitOrAotBlock = JitOrAotBlock> = Option<
-  ScopeBlock<C> | VersionedPathReference<unknown>
+  ScopeBlock<C> | PathReference<unknown>
 >;
 
 export interface Scope<C extends JitOrAotBlock> {
   // for debug only
   readonly slots: Array<ScopeSlot<C>>;
 
-  getSelf(): VersionedPathReference<unknown>;
-  getSymbol(symbol: number): VersionedPathReference<unknown>;
+  getSelf(): PathReference<unknown>;
+  getSymbol(symbol: number): PathReference<unknown>;
   getBlock(symbol: number): Option<ScopeBlock<C>>;
   getEvalScope(): Option<Dict<ScopeSlot<C>>>;
-  getPartialMap(): Option<Dict<VersionedPathReference<unknown>>>;
+  getPartialMap(): Option<Dict<PathReference<unknown>>>;
   bind(symbol: number, value: ScopeSlot<C>): void;
-  bindSelf(self: VersionedPathReference<unknown>): void;
-  bindSymbol(symbol: number, value: VersionedPathReference<unknown>): void;
+  bindSelf(self: PathReference<unknown>): void;
+  bindSymbol(symbol: number, value: PathReference<unknown>): void;
   bindBlock(symbol: number, value: Option<ScopeBlock<C>>): void;
   bindEvalScope(map: Option<Dict<ScopeSlot<C>>>): void;
-  bindPartialMap(map: Dict<VersionedPathReference<unknown>>): void;
+  bindPartialMap(map: Dict<PathReference<unknown>>): void;
   child(): Scope<C>;
 }
 

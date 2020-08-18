@@ -1,15 +1,17 @@
 import { Tag } from './validators';
 import { DEBUG } from '@glimmer/env';
 
-interface AutotrackingTransactionSourceData {
-  context?: string;
-}
-
-export let runInAutotrackingTransaction:
+export let beginTrackingTransaction:
+  | undefined
+  | ((debuggingContext?: string | false, deprecate?: boolean) => void);
+export let endTrackingTransaction: undefined | (() => void);
+export let runInTrackingTransaction:
   | undefined
   | ((fn: () => void, debuggingContext?: string | false) => void);
-export let deprecateMutationsInAutotrackingTransaction: undefined | ((fn: () => void) => void);
-export let setAutotrackingTransactionEnv:
+export let deprecateMutationsInTrackingTransaction: undefined | ((fn: () => void) => void);
+
+export let resetTrackingTransaction: undefined | (() => void);
+export let setTrackingTransactionEnv:
   | undefined
   | ((env: {
       assert?(message: string): void;
@@ -23,11 +25,18 @@ export let assertTagNotConsumed:
 
 export let markTagAsConsumed: undefined | ((_tag: Tag) => void);
 
-if (DEBUG) {
-  let DEPRECATE_IN_AUTOTRACKING_TRANSACTION = false;
-  let AUTOTRACKING_TRANSACTION: WeakMap<Tag, AutotrackingTransactionSourceData> | null = null;
+export let logTrackingStack: undefined | ((transaction?: Transaction) => string);
 
-  let debuggingContexts: string[] = [];
+interface Transaction {
+  parent: Transaction | null;
+  debugLabel?: string;
+  deprecate: boolean;
+}
+
+if (DEBUG) {
+  let CONSUMED_TAGS: WeakMap<Tag, Transaction> | null = null;
+
+  let TRANSACTION_STACK: Transaction[] = [];
 
   /////////
 
@@ -61,7 +70,38 @@ if (DEBUG) {
     },
   };
 
-  setAutotrackingTransactionEnv = env => Object.assign(TRANSACTION_ENV, env);
+  setTrackingTransactionEnv = env => Object.assign(TRANSACTION_ENV, env);
+
+  beginTrackingTransaction = (_debugLabel?: string | false, deprecate = false) => {
+    CONSUMED_TAGS = CONSUMED_TAGS || new WeakMap();
+
+    let debugLabel = _debugLabel || undefined;
+
+    let parent = TRANSACTION_STACK[TRANSACTION_STACK.length - 1] || null;
+
+    TRANSACTION_STACK.push({
+      parent,
+      debugLabel,
+      deprecate,
+    });
+  };
+
+  endTrackingTransaction = () => {
+    if (TRANSACTION_STACK.length === 0) {
+      throw new Error('attempted to close a tracking transaction, but one was not open');
+    }
+
+    TRANSACTION_STACK.pop();
+
+    if (TRANSACTION_STACK.length === 0) {
+      CONSUMED_TAGS = null;
+    }
+  };
+
+  resetTrackingTransaction = () => {
+    TRANSACTION_STACK = [];
+    CONSUMED_TAGS = null;
+  };
 
   /**
    * Creates a global autotracking transaction. This will prevent any backflow
@@ -73,30 +113,13 @@ if (DEBUG) {
    *
    * TODO: Only throw an error if the `track` is consumed.
    */
-  runInAutotrackingTransaction = (fn: () => void, debuggingContext?: string | false) => {
-    let previousDeprecateState = DEPRECATE_IN_AUTOTRACKING_TRANSACTION;
-    let previousTransactionState = AUTOTRACKING_TRANSACTION;
-
-    DEPRECATE_IN_AUTOTRACKING_TRANSACTION = false;
-
-    if (previousTransactionState === null) {
-      // if there was no transaction start it. Otherwise, the transaction already exists.
-      AUTOTRACKING_TRANSACTION = new WeakMap();
-    }
-
-    if (debuggingContext) {
-      debuggingContexts!.unshift(debuggingContext);
-    }
+  runInTrackingTransaction = (fn: () => void, debugLabel?: string | false) => {
+    beginTrackingTransaction!(debugLabel);
 
     try {
       fn();
     } finally {
-      if (debuggingContext) {
-        debuggingContexts!.shift();
-      }
-
-      DEPRECATE_IN_AUTOTRACKING_TRANSACTION = previousDeprecateState;
-      AUTOTRACKING_TRANSACTION = previousTransactionState;
+      endTrackingTransaction!();
     }
   };
 
@@ -111,14 +134,13 @@ if (DEBUG) {
    * NOTE: For Ember usage only, in general you should assert that these
    * invariants are true.
    */
-  deprecateMutationsInAutotrackingTransaction = (fn: () => void) => {
-    let previousDeprecateState = DEPRECATE_IN_AUTOTRACKING_TRANSACTION;
-    DEPRECATE_IN_AUTOTRACKING_TRANSACTION = true;
+  deprecateMutationsInTrackingTransaction = (fn: () => void, debugLabel?: string | false) => {
+    beginTrackingTransaction!(debugLabel, true);
 
     try {
       fn();
     } finally {
-      DEPRECATE_IN_AUTOTRACKING_TRANSACTION = previousDeprecateState;
+      endTrackingTransaction!();
     }
   };
 
@@ -133,28 +155,44 @@ if (DEBUG) {
     return i;
   };
 
-  let makeAutotrackingErrorMessage = <T>(
-    sourceData: AutotrackingTransactionSourceData,
+  let makeTrackingErrorMessage = <T>(
+    transaction: Transaction,
     obj?: T,
     keyName?: keyof T | string | symbol
   ) => {
     let message = [TRANSACTION_ENV.debugMessage(obj, keyName && String(keyName))];
 
-    if (sourceData.context) {
-      message.push(`\`${String(keyName)}\` was first used:\n\n${sourceData.context}`);
-    }
+    message.push(`\`${String(keyName)}\` was first used:`);
+
+    message.push(logTrackingStack!(transaction));
 
     message.push(`Stack trace for the update:`);
 
     return message.join('\n\n');
   };
 
-  markTagAsConsumed = (_tag: Tag) => {
-    if (!AUTOTRACKING_TRANSACTION || AUTOTRACKING_TRANSACTION.has(_tag)) return;
+  logTrackingStack = (transaction?: Transaction) => {
+    let trackingStack = [];
+    let current: Transaction | null | undefined =
+      transaction || TRANSACTION_STACK[TRANSACTION_STACK.length - 1];
 
-    AUTOTRACKING_TRANSACTION.set(_tag, {
-      context: debuggingContexts!.map(c => c.replace(/^/gm, '  ').replace(/^ /, '-')).join('\n\n'),
-    });
+    if (current === undefined) return '';
+
+    while (current) {
+      if (current.debugLabel) {
+        trackingStack.unshift(current.debugLabel);
+      }
+
+      current = current.parent;
+    }
+
+    return trackingStack.map((label, index) => ' '.repeat(2 * index) + label).join('\n');
+  };
+
+  markTagAsConsumed = (_tag: Tag) => {
+    if (!CONSUMED_TAGS || CONSUMED_TAGS.has(_tag)) return;
+
+    CONSUMED_TAGS.set(_tag, TRANSACTION_STACK[TRANSACTION_STACK.length - 1]);
 
     // We need to mark the tag and all of its subtags as consumed, so we need to
     // cast it and access its internals. In the future this shouldn't be necessary,
@@ -176,20 +214,22 @@ if (DEBUG) {
     keyName?: keyof T | string | symbol,
     forceHardError: boolean | undefined = false
   ) => {
-    if (AUTOTRACKING_TRANSACTION === null) return;
+    if (CONSUMED_TAGS === null) return;
 
-    let sourceData = AUTOTRACKING_TRANSACTION.get(tag);
+    let transaction = CONSUMED_TAGS.get(tag);
 
-    if (!sourceData) return;
+    if (!transaction) return;
 
-    if (DEPRECATE_IN_AUTOTRACKING_TRANSACTION && !forceHardError) {
-      TRANSACTION_ENV.deprecate(makeAutotrackingErrorMessage(sourceData, obj, keyName));
+    let currentTransaction = TRANSACTION_STACK[TRANSACTION_STACK.length - 1];
+
+    if (currentTransaction.deprecate && !forceHardError) {
+      TRANSACTION_ENV.deprecate(makeTrackingErrorMessage(transaction, obj, keyName));
     } else {
       // This hack makes the assertion message nicer, we can cut off the first
       // few lines of the stack trace and let users know where the actual error
       // occurred.
       try {
-        TRANSACTION_ENV.assert(makeAutotrackingErrorMessage(sourceData, obj, keyName));
+        TRANSACTION_ENV.assert(makeTrackingErrorMessage(transaction, obj, keyName));
       } catch (e) {
         if (e.stack) {
           let updateStackBegin = e.stack.indexOf('Stack trace for the update:');

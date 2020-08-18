@@ -1,6 +1,4 @@
-import { Option } from '@glimmer/interfaces';
 import { TemplateReferenceEnvironment, IteratorDelegate } from '../..';
-import { TemplatePathReference } from '../../lib/template';
 import objectValues from './platform';
 
 abstract class BoundedIterator implements IteratorDelegate {
@@ -71,16 +69,6 @@ export class TestEnv implements TemplateReferenceEnvironment {
   setPath(obj: unknown, path: string, value: unknown) {
     return ((obj as any)[path] = value);
   }
-
-  getTemplatePathDebugContext(_ref: TemplatePathReference) {
-    return '';
-  }
-
-  setTemplatePathDebugContext(
-    _ref: TemplatePathReference,
-    _key: string,
-    _parentRef: Option<TemplatePathReference>
-  ) {}
 
   toIterator(obj: unknown) {
     if (typeof obj === 'object' && obj !== null) {

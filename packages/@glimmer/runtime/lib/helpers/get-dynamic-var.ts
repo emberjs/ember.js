@@ -1,18 +1,15 @@
 import { PathReference } from '@glimmer/reference';
-import { Tag, UpdatableTag, combine, createUpdatableTag, updateTag } from '@glimmer/validator';
 import { DynamicScope, VM as PublicVM, VMArguments, Helper } from '@glimmer/interfaces';
 
 class DynamicVarReference implements PathReference<unknown> {
-  public tag: Tag;
-  private varTag: UpdatableTag;
-
-  constructor(private scope: DynamicScope, private nameRef: PathReference<unknown>) {
-    let varTag = (this.varTag = createUpdatableTag());
-    this.tag = combine([nameRef.tag, varTag]);
-  }
+  constructor(private scope: DynamicScope, private nameRef: PathReference<unknown>) {}
 
   value(): unknown {
     return this.getVar().value();
+  }
+
+  isConst() {
+    return false;
   }
 
   get(key: string): PathReference<unknown> {
@@ -21,11 +18,7 @@ class DynamicVarReference implements PathReference<unknown> {
 
   private getVar(): PathReference<unknown> {
     let name = String(this.nameRef.value());
-    let ref = this.scope.get(name);
-
-    updateTag(this.varTag, ref.tag);
-
-    return ref;
+    return this.scope.get(name);
   }
 }
 

@@ -1,81 +1,52 @@
-import { RootReference, TemplateReferenceEnvironment } from '@glimmer/reference';
-import { createUpdatableTag, dirtyTag, UpdatableTag } from '@glimmer/validator';
-import { Dict } from '@glimmer/interfaces';
+import { createTag, dirtyTag, consumeTag, tagFor } from '@glimmer/validator';
+import { Reference, PathReference } from '@glimmer/reference';
 
 /**
  * UpdatableRootReferences aren't directly related to templates, but they are
  * currently used in tests and the `State` helper used for embedding.
  */
-export class UpdatableRootReference<T = unknown> extends RootReference<T> {
-  public tag: UpdatableTag = createUpdatableTag();
+export class UpdatableRootReference<T = unknown> implements PathReference<T> {
+  constructor(private inner: T) {}
 
-  constructor(private inner: T, env: TemplateReferenceEnvironment = DEFAULT_TEMPLATE_REF_ENV) {
-    super(env);
+  isConst() {
+    return false;
   }
 
+  private tag = createTag();
+
   value() {
+    consumeTag(this.tag);
     return this.inner;
   }
 
   update(value: T) {
-    let { inner } = this;
+    this.inner = value;
+    dirtyTag(this.tag);
+  }
 
-    if (value !== inner) {
-      dirtyTag(this.tag);
-      this.inner = value;
+  get(key: string) {
+    return new ProxyPathReference(this, key);
+  }
+}
+
+class ProxyPathReference<T = unknown> implements PathReference<T> {
+  constructor(private parent: Reference, private key: string) {}
+
+  isConst() {
+    return false;
+  }
+
+  value() {
+    let parent = this.parent.value();
+    let { key } = this;
+
+    if (typeof parent === 'function' || (typeof parent === 'object' && parent !== null)) {
+      consumeTag(tagFor(parent, key));
+      return (parent as any)[key];
     }
   }
 
-  forceUpdate(value: T) {
-    dirtyTag(this.tag);
-    this.inner = value;
-  }
-
-  dirty() {
-    dirtyTag(this.tag);
-  }
-
-  getDebugPath() {
-    return 'this';
-  }
-}
-
-const DEFAULT_TEMPLATE_REF_ENV = {
-  toIterator() {
-    return null;
-  },
-
-  getProp(obj: unknown, key: string) {
-    return (obj as Dict)[key];
-  },
-
-  getPath(obj: unknown, key: string) {
-    return (obj as Dict)[key];
-  },
-
-  setPath(obj: unknown, key: string, value: unknown) {
-    return ((obj as Dict)[key] = value);
-  },
-
-  getTemplatePathDebugContext() {
-    return '';
-  },
-
-  setTemplatePathDebugContext() {},
-};
-
-export function State<T>(data: T): UpdatableRootReference<T> {
-  return new UpdatableRootReference(data, DEFAULT_TEMPLATE_REF_ENV);
-}
-
-const STABLE_STATE = new WeakMap();
-
-export function StableState<T extends object>(data: T): UpdatableRootReference<T> {
-  if (STABLE_STATE.has(data)) {
-    return STABLE_STATE.get(data);
-  } else {
-    let ref = new UpdatableRootReference(data, DEFAULT_TEMPLATE_REF_ENV);
-    STABLE_STATE.set(data, ref);
-    return ref;
+  get(key: string) {
+    return new ProxyPathReference(this, key);
   }
 }

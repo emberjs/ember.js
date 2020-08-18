@@ -1,4 +1,4 @@
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { assert, unwrapHandle, decodeHandle } from '@glimmer/util';
 import { check } from '@glimmer/debug';
@@ -34,9 +34,7 @@ APPEND_OPCODES.add(
       partialScope.bindEvalScope(evalScope);
       partialScope.bindSelf(outerScope.getSelf());
 
-      let locals = Object.create(outerScope.getPartialMap()) as Dict<
-        VersionedPathReference<unknown>
-      >;
+      let locals = Object.create(outerScope.getPartialMap()) as Dict<PathReference<unknown>>;
 
       for (let i = 0; i < evalInfo.length; i++) {
         let slot = evalInfo[i];

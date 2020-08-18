@@ -26,6 +26,7 @@ import { AotVM, InternalVM, JitVM } from './vm/append';
 import { NewElementBuilder } from './vm/element-builder';
 import { DefaultDynamicScope } from './dynamic-scope';
 import { UNDEFINED_REFERENCE } from './references';
+import { inTransaction } from './environment';
 
 class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
   constructor(private vm: InternalVM<C>) {}
@@ -34,24 +35,16 @@ class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator 
   }
 
   sync(): RenderResult {
-    return renderSync(this.vm.runtime.env, this);
+    return this.vm.execute();
   }
 }
 
 export function renderSync(env: Environment, iterator: TemplateIterator): RenderResult {
-  try {
-    env.begin();
+  let result: RenderResult;
 
-    let iteratorResult: IteratorResult<RenderResult>;
+  inTransaction(env, () => (result = iterator.sync()));
 
-    do {
-      iteratorResult = iterator.next() as IteratorResult<RenderResult>;
-    } while (!iteratorResult.done);
-
-    return iteratorResult.value;
-  } finally {
-    env.commit();
-  }
+  return result!;
 }
 
 export function renderAotMain(

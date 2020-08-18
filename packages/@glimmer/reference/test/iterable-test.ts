@@ -1,16 +1,34 @@
 import { module, test } from './utils/qunit';
 
-import { IterableReference, OpaqueIterationItem, ConstReference } from '..';
+import { IterableReference, OpaqueIterationItem, UNDEFINED_REFERENCE } from '..';
 import { symbol } from '@glimmer/util';
+import { VOLATILE_TAG, consumeTag } from '../../validator';
 
 import { TestEnv } from './utils/template';
 import objectValues from './utils/platform';
+
+class VolatileReference<T> {
+  constructor(public inner: T) {}
+
+  isConst() {
+    return false;
+  }
+
+  value() {
+    consumeTag(VOLATILE_TAG);
+    return this.inner;
+  }
+
+  get(_key: string) {
+    return UNDEFINED_REFERENCE;
+  }
+}
 
 class IterableWrapper {
   private iterable: IterableReference;
 
   constructor(obj: unknown, key = '@identity') {
-    let valueRef = new ConstReference(obj);
+    let valueRef = new VolatileReference(obj);
     this.iterable = new IterableReference(valueRef, key, new TestEnv());
   }
 

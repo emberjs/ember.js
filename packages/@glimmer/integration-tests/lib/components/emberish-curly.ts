@@ -21,8 +21,8 @@ import {
   JitRuntimeResolver,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
-import { VersionedPathReference, PathReference } from '@glimmer/reference';
-import { combine, createTag, dirtyTag, DirtyableTag, Tag } from '@glimmer/validator';
+import { PathReference } from '@glimmer/reference';
+import { createTag, dirtyTag, DirtyableTag, consumeTag, dirtyTagFor } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { PrimitiveReference, registerDestructor } from '@glimmer/runtime';
@@ -78,16 +78,13 @@ export class EmberishCurlyComponent {
 
   set(key: string, value: unknown) {
     (this as any)[key] = value;
-    dirtyTag(this.dirtinessTag);
+    dirtyTagFor(this, key as string);
   }
 
   setProperties(dict: Dict) {
     for (let key of keys(dict)) {
-      (this as any)[key] = dict[key];
+      this.set(key as string, dict[key]);
     }
-
-    SELF_REF.get(this)!.dirty();
-    dirtyTag(this.dirtinessTag);
   }
 
   recompute() {
@@ -128,6 +125,10 @@ export class EmberishCurlyComponentManager
       AotRuntimeResolver
     > {
   constructor(private registry?: TestJitRegistry) {}
+
+  getDebugName(state: TestComponentDefinitionState) {
+    return state.name;
+  }
 
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
@@ -208,7 +209,7 @@ export class EmberishCurlyComponentManager
     state: EmberishCurlyComponentDefinitionState,
     _args: VMArguments,
     dynamicScope: DynamicScope,
-    callerSelf: VersionedPathReference,
+    callerSelf: PathReference,
     hasDefaultBlock: boolean
   ): EmberishCurlyComponent {
     let klass = state.ComponentClass || EmberishCurlyComponent;
@@ -243,6 +244,8 @@ export class EmberishCurlyComponentManager
       }
     }
 
+    consumeTag(component.dirtinessTag);
+
     component.didInitAttrs({ attrs });
     component.didReceiveAttrs({ oldAttrs: null, newAttrs: attrs });
     component.willInsertElement();
@@ -251,10 +254,6 @@ export class EmberishCurlyComponentManager
     registerDestructor(component, () => component.destroy());
 
     return component;
-  }
-
-  getTag({ args: { tag }, dirtinessTag }: EmberishCurlyComponent): Tag {
-    return combine([tag, dirtinessTag]);
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<unknown> {
@@ -316,6 +315,8 @@ export class EmberishCurlyComponentManager
     let oldAttrs = component.attrs;
     let newAttrs = component.args.value();
     let merged = assign({}, newAttrs, { attrs: newAttrs });
+
+    consumeTag(component.dirtinessTag);
 
     component.setProperties(merged);
     component.didUpdateAttrs({ oldAttrs, newAttrs });

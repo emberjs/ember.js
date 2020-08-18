@@ -21,12 +21,7 @@ import {
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
-import {
-  PathReference,
-  VersionedPathReference,
-  IterableReference,
-  OpaqueIterationItem,
-} from '@glimmer/reference';
+import { PathReference, OpaqueIterationItem, IterableReference } from '@glimmer/reference';
 import { expect, Option, Stack, assert } from '@glimmer/util';
 import {
   $fp,
@@ -44,8 +39,11 @@ import {
 } from '@glimmer/vm';
 import { CheckNumber, check } from '@glimmer/debug';
 import { unwrapHandle } from '@glimmer/util';
-import { combineFromIndex } from '../utils/tags';
-import { DidModifyOpcode, JumpIfNotModifiedOpcode } from '../compiled/opcodes/vm';
+import {
+  JumpIfNotModifiedOpcode,
+  BeginTrackFrameOpcode,
+  EndTrackFrameOpcode,
+} from '../compiled/opcodes/vm';
 import { ScopeImpl } from '../environment';
 import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
 import { UNDEFINED_REFERENCE } from '../references';
@@ -65,6 +63,7 @@ import {
 } from './update';
 import { associateDestroyableChild } from '../destroyables';
 import { LiveBlockList } from './element-builder';
+import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -99,7 +98,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
 
   associateDestroyable(d: Destroyable): void;
 
-  beginCacheGroup(): void;
+  beginCacheGroup(name?: string): void;
   commitCacheGroup(): void;
 
   /// Iteration ///
@@ -330,22 +329,23 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
   abstract capture(args: number, pc?: number): ResumableVMState<InternalVM>;
 
-  beginCacheGroup() {
+  beginCacheGroup(name?: string) {
     let opcodes = this.updating();
-    let guard = new JumpIfNotModifiedOpcode(opcodes.length);
+    let guard = new JumpIfNotModifiedOpcode();
 
     opcodes.push(guard);
+    opcodes.push(new BeginTrackFrameOpcode(name));
     this[STACKS].cache.push(guard);
+
+    beginTrackFrame(name);
   }
 
   commitCacheGroup() {
     let opcodes = this.updating();
     let guard = expect(this[STACKS].cache.pop(), 'VM BUG: Expected a cache group');
 
-    let startIndex = guard.index;
-
-    let tag = combineFromIndex(opcodes, startIndex);
-    opcodes.push(new DidModifyOpcode(guard));
+    let tag = endTrackFrame();
+    opcodes.push(new EndTrackFrameOpcode(guard));
 
     guard.finalize(tag, opcodes.length);
   }
@@ -412,12 +412,6 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     this[DESTROYABLE_STACK].pop();
     this.elements().popBlock();
     this.popUpdating();
-
-    let updating = this.updating();
-
-    let parent = updating[updating.length - 1] as BlockOpcode;
-
-    parent.didInitializeChildren();
   }
 
   exitList() {
@@ -526,7 +520,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
         result = this.next();
         if (result.done) break;
       }
-    } finally {
+    } catch (e) {
       // If any existing blocks are open, due to an error or something like
       // that, we need to close them all and clean things up properly.
       let elements = this.elements();
@@ -534,6 +528,10 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
       while (elements.hasBlocks) {
         elements.popBlock();
       }
+
+      resetTracking();
+
+      throw e;
     }
 
     return result.value;
@@ -568,7 +566,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
     for (let i = names.length - 1; i >= 0; i--) {
       let name = names[i];
-      scope.set(name, this.stack.popJs<VersionedPathReference<unknown>>());
+      scope.set(name, this.stack.popJs<PathReference<unknown>>());
     }
   }
 }
