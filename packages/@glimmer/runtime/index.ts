@@ -25,13 +25,12 @@ export {
   isWhitespace,
 } from './lib/dom/helper';
 export { normalizeProperty } from './lib/dom/props';
-export { DefaultDynamicScope } from './lib/dynamic-scope';
+export { DynamicScopeImpl, PartialScopeImpl } from './lib/scope';
 export {
   AotRuntime,
   JitRuntime,
   EnvironmentImpl,
   EnvironmentDelegate,
-  ScopeImpl,
   JitProgramCompilationContext,
   JitSyntaxCompilationContext,
   inTransaction,
