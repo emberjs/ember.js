@@ -187,7 +187,7 @@ if (DEBUG) {
     }
 
     // TODO: Use String.prototype.repeat here once we can drop support for IE11
-    return trackingStack.map((label, index) => Array(2 * index).join(' ') + label).join('\n');
+    return trackingStack.map((label, index) => Array(2 * index + 1).join(' ') + label).join('\n');
   };
 
   markTagAsConsumed = (_tag: Tag) => {
