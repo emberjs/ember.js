@@ -8,11 +8,6 @@ import { backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { ElementBuilder, Environment, Option } from '@glimmer/interfaces';
 import {
-  IterationItemReference,
-  PropertyReference,
-  VersionedPathReference,
-} from '@glimmer/reference';
-import {
   DynamicAttribute,
   dynamicAttribute,
   EnvironmentDelegate,
@@ -20,11 +15,11 @@ import {
   setScheduleDestroyed,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
-import { setAutotrackingTransactionEnv, setPropertyDidChange } from '@glimmer/validator';
+import { setPropertyDidChange, setTrackingTransactionEnv } from '@glimmer/validator';
 import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { OwnedTemplate } from './template';
-import DebugRenderTree, { PathNodeType } from './utils/debug-render-tree';
+import DebugRenderTree from './utils/debug-render-tree';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
@@ -38,7 +33,7 @@ import toBool from './utils/to-bool';
 setPropertyDidChange(() => backburner.ensureInstance());
 
 if (DEBUG) {
-  setAutotrackingTransactionEnv!({
+  setTrackingTransactionEnv!({
     assert(message) {
       assert(message, false);
     },
@@ -141,28 +136,6 @@ export class EmberEnvironmentDelegate implements EnvironmentDelegate<EmberEnviro
   // it really should just delegate to a platform specific injection
   protocolForURL(s: string): string {
     return s;
-  }
-
-  getTemplatePathDebugContext(pathRef: VersionedPathReference) {
-    let stack = this.extra.debugRenderTree.logRenderStackForPath(pathRef);
-
-    return `While rendering:\n\n${stack}`;
-  }
-
-  setTemplatePathDebugContext(
-    pathRef: VersionedPathReference,
-    desc: string,
-    parentRef: Option<VersionedPathReference>
-  ) {
-    let type: PathNodeType = 'root';
-
-    if (pathRef instanceof IterationItemReference) {
-      type = 'iterator';
-    } else if (pathRef instanceof PropertyReference) {
-      type = 'property';
-    }
-
-    this.extra.debugRenderTree.createPath(pathRef, desc, type, parentRef);
   }
 
   onTransactionBegin() {

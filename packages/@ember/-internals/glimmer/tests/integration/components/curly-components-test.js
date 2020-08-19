@@ -3068,7 +3068,7 @@ moduleFor(
         this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
           visible: false,
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       assertStyle('display: none;');
 
@@ -3078,7 +3078,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', true);
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       assertStyle('');
 
@@ -3086,7 +3086,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', false);
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       assertStyle('display: none;');
     }
@@ -3105,7 +3105,7 @@ moduleFor(
         this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
           visible: false,
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -3118,7 +3118,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', true);
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -3129,7 +3129,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', false);
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -3165,7 +3165,7 @@ moduleFor(
           visible: false,
           foo: 'baz',
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       assertStyle('display: none;');
 
@@ -3175,7 +3175,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', true);
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       assertStyle('');
 
@@ -3184,7 +3184,7 @@ moduleFor(
           set(this.context, 'visible', false);
           set(this.context, 'foo', 'woo');
         });
-      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed:\n\n- While rendering:\n {2}foo-bar/);
 
       assertStyle('display: none;');
       assert.equal(this.firstChild.getAttribute('foo'), 'woo');

@@ -21,10 +21,18 @@ import {
   WithJitDynamicLayout,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { RootReference, VersionedPathReference } from '@glimmer/reference';
+import { PathReference, RootReference } from '@glimmer/reference';
 import { PrimitiveReference, registerDestructor } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
-import { combine, Tag, validateTag, valueForTag } from '@glimmer/validator';
+import {
+  beginTrackFrame,
+  beginUntrackFrame,
+  consumeTag,
+  endTrackFrame,
+  endUntrackFrame,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
 import { EmberVMEnvironment } from '../environment';
@@ -62,8 +70,7 @@ function applyAttributeBindings(
   attributeBindings: Array<string>,
   component: Component,
   rootRef: RootReference<Component>,
-  operations: ElementOperations,
-  environment: EmberVMEnvironment
+  operations: ElementOperations
 ) {
   let seen: string[] = [];
   let i = attributeBindings.length - 1;
@@ -75,7 +82,7 @@ function applyAttributeBindings(
 
     if (seen.indexOf(attribute) === -1) {
       seen.push(attribute);
-      AttributeBinding.install(component, rootRef, parsed, operations, environment);
+      AttributeBinding.install(component, rootRef, parsed, operations);
     }
 
     i--;
@@ -91,12 +98,12 @@ function applyAttributeBindings(
     installIsVisibleBinding !== undefined &&
     seen.indexOf('style') === -1
   ) {
-    installIsVisibleBinding(rootRef, operations, environment);
+    installIsVisibleBinding(rootRef, operations);
   }
 }
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
-const EMPTY_POSITIONAL_ARGS: VersionedPathReference[] = [];
+const EMPTY_POSITIONAL_ARGS: PathReference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
@@ -167,7 +174,7 @@ export default class CurlyComponentManager
         positional: EMPTY_POSITIONAL_ARGS,
         named: {
           ...rest,
-          ...(__ARGS__.value() as { [key: string]: VersionedPathReference<unknown> }),
+          ...(__ARGS__.value() as { [key: string]: PathReference<unknown> }),
         },
       };
 
@@ -227,7 +234,7 @@ export default class CurlyComponentManager
     state: DefinitionState,
     args: VMArguments,
     dynamicScope: DynamicScope,
-    callerSelfRef: VersionedPathReference,
+    callerSelfRef: PathReference,
     hasBlock: boolean
   ): ComponentStateBucket {
     // Get the nearest concrete component instance from the scope. "Virtual"
@@ -240,7 +247,10 @@ export default class CurlyComponentManager
     // Capture the arguments, which tells Glimmer to give us our own, stable
     // copy of the Arguments object that is safe to hold on to between renders.
     let capturedArgs = args.named.capture();
+
+    beginTrackFrame();
     let props = processComponentArgs(capturedArgs);
+    let argsTag = endTrackFrame();
 
     // Alias `id` argument to `elementId` property on the component instance.
     aliasIdToElementId(args, props);
@@ -271,6 +281,7 @@ export default class CurlyComponentManager
 
     // Now that we've built up all of the properties to set on the component instance,
     // actually create it.
+    beginUntrackFrame();
     let component = factory.create(props);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
@@ -308,6 +319,7 @@ export default class CurlyComponentManager
       environment,
       component,
       capturedArgs,
+      argsTag,
       finalizer,
       hasWrappedElement
     );
@@ -324,6 +336,8 @@ export default class CurlyComponentManager
       component.trigger('willRender');
     }
 
+    endUntrackFrame();
+
     if (ENV._DEBUG_RENDER_TREE) {
       environment.extra.debugRenderTree.create(bucket, {
         type: 'component',
@@ -338,10 +352,18 @@ export default class CurlyComponentManager
       });
     }
 
+    // consume every argument so we always run again
+    consumeTag(bucket.argsTag);
+    consumeTag(component[DIRTY_TAG]);
+
     return bucket;
   }
 
-  getSelf({ rootRef }: ComponentStateBucket): VersionedPathReference {
+  getDebugName({ name }: DefinitionState) {
+    return name;
+  }
+
+  getSelf({ rootRef }: ComponentStateBucket): PathReference {
     return rootRef;
   }
 
@@ -356,12 +378,12 @@ export default class CurlyComponentManager
     let { attributeBindings, classNames, classNameBindings } = component;
 
     if (attributeBindings && attributeBindings.length) {
-      applyAttributeBindings(attributeBindings, component, rootRef, operations, environment);
+      applyAttributeBindings(attributeBindings, component, rootRef, operations);
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
       operations.setAttribute('id', PrimitiveReference.create(id), false, null);
       if (EMBER_COMPONENT_IS_VISIBLE) {
-        installIsVisibleBinding!(rootRef, operations, environment);
+        installIsVisibleBinding!(rootRef, operations);
       }
     }
 
@@ -403,10 +425,6 @@ export default class CurlyComponentManager
     }
   }
 
-  getTag({ args, component }: ComponentStateBucket): Tag {
-    return args ? combine([args.tag, component[DIRTY_TAG]]) : component[DIRTY_TAG];
-  }
-
   didCreate({ component, environment }: ComponentStateBucket): void {
     if (environment.isInteractive) {
       component._transitionTo('inDOM');
@@ -416,7 +434,7 @@ export default class CurlyComponentManager
   }
 
   update(bucket: ComponentStateBucket): void {
-    let { component, args, argsRevision, environment } = bucket;
+    let { component, args, argsTag, argsRevision, environment } = bucket;
 
     if (ENV._DEBUG_RENDER_TREE) {
       environment.extra.debugRenderTree.update(bucket);
@@ -424,10 +442,14 @@ export default class CurlyComponentManager
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
-    if (args && !validateTag(args.tag, argsRevision)) {
-      let props = processComponentArgs(args!);
+    beginUntrackFrame();
 
-      bucket.argsRevision = valueForTag(args!.tag);
+    if (args !== null && !validateTag(argsTag, argsRevision)) {
+      beginTrackFrame();
+      let props = processComponentArgs(args!);
+      argsTag = bucket.argsTag = endTrackFrame();
+
+      bucket.argsRevision = valueForTag(argsTag);
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
@@ -441,6 +463,11 @@ export default class CurlyComponentManager
       component.trigger('willUpdate');
       component.trigger('willRender');
     }
+
+    endUntrackFrame();
+
+    consumeTag(argsTag);
+    consumeTag(component[DIRTY_TAG]);
   }
 
   didUpdateLayout(bucket: ComponentStateBucket, bounds: Bounds): void {

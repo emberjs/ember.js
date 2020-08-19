@@ -4,16 +4,10 @@ import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import { ElementOperations, Option } from '@glimmer/interfaces';
-import {
-  Reference,
-  RootReference,
-  VersionedPathReference,
-  VersionedReference,
-} from '@glimmer/reference';
+import { CachedReference, PathReference, Reference, RootReference } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '@glimmer/runtime';
-import { combine, Tag } from '@glimmer/validator';
+import { logTrackingStack } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { EmberVMEnvironment } from '../environment';
 import { Component } from './curly-component-state-bucket';
 import { referenceFromParts } from './references';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
@@ -64,8 +58,7 @@ export const AttributeBinding = {
     component: Component,
     rootRef: RootReference<Component>,
     parsed: [string, string, boolean],
-    operations: ElementOperations,
-    env: EmberVMEnvironment
+    operations: ElementOperations
   ) {
     let [prop, attribute, isSimple] = parsed;
 
@@ -98,8 +91,7 @@ export const AttributeBinding = {
       reference = new StyleBindingReference(
         rootRef,
         reference,
-        referenceForKey(rootRef, 'isVisible'),
-        env
+        referenceForKey(rootRef, 'isVisible')
       );
     }
 
@@ -115,46 +107,39 @@ let StyleBindingReference:
   | undefined
   | {
       new (
-        parent: VersionedPathReference<Component>,
+        parent: PathReference<Component>,
         inner: Reference<unknown>,
-        isVisible: Reference<unknown>,
-        env: EmberVMEnvironment
-      ): VersionedReference<string | SafeString>;
+        isVisible: Reference<unknown>
+      ): Reference<string | SafeString>;
     };
 
 export let installIsVisibleBinding:
   | undefined
-  | ((
-      rootRef: RootReference<Component>,
-      operations: ElementOperations,
-      environment: EmberVMEnvironment
-    ) => void);
+  | ((rootRef: RootReference<Component>, operations: ElementOperations) => void);
 
 if (EMBER_COMPONENT_IS_VISIBLE) {
-  StyleBindingReference = class implements VersionedPathReference<string | SafeString> {
-    public tag: Tag;
+  StyleBindingReference = class extends CachedReference<string | SafeString> {
+    debugLabel?: string;
+
     constructor(
-      parent: VersionedPathReference<Component>,
+      parent: PathReference<Component>,
       private inner: Reference<unknown>,
-      private isVisible: Reference<unknown>,
-      private env: EmberVMEnvironment
+      private isVisible: Reference<unknown>
     ) {
-      this.tag = combine([inner.tag, isVisible.tag]);
+      super();
 
       if (DEBUG) {
-        env.setTemplatePathDebugContext(this, 'style', parent);
+        this.debugLabel = `${parent.debugLabel}.style`;
       }
     }
 
-    value(): string | SafeString {
+    compute(): string | SafeString {
       let value = this.inner.value();
       let isVisible = this.isVisible.value();
 
-      if (isVisible !== undefined) {
+      if (DEBUG && isVisible !== undefined) {
         deprecate(
-          `The \`isVisible\` property on classic component classes is deprecated. Was accessed ${this.env
-            .getTemplatePathDebugContext(this)
-            .replace(/^W/, 'w')}`,
+          `The \`isVisible\` property on classic component classes is deprecated. Was accessed:\n\n${logTrackingStack!()}`,
           false,
           {
             id: 'ember-component.is-visible',
@@ -179,19 +164,10 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
     }
   };
 
-  installIsVisibleBinding = (
-    rootRef: RootReference<Component>,
-    operations: ElementOperations,
-    environment: EmberVMEnvironment
-  ) => {
+  installIsVisibleBinding = (rootRef: RootReference<Component>, operations: ElementOperations) => {
     operations.setAttribute(
       'style',
-      new StyleBindingReference!(
-        rootRef,
-        UNDEFINED_REFERENCE,
-        rootRef.get('isVisible'),
-        environment
-      ),
+      new StyleBindingReference!(rootRef, UNDEFINED_REFERENCE, rootRef.get('isVisible')),
       false,
       null
     );
@@ -227,13 +203,13 @@ export const ClassNameBinding = {
   },
 };
 
-export class SimpleClassNameBindingReference implements VersionedReference<Option<string>> {
-  public tag: Tag;
-  private dasherizedPath: Option<string>;
+export class SimpleClassNameBindingReference implements Reference<Option<string>> {
+  private dasherizedPath: Option<string> = null;
 
-  constructor(private inner: Reference<unknown | number>, private path: string) {
-    this.tag = inner.tag;
-    this.dasherizedPath = null;
+  constructor(private inner: Reference<unknown | number>, private path: string) {}
+
+  isConst() {
+    return this.inner.isConst();
   }
 
   value(): Option<string> {
@@ -250,15 +226,15 @@ export class SimpleClassNameBindingReference implements VersionedReference<Optio
   }
 }
 
-class ColonClassNameBindingReference implements VersionedReference<Option<string>> {
-  public tag: Tag;
-
+class ColonClassNameBindingReference implements Reference<Option<string>> {
   constructor(
     private inner: Reference<unknown>,
     private truthy: Option<string> = null,
     private falsy: Option<string> = null
-  ) {
-    this.tag = inner.tag;
+  ) {}
+
+  isConst() {
+    return this.inner.isConst();
   }
 
   value(): Option<string> {

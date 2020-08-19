@@ -1,13 +1,8 @@
 import { get as emberGet, set as emberSet } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
-import {
-  HelperRootReference,
-  UPDATE_REFERENCED_VALUE,
-  VersionedPathReference,
-} from '@glimmer/reference';
+import { HelperRootReference, PathReference, UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 import { NULL_REFERENCE } from '@glimmer/runtime';
-import { isConstTagged } from '@glimmer/validator';
 import { referenceFromParts } from '../utils/references';
 
 /**
@@ -98,11 +93,12 @@ export default function(args: VMArguments, vm: VM) {
   let sourceReference = args.positional.at(0);
   let pathReference = args.positional.at(1);
 
-  if (isConstTagged(pathReference)) {
+  let path = pathReference.value();
+
+  if (pathReference.isConst()) {
     // Since the path is constant, we can create a normal chain of property
     // references. The source reference will update like normal, and all of the
     // child references will update accordingly.
-    let path = pathReference.value();
 
     if (path === undefined || path === null || path === '') {
       return NULL_REFERENCE;
@@ -127,8 +123,8 @@ function get({ positional }: CapturedArguments) {
 }
 
 class GetHelperRootReference extends HelperRootReference {
-  private sourceReference: VersionedPathReference<object>;
-  private pathReference: VersionedPathReference<string>;
+  private sourceReference: PathReference<object>;
+  private pathReference: PathReference<string>;
 
   constructor(args: CapturedArguments, env: Environment) {
     super(get, args, env);

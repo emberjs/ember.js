@@ -146,7 +146,7 @@ moduleFor(
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        renderTree: ['application', 'route-with-mount', 'chat', 'application', 'this.person.name'],
+        renderTree: ['application', 'route-with-mount', 'chat', 'this.person.name'],
       });
 
       await this.visit('/');

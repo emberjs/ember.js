@@ -11,7 +11,7 @@ import {
   VMArguments,
 } from '@glimmer/interfaces';
 import { registerDestructor } from '@glimmer/runtime';
-import { Tag } from '@glimmer/validator';
+import { createUpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../helpers/mut';
 
@@ -70,29 +70,23 @@ export class ActionState {
   public implicitTarget: any;
   public dom: any;
   public eventName: any;
-  public tag: Tag;
+  public tag = createUpdatableTag();
 
   constructor(
     element: SimpleElement,
     actionId: number,
-    actionName: any,
     actionArgs: any[],
     namedArgs: CapturedNamedArguments,
     positionalArgs: CapturedPositionalArguments,
-    implicitTarget: any,
-    dom: any,
-    tag: Tag
+    dom: any
   ) {
     this.element = element;
     this.actionId = actionId;
-    this.actionName = actionName;
     this.actionArgs = actionArgs;
     this.namedArgs = namedArgs;
     this.positional = positionalArgs;
-    this.implicitTarget = implicitTarget;
     this.dom = dom;
     this.eventName = this.getEventName();
-    this.tag = tag;
 
     registerDestructor(this, () => ActionHelper.unregisterAction(this));
   }
@@ -192,10 +186,44 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     _dynamicScope: DynamicScope,
     dom: any
   ) {
-    let { named, positional, tag } = args.capture();
-    let implicitTarget;
+    let { named, positional } = args.capture();
+
+    let actionArgs: any[] = [];
+    // The first two arguments are (1) `this` and (2) the action name.
+    // Everything else is a param.
+    for (let i = 2; i < positional.length; i++) {
+      actionArgs.push(positional.at(i));
+    }
+
+    let actionId = uuid();
+    let actionState = new ActionState(element, actionId, actionArgs, named, positional, dom);
+
+    deprecate(
+      `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
+      actionState.eventName !== 'mouseEnter' &&
+        actionState.eventName !== 'mouseLeave' &&
+        actionState.eventName !== 'mouseMove',
+      {
+        id: 'ember-views.event-dispatcher.mouseenter-leave-move',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_action-mouseenter-leave-move',
+      }
+    );
+
+    return actionState;
+  }
+
+  getDebugName() {
+    return 'action';
+  }
+
+  install(actionState: ActionState) {
+    let { dom, element, actionId, positional } = actionState;
+
     let actionName;
     let actionNameRef: any;
+    let implicitTarget;
+
     if (positional.length > 1) {
       implicitTarget = positional.at(0);
       actionNameRef = positional.at(1);
@@ -220,43 +248,8 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       }
     }
 
-    let actionArgs: any[] = [];
-    // The first two arguments are (1) `this` and (2) the action name.
-    // Everything else is a param.
-    for (let i = 2; i < positional.length; i++) {
-      actionArgs.push(positional.at(i));
-    }
-
-    let actionId = uuid();
-    let actionState = new ActionState(
-      element,
-      actionId,
-      actionName,
-      actionArgs,
-      named,
-      positional,
-      implicitTarget,
-      dom,
-      tag
-    );
-
-    deprecate(
-      `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
-      actionState.eventName !== 'mouseEnter' &&
-        actionState.eventName !== 'mouseLeave' &&
-        actionState.eventName !== 'mouseMove',
-      {
-        id: 'ember-views.event-dispatcher.mouseenter-leave-move',
-        until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_action-mouseenter-leave-move',
-      }
-    );
-
-    return actionState;
-  }
-
-  install(actionState: ActionState) {
-    let { dom, element, actionId } = actionState;
+    actionState.actionName = actionName;
+    actionState.implicitTarget = implicitTarget;
 
     ActionHelper.registerAction(actionState);
 

@@ -707,18 +707,29 @@ class DynamicContentTestGenerator {
         [`${tag} rendering ${label}`]() {
           this.renderPath('value', { value });
 
+          // NaN is unstable, not worth optimizing for in the VM
+          let wasNaN = typeof value === 'number' && isNaN(value);
+
           this.assertContent(expected);
 
-          this.assertStableRerender();
+          if (!wasNaN) {
+            this.assertStableRerender();
+          }
 
           runTask(() => set(this.context, 'value', 'hello'));
           this.assertContent('hello');
-          this.assertInvariants();
+
+          if (!wasNaN) {
+            this.assertInvariants();
+          }
 
           runTask(() => set(this.context, 'value', value));
 
           this.assertContent(expected);
-          this.assertInvariants();
+
+          if (!wasNaN) {
+            this.assertInvariants();
+          }
         },
       };
     }

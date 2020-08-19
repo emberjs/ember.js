@@ -150,7 +150,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
         this.registerTemplateOnlyComponent('x-inner-template-only', '{{@value}}');
 
         let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
-          renderTree: ['x-outer', 'this.wrapper.content'],
+          renderTree: ['x-outer', 'x-inner-template-only', 'this.wrapper.content'],
         });
 
         expectAssertion(() => {

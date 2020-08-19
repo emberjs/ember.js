@@ -15,10 +15,9 @@ import {
   WithDynamicTagName,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
+import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import { EMPTY_ARGS, registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
-import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
 
 import { SimpleElement } from '@simple-dom/interface';
 import { EmberVMEnvironment } from '../environment';
@@ -34,7 +33,7 @@ function instrumentationPayload(def: OutletDefinitionState) {
 }
 
 interface OutletInstanceState {
-  self: VersionedPathReference<any | undefined>;
+  self: PathReference<any | undefined>;
   environment: EmberVMEnvironment;
   outlet?: { name: string };
   engine?: { mountPoint: string };
@@ -42,7 +41,7 @@ interface OutletInstanceState {
 }
 
 export interface OutletDefinitionState {
-  ref: VersionedPathReference<OutletState | undefined>;
+  ref: PathReference<OutletState | undefined>;
   name: string;
   outlet: string;
   template: OwnedTemplate;
@@ -140,6 +139,14 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     return state;
   }
 
+  getDebugName({ name }: OutletDefinitionState) {
+    if (name === '-top-level') {
+      return '- While rendering:';
+    }
+
+    return name;
+  }
+
   getJitStaticLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver) {
     // The router has already resolved the template
     return unwrapTemplate(template).asLayout();
@@ -151,16 +158,6 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 
   getSelf({ self }: OutletInstanceState) {
     return self;
-  }
-
-  getTag(): Tag {
-    if (ENV._DEBUG_RENDER_TREE) {
-      // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
-    } else {
-      // an outlet has no hooks
-      return CONSTANT_TAG;
-    }
   }
 
   didRenderLayout(state: OutletInstanceState, bounds: Bounds): void {

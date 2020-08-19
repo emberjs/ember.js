@@ -1,6 +1,6 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
 import buildUntouchableThis from '../utils/untouchable-this';
 import { INVOKE } from './mut';
@@ -79,7 +79,7 @@ const context = buildUntouchableThis('`fn` helper');
   @since 3.11.0
 */
 
-function fn({ positional }: CapturedArguments, env?: Environment<unknown>) {
+function fn({ positional }: CapturedArguments) {
   let callbackRef = positional.at(0);
 
   assert(
@@ -93,7 +93,7 @@ function fn({ positional }: CapturedArguments, env?: Environment<unknown>) {
     assert(
       `You must pass a function as the \`fn\` helpers first argument, you passed ${
         callback === null ? 'null' : typeof callback
-      }. ${env!.getTemplatePathDebugContext(callbackRef)}`,
+      }. While rendering:\n\n${callbackRef.debugLabel}`,
       typeof callback === 'function'
     );
   }
@@ -112,12 +112,5 @@ function fn({ positional }: CapturedArguments, env?: Environment<unknown>) {
 }
 
 export default function(args: VMArguments, vm: VM) {
-  let callback = fn;
-  if (DEBUG) {
-    callback = (args: CapturedArguments) => {
-      return fn(args, vm.env);
-    };
-  }
-
-  return new HelperRootReference(callback, args.capture(), vm.env);
+  return new HelperRootReference(fn, args.capture(), vm.env);
 }

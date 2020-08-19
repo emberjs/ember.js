@@ -19,7 +19,7 @@ import {
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
-import { consumeTag, createTag, isConstTagged, Tag } from '@glimmer/validator';
+import { track } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -194,17 +194,14 @@ export default class CustomComponentManager<ComponentInstance>
 
     if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
       let getTag = (key: string) => {
-        return namedArgs.get(key).tag;
+        return track(() => namedArgs.get(key).value());
       };
 
       if (HAS_NATIVE_PROXY) {
         let handler: ProxyHandler<{}> = {
           get(_target, prop) {
             if (namedArgs.has(prop as string)) {
-              let ref = namedArgs.get(prop as string);
-              consumeTag(ref.tag);
-
-              return ref.value();
+              return namedArgs.get(prop as string).value();
             } else if (prop === CUSTOM_TAG_FOR) {
               return getTag;
             }
@@ -256,10 +253,7 @@ export default class CustomComponentManager<ComponentInstance>
             enumerable: true,
             configurable: true,
             get() {
-              let ref = namedArgs.get(name);
-              consumeTag(ref.tag);
-
-              return ref.value();
+              return namedArgs.get(name).value();
             },
           });
         });
@@ -292,6 +286,10 @@ export default class CustomComponentManager<ComponentInstance>
     }
 
     return bucket;
+  }
+
+  getDebugName({ name }: CustomComponentDefinitionState<ComponentInstance>) {
+    return name;
   }
 
   update(bucket: CustomComponentState<ComponentInstance>) {
@@ -351,15 +349,6 @@ export default class CustomComponentManager<ComponentInstance>
     return Object.assign({}, CAPABILITIES, {
       updateHook: ENV._DEBUG_RENDER_TREE || delegate.capabilities.updateHook,
     });
-  }
-
-  getTag({ args }: CustomComponentState<ComponentInstance>): Tag {
-    if (isConstTagged(args)) {
-      // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
-    } else {
-      return args.tag;
-    }
   }
 
   didRenderLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {

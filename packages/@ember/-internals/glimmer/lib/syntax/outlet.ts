@@ -1,12 +1,7 @@
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Dict, Option, unsafe, VM, VMArguments } from '@glimmer/interfaces';
-import {
-  ConstReference,
-  Reference,
-  RootReference,
-  VersionedPathReference,
-} from '@glimmer/reference';
+import { ConstReference, PathReference, Reference, RootReference } from '@glimmer/reference';
 import {
   CurriedComponentDefinition,
   curry,
@@ -14,7 +9,6 @@ import {
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import { Tag } from '@glimmer/validator';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
@@ -75,7 +69,7 @@ export function outletHelper(args: VMArguments, vm: VM) {
   if (args.positional.length === 0) {
     nameRef = new ConstReference('main');
   } else {
-    nameRef = args.positional.at<VersionedPathReference<string>>(0);
+    nameRef = args.positional.at<PathReference<string>>(0);
   }
 
   return new OutletComponentReference(
@@ -85,17 +79,19 @@ export function outletHelper(args: VMArguments, vm: VM) {
 }
 
 class OutletModelReference extends RootReference {
-  public tag: Tag;
-
-  constructor(
-    private parent: VersionedPathReference<OutletState | undefined>,
-    env: EmberVMEnvironment
-  ) {
+  constructor(private parent: PathReference<OutletState | undefined>, env: EmberVMEnvironment) {
     super(env);
-    this.tag = parent.tag;
+
+    if (DEBUG) {
+      this.debugLabel = '@model';
+    }
   }
 
-  value(): unknown {
+  isConst() {
+    return false;
+  }
+
+  compute(): unknown {
     let state = this.parent.value();
 
     if (state === undefined) {
@@ -112,22 +108,17 @@ class OutletModelReference extends RootReference {
   }
 }
 
-if (DEBUG) {
-  OutletModelReference.prototype['debugLogName'] = '@model';
-}
-
-class OutletComponentReference
-  implements VersionedPathReference<CurriedComponentDefinition | null> {
-  public tag: Tag;
+class OutletComponentReference implements PathReference<CurriedComponentDefinition | null> {
   private definition: Option<CurriedComponentDefinition> = null;
   private lastState: Option<OutletDefinitionState> = null;
 
   constructor(
-    private outletRef: VersionedPathReference<OutletState | undefined>,
+    private outletRef: PathReference<OutletState | undefined>,
     private env: EmberVMEnvironment
-  ) {
-    // The router always dirties the root state.
-    this.tag = outletRef.tag;
+  ) {}
+
+  isConst() {
+    return false;
   }
 
   value(): CurriedComponentDefinition | null {
@@ -154,22 +145,22 @@ class OutletComponentReference
 }
 
 function makeArgs(
-  outletRef: VersionedPathReference<OutletState | undefined>,
+  outletRef: PathReference<OutletState | undefined>,
   env: EmberVMEnvironment
 ): CapturedArguments {
-  let tag = outletRef.tag;
   let modelRef = new OutletModelReference(outletRef, env);
-  let map = dict<VersionedPathReference>();
+  let map = dict<PathReference>();
   map.model = modelRef;
 
   // TODO: the functionailty to create a proper CapturedArgument should be
   // exported by glimmer, or that it should provide an overload for `curry`
   // that takes `PreparedArguments`
   return {
-    tag,
     positional: EMPTY_ARGS.positional,
     named: {
-      tag,
+      isConst() {
+        return false;
+      },
       map,
       names: ['model'],
       references: [modelRef],
@@ -177,7 +168,7 @@ function makeArgs(
       has(key: string): boolean {
         return key === 'model';
       },
-      get<T extends VersionedPathReference>(key: string): T {
+      get<T extends PathReference>(key: string): T {
         return (key === 'model' ? modelRef : UNDEFINED_REFERENCE) as unsafe;
       },
       value(): Dict<unknown> {
@@ -195,9 +186,7 @@ function makeArgs(
   };
 }
 
-function stateFor(
-  ref: VersionedPathReference<OutletState | undefined>
-): OutletDefinitionState | null {
+function stateFor(ref: PathReference<OutletState | undefined>): OutletDefinitionState | null {
   let outlet = ref.value();
   if (outlet === undefined) return null;
   let render = outlet.render;

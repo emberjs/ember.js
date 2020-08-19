@@ -1,8 +1,8 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
-import { ComponentRootReference, VersionedReference } from '@glimmer/reference';
+import { ComponentRootReference, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
-import { Revision, valueForTag } from '@glimmer/validator';
+import { Revision, Tag, valueForTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import { Renderer } from '../renderer';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
@@ -40,7 +40,7 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  public classRef: VersionedReference<unknown> | null = null;
+  public classRef: Reference<unknown> | null = null;
   public rootRef: ComponentRootReference<Component>;
   public argsRevision: Revision;
 
@@ -48,11 +48,12 @@ export default class ComponentStateBucket {
     public environment: EmberVMEnvironment,
     public component: Component,
     public args: CapturedNamedArguments | null,
+    public argsTag: Tag,
     public finalizer: Finalizer,
     public hasWrappedElement: boolean
   ) {
     this.classRef = null;
-    this.argsRevision = args === null ? 0 : valueForTag(args.tag);
+    this.argsRevision = args === null ? 0 : valueForTag(argsTag);
     this.rootRef = new ComponentRootReference(component, environment);
 
     registerDestructor(this, () => this.willDestroy(), true);

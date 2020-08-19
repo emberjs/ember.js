@@ -6,7 +6,7 @@ import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
   consumeTag,
-  deprecateMutationsInAutotrackingTransaction,
+  deprecateMutationsInTrackingTransaction,
   isTracking,
   tagFor,
   track,
@@ -119,7 +119,7 @@ export function _getProp(obj: object, keyName: string) {
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
     ) {
       if (DEBUG) {
-        deprecateMutationsInAutotrackingTransaction!(() => {
+        deprecateMutationsInTrackingTransaction!(() => {
           value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
         });
       } else {

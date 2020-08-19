@@ -3,7 +3,6 @@ import { getOwner, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   Cursor,
@@ -16,7 +15,7 @@ import {
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
 import { JitContext } from '@glimmer/opcode-compiler';
-import { VersionedPathReference } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
 import {
   clientBuilder,
   CurriedComponentDefinition,
@@ -25,19 +24,13 @@ import {
   DOMChanges,
   DOMTreeConstruction,
   inTransaction,
-  IteratorResult,
   JitRuntime,
   JitSyntaxCompilationContext,
   renderJitMain,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { unwrapHandle, unwrapTemplate } from '@glimmer/util';
-import {
-  CURRENT_TAG,
-  runInAutotrackingTransaction,
-  validateTag,
-  valueForTag,
-} from '@glimmer/validator';
+import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import CompileTimeResolver from './compile-time-lookup';
@@ -59,14 +52,14 @@ export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
     public view: Component | {} | null,
-    public outletState: VersionedPathReference<OutletState | undefined>
+    public outletState: PathReference<OutletState | undefined>
   ) {}
 
   child() {
     return new DynamicScope(this.view, this.outletState);
   }
 
-  get(key: 'outletState'): VersionedPathReference<OutletState | undefined> {
+  get(key: 'outletState'): PathReference<OutletState | undefined> {
     // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
@@ -75,7 +68,7 @@ export class DynamicScope implements GlimmerDynamicScope {
     return this.outletState;
   }
 
-  set(key: 'outletState', value: VersionedPathReference<OutletState | undefined>) {
+  set(key: 'outletState', value: PathReference<OutletState | undefined>) {
     // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
@@ -97,7 +90,7 @@ class RootState {
     public runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
     context: SyntaxCompilationContext,
     template: OwnedTemplate,
-    self: VersionedPathReference<unknown>,
+    self: PathReference<unknown>,
     parentElement: SimpleElement,
     dynamicScope: DynamicScope,
     builder: IBuilder
@@ -120,12 +113,8 @@ class RootState {
         unwrapHandle(handle),
         dynamicScope
       );
-      let iteratorResult: IteratorResult<RenderResult>;
-      do {
-        iteratorResult = iterator.next();
-      } while (!iteratorResult.done);
 
-      let result = (this.result = iteratorResult.value);
+      let result = (this.result = iterator.sync());
 
       // override .render function after initial render
       this.render = () => result.rerender({ alwaysRevalidate: false });
@@ -457,14 +446,7 @@ export abstract class Renderer {
             continue;
           }
 
-          if (DEBUG) {
-            // run in an autotracking transaction to prevent backflow errors.
-            // we use `bind` here to avoid creating a closure (and requiring a
-            // hoisted variable).
-            runInAutotrackingTransaction!(root.render.bind(root));
-          } else {
-            root.render();
-          }
+          root.render();
         }
 
         this._lastRevision = valueForTag(CURRENT_TAG);
