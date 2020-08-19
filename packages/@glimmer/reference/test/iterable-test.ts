@@ -2,9 +2,10 @@ import { module, test } from './utils/qunit';
 
 import { IterableReference, OpaqueIterationItem, UNDEFINED_REFERENCE } from '..';
 import { symbol } from '@glimmer/util';
-import { VOLATILE_TAG, consumeTag } from '../../validator';
+import { testOverrideGlobalContext, GlobalContext } from '@glimmer/global-context';
+import { VOLATILE_TAG, consumeTag } from '@glimmer/validator';
 
-import { TestEnv } from './utils/template';
+import { TestContext } from './utils/template';
 import objectValues from './utils/platform';
 
 class VolatileReference<T> {
@@ -29,7 +30,7 @@ class IterableWrapper {
 
   constructor(obj: unknown, key = '@identity') {
     let valueRef = new VolatileReference(obj);
-    this.iterable = new IterableReference(valueRef, key, new TestEnv());
+    this.iterable = new IterableReference(valueRef, key);
   }
 
   private iterate() {
@@ -58,7 +59,17 @@ class IterableWrapper {
   }
 }
 
-module('@glimmer/reference: IterableReference', () => {
+module('@glimmer/reference: IterableReference', hooks => {
+  let originalContext: GlobalContext | null;
+
+  hooks.before(() => {
+    originalContext = testOverrideGlobalContext!(TestContext);
+  });
+
+  hooks.after(() => {
+    testOverrideGlobalContext!(originalContext);
+  });
+
   module('iterator delegates', () => {
     test('it correctly iterates delegates', assert => {
       let obj = { a: 'Yehuda', b: 'Godfrey' };

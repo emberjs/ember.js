@@ -4,7 +4,15 @@ import { SimpleDocument } from '@simple-dom/interface';
 QUnit.module('[integration] env');
 
 QUnit.test('assert against nested transactions', assert => {
-  let env = new EnvironmentImpl({ document: document as SimpleDocument }, {});
+  let env = new EnvironmentImpl(
+    { document: document as SimpleDocument },
+    {
+      onTransactionBegin() {},
+      onTransactionCommit() {},
+      isInteractive: true,
+      extra: undefined,
+    }
+  );
   env.begin();
   assert.throws(
     () => env.begin(),
@@ -13,7 +21,15 @@ QUnit.test('assert against nested transactions', assert => {
 });
 
 QUnit.test('ensure commit cleans up when it can', assert => {
-  let env = new EnvironmentImpl({ document: document as SimpleDocument }, {});
+  let env = new EnvironmentImpl(
+    { document: document as SimpleDocument },
+    {
+      onTransactionBegin() {},
+      onTransactionCommit() {},
+      isInteractive: true,
+      extra: undefined,
+    }
+  );
   env.begin();
 
   // ghetto stub

@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/env';
 import {
-  Dict,
   Environment,
   EnvironmentOptions,
   GlimmerTreeChanges,
@@ -27,18 +26,9 @@ import {
   CompileTimeHeap,
   WholeProgramCompilationContext,
 } from '@glimmer/interfaces';
-import {
-  PathReference,
-  Reference,
-  IteratorDelegate,
-  NativeIteratorDelegate,
-} from '@glimmer/reference';
 import { assert, expect, symbol, debugToString } from '@glimmer/util';
 import { track, updateTag } from '@glimmer/validator';
-import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
-import { ConditionalReference } from './references';
-import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
 import { RuntimeProgramImpl } from '@glimmer/program';
 
 export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
@@ -135,18 +125,6 @@ class TransactionImpl implements Transaction {
   }
 }
 
-function defaultDelegateFn(delegateFn: Function | undefined, delegateDefault: Function) {
-  let defaultFn = delegateFn !== undefined ? delegateFn : delegateDefault;
-
-  if (DEBUG) {
-    // Bind to `null` in DEBUG since these methods are assumed to be pure
-    // functions, so we can reassign them.
-    return defaultFn.bind(null);
-  }
-
-  return defaultFn;
-}
-
 export class EnvironmentImpl<Extra> implements Environment<Extra> {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
@@ -154,19 +132,8 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   protected updateOperations?: GlimmerTreeChanges;
 
   // Delegate methods and values
-  public extra = this.delegate.extra!;
-  public isInteractive =
-    typeof this.delegate.isInteractive === 'boolean' ? this.delegate.isInteractive : true;
-
-  public protocolForURL = defaultDelegateFn(this.delegate.protocolForURL, defaultGetProtocolForURL);
-  public attributeFor = defaultDelegateFn(this.delegate.attributeFor, defaultAttributeFor);
-
-  public getProp = defaultDelegateFn(this.delegate.getProp, defaultGetProp);
-  public getPath = defaultDelegateFn(this.delegate.getPath, defaultGetProp);
-  public setPath = defaultDelegateFn(this.delegate.setPath, defaultSetPath);
-
-  public toBool = defaultDelegateFn(this.delegate.toBool, defaultToBool);
-  public toIterator = defaultDelegateFn(this.delegate.toIterator, defaultToIterator);
+  public extra = this.delegate.extra;
+  public isInteractive = this.delegate.isInteractive;
 
   constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate<Extra>) {
     if (options.appendOperations) {
@@ -178,10 +145,6 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     } else if (DEBUG) {
       throw new Error('you must pass document or appendOperations to a new runtime');
     }
-  }
-
-  toConditionalReference(input: PathReference): Reference<boolean> {
-    return new ConditionalReference(input, this.delegate.toBool);
   }
 
   getAppendOperations(): GlimmerTreeConstruction {
@@ -201,9 +164,7 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
 
-    if (this.delegate.onTransactionBegin !== undefined) {
-      this.delegate.onTransactionBegin();
-    }
+    this.delegate.onTransactionBegin();
 
     this[TRANSACTION] = new TransactionImpl();
   }
@@ -237,9 +198,7 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     this[TRANSACTION] = null;
     transaction.commit();
 
-    if (this.delegate.onTransactionCommit !== undefined) {
-      this.delegate.onTransactionCommit();
-    }
+    this.delegate.onTransactionCommit();
   }
 }
 
@@ -248,137 +207,23 @@ export interface EnvironmentDelegate<Extra = undefined> {
    * Used to determine the the environment is interactive (e.g. SSR is not
    * interactive). Interactive environments schedule modifiers, among other things.
    */
-  isInteractive?: boolean;
-
-  /**
-   * Hook to provide iterators for `{{each}}` loops
-   *
-   * @param value The value to create an iterator for
-   */
-  toIterator?(value: unknown): Option<IteratorDelegate>;
-
-  /**
-   * Hook to specify truthiness within Glimmer
-   *
-   * @param value The value to convert to a boolean
-   */
-  toBool?(value: unknown): boolean;
-
-  /**
-   * Hook for specifying how Glimmer should access properties in cases where it
-   * needs to. For instance, accessing an object's values in templates.
-   *
-   * @param obj The object provided to get a value from
-   * @param path The path to get the value from
-   */
-  getProp?(obj: unknown, path: string): unknown;
-
-  /**
-   * Hook for specifying how Glimmer should access paths in cases where it needs
-   * to. For instance, the `key` value of `{{each}}` loops.
-   *
-   * @param obj The object provided to get a value from
-   * @param path The path to get the value from
-   */
-  getPath?(obj: unknown, path: string): unknown;
-
-  /**
-   * Hook for specifying how Glimmer should update paths in cases where it needs
-   * to. For instance, when updating a template reference (e.g. 2-way-binding)
-   *
-   * @param obj The object provided to get a value from
-   * @param path The path to set the value at
-   * @param value The value to set the value to
-   */
-  setPath?(obj: unknown, path: string, value: unknown): unknown;
-
-  /**
-   * TODO
-   *
-   * @param url
-   */
-  protocolForURL?(url: string): string;
-
-  /**
-   * TODO
-   *
-   * @param element
-   * @param attr
-   * @param isTrusting
-   * @param namespace
-   */
-  attributeFor?(
-    element: SimpleElement,
-    attr: string,
-    isTrusting: boolean,
-    namespace: Option<AttrNamespace>
-  ): DynamicAttribute;
+  isInteractive: boolean;
 
   /**
    * Slot for any extra values that the embedding environment wants to add,
    * providing/passing around additional context to various users in the VM.
    */
-  extra?: Extra;
+  extra: Extra;
 
   /**
    * Callback to be called when an environment transaction begins
    */
-  onTransactionBegin?: () => void;
+  onTransactionBegin: () => void;
 
   /**
    * Callback to be called when an environment transaction commits
    */
-  onTransactionCommit?: () => void;
-}
-
-function defaultGetProtocolForURL(url: string): string {
-  if (typeof URL === 'object' || typeof URL === 'undefined') {
-    return legacyProtocolForURL(url);
-  } else if (typeof document !== 'undefined') {
-    return new URL(url, document.baseURI).protocol;
-  } else {
-    return new URL(url, 'https://www.example.com').protocol;
-  }
-}
-
-function defaultAttributeFor(
-  element: SimpleElement,
-  attr: string,
-  _isTrusting: boolean,
-  namespace: Option<AttrNamespace>
-): DynamicAttribute {
-  return dynamicAttribute(element, attr, namespace);
-}
-
-function defaultGetProp(obj: unknown, key: string): unknown {
-  return (obj as Dict)[key];
-}
-
-function defaultSetPath(obj: unknown, key: string, value: unknown): unknown {
-  return ((obj as Dict)[key] = value);
-}
-
-function defaultToBool(value: unknown) {
-  return Boolean(value);
-}
-
-function defaultToIterator(value: any): Option<IteratorDelegate> {
-  if (value && value[Symbol.iterator]) {
-    return NativeIteratorDelegate.from(value);
-  }
-
-  return null;
-}
-
-function legacyProtocolForURL(url: string): string {
-  if (typeof window === 'undefined') {
-    let match = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\S\s]*)/i.exec(url);
-    return match && match[1] ? match[1].toLowerCase() : '';
-  }
-
-  let anchor = window.document.createElement('a');
-  anchor.href = url;
-  return anchor.protocol;
+  onTransactionCommit: () => void;
 }
 
 export class DefaultRuntimeResolver<R> implements JitRuntimeResolver<R>, AotRuntimeResolver {
@@ -467,7 +312,7 @@ export function AotRuntime(
   options: EnvironmentOptions,
   program: CompilerArtifacts,
   resolver: RuntimeResolverDelegate = {},
-  delegate: EnvironmentDelegate = {}
+  delegate: EnvironmentDelegate
 ): AotRuntimeContext {
   let env = new EnvironmentImpl(options, delegate);
 
@@ -490,7 +335,7 @@ export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
 
 export function JitRuntime<R, E>(
   options: EnvironmentOptions,
-  delegate: EnvironmentDelegate<E> = {},
+  delegate: EnvironmentDelegate<E>,
   context: JitSyntaxCompilationContext,
   resolver: RuntimeResolverDelegate<R> = {}
 ): JitRuntimeContext<R, E> {

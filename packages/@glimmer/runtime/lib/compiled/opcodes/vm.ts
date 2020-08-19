@@ -23,7 +23,7 @@ import {
 } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { PrimitiveReference } from '../../references';
+import { PrimitiveReference, ConditionalReference } from '../../references';
 import { UpdatingVM } from '../../vm';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
@@ -217,8 +217,9 @@ APPEND_OPCODES.add(Op.AssertSame, vm => {
 });
 
 APPEND_OPCODES.add(Op.ToBoolean, vm => {
-  let { env, stack } = vm;
-  stack.pushJs(env.toConditionalReference(check(stack.popJs(), CheckReference)));
+  let { stack } = vm;
+  let inner = check(stack.popJs(), CheckReference);
+  stack.pushJs(new ConditionalReference(inner));
 });
 
 export class Assert extends UpdatingOpcode {

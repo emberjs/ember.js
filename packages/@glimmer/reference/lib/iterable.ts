@@ -1,7 +1,8 @@
+import { getPath, toIterator } from '@glimmer/global-context';
 import { Option, Dict } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, isObject, debugToString, expect } from '@glimmer/util';
 import { DEBUG } from '@glimmer/env';
-import { IterationItemReference, TemplateReferenceEnvironment } from './template';
+import { IterationItemReference } from './template';
 import { PathReference, CachedReference } from './reference';
 
 export interface IterationItem<T, U> {
@@ -39,14 +40,14 @@ const IDENTITY: KeyFor = item => {
   return item;
 };
 
-function keyForPath(path: string, getPath: (item: unknown, path: string) => any): KeyFor {
+function keyForPath(path: string): KeyFor {
   if (DEBUG && path[0] === '@') {
     throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
   }
-  return uniqueKeyFor(item => getPath(item, path));
+  return uniqueKeyFor(item => getPath(item as object, path));
 }
 
-function makeKeyFor(key: string, getPath: (item: unknown, path: string) => any) {
+function makeKeyFor(key: string) {
   switch (key) {
     case '@key':
       return uniqueKeyFor(KEY);
@@ -55,7 +56,7 @@ function makeKeyFor(key: string, getPath: (item: unknown, path: string) => any) 
     case '@identity':
       return uniqueKeyFor(IDENTITY);
     default:
-      return keyForPath(key, getPath);
+      return keyForPath(key);
   }
 }
 
@@ -151,11 +152,7 @@ function uniqueKeyFor(keyFor: KeyFor) {
 export class IterableReference extends CachedReference<boolean> {
   private iterator: Option<OpaqueIterator> = null;
 
-  constructor(
-    private parentRef: PathReference,
-    private key: string,
-    private env: TemplateReferenceEnvironment
-  ) {
+  constructor(private parentRef: PathReference, private key: string) {
     super();
   }
 
@@ -192,17 +189,17 @@ export class IterableReference extends CachedReference<boolean> {
   }
 
   private createIterator(): OpaqueIterator {
-    let { parentRef, key, env } = this;
+    let { parentRef, key } = this;
 
     let iterable = parentRef.value() as { [Symbol.iterator]: any } | null | false;
 
-    let keyFor = makeKeyFor(key, env.getPath);
+    let keyFor = makeKeyFor(key);
 
     if (Array.isArray(iterable)) {
       return new ArrayIterator(iterable, keyFor);
     }
 
-    let maybeIterator = env.toIterator(iterable);
+    let maybeIterator = toIterator(iterable);
 
     if (maybeIterator === null) {
       return new ArrayIterator(EMPTY_ARRAY, () => null);
@@ -212,13 +209,12 @@ export class IterableReference extends CachedReference<boolean> {
   }
 
   childRefFor(key: unknown, value: unknown): IterationItemReference<unknown> {
-    let { parentRef, env } = this;
+    let { parentRef } = this;
 
     return new IterationItemReference(
       parentRef,
       value,
-      DEBUG ? `(key: ${debugToString!(key)}` : '',
-      env
+      DEBUG ? `(key: ${debugToString!(key)}` : ''
     );
   }
 }
@@ -276,42 +272,5 @@ class ArrayIterator implements OpaqueIterator {
     let memo = this.pos;
 
     return { key, value, memo };
-  }
-}
-
-export class NativeIteratorDelegate<T = unknown> implements IteratorDelegate {
-  static from<T>(iterable: Iterable<T>) {
-    let iterator = iterable[Symbol.iterator]();
-    let result = iterator.next();
-    let { done } = result;
-
-    if (done) {
-      return null;
-    } else {
-      return new this(iterator, result);
-    }
-  }
-
-  private position = 0;
-
-  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>) {}
-
-  isEmpty(): false {
-    return false;
-  }
-
-  next() {
-    let { iterable, result } = this;
-
-    let { value, done } = result;
-
-    if (done === true) {
-      return null;
-    }
-
-    let memo = this.position++;
-    this.result = iterable.next();
-
-    return { value, memo };
   }
 }

@@ -34,7 +34,7 @@ class BasicComponentManager
     args: VMArguments | null
   ) {
     const instance = new Component(argsProxy(args === null ? EMPTY_ARGS : args.capture()));
-    const self = new ComponentRootReference(instance, env);
+    const self = new ComponentRootReference(instance);
     return { env, instance, self };
   }
 

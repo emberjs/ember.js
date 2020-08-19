@@ -1,5 +1,6 @@
 import { module, test } from './-utils';
 import { DEBUG } from '@glimmer/env';
+import { testOverrideGlobalContext } from '@glimmer/global-context';
 
 import {
   ALLOW_CYCLES,
@@ -29,6 +30,24 @@ module('@glimmer/validator: validators', () => {
 
       snapshot = valueForTag(tag);
       assert.ok(validateTag(tag, snapshot));
+    });
+
+    test('it calls scheduleRevalidate', assert => {
+      assert.expect(1);
+
+      let originalContext = testOverrideGlobalContext!({
+        scheduleRevalidate() {
+          assert.ok(true, 'called');
+        },
+      });
+
+      try {
+        let tag = createTag();
+
+        dirtyTag(tag);
+      } finally {
+        testOverrideGlobalContext!(originalContext);
+      }
     });
 
     if (DEBUG) {
