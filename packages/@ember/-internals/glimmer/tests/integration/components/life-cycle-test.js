@@ -6,7 +6,7 @@ import {
   runAppend,
   runTask,
 } from 'internal-test-helpers';
-
+import { renderSettled } from '@ember/-internals/glimmer';
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
@@ -1342,7 +1342,7 @@ moduleFor(
 moduleFor(
   'Run loop and lifecycle hooks',
   class extends RenderingTestCase {
-    ['@test afterRender set']() {
+    async ['@test afterRender set']() {
       let ComponentClass = Component.extend({
         width: '5',
         didInsertElement() {
@@ -1353,9 +1353,12 @@ moduleFor(
       });
 
       let template = `{{width}}`;
+
       this.registerComponent('foo-bar', { ComponentClass, template });
 
       this.render('{{foo-bar}}');
+
+      await renderSettled();
 
       this.assertText('10');
 
@@ -1364,7 +1367,7 @@ moduleFor(
       this.assertText('10');
     }
 
-    ['@test afterRender set on parent']() {
+    async ['@test afterRender set on parent']() {
       let ComponentClass = Component.extend({
         didInsertElement() {
           schedule('afterRender', () => {
@@ -1379,6 +1382,8 @@ moduleFor(
       this.registerComponent('foo-bar', { ComponentClass, template });
 
       this.render('{{foo-bar parent=this foo=foo}}');
+
+      await renderSettled();
 
       this.assertText('wat');
 

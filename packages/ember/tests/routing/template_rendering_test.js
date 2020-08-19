@@ -5,6 +5,7 @@ import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase, getTextOf, runTask } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
+import { Promise } from 'rsvp';
 
 let originalConsoleError;
 
@@ -724,18 +725,21 @@ moduleFor(
           assert.ok(true, '/second has been handled');
           assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the second message');
           assert.equal(insertionCount, 1, 'expected one assertion');
-          return run(() => {
-            this.applicationInstance
-              .lookup('router:main')
-              .transitionTo('third')
-              .then(
-                function() {
-                  assert.ok(true, 'expected transition');
-                },
-                function(reason) {
-                  assert.ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
-                }
-              );
+          return new Promise(resolve => {
+            run(() => {
+              this.applicationInstance
+                .lookup('router:main')
+                .transitionTo('third')
+                .then(
+                  function() {
+                    assert.ok(true, 'expected transition');
+                    resolve();
+                  },
+                  function(reason) {
+                    assert.ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
+                  }
+                );
+            });
           });
         })
         .then(() => {

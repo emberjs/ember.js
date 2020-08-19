@@ -2,7 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { backburner, getCurrentRunLoop } from '@ember/runloop';
+import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
@@ -189,10 +189,6 @@ function loopBegin(): void {
   }
 }
 
-function K() {
-  /* noop */
-}
-
 let renderSettledDeferred: RSVP.Deferred<void> | null = null;
 /*
   Returns a promise which will resolve when rendering has settled. Settled in
@@ -208,10 +204,7 @@ export function renderSettled() {
     renderSettledDeferred = RSVP.defer();
     // if there is no current runloop, the promise created above will not have
     // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!getCurrentRunLoop()) {
-      // ensure a runloop has been kicked off
-      backburner.schedule('actions', null, K);
-    }
+    backburner.ensureInstance();
   }
 
   return renderSettledDeferred.promise;
@@ -221,8 +214,7 @@ function resolveRenderPromise() {
   if (renderSettledDeferred !== null) {
     let resolve = renderSettledDeferred.resolve;
     renderSettledDeferred = null;
-
-    backburner.join(null, resolve);
+    resolve();
   }
 }
 
@@ -237,7 +229,7 @@ function loopEnd() {
         throw new Error('infinite rendering invalidation detected');
       }
       loops++;
-      return backburner.join(null, K);
+      return backburner.ensureInstance();
     }
   }
   loops = 0;

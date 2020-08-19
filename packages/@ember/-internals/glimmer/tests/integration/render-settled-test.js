@@ -1,8 +1,6 @@
 import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
-
 import { renderSettled } from '@ember/-internals/glimmer';
 import { run, schedule } from '@ember/runloop';
-
 import { all } from 'rsvp';
 
 moduleFor(
@@ -44,30 +42,29 @@ moduleFor(
     }
 
     ['@test resolves in run loop when renderer has settled'](assert) {
+      let done = assert.async();
       assert.expect(3);
 
       this.render(strip`{{foo}}`, { foo: 'bar' });
 
       this.assertText('bar');
-      let promise;
 
-      return run(() => {
-        schedule('actions', null, () => {
+      run(() => {
+        schedule('actions', () => {
           this.component.set('foo', 'set in actions');
 
-          promise = renderSettled().then(() => {
+          renderSettled().then(() => {
             this.assertText('set in afterRender');
+            done();
           });
 
-          schedule('afterRender', null, () => {
+          schedule('afterRender', () => {
             this.component.set('foo', 'set in afterRender');
           });
         });
 
         // still not updated here
         this.assertText('bar');
-
-        return promise;
       });
     }
   }

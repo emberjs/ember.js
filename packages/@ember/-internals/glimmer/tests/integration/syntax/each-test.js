@@ -555,7 +555,7 @@ class EachTest extends AbstractEachTest {
 
     runTask(() => set(this.objectAt(0), 'value', 3));
 
-    this.assertText('PrevNextPrev2NextPrev3Next');
+    this.assertText('Prev3NextPrev2NextPrev3Next');
 
     this.replaceList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 

@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
-
 import Controller from '@ember/controller';
+import { renderSettled } from '@ember/-internals/glimmer';
 import {
   getRootViews,
   getChildViews,
@@ -191,16 +191,16 @@ moduleFor(
 
           return this.visit('/zomg');
         })
-        .then(() => {
+        .then(async () => {
           this.assertChildViews('root-2', []);
           this.assertChildViews('root-8', ['inner-7', 'inner-8']);
           this.assertChildViews('inner-8', ['inner-9']);
           this.assertChildViews('root-9', []);
 
           runTask(() => this.$('#root-8').click());
+          await renderSettled();
 
           this.assertChildViews('root-8', []);
-
           return this.visit('/zomg/lol');
         })
         .then(() => {
@@ -210,12 +210,14 @@ moduleFor(
 
           return this.visit('/');
         })
-        .then(() => {
+        .then(async () => {
           this.assertChildViews('root-2', []);
           this.assertChildViews('root-5', []);
 
           runTask(() => this.$('#root-2').click());
+          await renderSettled();
           runTask(() => this.$('#inner-2').click());
+          await renderSettled();
 
           this.assertChildViews('root-2', ['inner-1', 'inner-2']);
           this.assertChildViews('inner-2', []);
