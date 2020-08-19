@@ -1,13 +1,13 @@
 {
   "name": "@glimmer/program",
-  "version": "0.57.2",
+  "version": "0.58.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
   "dependencies": {
-    "@glimmer/util": "^0.57.2",
-    "@glimmer/interfaces": "^0.57.2",
-    "@glimmer/encoder": "^0.57.2"
+    "@glimmer/util": "^0.58.0",
+    "@glimmer/interfaces": "^0.58.0",
+    "@glimmer/encoder": "^0.58.0"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "^0.57.2"
+    "@glimmer/local-debug-flags": "^0.58.0"
   }
 }
