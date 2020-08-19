@@ -1,5 +1,4 @@
 import { PathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import ComponentCapabilities from '../component-capabilities';
 import { ComponentDefinitionState, PreparedArguments, ComponentInstanceState } from '../components';
@@ -7,10 +6,11 @@ import { Option, Destroyable } from '../core';
 import { Bounds } from '../dom/bounds';
 import { VMArguments } from '../runtime/arguments';
 import { ElementOperations } from '../runtime/element';
-import { DynamicScope, Environment } from '../runtime/environment';
+import { Environment } from '../runtime/environment';
 import { RuntimeResolverDelegate, JitRuntimeResolver, RuntimeResolver } from '../serialize';
 import { CompilableProgram, Template } from '../template';
 import { ProgramSymbolTable } from '../tier1/symbol-table';
+import { DynamicScope } from '../runtime/scope';
 
 export interface ComponentManager<
   ComponentInstanceState = unknown,
