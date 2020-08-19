@@ -1,5 +1,6 @@
 import { Dict, CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { PathReference, Reference } from '@glimmer/reference';
+import { reifyNamed, reifyPositional } from '@glimmer/runtime';
 
 export type UserHelper = (args: ReadonlyArray<unknown>, named: Dict<unknown>) => unknown;
 
@@ -19,7 +20,7 @@ export class HelperReference implements PathReference {
   value() {
     let { helper, args } = this;
 
-    return helper(args.positional.value(), args.named.value());
+    return helper(reifyPositional(args.positional), reifyNamed(args.named));
   }
 
   get(prop: string): SimplePathReference {
