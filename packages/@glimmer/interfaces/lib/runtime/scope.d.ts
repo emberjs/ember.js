@@ -46,3 +46,9 @@ export interface Scope<C extends JitOrAotBlock> {
 export interface PartialScope<C extends JitOrAotBlock> extends Scope<C> {
   bindEvalScope(scope: Option<Dict<ScopeSlot<C>>>): void;
 }
+
+export interface DynamicScope {
+  get(key: string): PathReference<unknown>;
+  set(key: string, reference: PathReference<unknown>): PathReference<unknown>;
+  child(): DynamicScope;
+}
