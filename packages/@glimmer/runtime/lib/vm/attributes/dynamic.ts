@@ -6,18 +6,25 @@ import {
   AttributeOperation,
   AttributeCursor,
 } from '@glimmer/interfaces';
+import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 import { AttrNamespace, Namespace, SimpleElement } from '@simple-dom/interface';
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
+import { DEBUG } from '@glimmer/env';
 
 export function dynamicAttribute(
   element: SimpleElement,
   attr: string,
-  namespace: Option<AttrNamespace>
+  namespace: Option<AttrNamespace>,
+  isTrusting = false
 ): DynamicAttribute {
   let { tagName, namespaceURI } = element;
   let attribute = { element, name: attr, namespace };
+
+  if (DEBUG && attr === 'style' && !isTrusting) {
+    return new DebugStyleAttributeManager(attribute);
+  }
 
   if (namespaceURI === Namespace.SVG) {
     return buildDynamicAttribute(tagName, attr, attribute);
@@ -134,13 +141,13 @@ export class DefaultDynamicProperty extends DynamicAttribute {
 export class SafeDynamicProperty extends DefaultDynamicProperty {
   set(dom: ElementBuilder, value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
-    let sanitized = sanitizeAttributeValue(env, element, name, value);
+    let sanitized = sanitizeAttributeValue(element, name, value);
     super.set(dom, sanitized, env);
   }
 
   update(value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
-    let sanitized = sanitizeAttributeValue(env, element, name, value);
+    let sanitized = sanitizeAttributeValue(element, name, value);
     super.update(sanitized, env);
   }
 }
@@ -148,13 +155,13 @@ export class SafeDynamicProperty extends DefaultDynamicProperty {
 export class SafeDynamicAttribute extends SimpleDynamicAttribute {
   set(dom: ElementBuilder, value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
-    let sanitized = sanitizeAttributeValue(env, element, name, value);
+    let sanitized = sanitizeAttributeValue(element, name, value);
     super.set(dom, sanitized, env);
   }
 
   update(value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
-    let sanitized = sanitizeAttributeValue(env, element, name, value);
+    let sanitized = sanitizeAttributeValue(element, name, value);
     super.update(sanitized, env);
   }
 }
@@ -218,4 +225,23 @@ function normalizeValue(value: unknown): Option<string> {
   }
 
   return String(value);
+}
+
+let DebugStyleAttributeManager: {
+  new (attribute: AttributeCursor): AttributeOperation;
+};
+
+if (DEBUG) {
+  DebugStyleAttributeManager = class extends SimpleDynamicAttribute {
+    set(dom: ElementBuilder, value: unknown, env: Environment): void {
+      warnIfStyleNotTrusted(value);
+
+      super.set(dom, value, env);
+    }
+    update(value: unknown, env: Environment): void {
+      warnIfStyleNotTrusted(value);
+
+      super.update(value, env);
+    }
+  };
 }

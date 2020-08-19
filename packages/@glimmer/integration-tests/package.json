@@ -4,6 +4,7 @@
   "private": true,
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/integration-tests",
   "dependencies": {
+    "@glimmer/global-context": "^0.58.0",
     "@glimmer/reference": "^0.58.0",
     "@glimmer/runtime": "^0.58.0",
     "@glimmer/syntax": "^0.58.0",

@@ -1,5 +1,6 @@
 import { Option, Recast } from '@glimmer/interfaces';
 import { ConstReference, PathReference, Reference, CachedReference } from '@glimmer/reference';
+import { toBool as defaultToBool } from '@glimmer/global-context';
 
 export type Primitive = undefined | null | boolean | number | string;
 
@@ -62,20 +63,13 @@ export const TRUE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(tr
 export const FALSE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(false);
 
 export class ConditionalReference extends CachedReference<boolean> implements Reference<boolean> {
-  constructor(
-    private inner: Reference<unknown>,
-    private toBool: (value: unknown) => boolean = defaultToBool
-  ) {
+  constructor(private inner: Reference<unknown>, private toBool = defaultToBool) {
     super();
   }
 
   compute() {
-    let { toBool, inner } = this;
+    let { inner, toBool } = this;
 
     return toBool(inner.value());
   }
-}
-
-function defaultToBool(value: unknown) {
-  return !!value;
 }

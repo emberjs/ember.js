@@ -1,7 +1,4 @@
-// eslint-disable-next-line node/no-extraneous-import
-import { Reference, IteratorDelegate } from '@glimmer/reference';
-import { AttributeOperation } from '../dom/attributes';
-import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
+import { SimpleDocument } from '@simple-dom/interface';
 import { ComponentInstanceState } from '../components';
 import { ComponentManager } from '../components/component-manager';
 import { Option } from '../core';
@@ -35,24 +32,7 @@ export interface Environment<Extra = unknown> {
   commit(): void;
 
   getDOM(): GlimmerTreeChanges;
-  protocolForURL(s: string): string;
-  attributeFor(
-    element: SimpleElement,
-    attr: string,
-    isTrusting: boolean,
-    namespace: Option<AttrNamespace>
-  ): AttributeOperation;
   getAppendOperations(): GlimmerTreeConstruction;
-
-  // Moving away from this, toward `toBool`
-  toConditionalReference(reference: Reference<unknown>): Reference<boolean>;
-
-  toBool(value: unknown): boolean;
-  toIterator(value: unknown): Option<IteratorDelegate>;
-
-  getProp(item: unknown, prop: string): unknown;
-  getPath(item: unknown, path: string): unknown;
-  setPath(item: unknown, path: string, value: unknown): unknown;
 
   isInteractive: boolean;
   extra: Extra;

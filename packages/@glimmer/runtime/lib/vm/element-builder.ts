@@ -21,7 +21,7 @@ import {
   SimpleText,
 } from '@simple-dom/interface';
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
-import { DynamicAttribute } from './attributes/dynamic';
+import { DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
 import { registerDestructor, destroy } from '../destroyables';
 
 export interface FirstNode {
@@ -361,7 +361,7 @@ export class NewElementBuilder implements ElementBuilder {
     namespace: Option<AttrNamespace>
   ): DynamicAttribute {
     let element = this.constructing!;
-    let attribute = this.env.attributeFor(element, name, trusting, namespace);
+    let attribute = dynamicAttribute(element, name, namespace, trusting);
     attribute.set(this, value, this.env);
     return attribute;
   }

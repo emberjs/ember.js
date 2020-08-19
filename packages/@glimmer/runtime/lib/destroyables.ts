@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { Destroyable, Destructor } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/util';
+import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 
 const enum DestroyingState {
   Live = 0,
@@ -151,21 +152,6 @@ export function unregisterDestructor<T extends Destroyable>(
 
 ////////////
 
-export let scheduleDestroy: <T extends Destroyable>(
-  destroyable: T,
-  destructor: Destructor<T>
-) => void = DEBUG
-  ? () => {
-      throw new Error('Must provide a scheduleDestroy method');
-    }
-  : () => {};
-
-export let scheduleDestroyed: (fn: () => void) => void = DEBUG
-  ? () => {
-      throw new Error('Must provide a scheduleDestroyed method');
-    }
-  : () => {};
-
 export function destroy(destroyable: Destroyable) {
   let meta = getDestroyableMeta(destroyable);
 
@@ -203,16 +189,6 @@ export function destroyChildren(destroyable: Destroyable) {
   let { children } = getDestroyableMeta(destroyable);
 
   iterate(children, destroy);
-}
-
-export function setScheduleDestroy(
-  fn: <T extends Destroyable>(destroyable: T, destructor: Destructor<T>) => void
-) {
-  scheduleDestroy = fn;
-}
-
-export function setScheduleDestroyed(fn: (fn: () => void) => void) {
-  scheduleDestroyed = fn;
 }
 
 export function isDestroying(destroyable: Destroyable) {

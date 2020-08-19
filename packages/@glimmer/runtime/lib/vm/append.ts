@@ -64,6 +64,8 @@ import {
 import { associateDestroyableChild } from '../destroyables';
 import { LiveBlockList } from './element-builder';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
+import { DEBUG } from '@glimmer/env';
+import { assertGlobalContextWasSet } from '@glimmer/global-context';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -276,6 +278,10 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     { pc, scope, dynamicScope, stack }: VMState,
     private readonly elementStack: ElementBuilder
   ) {
+    if (DEBUG) {
+      assertGlobalContextWasSet!();
+    }
+
     let evalStack = EvaluationStackImpl.restore(stack);
 
     assert(typeof pc === 'number', 'pc is a number');

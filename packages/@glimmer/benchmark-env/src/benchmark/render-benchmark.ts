@@ -5,7 +5,6 @@ import {
   ComponentDefinition,
   CompilableProgram,
 } from '@glimmer/interfaces';
-import { setPropertyDidChange } from '@glimmer/validator';
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import {
   NewElementBuilder,
@@ -15,7 +14,7 @@ import {
   renderJitComponent,
 } from '@glimmer/runtime';
 
-import createEnvDelegate from './create-env-delegate';
+import createEnvDelegate, { registerResult } from './create-env-delegate';
 import { measureRender } from './util';
 import { UpdateBenchmark } from '../interfaces';
 
@@ -29,6 +28,7 @@ export default async function renderBenchmark(
   isInteractive = true
 ): Promise<UpdateBenchmark> {
   let resolveRender: (() => void) | undefined;
+
   await measureRender('render', 'renderStart', 'renderEnd', () => {
     const document = element.ownerDocument;
     const envDelegate = createEnvDelegate(isInteractive);
@@ -43,7 +43,7 @@ export default async function renderBenchmark(
     const env = runtime.env;
     const cursor = { element, nextSibling: null };
     const treeBuilder = NewElementBuilder.forInitialRender(env, cursor);
-    const rootRef = new ComponentRootReference(root, env);
+    const rootRef = new ComponentRootReference(root);
 
     const args: Dict<PathReference> = {};
     for (const key of Object.keys(root)) {
@@ -55,21 +55,10 @@ export default async function renderBenchmark(
       renderJitComponent(runtime, treeBuilder, context, component, layout, args)
     );
 
-    let scheduled = false;
-    setPropertyDidChange(() => {
-      if (!scheduled) {
-        Promise.resolve().then(() => {
-          const { env } = result;
-          env.begin();
-          result.rerender();
-          scheduled = false;
-          env.commit();
-          // only resolve if commit didn't dirty again
-          if (!scheduled && resolveRender !== undefined) {
-            resolveRender();
-            resolveRender = undefined;
-          }
-        });
+    registerResult(result, () => {
+      if (resolveRender !== undefined) {
+        resolveRender();
+        resolveRender = undefined;
       }
     });
   });

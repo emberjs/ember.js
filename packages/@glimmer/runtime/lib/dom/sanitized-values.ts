@@ -1,6 +1,5 @@
 import { Option } from '@glimmer/util';
 import { normalizeStringValue, isSafeString } from '../dom/normalize';
-import { Environment } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
 
 const badProtocols = ['javascript:', 'vbscript:'];
@@ -30,8 +29,31 @@ export function requiresSanitization(tagName: string, attribute: string): boolea
   return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
 }
 
+let protocolForUrl: (url: string) => string;
+
+// TODO: We should replace these methods with something more modern https://github.com/glimmerjs/glimmer-vm/issues/1140
+if (typeof document !== 'undefined') {
+  let parsingNode = document.createElement('a');
+
+  protocolForUrl = (url: string) => {
+    parsingNode.href = url;
+    return parsingNode.protocol;
+  };
+} else {
+  let nodeURL = module.require('url');
+
+  protocolForUrl = (url: string) => {
+    let protocol = null;
+
+    if (typeof url === 'string') {
+      protocol = nodeURL.parse(url).protocol;
+    }
+
+    return protocol === null ? ':' : protocol;
+  };
+}
+
 export function sanitizeAttributeValue(
-  env: Environment,
   element: SimpleElement,
   attribute: string,
   value: unknown
@@ -55,7 +77,7 @@ export function sanitizeAttributeValue(
   let str = normalizeStringValue(value);
 
   if (checkURI(tagName, attribute)) {
-    let protocol = env.protocolForURL(str);
+    let protocol = protocolForUrl(str);
     if (has(badProtocols, protocol)) {
       return `unsafe:${str}`;
     }

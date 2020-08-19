@@ -1,6 +1,8 @@
 import { module, test } from './utils/qunit';
 
+import { testOverrideGlobalContext, GlobalContext } from '@glimmer/global-context';
 import { createTag, consumeTag, dirtyTag } from '@glimmer/validator';
+import { EMPTY_ARGS, EMPTY_NAMED, createCapturedArgs } from '@glimmer/runtime';
 
 import {
   ComponentRootReference,
@@ -9,22 +11,30 @@ import {
   IterationItemReference,
   UNDEFINED_REFERENCE,
 } from '..';
-import { TestEnv } from './utils/template';
-// eslint-disable-next-line node/no-extraneous-import
-import { EMPTY_ARGS, EMPTY_NAMED, createCapturedArgs } from '@glimmer/runtime';
+import { TestContext } from './utils/template';
 
-module('@glimmer/reference: template', () => {
+module('@glimmer/reference: template', hooks => {
+  let originalContext: GlobalContext | null;
+
+  hooks.before(() => {
+    originalContext = testOverrideGlobalContext!(TestContext);
+  });
+
+  hooks.after(() => {
+    testOverrideGlobalContext!(originalContext);
+  });
+
   module('ComponentRootReference', () => {
     test('it creates a reference with the component as the value', assert => {
       let component = {};
-      let ref = new ComponentRootReference(component, new TestEnv());
+      let ref = new ComponentRootReference(component);
 
       assert.equal(ref.value(), component);
     });
 
     test('it creates PropertyReferences when chained', assert => {
       let component = { foo: 'bar' };
-      let ref = new ComponentRootReference(component, new TestEnv());
+      let ref = new ComponentRootReference(component);
       let propRef = ref.get('foo');
 
       assert.ok(propRef instanceof PropertyReference);
@@ -34,7 +44,7 @@ module('@glimmer/reference: template', () => {
 
   module('HelperRootReference', () => {
     test('constant helper values are constant', assert => {
-      let ref = new HelperRootReference(() => 123, EMPTY_ARGS, new TestEnv());
+      let ref = new HelperRootReference(() => 123, EMPTY_ARGS);
 
       assert.equal(ref.value(), 123, 'value is calculated correctly');
       assert.ok(ref.isConst(), 'value is constant');
@@ -58,11 +68,7 @@ module('@glimmer/reference: template', () => {
         },
       ]);
 
-      let ref = new HelperRootReference(
-        args => args.positional[0].value(),
-        MUTABLE_ARGS,
-        new TestEnv()
-      );
+      let ref = new HelperRootReference(args => args.positional[0].value(), MUTABLE_ARGS);
 
       assert.equal(ref.value(), 123, 'value is calculated correctly');
       assert.notOk(ref.isConst(), 'value is not constant');
@@ -70,21 +76,17 @@ module('@glimmer/reference: template', () => {
 
     test('non-constant helper values are non-constant if helper is not constant', assert => {
       let tag = createTag();
-      let ref = new HelperRootReference(
-        () => {
-          consumeTag(tag);
-          return 123;
-        },
-        EMPTY_ARGS,
-        new TestEnv()
-      );
+      let ref = new HelperRootReference(() => {
+        consumeTag(tag);
+        return 123;
+      }, EMPTY_ARGS);
 
       assert.equal(ref.value(), 123, 'value is calculated correctly');
       assert.notOk(ref.isConst(), 'value is not constant');
     });
 
     test('it creates PropertyReferences when chained', assert => {
-      let ref = new HelperRootReference(() => ({ foo: 'bar' }), EMPTY_ARGS, new TestEnv());
+      let ref = new HelperRootReference(() => ({ foo: 'bar' }), EMPTY_ARGS);
       let propRef = ref.get('foo');
 
       assert.ok(propRef instanceof PropertyReference);
@@ -95,7 +97,7 @@ module('@glimmer/reference: template', () => {
   module('PropertyReference', () => {
     test('it chains off the parent value', assert => {
       let component = { foo: { bar: 'baz' } };
-      let ref = new ComponentRootReference(component, new TestEnv());
+      let ref = new ComponentRootReference(component);
 
       let fooRef = ref.get('foo');
       assert.ok(fooRef instanceof PropertyReference);
@@ -125,7 +127,7 @@ module('@glimmer/reference: template', () => {
         },
       };
 
-      let ref = new ComponentRootReference(component, new TestEnv());
+      let ref = new ComponentRootReference(component);
 
       let fooRef = ref.get('foo');
       assert.equal(fooRef.value(), 123, 'gets the value correctly');
@@ -152,7 +154,7 @@ module('@glimmer/reference: template', () => {
         },
       };
 
-      let ref = new ComponentRootReference(component, new TestEnv());
+      let ref = new ComponentRootReference(component);
 
       let fooRef = ref.get('foo');
       fooRef.value();
@@ -162,27 +164,30 @@ module('@glimmer/reference: template', () => {
 
     test('it calls getProp', assert => {
       let component = {};
-      let ref = new ComponentRootReference(
-        component,
-        new (class extends TestEnv {
-          getProp(obj: unknown, key: string) {
-            assert.equal(obj, component);
-            assert.equal(key, 'foo');
+      let ref = new ComponentRootReference(component);
 
-            return 123;
-          }
-        })()
-      );
+      let originalContext = testOverrideGlobalContext!({
+        getProp(obj: unknown, key: string) {
+          assert.equal(obj, component);
+          assert.equal(key, 'foo');
 
-      let fooRef = ref.get('foo');
-      assert.equal(fooRef.value(), 123);
+          return 123;
+        },
+      });
+
+      try {
+        let fooRef = ref.get('foo');
+        assert.equal(fooRef.value(), 123);
+      } finally {
+        testOverrideGlobalContext!(originalContext);
+      }
     });
   });
 
   module('IterationItemReference', () => {
     test('it creates PropertyReferences when chained', assert => {
-      let componentRef = new ComponentRootReference({}, new TestEnv());
-      let itemRef = new IterationItemReference(componentRef, { foo: 'bar' }, 1, new TestEnv());
+      let componentRef = new ComponentRootReference({});
+      let itemRef = new IterationItemReference(componentRef, { foo: 'bar' }, 1);
       let propRef = itemRef.get('foo');
 
       assert.ok(propRef instanceof PropertyReference);

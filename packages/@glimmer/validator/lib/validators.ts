@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { scheduleRevalidate } from '@glimmer/global-context';
 import { symbol } from './utils';
 import { assertTagNotConsumed } from './debug';
 
@@ -195,6 +196,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
     }
 
     (tag as MonomorphicTagImpl).revision = ++$REVISION;
+
+    scheduleRevalidate();
   }
 }
 

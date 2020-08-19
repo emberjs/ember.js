@@ -12,7 +12,6 @@ import {
   dirtyTagFor,
   isTracking,
   runInTrackingTransaction,
-  setPropertyDidChange,
   tagFor,
   track,
   trackedData,
@@ -472,29 +471,6 @@ module('@glimmer/validator: tracking', () => {
 
       setter(foo, 789);
       assert.notOk(validateTag(tag, snapshot));
-    });
-
-    test('it calls propertyDidChange', assert => {
-      assert.expect(1);
-
-      setPropertyDidChange(() => {
-        assert.ok(true, 'called');
-      });
-
-      class Foo {
-        foo = 123;
-        bar = 456;
-      }
-
-      let { setter } = trackedData<Foo, keyof Foo>('foo', function(this: Foo) {
-        return this.bar;
-      });
-
-      let foo = new Foo();
-      setter(foo, 789);
-
-      // cleanup
-      setPropertyDidChange(() => {});
     });
   });
 
