@@ -291,8 +291,10 @@ function addEventListener(
   <button {{on 'click' (fn this.saveLike @post)}}>Like this post!</button>
   ```
 
-  In this case, the `saveLike` function will receive two arguments: the click event
-  and the value of `@post`.
+  In this case, the `saveLike` function will receive two arguments: the value
+  of `@post` and the click event. The click event will always be the last
+  argument passed to the handler because `{{fn}}` injects custom arguments
+  first.
 
   ### Function Context
 
