@@ -3,6 +3,8 @@ import { Tag } from '@glimmer/validator';
 import { Dict, Option } from '../core';
 import { ScopeBlock, JitOrAotBlock } from './scope';
 
+declare const CAPTURED_ARGS: unique symbol;
+
 export interface VMArguments {
   length: number;
   positional: PositionalArguments;
@@ -13,15 +15,9 @@ export interface VMArguments {
 }
 
 export interface CapturedArguments {
-  length: number;
   positional: CapturedPositionalArguments;
   named: CapturedNamedArguments;
-  value(): CapturedArgumentsValue;
-}
-
-export interface CapturedArgumentsValue {
-  named: Dict;
-  positional: unknown[];
+  [CAPTURED_ARGS]: true;
 }
 
 export interface PositionalArguments {
@@ -30,11 +26,8 @@ export interface PositionalArguments {
   capture(): CapturedPositionalArguments;
 }
 
-export interface CapturedPositionalArguments extends PathReference<unknown[]> {
-  length: number;
-  references: PathReference<unknown>[];
-  at<T extends unknown>(position: number): PathReference<T>;
-  value(): unknown[];
+export interface CapturedPositionalArguments extends Array<PathReference> {
+  [CAPTURED_ARGS]: true;
 }
 
 export interface NamedArguments {
@@ -60,12 +53,12 @@ export interface CapturedBlockArguments {
   get(name: string): Option<ScopeBlock>;
 }
 
-export interface CapturedNamedArguments extends PathReference<Dict<unknown>> {
-  map: Dict<PathReference<unknown>>;
-  names: string[];
-  length: number;
-  references: PathReference<unknown>[];
-  has(name: string): boolean;
-  get<T extends PathReference<unknown>>(name: string): T;
-  value(): Dict<unknown>;
+export interface CapturedNamedArguments {
+  [key: string]: PathReference;
+  [CAPTURED_ARGS]: true;
+}
+
+export interface Arguments {
+  positional: unknown[];
+  named: Record<string, unknown>;
 }

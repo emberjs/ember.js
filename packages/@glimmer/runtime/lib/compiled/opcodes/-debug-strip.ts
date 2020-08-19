@@ -11,9 +11,10 @@ import {
   wrap,
   CheckOption,
   CheckOr,
+  CheckArray,
+  CheckDict,
 } from '@glimmer/debug';
 import {
-  CapturedArguments,
   CompilableBlock,
   ComponentDefinition,
   ComponentManager,
@@ -22,7 +23,7 @@ import {
   JitOrAotBlock,
   Scope,
   Helper,
-  CapturedArgumentsValue,
+  CapturedArguments,
   Option,
   JitScopeBlock,
 } from '@glimmer/interfaces';
@@ -30,11 +31,7 @@ import { PathReference, Reference } from '@glimmer/reference';
 import { Tag, COMPUTE } from '@glimmer/validator';
 import { PartialScopeImpl } from '../../scope';
 import CurryComponentReference from '../../references/curry-component';
-import {
-  CapturedNamedArgumentsImpl,
-  CapturedPositionalArgumentsImpl,
-  VMArgumentsImpl,
-} from '../../vm/arguments';
+import { VMArgumentsImpl } from '../../vm/arguments';
 import { ComponentInstance, ComponentElementOperations } from './component';
 import { UNDEFINED_REFERENCE } from '../../references';
 
@@ -61,18 +58,6 @@ export const CheckArguments: Checker<VMArgumentsImpl> = wrap(() =>
 
 export const CheckHelper: Checker<Helper> = CheckFunction as Checker<Helper>;
 
-class CheckCapturedArgumentsValue implements Checker<() => CapturedArgumentsValue> {
-  type!: () => CapturedArgumentsValue;
-
-  validate(value: unknown): value is () => CapturedArgumentsValue {
-    return typeof value === 'function';
-  }
-
-  expected(): string {
-    return `SafeString`;
-  }
-}
-
 export class UndefinedReferenceChecker implements Checker<Reference> {
   type!: Reference;
 
@@ -88,10 +73,8 @@ export class UndefinedReferenceChecker implements Checker<Reference> {
 export const CheckUndefinedReference = new UndefinedReferenceChecker();
 
 export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
-  length: CheckNumber,
-  positional: wrap(() => CheckInstanceof(CapturedPositionalArgumentsImpl)),
-  named: wrap(() => CheckInstanceof(CapturedNamedArgumentsImpl)),
-  value: new CheckCapturedArgumentsValue(),
+  positional: wrap(() => CheckArray(CheckPathReference)),
+  named: wrap(() => CheckDict(CheckPathReference)),
 });
 
 export const CheckCurryComponent = wrap(() => CheckInstanceof(CurryComponentReference));

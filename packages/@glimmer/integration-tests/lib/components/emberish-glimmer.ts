@@ -24,7 +24,7 @@ import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
 import { EmberishCurlyComponentFactory } from './emberish-curly';
 import { UpdatableRootReference } from '../reference';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor, reifyNamed } from '@glimmer/runtime';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
@@ -133,7 +133,7 @@ export class EmberishGlimmerComponentManager
   ): EmberishGlimmerComponentState {
     let args = _args.named.capture();
     let klass = definition.ComponentClass || EmberishGlimmerComponent;
-    let attrs = args.value();
+    let attrs = reifyNamed(args);
     let component = klass.create({ attrs });
 
     component.didInitAttrs({ attrs });
@@ -183,7 +183,7 @@ export class EmberishGlimmerComponentManager
 
   update({ args, component }: EmberishGlimmerComponentState): void {
     let oldAttrs = component.attrs;
-    let newAttrs = args.value();
+    let newAttrs = reifyNamed(args);
 
     component.attrs = newAttrs;
     component.didUpdateAttrs({ oldAttrs, newAttrs });
