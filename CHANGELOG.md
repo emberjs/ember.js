@@ -1,3 +1,13 @@
+## v0.57.1 (2020-08-19)
+
+#### :bug: Bug Fix
+* `@glimmer/validator`
+  * [#1133](https://github.com/glimmerjs/glimmer-vm/pull/1133) [BUGFIX] Avoid String.prototype.repeat ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.57.0 (2020-08-18)
 
 #### :boom: Breaking Change
