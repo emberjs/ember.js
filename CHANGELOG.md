@@ -1,3 +1,15 @@
+## v0.58.0 (2020-08-19)
+
+#### :boom: Breaking Change
+* `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/reference`, `@glimmer/runtime`
+  * [#1135](https://github.com/glimmerjs/glimmer-vm/pull/1135) [REFACTOR] Simplify CapturedArguments ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`
+  * [#1136](https://github.com/glimmerjs/glimmer-vm/pull/1136) [CLEANUP] Consolidate Scope classes ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.57.2 (2020-08-19)
 
 #### :bug: Bug Fix
