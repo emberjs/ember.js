@@ -1,9 +1,9 @@
 import { VMArguments } from './arguments';
-import { DynamicScope } from './environment';
 import { GlimmerTreeChanges } from '../dom/changes';
 import { Tag, UpdatableTag } from '@glimmer/validator';
 import { Option, Destroyable } from '../core';
 import { SimpleElement } from '@simple-dom/interface';
+import { DynamicScope } from './scope';
 
 export interface ModifierManager<
   ModifierInstanceState = unknown,

@@ -1,8 +1,8 @@
-import { Environment, DynamicScope } from './environment';
+import { Environment } from './environment';
 import { PathReference } from '@glimmer/reference';
 import { Destroyable } from '../core';
 import { VMArguments } from './arguments';
-
+import { DynamicScope } from './scope';
 /**
  * This is used in the Glimmer Embedding API. In particular, embeddings
  * provide helpers through the `CompileTimeLookup` interface, and the

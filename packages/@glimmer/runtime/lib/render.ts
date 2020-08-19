@@ -24,7 +24,7 @@ import { resolveComponent } from './component/resolve';
 import { ARGS } from './symbols';
 import { AotVM, InternalVM, JitVM } from './vm/append';
 import { NewElementBuilder } from './vm/element-builder';
-import { DefaultDynamicScope } from './dynamic-scope';
+import { DynamicScopeImpl } from './scope';
 import { UNDEFINED_REFERENCE } from './references';
 import { inTransaction } from './environment';
 
@@ -52,7 +52,7 @@ export function renderAotMain(
   self: PathReference,
   treeBuilder: ElementBuilder,
   handle: number,
-  dynamicScope: DynamicScope = new DefaultDynamicScope()
+  dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
   let vm = AotVM.initial(runtime, { self, dynamicScope, treeBuilder, handle });
   return new TemplateIteratorImpl(vm);
@@ -65,7 +65,7 @@ export function renderAot(
   self: PathReference = UNDEFINED_REFERENCE
 ): TemplateIterator {
   let treeBuilder = NewElementBuilder.forInitialRender(runtime.env, cursor);
-  let dynamicScope = new DefaultDynamicScope();
+  let dynamicScope = new DynamicScopeImpl();
   let vm = AotVM.initial(runtime, { self, dynamicScope, treeBuilder, handle });
   return new TemplateIteratorImpl(vm);
 }
@@ -76,7 +76,7 @@ export function renderJitMain(
   self: PathReference,
   treeBuilder: ElementBuilder,
   handle: number,
-  dynamicScope: DynamicScope = new DefaultDynamicScope()
+  dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
   let vm = JitVM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle });
   return new TemplateIteratorImpl(vm);
@@ -130,7 +130,7 @@ export function renderAotComponent<R>(
   main: number,
   name: string,
   args: RenderComponentArgs = {},
-  dynamicScope: DynamicScope = new DefaultDynamicScope()
+  dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
   let vm = AotVM.empty(runtime, { treeBuilder, handle: main, dynamicScope });
 
@@ -161,7 +161,7 @@ export function renderJitComponent(
   main: number,
   name: string,
   args: RenderComponentArgs = {},
-  dynamicScope: DynamicScope = new DefaultDynamicScope()
+  dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
   let vm = JitVM.empty(runtime, { treeBuilder, handle: main, dynamicScope }, context);
 

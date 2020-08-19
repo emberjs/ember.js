@@ -56,9 +56,3 @@ export interface Environment<Extra = unknown> {
   isInteractive: boolean;
   extra: Extra;
 }
-
-export interface DynamicScope {
-  get(key: string): PathReference<unknown>;
-  set(key: string, reference: PathReference<unknown>): PathReference<unknown>;
-  child(): DynamicScope;
-}

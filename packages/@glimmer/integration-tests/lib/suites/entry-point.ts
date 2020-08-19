@@ -1,4 +1,4 @@
-import { PrimitiveReference, DefaultDynamicScope } from '@glimmer/runtime';
+import { PrimitiveReference, DynamicScopeImpl } from '@glimmer/runtime';
 import { ConstReference } from '@glimmer/reference';
 import { RenderTest, Count } from '../render-test';
 import { ComponentKind } from '../components/types';
@@ -63,7 +63,7 @@ export class EntryPointTest extends RenderTest {
     delegate.registerComponent('Basic', 'Basic', 'Locale', `{{-get-dynamic-var "locale"}}`);
 
     let element = delegate.getInitialElement();
-    let dynamicScope = new DefaultDynamicScope({
+    let dynamicScope = new DynamicScopeImpl({
       locale: new ConstReference('en_US'),
     });
     delegate.renderComponent('Locale', {}, element, dynamicScope);
