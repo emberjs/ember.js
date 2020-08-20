@@ -113,10 +113,10 @@ export default function(args: VMArguments, vm: VM) {
 }
 
 function get({ positional }: CapturedArguments) {
-  let source = positional.at(0).value();
+  let source = positional[0].value();
 
   if (isObject(source)) {
-    let path = positional.at(1).value();
+    let path = positional[1].value();
 
     return emberGet(source, String(path));
   }
@@ -128,8 +128,8 @@ class GetHelperRootReference extends HelperRootReference {
 
   constructor(args: CapturedArguments, env: Environment) {
     super(get, args, env);
-    this.sourceReference = args.positional.at(0);
-    this.pathReference = args.positional.at(1);
+    this.sourceReference = args.positional[0] as PathReference<object>;
+    this.pathReference = args.positional[1] as PathReference<string>;
   }
 
   [UPDATE_REFERENCED_VALUE](value: any) {

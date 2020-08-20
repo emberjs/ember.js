@@ -92,7 +92,9 @@ export class ActionState {
   }
 
   getEventName() {
-    return this.namedArgs.get('on').value() || 'click';
+    let onRef = this.namedArgs.on;
+
+    return onRef !== undefined ? onRef.value() : 'click';
   }
 
   getActionArgs() {
@@ -107,30 +109,28 @@ export class ActionState {
 
   getTarget() {
     let { implicitTarget, namedArgs } = this;
-    let target;
+    let { target } = namedArgs;
 
-    if (namedArgs.has('target')) {
-      target = namedArgs.get('target').value();
-    } else {
-      target = implicitTarget.value();
-    }
-
-    return target;
+    return target !== undefined ? target.value() : implicitTarget.value();
   }
 
   handler(event: Event): boolean {
     let { actionName, namedArgs } = this;
-    let bubbles = namedArgs.get('bubbles');
-    let preventDefault = namedArgs.get('preventDefault');
-    let allowedKeys = namedArgs.get('allowedKeys');
-    let target = this.getTarget();
-    let shouldBubble = bubbles.value() !== false;
+    let { bubbles, preventDefault, allowedKeys } = namedArgs;
 
-    if (!isAllowedEvent(event, allowedKeys.value())) {
+    let bubblesVal = bubbles !== undefined ? bubbles.value() : undefined;
+    let preventDefaultVal = preventDefault !== undefined ? preventDefault.value() : undefined;
+    let allowedKeysVal = allowedKeys !== undefined ? allowedKeys.value() : undefined;
+
+    let target = this.getTarget();
+
+    let shouldBubble = bubblesVal !== false;
+
+    if (!isAllowedEvent(event, allowedKeysVal)) {
       return true;
     }
 
-    if (preventDefault.value() !== false) {
+    if (preventDefaultVal !== false) {
       event.preventDefault();
     }
 
@@ -192,7 +192,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     // The first two arguments are (1) `this` and (2) the action name.
     // Everything else is a param.
     for (let i = 2; i < positional.length; i++) {
-      actionArgs.push(positional.at(i));
+      actionArgs.push(positional[i]);
     }
 
     let actionId = uuid();
@@ -225,8 +225,8 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     let implicitTarget;
 
     if (positional.length > 1) {
-      implicitTarget = positional.at(0);
-      actionNameRef = positional.at(1);
+      implicitTarget = positional[0];
+      actionNameRef = positional[1];
 
       if (actionNameRef[INVOKE]) {
         actionName = actionNameRef;
@@ -259,7 +259,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
 
   update(actionState: ActionState) {
     let { positional } = actionState;
-    let actionNameRef = positional.at(1);
+    let actionNameRef = positional[1];
 
     if (!actionNameRef[INVOKE]) {
       actionState.actionName = actionNameRef.value();

@@ -22,7 +22,7 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { PathReference, RootReference } from '@glimmer/reference';
-import { PrimitiveReference, registerDestructor } from '@glimmer/runtime';
+import { PrimitiveReference, registerDestructor, ReifyPositionalReference } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import {
   beginTrackFrame,
@@ -168,7 +168,7 @@ export default class CurlyComponentManager
 
   prepareArgs(state: DefinitionState, args: VMArguments): Option<PreparedArguments> {
     if (args.named.has('__ARGS__')) {
-      let { __ARGS__, ...rest } = args.named.capture().map;
+      let { __ARGS__, ...rest } = args.named.capture();
 
       let prepared = {
         positional: EMPTY_POSITIONAL_ARGS,
@@ -199,12 +199,12 @@ export default class CurlyComponentManager
         `You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`,
         !args.named.has(positionalParams)
       );
-      named = { [positionalParams]: args.positional.capture() };
-      assign(named, args.named.capture().map);
+      named = { [positionalParams]: new ReifyPositionalReference(args.positional.capture()) };
+      assign(named, args.named.capture());
     } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
       const count = Math.min(positionalParams.length, args.positional.length);
       named = {};
-      assign(named, args.named.capture().map);
+      assign(named, args.named.capture());
 
       for (let i = 0; i < count; i++) {
         const name = positionalParams[i];

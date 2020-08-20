@@ -13,9 +13,7 @@ function ifHelper({ positional }: CapturedArguments) {
     positional.length === 3 || positional.length === 2
   );
 
-  let condition = positional.at(0);
-  let truthyValue = positional.at(1);
-  let falsyValue = positional.at(2);
+  let [condition, truthyValue, falsyValue] = positional;
 
   if (toBool(condition.value()) === true) {
     return truthyValue.value();
@@ -30,9 +28,7 @@ function unless({ positional }: CapturedArguments) {
     positional.length === 3 || positional.length === 2
   );
 
-  let condition = positional.at(0);
-  let truthyValue = positional.at(2);
-  let falsyValue = positional.at(1);
+  let [condition, falsyValue, truthyValue] = positional;
 
   if (toBool(condition.value()) === true) {
     return truthyValue !== undefined ? truthyValue.value() : undefined;

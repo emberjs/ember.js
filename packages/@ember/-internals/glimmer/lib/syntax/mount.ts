@@ -6,12 +6,13 @@ import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import {
+  createCapturedArgs,
   CurriedComponentDefinition,
   curry,
-  EMPTY_ARGS,
+  EMPTY_POSITIONAL,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
-import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
+import { MountDefinition } from '../component-managers/mount';
 import { EmberVMEnvironment } from '../environment';
 
 export function mountHelper(
@@ -45,25 +46,7 @@ export function mountHelper(
   if (args.named.has('model')) {
     assert('[BUG] this should already be checked by the macro', args.named.length === 1);
 
-    let named = args.named.capture();
-
-    // TODO delete me after EMBER_ROUTING_MODEL_ARG has shipped
-    if (DEBUG && MODEL_ARG_NAME !== 'model') {
-      assert('[BUG] named._map is not null', named['_map'] === null);
-      named.names = [MODEL_ARG_NAME];
-    }
-
-    captured = {
-      positional: EMPTY_ARGS.positional,
-      named,
-      length: 1,
-      value() {
-        return {
-          named: this.named.value(),
-          positional: this.positional.value(),
-        };
-      },
-    };
+    captured = createCapturedArgs(args.named.capture(), EMPTY_POSITIONAL);
   }
 
   return new DynamicEngineReference(nameRef, env, captured);

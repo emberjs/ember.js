@@ -1,5 +1,6 @@
 import { assert } from '@ember/debug';
-import { Bounds, CapturedArguments, Option } from '@glimmer/interfaces';
+import { Arguments, Bounds, CapturedArguments, Option } from '@glimmer/interfaces';
+import { reifyArgs } from '@glimmer/runtime';
 import { expect, Stack, unwrapTemplate } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { OwnedTemplate } from '../template';
@@ -24,7 +25,7 @@ export interface CapturedRenderNode {
   id: string;
   type: RenderNodeType;
   name: string;
-  args: ReturnType<CapturedArguments['value']>;
+  args: Arguments;
   instance: unknown;
   template: Option<string>;
   bounds: Option<{
@@ -185,7 +186,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
     let template = this.captureTemplate(node);
     let bounds = this.captureBounds(node);
     let children = this.captureRefs(refs);
-    return { id, type, name, args: args.value(), instance, template, bounds, children };
+    return { id, type, name, args: reifyArgs(args), instance, template, bounds, children };
   }
 
   private captureTemplate({ template }: InternalRenderNode<Bucket>): Option<string> {

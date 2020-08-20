@@ -6,6 +6,7 @@ import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
+import { reifyNamed } from '@glimmer/runtime';
 
 /**
   This is a helper to be used in conjunction with the link-to helper.
@@ -32,10 +33,10 @@ function queryParams({ positional, named }: CapturedArguments) {
   // tslint:disable-next-line:max-line-length
   assert(
     "The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='foo') as opposed to just (query-params 'foo')",
-    positional.value().length === 0
+    positional.length === 0
   );
 
-  return new QueryParams(assign({}, named.value() as any));
+  return new QueryParams(assign({}, reifyNamed(named) as any));
 }
 
 export default function(args: VMArguments, vm: VM) {

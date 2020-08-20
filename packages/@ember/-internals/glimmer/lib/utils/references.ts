@@ -3,7 +3,7 @@ import { debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Environment } from '@glimmer/interfaces';
 import { HelperRootReference, PathReference, RootReference } from '@glimmer/reference';
-import { PrimitiveReference } from '@glimmer/runtime';
+import { PrimitiveReference, reifyArgs } from '@glimmer/runtime';
 import { consumeTag, deprecateMutationsInTrackingTransaction } from '@glimmer/validator';
 import { HelperInstance, isClassHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
 
@@ -14,22 +14,19 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
     env: Environment
   ) {
     let fnWrapper = (args: CapturedArguments) => {
-      let { positional, named } = args;
-
-      let positionalValue = positional.value();
-      let namedValue = named.value();
+      let { positional, named } = reifyArgs(args);
 
       let ret: T;
 
       if (DEBUG) {
-        debugFreeze(positionalValue);
-        debugFreeze(namedValue);
+        debugFreeze(positional);
+        debugFreeze(named);
 
         deprecateMutationsInTrackingTransaction!(() => {
-          ret = helper.compute(positionalValue, namedValue);
+          ret = helper.compute(positional, named);
         });
       } else {
-        ret = helper.compute(positionalValue, namedValue);
+        ret = helper.compute(positional, named);
       }
 
       if (helper[RECOMPUTE_TAG]) {

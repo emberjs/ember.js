@@ -2,7 +2,7 @@ import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor, reifyArgs } from '@glimmer/runtime';
 import { createUpdatableTag, untrack } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 
@@ -63,7 +63,7 @@ export class CustomModifierState<ModifierInstance> {
     public modifier: ModifierInstance,
     public args: CapturedArguments
   ) {
-    registerDestructor(this, () => delegate.destroyModifier(modifier, args.value()));
+    registerDestructor(this, () => delegate.destroyModifier(modifier, reifyArgs(args)));
   }
 }
 
@@ -119,7 +119,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
     let { delegate, ModifierClass } = definition;
     const capturedArgs = args.capture();
 
-    let instance = definition.delegate.createModifier(ModifierClass, capturedArgs.value());
+    let instance = definition.delegate.createModifier(ModifierClass, reifyArgs(capturedArgs));
     let state = new CustomModifierState(element, delegate, instance, capturedArgs);
 
     if (DEBUG) {
@@ -146,7 +146,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
     );
 
     let { capabilities } = delegate;
-    let argsValue = args.value();
+    let argsValue = reifyArgs(args);
 
     if (capabilities.disableAutoTracking === true) {
       untrack(() => delegate.installModifier(modifier, element, argsValue));
@@ -158,7 +158,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
   update(state: CustomModifierState<ModifierInstance>) {
     let { args, delegate, modifier } = state;
     let { capabilities } = delegate;
-    let argsValue = args.value();
+    let argsValue = reifyArgs(args);
 
     if (capabilities.disableAutoTracking === true) {
       untrack(() => delegate.updateModifier(modifier, argsValue));
