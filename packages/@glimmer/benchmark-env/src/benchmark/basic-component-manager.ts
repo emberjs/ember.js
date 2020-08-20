@@ -38,6 +38,10 @@ class BasicComponentManager
     return { env, instance, self };
   }
 
+  getDebugName() {
+    return 'basic-benchmark-component';
+  }
+
   didCreate() {
     //
   }
@@ -52,12 +56,6 @@ class BasicComponentManager
 
   didUpdateLayout() {
     //
-  }
-
-  // Convert the opaque component into a `RevisionTag` that determins when
-  // the component's update hooks need to be called (if at all).
-  getTag(state: BasicState) {
-    return state.self.tag;
   }
 
   getCapabilities() {

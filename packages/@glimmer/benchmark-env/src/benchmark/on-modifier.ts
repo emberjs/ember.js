@@ -1,12 +1,12 @@
 import { ModifierManager, VMArguments } from '@glimmer/interfaces';
-import { VersionedReference } from '@glimmer/reference';
-import { combine } from '@glimmer/validator';
+import { Reference } from '@glimmer/reference';
+import { createUpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 
 interface OnModifierState {
   element: HTMLElement;
-  nameRef: VersionedReference<string>;
-  listenerRef: VersionedReference<EventListener>;
+  nameRef: Reference<string>;
+  listenerRef: Reference<EventListener>;
   name: string | null;
   listener: EventListener | null;
 }
@@ -15,11 +15,15 @@ class OnModifierManager implements ModifierManager<OnModifierState, null> {
   create(element: SimpleElement, _: null, args: VMArguments) {
     return {
       element: element as HTMLElement,
-      nameRef: args.positional.at(0) as VersionedReference<string>,
-      listenerRef: args.positional.at(1) as VersionedReference<EventListener>,
+      nameRef: args.positional.at(0) as Reference<string>,
+      listenerRef: args.positional.at(1) as Reference<EventListener>,
       name: null,
       listener: null,
     };
+  }
+
+  getDebugName() {
+    return 'on-modifier';
   }
 
   install(state: OnModifierState) {
@@ -46,8 +50,8 @@ class OnModifierManager implements ModifierManager<OnModifierState, null> {
     return state;
   }
 
-  getTag(state: OnModifierState) {
-    return combine([state.nameRef.tag, state.listenerRef.tag]);
+  getTag() {
+    return createUpdatableTag();
   }
 }
 

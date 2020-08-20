@@ -7,6 +7,7 @@ import {
   JitRuntime,
   JitSyntaxCompilationContext,
   renderJitMain,
+  renderSync,
 } from '@glimmer/runtime';
 
 import createEnvDelegate from './create-env-delegate';
@@ -35,13 +36,16 @@ export default async function renderBenchmark(
     );
     const env = runtime.env;
     const cursor = { element, nextSibling: null };
-    const result = renderJitMain(
-      runtime,
-      context,
-      new ComponentRootReference(root, env),
-      NewElementBuilder.forInitialRender(env, cursor),
-      entry
-    ).sync();
+    const result = renderSync(
+      env,
+      renderJitMain(
+        runtime,
+        context,
+        new ComponentRootReference(root, env),
+        NewElementBuilder.forInitialRender(env, cursor),
+        entry
+      )
+    );
 
     let scheduled = false;
     setPropertyDidChange(() => {
