@@ -7,7 +7,7 @@ class ArgsProxy implements ProxyHandler<CapturedNamedArguments> {
   }
 
   ownKeys(target: CapturedNamedArguments): string[] {
-    return target.names;
+    return Object.keys(target);
   }
 
   getOwnPropertyDescriptor(
@@ -15,8 +15,8 @@ class ArgsProxy implements ProxyHandler<CapturedNamedArguments> {
     p: PropertyKey
   ): PropertyDescriptor | undefined {
     let desc: PropertyDescriptor | undefined;
-    if (typeof p === 'string' && target.has(p)) {
-      const value = target.get(p).value();
+    if (typeof p === 'string' && p in target) {
+      const value = target[p].value();
       desc = {
         enumerable: true,
         configurable: false,
@@ -28,12 +28,12 @@ class ArgsProxy implements ProxyHandler<CapturedNamedArguments> {
   }
 
   has(target: CapturedNamedArguments, p: PropertyKey): boolean {
-    return typeof p === 'string' ? target.has(p) : false;
+    return typeof p === 'string' ? p in target : false;
   }
 
   get(target: CapturedNamedArguments, p: PropertyKey): any {
-    if (typeof p === 'string' && target.has(p)) {
-      return target.get(p).value();
+    if (typeof p === 'string' && p in target) {
+      return target[p].value();
     }
   }
 
