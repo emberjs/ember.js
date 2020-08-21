@@ -16,6 +16,6 @@ export default function createBenchmark(): Benchmark {
     basicComponent: (name, template, component) => {
       registry.registerComponent(name, template, component, basicComponentManager);
     },
-    compile: entry => registry.compile(entry),
+    render: registry.render,
   };
 }

@@ -1,13 +1,18 @@
 import { SimpleElement } from '@simple-dom/interface';
-import { Dict, RuntimeResolverDelegate } from '@glimmer/interfaces';
+import {
+  Dict,
+  RuntimeResolverDelegate,
+  ComponentDefinition,
+  CompilableProgram,
+} from '@glimmer/interfaces';
 import { setPropertyDidChange } from '@glimmer/validator';
-import { ComponentRootReference } from '@glimmer/reference';
+import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import {
   NewElementBuilder,
   JitRuntime,
   JitSyntaxCompilationContext,
-  renderJitMain,
   renderSync,
+  renderJitComponent,
 } from '@glimmer/runtime';
 
 import createEnvDelegate from './create-env-delegate';
@@ -17,9 +22,10 @@ import { UpdateBenchmark } from '../interfaces';
 export default async function renderBenchmark(
   context: JitSyntaxCompilationContext,
   runtimeResolverDelegate: RuntimeResolverDelegate,
-  entry: number,
-  element: SimpleElement,
+  component: ComponentDefinition,
+  layout: CompilableProgram,
   root: Dict,
+  element: SimpleElement,
   isInteractive = true
 ): Promise<UpdateBenchmark> {
   let resolveRender: (() => void) | undefined;
@@ -36,15 +42,17 @@ export default async function renderBenchmark(
     );
     const env = runtime.env;
     const cursor = { element, nextSibling: null };
+    const treeBuilder = NewElementBuilder.forInitialRender(env, cursor);
+    const rootRef = new ComponentRootReference(root, env);
+
+    const args: Dict<PathReference> = {};
+    for (const key of Object.keys(root)) {
+      args[key] = rootRef.get(key);
+    }
+
     const result = renderSync(
       env,
-      renderJitMain(
-        runtime,
-        context,
-        new ComponentRootReference(root, env),
-        NewElementBuilder.forInitialRender(env, cursor),
-        entry
-      )
+      renderJitComponent(runtime, treeBuilder, context, component, layout, args)
     );
 
     let scheduled = false;
@@ -66,8 +74,7 @@ export default async function renderBenchmark(
     });
   });
 
-  performance.measure('load', 'navigationStart', 'compileStart');
-  performance.measure('compile', 'compileStart', 'renderStart');
+  performance.measure('load', 'navigationStart', 'renderStart');
 
   return async (name, update) => {
     await measureRender(

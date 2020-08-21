@@ -6,18 +6,27 @@ import {
   ComponentManager,
   SerializedTemplateWithLazyBlock,
   ModifierManager,
+  CompilableProgram,
+  Dict,
 } from '@glimmer/interfaces';
+import { JitContext } from '@glimmer/opcode-compiler';
 import { SimpleComponentManager } from '@glimmer/runtime';
-import { RenderBenchmark } from '../interfaces';
+import { SimpleElement } from '@simple-dom/interface';
+
+import { UpdateBenchmark } from '../interfaces';
 import { createProgram } from './util';
-import compileBenchmark from './compile-benchmark';
+import renderBenchmark from './render-benchmark';
 
 interface RegisteredValueBase<TDefinition> {
   handle: number;
   name: string;
   definition: TDefinition;
 }
-type RegisteredComponent = RegisteredValueBase<ComponentDefinition> & CompileTimeComponent;
+interface RegisteredComponent
+  extends CompileTimeComponent,
+    RegisteredValueBase<ComponentDefinition> {
+  compilable: CompilableProgram;
+}
 type RegisteredHelper = RegisteredValueBase<Helper>;
 type RegisteredModifier = RegisteredValueBase<ModifierDefinition>;
 type RegisteredValue = RegisteredComponent | RegisteredHelper | RegisteredModifier;
@@ -54,11 +63,13 @@ export interface Registry {
    * @param helper
    */
   registerModifier<T>(name: string, modifier: T, manager: ModifierManager<unknown, T>): void;
-  /**
-   * Compile the benchmark
-   * @param entry the entry template compiled with precompile
-   */
-  compile(entry: SerializedTemplateWithLazyBlock<unknown>): RenderBenchmark;
+
+  render(
+    entry: string,
+    args: Dict<unknown>,
+    element: SimpleElement | HTMLElement,
+    isInteractive?: boolean
+  ): Promise<UpdateBenchmark>;
 }
 
 export default function createRegistry(): Registry {
@@ -116,17 +127,28 @@ export default function createRegistry(): Registry {
         }))
       );
     },
-    compile: entry =>
-      compileBenchmark(
-        {
-          lookupHelper: name => helpers.get(name)?.handle,
-          lookupModifier: name => modifiers.get(name)?.handle,
-          lookupComponent: name => components.get(name),
-        },
+    render: (entry, args, element, isIteractive) => {
+      const context = JitContext({
+        lookupHelper: name => helpers.get(name)?.handle,
+        lookupModifier: name => modifiers.get(name)?.handle,
+        lookupComponent: name => components.get(name),
+      });
+      const component = components.get(entry);
+      if (!component) {
+        throw new Error(`missing ${entry} component`);
+      }
+
+      return renderBenchmark(
+        context,
         {
           resolve: handle => values[handle].definition,
         },
-        entry
-      ),
+        component.definition,
+        component.compilable,
+        args,
+        element as SimpleElement,
+        isIteractive
+      );
+    },
   };
 }

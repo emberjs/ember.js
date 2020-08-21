@@ -32,23 +32,19 @@ export interface Benchmark {
   ): void;
 
   /**
-   * Compile the benchmark
-   * @param entry the entry template compiled with precompile
+   * Create the benchmark
+   * @param entry the name of the entry component
+   * @param args the named args to the component
+   * @param element the target element to append to
+   * @param isInteractive whether we are in SSR mode
    */
-  compile(entry: SerializedTemplateWithLazyBlock<unknown>): RenderBenchmark;
+  render(
+    entry: string,
+    args: Dict<unknown>,
+    element: SimpleElement | HTMLElement,
+    isInteractive?: boolean
+  ): Promise<UpdateBenchmark>;
 }
-
-/**
- * Render the benchmark
- * @param element - the element to append to.
- * @param root - root state.
- * @param isInteractive - whether we are in SSR mode.
- */
-export type RenderBenchmark = (
-  element: SimpleElement | HTMLElement,
-  root: Dict<unknown>,
-  isInteractive?: boolean
-) => Promise<UpdateBenchmark>;
 
 /**
  * Update the benchmark.

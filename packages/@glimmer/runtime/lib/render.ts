@@ -8,13 +8,13 @@ import {
   RichIteratorResult,
   SyntaxCompilationContext,
   WithAotStaticLayout,
-  WithJitStaticLayout,
   TemplateIterator,
   Cursor,
   ComponentDefinition,
   JitRuntimeContext,
   AotRuntimeContext,
   ElementBuilder,
+  CompilableProgram,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { expect, unwrapHandle } from '@glimmer/util';
@@ -158,40 +158,17 @@ export function renderJitComponent(
   runtime: JitRuntimeContext,
   treeBuilder: ElementBuilder,
   context: SyntaxCompilationContext,
-  main: number,
-  name: string,
+  definition: ComponentDefinition,
+  layout: CompilableProgram,
   args: RenderComponentArgs = {},
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
-  let vm = JitVM.empty(runtime, { treeBuilder, handle: main, dynamicScope }, context);
-
-  const definition = expect(
-    resolveComponent(vm.runtime.resolver, name),
-    `could not find component "${name}"`
+  const handle = unwrapHandle(layout.compile(context));
+  const invocation = { handle, symbolTable: layout.symbolTable };
+  let vm = JitVM.empty(
+    runtime,
+    { treeBuilder, handle: context.program.stdlib.main, dynamicScope },
+    context
   );
-
-  const { manager, state } = definition;
-
-  const capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
-
-  let invocation: Invocation;
-
-  if (hasStaticLayoutCapability(capabilities, manager)) {
-    let layout = (manager as WithJitStaticLayout).getJitStaticLayout(state, vm.runtime.resolver);
-
-    let handle = unwrapHandle(layout.compile(context));
-
-    if (Array.isArray(handle)) {
-      let error = handle[0];
-      throw new Error(
-        `Compile Error: ${error.problem} ${error.span.start}..${error.span.end} :: TODO (thread better)`
-      );
-    }
-
-    invocation = { handle, symbolTable: layout.symbolTable };
-  } else {
-    throw new Error('Cannot invoke components with dynamic layouts as a root component.');
-  }
-
   return renderInvocation(vm, invocation, definition, args);
 }
