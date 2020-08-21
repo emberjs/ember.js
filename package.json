@@ -10,6 +10,7 @@
   "license": "MIT",
   "author": "Tilde, Inc.",
   "workspaces": [
+    "benchmark",
     "packages/*/*"
   ],
   "scripts": {
@@ -87,8 +88,9 @@
     "release-it-lerna-changelog": "^2.3.0",
     "release-it-yarn-workspaces": "^1.4.0",
     "rimraf": "^2.7.1",
-    "rollup": "^1.31.1",
-    "rollup-plugin-sourcemaps": "^0.5.0",
+    "rollup": "^2.24.0",
+    "rollup-plugin-sourcemaps": "^0.6.2",
+    "rollup-plugin-terser": "^7.0.0",
     "semver": "^6.3.0",
     "testem-failure-only-reporter": "^0.0.1",
     "toml": "^3.0.0",

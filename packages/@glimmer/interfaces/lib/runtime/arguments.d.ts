@@ -1,4 +1,6 @@
+// eslint-disable-next-line node/no-extraneous-import
 import { PathReference } from '@glimmer/reference';
+// eslint-disable-next-line node/no-extraneous-import
 import { Tag } from '@glimmer/validator';
 import { Dict, Option } from '../core';
 import { ScopeBlock, JitOrAotBlock } from './scope';

@@ -189,6 +189,9 @@ module.exports = {
   overrides: [
     {
       files: ['**/*.d.ts'],
+      parserOptions: {
+        sourceType: 'module',
+      },
       rules: {
         'no-useless-constructor': 'off',
       },
@@ -215,6 +218,19 @@ module.exports = {
       rules: {
         'no-process-exit': 'off',
         'node/shebang': 'off',
+      },
+    },
+    {
+      env: {
+        es6: true,
+        browser: true,
+      },
+      files: ['benchmark/**/*.js', 'benchmark/**/*.d.ts'],
+      parserOptions: {
+        sourceType: 'module',
+      },
+      rules: {
+        'node/no-unsupported-features/es-syntax': 'off',
       },
     },
     // source packages

@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-extraneous-import
 import { PathReference } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
 import ComponentCapabilities from '../component-capabilities';
@@ -35,8 +36,9 @@ export interface WithPrepareArgs<
 
 export interface WithCreateInstance<
   ComponentInstanceState = unknown,
-  E extends Environment = Environment
-> extends ComponentManager<ComponentInstanceState> {
+  E extends Environment = Environment,
+  ComponentDefinitionState = unknown
+> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   // The component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.

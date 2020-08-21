@@ -21,9 +21,11 @@
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "typescript.tsc.autoDetect": "on",
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.preferences.importModuleSpecifier": "relative",
   "javascript.preferences.importModuleSpecifier": "relative",
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.workspaceSymbols.scope": "currentProject"
 }

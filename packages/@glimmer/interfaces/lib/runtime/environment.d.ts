@@ -1,4 +1,5 @@
-import { PathReference, Reference, IteratorDelegate } from '@glimmer/reference';
+// eslint-disable-next-line node/no-extraneous-import
+import { Reference, IteratorDelegate } from '@glimmer/reference';
 import { AttributeOperation } from '../dom/attributes';
 import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentInstanceState } from '../components';
