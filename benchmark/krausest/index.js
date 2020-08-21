@@ -1,5 +1,6 @@
-import { createBenchmark } from '@glimmer/benchmark-env';
-import Application from './Application.hbs';
+import { createBenchmark, createCell } from '@glimmer/benchmark-env';
+import ApplicationTemplate from './Application.hbs';
+import Application from './Application';
 import RowTemplate from './Row.hbs';
 import Row from './Row';
 import GlyphIcon from './GlyphIcon.hbs';
@@ -8,23 +9,25 @@ import buildData from './data';
 const benchmark = createBenchmark();
 
 benchmark.basicComponent('Row', RowTemplate, Row);
+benchmark.basicComponent('Application', ApplicationTemplate, Application);
+
 benchmark.templateOnlyComponent('GlyphIcon', GlyphIcon);
 
-const render = benchmark.compile(Application);
+/** @type {{[name: string]: any}} */
+const args = {};
 
-const state = {
-  items: buildData(),
-  lastSelected: null,
-  select: item => {
-    const lastSelected = state.lastSelected;
-    if (lastSelected !== item && lastSelected !== null) {
-      lastSelected.selected = false;
-    }
-    state.lastSelected = item;
-    item.selected = true;
-  },
-};
+const items = createCell(args, 'items', []);
+
+Reflect.defineProperty(args, 'items', {
+  get: () => items.get(),
+  set: v => items.set(v),
+  enumerable: true,
+  configurable: false,
+});
 
 (async () => {
-  await render(document.body, state);
+  const update = await benchmark.render('Application', args, document.body);
+  await update('update', () => {
+    args.items = buildData();
+  });
 })();

@@ -1,6 +1,6 @@
 import { createCell } from '@glimmer/benchmark-env';
 
-class Item {
+export class Item {
   /** @type {number} */
   id;
 

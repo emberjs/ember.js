@@ -30,10 +30,8 @@ class CellImpl<T> implements Cell<T> {
   }
 
   set(value: T) {
-    if (value !== this._value) {
-      dirtyTagFor(this._obj, this._key, this._meta);
-      this._value = value;
-    }
+    dirtyTagFor(this._obj, this._key, this._meta);
+    this._value = value;
   }
 }
 

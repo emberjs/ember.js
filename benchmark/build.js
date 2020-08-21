@@ -28,7 +28,7 @@ async function build() {
           let result;
           if (id.endsWith('.hbs')) {
             const source = fs.readFileSync(id, 'utf8');
-            // eslint-disable-next-line node/no-unpublished-require
+            // eslint-disable-next-line node/no-unpublished-require, node/no-missing-require
             const compiled = require('../dist/@glimmer/compiler').precompile(source);
             result = `export default ${compiled};`;
           }

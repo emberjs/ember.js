@@ -1,4 +1,8 @@
-import { SerializedTemplateWithLazyBlock, CompilableProgram } from '@glimmer/interfaces';
+import {
+  SerializedTemplateWithLazyBlock,
+  CompilableProgram,
+  CompileTimeComponent,
+} from '@glimmer/interfaces';
 import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 import { templateFactory } from '@glimmer/opcode-compiler';
 import { JitSyntaxCompilationContext } from '@glimmer/interfaces';
@@ -9,11 +13,8 @@ export function createProgram(
   return unwrapTemplate(templateFactory(template).create()).asLayout();
 }
 
-export function compileTemplate(
-  template: SerializedTemplateWithLazyBlock<unknown>,
-  context: JitSyntaxCompilationContext
-) {
-  return unwrapHandle(createProgram(template).compile(context));
+export function compileEntry(entry: CompileTimeComponent, context: JitSyntaxCompilationContext) {
+  return unwrapHandle(entry.compilable!.compile(context));
 }
 
 export async function measureRender(
