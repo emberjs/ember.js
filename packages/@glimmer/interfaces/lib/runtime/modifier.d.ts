@@ -1,6 +1,7 @@
 import { VMArguments } from './arguments';
 import { GlimmerTreeChanges } from '../dom/changes';
-import { Tag, UpdatableTag } from '@glimmer/validator';
+// eslint-disable-next-line node/no-extraneous-import
+import { UpdatableTag } from '@glimmer/validator';
 import { Option, Destroyable } from '../core';
 import { SimpleElement } from '@simple-dom/interface';
 import { DynamicScope } from './scope';

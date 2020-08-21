@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-extraneous-import
 import { PathReference } from '@glimmer/reference';
 import { ComponentManager } from './components/component-manager';
 import { Dict } from './core';
