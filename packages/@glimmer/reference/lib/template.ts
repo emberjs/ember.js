@@ -1,9 +1,9 @@
-import { ComponentInstanceState, CapturedArguments, Option } from '@glimmer/interfaces';
+import { ComponentInstanceState, CapturedArguments } from '@glimmer/interfaces';
 import { dict, isDict, symbol, debugToString } from '@glimmer/util';
 import { dirtyTag, consumeTag, createTag } from '@glimmer/validator';
-import { PathReference, CachedReference } from './reference';
+import { getProp, setProp } from '@glimmer/global-context';
 import { DEBUG } from '@glimmer/env';
-import { IteratorDelegate } from './iterable';
+import { PathReference, CachedReference } from './reference';
 
 export const UPDATE_REFERENCED_VALUE: unique symbol = symbol('UPDATE_REFERENCED_VALUE');
 
@@ -26,22 +26,6 @@ export interface TemplatePathReference<T = unknown> extends PathReference<T> {
 }
 
 /**
- * Define a minimal subset of Environment so that reference roots can be used
- * with an environment (e.g. State).
- *
- * TODO: This doesn't really make sense, but State exists so we need to do
- * something. We should probably refactor so that State is created by the the
- * renderer, and gets `env` passed to it.
- */
-export interface TemplateReferenceEnvironment {
-  getProp(obj: unknown, prop: string): unknown;
-  getPath(obj: unknown, path: string): unknown;
-  setPath(obj: unknown, path: string, value: unknown): unknown;
-
-  toIterator(obj: unknown): Option<IteratorDelegate>;
-}
-
-/**
  * RootReferences refer to a constant root value within a template. For
  * instance, the `this` in `{{this.some.prop}}`. This is typically a:
  *
@@ -58,21 +42,17 @@ export abstract class RootReference<T = unknown> extends CachedReference<T>
   private children = dict<PropertyReference>();
   debugLabel?: string;
 
-  constructor(protected env: TemplateReferenceEnvironment) {
-    super();
-  }
-
   get(key: string): TemplatePathReference {
     // References should in general be identical to one another, so we can usually
     // deduplicate them in production. However, in DEBUG we need unique references
     // so we can properly key off them for the logging context.
     if (DEBUG) {
-      return new PropertyReference(this, key, this.env);
+      return new PropertyReference(this, key);
     } else {
       let ref = this.children[key];
 
       if (ref === undefined) {
-        ref = this.children[key] = new PropertyReference(this, key, this.env);
+        ref = this.children[key] = new PropertyReference(this, key);
       }
 
       return ref;
@@ -81,8 +61,8 @@ export abstract class RootReference<T = unknown> extends CachedReference<T>
 }
 
 export class ComponentRootReference<T extends ComponentInstanceState> extends RootReference<T> {
-  constructor(private inner: T, env: TemplateReferenceEnvironment) {
-    super(env);
+  constructor(private inner: T) {
+    super();
 
     if (DEBUG) {
       this.debugLabel = 'this';
@@ -108,13 +88,8 @@ export type InternalHelperFunction<T = unknown> = (args: CapturedArguments) => T
 export class HelperRootReference<T = unknown> extends RootReference<T> {
   compute: () => T;
 
-  constructor(
-    fn: InternalHelperFunction<T>,
-    args: CapturedArguments,
-    protected env: TemplateReferenceEnvironment,
-    debugName?: string
-  ) {
-    super(env);
+  constructor(fn: InternalHelperFunction<T>, args: CapturedArguments, debugName?: string) {
+    super();
 
     if (DEBUG) {
       let name = debugName || fn.name;
@@ -138,11 +113,7 @@ export class PropertyReference extends CachedReference implements TemplatePathRe
   private children = dict<PropertyReference>();
   debugLabel?: string;
 
-  constructor(
-    protected parentReference: TemplatePathReference,
-    protected propertyKey: string,
-    protected env: TemplateReferenceEnvironment
-  ) {
+  constructor(protected parentReference: TemplatePathReference, protected propertyKey: string) {
     super();
 
     if (DEBUG) {
@@ -156,7 +127,7 @@ export class PropertyReference extends CachedReference implements TemplatePathRe
     let parentValue = parentReference.value();
 
     if (isDict(parentValue)) {
-      return this.env.getProp(parentValue, propertyKey);
+      return getProp(parentValue, propertyKey);
     }
   }
 
@@ -165,12 +136,12 @@ export class PropertyReference extends CachedReference implements TemplatePathRe
     // deduplicate them in production. However, in DEBUG we need unique references
     // so we can properly key off them for the logging context.
     if (DEBUG) {
-      return new PropertyReference(this, key, this.env);
+      return new PropertyReference(this, key);
     } else {
       let ref = this.children[key];
 
       if (ref === undefined) {
-        ref = this.children[key] = new PropertyReference(this, key, this.env);
+        ref = this.children[key] = new PropertyReference(this, key);
       }
 
       return ref;
@@ -181,7 +152,9 @@ export class PropertyReference extends CachedReference implements TemplatePathRe
     let { parentReference, propertyKey } = this;
     let parentValue = parentReference.value();
 
-    this.env.setPath(parentValue, propertyKey, value);
+    if (isDict(parentValue)) {
+      setProp(parentValue, propertyKey, value);
+    }
   }
 }
 
@@ -210,8 +183,7 @@ export class IterationItemReference<T = unknown> implements TemplatePathReferenc
   constructor(
     public parentReference: TemplatePathReference,
     private itemValue: T,
-    itemKey: unknown,
-    private env: TemplateReferenceEnvironment
+    itemKey: unknown
   ) {
     if (DEBUG) {
       this.debugLabel = `${parentReference.debugLabel!}.${debugToString!(itemKey)}`;
@@ -240,12 +212,12 @@ export class IterationItemReference<T = unknown> implements TemplatePathReferenc
     // deduplicate them in production. However, in DEBUG we need unique references
     // so we can properly key off them for the logging context.
     if (DEBUG) {
-      return new PropertyReference(this, key, this.env);
+      return new PropertyReference(this, key);
     } else {
       let ref = this.children[key];
 
       if (ref === undefined) {
-        ref = this.children[key] = new PropertyReference(this, key, this.env);
+        ref = this.children[key] = new PropertyReference(this, key);
       }
 
       return ref;

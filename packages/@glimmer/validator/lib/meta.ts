@@ -2,12 +2,6 @@ import { DEBUG } from '@glimmer/env';
 import { dirtyTag, createUpdatableTag, UpdatableTag, ConstantTag } from './validators';
 import { assertTagNotConsumed } from './debug';
 
-export let propertyDidChange = function() {};
-
-export function setPropertyDidChange(cb: () => void) {
-  propertyDidChange = cb;
-}
-
 function isObjectLike<T>(u: T): u is object & T {
   return (typeof u === 'object' && u !== null) || typeof u === 'function';
 }
@@ -41,7 +35,6 @@ export function dirtyTagFor<T extends object>(
     }
 
     dirtyTag(propertyTag);
-    propertyDidChange();
   }
 }
 

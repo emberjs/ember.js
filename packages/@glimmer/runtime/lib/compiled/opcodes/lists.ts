@@ -12,7 +12,7 @@ APPEND_OPCODES.add(Op.PutIterator, vm => {
   let keyValue = keyRef.value();
   let key = keyValue === null ? '@identity' : String(keyValue);
 
-  let iterableRef = new IterableReference(listRef, key, vm.env);
+  let iterableRef = new IterableReference(listRef, key);
 
   // Push the first time to push the iterator onto the stack for iteration
   stack.pushJs(iterableRef);

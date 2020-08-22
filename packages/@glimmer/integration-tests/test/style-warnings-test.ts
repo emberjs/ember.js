@@ -1,16 +1,24 @@
-import { Option, Environment, ElementBuilder } from '@glimmer/interfaces';
-import { DynamicAttribute, SimpleDynamicAttribute, dynamicAttribute } from '@glimmer/runtime';
-import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
+import { testOverrideGlobalContext, GlobalContext } from '@glimmer/global-context';
 import { assert } from './support';
 import { RenderTest, test, jitSuite } from '..';
 
 let warnings = 0;
+let originalContext: GlobalContext | null;
 
 class StyleWarningsTest extends RenderTest {
   static suiteName = 'Style attributes';
 
   beforeEach() {
     warnings = 0;
+    originalContext = testOverrideGlobalContext!({
+      warnIfStyleNotTrusted() {
+        warnings++;
+      },
+    });
+  }
+
+  afterEach() {
+    testOverrideGlobalContext!(originalContext);
   }
 
   @test
@@ -58,28 +66,4 @@ class StyleWarningsTest extends RenderTest {
   }
 }
 
-jitSuite(StyleWarningsTest, {
-  env: {
-    attributeFor(
-      element: SimpleElement,
-      attr: string,
-      isTrusting: boolean,
-      namespace: Option<AttrNamespace>
-    ): DynamicAttribute {
-      if (attr === 'style' && !isTrusting) {
-        return new StyleAttribute({ element, name: 'style', namespace });
-      }
-
-      return dynamicAttribute(element, attr, namespace);
-    },
-  },
-});
-
-class StyleAttribute extends SimpleDynamicAttribute {
-  set(dom: ElementBuilder, value: unknown, env: Environment): void {
-    warnings++;
-    super.set(dom, value, env);
-  }
-
-  update() {}
-}
+jitSuite(StyleWarningsTest);

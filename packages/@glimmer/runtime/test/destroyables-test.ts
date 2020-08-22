@@ -5,15 +5,12 @@ import {
   destroy,
   isDestroying,
   isDestroyed,
-  _scheduleDestroy,
-  _scheduleDestroyed,
   _destroyChildren,
-  setScheduleDestroy,
-  setScheduleDestroyed,
   enableDestroyableTracking,
   assertDestroyablesDestroyed,
 } from '..';
 import { DEBUG } from '@glimmer/env';
+import { testOverrideGlobalContext, GlobalContext } from '@glimmer/global-context';
 
 const { module, test } = QUnit;
 
@@ -28,21 +25,23 @@ function flush() {
   destroyedQueue = [];
 }
 
-let originalScheduleDestroy = _scheduleDestroy;
-let originalScheduleDestroyed = _scheduleDestroyed;
-
 module('Destroyables', hooks => {
-  hooks.before(() => {
-    setScheduleDestroy((destroyable, destructor) => {
-      destroyQueue.push(() => destructor(destroyable));
-    });
+  let originalContext: GlobalContext | null;
 
-    setScheduleDestroyed(fn => destroyedQueue.push(fn));
+  hooks.before(() => {
+    originalContext = testOverrideGlobalContext!({
+      scheduleDestroy<T extends object>(destroyable: T, destructor: (obj: T) => void) {
+        destroyQueue.push(() => destructor(destroyable));
+      },
+
+      scheduleDestroyed(fn: () => void) {
+        destroyedQueue.push(fn);
+      },
+    });
   });
 
   hooks.after(() => {
-    setScheduleDestroy(originalScheduleDestroy);
-    setScheduleDestroyed(originalScheduleDestroyed);
+    testOverrideGlobalContext!(originalContext);
   });
 
   hooks.afterEach(assert => {

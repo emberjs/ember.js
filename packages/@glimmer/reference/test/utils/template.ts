@@ -1,4 +1,4 @@
-import { TemplateReferenceEnvironment, IteratorDelegate } from '../..';
+import { IteratorDelegate } from '../..';
 import objectValues from './platform';
 
 abstract class BoundedIterator implements IteratorDelegate {
@@ -57,18 +57,18 @@ class ObjectIterator extends BoundedIterator {
   }
 }
 
-export class TestEnv implements TemplateReferenceEnvironment {
+export const TestContext = {
   getProp(obj: unknown, path: string) {
     return (obj as any)[path];
-  }
+  },
 
   getPath(obj: unknown, path: string) {
     return (obj as any)[path];
-  }
+  },
 
-  setPath(obj: unknown, path: string, value: unknown) {
+  setProp(obj: unknown, path: string, value: unknown) {
     return ((obj as any)[path] = value);
-  }
+  },
 
   toIterator(obj: unknown) {
     if (typeof obj === 'object' && obj !== null) {
@@ -76,5 +76,5 @@ export class TestEnv implements TemplateReferenceEnvironment {
     }
 
     return null;
-  }
-}
+  },
+};
