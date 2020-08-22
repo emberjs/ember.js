@@ -7,7 +7,7 @@ import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { VM, VMArguments } from '@glimmer/interfaces';
+import { VMArguments } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { UnboundRootReference } from '../utils/references';
 import { INVOKE } from './mut';
@@ -277,7 +277,7 @@ export const ACTION = symbol('ACTION');
   @for Ember.Templates.helpers
   @public
 */
-export default function(args: VMArguments, vm: VM): UnboundRootReference<Function> {
+export default function(args: VMArguments): UnboundRootReference<Function> {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -304,7 +304,7 @@ export default function(args: VMArguments, vm: VM): UnboundRootReference<Functio
 
   fn[ACTION] = true;
 
-  return new UnboundRootReference(fn, vm.env);
+  return new UnboundRootReference(fn);
 }
 
 function NOOP(args: VMArguments) {

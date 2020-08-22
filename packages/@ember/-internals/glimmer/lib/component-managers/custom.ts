@@ -334,11 +334,10 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   getSelf({
-    env,
     delegate,
     component,
   }: CustomComponentState<ComponentInstance>): PathReference<unknown> {
-    return new ComponentRootReference(delegate.getContext(component), env);
+    return new ComponentRootReference(delegate.getContext(component));
   }
 
   getDestroyable(bucket: CustomComponentState<ComponentInstance>): Option<Destroyable> {

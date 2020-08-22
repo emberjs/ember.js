@@ -54,7 +54,7 @@ export default class ComponentStateBucket {
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : valueForTag(argsTag);
-    this.rootRef = new ComponentRootReference(component, environment);
+    this.rootRef = new ComponentRootReference(component);
 
     registerDestructor(this, () => this.willDestroy(), true);
     registerDestructor(this, () => this.component.destroy());

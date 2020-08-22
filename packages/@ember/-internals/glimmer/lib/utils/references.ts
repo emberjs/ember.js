@@ -1,18 +1,14 @@
 import { getDebugName, isObject } from '@ember/-internals/utils';
 import { debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Environment } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import { HelperRootReference, PathReference, RootReference } from '@glimmer/reference';
 import { PrimitiveReference, reifyArgs } from '@glimmer/runtime';
 import { consumeTag, deprecateMutationsInTrackingTransaction } from '@glimmer/validator';
 import { HelperInstance, isClassHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
 
 export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T> {
-  constructor(
-    helper: SimpleHelper<T> | HelperInstance<T>,
-    args: CapturedArguments,
-    env: Environment
-  ) {
+  constructor(helper: SimpleHelper<T> | HelperInstance<T>, args: CapturedArguments) {
     let fnWrapper = (args: CapturedArguments) => {
       let { positional, named } = reifyArgs(args);
 
@@ -39,16 +35,16 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
     if (DEBUG) {
       let debugName = isClassHelper(helper) ? getDebugName!(helper) : getDebugName!(helper.compute);
 
-      super(fnWrapper, args, env, debugName);
+      super(fnWrapper, args, debugName);
     } else {
-      super(fnWrapper, args, env);
+      super(fnWrapper, args);
     }
   }
 }
 
 export class UnboundRootReference<T = unknown> extends RootReference<T> {
-  constructor(private inner: T, protected env: Environment, parent?: PathReference, key?: string) {
-    super(env);
+  constructor(private inner: T, parent?: PathReference, key?: string) {
+    super();
 
     if (DEBUG) {
       this.debugLabel = parent ? `${parent.debugLabel}.${key}` : `this`;
@@ -72,7 +68,7 @@ export class UnboundRootReference<T = unknown> extends RootReference<T> {
 
     if (isObject(value)) {
       // root of interop with ember objects
-      return new UnboundPropertyReference(value[key], this.env, this, key);
+      return new UnboundPropertyReference(value[key], this, key);
     } else {
       return PrimitiveReference.create(value as any);
     }

@@ -1,4 +1,4 @@
-import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 /**
@@ -24,6 +24,6 @@ function log({ positional }: CapturedArguments) {
   /* eslint-enable no-console */
 }
 
-export default function(args: VMArguments, vm: VM) {
-  return new HelperRootReference(log, args.capture(), vm.env);
+export default function(args: VMArguments) {
+  return new HelperRootReference(log, args.capture());
 }

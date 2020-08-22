@@ -3,7 +3,7 @@
 */
 
 import { assert } from '@ember/debug';
-import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
 import toBool from '../utils/to-bool';
 
@@ -128,8 +128,8 @@ function unless({ positional }: CapturedArguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineIf(args: VMArguments, vm: VM) {
-  return new HelperRootReference(ifHelper, args.capture(), vm.env);
+export function inlineIf(args: VMArguments) {
+  return new HelperRootReference(ifHelper, args.capture());
 }
 
 /**
@@ -217,6 +217,6 @@ export function inlineIf(args: VMArguments, vm: VM) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineUnless(args: VMArguments, vm: VM) {
-  return new HelperRootReference(unless, args.capture(), vm.env);
+export function inlineUnless(args: VMArguments) {
+  return new HelperRootReference(unless, args.capture());
 }

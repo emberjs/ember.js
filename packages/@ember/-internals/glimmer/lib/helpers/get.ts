@@ -1,6 +1,6 @@
 import { get as emberGet, set as emberSet } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
-import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference, PathReference, UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 import { NULL_REFERENCE } from '@glimmer/runtime';
 import { referenceFromParts } from '../utils/references';
@@ -89,7 +89,7 @@ import { referenceFromParts } from '../utils/references';
   @for Ember.Templates.helpers
   @since 2.1.0
  */
-export default function(args: VMArguments, vm: VM) {
+export default function(args: VMArguments) {
   let sourceReference = args.positional.at(0);
   let pathReference = args.positional.at(1);
 
@@ -108,7 +108,7 @@ export default function(args: VMArguments, vm: VM) {
       return sourceReference.get(String(path));
     }
   } else {
-    return new GetHelperRootReference(args.capture(), vm.env);
+    return new GetHelperRootReference(args.capture());
   }
 }
 
@@ -126,8 +126,8 @@ class GetHelperRootReference extends HelperRootReference {
   private sourceReference: PathReference<object>;
   private pathReference: PathReference<string>;
 
-  constructor(args: CapturedArguments, env: Environment) {
-    super(get, args, env);
+  constructor(args: CapturedArguments) {
+    super(get, args);
     this.sourceReference = args.positional[0] as PathReference<object>;
     this.pathReference = args.positional[1] as PathReference<string>;
   }

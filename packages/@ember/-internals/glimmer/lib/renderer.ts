@@ -316,7 +316,7 @@ export abstract class Renderer {
     definition: CurriedComponentDefinition,
     target: SimpleElement
   ) {
-    let self = new UnboundRootReference(definition, this._runtime.env);
+    let self = new UnboundRootReference(definition);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,
