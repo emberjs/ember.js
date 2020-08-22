@@ -41,7 +41,7 @@ export {
   VOLATILE,
 } from './lib/validators';
 
-export { dirtyTagFor, tagFor, tagMetaFor, setPropertyDidChange, TagMeta } from './lib/meta';
+export { dirtyTagFor, tagFor, tagMetaFor, TagMeta } from './lib/meta';
 
 export {
   beginTrackFrame,

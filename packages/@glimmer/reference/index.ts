@@ -21,5 +21,4 @@ export {
   AbstractIterator,
   IteratorDelegate,
   IterableReference,
-  NativeIteratorDelegate,
 } from './lib/iterable';

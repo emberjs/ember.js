@@ -65,7 +65,7 @@ export function JitDelegateContext(
   doc: SimpleDocument,
   resolver: TestJitRuntimeResolver,
   registry: TestJitRegistry,
-  env: EnvironmentDelegate = {}
+  env: EnvironmentDelegate
 ): JitTestDelegateContext {
   registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
   let context = JitContext(new JitCompileTimeLookup(resolver, registry), new TestMacros());
