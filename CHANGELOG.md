@@ -1,3 +1,16 @@
+## v0.59.0 (2020-08-22)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/global-context`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1138](https://github.com/glimmerjs/glimmer-vm/pull/1138) [REFACTOR] Extract environment variables into global context ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1139](https://github.com/glimmerjs/glimmer-vm/pull/1139) Add Benchmark Interface ([@krisselden](https://github.com/krisselden))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+
+
 ## v0.58.0 (2020-08-19)
 
 #### :boom: Breaking Change
