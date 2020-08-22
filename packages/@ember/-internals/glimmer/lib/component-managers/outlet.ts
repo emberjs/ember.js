@@ -78,7 +78,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     dynamicScope.outletState = currentStateRef;
 
     let state: OutletInstanceState = {
-      self: new ComponentRootReference(definition.controller, environment),
+      self: new ComponentRootReference(definition.controller),
       environment,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };

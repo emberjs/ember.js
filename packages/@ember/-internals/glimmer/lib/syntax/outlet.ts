@@ -10,7 +10,6 @@ import {
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
-import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
 import { OutletReference, OutletState } from '../utils/outlet';
@@ -72,15 +71,12 @@ export function outletHelper(args: VMArguments, vm: VM) {
     nameRef = args.positional.at<PathReference<string>>(0);
   }
 
-  return new OutletComponentReference(
-    new OutletReference(scope.outletState, nameRef),
-    vm.env as EmberVMEnvironment
-  );
+  return new OutletComponentReference(new OutletReference(scope.outletState, nameRef));
 }
 
 class OutletModelReference extends RootReference {
-  constructor(private parent: PathReference<OutletState | undefined>, env: EmberVMEnvironment) {
-    super(env);
+  constructor(private parent: PathReference<OutletState | undefined>) {
+    super();
 
     if (DEBUG) {
       this.debugLabel = '@model';
@@ -112,10 +108,7 @@ class OutletComponentReference implements PathReference<CurriedComponentDefiniti
   private definition: Option<CurriedComponentDefinition> = null;
   private lastState: Option<OutletDefinitionState> = null;
 
-  constructor(
-    private outletRef: PathReference<OutletState | undefined>,
-    private env: EmberVMEnvironment
-  ) {}
+  constructor(private outletRef: PathReference<OutletState | undefined>) {}
 
   isConst() {
     return false;
@@ -131,7 +124,7 @@ class OutletComponentReference implements PathReference<CurriedComponentDefiniti
     let definition = null;
 
     if (state !== null) {
-      let args = makeArgs(this.outletRef, this.env);
+      let args = makeArgs(this.outletRef);
 
       definition = curry(new OutletComponentDefinition(state), args);
     }
@@ -144,11 +137,8 @@ class OutletComponentReference implements PathReference<CurriedComponentDefiniti
   }
 }
 
-function makeArgs(
-  outletRef: PathReference<OutletState | undefined>,
-  env: EmberVMEnvironment
-): CapturedArguments {
-  let modelRef = new OutletModelReference(outletRef, env);
+function makeArgs(outletRef: PathReference<OutletState | undefined>): CapturedArguments {
+  let modelRef = new OutletModelReference(outletRef);
   let named = dict<PathReference>();
   named.model = modelRef;
 

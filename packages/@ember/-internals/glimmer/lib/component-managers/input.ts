@@ -100,8 +100,8 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return 'input';
   }
 
-  getSelf({ env, instance }: InputComponentState): PathReference {
-    return new ComponentRootReference(instance, env);
+  getSelf({ instance }: InputComponentState): PathReference {
+    return new ComponentRootReference(instance);
   }
 
   didRenderLayout(state: InputComponentState, bounds: Bounds): void {

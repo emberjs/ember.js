@@ -1,6 +1,6 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import buildUntouchableThis from '../utils/untouchable-this';
@@ -112,6 +112,6 @@ function fn({ positional }: CapturedArguments) {
   };
 }
 
-export default function(args: VMArguments, vm: VM) {
-  return new HelperRootReference(fn, args.capture(), vm.env);
+export default function(args: VMArguments) {
+  return new HelperRootReference(fn, args.capture());
 }

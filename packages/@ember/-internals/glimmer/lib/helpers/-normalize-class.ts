@@ -1,5 +1,5 @@
 import { dasherize } from '@ember/string';
-import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
 
 function normalizeClass({ positional }: CapturedArguments) {
@@ -16,6 +16,6 @@ function normalizeClass({ positional }: CapturedArguments) {
   }
 }
 
-export default function(args: VMArguments, vm: VM) {
-  return new HelperRootReference(normalizeClass, args.capture(), vm.env);
+export default function(args: VMArguments) {
+  return new HelperRootReference(normalizeClass, args.capture());
 }

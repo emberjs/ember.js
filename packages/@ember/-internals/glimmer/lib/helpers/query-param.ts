@@ -4,7 +4,7 @@
 import { QueryParams } from '@ember/-internals/routing';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
-import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
 import { reifyNamed } from '@glimmer/runtime';
 
@@ -39,6 +39,6 @@ function queryParams({ positional, named }: CapturedArguments) {
   return new QueryParams(assign({}, reifyNamed(named) as any));
 }
 
-export default function(args: VMArguments, vm: VM) {
-  return new HelperRootReference(queryParams, args.capture(), vm.env);
+export default function(args: VMArguments) {
+  return new HelperRootReference(queryParams, args.capture());
 }

@@ -440,7 +440,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
         helper.compute = helper.compute.bind(null);
       }
 
-      return new EmberHelperRootReference(helper, args.capture(), vm.env);
+      return new EmberHelperRootReference(helper, args.capture());
     };
   }
 

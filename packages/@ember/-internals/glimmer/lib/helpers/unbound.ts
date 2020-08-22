@@ -3,7 +3,7 @@
 */
 
 import { assert } from '@ember/debug';
-import { VM, VMArguments } from '@glimmer/interfaces';
+import { VMArguments } from '@glimmer/interfaces';
 import { UnboundRootReference } from '../utils/references';
 
 /**
@@ -34,11 +34,11 @@ import { UnboundRootReference } from '../utils/references';
   @public
 */
 
-export default function(args: VMArguments, vm: VM) {
+export default function(args: VMArguments) {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
     args.positional.length === 1 && args.named.length === 0
   );
 
-  return new UnboundRootReference(args.positional.at(0).value(), vm.env);
+  return new UnboundRootReference(args.positional.at(0).value());
 }

@@ -1,4 +1,4 @@
-import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 
@@ -45,6 +45,6 @@ function concat({ positional }: CapturedArguments) {
     .join('');
 }
 
-export default function(args: VMArguments, vm: VM) {
-  return new HelperRootReference(concat, args.capture(), vm.env);
+export default function(args: VMArguments) {
+  return new HelperRootReference(concat, args.capture());
 }
