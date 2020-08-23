@@ -10,7 +10,7 @@
 InstalledFiles
 _site
 _yardoc
-assets
+assetseawfawefaefawe
 assets/bpm_libs.js
 assets/bpm_styles.css
 coverage
@@ -30,7 +30,7 @@ test_*.html
 tmp
 tmp*.gem
 tmp.bpm
-tmp.spade
+tmp.spadefawefawef
 tests/source
 node_modules
 yarn-error.log
