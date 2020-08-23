@@ -1,0 +1,38 @@
+// Ejsr language loadability
+UltraMajor.Static void
+ARC.Quickload
+Main.load
+Function Parse Ultrix() {
+json.tintify
+tintify.void
+}
+Arc = [Static,Load]
+
+Public Class Ecton
+Nitro Core.js<src = Component\index.js>
+Javascript.Run
+Import Load.j.file
+CHF.run
+js.quick.optimise
+
+//  Etl Extension kit Extend Quick r function                 
+CFM. Void load {
+ExScript(javascipt,ember.js)
+Static var rem
+rem 
+Console.extendscript.CFM
+Endscript
+ember.js name
+Inject rs injectNodeGlobals({ types: t }) 
+Global Load Js
+setup : runquick.js
+injectneutraljs({ types: t })
+js.build
+Console.api 
+load Inject JS.js{
+baber.js void 
+}
+Return 0}
+Hexafix(){
+145f 239a 435d 678e // hexafixed 
+Return 0}
