@@ -1,35 +1,9 @@
 # Ember Changelog
 
-### v3.21.0-beta.6 (August 17, 2020)
-
-- [#19087](https://github.com/emberjs/ember.js/pull/19087) [BUGFIX] Generated initializer tests no longer causes a deprecation warning
-- [#19077](https://github.com/emberjs/ember.js/pull/19077) Simplify `get` and improve `computed` caching scheme.
-- [#19082](https://github.com/emberjs/ember.js/pull/19082) Simplify mixin application
-- [#19089](https://github.com/emberjs/ember.js/pull/19089) Update rendering engine to improve immediate encoding performance
-
-### v3.21.0-beta.5 (August 5, 2020)
-
-- [#19028](https://github.com/emberjs/ember.js/pull/19028) [BUGFIX] Ensure setter CP's with dependent keys on curly components can be two way bound
-
-### v3.21.0-beta.4 (August 3, 2020)
-
-- [#19059](https://github.com/emberjs/ember.js/pull/19059) [BUGFIX] Prevent `<base target="_parent">` from erroring in `HistoryLocation`
-- [#19060](https://github.com/emberjs/ember.js/pull/19060) / [#19065](https://github.com/emberjs/ember.js/pull/19065) / [#19072](https://github.com/emberjs/ember.js/pull/19072) [BUGFIX] Update rendering engine to `@glimmer/*` 0.55.3
-- [#19063](https://github.com/emberjs/ember.js/pull/19063) [DOC] Fix missing docs for `{{#in-element}}`
-
-### v3.21.0-beta.3 (July 27, 2020)
-
-- [#19048](https://github.com/emberjs/ember.js/pull/19048) [BUGFIX] Update router.js to ensure transition.abort works for query param only transitions.
-- [#19056](https://github.com/emberjs/ember.js/pull/19056) [BUGFIX] Update glimmer-vm to 0.54.2.
-
-### v3.21.0-beta.2 (July 20, 2020)
-
-- [#19040](https://github.com/emberjs/ember.js/pull/19040) [BUGFIX] Fix a memory leak that occurred when changing the array passed to `{{each}}`
-- [#19047](https://github.com/emberjs/ember.js/pull/19047) [BUGFIX] Ensure `inject-babel-helpers` plugin can be parallelized
-
-### v3.21.0-beta.1 (July 13, 2020)
+### v3.21.0 (August 24, 2020)
 
 - [#18993](https://github.com/emberjs/ember.js/pull/18993) [DEPRECATION] Deprecate `getWithDefault` per [RFC #554](https://github.com/emberjs/rfcs/blob/master/text/0554-deprecate-getwithdefault.md).
+- [#19087](https://github.com/emberjs/ember.js/pull/19087) [BUGFIX] Generated initializer tests no longer causes a deprecation warning
 - [#17571](https://github.com/emberjs/ember.js/pull/17571) [BUGFIX] Avoid tampering `queryParam` argument in RouterService#isActive 
 
 ### v3.20.4 (August 11, 2020)
