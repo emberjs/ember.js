@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.22.0-beta.1 (August 24, 2020)
+
+- [#19062](https://github.com/emberjs/ember.js/pull/19062) / [#19068](https://github.com/emberjs/ember.js/pull/19068) [FEATURE] Add @ember/destroyable feature from the [Destroyables RFC](https://github.com/emberjs/rfcs/blob/master/text/0580-destroyables.md).
+- [#18984](https://github.com/emberjs/ember.js/pull/18984) / [#19067](https://github.com/emberjs/ember.js/pull/19067) [FEATURE] Add low-level Cache API per [Autotracking Memoization RFC](https://github.com/emberjs/rfcs/blob/master/text/0615-autotracking-memoization.md)
+- [#19086](https://github.com/emberjs/ember.js/pull/19086) [FEATURE] Pass transition object to activate/deactivate hooks and events
+
 ### v3.21.0 (August 24, 2020)
 
 - [#18993](https://github.com/emberjs/ember.js/pull/18993) [DEPRECATION] Deprecate `getWithDefault` per [RFC #554](https://github.com/emberjs/rfcs/blob/master/text/0554-deprecate-getwithdefault.md).
