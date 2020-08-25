@@ -4,6 +4,7 @@ import ContainerProxy from '../../lib/mixins/container_proxy';
 import EmberObject from '../../lib/system/object';
 import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { destroy } from '@glimmer/runtime';
 
 moduleFor(
   '@ember/-internals/runtime/mixins/container_proxy',
@@ -42,6 +43,27 @@ moduleFor(
       run(() => {
         schedule('actions', service, 'destroy');
         this.instance.destroy();
+      });
+    }
+
+    '@test being destroyed by @ember/destroyable properly destroys the container and created instances'(
+      assert
+    ) {
+      assert.expect(1);
+
+      this.registry.register(
+        'service:foo',
+        class FooService extends EmberObject {
+          willDestroy() {
+            assert.ok(true, 'is properly destroyed');
+          }
+        }
+      );
+
+      this.instance.lookup('service:foo');
+
+      run(() => {
+        destroy(this.instance);
       });
     }
   }
