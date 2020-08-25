@@ -39,6 +39,14 @@ const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
+const destroyCalled = new Set();
+
+function ensureDestroyCalled(instance) {
+  if (!destroyCalled.has(instance)) {
+    instance.destroy();
+  }
+}
+
 function initialize(obj, properties) {
   let m = meta(obj);
 
@@ -256,6 +264,7 @@ class CoreObject {
       });
     }
 
+    registerDestructor(self, ensureDestroyCalled, true);
     registerDestructor(self, () => self.willDestroy());
 
     // disable chains
@@ -512,7 +521,15 @@ class CoreObject {
     @public
   */
   destroy() {
-    destroy(this);
+    // Used to ensure that manually calling `.destroy()` does not immediately call destroy again
+    destroyCalled.add(this);
+
+    try {
+      destroy(this);
+    } finally {
+      destroyCalled.delete(this);
+    }
+
     return this;
   }
 
