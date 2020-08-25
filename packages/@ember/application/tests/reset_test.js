@@ -3,6 +3,7 @@ import { get } from '@ember/-internals/metal';
 import Controller from '@ember/controller';
 import { Router } from '@ember/-internals/routing';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
+import { CoreObject } from '@ember/-internals/runtime';
 
 moduleFor(
   'Application - resetting',
@@ -71,31 +72,35 @@ moduleFor(
       let eventDispatcherWasSetup = 0;
       let eventDispatcherWasDestroyed = 0;
 
-      let mockEventDispatcher = {
+      class FakeEventDispatcher extends CoreObject {
         setup() {
           eventDispatcherWasSetup++;
-        },
+        }
+
         destroy() {
+          if (this.isDestroying) {
+            return;
+          }
+          super.destroy();
+
           eventDispatcherWasDestroyed++;
-        },
-      };
+        }
+      }
 
       run(() => {
         this.createApplication();
-        this.add('event_dispatcher:main', {
-          create: () => mockEventDispatcher,
-        });
+        this.add('event_dispatcher:main', FakeEventDispatcher);
 
-        assert.equal(eventDispatcherWasSetup, 0);
-        assert.equal(eventDispatcherWasDestroyed, 0);
+        assert.equal(eventDispatcherWasSetup, 0, 'not setup yet');
+        assert.equal(eventDispatcherWasDestroyed, 0, 'not destroyed yet');
       });
 
-      assert.equal(eventDispatcherWasSetup, 1);
-      assert.equal(eventDispatcherWasDestroyed, 0);
+      assert.equal(eventDispatcherWasSetup, 1, 'setup');
+      assert.equal(eventDispatcherWasDestroyed, 0, 'still not destroyed');
 
       this.application.reset();
 
-      assert.equal(eventDispatcherWasDestroyed, 1);
+      assert.equal(eventDispatcherWasDestroyed, 1, 'destroyed');
       assert.equal(eventDispatcherWasSetup, 2, 'setup called after reset');
     }
 
