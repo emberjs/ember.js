@@ -3,6 +3,8 @@ import { get, set, observer } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
 import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
+import { destroy } from '@glimmer/runtime';
+import { run } from '@ember/runloop';
 
 moduleFor(
   'Ember.CoreObject',
@@ -127,6 +129,21 @@ moduleFor(
       track(() => {
         TestObject.create({ hiddenValue: true });
         assert.ok(true, 'We did not error');
+      });
+    }
+    '@test destroy method is called when being destroyed by @ember/destroyable'(assert) {
+      assert.expect(1);
+
+      class TestObject extends CoreObject {
+        destroy() {
+          assert.ok(true, 'destroy was invoked');
+        }
+      }
+
+      let instance = TestObject.create();
+
+      run(() => {
+        destroy(instance);
       });
     }
   }
