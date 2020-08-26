@@ -64,6 +64,10 @@ if (DEBUG) {
       deprecate(message, false, {
         id: 'autotracking.mutation-after-consumption',
         until: '4.0.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.21.0',
+        },
       });
     },
 

@@ -10,13 +10,18 @@ declare global {
   };
 }
 
+export type DeprecationStages = 'available' | 'enabled';
+
 export interface DeprecationOptions {
   id: string;
   until: string;
   url?: string;
+  for: string;
+  since: Partial<Record<DeprecationStages, string>>;
 }
 
 export type DeprecateFunc = (message: string, test?: boolean, options?: DeprecationOptions) => void;
+export type MissingOptionDeprecateFunc = (id: string) => string;
 
 /**
  @module @ember/debug
@@ -64,7 +69,11 @@ let registerHandler: (handler: HandlerCallback) => void = () => {};
 let missingOptionsDeprecation: string;
 let missingOptionsIdDeprecation: string;
 let missingOptionsUntilDeprecation: string;
+let missingOptionsForDeprecation: MissingOptionDeprecateFunc = () => '';
+let missingOptionsSinceDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
+let FOR_MISSING_DEPRECATIONS = new Set();
+let SINCE_MISSING_DEPRECATIONS = new Set();
 
 if (DEBUG) {
   registerHandler = function registerHandler(handler: HandlerCallback) {
@@ -154,6 +163,13 @@ if (DEBUG) {
     '`options` should include `id` and `until` properties.';
   missingOptionsIdDeprecation = 'When calling `deprecate` you must provide `id` in options.';
   missingOptionsUntilDeprecation = 'When calling `deprecate` you must provide `until` in options.';
+
+  missingOptionsForDeprecation = (id: string) => {
+    return `When calling \`deprecate\` you must provide \`for\` in options. Missing options.for in "${id}" deprecation`;
+  };
+  missingOptionsSinceDeprecation = (id: string) => {
+    return `When calling \`deprecate\` you must provide \`since\` in options. Missing options.since in "${id}" deprecation`;
+  };
   /**
    @module @ember/debug
    @public
@@ -176,8 +192,10 @@ if (DEBUG) {
       "view.helper.select".
     @param {string} options.until The version of Ember when this deprecation
       warning will be removed.
+    @param {String} options.for A namespace for the deprecation, usually the package name
+    @param {Object} options.since Describes when the deprecation became available and enabled.
     @param {String} [options.url] An optional url to the transition guide on the
-      emberjs.com website.
+          emberjs.com website.
     @static
     @public
     @since 1.0.0
@@ -186,6 +204,32 @@ if (DEBUG) {
     assert(missingOptionsDeprecation, Boolean(options && (options.id || options.until)));
     assert(missingOptionsIdDeprecation, Boolean(options!.id));
     assert(missingOptionsUntilDeprecation, Boolean(options!.until));
+
+    if (!options!.for && !FOR_MISSING_DEPRECATIONS.has(options!.id)) {
+      FOR_MISSING_DEPRECATIONS.add(options!.id);
+
+      deprecate(missingOptionsForDeprecation(options!.id), Boolean(options!.for), {
+        id: 'ember-source.deprecation-without-for',
+        until: '4.0.0',
+        for: 'ember-source',
+        since: {
+          available: '3.24.0',
+        },
+      });
+    }
+
+    if (!options!.since && !SINCE_MISSING_DEPRECATIONS.has(options!.id)) {
+      SINCE_MISSING_DEPRECATIONS.add(options!.id);
+
+      deprecate(missingOptionsSinceDeprecation(options!.id), Boolean(options!.since), {
+        id: 'ember-source.deprecation-without-since',
+        until: '4.0.0',
+        for: 'ember-source',
+        since: {
+          available: '3.24.0',
+        },
+      });
+    }
 
     invoke('deprecate', message, test, options);
   };
@@ -198,4 +242,8 @@ export {
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
   missingOptionsUntilDeprecation,
+  missingOptionsForDeprecation,
+  missingOptionsSinceDeprecation,
+  FOR_MISSING_DEPRECATIONS,
+  SINCE_MISSING_DEPRECATIONS,
 };

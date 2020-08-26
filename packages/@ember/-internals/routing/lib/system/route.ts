@@ -2640,6 +2640,10 @@ if (ROUTER_EVENTS) {
             id: 'deprecate-router-events',
             until: '4.0.0',
             url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
+            for: 'ember-source',
+            since: {
+              enabled: '3.11.0',
+            },
           }
         );
       }
@@ -2652,6 +2656,10 @@ if (ROUTER_EVENTS) {
             id: 'deprecate-router-events',
             until: '4.0.0',
             url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
+            for: 'ember-source',
+            since: {
+              enabled: '3.11.0',
+            },
           }
         );
       }

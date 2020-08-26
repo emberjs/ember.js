@@ -156,6 +156,10 @@ export class ActionState {
           {
             until: '3.25.0',
             id: 'actions.custom-invoke-invokable',
+            for: 'ember-source',
+            since: {
+              enabled: '3.23.0-beta.1',
+            },
           }
         );
 
@@ -226,6 +230,10 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
         id: 'ember-views.event-dispatcher.mouseenter-leave-move',
         until: '4.0.0',
         url: 'https://emberjs.com/deprecations/v3.x#toc_action-mouseenter-leave-move',
+        for: 'ember-source',
+        since: {
+          enabled: '3.13.0-beta.1',
+        },
       }
     );
 

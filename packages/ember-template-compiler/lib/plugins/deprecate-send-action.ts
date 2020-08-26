@@ -49,6 +49,10 @@ export default function deprecateSendAction(env: EmberASTPluginEnvironment): AST
                     id: 'ember-component.send-action',
                     until: '4.0.0',
                     url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                    for: 'ember-source',
+                    since: {
+                      enabled: '3.4.0',
+                    },
                   });
                 } else if (
                   value.type === 'MustacheStatement' &&
@@ -58,6 +62,10 @@ export default function deprecateSendAction(env: EmberASTPluginEnvironment): AST
                     id: 'ember-component.send-action',
                     until: '4.0.0',
                     url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                    for: 'ember-source',
+                    since: {
+                      enabled: '3.4.0',
+                    },
                   });
                 }
               }
@@ -76,6 +84,10 @@ export default function deprecateSendAction(env: EmberASTPluginEnvironment): AST
                 id: 'ember-component.send-action',
                 until: '4.0.0',
                 url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                for: 'ember-source',
+                since: {
+                  enabled: '3.4.0',
+                },
               });
             }
           });

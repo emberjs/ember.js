@@ -144,6 +144,10 @@ export class Meta {
       {
         id: 'meta-destruction-apis',
         until: '3.25.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.21.0',
+        },
       }
     );
   }
@@ -155,6 +159,10 @@ export class Meta {
       {
         id: 'meta-destruction-apis',
         until: '3.25.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.21.0',
+        },
       }
     );
   }
@@ -166,6 +174,10 @@ export class Meta {
       {
         id: 'meta-destruction-apis',
         until: '3.25.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.21.0',
+        },
       }
     );
 
@@ -179,6 +191,10 @@ export class Meta {
       {
         id: 'meta-destruction-apis',
         until: '3.25.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.21.0',
+        },
       }
     );
 

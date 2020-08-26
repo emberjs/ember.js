@@ -171,6 +171,10 @@ export function setComponentManager(
         id: 'deprecate-string-based-component-manager',
         until: '4.0.0',
         url: 'https://emberjs.com/deprecations/v3.x/#toc_component-manager-string-lookup',
+        for: 'ember-source',
+        since: {
+          enabled: '3.8.0',
+        },
       }
     );
     factory = function (owner: Owner) {

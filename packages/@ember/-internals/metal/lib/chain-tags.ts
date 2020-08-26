@@ -109,6 +109,10 @@ function getChainTags(
         {
           until: '3.17.0',
           id: 'ember-metal.computed-deep-each',
+          for: 'ember-source',
+          since: {
+            enabled: '3.13.0-beta.3',
+          },
         }
       );
 

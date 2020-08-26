@@ -415,6 +415,10 @@ function makeClosureAction(
       {
         until: '3.25.0',
         id: 'actions.custom-invoke-invokable',
+        for: 'ember-source',
+        since: {
+          enabled: '3.23.0-beta.1',
+        },
       }
     );
 

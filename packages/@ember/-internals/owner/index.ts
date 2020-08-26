@@ -99,6 +99,10 @@ export function getOwner(object: any): Owner {
       {
         id: 'owner.legacy-owner-injection',
         until: '3.25.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.22.0',
+        },
       }
     );
   }
