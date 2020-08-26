@@ -1,4 +1,5 @@
-/dist
+/dist/
+/control-dist/
 node_modules/
 tmp/
 ts-dist/

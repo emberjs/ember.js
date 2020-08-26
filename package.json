@@ -11,6 +11,7 @@
   "author": "Tilde, Inc.",
   "workspaces": [
     "benchmark",
+    "lib/local-linker",
     "packages/*/*"
   ],
   "scripts": {
@@ -30,7 +31,10 @@
     "test:smoke": "SMOKE_TESTS=true ember test",
     "test:types": "node bin/run-types-tests.js",
     "yarn:link": "node bin/yarn-link-all",
-    "yarn:unlink": "node bin/yarn-link-all --unlink"
+    "yarn:unlink": "node bin/yarn-link-all --unlink",
+    "benchmark:build": "node benchmark/bin/build.js",
+    "benchmark:control": "node benchmark/bin/control.js",
+    "benchmark:experiment": "node benchmark/bin/experiment.js"
   },
   "dependencies": {
     "@simple-dom/document": "^1.4.0",
@@ -69,7 +73,7 @@
     "broccoli-typescript-compiler": "^5.0.0",
     "chalk": "^3.0.0",
     "dag-map": "^2.0.2",
-    "ember-cli": "~3.16.0",
+    "ember-cli": "~3.20.0",
     "ember-cli-browserstack": "^1.1.0",
     "ensure-posix-path": "^1.1.1",
     "eslint": "^6.8.0",
@@ -143,7 +147,7 @@
     "npm": false
   },
   "volta": {
-    "node": "10.22.0",
+    "node": "12.18.3",
     "yarn": "1.22.4"
   },
   "ember-addon": {

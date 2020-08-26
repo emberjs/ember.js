@@ -17,4 +17,4 @@ export default class Application {
   }
 }
 
-/** @typedef {import('./data').Item} Item */
+/** @typedef {import('../utils/data').Item} Item */

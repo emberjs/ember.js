@@ -13,5 +13,5 @@
       "@glimmer/*": ["../../dist/@glimmer/*"]
     }
   },
-  "files": ["index.js"]
+  "files": ["lib/index.js"]
 }

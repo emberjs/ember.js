@@ -1,13 +1,19 @@
 {
   "name": "glimmer-benchmark",
+  "version": "0.59.0",
   "private": true,
   "dependencies": {
-    "@glimmer/benchmark-env": "^0.56.1",
-    "@glimmer/reference": "^0.56.1",
-    "@glimmer/validator": "^0.56.1"
+    "@glimmer/benchmark-env": "^0.59.0",
+    "@simple-dom/document": "^1.4.0",
+    "@simple-dom/void-map": "^1.4.0",
+    "@simple-dom/serializer": "^1.4.0"
   },
   "devDependencies": {
+    "fs-extra": "*",
+    "symlink-or-copy": "*",
     "rollup": "^2.24.0",
-    "rollup-plugin-terser": "^7.0.0"
+    "express": "^4.0.0",
+    "rollup-plugin-terser": "^7.0.0",
+    "rollup-plugin-sourcemaps": "^0.6.2"
   }
 }

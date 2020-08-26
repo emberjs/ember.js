@@ -1,0 +1,43 @@
+name: PerformanceCheck
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  master-krausest-comparison:
+    strategy:
+      fail-fast: false
+    name: Glimmer Krausest Benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+      - name: Install dependencies
+        run: |
+          git fetch origin master
+          yarn install
+      - name: Run Analysis
+        timeout-minutes: 10
+        uses: tracerbench/tracerbench-compare-action@master
+        with:
+          control-build-command: node node_modules/.bin/ember build -e production --output-path=control-dist
+          control-serve-command: yarn benchmark:control
+          experiment-build-command: node node_modules/.bin/ember build -e production --output-path=dist
+          experiment-serve-command: yarn benchmark:experiment
+          control-dist: ./control-dist
+          experiment-dist: ./dist
+          control-url: http://localhost:3000/krausest/
+          experiment-url: http://localhost:3001/krausest/
+          regression-threshold: 25
+          fidelity: high
+          markers: 'navigationStart,renderStart,renderEnd'
+      - name: Upload Tracerbench Artifacts
+        if: failure() || success()
+        uses: actions/upload-artifact@v1
+        with:
+          name: Trace Artifacts
+          path: tracerbench-results
