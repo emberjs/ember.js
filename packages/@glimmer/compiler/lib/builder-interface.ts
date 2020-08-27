@@ -407,7 +407,7 @@ export function entries<D extends Dict>(
   dict: D,
   callback: <K extends keyof D>(key: K, value: D[K]) => void
 ): void {
-  Object.keys(dict).forEach(key => {
+  Object.keys(dict).forEach((key) => {
     let value = dict[key];
     callback(key, value as D[keyof D]);
   });
@@ -422,11 +422,11 @@ function normalizeBlocks(value: BuilderBlock | BuilderBlocks): NormalizedBlocks 
 }
 
 function normalizeBlock(block: BuilderBlock): NormalizedBlock {
-  return block.map(s => normalizeStatement(s));
+  return block.map((s) => normalizeStatement(s));
 }
 
 function normalizeAttrs(attrs: BuilderAttrs): NormalizedAttrs {
-  return mapObject(attrs, a => normalizeAttr(a).expr);
+  return mapObject(attrs, (a) => normalizeAttr(a).expr);
 }
 
 function normalizeAttr(attr: BuilderAttr): { expr: NormalizedAttr; trusted: boolean } {
@@ -444,7 +444,7 @@ function mapObject<T extends Dict, U extends Dict>(
 ): U {
   let out: any = dict();
 
-  Object.keys(object).forEach(k => {
+  Object.keys(object).forEach((k) => {
     out[k] = callback(object[k] as any, k);
   });
 

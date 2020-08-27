@@ -127,7 +127,7 @@ export function isInvokableRef(ref: Reference) {
 export function createInvokableRef(inner: Reference): Reference {
   let ref = createComputeRef(
     () => valueForRef(inner),
-    value => updateRef(inner, value)
+    (value) => updateRef(inner, value)
   );
   ref.debugLabel = inner.debugLabel;
   ref[REFERENCE] = ReferenceType.Invokable;
@@ -222,7 +222,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
           return getProp(parent, path);
         }
       },
-      val => {
+      (val) => {
         let parent = valueForRef(parentRef);
 
         if (isDict(parent)) {

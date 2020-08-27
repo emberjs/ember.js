@@ -150,5 +150,5 @@ export function decodeImmediate(num: number) {
 }
 
 // Warm
-[1, 2, 3].forEach(x => decodeHandle(encodeHandle(x)));
-[1, -1].forEach(x => decodeImmediate(encodeImmediate(x)));
+[1, 2, 3].forEach((x) => decodeHandle(encodeHandle(x)));
+[1, -1].forEach((x) => decodeImmediate(encodeImmediate(x)));

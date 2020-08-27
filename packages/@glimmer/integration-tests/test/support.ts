@@ -45,7 +45,7 @@ export function module(name: string, second?: any, third?: any) {
     }
   }
 
-  return QUnit.module(`integration - ${name}`, setup, supplied => {
+  return QUnit.module(`integration - ${name}`, setup, (supplied) => {
     nested(assign({}, supplied, { test: QUnit.test }));
   });
 }

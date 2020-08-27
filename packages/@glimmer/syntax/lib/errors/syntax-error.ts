@@ -14,7 +14,7 @@ export interface SyntaxErrorConstructor {
  * Subclass of `Error` with additional information
  * about location of incorrect markup.
  */
-const SyntaxError: SyntaxErrorConstructor = (function() {
+const SyntaxError: SyntaxErrorConstructor = (function () {
   SyntaxError.prototype = Object.create(Error.prototype);
   SyntaxError.prototype.constructor = SyntaxError;
 

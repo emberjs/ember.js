@@ -19,7 +19,7 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
     let handle = resolver.lookup('template-source', name)!;
 
     return unwrapTemplate(
-      resolver.registry.customCompilableTemplate(handle, name, source =>
+      resolver.registry.customCompilableTemplate(handle, name, (source) =>
         createTemplate(source).create()
       )
     ).asLayout();

@@ -31,13 +31,13 @@ QUnit.module('templateFactory', {
   },
 });
 
-QUnit.test('id of serialized template is exposed on the factory', assert => {
+QUnit.test('id of serialized template is exposed on the factory', (assert) => {
   let factory = templateFactory(serializedTemplate);
   assert.ok(factory.id, 'is present');
   assert.equal(factory.id, serializedTemplate.id, 'id matches serialized template id');
 });
 
-QUnit.test('generates id if no id is on the serialized template', assert => {
+QUnit.test('generates id if no id is on the serialized template', (assert) => {
   let factory1 = templateFactory(serializedTemplateNoId);
   let factory2 = templateFactory(serializedTemplateNoId);
   assert.ok(factory1.id, 'is present');
@@ -49,14 +49,14 @@ QUnit.test('generates id if no id is on the serialized template', assert => {
   );
 });
 
-QUnit.test('id of template matches factory', assert => {
+QUnit.test('id of template matches factory', (assert) => {
   let factory = templateFactory(serializedTemplate);
   let template = unwrapTemplate(factory.create());
   assert.ok(template.id, 'is present');
   assert.equal(template.id, factory.id, 'template id matches factory id');
 });
 
-QUnit.test('meta is accessible from factory', assert => {
+QUnit.test('meta is accessible from factory', (assert) => {
   let factory = templateFactory(serializedTemplate);
   assert.deepEqual(factory.meta, {
     kind: 'unknown',
@@ -66,7 +66,7 @@ QUnit.test('meta is accessible from factory', assert => {
   });
 });
 
-QUnit.test('meta is accessible from template', assert => {
+QUnit.test('meta is accessible from template', (assert) => {
   let factory = templateFactory(serializedTemplate);
   let template = unwrapTemplate(factory.create());
   assert.deepEqual(
@@ -81,7 +81,7 @@ QUnit.test('meta is accessible from template', assert => {
   );
 });
 
-QUnit.test('can inject per environment things into meta', assert => {
+QUnit.test('can inject per environment things into meta', (assert) => {
   let owner = {};
   let factory = templateFactory<AnnotatedModuleLocator>(serializedTemplate);
 

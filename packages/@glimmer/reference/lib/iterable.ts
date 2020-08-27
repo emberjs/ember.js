@@ -35,7 +35,7 @@ const NULL_IDENTITY = {};
 
 const KEY: KeyFor = (_, index) => index;
 const INDEX: KeyFor = (_, index) => String(index);
-const IDENTITY: KeyFor = item => {
+const IDENTITY: KeyFor = (item) => {
   if (item === null) {
     // Returning null as an identity will cause failures since the iterator
     // can't tell that it's actually supposed to be null
@@ -49,7 +49,7 @@ function keyForPath(path: string): KeyFor {
   if (DEBUG && path[0] === '@') {
     throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
   }
-  return uniqueKeyFor(item => getPath(item as object, path));
+  return uniqueKeyFor((item) => getPath(item as object, path));
 }
 
 function makeKeyFor(key: string) {
@@ -183,7 +183,7 @@ export function createIteratorItemRef(_value: unknown) {
       consumeTag(tag);
       return value;
     },
-    newValue => {
+    (newValue) => {
       if (value !== newValue) {
         value = newValue;
         dirtyTag(tag);

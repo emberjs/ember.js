@@ -28,7 +28,7 @@ export function main(): CompileActions {
  */
 export function StdAppend(trusting: boolean): CompileActions {
   return [
-    ContentTypeSwitchCases(when => {
+    ContentTypeSwitchCases((when) => {
       when(ContentType.String, () => {
         if (trusting) {
           return [op(Op.AssertSame), op(Op.AppendHTML)];

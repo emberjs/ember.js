@@ -19,7 +19,7 @@ import {
 
 module('@glimmer/validator: validators', () => {
   module('DirtyableTag', () => {
-    test('it can be dirtied', assert => {
+    test('it can be dirtied', (assert) => {
       let tag = createTag();
       let snapshot = valueForTag(tag);
 
@@ -32,7 +32,7 @@ module('@glimmer/validator: validators', () => {
       assert.ok(validateTag(tag, snapshot));
     });
 
-    test('it calls scheduleRevalidate', assert => {
+    test('it calls scheduleRevalidate', (assert) => {
       assert.expect(1);
 
       let originalContext = testOverrideGlobalContext!({
@@ -51,7 +51,7 @@ module('@glimmer/validator: validators', () => {
     });
 
     if (DEBUG) {
-      test('it cannot be updated', assert => {
+      test('it cannot be updated', (assert) => {
         let tag = createTag();
         let subtag = createTag();
 
@@ -64,7 +64,7 @@ module('@glimmer/validator: validators', () => {
   });
 
   module('UpdatableTag', () => {
-    test('it can be dirtied', assert => {
+    test('it can be dirtied', (assert) => {
       let tag = createUpdatableTag();
       let snapshot = valueForTag(tag);
 
@@ -77,7 +77,7 @@ module('@glimmer/validator: validators', () => {
       assert.ok(validateTag(tag, snapshot));
     });
 
-    test('it can be updated', assert => {
+    test('it can be updated', (assert) => {
       let tag = createUpdatableTag();
       let subtag = createUpdatableTag();
 
@@ -93,7 +93,7 @@ module('@glimmer/validator: validators', () => {
       assert.ok(validateTag(tag, snapshot));
     });
 
-    test('it correctly buffers updates when subtag has a less recent value', assert => {
+    test('it correctly buffers updates when subtag has a less recent value', (assert) => {
       let tag = createUpdatableTag();
       let subtag = createUpdatableTag();
 
@@ -114,7 +114,7 @@ module('@glimmer/validator: validators', () => {
       assert.notOk(validateTag(tag, snapshot), 'tag is invalid after subtag is dirtied again');
     });
 
-    test('it correctly buffers updates when subtag has a more recent value', assert => {
+    test('it correctly buffers updates when subtag has a more recent value', (assert) => {
       let tag = createUpdatableTag();
       let subtag = createUpdatableTag();
 
@@ -136,7 +136,7 @@ module('@glimmer/validator: validators', () => {
     });
 
     if (DEBUG) {
-      test('does not allow cycles on tags that have not been marked with ALLOW_CYCLES', assert => {
+      test('does not allow cycles on tags that have not been marked with ALLOW_CYCLES', (assert) => {
         let tag = createUpdatableTag();
         let subtag = createUpdatableTag();
 
@@ -150,7 +150,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(() => validateTag(tag, snapshot));
       });
 
-      test('does allow cycles on tags that have been marked with ALLOW_CYCLES', assert => {
+      test('does allow cycles on tags that have been marked with ALLOW_CYCLES', (assert) => {
         let tag = createUpdatableTag();
         let subtag = createUpdatableTag();
 
@@ -170,7 +170,7 @@ module('@glimmer/validator: validators', () => {
   });
 
   module('CombinatorTag', () => {
-    test('it can combine multiple tags', assert => {
+    test('it can combine multiple tags', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -186,7 +186,7 @@ module('@glimmer/validator: validators', () => {
     });
 
     if (DEBUG) {
-      test('it cannot be dirtied', assert => {
+      test('it cannot be dirtied', (assert) => {
         let tag1 = createTag();
         let tag2 = createTag();
 
@@ -198,7 +198,7 @@ module('@glimmer/validator: validators', () => {
         );
       });
 
-      test('it cannot be updated', assert => {
+      test('it cannot be updated', (assert) => {
         let tag1 = createTag();
         let tag2 = createTag();
 
@@ -214,14 +214,14 @@ module('@glimmer/validator: validators', () => {
 
   module('ConstantTag', () => {
     if (DEBUG) {
-      test('it cannot be dirtied', assert => {
+      test('it cannot be dirtied', (assert) => {
         assert.throws(
           () => dirtyTag(CONSTANT_TAG as any),
           /Error: Attempted to dirty a tag that was not dirtyable/
         );
       });
 
-      test('it cannot be updated', assert => {
+      test('it cannot be updated', (assert) => {
         let subtag = createTag();
 
         assert.throws(
@@ -233,12 +233,12 @@ module('@glimmer/validator: validators', () => {
   });
 
   module('VolatileTag', () => {
-    test('it is always invalid', assert => {
+    test('it is always invalid', (assert) => {
       let snapshot = valueForTag(VOLATILE_TAG);
       assert.notOk(validateTag(VOLATILE_TAG, snapshot));
     });
 
-    test('it ensures that any tags which it is combined with are also always invalid', assert => {
+    test('it ensures that any tags which it is combined with are also always invalid', (assert) => {
       let tag2 = createTag();
 
       let combined = combine([VOLATILE_TAG, tag2]);
@@ -250,14 +250,14 @@ module('@glimmer/validator: validators', () => {
     });
 
     if (DEBUG) {
-      test('it cannot be dirtied', assert => {
+      test('it cannot be dirtied', (assert) => {
         assert.throws(
           () => dirtyTag(VOLATILE_TAG as any),
           /Error: Attempted to dirty a tag that was not dirtyable/
         );
       });
 
-      test('it cannot be updated', assert => {
+      test('it cannot be updated', (assert) => {
         let subtag = createTag();
 
         assert.throws(
@@ -269,7 +269,7 @@ module('@glimmer/validator: validators', () => {
   });
 
   module('CurrentTag', () => {
-    test('it is always the current revision', assert => {
+    test('it is always the current revision', (assert) => {
       let snapshot = valueForTag(CURRENT_TAG);
       assert.ok(validateTag(CURRENT_TAG, snapshot));
 
@@ -279,7 +279,7 @@ module('@glimmer/validator: validators', () => {
       assert.notOk(validateTag(CURRENT_TAG, snapshot));
     });
 
-    test('it ensures that any tags which it is combined with are also always the current revision', assert => {
+    test('it ensures that any tags which it is combined with are also always the current revision', (assert) => {
       let tag2 = createTag();
       let combined = combine([CURRENT_TAG, tag2]);
 
@@ -293,14 +293,14 @@ module('@glimmer/validator: validators', () => {
     });
 
     if (DEBUG) {
-      test('it cannot be dirtied', assert => {
+      test('it cannot be dirtied', (assert) => {
         assert.throws(
           () => dirtyTag(CURRENT_TAG as any),
           /Error: Attempted to dirty a tag that was not dirtyable/
         );
       });
 
-      test('it cannot be updated', assert => {
+      test('it cannot be updated', (assert) => {
         let subtag = createTag();
 
         assert.throws(

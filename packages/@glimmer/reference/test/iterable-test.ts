@@ -43,15 +43,15 @@ class IterableWrapper {
   }
 
   toValues() {
-    return this.iterate().map(i => i.value);
+    return this.iterate().map((i) => i.value);
   }
 
   toKeys() {
-    return this.iterate().map(i => i.key);
+    return this.iterate().map((i) => i.key);
   }
 }
 
-module('@glimmer/reference: IterableReference', hooks => {
+module('@glimmer/reference: IterableReference', (hooks) => {
   let originalContext: GlobalContext | null;
 
   hooks.before(() => {
@@ -63,14 +63,14 @@ module('@glimmer/reference: IterableReference', hooks => {
   });
 
   module('iterator delegates', () => {
-    test('it correctly iterates delegates', assert => {
+    test('it correctly iterates delegates', (assert) => {
       let obj = { a: 'Yehuda', b: 'Godfrey' };
       let target = new IterableWrapper(obj);
 
       assert.deepEqual(target.toValues(), objectValues(obj));
     });
 
-    test('it correctly synchronizes delegates when changed', assert => {
+    test('it correctly synchronizes delegates when changed', (assert) => {
       let obj = { a: 'Yehuda', b: 'Godfrey' } as any;
       let target = new IterableWrapper(obj);
 
@@ -85,7 +85,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.deepEqual(target.toValues(), objectValues(obj));
     });
 
-    test('it handles null delegates', assert => {
+    test('it handles null delegates', (assert) => {
       // Passing null will return an empty iterator
       let target = new IterableWrapper(null);
 
@@ -94,7 +94,7 @@ module('@glimmer/reference: IterableReference', hooks => {
   });
 
   module('keys', () => {
-    test('@identity works', assert => {
+    test('@identity works', (assert) => {
       let arr = [
         { key: 'a', name: 'Yehuda' },
         { key: 'b', name: 'Godfrey' },
@@ -104,7 +104,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.deepEqual(target.toKeys(), arr);
     });
 
-    test('@identity works with multiple values that are the same', assert => {
+    test('@identity works with multiple values that are the same', (assert) => {
       let yehuda = { key: 'a', name: 'Yehuda' };
       let godfrey = { key: 'b', name: 'Godfrey' };
       let arr = [yehuda, godfrey, godfrey];
@@ -130,7 +130,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.equal(keys1[2], keys2[2]);
     });
 
-    test('@identity works with primitives (except null)', assert => {
+    test('@identity works with primitives (except null)', (assert) => {
       let arr = [undefined, 123, 'foo', symbol('bar'), true];
       let target = new IterableWrapper(arr);
 
@@ -138,7 +138,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.deepEqual(target.toKeys(), arr);
     });
 
-    test('@identity works with null', assert => {
+    test('@identity works with null', (assert) => {
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 
@@ -151,7 +151,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.equal(keys1[0], keys2[1]);
     });
 
-    test('@identity works with multiple null values', assert => {
+    test('@identity works with multiple null values', (assert) => {
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 
@@ -166,7 +166,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.notEqual(keys1[0], keys2[1]);
     });
 
-    test('@key works', assert => {
+    test('@key works', (assert) => {
       let arr = [
         { key: 'a', name: 'Yehuda' },
         { key: 'b', name: 'Godfrey' },
@@ -176,7 +176,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.deepEqual(target.toKeys(), [0, 1]);
     });
 
-    test('@index works', assert => {
+    test('@index works', (assert) => {
       let arr = [
         { key: 'a', name: 'Yehuda' },
         { key: 'b', name: 'Godfrey' },
@@ -186,7 +186,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.deepEqual(target.toKeys(), ['0', '1']);
     });
 
-    test('paths work', assert => {
+    test('paths work', (assert) => {
       let arr = [
         { key: 'a', name: 'Yehuda' },
         { key: 'b', name: 'Godfrey' },
@@ -196,7 +196,7 @@ module('@glimmer/reference: IterableReference', hooks => {
       assert.deepEqual(target.toKeys(), ['a', 'b']);
     });
 
-    test('it works with dictionaries', assert => {
+    test('it works with dictionaries', (assert) => {
       let arr = [Object.create(null), Object.create(null)];
       let target = new IterableWrapper(arr);
 

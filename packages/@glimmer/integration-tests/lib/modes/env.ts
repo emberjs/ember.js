@@ -108,7 +108,7 @@ export const BaseEnv: EnvironmentDelegate = {
       scheduledDestructors[i](scheduledDestroyables[i]);
     }
 
-    scheduledFinishDestruction.forEach(fn => fn());
+    scheduledFinishDestruction.forEach((fn) => fn());
 
     scheduledDestroyables = [];
     scheduledDestructors = [];

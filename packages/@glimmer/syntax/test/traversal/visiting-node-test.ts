@@ -17,8 +17,8 @@ function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.Ba
   });
 
   QUnit.assert.deepEqual(
-    actualTraversal.map(a => `${a[0]} ${a[1].type}`),
-    expectedTraversal.map(a => `${a[0]} ${a[1].type}`)
+    actualTraversal.map((a) => `${a[0]} ${a[1].type}`),
+    expectedTraversal.map((a) => `${a[0]} ${a[1].type}`)
   );
 
   let nodesEqual = true;
@@ -35,7 +35,7 @@ function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.Ba
 
 QUnit.module('[glimmer-syntax] Traversal - visiting');
 
-test('Elements and attributes', function() {
+test('Elements and attributes', function () {
   let ast = parse(`<div id="id" class="large {{classes}}" value={{value}}><b></b><b></b></div>`);
   let el = ast.body[0] as AST.ElementNode;
   let concat = el.attributes[1].value as AST.ConcatStatement;
@@ -77,7 +77,7 @@ test('Elements and attributes', function() {
   ]);
 });
 
-test('Element modifiers', function() {
+test('Element modifiers', function () {
   let ast = parse(`<div {{modifier}}{{modifier param1 param2 key1=value key2=value}}></div>`);
   let el = ast.body[0] as AST.ElementNode;
   traversalEqual(ast, [
@@ -112,7 +112,7 @@ test('Element modifiers', function() {
   ]);
 });
 
-test('Blocks', function() {
+test('Blocks', function () {
   let ast = parse(
     `{{#block}}{{/block}}` +
       `{{#block param1 param2 key1=value key2=value}}<b></b><b></b>{{/block}}`
@@ -159,7 +159,7 @@ test('Blocks', function() {
   ]);
 });
 
-test('Mustaches', function() {
+test('Mustaches', function () {
   let ast = parse(`{{mustache}}` + `{{mustache param1 param2 key1=value key2=value}}`);
 
   let must1 = ast.body[0] as AST.MustacheStatement;
@@ -195,7 +195,7 @@ test('Mustaches', function() {
   ]);
 });
 
-test('Nested helpers', function() {
+test('Nested helpers', function () {
   let ast = parse(`{{helper
     (helper param1 param2 key1=value key2=value)
     key1=(helper param)
@@ -265,7 +265,7 @@ test('Nested helpers', function() {
   ]);
 });
 
-test('Comments', function() {
+test('Comments', function () {
   let ast = parse(
     `<!-- HTML comment -->{{!-- Handlebars comment --}}<div {{! Other Comment }}></div>`
   );
@@ -286,7 +286,7 @@ test('Comments', function() {
 
 QUnit.module('[glimmer-syntax] Traversal - visiting - paths');
 
-test('Basics', function(assert) {
+test('Basics', function (assert) {
   assert.expect(3);
 
   let ast = parse(`{{#if foo}}<div>bar</div>{{/if}}`);
@@ -306,7 +306,7 @@ test('Basics', function(assert) {
   });
 });
 
-test('Helper', function(assert) {
+test('Helper', function (assert) {
   assert.expect(2);
 
   let ast = parse(`{{#foo (bar this.blah)}}{{/foo}}`);
@@ -327,7 +327,7 @@ test('Helper', function(assert) {
   });
 });
 
-test('Modifier', function(assert) {
+test('Modifier', function (assert) {
   let hasSymbol = typeof Symbol !== 'undefined';
 
   assert.expect(hasSymbol ? 3 : 2);
@@ -346,7 +346,7 @@ test('Modifier', function(assert) {
 
         if (hasSymbol) {
           assert.deepEqual(
-            Array.from(path.parents()).map(it => (it as Path<AST.Node>).node.type),
+            Array.from(path.parents()).map((it) => (it as Path<AST.Node>).node.type),
             ['ElementModifierStatement', 'ElementNode', 'Template']
           );
         }

@@ -69,7 +69,7 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
 
   @test
   'Unescaped helpers render correctly'() {
-    this.registerHelper('testing-unescaped', params => params[0]);
+    this.registerHelper('testing-unescaped', (params) => params[0]);
     this.render('{{{testing-unescaped "<span>hi</span>"}}}');
     let b = blockStack();
     this.assertHTML(strip`

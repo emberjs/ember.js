@@ -40,13 +40,13 @@ import { CheckReference, CheckScope } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 import { InternalJitVM } from '../../vm/append';
 
-APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
+APPEND_OPCODES.add(Op.ChildScope, (vm) => vm.pushChildScope());
 
-APPEND_OPCODES.add(Op.PopScope, vm => vm.popScope());
+APPEND_OPCODES.add(Op.PopScope, (vm) => vm.popScope());
 
-APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
+APPEND_OPCODES.add(Op.PushDynamicScope, (vm) => vm.pushDynamicScope());
 
-APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
+APPEND_OPCODES.add(Op.PopDynamicScope, (vm) => vm.popDynamicScope());
 
 APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
   vm.stack.pushJs(vm[CONSTANTS].getValue(decodeHandle(other)));
@@ -65,7 +65,7 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.PrimitiveReference, vm => {
+APPEND_OPCODES.add(Op.PrimitiveReference, (vm) => {
   let stack = vm.stack;
   let value = check(stack.pop(), CheckPrimitive);
   let ref;
@@ -111,7 +111,7 @@ APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
   vm.enter(args);
 });
 
-APPEND_OPCODES.add(Op.Exit, vm => {
+APPEND_OPCODES.add(Op.Exit, (vm) => {
   vm.exit();
 });
 
@@ -120,7 +120,7 @@ APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   stack.pushJs(vm[CONSTANTS].getSerializable(_table));
 });
 
-APPEND_OPCODES.add(Op.PushBlockScope, vm => {
+APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
   let stack = vm.stack;
   stack.pushJs(vm.scope());
 });
@@ -140,7 +140,7 @@ APPEND_OPCODES.add(
   'jit'
 );
 
-APPEND_OPCODES.add(Op.InvokeYield, vm => {
+APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckOption(CheckHandle));
@@ -224,7 +224,7 @@ APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.AssertSame, vm => {
+APPEND_OPCODES.add(Op.AssertSame, (vm) => {
   let reference = check(vm.stack.peekJs(), CheckReference);
 
   if (isConstRef(reference) === false) {
@@ -232,7 +232,7 @@ APPEND_OPCODES.add(Op.AssertSame, vm => {
   }
 });
 
-APPEND_OPCODES.add(Op.ToBoolean, vm => {
+APPEND_OPCODES.add(Op.ToBoolean, (vm) => {
   let { stack } = vm;
   let valueRef = check(stack.popJs(), CheckReference);
 

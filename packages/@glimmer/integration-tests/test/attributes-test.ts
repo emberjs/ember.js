@@ -31,7 +31,7 @@ export class AttributesTests extends RenderTest {
 
   @test
   'helpers shadow self'() {
-    this.registerHelper('foo', function() {
+    this.registerHelper('foo', function () {
       return 'hello';
     });
 
@@ -228,7 +228,7 @@ export class AttributesTests extends RenderTest {
 
   @test
   'input[checked] prop updates when set to undefined'() {
-    this.registerHelper('if', params => {
+    this.registerHelper('if', (params) => {
       if (params[0]) {
         return params[1];
       } else {

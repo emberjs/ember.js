@@ -36,7 +36,7 @@ class ContentTest extends RenderTest {
 
   makeFragment(nodes: SimpleNode[]) {
     let frag = this.delegate.createDocumentFragment();
-    nodes.forEach(node => frag.appendChild(node));
+    nodes.forEach((node) => frag.appendChild(node));
     return frag;
   }
 }
@@ -131,8 +131,8 @@ function generateContentTestCase(
       before: '<svg><text><text>before</text>',
       after: '<text>after</text></text></svg>',
     },
-  ].forEach(wrapper => {
-    let test = function(this: ContentTest) {
+  ].forEach((wrapper) => {
+    let test = function (this: ContentTest) {
       let template = wrapper.before + tc.template + wrapper.after;
       tc.values.forEach(({ input: _input, expected: _expected, description }, index) => {
         let input: unknown;

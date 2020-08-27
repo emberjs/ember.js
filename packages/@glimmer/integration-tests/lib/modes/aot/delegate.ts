@@ -183,7 +183,7 @@ export class AotRenderDelegate implements RenderDelegate {
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    let glimmerHelper: GlimmerHelper = args => createHelperRef(helper, args.capture());
+    let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args.capture());
     this.registry.register(name, 'helper', { default: glimmerHelper });
   }
 
@@ -215,7 +215,7 @@ export class AotRenderDelegate implements RenderDelegate {
 
   private addRegisteredComponents(bundleCompiler: BundleCompiler): void {
     let { registry, compileTimeModules } = this;
-    Object.keys(registry.components).forEach(key => {
+    Object.keys(registry.components).forEach((key) => {
       assert(
         key.indexOf('ui/components') !== -1,
         `Expected component key to start with ui/components, got ${key}.`

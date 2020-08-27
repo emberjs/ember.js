@@ -2,7 +2,7 @@ import { Storage } from '../..';
 
 QUnit.module('[low-level glue] Storage');
 
-QUnit.test('basic functionality', assert => {
+QUnit.test('basic functionality', (assert) => {
   let storage = new Storage();
 
   let ref = {};

@@ -114,7 +114,7 @@ export function suite<D extends RenderDelegate>(
 
       if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
         // eslint-disable-next-line no-loop-func
-        QUnit.test(prop, assert => {
+        QUnit.test(prop, (assert) => {
           test.call(instance!, assert, instance!.count);
           instance!.count.assert();
         });
@@ -144,7 +144,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
 
     return (type: ComponentKind, klass: RenderTestConstructor<D, T>) => {
       if (!shouldSkip) {
-        QUnit.test(prop, assert => {
+        QUnit.test(prop, (assert) => {
           let instance = new klass(new Delegate());
           instance.testType = type;
           test.call(instance, assert, instance.count);
@@ -181,7 +181,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
             } else if (test['kind'] === 'fragment') {
               tests.fragment.push(createTest(prop, test, true));
             } else {
-              ['glimmer', 'curly', 'dynamic'].forEach(kind => {
+              ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
                 tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
               });
             }
@@ -235,7 +235,7 @@ function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>
   klass: RenderTestConstructor<D, T>,
   tests: ComponentTests
 ): void {
-  keys(tests).forEach(type => {
+  keys(tests).forEach((type) => {
     let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
     QUnit.module(`[integration] ${formattedType}`, () => {
       for (let i = tests[type].length - 1; i >= 0; i--) {

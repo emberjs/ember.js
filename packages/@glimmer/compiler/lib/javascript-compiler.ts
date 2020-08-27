@@ -114,8 +114,8 @@ export class ComponentBlock extends Block {
   toJSON(): [string, Statements.Attribute[], Core.Hash, Core.Blocks] {
     let blocks: Core.Blocks;
     let args = this.arguments;
-    let keys = args.map(arg => arg[1]);
-    let values = args.map(arg => arg[2]);
+    let keys = args.map((arg) => arg[1]);
+    let values = args.map((arg) => arg[2]);
 
     if (this.selfClosing) {
       blocks = null;

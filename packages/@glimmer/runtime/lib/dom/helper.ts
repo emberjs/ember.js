@@ -57,7 +57,7 @@ import { DOMOperations, BLACKLIST_TABLE } from './operations';
   'u',
   'ul',
   'var',
-].forEach(tag => (BLACKLIST_TABLE[tag] = 1));
+].forEach((tag) => (BLACKLIST_TABLE[tag] = 1));
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 

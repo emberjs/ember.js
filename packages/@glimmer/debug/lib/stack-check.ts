@@ -155,7 +155,7 @@ class PropertyChecker<T> implements Checker<T> {
     if (typeof obj !== 'object') return false;
     if (obj === null || obj === undefined) return false;
 
-    return Object.keys(this.checkers).every(k => {
+    return Object.keys(this.checkers).every((k) => {
       if (!(k in obj)) return false;
 
       let value = (obj as Dict)[k];
@@ -166,7 +166,7 @@ class PropertyChecker<T> implements Checker<T> {
   }
 
   expected(): string {
-    let pairs = Object.keys(this.checkers).map(k => {
+    let pairs = Object.keys(this.checkers).map((k) => {
       return `${k}: ${this.checkers[k].expected()}`;
     });
 
@@ -183,7 +183,7 @@ class ArrayChecker<T> implements Checker<T[]> {
     if (obj === null || obj === undefined) return false;
     if (!Array.isArray(obj)) return false;
 
-    return obj.every(item => this.checker.validate(item));
+    return obj.every((item) => this.checker.validate(item));
   }
 
   expected(): string {

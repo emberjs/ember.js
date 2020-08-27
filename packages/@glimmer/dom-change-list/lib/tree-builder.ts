@@ -69,7 +69,7 @@ export const BLACKLIST_TABLE = Object.create(null);
   'u',
   'ul',
   'var',
-].forEach(tag => (BLACKLIST_TABLE[tag] = 1));
+].forEach((tag) => (BLACKLIST_TABLE[tag] = 1));
 
 interface Context {
   tag: string;

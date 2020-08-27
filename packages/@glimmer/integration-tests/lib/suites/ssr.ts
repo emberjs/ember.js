@@ -129,7 +129,7 @@ export class ServerSideSuite extends AbstractNodeTest {
 
   @test
   'Unescaped helpers render correctly'() {
-    this.registerHelper('testing-unescaped', params => params[0]);
+    this.registerHelper('testing-unescaped', (params) => params[0]);
     this.render('{{{testing-unescaped "<span>hi</span>"}}}');
     this.assertHTML('<span>hi</span>');
   }
@@ -142,7 +142,7 @@ export class ServerSideSuite extends AbstractNodeTest {
 
   @test
   'Attributes can be populated with helpers that generate a string'() {
-    this.registerHelper('testing', params => {
+    this.registerHelper('testing', (params) => {
       return params[0];
     });
 
