@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-extraneous-import
-import { PathReference } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
 // eslint-disable-next-line node/no-extraneous-import
 import { Tag } from '@glimmer/validator';
 import { Dict, Option } from '../core';
@@ -12,7 +12,7 @@ export interface VMArguments {
   positional: PositionalArguments;
   named: NamedArguments;
 
-  at<T extends PathReference<unknown>>(pos: number): T;
+  at(pos: number): Reference;
   capture(): CapturedArguments;
 }
 
@@ -24,11 +24,11 @@ export interface CapturedArguments {
 
 export interface PositionalArguments {
   length: number;
-  at<T extends PathReference<unknown>>(position: number): T;
+  at(position: number): Reference;
   capture(): CapturedPositionalArguments;
 }
 
-export interface CapturedPositionalArguments extends Array<PathReference> {
+export interface CapturedPositionalArguments extends Array<Reference> {
   [CAPTURED_ARGS]: true;
 }
 
@@ -36,7 +36,7 @@ export interface NamedArguments {
   names: string[];
   length: number;
   has(name: string): boolean;
-  get<T extends PathReference<unknown>>(name: string): T;
+  get(name: string): Reference;
   capture(): CapturedNamedArguments;
 }
 
@@ -56,7 +56,7 @@ export interface CapturedBlockArguments {
 }
 
 export interface CapturedNamedArguments {
-  [key: string]: PathReference;
+  [key: string]: Reference;
   [CAPTURED_ARGS]: true;
 }
 

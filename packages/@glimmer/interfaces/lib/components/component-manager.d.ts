@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-extraneous-import
-import { PathReference } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
 import ComponentCapabilities from '../component-capabilities';
 import { ComponentDefinitionState, PreparedArguments, ComponentInstanceState } from '../components';
@@ -18,7 +18,7 @@ export interface ComponentManager<
   ComponentDefinitionState = unknown
 > {
   getCapabilities(state: ComponentDefinitionState): ComponentCapabilities;
-  getSelf(state: ComponentInstanceState): PathReference<unknown>;
+  getSelf(state: ComponentInstanceState): Reference;
   getDestroyable(state: ComponentInstanceState): Option<Destroyable>;
   getDebugName(state: ComponentDefinitionState): string;
 }
@@ -47,7 +47,7 @@ export interface WithCreateInstance<
     state: ComponentDefinitionState,
     args: Option<VMArguments>,
     dynamicScope: Option<DynamicScope>,
-    caller: Option<PathReference<unknown>>,
+    caller: Option<Reference>,
     hasDefaultBlock: boolean
   ): ComponentInstanceState;
 

@@ -1,30 +1,30 @@
-import { IterableReference } from '@glimmer/reference';
+import { createIteratorRef, valueForRef } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
-import { CheckPathReference } from './-debug-strip';
-import { check, CheckInstanceof } from '@glimmer/debug';
+import { CheckReference, CheckIterator } from './-debug-strip';
+import { check } from '@glimmer/debug';
 import { Op } from '@glimmer/interfaces';
+import { AssertFilter } from './vm';
 
-APPEND_OPCODES.add(Op.PutIterator, vm => {
+APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) => {
   let stack = vm.stack;
-  let listRef = check(stack.popJs(), CheckPathReference);
-  let keyRef = check(stack.popJs(), CheckPathReference);
+  let listRef = check(stack.popJs(), CheckReference);
+  let keyRef = check(stack.popJs(), CheckReference);
 
-  let keyValue = keyRef.value();
+  let keyValue = valueForRef(keyRef);
   let key = keyValue === null ? '@identity' : String(keyValue);
 
-  let iterableRef = new IterableReference(listRef, key);
+  let iteratorRef = createIteratorRef(listRef, key);
+  let iterator = valueForRef(iteratorRef);
 
-  // Push the first time to push the iterator onto the stack for iteration
-  stack.pushJs(iterableRef);
+  vm.updateWith(new AssertFilter(iteratorRef, iterator => iterator.isEmpty()));
 
-  // Push the second time to push it as a reference for presence in general
-  // (e.g whether or not it is empty). This reference will be used to skip
-  // iteration entirely.
-  stack.pushJs(iterableRef);
-});
-
-APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart }) => {
-  vm.enterList(relativeStart);
+  if (iterator.isEmpty() === true) {
+    // TODO: Fix this offset, should be accurate
+    vm.goto(elseTarget + 1);
+  } else {
+    vm.enterList(iteratorRef, relativeStart);
+    vm.stack.pushJs(iterator);
+  }
 });
 
 APPEND_OPCODES.add(Op.ExitList, vm => {
@@ -33,12 +33,11 @@ APPEND_OPCODES.add(Op.ExitList, vm => {
 
 APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
   let stack = vm.stack;
-  let iterable = check(stack.peekJs(), CheckInstanceof(IterableReference));
-  let item = iterable.next();
+  let iterator = check(stack.peekJs(), CheckIterator);
+  let item = iterator.next();
 
-  if (item) {
-    let opcode = vm.enterItem(iterable, item);
-    vm.registerItem(opcode);
+  if (item !== null) {
+    vm.registerItem(vm.enterItem(item));
   } else {
     vm.goto(breaks);
   }

@@ -1,4 +1,4 @@
-import { Reference, ReferenceCache } from '@glimmer/reference';
+import { Reference, valueForRef, isConstRef } from '@glimmer/reference';
 import { Revision, Tag, valueForTag, validateTag, consumeTag } from '@glimmer/validator';
 import {
   check,
@@ -21,7 +21,6 @@ import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { expect } from '@glimmer/util';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
@@ -37,7 +36,7 @@ APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
-  let tagName = check(check(vm.stack.popJs(), CheckReference).value(), CheckString);
+  let tagName = check(valueForRef(check(vm.stack.popJs(), CheckReference)), CheckString);
   vm.elements().openElement(tagName);
 });
 
@@ -46,18 +45,16 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let insertBeforeRef = check(vm.stack.popJs(), CheckReference);
   let guidRef = check(vm.stack.popJs(), CheckReference);
 
-  let element = check(elementRef.value(), CheckElement);
-  let insertBefore = check(insertBeforeRef.value(), CheckMaybe(CheckOption(CheckNode)));
-  let guid = guidRef.value() as string;
+  let element = check(valueForRef(elementRef), CheckElement);
+  let insertBefore = check(valueForRef(insertBeforeRef), CheckMaybe(CheckOption(CheckNode)));
+  let guid = valueForRef(guidRef) as string;
 
-  if (!elementRef.isConst()) {
-    let cache = new ReferenceCache(elementRef as Reference<SimpleElement>);
-    vm.updateWith(new Assert(cache));
+  if (!isConstRef(elementRef)) {
+    vm.updateWith(new Assert(elementRef));
   }
 
-  if (insertBefore !== undefined && !insertBeforeRef.isConst()) {
-    let cache = new ReferenceCache(insertBeforeRef as Reference<Option<SimpleNode>>);
-    vm.updateWith(new Assert(cache));
+  if (insertBefore !== undefined && !isConstRef(insertBeforeRef)) {
+    vm.updateWith(new Assert(insertBeforeRef));
   }
 
   let block = vm.elements().pushRemoteElement(element, guid, insertBefore);
@@ -160,12 +157,12 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
   let name = vm[CONSTANTS].getValue<string>(_name);
   let reference = check(vm.stack.popJs(), CheckReference);
-  let value = reference.value();
+  let value = valueForRef(reference);
   let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
 
   let attribute = vm.elements().setDynamicAttribute(name, value, !!trusting, namespace);
 
-  if (!reference.isConst()) {
+  if (!isConstRef(reference)) {
     vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
   }
 });
@@ -177,12 +174,12 @@ export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
 
   constructor(private reference: Reference<unknown>, private attribute: DynamicAttribute) {
     super();
-    this.lastValue = reference.value();
+    this.lastValue = valueForRef(reference);
   }
 
   evaluate(vm: UpdatingVM) {
     let { attribute, reference, lastValue } = this;
-    let currentValue = reference.value();
+    let currentValue = valueForRef(reference);
 
     if (currentValue !== lastValue) {
       attribute.update(currentValue, vm.env);

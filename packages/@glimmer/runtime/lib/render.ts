@@ -16,7 +16,7 @@ import {
   ElementBuilder,
   CompilableProgram,
 } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
+import { Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { expect, unwrapHandle } from '@glimmer/util';
 import { capabilityFlagsFrom } from './capabilities';
 import { hasStaticLayoutCapability } from './compiled/opcodes/component';
@@ -25,7 +25,6 @@ import { ARGS } from './symbols';
 import { AotVM, InternalVM, JitVM } from './vm/append';
 import { NewElementBuilder } from './vm/element-builder';
 import { DynamicScopeImpl } from './scope';
-import { UNDEFINED_REFERENCE } from './references';
 import { inTransaction } from './environment';
 
 class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
@@ -49,7 +48,7 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 
 export function renderAotMain(
   runtime: AotRuntimeContext,
-  self: PathReference,
+  self: Reference,
   treeBuilder: ElementBuilder,
   handle: number,
   dynamicScope: DynamicScope = new DynamicScopeImpl()
@@ -62,7 +61,7 @@ export function renderAot(
   runtime: AotRuntimeContext,
   handle: number,
   cursor: Cursor,
-  self: PathReference = UNDEFINED_REFERENCE
+  self: Reference = UNDEFINED_REFERENCE
 ): TemplateIterator {
   let treeBuilder = NewElementBuilder.forInitialRender(runtime.env, cursor);
   let dynamicScope = new DynamicScopeImpl();
@@ -73,7 +72,7 @@ export function renderAot(
 export function renderJitMain(
   runtime: JitRuntimeContext,
   context: SyntaxCompilationContext,
-  self: PathReference,
+  self: Reference,
   treeBuilder: ElementBuilder,
   handle: number,
   dynamicScope: DynamicScope = new DynamicScopeImpl()
@@ -82,7 +81,7 @@ export function renderJitMain(
   return new TemplateIteratorImpl(vm);
 }
 
-export type RenderComponentArgs = Dict<PathReference>;
+export type RenderComponentArgs = Dict<Reference>;
 
 function renderInvocation<C extends JitOrAotBlock>(
   vm: InternalVM<C>,

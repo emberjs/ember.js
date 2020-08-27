@@ -1,5 +1,5 @@
 import { WithCreateInstance, Environment, Dict, VMArguments } from '@glimmer/interfaces';
-import { ComponentRootReference } from '@glimmer/reference';
+import { createConstRef, Reference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { ComponentArgs } from '../interfaces';
 import argsProxy from './args-proxy';
@@ -21,7 +21,7 @@ const BASIC_COMPONENT_CAPABILITIES = {
 
 interface BasicState {
   env: Environment;
-  self: ComponentRootReference<unknown>;
+  self: Reference<unknown>;
   instance: object;
 }
 
@@ -34,7 +34,7 @@ class BasicComponentManager
     args: VMArguments | null
   ) {
     const instance = new Component(argsProxy(args === null ? EMPTY_ARGS : args.capture()));
-    const self = new ComponentRootReference(instance);
+    const self = createConstRef(instance, 'this');
     return { env, instance, self };
   }
 

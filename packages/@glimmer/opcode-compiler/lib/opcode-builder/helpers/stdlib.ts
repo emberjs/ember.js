@@ -10,7 +10,7 @@ import {
   WholeProgramCompilationContext,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
-import { SwitchCases } from './conditional';
+import { ContentTypeSwitchCases } from './conditional';
 import { concat } from '../../syntax/concat';
 import { MacrosImpl } from '../../syntax/macros';
 
@@ -28,8 +28,7 @@ export function main(): CompileActions {
  */
 export function StdAppend(trusting: boolean): CompileActions {
   return [
-    op(Op.ContentType),
-    SwitchCases(when => {
+    ContentTypeSwitchCases(when => {
       when(ContentType.String, () => {
         if (trusting) {
           return [op(Op.AssertSame), op(Op.AppendHTML)];

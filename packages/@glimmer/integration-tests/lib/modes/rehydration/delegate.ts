@@ -10,6 +10,7 @@ import {
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
 import { ASTPluginBuilder } from '@glimmer/syntax';
+import { createConstRef, Reference } from '@glimmer/reference';
 import createHTMLDocument from '@simple-dom/document';
 import {
   SimpleDocument,
@@ -36,7 +37,6 @@ import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import TestJitRuntimeResolver from '../jit/resolver';
 import { debugRehydration, DebugRehydrationBuilder } from './builder';
-import { UpdatableRootReference } from '../../reference';
 import { BaseEnv } from '../env';
 import { assign } from '@glimmer/util';
 
@@ -64,7 +64,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
   public rehydrationStats!: RehydrationStats;
 
-  private self: Option<UpdatableRootReference> = null;
+  private self: Option<Reference> = null;
 
   constructor(options?: RenderDelegateOptions) {
     let delegate = assign(options?.env ?? {}, BaseEnv);
@@ -126,12 +126,14 @@ export class RehydrationDelegate implements RenderDelegate {
   ): string {
     element = element || this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
+    let { env } = this.serverEnv.runtime;
+
     // Emulate server-side render
     renderTemplate(
       template,
       this.serverEnv,
-      this.getSelf(context),
-      this.getElementBuilder(this.serverEnv.runtime.env, cursor),
+      this.getSelf(env, context),
+      this.getElementBuilder(env, cursor),
       this.precompileOptions
     );
 
@@ -139,9 +141,9 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.serialize(element);
   }
 
-  getSelf(context: unknown): UpdatableRootReference {
+  getSelf(_env: Environment, context: unknown): Reference {
     if (!this.self) {
-      this.self = new UpdatableRootReference(context);
+      this.self = createConstRef(context, 'this');
     }
 
     return this.self;
@@ -161,7 +163,7 @@ export class RehydrationDelegate implements RenderDelegate {
     let result = renderTemplate(
       template,
       this.clientEnv,
-      this.getSelf(context),
+      this.getSelf(env, context),
       builder,
       this.precompileOptions
     );

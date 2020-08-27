@@ -23,7 +23,7 @@ import {
   DynamicScope,
 } from '@glimmer/interfaces';
 import { WrappedBuilder, PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import { PathReference } from '@glimmer/reference';
+import { createConstRef, Reference } from '@glimmer/reference';
 import {
   clientBuilder,
   getDynamicVar,
@@ -58,7 +58,7 @@ import { ComponentKind } from '../../components/types';
 import { BASIC_CAPABILITIES, EMBERISH_CURLY_CAPABILITIES } from '../../components/capabilities';
 import { AotCompilerRegistry, Modules } from './registry';
 import { locatorFor } from '../../locator';
-import { UserHelper, HelperReference } from '../../helpers';
+import { UserHelper, createHelperRef } from '../../helpers';
 import {
   TestModifierConstructor,
   TestModifierDefinitionState,
@@ -68,7 +68,6 @@ import AotRuntimeResolverImpl from './resolver';
 import { TestMacros } from '../../compile/macros';
 import AotCompilerDelegate from './compiler-delegate';
 import { preprocess } from '../../compile';
-import { UpdatableRootReference } from '../../reference';
 import { BaseEnv } from '../env';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
@@ -179,12 +178,12 @@ export class AotRenderDelegate implements RenderDelegate {
     this.registry.addComponent(module, manager, state);
   }
 
-  getSelf(context: object): UpdatableRootReference {
-    return new UpdatableRootReference(context);
+  getSelf(context: object) {
+    return createConstRef(context, 'this');
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    let glimmerHelper: GlimmerHelper = args => new HelperReference(helper, args);
+    let glimmerHelper: GlimmerHelper = args => createHelperRef(helper, args.capture());
     this.registry.register(name, 'helper', { default: glimmerHelper });
   }
 
@@ -296,7 +295,7 @@ export class AotRenderDelegate implements RenderDelegate {
 
   renderComponent(
     name: string,
-    args: Dict<PathReference<unknown>>,
+    args: Dict<Reference<unknown>>,
     element: SimpleElement,
     dyanmicScope?: DynamicScope
   ): RenderResult {
