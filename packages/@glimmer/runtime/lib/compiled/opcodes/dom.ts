@@ -35,12 +35,12 @@ APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
   vm.elements().openElement(vm[CONSTANTS].getValue(tag));
 });
 
-APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
+APPEND_OPCODES.add(Op.OpenDynamicElement, (vm) => {
   let tagName = check(valueForRef(check(vm.stack.popJs(), CheckReference)), CheckString);
   vm.elements().openElement(tagName);
 });
 
-APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
+APPEND_OPCODES.add(Op.PushRemoteElement, (vm) => {
   let elementRef = check(vm.stack.popJs(), CheckReference);
   let insertBeforeRef = check(vm.stack.popJs(), CheckReference);
   let guidRef = check(vm.stack.popJs(), CheckReference);
@@ -61,11 +61,11 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   if (block) vm.associateDestroyable(block);
 });
 
-APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
+APPEND_OPCODES.add(Op.PopRemoteElement, (vm) => {
   vm.elements().popRemoteElement();
 });
 
-APPEND_OPCODES.add(Op.FlushElement, vm => {
+APPEND_OPCODES.add(Op.FlushElement, (vm) => {
   let operations = check(vm.fetchValue($t0), CheckOperations);
   let modifiers: Option<[ModifierManager, unknown][]> = null;
 
@@ -77,7 +77,7 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
   vm.elements().flushElement(modifiers);
 });
 
-APPEND_OPCODES.add(Op.CloseElement, vm => {
+APPEND_OPCODES.add(Op.CloseElement, (vm) => {
   let modifiers = vm.elements().closeElement();
 
   if (modifiers) {

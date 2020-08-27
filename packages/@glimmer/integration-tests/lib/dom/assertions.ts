@@ -188,17 +188,7 @@ export function classes(expected: string) {
   return {
     '3d4ef194-13be-4ccf-8dc7-862eea02c93e': true,
     match(actual: string) {
-      return (
-        actual &&
-        expected
-          .split(' ')
-          .sort()
-          .join(' ') ===
-          actual
-            .split(' ')
-            .sort()
-            .join(' ')
-      );
+      return actual && expected.split(' ').sort().join(' ') === actual.split(' ').sort().join(' ');
     },
     expected() {
       return `to include '${expected}'`;

@@ -34,7 +34,7 @@ export default class ModuleLocatorMap<V, K extends ModuleLocator = ModuleLocator
   }
 
   forEach(cb: (value: V, key: K) => void): void {
-    this.locators.forEach(locator => {
+    this.locators.forEach((locator) => {
       cb(this.get(locator)!, locator);
     });
   }

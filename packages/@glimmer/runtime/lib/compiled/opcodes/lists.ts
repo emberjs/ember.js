@@ -16,7 +16,7 @@ APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) =
   let iteratorRef = createIteratorRef(listRef, key);
   let iterator = valueForRef(iteratorRef);
 
-  vm.updateWith(new AssertFilter(iteratorRef, iterator => iterator.isEmpty()));
+  vm.updateWith(new AssertFilter(iteratorRef, (iterator) => iterator.isEmpty()));
 
   if (iterator.isEmpty() === true) {
     // TODO: Fix this offset, should be accurate
@@ -27,7 +27,7 @@ APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) =
   }
 });
 
-APPEND_OPCODES.add(Op.ExitList, vm => {
+APPEND_OPCODES.add(Op.ExitList, (vm) => {
   vm.exitList();
 });
 

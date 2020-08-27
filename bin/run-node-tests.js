@@ -12,7 +12,7 @@ const NODE_TEST_GLOB = '@glimmer/{node,bundle-compiler}/test/**/*node-test.js';
 // this script that are not in TAP format and does not treat non-zero exit codes
 // as a test failure. This handler ensures that any non-zero exits emit a
 // TAP-compatible bail out message.
-process.on('exit', code => {
+process.on('exit', (code) => {
   if (code !== 0) {
     console.log('Bail out! Non-zero exit code ' + code);
   }

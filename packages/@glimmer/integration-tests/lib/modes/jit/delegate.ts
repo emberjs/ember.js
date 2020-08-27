@@ -209,9 +209,7 @@ export class JitRenderDelegate implements RenderDelegate {
   compileTemplate(template: string): HandleResult {
     let compiled = preprocess(template, undefined, this.precompileOptions);
 
-    return unwrapTemplate(compiled)
-      .asLayout()
-      .compile(this.context.syntax);
+    return unwrapTemplate(compiled).asLayout().compile(this.context.syntax);
   }
 
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {

@@ -52,7 +52,7 @@ module.exports = function transpileToES5(inputNode, modules = false) {
     const ensurePosix = require('ensure-posix-path');
     const path = require('path');
     options.moduleIds = true;
-    options.getModuleId = modulePath => ensurePosix(path.relative(process.cwd(), modulePath));
+    options.getModuleId = (modulePath) => ensurePosix(path.relative(process.cwd(), modulePath));
   }
 
   return babel(inputNode, options);

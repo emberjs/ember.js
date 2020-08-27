@@ -19,7 +19,7 @@ export const defaultId: TemplateIdFn = (() => {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const crypto = require('crypto');
 
-      let idFn: TemplateIdFn = src => {
+      let idFn: TemplateIdFn = (src) => {
         let hash = crypto.createHash('sha1');
         hash.update(src, 'utf8');
         // trim to 6 bytes of data (2^48 - 1)

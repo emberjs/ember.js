@@ -34,7 +34,7 @@ class TrackedDict<T> {
   }
 }
 
-module('References', hooks => {
+module('References', (hooks) => {
   let originalContext: GlobalContext | null;
   let getCount = 0;
   let setCount = 0;
@@ -63,7 +63,7 @@ module('References', hooks => {
   });
 
   module('const ref', () => {
-    test('it works', assert => {
+    test('it works', (assert) => {
       let value = {};
       let constRef = createConstRef(value, 'test');
 
@@ -71,7 +71,7 @@ module('References', hooks => {
       assert.notOk(isUpdatableRef(constRef), 'value is not updatable');
     });
 
-    test('can create children of const refs', assert => {
+    test('can create children of const refs', (assert) => {
       class Parent {
         @tracked child = 123;
       }
@@ -102,7 +102,7 @@ module('References', hooks => {
   });
 
   module('compute ref', () => {
-    test('compute reference caches computation', assert => {
+    test('compute reference caches computation', (assert) => {
       let count = 0;
 
       let dict = new TrackedDict<string>();
@@ -146,7 +146,7 @@ module('References', hooks => {
       assert.strictEqual(count, 4, 'computed');
     });
 
-    test('compute refs cache nested computation correctly', assert => {
+    test('compute refs cache nested computation correctly', (assert) => {
       let count = 0;
 
       let first = new TrackedDict<string>();
@@ -185,7 +185,7 @@ module('References', hooks => {
       assert.strictEqual(count, 2, 'computed');
     });
 
-    test('can create children of compute refs', assert => {
+    test('can create children of compute refs', (assert) => {
       class Child {
         @tracked value = 123;
       }
@@ -225,7 +225,7 @@ module('References', hooks => {
   });
 
   module('unbound ref', () => {
-    test('it works', assert => {
+    test('it works', (assert) => {
       let value = {};
       let constRef = createUnboundRef(value, 'test');
 
@@ -233,7 +233,7 @@ module('References', hooks => {
       assert.notOk(isUpdatableRef(constRef), 'value is not updatable');
     });
 
-    test('children of unbound refs are not reactive', assert => {
+    test('children of unbound refs are not reactive', (assert) => {
       class Parent {
         @tracked child = 123;
       }
@@ -252,7 +252,7 @@ module('References', hooks => {
   });
 
   module('invokable ref', () => {
-    test('can create invokable refs', assert => {
+    test('can create invokable refs', (assert) => {
       let ref = createComputeRef(
         () => {},
         () => {}
@@ -263,7 +263,7 @@ module('References', hooks => {
       assert.ok(isInvokableRef(invokableRef));
     });
 
-    test('can create children of invokable refs', assert => {
+    test('can create children of invokable refs', (assert) => {
       class Child {
         @tracked value = 123;
       }
@@ -276,7 +276,7 @@ module('References', hooks => {
 
       let computeRef = createComputeRef(
         () => parent.child,
-        value => (parent.child = value)
+        (value) => (parent.child = value)
       );
       let invokableRef = createInvokableRef(computeRef);
       let valueRef = childRefFor(invokableRef, 'value');
@@ -307,7 +307,7 @@ module('References', hooks => {
   });
 
   module('read only ref', () => {
-    test('can convert an updatable ref to read only', assert => {
+    test('can convert an updatable ref to read only', (assert) => {
       class Parent {
         @tracked child = 123;
       }
@@ -316,7 +316,7 @@ module('References', hooks => {
 
       let computeRef = createComputeRef(
         () => parent.child,
-        value => (parent.child = value)
+        (value) => (parent.child = value)
       );
 
       let readOnlyRef = createReadOnlyRef(computeRef);
@@ -325,7 +325,7 @@ module('References', hooks => {
       assert.notOk(isUpdatableRef(readOnlyRef), 'read only ref is not updatable');
     });
 
-    test('can create children of read only refs', assert => {
+    test('can create children of read only refs', (assert) => {
       class Child {
         @tracked value = 123;
       }
@@ -338,7 +338,7 @@ module('References', hooks => {
 
       let computeRef = createComputeRef(
         () => parent.child,
-        value => (parent.child = value)
+        (value) => (parent.child = value)
       );
       let readOnlyRef = createReadOnlyRef(computeRef);
       let valueRef = childRefFor(readOnlyRef, 'value');
@@ -370,7 +370,7 @@ module('References', hooks => {
 
   if (DEBUG) {
     module('debugAliasRef', () => {
-      test('debug alias refs are transparent', assert => {
+      test('debug alias refs are transparent', (assert) => {
         class Foo {
           @tracked value = 123;
         }
@@ -379,7 +379,7 @@ module('References', hooks => {
 
         let original = createComputeRef(
           () => foo.value,
-          newValue => (foo.value = newValue)
+          (newValue) => (foo.value = newValue)
         );
 
         let alias = createDebugAliasRef!('@test', original);

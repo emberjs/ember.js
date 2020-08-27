@@ -3,7 +3,7 @@ import { STDLib } from '@glimmer/interfaces';
 
 QUnit.module('Heap');
 
-QUnit.test('Can grow', assert => {
+QUnit.test('Can grow', (assert) => {
   let size = 0x100000;
   let heap = new HeapImpl();
   let stdlib: STDLib = {

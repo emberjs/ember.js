@@ -8,7 +8,7 @@ export function content(list: Content[]): string {
   let out: string[] = [];
   let depth = 0;
 
-  list.forEach(item => {
+  list.forEach((item) => {
     if (typeof item === 'string') {
       out.push(item);
     } else if (item.marker === 'open-block') {

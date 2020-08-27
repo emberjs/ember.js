@@ -174,7 +174,7 @@ export class TestJitRegistry {
     // TODO: This whole thing probably should have a more first-class
     // structure.
     let template = unwrapTemplate(
-      this.customCompilableTemplate(templateHandle, name, source => {
+      this.customCompilableTemplate(templateHandle, name, (source) => {
         let factory = createTemplate(source, undefined, CIRCULAR_OBJECT);
         return factory.create();
       })

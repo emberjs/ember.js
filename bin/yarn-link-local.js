@@ -6,7 +6,7 @@ const mkdirp = require('mkdirp');
 const glob = require('glob');
 
 let cwd = path.resolve(__dirname, '..');
-let packages = glob.sync('dist/@glimmer/*/', { cwd }).map(f => path.resolve(cwd, f));
+let packages = glob.sync('dist/@glimmer/*/', { cwd }).map((f) => path.resolve(cwd, f));
 const nodeModules = path.resolve(__dirname, '..', 'node_modules', '@glimmer');
 
 mkdirp.sync(nodeModules);

@@ -227,7 +227,7 @@ export default class Printer {
   }
 
   TopLevelStatements(statements: TopLevelStatement[]) {
-    statements.forEach(statement => this.TopLevelStatement(statement));
+    statements.forEach((statement) => this.TopLevelStatement(statement));
   }
 
   ElementNode(el: ElementNode): void {
@@ -243,19 +243,19 @@ export default class Printer {
   OpenElementNode(el: ElementNode): void {
     this.buffer += `<${el.tag}`;
     if (el.attributes.length) {
-      el.attributes.forEach(attr => {
+      el.attributes.forEach((attr) => {
         this.buffer += ' ';
         this.AttrNode(attr);
       });
     }
     if (el.modifiers.length) {
-      el.modifiers.forEach(mod => {
+      el.modifiers.forEach((mod) => {
         this.buffer += ' ';
         this.ElementModifierStatement(mod);
       });
     }
     if (el.comments.length) {
-      el.comments.forEach(comment => {
+      el.comments.forEach((comment) => {
         this.buffer += ' ';
         this.MustacheCommentStatement(comment);
       });
@@ -402,7 +402,7 @@ export default class Printer {
     }
 
     this.buffer += '"';
-    concat.parts.forEach(part => {
+    concat.parts.forEach((part) => {
       if (part.type === 'TextNode') {
         this.TextNode(part, true);
       } else {
@@ -464,7 +464,7 @@ export default class Printer {
     // TODO: implement a top level Params AST node (just like the Hash object)
     // so that this can also be overridden
     if (params.length) {
-      params.forEach(param => {
+      params.forEach((param) => {
         this.buffer += ' ';
         this.Expression(param);
       });
@@ -476,7 +476,7 @@ export default class Printer {
       return;
     }
 
-    hash.pairs.forEach(pair => {
+    hash.pairs.forEach((pair) => {
       this.buffer += ' ';
       this.HashPair(pair);
     });

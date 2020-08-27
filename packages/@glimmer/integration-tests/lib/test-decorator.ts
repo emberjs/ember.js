@@ -19,7 +19,7 @@ export function test(...args: any[]) {
     let meta: ComponentTestMeta = args[0];
     return (_target: Object, _name: string, descriptor: PropertyDescriptor) => {
       let testFunction = descriptor.value as Function & Dict;
-      keys(meta).forEach(key => (testFunction[key] = meta[key]));
+      keys(meta).forEach((key) => (testFunction[key] = meta[key]));
       setTestingDescriptor(descriptor);
     };
   }

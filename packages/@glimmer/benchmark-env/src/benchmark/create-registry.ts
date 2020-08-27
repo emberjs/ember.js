@@ -92,7 +92,7 @@ export default function createRegistry(): Registry {
     ) => {
       components.set(
         name,
-        pushValue(handle => ({
+        pushValue((handle) => ({
           handle,
           name,
           definition: {
@@ -107,7 +107,7 @@ export default function createRegistry(): Registry {
     registerHelper: (name, helper) => {
       helpers.set(
         name,
-        pushValue(handle => ({
+        pushValue((handle) => ({
           handle,
           name,
           definition: helper,
@@ -117,7 +117,7 @@ export default function createRegistry(): Registry {
     registerModifier: (name, modifier, manager) => {
       modifiers.set(
         name,
-        pushValue(handle => ({
+        pushValue((handle) => ({
           handle,
           name,
           definition: {
@@ -129,9 +129,9 @@ export default function createRegistry(): Registry {
     },
     render: (entry, args, element, isIteractive) => {
       const context = JitContext({
-        lookupHelper: name => helpers.get(name)?.handle,
-        lookupModifier: name => modifiers.get(name)?.handle,
-        lookupComponent: name => components.get(name),
+        lookupHelper: (name) => helpers.get(name)?.handle,
+        lookupModifier: (name) => modifiers.get(name)?.handle,
+        lookupComponent: (name) => components.get(name),
       });
       const component = components.get(entry);
       if (!component) {
@@ -141,7 +141,7 @@ export default function createRegistry(): Registry {
       return renderBenchmark(
         context,
         {
-          resolve: handle => values[handle].definition,
+          resolve: (handle) => values[handle].definition,
         },
         component.definition,
         component.compilable,

@@ -24,7 +24,7 @@ function locatorFor(locator: ModuleLocator): ModuleLocator {
   };
 }
 
-test('correct referrer is passed during component lookup', function(assert) {
+test('correct referrer is passed during component lookup', function (assert) {
   let inScopeReferrers: ModuleLocator[] = [];
   let resolveComponentReferrers: ModuleLocator[] = [];
 

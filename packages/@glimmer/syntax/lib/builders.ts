@@ -256,7 +256,7 @@ export function normalizeAttr(sexp: AttrSexp): AST.AttrNode {
 export function normalizeHash(hash: Dict<AST.Expression>, loc?: AST.SourceLocation): AST.Hash {
   let pairs: AST.HashPair[] = [];
 
-  Object.keys(hash).forEach(key => {
+  Object.keys(hash).forEach((key) => {
     pairs.push(buildPair(key, hash[key]));
   });
 
@@ -580,7 +580,7 @@ export default {
 type BuildLiteral<T extends AST.Literal> = (value: T['value']) => T;
 
 function literal<T extends AST.Literal>(type: T['type']): BuildLiteral<T> {
-  return function(value: T['value']): T {
+  return function (value: T['value']): T {
     return buildLiteral(type, value);
   };
 }

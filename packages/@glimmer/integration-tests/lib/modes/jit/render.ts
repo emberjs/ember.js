@@ -14,9 +14,7 @@ export function renderTemplate(
   options?: PrecompileOptions
 ): RenderResult {
   let template = preprocess(src, undefined, options);
-  let handle = unwrapTemplate(template)
-    .asLayout()
-    .compile(syntax);
+  let handle = unwrapTemplate(template).asLayout().compile(syntax);
 
   let iterator = renderJitMain(runtime, syntax, self, builder, unwrapHandle(handle));
   return renderSync(runtime.env, iterator);

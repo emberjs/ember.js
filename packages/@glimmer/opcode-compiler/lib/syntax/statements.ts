@@ -36,7 +36,7 @@ export function inflateAttrName(attrName: string | WellKnownAttrName) {
   return typeof attrName === 'string' ? attrName : INFLATE_ATTR_TABLE[attrName];
 }
 
-STATEMENTS.add(SexpOpcodes.Comment, sexp => op(Op.Comment, sexp[1]));
+STATEMENTS.add(SexpOpcodes.Comment, (sexp) => op(Op.Comment, sexp[1]));
 STATEMENTS.add(SexpOpcodes.CloseElement, () => op(Op.CloseElement));
 STATEMENTS.add(SexpOpcodes.FlushElement, () => op(Op.FlushElement));
 
@@ -52,7 +52,7 @@ STATEMENTS.add(SexpOpcodes.Modifier, (sexp, meta) => {
   return op('IfResolved', {
     kind: ResolveHandle.Modifier,
     name: stringName,
-    andThen: handle => [
+    andThen: (handle) => [
       op(MachineOp.PushFrame),
       op('SimpleArgs', { params, hash, atNames: false }),
       op(Op.Modifier, handle),
@@ -178,7 +178,7 @@ STATEMENTS.add(SexpOpcodes.Debugger, ([, evalInfo], meta) =>
   op(Op.Debugger, strArray(meta.evalSymbols!), arr(evalInfo))
 );
 
-STATEMENTS.add(SexpOpcodes.Append, sexp => {
+STATEMENTS.add(SexpOpcodes.Append, (sexp) => {
   let [, value] = sexp;
 
   return op('CompileInline', {
@@ -195,7 +195,7 @@ STATEMENTS.add(SexpOpcodes.Append, sexp => {
   });
 });
 
-STATEMENTS.add(SexpOpcodes.TrustingAppend, sexp => {
+STATEMENTS.add(SexpOpcodes.TrustingAppend, (sexp) => {
   let [, value] = sexp;
 
   if (typeof value === 'string') {
@@ -214,6 +214,6 @@ STATEMENTS.add(SexpOpcodes.TrustingAppend, sexp => {
   ];
 });
 
-STATEMENTS.add(SexpOpcodes.Block, sexp => {
+STATEMENTS.add(SexpOpcodes.Block, (sexp) => {
   return op('CompileBlock', sexp);
 });

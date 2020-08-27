@@ -49,7 +49,7 @@ test('programs', () => {
   }
 });
 
-test('blocks', function() {
+test('blocks', function () {
   let ast = parse(`
   {{#if foo}}
     {{#if bar}}
@@ -72,7 +72,7 @@ test('blocks', function() {
   locEqual(nestedInverse as AST.Node, 5, 16, 7, 2);
 });
 
-test('mustache', function() {
+test('mustache', function () {
   let ast = parse(`
     {{foo}}
     {{#if foo}}
@@ -92,7 +92,7 @@ test('mustache', function() {
   }
 });
 
-test('element modifier', function() {
+test('element modifier', function () {
   let ast = parse(`
     <div {{bind-attr
       foo
@@ -105,7 +105,7 @@ test('element modifier', function() {
   }
 });
 
-test('html elements', function() {
+test('html elements', function () {
   let ast = parse(`
     <section>
       <br>
@@ -129,7 +129,7 @@ test('html elements', function() {
   }
 });
 
-test('html elements with nested blocks', assert => {
+test('html elements with nested blocks', (assert) => {
   let ast = parse(`
     <div>
       {{#if isSingleError}}
@@ -167,7 +167,7 @@ test('html elements with nested blocks', assert => {
   }
 });
 
-test('block + newline + element ', function() {
+test('block + newline + element ', function () {
   let ast = parse(`
     {{#if stuff}}
     {{/if}}
@@ -180,7 +180,7 @@ test('block + newline + element ', function() {
   locEqual(p, 4, 4, 4, 14, 'p element');
 });
 
-test('mustache + newline + element ', function() {
+test('mustache + newline + element ', function () {
   let ast = parse(`
     {{foo}}
     <p>Hi!</p>
@@ -192,7 +192,7 @@ test('mustache + newline + element ', function() {
   locEqual(p, 3, 4, 3, 14, 'p element');
 });
 
-test('blocks with nested html elements', function() {
+test('blocks with nested html elements', function () {
   let ast = parse(`
     {{#foo-bar}}<div>Foo</div>{{/foo-bar}} <p>Hi!</p>
   `);
@@ -207,7 +207,7 @@ test('blocks with nested html elements', function() {
   locEqual(p, 2, 43, 2, 53, 'p element');
 });
 
-test('html elements after mustache', function() {
+test('html elements after mustache', function () {
   let ast = parse(`
     {{foo-bar}} <p>Hi!</p>
   `);
@@ -218,7 +218,7 @@ test('html elements after mustache', function() {
   locEqual(p, 2, 16, 2, 26, 'div element');
 });
 
-test('text', function() {
+test('text', function () {
   let ast = parse(`
     foo!
     <div>blah</div>
@@ -233,7 +233,7 @@ test('text', function() {
   }
 });
 
-test('comment', function() {
+test('comment', function () {
   let ast = parse(`
     <div><!-- blah blah blah blah -->
       <!-- derp herky --><div></div>
@@ -250,7 +250,7 @@ test('comment', function() {
   }
 });
 
-test('handlebars comment', function() {
+test('handlebars comment', function () {
   let ast = parse(`
     <div>{{!-- blah blah blah blah --}}
       {{!-- derp herky --}}<div></div>
@@ -272,7 +272,7 @@ test('handlebars comment', function() {
   }
 });
 
-test('element attribute', function() {
+test('element attribute', function () {
   let ast = parse(`
     <div data-foo="blah"
       data-derp="lolol"
@@ -302,7 +302,7 @@ data-barf="herpy"
   }
 });
 
-test('element dynamic attribute', function() {
+test('element dynamic attribute', function () {
   let ast = parse(`<img src={{blah}}>`);
 
   let [img] = ast.body;
@@ -314,7 +314,7 @@ test('element dynamic attribute', function() {
   }
 });
 
-test('concat statement', function() {
+test('concat statement', function () {
   let ast = parse(`
     <div data-foo="{{if foo
         "active"
@@ -366,7 +366,7 @@ foo"
   }
 });
 
-test('char references', function() {
+test('char references', function () {
   let ast = parse(`
     &gt;<div>&lt;<p>
       Hi, danmcclain &excl;</p>
@@ -388,7 +388,7 @@ test('char references', function() {
   }
 });
 
-test('whitespace control - trailing', function() {
+test('whitespace control - trailing', function () {
   let ast = parse(`
   {{#if foo~}}
     <div></div>
@@ -405,7 +405,7 @@ test('whitespace control - trailing', function() {
   }
 });
 
-test("whitespace control - 'else if' trailing", function() {
+test("whitespace control - 'else if' trailing", function () {
   let ast = parse(`
   {{#if foo}}
     {{bar}}
@@ -427,7 +427,7 @@ test("whitespace control - 'else if' trailing", function() {
   }
 });
 
-test('whitespace control - leading', function() {
+test('whitespace control - leading', function () {
   let ast = parse(`
   {{~#if foo}}
     <div></div>
