@@ -1,9 +1,12 @@
 {
   "name": "local-linker",
+  "version": "0.59.0",
+  "private": true,
   "keywords": [
     "ember-addon"
   ],
   "dependencies": {
+    "glimmer-benchmark": "^0.59.0",
     "fs-extra": "*",
     "symlink-or-copy": "*"
   }
