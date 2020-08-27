@@ -6,7 +6,7 @@
     "ember-addon"
   ],
   "dependencies": {
-    "glimmer-benchmark": "^0.59.0",
+    "glimmer-benchmark": "*",
     "fs-extra": "*",
     "symlink-or-copy": "*"
   }
