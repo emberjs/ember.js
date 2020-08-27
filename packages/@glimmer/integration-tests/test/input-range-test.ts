@@ -1,11 +1,5 @@
 import { AttributesTests } from './attributes-test';
-import {
-  jitSuite,
-  test,
-  EmberishCurlyComponent,
-  EmberishCurlyComponentFactory,
-  EmberishRootView,
-} from '..';
+import { jitSuite, test, EmberishCurlyComponent, EmberishCurlyComponentFactory } from '..';
 
 abstract class RangeTests extends AttributesTests {
   min = -5;
@@ -83,8 +77,6 @@ class EmberInputRangeComponent extends EmberishCurlyComponent {
 }
 
 abstract class EmberComponentRangeTests extends RangeTests {
-  view!: EmberishRootView;
-
   abstract component(): EmberishCurlyComponentFactory;
 
   renderRange(value: number): void {

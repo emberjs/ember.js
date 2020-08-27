@@ -12,8 +12,7 @@ import {
   Environment,
 } from '@glimmer/interfaces';
 import { MINIMAL_CAPABILITIES } from './interfaces';
-import { PathReference } from '@glimmer/reference';
-import { UNDEFINED_REFERENCE } from '../references';
+import { Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 // TODO: This manager appears to be unused
 export class SimpleComponentManager implements ComponentManager {
@@ -34,13 +33,13 @@ export class SimpleComponentManager implements ComponentManager {
     _state: ComponentDefinitionState,
     _args: Option<VMArguments>,
     _dynamicScope: Option<DynamicScope>,
-    _caller: Option<PathReference<unknown>>,
+    _caller: Option<Reference>,
     _hasDefaultBlock: boolean
   ): ComponentInstanceState {
     throw new Error(`Unimplemented create in SimpleComponentManager`);
   }
 
-  getSelf(_state: ComponentInstanceState): PathReference {
+  getSelf(_state: ComponentInstanceState): Reference {
     return UNDEFINED_REFERENCE;
   }
 

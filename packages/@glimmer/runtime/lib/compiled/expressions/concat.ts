@@ -1,16 +1,12 @@
-import { Option, Dict, Maybe } from '@glimmer/interfaces';
-import { CachedReference, PathReference } from '@glimmer/reference';
+import { Dict, Maybe } from '@glimmer/interfaces';
+import { Reference, valueForRef, createComputeRef } from '@glimmer/reference';
 
-export class ConcatReference extends CachedReference<Option<string>> {
-  constructor(private parts: Array<PathReference<unknown>>) {
-    super();
-  }
-
-  protected compute(): Option<string> {
+export function createConcatRef(partsRefs: Reference[]) {
+  return createComputeRef(() => {
     let parts = new Array<string>();
 
-    for (let i = 0; i < this.parts.length; i++) {
-      let value = this.parts[i].value() as Maybe<Dict>;
+    for (let i = 0; i < partsRefs.length; i++) {
+      let value = valueForRef(partsRefs[i]) as Maybe<Dict>;
 
       if (value !== null && value !== undefined) {
         parts[i] = castToString(value);
@@ -22,7 +18,7 @@ export class ConcatReference extends CachedReference<Option<string>> {
     }
 
     return null;
-  }
+  });
 }
 
 function castToString(value: Dict) {

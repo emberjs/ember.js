@@ -13,7 +13,13 @@ import {
   LiveBlock,
   UpdatableBlock,
 } from '@glimmer/interfaces';
-import { IterationItemReference, IterableReference, OpaqueIterationItem } from '@glimmer/reference';
+import {
+  OpaqueIterationItem,
+  OpaqueIterator,
+  valueForRef,
+  Reference,
+  updateRef,
+} from '@glimmer/reference';
 import { expect, Option, Stack, logStep } from '@glimmer/util';
 import { resetTracking } from '@glimmer/validator';
 import { SimpleComment } from '@simple-dom/interface';
@@ -176,16 +182,16 @@ export class ListItemOpcode extends TryOpcode {
     runtime: RuntimeContext,
     bounds: UpdatableBlock,
     public key: unknown,
-    public memo: IterationItemReference,
-    public value: IterationItemReference
+    public memo: Reference,
+    public value: Reference
   ) {
     super(state, runtime, bounds, []);
   }
 
   updateReferences(item: OpaqueIterationItem) {
     this.retained = true;
-    this.value.update(item.value);
-    this.memo.update(item.memo);
+    updateRef(this.value, item.value);
+    updateRef(this.memo, item.memo);
   }
 
   shouldRemove(): boolean {
@@ -203,6 +209,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
   private opcodeMap = new Map<unknown, ListItemOpcode>();
   private marker: SimpleComment | null = null;
+  private lastIterator: OpaqueIterator;
 
   protected readonly bounds!: LiveBlockList;
 
@@ -211,9 +218,10 @@ export class ListBlockOpcode extends BlockOpcode {
     runtime: RuntimeContext,
     bounds: LiveBlockList,
     children: ListItemOpcode[],
-    private iterableRef: IterableReference
+    private iterableRef: Reference<OpaqueIterator>
   ) {
     super(state, runtime, bounds, children);
+    this.lastIterator = valueForRef(iterableRef);
   }
 
   initializeChild(opcode: ListItemOpcode) {
@@ -222,7 +230,9 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 
   evaluate(vm: UpdatingVM) {
-    if (this.iterableRef.isDone() === false) {
+    let iterator = valueForRef(this.iterableRef);
+
+    if (this.lastIterator !== iterator) {
       let { bounds } = this;
       let { dom } = vm;
 
@@ -233,18 +243,19 @@ export class ListBlockOpcode extends BlockOpcode {
         expect(bounds.lastNode(), "can't insert after an empty bounds")
       );
 
-      this.sync();
+      this.sync(iterator);
 
       this.parentElement().removeChild(marker);
       this.marker = null;
+      this.lastIterator = iterator;
     }
 
     // Run now-updated updating opcodes
     super.evaluate(vm);
   }
 
-  private sync() {
-    let { iterableRef, opcodeMap: itemMap, children } = this;
+  private sync(iterator: OpaqueIterator) {
+    let { opcodeMap: itemMap, children } = this;
 
     let currentOpcodeIndex = 0;
     let seenIndex = 0;
@@ -252,7 +263,7 @@ export class ListBlockOpcode extends BlockOpcode {
     this.children = this.bounds.boundList = [];
 
     while (true) {
-      let item = iterableRef.next();
+      let item = iterator.next();
 
       if (item === null) break;
 
@@ -326,8 +337,8 @@ export class ListBlockOpcode extends BlockOpcode {
 
     let { children } = this;
 
-    opcode.memo.update(item.memo);
-    opcode.value.update(item.value);
+    updateRef(opcode.memo, item.memo);
+    updateRef(opcode.value, item.value);
     opcode.retained = true;
 
     opcode.index = children.length;
@@ -339,7 +350,7 @@ export class ListBlockOpcode extends BlockOpcode {
       logStep!('list-updates', ['insert', item.key]);
     }
 
-    let { opcodeMap, bounds, state, runtime, iterableRef, children } = this;
+    let { opcodeMap, bounds, state, runtime, children } = this;
     let { key } = item;
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
@@ -352,7 +363,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
     vm.execute(vm => {
       vm.pushUpdating();
-      let opcode = vm.enterItem(iterableRef, item);
+      let opcode = vm.enterItem(item);
 
       opcode.index = children.length;
       children.push(opcode);
@@ -364,8 +375,8 @@ export class ListBlockOpcode extends BlockOpcode {
   private moveItem(opcode: ListItemOpcode, item: OpaqueIterationItem, before: ListItemOpcode) {
     let { children } = this;
 
-    opcode.memo.update(item.memo);
-    opcode.value.update(item.value);
+    updateRef(opcode.memo, item.memo);
+    updateRef(opcode.value, item.value);
     opcode.retained = true;
 
     let currentSibling, nextSibling;

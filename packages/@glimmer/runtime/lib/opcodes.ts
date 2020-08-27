@@ -11,6 +11,7 @@ import { DESTROYABLE_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
 import { InternalVM, InternalJitVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';
 import { isScopeReference } from './scope';
+import { valueForRef } from '@glimmer/reference';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -143,7 +144,7 @@ export class AppendOpcodes {
           console.log(
             '%c -> scope',
             'color: green',
-            vm.scope().slots.map(s => (isScopeReference(s) ? s.value() : s))
+            vm.scope().slots.map(s => (isScopeReference(s) ? valueForRef(s) : s))
           );
         }
 

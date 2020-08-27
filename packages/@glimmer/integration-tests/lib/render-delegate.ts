@@ -17,9 +17,8 @@ import {
   ElementBuilder,
   Helper,
 } from '@glimmer/interfaces';
-import { ConstReference } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
 import { EnvironmentDelegate } from '@glimmer/runtime';
-import { UpdatableRootReference } from './reference';
 
 export interface RenderDelegateOptions {
   doc?: SimpleDocument;
@@ -52,5 +51,5 @@ export default interface RenderDelegate {
     snapshot: () => void
   ): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder;
-  getSelf(context: unknown): UpdatableRootReference | ConstReference;
+  getSelf(env: Environment, context: unknown): Reference;
 }

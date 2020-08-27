@@ -38,12 +38,6 @@ export {
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
 export {
-  ConditionalReference,
-  NULL_REFERENCE,
-  PrimitiveReference,
-  UNDEFINED_REFERENCE,
-} from './lib/references';
-export {
   renderAot,
   renderAotComponent,
   renderAotMain,
@@ -62,8 +56,6 @@ export {
   reifyArgs,
   reifyNamed,
   reifyPositional,
-  ReifyNamedReference,
-  ReifyPositionalReference,
 } from './lib/vm/arguments';
 export {
   DynamicAttribute,
