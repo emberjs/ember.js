@@ -1,3 +1,13 @@
+## v0.60.0 (2020-08-27)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`
+  * [#1142](https://github.com/glimmerjs/glimmer-vm/pull/1142) [REFACTOR] Monomorphic Reference ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+
 ## v0.59.0 (2020-08-22)
 
 #### :boom: Breaking Change
