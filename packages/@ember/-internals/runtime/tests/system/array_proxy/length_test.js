@@ -5,6 +5,7 @@ import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '../../../lib/mixins/array';
 import { moduleFor, AbstractTestCase, runTask, runLoopSettled } from 'internal-test-helpers';
 import { set, get } from '@ember/-internals/metal';
+import { createCache, getValue } from '@glimmer/validator';
 
 moduleFor(
   'Ember.ArrayProxy - content change (length)',
@@ -204,6 +205,50 @@ moduleFor(
       assert.equal(eCalled, 2, 'expected observer `colors.content.[]` to be called TWICE');
 
       obj.destroy();
+    }
+
+    async ['@test array proxy length is reactive when accessed normally'](assert) {
+      let proxy = ArrayProxy.create({
+        content: a([1, 2, 3]),
+      });
+
+      let lengthCache = createCache(() => proxy.length);
+
+      assert.equal(getValue(lengthCache), 3, 'length is correct');
+
+      proxy.pushObject(4);
+
+      assert.equal(getValue(lengthCache), 4, 'length is correct');
+
+      proxy.removeObject(1);
+
+      assert.equal(getValue(lengthCache), 3, 'length is correct');
+
+      proxy.set('content', []);
+
+      assert.equal(getValue(lengthCache), 0, 'length is correct');
+    }
+
+    async ['@test array proxy length is reactive when accessed using get'](assert) {
+      let proxy = ArrayProxy.create({
+        content: a([1, 2, 3]),
+      });
+
+      let lengthCache = createCache(() => get(proxy, 'length'));
+
+      assert.equal(getValue(lengthCache), 3, 'length is correct');
+
+      proxy.pushObject(4);
+
+      assert.equal(getValue(lengthCache), 4, 'length is correct');
+
+      proxy.removeObject(1);
+
+      assert.equal(getValue(lengthCache), 3, 'length is correct');
+
+      proxy.set('content', []);
+
+      assert.equal(getValue(lengthCache), 0, 'length is correct');
     }
   }
 );
