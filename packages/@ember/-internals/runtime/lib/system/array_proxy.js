@@ -18,7 +18,7 @@ import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
-import { combine, validateTag, valueForTag, tagFor } from '@glimmer/validator';
+import { combine, consumeTag, validateTag, valueForTag, tagFor } from '@glimmer/validator';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
@@ -109,28 +109,23 @@ export default class ArrayProxy extends EmberObject {
     this._arrangedContentIsUpdating = false;
     this._arrangedContentTag = null;
     this._arrangedContentRevision = null;
+    this._lengthTag = null;
+    this._arrTag = null;
   }
 
   [PROPERTY_DID_CHANGE]() {
     this._revalidate();
   }
 
-  [CUSTOM_TAG_FOR](key, addMandatorySetter) {
-    if (key === '[]' || key === 'length') {
-      // revalidate eagerly if we're being tracked, since we no longer will
-      // be able to later on due to backtracking re-render assertion
+  [CUSTOM_TAG_FOR](key) {
+    if (key === '[]') {
       this._revalidate();
-      let arrangedContentTag = this._arrangedContentTag;
-      let arrangedContent = get(this, 'arrangedContent');
 
-      if (isObject(arrangedContent)) {
-        return combine([
-          arrangedContentTag,
-          tagForProperty(arrangedContent, key, addMandatorySetter),
-        ]);
-      } else {
-        return arrangedContentTag;
-      }
+      return this._arrTag;
+    } else if (key === 'length') {
+      this._revalidate();
+
+      return this._lengthTag;
     }
 
     return tagFor(this, key);
@@ -229,6 +224,8 @@ export default class ArrayProxy extends EmberObject {
       this._lengthDirty = false;
     }
 
+    consumeTag(this._lengthTag);
+
     return this._length;
   }
 
@@ -252,9 +249,8 @@ export default class ArrayProxy extends EmberObject {
     }
   }
 
-  _updateArrangedContentArray() {
+  _updateArrangedContentArray(arrangedContent) {
     let oldLength = this._objects === null ? 0 : this._objects.length;
-    let arrangedContent = get(this, 'arrangedContent');
     let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
 
     this._removeArrangedContentArrayObserver();
@@ -263,11 +259,10 @@ export default class ArrayProxy extends EmberObject {
     this._invalidate();
 
     this.arrayContentDidChange(0, oldLength, newLength);
-    this._addArrangedContentArrayObserver();
+    this._addArrangedContentArrayObserver(arrangedContent);
   }
 
-  _addArrangedContentArrayObserver() {
-    let arrangedContent = get(this, 'arrangedContent');
+  _addArrangedContentArrayObserver(arrangedContent) {
     if (arrangedContent && !arrangedContent.isDestroyed) {
       assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
       assert(
@@ -319,18 +314,27 @@ export default class ArrayProxy extends EmberObject {
       this._arrangedContentTag === null ||
       !validateTag(this._arrangedContentTag, this._arrangedContentRevision)
     ) {
+      let arrangedContent = this.get('arrangedContent');
+
       if (this._arrangedContentTag === null) {
         // This is the first time the proxy has been setup, only add the observer
         // don't trigger any events
-        this._addArrangedContentArrayObserver();
+        this._addArrangedContentArrayObserver(arrangedContent);
       } else {
         this._arrangedContentIsUpdating = true;
-        this._updateArrangedContentArray();
+        this._updateArrangedContentArray(arrangedContent);
         this._arrangedContentIsUpdating = false;
       }
 
-      this._arrangedContentTag = tagFor(this, 'arrangedContent');
+      let arrangedContentTag = (this._arrangedContentTag = tagFor(this, 'arrangedContent'));
       this._arrangedContentRevision = valueForTag(this._arrangedContentTag);
+
+      if (isObject(arrangedContent)) {
+        this._lengthTag = combine([arrangedContentTag, tagForProperty(arrangedContent, 'length')]);
+        this._arrTag = combine([arrangedContentTag, tagForProperty(arrangedContent, '[]')]);
+      } else {
+        this._lengthTag = this._arrTag = arrangedContentTag;
+      }
     }
   }
 }
