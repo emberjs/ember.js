@@ -87,9 +87,14 @@ run();
 
 module.exports = async function buildAll() {
   const experimentDist = path.resolve(__dirname, '../../dist');
+  const experimentBuild = path.resolve(experimentDist, '@glimmer');
+  if (!fs.existsSync(experimentBuild)) {
+    return;
+  }
   await build(experimentDist, path.resolve(experimentDist, 'benchmarks/experiment'));
   const controlDist = path.resolve(__dirname, '../../control-dist');
-  if (fs.existsSync(controlDist)) {
+  const controlBuild = path.resolve(controlDist, '@glimmer');
+  if (fs.existsSync(controlBuild)) {
     if (!fs.existsSync(path.join(controlDist, 'node_modules'))) {
       fs.mkdirsSync(path.join(controlDist, 'node_modules'));
       symlinkOrCopy(

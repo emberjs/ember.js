@@ -24,9 +24,9 @@ jobs:
         timeout-minutes: 10
         uses: tracerbench/tracerbench-compare-action@master
         with:
-          control-build-command: node node_modules/.bin/ember build -e production --output-path=control-dist
+          control-build-command: yarn ember build --env production --suppress-sizes --output-path control-dist
           control-serve-command: yarn benchmark:control
-          experiment-build-command: node node_modules/.bin/ember build -e production --output-path=dist
+          experiment-build-command: yarn ember build --env production --suppress-sizes --output-path dist
           experiment-serve-command: yarn benchmark:experiment
           control-dist: ./control-dist
           experiment-dist: ./dist
