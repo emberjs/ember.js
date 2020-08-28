@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.20.5 (August 28, 2020)
+
+- [#19106](https://github.com/emberjs/ember.js/pull/19106) [BUGFIX] Ensure `destroy` methods on `CoreObject` are invoked.
+- [#19111](https://github.com/emberjs/ember.js/pull/19111) [BUGFIX] Fixes `ArrayProxy` length reactivity.
+
+
 ### v3.20.4 (August 11, 2020)
 
 - [#19047](https://github.com/emberjs/ember.js/pull/19047) Ensure `inject-babel-helpers` plugin can be parallelized
