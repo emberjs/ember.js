@@ -13,28 +13,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2-beta
         with:
-          node-version: '12'
-      - name: Install dependencies
+          fetch-depth: 2
+      - uses: volta-cli/action@v1
+      - name: Build Control
         run: |
-          git fetch origin master
-          yarn install
+          git checkout ${{ github.event.pull_request.base.sha }}
+          yarn install --frozen-lockfile
+          yarn ember build --env production --suppress-sizes --output-path control-dist
+      - name: Build Experiment
+        run: |
+          git checkout ${{ github.sha }}
+          yarn install --frozen-lockfile
+          yarn ember build --env production --suppress-sizes --output-path dist
       - name: Run Analysis
         timeout-minutes: 10
         uses: tracerbench/tracerbench-compare-action@master
         with:
-          control-build-command: yarn ember build --env production --suppress-sizes --output-path control-dist
+          build-control: false
+          build-experiment: false
           control-serve-command: yarn benchmark:control
-          experiment-build-command: yarn ember build --env production --suppress-sizes --output-path dist
           experiment-serve-command: yarn benchmark:experiment
-          control-dist: ./control-dist
-          experiment-dist: ./dist
           control-url: http://localhost:3000/krausest/
           experiment-url: http://localhost:3001/krausest/
           regression-threshold: 25
           fidelity: high
           markers: 'navigationStart,renderStart,renderEnd'
+          clean-after-analyze: false
       - name: Upload Tracerbench Artifacts
         if: failure() || success()
         uses: actions/upload-artifact@v1
