@@ -10,7 +10,7 @@ const nameResolver = require('amd-name-resolver').moduleResolve;
  * Optimizes out Glimmer utility functions and strips debug code with a set of
  * Babel plugins.
  */
-module.exports = function(jsTree) {
+module.exports = function (jsTree) {
   let RETAIN_FLAGS = process.env.RETAIN_FLAGS;
   let glimmerUtils = [];
 

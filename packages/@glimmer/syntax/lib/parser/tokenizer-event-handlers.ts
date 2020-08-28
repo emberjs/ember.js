@@ -20,7 +20,7 @@ export const voidMap: {
 
 let voidTagNames =
   'area base br col command embed hr img input keygen link meta param source track wbr';
-voidTagNames.split(' ').forEach(tagName => {
+voidTagNames.split(' ').forEach((tagName) => {
   voidMap[tagName] = true;
 });
 

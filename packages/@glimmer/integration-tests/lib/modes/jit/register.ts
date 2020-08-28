@@ -148,7 +148,7 @@ export function registerHelper(
   name: string,
   helper: UserHelper
 ): GlimmerHelper {
-  let glimmerHelper: GlimmerHelper = args => createHelperRef(helper, args.capture());
+  let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args.capture());
   registry.register('helper', name, glimmerHelper);
   return glimmerHelper;
 }

@@ -49,6 +49,6 @@ class TypesSmokeTestWriter extends Plugin {
   }
 }
 
-module.exports = function(inputPath) {
+module.exports = function (inputPath) {
   return new TypesSmokeTestWriter([inputPath]);
 };

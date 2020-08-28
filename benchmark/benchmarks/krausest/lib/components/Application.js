@@ -7,7 +7,7 @@ export default class Application {
     /**
      * @param {Item} item
      */
-    this.select = item => {
+    this.select = (item) => {
       if (lastSelected !== item && lastSelected !== null) {
         lastSelected.selected = false;
       }

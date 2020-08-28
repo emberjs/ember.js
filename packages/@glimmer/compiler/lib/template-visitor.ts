@@ -19,7 +19,7 @@ export abstract class SymbolTable {
   abstract allocate(identifier: string): number;
 
   child(locals: string[]): BlockSymbolTable {
-    let symbols = locals.map(name => this.allocate(name));
+    let symbols = locals.map((name) => this.allocate(name));
     return new BlockSymbolTable(this, locals, symbols);
   }
 }
@@ -106,13 +106,13 @@ export class BlockSymbolTable extends SymbolTable {
 
   getLocalsMap(): Dict<number> {
     let dict = this.parent.getLocalsMap();
-    this.symbols.forEach(symbol => (dict[symbol] = this.get(symbol)));
+    this.symbols.forEach((symbol) => (dict[symbol] = this.get(symbol)));
     return dict;
   }
 
   getEvalInfo(): Core.EvalInfo {
     let locals = this.getLocalsMap();
-    return Object.keys(locals).map(symbol => locals[symbol]);
+    return Object.keys(locals).map((symbol) => locals[symbol]);
   }
 
   allocateFree(name: string): number {

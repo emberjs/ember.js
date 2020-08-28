@@ -180,7 +180,7 @@ const ConstructionOperations: ConstructionFunction[] = [
   },
 
   /* (CloseElement) */
-  state => {
+  (state) => {
     if (state.constructing) flush(state);
     state.elements.pop();
     state.parent = state.elements[state.elements.length - 1];

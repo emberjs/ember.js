@@ -10,8 +10,8 @@ import {
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
-(['enter', 'exit'] as Array<'enter' | 'exit'>).forEach(eventName => {
-  QUnit.test(`[${eventName}] Replacing self in a key (returning null)`, assert => {
+(['enter', 'exit'] as Array<'enter' | 'exit'>).forEach((eventName) => {
+  QUnit.test(`[${eventName}] Replacing self in a key (returning null)`, (assert) => {
     let ast = parse(`<x y={{z}} />`);
     let el = ast.body[0] as AST.ElementNode;
     let attr = el.attributes[0];
@@ -30,7 +30,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     }, cannotRemoveNode(attr.value, attr, 'value'));
   });
 
-  QUnit.test(`[${eventName}] Replacing self in a key (returning an empty array)`, assert => {
+  QUnit.test(`[${eventName}] Replacing self in a key (returning an empty array)`, (assert) => {
     let ast = parse(`<x y={{z}} />`);
     let el = ast.body[0] as AST.ElementNode;
     let attr = el.attributes[0];
@@ -88,7 +88,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
   QUnit.test(
     `[${eventName}] Replacing self in a key (returning an array with multiple nodes)`,
-    assert => {
+    (assert) => {
       let ast = parse(`<x y={{z}} />`);
       let el = ast.body[0] as AST.ElementNode;
       let attr = el.attributes[0];
@@ -269,7 +269,7 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
       return;
     },
 
-    MustacheStatement: function(node) {
+    MustacheStatement: function (node) {
       if (expectPath(node.path).original === 'baz') {
         return b.mustache('x-baz');
       } else if (expectPath(node.path).original === 'bat') {
@@ -285,24 +285,27 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
   );
 });
 
-QUnit.test('Exit event is not triggered if the node is replaced during the enter event', assert => {
-  let ast = parse(`{{x}}`);
+QUnit.test(
+  'Exit event is not triggered if the node is replaced during the enter event',
+  (assert) => {
+    let ast = parse(`{{x}}`);
 
-  let entered: Array<string | number | boolean | null | undefined> = [];
-  let exited: Array<string | number | boolean | null | undefined> = [];
+    let entered: Array<string | number | boolean | null | undefined> = [];
+    let exited: Array<string | number | boolean | null | undefined> = [];
 
-  traverse(ast, {
-    MustacheStatement: {
-      enter(node) {
-        entered.push(expectPath(node.path).original);
-        return b.mustache('y');
+    traverse(ast, {
+      MustacheStatement: {
+        enter(node) {
+          entered.push(expectPath(node.path).original);
+          return b.mustache('y');
+        },
+        exit(node) {
+          exited.push(expectPath(node.path).original);
+        },
       },
-      exit(node) {
-        exited.push(expectPath(node.path).original);
-      },
-    },
-  });
+    });
 
-  assert.deepEqual(entered, ['x', 'y']);
-  assert.deepEqual(exited, ['y']);
-});
+    assert.deepEqual(entered, ['x', 'y']);
+    assert.deepEqual(exited, ['y']);
+  }
+);

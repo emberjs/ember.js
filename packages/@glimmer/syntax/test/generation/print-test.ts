@@ -56,30 +56,30 @@ let templates = [
   '{{{unescaped}}}',
 ];
 
-QUnit.module('[glimmer-syntax] Code generation', function() {
+QUnit.module('[glimmer-syntax] Code generation', function () {
   function printTransform(template: string) {
     return print(parse(template));
   }
 
-  templates.forEach(template => {
-    test(`${template} is stable when printed`, function(assert) {
+  templates.forEach((template) => {
+    test(`${template} is stable when printed`, function (assert) {
       assert.equal(printTransform(template), template);
     });
   });
 
-  test('TextNode: chars escape - but do not match', assert => {
+  test('TextNode: chars escape - but do not match', (assert) => {
     assert.equal(
       printTransform('&lt; &amp; &nbsp; &gt; &copy;2018'),
       '&lt; &amp; &nbsp; &gt; ©2018'
     );
   });
 
-  test('Handlebars comment', assert => {
+  test('Handlebars comment', (assert) => {
     assert.equal(printTransform('{{! foo }}'), '{{!-- foo --}}');
   });
 });
 
-QUnit.module('[glimmer-syntax] Code generation - source -> source', function() {
+QUnit.module('[glimmer-syntax] Code generation - source -> source', function () {
   function printTransform(template: string) {
     let ast = parse(template, {
       mode: 'codemod',
@@ -90,7 +90,7 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', function() {
   }
 
   function buildTest(template: string) {
-    test(`${template} is stable when printed`, function(assert) {
+    test(`${template} is stable when printed`, function (assert) {
       assert.equal(printTransform(template), template);
     });
   }
@@ -113,8 +113,8 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', function() {
   ].forEach(buildTest);
 });
 
-QUnit.module('[glimmer-syntax] Code generation - override', function() {
-  test('can provide a custom options.override to be used', function(assert) {
+QUnit.module('[glimmer-syntax] Code generation - override', function () {
+  test('can provide a custom options.override to be used', function (assert) {
     let ast = parse(`<FooBar @baz="qux" @derp="qux" />`);
 
     let actual = print(ast, {
@@ -132,7 +132,7 @@ QUnit.module('[glimmer-syntax] Code generation - override', function() {
     assert.equal(actual, `<FooBar @baz="ZOMG!!!!" @derp="qux" />`);
   });
 
-  test('maintains proper spacing when overriding hash', function(assert) {
+  test('maintains proper spacing when overriding hash', function (assert) {
     let ast = parse(`{{foo-bar blah=baz}}`);
 
     let actual = print(ast, {
@@ -150,7 +150,7 @@ QUnit.module('[glimmer-syntax] Code generation - override', function() {
     assert.equal(actual, `{{foo-bar baz="ZOMG!!!!"}}`);
   });
 
-  test('maintains proper spacing when overriding empty hash', function(assert) {
+  test('maintains proper spacing when overriding empty hash', function (assert) {
     let ast = parse(`{{foo-bar derp blah=baz}}`);
 
     let actual = print(ast, {

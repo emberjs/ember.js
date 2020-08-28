@@ -1,5 +1,5 @@
 // detect side-effects of cloning svg elements in IE9-11
-let ieSVGInnerHTML = (function() {
+let ieSVGInnerHTML = (function () {
   if (typeof document === 'undefined' || !document.createElementNS) {
     return false;
   }
@@ -16,7 +16,7 @@ export function normalizeInnerHTML(actualHTML: string) {
     // drop namespace attribute
     actualHTML = actualHTML.replace(/ xmlns="[^"]+"/, '');
     // replace self-closing elements
-    actualHTML = actualHTML.replace(/<([^ >]+) [^\/>]*\/>/gi, function(tag, tagName) {
+    actualHTML = actualHTML.replace(/<([^ >]+) [^\/>]*\/>/gi, function (tag, tagName) {
       return tag.slice(0, tag.length - 3) + '></' + tagName + '>';
     });
   }

@@ -25,8 +25,8 @@ function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.No
   });
 
   QUnit.assert.deepEqual(
-    actualTraversal.map(a => `${a[0]} ${a[1].type}`),
-    expectedTraversal.map(a => `${a[0]} ${a[1].type}`)
+    actualTraversal.map((a) => `${a[0]} ${a[1].type}`),
+    expectedTraversal.map((a) => `${a[0]} ${a[1].type}`)
   );
 
   let nodesEqual = true;
@@ -43,7 +43,7 @@ function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.No
 
 QUnit.module('[glimmer-syntax] Traversal - visiting keys');
 
-QUnit.test('Blocks', function() {
+QUnit.test('Blocks', function () {
   let ast = parse(`{{#block param1 param2 key1=value key2=value}}<b></b><b></b>{{/block}}`);
   let block = ast.body[0] as AST.BlockStatement;
   let program = block.program as AST.Block;

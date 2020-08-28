@@ -10,7 +10,7 @@ module(
     },
   },
   ({ test }) => {
-    test('Can build basic glimmer invocation', assert => {
+    test('Can build basic glimmer invocation', (assert) => {
       renderTests['testType'] = 'Glimmer';
       let invocation = renderTests.buildComponent({
         layout: 'Hello',
@@ -19,7 +19,7 @@ module(
       assert.equal(invocation, '<TestComponent />');
     });
 
-    test('Can build glimmer invocation with template', assert => {
+    test('Can build glimmer invocation with template', (assert) => {
       renderTests['testType'] = 'Glimmer';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -29,7 +29,7 @@ module(
       assert.equal(invocation, '<TestComponent>World</TestComponent>');
     });
 
-    test('Can build glimmer invocation with args', assert => {
+    test('Can build glimmer invocation with args', (assert) => {
       renderTests['testType'] = 'Glimmer';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -43,7 +43,7 @@ module(
       );
     });
 
-    test('Can build glimmer invocation with attributes', assert => {
+    test('Can build glimmer invocation with attributes', (assert) => {
       renderTests['testType'] = 'Glimmer';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -58,7 +58,7 @@ module(
       );
     });
 
-    test('Can build glimmer invocation with custom tag name', assert => {
+    test('Can build glimmer invocation with custom tag name', (assert) => {
       renderTests['testType'] = 'Glimmer';
       let invocation = renderTests.buildComponent({
         name: 'LolWat',
@@ -74,7 +74,7 @@ module(
       );
     });
 
-    test('Can build glimmer invocation with block params', assert => {
+    test('Can build glimmer invocation with block params', (assert) => {
       renderTests['testType'] = 'Glimmer';
       let invocation = renderTests.buildComponent({
         name: 'Lol',
@@ -91,7 +91,7 @@ module(
       );
     });
 
-    test('Can build basic curly invocation', assert => {
+    test('Can build basic curly invocation', (assert) => {
       renderTests['testType'] = 'Curly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello',
@@ -100,7 +100,7 @@ module(
       assert.equal(invocation, '{{test-component}}');
     });
 
-    test('Can build curly invocation with template', assert => {
+    test('Can build curly invocation with template', (assert) => {
       renderTests['testType'] = 'Curly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -110,7 +110,7 @@ module(
       assert.equal(invocation, '{{#test-component}}World{{/test-component}}');
     });
 
-    test('Can build curly invocation with args', assert => {
+    test('Can build curly invocation with args', (assert) => {
       renderTests['testType'] = 'Curly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -124,7 +124,7 @@ module(
       );
     });
 
-    test('Can build curly invocation with attributes throws', assert => {
+    test('Can build curly invocation with attributes throws', (assert) => {
       renderTests['testType'] = 'Curly';
 
       assert.throws(() => {
@@ -137,7 +137,7 @@ module(
       }, /Cannot pass attributes to curly components/);
     });
 
-    test("Can build curly invocation with 'attributes' in args", assert => {
+    test("Can build curly invocation with 'attributes' in args", (assert) => {
       renderTests['testType'] = 'Curly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -151,7 +151,7 @@ module(
       );
     });
 
-    test('Can build curly invocation with custom tag name', assert => {
+    test('Can build curly invocation with custom tag name', (assert) => {
       renderTests['testType'] = 'Curly';
       let invocation = renderTests.buildComponent({
         name: 'lol-wat',
@@ -166,7 +166,7 @@ module(
       );
     });
 
-    test('Can build curly invocation with block params', assert => {
+    test('Can build curly invocation with block params', (assert) => {
       renderTests['testType'] = 'Curly';
       let invocation = renderTests.buildComponent({
         name: 'lol-wat',
@@ -182,7 +182,7 @@ module(
       );
     });
 
-    test('Can build curly invocation with else', assert => {
+    test('Can build curly invocation with else', (assert) => {
       renderTests['testType'] = 'Curly';
       let invocation = renderTests.buildComponent({
         name: 'lol-wat',
@@ -199,7 +199,7 @@ module(
       );
     });
 
-    test('Can build basic dynamic invocation', assert => {
+    test('Can build basic dynamic invocation', (assert) => {
       renderTests['testType'] = 'Dynamic';
       let invocation = renderTests.buildComponent({
         layout: 'Hello',
@@ -208,7 +208,7 @@ module(
       assert.equal(invocation, '{{component componentName}}');
     });
 
-    test('Can build dynamic invocation with template', assert => {
+    test('Can build dynamic invocation with template', (assert) => {
       renderTests['testType'] = 'Dynamic';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -218,7 +218,7 @@ module(
       assert.equal(invocation, '{{#component componentName}}World{{/component}}');
     });
 
-    test('Can build dynamic invocation with args', assert => {
+    test('Can build dynamic invocation with args', (assert) => {
       renderTests['testType'] = 'Dynamic';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -232,7 +232,7 @@ module(
       );
     });
 
-    test('Can build dynamic invocation with custom tag name', assert => {
+    test('Can build dynamic invocation with custom tag name', (assert) => {
       renderTests['testType'] = 'Dynamic';
       let invocation = renderTests.buildComponent({
         name: 'lol-wat',
@@ -247,7 +247,7 @@ module(
       );
     });
 
-    test('Can build dynamic invocation with block params', assert => {
+    test('Can build dynamic invocation with block params', (assert) => {
       renderTests['testType'] = 'Dynamic';
       let invocation = renderTests.buildComponent({
         name: 'lol-wat',
@@ -263,7 +263,7 @@ module(
       );
     });
 
-    test('Can build dynamic invocation with else', assert => {
+    test('Can build dynamic invocation with else', (assert) => {
       renderTests['testType'] = 'Dynamic';
       let invocation = renderTests.buildComponent({
         name: 'lol-wat',
@@ -280,7 +280,7 @@ module(
       );
     });
 
-    test('Can build basic component invocation', assert => {
+    test('Can build basic component invocation', (assert) => {
       renderTests['testType'] = 'Basic';
       let invocation = renderTests.buildComponent({
         layout: 'Hello',
@@ -289,7 +289,7 @@ module(
       assert.equal(invocation, '<TestComponent />');
     });
 
-    test('Can build basic component invocation with template', assert => {
+    test('Can build basic component invocation with template', (assert) => {
       renderTests['testType'] = 'Basic';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -299,7 +299,7 @@ module(
       assert.equal(invocation, '<TestComponent>World</TestComponent>');
     });
 
-    test('Can build basic component invocation with args', assert => {
+    test('Can build basic component invocation with args', (assert) => {
       renderTests['testType'] = 'Basic';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -313,7 +313,7 @@ module(
       );
     });
 
-    test('Can build basic component invocation with attributes', assert => {
+    test('Can build basic component invocation with attributes', (assert) => {
       renderTests['testType'] = 'Basic';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
@@ -328,7 +328,7 @@ module(
       );
     });
 
-    test('Can build basic component invocation with custom tag name', assert => {
+    test('Can build basic component invocation with custom tag name', (assert) => {
       renderTests['testType'] = 'Basic';
       let invocation = renderTests.buildComponent({
         name: 'Lol',
@@ -344,7 +344,7 @@ module(
       );
     });
 
-    test('Can build basic component invocation with block params', assert => {
+    test('Can build basic component invocation with block params', (assert) => {
       renderTests['testType'] = 'Basic';
       let invocation = renderTests.buildComponent({
         name: 'Lol',

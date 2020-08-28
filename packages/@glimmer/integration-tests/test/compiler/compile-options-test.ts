@@ -4,7 +4,7 @@ import { module } from '../support';
 import { assign, unwrapTemplate } from '@glimmer/util';
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
-  test('moduleName option is passed into meta', assert => {
+  test('moduleName option is passed into meta', (assert) => {
     let moduleName = "It ain't hard to tell";
     let template = unwrapTemplate(
       preprocess('Hi, {{name}}!', assign({}, DEFAULT_TEST_META, { module: moduleName }))
@@ -14,7 +14,7 @@ module('[glimmer-compiler] Compile options', ({ test }) => {
 });
 
 module('[glimmer-compiler] precompile', ({ test }) => {
-  test('returned meta is correct', assert => {
+  test('returned meta is correct', (assert) => {
     let wire = JSON.parse(
       precompile('Hi, {{name}}!', {
         meta: {
@@ -28,7 +28,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     assert.equal(wire.meta.metaIsunknown, 'yes', 'Template has correct meta');
   });
 
-  test('customizeComponentName is used if present', function(assert) {
+  test('customizeComponentName is used if present', function (assert) {
     let wire = JSON.parse(
       precompile('<XFoo />', {
         meta: {
@@ -36,10 +36,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
           metaIsunknown: 'yes',
         },
         customizeComponentName(input: string) {
-          return input
-            .split('')
-            .reverse()
-            .join('');
+          return input.split('').reverse().join('');
         },
       })
     );

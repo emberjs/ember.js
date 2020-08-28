@@ -15,16 +15,16 @@ console.log('Looking for existing owners on ' + name + ' on npm...');
 let owners = execSync('npm owner ls')
   .toString()
   .split('\n')
-  .filter(line => line.trim())
-  .map(line => line.split(' ')[0]);
+  .filter((line) => line.trim())
+  .map((line) => line.split(' ')[0]);
 
-console.log(owners.map(o => `✅  ${o}`).join('\n'));
+console.log(owners.map((o) => `✅  ${o}`).join('\n'));
 
 console.log('\nLooking for packages...');
 
 let packages = globSync('@glimmer/*/package.json', {
   cwd: __dirname + '/../dist',
-}).map(package => package.replace('/package.json', ''));
+}).map((package) => package.replace('/package.json', ''));
 
 if (!packages.length) {
   console.log('No packages found. Did you do a build first?');
@@ -33,8 +33,8 @@ if (!packages.length) {
 
 console.log(packages.join('\n') + '\n');
 
-owners.forEach(owner => {
-  packages.forEach(package => {
+owners.forEach((owner) => {
+  packages.forEach((package) => {
     console.log(`Adding ${owner} to ${package}...`);
     execSync(`npm owner add "${owner}" "${package}"`);
   });

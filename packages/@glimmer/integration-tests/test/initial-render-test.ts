@@ -370,8 +370,8 @@ class Rehydration extends AbstractRehydrationTests {
 
   @test
   'does not mutate attributes that already match'() {
-    let observer = new MutationObserver(mutationList => {
-      mutationList.forEach(mutation => {
+    let observer = new MutationObserver((mutationList) => {
+      mutationList.forEach((mutation) => {
         let target = mutation.target as Element;
         this.assert.ok(
           false,

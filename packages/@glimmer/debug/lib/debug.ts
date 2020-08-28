@@ -54,7 +54,7 @@ export function logOpcode(type: string, params: Maybe<Dict>): string | void {
 
     if (params) {
       let args = Object.keys(params)
-        .map(p => ` ${p}=${json(params[p])}`)
+        .map((p) => ` ${p}=${json(params[p])}`)
         .join('');
       out += args;
     }

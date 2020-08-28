@@ -39,7 +39,7 @@ module.exports = {
       let modulesPath = path.join(outputPath, name, 'node_modules');
       let dependencies = pkg.internalDependencies;
 
-      dependencies.forEach(dep => {
+      dependencies.forEach((dep) => {
         if (isScopedPackage(dep)) {
           mkdirpScope(dep, modulesPath);
         }

@@ -91,7 +91,7 @@ function renderInvocation<C extends JitOrAotBlock>(
 ): TemplateIterator {
   // Get a list of tuples of argument names and references, like
   // [['title', reference], ['name', reference]]
-  const argList = Object.keys(args).map(key => [key, args[key]]);
+  const argList = Object.keys(args).map((key) => [key, args[key]]);
 
   const blockNames = ['main', 'else', 'attrs'];
   // Prefix argument names with `@` symbol

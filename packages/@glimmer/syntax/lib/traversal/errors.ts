@@ -13,7 +13,7 @@ export interface TraversalErrorConstructor {
   readonly prototype: TraversalError;
 }
 
-const TraversalError: TraversalErrorConstructor = (function() {
+const TraversalError: TraversalErrorConstructor = (function () {
   TraversalError.prototype = Object.create(Error.prototype);
   TraversalError.prototype.constructor = TraversalError;
 

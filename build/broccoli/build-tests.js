@@ -15,7 +15,7 @@ const babel = require('broccoli-babel-transpiler');
  * 2. Test files as AMD modules.
  * 3. A test harness, including HTML page, QUnit, dependencies, etc.
  */
-module.exports = function(tsTree, jsTree, packagesTree) {
+module.exports = function (tsTree, jsTree, packagesTree) {
   let browserTests = merge([
     transpileBrowserTestsToAMD(tsTree, jsTree),
     includeGlimmerAMD(packagesTree),

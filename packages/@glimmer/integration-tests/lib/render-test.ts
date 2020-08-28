@@ -121,7 +121,7 @@ export class RenderTest implements IRenderTest {
     }
 
     return `${Object.keys(args)
-      .map(arg => {
+      .map((arg) => {
         let rightSide: string;
 
         let value = args[arg] as Maybe<string[]>;
@@ -151,7 +151,7 @@ export class RenderTest implements IRenderTest {
 
   private buildAttributes(attrs: Dict = {}): string {
     return Object.keys(attrs)
-      .map(attr => `${attr}=${attrs[attr]}`)
+      .map((attr) => `${attr}=${attrs[attr]}`)
       .join(' ');
   }
 

@@ -110,7 +110,7 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.JitSpreadBlock, vm => {
+APPEND_OPCODES.add(Op.JitSpreadBlock, (vm) => {
   let { stack } = vm;
   let block = check(stack.popJs(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
@@ -140,7 +140,7 @@ function isUndefinedReference(input: JitScopeBlock | Reference): input is Refere
   return input === UNDEFINED_REFERENCE;
 }
 
-APPEND_OPCODES.add(Op.HasBlock, vm => {
+APPEND_OPCODES.add(Op.HasBlock, (vm) => {
   let { stack } = vm;
   let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
@@ -151,7 +151,7 @@ APPEND_OPCODES.add(Op.HasBlock, vm => {
   }
 });
 
-APPEND_OPCODES.add(Op.HasBlockParams, vm => {
+APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
   // FIXME(mmun): should only need to push the symbol table
   let block = vm.stack.pop();
   let scope = vm.stack.popJs();

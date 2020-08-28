@@ -48,7 +48,7 @@ class Package {
    */
   get internalDependencies() {
     let siblings = this.siblingPackages;
-    return Object.keys(this.allDependencies).filter(dep => siblings.includes(dep));
+    return Object.keys(this.allDependencies).filter((dep) => siblings.includes(dep));
   }
 
   get packageJSONPath() {
@@ -87,7 +87,7 @@ class Package {
       return;
     }
 
-    Object.keys(deps).forEach(dep => {
+    Object.keys(deps).forEach((dep) => {
       if (this.siblingPackages.indexOf(dep) >= 0) {
         deps[dep] = `^${newVersion}`;
       }
@@ -108,7 +108,7 @@ function findPackages(cwd, packagesGlob = PACKAGES_GLOB) {
     throw new Error(`No packages found in ${cwd}`);
   }
 
-  let packages = packageNames.map(pkg => new Package(pkg, cwd, packageNames));
+  let packages = packageNames.map((pkg) => new Package(pkg, cwd, packageNames));
 
   return topsort(packages);
 }
@@ -121,12 +121,12 @@ function topsort(packages) {
   let graph = new DAGMap();
 
   // Get a list of package names discovered in the repo.
-  let inRepoDependencies = packages.map(pkg => pkg.name);
+  let inRepoDependencies = packages.map((pkg) => pkg.name);
 
   // For each package, get a list of in-repo packages it depends on, and add
   // them to the graph.
   packages
-    .map(pkg => filterDependencies(pkg))
+    .map((pkg) => filterDependencies(pkg))
     .forEach(([pkg, deps]) => {
       graph.add(pkg.name, pkg, null, deps);
     });
@@ -142,7 +142,7 @@ function topsort(packages) {
     // Merge the package's dependencies and dev dependencies, then filter out
     // any dependencies that we didn't discover in the repo.
     let dependencies = Object.keys(pkg.allDependencies).filter(
-      dep => inRepoDependencies.indexOf(dep) > -1
+      (dep) => inRepoDependencies.indexOf(dep) > -1
     );
 
     return [pkg, dependencies];
@@ -180,7 +180,7 @@ class Project {
   get dependencies() {
     let deps = [];
 
-    this.packages.forEach(pkg => {
+    this.packages.forEach((pkg) => {
       deps.push(...Object.keys(pkg.allDependencies));
     });
 

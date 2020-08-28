@@ -47,7 +47,7 @@ class Tracker {
       return this.last as Tag;
     } else {
       let tagsArr: Tag[] = [];
-      tags.forEach(tag => tagsArr.push(tag));
+      tags.forEach((tag) => tagsArr.push(tag));
       return combine(tagsArr);
     }
   }
