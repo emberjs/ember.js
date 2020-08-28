@@ -4,7 +4,7 @@ import { SimpleComment, SimpleElement, SimpleText } from '@simple-dom/interface'
 import { module } from './support';
 
 module('Render Tests: I-N-U-R', ({ test }) => {
-  test('Can set properties', assert => {
+  test('Can set properties', (assert) => {
     new (class extends RenderTest {
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
@@ -14,7 +14,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
-  test('Can take basic snapshots', assert => {
+  test('Can take basic snapshots', (assert) => {
     let div = document.createElement('div') as SimpleElement;
     let text = document.createTextNode('Foo') as SimpleText;
     div.appendChild(text);
@@ -29,7 +29,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
-  test('Can take nested snapshots', assert => {
+  test('Can take nested snapshots', (assert) => {
     let div = document.createElement('div') as SimpleElement;
     let p = document.createElement('p') as SimpleElement;
     let text = document.createTextNode('Foo') as SimpleText;
@@ -46,7 +46,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
-  test('Can take nested snapshots of serialized blocks', assert => {
+  test('Can take nested snapshots of serialized blocks', (assert) => {
     let div = document.createElement('div') as SimpleElement;
     let open = document.createComment('<!--%+b:0%-->') as SimpleComment;
     let text = document.createTextNode('Foo') as SimpleText;

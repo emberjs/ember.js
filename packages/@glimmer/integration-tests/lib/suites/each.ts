@@ -244,7 +244,7 @@ export class EachSuite extends RenderTest {
     this.assertHTML('HelloHelloHello');
     this.assertStableRerender();
 
-    list.forEach(item => (item.text = 'Goodbye'));
+    list.forEach((item) => (item.text = 'Goodbye'));
 
     this.rerender({ list });
     this.assertHTML('GoodbyeGoodbyeGoodbye');
@@ -276,7 +276,7 @@ export class EachSuite extends RenderTest {
     this.assertHTML('HelloHelloHello');
     this.assertStableRerender();
 
-    list.forEach(item => (item.text = 'Goodbye'));
+    list.forEach((item) => (item.text = 'Goodbye'));
 
     this.rerender({ list });
     this.assertHTML('GoodbyeGoodbyeGoodbye');
@@ -300,7 +300,7 @@ export class EachSuite extends RenderTest {
     this.assertHTML('HelloHelloHello');
     this.assertStableRerender();
 
-    list.forEach(item => (item.text = 'Goodbye'));
+    list.forEach((item) => (item.text = 'Goodbye'));
 
     this.rerender({ list });
     this.assertHTML('HelloHelloHello');
@@ -648,7 +648,7 @@ export class EachSuite extends RenderTest {
       this.rerender({ arr });
 
       // eslint-disable-next-line no-loop-func
-      verifySteps!('list-updates', steps => {
+      verifySteps!('list-updates', (steps) => {
         let stats = getStepStats(steps as ListStep[]);
 
         let changedNodes = stats.move + stats.retain;
@@ -675,7 +675,7 @@ export class EachSuite extends RenderTest {
       this.rerender({ arr: semiArr });
 
       // eslint-disable-next-line no-loop-func
-      verifySteps!('list-updates', steps => {
+      verifySteps!('list-updates', (steps) => {
         let stats = getStepStats(steps as ListStep[]);
 
         let changedNodes = stats.move + stats.retain;
@@ -702,7 +702,7 @@ export class EachSuite extends RenderTest {
       this.rerender({ arr: semiArr });
 
       // eslint-disable-next-line no-loop-func
-      verifySteps!('list-updates', steps => {
+      verifySteps!('list-updates', (steps) => {
         let stats = getStepStats(steps as ListStep[]);
 
         let changedNodes = stats.move + stats.retain + stats.insert + stats.delete;
@@ -729,9 +729,9 @@ export class EachSuite extends RenderTest {
         shuffleArray(sub);
       }
 
-      this.rerender({ arr: arr.map(sub => sub.slice()) });
+      this.rerender({ arr: arr.map((sub) => sub.slice()) });
 
-      this.assertHTML(arr.map(sub => sub.join('')).join(''));
+      this.assertHTML(arr.map((sub) => sub.join('')).join(''));
     }
   }
 }

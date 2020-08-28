@@ -14,7 +14,7 @@ export class InElementSuite extends RenderTest {
 
   @test
   'It works with AST transforms'() {
-    this.registerPlugin(env => ({
+    this.registerPlugin((env) => ({
       name: 'maybe-in-element',
       visitor: {
         BlockStatement(node: AST.BlockStatement) {

@@ -2,7 +2,7 @@ import { JitContext } from '..';
 
 QUnit.module('Jit Context Test');
 
-QUnit.test('Jit template metas are not not stringified and parsed', assert => {
+QUnit.test('Jit template metas are not not stringified and parsed', (assert) => {
   let context = JitContext();
 
   let { constants } = context.program;

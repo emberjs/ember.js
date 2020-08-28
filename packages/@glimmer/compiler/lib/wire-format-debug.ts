@@ -200,12 +200,12 @@ export default class WireFormatDebugger {
 
   private formatAttrs(opcodes: Option<WireFormat.Attribute[]>): Option<unknown[]> {
     if (opcodes === null) return null;
-    return opcodes.map(o => this.formatOpcode(o));
+    return opcodes.map((o) => this.formatOpcode(o));
   }
 
   private formatParams(opcodes: Option<WireFormat.Expression[]>): Option<unknown[]> {
     if (opcodes === null) return null;
-    return opcodes.map(o => this.formatOpcode(o));
+    return opcodes.map((o) => this.formatOpcode(o));
   }
 
   private formatHash(hash: WireFormat.Core.Hash): Option<object> {
@@ -229,7 +229,7 @@ export default class WireFormatDebugger {
   private formatBlock(block: SerializedInlineBlock): object {
     return {
       parameters: block.parameters,
-      statements: block.statements.map(s => this.formatOpcode(s)),
+      statements: block.statements.map((s) => this.formatOpcode(s)),
     };
   }
 }

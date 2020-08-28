@@ -71,7 +71,7 @@ export default async function renderBenchmark(
       name + 'Start',
       name + 'End',
       () =>
-        new Promise(resolve => {
+        new Promise((resolve) => {
           resolveRender = resolve;
           update();
         })

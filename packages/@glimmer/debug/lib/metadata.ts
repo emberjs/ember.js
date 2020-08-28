@@ -102,7 +102,7 @@ function hasRest(input: string[]): boolean {
   if (!Array.isArray(input)) {
     throw new Error(`Unexpected stack entry: ${JSON.stringify(input)}`);
   }
-  return input.some(s => s.slice(-3) === '...');
+  return input.some((s) => s.slice(-3) === '...');
 }
 
 function operands(input: string[]): OperandList {
@@ -230,7 +230,7 @@ function stringify(o: unknown, pad: number): string {
   }
 
   if (Array.isArray(o)) {
-    return `[${o.map(v => stringify(v, pad)).join(', ')}]`;
+    return `[${o.map((v) => stringify(v, pad)).join(', ')}]`;
   }
 
   let out = ['{'];

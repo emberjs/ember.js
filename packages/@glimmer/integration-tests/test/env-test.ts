@@ -3,7 +3,7 @@ import { SimpleDocument } from '@simple-dom/interface';
 
 QUnit.module('[integration] env');
 
-QUnit.test('assert against nested transactions', assert => {
+QUnit.test('assert against nested transactions', (assert) => {
   let env = new EnvironmentImpl(
     { document: document as SimpleDocument },
     {
@@ -20,7 +20,7 @@ QUnit.test('assert against nested transactions', assert => {
   );
 });
 
-QUnit.test('ensure commit cleans up when it can', assert => {
+QUnit.test('ensure commit cleans up when it can', (assert) => {
   let env = new EnvironmentImpl(
     { document: document as SimpleDocument },
     {

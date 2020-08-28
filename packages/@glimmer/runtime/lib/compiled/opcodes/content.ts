@@ -31,7 +31,7 @@ function toContentType(value: Maybe<Dict>) {
   }
 }
 
-APPEND_OPCODES.add(Op.ContentType, vm => {
+APPEND_OPCODES.add(Op.ContentType, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
   vm.stack.pushSmallInt(toContentType(valueForRef(reference) as Maybe<Dict>));
@@ -41,7 +41,7 @@ APPEND_OPCODES.add(Op.ContentType, vm => {
   }
 });
 
-APPEND_OPCODES.add(Op.AppendHTML, vm => {
+APPEND_OPCODES.add(Op.AppendHTML, (vm) => {
   let reference = check(vm.stack.popJs(), CheckReference);
 
   let rawValue = valueForRef(reference);
@@ -50,7 +50,7 @@ APPEND_OPCODES.add(Op.AppendHTML, vm => {
   vm.elements().appendDynamicHTML(value);
 });
 
-APPEND_OPCODES.add(Op.AppendSafeHTML, vm => {
+APPEND_OPCODES.add(Op.AppendSafeHTML, (vm) => {
   let reference = check(vm.stack.popJs(), CheckReference);
 
   let rawValue = check(valueForRef(reference), CheckSafeString).toHTML();
@@ -59,7 +59,7 @@ APPEND_OPCODES.add(Op.AppendSafeHTML, vm => {
   vm.elements().appendDynamicHTML(value);
 });
 
-APPEND_OPCODES.add(Op.AppendText, vm => {
+APPEND_OPCODES.add(Op.AppendText, (vm) => {
   let reference = check(vm.stack.popJs(), CheckReference);
 
   let rawValue = valueForRef(reference);
@@ -72,7 +72,7 @@ APPEND_OPCODES.add(Op.AppendText, vm => {
   }
 });
 
-APPEND_OPCODES.add(Op.AppendDocumentFragment, vm => {
+APPEND_OPCODES.add(Op.AppendDocumentFragment, (vm) => {
   let reference = check(vm.stack.popJs(), CheckReference);
 
   let value = check(valueForRef(reference), CheckDocumentFragment);
@@ -80,7 +80,7 @@ APPEND_OPCODES.add(Op.AppendDocumentFragment, vm => {
   vm.elements().appendDynamicFragment(value);
 });
 
-APPEND_OPCODES.add(Op.AppendNode, vm => {
+APPEND_OPCODES.add(Op.AppendNode, (vm) => {
   let reference = check(vm.stack.popJs(), CheckReference);
 
   let value = check(valueForRef(reference), CheckNode);

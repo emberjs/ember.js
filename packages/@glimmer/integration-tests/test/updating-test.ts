@@ -315,10 +315,10 @@ class UpdatingTest extends RenderTest {
 
     let safeString = {
       string: '<p>hello world</p>',
-      toHTML: function(this: SafeString) {
+      toHTML: function (this: SafeString) {
         return this.string;
       },
-      toString: function(this: SafeString) {
+      toString: function (this: SafeString) {
         return this.string;
       },
     };
@@ -807,7 +807,7 @@ class UpdatingTest extends RenderTest {
   'block arguments should have higher presedence than helpers'() {
     this.registerHelper('foo', () => 'foo-helper');
     this.registerHelper('bar', () => 'bar-helper');
-    this.registerHelper('echo', args => args[0]);
+    this.registerHelper('echo', (args) => args[0]);
 
     let template = trimLines`
       <div>
@@ -1000,7 +1000,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'block arguments cannot be accessed through {{this}}'() {
-    this.registerHelper('noop', params => params[0]);
+    this.registerHelper('noop', (params) => params[0]);
 
     this.render(
       stripTight`
@@ -1079,7 +1079,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'helper calls follow the normal dirtying rules'() {
-    this.registerHelper('capitalize', function(params) {
+    this.registerHelper('capitalize', function (params) {
       let value = params[0];
       if (value !== null && value !== undefined && typeof value === 'string') {
         return value.toUpperCase();

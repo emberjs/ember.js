@@ -51,6 +51,6 @@ export class TestMacros extends MacrosImpl {
 
 function hashToArgs(hash: Option<WireFormat.Core.Hash>): Option<WireFormat.Core.Hash> {
   if (hash === null) return null;
-  let names = hash[0].map(key => `@${key}`);
+  let names = hash[0].map((key) => `@${key}`);
   return [names, hash[1]];
 }

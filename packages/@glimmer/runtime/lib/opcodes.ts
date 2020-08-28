@@ -144,7 +144,7 @@ export class AppendOpcodes {
           console.log(
             '%c -> scope',
             'color: green',
-            vm.scope().slots.map(s => (isScopeReference(s) ? valueForRef(s) : s))
+            vm.scope().slots.map((s) => (isScopeReference(s) ? valueForRef(s) : s))
           );
         }
 

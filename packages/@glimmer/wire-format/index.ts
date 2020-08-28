@@ -1,7 +1,7 @@
 import { Statements, Statement, SexpOpcodes, Expressions, Expression } from '@glimmer/interfaces';
 
 export function is<T>(variant: number): (value: any) => value is T {
-  return function(value: any): value is T {
+  return function (value: any): value is T {
     return Array.isArray(value) && value[0] === variant;
   };
 }

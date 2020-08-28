@@ -6,7 +6,7 @@ const { test } = QUnit;
 
 QUnit.module('[glimmer-syntax] Plugins - AST Transforms');
 
-test('function based AST plugins can be provided to the compiler', assert => {
+test('function based AST plugins can be provided to the compiler', (assert) => {
   assert.expect(1);
 
   preprocess('<div></div>', {
@@ -25,7 +25,7 @@ test('function based AST plugins can be provided to the compiler', assert => {
   });
 });
 
-test('plugins are provided the syntax package', assert => {
+test('plugins are provided the syntax package', (assert) => {
   assert.expect(1);
 
   preprocess('<div></div>', {
@@ -41,7 +41,7 @@ test('plugins are provided the syntax package', assert => {
   });
 });
 
-test('can support the legacy AST transform API via ASTPlugin', assert => {
+test('can support the legacy AST transform API via ASTPlugin', (assert) => {
   function ensurePlugin(FunctionOrPlugin: any): ASTPluginBuilder {
     if (FunctionOrPlugin.prototype && FunctionOrPlugin.prototype.transform) {
       return (env: ASTPluginEnvironment) => {
@@ -84,7 +84,7 @@ const FIRST_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean
 const SECOND_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
 const THIRD_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
 
-test('AST plugins can be chained', assert => {
+test('AST plugins can be chained', (assert) => {
   assert.expect(3);
 
   let first = () => {
@@ -133,7 +133,7 @@ test('AST plugins can be chained', assert => {
   assert.equal(THIRD_PLUGIN.get(ast), true, 'return value from last AST transform is used');
 });
 
-test('AST plugins can access meta from environment', assert => {
+test('AST plugins can access meta from environment', (assert) => {
   assert.expect(2);
 
   const locator: ModuleLocator = {

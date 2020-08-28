@@ -2,7 +2,7 @@ import { capabilityFlagsFrom, hasCapability, Capability } from '..';
 
 QUnit.module('Capabilities Bitmaps');
 
-QUnit.test('encodes a capabilities object into a bitmap', assert => {
+QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
   assert.equal(
     capabilityFlagsFrom({
       dynamicLayout: false,
@@ -61,7 +61,7 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
   );
 });
 
-QUnit.test('allows querying bitmap for a capability', assert => {
+QUnit.test('allows querying bitmap for a capability', (assert) => {
   let capabilities = capabilityFlagsFrom({
     dynamicLayout: true,
     dynamicTag: false,

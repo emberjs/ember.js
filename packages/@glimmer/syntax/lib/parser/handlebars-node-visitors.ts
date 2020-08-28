@@ -408,7 +408,7 @@ function acceptCallNodes(
 ): { path: AST.PathExpression; params: AST.Expression[]; hash: AST.Hash } {
   let path = compiler.PathExpression(node.path);
 
-  let params = node.params ? node.params.map(e => compiler.acceptNode<AST.Expression>(e)) : [];
+  let params = node.params ? node.params.map((e) => compiler.acceptNode<AST.Expression>(e)) : [];
   let hash = node.hash ? compiler.Hash(node.hash) : b.hash();
 
   return { path, params, hash };
@@ -422,8 +422,9 @@ function addElementModifier(element: Tag<'StartTag'>, mustache: AST.MustacheStat
     let tag = `<${element.name} ... ${modifier} ...`;
 
     throw new SyntaxError(
-      `In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc &&
-        loc.start.line}.`,
+      `In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${
+        loc && loc.start.line
+      }.`,
       mustache.loc
     );
   }

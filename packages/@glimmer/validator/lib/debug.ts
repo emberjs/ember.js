@@ -70,7 +70,7 @@ if (DEBUG) {
     },
   };
 
-  setTrackingTransactionEnv = env => Object.assign(TRANSACTION_ENV, env);
+  setTrackingTransactionEnv = (env) => Object.assign(TRANSACTION_ENV, env);
 
   beginTrackingTransaction = (_debugLabel?: string | false, deprecate = false) => {
     CONSUMED_TAGS = CONSUMED_TAGS || new WeakMap();

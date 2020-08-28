@@ -63,7 +63,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
   return op('IfResolved', {
     kind: ResolveHandle.Helper,
     name: nameOrError,
-    andThen: handle => Call({ handle, params, hash }),
+    andThen: (handle) => Call({ handle, params, hash }),
     span: {
       start,
       end: start + offset,

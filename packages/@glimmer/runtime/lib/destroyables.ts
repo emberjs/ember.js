@@ -162,11 +162,11 @@ export function destroy(destroyable: Destroyable) {
   meta.state = DestroyingState.Destroying;
 
   iterate(children, destroy);
-  iterate(eagerDestructors, destructor => destructor(destroyable));
-  iterate(destructors, destructor => scheduleDestroy(destroyable, destructor));
+  iterate(eagerDestructors, (destructor) => destructor(destroyable));
+  iterate(destructors, (destructor) => scheduleDestroy(destroyable, destructor));
 
   scheduleDestroyed(() => {
-    iterate(parents, parent => removeChildFromParent(destroyable, parent));
+    iterate(parents, (parent) => removeChildFromParent(destroyable, parent));
 
     meta.state = DestroyingState.Destroyed;
   });
@@ -236,7 +236,7 @@ if (DEBUG) {
 
     let undestroyed: object[] = [];
 
-    map.forEach(meta => {
+    map.forEach((meta) => {
       if (meta.state !== DestroyingState.Destroyed) {
         undestroyed.push(meta.source!);
       }

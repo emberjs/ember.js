@@ -5,7 +5,7 @@ function compareWalkedNodes(html: string, expected: string[]) {
   let walker = new Walker();
   let nodes: string[] = [];
 
-  walker.visit(ast, function(node) {
+  walker.visit(ast, function (node) {
     nodes.push(node.type);
   });
 
@@ -14,11 +14,11 @@ function compareWalkedNodes(html: string, expected: string[]) {
 
 QUnit.module('[glimmer-syntax] (Legacy) Traversal - Walker');
 
-QUnit.test('walks elements', function() {
+QUnit.test('walks elements', function () {
   compareWalkedNodes('<div><li></li></div>', ['Template', 'ElementNode', 'ElementNode']);
 });
 
-QUnit.test('walks blocks', function() {
+QUnit.test('walks blocks', function () {
   compareWalkedNodes('{{#foo}}<li></li>{{/foo}}', [
     'Template',
     'BlockStatement',

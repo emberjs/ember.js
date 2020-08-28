@@ -25,7 +25,7 @@ import {
 
 module('@glimmer/validator: tracking', () => {
   module('track', () => {
-    test('it combines tags that are consumed within a track frame', assert => {
+    test('it combines tags that are consumed within a track frame', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -43,7 +43,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
-    test('it ignores tags consumed within an untrack frame', assert => {
+    test('it ignores tags consumed within an untrack frame', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -64,7 +64,7 @@ module('@glimmer/validator: tracking', () => {
       assert.ok(validateTag(combined, snapshot));
     });
 
-    test('it does not automatically consume tags in nested tracking frames', assert => {
+    test('it does not automatically consume tags in nested tracking frames', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -85,7 +85,7 @@ module('@glimmer/validator: tracking', () => {
       assert.ok(validateTag(combined, snapshot));
     });
 
-    test('it works for nested tags', assert => {
+    test('it works for nested tags', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -108,7 +108,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
-    test('isTracking works within a track and untrack frame', assert => {
+    test('isTracking works within a track and untrack frame', (assert) => {
       assert.notOk(isTracking());
 
       track(() => {
@@ -120,7 +120,7 @@ module('@glimmer/validator: tracking', () => {
       });
     });
 
-    test('nested tracks work', assert => {
+    test('nested tracks work', (assert) => {
       assert.notOk(isTracking());
 
       track(() => {
@@ -132,7 +132,7 @@ module('@glimmer/validator: tracking', () => {
       });
     });
 
-    test('nested tracks and untracks work', assert => {
+    test('nested tracks and untracks work', (assert) => {
       track(() => {
         track(() => {
           untrack(() => {
@@ -146,7 +146,7 @@ module('@glimmer/validator: tracking', () => {
   });
 
   module('manual track frames', () => {
-    test('it combines tags that are consumed within a track frame', assert => {
+    test('it combines tags that are consumed within a track frame', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -166,7 +166,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
-    test('it ignores tags consumed within an untrack frame', assert => {
+    test('it ignores tags consumed within an untrack frame', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -189,7 +189,7 @@ module('@glimmer/validator: tracking', () => {
       assert.ok(validateTag(combined, snapshot));
     });
 
-    test('it does not automatically consume tags in nested tracking frames', assert => {
+    test('it does not automatically consume tags in nested tracking frames', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -216,7 +216,7 @@ module('@glimmer/validator: tracking', () => {
       assert.ok(validateTag(combined, snapshot));
     });
 
-    test('it works for nested tags', assert => {
+    test('it works for nested tags', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
 
@@ -245,7 +245,7 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
-    test('isTracking works within a track', assert => {
+    test('isTracking works within a track', (assert) => {
       assert.notOk(isTracking());
 
       beginTrackFrame();
@@ -255,7 +255,7 @@ module('@glimmer/validator: tracking', () => {
       endTrackFrame();
     });
 
-    test('asserts if track frame was ended without one existing', assert => {
+    test('asserts if track frame was ended without one existing', (assert) => {
       assert.throws(
         () => endTrackFrame(),
         /attempted to close a tracking frame, but one was not open/
@@ -264,7 +264,7 @@ module('@glimmer/validator: tracking', () => {
   });
 
   module('tracking cache', () => {
-    test('it memoizes based on tags that are consumed within a track frame', assert => {
+    test('it memoizes based on tags that are consumed within a track frame', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
       let count = 0;
@@ -288,7 +288,7 @@ module('@glimmer/validator: tracking', () => {
       assert.equal(getValue(cache), 3, 'memoized result returned when nothing dirtied');
     });
 
-    test('it ignores tags consumed within an untrack frame', assert => {
+    test('it ignores tags consumed within an untrack frame', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
       let count = 0;
@@ -312,7 +312,7 @@ module('@glimmer/validator: tracking', () => {
       assert.equal(getValue(cache), 2, 'cache not busted when tag2 dirtied');
     });
 
-    test('nested memoizations work, and automatically propogate', assert => {
+    test('nested memoizations work, and automatically propogate', (assert) => {
       let innerTag = createTag();
       let outerTag = createTag();
 
@@ -353,7 +353,7 @@ module('@glimmer/validator: tracking', () => {
       assert.deepEqual(getValue(outerCache), [3, 2], 'memoized result returned correctly');
     });
 
-    test('isTracking works within a memoized function and untrack frame', assert => {
+    test('isTracking works within a memoized function and untrack frame', (assert) => {
       assert.expect(3);
       assert.notOk(isTracking());
 
@@ -368,7 +368,7 @@ module('@glimmer/validator: tracking', () => {
       getValue(cache);
     });
 
-    test('isConst allows users to check if a memoized function is constant', assert => {
+    test('isConst allows users to check if a memoized function is constant', (assert) => {
       let tag = createTag();
 
       let constCache = createCache(() => {
@@ -387,21 +387,21 @@ module('@glimmer/validator: tracking', () => {
     });
 
     if (DEBUG) {
-      test('createCache throws an error in DEBUG mode if users to use with a non-function', assert => {
+      test('createCache throws an error in DEBUG mode if users to use with a non-function', (assert) => {
         assert.throws(
           () => createCache(123 as any),
           /Error: createCache\(\) must be passed a function as its first parameter. Called with: 123/
         );
       });
 
-      test('getValue throws an error in DEBUG mode if users to use with a non-cache', assert => {
+      test('getValue throws an error in DEBUG mode if users to use with a non-cache', (assert) => {
         assert.throws(
           () => getValue(123 as any),
           /Error: getValue\(\) can only be used on an instance of a cache created with createCache\(\). Called with: 123/
         );
       });
 
-      test('isConst throws an error in DEBUG mode if users attempt to check a function before it has been called', assert => {
+      test('isConst throws an error in DEBUG mode if users attempt to check a function before it has been called', (assert) => {
         let cache = createCache(() => {
           // do nothing;
         });
@@ -412,7 +412,7 @@ module('@glimmer/validator: tracking', () => {
         );
       });
 
-      test('isConst throws an error in DEBUG mode if users attempt to use with a non-cache', assert => {
+      test('isConst throws an error in DEBUG mode if users attempt to use with a non-cache', (assert) => {
         assert.throws(
           () => isConst(123 as any),
           /Error: isConst\(\) can only be used on an instance of a cache created with createCache\(\). Called with: 123/
@@ -422,7 +422,7 @@ module('@glimmer/validator: tracking', () => {
   });
 
   module('trackedData', () => {
-    test('it creates a storage cell that can be accessed and updated', assert => {
+    test('it creates a storage cell that can be accessed and updated', (assert) => {
       class Foo {
         foo = 123;
       }
@@ -436,13 +436,13 @@ module('@glimmer/validator: tracking', () => {
       assert.equal(foo.foo, 123, 'value is not set on the actual object');
     });
 
-    test('it can receive an initializer', assert => {
+    test('it can receive an initializer', (assert) => {
       class Foo {
         foo = 123;
         bar = 456;
       }
 
-      let { getter } = trackedData<Foo, keyof Foo>('foo', function(this: Foo) {
+      let { getter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
         return this.bar;
       });
 
@@ -452,13 +452,13 @@ module('@glimmer/validator: tracking', () => {
       assert.equal(foo.foo, 123, 'value is not set on the actual object');
     });
 
-    test('it tracks changes to the storage cell', assert => {
+    test('it tracks changes to the storage cell', (assert) => {
       class Foo {
         foo = 123;
         bar = 456;
       }
 
-      let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function(this: Foo) {
+      let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
         return this.bar;
       });
 
@@ -476,7 +476,7 @@ module('@glimmer/validator: tracking', () => {
 
   if (DEBUG) {
     module('debug', () => {
-      test('it errors when attempting to update a value that has already been consumed in the same transaction', assert => {
+      test('it errors when attempting to update a value that has already been consumed in the same transaction', (assert) => {
         let tag = createTag();
 
         assert.throws(() => {
@@ -489,7 +489,7 @@ module('@glimmer/validator: tracking', () => {
         }, /Error: You attempted to update `\(an unknown tag\)`/);
       });
 
-      test('it throws errors across track frames within the same debug transaction', assert => {
+      test('it throws errors across track frames within the same debug transaction', (assert) => {
         let tag = createTag();
 
         assert.throws(() => {
@@ -505,7 +505,7 @@ module('@glimmer/validator: tracking', () => {
         }, /Error: You attempted to update `\(an unknown tag\)`/);
       });
 
-      test('it ignores untrack for consumption', assert => {
+      test('it ignores untrack for consumption', (assert) => {
         assert.expect(0);
         let tag = createTag();
 
@@ -520,7 +520,7 @@ module('@glimmer/validator: tracking', () => {
         });
       });
 
-      test('it does not ignore untrack for dirty', assert => {
+      test('it does not ignore untrack for dirty', (assert) => {
         let tag = createTag();
 
         assert.throws(() => {
@@ -536,7 +536,7 @@ module('@glimmer/validator: tracking', () => {
         }, /Error: You attempted to update `\(an unknown tag\)`/);
       });
 
-      test('it can switch to warnings/deprecations', assert => {
+      test('it can switch to warnings/deprecations', (assert) => {
         let tag = createTag();
 
         let originalConsoleWarn = console.warn;
@@ -556,7 +556,7 @@ module('@glimmer/validator: tracking', () => {
         console.warn = originalConsoleWarn;
       });
 
-      test('it switches back to errors with nested track calls', assert => {
+      test('it switches back to errors with nested track calls', (assert) => {
         let tag = createTag();
 
         assert.throws(() => {
@@ -571,7 +571,7 @@ module('@glimmer/validator: tracking', () => {
         }, /Error: You attempted to update `\(an unknown tag\)`/);
       });
 
-      test('it gets a better error message with tagFor', assert => {
+      test('it gets a better error message with tagFor', (assert) => {
         class Foo {}
         let foo = new Foo();
 
