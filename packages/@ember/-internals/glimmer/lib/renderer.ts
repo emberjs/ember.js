@@ -15,7 +15,7 @@ import {
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
 import { JitContext } from '@glimmer/opcode-compiler';
-import { PathReference } from '@glimmer/reference';
+import { createConstRef, Reference, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import {
   clientBuilder,
   CurriedComponentDefinition,
@@ -27,7 +27,6 @@ import {
   JitRuntime,
   JitSyntaxCompilationContext,
   renderJitMain,
-  UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { unwrapHandle, unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
@@ -44,7 +43,6 @@ import { populateMacros } from './syntax';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
-import { UnboundRootReference } from './utils/references';
 import OutletView from './views/outlet';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
@@ -52,14 +50,14 @@ export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
     public view: Component | {} | null,
-    public outletState: PathReference<OutletState | undefined>
+    public outletState: Reference<OutletState | undefined>
   ) {}
 
   child() {
     return new DynamicScope(this.view, this.outletState);
   }
 
-  get(key: 'outletState'): PathReference<OutletState | undefined> {
+  get(key: 'outletState'): Reference<OutletState | undefined> {
     // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
@@ -68,7 +66,7 @@ export class DynamicScope implements GlimmerDynamicScope {
     return this.outletState;
   }
 
-  set(key: 'outletState', value: PathReference<OutletState | undefined>) {
+  set(key: 'outletState', value: Reference<OutletState | undefined>) {
     // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
@@ -90,12 +88,15 @@ class RootState {
     public runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
     context: SyntaxCompilationContext,
     template: OwnedTemplate,
-    self: PathReference<unknown>,
+    self: Reference<unknown>,
     parentElement: SimpleElement,
     dynamicScope: DynamicScope,
     builder: IBuilder
   ) {
-    assert(`You cannot render \`${self.value()}\` without a template.`, template !== undefined);
+    assert(
+      `You cannot render \`${valueForRef(self)}\` without a template.`,
+      template !== undefined
+    );
 
     this.id = getViewId(root);
     this.result = undefined;
@@ -316,7 +317,7 @@ export abstract class Renderer {
     definition: CurriedComponentDefinition,
     target: SimpleElement
   ) {
-    let self = new UnboundRootReference(definition);
+    let self = createConstRef(definition, 'this');
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,

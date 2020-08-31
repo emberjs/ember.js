@@ -7,7 +7,8 @@ import {
   VMArguments,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { NULL_REFERENCE, registerDestructor } from '@glimmer/runtime';
+import { NULL_REFERENCE } from '@glimmer/reference';
+import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';

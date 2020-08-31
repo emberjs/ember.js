@@ -1,6 +1,6 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
-import { ComponentRootReference, Reference } from '@glimmer/reference';
+import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { Revision, Tag, valueForTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
@@ -40,8 +40,8 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  public classRef: Reference<unknown> | null = null;
-  public rootRef: ComponentRootReference<Component>;
+  public classRef: Reference | null = null;
+  public rootRef: Reference<Component>;
   public argsRevision: Revision;
 
   constructor(
@@ -54,7 +54,7 @@ export default class ComponentStateBucket {
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : valueForTag(argsTag);
-    this.rootRef = new ComponentRootReference(component);
+    this.rootRef = createConstRef(component, 'this');
 
     registerDestructor(this, () => this.willDestroy(), true);
     registerDestructor(this, () => this.component.destroy());

@@ -1,33 +1,23 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Helper, VMArguments } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference';
 
 let helper: Helper;
 
 if (DEBUG) {
-  class ComponentAssertionReference implements PathReference<unknown> {
-    constructor(private component: PathReference<unknown>, private message: string) {}
+  helper = (args: VMArguments) => {
+    let inner = args.positional.at(0);
+    let messageRef = args.positional.at(1);
 
-    isConst() {
-      return this.component.isConst();
-    }
+    return createComputeRef(() => {
+      let value = valueForRef(inner);
 
-    value(): unknown {
-      let value = this.component.value();
-
-      assert(this.message, typeof value !== 'string');
+      assert(valueForRef(messageRef) as string, typeof value !== 'string');
 
       return value;
-    }
-
-    get(property: string): PathReference<unknown> {
-      return this.component.get(property);
-    }
-  }
-
-  helper = (args: VMArguments) =>
-    new ComponentAssertionReference(args.positional.at(0), args.positional.at(1).value() as string);
+    });
+  };
 } else {
   helper = (args: VMArguments) => args.positional.at(0);
 }

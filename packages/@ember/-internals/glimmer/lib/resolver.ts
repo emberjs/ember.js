@@ -55,7 +55,7 @@ import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { getComponentTemplate } from './utils/component-template';
 import { getModifierManager } from './utils/custom-modifier-manager';
 import { getManager } from './utils/managers';
-import { EmberHelperRootReference } from './utils/references';
+import { createHelperRef } from './utils/references';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -440,7 +440,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
         helper.compute = helper.compute.bind(null);
       }
 
-      return new EmberHelperRootReference(helper, args.capture());
+      return createHelperRef(helper, args.capture());
     };
   }
 

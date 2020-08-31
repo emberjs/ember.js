@@ -1,4 +1,4 @@
-import { _WeakSet as WeakSet } from '@ember/polyfills';
+import { _WeakSet as WeakSet } from '@glimmer/util';
 
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 const fnToString = Function.prototype.toString;

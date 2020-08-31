@@ -1,20 +1,16 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Helper, VMArguments } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference';
 
 let helper: Helper;
 
 if (DEBUG) {
-  class InElementNullCheckReference implements PathReference {
-    constructor(private inner: PathReference) {}
+  helper = (args: VMArguments) => {
+    let inner = args.positional.at(0);
 
-    isConst() {
-      return this.inner.isConst();
-    }
-
-    value(): unknown {
-      let value = this.inner.value();
+    return createComputeRef(() => {
+      let value = valueForRef(inner);
 
       assert(
         'You cannot pass a null or undefined destination element to in-element',
@@ -22,14 +18,8 @@ if (DEBUG) {
       );
 
       return value;
-    }
-
-    get(key: string): PathReference {
-      return this.inner.get(key);
-    }
-  }
-
-  helper = (args: VMArguments) => new InElementNullCheckReference(args.positional.at(0));
+    });
+  };
 } else {
   helper = (args: VMArguments) => args.positional.at(0);
 }

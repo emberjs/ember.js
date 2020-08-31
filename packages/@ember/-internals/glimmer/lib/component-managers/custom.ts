@@ -16,7 +16,7 @@ import {
   VMArguments,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
-import { ComponentRootReference, PathReference } from '@glimmer/reference';
+import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { registerDestructor, reifyArgs, reifyPositional } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { track } from '@glimmer/validator';
@@ -194,7 +194,7 @@ export default class CustomComponentManager<ComponentInstance>
 
     if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
       let getTag = (key: string) => {
-        return track(() => namedArgs[key].value());
+        return track(() => valueForRef(namedArgs[key]));
       };
 
       if (HAS_NATIVE_PROXY) {
@@ -203,7 +203,7 @@ export default class CustomComponentManager<ComponentInstance>
             let ref = namedArgs[prop as string];
 
             if (ref !== undefined) {
-              return ref.value();
+              return valueForRef(ref);
             } else if (prop === CUSTOM_TAG_FOR) {
               return getTag;
             }
@@ -255,7 +255,7 @@ export default class CustomComponentManager<ComponentInstance>
             enumerable: true,
             configurable: true,
             get() {
-              return namedArgs[name].value();
+              return valueForRef(namedArgs[name]);
             },
           });
         });
@@ -333,11 +333,8 @@ export default class CustomComponentManager<ComponentInstance>
     delegate.getContext(component);
   }
 
-  getSelf({
-    delegate,
-    component,
-  }: CustomComponentState<ComponentInstance>): PathReference<unknown> {
-    return new ComponentRootReference(delegate.getContext(component));
+  getSelf({ delegate, component }: CustomComponentState<ComponentInstance>): Reference {
+    return createConstRef(delegate.getContext(component), 'this');
   }
 
   getDestroyable(bucket: CustomComponentState<ComponentInstance>): Option<Destroyable> {

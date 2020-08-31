@@ -1039,51 +1039,54 @@ moduleFor(
       this.assert.ok(capturedRunLoop, 'action is called within a run loop');
     }
 
+    // TODO: This is for intimate APIs, specifically ember-concurrency
     ['@test objects that define INVOKE can be casted to actions']() {
-      let innerComponent;
-      let actionArgs;
-      let invokableArgs;
+      expectDeprecation(() => {
+        let innerComponent;
+        let actionArgs;
+        let invokableArgs;
 
-      let InnerComponent = Component.extend({
-        init() {
-          this._super(...arguments);
-          innerComponent = this;
-        },
-        fireAction() {
-          actionArgs = this.attrs.submit(4, 5, 6);
-        },
-      });
+        let InnerComponent = Component.extend({
+          init() {
+            this._super(...arguments);
+            innerComponent = this;
+          },
+          fireAction() {
+            actionArgs = this.attrs.submit(4, 5, 6);
+          },
+        });
 
-      let OuterComponent = Component.extend({
-        foo: 123,
-        submitTask: computed(function() {
-          return {
-            [INVOKE]: (...args) => {
-              invokableArgs = args;
-              return this.foo;
-            },
-          };
-        }),
-      });
+        let OuterComponent = Component.extend({
+          foo: 123,
+          submitTask: computed(function() {
+            return {
+              [INVOKE]: (...args) => {
+                invokableArgs = args;
+                return this.foo;
+              },
+            };
+          }),
+        });
 
-      this.registerComponent('inner-component', {
-        ComponentClass: InnerComponent,
-        template: 'inner',
-      });
+        this.registerComponent('inner-component', {
+          ComponentClass: InnerComponent,
+          template: 'inner',
+        });
 
-      this.registerComponent('outer-component', {
-        ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action submitTask 1 2 3)}}`,
-      });
+        this.registerComponent('outer-component', {
+          ComponentClass: OuterComponent,
+          template: `{{inner-component submit=(action submitTask 1 2 3)}}`,
+        });
 
-      this.render('{{outer-component}}');
+        this.render('{{outer-component}}');
 
-      runTask(() => {
-        innerComponent.fireAction();
-      });
+        runTask(() => {
+          innerComponent.fireAction();
+        });
 
-      this.assert.equal(actionArgs, 123);
-      this.assert.deepEqual(invokableArgs, [1, 2, 3, 4, 5, 6]);
+        this.assert.equal(actionArgs, 123);
+        this.assert.deepEqual(invokableArgs, [1, 2, 3, 4, 5, 6]);
+      }, /Usage of the private INVOKE API to make an object callable/);
     }
 
     ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {
