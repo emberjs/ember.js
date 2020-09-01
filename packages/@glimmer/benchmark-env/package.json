@@ -5,6 +5,7 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/benchmark-env",
   "dependencies": {
     "@glimmer/global-context": "^0.60.0",
+    "@glimmer/program": "^0.60.0",
     "@glimmer/reference": "^0.60.0",
     "@glimmer/runtime": "^0.60.0",
     "@glimmer/validator": "^0.60.0",

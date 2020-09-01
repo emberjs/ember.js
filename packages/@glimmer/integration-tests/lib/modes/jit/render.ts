@@ -3,7 +3,7 @@ import { PrecompileOptions } from '@glimmer/compiler';
 import { Reference } from '@glimmer/reference';
 import { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import { preprocess } from '../../compile';
-import { renderJitMain, renderSync } from '@glimmer/runtime';
+import { renderMain, renderSync } from '@glimmer/runtime';
 import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 
 export function renderTemplate(
@@ -16,6 +16,6 @@ export function renderTemplate(
   let template = preprocess(src, undefined, options);
   let handle = unwrapTemplate(template).asLayout().compile(syntax);
 
-  let iterator = renderJitMain(runtime, syntax, self, builder, unwrapHandle(handle));
+  let iterator = renderMain(runtime, syntax, self, builder, unwrapHandle(handle));
   return renderSync(runtime.env, iterator);
 }

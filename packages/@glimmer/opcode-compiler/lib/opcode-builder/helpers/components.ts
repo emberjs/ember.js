@@ -17,11 +17,17 @@ import {
   CompileTimeComponent,
 } from '@glimmer/interfaces';
 
-import { label, templateMeta } from '../operands';
+import { label, templateMeta, other } from '../operands';
 import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
-import { meta } from './shared';
-import { YieldBlock, PushSymbolTable, InvokeStaticBlock, PushYieldableBlock } from './blocks';
+import { meta, CompileArgs } from './shared';
+import {
+  YieldBlock,
+  PushSymbolTable,
+  InvokeStaticBlock,
+  PushYieldableBlock,
+  PushCompilable,
+} from './blocks';
 import { Replayable } from './conditional';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { op } from '../encoder';
@@ -219,13 +225,13 @@ export function InvokeStaticComponent({
     let { symbol, isBlock } = bindings[i];
 
     if (isBlock) {
-      out.push(op('SetBlock', symbol));
+      out.push(op(Op.SetBlock, symbol));
     } else {
       out.push(op(Op.SetVariable, symbol));
     }
   }
 
-  out.push(op('InvokeStatic', layout));
+  out.push([op(Op.Constant, other(layout)), op(Op.CompileBlock), op(MachineOp.InvokeVirtual)]);
 
   if (capabilities.createInstance) {
     out.push(op(Op.DidRenderLayout, $s0));
@@ -360,19 +366,15 @@ export function InvokeComponent({
     op(Op.Load, $s0),
 
     op(MachineOp.PushFrame),
-    op('Args', { params, hash, blocks, atNames }),
+    CompileArgs({ params, hash, blocks, atNames }),
     op(Op.PrepareArgs, $s0),
     invokePreparedComponent(blocks.has('default'), bindableBlocks, bindableAtNames, () => {
       let out: NestedStatementCompileActions;
 
       if (layout) {
-        out = [
-          PushSymbolTable(layout.symbolTable),
-          op('PushCompilable', layout),
-          op('JitCompileBlock'),
-        ];
+        out = [PushSymbolTable(layout.symbolTable), PushCompilable(layout), op(Op.CompileBlock)];
       } else {
-        out = [op('GetComponentLayout', $s0)];
+        out = [op(Op.GetComponentLayout, $s0)];
       }
 
       out.push(op(Op.PopulateLayout, $s0));
@@ -437,7 +439,7 @@ export function InvokeBareComponent(): CompileActions {
     op(Op.PushEmptyArgs),
     op(Op.PrepareArgs, $s0),
     invokePreparedComponent(false, false, true, () => [
-      op('GetComponentLayout', $s0),
+      op(Op.GetComponentLayout, $s0),
       op(Op.PopulateLayout, $s0),
     ]),
     op(Op.Load, $s0),

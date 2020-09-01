@@ -74,7 +74,7 @@ export interface CompileTimeComponent {
   compilable: Option<CompilableProgram>;
 }
 
-export interface CompileTimeResolverDelegate<M = unknown> extends HandleResolver {
+export interface CompileTimeResolver<M = unknown> extends HandleResolver {
   lookupHelper(name: string, referrer: M): Option<number>;
   lookupModifier(name: string, referrer: M): Option<number>;
   lookupComponent(name: string, referrer: M): Option<CompileTimeComponent>;
@@ -98,25 +98,5 @@ export interface RuntimeResolver<R = unknown> extends HandleResolver {
   lookupComponent(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
   lookupPartial(name: string, referrer?: Option<R>): Option<number>;
   resolve<U extends ResolvedValue>(handle: number): U;
-}
-
-export interface JitRuntimeResolver<R = unknown> extends RuntimeResolver<R> {
   compilable(locator: R): Template;
-}
-
-export interface AotRuntimeResolver<R = unknown> extends RuntimeResolver<R> {
-  // for {{component}} support
-  getInvocation(locator: R): Invocation;
-}
-
-export interface RuntimeResolverDelegate<R = unknown> {
-  lookupComponent?(name: string, referrer?: Option<R>): Option<ComponentDefinition> | void;
-  lookupPartial?(name: string, referrer?: Option<R>): Option<number> | void;
-  resolve?(handle: number): ResolvedValue | void;
-  compilable?(locator: R): Template;
-  getInvocation?(locator: R): Invocation;
-}
-
-export interface JitRuntimeResolverOptions<R = unknown> extends RuntimeResolverDelegate<R> {
-  compilable?(locator: R): Template;
 }

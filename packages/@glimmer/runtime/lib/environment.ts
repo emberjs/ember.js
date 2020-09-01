@@ -6,25 +6,12 @@ import {
   GlimmerTreeConstruction,
   Transaction,
   TransactionSymbol,
-  CompilerArtifacts,
   WithCreateInstance,
-  ResolvedValue,
-  RuntimeResolverDelegate,
   ModifierManager,
-  Template,
-  AotRuntimeResolver,
-  Invocation,
-  JitRuntimeContext,
-  AotRuntimeContext,
-  JitRuntimeResolver,
-  SyntaxCompilationContext,
-  RuntimeConstants,
-  RuntimeHeap,
-  Macros,
+  RuntimeContext,
+  RuntimeResolver,
   Option,
-  CompileTimeConstants,
-  CompileTimeHeap,
-  WholeProgramCompilationContext,
+  RuntimeArtifacts,
 } from '@glimmer/interfaces';
 import { assert, expect, symbol, debugToString } from '@glimmer/util';
 import { track, updateTag } from '@glimmer/validator';
@@ -226,123 +213,16 @@ export interface EnvironmentDelegate<Extra = undefined> {
   onTransactionCommit: () => void;
 }
 
-export class DefaultRuntimeResolver<R> implements JitRuntimeResolver<R>, AotRuntimeResolver {
-  constructor(private inner: RuntimeResolverDelegate<R>) {}
-
-  lookupComponent(name: string, referrer?: R): Option<any> {
-    if (this.inner.lookupComponent) {
-      let component = this.inner.lookupComponent(name, referrer);
-
-      if (component === undefined) {
-        throw new Error(
-          `Unexpected component ${name} (from ${referrer}) (lookupComponent returned undefined)`
-        );
-      }
-
-      return component;
-    } else {
-      throw new Error('lookupComponent not implemented on RuntimeResolver.');
-    }
-  }
-
-  lookupPartial(name: string, referrer?: R): Option<number> {
-    if (this.inner.lookupPartial) {
-      let partial = this.inner.lookupPartial(name, referrer);
-
-      if (partial === undefined) {
-        throw new Error(
-          `Unexpected partial ${name} (from ${referrer}) (lookupPartial returned undefined)`
-        );
-      }
-
-      return partial;
-    } else {
-      throw new Error('lookupPartial not implemented on RuntimeResolver.');
-    }
-  }
-
-  resolve<U extends ResolvedValue>(handle: number): U {
-    if (this.inner.resolve) {
-      let resolved = this.inner.resolve(handle);
-
-      if (resolved === undefined) {
-        throw new Error(`Unexpected handle ${handle} (resolve returned undefined)`);
-      }
-
-      return resolved as U;
-    } else {
-      throw new Error('resolve not implemented on RuntimeResolver.');
-    }
-  }
-
-  compilable(locator: R): Template {
-    if (this.inner.compilable) {
-      let resolved = this.inner.compilable(locator);
-
-      if (resolved === undefined) {
-        throw new Error(`Unable to compile ${name} (compilable returned undefined)`);
-      }
-
-      return resolved;
-    } else {
-      throw new Error('compilable not implemented on RuntimeResolver.');
-    }
-  }
-
-  getInvocation(locator: R): Invocation {
-    if (this.inner.getInvocation) {
-      let invocation = this.inner.getInvocation(locator);
-
-      if (invocation === undefined) {
-        throw new Error(
-          `Unable to get invocation for ${JSON.stringify(
-            locator
-          )} (getInvocation returned undefined)`
-        );
-      }
-
-      return invocation;
-    } else {
-      throw new Error('getInvocation not implemented on RuntimeResolver.');
-    }
-  }
-}
-
-export function AotRuntime(
-  options: EnvironmentOptions,
-  program: CompilerArtifacts,
-  resolver: RuntimeResolverDelegate = {},
-  delegate: EnvironmentDelegate
-): AotRuntimeContext {
-  let env = new EnvironmentImpl(options, delegate);
-
-  return {
-    env,
-    resolver: new DefaultRuntimeResolver(resolver),
-    program: RuntimeProgramImpl.hydrate(program),
-  };
-}
-
-export interface JitProgramCompilationContext extends WholeProgramCompilationContext {
-  readonly constants: CompileTimeConstants & RuntimeConstants;
-  readonly heap: CompileTimeHeap & RuntimeHeap;
-}
-
-export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
-  readonly program: JitProgramCompilationContext;
-  readonly macros: Macros;
-}
-
-export function JitRuntime<R, E>(
+export function runtimeContext<R, E>(
   options: EnvironmentOptions,
   delegate: EnvironmentDelegate<E>,
-  context: JitSyntaxCompilationContext,
-  resolver: RuntimeResolverDelegate<R> = {}
-): JitRuntimeContext<R, E> {
+  artifacts: RuntimeArtifacts,
+  resolver: RuntimeResolver<R>
+): RuntimeContext<R, E> {
   return {
     env: new EnvironmentImpl(options, delegate),
-    program: new RuntimeProgramImpl(context.program.constants, context.program.heap),
-    resolver: new DefaultRuntimeResolver(resolver),
+    program: new RuntimeProgramImpl(artifacts.constants, artifacts.heap),
+    resolver: resolver,
   };
 }
 

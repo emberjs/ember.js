@@ -1,5 +1,5 @@
 import {
-  JitRuntimeResolver,
+  RuntimeResolver,
   AnnotatedModuleLocator,
   Option,
   ComponentDefinition,
@@ -9,7 +9,7 @@ import {
 import { LookupType, TestJitRegistry } from './registry';
 import { createTemplate } from '../../compile';
 
-export default class TestJitRuntimeResolver implements JitRuntimeResolver {
+export default class TestJitRuntimeResolver implements RuntimeResolver {
   readonly registry = new TestJitRegistry();
 
   lookup(

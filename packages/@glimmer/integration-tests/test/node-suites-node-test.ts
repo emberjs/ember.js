@@ -6,24 +6,17 @@ import {
   suite,
   DOMHelperTests,
   NodeJitRenderDelegate,
-  NodeAotRenderDelegate,
   SerializedDOMHelperTests,
   JitSerializationDelegate,
-  AotSerializationDelegate,
   CompilationTests,
-  componentSuite,
 } from '..';
 
 nodeSuite(ServerSideSuite);
 nodeComponentSuite(ServerSideComponentSuite);
 
 suite(DOMHelperTests, NodeJitRenderDelegate);
-suite(DOMHelperTests, NodeAotRenderDelegate);
 suite(SerializedDOMHelperTests, JitSerializationDelegate);
-suite(SerializedDOMHelperTests, AotSerializationDelegate);
 
 if (typeof process !== 'undefined') {
   suite(CompilationTests, NodeJitRenderDelegate);
 }
-
-componentSuite(ServerSideComponentSuite, NodeAotRenderDelegate);

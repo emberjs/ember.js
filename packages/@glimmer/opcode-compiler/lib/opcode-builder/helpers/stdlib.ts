@@ -7,7 +7,7 @@ import {
   ContentType,
   Op,
   CompileActions,
-  WholeProgramCompilationContext,
+  CompileTimeCompilationContext,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
 import { ContentTypeSwitchCases } from './conditional';
@@ -50,7 +50,7 @@ export function StdAppend(trusting: boolean): CompileActions {
   ];
 }
 
-export function compileStd(context: WholeProgramCompilationContext): StdLib {
+export function compileStd(context: CompileTimeCompilationContext): StdLib {
   let mainHandle = build(context, main);
   let trustingGuardedAppend = build(context, () => StdAppend(true));
   let cautiousGuardedAppend = build(context, () => StdAppend(false));
@@ -68,7 +68,7 @@ const STDLIB_META = {
   size: 0,
 };
 
-function build(program: WholeProgramCompilationContext, callback: () => CompileActions): number {
+function build(program: CompileTimeCompilationContext, callback: () => CompileActions): number {
   let encoder = new EncoderImpl();
   let macros = new MacrosImpl();
 

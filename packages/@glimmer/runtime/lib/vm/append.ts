@@ -1,10 +1,8 @@
 import {
-  CompilableBlock,
   CompilableTemplate,
   Destroyable,
   DynamicScope,
   Environment,
-  JitOrAotBlock,
   PartialScope,
   RenderResult,
   RichIteratorResult,
@@ -15,8 +13,6 @@ import {
   Scope,
   SyntaxCompilationContext,
   VM as PublicVM,
-  JitRuntimeContext,
-  AotRuntimeContext,
   ElementBuilder,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
@@ -43,7 +39,6 @@ import {
   Register,
   SyscallRegister,
 } from '@glimmer/vm';
-import { CheckNumber, check } from '@glimmer/debug';
 import { unwrapHandle } from '@glimmer/util';
 import {
   JumpIfNotModifiedOpcode,
@@ -76,13 +71,14 @@ import { assertGlobalContextWasSet } from '@glimmer/global-context';
  * This interface is used by internal opcodes, and is more stable than
  * the implementation of the Append VM itself.
  */
-export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
+export interface InternalVM {
   readonly [CONSTANTS]: RuntimeConstants;
   readonly [ARGS]: VMArgumentsImpl;
 
   readonly env: Environment;
   readonly stack: EvaluationStack;
   readonly runtime: RuntimeContext;
+  readonly context: SyntaxCompilationContext;
 
   loadValue(register: MachineRegister, value: number): void;
   loadValue(register: Register, value: unknown): void;
@@ -96,7 +92,9 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   load(register: Register): void;
   fetch(register: Register): void;
 
-  scope(): Scope<C>;
+  compile(block: CompilableTemplate): number;
+
+  scope(): Scope;
   elements(): ElementBuilder;
 
   getSelf(): Reference;
@@ -115,10 +113,10 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   enterItem(item: OpaqueIterationItem): ListItemOpcode;
   registerItem(item: ListItemOpcode): void;
 
-  pushRootScope(size: number): PartialScope<C>;
+  pushRootScope(size: number): PartialScope;
   pushChildScope(): void;
   popScope(): void;
-  pushScope(scope: Scope<C>): void;
+  pushScope(scope: Scope): void;
 
   dynamicScope(): DynamicScope;
   bindDynamicScope(names: string[]): void;
@@ -139,22 +137,16 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   next(): RichIteratorResult<null, RenderResult>;
 }
 
-export interface InternalJitVM extends InternalVM<CompilableBlock> {
-  compile(block: CompilableTemplate): number;
-  readonly runtime: JitRuntimeContext;
-  readonly context: SyntaxCompilationContext;
-}
-
-class Stacks<C extends JitOrAotBlock> {
-  readonly scope = new Stack<Scope<C>>();
+class Stacks {
+  readonly scope = new Stack<Scope>();
   readonly dynamicScope = new Stack<DynamicScope>();
   readonly updating = new Stack<UpdatingOpcode[]>();
   readonly cache = new Stack<JumpIfNotModifiedOpcode>();
   readonly list = new Stack<ListBlockOpcode>();
 }
 
-export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, InternalVM<C> {
-  private readonly [STACKS] = new Stacks<C>();
+export default class VM implements PublicVM, InternalVM {
+  private readonly [STACKS] = new Stacks();
   private readonly [HEAP]: RuntimeHeap;
   private readonly destructor: object;
   private readonly [DESTROYABLE_STACK] = new Stack<object>();
@@ -281,7 +273,8 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   constructor(
     readonly runtime: RuntimeContext,
     { pc, scope, dynamicScope, stack }: VMState,
-    private readonly elementStack: ElementBuilder
+    private readonly elementStack: ElementBuilder,
+    readonly context: SyntaxCompilationContext
   ) {
     if (DEBUG) {
       assertGlobalContextWasSet!();
@@ -321,6 +314,45 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     this[DESTROYABLE_STACK].push(this.destructor);
   }
 
+  static initial(
+    runtime: RuntimeContext,
+    context: SyntaxCompilationContext,
+    { handle, self, dynamicScope, treeBuilder }: InitOptions
+  ) {
+    let scopeSize = runtime.program.heap.scopesizeof(handle);
+    let scope = PartialScopeImpl.root(self, scopeSize);
+    let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
+    let vm = initVM(context)(runtime, state, treeBuilder);
+    vm.pushUpdating();
+    return vm;
+  }
+
+  static empty(
+    runtime: RuntimeContext,
+    { handle, treeBuilder, dynamicScope }: MinimalInitOptions,
+    context: SyntaxCompilationContext
+  ) {
+    let vm = initVM(context)(
+      runtime,
+      vmState(
+        runtime.program.heap.getaddr(handle),
+        PartialScopeImpl.root(UNDEFINED_REFERENCE, 0),
+        dynamicScope
+      ),
+      treeBuilder
+    );
+    vm.pushUpdating();
+    return vm;
+  }
+
+  private resume: VmInitCallback = initVM(this.context);
+
+  compile(block: CompilableTemplate): number {
+    let handle = unwrapHandle(block.compile(this.context));
+
+    return handle;
+  }
+
   get program(): RuntimeProgram {
     return this.runtime.program;
   }
@@ -338,7 +370,9 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     };
   }
 
-  abstract capture(args: number, pc?: number): ResumableVMState<InternalVM>;
+  capture(args: number, pc = this[INNER_VM].fetchRegister($pc)): ResumableVMState {
+    return new ResumableVMStateImpl(this.captureState(args, pc), this.resume);
+  }
 
   beginCacheGroup(name?: string) {
     let opcodes = this.updating();
@@ -462,7 +496,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     return this.elementStack;
   }
 
-  scope(): Scope<C> {
+  scope(): Scope {
     return expect(this[STACKS].scope.current, 'expected scope on the scope stack');
   }
 
@@ -483,13 +517,13 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     return child;
   }
 
-  pushRootScope(size: number): PartialScope<C> {
-    let scope = PartialScopeImpl.sized<C>(size);
+  pushRootScope(size: number): PartialScope {
+    let scope = PartialScopeImpl.sized(size);
     this[STACKS].scope.push(scope);
     return scope;
   }
 
-  pushScope(scope: Scope<C>) {
+  pushScope(scope: Scope) {
     this[STACKS].scope.push(scope);
   }
 
@@ -578,9 +612,9 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   }
 }
 
-function vmState<C extends JitOrAotBlock>(
+function vmState(
   pc: number,
-  scope: Scope<C> = PartialScopeImpl.root<C>(UNDEFINED_REFERENCE, 0),
+  scope: Scope = PartialScopeImpl.root(UNDEFINED_REFERENCE, 0),
   dynamicScope: DynamicScope
 ) {
   return {
@@ -601,116 +635,13 @@ export interface InitOptions extends MinimalInitOptions {
   self: Reference;
 }
 
-export class AotVM extends VM<number> implements InternalVM<number> {
-  static empty(
-    runtime: AotRuntimeContext,
-    { handle, treeBuilder, dynamicScope }: MinimalInitOptions
-  ): InternalVM<number> {
-    let vm = initAOT(
-      runtime,
-      vmState(
-        runtime.program.heap.getaddr(handle),
-        PartialScopeImpl.root<number>(UNDEFINED_REFERENCE, 0),
-        dynamicScope
-      ),
-      treeBuilder
-    );
-    vm.pushUpdating();
-    return vm;
-  }
-
-  static initial(
-    runtime: AotRuntimeContext,
-    { handle, self, treeBuilder, dynamicScope }: InitOptions
-  ) {
-    let scopeSize = runtime.program.heap.scopesizeof(handle);
-    let scope = PartialScopeImpl.root(self, scopeSize);
-    let pc = check(runtime.program.heap.getaddr(handle), CheckNumber);
-    let state = vmState(pc, scope, dynamicScope);
-    let vm = initAOT(runtime, state, treeBuilder);
-    vm.pushUpdating();
-    return vm;
-  }
-
-  capture(args: number, pc = this[INNER_VM].fetchRegister($pc)): ResumableVMState<AotVM> {
-    return new ResumableVMStateImpl(this.captureState(args, pc), initAOT);
-  }
-}
-
-export type VmInitCallback<V extends InternalVM = InternalVM> = (
+export type VmInitCallback = (
   this: void,
-  runtime: V extends JitVM ? JitRuntimeContext : AotRuntimeContext,
+  runtime: RuntimeContext,
   state: VMState,
   builder: ElementBuilder
-) => V;
+) => InternalVM;
 
-export type JitVmInitCallback<V extends InternalVM> = (
-  this: void,
-  runtime: JitRuntimeContext,
-  state: VMState,
-  builder: ElementBuilder
-) => V;
-
-function initAOT(runtime: AotRuntimeContext, state: VMState, builder: ElementBuilder): AotVM {
-  return new AotVM(runtime, state, builder);
-}
-
-function initJIT(context: SyntaxCompilationContext): JitVmInitCallback<JitVM> {
-  return (runtime, state, builder) => new JitVM(runtime, state, builder, context);
-}
-
-export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
-  static initial(
-    runtime: JitRuntimeContext,
-    context: SyntaxCompilationContext,
-    { handle, self, dynamicScope, treeBuilder }: InitOptions
-  ) {
-    let scopeSize = runtime.program.heap.scopesizeof(handle);
-    let scope = PartialScopeImpl.root(self, scopeSize);
-    let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
-    let vm = initJIT(context)(runtime, state, treeBuilder);
-    vm.pushUpdating();
-    return vm;
-  }
-
-  static empty(
-    runtime: JitRuntimeContext,
-    { handle, treeBuilder, dynamicScope }: MinimalInitOptions,
-    context: SyntaxCompilationContext
-  ) {
-    let vm = initJIT(context)(
-      runtime,
-      vmState(
-        runtime.program.heap.getaddr(handle),
-        PartialScopeImpl.root<CompilableBlock>(UNDEFINED_REFERENCE, 0),
-        dynamicScope
-      ),
-      treeBuilder
-    );
-    vm.pushUpdating();
-    return vm;
-  }
-
-  readonly runtime!: JitRuntimeContext;
-
-  constructor(
-    runtime: JitRuntimeContext,
-    state: VMState,
-    elementStack: ElementBuilder,
-    readonly context: SyntaxCompilationContext
-  ) {
-    super(runtime, state, elementStack);
-  }
-
-  capture(args: number, pc = this[INNER_VM].fetchRegister($pc)): ResumableVMState<JitVM> {
-    return new ResumableVMStateImpl(this.captureState(args, pc), this.resume);
-  }
-
-  private resume: VmInitCallback<JitVM> = initJIT(this.context);
-
-  compile(block: CompilableTemplate): number {
-    let handle = unwrapHandle(block.compile(this.context));
-
-    return handle;
-  }
+function initVM(context: SyntaxCompilationContext): VmInitCallback {
+  return (runtime, state, builder) => new VM(runtime, state, builder, context);
 }

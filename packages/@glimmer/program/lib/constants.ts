@@ -5,7 +5,7 @@ const WELL_KNOWN_EMPTY_ARRAY: unknown = Object.freeze([]);
 const STARTER_CONSTANTS = constants(WELL_KNOWN_EMPTY_ARRAY);
 const WELL_KNOWN_EMPTY_ARRAY_POSITION: number = STARTER_CONSTANTS.indexOf(WELL_KNOWN_EMPTY_ARRAY);
 
-export class WriteOnlyConstants implements CompileTimeConstants {
+export class CompileTimeConstantImpl implements CompileTimeConstants {
   // `0` means NULL
 
   protected values: unknown[] = STARTER_CONSTANTS.slice();
@@ -78,7 +78,7 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
   }
 }
 
-export class JitConstants extends WriteOnlyConstants implements RuntimeConstants {
+export class ConstantsImpl extends CompileTimeConstantImpl implements RuntimeConstants {
   protected reifiedArrs: { [key: number]: unknown[] } = {
     [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],
   };

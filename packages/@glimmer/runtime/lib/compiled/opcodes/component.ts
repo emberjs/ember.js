@@ -17,24 +17,18 @@ import {
   DynamicScope,
   ElementOperations,
   InternalComponentManager,
-  JitOrAotBlock,
   Maybe,
   Op,
   ProgramSymbolTable,
   Recast,
-  RuntimeResolverDelegate,
   ScopeSlot,
   VMArguments,
-  WithAotDynamicLayout,
-  WithAotStaticLayout,
+  WithDynamicLayout,
+  WithStaticLayout,
   WithDynamicTagName,
   WithElementHook,
-  WithJitDynamicLayout,
-  WithJitStaticLayout,
   WithUpdateHook,
   WithCreateInstance,
-  JitRuntimeResolver,
-  RuntimeResolver,
   ModifierManager,
 } from '@glimmer/interfaces';
 import { Reference, valueForRef, isConstRef } from '@glimmer/reference';
@@ -64,6 +58,7 @@ import {
   resolveCurriedComponentDefinition,
 } from '../../component/curried-component';
 import { resolveComponent } from '../../component/resolve';
+import { hasStaticLayout } from '../../component/interfaces';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import createCurryComponentRef from '../../references/curry-component';
@@ -103,7 +98,7 @@ export interface ComponentInstance {
   state: ComponentInstanceState;
   handle: number;
   table: ProgramSymbolTable;
-  lookup: Option<Dict<ScopeSlot<JitOrAotBlock>>>;
+  lookup: Option<Dict<ScopeSlot>>;
 }
 
 export interface InitialComponentInstance {
@@ -114,7 +109,7 @@ export interface InitialComponentInstance {
   state: null;
   handle: Option<number>;
   table: Option<ProgramSymbolTable>;
-  lookup: Option<Dict<ScopeSlot<JitOrAotBlock>>>;
+  lookup: Option<Dict<ScopeSlot>>;
 }
 
 export interface PopulatedComponentInstance {
@@ -125,7 +120,7 @@ export interface PopulatedComponentInstance {
   state: null;
   handle: number;
   table: Option<ProgramSymbolTable>;
-  lookup: Option<Dict<ScopeSlot<JitOrAotBlock>>>;
+  lookup: Option<Dict<ScopeSlot>>;
 }
 
 export interface PartialComponentDefinition {
@@ -446,7 +441,7 @@ export class ComponentElementOperations implements ElementOperations {
     this.modifiers.push([manager, state]);
   }
 
-  flush(vm: InternalVM<JitOrAotBlock>): [ModifierManager<unknown>, unknown][] {
+  flush(vm: InternalVM): [ModifierManager<unknown>, unknown][] {
     let type: DeferredAttribute | undefined;
     let attributes = this.attributes;
 
@@ -496,7 +491,7 @@ function allStringClasses(classes: (string | Reference<unknown>)[]): classes is 
 }
 
 function setDeferredAttr(
-  vm: InternalVM<JitOrAotBlock>,
+  vm: InternalVM,
   name: string,
   value: string | Reference<unknown>,
   namespace: Option<string>,
@@ -548,114 +543,39 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
 });
 
 // Dynamic Invocation Only
-APPEND_OPCODES.add(
-  Op.GetJitComponentLayout,
-  (vm, { op1: _state }) => {
-    let instance = check(vm.fetchValue(_state), CheckComponentInstance);
-
-    let manager = instance.manager as WithJitStaticLayout | WithJitDynamicLayout;
-    let { definition } = instance;
-    let { stack } = vm;
-
-    let { capabilities } = instance;
-
-    // let invoke: { handle: number; symbolTable: ProgramSymbolTable };
-
-    let layout: CompilableTemplate;
-
-    if (hasStaticLayoutCapability(capabilities, manager)) {
-      layout = manager.getJitStaticLayout(definition.state, vm.runtime.resolver);
-    } else if (hasDynamicLayoutCapability(capabilities, manager)) {
-      let template = unwrapTemplate(
-        manager.getJitDynamicLayout(instance.state, vm.runtime.resolver)
-      );
-
-      if (hasCapability(capabilities, Capability.Wrapped)) {
-        layout = template.asWrappedLayout();
-      } else {
-        layout = template.asLayout();
-      }
-    } else {
-      throw unreachable();
-    }
-
-    let handle = layout.compile(vm.context);
-
-    stack.pushJs(layout.symbolTable);
-
-    if (DEBUG && isErrHandle(handle)) {
-      stack.pushJs(handle);
-    } else {
-      stack.pushSmallInt(handle as number);
-    }
-  },
-  'jit'
-);
-
-// Dynamic Invocation Only
-APPEND_OPCODES.add(Op.GetAotComponentLayout, (vm, { op1: _state }) => {
+APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let instance = check(vm.fetchValue(_state), CheckComponentInstance);
-  let { manager, definition } = instance;
+
+  let manager = instance.manager as WithStaticLayout | WithDynamicLayout;
+  let { definition } = instance;
   let { stack } = vm;
 
-  let { state: instanceState, capabilities } = instance;
-  let { state: definitionState } = definition;
+  let { capabilities } = instance;
 
-  let invoke: { handle: number; symbolTable: ProgramSymbolTable };
+  let layout: CompilableTemplate;
 
-  if (hasStaticLayoutCapability(capabilities, manager)) {
-    invoke = (manager as WithAotStaticLayout<
-      ComponentInstanceState,
-      ComponentDefinitionState,
-      RuntimeResolverDelegate
-    >).getAotStaticLayout(definitionState, vm.runtime.resolver);
-  } else if (hasDynamicLayoutCapability(capabilities, manager)) {
-    invoke = (manager as WithAotDynamicLayout<
-      ComponentInstanceState,
-      RuntimeResolver
-    >).getAotDynamicLayout(instanceState, vm.runtime.resolver);
+  if (hasStaticLayout(capabilities, manager)) {
+    layout = manager.getStaticLayout(definition.state, vm.runtime.resolver);
   } else {
-    throw unreachable();
+    let template = unwrapTemplate(manager.getDynamicLayout(instance.state, vm.runtime.resolver));
+
+    if (hasCapability(capabilities, Capability.Wrapped)) {
+      layout = template.asWrappedLayout();
+    } else {
+      layout = template.asLayout();
+    }
   }
 
-  stack.pushJs(invoke.symbolTable);
+  let handle = layout.compile(vm.context);
 
-  if (DEBUG && isErrHandle(invoke.handle)) {
-    stack.pushJs(invoke.handle);
+  stack.pushJs(layout.symbolTable);
+
+  if (DEBUG && isErrHandle(handle)) {
+    stack.pushJs(handle);
   } else {
-    stack.pushSmallInt(invoke.handle);
+    stack.pushSmallInt(handle as number);
   }
 });
-
-// These types are absurd here
-export function hasStaticLayoutCapability(
-  capabilities: Capability,
-  _manager: InternalComponentManager
-): _manager is
-  | WithJitStaticLayout<ComponentInstanceState, ComponentDefinitionState, JitRuntimeResolver>
-  | WithAotStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver> {
-  return managerHasCapability(_manager, capabilities, Capability.DynamicLayout) === false;
-}
-
-export function hasJitStaticLayoutCapability(
-  capabilities: Capability,
-  _manager: InternalComponentManager
-): _manager is WithJitStaticLayout<
-  ComponentInstanceState,
-  ComponentDefinitionState,
-  JitRuntimeResolver
-> {
-  return managerHasCapability(_manager, capabilities, Capability.DynamicLayout) === false;
-}
-
-export function hasDynamicLayoutCapability(
-  capabilities: Capability,
-  _manager: InternalComponentManager
-): _manager is
-  | WithJitDynamicLayout<ComponentInstanceState, JitRuntimeResolver>
-  | WithAotDynamicLayout<ComponentInstanceState, RuntimeResolver> {
-  return managerHasCapability(_manager, capabilities, Capability.DynamicLayout) === true;
-}
 
 APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
   let definition = check(vm.stack.popJs(), CheckComponentDefinition);
@@ -701,7 +621,7 @@ APPEND_OPCODES.add(Op.SetupForEval, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
 
   if (state.table.hasEval) {
-    let lookup = (state.lookup = dict<ScopeSlot<JitOrAotBlock>>());
+    let lookup = (state.lookup = dict<ScopeSlot>());
     vm.scope().bindEvalScope(lookup);
   }
 });
@@ -723,12 +643,12 @@ APPEND_OPCODES.add(Op.SetNamedVariables, (vm, { op1: _state }) => {
   }
 });
 
-function bindBlock<C extends JitOrAotBlock>(
+function bindBlock(
   symbolName: string,
   blockName: string,
   state: ComponentInstance,
-  blocks: BlockArgumentsImpl<C>,
-  vm: InternalVM<C>
+  blocks: BlockArgumentsImpl,
+  vm: InternalVM
 ) {
   let symbol = state.table.symbols.indexOf(symbolName);
   let block = blocks.get(blockName);

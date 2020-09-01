@@ -2,7 +2,6 @@ import { GlimmerTreeChanges, GlimmerTreeConstruction } from '@glimmer/interfaces
 import createHTMLDocument from '@simple-dom/document';
 import { SimpleDocument } from '@simple-dom/interface';
 import { JitRenderDelegate } from '../jit/delegate';
-import { AotRenderDelegate } from '../aot/delegate';
 import { RenderTest } from '../../render-test';
 import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
 import { toInnerHTML, assertElement } from '../../dom/simple-utils';
@@ -15,15 +14,6 @@ export interface NodeEnvironmentOptions {
 
 export class NodeJitRenderDelegate extends JitRenderDelegate {
   static style = 'node jit';
-
-  constructor(options: RenderDelegateOptions = {}) {
-    options.doc = options.doc || createHTMLDocument();
-    super(options);
-  }
-}
-
-export class NodeAotRenderDelegate extends AotRenderDelegate {
-  static style = 'node aot';
 
   constructor(options: RenderDelegateOptions = {}) {
     options.doc = options.doc || createHTMLDocument();
@@ -52,12 +42,5 @@ export class AbstractNodeTest extends RenderTest {
 
     let serialized = toInnerHTML(el);
     this.assert.equal(serialized, html);
-  }
-}
-
-export class NodeRenderDelegate extends AotRenderDelegate {
-  constructor(options: RenderDelegateOptions = {}) {
-    options.doc = options.doc ?? createHTMLDocument();
-    super(options);
   }
 }

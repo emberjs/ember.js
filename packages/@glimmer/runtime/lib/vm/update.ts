@@ -4,11 +4,8 @@ import {
   Environment,
   ExceptionHandler,
   GlimmerTreeChanges,
-  JitOrAotBlock,
   RuntimeContext,
   Scope,
-  AotRuntimeContext,
-  JitRuntimeContext,
   ElementBuilder,
   LiveBlock,
   UpdatableBlock,
@@ -25,7 +22,7 @@ import { resetTracking } from '@glimmer/validator';
 import { SimpleComment } from '@simple-dom/interface';
 import { move as moveBounds, clear } from '../bounds';
 import { UpdatingOpcode } from '../opcodes';
-import { InternalVM, VmInitCallback, JitVM } from './append';
+import { InternalVM, VmInitCallback } from './append';
 import { NewElementBuilder, LiveBlockList } from './element-builder';
 import { destroy, associateDestroyableChild, destroyChildren } from '../destroyables';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
@@ -88,22 +85,19 @@ export default class UpdatingVM {
 
 export interface VMState {
   readonly pc: number;
-  readonly scope: Scope<JitOrAotBlock>;
+  readonly scope: Scope;
   readonly dynamicScope: DynamicScope;
   readonly stack: unknown[];
 }
 
-export interface ResumableVMState<V extends InternalVM> {
-  resume(runtime: RuntimeContext, builder: ElementBuilder): V;
+export interface ResumableVMState {
+  resume(runtime: RuntimeContext, builder: ElementBuilder): InternalVM;
 }
 
-export class ResumableVMStateImpl<V extends InternalVM> implements ResumableVMState<V> {
-  constructor(readonly state: VMState, private resumeCallback: VmInitCallback<V>) {}
+export class ResumableVMStateImpl implements ResumableVMState {
+  constructor(readonly state: VMState, private resumeCallback: VmInitCallback) {}
 
-  resume(
-    runtime: V extends JitVM ? JitRuntimeContext : AotRuntimeContext,
-    builder: ElementBuilder
-  ): V {
+  resume(runtime: RuntimeContext, builder: ElementBuilder): InternalVM {
     return this.resumeCallback(runtime, this.state, builder);
   }
 }
@@ -115,7 +109,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
   protected readonly bounds: LiveBlock;
 
   constructor(
-    protected state: ResumableVMState<InternalVM>,
+    protected state: ResumableVMState,
     protected runtime: RuntimeContext,
     bounds: LiveBlock,
     children: UpdatingOpcode[]
@@ -178,7 +172,7 @@ export class ListItemOpcode extends TryOpcode {
   public index = -1;
 
   constructor(
-    state: ResumableVMState<InternalVM>,
+    state: ResumableVMState,
     runtime: RuntimeContext,
     bounds: UpdatableBlock,
     public key: unknown,
@@ -214,7 +208,7 @@ export class ListBlockOpcode extends BlockOpcode {
   protected readonly bounds!: LiveBlockList;
 
   constructor(
-    state: ResumableVMState<InternalVM>,
+    state: ResumableVMState,
     runtime: RuntimeContext,
     bounds: LiveBlockList,
     children: ListItemOpcode[],

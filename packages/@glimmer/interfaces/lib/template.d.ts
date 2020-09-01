@@ -1,9 +1,9 @@
 import { Operand, SerializedTemplateBlock, SerializedInlineBlock } from './compile';
-import { CompileMode, EncoderError } from './compile/encoder';
+import { EncoderError } from './compile/encoder';
 import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
-import { CompileTimeResolverDelegate } from './serialize';
+import { CompileTimeResolver } from './serialize';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
 export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
@@ -108,11 +108,6 @@ export interface ContainingMetadata {
 export interface CompilerArtifacts {
   heap: SerializedHeap;
   constants: ConstantPool;
-}
-
-export interface CompileTime {
-  readonly resolver: CompileTimeResolverDelegate;
-  readonly mode: CompileMode;
 }
 
 export interface Unhandled {

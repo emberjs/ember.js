@@ -3,12 +3,12 @@ import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { Option, initializeGuid, fillNulls, assert } from '@glimmer/util';
 import { recordStackSize, opcodeMetadata } from '@glimmer/debug';
 import { $pc, $sp, $ra, $fp } from '@glimmer/vm';
-import { RuntimeOp, Op, JitOrAotBlock, Maybe, Dict } from '@glimmer/interfaces';
+import { RuntimeOp, Op, Maybe, Dict } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
 import { debug, logOpcode } from '@glimmer/debug';
 import { DESTROYABLE_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
-import { InternalVM, InternalJitVM } from './vm/append';
+import { InternalVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';
 import { isScopeReference } from './scope';
 import { valueForRef } from '@glimmer/reference';
@@ -26,8 +26,7 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type Syscall = (vm: InternalVM<JitOrAotBlock>, opcode: RuntimeOp) => void;
-export type JitSyscall = (vm: InternalJitVM, opcode: RuntimeOp) => void;
+export type Syscall = (vm: InternalVM, opcode: RuntimeOp) => void;
 export type MachineOpcode = (vm: LowLevelVM, opcode: RuntimeOp) => void;
 
 export type Evaluate =
@@ -50,19 +49,14 @@ export class AppendOpcodes {
 
   add<Name extends Op>(name: Name, evaluate: Syscall): void;
   add<Name extends Op>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
-  add<Name extends Op>(name: Name, evaluate: JitSyscall, kind: 'jit'): void;
-  add<Name extends Op>(
-    name: Name,
-    evaluate: Syscall | JitSyscall | MachineOpcode,
-    kind = 'syscall'
-  ): void {
+  add<Name extends Op>(name: Name, evaluate: Syscall | MachineOpcode, kind = 'syscall'): void {
     this.evaluateOpcode[name as number] = {
       syscall: kind !== 'machine',
       evaluate,
     } as Evaluate;
   }
 
-  debugBefore(vm: VM<JitOrAotBlock>, opcode: RuntimeOp): DebugState {
+  debugBefore(vm: VM, opcode: RuntimeOp): DebugState {
     let params: Maybe<Dict> = undefined;
     let opName: string | undefined = undefined;
 
@@ -101,7 +95,7 @@ export class AppendOpcodes {
     };
   }
 
-  debugAfter(vm: VM<JitOrAotBlock>, pre: DebugState) {
+  debugAfter(vm: VM, pre: DebugState) {
     let { sp, type, isMachine, pc } = pre;
 
     if (LOCAL_DEBUG) {
@@ -155,7 +149,7 @@ export class AppendOpcodes {
     }
   }
 
-  evaluate(vm: VM<JitOrAotBlock>, opcode: RuntimeOp, type: number) {
+  evaluate(vm: VM, opcode: RuntimeOp, type: number) {
     let operation = this.evaluateOpcode[type];
 
     if (operation.syscall) {
