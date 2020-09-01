@@ -1,30 +1,17 @@
-import { other } from '../opcode-builder/operands';
 import {
   HighLevelCompileOp,
   HighLevelCompileOpcode,
-  CompileMode,
-  Op,
-  MachineOp,
   StatementCompileActions,
-  InvokeStaticOp,
   DynamicComponentOp,
   IfResolvedComponentOp,
-  SyntaxCompilationContext,
   TemplateCompilationContext,
-  Option,
-  CompilableTemplate,
-  BuilderOp,
-  CompileErrorOp,
 } from '@glimmer/interfaces';
-import { op } from '../opcode-builder/encoder';
-import { CompileArgs } from '../opcode-builder/helpers/shared';
-import { compilableBlock, PLACEHOLDER_HANDLE } from '../compilable-template';
+import { compilableBlock } from '../compilable-template';
 import { InvokeDynamicComponent } from '../opcode-builder/helpers/components';
 import { resolveLayoutForTag } from '../resolver';
 import { exhausted } from '@glimmer/util';
 import { concatStatements, isHandled } from './concat';
 import { compileInline, compileBlock } from '../compiler';
-import { PushPrimitive } from '../opcode-builder/helpers/vm';
 import { namedBlocks } from '../utils';
 
 export default function pushCompileOp(
@@ -43,12 +30,6 @@ function compileOp(
       return CompileBlockOp(context, action);
     case HighLevelCompileOpcode.CompileInline:
       return CompileInlineOp(context, action);
-    case HighLevelCompileOpcode.InvokeStatic:
-      return InvokeStatic(context.syntax, action);
-    case HighLevelCompileOpcode.Args:
-      return CompileArgs(action.op1);
-    case HighLevelCompileOpcode.PushCompilable:
-      return PushCompilable(action.op1, context.syntax);
     case HighLevelCompileOpcode.DynamicComponent:
       return DynamicComponent(context, action);
     case HighLevelCompileOpcode.IfResolvedComponent:
@@ -81,33 +62,6 @@ function CompileInlineOp(
   }
 }
 
-function InvokeStatic(
-  context: SyntaxCompilationContext,
-  action: InvokeStaticOp
-): StatementCompileActions {
-  let compilable = action.op1;
-
-  if (context.program.mode === CompileMode.aot) {
-    let handle = compilable.compile(context);
-
-    if (typeof handle !== 'number') {
-      return op('Error', { problem: 'Invalid block', start: 0, end: 0 });
-    }
-
-    // If the handle for the invoked component is not yet known (for example,
-    // because this is a recursive invocation and we're still compiling), push a
-    // function that will produce the correct handle when the heap is
-    // serialized.
-    if (handle === PLACEHOLDER_HANDLE) {
-      return op(MachineOp.InvokeStatic, () => compilable.compile(context));
-    } else {
-      return op(MachineOp.InvokeStatic, handle);
-    }
-  } else {
-    return [op(Op.Constant, other(action.op1)), op(Op.CompileBlock), op(MachineOp.InvokeVirtual)];
-  }
-}
-
 function DynamicComponent(
   context: TemplateCompilationContext,
   action: DynamicComponentOp
@@ -135,7 +89,7 @@ function IfResolvedComponent(
 ): StatementCompileActions {
   let { name, attrs, blocks, staticTemplate, dynamicTemplate, orElse } = action.op1;
   let component = resolveLayoutForTag(name, {
-    resolver: context.syntax.program.resolverDelegate,
+    resolver: context.syntax.program.resolver,
     meta: context.meta,
   });
 
@@ -163,28 +117,5 @@ function IfResolvedComponent(
     return orElse();
   } else {
     throw new Error(`Compile Error: Cannot find component ${name}`);
-  }
-}
-
-function PushCompilable(
-  block: Option<CompilableTemplate>,
-  context: SyntaxCompilationContext
-): BuilderOp | CompileErrorOp {
-  if (block === null) {
-    return PushPrimitive(null);
-  } else if (context.program.mode === CompileMode.aot) {
-    let compiled = block.compile(context);
-
-    if (typeof compiled !== 'number') {
-      return op('Error', {
-        problem: 'Compile Error (TODO: thread better)',
-        start: 0,
-        end: 0,
-      });
-    }
-
-    return PushPrimitive(compiled);
-  } else {
-    return op(Op.Constant, other(block));
   }
 }

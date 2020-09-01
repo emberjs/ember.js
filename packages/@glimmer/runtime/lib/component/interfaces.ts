@@ -3,36 +3,20 @@ import {
   ComponentDefinitionState,
   ComponentInstanceState,
   ComponentManager,
-  WithAotDynamicLayout,
-  WithAotStaticLayout,
-  WithJitDynamicLayout,
-  WithJitStaticLayout,
-  JitRuntimeResolver,
+  WithStaticLayout,
   RuntimeResolver,
 } from '@glimmer/interfaces';
+import { hasCapability, Capability } from '../capabilities';
 
 /** @internal */
 export function hasStaticLayout<
   D extends ComponentDefinitionState,
   I extends ComponentInstanceState
 >(
-  state: D,
-  manager: ComponentManager<I, D>
-): manager is
-  | WithAotStaticLayout<I, D, RuntimeResolver>
-  | WithJitStaticLayout<I, D, JitRuntimeResolver> {
-  return manager.getCapabilities(state).dynamicLayout === false;
-}
-
-/** @internal */
-export function hasDynamicLayout<
-  D extends ComponentDefinitionState,
-  I extends ComponentInstanceState
->(
-  state: D,
-  manager: ComponentManager<I, D>
-): manager is WithAotDynamicLayout<I, RuntimeResolver> | WithJitDynamicLayout<I, RuntimeResolver> {
-  return manager.getCapabilities(state).dynamicLayout === true;
+  capabilities: Capability,
+  _manager: ComponentManager<I, D>
+): _manager is WithStaticLayout<I, D, RuntimeResolver> {
+  return !hasCapability(capabilities, Capability.DynamicLayout);
 }
 
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {

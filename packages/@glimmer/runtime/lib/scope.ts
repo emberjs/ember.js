@@ -2,7 +2,6 @@ import {
   DynamicScope,
   Dict,
   PartialScope,
-  JitOrAotBlock,
   ScopeSlot,
   ScopeBlock,
   Option,
@@ -40,18 +39,18 @@ export function isScopeReference(s: ScopeSlot): s is Reference {
   return true;
 }
 
-export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C> {
-  static root<C extends JitOrAotBlock>(self: Reference<unknown>, size = 0): PartialScope<C> {
+export class PartialScopeImpl implements PartialScope {
+  static root(self: Reference<unknown>, size = 0): PartialScope {
     let refs: Reference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new PartialScopeImpl<C>(refs, null, null, null).init({ self });
+    return new PartialScopeImpl(refs, null, null, null).init({ self });
   }
 
-  static sized<C extends JitOrAotBlock>(size = 0): Scope<C> {
+  static sized(size = 0): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
@@ -63,10 +62,10 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
 
   constructor(
     // the 0th slot is `self`
-    readonly slots: Array<ScopeSlot<C>>,
-    private callerScope: Option<Scope<C>>,
+    readonly slots: Array<ScopeSlot>,
+    private callerScope: Option<Scope>,
     // named arguments and blocks passed to a layout that uses eval
-    private evalScope: Option<Dict<ScopeSlot<C>>>,
+    private evalScope: Option<Dict<ScopeSlot>>,
     // locals in scope when the partial was invoked
     private partialMap: Option<Dict<Reference<unknown>>>
   ) {}
@@ -84,12 +83,12 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     return this.get<Reference<unknown>>(symbol);
   }
 
-  getBlock(symbol: number): Option<ScopeBlock<C>> {
+  getBlock(symbol: number): Option<ScopeBlock> {
     let block = this.get(symbol);
-    return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock<C>);
+    return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock);
   }
 
-  getEvalScope(): Option<Dict<ScopeSlot<C>>> {
+  getEvalScope(): Option<Dict<ScopeSlot>> {
     return this.evalScope;
   }
 
@@ -97,7 +96,7 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     return this.partialMap;
   }
 
-  bind(symbol: number, value: ScopeSlot<C>) {
+  bind(symbol: number, value: ScopeSlot) {
     this.set(symbol, value);
   }
 
@@ -109,11 +108,11 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     this.set(symbol, value);
   }
 
-  bindBlock(symbol: number, value: Option<ScopeBlock<C>>) {
-    this.set<Option<ScopeBlock<C>>>(symbol, value);
+  bindBlock(symbol: number, value: Option<ScopeBlock>) {
+    this.set<Option<ScopeBlock>>(symbol, value);
   }
 
-  bindEvalScope(map: Option<Dict<ScopeSlot<C>>>) {
+  bindEvalScope(map: Option<Dict<ScopeSlot>>) {
     this.evalScope = map;
   }
 
@@ -121,15 +120,15 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     this.partialMap = map;
   }
 
-  bindCallerScope(scope: Option<Scope<C>>): void {
+  bindCallerScope(scope: Option<Scope>): void {
     this.callerScope = scope;
   }
 
-  getCallerScope(): Option<Scope<C>> {
+  getCallerScope(): Option<Scope> {
     return this.callerScope;
   }
 
-  child(): Scope<C> {
+  child(): Scope {
     return new PartialScopeImpl(
       this.slots.slice(),
       this.callerScope,
@@ -138,7 +137,7 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     );
   }
 
-  private get<T extends ScopeSlot<C>>(index: number): T {
+  private get<T extends ScopeSlot>(index: number): T {
     if (index >= this.slots.length) {
       throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
     }
@@ -146,7 +145,7 @@ export class PartialScopeImpl<C extends JitOrAotBlock> implements PartialScope<C
     return this.slots[index] as T;
   }
 
-  private set<T extends ScopeSlot<C>>(index: number, value: T): void {
+  private set<T extends ScopeSlot>(index: number, value: T): void {
     if (index >= this.slots.length) {
       throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
     }

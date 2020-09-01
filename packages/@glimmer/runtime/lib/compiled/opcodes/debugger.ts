@@ -1,4 +1,4 @@
-import { Op, JitOrAotBlock, Scope } from '@glimmer/interfaces';
+import { Op, Scope } from '@glimmer/interfaces';
 import { Reference, childRefFor, valueForRef } from '@glimmer/reference';
 import { dict, decodeHandle } from '@glimmer/util';
 import { APPEND_OPCODES } from '../../opcodes';
@@ -30,10 +30,10 @@ export function resetDebuggerCallback() {
   callback = debugCallback;
 }
 
-class ScopeInspector<C extends JitOrAotBlock> {
+class ScopeInspector {
   private locals = dict<Reference>();
 
-  constructor(private scope: Scope<C>, symbols: string[], evalInfo: number[]) {
+  constructor(private scope: Scope, symbols: string[], evalInfo: number[]) {
     for (let i = 0; i < evalInfo.length; i++) {
       let slot = evalInfo[i];
       let name = symbols[slot - 1];

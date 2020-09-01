@@ -36,7 +36,7 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
       opcode.offset = i;
       let [name, params] = debug(
         context.syntax.program.constants as Recast<CompileTimeConstants, DebugConstants>,
-        context.syntax.program.resolverDelegate,
+        context.syntax.program.resolver,
         opcode,
         opcode.isMachine
       )!;

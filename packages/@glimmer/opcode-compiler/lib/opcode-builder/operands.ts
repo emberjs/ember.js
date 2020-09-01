@@ -1,6 +1,4 @@
 import {
-  ArgsOperand,
-  ArgsOptions,
   ArrayOperand,
   CompileActions,
   ExpressionOperand,
@@ -45,10 +43,6 @@ export function other(value: unknown): OtherOperand {
 
 export function label(value: string): LabelOperand {
   return { type: 'label', value };
-}
-
-export function args(options: ArgsOptions): ArgsOperand {
-  return { type: 'args', value: options };
 }
 
 export function option(list: Option<CompileActions>): OptionOperand {

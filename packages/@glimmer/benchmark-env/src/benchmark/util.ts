@@ -5,7 +5,7 @@ import {
 } from '@glimmer/interfaces';
 import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { JitSyntaxCompilationContext } from '@glimmer/interfaces';
+import { SyntaxCompilationContext } from '@glimmer/interfaces';
 
 export function createProgram(
   template: SerializedTemplateWithLazyBlock<unknown>
@@ -13,7 +13,7 @@ export function createProgram(
   return unwrapTemplate(templateFactory(template).create()).asLayout();
 }
 
-export function compileEntry(entry: CompileTimeComponent, context: JitSyntaxCompilationContext) {
+export function compileEntry(entry: CompileTimeComponent, context: SyntaxCompilationContext) {
   return unwrapHandle(entry.compilable!.compile(context));
 }
 

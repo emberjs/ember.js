@@ -38,7 +38,7 @@ import { UpdatingVM } from '../../vm';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
-import { InternalJitVM } from '../../vm/append';
+import { InternalVM } from '../../vm/append';
 
 APPEND_OPCODES.add(Op.ChildScope, (vm) => vm.pushChildScope());
 
@@ -125,20 +125,16 @@ APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
   stack.pushJs(vm.scope());
 });
 
-APPEND_OPCODES.add(
-  Op.CompileBlock,
-  (vm: InternalJitVM) => {
-    let stack = vm.stack;
-    let block = stack.pop<Option<CompilableTemplate> | 0>();
+APPEND_OPCODES.add(Op.CompileBlock, (vm: InternalVM) => {
+  let stack = vm.stack;
+  let block = stack.pop<Option<CompilableTemplate> | 0>();
 
-    if (block) {
-      stack.pushSmallInt(vm.compile(block));
-    } else {
-      stack.pushNull();
-    }
-  },
-  'jit'
-);
+  if (block) {
+    stack.pushSmallInt(vm.compile(block));
+  } else {
+    stack.pushNull();
+  }
+});
 
 APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
   let { stack } = vm;

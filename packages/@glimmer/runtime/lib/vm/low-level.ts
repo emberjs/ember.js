@@ -1,11 +1,4 @@
-import {
-  Option,
-  RuntimeHeap,
-  MachineOp,
-  RuntimeProgram,
-  RuntimeOp,
-  JitOrAotBlock,
-} from '@glimmer/interfaces';
+import { Option, RuntimeHeap, MachineOp, RuntimeProgram, RuntimeOp } from '@glimmer/interfaces';
 import { APPEND_OPCODES } from '../opcodes';
 import VM from './append';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
@@ -143,7 +136,7 @@ export default class LowLevelVM {
     return opcode;
   }
 
-  evaluateOuter(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
+  evaluateOuter(opcode: RuntimeOp, vm: VM) {
     if (LOCAL_DEBUG) {
       let {
         externs: { debugBefore, debugAfter },
@@ -156,7 +149,7 @@ export default class LowLevelVM {
     }
   }
 
-  evaluateInner(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
+  evaluateInner(opcode: RuntimeOp, vm: VM) {
     if (opcode.isMachine) {
       this.evaluateMachine(opcode);
     } else {
@@ -183,7 +176,7 @@ export default class LowLevelVM {
     }
   }
 
-  evaluateSyscall(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
+  evaluateSyscall(opcode: RuntimeOp, vm: VM) {
     APPEND_OPCODES.evaluate(vm, opcode, opcode.type);
   }
 }

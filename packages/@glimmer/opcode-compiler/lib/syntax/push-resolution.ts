@@ -2,7 +2,7 @@ import {
   Encoder,
   HighLevelResolutionOp,
   HighLevelResolutionOpcode,
-  CompileTimeResolverDelegate,
+  CompileTimeResolver,
   ResolveHandle,
   Option,
   ExpressionCompileActions,
@@ -74,7 +74,7 @@ export default function pushResolutionOp(
         }
 
         case ExpressionContext.AppendSingleId: {
-          let resolver = context.syntax.program.resolverDelegate;
+          let resolver = context.syntax.program.resolver;
           let name = context.meta.upvars![freeVar];
 
           let resolvedHelper = resolver.lookupHelper(name, context.meta.referrer);
@@ -152,12 +152,7 @@ function ifResolved(
 ): ExpressionCompileActions {
   let { kind, name, andThen, orElse, span } = op1;
 
-  let resolved = resolve(
-    context.syntax.program.resolverDelegate,
-    kind,
-    name,
-    context.meta.referrer
-  );
+  let resolved = resolve(context.syntax.program.resolver, kind, name, context.meta.referrer);
 
   if (resolved !== null) {
     return andThen(resolved);
@@ -169,7 +164,7 @@ function ifResolved(
 }
 
 function resolve(
-  resolver: CompileTimeResolverDelegate,
+  resolver: CompileTimeResolver,
   kind: ResolveHandle,
   name: string,
   referrer: unknown

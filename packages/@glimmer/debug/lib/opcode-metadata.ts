@@ -165,24 +165,9 @@ METADATA[Op.SetVariable] = {
   check: true,
 };
 
-METADATA[Op.SetAotBlock] = {
-  name: 'SetAotBlock',
-  mnemonic: 'sbblock',
-  before: null,
-  stackChange: -3,
-  ops: [
-    {
-      name: 'symbol',
-      type: 'u32',
-    },
-  ],
-  operands: 1,
-  check: true,
-};
-
-METADATA[Op.SetJitBlock] = {
-  name: 'SetJitBlock',
-  mnemonic: 'sjblock',
+METADATA[Op.SetBlock] = {
+  name: 'SetBlock',
+  mnemonic: 'sblock',
   before: null,
   stackChange: -3,
   ops: [
@@ -240,8 +225,8 @@ METADATA[Op.GetBlock] = {
   check: true,
 };
 
-METADATA[Op.JitSpreadBlock] = {
-  name: 'JitSpreadBlock',
+METADATA[Op.SpreadBlock] = {
+  name: 'SpreadBlock',
   mnemonic: 'blockspread',
   before: null,
   stackChange: 2,
@@ -1133,24 +1118,9 @@ METADATA[Op.GetComponentTagName] = {
   check: true,
 };
 
-METADATA[Op.GetAotComponentLayout] = {
-  name: 'GetAotComponentLayout',
-  mnemonic: 'comp_alayoutload',
-  before: null,
-  stackChange: 2,
-  ops: [
-    {
-      name: 'state',
-      type: 'register',
-    },
-  ],
-  operands: 1,
-  check: true,
-};
-
-METADATA[Op.GetJitComponentLayout] = {
-  name: 'GetJitComponentLayout',
-  mnemonic: 'comp_jlayoutload',
+METADATA[Op.GetComponentLayout] = {
+  name: 'GetComponentLayout',
+  mnemonic: 'comp_layoutload',
   before: null,
   stackChange: 2,
   ops: [

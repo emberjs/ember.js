@@ -8,8 +8,10 @@ import {
   ModifierManager,
   CompilableProgram,
   Dict,
+  PartialDefinition,
 } from '@glimmer/interfaces';
-import { JitContext } from '@glimmer/opcode-compiler';
+import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
+import { artifacts } from '@glimmer/program';
 import { SimpleComponentManager } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 
@@ -128,10 +130,13 @@ export default function createRegistry(): Registry {
       );
     },
     render: (entry, args, element, isIteractive) => {
-      const context = JitContext({
-        lookupHelper: (name) => helpers.get(name)?.handle,
-        lookupModifier: (name) => modifiers.get(name)?.handle,
-        lookupComponent: (name) => components.get(name),
+      const sharedArtifacts = artifacts();
+      const context = syntaxCompilationContext(sharedArtifacts, {
+        lookupHelper: (name) => helpers.get(name)?.handle ?? null,
+        lookupModifier: (name) => modifiers.get(name)?.handle ?? null,
+        lookupComponent: (name) => components.get(name) ?? null,
+        lookupPartial: () => null,
+        resolve: () => null,
       });
       const component = components.get(entry);
       if (!component) {
@@ -139,9 +144,19 @@ export default function createRegistry(): Registry {
       }
 
       return renderBenchmark(
+        sharedArtifacts,
         context,
         {
-          resolve: (handle) => values[handle].definition,
+          resolve<U extends ComponentDefinition | Helper | ModifierDefinition | PartialDefinition>(
+            handle: number
+          ): U {
+            return values[handle].definition as U;
+          },
+          lookupComponent: () => null,
+          lookupPartial: () => null,
+          compilable() {
+            throw new Error('not implemented');
+          },
         },
         component.definition,
         component.compilable,

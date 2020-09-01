@@ -6,16 +6,13 @@ import {
   Bounds,
   CapturedNamedArguments,
   ComponentManager,
-  WithJitStaticLayout,
-  JitRuntimeResolver,
-  AotRuntimeResolver,
-  WithAotStaticLayout,
+  WithStaticLayout,
+  RuntimeResolver,
   ComponentCapabilities,
   Environment,
   VMArguments,
   DynamicScope,
   CompilableProgram,
-  Invocation,
   Destroyable,
 } from '@glimmer/interfaces';
 import { keys, assign, unwrapTemplate } from '@glimmer/util';
@@ -89,16 +86,7 @@ export interface EmberishGlimmerComponentState {
 export class EmberishGlimmerComponentManager
   implements
     ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
-    WithJitStaticLayout<
-      EmberishGlimmerComponentState,
-      TestComponentDefinitionState,
-      JitRuntimeResolver
-    >,
-    WithAotStaticLayout<
-      EmberishGlimmerComponentState,
-      TestComponentDefinitionState,
-      AotRuntimeResolver
-    > {
+    WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, RuntimeResolver> {
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
@@ -138,20 +126,11 @@ export class EmberishGlimmerComponentManager
     return { args, component, selfRef };
   }
 
-  getJitStaticLayout(
+  getStaticLayout(
     state: TestComponentDefinitionState,
-    resolver: JitRuntimeResolver
+    resolver: RuntimeResolver
   ): CompilableProgram {
     return unwrapTemplate(resolver.compilable(state.locator)).asLayout();
-  }
-
-  getAotStaticLayout(
-    state: TestComponentDefinitionState,
-    resolver: AotRuntimeResolver
-  ): Invocation {
-    let { locator } = state;
-
-    return resolver.getInvocation(locator);
   }
 
   getSelf({ selfRef }: EmberishGlimmerComponentState): Reference<unknown> {

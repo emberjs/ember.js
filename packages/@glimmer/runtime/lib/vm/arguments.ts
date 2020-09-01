@@ -10,12 +10,12 @@ import {
   CapturedPositionalArguments,
   NamedArguments,
   CapturedNamedArguments,
-  JitOrAotBlock,
   BlockValue,
   ScopeBlock,
   CapturedBlockArguments,
   Scope,
   BlockArguments,
+  CompilableBlock,
 } from '@glimmer/interfaces';
 import {
   Reference,
@@ -354,9 +354,9 @@ function toSymbolName(name: string): string {
   return `&${name}`;
 }
 
-export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArguments<C> {
+export class BlockArgumentsImpl implements BlockArguments {
   private stack!: EvaluationStack;
-  private internalValues: Option<number[]> = null;
+  private internalValues: Option<BlockValue[]> = null;
   private _symbolNames: Option<string[]> = null;
 
   public internalTag: Option<Tag> = null;
@@ -397,7 +397,7 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
 
     if (!values) {
       let { base, length, stack } = this;
-      values = this.internalValues = stack.slice<number>(base, base + length * 3);
+      values = this.internalValues = stack.slice<BlockValue>(base, base + length * 3);
     }
 
     return values;
@@ -407,7 +407,7 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
     return this.names!.indexOf(name) !== -1;
   }
 
-  get(name: string): Option<ScopeBlock<C>> {
+  get(name: string): Option<ScopeBlock> {
     let idx = this.names!.indexOf(name);
 
     if (idx === -1) {
@@ -423,7 +423,7 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
       CheckOption(CheckOr(CheckHandle, CheckCompilableBlock))
     );
 
-    return handle === null ? null : ([handle, scope!, table!] as ScopeBlock<C>);
+    return handle === null ? null : ([handle, scope!, table!] as ScopeBlock);
   }
 
   capture(): CapturedBlockArguments {
@@ -458,8 +458,8 @@ class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
     if (idx === -1) return null;
 
     return [
-      this.values[idx * 3 + 2] as number,
-      this.values[idx * 3 + 1] as Scope<JitOrAotBlock>,
+      this.values[idx * 3 + 2] as CompilableBlock,
+      this.values[idx * 3 + 1] as Scope,
       this.values[idx * 3] as BlockSymbolTable,
     ];
   }

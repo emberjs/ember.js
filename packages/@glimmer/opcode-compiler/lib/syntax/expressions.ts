@@ -149,7 +149,7 @@ EXPRESSIONS.add(SexpOpcodes.HasBlock, ([, block]) => {
 
 EXPRESSIONS.add(SexpOpcodes.HasBlockParams, ([, block]) => [
   op('Expr', block),
-  op(Op.JitSpreadBlock),
-  op('JitCompileBlock'),
+  op(Op.SpreadBlock),
+  op(Op.CompileBlock),
   op(Op.HasBlockParams),
 ]);

@@ -1,20 +1,18 @@
 import {
-  WholeProgramCompilationContext,
-  CompilerArtifacts,
-  SyntaxCompilationContext,
+  CompileTimeCompilationContext,
+  CompileTimeArtifacts,
+  RuntimeArtifacts,
 } from '@glimmer/interfaces';
+import { ConstantsImpl } from './constants';
+import { HeapImpl } from './program';
 
-export function patchStdlibs(program: WholeProgramCompilationContext) {
+export function patchStdlibs(program: CompileTimeCompilationContext) {
   program.heap.patchStdlibs(program.stdlib);
 }
 
-export function programArtifacts(program: WholeProgramCompilationContext): CompilerArtifacts {
-  let heap = program.heap.capture(program.stdlib);
-  let constants = program.constants.toPool();
-
-  return { heap, constants };
-}
-
-export function artifacts(syntax: SyntaxCompilationContext): CompilerArtifacts {
-  return programArtifacts(syntax.program);
+export function artifacts(): CompileTimeArtifacts & RuntimeArtifacts {
+  return {
+    constants: new ConstantsImpl(),
+    heap: new HeapImpl(),
+  };
 }
