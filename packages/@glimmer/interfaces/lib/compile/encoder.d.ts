@@ -167,6 +167,7 @@ export interface DynamicComponentOp {
     args: WireFormat.Core.Hash;
     blocks: WireFormat.Core.Blocks | NamedBlocks;
     atNames: boolean;
+    curried: boolean;
   };
 }
 

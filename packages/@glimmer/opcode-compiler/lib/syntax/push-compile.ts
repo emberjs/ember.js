@@ -66,7 +66,7 @@ function DynamicComponent(
   context: TemplateCompilationContext,
   action: DynamicComponentOp
 ): StatementCompileActions {
-  let { definition, attrs, params, args, blocks, atNames } = action.op1;
+  let { definition, attrs, params, args, blocks, atNames, curried } = action.op1;
 
   let attrsBlock = attrs && attrs.length > 0 ? compilableBlock(attrs, context.meta) : null;
 
@@ -80,6 +80,7 @@ function DynamicComponent(
     hash: args,
     atNames,
     blocks: compiled,
+    curried,
   });
 }
 
