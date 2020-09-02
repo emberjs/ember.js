@@ -33,4 +33,12 @@ QUnit.module('Components can be rendered without a DOM dependency', function(hoo
 
     assert.ok(html.match(/rel="canonical"/));
   });
+
+  QUnit.test('attributes requiring protocol sanitization do not error', function(assert) {
+    this.set('someHref', 'https://foo.com/');
+
+    let html = this.render('<a href={{this.someHref}}>Some Link</a>');
+
+    assert.ok(html.match(/<a href="https:\/\/foo.com\/">Some Link<\/a>/));
+  });
 });
