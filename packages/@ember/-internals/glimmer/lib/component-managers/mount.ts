@@ -8,7 +8,7 @@ import {
   Destroyable,
   Option,
   VMArguments,
-  WithJitDynamicLayout,
+  WithDynamicLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
@@ -45,8 +45,8 @@ const CAPABILITIES = {
 };
 
 class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
-  implements WithJitDynamicLayout<EngineState, RuntimeResolver> {
-  getJitDynamicLayout(state: EngineState, _: RuntimeResolver) {
+  implements WithDynamicLayout<EngineState, RuntimeResolver> {
+  getDynamicLayout(state: EngineState, _: RuntimeResolver) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     let template = templateFactory(state.engine);
 

@@ -9,12 +9,13 @@ import {
   DynamicScope as GlimmerDynamicScope,
   ElementBuilder,
   Environment,
-  JitRuntimeContext,
   Option,
   RenderResult,
+  RuntimeContext,
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
-import { JitContext } from '@glimmer/opcode-compiler';
+import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
+import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -24,15 +25,14 @@ import {
   DOMChanges,
   DOMTreeConstruction,
   inTransaction,
-  JitRuntime,
-  JitSyntaxCompilationContext,
-  renderJitMain,
+  renderMain,
+  runtimeContext,
 } from '@glimmer/runtime';
 import { unwrapHandle, unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
-import CompileTimeResolver from './compile-time-lookup';
+import CompileTimeResolverImpl from './compile-time-lookup';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
@@ -85,7 +85,7 @@ class RootState {
 
   constructor(
     public root: Component | OutletView,
-    public runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
+    public runtime: RuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
     context: SyntaxCompilationContext,
     template: OwnedTemplate,
     self: Reference<unknown>,
@@ -106,7 +106,7 @@ class RootState {
       let layout = unwrapTemplate(template).asLayout();
       let handle = layout.compile(context);
 
-      let iterator = renderJitMain(
+      let iterator = renderMain(
         runtime,
         context,
         self,
@@ -250,8 +250,8 @@ export abstract class Renderer {
   private _builder: IBuilder;
   private _inRenderTransaction = false;
 
-  private _context: JitSyntaxCompilationContext;
-  private _runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>;
+  private _context: SyntaxCompilationContext;
+  private _runtime: RuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>;
 
   private _lastRevision = -1;
   private _destroyed = false;
@@ -276,14 +276,16 @@ export abstract class Renderer {
 
     // resolver is exposed for tests
     let runtimeResolver = (this._runtimeResolver = new RuntimeResolver(owner, env.isInteractive));
-    let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
+    let compileTimeResolver = new CompileTimeResolverImpl(runtimeResolver);
 
-    let context = (this._context = JitContext(compileTimeResolver));
+    let sharedArtifacts = artifacts();
+
+    let context = (this._context = syntaxCompilationContext(sharedArtifacts, compileTimeResolver));
 
     populateMacros(context.macros);
 
     let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
-    this._runtime = JitRuntime(
+    this._runtime = runtimeContext(
       {
         appendOperations: env.hasDOM
           ? new DOMTreeConstruction(document)
@@ -291,7 +293,7 @@ export abstract class Renderer {
         updateOperations: new DOMChanges(document),
       },
       runtimeEnvironmentDelegate,
-      context,
+      sharedArtifacts,
       runtimeResolver
     );
   }

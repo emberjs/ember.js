@@ -5,7 +5,7 @@ import {
   ComponentDefinition,
   Option,
   VMArguments,
-  WithJitStaticLayout,
+  WithStaticLayout,
 } from '@glimmer/interfaces';
 import { NULL_REFERENCE } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
@@ -37,12 +37,12 @@ export interface DebugStateBucket {
 export default class TemplateOnlyComponentManager
   extends AbstractManager<Option<DebugStateBucket>, TemplateOnlyComponentDefinitionState>
   implements
-    WithJitStaticLayout<
+    WithStaticLayout<
       Option<DebugStateBucket>,
       TemplateOnlyComponentDefinitionState,
       RuntimeResolver
     > {
-  getJitStaticLayout({ template }: TemplateOnlyComponentDefinitionState) {
+  getStaticLayout({ template }: TemplateOnlyComponentDefinitionState) {
     return unwrapTemplate(template).asLayout();
   }
 

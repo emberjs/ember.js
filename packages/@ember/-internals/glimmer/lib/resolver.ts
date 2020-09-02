@@ -15,9 +15,9 @@ import { DEBUG } from '@glimmer/env';
 import {
   ComponentDefinition,
   Helper,
-  JitRuntimeResolver,
   Option,
   PartialDefinition,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition, registerDestructor } from '@glimmer/runtime';
@@ -270,7 +270,7 @@ interface IBuiltInModifiers {
   [name: string]: ModifierDefinition | undefined;
 }
 
-export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplateMeta> {
+export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplateMeta> {
   public isInteractive: boolean;
 
   private handles: any[] = [
