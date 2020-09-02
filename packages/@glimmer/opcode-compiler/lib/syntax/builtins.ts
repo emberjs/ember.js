@@ -236,6 +236,7 @@ export function populateBuiltins(
       args: hash,
       atNames: false,
       blocks,
+      curried: false,
     });
   });
 
@@ -259,6 +260,7 @@ export function populateBuiltins(
       hash,
       atNames: false,
       blocks: EMPTY_BLOCKS,
+      curried: false,
     });
   });
 

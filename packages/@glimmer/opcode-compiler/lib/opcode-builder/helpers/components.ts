@@ -52,6 +52,7 @@ interface AnyComponent {
 export interface DynamicComponent extends AnyComponent {
   definition: WireFormat.Expression;
   atNames: boolean;
+  curried: boolean;
 }
 
 // (component)
@@ -250,7 +251,7 @@ export function InvokeStaticComponent({
 
 export function InvokeDynamicComponent(
   meta: ContainingMetadata,
-  { definition, attrs, params, hash, atNames, blocks }: DynamicComponent
+  { definition, attrs, params, hash, atNames, blocks, curried }: DynamicComponent
 ): StatementCompileActions {
   return Replayable({
     args: () => {
@@ -263,7 +264,9 @@ export function InvokeDynamicComponent(
     body: () => {
       return [
         op(Op.JumpUnless, label('ELSE')),
-        op(Op.ResolveDynamicComponent, templateMeta(meta.referrer)),
+        curried
+          ? op(Op.ResolveCurriedComponent)
+          : op(Op.ResolveDynamicComponent, templateMeta(meta.referrer)),
         op(Op.PushDynamicComponentInstance),
         InvokeComponent({
           capabilities: true,
