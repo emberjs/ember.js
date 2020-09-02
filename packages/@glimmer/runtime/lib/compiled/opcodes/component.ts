@@ -5,6 +5,8 @@ import {
   CheckInstanceof,
   CheckInterface,
   CheckProgramSymbolTable,
+  CheckString,
+  CheckOr,
 } from '@glimmer/debug';
 import {
   Bounds,
@@ -74,6 +76,7 @@ import {
   CheckFinishedComponentInstance,
   CheckInvocation,
   CheckReference,
+  CheckCurriedComponentDefinition,
 } from './-debug-strip';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { DEBUG } from '@glimmer/env';
@@ -163,7 +166,10 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
 
 APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
-  let component = valueForRef(check(stack.popJs(), CheckReference)) as Maybe<Dict>;
+  let component = check(
+    valueForRef(check(stack.popJs(), CheckReference)),
+    CheckOr(CheckString, CheckCurriedComponentDefinition)
+  );
   let meta = vm[CONSTANTS].getValue(_meta);
 
   vm.loadValue($t1, null); // Clear the temp register
@@ -174,12 +180,27 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
     let resolvedDefinition = resolveComponent(vm.runtime.resolver, component, meta);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
-  } else if (isCurriedComponentDefinition(component)) {
-    definition = component;
   } else {
-    throw unreachable();
+    definition = component;
   }
 
+  stack.pushJs(definition);
+});
+
+APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
+  let stack = vm.stack;
+  let ref = check(stack.popJs(), CheckReference);
+  let value = valueForRef(ref);
+
+  if (DEBUG && !isCurriedComponentDefinition(value)) {
+    throw new Error(
+      `Expected a curried component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must use the {{component}} helper to create a component definition when invoking dynamically.`
+    );
+  }
+
+  let definition = value as CurriedComponentDefinition;
+
+  vm.loadValue($t1, null); // Clear the temp register
   stack.pushJs(definition);
 });
 

@@ -142,6 +142,7 @@ STATEMENTS.add(SexpOpcodes.Component, ([, tag, attrs, args, blocks]) => {
       args,
       blocks,
       atNames: true,
+      curried: true,
     });
   }
 });
