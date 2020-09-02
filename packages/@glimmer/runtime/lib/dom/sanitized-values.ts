@@ -29,18 +29,31 @@ export function requiresSanitization(tagName: string, attribute: string): boolea
   return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
 }
 
+interface NodeUrlParseResult {
+  protocol: string | null;
+}
+
+interface NodeUrlModule {
+  parse(url: string): NodeUrlParseResult;
+}
+
 let protocolForUrl: (url: string) => string;
 
-// TODO: We should replace these methods with something more modern https://github.com/glimmerjs/glimmer-vm/issues/1140
-if (typeof document !== 'undefined') {
-  let parsingNode = document.createElement('a');
-
-  protocolForUrl = (url: string) => {
-    parsingNode.href = url;
-    return parsingNode.protocol;
-  };
-} else {
-  let nodeURL = module.require('url');
+if (
+  typeof URL === 'object' &&
+  URL !== null &&
+  // this is super annoying, TS thinks that URL **must** be a function so `URL.parse` check
+  // thinks it is `never` without this `as unknown as any`
+  typeof ((URL as unknown) as any).parse === 'function'
+) {
+  // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`
+  // ultimately, this should be changed (so that we can either rely on the natural `URL` global
+  // that exists) but for now we have to detect the specifc `FastBoot` case first
+  //
+  // a future version of `fastboot` will detect if this legacy URL setup is required (by
+  // inspecting Ember version) and if new enough, it will avoid shadowing the `URL` global
+  // constructor with `require('url')`.
+  let nodeURL = URL as NodeUrlModule;
 
   protocolForUrl = (url: string) => {
     let protocol = null;
@@ -50,6 +63,28 @@ if (typeof document !== 'undefined') {
     }
 
     return protocol === null ? ':' : protocol;
+  };
+} else if (typeof URL === 'function') {
+  protocolForUrl = (_url: string) => {
+    try {
+      let url = new URL(_url);
+
+      return url.protocol;
+    } catch (error) {
+      // any non-fully qualified url string will trigger an error (because there is no
+      // baseURI that we can provide; in that case we **know** that the protocol is
+      // "safe" because it isn't specifically one of the `badProtocols` listed above
+      // (and those protocols can never be the default baseURI)
+      return ':';
+    }
+  };
+} else {
+  // fallback for IE11 support
+  let parsingNode = document.createElement('a');
+
+  protocolForUrl = (url: string) => {
+    parsingNode.href = url;
+    return parsingNode.protocol;
   };
 }
 
