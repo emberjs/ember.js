@@ -10,7 +10,8 @@ import {
 } from '@simple-dom/interface';
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
-import { DOMOperations, BLACKLIST_TABLE } from './operations';
+import { cast } from '../simple-cast';
+import { BLACKLIST_TABLE, DOMOperations } from './operations';
 
 [
   'b',
@@ -61,8 +62,7 @@ import { DOMOperations, BLACKLIST_TABLE } from './operations';
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
-let doc: Option<SimpleDocument> =
-  typeof document === 'undefined' ? null : (document as SimpleDocument);
+let doc: Option<SimpleDocument> = typeof document === 'undefined' ? null : cast(document).simple;
 
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);

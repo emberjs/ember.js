@@ -1,5 +1,5 @@
 import { RehydrateBuilder } from '@glimmer/runtime';
-import { SimpleNode } from '@simple-dom/interface';
+import { NodeType, SimpleNode } from '@simple-dom/interface';
 import { Environment, Cursor, ElementBuilder } from '@glimmer/interfaces';
 
 export class DebugRehydrationBuilder extends RehydrateBuilder {
@@ -7,12 +7,11 @@ export class DebugRehydrationBuilder extends RehydrateBuilder {
 
   remove(node: SimpleNode) {
     let next = super.remove(node);
-    let el = node as Element;
 
-    if (node.nodeType !== 8) {
-      if (el.nodeType === 1) {
+    if (node.nodeType !== NodeType.COMMENT_NODE) {
+      if (node.nodeType === NodeType.ELEMENT_NODE) {
         // don't stat serialized cursor positions
-        if (el.tagName !== 'SCRIPT' || !el.getAttribute('glmr')) {
+        if (node.tagName !== 'SCRIPT' || !node.getAttribute('glmr')) {
           this.clearedNodes.push(node);
         }
       } else {

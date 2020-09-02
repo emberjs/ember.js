@@ -10,7 +10,7 @@ import { ExpressionContext } from '@glimmer/interfaces';
 import { locationToOffset } from './location';
 
 export interface CompileOptions {
-  meta?: unknown;
+  meta?: object;
   customizeComponentName?(tag: string): string;
 }
 
@@ -334,7 +334,7 @@ export default class TemplateCompiler implements Processor<InputOps> {
       let name = assertValidHasBlockUsage(path.original, action);
       this.hasBlock(name, action);
     } else if (isHasBlockParams(path)) {
-      let name = assertValidHasBlockUsage(path.original, action);
+      let name = assertValidHasBlockUsage((path as any).original, action);
       this.hasBlockParams(name, action);
     }
   }

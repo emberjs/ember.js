@@ -4,6 +4,7 @@ import { test } from '../test-decorator';
 import { strip, unwrap } from '@glimmer/util';
 import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
 import { assertNodeTagName } from '../dom/assertions';
+import { cast } from '@glimmer/runtime';
 
 export class InitialRenderSuite extends RenderTest {
   static suiteName = 'initial render';
@@ -414,7 +415,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    let selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
+    let selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableRerender();
 
@@ -427,7 +428,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
+    selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
 
     this.assert.equal(selectNode.selectedIndex, 0);
 
@@ -443,7 +444,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
+    selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
 
     this.assert.equal(selectNode.selectedIndex, 0);
 
@@ -458,7 +459,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
+    selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableNodes();
   }
@@ -510,8 +511,8 @@ export class InitialRenderSuite extends RenderTest {
       </select>`);
 
     this.assert.equal(selected.length, 2, 'two options are selected');
-    this.assert.equal((selected[0] as HTMLOptionElement).value, '1', 'first selected item is "1"');
-    this.assert.equal((selected[1] as HTMLOptionElement).value, '2', 'second selected item is "2"');
+    this.assert.equal(cast(selected[0], 'option').node.value, '1', 'first selected item is "1"');
+    this.assert.equal(cast(selected[1], 'option').node.value, '2', 'second selected item is "2"');
   }
 
   @test
@@ -690,19 +691,19 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<svg></svg><svg></svg><div></div>');
 
     this.assert.equal(
-      (this.element.childNodes[0] as Node).namespaceURI,
+      cast(unwrap(this.element.childNodes[0]), 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the first svg element with a namespace'
     );
 
     this.assert.equal(
-      (this.element.childNodes[1] as Node).namespaceURI,
+      cast(this.element.childNodes[1], 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the second svg element with a namespace'
     );
 
     this.assert.equal(
-      (this.element.childNodes[2] as Node).namespaceURI,
+      cast(this.element.childNodes[2], 'HTML').namespaceURI,
       XHTML_NAMESPACE,
       'creates the div element without a namespace'
     );
