@@ -1,10 +1,10 @@
 {
   "name": "@glimmer/vm",
-  "version": "0.61.1",
+  "version": "0.61.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/vm",
   "dependencies": {
-    "@glimmer/util": "^0.61.1",
-    "@glimmer/interfaces": "^0.61.1"
+    "@glimmer/util": "^0.61.2",
+    "@glimmer/interfaces": "^0.61.2"
   },
   "typings": "index.ts"
 }
