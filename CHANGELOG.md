@@ -1,3 +1,22 @@
+## v0.61.0 (2020-09-02)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/bundle-compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#1148](https://github.com/glimmerjs/glimmer-vm/pull/1148) [REFACTOR] Removes AoT mode ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* Other
+  * [#1151](https://github.com/glimmerjs/glimmer-vm/pull/1151) Ensure version numbers are bumped for benchmark and local-linker. ([@rwjblue](https://github.com/rwjblue))
+  * [#1147](https://github.com/glimmerjs/glimmer-vm/pull/1147) GH Actions Workflow cleanup ([@krisselden](https://github.com/krisselden))
+* `@glimmer/benchmark-env`, `@glimmer/bundle-compiler`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/integration-tests`, `@glimmer/low-level`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/wire-format`
+  * [#1146](https://github.com/glimmerjs/glimmer-vm/pull/1146) Update Prettier to 2.1 ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.60.0 (2020-08-27)
 
 #### :boom: Breaking Change
