@@ -128,10 +128,14 @@
         ],
         "additionalManifests": {
           "dependencyUpdates": [
+            "benchmark/package.json",
+            "lib/local-linker/package.json",
             "packages/*/*/package.json"
           ],
           "versionUpdates": [
             "package.json",
+            "benchmark/package.json",
+            "lib/local-linker/package.json",
             "packages/*/*/package.json"
           ]
         }
