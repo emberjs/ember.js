@@ -31,6 +31,10 @@ import { Tag, COMPUTE } from '@glimmer/validator';
 import { PartialScopeImpl } from '../../scope';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { ComponentInstance, ComponentElementOperations } from './component';
+import {
+  CurriedComponentDefinition,
+  isCurriedComponentDefinition,
+} from '../../component/curried-component';
 
 export const CheckTag: Checker<Tag> = CheckInterface({
   [COMPUTE]: CheckFunction,
@@ -105,6 +109,20 @@ export const CheckComponentDefinition: Checker<ComponentDefinition> = CheckInter
   state: CheckUnknown,
   manager: CheckComponentManager,
 });
+
+class CurriedComponentDefinitionChecker implements Checker<CurriedComponentDefinition> {
+  type!: CurriedComponentDefinition;
+
+  validate(value: unknown): value is CurriedComponentDefinition {
+    return isCurriedComponentDefinition(value);
+  }
+
+  expected(): string {
+    return `CurriedComponentDefinition`;
+  }
+}
+
+export const CheckCurriedComponentDefinition = new CurriedComponentDefinitionChecker();
 
 export const CheckInvocation: Checker<Invocation> = CheckInterface({
   handle: CheckNumber,

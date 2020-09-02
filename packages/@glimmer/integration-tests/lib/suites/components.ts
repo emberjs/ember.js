@@ -559,6 +559,21 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'glimmer',
   })
+  'invoking dynamic component (path) via angle brackets does not work for string'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+    }
+    this.registerComponent('Glimmer', 'TestHarness', '<this.Foo />', TestHarness);
+    this.registerComponent('Glimmer', 'Foo', 'hello world!');
+
+    this.assert.throws(() => {
+      this.render('<TestHarness @Foo="Foo" />');
+    }, /Expected a curried component definition, but received Foo. You may have accidentally done <this.Foo>, where \"this.Foo\"/);
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
   'invoking dynamic component (path) via angle brackets with named block'() {
     class TestHarness extends EmberishGlimmerComponent {
       public Foo: any;
