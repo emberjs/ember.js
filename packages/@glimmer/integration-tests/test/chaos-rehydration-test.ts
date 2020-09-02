@@ -1,20 +1,21 @@
 import { Dict, Option } from '@glimmer/interfaces';
+import { cast } from '@glimmer/runtime';
+import { expect } from '@glimmer/util';
+import { NodeType, SimpleElement } from '@simple-dom/interface';
 import {
-  OPEN,
+  blockStack,
   CLOSE,
-  equalTokens,
-  suite,
-  RehydrationDelegate,
-  test,
+  ComponentBlueprint,
   Content,
   content,
-  blockStack,
-  ComponentBlueprint,
-  replaceHTML,
+  equalTokens,
+  OPEN,
+  RehydrationDelegate,
   RenderTest,
+  replaceHTML,
+  suite,
+  test,
 } from '..';
-import { expect } from '@glimmer/util';
-import { SimpleElement, NodeType } from '@simple-dom/interface';
 
 // `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
 // `"ActiveXObject" in window` returns `true` in all IE versions
@@ -92,7 +93,7 @@ class ChaosMonkeyRehydration extends RenderTest {
   }
 
   wreakHavoc(iteration = 0, shouldLog = false) {
-    let element = this.element as Element;
+    let element = cast(this.element, 'HTML');
 
     let original = element.innerHTML;
 
@@ -110,7 +111,7 @@ class ChaosMonkeyRehydration extends RenderTest {
     }
 
     // gather all the nodes recursively
-    let nodes: Node[] = collectChildNodes([], element);
+    let nodes: Node[] = collectChildNodes([], element.node);
 
     // cannot remove the first node, that is what makes it rehydrateable
     nodes = nodes.slice(1);
@@ -129,7 +130,7 @@ class ChaosMonkeyRehydration extends RenderTest {
         removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
         break;
       case NodeType.ELEMENT_NODE:
-        removedNodeDisplay = (nodeToRemove as Element).outerHTML;
+        removedNodeDisplay = cast(nodeToRemove, ['HTML', 'SVG']).outerHTML;
         break;
       default:
         removedNodeDisplay = nodeToRemove.nodeValue;
@@ -149,7 +150,7 @@ class ChaosMonkeyRehydration extends RenderTest {
   }
 
   runIterations(template: string, context: Dict<unknown>, expectedHTML: string, count: number) {
-    let element = this.element as Element;
+    let element = cast(this.element, 'HTML');
     let elementResetValue = element.innerHTML;
 
     let urlParams = (QUnit as any).urlParams as Dict<string>;
@@ -160,7 +161,7 @@ class ChaosMonkeyRehydration extends RenderTest {
 
       this.renderClientSide(template, context);
 
-      let element = this.element as Element;
+      let element = cast(this.element, 'HTML');
       this.assert.equal(element.innerHTML, expectedHTML);
     } else {
       for (let i = 0; i < count; i++) {
@@ -172,7 +173,7 @@ class ChaosMonkeyRehydration extends RenderTest {
 
           this.renderClientSide(template, context);
 
-          let element = this.element as Element;
+          let element = cast(this.element, 'HTML');
           this.assert.equal(
             element.innerHTML,
             expectedHTML,

@@ -8,6 +8,7 @@ import {
   SimpleNode,
 } from '@simple-dom/interface';
 import { DOMOperations, moveNodesBefore } from '../dom/operations';
+import { cast } from '../simple-cast';
 
 export const SVG_NAMESPACE = Namespace.SVG;
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
@@ -98,7 +99,7 @@ function shouldApplyFix(document: SimpleDocument, svgNamespace: SVG_NAMESPACE) {
     // FF: Old versions will create a node in the wrong namespace
     if (
       svg.childNodes.length === 1 &&
-      (unwrap(svg.firstChild) as Node).namespaceURI === SVG_NAMESPACE
+      cast(unwrap(svg.firstChild), 'SVG').namespaceURI === SVG_NAMESPACE
     ) {
       // The test worked as expected, no fix required
       return false;

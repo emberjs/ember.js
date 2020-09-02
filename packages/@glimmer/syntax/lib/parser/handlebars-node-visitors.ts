@@ -58,15 +58,14 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   }
 
   BlockStatement(block: HBS.BlockStatement): AST.BlockStatement | void {
-    if (this.tokenizer['state'] === 'comment') {
+    if (this.tokenizer.state === TokenizerState.comment) {
       this.appendToCommentData(this.sourceForNode(block));
       return;
     }
 
     if (
-      this.tokenizer['state'] !== 'comment' &&
-      this.tokenizer['state'] !== 'data' &&
-      this.tokenizer['state'] !== 'beforeData'
+      this.tokenizer.state !== TokenizerState.data &&
+      this.tokenizer['state'] !== TokenizerState.beforeData
     ) {
       throw new SyntaxError(
         'A block may only be used inside an HTML element or another block.',

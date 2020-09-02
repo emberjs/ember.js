@@ -1,4 +1,4 @@
-import { DynamicScopeImpl } from '@glimmer/runtime';
+import { DynamicScopeImpl, cast } from '@glimmer/runtime';
 import { createPrimitiveRef } from '@glimmer/reference';
 import { RenderTest, Count } from '../render-test';
 import { ComponentKind } from '../components/types';
@@ -21,7 +21,7 @@ export class EntryPointTest extends RenderTest {
     let title = createPrimitiveRef('renderComponent');
     delegate.renderComponent('Title', { title }, element);
 
-    QUnit.assert.equal((element as Element).innerHTML, '<h1>hello renderComponent</h1>');
+    QUnit.assert.equal(cast(element, 'HTML').innerHTML, '<h1>hello renderComponent</h1>');
   }
 
   @test
@@ -32,12 +32,12 @@ export class EntryPointTest extends RenderTest {
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
     delegate.renderComponent('Title', { title }, element);
-    QUnit.assert.equal((element as Element).innerHTML, '<h1>hello renderComponent</h1>');
+    QUnit.assert.equal(cast(element, 'HTML').innerHTML, '<h1>hello renderComponent</h1>');
 
     element = delegate.getInitialElement();
     let newTitle = createPrimitiveRef('new title');
     delegate.renderComponent('Title', { title: newTitle }, element);
-    QUnit.assert.equal((element as Element).innerHTML, '<h1>hello new title</h1>');
+    QUnit.assert.equal(cast(element, 'HTML').innerHTML, '<h1>hello new title</h1>');
   }
 
   @test
@@ -49,12 +49,12 @@ export class EntryPointTest extends RenderTest {
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
     delegate.renderComponent('Title', { title }, element);
-    QUnit.assert.equal((element as Element).innerHTML, '<h1>hello renderComponent</h1>');
+    QUnit.assert.equal(cast(element, 'HTML').innerHTML, '<h1>hello renderComponent</h1>');
 
     element = delegate.getInitialElement();
     let body = createPrimitiveRef('text');
     delegate.renderComponent('Body', { body }, element);
-    QUnit.assert.equal((element as Element).innerHTML, '<p>body text</p>');
+    QUnit.assert.equal(cast(element, 'HTML').innerHTML, '<p>body text</p>');
   }
 
   @test
@@ -68,6 +68,6 @@ export class EntryPointTest extends RenderTest {
     });
     delegate.renderComponent('Locale', {}, element, dynamicScope);
 
-    QUnit.assert.equal((element as Element).innerHTML, 'en_US');
+    QUnit.assert.equal(cast(element, 'HTML').innerHTML, 'en_US');
   }
 }

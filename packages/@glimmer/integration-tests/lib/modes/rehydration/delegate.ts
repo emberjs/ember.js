@@ -11,6 +11,7 @@ import {
 import { serializeBuilder } from '@glimmer/node';
 import { ASTPluginBuilder } from '@glimmer/syntax';
 import { createConstRef, Reference } from '@glimmer/reference';
+import { cast } from '@glimmer/runtime';
 import createHTMLDocument from '@simple-dom/document';
 import {
   SimpleDocument,
@@ -69,7 +70,7 @@ export class RehydrationDelegate implements RenderDelegate {
   constructor(options?: RenderDelegateOptions) {
     let delegate = assign(options?.env ?? {}, BaseEnv);
 
-    this.clientDoc = document as SimpleDocument;
+    this.clientDoc = cast(document).simple;
     this.clientResolver = new TestJitRuntimeResolver();
     this.clientRegistry = this.clientResolver.registry;
     this.clientEnv = JitDelegateContext(
@@ -227,5 +228,5 @@ export class RehydrationDelegate implements RenderDelegate {
 }
 
 export function qunitFixture(): SimpleElement {
-  return document.getElementById('qunit-fixture') as SimpleElement;
+  return cast(document).getElementById('qunit-fixture');
 }
