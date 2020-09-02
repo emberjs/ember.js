@@ -14,7 +14,7 @@ import {
   Dict,
   Option,
   VMArguments,
-  WithJitStaticLayout,
+  WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { registerDestructor, reifyArgs, reifyPositional } from '@glimmer/runtime';
@@ -175,7 +175,7 @@ export default class CustomComponentManager<ComponentInstance>
     CustomComponentDefinitionState<ComponentInstance>
   >
   implements
-    WithJitStaticLayout<
+    WithStaticLayout<
       CustomComponentState<ComponentInstance>,
       CustomComponentDefinitionState<ComponentInstance>,
       RuntimeResolver
@@ -361,7 +361,7 @@ export default class CustomComponentManager<ComponentInstance>
     }
   }
 
-  getJitStaticLayout(state: DefinitionState<ComponentInstance>) {
+  getStaticLayout(state: DefinitionState<ComponentInstance>) {
     return unwrapTemplate(state.template).asLayout();
   }
 }

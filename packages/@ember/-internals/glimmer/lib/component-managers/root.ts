@@ -34,7 +34,7 @@ class RootComponentManager extends CurlyComponentManager {
     return '- While rendering:';
   }
 
-  getJitStaticLayout(_state: DefinitionState) {
+  getStaticLayout(_state: DefinitionState) {
     const template = this.templateFor(this.component);
     return unwrapTemplate(template).asWrappedLayout();
   }

@@ -17,9 +17,9 @@ import {
   Option,
   PreparedArguments,
   VMArguments,
+  WithDynamicLayout,
   WithDynamicTagName,
-  WithJitDynamicLayout,
-  WithJitStaticLayout,
+  WithStaticLayout,
 } from '@glimmer/interfaces';
 import {
   childRefFor,
@@ -118,8 +118,8 @@ debugFreeze(EMPTY_POSITIONAL_ARGS);
 export default class CurlyComponentManager
   extends AbstractManager<ComponentStateBucket, DefinitionState>
   implements
-    WithJitStaticLayout<ComponentStateBucket, DefinitionState, RuntimeResolver>,
-    WithJitDynamicLayout<ComponentStateBucket, RuntimeResolver>,
+    WithStaticLayout<ComponentStateBucket, DefinitionState, RuntimeResolver>,
+    WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket> {
   protected templateFor(component: Component): OwnedTemplate {
     let { layout, layoutName } = component;
@@ -145,11 +145,11 @@ export default class CurlyComponentManager
     return factory(owner);
   }
 
-  getJitStaticLayout(state: DefinitionState, _resolver: RuntimeResolver) {
+  getStaticLayout(state: DefinitionState, _resolver: RuntimeResolver) {
     return unwrapTemplate(state.template!).asLayout();
   }
 
-  getJitDynamicLayout(bucket: ComponentStateBucket) {
+  getDynamicLayout(bucket: ComponentStateBucket) {
     let component = bucket.component;
     let template = this.templateFor(component);
 

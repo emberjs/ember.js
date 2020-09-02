@@ -13,7 +13,7 @@ import {
   Option,
   VMArguments,
   WithDynamicTagName,
-  WithJitStaticLayout,
+  WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { EMPTY_ARGS, registerDestructor } from '@glimmer/runtime';
@@ -65,7 +65,7 @@ const CAPABILITIES: ComponentCapabilities = {
 };
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
-  implements WithJitStaticLayout<OutletInstanceState, OutletDefinitionState, RuntimeResolver> {
+  implements WithStaticLayout<OutletInstanceState, OutletDefinitionState, RuntimeResolver> {
   create(
     environment: EmberVMEnvironment,
     definition: OutletDefinitionState,
@@ -147,7 +147,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     return name;
   }
 
-  getJitStaticLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver) {
+  getStaticLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver) {
     // The router has already resolved the template
     return unwrapTemplate(template).asLayout();
   }
@@ -232,7 +232,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return 'div';
       }
 
-      getJitStaticLayout({ template }: OutletDefinitionState) {
+      getStaticLayout({ template }: OutletDefinitionState) {
         // The router has already resolved the template
         return unwrapTemplate(template).asWrappedLayout();
       }
