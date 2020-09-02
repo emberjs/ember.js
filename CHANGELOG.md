@@ -1,3 +1,13 @@
+## v0.61.1 (2020-09-02)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1152](https://github.com/glimmerjs/glimmer-vm/pull/1152) [BUGFIX] Prevent accidental dynamic component lookup ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.61.0 (2020-09-02)
 
 #### :boom: Breaking Change
