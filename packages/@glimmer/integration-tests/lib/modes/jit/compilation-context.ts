@@ -1,5 +1,5 @@
 import {
-  CompileTimeResolverDelegate,
+  CompileTimeResolver,
   ComponentCapabilities,
   Option,
   ComponentDefinition,
@@ -10,7 +10,7 @@ import { TestJitRegistry } from './registry';
 import { unwrapTemplate } from '@glimmer/util';
 import TestJitRuntimeResolver from './resolver';
 
-export default class JitCompileTimeLookup implements CompileTimeResolverDelegate {
+export default class JitCompileTimeLookup implements CompileTimeResolver {
   constructor(private resolver: TestJitRuntimeResolver, private registry: TestJitRegistry) {}
 
   resolve<T>(handle: number): T {

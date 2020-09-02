@@ -27,25 +27,14 @@ export {
 export { normalizeProperty } from './lib/dom/props';
 export { DynamicScopeImpl, PartialScopeImpl } from './lib/scope';
 export {
-  AotRuntime,
-  JitRuntime,
+  runtimeContext,
   EnvironmentImpl,
   EnvironmentDelegate,
-  JitProgramCompilationContext,
-  JitSyntaxCompilationContext,
   inTransaction,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
-export {
-  renderAot,
-  renderAotComponent,
-  renderAotMain,
-  RenderComponentArgs,
-  renderJitComponent,
-  renderJitMain,
-  renderSync,
-} from './lib/render';
+export { RenderComponentArgs, renderComponent, renderMain, renderSync } from './lib/render';
 export { SafeString } from './lib/upsert';
 export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
 export {

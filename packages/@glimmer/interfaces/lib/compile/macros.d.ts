@@ -2,7 +2,7 @@ import * as WireFormat from './wire-format';
 import { NamedBlocks, ContainingMetadata, Unhandled } from '../template';
 import { TemplateCompilationContext } from '../program';
 import { StatementCompileActions } from './encoder';
-import { CompileTimeResolverDelegate } from '../serialize';
+import { CompileTimeResolver } from '../serialize';
 import { Option } from '../core';
 
 export interface Macros {
@@ -11,7 +11,7 @@ export interface Macros {
 }
 
 export interface MacroContext {
-  resolver: CompileTimeResolverDelegate;
+  resolver: CompileTimeResolver;
   meta: ContainingMetadata;
 }
 

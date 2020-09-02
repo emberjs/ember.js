@@ -1,4 +1,3 @@
-import { DebugConstants } from '@glimmer/bundle-compiler';
 import {
   SimpleElement,
   SimpleText,
@@ -26,7 +25,6 @@ export interface RenderDelegateOptions {
 }
 
 export default interface RenderDelegate {
-  constants?: DebugConstants;
   getInitialElement(): SimpleElement;
   createElement(tagName: string): SimpleElement;
   createTextNode(content: string): SimpleText;

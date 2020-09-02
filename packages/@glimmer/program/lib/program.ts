@@ -6,10 +6,8 @@ import {
   StdlibOperand,
   RuntimeConstants,
   RuntimeProgram,
-  CompilerArtifacts,
 } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { RuntimeConstantsImpl } from './constants';
 import { RuntimeOpImpl } from './opcode';
 import { assert } from '@glimmer/util';
 
@@ -295,13 +293,6 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
 export class RuntimeProgramImpl implements RuntimeProgram {
   [key: number]: never;
 
-  static hydrate(artifacts: CompilerArtifacts) {
-    let heap = new RuntimeHeapImpl(artifacts.heap);
-    let constants = new RuntimeConstantsImpl(artifacts.constants);
-
-    return new RuntimeProgramImpl(constants, heap);
-  }
-
   private _opcode: RuntimeOpImpl;
 
   constructor(public constants: RuntimeConstants, public heap: RuntimeHeap) {
@@ -312,13 +303,6 @@ export class RuntimeProgramImpl implements RuntimeProgram {
     this._opcode.offset = offset;
     return this._opcode;
   }
-}
-
-export function hydrateProgram(artifacts: CompilerArtifacts): RuntimeProgram {
-  let heap = new RuntimeHeapImpl(artifacts.heap);
-  let constants = new RuntimeConstantsImpl(artifacts.constants);
-
-  return new RuntimeProgramImpl(constants, heap);
 }
 
 function slice(arr: Int32Array, start: number, end: number): Int32Array {

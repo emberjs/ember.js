@@ -3,7 +3,7 @@ import { createPrimitiveRef } from '@glimmer/reference';
 import { RenderTest, Count } from '../render-test';
 import { ComponentKind } from '../components/types';
 import { test } from '../test-decorator';
-import { AotRenderDelegate } from '../modes/aot/delegate';
+import { JitRenderDelegate } from '../modes/jit/delegate';
 
 export class EntryPointTest extends RenderTest {
   static suiteName = 'entry points';
@@ -14,7 +14,7 @@ export class EntryPointTest extends RenderTest {
 
   @test
   'an entry point'() {
-    let delegate = new AotRenderDelegate();
+    let delegate = new JitRenderDelegate();
     delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
 
     let element = delegate.getInitialElement();
@@ -26,7 +26,7 @@ export class EntryPointTest extends RenderTest {
 
   @test
   'does not leak args between invocations'() {
-    let delegate = new AotRenderDelegate();
+    let delegate = new JitRenderDelegate();
     delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
 
     let element = delegate.getInitialElement();
@@ -42,7 +42,7 @@ export class EntryPointTest extends RenderTest {
 
   @test
   'can render different components per call'() {
-    let delegate = new AotRenderDelegate();
+    let delegate = new JitRenderDelegate();
     delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
     delegate.registerComponent('Basic', 'Basic', 'Body', `<p>body {{@body}}</p>`);
 
@@ -59,7 +59,7 @@ export class EntryPointTest extends RenderTest {
 
   @test
   'supports passing in an initial dynamic context'() {
-    let delegate = new AotRenderDelegate();
+    let delegate = new JitRenderDelegate();
     delegate.registerComponent('Basic', 'Basic', 'Locale', `{{-get-dynamic-var "locale"}}`);
 
     let element = delegate.getInitialElement();

@@ -5,7 +5,6 @@ export * from './lib/dom/assertions';
 export * from './lib/dom/blocks';
 export * from './lib/dom/simple-utils';
 export * from './lib/markers';
-export * from './lib/modes/aot/delegate';
 export * from './lib/modes/jit/delegate';
 export * from './lib/modes/jit/register';
 export * from './lib/modes/node/env';

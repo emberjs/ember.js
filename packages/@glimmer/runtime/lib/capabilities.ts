@@ -4,8 +4,7 @@ import {
   WithUpdateHook,
   WithPrepareArgs,
   WithCreateInstance,
-  WithJitDynamicLayout,
-  WithAotDynamicLayout,
+  WithDynamicLayout,
 } from '@glimmer/interfaces';
 import { check, CheckNumber } from '@glimmer/debug';
 
@@ -46,7 +45,7 @@ export function capabilityFlagsFrom(capabilities: ComponentCapabilities): Capabi
 }
 
 export interface CapabilityMap {
-  [Capability.DynamicLayout]: WithJitDynamicLayout | WithAotDynamicLayout;
+  [Capability.DynamicLayout]: WithDynamicLayout;
   [Capability.DynamicTag]: ComponentManager;
   [Capability.PrepareArgs]: WithPrepareArgs;
   [Capability.CreateArgs]: ComponentManager;

@@ -231,25 +231,13 @@ function constant(
 }
 
 function isSimpleOpcode(op: AllOpcode): op is HighLevelBuilderOpcode {
-  return (
-    op === 'Label' ||
-    op === 'Option' ||
-    op === 'GetComponentLayout' ||
-    op === 'StartLabels' ||
-    op === 'StopLabels' ||
-    op === 'SimpleArgs' ||
-    op === 'JitCompileBlock' ||
-    op === 'SetBlock'
-  );
+  return op === 'Label' || op === 'Option' || op === 'StartLabels' || op === 'StopLabels';
 }
 
 function isCompileOpcode(op: AllOpcode): op is HighLevelCompileOpcode {
   return (
     op === 'CompileInline' ||
     op === 'CompileBlock' ||
-    op === 'InvokeStatic' ||
-    op === 'PushCompilable' ||
-    op === 'Args' ||
     op === 'IfResolvedComponent' ||
     op === 'DynamicComponent'
   );

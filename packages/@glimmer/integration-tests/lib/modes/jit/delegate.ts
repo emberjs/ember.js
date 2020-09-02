@@ -1,6 +1,6 @@
 import { PrecompileOptions } from '@glimmer/compiler';
 import {
-  JitRuntimeContext,
+  RuntimeContext,
   SyntaxCompilationContext,
   Environment,
   Cursor,
@@ -10,6 +10,8 @@ import {
   Option,
   Helper,
   HandleResult,
+  DynamicScope,
+  ComponentDefinition,
 } from '@glimmer/interfaces';
 import {
   SimpleDocument,
@@ -22,10 +24,13 @@ import { TestJitRegistry } from './registry';
 import {
   getDynamicVar,
   clientBuilder,
-  JitRuntime,
   EnvironmentDelegate,
   CurriedComponentDefinition,
+  runtimeContext,
+  renderSync,
+  renderComponent,
 } from '@glimmer/runtime';
+import { artifacts } from '@glimmer/program';
 import {
   registerInternalHelper,
   registerStaticTaglessComponent,
@@ -50,13 +55,13 @@ import { TestModifierConstructor } from '../../modifiers';
 import { UserHelper } from '../../helpers';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { renderTemplate } from './render';
-import { JitContext } from '@glimmer/opcode-compiler';
+import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
 import { preprocess } from '../../compile';
 import { unwrapTemplate, assign } from '@glimmer/util';
 import { BaseEnv } from '../env';
 
 export interface JitTestDelegateContext {
-  runtime: JitRuntimeContext;
+  runtime: RuntimeContext;
   syntax: SyntaxCompilationContext;
 }
 
@@ -67,8 +72,13 @@ export function JitDelegateContext(
   env: EnvironmentDelegate
 ): JitTestDelegateContext {
   registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
-  let context = JitContext(new JitCompileTimeLookup(resolver, registry), new TestMacros());
-  let runtime = JitRuntime({ document: doc }, env, context, resolver);
+  let sharedArtifacts = artifacts();
+  let context = syntaxCompilationContext(
+    sharedArtifacts,
+    new JitCompileTimeLookup(resolver, registry),
+    new TestMacros()
+  );
+  let runtime = runtimeContext({ document: doc }, env, sharedArtifacts, resolver);
   return { runtime, syntax: context };
 }
 
@@ -224,6 +234,32 @@ export class JitRenderDelegate implements RenderDelegate {
       this.getElementBuilder(env, cursor),
       this.precompileOptions
     );
+  }
+
+  renderComponent(
+    name: string,
+    args: Dict<Reference<unknown>>,
+    element: SimpleElement,
+    dyanmicScope?: DynamicScope
+  ): RenderResult {
+    let cursor = { element, nextSibling: null };
+    let { syntax, runtime } = this.context;
+    let builder = this.getElementBuilder(runtime.env, cursor);
+
+    let { handle, compilable } = this.registry.lookupCompileTimeComponent(name, null)!;
+    let component = this.registry.resolve<ComponentDefinition>(handle);
+
+    let iterator = renderComponent(
+      runtime,
+      builder,
+      syntax,
+      component,
+      compilable!,
+      args,
+      dyanmicScope
+    );
+
+    return renderSync(runtime.env, iterator);
   }
 
   private get precompileOptions(): PrecompileOptions {

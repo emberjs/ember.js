@@ -20,12 +20,11 @@ import {
   ComponentManager,
   ElementOperations,
   Invocation,
-  JitOrAotBlock,
   Scope,
   Helper,
   CapturedArguments,
   Option,
-  JitScopeBlock,
+  ScopeBlock,
 } from '@glimmer/interfaces';
 import { Reference, REFERENCE, OpaqueIterator, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { Tag, COMPUTE } from '@glimmer/validator';
@@ -89,9 +88,7 @@ export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface
   named: wrap(() => CheckDict(CheckReference)),
 });
 
-export const CheckScope: Checker<Scope<JitOrAotBlock>> = wrap(() =>
-  CheckInstanceof(PartialScopeImpl)
-);
+export const CheckScope: Checker<Scope> = wrap(() => CheckInstanceof(PartialScopeImpl));
 
 export const CheckComponentManager: Checker<ComponentManager<unknown>> = CheckInterface({
   getCapabilities: CheckFunction,
@@ -130,7 +127,7 @@ export const CheckCompilableBlock: Checker<CompilableBlock> = CheckInterface({
   symbolTable: CheckBlockSymbolTable,
 });
 
-export const CheckScopeBlock: Checker<JitScopeBlock> = CheckInterface({
+export const CheckScopeBlock: Checker<ScopeBlock> = CheckInterface({
   0: CheckOr(CheckHandle, CheckCompilableBlock),
   1: CheckScope,
   2: CheckBlockSymbolTable,

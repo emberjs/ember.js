@@ -7,11 +7,12 @@ import {
   StatementCompileActions,
   SymbolTable,
   WireFormat,
+  CompilableTemplate,
 } from '@glimmer/interfaces';
 import { $fp } from '@glimmer/vm';
 import { op } from '../encoder';
 import { PushPrimitive } from './vm';
-import { serializable } from '../operands';
+import { serializable, other } from '../operands';
 
 /**
  * Yield to a block located at a particular symbol location.
@@ -26,8 +27,8 @@ export function YieldBlock(
   return [
     op('SimpleArgs', { params, hash: null, atNames: true }),
     op(Op.GetBlock, to),
-    op(Op.JitSpreadBlock),
-    op('Option', op('JitCompileBlock')),
+    op(Op.SpreadBlock),
+    op('Option', op(Op.CompileBlock)),
     op(Op.InvokeYield),
     op(Op.PopScope),
     op(MachineOp.PopFrame),
@@ -44,7 +45,7 @@ export function PushYieldableBlock(block: Option<CompilableBlock>): StatementCom
   return [
     PushSymbolTable(block && block.symbolTable),
     op(Op.PushBlockScope),
-    op('PushCompilable', block),
+    PushCompilable(block),
   ];
 }
 
@@ -56,8 +57,8 @@ export function PushYieldableBlock(block: Option<CompilableBlock>): StatementCom
 export function InvokeStaticBlock(block: CompilableBlock): StatementCompileActions {
   return [
     op(MachineOp.PushFrame),
-    op('PushCompilable', block),
-    op('JitCompileBlock'),
+    PushCompilable(block),
+    op(Op.CompileBlock),
     op(MachineOp.InvokeVirtual),
     op(MachineOp.PopFrame),
   ];
@@ -95,8 +96,8 @@ export function InvokeStaticBlockWithStack(
     }
   }
 
-  out.push(op('PushCompilable', block));
-  out.push(op('JitCompileBlock'));
+  out.push(PushCompilable(block));
+  out.push(op(Op.CompileBlock));
   out.push(op(MachineOp.InvokeVirtual));
 
   if (count) {
@@ -113,5 +114,13 @@ export function PushSymbolTable(table: Option<SymbolTable>): BuilderOp {
     return op(Op.PushSymbolTable, serializable(table));
   } else {
     return PushPrimitive(null);
+  }
+}
+
+export function PushCompilable(block: Option<CompilableTemplate>): BuilderOp {
+  if (block === null) {
+    return PushPrimitive(null);
+  } else {
+    return op(Op.Constant, other(block));
   }
 }

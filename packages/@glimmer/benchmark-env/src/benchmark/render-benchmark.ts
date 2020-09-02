@@ -1,26 +1,23 @@
 import { SimpleElement } from '@simple-dom/interface';
 import {
   Dict,
-  RuntimeResolverDelegate,
+  RuntimeResolver,
+  SyntaxCompilationContext,
   ComponentDefinition,
   CompilableProgram,
+  RuntimeArtifacts,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, childRefFor } from '@glimmer/reference';
-import {
-  NewElementBuilder,
-  JitRuntime,
-  JitSyntaxCompilationContext,
-  renderSync,
-  renderJitComponent,
-} from '@glimmer/runtime';
+import { NewElementBuilder, runtimeContext, renderComponent, renderSync } from '@glimmer/runtime';
 
 import createEnvDelegate, { registerResult } from './create-env-delegate';
 import { measureRender } from './util';
 import { UpdateBenchmark } from '../interfaces';
 
 export default async function renderBenchmark(
-  context: JitSyntaxCompilationContext,
-  runtimeResolverDelegate: RuntimeResolverDelegate,
+  artifacts: RuntimeArtifacts,
+  context: SyntaxCompilationContext,
+  runtimeResolver: RuntimeResolver,
   component: ComponentDefinition,
   layout: CompilableProgram,
   root: Dict,
@@ -32,13 +29,13 @@ export default async function renderBenchmark(
   await measureRender('render', 'renderStart', 'renderEnd', () => {
     const document = element.ownerDocument;
     const envDelegate = createEnvDelegate(isInteractive);
-    const runtime = JitRuntime(
+    const runtime = runtimeContext(
       {
         document,
       },
       envDelegate,
-      context,
-      runtimeResolverDelegate
+      artifacts,
+      runtimeResolver
     );
     const env = runtime.env;
     const cursor = { element, nextSibling: null };
@@ -52,7 +49,7 @@ export default async function renderBenchmark(
 
     const result = renderSync(
       env,
-      renderJitComponent(runtime, treeBuilder, context, component, layout, args)
+      renderComponent(runtime, treeBuilder, context, component, layout, args)
     );
 
     registerResult(result, () => {
