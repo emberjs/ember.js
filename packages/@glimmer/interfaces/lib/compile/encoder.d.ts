@@ -32,8 +32,6 @@ export interface AllOpMap {
   Option: OptionOp;
   StartLabels: StartLabelsOp;
   StopLabels: StopLabelsOp;
-  JitCompileBlock: JitCompileBlockOp;
-  GetComponentLayout: GetComponentLayoutOp;
 
   IfResolved: IfResolvedOp;
   Expr: ExprOp;
@@ -43,10 +41,6 @@ export interface AllOpMap {
 
   CompileInline: CompileInlineOp;
   CompileBlock: CompileBlockOp;
-  SetBlock: SetBlockOp;
-  InvokeStatic: InvokeStaticOp;
-  PushCompilable: PushCompilableOp;
-  Args: ArgsOp;
   IfResolvedComponent: IfResolvedComponentOp;
   DynamicComponent: DynamicComponentOp;
 
@@ -64,18 +58,12 @@ export const enum HighLevelBuilderOpcode {
   Option = 'Option',
   StartLabels = 'StartLabels',
   StopLabels = 'StopLabels',
-  JitCompileBlock = 'JitCompileBlock',
-  GetComponentLayout = 'GetComponentLayout',
-  SetBlock = 'SetBlock',
 }
 
 // Must be kept in sync with isCompileOpcode in encoder.ts
 export const enum HighLevelCompileOpcode {
   CompileInline = 'CompileInline',
   CompileBlock = 'CompileBlock',
-  InvokeStatic = 'InvokeStatic',
-  PushCompilable = 'PushCompilable',
-  Args = 'Args',
   IfResolvedComponent = 'IfResolvedComponent',
   DynamicComponent = 'DynamicComponent',
 }
@@ -105,12 +93,6 @@ export const enum ResolveHandle {
   ComponentDefinition = 'ComponentDefinition',
 }
 
-export interface InvokeStaticOp {
-  type: 'Compile';
-  op: HighLevelCompileOpcode.InvokeStatic;
-  op1: CompilableTemplate;
-}
-
 export interface CompileInlineOp {
   type: 'Compile';
   op: HighLevelCompileOpcode.CompileInline;
@@ -131,18 +113,6 @@ export interface ArgsOptions {
   hash: WireFormat.Core.Hash;
   blocks: NamedBlocks;
   atNames: boolean;
-}
-
-export interface ArgsOp {
-  type: 'Compile';
-  op: HighLevelCompileOpcode.Args;
-  op1: ArgsOptions;
-}
-
-export interface PushCompilableOp {
-  type: 'Compile';
-  op: HighLevelCompileOpcode.PushCompilable;
-  op1: Option<CompilableTemplate>;
 }
 
 export interface IfResolvedOp {
@@ -203,9 +173,6 @@ export interface DynamicComponentOp {
 export type HighLevelCompileOp =
   | CompileInlineOp
   | CompileBlockOp
-  | InvokeStaticOp
-  | ArgsOp
-  | PushCompilableOp
   | IfResolvedComponentOp
   | DynamicComponentOp;
 
@@ -242,12 +209,6 @@ export interface OptionOp {
   op1: Option<CompileActions>;
 }
 
-export interface SetBlockOp {
-  type: 'Simple';
-  op: HighLevelBuilderOpcode.SetBlock;
-  op1: number;
-}
-
 export interface StartLabelsOp {
   type: 'Simple';
   op: HighLevelBuilderOpcode.StartLabels;
@@ -257,12 +218,6 @@ export interface StartLabelsOp {
 export interface StopLabelsOp {
   type: 'Simple';
   op: HighLevelBuilderOpcode.StopLabels;
-  op1: undefined;
-}
-
-export interface JitCompileBlockOp {
-  type: 'Simple';
-  op: HighLevelBuilderOpcode.JitCompileBlock;
   op1: undefined;
 }
 
@@ -303,12 +258,6 @@ export interface ResolveContextualFreeOp {
   };
 }
 
-export interface GetComponentLayoutOp {
-  type: 'Simple';
-  op: HighLevelBuilderOpcode.GetComponentLayout;
-  op1: number;
-}
-
 export interface CompileErrorOp {
   type: 'Error';
   op: ErrorOpcode.Error;
@@ -319,14 +268,7 @@ export interface CompileErrorOp {
   };
 }
 
-export type HighLevelBuilderOp =
-  | LabelOp
-  | OptionOp
-  | JitCompileBlockOp
-  | StartLabelsOp
-  | StopLabelsOp
-  | GetComponentLayoutOp
-  | SetBlockOp;
+export type HighLevelBuilderOp = LabelOp | OptionOp | StartLabelsOp | StopLabelsOp;
 
 export type HighLevelBuilderOperands = [HighLevelBuilderOp['op1']];
 
@@ -349,11 +291,6 @@ export interface NestedExpressionCompileActions
   extends Array<ExpressionCompileAction | NestedExpressionCompileActions> {}
 
 export type ExpressionCompileActions = NestedExpressionCompileActions | ExpressionCompileAction;
-
-export const enum CompileMode {
-  aot = 'aot',
-  jit = 'jit',
-}
 
 export interface EncoderError {
   problem: string;

@@ -7,7 +7,7 @@ import {
   Option,
   Unhandled,
   SexpOpcodes,
-  CompileTimeResolverDelegate,
+  CompileTimeResolver,
   ContainingMetadata,
   MacroBlocks,
   MacroInlines,
@@ -29,7 +29,7 @@ export class MacrosImpl implements Macros {
 }
 
 export interface MacroContext {
-  resolver: CompileTimeResolverDelegate;
+  resolver: CompileTimeResolver;
   meta: ContainingMetadata;
 }
 
@@ -72,7 +72,7 @@ export class Blocks implements MacroBlocks {
     let index = this.names[name];
 
     let macroContext = {
-      resolver: context.syntax.program.resolverDelegate,
+      resolver: context.syntax.program.resolver,
       meta: context.meta,
     };
 
@@ -158,7 +158,7 @@ export class Inlines implements MacroInlines {
     let index = this.names[name];
 
     let macroContext = {
-      resolver: context.syntax.program.resolverDelegate,
+      resolver: context.syntax.program.resolver,
       meta: context.meta,
     };
 

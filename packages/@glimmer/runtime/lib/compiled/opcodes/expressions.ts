@@ -1,4 +1,4 @@
-import { Option, Op, JitScopeBlock, AotScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
+import { Option, Op, ScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
 import {
   Reference,
   childRefFor,
@@ -28,7 +28,6 @@ import {
   CheckScopeBlock,
 } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
-import { DEBUG } from '@glimmer/env';
 
 export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 
@@ -52,27 +51,12 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
   vm.scope().bindSymbol(symbol, expr);
 });
 
-APPEND_OPCODES.add(
-  Op.SetJitBlock,
-  (vm, { op1: symbol }) => {
-    let handle = check(vm.stack.popJs(), CheckOption(CheckCompilableBlock));
-    let scope = check(vm.stack.popJs(), CheckScope);
-    let table = check(vm.stack.popJs(), CheckOption(CheckBlockSymbolTable));
-
-    let block: Option<JitScopeBlock> = table ? [handle!, scope, table] : null;
-
-    vm.scope().bindBlock(symbol, block);
-  },
-  'jit'
-);
-
-APPEND_OPCODES.add(Op.SetAotBlock, (vm, { op1: symbol }) => {
-  // In DEBUG handles could be ErrHandle objects
-  let handle = check(DEBUG ? vm.stack.pop() : vm.stack.popSmallInt(), CheckOption(CheckHandle));
+APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
+  let handle = check(vm.stack.popJs(), CheckOption(CheckCompilableBlock));
   let scope = check(vm.stack.popJs(), CheckScope);
   let table = check(vm.stack.popJs(), CheckOption(CheckBlockSymbolTable));
 
-  let block: Option<AotScopeBlock> = table ? [handle!, scope, table] : null;
+  let block: Option<ScopeBlock> = table ? [handle!, scope, table] : null;
 
   vm.scope().bindBlock(symbol, block);
 });
@@ -110,7 +94,7 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.JitSpreadBlock, (vm) => {
+APPEND_OPCODES.add(Op.SpreadBlock, (vm) => {
   let { stack } = vm;
   let block = check(stack.popJs(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
@@ -132,7 +116,7 @@ APPEND_OPCODES.add(Op.JitSpreadBlock, (vm) => {
   }
 });
 
-function isUndefinedReference(input: JitScopeBlock | Reference): input is Reference {
+function isUndefinedReference(input: ScopeBlock | Reference): input is Reference {
   assert(
     Array.isArray(input) || input === UNDEFINED_REFERENCE,
     'a reference other than UNDEFINED_REFERENCE is illegal here'

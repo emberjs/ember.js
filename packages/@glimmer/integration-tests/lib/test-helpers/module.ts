@@ -4,9 +4,8 @@ import { JitRenderDelegate } from '../modes/jit/delegate';
 import { keys } from '@glimmer/util';
 import { DeclaredComponentKind } from '../test-decorator';
 import { ComponentKind } from '../components';
-import { AotRenderDelegate } from '../modes/aot/delegate';
-import { NodeRenderDelegate } from '../modes/node/env';
-import { JitSerializationDelegate, AotSerializationDelegate } from '../suites/custom-dom-helper';
+import { NodeJitRenderDelegate } from '../modes/node/env';
+import { JitSerializationDelegate } from '../suites/custom-dom-helper';
 import { EnvironmentDelegate } from '@glimmer/runtime';
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
@@ -25,13 +24,13 @@ export function nodeSuite<T extends IRenderTest>(
   klass: RenderTestConstructor<RenderDelegate, T>,
   options = { componentModule: false }
 ): void {
-  return suite(klass, NodeRenderDelegate, options);
+  return suite(klass, NodeJitRenderDelegate, options);
 }
 
 export function nodeComponentSuite<T extends IRenderTest>(
   klass: RenderTestConstructor<RenderDelegate, T>
 ): void {
-  return suite(klass, NodeRenderDelegate, { componentModule: true });
+  return suite(klass, NodeJitRenderDelegate, { componentModule: true });
 }
 
 export function jitComponentSuite<T extends IRenderTest>(
@@ -40,31 +39,11 @@ export function jitComponentSuite<T extends IRenderTest>(
   return suite(klass, JitRenderDelegate, { componentModule: true });
 }
 
-export function aotSuite<T extends IRenderTest>(
-  klass: RenderTestConstructor<RenderDelegate, T>,
-  options = { componentModule: false }
-): void {
-  return suite(klass, AotRenderDelegate, options);
-}
-
-export function aotComponentSuite<T extends IRenderTest>(
-  klass: RenderTestConstructor<RenderDelegate, T>
-): void {
-  return suite(klass, AotRenderDelegate, { componentModule: true });
-}
-
 export function jitSerializeSuite<T extends IRenderTest>(
   klass: RenderTestConstructor<RenderDelegate, T>,
   options = { componentModule: false }
 ): void {
   return suite(klass, JitSerializationDelegate, options);
-}
-
-export function aotSerializeSuite<T extends IRenderTest>(
-  klass: RenderTestConstructor<RenderDelegate, T>,
-  options = { componentModule: false }
-): void {
-  return suite(klass, AotSerializationDelegate, options);
 }
 
 export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {

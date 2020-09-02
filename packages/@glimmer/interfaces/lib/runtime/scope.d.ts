@@ -4,46 +4,32 @@ import { Reference } from '@glimmer/reference';
 import { Option, Dict } from '../core';
 import { BlockSymbolTable } from '../tier1/symbol-table';
 
-export type JitOrAotBlock = CompilableBlock | number;
+export type Block = CompilableBlock | number;
 
-export type JitScopeBlock = [CompilableBlock, Scope<CompilableBlock>, BlockSymbolTable];
-export type JitBlockValue = JitScopeBlock[0 | 1 | 2];
-export type JitScopeSlot = Option<Reference> | Option<JitScopeBlock>;
+export type ScopeBlock = [CompilableBlock, Scope, BlockSymbolTable];
+export type BlockValue = ScopeBlock[0 | 1 | 2];
+export type ScopeSlot = Reference | ScopeBlock | null;
 
-export type AotScopeBlock = [number, Scope<number>, BlockSymbolTable];
-export type AotBlockValue = AotScopeBlock[0 | 1 | 2];
-export type AotScopeSlot = Option<Reference> | Option<AotScopeBlock>;
-
-export type ScopeBlock<C extends JitOrAotBlock = JitOrAotBlock> = C extends CompilableBlock
-  ? JitScopeBlock
-  : AotScopeBlock;
-
-export type BlockValue<C extends JitOrAotBlock = JitOrAotBlock> = C extends CompilableBlock
-  ? JitBlockValue
-  : AotBlockValue;
-
-export type ScopeSlot<C extends JitOrAotBlock = JitOrAotBlock> = Option<ScopeBlock<C> | Reference>;
-
-export interface Scope<C extends JitOrAotBlock> {
+export interface Scope {
   // for debug only
-  readonly slots: Array<ScopeSlot<C>>;
+  readonly slots: Array<ScopeSlot>;
 
   getSelf(): Reference;
   getSymbol(symbol: number): Reference;
-  getBlock(symbol: number): Option<ScopeBlock<C>>;
-  getEvalScope(): Option<Dict<ScopeSlot<C>>>;
+  getBlock(symbol: number): Option<ScopeBlock>;
+  getEvalScope(): Option<Dict<ScopeSlot>>;
   getPartialMap(): Option<Dict<Reference>>;
-  bind(symbol: number, value: ScopeSlot<C>): void;
+  bind(symbol: number, value: ScopeSlot): void;
   bindSelf(self: Reference): void;
   bindSymbol(symbol: number, value: Reference): void;
-  bindBlock(symbol: number, value: Option<ScopeBlock<C>>): void;
-  bindEvalScope(map: Option<Dict<ScopeSlot<C>>>): void;
+  bindBlock(symbol: number, value: Option<ScopeBlock>): void;
+  bindEvalScope(map: Option<Dict<ScopeSlot>>): void;
   bindPartialMap(map: Dict<Reference>): void;
-  child(): Scope<C>;
+  child(): Scope;
 }
 
-export interface PartialScope<C extends JitOrAotBlock> extends Scope<C> {
-  bindEvalScope(scope: Option<Dict<ScopeSlot<C>>>): void;
+export interface PartialScope extends Scope {
+  bindEvalScope(scope: Option<Dict<ScopeSlot>>): void;
 }
 
 export interface DynamicScope {

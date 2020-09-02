@@ -3,32 +3,24 @@ import {
   DynamicScope,
   Environment,
   Invocation,
-  JitOrAotBlock,
   RenderResult,
   RichIteratorResult,
   SyntaxCompilationContext,
-  WithAotStaticLayout,
   TemplateIterator,
-  Cursor,
   ComponentDefinition,
-  JitRuntimeContext,
-  AotRuntimeContext,
+  RuntimeContext,
   ElementBuilder,
   CompilableProgram,
 } from '@glimmer/interfaces';
-import { Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { expect, unwrapHandle } from '@glimmer/util';
-import { capabilityFlagsFrom } from './capabilities';
-import { hasStaticLayoutCapability } from './compiled/opcodes/component';
-import { resolveComponent } from './component/resolve';
+import { Reference } from '@glimmer/reference';
+import { unwrapHandle } from '@glimmer/util';
 import { ARGS } from './symbols';
-import { AotVM, InternalVM, JitVM } from './vm/append';
-import { NewElementBuilder } from './vm/element-builder';
+import VM, { InternalVM } from './vm/append';
 import { DynamicScopeImpl } from './scope';
 import { inTransaction } from './environment';
 
-class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
-  constructor(private vm: InternalVM<C>) {}
+class TemplateIteratorImpl implements TemplateIterator {
+  constructor(private vm: InternalVM) {}
   next(): RichIteratorResult<null, RenderResult> {
     return this.vm.next();
   }
@@ -46,45 +38,22 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
   return result!;
 }
 
-export function renderAotMain(
-  runtime: AotRuntimeContext,
-  self: Reference,
-  treeBuilder: ElementBuilder,
-  handle: number,
-  dynamicScope: DynamicScope = new DynamicScopeImpl()
-): TemplateIterator {
-  let vm = AotVM.initial(runtime, { self, dynamicScope, treeBuilder, handle });
-  return new TemplateIteratorImpl(vm);
-}
-
-export function renderAot(
-  runtime: AotRuntimeContext,
-  handle: number,
-  cursor: Cursor,
-  self: Reference = UNDEFINED_REFERENCE
-): TemplateIterator {
-  let treeBuilder = NewElementBuilder.forInitialRender(runtime.env, cursor);
-  let dynamicScope = new DynamicScopeImpl();
-  let vm = AotVM.initial(runtime, { self, dynamicScope, treeBuilder, handle });
-  return new TemplateIteratorImpl(vm);
-}
-
-export function renderJitMain(
-  runtime: JitRuntimeContext,
+export function renderMain(
+  runtime: RuntimeContext,
   context: SyntaxCompilationContext,
   self: Reference,
   treeBuilder: ElementBuilder,
   handle: number,
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
-  let vm = JitVM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle });
+  let vm = VM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle });
   return new TemplateIteratorImpl(vm);
 }
 
 export type RenderComponentArgs = Dict<Reference>;
 
-function renderInvocation<C extends JitOrAotBlock>(
-  vm: InternalVM<C>,
+function renderInvocation(
+  vm: InternalVM,
   invocation: Invocation,
   definition: ComponentDefinition,
   args: RenderComponentArgs
@@ -123,38 +92,8 @@ function renderInvocation<C extends JitOrAotBlock>(
   return new TemplateIteratorImpl(vm);
 }
 
-export function renderAotComponent<R>(
-  runtime: AotRuntimeContext<R>,
-  treeBuilder: ElementBuilder,
-  main: number,
-  name: string,
-  args: RenderComponentArgs = {},
-  dynamicScope: DynamicScope = new DynamicScopeImpl()
-): TemplateIterator {
-  let vm = AotVM.empty(runtime, { treeBuilder, handle: main, dynamicScope });
-
-  const definition = expect(
-    resolveComponent(vm.runtime.resolver, name),
-    `could not find component "${name}"`
-  );
-
-  const { manager, state } = definition;
-
-  const capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
-
-  let invocation;
-
-  if (hasStaticLayoutCapability(capabilities, manager)) {
-    invocation = (manager as WithAotStaticLayout).getAotStaticLayout(state, vm.runtime.resolver);
-  } else {
-    throw new Error('Cannot invoke components with dynamic layouts as a root component.');
-  }
-
-  return renderInvocation(vm, invocation, definition, args);
-}
-
-export function renderJitComponent(
-  runtime: JitRuntimeContext,
+export function renderComponent(
+  runtime: RuntimeContext,
   treeBuilder: ElementBuilder,
   context: SyntaxCompilationContext,
   definition: ComponentDefinition,
@@ -164,7 +103,7 @@ export function renderJitComponent(
 ): TemplateIterator {
   const handle = unwrapHandle(layout.compile(context));
   const invocation = { handle, symbolTable: layout.symbolTable };
-  let vm = JitVM.empty(
+  let vm = VM.empty(
     runtime,
     { treeBuilder, handle: context.program.stdlib.main, dynamicScope },
     context

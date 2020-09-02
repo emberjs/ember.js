@@ -1,4 +1,4 @@
-import { AbstractNodeTest, NodeJitRenderDelegate, NodeAotRenderDelegate } from '../modes/node/env';
+import { AbstractNodeTest, NodeJitRenderDelegate } from '../modes/node/env';
 import { test } from '../test-decorator';
 import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
 import { RenderTest } from '../render-test';
@@ -39,12 +39,6 @@ export class JitSerializationDelegate extends NodeJitRenderDelegate {
   static style = 'jit serialization';
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
-    return serializeBuilder(env, cursor);
-  }
-}
-
-export class AotSerializationDelegate extends NodeAotRenderDelegate {
-  getElementBuilder(env: Environment, cursor: Cursor) {
     return serializeBuilder(env, cursor);
   }
 }

@@ -84,19 +84,9 @@ operand-stack = [
   []
 ]
 
-[syscall.sbblock]
+[syscall.sblock]
 
-format = ["SetAotBlock", "symbol:u32"]
-operation = "Bind the block at the top of the stack."
-operand-stack = [
-  ["symbol-table", "scope", "handle"],
-  []
-]
-
-
-[syscall.sjblock]
-
-format = ["SetJitBlock", "symbol:u32"]
+format = ["SetBlock", "symbol:u32"]
 operation = "Bind the block at the top of the stack."
 operand-stack = [
   ["symbol-table", "scope", "block"],
@@ -140,8 +130,8 @@ notes = "TODO: The three elements on the stack can be null"
 
 [syscall.blockspread]
 
-format = ["JitSpreadBlock"]
-operation = "Spread a JIT scope block into three stack elements"
+format = ["SpreadBlock"]
+operation = "Spread a scope block into three stack elements"
 operand-stack = [
   ["scope-block"],
   ["symbol-table", "scope", "handle"]
@@ -792,18 +782,9 @@ operand-stack = [
   ["option-str"]
 ]
 
-[syscall.comp_alayoutload]
+[syscall.comp_layoutload]
 
-format = ["GetAotComponentLayout", "state:register"]
-operation = "Get the component layout from the manager."
-operand-stack = [
-  [],
-  ["ProgramSymbolTable", "handle"]
-]
-
-[syscall.comp_jlayoutload]
-
-format = ["GetJitComponentLayout", "state:register"]
+format = ["GetComponentLayout", "state:register"]
 operation = "Get the component layout from the manager."
 operand-stack = [
   [],

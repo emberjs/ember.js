@@ -8,7 +8,7 @@ import { Bounds } from '../dom/bounds';
 import { VMArguments } from '../runtime/arguments';
 import { ElementOperations } from '../runtime/element';
 import { Environment } from '../runtime/environment';
-import { RuntimeResolverDelegate, JitRuntimeResolver, RuntimeResolver } from '../serialize';
+import { RuntimeResolver } from '../serialize';
 import { CompilableProgram, Template } from '../template';
 import { ProgramSymbolTable } from '../tier1/symbol-table';
 import { DynamicScope } from '../runtime/scope';
@@ -79,34 +79,15 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
   update(state: ComponentInstanceState, dynamicScope: Option<DynamicScope>): void;
 }
 
-export interface WithAotStaticLayout<
+export interface WithStaticLayout<
   I = ComponentInstanceState,
   D = ComponentDefinitionState,
-  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
+  R extends RuntimeResolver = RuntimeResolver
 > extends ComponentManager<I, D> {
-  getAotStaticLayout(state: D, resolver: R): Invocation;
+  getStaticLayout(state: D, resolver: R): CompilableProgram;
 }
 
-export interface WithJitStaticLayout<
-  I = ComponentInstanceState,
-  D = ComponentDefinitionState,
-  R extends JitRuntimeResolver = JitRuntimeResolver
-> extends ComponentManager<I, D> {
-  getJitStaticLayout(state: D, resolver: R): CompilableProgram;
-}
-
-export interface WithJitDynamicLayout<
-  I = ComponentInstanceState,
-  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
-> extends ComponentManager<I> {
-  // Return the compiled layout to use for this component. This is called
-  // *after* the component instance has been created, because you might
-  // want to return a different layout per-instance for optimization reasons
-  // or to implement features like Ember's "late-bound" layouts.
-  getJitDynamicLayout(component: I, resolver: R): Template;
-}
-
-export interface WithAotDynamicLayout<
+export interface WithDynamicLayout<
   I = ComponentInstanceState,
   R extends RuntimeResolver = RuntimeResolver
 > extends ComponentManager<I> {
@@ -114,7 +95,7 @@ export interface WithAotDynamicLayout<
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  getAotDynamicLayout(component: I, resolver: R): Invocation;
+  getDynamicLayout(component: I, resolver: R): Template;
 }
 
 export interface WithDynamicTagName<ComponentInstanceState>

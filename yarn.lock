@@ -846,6 +846,19 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@glimmer/bundle-compiler@^0.60.0":
+  version "0.60.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/bundle-compiler/-/bundle-compiler-0.60.0.tgz#f96c72745d671ecc7fb1886adf8d8d7a6f70cefb"
+  integrity sha512-vR4t4ElNZC0aKBiTIrGgzzrzbhy7VIlfcoCXZdBOBFIx+ut4cVbUCFk+vwXk+siTiQBlNlbaN/hkWtUW8oHB9w==
+  dependencies:
+    "@glimmer/compiler" "^0.60.0"
+    "@glimmer/interfaces" "^0.60.0"
+    "@glimmer/opcode-compiler" "^0.60.0"
+    "@glimmer/program" "^0.60.0"
+    "@glimmer/syntax" "^0.60.0"
+    "@glimmer/util" "^0.60.0"
+    "@glimmer/wire-format" "^0.60.0"
+
 "@glimmer/env@0.1.7", "@glimmer/env@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"

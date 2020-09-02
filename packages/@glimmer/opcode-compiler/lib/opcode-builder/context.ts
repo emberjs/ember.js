@@ -1,53 +1,21 @@
 import {
+  CompileTimeResolver,
   ContainingMetadata,
   SyntaxCompilationContext,
   TemplateCompilationContext,
-  JitSyntaxCompilationContext,
-  WholeProgramCompilationContext,
-  CompileMode,
+  CompileTimeArtifacts,
 } from '@glimmer/interfaces';
 import { EncoderImpl } from './encoder';
 import { MacrosImpl } from '../syntax/macros';
-import { ProgramCompilationContext, JitProgramCompilationContext } from '../program-context';
-import { DefaultCompileTimeResolverDelegate, ResolverDelegate } from './delegate';
+import { CompileTimeCompilationContextImpl } from '../program-context';
 
 export function syntaxCompilationContext(
-  program: WholeProgramCompilationContext,
-  macros: MacrosImpl
+  artifacts: CompileTimeArtifacts,
+  resolver: CompileTimeResolver,
+  macros = new MacrosImpl()
 ): SyntaxCompilationContext {
   return {
-    program,
-    macros,
-  };
-}
-
-export function Context(
-  resolver: ResolverDelegate = {},
-  mode: CompileMode = CompileMode.aot,
-  macros = new MacrosImpl()
-) {
-  return {
-    program: new ProgramCompilationContext(new DefaultCompileTimeResolverDelegate(resolver), mode),
-    macros,
-  };
-}
-
-export function JitContext(
-  resolver: ResolverDelegate = {},
-  macros = new MacrosImpl()
-): JitSyntaxCompilationContext {
-  return {
-    program: new JitProgramCompilationContext(new DefaultCompileTimeResolverDelegate(resolver)),
-    macros,
-  };
-}
-
-export function AotContext(resolver: ResolverDelegate = {}, macros = new MacrosImpl()) {
-  return {
-    program: new ProgramCompilationContext(
-      new DefaultCompileTimeResolverDelegate(resolver),
-      CompileMode.aot
-    ),
+    program: new CompileTimeCompilationContextImpl(artifacts, resolver),
     macros,
   };
 }

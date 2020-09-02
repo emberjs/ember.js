@@ -3,12 +3,9 @@ import {
   CapturedNamedArguments,
   Bounds,
   WithDynamicTagName,
-  WithJitDynamicLayout,
-  WithAotStaticLayout,
+  WithDynamicLayout,
   ModuleLocator,
   ProgramSymbolTable,
-  AotRuntimeResolver,
-  Invocation,
   Template,
   VMArguments,
   PreparedArguments,
@@ -18,7 +15,7 @@ import {
   Destroyable,
   Dict,
   ComponentCapabilities,
-  JitRuntimeResolver,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
 import {
@@ -127,12 +124,7 @@ export interface EmberishCurlyComponentDefinitionState {
 export class EmberishCurlyComponentManager
   implements
     WithDynamicTagName<EmberishCurlyComponentState>,
-    WithJitDynamicLayout<EmberishCurlyComponentState, TestJitRuntimeResolver>,
-    WithAotStaticLayout<
-      EmberishCurlyComponentState,
-      EmberishCurlyComponentDefinitionState,
-      AotRuntimeResolver
-    > {
+    WithDynamicLayout<EmberishCurlyComponentState, TestJitRuntimeResolver> {
   constructor(private registry?: TestJitRegistry) {}
 
   getDebugName(state: TestComponentDefinitionState) {
@@ -143,16 +135,9 @@ export class EmberishCurlyComponentManager
     return state.capabilities;
   }
 
-  getAotStaticLayout(
-    state: EmberishCurlyComponentDefinitionState,
-    resolver: AotRuntimeResolver
-  ): Invocation {
-    return resolver.getInvocation(state.locator);
-  }
-
-  getJitDynamicLayout(
+  getDynamicLayout(
     { component: { layout } }: EmberishCurlyComponentState,
-    resolver: JitRuntimeResolver
+    resolver: RuntimeResolver
   ): Template {
     if (!this.registry) {
       throw new Error(

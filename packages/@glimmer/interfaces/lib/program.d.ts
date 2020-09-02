@@ -1,7 +1,7 @@
 import { STDLib, ContainingMetadata, HandleResult } from './template';
-import { StdlibOperand, CompileMode, Encoder, Macros } from './compile';
+import { StdlibOperand, Encoder, Macros } from './compile';
 import { Op } from './vm-opcodes';
-import { CompileTimeResolverDelegate } from './serialize';
+import { CompileTimeResolver } from './serialize';
 
 export interface RuntimeOp {
   offset: number;
@@ -44,7 +44,7 @@ export interface RuntimeHeap extends OpcodeHeap {
   scopesizeof(handle: number): number;
 }
 
-export interface WholeProgramCompilationContext {
+export interface CompileTimeCompilationContext {
   // The offsets to stdlib functions
   readonly stdlib: STDLib;
 
@@ -52,13 +52,10 @@ export interface WholeProgramCompilationContext {
   readonly constants: CompileTimeConstants;
 
   // The mechanism of resolving names to values at compile-time
-  readonly resolverDelegate: CompileTimeResolverDelegate;
+  readonly resolver: CompileTimeResolver;
 
   // The heap that the program is serializing into
   readonly heap: CompileTimeHeap;
-
-  // The mode: AOT or JIT
-  readonly mode: CompileMode;
 }
 
 /**
@@ -68,7 +65,7 @@ export interface WholeProgramCompilationContext {
  * of templates that use different macros.
  */
 export interface SyntaxCompilationContext {
-  readonly program: WholeProgramCompilationContext;
+  readonly program: CompileTimeCompilationContext;
   readonly macros: Macros;
 }
 
@@ -113,12 +110,7 @@ export interface RuntimeConstants {
   getSerializable<T>(handle: number): T;
 }
 
-export interface JitProgramCompilationContext extends WholeProgramCompilationContext {
-  readonly constants: CompileTimeConstants & RuntimeConstants;
-  readonly heap: CompileTimeHeap & RuntimeHeap;
-}
-
-export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
-  readonly program: JitProgramCompilationContext;
-  readonly macros: Macros;
+export interface CompileTimeArtifacts {
+  heap: CompileTimeHeap;
+  constants: CompileTimeConstants;
 }
