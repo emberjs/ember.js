@@ -11,7 +11,6 @@ import {
 import { serializeBuilder } from '@glimmer/node';
 import { ASTPluginBuilder } from '@glimmer/syntax';
 import { createConstRef, Reference } from '@glimmer/reference';
-import { cast } from '@glimmer/runtime';
 import createHTMLDocument from '@simple-dom/document';
 import {
   SimpleDocument,
@@ -39,7 +38,7 @@ import { renderTemplate } from '../jit/render';
 import TestJitRuntimeResolver from '../jit/resolver';
 import { debugRehydration, DebugRehydrationBuilder } from './builder';
 import { BaseEnv } from '../env';
-import { assign } from '@glimmer/util';
+import { assign, cast } from '@glimmer/util';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];

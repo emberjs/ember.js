@@ -1,5 +1,5 @@
 import { Bounds, ElementBuilder, Environment, Option } from '@glimmer/interfaces';
-import { assert, expect, Maybe, Stack } from '@glimmer/util';
+import { assert, cast, expect, Maybe, Stack } from '@glimmer/util';
 import {
   AttrNamespace,
   Namespace,
@@ -11,7 +11,6 @@ import {
   SimpleText,
 } from '@simple-dom/interface';
 import { ConcreteBounds, CursorImpl } from '../bounds';
-import { cast } from '../simple-cast';
 import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';
 
 export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';

@@ -1,5 +1,6 @@
-import { DynamicScopeImpl, cast } from '@glimmer/runtime';
+import { DynamicScopeImpl } from '@glimmer/runtime';
 import { createPrimitiveRef } from '@glimmer/reference';
+import { cast } from '@glimmer/util';
 import { RenderTest, Count } from '../render-test';
 import { ComponentKind } from '../components/types';
 import { test } from '../test-decorator';

@@ -1,5 +1,5 @@
 import { Bounds } from '@glimmer/interfaces';
-import { assert, clearElement, Option, unwrap } from '@glimmer/util';
+import { assert, cast, clearElement, Option, unwrap } from '@glimmer/util';
 import {
   InsertPosition,
   Namespace,
@@ -8,7 +8,6 @@ import {
   SimpleNode,
 } from '@simple-dom/interface';
 import { DOMOperations, moveNodesBefore } from '../dom/operations';
-import { cast } from '../simple-cast';
 
 export const SVG_NAMESPACE = Namespace.SVG;
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;

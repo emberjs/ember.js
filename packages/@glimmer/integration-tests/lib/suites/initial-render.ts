@@ -1,10 +1,9 @@
 import { Namespace, SimpleElement } from '@simple-dom/interface';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { strip, unwrap } from '@glimmer/util';
+import { cast, strip, unwrap } from '@glimmer/util';
 import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
 import { assertNodeTagName } from '../dom/assertions';
-import { cast } from '@glimmer/runtime';
 
 export class InitialRenderSuite extends RenderTest {
   static suiteName = 'initial render';

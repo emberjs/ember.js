@@ -17,7 +17,6 @@ import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference } from '@glimmer/reference';
 import {
-  cast,
   clientBuilder,
   CurriedComponentDefinition,
   EnvironmentDelegate,
@@ -27,7 +26,7 @@ import {
   runtimeContext,
 } from '@glimmer/runtime';
 import { ASTPluginBuilder } from '@glimmer/syntax';
-import { assign, unwrapTemplate } from '@glimmer/util';
+import { assign, cast, unwrapTemplate } from '@glimmer/util';
 import {
   ElementNamespace,
   SimpleDocument,

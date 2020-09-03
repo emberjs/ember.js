@@ -1,6 +1,6 @@
 import { Dict, Option } from '@glimmer/interfaces';
-import { cast, SafeString } from '@glimmer/runtime';
-import { expect } from '@glimmer/util';
+import { SafeString } from '@glimmer/runtime';
+import { cast, expect } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 import {
   assertElement,

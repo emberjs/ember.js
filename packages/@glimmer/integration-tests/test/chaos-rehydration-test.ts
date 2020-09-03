@@ -1,6 +1,5 @@
 import { Dict, Option } from '@glimmer/interfaces';
-import { cast } from '@glimmer/runtime';
-import { expect } from '@glimmer/util';
+import { cast, expect } from '@glimmer/util';
 import { NodeType, SimpleElement } from '@simple-dom/interface';
 import {
   blockStack,

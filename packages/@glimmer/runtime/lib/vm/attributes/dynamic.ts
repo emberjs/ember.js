@@ -12,7 +12,7 @@ import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
 import { DEBUG } from '@glimmer/env';
-import { cast } from '../../simple-cast';
+import { cast } from '@glimmer/util';
 
 export function dynamicAttribute(
   element: SimpleElement,

@@ -1,4 +1,5 @@
-import { cast, EnvironmentImpl } from '@glimmer/runtime';
+import { cast } from '@glimmer/util';
+import { EnvironmentImpl } from '@glimmer/runtime';
 
 QUnit.module('[integration] env');
 
