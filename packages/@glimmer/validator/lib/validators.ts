@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { scheduleRevalidate } from '@glimmer/global-context';
-import { symbol } from './utils';
+import { symbol, unwrap } from './utils';
 import { assertTagNotConsumed } from './debug';
 
 //////////
@@ -13,7 +13,7 @@ export const VOLATILE: Revision = NaN;
 
 let $REVISION = INITIAL;
 
-export function bump() {
+export function bump(): void {
   $REVISION++;
 }
 
@@ -25,7 +25,7 @@ export interface EntityTag<T> {
   [COMPUTE](): T;
 }
 
-export interface Tag extends EntityTag<Revision> {}
+export type Tag = EntityTag<Revision>;
 
 //////////
 
@@ -51,7 +51,7 @@ export function valueForTag(tag: Tag): Revision {
  * @param tag
  * @param snapshot
  */
-export function validateTag(tag: Tag, snapshot: Revision) {
+export function validateTag(tag: Tag, snapshot: Revision): boolean {
   return snapshot >= tag[COMPUTE]();
 }
 
@@ -72,22 +72,44 @@ const enum MonomorphicTagTypes {
 
 const TYPE: unique symbol = symbol('TAG_TYPE');
 
+// this is basically a const
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export let ALLOW_CYCLES: WeakMap<Tag, boolean> | undefined;
 
 if (DEBUG) {
   ALLOW_CYCLES = new WeakMap();
 }
 
+function allowsCycles(tag: Tag): boolean {
+  if (ALLOW_CYCLES === undefined) {
+    return true;
+  } else {
+    return ALLOW_CYCLES.has(tag);
+  }
+}
+
 interface MonomorphicTagBase<T extends MonomorphicTagTypes> extends Tag {
   [TYPE]: T;
 }
 
-export interface DirtyableTag extends MonomorphicTagBase<MonomorphicTagTypes.Dirtyable> {}
-export interface UpdatableTag extends MonomorphicTagBase<MonomorphicTagTypes.Updatable> {}
-export interface CombinatorTag extends MonomorphicTagBase<MonomorphicTagTypes.Combinator> {}
-export interface ConstantTag extends MonomorphicTagBase<MonomorphicTagTypes.Constant> {}
+export type DirtyableTag = MonomorphicTagBase<MonomorphicTagTypes.Dirtyable>;
+export type UpdatableTag = MonomorphicTagBase<MonomorphicTagTypes.Updatable>;
+export type CombinatorTag = MonomorphicTagBase<MonomorphicTagTypes.Combinator>;
+export type ConstantTag = MonomorphicTagBase<MonomorphicTagTypes.Constant>;
 
 class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
+  static combine(tags: Tag[]): Tag {
+    switch (tags.length) {
+      case 0:
+        return CONSTANT_TAG;
+      case 1:
+        return tags[0];
+      default:
+        let tag: MonomorphicTagImpl = new MonomorphicTagImpl(MonomorphicTagTypes.Combinator);
+        tag.subtag = tags;
+        return tag;
+    }
+  }
   private revision = INITIAL;
   private lastChecked = INITIAL;
   private lastValue = INITIAL;
@@ -106,7 +128,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
     let { lastChecked } = this;
 
     if (this.isUpdating === true) {
-      if (DEBUG && !ALLOW_CYCLES!.has(this)) {
+      if (DEBUG && !allowsCycles(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
 
@@ -192,7 +214,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
     if (DEBUG) {
       // Usually by this point, we've already asserted with better error information,
       // but this is our last line of defense.
-      assertTagNotConsumed!(tag);
+      unwrap(assertTagNotConsumed)(tag);
     }
 
     (tag as MonomorphicTagImpl).revision = ++$REVISION;
@@ -201,8 +223,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
   }
 }
 
-export const dirtyTag = MonomorphicTagImpl.dirtyTag;
-export const updateTag = MonomorphicTagImpl.updateTag;
+export const DIRTY_TAG = MonomorphicTagImpl.dirtyTag;
+export const UPDATE_TAG = MonomorphicTagImpl.updateTag;
 
 //////////
 
@@ -225,7 +247,7 @@ export function isConstTag(tag: Tag): tag is ConstantTag {
 //////////
 
 export class VolatileTag implements Tag {
-  [COMPUTE]() {
+  [COMPUTE](): Revision {
     return VOLATILE;
   }
 }
@@ -235,7 +257,7 @@ export const VOLATILE_TAG = new VolatileTag();
 //////////
 
 export class CurrentTag implements CurrentTag {
-  [COMPUTE]() {
+  [COMPUTE](): Revision {
     return $REVISION;
   }
 }
@@ -244,18 +266,7 @@ export const CURRENT_TAG = new CurrentTag();
 
 //////////
 
-export function combine(tags: Tag[]): Tag {
-  switch (tags.length) {
-    case 0:
-      return CONSTANT_TAG;
-    case 1:
-      return tags[0];
-    default:
-      let tag: CombinatorTag = new MonomorphicTagImpl(MonomorphicTagTypes.Combinator);
-      (tag as any).subtag = tags;
-      return tag;
-  }
-}
+export const combine = MonomorphicTagImpl.combine;
 
 // Warm
 
@@ -264,15 +275,15 @@ let tag2 = createUpdatableTag();
 let tag3 = createUpdatableTag();
 
 valueForTag(tag1);
-dirtyTag(tag1);
+DIRTY_TAG(tag1);
 valueForTag(tag1);
-updateTag(tag1, combine([tag2, tag3]));
+UPDATE_TAG(tag1, combine([tag2, tag3]));
 valueForTag(tag1);
-dirtyTag(tag2);
+DIRTY_TAG(tag2);
 valueForTag(tag1);
-dirtyTag(tag3);
+DIRTY_TAG(tag3);
 valueForTag(tag1);
-updateTag(tag1, tag3);
+UPDATE_TAG(tag1, tag3);
 valueForTag(tag1);
-dirtyTag(tag3);
+DIRTY_TAG(tag3);
 valueForTag(tag1);

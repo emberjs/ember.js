@@ -38,7 +38,7 @@ import { renderTemplate } from '../jit/render';
 import TestJitRuntimeResolver from '../jit/resolver';
 import { debugRehydration, DebugRehydrationBuilder } from './builder';
 import { BaseEnv } from '../env';
-import { assign } from '@glimmer/util';
+import { assign, cast } from '@glimmer/util';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];
@@ -69,7 +69,7 @@ export class RehydrationDelegate implements RenderDelegate {
   constructor(options?: RenderDelegateOptions) {
     let delegate = assign(options?.env ?? {}, BaseEnv);
 
-    this.clientDoc = document as SimpleDocument;
+    this.clientDoc = cast(document).simple;
     this.clientResolver = new TestJitRuntimeResolver();
     this.clientRegistry = this.clientResolver.registry;
     this.clientEnv = JitDelegateContext(
@@ -227,5 +227,5 @@ export class RehydrationDelegate implements RenderDelegate {
 }
 
 export function qunitFixture(): SimpleElement {
-  return document.getElementById('qunit-fixture') as SimpleElement;
+  return cast(document).getElementById('qunit-fixture');
 }

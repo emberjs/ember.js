@@ -30,7 +30,7 @@ class BasicComponentManager
     WithCreateInstance<BasicState, Environment, new (args: Readonly<Dict<unknown>>) => object> {
   create(
     env: Environment,
-    Component: new (args: ComponentArgs) => object,
+    Component: { new (args: ComponentArgs): object },
     args: VMArguments | null
   ) {
     const instance = new Component(argsProxy(args === null ? EMPTY_ARGS : args.capture()));

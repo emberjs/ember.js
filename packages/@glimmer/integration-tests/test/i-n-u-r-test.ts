@@ -1,9 +1,10 @@
+import { cast } from '@glimmer/util';
 import { JitRenderDelegate, RenderTest } from '..';
-import { SimpleComment, SimpleElement, SimpleText } from '@simple-dom/interface';
-
 import { module } from './support';
 
 module('Render Tests: I-N-U-R', ({ test }) => {
+  let doc = cast(document).simple;
+
   test('Can set properties', (assert) => {
     new (class extends RenderTest {
       constructor(delegate: JitRenderDelegate) {
@@ -15,8 +16,8 @@ module('Render Tests: I-N-U-R', ({ test }) => {
   });
 
   test('Can take basic snapshots', (assert) => {
-    let div = document.createElement('div') as SimpleElement;
-    let text = document.createTextNode('Foo') as SimpleText;
+    let div = doc.createElement('div');
+    let text = doc.createTextNode('Foo');
     div.appendChild(text);
 
     new (class extends RenderTest {
@@ -30,9 +31,9 @@ module('Render Tests: I-N-U-R', ({ test }) => {
   });
 
   test('Can take nested snapshots', (assert) => {
-    let div = document.createElement('div') as SimpleElement;
-    let p = document.createElement('p') as SimpleElement;
-    let text = document.createTextNode('Foo') as SimpleText;
+    let div = doc.createElement('div');
+    let p = doc.createElement('p');
+    let text = doc.createTextNode('Foo');
     p.appendChild(text);
     div.appendChild(p);
 
@@ -47,10 +48,10 @@ module('Render Tests: I-N-U-R', ({ test }) => {
   });
 
   test('Can take nested snapshots of serialized blocks', (assert) => {
-    let div = document.createElement('div') as SimpleElement;
-    let open = document.createComment('<!--%+b:0%-->') as SimpleComment;
-    let text = document.createTextNode('Foo') as SimpleText;
-    let close = document.createComment('<!--%-b:0%-->') as SimpleComment;
+    let div = doc.createElement('div');
+    let open = doc.createComment('<!--%+b:0%-->');
+    let text = doc.createTextNode('Foo');
+    let close = doc.createComment('<!--%-b:0%-->');
     div.appendChild(open);
     div.appendChild(text);
     div.appendChild(close);

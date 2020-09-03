@@ -1,14 +1,14 @@
-import { Bounds, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
-import { assert, expect, Stack, Maybe } from '@glimmer/util';
+import { Bounds, ElementBuilder, Environment, Option } from '@glimmer/interfaces';
+import { assert, cast, expect, Maybe, Stack } from '@glimmer/util';
 import {
   AttrNamespace,
   Namespace,
+  NodeType,
   SimpleAttr,
   SimpleComment,
   SimpleElement,
   SimpleNode,
   SimpleText,
-  NodeType,
 } from '@simple-dom/interface';
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';
@@ -413,7 +413,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   getMarker(element: HTMLElement, guid: string): Option<SimpleNode> {
     let marker = element.querySelector(`script[glmr="${guid}"]`);
     if (marker) {
-      return marker as SimpleNode;
+      return cast(marker, 'NODE').simple;
     }
     return null;
   }
@@ -423,7 +423,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
   ): Option<RemoteLiveBlock> {
-    let marker = this.getMarker(element as HTMLElement, cursorId);
+    let marker = this.getMarker(cast(element, 'HTML').node, cursorId);
 
     assert(
       !marker || marker.parentNode === element,

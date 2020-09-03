@@ -347,7 +347,7 @@ interface HandlebarsParseOptions {
 }
 
 export interface PreprocessOptions {
-  meta?: unknown;
+  meta?: object;
   plugins?: {
     ast?: ASTPluginBuilder[];
   };
@@ -401,7 +401,7 @@ export function preprocess(html: string, options: PreprocessOptions = {}): AST.T
   if (options && options.plugins && options.plugins.ast) {
     for (let i = 0, l = options.plugins.ast.length; i < l; i++) {
       let transform = options.plugins.ast[i];
-      let env = assign({}, options, { syntax }, { plugins: undefined });
+      let env: ASTPluginEnvironment = assign({}, options, { syntax }, { plugins: undefined });
 
       let pluginResult = transform(env);
 

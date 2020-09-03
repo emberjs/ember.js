@@ -25,12 +25,5 @@
     "noEmit": true
   },
   "include": ["packages/**/*.ts"],
-  "exclude": [
-    "dist",
-    "ts-dist",
-    "**/dist",
-    "tmp",
-    "node_modules",
-    ".vscode"
-  ]
+  "exclude": ["dist", "ts-dist", "**/dist", "tmp", "node_modules", ".vscode"]
 }

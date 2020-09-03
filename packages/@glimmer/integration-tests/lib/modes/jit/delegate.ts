@@ -1,64 +1,64 @@
 import { PrecompileOptions } from '@glimmer/compiler';
 import {
+  ComponentDefinition,
+  Cursor,
+  Dict,
+  DynamicScope,
+  ElementBuilder,
+  Environment,
+  HandleResult,
+  Helper,
+  Option,
+  RenderResult,
   RuntimeContext,
   SyntaxCompilationContext,
-  Environment,
-  Cursor,
-  ElementBuilder,
-  Dict,
-  RenderResult,
-  Option,
-  Helper,
-  HandleResult,
-  DynamicScope,
-  ComponentDefinition,
 } from '@glimmer/interfaces';
-import {
-  SimpleDocument,
-  SimpleElement,
-  ElementNamespace,
-  SimpleText,
-  SimpleDocumentFragment,
-} from '@simple-dom/interface';
-import { TestJitRegistry } from './registry';
-import {
-  getDynamicVar,
-  clientBuilder,
-  EnvironmentDelegate,
-  CurriedComponentDefinition,
-  runtimeContext,
-  renderSync,
-  renderComponent,
-} from '@glimmer/runtime';
+import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
+import { createConstRef, Reference } from '@glimmer/reference';
 import {
-  registerInternalHelper,
-  registerStaticTaglessComponent,
-  registerEmberishCurlyComponent,
-  registerEmberishGlimmerComponent,
-  registerModifier,
-  registerHelper,
-  registerPartial,
-  registerTemplate,
-  componentHelper,
-} from './register';
+  clientBuilder,
+  CurriedComponentDefinition,
+  EnvironmentDelegate,
+  getDynamicVar,
+  renderComponent,
+  renderSync,
+  runtimeContext,
+} from '@glimmer/runtime';
 import { ASTPluginBuilder } from '@glimmer/syntax';
+import { assign, cast, unwrapTemplate } from '@glimmer/util';
+import {
+  ElementNamespace,
+  SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleText,
+} from '@simple-dom/interface';
+import { preprocess } from '../../compile';
 import { TestMacros } from '../../compile/macros';
-import JitCompileTimeLookup from './compilation-context';
-import TestJitRuntimeResolver from './resolver';
-import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { BasicComponentFactory } from '../../components/basic';
 import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
 import { EmberishGlimmerComponentFactory } from '../../components/emberish-glimmer';
-import { TestModifierConstructor } from '../../modifiers';
 import { UserHelper } from '../../helpers';
-import { createConstRef, Reference } from '@glimmer/reference';
-import { renderTemplate } from './render';
-import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
-import { preprocess } from '../../compile';
-import { unwrapTemplate, assign } from '@glimmer/util';
+import { TestModifierConstructor } from '../../modifiers';
+import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
 import { BaseEnv } from '../env';
+import JitCompileTimeLookup from './compilation-context';
+import {
+  componentHelper,
+  registerEmberishCurlyComponent,
+  registerEmberishGlimmerComponent,
+  registerHelper,
+  registerInternalHelper,
+  registerModifier,
+  registerPartial,
+  registerStaticTaglessComponent,
+  registerTemplate,
+} from './register';
+import { TestJitRegistry } from './registry';
+import { renderTemplate } from './render';
+import TestJitRuntimeResolver from './resolver';
 
 export interface JitTestDelegateContext {
   runtime: RuntimeContext;
@@ -95,7 +95,7 @@ export class JitRenderDelegate implements RenderDelegate {
   private env: EnvironmentDelegate;
 
   constructor(options?: RenderDelegateOptions) {
-    this.doc = options?.doc ?? (document as SimpleDocument);
+    this.doc = options?.doc ?? cast(document).simple;
     this.env = assign(options?.env ?? {}, BaseEnv);
     this.context = this.getContext();
   }
@@ -106,7 +106,7 @@ export class JitRenderDelegate implements RenderDelegate {
 
   getInitialElement(): SimpleElement {
     if (isBrowserTestDocument(this.doc)) {
-      return this.doc.getElementById('qunit-fixture')! as SimpleElement;
+      return cast(this.doc).getElementById('qunit-fixture');
     } else {
       return this.createElement('div');
     }

@@ -14,6 +14,7 @@ export interface SyntaxErrorConstructor {
  * Subclass of `Error` with additional information
  * about location of incorrect markup.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const SyntaxError: SyntaxErrorConstructor = (function () {
   SyntaxError.prototype = Object.create(Error.prototype);
   SyntaxError.prototype.constructor = SyntaxError;

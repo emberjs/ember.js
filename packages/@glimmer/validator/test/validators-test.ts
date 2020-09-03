@@ -16,6 +16,15 @@ import {
   validateTag,
   valueForTag,
 } from '..';
+import { UpdatableTag } from '../lib/validators';
+
+function unwrap<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) {
+    throw new Error('unexpected null or undefined value');
+  }
+
+  return value;
+}
 
 module('@glimmer/validator: validators', () => {
   module('DirtyableTag', () => {
@@ -35,7 +44,7 @@ module('@glimmer/validator: validators', () => {
     test('it calls scheduleRevalidate', (assert) => {
       assert.expect(1);
 
-      let originalContext = testOverrideGlobalContext!({
+      let originalContext = unwrap(testOverrideGlobalContext)({
         scheduleRevalidate() {
           assert.ok(true, 'called');
         },
@@ -46,7 +55,7 @@ module('@glimmer/validator: validators', () => {
 
         dirtyTag(tag);
       } finally {
-        testOverrideGlobalContext!(originalContext);
+        unwrap(testOverrideGlobalContext)(originalContext);
       }
     });
 
@@ -56,7 +65,7 @@ module('@glimmer/validator: validators', () => {
         let subtag = createTag();
 
         assert.throws(
-          () => updateTag(tag as any, subtag),
+          () => updateTag((tag as unknown) as UpdatableTag, subtag),
           /Error: Attempted to update a tag that was not updatable/
         );
       });
@@ -104,7 +113,7 @@ module('@glimmer/validator: validators', () => {
       let snapshot = valueForTag(tag);
 
       // Now, we update the parent tag with the subtag, and revalidate it
-      updateTag(tag as any, subtag);
+      updateTag((tag as unknown) as UpdatableTag, subtag);
 
       assert.ok(validateTag(tag, snapshot), 'tag is still valid after being updated');
 
@@ -125,7 +134,7 @@ module('@glimmer/validator: validators', () => {
       dirtyTag(subtag);
 
       // Now, we update the parent tag with the subtag, and revalidate it
-      updateTag(tag as any, subtag);
+      updateTag(tag, subtag);
 
       assert.ok(validateTag(tag, snapshot), 'tag is still valid after being updated');
 
@@ -156,8 +165,8 @@ module('@glimmer/validator: validators', () => {
 
         let snapshot = valueForTag(tag);
 
-        ALLOW_CYCLES!.set(tag, true);
-        ALLOW_CYCLES!.set(subtag, true);
+        unwrap(ALLOW_CYCLES).set(tag, true);
+        unwrap(ALLOW_CYCLES).set(subtag, true);
 
         updateTag(tag, subtag);
         updateTag(subtag, tag);
@@ -193,7 +202,8 @@ module('@glimmer/validator: validators', () => {
         let combined = combine([tag1, tag2]);
 
         assert.throws(
-          () => dirtyTag(combined as any),
+          // @ts-expect-error this is an error condition
+          () => dirtyTag(combined),
           /Error: Attempted to dirty a tag that was not dirtyable/
         );
       });
@@ -205,7 +215,8 @@ module('@glimmer/validator: validators', () => {
         let combined = combine([tag1, tag2]);
 
         assert.throws(
-          () => updateTag(combined as any, tag1),
+          // @ts-expect-error this is an error condition
+          () => updateTag(combined, tag1),
           /Error: Attempted to update a tag that was not updatable/
         );
       });
@@ -216,7 +227,8 @@ module('@glimmer/validator: validators', () => {
     if (DEBUG) {
       test('it cannot be dirtied', (assert) => {
         assert.throws(
-          () => dirtyTag(CONSTANT_TAG as any),
+          // @ts-expect-error this is an error condition
+          () => dirtyTag(CONSTANT_TAG),
           /Error: Attempted to dirty a tag that was not dirtyable/
         );
       });
@@ -225,7 +237,8 @@ module('@glimmer/validator: validators', () => {
         let subtag = createTag();
 
         assert.throws(
-          () => updateTag(CONSTANT_TAG as any, subtag),
+          // @ts-expect-error this is an error condition
+          () => updateTag(CONSTANT_TAG, subtag),
           /Error: Attempted to update a tag that was not updatable/
         );
       });
@@ -252,7 +265,8 @@ module('@glimmer/validator: validators', () => {
     if (DEBUG) {
       test('it cannot be dirtied', (assert) => {
         assert.throws(
-          () => dirtyTag(VOLATILE_TAG as any),
+          // @ts-expect-error this is an error condition
+          () => dirtyTag(VOLATILE_TAG),
           /Error: Attempted to dirty a tag that was not dirtyable/
         );
       });
@@ -261,7 +275,8 @@ module('@glimmer/validator: validators', () => {
         let subtag = createTag();
 
         assert.throws(
-          () => updateTag(VOLATILE_TAG as any, subtag),
+          // @ts-expect-error this is an error condition
+          () => updateTag(VOLATILE_TAG, subtag),
           /Error: Attempted to update a tag that was not updatable/
         );
       });
@@ -295,7 +310,8 @@ module('@glimmer/validator: validators', () => {
     if (DEBUG) {
       test('it cannot be dirtied', (assert) => {
         assert.throws(
-          () => dirtyTag(CURRENT_TAG as any),
+          // @ts-expect-error this is an error condition
+          () => dirtyTag(CURRENT_TAG),
           /Error: Attempted to dirty a tag that was not dirtyable/
         );
       });
@@ -304,7 +320,8 @@ module('@glimmer/validator: validators', () => {
         let subtag = createTag();
 
         assert.throws(
-          () => updateTag(CURRENT_TAG as any, subtag),
+          // @ts-expect-error this is an error condition
+          () => updateTag(CURRENT_TAG, subtag),
           /Error: Attempted to update a tag that was not updatable/
         );
       });
