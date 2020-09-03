@@ -1,8 +1,8 @@
 import { symbolFor, getGlobal } from './lib/utils';
 
-const globalObj = getGlobal();
-
 const GLIMMER_VALIDATOR_REGISTRATION = symbolFor('GLIMMER_VALIDATOR_REGISTRATION');
+
+const globalObj = getGlobal();
 
 if (globalObj[GLIMMER_VALIDATOR_REGISTRATION] === true) {
   throw new Error(
@@ -25,7 +25,7 @@ export {
   createUpdatableTag,
   CurrentTag,
   CURRENT_TAG,
-  dirtyTag,
+  DIRTY_TAG as dirtyTag,
   DirtyableTag,
   EntityTag,
   INITIAL,
@@ -33,7 +33,7 @@ export {
   Revision,
   Tag,
   UpdatableTag,
-  updateTag,
+  UPDATE_TAG as updateTag,
   validateTag,
   valueForTag,
   VolatileTag,

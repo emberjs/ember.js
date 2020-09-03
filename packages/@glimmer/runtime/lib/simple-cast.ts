@@ -245,7 +245,6 @@ function isElement(node: Node | SimpleNode | SimpleElement): node is Element | S
 }
 
 function isBrowserNode(node: Node | SimpleNode): node is Node {
-  return typeof Node !== undefined && node instanceof Node;
   return typeof document !== undefined && node.ownerDocument === document;
 }
 

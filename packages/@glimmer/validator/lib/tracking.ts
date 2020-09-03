@@ -15,7 +15,7 @@ import {
   endTrackingTransaction,
   resetTrackingTransaction,
 } from './debug';
-import { symbol } from './utils';
+import { symbol, unwrap } from './utils';
 
 type Option<T> = T | null;
 
@@ -32,7 +32,7 @@ class Tracker {
     this.tags.add(tag);
 
     if (DEBUG) {
-      markTagAsConsumed!(tag);
+      unwrap(markTagAsConsumed)(tag);
     }
 
     this.last = tag;
@@ -76,7 +76,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
   CURRENT_TRACKER = new Tracker();
 
   if (DEBUG) {
-    beginTrackingTransaction!(debuggingContext);
+    unwrap(beginTrackingTransaction)(debuggingContext);
   }
 }
 
@@ -88,29 +88,29 @@ export function endTrackFrame(): Tag {
       throw new Error('attempted to close a tracking frame, but one was not open');
     }
 
-    endTrackingTransaction!();
+    unwrap(endTrackingTransaction)();
   }
 
-  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return current!.combine();
+  return unwrap(current).combine();
 }
 
-export function beginUntrackFrame() {
+export function beginUntrackFrame(): void {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
   CURRENT_TRACKER = null;
 }
 
-export function endUntrackFrame() {
+export function endUntrackFrame(): void {
   if (DEBUG && OPEN_TRACK_FRAMES.length === 0) {
     throw new Error('attempted to close a tracking frame, but one was not open');
   }
 
-  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop()!;
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 }
 
 // This function is only for handling errors and resetting to a valid state
-export function resetTracking() {
+export function resetTracking(): void {
   while (OPEN_TRACK_FRAMES.length > 0) {
     OPEN_TRACK_FRAMES.pop();
   }
@@ -118,15 +118,15 @@ export function resetTracking() {
   CURRENT_TRACKER = null;
 
   if (DEBUG) {
-    resetTrackingTransaction!();
+    unwrap(resetTrackingTransaction)();
   }
 }
 
-export function isTracking() {
+export function isTracking(): boolean {
   return CURRENT_TRACKER !== null;
 }
 
-export function consumeTag(tag: Tag) {
+export function consumeTag(tag: Tag): void {
   if (CURRENT_TRACKER !== null) {
     CURRENT_TRACKER.add(tag);
   }
@@ -176,7 +176,7 @@ export function createCache<T>(fn: () => T, debuggingLabel?: string | false): Ca
   return (cache as unknown) as Cache<T>;
 }
 
-export function getValue<T>(cache: Cache<T>): T {
+export function getValue<T>(cache: Cache<T>): T | undefined {
   assertCache(cache, 'getValue');
 
   let fn = cache[FN];
@@ -198,10 +198,10 @@ export function getValue<T>(cache: Cache<T>): T {
     consumeTag(tag);
   }
 
-  return cache[LAST_VALUE]!;
+  return cache[LAST_VALUE];
 }
 
-export function isConst(cache: Cache) {
+export function isConst(cache: Cache): boolean {
   assertCache(cache, 'isConst');
 
   let tag = cache[TAG];
@@ -261,7 +261,7 @@ export function track(callback: () => void, debugLabel?: string | false): Tag {
 // tracked, and that tracking now would cause backtracking rerender assertions.
 // I think once we move everyone forward onto modern APIs, we'll probably be
 // able to remove it, but I'm not sure yet.
-export function untrack(callback: () => void) {
+export function untrack<T>(callback: () => T): T {
   beginUntrackFrame();
 
   try {
