@@ -42,6 +42,7 @@ test('plugins are provided the syntax package', (assert) => {
 });
 
 test('can support the legacy AST transform API via ASTPlugin', (assert) => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   function ensurePlugin(FunctionOrPlugin: any): ASTPluginBuilder {
     if (FunctionOrPlugin.prototype && FunctionOrPlugin.prototype.transform) {
       return (env: ASTPluginEnvironment) => {

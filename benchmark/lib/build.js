@@ -24,7 +24,7 @@ async function build(dist, out) {
       sourcemap(),
       terser({
         compress: {
-          // eslint-disable-next-line @typescript-eslint/camelcase
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           negate_iife: false,
           sequences: 0,
         },

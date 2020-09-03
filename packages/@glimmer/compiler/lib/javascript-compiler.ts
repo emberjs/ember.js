@@ -17,14 +17,13 @@ import {
 } from '@glimmer/interfaces';
 import { expressionContextOp } from './builder';
 
-export type str = string;
 import Core = WireFormat.Core;
 import { deflateAttrName } from './utils';
 export type Params = WireFormat.Core.Params;
 export type ConcatParams = WireFormat.Core.ConcatParams;
 export type Hash = WireFormat.Core.Hash;
 export type Path = WireFormat.Core.Path;
-export type StackValue = WireFormat.Expression | Params | Hash | str;
+export type StackValue = WireFormat.Expression | Params | Hash | string;
 
 export abstract class Block {
   public statements: WireFormat.Statement[] = [];
@@ -399,12 +398,12 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
     this.push(op);
   }
 
-  staticArg(name: str) {
+  staticArg(name: string) {
     let value = this.popValue<Expression>();
     this.push([SexpOpcodes.StaticArg, name, value]);
   }
 
-  dynamicArg(name: str) {
+  dynamicArg(name: string) {
     let value = this.popValue<Expression>();
     this.push([SexpOpcodes.DynamicArg, name, value]);
   }
@@ -504,7 +503,7 @@ export default class JavaScriptCompiler implements Processor<JavaScriptCompilerO
     let values: Expression[] = new Array(size);
 
     for (let i = 0; i < size; i++) {
-      keys[i] = this.popValue<str>();
+      keys[i] = this.popValue<string>();
       values[i] = this.popValue<Expression>();
     }
 

@@ -1,8 +1,9 @@
 import { DEBUG } from '@glimmer/env';
-import { dirtyTag, createUpdatableTag, UpdatableTag, ConstantTag } from './validators';
+import { DIRTY_TAG, createUpdatableTag, UpdatableTag, ConstantTag } from './validators';
 import { assertTagNotConsumed } from './debug';
+import { Indexable, unwrap } from './utils';
 
-function isObjectLike<T>(u: T): u is object & T {
+function isObjectLike<T>(u: T): u is Indexable & T {
   return (typeof u === 'object' && u !== null) || typeof u === 'function';
 }
 
@@ -31,14 +32,14 @@ export function dirtyTagFor<T extends object>(
 
   if (propertyTag !== undefined) {
     if (DEBUG) {
-      assertTagNotConsumed!(propertyTag, obj, key);
+      unwrap(assertTagNotConsumed)(propertyTag, obj, key);
     }
 
-    dirtyTag(propertyTag);
+    DIRTY_TAG(propertyTag);
   }
 }
 
-export function tagMetaFor(obj: object) {
+export function tagMetaFor(obj: object): TagMeta {
   let tags = TRACKED_TAGS.get(obj);
 
   if (tags === undefined) {
