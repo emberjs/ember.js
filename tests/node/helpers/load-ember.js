@@ -7,19 +7,27 @@ const templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 // properly to avoid the @glimmer/validator assertion
 const originalGlobalSymbols = Object.getOwnPropertySymbols(global).map(sym => [sym, global[sym]]);
 
+module.exports.emberPath = require.resolve(emberPath);
+
 module.exports.loadEmber = function() {
   let Ember = require(emberPath);
 
-  let precompile = require(templateCompilerPath).precompile;
+  let _precompile = require(templateCompilerPath).precompile;
+
+  let precompile = function(templateString, options) {
+    let templateSpec = _precompile(templateString, options);
+
+    return `Ember.HTMLBars.template(${templateSpec})`;
+  };
 
   let compile = function(templateString, options) {
-    let templateSpec = precompile(templateString, options);
+    let templateSpec = _precompile(templateString, options);
     let template = new Function('return ' + templateSpec)();
 
     return Ember.HTMLBars.template(template);
   };
 
-  return { Ember, compile };
+  return { Ember, compile, precompile };
 };
 
 module.exports.clearEmber = function() {
