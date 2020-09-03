@@ -4,7 +4,6 @@
 import { RichIteratorResult } from '@glimmer/interfaces';
 import './lib/bootstrap';
 
-export { cast } from './lib/simple-cast';
 export { clear, ConcreteBounds, CursorImpl } from './lib/bounds';
 export { Capability, capabilityFlagsFrom, hasCapability } from './lib/capabilities';
 export {

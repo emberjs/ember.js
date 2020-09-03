@@ -1,6 +1,6 @@
 import { ModifierManager, VMArguments } from '@glimmer/interfaces';
 import { Reference, valueForRef } from '@glimmer/reference';
-import { cast } from '@glimmer/runtime';
+import { cast } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 

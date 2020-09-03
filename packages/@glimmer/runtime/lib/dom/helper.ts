@@ -1,5 +1,5 @@
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '@glimmer/interfaces';
-import { Option } from '@glimmer/util';
+import { cast, Option } from '@glimmer/util';
 import {
   AttrNamespace,
   ElementNamespace,
@@ -10,7 +10,6 @@ import {
 } from '@simple-dom/interface';
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
-import { cast } from '../simple-cast';
 import { BLACKLIST_TABLE, DOMOperations } from './operations';
 
 [

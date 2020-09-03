@@ -1,4 +1,4 @@
-import { unreachable } from '@glimmer/util';
+import { unreachable } from './platform-utils';
 import {
   Namespace,
   NodeType,

@@ -1,4 +1,4 @@
-import { cast } from '@glimmer/runtime';
+import { cast } from '@glimmer/util';
 import { JitRenderDelegate, RenderTest } from '..';
 import { module } from './support';
 
