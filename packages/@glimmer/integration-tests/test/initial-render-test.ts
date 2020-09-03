@@ -1,33 +1,33 @@
 import { Dict, Option } from '@glimmer/interfaces';
 import { SafeString } from '@glimmer/runtime';
+import { cast, expect } from '@glimmer/util';
+import { SimpleElement } from '@simple-dom/interface';
 import {
-  OPEN,
-  EMPTY,
-  CLOSE,
-  equalTokens,
-  InitialRenderSuite,
-  suite,
-  jitSuite,
-  toTextContent,
-  RehydrationDelegate,
-  toInnerHTML,
-  firstElementChild,
-  GLIMMER_TEST_COMPONENT,
-  test,
-  Content,
-  content,
-  strip,
-  blockStack,
-  ComponentBlueprint,
-  assertEmberishElement,
-  assertSerializedInElement,
-  replaceHTML,
   assertElement,
   assertElementShape,
+  assertEmberishElement,
+  assertSerializedInElement,
+  blockStack,
+  CLOSE,
+  ComponentBlueprint,
   componentSuite,
+  Content,
+  content,
+  EMPTY,
+  equalTokens,
+  firstElementChild,
+  GLIMMER_TEST_COMPONENT,
+  InitialRenderSuite,
+  jitSuite,
+  OPEN,
+  RehydrationDelegate,
+  replaceHTML,
+  strip,
+  suite,
+  test,
+  toInnerHTML,
+  toTextContent,
 } from '..';
-import { expect } from '@glimmer/util';
-import { SimpleElement } from '@simple-dom/interface';
 
 // `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
 // `"ActiveXObject" in window` returns `true` in all IE versions
@@ -191,7 +191,7 @@ class Rehydration extends AbstractRehydrationTests {
     // Just repairs the value of the text node
     this.assertRehydrationStats({ nodesRemoved: 0 });
 
-    // TODO: handle % % in the testing DSL
+    // TODO handle % % in the testing DSL
     // this.assertStableNodes();
     this.assertStableRerender();
   }
@@ -209,7 +209,7 @@ class Rehydration extends AbstractRehydrationTests {
     );
 
     // remove the first `<!--%-b:1%-->`
-    let element = this.element as Element;
+    let element = cast(this.element, 'HTML');
     let [div] = element.children;
     let commentToRemove = div.childNodes[3];
     div.removeChild(commentToRemove);
@@ -324,7 +324,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div data-foo="true"></div>');
 
     // remove the attribute
-    let element = this.element as Element;
+    let element = cast(this.element, 'HTML');
     let [div] = element.children;
     div.removeAttribute('data-foo');
 
@@ -341,7 +341,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div data-foo="true"></div>');
 
     // add an extra attribute
-    let element = this.element as Element;
+    let element = cast(this.element, 'HTML');
     let [div] = element.children;
     div.setAttribute('data-bar', 'oops');
 
@@ -358,7 +358,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertServerOutput('<div class="always-present show-me"></div>');
 
     // mutate the attribute
-    let element = this.element as Element;
+    let element = cast(this.element, 'HTML');
     let [div] = element.children;
     div.setAttribute('class', 'zomg');
 
@@ -372,7 +372,7 @@ class Rehydration extends AbstractRehydrationTests {
   'does not mutate attributes that already match'() {
     let observer = new MutationObserver((mutationList) => {
       mutationList.forEach((mutation) => {
-        let target = mutation.target as Element;
+        let target = cast(mutation.target, 'HTML');
         this.assert.ok(
           false,
           `should not have updated ${mutation.attributeName} on ${target.outerHTML}`
@@ -384,7 +384,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.renderServerSide(template, {});
     this.assertServerOutput('<div data-foo="whatever"></div>');
 
-    observer.observe(this.element as Element, { attributes: true, subtree: true });
+    observer.observe(cast(this.element, 'HTML').node, { attributes: true, subtree: true });
 
     this.renderClientSide(template, {});
     this.assertRehydrationStats({ nodesRemoved: 0 });

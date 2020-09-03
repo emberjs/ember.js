@@ -1,4 +1,4 @@
-import {
+import type {
   Bounds,
   Environment,
   Option,
@@ -8,7 +8,7 @@ import {
 } from '@glimmer/interfaces';
 import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
 import { RemoteLiveBlock } from '@glimmer/runtime';
-import { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
+import type { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
 
 const TEXT_NODE = 3;
 
