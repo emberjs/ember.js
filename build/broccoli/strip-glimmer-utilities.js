@@ -25,7 +25,7 @@ module.exports = function (jsTree) {
     getModuleId: nameResolver,
     plugins: [
       ...glimmerUtils,
-      [stripGlimmerUtils, { bindings: ['expect', 'unwrap'], source: '@glimmer/util' }],
+      [stripGlimmerUtils, { bindings: ['cast', 'expect', 'unwrap'], source: '@glimmer/util' }],
     ],
   });
 };
