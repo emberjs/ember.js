@@ -320,8 +320,7 @@ export default class RouterService extends Service {
     // you'd expect isBarActive to be dirtied when the route changes.
     //
     // https://github.com/emberjs/ember.js/issues/19004
-    consumeTag(tagFor(this, 'currentURL'));
-    consumeTag(tagFor(this, 'currentRouteName'));
+    consumeTag(tagFor(this._router, 'currentURL'));
 
     // UNSAFE: casting `routeName as string` here encodes the existing
     // assumption but may be wrong: `extractRouteArgs` correctly returns it as
