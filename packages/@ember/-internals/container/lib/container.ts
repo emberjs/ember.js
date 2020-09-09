@@ -221,10 +221,6 @@ export default class Container {
     let normalizedName = this.registry.normalize(fullName);
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
-    assert(
-      'namespace must be enabled to pass a namespace option to factoryFor',
-      !options.namespace
-    );
 
     if (options.source || options.namespace) {
       normalizedName = this.registry.expandLocalLookup(fullName, options);
@@ -281,8 +277,6 @@ function isInstantiatable(container: Container, fullName: string) {
 }
 
 function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
-  assert('namespace must be enabled to pass a namespace option to lookup', !options.namespace);
-
   let normalizedName = fullName;
 
   if (options.source || options.namespace) {
