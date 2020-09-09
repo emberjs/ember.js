@@ -366,7 +366,7 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       return null;
     }
 
-    return (args: { capture: () => any }, vm: { associateDestroyable: (arg0: {}) => void }) => {
+    return (args, vm) => {
       const helper = factory.create();
 
       if (isClassHelper(helper)) {
