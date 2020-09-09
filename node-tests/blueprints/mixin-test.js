@@ -5,7 +5,6 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
-const expectError = require('../helpers/expect-error');
 const EOL = require('os').EOL;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -158,7 +157,6 @@ describe('Blueprint: mixin', function() {
       });
     });
   });
-
 
   describe('in addon', function() {
     beforeEach(function() {

@@ -1,10 +1,5 @@
 import { Registry, privatize } from '..';
-import {
-  factory,
-  moduleFor,
-  AbstractTestCase,
-  ModuleBasedTestResolver,
-} from 'internal-test-helpers';
+import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Registry',

@@ -1,7 +1,5 @@
 'use strict';
 
-const path = require('path');
-
 module.exports = {
   description: 'Generates a mixin.',
   normalizeEntityName: function(entityName) {

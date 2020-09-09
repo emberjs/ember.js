@@ -2,9 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import {
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-} from '@ember/canary-features';
+import { EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
 import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert, deprecate } from '@ember/debug';
 import { PARTIALS } from '@ember/deprecated-features';

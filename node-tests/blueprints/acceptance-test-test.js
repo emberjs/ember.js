@@ -142,5 +142,4 @@ describe('Blueprint: acceptance-test', function() {
       });
     });
   });
-
 });

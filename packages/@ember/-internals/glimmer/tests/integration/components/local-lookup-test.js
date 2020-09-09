@@ -1,14 +1,4 @@
-import {
-  moduleFor,
-  RenderingTestCase,
-  ModuleBasedTestResolver,
-  ApplicationTestCase,
-  runTask,
-} from 'internal-test-helpers';
-
-import { compile } from 'ember-template-compiler';
-import { helper, Helper } from '@ember/-internals/glimmer';
-
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 
 class LocalLookupTest extends RenderingTestCase {

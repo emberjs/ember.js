@@ -112,5 +112,4 @@ describe('Blueprint: instance-initializer-test', function() {
       });
     });
   });
-
 });

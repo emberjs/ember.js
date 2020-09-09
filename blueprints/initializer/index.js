@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-  description: 'Generates an initializer.'
+  description: 'Generates an initializer.',
 };

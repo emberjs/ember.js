@@ -167,5 +167,4 @@ describe('Blueprint: helper-test', function() {
       });
     });
   });
-
 });

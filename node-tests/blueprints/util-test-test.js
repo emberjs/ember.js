@@ -108,5 +108,4 @@ describe('Blueprint: util-test', function() {
       });
     });
   });
-
 });

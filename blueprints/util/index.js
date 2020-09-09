@@ -1,7 +1,5 @@
 'use strict';
 
-const path = require('path');
-
 module.exports = {
   description: 'Generates a simple utility module/function.',
   normalizeEntityName: function(entityName) {
