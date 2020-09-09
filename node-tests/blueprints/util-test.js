@@ -14,9 +14,6 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
-const setupTestEnvironment = require('../helpers/setup-test-environment');
-const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
-
 describe('Blueprint: util', function() {
   setupTestHooks(this);
 
@@ -120,57 +117,6 @@ describe('Blueprint: util', function() {
     });
   });
 
-  describe('in app - module unification', function() {
-    enableModuleUnification();
-
-    beforeEach(function() {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
-    });
-
-    it('util foo-bar', function() {
-      return emberGenerateDestroy(['util', 'foo-bar'], _file => {
-        expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
-
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
-      });
-    });
-
-    it('util foo-bar.js', function() {
-      return emberGenerateDestroy(['util', 'foo-bar.js'], _file => {
-        expect(_file('src/utils/foo-bar.js.js')).to.not.exist;
-        expect(_file('src/utils/foo-bar.js-test.js')).to.not.exist;
-
-        expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
-
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
-      });
-    });
-
-    it('util foo/bar-baz', function() {
-      return emberGenerateDestroy(['util', 'foo/bar-baz'], _file => {
-        expect(_file('src/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
-
-        expect(_file('src/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
-        );
-      });
-    });
-
-    it('util foo-bar --pod', function() {
-      return expectError(
-        emberGenerateDestroy(['util', 'foo-bar', '--pod']),
-        "Pods aren't supported within a module unification app"
-      );
-    });
-  });
-
   describe('in addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'addon' })
@@ -236,78 +182,6 @@ describe('Blueprint: util', function() {
         );
 
         expect(_file('addon/utils/foo/bar-baz.js')).to.not.exist;
-      });
-    });
-  });
-
-  describe('in addon - module unification', function() {
-    enableModuleUnification();
-
-    beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
-    });
-
-    it('util foo-bar', function() {
-      return emberGenerateDestroy(['util', 'foo-bar'], _file => {
-        expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
-
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/addon-default.js'));
-
-        expect(_file('app/utils/foo-bar.js')).to.not.exist;
-      });
-    });
-
-    it('util foo-bar.js', function() {
-      return emberGenerateDestroy(['util', 'foo-bar.js'], _file => {
-        expect(_file('src/utils/foo-bar.js.js')).to.not.exist;
-        expect(_file('src/utils/foo-bar.js-test.js')).to.not.exist;
-
-        expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
-
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/addon-default.js'));
-
-        expect(_file('app/utils/foo-bar.js')).to.not.exist;
-      });
-    });
-
-    it('util foo-bar/baz', function() {
-      return emberGenerateDestroy(['util', 'foo/bar-baz'], _file => {
-        expect(_file('src/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
-
-        expect(_file('src/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/addon-default-nested.js')
-        );
-
-        expect(_file('app/utils/foo/bar-baz.js')).to.not.exist;
-      });
-    });
-
-    it('util foo/bar-baz --dummy', function() {
-      return emberGenerateDestroy(['util', 'foo/bar-baz', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/utils/foo/bar-baz.js')).to.equal(
-          fixture('util/util-nested.js')
-        );
-
-        expect(_file('src/utils/foo/bar-baz.js')).to.not.exist;
-      });
-    });
-
-    it('util foo/bar-baz.js --dummy', function() {
-      return emberGenerateDestroy(['util', 'foo/bar-baz.js', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/utils/foo/bar-baz.js.js')).to.not.exist;
-
-        expect(_file('tests/dummy/src/utils/foo/bar-baz.js')).to.equal(
-          fixture('util/util-nested.js')
-        );
-
-        expect(_file('src/utils/foo/bar-baz.js')).to.not.exist;
       });
     });
   });

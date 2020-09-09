@@ -1,6 +1,5 @@
 import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { dictionary, HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
@@ -223,8 +222,8 @@ export default class Container {
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
     assert(
-      'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to factoryFor',
-      EMBER_MODULE_UNIFICATION || !options.namespace
+      'namespace must be enabled to pass a namespace option to factoryFor',
+      !options.namespace
     );
 
     if (options.source || options.namespace) {
@@ -282,10 +281,7 @@ function isInstantiatable(container: Container, fullName: string) {
 }
 
 function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
-  assert(
-    'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to lookup',
-    EMBER_MODULE_UNIFICATION || !options.namespace
-  );
+  assert('namespace must be enabled to pass a namespace option to lookup', !options.namespace);
 
   let normalizedName = fullName;
 
@@ -403,7 +399,7 @@ function instantiateFactory(
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    let instance = (container.cache[normalizedName] = factoryManager.create());
+    let instance = (container.cache[normalizedName] = factoryManager.create() as CacheMember);
 
     // if this lookup happened _during_ destruction (emits a deprecation, but
     // is still possible) ensure that it gets destroyed

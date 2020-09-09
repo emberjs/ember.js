@@ -1,5 +1,4 @@
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
@@ -53,21 +52,6 @@ export default function inject(
   let source: string | undefined, namespace: string | undefined;
 
   let name = calledAsDecorator ? undefined : args[0];
-  let options = calledAsDecorator ? undefined : args[1];
-
-  if (EMBER_MODULE_UNIFICATION) {
-    source = options ? options.source : undefined;
-    namespace = undefined;
-
-    if (name !== undefined) {
-      let namespaceDelimiterOffset = name.indexOf('::');
-
-      if (namespaceDelimiterOffset !== -1) {
-        namespace = name.slice(0, namespaceDelimiterOffset);
-        name = name.slice(namespaceDelimiterOffset + 2);
-      }
-    }
-  }
 
   let getInjection = function(this: any, propertyName: string) {
     let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
