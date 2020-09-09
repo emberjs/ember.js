@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.22.0-beta.3 (September 09, 2020)
+
+- [#19124](https://github.com/emberjs/ember.js/pull/19124) Fix rendering engine usage within a `fastboot` sandbox
+
 ### v3.22.0-beta.2 (August 31, 2020)
 
 - [#19106](https://github.com/emberjs/ember.js/pull/19106) [BUGFIX] Ensure `destroy` methods on `CoreObject` are invoked.
