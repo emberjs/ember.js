@@ -5,7 +5,7 @@ moduleFor(
   'ember-template-compiler: assert-attrs-into-args-expression',
   class extends AbstractTestCase {
     expectedMessage(locInfo) {
-      return `String "foo-bar" could not be used as a path. (${locInfo}) `;
+      return `String "foo-baz" could not be used as a path. (${locInfo}) `;
     }
 
     '@test <MyComponent {{foo ("foo-baz")}} /> is not valid'() {
@@ -13,7 +13,7 @@ moduleFor(
         compile('<MyComponent {{foo ("foo-baz")}} />', {
           moduleName: 'foo-bar',
         });
-      }, this.expectedMessage(`'foo-bar' @ L1:C21`));
+      }, this.expectedMessage(`'foo-bar' @ L1:C20`));
     }
   }
 );
