@@ -166,3 +166,29 @@
     value that the final redirecting transition fulfills with
   @public
 */
+
+/**
+  In non-production builds, this function will return the stack that this Transition was
+  created within. In production builds, this function will not be present.
+
+  @method debugCreationStack
+  @return string
+*/
+
+/**
+  In non-production builds, this function will return the stack that this Transition was
+  aborted within (or `undefined` if the Transition has not been aborted yet). In production
+  builds, this function will not be present.
+
+  @method debugAbortStack
+  @return string
+*/
+
+/**
+  In non-production builds, this property references the Transition that _this_ Transition
+  was derived from or `undefined` if this transition did not derive from another. In
+  production builds, this property will not be present.
+
+  @property debugPreviousTransition
+  @type {Transition | undefined}
+*/
