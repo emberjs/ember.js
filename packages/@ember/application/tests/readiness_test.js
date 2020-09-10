@@ -2,52 +2,39 @@ import { moduleFor, ModuleBasedTestResolver, ApplicationTestCase } from 'interna
 import { run } from '@ember/runloop';
 import EmberApplication from '..';
 
-let jQuery, application, Application;
-let readyWasCalled, domReady, readyCallbacks;
+let application, Application, _document, callbacks;
+let readyWasCalled = 0;
 
-// We are using a small mock of jQuery because jQuery is third-party code with
-// very well-defined semantics, and we want to confirm that a jQuery stub run
-// in a more minimal server environment that implements this behavior will be
-// sufficient for Ember's requirements.
+const dispatchEvent = (eventName) => {
+  callbacks[eventName].forEach((callback) => callback());
+};
+
+const removeEventListener = (eventName, callbackToRemove) => {
+  callbacks[eventName] = callbacks[eventName].filter((callback) => callback !== callbackToRemove);
+};
+
+const addEventListener = (eventName, callback) => {
+  callbacks[eventName] ? callbacks[eventName].push(callback) : (callbacks[eventName] = [callback]);
+};
+
 moduleFor(
   'Application readiness',
   class extends ApplicationTestCase {
     constructor() {
       super();
 
-      readyWasCalled = 0;
-      readyCallbacks = [];
-
-      let jQueryInstance = {
-        ready(callback) {
-          readyCallbacks.push(callback);
-          if (jQuery.isReady) {
-            domReady();
-          }
-        },
-      };
-
-      jQuery = function () {
-        return jQueryInstance;
-      };
-      jQuery.isReady = false;
-
-      let domReadyCalled = 0;
-      domReady = function () {
-        if (domReadyCalled !== 0) {
-          return;
-        }
-        domReadyCalled++;
-        for (let i = 0; i < readyCallbacks.length; i++) {
-          readyCallbacks[i]();
-        }
+      callbacks = [];
+      _document = {
+        removeEventListener,
+        addEventListener,
       };
 
       Application = EmberApplication.extend({
-        $: jQuery,
         Resolver: ModuleBasedTestResolver,
+        _document,
 
         ready() {
+          this._super();
           readyWasCalled++;
         },
       });
@@ -56,52 +43,59 @@ moduleFor(
     teardown() {
       if (application) {
         run(() => application.destroy());
-        jQuery = readyCallbacks = domReady = Application = application = undefined;
+        Application = application = _document = callbacks = undefined;
+        readyWasCalled = 0;
       }
     }
 
-    // These tests are confirming that if the callbacks passed into jQuery's ready hook is called
-    // synchronously during the application's initialization, we get the same behavior as if
-    // it was triggered after initialization.
-
-    ["@test Application's ready event is called right away if jQuery is already ready"](assert) {
-      jQuery.isReady = true;
+    ["@test Application's ready event is called right away if DOM is already ready"](assert) {
+      _document.readyState = 'interactive';
 
       run(() => {
-        application = Application.create({ router: false });
+        application = Application.create({
+          router: false,
+        });
 
         assert.equal(readyWasCalled, 0, 'ready is not called until later');
       });
 
       assert.equal(readyWasCalled, 1, 'ready was called');
 
-      domReady();
+      application.domReady();
 
+      assert.equal(callbacks['DOMContentLoaded'], undefined);
       assert.equal(readyWasCalled, 1, "application's ready was not called again");
     }
 
     ["@test Application's ready event is called after the document becomes ready"](assert) {
+      _document.readyState = 'loading';
+
       run(() => {
         application = Application.create({ router: false });
+        assert.equal(callbacks['DOMContentLoaded'].length, 1);
       });
 
       assert.equal(readyWasCalled, 0, "ready wasn't called yet");
 
-      domReady();
+      dispatchEvent('DOMContentLoaded');
 
+      assert.equal(callbacks['DOMContentLoaded'].length, 0);
       assert.equal(readyWasCalled, 1, 'ready was called now that DOM is ready');
     }
 
     ["@test Application's ready event can be deferred by other components"](assert) {
+      _document.readyState = 'loading';
+
       run(() => {
         application = Application.create({ router: false });
         application.deferReadiness();
         assert.equal(readyWasCalled, 0, "ready wasn't called yet");
+        assert.equal(callbacks['DOMContentLoaded'].length, 1);
       });
 
       assert.equal(readyWasCalled, 0, "ready wasn't called yet");
 
-      domReady();
+      application.domReady();
 
       assert.equal(readyWasCalled, 0, "ready wasn't called yet");
 
@@ -111,6 +105,10 @@ moduleFor(
       });
 
       assert.equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
+
+      dispatchEvent('DOMContentLoaded');
+
+      assert.equal(callbacks['DOMContentLoaded'].length, 0);
 
       expectAssertion(() => {
         application.deferReadiness();
