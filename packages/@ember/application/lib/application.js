@@ -7,7 +7,7 @@ import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { bind, join, once, run, schedule } from '@ember/runloop';
+import { join, once, run, schedule } from '@ember/runloop';
 import {
   libraries,
   processAllNamespaces,
@@ -204,6 +204,15 @@ const Application = Engine.extend({
     @public
   */
   rootElement: 'body',
+
+  /**
+
+    @property _document
+    @type Document | null
+    @default 'window.document'
+    @private
+  */
+  _document: hasDOM ? window.document : null,
 
   /**
     The `Ember.EventDispatcher` responsible for delegating events to this
@@ -483,10 +492,15 @@ const Application = Engine.extend({
     @method waitForDOMReady
   */
   waitForDOMReady() {
-    if (!this.$ || this.$.isReady) {
+    if (this._document === null || this._document.readyState !== 'loading') {
       schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(bind(this, 'domReady'));
+      let callback = () => {
+        this._document.removeEventListener('DOMContentLoaded', callback);
+        run(this, 'domReady');
+      };
+
+      this._document.addEventListener('DOMContentLoaded', callback);
     }
   },
 
