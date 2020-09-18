@@ -5,7 +5,6 @@ const merge = require('broccoli-merge-trees');
 const funnel = require('broccoli-funnel');
 const concat = require('broccoli-concat');
 const transpileToES5 = require('./transpile-to-es5');
-const handlebarsInlinedTrees = require('./handlebars-inliner');
 const babel = require('broccoli-babel-transpiler');
 
 /**
@@ -70,10 +69,11 @@ function includeVendorDependencies() {
     destDir: 'simple-html-tokenizer',
   });
 
-  let transpiled = transpileToES5(
-    merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler]),
-    'amd'
-  );
+  let handlebars = funnel('node_modules/@handlebars/parser/dist/esm', {
+    destDir: '@handlebars/parser',
+  });
+
+  let transpiled = transpileToES5(merge([simpleHTMLTokenizer, handlebars]), 'amd');
 
   let simpleDOM = funnel('node_modules/@simple-dom', {
     include: ['*/dist/amd/es5/*.{js,map}'],
