@@ -9,7 +9,7 @@ import builders from '../builders';
 import traverse from '../traversal/traverse';
 import print from '../generation/print';
 import Walker from '../traversal/walker';
-import * as handlebars from 'handlebars';
+import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { assign } from '@glimmer/util';
 import { NodeVisitor } from '../traversal/visitor';
 import { EntityParser } from 'simple-html-tokenizer';
@@ -386,9 +386,9 @@ export function preprocess(html: string, options: PreprocessOptions = {}): AST.T
   if (typeof html === 'object') {
     ast = html;
   } else if (mode === 'codemod') {
-    ast = handlebars.parseWithoutProcessing(html, options.parseOptions) as HBS.Program;
+    ast = parseWithoutProcessing(html, options.parseOptions) as HBS.Program;
   } else {
-    ast = handlebars.parse(html, options.parseOptions) as HBS.Program;
+    ast = parse(html, options.parseOptions) as HBS.Program;
   }
 
   let entityParser = undefined;
