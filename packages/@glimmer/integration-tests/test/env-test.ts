@@ -1,11 +1,11 @@
-import { cast } from '@glimmer/util';
+import { castToSimple } from '@glimmer/util';
 import { EnvironmentImpl } from '@glimmer/runtime';
 
 QUnit.module('[integration] env');
 
 QUnit.test('assert against nested transactions', (assert) => {
   let env = new EnvironmentImpl(
-    { document: cast(document).simple },
+    { document: castToSimple(document) },
     {
       onTransactionBegin() {},
       onTransactionCommit() {},
@@ -22,7 +22,7 @@ QUnit.test('assert against nested transactions', (assert) => {
 
 QUnit.test('ensure commit cleans up when it can', (assert) => {
   let env = new EnvironmentImpl(
-    { document: cast(document).simple },
+    { document: castToSimple(document) },
     {
       onTransactionBegin() {},
       onTransactionCommit() {},

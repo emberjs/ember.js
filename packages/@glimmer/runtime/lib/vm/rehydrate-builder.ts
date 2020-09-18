@@ -1,5 +1,5 @@
 import { Bounds, ElementBuilder, Environment, Option } from '@glimmer/interfaces';
-import { assert, cast, expect, Maybe, Stack } from '@glimmer/util';
+import { assert, castToBrowser, castToSimple, expect, Maybe, Stack } from '@glimmer/util';
 import {
   AttrNamespace,
   Namespace,
@@ -413,7 +413,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   getMarker(element: HTMLElement, guid: string): Option<SimpleNode> {
     let marker = element.querySelector(`script[glmr="${guid}"]`);
     if (marker) {
-      return cast(marker, 'NODE').simple;
+      return castToSimple(marker);
     }
     return null;
   }
@@ -423,7 +423,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
   ): Option<RemoteLiveBlock> {
-    let marker = this.getMarker(cast(element, 'HTML').node, cursorId);
+    let marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
 
     assert(
       !marker || marker.parentNode === element,
