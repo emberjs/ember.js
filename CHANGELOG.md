@@ -1,3 +1,24 @@
+## v0.62.0 (2020-09-18)
+
+#### :boom: Breaking Change
+* `@glimmer/syntax`
+  * [#1160](https://github.com/glimmerjs/glimmer-vm/pull/1160) [REFACTOR] Converts to using @handlebars/parser ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/low-level`, `@glimmer/node`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`
+  * [#1154](https://github.com/glimmerjs/glimmer-vm/pull/1154) Upgrade to TypeScript 4.0 ([@wycats](https://github.com/wycats))
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1155](https://github.com/glimmerjs/glimmer-vm/pull/1155) Ensure `protocolForUrl` works in `fastboot@3.1.0` environment ([@rwjblue](https://github.com/rwjblue))
+
+#### :house: Internal
+* [#1156](https://github.com/glimmerjs/glimmer-vm/pull/1156) Update PerformanceCheck CI run to fetch full git history. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Yehuda Katz ([@wycats](https://github.com/wycats))
+
+
 ## v0.61.2 (2020-09-02)
 
 #### :bug: Bug Fix

@@ -1,5 +1,5 @@
 {
   "name": "@glimmer/low-level",
-  "version": "0.61.2",
+  "version": "0.62.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/low-level"
 }
