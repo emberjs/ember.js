@@ -26,7 +26,7 @@ import {
   runtimeContext,
 } from '@glimmer/runtime';
 import { ASTPluginBuilder } from '@glimmer/syntax';
-import { assign, cast, unwrapTemplate } from '@glimmer/util';
+import { assign, castToBrowser, castToSimple, unwrapTemplate } from '@glimmer/util';
 import {
   ElementNamespace,
   SimpleDocument,
@@ -95,7 +95,7 @@ export class JitRenderDelegate implements RenderDelegate {
   private env: EnvironmentDelegate;
 
   constructor(options?: RenderDelegateOptions) {
-    this.doc = options?.doc ?? cast(document).simple;
+    this.doc = options?.doc ?? castToSimple(document);
     this.env = assign(options?.env ?? {}, BaseEnv);
     this.context = this.getContext();
   }
@@ -106,7 +106,7 @@ export class JitRenderDelegate implements RenderDelegate {
 
   getInitialElement(): SimpleElement {
     if (isBrowserTestDocument(this.doc)) {
-      return cast(this.doc).getElementById('qunit-fixture');
+      return castToSimple(castToBrowser(this.doc).getElementById('qunit-fixture')!);
     } else {
       return this.createElement('div');
     }

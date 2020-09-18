@@ -1,5 +1,5 @@
 import { Dict, Option } from '@glimmer/interfaces';
-import { cast, expect } from '@glimmer/util';
+import { castToBrowser, expect } from '@glimmer/util';
 import { NodeType, SimpleElement } from '@simple-dom/interface';
 import {
   blockStack,
@@ -92,7 +92,7 @@ class ChaosMonkeyRehydration extends RenderTest {
   }
 
   wreakHavoc(iteration = 0, shouldLog = false) {
-    let element = cast(this.element, 'HTML');
+    let element = castToBrowser(this.element, 'HTML');
 
     let original = element.innerHTML;
 
@@ -110,7 +110,7 @@ class ChaosMonkeyRehydration extends RenderTest {
     }
 
     // gather all the nodes recursively
-    let nodes: Node[] = collectChildNodes([], element.node);
+    let nodes: Node[] = collectChildNodes([], element);
 
     // cannot remove the first node, that is what makes it rehydrateable
     nodes = nodes.slice(1);
@@ -129,7 +129,7 @@ class ChaosMonkeyRehydration extends RenderTest {
         removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
         break;
       case NodeType.ELEMENT_NODE:
-        removedNodeDisplay = cast(nodeToRemove, ['HTML', 'SVG']).outerHTML;
+        removedNodeDisplay = castToBrowser(nodeToRemove, ['HTML', 'SVG']).outerHTML;
         break;
       default:
         removedNodeDisplay = nodeToRemove.nodeValue;
@@ -149,7 +149,7 @@ class ChaosMonkeyRehydration extends RenderTest {
   }
 
   runIterations(template: string, context: Dict<unknown>, expectedHTML: string, count: number) {
-    let element = cast(this.element, 'HTML');
+    let element = castToBrowser(this.element, 'HTML');
     let elementResetValue = element.innerHTML;
 
     let urlParams = (QUnit as any).urlParams as Dict<string>;
@@ -160,7 +160,7 @@ class ChaosMonkeyRehydration extends RenderTest {
 
       this.renderClientSide(template, context);
 
-      let element = cast(this.element, 'HTML');
+      let element = castToBrowser(this.element, 'HTML');
       this.assert.equal(element.innerHTML, expectedHTML);
     } else {
       for (let i = 0; i < count; i++) {
@@ -172,7 +172,7 @@ class ChaosMonkeyRehydration extends RenderTest {
 
           this.renderClientSide(template, context);
 
-          let element = cast(this.element, 'HTML');
+          let element = castToBrowser(this.element, 'HTML');
           this.assert.equal(
             element.innerHTML,
             expectedHTML,

@@ -1,5 +1,5 @@
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '@glimmer/interfaces';
-import { cast, Option } from '@glimmer/util';
+import { castToSimple, Option } from '@glimmer/util';
 import {
   AttrNamespace,
   ElementNamespace,
@@ -61,7 +61,7 @@ import { BLACKLIST_TABLE, DOMOperations } from './operations';
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
-let doc: Option<SimpleDocument> = typeof document === 'undefined' ? null : cast(document).simple;
+let doc: Option<SimpleDocument> = typeof document === 'undefined' ? null : castToSimple(document);
 
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
