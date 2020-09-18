@@ -5,9 +5,9 @@
   "license": "MIT",
   "dependencies": {
     "@glimmer/env": "^0.1.7",
-    "@glimmer/global-context": "^0.62.0",
-    "@glimmer/interfaces": "^0.62.0",
-    "@glimmer/util": "^0.62.0",
-    "@glimmer/validator": "^0.62.0"
+    "@glimmer/global-context": "0.62.0",
+    "@glimmer/interfaces": "0.62.0",
+    "@glimmer/util": "0.62.0",
+    "@glimmer/validator": "0.62.0"
   }
 }
