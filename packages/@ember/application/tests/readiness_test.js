@@ -96,6 +96,7 @@ moduleFor(
       run(() => {
         application = Application.create({ router: false });
         application.deferReadiness();
+        assert.equal(readyWasCalled, 0, "ready wasn't called yet");
       });
 
       assert.equal(readyWasCalled, 0, "ready wasn't called yet");
@@ -107,28 +108,6 @@ moduleFor(
       run(() => {
         application.advanceReadiness();
         assert.equal(readyWasCalled, 0);
-      });
-
-      assert.equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
-    }
-
-    ["@test Application's ready event can be deferred by other components (jQuery.isReady === false)"](
-      assert
-    ) {
-      jQuery.isReady = false;
-
-      run(() => {
-        application = Application.create({ router: false });
-        application.deferReadiness();
-        assert.equal(readyWasCalled, 0, "ready wasn't called yet");
-      });
-
-      domReady();
-
-      assert.equal(readyWasCalled, 0, "ready wasn't called yet");
-
-      run(() => {
-        application.advanceReadiness();
       });
 
       assert.equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
