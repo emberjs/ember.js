@@ -11,7 +11,7 @@ import { Transition } from 'router_js';
 import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
-const ROUTER = symbol('ROUTER');
+const ROUTER = symbol('ROUTER') as string;
 
 let freezeRouteInfo: Function;
 if (DEBUG) {
@@ -80,14 +80,16 @@ export default class RouterService extends Service {
   init() {
     super.init(...arguments);
 
-    this._router.on('routeWillChange', (transition: Transition) => {
+    const router = getOwner(this).lookup('router:main') as EmberRouter;
+
+    router.on('routeWillChange', (transition: Transition) => {
       if (DEBUG) {
         freezeRouteInfo(transition);
       }
       this.trigger('routeWillChange', transition);
     });
 
-    this._router.on('routeDidChange', (transition: Transition) => {
+    router.on('routeDidChange', (transition: Transition) => {
       if (DEBUG) {
         freezeRouteInfo(transition);
       }
