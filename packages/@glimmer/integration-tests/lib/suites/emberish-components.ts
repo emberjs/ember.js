@@ -50,25 +50,37 @@ export class EmberishComponentTests extends RenderTest {
 
   @test({ kind: 'glimmer' })
   'Static block component helper'() {
-    this.registerComponent('Glimmer', 'A', 'A {{#component "B" arg1=@one}}{{/component}}');
-    this.registerComponent('Glimmer', 'B', 'B {{@arg1}}');
-    this.render('<A @one={{arg}} />', { arg: 1 });
-    this.assertHTML('A B 1');
+    this.registerComponent(
+      'Glimmer',
+      'A',
+      'A {{#component "B" arg1=@one arg2=@two arg3=@three}}{{/component}}'
+    );
+    this.registerComponent('Glimmer', 'B', 'B {{@arg1}} {{@arg2}} {{@arg3}}');
+    this.render('<A @one={{first}} @two={{second}} @three={{third}} />', {
+      first: 1,
+      second: 2,
+      third: 3,
+    });
+    this.assertHTML('A B 1 2 3');
     this.assertStableRerender();
-    this.rerender({ arg: 2 });
-    this.assertHTML('A B 2');
+    this.rerender({ first: 2, second: 3, third: 4 });
+    this.assertHTML('A B 2 3 4');
     this.assertStableNodes();
   }
 
   @test({ kind: 'glimmer' })
   'Static inline component helper'() {
-    this.registerComponent('Glimmer', 'A', 'A {{component "B" arg1=@one}}');
-    this.registerComponent('Glimmer', 'B', 'B {{@arg1}}');
-    this.render('<A @one={{arg}} />', { arg: 1 });
-    this.assertHTML('A B 1');
+    this.registerComponent('Glimmer', 'A', 'A {{component "B" arg1=@one arg2=@two arg3=@three}}');
+    this.registerComponent('Glimmer', 'B', 'B {{@arg1}} {{@arg2}} {{@arg3}}');
+    this.render('<A @one={{first}} @two={{second}} @three={{third}} />', {
+      first: 1,
+      second: 2,
+      third: 3,
+    });
+    this.assertHTML('A B 1 2 3');
     this.assertStableRerender();
-    this.rerender({ arg: 2 });
-    this.assertHTML('A B 2');
+    this.rerender({ first: 2, second: 3, third: 4 });
+    this.assertHTML('A B 2 3 4');
     this.assertStableNodes();
   }
 
