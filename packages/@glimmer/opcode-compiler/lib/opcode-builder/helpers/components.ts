@@ -95,8 +95,8 @@ export function StaticComponentHelper(
 
     if (compilable) {
       if (hash) {
-        for (let i = 0; i < hash.length; i = i + 2) {
-          hash[i][0] = `@${hash[i][0]}`;
+        for (let i = 0; i < hash[0].length; i = i + 1) {
+          hash[0][i] = `@${hash[0][i]}`;
         }
       }
 
