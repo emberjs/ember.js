@@ -20,6 +20,7 @@ let templates = [
   '<Foo></Foo>',
   '<Foo />',
   '<Foo as |bar|>{{bar}}</Foo>',
+  '{{#in-element this.someElement}}Content here{{/in-element}}',
 
   // void elements
   '<br>',
