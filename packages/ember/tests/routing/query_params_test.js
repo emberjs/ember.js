@@ -1228,6 +1228,29 @@ moduleFor(
       this.assertCurrentPath('/?foo=%5B%5D', 'longform supported');
     }
 
+    async ['@test (de)serialization: arrays when corrupted'](assert) {
+      assert.expect(7);
+
+      this.add(
+        'controller:index',
+        Controller.extend({
+          queryParams: [{ category: { type: 'array' } }],
+        })
+      );
+
+      await this.visitAndAssert('/');
+      await this.transitionTo({ queryParams: { category: [2, 3] } });
+      this.assertCurrentPath('/?category=%5B2%2C3%5D', 'handles normal array');
+      await this.transitionTo({ queryParams: { category: [] } });
+      this.assertCurrentPath('/?category=%5B%5D', 'handles empty array');
+      await this.transitionTo({ queryParams: { category: '"[2,3]"' } });
+      this.assertCurrentPath('/?category=%5B2%2C3%5D', 'handles double encoded JSON array');
+      await this.transitionTo({ queryParams: { category: '"\\"[2,3]\\""' } });
+      this.assertCurrentPath('/?category=%5B2%2C3%5D', 'handles triple encoded JSON array');
+      await this.transitionTo({ queryParams: { category: '"\\"\\\\\\"[2,3]\\\\\\"\\""' } });
+      this.assertCurrentPath('/?category=%5B2%2C3%5D', 'handles quadruple encoded JSON array');
+    }
+
     ['@test Url with array query param sets controller property to array'](assert) {
       assert.expect(1);
 
