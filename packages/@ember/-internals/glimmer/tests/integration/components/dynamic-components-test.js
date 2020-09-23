@@ -9,6 +9,80 @@ import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 moduleFor(
   'Components test: dynamic components',
   class extends RenderingTestCase {
+    ['@test Component helper updating when component name changes #16832 [curly]']() {
+      this.registerComponent('foo-bar', {
+        template: 'hello from foo-bar',
+      });
+      this.registerComponent('foo-bar-baz', {
+        template: 'hello from foo-bar-baz',
+      });
+
+      this.render('{{#let (component componentName) as |comp|}}{{comp}}{{/let}}', {
+        componentName: 'foo-bar',
+      });
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar',
+      });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar',
+      });
+
+      runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar-baz',
+      });
+
+      runTask(() => {
+        set(this.context, 'componentName', 'foo-bar');
+      });
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar',
+      });
+    }
+
+    ['@test Component helper updating when component name changes #16832 [angle]']() {
+      this.registerComponent('foo-bar', {
+        template: 'hello from foo-bar',
+      });
+      this.registerComponent('foo-bar-baz', {
+        template: 'hello from foo-bar-baz',
+      });
+
+      this.render('{{#let (component componentName) as |MyComponent|}}<MyComponent />{{/let}}', {
+        componentName: 'foo-bar',
+      });
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar',
+      });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar',
+      });
+
+      runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar-baz',
+      });
+
+      runTask(() => {
+        set(this.context, 'componentName', 'foo-bar');
+      });
+
+      this.assertComponentElement(this.firstChild, {
+        content: 'hello from foo-bar',
+      });
+    }
+
     ['@test it can render a basic component with a static component name argument']() {
       this.registerComponent('foo-bar', { template: 'hello {{name}}' });
 
