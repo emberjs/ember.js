@@ -1,4 +1,4 @@
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
@@ -77,10 +77,10 @@ export default class RouterService extends Service {
     return (this[ROUTER] = router);
   }
 
-  init() {
-    super.init(...arguments);
+  constructor(owner: Owner) {
+    super(owner);
 
-    const router = getOwner(this).lookup('router:main') as EmberRouter;
+    const router = owner.lookup('router:main') as EmberRouter;
 
     router.on('routeWillChange', (transition: Transition) => {
       if (DEBUG) {
