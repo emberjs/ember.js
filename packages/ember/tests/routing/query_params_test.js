@@ -1229,7 +1229,7 @@ moduleFor(
     }
 
     async ['@test (de)serialization: arrays when corrupted'](assert) {
-      assert.expect(7);
+      assert.expect(6);
 
       this.add(
         'controller:index',
