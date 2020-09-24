@@ -1,6 +1,6 @@
-import { Option } from '@glimmer/util';
-import { normalizeStringValue, isSafeString } from '../dom/normalize';
+import { Option } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
+import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
 const badProtocols = ['javascript:', 'vbscript:'];
 
@@ -48,7 +48,7 @@ if (
 ) {
   // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`
   // ultimately, this should be changed (so that we can either rely on the natural `URL` global
-  // that exists) but for now we have to detect the specifc `FastBoot` case first
+  // that exists) but for now we have to detect the specific `FastBoot` case first
   //
   // a future version of `fastboot` will detect if this legacy URL setup is required (by
   // inspecting Ember version) and if new enough, it will avoid shadowing the `URL` global

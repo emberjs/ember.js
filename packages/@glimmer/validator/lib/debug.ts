@@ -46,6 +46,7 @@ if (DEBUG) {
     },
 
     deprecate(message: string): void {
+      // eslint-disable-next-line no-console
       console.warn(message);
     },
 

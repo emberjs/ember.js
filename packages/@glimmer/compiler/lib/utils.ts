@@ -1,16 +1,4 @@
-import { Dict, Option, WellKnownTagName, WellKnownAttrName } from '@glimmer/interfaces';
-
-export function processOpcodes(compiler: any, opcodes: any) {
-  for (let i = 0, l = opcodes.length; i < l; i++) {
-    let method = opcodes[i][0];
-    let params = opcodes[i][1];
-    if (params) {
-      compiler[method].apply(compiler, params);
-    } else {
-      compiler[method].call(compiler);
-    }
-  }
-}
+import { Dict, WellKnownAttrName, WellKnownTagName } from '@glimmer/interfaces';
 
 // There is a small whitelist of namespaced attributes specially
 // enumerated in
@@ -45,8 +33,8 @@ const WHITELIST: Dict<string | undefined> = {
   'xmlns:xlink': XMLNS,
 };
 
-export function getAttrNamespace(attrName: string): Option<string> {
-  return WHITELIST[attrName] || null;
+export function getAttrNamespace(attrName: string): string | undefined {
+  return WHITELIST[attrName];
 }
 
 const DEFLATE_TAG_TABLE: {
@@ -66,7 +54,7 @@ export function deflateTagName(tagName: string): string | WellKnownTagName {
   return DEFLATE_TAG_TABLE[tagName] ?? tagName;
 }
 
-export function inflateTagName(tagName: string | WellKnownTagName) {
+export function inflateTagName(tagName: string | WellKnownTagName): string {
   return typeof tagName === 'string' ? tagName : INFLATE_TAG_TABLE[tagName];
 }
 
@@ -90,6 +78,6 @@ export function deflateAttrName(attrName: string): string | WellKnownAttrName {
   return DEFLATE_ATTR_TABLE[attrName] ?? attrName;
 }
 
-export function inflateAttrName(attrName: string | WellKnownAttrName) {
+export function inflateAttrName(attrName: string | WellKnownAttrName): string {
   return typeof attrName === 'string' ? attrName : INFLATE_ATTR_TABLE[attrName];
 }

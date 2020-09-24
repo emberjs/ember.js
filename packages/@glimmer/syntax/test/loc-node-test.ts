@@ -1,4 +1,5 @@
 import { preprocess as parse, AST } from '..';
+import { SourceLocation } from '../lib/v1/api';
 
 QUnit.module('[glimmer-syntax] Parser - Location Info');
 
@@ -26,13 +27,16 @@ function locEqual(
   endColumn: number,
   message = JSON.stringify(node)
 ) {
-  let expected = {
-    source: null,
+  let expected: SourceLocation = {
     start: { line: startLine, column: startColumn },
     end: { line: endLine, column: endColumn },
   };
 
-  QUnit.assert.deepEqual(node && node.loc, expected, message);
+  QUnit.assert.deepEqual(
+    node && { start: node.loc.startPosition, end: node.loc.endPosition },
+    expected,
+    message
+  );
 }
 
 test('programs', () => {

@@ -1,66 +1,71 @@
-import { offsetToLocation, locationToOffset } from '..';
+/* eslint-disable qunit/no-global-module-test */
 import { Dict } from '@glimmer/interfaces';
+import { Source } from '@glimmer/syntax';
+import { unwrap } from '@glimmer/util';
 
+// eslint-disable-next-line @typescript-eslint/unbound-method
 const test = QUnit.test;
 
 const cases: Dict<[string, number | null][]> = {
   'hello world': [
-    ['0:0', 0],
-    ['0:5', 5],
-    ['0:11', 11],
-    ['0:12', null],
-    ['1:0', null],
+    ['1:0', 0],
+    ['1:5', 5],
+    ['1:11', 11],
+    ['1:12', null],
+    ['2:0', null],
   ],
   'hello world\n': [
-    ['0:0', 0],
-    ['0:5', 5],
-    ['0:11', 11],
-    ['0:12', null],
-    ['1:0', null],
+    ['1:0', 0],
+    ['1:5', 5],
+    ['1:11', 11],
+    ['1:12', null],
+    ['2:0', null],
   ],
   'hello world\n\n': [
-    ['0:0', 0],
-    ['0:5', 5],
-    ['0:11', 11],
-    ['0:12', null],
-    ['1:0', 12],
-    ['1:1', null],
-    ['2:0', null],
+    ['1:0', 0],
+    ['1:5', 5],
+    ['1:11', 11],
+    ['1:12', null],
+    ['2:0', 12],
+    ['2:1', null],
+    ['3:0', null],
   ],
   'hello world\ngoodbye world': [
-    ['0:0', 0],
-    ['0:5', 5],
-    ['0:11', 11],
-    ['0:12', null],
-    ['1:0', 12],
-    ['1:7', 19],
-    ['1:13', 25],
-    ['1:14', null],
-    ['2:0', null],
+    ['1:0', 0],
+    ['1:5', 5],
+    ['1:11', 11],
+    ['1:12', null],
+    ['2:0', 12],
+    ['2:7', 19],
+    ['2:13', 25],
+    ['2:14', null],
+    ['3:0', null],
   ],
   'hello world\ngoodbye world\n': [
-    ['0:0', 0],
-    ['0:5', 5],
-    ['0:11', 11],
-    ['0:12', null],
-    ['1:0', 12],
-    ['1:7', 19],
-    ['1:13', 25],
-    ['1:14', null],
-    ['2:0', null],
+    ['1:0', 0],
+    ['1:5', 5],
+    ['1:11', 11],
+    ['1:12', null],
+    ['2:0', 12],
+    ['2:7', 19],
+    ['2:13', 25],
+    ['2:14', null],
+    ['3:0', null],
   ],
 };
 
 QUnit.module('locations - position');
 
 Object.keys(cases).forEach((string) => {
+  let source = new Source(string);
+
   for (let [span, offset] of cases[string]) {
     let [line, column] = span.split(':').map((i) => parseInt(i, 10));
 
     if (offset === null) continue;
 
     test(`${string} @ ${offset} -> ${line}:${column}`, (assert) => {
-      assert.deepEqual(offsetToLocation(string, offset!), { line, column });
+      assert.deepEqual(source.hbsPosFor(unwrap(offset)), { line, column });
     });
   }
 });
@@ -68,11 +73,15 @@ Object.keys(cases).forEach((string) => {
 QUnit.module('locations - location');
 
 Object.keys(cases).forEach((string) => {
+  let source = new Source(string);
+
   for (let [span, offset] of cases[string]) {
     let [line, column] = span.split(':').map((i) => parseInt(i, 10));
 
-    test(`${string} @ ${line}:${column} -> ${offset}`, (assert) => {
-      assert.deepEqual(locationToOffset(string, line, column), offset === null ? null : offset);
+    if (offset === null) continue;
+
+    test(`${string} @ ${line}:${column} -> ${String(offset)}`, (assert) => {
+      assert.deepEqual(source.offsetFor(line, column).offset, offset);
     });
   }
 });

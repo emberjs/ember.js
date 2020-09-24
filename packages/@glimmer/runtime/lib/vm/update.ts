@@ -2,31 +2,32 @@ import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   DynamicScope,
+  ElementBuilder,
   Environment,
   ExceptionHandler,
   GlimmerTreeChanges,
+  LiveBlock,
+  Option,
   RuntimeContext,
   Scope,
-  ElementBuilder,
-  LiveBlock,
   UpdatableBlock,
 } from '@glimmer/interfaces';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import {
   OpaqueIterationItem,
   OpaqueIterator,
-  valueForRef,
   Reference,
   updateRef,
+  valueForRef,
 } from '@glimmer/reference';
-import { expect, Option, Stack, logStep } from '@glimmer/util';
+import { expect, Stack, logStep } from '@glimmer/util';
 import { resetTracking, runInTrackingTransaction } from '@glimmer/validator';
 import { SimpleComment } from '@simple-dom/interface';
-import { move as moveBounds, clear } from '../bounds';
+import { clear, move as moveBounds } from '../bounds';
+import { associateDestroyableChild, destroy, destroyChildren } from '../destroyables';
 import { UpdatingOpcode } from '../opcodes';
 import { InternalVM, VmInitCallback } from './append';
-import { NewElementBuilder, LiveBlockList } from './element-builder';
-import { destroy, associateDestroyableChild, destroyChildren } from '../destroyables';
-import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
+import { LiveBlockList, NewElementBuilder } from './element-builder';
 
 export default class UpdatingVM {
   public env: Environment;

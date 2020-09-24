@@ -1,6 +1,6 @@
+import { Cursor, ElementBuilder, Environment } from '@glimmer/interfaces';
 import { RehydrateBuilder } from '@glimmer/runtime';
 import { NodeType, SimpleNode } from '@simple-dom/interface';
-import { Environment, Cursor, ElementBuilder } from '@glimmer/interfaces';
 
 export class DebugRehydrationBuilder extends RehydrateBuilder {
   clearedNodes: SimpleNode[] = [];

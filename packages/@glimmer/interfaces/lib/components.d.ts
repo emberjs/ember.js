@@ -16,6 +16,6 @@ export interface ComponentDefinition<
 }
 
 export interface PreparedArguments {
-  positional: Array<Reference>;
+  positional: ReadonlyArray<Reference>;
   named: Dict<Reference>;
 }

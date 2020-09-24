@@ -1,44 +1,43 @@
-import { PrecompileOptions } from '@glimmer/compiler';
 import {
   Cursor,
   Dict,
   ElementBuilder,
   Environment,
-  RenderResult,
-  Option,
   Helper,
+  Option,
+  RenderResult,
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
-import { ASTPluginBuilder } from '@glimmer/syntax';
 import { createConstRef, Reference } from '@glimmer/reference';
+import { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
+import { assign, castToSimple } from '@glimmer/util';
 import createHTMLDocument from '@simple-dom/document';
 import {
+  ElementNamespace,
   SimpleDocument,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
-  ElementNamespace,
-  SimpleDocumentFragment,
 } from '@simple-dom/interface';
 import { ComponentKind } from '../../components';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
 import { UserHelper } from '../../helpers';
 import { TestModifierConstructor } from '../../modifiers';
 import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
+import { BaseEnv } from '../env';
 import { JitDelegateContext, JitTestDelegateContext } from '../jit/delegate';
 import {
   registerComponent,
   registerHelper,
+  registerInternalHelper,
   registerModifier,
   registerPartial,
-  registerInternalHelper,
 } from '../jit/register';
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
 import { debugRehydration, DebugRehydrationBuilder } from './builder';
-import { BaseEnv } from '../env';
-import { assign, castToSimple } from '@glimmer/util';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];

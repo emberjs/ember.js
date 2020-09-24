@@ -539,7 +539,9 @@ module('@glimmer/validator: tracking', () => {
       test('it can switch to warnings/deprecations', (assert) => {
         let tag = createTag();
 
+        // eslint-disable-next-line no-console
         let originalConsoleWarn = console.warn;
+        // eslint-disable-next-line no-console
         console.warn = () => {
           assert.ok(true);
         };
@@ -553,6 +555,7 @@ module('@glimmer/validator: tracking', () => {
           });
         });
 
+        // eslint-disable-next-line no-console
         console.warn = originalConsoleWarn;
       });
 

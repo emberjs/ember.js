@@ -1,8 +1,8 @@
-import { SimpleNode, NodeType, SimpleElement } from '@simple-dom/interface';
 import { Option } from '@glimmer/interfaces';
-import { replaceHTML, toInnerHTML } from './dom/simple-utils';
-import { tokenize, EndTag, Token } from 'simple-html-tokenizer';
 import { castToSimple } from '@glimmer/util';
+import { NodeType, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { EndTag, Token, tokenize } from 'simple-html-tokenizer';
+import { replaceHTML, toInnerHTML } from './dom/simple-utils';
 
 export type IndividualSnapshot = 'up' | 'down' | SimpleNode;
 export type NodesSnapshot = IndividualSnapshot[];

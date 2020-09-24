@@ -1,18 +1,17 @@
 import {
+  DynamicComponentOp,
   HighLevelCompileOp,
   HighLevelCompileOpcode,
-  StatementCompileActions,
-  DynamicComponentOp,
   IfResolvedComponentOp,
+  StatementCompileActions,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
 import { compilableBlock } from '../compilable-template';
+import { compileBlock, compileInline } from '../compiler';
 import { InvokeDynamicComponent } from '../opcode-builder/helpers/components';
 import { resolveLayoutForTag } from '../resolver';
-import { exhausted } from '@glimmer/util';
-import { concatStatements, isHandled } from './concat';
-import { compileInline, compileBlock } from '../compiler';
 import { namedBlocks } from '../utils';
+import { concatStatements, isHandled } from './concat';
 
 export default function pushCompileOp(
   context: TemplateCompilationContext,
@@ -34,9 +33,6 @@ function compileOp(
       return DynamicComponent(context, action);
     case HighLevelCompileOpcode.IfResolvedComponent:
       return IfResolvedComponent(context, action);
-
-    default:
-      return exhausted(action);
   }
 }
 
@@ -66,16 +62,16 @@ function DynamicComponent(
   context: TemplateCompilationContext,
   action: DynamicComponentOp
 ): StatementCompileActions {
-  let { definition, attrs, params, args, blocks, atNames, curried } = action.op1;
+  let { definition, elementBlock, params, args, blocks, atNames, curried } = action.op1;
 
-  let attrsBlock = attrs && attrs.length > 0 ? compilableBlock(attrs, context.meta) : null;
+  let elementParamsBlock = elementBlock ? compilableBlock(elementBlock, context.meta) : null;
 
   let compiled =
     Array.isArray(blocks) || blocks === null ? namedBlocks(blocks, context.meta) : blocks;
 
   return InvokeDynamicComponent(context.meta, {
     definition,
-    attrs: attrsBlock,
+    elementBlock: elementParamsBlock,
     params,
     hash: args,
     atNames,
@@ -88,7 +84,7 @@ function IfResolvedComponent(
   context: TemplateCompilationContext,
   action: IfResolvedComponentOp
 ): StatementCompileActions {
-  let { name, attrs, blocks, staticTemplate, dynamicTemplate, orElse } = action.op1;
+  let { name, elementBlock, blocks, staticTemplate, dynamicTemplate, orElse } = action.op1;
   let component = resolveLayoutForTag(name, {
     resolver: context.syntax.program.resolver,
     meta: context.meta,
@@ -99,18 +95,18 @@ function IfResolvedComponent(
   if (component !== null) {
     let { handle, capabilities, compilable } = component;
 
-    let attrsBlock = compilableBlock(attrs, meta);
+    let attrsBlock = elementBlock ? compilableBlock(elementBlock, meta) : null;
 
     let compilableBlocks = namedBlocks(blocks, meta);
 
     if (compilable !== null) {
       return staticTemplate(handle, capabilities, compilable, {
-        attrs: attrsBlock,
+        elementBlock: attrsBlock,
         blocks: compilableBlocks,
       });
     } else {
       return dynamicTemplate(handle, capabilities, {
-        attrs: attrsBlock,
+        elementBlock: attrsBlock,
         blocks: compilableBlocks,
       });
     }

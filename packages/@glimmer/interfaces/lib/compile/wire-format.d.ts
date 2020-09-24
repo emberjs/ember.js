@@ -1,3 +1,4 @@
+import { PresentArray } from '../array';
 import { Dict, Option } from '../core';
 
 export type TupleSyntax = Statement | TupleExpression;
@@ -9,6 +10,20 @@ interface JsonArray extends Array<JsonValue> {}
 
 export type TemplateReference = Option<SerializedBlock>;
 export type YieldTo = number;
+
+/**
+ * A VariableResolutionContext explains how a variable name should be resolved.
+ */
+export const enum VariableResolutionContext {
+  Strict = 0,
+  AmbiguousAppend = 1,
+  AmbiguousAppendInvoke = 2,
+  AmbiguousAttr = 3,
+  LooseFreeVariable = 4,
+  ResolveAsCallHead = 5,
+  ResolveAsModifierHead = 6,
+  ResolveAsComponentHead = 7,
+}
 
 export const enum SexpOpcodes {
   // Statements
@@ -48,19 +63,51 @@ export const enum SexpOpcodes {
   Call = 30,
   Concat = 31,
 
-  // GetPath
+  // Get
   GetSymbol = 32, // GetPath + 0-2,
-  GetFree = 33,
-  GetFreeInAppendSingleId = 34, // GetContextualFree + 0-5
-  GetFreeInExpression = 35,
-  GetFreeInCallHead = 36,
-  GetFreeInBlockHead = 37,
-  GetFreeInModifierHead = 38,
-  GetFreeInComponentHead = 39,
+  GetStrictFree = 33,
 
-  GetPathStart = GetSymbol,
-  GetContextualFreeStart = GetFreeInAppendSingleId,
+  // falls back to `this.` (or locals in the case of partials), but
+  // never turns into a component or helper invocation
+  GetFreeAsFallback = 34,
+  // `{{x}}` in append position (might be a helper or component invocation, otherwise fall back to `this`)
+  GetFreeAsComponentOrHelperHeadOrThisFallback = 35,
+  // a component or helper (`{{<expr> x}}` in append position)
+  GetFreeAsComponentOrHelperHead = 36,
+  // a helper or `this` fallback `attr={{x}}`
+  GetFreeAsHelperHeadOrThisFallback = 37,
+  // a call head `(x)`
+  GetFreeAsHelperHead = 38,
+  GetFreeAsModifierHead = 39,
+  GetFreeAsComponentHead = 40,
+
+  // InElement
+  InElement = 41,
+
+  GetStart = GetSymbol,
+  GetEnd = GetFreeAsComponentHead,
+  GetLooseFreeStart = GetFreeAsComponentOrHelperHeadOrThisFallback,
+  GetLooseFreeEnd = GetFreeAsComponentHead,
+  GetContextualFreeStart = GetFreeAsComponentOrHelperHeadOrThisFallback,
 }
+
+export type GetContextualFreeOp =
+  | SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback
+  | SexpOpcodes.GetFreeAsComponentOrHelperHead
+  | SexpOpcodes.GetFreeAsHelperHeadOrThisFallback
+  | SexpOpcodes.GetFreeAsHelperHead
+  | SexpOpcodes.GetFreeAsModifierHead
+  | SexpOpcodes.GetFreeAsComponentHead
+  | SexpOpcodes.GetFreeAsFallback
+  | SexpOpcodes.GetStrictFree;
+
+export type AttrOp =
+  | SexpOpcodes.StaticAttr
+  | SexpOpcodes.StaticComponentAttr
+  | SexpOpcodes.DynamicAttr
+  | SexpOpcodes.TrustingDynamicAttr
+  | SexpOpcodes.ComponentAttr
+  | SexpOpcodes.TrustingComponentAttr;
 
 export type StatementSexpOpcode = Statement[0];
 export type StatementSexpOpcodeMap = {
@@ -77,32 +124,21 @@ export type SexpOpcode = keyof SexpOpcodeMap;
 export namespace Core {
   export type Expression = Expressions.Expression;
 
-  export type Path = string[];
-  export type Params = Expression[];
-  export type ConcatParams = [Expression, ...Expression[]];
-  export type Hash = Option<[string[], Expression[]]>;
+  export type CallArgs = [Params, Hash];
+  export type Path = [string, ...string[]];
+  export type ConcatParams = PresentArray<Expression>;
+  export type Params = Option<ConcatParams>;
+  export type Hash = Option<[PresentArray<string>, PresentArray<Expression>]>;
   export type Blocks = Option<[string[], SerializedInlineBlock[]]>;
   export type Args = [Params, Hash];
+  export type NamedBlock = [string, SerializedInlineBlock];
   export type EvalInfo = number[];
+  export type ElementParameters = Option<PresentArray<ElementParameter>>;
+
+  export type Syntax = Path | Params | ConcatParams | Hash | Blocks | Args | EvalInfo;
 }
 
-export const enum ExpressionContext {
-  // An `Append` is a single identifier that is contained inside a curly (either in a
-  // content curly or an attribute curly)
-  AppendSingleId = 0,
-  // An `Expression` is evaluated into a value (e.g. `person.name` in `(call person.name)`
-  // or `person.name` in `@name={{person.name}}`). This represents a syntactic position
-  // that must evaluate as an expression by virtue of its position in the syntax.
-  Expression = 1,
-  // A `CallHead` is the head of an expression that is definitely a call
-  CallHead = 2,
-  // A `BlockHead` is the head of an expression that is definitely a block
-  BlockHead = 3,
-  // A `ModifierHead` is the head of an expression that is definitely a modifir
-  ModifierHead = 4,
-  // A `ComponentHead` is the head of an expression that is definitely a component
-  ComponentHead = 5,
-}
+export type CoreSyntax = Core.Syntax;
 
 export namespace Expressions {
   export type Path = Core.Path;
@@ -110,65 +146,86 @@ export namespace Expressions {
   export type Hash = Core.Hash;
 
   export type GetSymbol = [SexpOpcodes.GetSymbol, number];
-  export type GetFree = [SexpOpcodes.GetFree, number];
-  export type GetFreeInAppendSingleId = [SexpOpcodes.GetFreeInAppendSingleId, number];
-  export type GetFreeInExpression = [SexpOpcodes.GetFreeInExpression, number];
-  export type GetFreeInCallHead = [SexpOpcodes.GetFreeInCallHead, number];
-  export type GetFreeInBlockHead = [SexpOpcodes.GetFreeInBlockHead, number];
-  export type GetFreeInModifierHead = [SexpOpcodes.GetFreeInModifierHead, number];
-  export type GetFreeInComponentHead = [SexpOpcodes.GetFreeInComponentHead, number];
+  export type GetStrictFree = [SexpOpcodes.GetStrictFree, number];
+  export type GetFreeAsFallback = [SexpOpcodes.GetFreeAsFallback, number];
+  export type GetFreeAsComponentOrHelperHeadOrThisFallback = [
+    SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
+    number
+  ];
+  export type GetFreeAsComponentOrHelperHead = [SexpOpcodes.GetFreeAsComponentOrHelperHead, number];
+  export type GetFreeAsHelperHeadOrThisFallback = [
+    SexpOpcodes.GetFreeAsHelperHeadOrThisFallback,
+    number
+  ];
+  export type GetFreeAsHelperHead = [SexpOpcodes.GetFreeAsHelperHead, number];
+  export type GetFreeAsModifierHead = [SexpOpcodes.GetFreeAsModifierHead, number];
+  export type GetFreeAsComponentHead = [SexpOpcodes.GetFreeAsComponentHead, number];
 
   export type GetContextualFree =
-    | GetFreeInAppendSingleId
-    | GetFreeInExpression
-    | GetFreeInCallHead
-    | GetFreeInBlockHead
-    | GetFreeInModifierHead
-    | GetFreeInComponentHead;
-  export type Get = GetSymbol | GetFree | GetContextualFree;
+    | GetFreeAsFallback
+    | GetFreeAsComponentOrHelperHeadOrThisFallback
+    | GetFreeAsComponentOrHelperHead
+    | GetFreeAsHelperHeadOrThisFallback
+    | GetFreeAsHelperHead
+    | GetFreeAsModifierHead
+    | GetFreeAsComponentHead;
+  export type GetVar = GetSymbol | GetStrictFree | GetContextualFree;
 
   export type GetPathSymbol = [SexpOpcodes.GetSymbol, number, Path];
-  export type GetPathFree = [SexpOpcodes.GetFree, number, Path];
-  export type GetPathFreeInAppendSingleId = [SexpOpcodes.GetFreeInAppendSingleId, number, Path];
-  export type GetPathFreeInExpression = [SexpOpcodes.GetFreeInExpression, number, Path];
-  export type GetPathFreeInCallHead = [SexpOpcodes.GetFreeInCallHead, number, Path];
-  export type GetPathFreeInBlockHead = [SexpOpcodes.GetFreeInBlockHead, number, Path];
-  export type GetPathFreeInModifierHead = [SexpOpcodes.GetFreeInModifierHead, number, Path];
-  export type GetPathFreeInComponentHead = [SexpOpcodes.GetFreeInComponentHead, number, Path];
+  export type GetPathStrictFree = [SexpOpcodes.GetStrictFree, number, Path];
+  export type GetPathFreeAsFallback = [SexpOpcodes.GetFreeAsFallback, number, Path];
+  export type GetPathFreeAsComponentOrHelperHeadOrThisFallback = [
+    SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
+    number,
+    Path
+  ];
+  export type GetPathFreeAsComponentOrHelperHead = [
+    SexpOpcodes.GetFreeAsComponentOrHelperHead,
+    number,
+    Path
+  ];
+  export type GetPathFreeAsHelperHeadOrThisFallback = [
+    SexpOpcodes.GetFreeAsHelperHeadOrThisFallback,
+    number,
+    Path
+  ];
+  export type GetPathFreeAsHelperHead = [SexpOpcodes.GetFreeAsHelperHead, number, Path];
+  export type GetPathFreeAsModifierHead = [SexpOpcodes.GetFreeAsModifierHead, number, Path];
+  export type GetPathFreeAsComponentHead = [SexpOpcodes.GetFreeAsComponentHead, number, Path];
 
   export type GetPathContextualFree =
-    | GetPathFreeInAppendSingleId
-    | GetPathFreeInExpression
-    | GetPathFreeInCallHead
-    | GetPathFreeInBlockHead
-    | GetPathFreeInModifierHead
-    | GetPathFreeInComponentHead;
-  export type GetPath = GetPathSymbol | GetPathFree | GetPathContextualFree;
+    | GetPathFreeAsFallback
+    | GetPathFreeAsComponentOrHelperHeadOrThisFallback
+    | GetPathFreeAsComponentOrHelperHead
+    | GetPathFreeAsHelperHeadOrThisFallback
+    | GetPathFreeAsHelperHead
+    | GetPathFreeAsModifierHead
+    | GetPathFreeAsComponentHead;
+  export type GetPath = GetPathSymbol | GetPathStrictFree | GetPathContextualFree;
 
-  export type Value = string | number | boolean | null;
+  export type Get = GetVar | GetPath;
+
+  export type StringValue = string;
+  export type NumberValue = number;
+  export type BooleanValue = boolean;
+  export type NullValue = null;
+  export type Value = StringValue | NumberValue | BooleanValue | NullValue;
   export type Undefined = [SexpOpcodes.Undefined];
 
-  export type TupleExpression =
-    | Get
-    | GetPath
-    | Concat
-    | HasBlock
-    | HasBlockParams
-    | Helper
-    | Undefined;
+  export type TupleExpression = Get | Concat | HasBlock | HasBlockParams | Helper | Undefined;
 
-  export type Expression = TupleExpression | Value;
+  // TODO get rid of undefined, which is just here to allow trailing undefined in attrs
+  // it would be better to handle that as an over-the-wire encoding concern
+  export type Expression = TupleExpression | Value | undefined;
 
-  type Recursive<T> = T;
-
-  export interface Concat extends Recursive<[SexpOpcodes.Concat, Core.ConcatParams]> {}
-  export interface Helper extends Recursive<[SexpOpcodes.Call, Expression, Option<Params>, Hash]> {}
-  export interface HasBlock extends Recursive<[SexpOpcodes.HasBlock, Expression]> {}
-  export interface HasBlockParams extends Recursive<[SexpOpcodes.HasBlockParams, Expression]> {}
+  export type Concat = [SexpOpcodes.Concat, Core.ConcatParams];
+  export type Helper = [SexpOpcodes.Call, Expression, Option<Params>, Hash];
+  export type HasBlock = [SexpOpcodes.HasBlock, Expression];
+  export type HasBlockParams = [SexpOpcodes.HasBlockParams, Expression];
 }
 
 export type Expression = Expressions.Expression;
-export type Get = Expressions.Get;
+export type Get = Expressions.GetVar;
 
 export type TupleExpression = Expressions.TupleExpression;
 
@@ -190,7 +247,7 @@ export const enum WellKnownTagName {
 }
 
 export namespace Statements {
-  export type Expression = Expressions.Expression;
+  export type Expression = Expressions.Expression | undefined;
   export type Params = Core.Params;
   export type Hash = Core.Hash;
   export type Blocks = Core.Blocks;
@@ -201,18 +258,38 @@ export namespace Statements {
   export type Comment = [SexpOpcodes.Comment, string];
   export type Modifier = [SexpOpcodes.Modifier, Expression, Params, Hash];
   export type Block = [SexpOpcodes.Block, Expression, Option<Params>, Hash, Blocks];
-  export type Component = [SexpOpcodes.Component, Expression, Attribute[], Hash, Blocks];
+  export type Component = [
+    op: SexpOpcodes.Component,
+    tag: Expression,
+    parameters: Core.ElementParameters,
+    args: Hash,
+    blocks: Blocks
+  ];
   export type OpenElement = [SexpOpcodes.OpenElement, string | WellKnownTagName];
   export type OpenElementWithSplat = [SexpOpcodes.OpenElementWithSplat, string | WellKnownTagName];
   export type FlushElement = [SexpOpcodes.FlushElement];
   export type CloseElement = [SexpOpcodes.CloseElement];
-  export type StaticAttr = [SexpOpcodes.StaticAttr, string | WellKnownAttrName, string, string?];
+  export type StaticAttr = [
+    SexpOpcodes.StaticAttr,
+    string | WellKnownAttrName,
+    Expression,
+    string?
+  ];
   export type StaticComponentAttr = [
     SexpOpcodes.StaticComponentAttr,
     string | WellKnownAttrName,
-    string,
+    Expression,
     string?
   ];
+
+  export type AnyStaticAttr = StaticAttr | StaticComponentAttr;
+
+  export type AttrSplat = [SexpOpcodes.AttrSplat, YieldTo];
+  export type Yield = [SexpOpcodes.Yield, YieldTo, Option<Params>];
+  export type Partial = [SexpOpcodes.Partial, Expression, Core.EvalInfo];
+  export type DynamicArg = [SexpOpcodes.DynamicArg, string, Expression];
+  export type StaticArg = [SexpOpcodes.StaticArg, string, Expression];
+
   export type DynamicAttr = [
     SexpOpcodes.DynamicAttr,
     string | WellKnownAttrName,
@@ -225,13 +302,7 @@ export namespace Statements {
     Expression,
     string?
   ];
-  export type AttrSplat = [SexpOpcodes.AttrSplat, YieldTo];
-  export type Yield = [SexpOpcodes.Yield, YieldTo, Option<Params>];
-  export type Partial = [SexpOpcodes.Partial, Expression, Core.EvalInfo];
-  export type DynamicArg = [SexpOpcodes.DynamicArg, string, Expression];
-  export type StaticArg = [SexpOpcodes.StaticArg, string, Expression];
-
-  export type TrustingAttr = [
+  export type TrustingDynamicAttr = [
     SexpOpcodes.TrustingDynamicAttr,
     string | WellKnownAttrName,
     Expression,
@@ -243,7 +314,21 @@ export namespace Statements {
     Expression,
     string?
   ];
+
+  export type AnyDynamicAttr =
+    | DynamicAttr
+    | ComponentAttr
+    | TrustingDynamicAttr
+    | TrustingComponentAttr;
+
   export type Debugger = [SexpOpcodes.Debugger, Core.EvalInfo];
+  export type InElement = [
+    op: SexpOpcodes.InElement,
+    block: SerializedInlineBlock,
+    guid: string,
+    destination: Expression,
+    insertBefore?: Expression
+  ];
 
   /**
    * A Handlebars statement
@@ -259,41 +344,46 @@ export namespace Statements {
     | OpenElementWithSplat
     | FlushElement
     | CloseElement
-    | StaticAttr
-    | StaticComponentAttr
-    | DynamicAttr
-    | ComponentAttr
+    | Attribute
     | AttrSplat
     | Yield
     | Partial
     | StaticArg
     | DynamicArg
-    | TrustingAttr
-    | TrustingComponentAttr
-    | Debugger;
+    | Debugger
+    | InElement;
 
   export type Attribute =
-    | Statements.StaticAttr
-    | Statements.StaticComponentAttr
-    | Statements.DynamicAttr
-    | Statements.ComponentAttr
-    | Statements.TrustingComponentAttr
-    | Statements.Modifier
-    | Statements.AttrSplat;
+    | StaticAttr
+    | StaticComponentAttr
+    | DynamicAttr
+    | TrustingDynamicAttr
+    | ComponentAttr
+    | TrustingComponentAttr;
 
-  export type Argument = Statements.StaticArg | Statements.DynamicArg;
+  export type ComponentFeature = Modifier | AttrSplat;
+  export type Argument = StaticArg | DynamicArg;
 
-  export type Parameter = Attribute | Argument;
+  export type ElementParameter = Attribute | Argument | ComponentFeature;
 }
 
 /** A Handlebars statement */
 export type Statement = Statements.Statement;
 export type Attribute = Statements.Attribute;
 export type Argument = Statements.Argument;
-export type Parameter = Statements.Parameter;
+export type ElementParameter = Statements.ElementParameter;
 
 export type SexpSyntax = Statement | TupleExpression;
-export type Syntax = SexpSyntax | Expressions.Value;
+// TODO this undefined is related to the other TODO in this file
+export type Syntax = SexpSyntax | Expressions.Value | undefined;
+
+export type SyntaxWithInternal =
+  | Syntax
+  | CoreSyntax
+  | SerializedTemplateBlock
+  | Core.CallArgs
+  | Core.NamedBlock
+  | Core.ElementParameters;
 
 /**
  * A JSON object that the Block was serialized into.

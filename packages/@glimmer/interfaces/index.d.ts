@@ -1,8 +1,9 @@
+export * from './lib/core';
 export * from './lib/compile';
 export * from './lib/components';
 export * from './lib/managers';
 export * from './lib/content';
-export * from './lib/core';
+export * from './lib/array';
 export * from './lib/dom/bounds';
 export * from './lib/dom/changes';
 export * from './lib/dom/attributes';
@@ -15,6 +16,6 @@ export * from './lib/tier1/symbol-table';
 export * from './lib/vm-opcodes';
 export * from './lib/runtime/vm';
 export * from './lib/stack';
-export { WireFormat };
 
 import * as WireFormat from './lib/compile/wire-format';
+export { WireFormat };

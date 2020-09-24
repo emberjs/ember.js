@@ -7,6 +7,8 @@ export interface Dict<T = unknown> {
   [key: string]: T;
 }
 
+export type DictValue<D extends Dict> = D extends Dict<infer V> ? V : never;
+
 export interface Unique<T> {
   'Unique [id=ada0f31f-27f7-4ab0-bc03-0005387c9d5f]': T;
 }

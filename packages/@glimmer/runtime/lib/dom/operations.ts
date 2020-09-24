@@ -30,7 +30,7 @@ export class DOMOperations {
     this.setupUselessElement();
   }
 
-  // split into seperate method so that NodeDOMTreeConstruction
+  // split into separate method so that NodeDOMTreeConstruction
   // can override it.
   protected setupUselessElement() {
     this.uselessElement = this.document.createElement('div');

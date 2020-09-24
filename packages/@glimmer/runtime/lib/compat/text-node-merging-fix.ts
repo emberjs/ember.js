@@ -1,9 +1,8 @@
-import { Bounds } from '@glimmer/interfaces';
-import { Option } from '@glimmer/util';
+import { Bounds, Option } from '@glimmer/interfaces';
 import {
-  SimpleDocument,
-  SimpleComment,
   InsertPosition,
+  SimpleComment,
+  SimpleDocument,
   SimpleElement,
   SimpleNode,
 } from '@simple-dom/interface';
@@ -11,7 +10,7 @@ import { DOMOperations } from '../dom/operations';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
-// Reason:   These browsers will merge adjacent text nodes. For exmaple given
+// Reason:   These browsers will merge adjacent text nodes. For example given
 //           <div>Hello</div> with div.insertAdjacentHTML(' world') browsers
 //           with proper behavior will populate div.childNodes with two items.
 //           These browsers will populate it with one merged node instead.
