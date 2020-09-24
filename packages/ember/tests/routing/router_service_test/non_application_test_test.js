@@ -39,10 +39,6 @@ moduleFor(
       return this.owner.lookup('service:router');
     }
 
-    afterEach() {
-      super.afterEach();
-    }
-
     ['@test RouterService can be instantiated in non application test'](assert) {
       assert.ok(this.routerService);
     }

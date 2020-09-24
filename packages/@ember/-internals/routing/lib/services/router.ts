@@ -71,8 +71,8 @@ export default class RouterService extends Service {
     if (router !== undefined) {
       return router;
     }
-    const owner = getOwner(this) as any;
-    router = owner.lookup('router:main');
+    const owner = getOwner(this) as Owner;
+    router = owner.lookup('router:main') as EmberRouter;
     router.setupRouter();
     return (this[ROUTER] = router);
   }
