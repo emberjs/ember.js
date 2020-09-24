@@ -71,7 +71,7 @@
     "broccoli-plugin": "^3.1.0",
     "broccoli-rollup": "^4.1.1",
     "broccoli-source": "^3.0.0",
-    "broccoli-typescript-compiler": "^6.0.0",
+    "broccoli-typescript-compiler": "^6.0.1",
     "chalk": "^3.0.0",
     "dag-map": "^2.0.2",
     "ember-cli": "~3.20.0",
@@ -79,9 +79,11 @@
     "ensure-posix-path": "^1.1.1",
     "eslint": "^7.7.0",
     "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-qunit": "^4.3.0",
+    "eslint-plugin-simple-import-sort": "^5.0.3",
     "execa": "^1.0.0",
     "glob": "^7.0.5",
     "js-yaml": "^3.10.0",
@@ -157,7 +159,7 @@
   },
   "volta": {
     "node": "12.18.3",
-    "yarn": "1.22.4"
+    "yarn": "1.22.5"
   },
   "ember-addon": {
     "paths": [

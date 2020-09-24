@@ -67,7 +67,32 @@ export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMeta
   return new NamedBlocksImpl(out);
 }
 
-export function expectString(
+export function isStrictFreeVariable(
+  expr: WireFormat.Expression
+): expr is WireFormat.Expressions.GetStrictFree {
+  return Array.isArray(expr) && expr[0] === SexpOpcodes.GetStrictFree;
+}
+
+export function tryLooseFreeVariable(
+  expr: WireFormat.Expression,
+  meta: ContainingMetadata
+): Option<string> {
+  if (!meta.upvars) {
+    return null;
+  }
+
+  if (!Array.isArray(expr)) {
+    return null;
+  }
+
+  if (isGet(expr)) {
+    return loosePathName(expr, meta);
+  }
+
+  return null;
+}
+
+export function expectLooseFreeVariable(
   expr: WireFormat.Expression,
   meta: ContainingMetadata,
   desc: string
@@ -76,27 +101,24 @@ export function expectString(
     return error(`${desc}, but there were no free variables in the template`, 0, 0);
   }
 
-  if (!Array.isArray(expr)) {
+  let stringHead = tryLooseFreeVariable(expr, meta);
+
+  if (stringHead === null) {
     throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
+  } else {
+    return stringHead;
   }
-
-  if (isGet(expr)) {
-    let name = simplePathName(expr, meta);
-    if (name !== null) return name;
-  }
-
-  throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
 }
 
-export function simplePathName(
-  opcode: Expressions.GetPath | Expressions.Get,
+export function loosePathName(
+  opcode: Expressions.GetPath | Expressions.GetVar,
   meta: ContainingMetadata
 ): Option<string> {
-  if (opcode.length === 3 && opcode[2].length > 0) {
+  if (opcode.length === 3) {
     return null;
   }
 
-  if (isGetFree(opcode)) {
+  if (isLooseGetFree(opcode)) {
     return meta.upvars![opcode[1]];
   }
 
@@ -105,12 +127,18 @@ export function simplePathName(
 
 export function isGet(
   opcode: Expressions.TupleExpression
-): opcode is Expressions.Get | Expressions.GetPath {
-  return opcode.length >= 2 && opcode[0] >= SexpOpcodes.GetSymbol;
+): opcode is Expressions.GetVar | Expressions.GetPath {
+  return opcode[0] >= SexpOpcodes.GetStart && opcode[0] <= SexpOpcodes.GetEnd;
 }
 
-function isGetFree(
-  opcode: Expressions.Get | Expressions.GetPath
-): opcode is Expressions.GetFree | Expressions.GetContextualFree {
-  return opcode[0] >= SexpOpcodes.GetFree;
+export function isStrictGetFree(
+  opcode: Expressions.GetVar | Expressions.GetPath
+): opcode is Expressions.GetContextualFree {
+  return opcode[0] === SexpOpcodes.GetStrictFree;
+}
+
+export function isLooseGetFree(
+  opcode: Expressions.GetVar | Expressions.GetPath
+): opcode is Expressions.GetContextualFree {
+  return opcode[0] >= SexpOpcodes.GetLooseFreeStart && opcode[0] <= SexpOpcodes.GetLooseFreeEnd;
 }

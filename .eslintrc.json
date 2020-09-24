@@ -2,7 +2,7 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2019
+    "ecmaVersion": 2020
   },
   "extends": [
     "eslint:recommended",
@@ -30,7 +30,9 @@
     "qunit/no-global-module-test": "off",
     // disabled due to false positives
     "qunit/no-global-stop-start": "off",
-
+    "import/no-extraneous-dependencies": ["error"],
+    // this is handled by import/no-extraneous-dependencies
+    "node/no-extraneous-import": "off",
     "prettier/prettier": "error",
     "accessor-pairs": "error",
     "array-callback-return": "error",
@@ -73,7 +75,7 @@
     "no-bitwise": "error",
     "no-caller": "error",
     "no-catch-shadow": "error",
-    "no-console": "off",
+    "no-console": "error",
     "no-continue": "error",
     "no-div-regex": "error",
     "no-duplicate-imports": "error",
@@ -187,6 +189,57 @@
   },
   "overrides": [
     {
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      },
+      "files": ["packages/@glimmer/compiler/**/*.ts", "packages/@glimmer/syntax/lib/**/*.ts", "packages/@glimmer/syntax/index.ts"],
+      "extends": [
+        // "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:import/errors",
+        "plugin:import/typescript",
+        "plugin:qunit/recommended",
+        "plugin:qunit/two",
+        "plugin:node/recommended",
+        "prettier",
+        "prettier/@typescript-eslint"
+      ],
+      "plugins": [
+        "simple-import-sort"
+      ],
+      "rules": {
+        "prefer-const": ["off"],
+        "simple-import-sort/sort": ["error"],
+        "import/order": "off",
+        "sort-imports": "off",
+        "import/first": ["error"],
+        "import/newline-after-import": ["error"],
+        "import/no-duplicates": ["error"],
+        "import/export": "off",
+        "qunit/no-global-expect": ["off"],
+        // this is handled by import/errors
+        "node/no-extraneous-import": "off",
+        "@typescript-eslint/unbound-method": [
+          "error",
+          {
+            "ignoreStatic": true
+          }
+        ],
+        "@typescript-eslint/no-explicit-any": [
+          "error", {
+            "ignoreRestArgs": true
+          }
+        ],
+        "@typescript-eslint/ban-types": ["error", {
+          "extendDefaults": true,
+          "types": {
+            "object": false
+          }
+        }]
+      }
+    },
+    {
       "files": ["**/*.d.ts"],
       "parserOptions": {
         "sourceType": "module"
@@ -209,6 +262,9 @@
       "env": {
         "es6": true,
         "node": true
+      },
+      "rules": {
+        "no-console": "off"
       }
     },
     // bin scripts
@@ -229,7 +285,8 @@
         "sourceType": "module"
       },
       "rules": {
-        "node/no-unsupported-features/es-syntax": "off"
+        "node/no-unsupported-features/es-syntax": "off",
+        "no-console": "off"
       }
     },
     // source packages

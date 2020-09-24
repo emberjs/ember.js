@@ -1,7 +1,8 @@
 import { precompile } from '@glimmer/compiler';
 import { preprocess } from '../..';
 import { module } from '../support';
-import { unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate, assert as glimmerAssert } from '@glimmer/util';
+import { SexpOpcodes, WireFormat } from '@glimmer/interfaces';
 import { TemplateWithIdAndReferrer } from '@glimmer/opcode-compiler';
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
@@ -34,7 +35,16 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       })
     );
 
-    let [componentInvocation] = JSON.parse(wire.block).statements;
-    assert.equal(componentInvocation[1], 'ooFX', 'customized component name was used');
+    let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
+    let [[, componentNameExpr]] = block.statements as [WireFormat.Statements.Component];
+
+    glimmerAssert(
+      Array.isArray(componentNameExpr) &&
+        componentNameExpr[0] === SexpOpcodes.GetFreeAsComponentHead,
+      `component name is a free variable lookup`
+    );
+
+    let componentName = block.upvars[componentNameExpr[1]];
+    assert.equal(componentName, 'ooFX', 'customized component name was used');
   });
 });

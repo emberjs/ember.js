@@ -1,20 +1,27 @@
 import {
-  WireFormat,
-  SexpOpcodes as Op,
   Option,
   SerializedInlineBlock,
   SerializedTemplateBlock,
+  SexpOpcodes as Op,
+  WireFormat,
 } from '@glimmer/interfaces';
-import { dict, exhausted } from '@glimmer/util';
+import { dict } from '@glimmer/util';
+
 import { inflateAttrName, inflateTagName } from './utils';
 
 export default class WireFormatDebugger {
-  constructor(private program: SerializedTemplateBlock, _parameters?: number[]) {}
+  private upvars: string[];
+  private symbols: string[];
 
-  format(): unknown {
+  constructor({ upvars, symbols }: { upvars: string[]; symbols: string[] }) {
+    this.upvars = upvars;
+    this.symbols = symbols;
+  }
+
+  format(program: SerializedTemplateBlock): unknown {
     let out = [];
 
-    for (let statement of this.program.statements) {
+    for (let statement of program.statements) {
       out.push(this.formatOpcode(statement));
     }
 
@@ -36,6 +43,14 @@ export default class WireFormatDebugger {
             this.formatParams(opcode[2]),
             this.formatHash(opcode[3]),
             this.formatBlocks(opcode[4]),
+          ];
+
+        case Op.InElement:
+          return [
+            'in-element',
+            opcode[1],
+            this.formatOpcode(opcode[2]),
+            opcode[3] ? this.formatOpcode(opcode[3]) : undefined,
           ];
 
         case Op.OpenElement:
@@ -121,19 +136,10 @@ export default class WireFormatDebugger {
           return [
             'component',
             this.formatOpcode(opcode[1]),
-            this.formatAttrs(opcode[2]),
+            this.formatElementParams(opcode[2]),
             this.formatHash(opcode[3]),
             this.formatBlocks(opcode[4]),
           ];
-
-        // case Op.DynamicComponent:
-        //   return [
-        //     'dynamic-component',
-        //     this.formatOpcode(opcode[1]),
-        //     this.formatAttrs(opcode[2]),
-        //     this.formatHash(opcode[3]),
-        //     this.formatBlocks(opcode[4]),
-        //   ];
 
         case Op.HasBlock:
           return ['has-block', this.formatOpcode(opcode[1])];
@@ -155,42 +161,40 @@ export default class WireFormatDebugger {
         case Op.Concat:
           return ['concat', this.formatParams(opcode[1] as WireFormat.Core.Params)];
 
-        default: {
-          let [op, sym, path] = opcode;
-          let opName: string;
-          let varName: string;
-          if (op === Op.GetSymbol) {
-            varName = this.program.symbols[sym];
-            opName = 'get-symbol';
+        case Op.GetStrictFree:
+          return ['get-strict-free', this.upvars[opcode[1]], opcode[2]];
+
+        case Op.GetFreeAsFallback:
+          return ['GetFreeAsFallback', this.upvars[opcode[1]], opcode[2]];
+
+        case Op.GetFreeAsComponentOrHelperHeadOrThisFallback:
+          return [
+            'GetFreeAsComponentOrHelperHeadOrThisFallback',
+            this.upvars[opcode[1]],
+            opcode[2],
+          ];
+
+        case Op.GetFreeAsComponentOrHelperHead:
+          return ['GetFreeAsComponentOrHelperHead', this.upvars[opcode[1]], opcode[2]];
+
+        case Op.GetFreeAsHelperHeadOrThisFallback:
+          return ['GetFreeAsHelperHeadOrThisFallback', this.upvars[opcode[1]], opcode[2]];
+
+        case Op.GetFreeAsHelperHead:
+          return ['GetFreeAsHelperHead', this.upvars[opcode[1]], opcode[2]];
+
+        case Op.GetFreeAsComponentHead:
+          return ['GetFreeAsComponentHead', this.upvars[opcode[1]], opcode[2]];
+
+        case Op.GetFreeAsModifierHead:
+          return ['GetFreeAsModifierHead', this.upvars[opcode[1]], opcode[2]];
+
+        case Op.GetSymbol: {
+          if (opcode[1] === 0) {
+            return ['get-symbol', 'this', opcode[2]];
           } else {
-            varName = this.program.upvars[sym];
-            switch (op) {
-              case Op.GetFree:
-                opName = 'get-free';
-                break;
-              case Op.GetFreeInAppendSingleId:
-                opName = 'get-free-in-append-single-id';
-                break;
-              case Op.GetFreeInBlockHead:
-                opName = 'get-free-in-block-head';
-                break;
-              case Op.GetFreeInCallHead:
-                opName = 'get-free-in-call-head';
-                break;
-              case Op.GetFreeInComponentHead:
-                opName = 'get-free-in-component-head';
-                break;
-              case Op.GetFreeInExpression:
-                opName = 'get-free-in-expression';
-                break;
-              case Op.GetFreeInModifierHead:
-                opName = 'get-free-in-modifier-head';
-                break;
-              default:
-                return exhausted(op);
-            }
+            return ['get-symbol', this.symbols[opcode[1] - 1], opcode[2]];
           }
-          return path ? [opName, varName, path] : [opName, varName];
         }
       }
     } else {
@@ -198,7 +202,7 @@ export default class WireFormatDebugger {
     }
   }
 
-  private formatAttrs(opcodes: Option<WireFormat.Attribute[]>): Option<unknown[]> {
+  private formatElementParams(opcodes: Option<WireFormat.ElementParameter[]>): Option<unknown[]> {
     if (opcodes === null) return null;
     return opcodes.map((o) => this.formatOpcode(o));
   }

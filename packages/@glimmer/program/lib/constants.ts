@@ -84,7 +84,7 @@ export class ConstantsImpl extends CompileTimeConstantImpl implements RuntimeCon
   };
 
   getValue<T>(index: number) {
-    assert(index > 0, `cannot get value for handle: ${index}`);
+    assert(index >= 0, `cannot get value for handle: ${index}`);
 
     return this.values[index] as T;
   }
@@ -109,5 +109,9 @@ export class ConstantsImpl extends CompileTimeConstantImpl implements RuntimeCon
 
   getSerializable<T>(s: number): T {
     return JSON.parse(this.getValue(s)) as T;
+  }
+
+  getOther(s: number): unknown {
+    return this.getValue(s);
   }
 }

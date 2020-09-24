@@ -1,4 +1,4 @@
-import { RenderTest, jitSuite, test, preprocess } from '..';
+import { RenderTest, jitSuite, test, preprocess, syntaxErrorFor } from '..';
 
 class SyntaxErrors extends RenderTest {
   static suiteName = 'syntax errors';
@@ -6,84 +6,63 @@ class SyntaxErrors extends RenderTest {
   @test
   'context switching using ../ is not allowed'() {
     this.assert.throws(() => {
-      preprocess('<div><p>{{../value}}</p></div>');
-    }, new Error('Changing context using "../" is not supported in Glimmer: "../value" on line 1.'));
+      preprocess('<div><p>{{../value}}</p></div>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor('Changing context using "../" is not supported in Glimmer', '../value', 'test-module', 1, 10));
   }
 
   @test
   'mixing . and / is not allowed'() {
     this.assert.throws(() => {
-      preprocess('<div><p>{{a/b.c}}</p></div>');
-    }, new Error("Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: \"a/b.c\" on line 1."));
+      preprocess('<div><p>{{a/b.c}}</p></div>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor("Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths", 'a/b.c', 'test-module', 1, 10));
   }
 
   @test
   'explicit self ref with ./ is not allowed'() {
     this.assert.throws(() => {
-      preprocess('<div><p>{{./value}}</p></div>');
-    }, new Error('Using "./" is not supported in Glimmer and unnecessary: "./value" on line 1.'));
-  }
-
-  @test
-  'helper invocation with dot-paths are not allowed'() {
-    this.assert.throws(() => {
-      preprocess('{{foo.bar some="args"}}');
-    }, new Error('`foo.bar` is not a valid name for a helper on line 1.'));
-  }
-
-  @test
-  'sub-expression helper invocation with dot-paths are not allowed'() {
-    this.assert.throws(() => {
-      preprocess('{{log (foo.bar some="args")}}');
-    }, new Error('`foo.bar` is not a valid name for a helper on line 1.'));
-  }
-
-  @test
-  'sub-expression modifier invocation with dot-paths are not allowed'() {
-    this.assert.throws(() => {
-      preprocess('<div {{foo.bar some="args"}} />');
-    }, new Error('`foo.bar` is not a valid name for a modifier on line 1.'));
+      preprocess('<div><p>{{./value}}</p></div>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor('Using "./" is not supported in Glimmer and unnecessary', './value', 'test-module', 1, 10));
   }
 
   @test
   'Block params in HTML syntax - Throws exception if given zero parameters'() {
     this.assert.throws(() => {
-      preprocess('<x-bar as ||>foo</x-bar>');
-    }, /Cannot use zero block parameters: 'as \|\|'/);
+      preprocess('<x-bar as ||>foo</x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor('Cannot use zero block parameters', '<x-bar as ||>foo</x-bar>', 'test-module', 1, 0));
 
     this.assert.throws(() => {
-      preprocess('<x-bar as | |>foo</x-bar>');
-    }, /Cannot use zero block parameters: 'as \| \|'/);
+      preprocess('<x-bar as | |>foo</x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor('Cannot use zero block parameters', '<x-bar as | |>foo</x-bar>', 'test-module', 1, 0));
   }
 
   @test
   'Block params in HTML syntax - Throws an error on invalid block params syntax'() {
     this.assert.throws(() => {
-      preprocess('<x-bar as |x y>{{x}},{{y}}</x-bar>');
-    }, /Invalid block parameters syntax: 'as |x y'/);
+      preprocess('<x-bar as |x y>{{x}},{{y}}</x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor("Invalid block parameters syntax, 'as |x y'", '<x-bar as |x y>{{x}},{{y}}</x-bar>', 'test-module', 1, 0));
 
     this.assert.throws(() => {
-      preprocess('<x-bar as |x| y>{{x}},{{y}}</x-bar>');
-    }, /Invalid block parameters syntax: 'as \|x\| y'/);
+      preprocess('<x-bar as |x| y>{{x}},{{y}}</x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor("Invalid block parameters syntax, 'as |x| y'", '<x-bar as |x| y>{{x}},{{y}}</x-bar>', 'test-module', 1, 0));
 
     this.assert.throws(() => {
-      preprocess('<x-bar as |x| y|>{{x}},{{y}}</x-bar>');
-    }, /Invalid block parameters syntax: 'as \|x\| y\|'/);
+      preprocess('<x-bar as |x| y|>{{x}},{{y}}</x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor("Invalid block parameters syntax, 'as |x| y|'", '<x-bar as |x| y|>{{x}},{{y}}</x-bar>', 'test-module', 1, 0));
   }
 
   @test
   'Block params in HTML syntax - Throws an error on invalid identifiers for params'() {
     this.assert.throws(() => {
-      preprocess('<x-bar as |x foo.bar|></x-bar>');
-    }, /Invalid identifier for block parameters: 'foo\.bar' in 'as \|x foo\.bar|'/);
+      preprocess('<x-bar as |x foo.bar|></x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor("Invalid identifier for block parameters, 'foo.bar'", '<x-bar as |x foo.bar|></x-bar>', 'test-module', 1, 0));
 
     this.assert.throws(() => {
-      preprocess('<x-bar as |x "foo"|></x-bar>');
-    }, /Syntax error at line 1 col 17: " is not a valid character within attribute names/);
+      preprocess('<x-bar as |x "foo"|></x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor('" is not a valid character within attribute names', '', 'test-module', 1, 17));
 
     this.assert.throws(() => {
-      preprocess('<x-bar as |foo[bar]|></x-bar>');
-    }, /Invalid identifier for block parameters: 'foo\[bar\]' in 'as \|foo\[bar\]\|'/);
+      preprocess('<x-bar as |foo[bar]|></x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor("Invalid identifier for block parameters, 'foo[bar]'", '<x-bar as |foo[bar]|></x-bar>', 'test-module', 1, 0));
   }
 }
 

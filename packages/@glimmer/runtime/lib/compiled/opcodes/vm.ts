@@ -153,7 +153,7 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
   if (table === null) {
     // To balance the pop{Frame,Scope}
     vm.pushFrame();
-    vm.pushScope(scope!); // Could be null but it doesnt matter as it is immediatelly popped.
+    vm.pushScope(scope!); // Could be null but it doesn't matter as it is immediately popped.
     return;
   }
 

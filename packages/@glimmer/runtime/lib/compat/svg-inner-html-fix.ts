@@ -1,5 +1,5 @@
-import { Bounds } from '@glimmer/interfaces';
-import { assert, castToBrowser, clearElement, Option, unwrap } from '@glimmer/util';
+import { Bounds, Option } from '@glimmer/interfaces';
+import { assert, castToBrowser, clearElement, unwrap } from '@glimmer/util';
 import {
   InsertPosition,
   Namespace,
@@ -61,7 +61,7 @@ function fixSVG(
 
   let source: SimpleNode;
 
-  // This is important, because decendants of the <foreignObject> integration
+  // This is important, because descendants of the <foreignObject> integration
   // point are parsed in the HTML namespace
   if (parent.tagName.toUpperCase() === 'FOREIGNOBJECT') {
     // IE, Edge: also do not correctly support using `innerHTML` on SVG

@@ -1,14 +1,14 @@
 import {
   MachineOp,
-  Op,
-  StatementCompileActions,
   MacroBlocks,
   MacroInlines,
+  Op,
+  StatementCompileActions,
 } from '@glimmer/interfaces';
+import { assert, expect, isPresent, unwrap } from '@glimmer/util';
+import { $fp, $sp } from '@glimmer/vm';
+import { error, op } from '../opcode-builder/encoder';
 import { InvokeStaticBlock, InvokeStaticBlockWithStack } from '../opcode-builder/helpers/blocks';
-import { assert, unwrap } from '@glimmer/util';
-import { $sp, $fp } from '@glimmer/vm';
-import { op, error } from '../opcode-builder/encoder';
 import {
   InvokeDynamicComponent,
   StaticComponentHelper,
@@ -125,7 +125,7 @@ export function populateBuiltins(
           actions = [PushPrimitiveReference(null)];
         }
 
-        actions.push(op('Expr', params[0]));
+        actions.push(op('Expr', expect(params, 'params in #each must exist')[0]));
 
         return { count: 2, actions };
       },
@@ -154,43 +154,6 @@ export function populateBuiltins(
         }
 
         return out;
-      },
-    });
-  });
-
-  blocks.add('in-element', (params, hash, blocks) => {
-    if (!params || params.length !== 1) {
-      throw new Error(`SYNTAX ERROR: #in-element requires a single argument`);
-    }
-
-    return ReplayableIf({
-      args() {
-        assert(hash !== null, '[BUG] `{{#in-element}}` should have non-empty hash');
-
-        let [keys, values] = hash!;
-
-        let actions: StatementCompileActions = [];
-
-        for (let i = 0; i < keys.length; i++) {
-          let key = keys[i];
-          if (key === 'guid' || key === 'insertBefore') {
-            actions.push(op('Expr', values[i]));
-          } else {
-            throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);
-          }
-        }
-
-        actions.push(op('Expr', params[0]), op(Op.Dup, $sp, 0));
-
-        return { count: 4, actions };
-      },
-
-      ifTrue() {
-        return [
-          op(Op.PushRemoteElement),
-          InvokeStaticBlock(unwrap(blocks.get('default'))),
-          op(Op.PopRemoteElement),
-        ];
       },
     });
   });
@@ -231,8 +194,8 @@ export function populateBuiltins(
 
     return op('DynamicComponent', {
       definition,
-      attrs: null,
-      params,
+      elementBlock: null,
+      params: isPresent(params) ? params : null,
       args: hash,
       atNames: false,
       blocks,
@@ -255,8 +218,8 @@ export function populateBuiltins(
     let [definition, ...params] = _params!;
     return InvokeDynamicComponent(context.meta, {
       definition,
-      attrs: null,
-      params,
+      elementBlock: null,
+      params: isPresent(params) ? params : null,
       hash,
       atNames: false,
       blocks: EMPTY_BLOCKS,

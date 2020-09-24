@@ -1,5 +1,4 @@
-export type Option<T> = T | null;
-export type Maybe<T> = Option<T> | undefined | void;
+import { Maybe } from '@glimmer/interfaces';
 
 export type Factory<T> = new (...args: unknown[]) => T;
 

@@ -1,8 +1,8 @@
-import { CapturedArguments, ComponentDefinition } from '@glimmer/interfaces';
-import { Option, symbol, assert, _WeakSet } from '@glimmer/util';
-import { VMArgumentsImpl } from '../vm/arguments';
+import { CapturedArguments, ComponentDefinition, Option } from '@glimmer/interfaces';
+import { assert, symbol, _WeakSet } from '@glimmer/util';
 import { capabilityFlagsFrom } from '../capabilities';
 import { ComponentInstance } from '../compiled/opcodes/component';
+import { VMArgumentsImpl } from '../vm/arguments';
 
 const INNER: unique symbol = symbol('INNER');
 const ARGS: unique symbol = symbol('ARGS');

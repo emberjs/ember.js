@@ -1,25 +1,24 @@
 import {
+  CompileTimeConstants,
+  CompileTimeResolver,
+  ContainingMetadata,
   Encoder,
+  ExpressionCompileActions,
   HighLevelResolutionOp,
   HighLevelResolutionOpcode,
-  CompileTimeResolver,
-  ResolveHandle,
-  Option,
-  ExpressionCompileActions,
   IfResolvedOp,
-  WireFormat,
   Op,
-  CompileTimeConstants,
-  ContainingMetadata,
+  Option,
+  ResolveHandle,
   TemplateCompilationContext,
-  ExpressionContext,
   Owner,
+  WireFormat,
 } from '@glimmer/interfaces';
+import { expect, emptyArray, EMPTY_STRING_ARRAY, exhausted } from '@glimmer/util';
+import { error, op } from '../opcode-builder/encoder';
 import { CompilePositional } from '../opcode-builder/helpers/shared';
-import { exhausted, EMPTY_ARRAY, expect } from '@glimmer/util';
-import { op, error } from '../opcode-builder/encoder';
+import { Call, PushPrimitive } from '../opcode-builder/helpers/vm';
 import { strArray } from '../opcode-builder/operands';
-import { PushPrimitive, Call } from '../opcode-builder/helpers/vm';
 import { concatExpressions } from './concat';
 import { EXPRESSIONS } from './expressions';
 
@@ -48,62 +47,40 @@ export default function pushResolutionOp(
     case HighLevelResolutionOpcode.ResolveFree: {
       throw new Error('Unimplemented HighLevelResolutionOpcode.ResolveFree');
     }
-    case HighLevelResolutionOpcode.ResolveContextualFree: {
-      let { freeVar, context: expressionContext } = operation.op1;
 
-      if (context.meta.asPartial) {
-        let name = context.meta.upvars![freeVar];
+    case HighLevelResolutionOpcode.ResolveAmbiguous: {
+      let { upvar, allowComponents } = operation.op1;
+      let resolver = context.syntax.program.resolver;
+      let name = context.meta.upvars![upvar];
 
-        concatExpressions(encoder, context, [op(Op.ResolveMaybeLocal, name)], constants);
+      let resolvedHelper = resolver.lookupHelper(
+        name,
+        expect(context.meta.owner, 'BUG: expected owner when resolving helper')
+      );
+      let expressions: ExpressionCompileActions;
 
-        break;
-      }
-
-      switch (expressionContext) {
-        case ExpressionContext.Expression: {
-          // in classic mode, this is always a this-fallback
-          let name = context.meta.upvars![freeVar];
-
-          concatExpressions(
-            encoder,
-            context,
-            [op(Op.GetVariable, 0), op(Op.GetProperty, name)],
-            constants
-          );
-
-          break;
-        }
-
-        case ExpressionContext.AppendSingleId: {
-          let resolver = context.syntax.program.resolver;
-          let name = context.meta.upvars![freeVar];
-
-          let resolvedHelper = resolver.lookupHelper(
+      if (resolvedHelper) {
+        expressions = Call({ handle: resolvedHelper, params: null, hash: null });
+      } else {
+        if (allowComponents) {
+          let resolvedComponent = resolver.lookupComponent(
             name,
             expect(context.meta.owner, 'BUG: expected owner when resolving helper')
           );
-          let expressions: ExpressionCompileActions;
 
-          if (resolvedHelper) {
-            expressions = Call({ handle: resolvedHelper, params: null, hash: null });
-          } else {
-            // in classic mode, this is always a this-fallback
-            expressions = [op(Op.GetVariable, 0), op(Op.GetProperty, name)];
+          if (resolvedComponent) {
+            throw new Error(`unimplemented {{component-name}}`);
           }
-
-          concatExpressions(encoder, context, expressions, constants);
-
-          break;
         }
 
-        default:
-          throw new Error(
-            `unimplemented: Can't evaluate expression in context ${expressionContext}`
-          );
+        expressions = [op(Op.GetVariable, 0), op(Op.GetProperty, name)];
       }
+
+      concatExpressions(encoder, context, expressions, constants);
 
       break;
     }
+
     default:
       return exhausted(operation);
   }
@@ -135,7 +112,7 @@ export function compileSimpleArgs(
 
   if (atNames) flags |= 0b1000;
 
-  let names: string[] = EMPTY_ARRAY;
+  let names = emptyArray<string>();
 
   if (hash) {
     names = hash[0];
@@ -145,7 +122,7 @@ export function compileSimpleArgs(
     }
   }
 
-  out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_ARRAY), flags));
+  out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_STRING_ARRAY), flags));
 
   return out;
 }

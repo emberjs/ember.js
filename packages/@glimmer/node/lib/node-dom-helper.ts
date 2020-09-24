@@ -1,8 +1,7 @@
-import { Bounds } from '@glimmer/interfaces';
+import { Bounds, Option } from '@glimmer/interfaces';
 import { ConcreteBounds, DOMTreeConstruction } from '@glimmer/runtime';
-import { Option } from '@glimmer/util';
-import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import createHTMLDocument from '@simple-dom/document';
+import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
   protected document!: SimpleDocument; // Hides property on base class

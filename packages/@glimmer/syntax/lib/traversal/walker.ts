@@ -1,13 +1,14 @@
 import { Option } from '@glimmer/interfaces';
-import * as AST from '../types/nodes';
 
-export type NodeCallback<N extends AST.Node> = (node: N, walker: Walker) => void;
+import * as ASTv1 from '../v1/api';
+
+export type NodeCallback<N extends ASTv1.Node> = (node: N, walker: Walker) => void;
 
 export default class Walker {
-  public stack: any[] = [];
-  constructor(public order?: any) {}
+  public stack: unknown[] = [];
+  constructor(public order?: unknown) {}
 
-  visit<N extends AST.Node>(node: Option<N>, callback: NodeCallback<N>) {
+  visit<N extends ASTv1.Node>(node: Option<N>, callback: NodeCallback<N>): void {
     if (!node) {
       return;
     }
@@ -25,48 +26,51 @@ export default class Walker {
     this.stack.pop();
   }
 
-  children(node: any, callback: any) {
-    let type;
-    if (node.type === 'Block' || (node.type === 'Template' && visitors.Program)) {
-      type = 'Program';
-    } else {
-      type = node.type;
-    }
-
-    let visitor = (visitors as any)[type];
-    if (visitor) {
-      visitor(this, node, callback);
+  children<N extends ASTv1.Node>(
+    node: N & ASTv1.Node,
+    callback: NodeCallback<N & ASTv1.Node>
+  ): void {
+    switch (node.type) {
+      case 'Block':
+      case 'Template':
+        return visitors.Program(this, (node as unknown) as ASTv1.Program, callback);
+      case 'ElementNode':
+        return visitors.ElementNode(this, node, callback);
+      case 'BlockStatement':
+        return visitors.BlockStatement(this, node, callback);
+      default:
+        return;
     }
   }
 }
 
-let visitors = {
-  Program(walker: Walker, node: AST.Program, callback: NodeCallback<AST.Node>) {
+const visitors = {
+  Program(walker: Walker, node: ASTv1.Program, callback: NodeCallback<ASTv1.Node>) {
     for (let i = 0; i < node.body.length; i++) {
       walker.visit(node.body[i], callback);
     }
   },
 
-  Template(walker: Walker, node: AST.Template, callback: NodeCallback<AST.Node>) {
+  Template(walker: Walker, node: ASTv1.Template, callback: NodeCallback<ASTv1.Node>) {
     for (let i = 0; i < node.body.length; i++) {
       walker.visit(node.body[i], callback);
     }
   },
 
-  Block(walker: Walker, node: AST.Block, callback: NodeCallback<AST.Node>) {
+  Block(walker: Walker, node: ASTv1.Block, callback: NodeCallback<ASTv1.Node>) {
     for (let i = 0; i < node.body.length; i++) {
       walker.visit(node.body[i], callback);
     }
   },
 
-  ElementNode(walker: Walker, node: AST.ElementNode, callback: NodeCallback<AST.Node>) {
+  ElementNode(walker: Walker, node: ASTv1.ElementNode, callback: NodeCallback<ASTv1.Node>) {
     for (let i = 0; i < node.children.length; i++) {
       walker.visit(node.children[i], callback);
     }
   },
 
-  BlockStatement(walker: Walker, node: AST.BlockStatement, callback: NodeCallback<AST.Block>) {
+  BlockStatement(walker: Walker, node: ASTv1.BlockStatement, callback: NodeCallback<ASTv1.Block>) {
     walker.visit(node.program, callback);
     walker.visit(node.inverse || null, callback);
   },
-};
+} as const;

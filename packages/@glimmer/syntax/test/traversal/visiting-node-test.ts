@@ -1,4 +1,4 @@
-import { preprocess as parse, traverse, AST, Path } from '../..';
+import { preprocess as parse, traverse, AST, WalkerPath } from '../..';
 
 const { test } = QUnit;
 
@@ -346,7 +346,7 @@ test('Modifier', function (assert) {
 
         if (hasSymbol) {
           assert.deepEqual(
-            Array.from(path.parents()).map((it) => (it as Path<AST.Node>).node.type),
+            Array.from(path.parents()).map((it) => (it as WalkerPath<AST.Node>).node.type),
             ['ElementModifierStatement', 'ElementNode', 'Template']
           );
         }
@@ -357,7 +357,9 @@ test('Modifier', function (assert) {
   });
 });
 
-function describeFullPath(path: Path<AST.Node>): Array<{ nodeType: string; key: string | null }> {
+function describeFullPath(
+  path: WalkerPath<AST.Node>
+): Array<{ nodeType: string; key: string | null }> {
   let description = [];
   description.push({ nodeType: path.node.type, key: null });
 

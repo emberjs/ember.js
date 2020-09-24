@@ -1,23 +1,25 @@
+/* eslint-disable qunit/no-global-module-test */
 /* eslint-disable qunit/no-test-expect-argument */
 
 import {
-  precompile,
-  WireFormatDebugger,
-  BuilderStatement,
-  ProgramSymbols,
-  buildStatements,
-  Builder,
-  s,
-  c,
-  NEWLINE,
-  unicode,
-} from '..';
-import {
-  SerializedTemplateWithLazyBlock,
   SerializedTemplate,
   SerializedTemplateBlock,
+  SerializedTemplateWithLazyBlock,
 } from '@glimmer/interfaces';
 import { assign, strip } from '@glimmer/util';
+
+import {
+  Builder,
+  BuilderStatement,
+  buildStatements,
+  c,
+  NEWLINE,
+  precompile,
+  ProgramSymbols,
+  s,
+  unicode,
+  WireFormatDebugger,
+} from '..';
 
 QUnit.module('@glimmer/compiler - compiling source to wire format');
 
@@ -43,8 +45,8 @@ function test(desc: string, template: string, ...expectedStatements: BuilderStat
       statements,
     };
 
-    let debugExpected = new WireFormatDebugger(expected).format();
-    let debugActual = new WireFormatDebugger(actual.block).format();
+    let debugExpected = new WireFormatDebugger(expected).format(expected);
+    let debugActual = new WireFormatDebugger(actual.block).format(actual.block);
 
     assert.deepEqual(debugActual, debugExpected);
   });
@@ -81,26 +83,6 @@ test(
   `{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}`,
   ['#^with', ['^person'], { as: 'name' }, [['#^with', ['this.name'], { as: 'test' }, ['test']]]]
 );
-
-// test(
-//   'Smoke test (integration, basic)',
-//   '<div ...attributes><@foo @staticNamedArg="static" data-test1={{@outerArg}} data-test2="static" @dynamicNamedArg={{@outerArg}} /></div>',
-//   [
-//     '<div>',
-//     { attributes: 'splat' },
-//     [
-//       [
-//         `<@foo>`,`
-//         {
-//           '@staticNamedArg': s`static`,
-//           'data-test1': '@outerArg',
-//           'data-test2': s`static`,
-//           '@dynamicNamedArg': `@outerArg`,
-//         },
-//       ],
-//     ],
-//   ]
-// );
 
 test(
   'elements',

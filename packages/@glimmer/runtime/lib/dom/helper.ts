@@ -1,5 +1,5 @@
-import { GlimmerTreeChanges, GlimmerTreeConstruction } from '@glimmer/interfaces';
-import { castToSimple, Option } from '@glimmer/util';
+import { GlimmerTreeChanges, GlimmerTreeConstruction, Option } from '@glimmer/interfaces';
+import { castToSimple } from '@glimmer/util';
 import {
   AttrNamespace,
   ElementNamespace,
@@ -87,18 +87,18 @@ export namespace DOM {
     }
   }
 
-  let appliedTreeContruction = TreeConstruction;
-  appliedTreeContruction = applyTextNodeMergingFix(
+  let appliedTreeConstruction = TreeConstruction;
+  appliedTreeConstruction = applyTextNodeMergingFix(
     doc,
-    appliedTreeContruction
+    appliedTreeConstruction
   ) as typeof TreeConstruction;
-  appliedTreeContruction = applySVGInnerHTMLFix(
+  appliedTreeConstruction = applySVGInnerHTMLFix(
     doc,
-    appliedTreeContruction,
+    appliedTreeConstruction,
     Namespace.SVG
   ) as typeof TreeConstruction;
 
-  export const DOMTreeConstruction = appliedTreeContruction;
+  export const DOMTreeConstruction = appliedTreeConstruction;
   export type DOMTreeConstruction = TreeConstruction;
 }
 

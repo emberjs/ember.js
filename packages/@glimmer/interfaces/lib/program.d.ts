@@ -91,7 +91,7 @@ export type ConstantPool = unknown[];
  */
 export interface CompileTimeConstants {
   value(value: unknown): number;
-  array(values: unknown[]): number;
+  array(values: unknown[] | readonly unknown[]): number;
   serializable(value: unknown): number;
   toPool(): ConstantPool;
 }

@@ -1,5 +1,5 @@
-import { ComponentDefinition, Owner, RuntimeResolver } from '@glimmer/interfaces';
-import { Option, assert, expect } from '@glimmer/util';
+import { ComponentDefinition, Option, Owner, RuntimeResolver } from '@glimmer/interfaces';
+import { assert, expect } from '@glimmer/util';
 
 export function resolveComponent(
   resolver: RuntimeResolver,

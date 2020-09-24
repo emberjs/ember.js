@@ -47,7 +47,7 @@ export function CompileArgs({
     flags |= 0b111;
   }
 
-  let names: string[] = EMPTY_ARRAY;
+  let names = EMPTY_ARRAY as readonly string[];
 
   if (hash) {
     names = hash[0];

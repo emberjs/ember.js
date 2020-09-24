@@ -804,7 +804,7 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
-  'block arguments should have higher presedence than helpers'() {
+  'block arguments should have higher precedence than helpers'() {
     this.registerHelper('foo', () => 'foo-helper');
     this.registerHelper('bar', () => 'bar-helper');
     this.registerHelper('echo', (args) => args[0]);

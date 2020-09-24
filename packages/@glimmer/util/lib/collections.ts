@@ -1,6 +1,5 @@
-import { HasGuid, ensureGuid } from './guid';
-import { Option } from './platform-utils';
-import { Dict, Stack } from '@glimmer/interfaces';
+import { Dict, NonemptyStack, Option, Stack } from '@glimmer/interfaces';
+import { ensureGuid, HasGuid } from './guid';
 
 export interface Set<T> {
   add(value: T): Set<T>;
@@ -41,8 +40,12 @@ export class DictSet<T extends SetMember> implements Set<T> {
 }
 
 export class StackImpl<T> implements Stack<T> {
-  private stack: T[] = [];
+  private stack: T[];
   public current: Option<T> = null;
+
+  constructor(values: T[] = []) {
+    this.stack = values;
+  }
 
   public get size() {
     return this.stack.length;
@@ -71,6 +74,53 @@ export class StackImpl<T> implements Stack<T> {
   }
 
   toArray(): T[] {
+    return this.stack;
+  }
+}
+
+export class NonemptyStackImpl<T> implements NonemptyStack<T> {
+  private stack: [T, ...T[]];
+  public current: T;
+
+  constructor(values: [T, ...T[]]) {
+    this.stack = values;
+    this.current = values[values.length - 1];
+  }
+
+  public get size() {
+    return this.stack.length;
+  }
+
+  push(item: T) {
+    this.current = item;
+    this.stack.push(item);
+  }
+
+  pop(): T {
+    if (this.stack.length === 1) {
+      throw new Error(`cannot pop the last element of a NonemptyStack`);
+    }
+
+    let item = this.stack.pop()!;
+    let len = this.stack.length;
+    this.current = this.stack[len - 1];
+
+    return item;
+  }
+
+  nth(from: 0): T;
+  nth(from: number): Option<T>;
+  nth(from: number): Option<T> {
+    let len = this.stack.length;
+    return from >= len ? null : this.stack[from];
+  }
+
+  nthBack(from: number): Option<T> {
+    let len = this.stack.length;
+    return len < from ? null : this.stack[len - from];
+  }
+
+  toArray(): [T, ...T[]] {
     return this.stack;
   }
 }

@@ -214,7 +214,7 @@ class ArrayIterator implements OpaqueIterator {
   private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
   private pos = 0;
 
-  constructor(private iterator: unknown[], private keyFor: KeyFor) {
+  constructor(private iterator: unknown[] | readonly unknown[], private keyFor: KeyFor) {
     if (iterator.length === 0) {
       this.current = { kind: 'empty' };
     } else {

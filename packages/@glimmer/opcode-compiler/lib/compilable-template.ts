@@ -11,6 +11,7 @@ import {
   CompilableBlock,
   CompilableProgram,
   HandleResult,
+  BlockSymbolTable,
 } from '@glimmer/interfaces';
 import { meta } from './opcode-builder/helpers/shared';
 import { EMPTY_ARRAY } from '@glimmer/util';
@@ -90,8 +91,10 @@ export function compilableBlock(
   containing: ContainingMetadata
 ): CompilableBlock {
   let block = Array.isArray(overloadBlock)
-    ? { statements: overloadBlock, parameters: EMPTY_ARRAY }
+    ? { statements: overloadBlock, parameters: EMPTY_ARRAY as number[] }
     : overloadBlock;
 
-  return new CompilableTemplateImpl(block.statements, containing, { parameters: block.parameters });
+  return new CompilableTemplateImpl<BlockSymbolTable>(block.statements, containing, {
+    parameters: block.parameters,
+  });
 }

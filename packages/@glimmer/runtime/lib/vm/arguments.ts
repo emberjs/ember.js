@@ -1,34 +1,34 @@
-import { EvaluationStack } from './stack';
-import { dict, EMPTY_ARRAY } from '@glimmer/util';
+import { check, CheckBlockSymbolTable, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
+import { DEBUG } from '@glimmer/env';
 import {
-  Dict,
-  Option,
-  BlockSymbolTable,
-  VMArguments,
-  CapturedArguments,
-  PositionalArguments,
-  CapturedPositionalArguments,
-  NamedArguments,
-  CapturedNamedArguments,
-  BlockValue,
-  ScopeBlock,
-  CapturedBlockArguments,
-  Scope,
   BlockArguments,
+  BlockSymbolTable,
+  BlockValue,
+  CapturedArguments,
+  CapturedBlockArguments,
+  CapturedNamedArguments,
+  CapturedPositionalArguments,
   CompilableBlock,
+  Dict,
+  NamedArguments,
+  Option,
+  PositionalArguments,
+  Scope,
+  ScopeBlock,
+  VMArguments,
 } from '@glimmer/interfaces';
 import {
+  createDebugAliasRef,
   Reference,
   UNDEFINED_REFERENCE,
   valueForRef,
-  createDebugAliasRef,
 } from '@glimmer/reference';
-import { Tag, CONSTANT_TAG } from '@glimmer/validator';
-import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
-import { CheckReference, CheckCompilableBlock, CheckScope } from '../compiled/opcodes/-debug-strip';
-import { REGISTERS } from '../symbols';
+import { dict, emptyArray, EMPTY_STRING_ARRAY } from '@glimmer/util';
+import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { $sp } from '@glimmer/vm';
-import { DEBUG } from '@glimmer/env';
+import { CheckCompilableBlock, CheckReference, CheckScope } from '../compiled/opcodes/-debug-strip';
+import { REGISTERS } from '../symbols';
+import { EvaluationStack } from './stack';
 
 /*
   The calling convention is:
@@ -56,8 +56,8 @@ export class VMArgumentsImpl implements VMArguments {
 
   setup(
     stack: EvaluationStack,
-    names: string[],
-    blockNames: string[],
+    names: readonly string[],
+    blockNames: readonly string[],
     positionalCount: number,
     atNames: boolean
   ) {
@@ -131,20 +131,22 @@ export class VMArgumentsImpl implements VMArguments {
   }
 }
 
+const EMPTY_REFERENCES = emptyArray<Reference>();
+
 export class PositionalArgumentsImpl implements PositionalArguments {
   public base = 0;
   public length = 0;
 
   private stack: EvaluationStack = null as any;
 
-  private _references: Option<Reference<unknown>[]> = null;
+  private _references: Option<readonly Reference[]> = null;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
     this.base = base;
     this.length = 0;
 
-    this._references = EMPTY_ARRAY;
+    this._references = EMPTY_REFERENCES;
   }
 
   setup(stack: EvaluationStack, base: number, length: number) {
@@ -153,7 +155,7 @@ export class PositionalArgumentsImpl implements PositionalArguments {
     this.length = length;
 
     if (length === 0) {
-      this._references = EMPTY_ARRAY;
+      this._references = EMPTY_REFERENCES;
     } else {
       this._references = null;
     }
@@ -190,12 +192,12 @@ export class PositionalArgumentsImpl implements PositionalArguments {
     }
   }
 
-  private get references(): Reference<unknown>[] {
+  private get references(): readonly Reference[] {
     let references = this._references;
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.slice<Reference<unknown>>(base, base + length);
+      references = this._references = stack.slice<Reference>(base, base + length);
     }
 
     return references;
@@ -208,30 +210,36 @@ export class NamedArgumentsImpl implements NamedArguments {
 
   private stack!: EvaluationStack;
 
-  private _references: Option<Reference<unknown>[]> = null;
+  private _references: Option<readonly Reference[]> = null;
 
-  private _names: Option<string[]> = EMPTY_ARRAY;
-  private _atNames: Option<string[]> = EMPTY_ARRAY;
+  private _names: Option<readonly string[]> = EMPTY_STRING_ARRAY;
+  private _atNames: Option<readonly string[]> = EMPTY_STRING_ARRAY;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
     this.base = base;
     this.length = 0;
 
-    this._references = EMPTY_ARRAY;
-    this._names = EMPTY_ARRAY;
-    this._atNames = EMPTY_ARRAY;
+    this._references = EMPTY_REFERENCES;
+    this._names = EMPTY_STRING_ARRAY;
+    this._atNames = EMPTY_STRING_ARRAY;
   }
 
-  setup(stack: EvaluationStack, base: number, length: number, names: string[], atNames: boolean) {
+  setup(
+    stack: EvaluationStack,
+    base: number,
+    length: number,
+    names: readonly string[],
+    atNames: boolean
+  ) {
     this.stack = stack;
     this.base = base;
     this.length = length;
 
     if (length === 0) {
-      this._references = EMPTY_ARRAY;
-      this._names = EMPTY_ARRAY;
-      this._atNames = EMPTY_ARRAY;
+      this._references = EMPTY_REFERENCES;
+      this._names = EMPTY_STRING_ARRAY;
+      this._atNames = EMPTY_STRING_ARRAY;
     } else {
       this._references = null;
 
@@ -245,7 +253,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     }
   }
 
-  get names(): string[] {
+  get names(): readonly string[] {
     let names = this._names;
 
     if (!names) {
@@ -255,7 +263,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     return names!;
   }
 
-  get atNames(): string[] {
+  get atNames(): readonly string[] {
     let atNames = this._atNames;
 
     if (!atNames) {
@@ -291,7 +299,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
   capture(): CapturedNamedArguments {
     let { names, references } = this;
-    let map = dict<Reference<unknown>>();
+    let map = dict<Reference>();
 
     for (let i = 0; i < names.length; i++) {
       let name = names[i];
@@ -330,12 +338,12 @@ export class NamedArgumentsImpl implements NamedArguments {
     }
   }
 
-  private get references(): Reference<unknown>[] {
+  private get references(): readonly Reference[] {
     let references = this._references;
 
     if (!references) {
       let { base, length, stack } = this;
-      references = this._references = stack.slice<Reference<unknown>>(base, base + length);
+      references = this._references = stack.slice<Reference>(base, base + length);
     }
 
     return references;
@@ -354,29 +362,31 @@ function toSymbolName(name: string): string {
   return `&${name}`;
 }
 
+const EMPTY_BLOCK_VALUES = emptyArray<BlockValue>();
+
 export class BlockArgumentsImpl implements BlockArguments {
   private stack!: EvaluationStack;
-  private internalValues: Option<BlockValue[]> = null;
-  private _symbolNames: Option<string[]> = null;
+  private internalValues: Option<readonly BlockValue[]> = null;
+  private _symbolNames: Option<readonly string[]> = null;
 
   public internalTag: Option<Tag> = null;
-  public names: string[] = EMPTY_ARRAY;
+  public names: readonly string[] = EMPTY_STRING_ARRAY;
 
   public length = 0;
   public base = 0;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
-    this.names = EMPTY_ARRAY;
+    this.names = EMPTY_STRING_ARRAY;
     this.base = base;
     this.length = 0;
     this._symbolNames = null;
 
     this.internalTag = CONSTANT_TAG;
-    this.internalValues = EMPTY_ARRAY;
+    this.internalValues = EMPTY_BLOCK_VALUES;
   }
 
-  setup(stack: EvaluationStack, base: number, length: number, names: string[]) {
+  setup(stack: EvaluationStack, base: number, length: number, names: readonly string[]) {
     this.stack = stack;
     this.names = names;
     this.base = base;
@@ -385,14 +395,14 @@ export class BlockArgumentsImpl implements BlockArguments {
 
     if (length === 0) {
       this.internalTag = CONSTANT_TAG;
-      this.internalValues = EMPTY_ARRAY;
+      this.internalValues = EMPTY_BLOCK_VALUES;
     } else {
       this.internalTag = null;
       this.internalValues = null;
     }
   }
 
-  get values(): BlockValue[] {
+  get values(): readonly BlockValue[] {
     let values = this.internalValues;
 
     if (!values) {
@@ -430,7 +440,7 @@ export class BlockArgumentsImpl implements BlockArguments {
     return new CapturedBlockArgumentsImpl(this.names, this.values);
   }
 
-  get symbolNames(): string[] {
+  get symbolNames(): readonly string[] {
     let symbolNames = this._symbolNames;
 
     if (symbolNames === null) {
@@ -444,7 +454,7 @@ export class BlockArgumentsImpl implements BlockArguments {
 class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
   public length: number;
 
-  constructor(public names: string[], public values: Option<BlockValue>[]) {
+  constructor(public names: readonly string[], public values: readonly Option<BlockValue>[]) {
     this.length = names.length;
   }
 
@@ -494,5 +504,5 @@ export function reifyArgs(args: CapturedArguments) {
 }
 
 export const EMPTY_NAMED = Object.freeze(Object.create(null)) as CapturedNamedArguments;
-export const EMPTY_POSITIONAL = EMPTY_ARRAY as CapturedPositionalArguments;
+export const EMPTY_POSITIONAL = EMPTY_REFERENCES as CapturedPositionalArguments;
 export const EMPTY_ARGS = createCapturedArgs(EMPTY_NAMED, EMPTY_POSITIONAL);
