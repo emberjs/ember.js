@@ -12,7 +12,7 @@ import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
 import { DEBUG } from '@glimmer/env';
-import { cast } from '@glimmer/util';
+import { castToBrowser } from '@glimmer/util';
 
 export function dynamicAttribute(
   element: SimpleElement,
@@ -173,11 +173,11 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   }
 
   update(value: unknown) {
-    let input = cast(this.attribute.element, ['input', 'textarea']);
-    let currentValue = input.node.value;
+    let input = castToBrowser(this.attribute.element, ['input', 'textarea']);
+    let currentValue = input.value;
     let normalizedValue = normalizeStringValue(value);
     if (currentValue !== normalizedValue) {
-      input.node.value = normalizedValue;
+      input.value = normalizedValue;
     }
   }
 }
@@ -190,12 +190,12 @@ export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
   }
 
   update(value: unknown): void {
-    let option = cast(this.attribute.element, 'option');
+    let option = castToBrowser(this.attribute.element, 'option');
 
     if (value) {
-      option.node.selected = true;
+      option.selected = true;
     } else {
-      option.node.selected = false;
+      option.selected = false;
     }
   }
 }

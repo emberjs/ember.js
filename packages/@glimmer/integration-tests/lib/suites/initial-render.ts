@@ -1,7 +1,7 @@
 import { Namespace, SimpleElement } from '@simple-dom/interface';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { cast, strip, unwrap } from '@glimmer/util';
+import { castToBrowser, checkNode, strip, unwrap } from '@glimmer/util';
 import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
 import { assertNodeTagName } from '../dom/assertions';
 
@@ -414,7 +414,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    let selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
+    let selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableRerender();
 
@@ -427,7 +427,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
+    selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
 
     this.assert.equal(selectNode.selectedIndex, 0);
 
@@ -443,7 +443,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
+    selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
 
     this.assert.equal(selectNode.selectedIndex, 0);
 
@@ -458,7 +458,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = cast(this.element, 'HTML').checkFirstElementChild('select');
+    selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableNodes();
   }
@@ -510,8 +510,16 @@ export class InitialRenderSuite extends RenderTest {
       </select>`);
 
     this.assert.equal(selected.length, 2, 'two options are selected');
-    this.assert.equal(cast(selected[0], 'option').node.value, '1', 'first selected item is "1"');
-    this.assert.equal(cast(selected[1], 'option').node.value, '2', 'second selected item is "2"');
+    this.assert.equal(
+      castToBrowser(selected[0], 'option').value,
+      '1',
+      'first selected item is "1"'
+    );
+    this.assert.equal(
+      castToBrowser(selected[1], 'option').value,
+      '2',
+      'second selected item is "2"'
+    );
   }
 
   @test
@@ -690,19 +698,19 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<svg></svg><svg></svg><div></div>');
 
     this.assert.equal(
-      cast(unwrap(this.element.childNodes[0]), 'SVG').namespaceURI,
+      castToBrowser(unwrap(this.element.childNodes[0]), 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the first svg element with a namespace'
     );
 
     this.assert.equal(
-      cast(this.element.childNodes[1], 'SVG').namespaceURI,
+      castToBrowser(this.element.childNodes[1], 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the second svg element with a namespace'
     );
 
     this.assert.equal(
-      cast(this.element.childNodes[2], 'HTML').namespaceURI,
+      castToBrowser(this.element.childNodes[2], 'HTML').namespaceURI,
       XHTML_NAMESPACE,
       'creates the div element without a namespace'
     );
