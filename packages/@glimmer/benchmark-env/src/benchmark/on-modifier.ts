@@ -1,6 +1,6 @@
 import { ModifierManager, VMArguments } from '@glimmer/interfaces';
 import { Reference, valueForRef } from '@glimmer/reference';
-import { cast } from '@glimmer/util';
+import { castToBrowser } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 
@@ -30,13 +30,13 @@ class OnModifierManager implements ModifierManager<OnModifierState, null> {
   install(state: OnModifierState) {
     const name = valueForRef(state.nameRef);
     const listener = valueForRef(state.listenerRef);
-    cast(state.element, 'ELEMENT').addEventListener(name, listener);
+    castToBrowser(state.element, 'ELEMENT').addEventListener(name, listener);
     state.listener = listener;
     state.name = name;
   }
 
   update(state: OnModifierState) {
-    const element = cast(state.element, 'ELEMENT');
+    const element = castToBrowser(state.element, 'ELEMENT');
     const name = valueForRef(state.nameRef);
     const listener = valueForRef(state.listenerRef);
     if (name !== state.name || listener !== state.listener) {

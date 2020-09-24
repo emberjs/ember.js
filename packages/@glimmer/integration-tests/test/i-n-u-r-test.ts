@@ -1,9 +1,9 @@
-import { cast } from '@glimmer/util';
+import { castToSimple } from '@glimmer/util';
 import { JitRenderDelegate, RenderTest } from '..';
 import { module } from './support';
 
 module('Render Tests: I-N-U-R', ({ test }) => {
-  let doc = cast(document).simple;
+  let doc = castToSimple(document);
 
   test('Can set properties', (assert) => {
     new (class extends RenderTest {

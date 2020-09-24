@@ -2,7 +2,7 @@ import { SimpleNode, NodeType, SimpleElement } from '@simple-dom/interface';
 import { Option } from '@glimmer/interfaces';
 import { replaceHTML, toInnerHTML } from './dom/simple-utils';
 import { tokenize, EndTag, Token } from 'simple-html-tokenizer';
-import { cast } from '@glimmer/util';
+import { castToSimple } from '@glimmer/util';
 
 export type IndividualSnapshot = 'up' | 'down' | SimpleNode;
 export type NodesSnapshot = IndividualSnapshot[];
@@ -87,7 +87,7 @@ export function generateSnapshot(element: SimpleElement): SimpleNode[] {
 function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; html: string } {
   let div: SimpleElement;
   if (typeof divOrHTML === 'string') {
-    div = cast(document).createElement('div');
+    div = castToSimple(document.createElement('div'));
     replaceHTML(div, divOrHTML);
   } else {
     div = divOrHTML;
