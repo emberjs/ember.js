@@ -1,3 +1,20 @@
+## v0.62.1 (2020-09-24)
+
+#### :bug: Bug Fix
+* `@glimmer/benchmark-env`, `@glimmer/integration-tests`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1162](https://github.com/glimmerjs/glimmer-vm/pull/1162) Simplify `SimpleDOM` casting (allow for proper production mode stripping) ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/integration-tests`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1161](https://github.com/glimmerjs/glimmer-vm/pull/1161) [BUGFIX] Pin all package versions ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* `@glimmer/syntax`
+  * [#1164](https://github.com/glimmerjs/glimmer-vm/pull/1164) Add test confirming parsing + printing `{{#in-element` is safe. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Volodymyr Radchenko ([@rreckonerr](https://github.com/rreckonerr))
+
 ## v0.62.0 (2020-09-18)
 
 #### :boom: Breaking Change
