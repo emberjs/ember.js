@@ -2429,7 +2429,7 @@ Route.reopen(ActionHandler, Evented, {
 
     ```app/routes/index.js
     import Route from '@ember/routing/route';
-    import { action } from '@glimmer/tracking';
+    import { action } from '@ember/object';
 
     export default class IndexRoute extends Route {
       @action
