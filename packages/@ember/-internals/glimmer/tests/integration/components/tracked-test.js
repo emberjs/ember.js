@@ -1,5 +1,4 @@
 import { Object as EmberObject, A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
-import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import {
   computed,
   get,
@@ -546,213 +545,211 @@ moduleFor(
   }
 );
 
-if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
-  moduleFor(
-    'Component Tracked Properties w/ Args Proxy',
-    class extends RenderingTestCase {
-      '@test downstream property changes do not invalidate upstream component getters/arguments'(
-        assert
-      ) {
-        let outerRenderCount = 0;
-        let innerRenderCount = 0;
+moduleFor(
+  'Component Tracked Properties w/ Args Proxy',
+  class extends RenderingTestCase {
+    '@test downstream property changes do not invalidate upstream component getters/arguments'(
+      assert
+    ) {
+      let outerRenderCount = 0;
+      let innerRenderCount = 0;
 
-        class OuterComponent extends GlimmerishComponent {
-          get count() {
-            outerRenderCount++;
-            return this.args.count;
-          }
+      class OuterComponent extends GlimmerishComponent {
+        get count() {
+          outerRenderCount++;
+          return this.args.count;
         }
-
-        class InnerComponent extends GlimmerishComponent {
-          @tracked count = 0;
-
-          get combinedCounts() {
-            innerRenderCount++;
-            return this.args.count + this.count;
-          }
-
-          updateInnerCount() {
-            this.count++;
-          }
-        }
-
-        this.registerComponent('outer', {
-          ComponentClass: OuterComponent,
-          template: '<Inner @count={{this.count}}/>',
-        });
-
-        this.registerComponent('inner', {
-          ComponentClass: InnerComponent,
-          template: '<button {{action this.updateInnerCount}}>{{this.combinedCounts}}</button>',
-        });
-
-        this.render('<Outer @count={{this.count}}/>', {
-          count: 0,
-        });
-
-        this.assertText('0');
-
-        assert.equal(outerRenderCount, 1);
-        assert.equal(innerRenderCount, 1);
-
-        runTask(() => this.$('button').click());
-
-        this.assertText('1');
-
-        assert.equal(
-          outerRenderCount,
-          1,
-          'updating inner component does not cause outer component to rerender'
-        );
-        assert.equal(
-          innerRenderCount,
-          2,
-          'updating inner component causes inner component to rerender'
-        );
-
-        runTask(() => this.context.set('count', 1));
-
-        this.assertText('2');
-
-        assert.equal(outerRenderCount, 2, 'outer component updates based on context');
-        assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
       }
 
-      '@test computed properties can depend on args'() {
-        class TestComponent extends GlimmerishComponent {
-          @computed('args.text')
-          get text() {
-            return this.args.text;
-          }
+      class InnerComponent extends GlimmerishComponent {
+        @tracked count = 0;
+
+        get combinedCounts() {
+          innerRenderCount++;
+          return this.args.count + this.count;
         }
 
-        this.registerComponent('test', {
-          ComponentClass: TestComponent,
-          template: '<p>{{this.text}}</p>',
-        });
-
-        this.render('<Test @text={{this.text}}/>', {
-          text: 'hello!',
-        });
-
-        this.assertText('hello!');
-
-        runTask(() => this.context.set('text', 'hello world!'));
-        this.assertText('hello world!');
-
-        runTask(() => this.context.set('text', 'hello!'));
-        this.assertText('hello!');
-      }
-
-      '@test computed properties can depend on nested args'() {
-        let foo = EmberObject.create({
-          text: 'hello!',
-        });
-
-        class TestComponent extends GlimmerishComponent {
-          @computed('args.foo.text')
-          get text() {
-            return this.args.foo.text;
-          }
+        updateInnerCount() {
+          this.count++;
         }
-
-        this.registerComponent('test', {
-          ComponentClass: TestComponent,
-          template: '<p>{{this.text}}</p>',
-        });
-
-        this.render('<Test @foo={{this.foo}}/>', {
-          foo: foo,
-        });
-
-        this.assertText('hello!');
-
-        runTask(() => foo.set('text', 'hello world!'));
-        this.assertText('hello world!');
-
-        runTask(() => foo.set('text', 'hello!'));
-        this.assertText('hello!');
       }
 
-      '@test args can be accessed with get()'() {
-        class TestComponent extends GlimmerishComponent {
-          get text() {
-            return get(this, 'args.text');
-          }
-        }
+      this.registerComponent('outer', {
+        ComponentClass: OuterComponent,
+        template: '<Inner @count={{this.count}}/>',
+      });
 
-        this.registerComponent('test', {
-          ComponentClass: TestComponent,
-          template: '<p>{{this.text}}</p>',
-        });
+      this.registerComponent('inner', {
+        ComponentClass: InnerComponent,
+        template: '<button {{action this.updateInnerCount}}>{{this.combinedCounts}}</button>',
+      });
 
-        this.render('<Test @text={{this.text}}/>', {
-          text: 'hello!',
-        });
+      this.render('<Outer @count={{this.count}}/>', {
+        count: 0,
+      });
 
-        this.assertText('hello!');
+      this.assertText('0');
 
-        runTask(() => this.context.set('text', 'hello world!'));
-        this.assertText('hello world!');
+      assert.equal(outerRenderCount, 1);
+      assert.equal(innerRenderCount, 1);
 
-        runTask(() => this.context.set('text', 'hello!'));
-        this.assertText('hello!');
-      }
+      runTask(() => this.$('button').click());
 
-      '@test args can be accessed with get() if no value is passed'() {
-        class TestComponent extends GlimmerishComponent {
-          get text() {
-            return get(this, 'args.text') || 'hello!';
-          }
-        }
+      this.assertText('1');
 
-        this.registerComponent('test', {
-          ComponentClass: TestComponent,
-          template: '<p>{{this.text}}</p>',
-        });
+      assert.equal(
+        outerRenderCount,
+        1,
+        'updating inner component does not cause outer component to rerender'
+      );
+      assert.equal(
+        innerRenderCount,
+        2,
+        'updating inner component causes inner component to rerender'
+      );
 
-        this.render('<Test/>', {
-          text: 'hello!',
-        });
+      runTask(() => this.context.set('count', 1));
 
-        this.assertText('hello!');
-      }
+      this.assertText('2');
 
-      '@test named args are enumerable'() {
-        class TestComponent extends GlimmerishComponent {
-          get objectKeys() {
-            return Object.keys(this.args).join('');
-          }
-
-          get hasArg() {
-            return 'text' in this.args;
-          }
-        }
-
-        this.registerComponent('test', {
-          ComponentClass: TestComponent,
-          template: '<p>{{this.objectKeys}} {{this.hasArg}}</p>',
-        });
-
-        this.render('<Test @text={{this.text}}/>', {
-          text: 'hello!',
-        });
-
-        this.assertText('text true');
-      }
-
-      '@test each-in works with args'() {
-        this.registerComponent('test', {
-          ComponentClass: class extends GlimmerishComponent {},
-          template: '{{#each-in this.args as |key value|}}{{key}}:{{value}}{{/each-in}}',
-        });
-
-        this.render('<Test @text={{this.text}}/>', {
-          text: 'hello!',
-        });
-
-        this.assertText('text:hello!');
-      }
+      assert.equal(outerRenderCount, 2, 'outer component updates based on context');
+      assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
     }
-  );
-}
+
+    '@test computed properties can depend on args'() {
+      class TestComponent extends GlimmerishComponent {
+        @computed('args.text')
+        get text() {
+          return this.args.text;
+        }
+      }
+
+      this.registerComponent('test', {
+        ComponentClass: TestComponent,
+        template: '<p>{{this.text}}</p>',
+      });
+
+      this.render('<Test @text={{this.text}}/>', {
+        text: 'hello!',
+      });
+
+      this.assertText('hello!');
+
+      runTask(() => this.context.set('text', 'hello world!'));
+      this.assertText('hello world!');
+
+      runTask(() => this.context.set('text', 'hello!'));
+      this.assertText('hello!');
+    }
+
+    '@test computed properties can depend on nested args'() {
+      let foo = EmberObject.create({
+        text: 'hello!',
+      });
+
+      class TestComponent extends GlimmerishComponent {
+        @computed('args.foo.text')
+        get text() {
+          return this.args.foo.text;
+        }
+      }
+
+      this.registerComponent('test', {
+        ComponentClass: TestComponent,
+        template: '<p>{{this.text}}</p>',
+      });
+
+      this.render('<Test @foo={{this.foo}}/>', {
+        foo: foo,
+      });
+
+      this.assertText('hello!');
+
+      runTask(() => foo.set('text', 'hello world!'));
+      this.assertText('hello world!');
+
+      runTask(() => foo.set('text', 'hello!'));
+      this.assertText('hello!');
+    }
+
+    '@test args can be accessed with get()'() {
+      class TestComponent extends GlimmerishComponent {
+        get text() {
+          return get(this, 'args.text');
+        }
+      }
+
+      this.registerComponent('test', {
+        ComponentClass: TestComponent,
+        template: '<p>{{this.text}}</p>',
+      });
+
+      this.render('<Test @text={{this.text}}/>', {
+        text: 'hello!',
+      });
+
+      this.assertText('hello!');
+
+      runTask(() => this.context.set('text', 'hello world!'));
+      this.assertText('hello world!');
+
+      runTask(() => this.context.set('text', 'hello!'));
+      this.assertText('hello!');
+    }
+
+    '@test args can be accessed with get() if no value is passed'() {
+      class TestComponent extends GlimmerishComponent {
+        get text() {
+          return get(this, 'args.text') || 'hello!';
+        }
+      }
+
+      this.registerComponent('test', {
+        ComponentClass: TestComponent,
+        template: '<p>{{this.text}}</p>',
+      });
+
+      this.render('<Test/>', {
+        text: 'hello!',
+      });
+
+      this.assertText('hello!');
+    }
+
+    '@test named args are enumerable'() {
+      class TestComponent extends GlimmerishComponent {
+        get objectKeys() {
+          return Object.keys(this.args).join('');
+        }
+
+        get hasArg() {
+          return 'text' in this.args;
+        }
+      }
+
+      this.registerComponent('test', {
+        ComponentClass: TestComponent,
+        template: '<p>{{this.objectKeys}} {{this.hasArg}}</p>',
+      });
+
+      this.render('<Test @text={{this.text}}/>', {
+        text: 'hello!',
+      });
+
+      this.assertText('text true');
+    }
+
+    '@test each-in works with args'() {
+      this.registerComponent('test', {
+        ComponentClass: class extends GlimmerishComponent {},
+        template: '{{#each-in this.args as |key value|}}{{key}}:{{value}}{{/each-in}}',
+      });
+
+      this.render('<Test @text={{this.text}}/>', {
+        text: 'hello!',
+      });
+
+      this.assertText('text:hello!');
+    }
+  }
+);

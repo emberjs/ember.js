@@ -2,12 +2,12 @@ import { ENV } from '@ember/-internals/environment';
 import { CUSTOM_TAG_FOR } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   CapturedArguments,
+  CapturedNamedArguments,
   ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
@@ -17,9 +17,9 @@ import {
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { registerDestructor, reifyArgs, reifyPositional } from '@glimmer/runtime';
+import { registerDestructor, reifyPositional } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
-import { track } from '@glimmer/validator';
+import { Tag, track } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -41,16 +41,21 @@ const CAPABILITIES = {
 };
 
 export interface OptionalCapabilities {
-  asyncLifecycleCallbacks?: boolean;
-  destructor?: boolean;
-  updateHook?: boolean;
+  '3.4': {
+    asyncLifecycleCallbacks?: boolean;
+    destructor?: boolean;
+  };
+
+  '3.13': {
+    asyncLifecycleCallbacks?: boolean;
+    destructor?: boolean;
+    updateHook?: boolean;
+  };
 }
 
-type managerAPIVersion = '3.4' | '3.13';
-
-export function capabilities(
-  managerAPI: managerAPIVersion,
-  options: OptionalCapabilities = {}
+export function capabilities<Version extends keyof OptionalCapabilities>(
+  managerAPI: Version,
+  options: OptionalCapabilities[Version] = {}
 ): Capabilities {
   assert(
     'Invalid component manager compatibility specified',
@@ -59,8 +64,8 @@ export function capabilities(
 
   let updateHook = true;
 
-  if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
-    updateHook = managerAPI === '3.13' ? Boolean(options.updateHook) : true;
+  if (managerAPI === '3.13') {
+    updateHook = Boolean((options as OptionalCapabilities['3.13']).updateHook);
   }
 
   return {
@@ -144,6 +149,94 @@ export interface ComponentArguments {
   named: Dict<unknown>;
 }
 
+function tagForNamedArg<NamedArgs extends CapturedNamedArguments, K extends keyof NamedArgs>(
+  namedArgs: NamedArgs,
+  key: K
+): Tag {
+  return track(() => valueForRef(namedArgs[key]));
+}
+
+let namedArgsProxyFor: (namedArgs: CapturedNamedArguments, debugName?: string) => Args['named'];
+
+if (HAS_NATIVE_PROXY) {
+  namedArgsProxyFor = <NamedArgs extends CapturedNamedArguments>(
+    namedArgs: NamedArgs,
+    debugName?: string
+  ) => {
+    let getTag = (key: keyof Args) => tagForNamedArg(namedArgs, key);
+
+    let handler: ProxyHandler<{}> = {
+      get(_target, prop) {
+        let ref = namedArgs[prop as string];
+
+        if (ref !== undefined) {
+          return valueForRef(ref);
+        } else if (prop === CUSTOM_TAG_FOR) {
+          return getTag;
+        }
+      },
+
+      has(_target, prop) {
+        return namedArgs[prop as string] !== undefined;
+      },
+
+      ownKeys(_target) {
+        return Object.keys(namedArgs);
+      },
+
+      getOwnPropertyDescriptor(_target, prop) {
+        assert(
+          'args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys()',
+          namedArgs[prop as string] !== undefined
+        );
+
+        return {
+          enumerable: true,
+          configurable: true,
+        };
+      },
+    };
+
+    if (DEBUG) {
+      handler.set = function(_target, prop) {
+        assert(
+          `You attempted to set ${debugName}#${String(
+            prop
+          )} on a components arguments. Component arguments are immutable and cannot be updated directly, they always represent the values that are passed to your component. If you want to set default values, you should use a getter instead`
+        );
+
+        return false;
+      };
+    }
+
+    return new Proxy({}, handler);
+  };
+} else {
+  namedArgsProxyFor = <NamedArgs extends CapturedNamedArguments>(namedArgs: NamedArgs) => {
+    let getTag = (key: keyof Args) => tagForNamedArg(namedArgs, key);
+
+    let proxy = {};
+
+    Object.defineProperty(proxy, CUSTOM_TAG_FOR, {
+      configurable: false,
+      enumerable: false,
+      value: getTag,
+    });
+
+    Object.keys(namedArgs).forEach(name => {
+      Object.defineProperty(proxy, name, {
+        enumerable: true,
+        configurable: true,
+        get() {
+          return valueForRef(namedArgs[name]);
+        },
+      });
+    });
+
+    return proxy;
+  };
+}
+
 /**
   The CustomComponentManager allows addons to provide custom component
   implementations that integrate seamlessly into Ember. This is accomplished
@@ -185,91 +278,15 @@ export default class CustomComponentManager<ComponentInstance>
     definition: CustomComponentDefinitionState<ComponentInstance>,
     args: VMArguments
   ): CustomComponentState<ComponentInstance> {
-    const { delegate } = definition;
-    const capturedArgs = args.capture();
-    const namedArgs = capturedArgs.named;
+    let { delegate } = definition;
+    let capturedArgs = args.capture();
+    let { named, positional } = capturedArgs;
+    let namedArgsProxy = namedArgsProxyFor(named);
 
-    let value;
-    let namedArgsProxy = {};
-
-    if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
-      let getTag = (key: string) => {
-        return track(() => valueForRef(namedArgs[key]));
-      };
-
-      if (HAS_NATIVE_PROXY) {
-        let handler: ProxyHandler<{}> = {
-          get(_target, prop) {
-            let ref = namedArgs[prop as string];
-
-            if (ref !== undefined) {
-              return valueForRef(ref);
-            } else if (prop === CUSTOM_TAG_FOR) {
-              return getTag;
-            }
-          },
-
-          has(_target, prop) {
-            return namedArgs[prop as string] !== undefined;
-          },
-
-          ownKeys(_target) {
-            return Object.keys(namedArgs);
-          },
-
-          getOwnPropertyDescriptor(_target, prop) {
-            assert(
-              'args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys()',
-              namedArgs[prop as string] !== undefined
-            );
-
-            return {
-              enumerable: true,
-              configurable: true,
-            };
-          },
-        };
-
-        if (DEBUG) {
-          handler.set = function(_target, prop) {
-            assert(
-              `You attempted to set ${definition.ComponentClass.class}#${String(
-                prop
-              )} on a components arguments. Component arguments are immutable and cannot be updated directly, they always represent the values that are passed to your component. If you want to set default values, you should use a getter instead`
-            );
-
-            return false;
-          };
-        }
-
-        namedArgsProxy = new Proxy(namedArgsProxy, handler);
-      } else {
-        Object.defineProperty(namedArgsProxy, CUSTOM_TAG_FOR, {
-          configurable: false,
-          enumerable: false,
-          value: getTag,
-        });
-
-        Object.keys(namedArgs).forEach(name => {
-          Object.defineProperty(namedArgsProxy, name, {
-            enumerable: true,
-            configurable: true,
-            get() {
-              return valueForRef(namedArgs[name]);
-            },
-          });
-        });
-      }
-
-      value = {
-        named: namedArgsProxy,
-        positional: reifyPositional(capturedArgs.positional),
-      };
-    } else {
-      value = reifyArgs(capturedArgs);
-    }
-
-    const component = delegate.createComponent(definition.ComponentClass.class, value);
+    let component = delegate.createComponent(definition.ComponentClass.class, {
+      named: namedArgsProxy,
+      positional: reifyPositional(positional),
+    });
 
     let bucket = new CustomComponentState(delegate, component, capturedArgs, env, namedArgsProxy);
 
@@ -299,21 +316,13 @@ export default class CustomComponentManager<ComponentInstance>
       bucket.env.extra.debugRenderTree.update(bucket);
     }
 
-    let { delegate, component, args, namedArgsProxy } = bucket;
+    if (hasUpdateHook(bucket.delegate)) {
+      let { delegate, component, args, namedArgsProxy } = bucket;
 
-    let value;
-
-    if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
-      value = {
-        named: namedArgsProxy!,
+      delegate.updateComponent(component, {
+        named: namedArgsProxy,
         positional: reifyPositional(args.positional),
-      };
-    } else {
-      value = reifyArgs(args);
-    }
-
-    if (hasUpdateHook(delegate)) {
-      delegate.updateComponent(component, value);
+      });
     }
   }
 
@@ -376,7 +385,7 @@ export class CustomComponentState<ComponentInstance> {
     public component: ComponentInstance,
     public args: CapturedArguments,
     public env: EmberVMEnvironment,
-    public namedArgsProxy?: {}
+    public namedArgsProxy: Args['named']
   ) {
     if (hasDestructors(delegate)) {
       registerDestructor(this, () => delegate.destroyComponent(component));
