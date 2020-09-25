@@ -21,7 +21,7 @@ export type DebugFunctionType =
   | 'runInDebug'
   | 'deprecateFunc';
 
-export type AssertFunc = (desc: string, test?: boolean) => void;
+export type AssertFunc = (desc: string, condition?: unknown) => asserts condition;
 export type DebugFunc = (message: string) => void;
 export type DebugSealFunc = (obj: object) => void;
 export type DebugFreezeFunc = (obj: object) => void;
