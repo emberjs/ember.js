@@ -4,6 +4,7 @@ import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
+import { consumeTag, tagFor } from '@glimmer/validator';
 import { Transition } from 'router_js';
 import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
@@ -308,6 +309,18 @@ export default class RouterService extends Service {
   isActive(...args: any[]) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
+
+    // When using isActive() in a getter, we want to entagle with the auto-tracking system
+    // for example,
+    // in
+    // get isBarActive() {
+    //   return isActive('foo.bar');
+    // }
+    //
+    // you'd expect isBarActive to be dirtied when the route changes.
+    //
+    // https://github.com/emberjs/ember.js/issues/19004
+    consumeTag(tagFor(this._router, 'currentURL'));
 
     // UNSAFE: casting `routeName as string` here encodes the existing
     // assumption but may be wrong: `extractRouteArgs` correctly returns it as
