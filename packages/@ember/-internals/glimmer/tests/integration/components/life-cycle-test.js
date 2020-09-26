@@ -1077,7 +1077,11 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.assertRegisteredViews('intial render');
 
     let initialHooks = () => {
-      let ret = [['an-item', 'init'], ['an-item', 'on(init)'], ['an-item', 'didReceiveAttrs']];
+      let ret = [
+        ['an-item', 'init'],
+        ['an-item', 'on(init)'],
+        ['an-item', 'didReceiveAttrs'],
+      ];
       if (this.isInteractive) {
         ret.push(['an-item', 'willRender'], ['an-item', 'willInsertElement']);
       }
@@ -1259,7 +1263,10 @@ class LifeCycleHooksTest extends RenderingTestCase {
           ['nested-item', 'willDestroy'],
         ],
 
-        nonInteractive: [['no-items', 'willDestroy'], ['nested-item', 'willDestroy']],
+        nonInteractive: [
+          ['no-items', 'willDestroy'],
+          ['nested-item', 'willDestroy'],
+        ],
       });
 
       this.assertRegisteredViews('after destroy');

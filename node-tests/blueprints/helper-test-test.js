@@ -126,7 +126,10 @@ describe('Blueprint: helper-test', function() {
 
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
-        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
         generateFakePackageManifest('ember-mocha', '0.14.0');
       });
 

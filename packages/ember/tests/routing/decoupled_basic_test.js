@@ -2035,17 +2035,27 @@ moduleFor(
           return run(router, 'transitionTo', 'b', 'b-1');
         })
         .then(() => {
-          assert.deepEqual(calls, [['setup', 'a'], ['setup', 'b']]);
+          assert.deepEqual(calls, [
+            ['setup', 'a'],
+            ['setup', 'b'],
+          ]);
           calls.length = 0;
           return run(router, 'transitionTo', 'c', 'c-1');
         })
         .then(() => {
-          assert.deepEqual(calls, [['reset', 'b'], ['setup', 'c']]);
+          assert.deepEqual(calls, [
+            ['reset', 'b'],
+            ['setup', 'c'],
+          ]);
           calls.length = 0;
           return run(router, 'transitionTo', 'out');
         })
         .then(() => {
-          assert.deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+          assert.deepEqual(calls, [
+            ['reset', 'c'],
+            ['reset', 'a'],
+            ['setup', 'out'],
+          ]);
         });
     }
 

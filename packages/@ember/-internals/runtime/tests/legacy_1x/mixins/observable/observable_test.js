@@ -430,9 +430,7 @@ moduleFor(
         assert.equal(
           object.set(key, values[1]),
           values[1],
-          `Try #3: object.set(${key}, ${
-            values[1]
-          }) should not run function since it is setting same value as before`
+          `Try #3: object.set(${key}, ${values[1]}) should not run function since it is setting same value as before`
         );
       });
 

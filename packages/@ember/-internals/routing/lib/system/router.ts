@@ -1438,11 +1438,13 @@ function calculatePostTransitionState(
 
     // If the routeInfo is not resolved, we serialize the context into params
     if (!routeInfo.isResolved) {
-      params[routeInfo.name] = routeInfo.serialize(routeInfo.context as
-        | {
-            [key: string]: unknown;
-          }
-        | undefined);
+      params[routeInfo.name] = routeInfo.serialize(
+        routeInfo.context as
+          | {
+              [key: string]: unknown;
+            }
+          | undefined
+      );
     } else {
       params[routeInfo.name] = routeInfo.params;
     }

@@ -1502,7 +1502,7 @@ if (ENV._DEBUG_RENDER_TREE) {
       ): ExpectedRenderNode;
       outlet(node: ExpectedRenderNode & { type: 'engine' | 'route-template' }): ExpectedRenderNode;
       outlet(
-        nodeOrName: string | ExpectedRenderNode & { type: 'engine' | 'route-template' },
+        nodeOrName: string | (ExpectedRenderNode & { type: 'engine' | 'route-template' }),
         node?: ExpectedRenderNode & { type: 'engine' | 'route-template' }
       ): ExpectedRenderNode {
         let name: string;

@@ -183,22 +183,38 @@ moduleFor(
     ['@test defining a computed property with a dependent key more than one level deep beyond @each is not supported']() {
       expectNoWarning(() => {
         obj = {};
-        defineProperty(obj, 'someProp', computed('todos', () => {}));
+        defineProperty(
+          obj,
+          'someProp',
+          computed('todos', () => {})
+        );
       });
 
       expectNoWarning(() => {
         obj = {};
-        defineProperty(obj, 'someProp', computed('todos.@each.owner', () => {}));
+        defineProperty(
+          obj,
+          'someProp',
+          computed('todos.@each.owner', () => {})
+        );
       });
 
       expectWarning(() => {
         obj = {};
-        defineProperty(obj, 'someProp', computed('todos.@each.owner.name', () => {}));
+        defineProperty(
+          obj,
+          'someProp',
+          computed('todos.@each.owner.name', () => {})
+        );
       }, /You used the key "todos\.@each\.owner\.name" which is invalid\. /);
 
       expectWarning(() => {
         obj = {};
-        defineProperty(obj, 'someProp', computed('todos.@each.owner.@each.name', () => {}));
+        defineProperty(
+          obj,
+          'someProp',
+          computed('todos.@each.owner.@each.name', () => {})
+        );
       }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
 
       let expected = new RegExp(
@@ -220,7 +236,11 @@ moduleFor(
         obj = {
           todos: [],
         };
-        defineProperty(obj, 'someProp', computed('todos.@each.owner.name', () => {}));
+        defineProperty(
+          obj,
+          'someProp',
+          computed('todos.@each.owner.name', () => {})
+        );
 
         get(obj, 'someProp');
       }, expected);
@@ -703,7 +723,11 @@ moduleFor(
 
     ['@test chained dependent keys should evaluate computed properties lazily'](assert) {
       defineProperty(obj.foo.bar, 'b', computed(func));
-      defineProperty(obj.foo, 'c', computed('bar.b', function() {}));
+      defineProperty(
+        obj.foo,
+        'c',
+        computed('bar.b', function() {})
+      );
       assert.equal(count, 0, 'b should not run');
     }
   }
@@ -806,7 +830,11 @@ moduleFor(
   class extends ComputedTestCase {
     ['@test adding a computed property should show up in key iteration'](assert) {
       obj = {};
-      defineProperty(obj, 'foo', computed(function() {}));
+      defineProperty(
+        obj,
+        'foo',
+        computed(function() {})
+      );
 
       let found = [];
       for (let key in obj) {

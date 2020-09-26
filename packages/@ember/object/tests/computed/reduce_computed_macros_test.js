@@ -639,7 +639,10 @@ moduleFor(
   }
 );
 
-[['uniq', uniq], ['union', union]].forEach(tuple => {
+[
+  ['uniq', uniq],
+  ['union', union],
+].forEach(tuple => {
   let [name, macro] = tuple;
 
   moduleFor(
@@ -745,7 +748,11 @@ moduleFor(
         list: null,
         uniqueById: uniqBy('list', 'id'),
       }).create({
-        list: emberA([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 1, value: 'one' }]),
+        list: emberA([
+          { id: 1, value: 'one' },
+          { id: 2, value: 'two' },
+          { id: 1, value: 'one' },
+        ]),
       });
     }
 
@@ -759,7 +766,10 @@ moduleFor(
       }, /Cannot set read-only property "uniqueById" on object:/);
     }
     ['@test does not include duplicates'](assert) {
-      assert.deepEqual(obj.get('uniqueById'), [{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
+      assert.deepEqual(obj.get('uniqueById'), [
+        { id: 1, value: 'one' },
+        { id: 2, value: 'two' },
+      ]);
     }
 
     ['@test it does not share state among instances'](assert) {
@@ -784,7 +794,11 @@ moduleFor(
 
       assert.deepEqual(
         obj.get('uniqueById'),
-        [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+        [
+          { id: 1, value: 'one' },
+          { id: 2, value: 'two' },
+          { id: 3, value: 'three' },
+        ],
         'The list includes three'
       );
 
@@ -792,7 +806,11 @@ moduleFor(
 
       assert.deepEqual(
         obj.get('uniqueById'),
-        [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+        [
+          { id: 1, value: 'one' },
+          { id: 2, value: 'two' },
+          { id: 3, value: 'three' },
+        ],
         'The list does not include a duplicate three'
       );
     }

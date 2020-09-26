@@ -140,7 +140,10 @@ class AbstractAppendTest extends RenderingTestCase {
 
     assert.deepEqual(
       hooks,
-      [['x-parent', 'init'], ['x-parent', 'on(init)']],
+      [
+        ['x-parent', 'init'],
+        ['x-parent', 'on(init)'],
+      ],
       'creation of x-parent'
     );
 

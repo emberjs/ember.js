@@ -890,7 +890,10 @@ class EachTest extends AbstractEachTest {
 
   [`@test an outer {{#each}}'s scoped variable does not clobber an inner {{#each}}'s property if they share the same name - Issue #1315`]() {
     let content = this.createList(['X', 'Y']);
-    let options = this.createList([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]);
+    let options = this.createList([
+      { label: 'One', value: 1 },
+      { label: 'Two', value: 2 },
+    ]);
 
     this.render(
       strip`
@@ -923,7 +926,10 @@ class EachTest extends AbstractEachTest {
       set(
         this.context,
         'options',
-        this.createList([{ label: 'One', value: 1 }, { label: 'Two', value: 2 }]).list
+        this.createList([
+          { label: 'One', value: 1 },
+          { label: 'Two', value: 2 },
+        ]).list
       );
     });
 
