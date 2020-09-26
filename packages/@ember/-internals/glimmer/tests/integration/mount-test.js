@@ -121,7 +121,9 @@ moduleFor(
 
       this.engineRegistrations['template:application'] = compile(
         'hi {{person.name}} [{{component-with-backtracking-set person=person}}]',
-        { moduleName: 'my-app/templates/application.hbs' }
+        {
+          moduleName: 'my-app/templates/application.hbs',
+        }
       );
       this.engineRegistrations['controller:application'] = Controller.extend({
         person: {

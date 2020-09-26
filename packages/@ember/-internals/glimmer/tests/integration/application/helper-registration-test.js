@@ -58,9 +58,15 @@ moduleFor(
         `<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`
       );
 
-      this.application.register('helper:omg', helper(() => 'OMG'));
+      this.application.register(
+        'helper:omg',
+        helper(() => 'OMG')
+      );
 
-      this.application.register('helper:yorp', helper(([value]) => value));
+      this.application.register(
+        'helper:yorp',
+        helper(([value]) => value)
+      );
 
       return this.visit('/').then(() => {
         assert.equal(

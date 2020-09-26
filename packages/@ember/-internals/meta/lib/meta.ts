@@ -744,7 +744,7 @@ function indexOfListener(
   for (let i = listeners.length - 1; i >= 0; i--) {
     let listener = listeners[i];
 
-    if (listener.event === event && (listener.target === target && listener.method === method)) {
+    if (listener.event === event && listener.target === target && listener.method === method) {
       return i;
     }
   }

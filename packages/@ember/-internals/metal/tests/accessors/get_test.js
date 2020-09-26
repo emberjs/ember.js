@@ -110,7 +110,10 @@ moduleFor(
       assert.equal(get({ foo: func }, 'foo.bar'), 'awesome');
       assert.equal(get({ foo: func }, 'foo.bar.length'), 7);
       assert.equal(get({}, 'foo.bar.length'), undefined);
-      assert.equal(get(function() {}, 'foo.bar.length'), undefined);
+      assert.equal(
+        get(function() {}, 'foo.bar.length'),
+        undefined
+      );
       assert.equal(get('', 'foo.bar.length'), undefined);
       assert.equal(get({ foo: destroyedObj }, 'foo.bar'), undefined);
     }

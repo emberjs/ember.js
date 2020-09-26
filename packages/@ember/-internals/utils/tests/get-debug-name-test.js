@@ -10,10 +10,16 @@ if (DEBUG) {
         class Person {}
 
         assert.equal(getDebugName({}), '(unknown object)');
-        assert.equal(getDebugName(() => {}), '(unknown function)');
+        assert.equal(
+          getDebugName(() => {}),
+          '(unknown function)'
+        );
         assert.equal(getDebugName(Person), 'Person');
         assert.equal(getDebugName(new Person()), 'Person');
-        assert.equal(getDebugName(function foo() {}), 'foo');
+        assert.equal(
+          getDebugName(function foo() {}),
+          'foo'
+        );
 
         assert.equal(
           getDebugName({
