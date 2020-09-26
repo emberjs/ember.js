@@ -181,7 +181,7 @@ export const ENV = {
   },
 };
 
-(EmberENV => {
+((EmberENV) => {
   if (typeof EmberENV !== 'object' || EmberENV === null) return;
 
   for (let flag in EmberENV) {
@@ -225,7 +225,7 @@ export const ENV = {
       if (!Object.prototype.hasOwnProperty.call(EMBER_LOAD_HOOKS, hookName)) continue;
       let hooks = EMBER_LOAD_HOOKS[hookName];
       if (Array.isArray(hooks)) {
-        ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter(hook => typeof hook === 'function');
+        ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter((hook) => typeof hook === 'function');
       }
     }
   }

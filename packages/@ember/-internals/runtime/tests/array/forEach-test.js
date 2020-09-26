@@ -9,7 +9,7 @@ class ForEachTests extends AbstractTestCase {
     let ary = this.toArray(obj);
     let found = [];
 
-    obj.forEach(i => found.push(i));
+    obj.forEach((i) => found.push(i));
     this.assert.deepEqual(found, ary, 'items passed during forEach should match');
   }
 
@@ -23,14 +23,14 @@ class ForEachTests extends AbstractTestCase {
     let ary = this.toArray(obj);
     let found = [];
 
-    obj.forEach(i => found.push(i));
+    obj.forEach((i) => found.push(i));
     this.assert.deepEqual(found, ary, 'items passed during forEach should match');
 
     this.mutate(obj);
     ary = this.toArray(obj);
     found = [];
 
-    obj.forEach(i => found.push(i));
+    obj.forEach((i) => found.push(i));
     this.assert.deepEqual(found, ary, 'items passed during forEach should match');
   }
 

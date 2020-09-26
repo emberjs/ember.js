@@ -324,7 +324,7 @@ class EmberRouter extends EmberObject {
     dsl.route(
       'application',
       { path: '/', resetNamespace: true, overrideNameAssertion: true },
-      function() {
+      function () {
         for (let i = 0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
@@ -1055,7 +1055,7 @@ class EmberRouter extends EmberObject {
 
         assert(
           `You passed the \`${presentProp}\` query parameter during a transition into ${qp.route.routeName}, please update to ${qp.urlKey}`,
-          (function() {
+          (function () {
             if (qp.urlKey === presentProp || qp.scopedPropertyName === presentProp) {
               return true;
             }
@@ -1438,11 +1438,13 @@ function calculatePostTransitionState(
 
     // If the routeInfo is not resolved, we serialize the context into params
     if (!routeInfo.isResolved) {
-      params[routeInfo.name] = routeInfo.serialize(routeInfo.context as
-        | {
-            [key: string]: unknown;
-          }
-        | undefined);
+      params[routeInfo.name] = routeInfo.serialize(
+        routeInfo.context as
+          | {
+              [key: string]: unknown;
+            }
+          | undefined
+      );
     } else {
       params[routeInfo.name] = routeInfo.params;
     }
@@ -1794,7 +1796,7 @@ EmberRouter.reopen(Evented, {
    @type {String}
    @private
  */
-  url: computed(function(this: Router<Route>) {
+  url: computed(function (this: Router<Route>) {
     let location = get(this, 'location');
 
     if (typeof location === 'string') {

@@ -80,7 +80,7 @@ moduleFor(
       let actualCalls = [];
 
       function generateHandler(item) {
-        return function(message, options, next) {
+        return function (message, options, next) {
           assert.equal(message, expectedMessage, `message supplied to ${item} handler is correct`);
           assert.equal(options, expectedOptions, `options supplied to ${item} handler is correct`);
 
@@ -90,7 +90,7 @@ moduleFor(
         };
       }
 
-      expected.forEach(item => registerHandler('blarz', generateHandler(item)));
+      expected.forEach((item) => registerHandler('blarz', generateHandler(item)));
 
       invoke('blarz', expectedMessage, false, expectedOptions);
 

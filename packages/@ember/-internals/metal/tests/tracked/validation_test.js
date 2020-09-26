@@ -212,7 +212,7 @@ moduleFor(
       defineProperty(
         EmberObject.prototype,
         'full',
-        computed('name.first', 'name.last', function() {
+        computed('name.first', 'name.last', function () {
           let name = get(this, 'name');
           return `${name.first} ${name.last}`;
         })
@@ -266,7 +266,7 @@ moduleFor(
       defineProperty(
         EmberObject.prototype,
         'full',
-        computed('contact.name.first', 'contact.name.last', function() {
+        computed('contact.name.first', 'contact.name.last', function () {
           let contact = get(self, 'contact');
           return `${get(contact.name, 'first')} ${get(contact.name, 'last')}`;
         })

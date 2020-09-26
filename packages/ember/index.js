@@ -155,7 +155,7 @@ import {
 const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
 
 Ember.isNamespace = true;
-Ember.toString = function() {
+Ember.toString = function () {
   return 'Ember';
 };
 
@@ -437,7 +437,7 @@ Ember.isEqual = isEqual;
 Ember.inject = function inject() {
   assert(
     `Injected properties must be created through helpers, see '${Object.keys(inject)
-      .map(k => `'inject.${k}'`)
+      .map((k) => `'inject.${k}'`)
       .join(' or ')}'`
   );
 };
@@ -574,7 +574,7 @@ Ember.HTMLBars = {
 };
 
 if (ENV.EXTEND_PROTOTYPES.String) {
-  String.prototype.htmlSafe = function() {
+  String.prototype.htmlSafe = function () {
     return htmlSafe(this);
   };
 }

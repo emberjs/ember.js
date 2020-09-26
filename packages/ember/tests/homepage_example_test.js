@@ -17,7 +17,7 @@ moduleFor(
       let Person = EmberObject.extend({
         firstName: null,
         lastName: null,
-        fullName: computed('firstName', 'lastName', function() {
+        fullName: computed('firstName', 'lastName', function () {
           return `${this.get('firstName')} ${this.get('lastName')}`;
         }),
       });
@@ -56,7 +56,7 @@ moduleFor(
       let Person = EmberObject.extend({
         firstName: null,
         lastName: null,
-        fullName: computed('firstName', 'lastName', function() {
+        fullName: computed('firstName', 'lastName', function () {
           return `${this.get('firstName')} ${this.get('lastName')}`;
         }),
       });

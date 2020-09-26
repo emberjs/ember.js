@@ -55,8 +55,8 @@ const { loadEmber, clearEmber } = require('./load-ember');
  *     });
  */
 
-module.exports = function(hooks) {
-  hooks.beforeEach(function() {
+module.exports = function (hooks) {
+  hooks.beforeEach(function () {
     let { Ember, compile } = loadEmber();
 
     this.Ember = Ember;
@@ -80,7 +80,7 @@ module.exports = function(hooks) {
     this.renderToHTML = renderToHTML;
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     this.run(this.app, 'destroy');
 
     clearEmber();
@@ -124,7 +124,7 @@ function visit(url) {
     isBrowser: false,
     document: dom,
     rootElement: dom.body,
-  }).catch(function(error) {
+  }).catch(function (error) {
     console.error(error.stack);
   });
 }
@@ -138,7 +138,7 @@ function renderToHTML(url) {
     isBrowser: false,
     document: dom,
     rootElement: root,
-  }).then(function() {
+  }).then(function () {
     let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
     return serializer.serialize(root);
   });
@@ -147,7 +147,7 @@ function renderToHTML(url) {
 function registerApplicationClasses(app, registry) {
   app.initializer({
     name: 'register-application-classes',
-    initialize: function(app) {
+    initialize: function (app) {
       for (let key in registry) {
         app.register(key, registry[key]);
       }

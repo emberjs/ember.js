@@ -2030,7 +2030,7 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
 }
 
 function addQueryParamsObservers(controller: any, propNames: string[]) {
-  propNames.forEach(prop => {
+  propNames.forEach((prop) => {
     if (descriptorForProperty(controller, prop) === undefined) {
       let desc = lookupDescriptor(controller, prop);
 
@@ -2277,7 +2277,7 @@ Route.reopen(ActionHandler, Evented, {
 
       @property _qp
     */
-  _qp: computed(function(this: Route) {
+  _qp: computed(function (this: Route) {
     let combinedQueryParameterConfiguration;
 
     let controllerName = this.controllerName || this.routeName;

@@ -56,7 +56,7 @@ moduleFor(
 
     '@test can register a custom element modifier and render it'(assert) {
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -82,7 +82,7 @@ moduleFor(
     '@test custom lifecycle hooks'(assert) {
       assert.expect(9);
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -124,7 +124,7 @@ moduleFor(
     '@test associates manager even through an inheritance structure'(assert) {
       assert.expect(5);
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -162,7 +162,7 @@ moduleFor(
     '@test can give consistent access to underlying DOM element'(assert) {
       assert.expect(4);
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -209,7 +209,7 @@ moduleFor(
       let updateCount = 0;
 
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -261,7 +261,7 @@ moduleFor(
       }
 
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         class {
@@ -305,7 +305,7 @@ moduleFor(
 
     [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({

@@ -228,7 +228,7 @@ const TestArray = EmberObject.extend(EmberArray, {
     return this._content[idx];
   },
 
-  length: computed(function() {
+  length: computed(function () {
     return this._content.length;
   }),
 });
@@ -262,7 +262,7 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
     return this._content[idx];
   },
 
-  length: computed(function() {
+  length: computed(function () {
     return this._content.length;
   }),
 
@@ -305,7 +305,7 @@ class EmberArrayHelpers extends MutableArrayHelpers {
 
 export function runArrayTests(name, Tests, ...types) {
   if (types.length > 0) {
-    types.forEach(type => {
+    types.forEach((type) => {
       switch (type) {
         case 'ArrayProxy':
           moduleFor(`ArrayProxy: ${name}`, Tests, ArrayProxyHelpers);

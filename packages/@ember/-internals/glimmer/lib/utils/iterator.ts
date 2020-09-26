@@ -86,7 +86,7 @@ class ArrayIterator extends BoundedIterator {
 
   static fromForEachable(object: ForEachable) {
     let array: unknown[] = [];
-    object.forEach(item => array.push(item));
+    object.forEach((item) => array.push(item));
     return this.from(array);
   }
 
@@ -151,7 +151,7 @@ class ObjectIterator extends BoundedIterator {
     let isMapLike = false;
 
     // Not using an arrow function here so we can get an accurate `arguments`
-    obj.forEach(function(value: unknown, key: unknown) {
+    obj.forEach(function (value: unknown, key: unknown) {
       isMapLike = isMapLike || arguments.length >= 2;
 
       if (isMapLike) {

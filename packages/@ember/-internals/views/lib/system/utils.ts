@@ -48,7 +48,7 @@ export function getRootViews(owner: Owner): View[] {
 
   let rootViews: View[] = [];
 
-  Object.keys(registry).forEach(id => {
+  Object.keys(registry).forEach((id) => {
     let view = registry[id];
 
     if (view.parentView === null) {
@@ -142,7 +142,7 @@ export function collectChildViews(view: View, registry: Dict<View>): View[] {
   let childViews = CHILD_VIEW_IDS.get(view);
 
   if (childViews !== undefined) {
-    childViews.forEach(id => {
+    childViews.forEach((id) => {
       let view = registry[id];
       if (view && !view.isDestroying && !view.isDestroyed) {
         views.push(view);

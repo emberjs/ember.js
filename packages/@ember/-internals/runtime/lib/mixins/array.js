@@ -31,16 +31,16 @@ import { typeOf } from '../type-of';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
-const identityFunction = item => item;
+const identityFunction = (item) => item;
 
 export function uniqBy(array, key = identityFunction) {
   assert(`first argument passed to \`uniqBy\` should be array`, isArray(array));
 
   let ret = A();
   let seen = new Set();
-  let getter = typeof key === 'function' ? key : item => get(item, key);
+  let getter = typeof key === 'function' ? key : (item) => get(item, key);
 
-  array.forEach(item => {
+  array.forEach((item) => {
     let val = getter(item);
     if (!seen.has(val)) {
       seen.add(val);
@@ -53,7 +53,7 @@ export function uniqBy(array, key = identityFunction) {
 
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
-  return valueProvided ? item => value === get(item, key) : item => Boolean(get(item, key));
+  return valueProvided ? (item) => value === get(item, key) : (item) => Boolean(get(item, key));
 }
 
 function findIndex(array, predicate, startAt) {
@@ -92,7 +92,7 @@ function indexOf(array, val, startAt = 0, withNaNCheck) {
   }
 
   // SameValueZero comparison (NaN !== NaN)
-  let predicate = withNaNCheck && val !== val ? item => item !== item : item => item === val;
+  let predicate = withNaNCheck && val !== val ? (item) => item !== item : (item) => item === val;
   return findIndex(array, predicate, startAt);
 }
 
@@ -176,7 +176,7 @@ function nonEnumerableComputed() {
 }
 
 function mapBy(key) {
-  return this.map(next => get(next, key));
+  return this.map((next) => get(next, key));
 }
 
 // ..........................................................
@@ -269,7 +269,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
    */
   objectsAt(indexes) {
-    return indexes.map(idx => objectAt(this, idx));
+    return indexes.map((idx) => objectAt(this, idx));
   },
 
   /**
@@ -321,7 +321,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object | undefined} The first object in the array
     @public
   */
-  firstObject: nonEnumerableComputed(function() {
+  firstObject: nonEnumerableComputed(function () {
     return objectAt(this, 0);
   }).readOnly(),
 
@@ -332,7 +332,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object | undefined} The last object in the array
     @public
   */
-  lastObject: nonEnumerableComputed(function() {
+  lastObject: nonEnumerableComputed(function () {
     return objectAt(this, this.length - 1);
   }).readOnly(),
 
@@ -771,7 +771,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   setEach(key, value) {
-    return this.forEach(item => set(item, key, value));
+    return this.forEach((item) => set(item, key, value));
   },
 
   /**
@@ -954,7 +954,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   */
   reject(callback, target = null) {
     assert('`reject` expects a function as first argument.', typeof callback === 'function');
-    return this.filter(function() {
+    return this.filter(function () {
       return !callback.apply(target, arguments);
     });
   },
@@ -1304,7 +1304,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     let ret = initialValue;
 
-    this.forEach(function(item, i) {
+    this.forEach(function (item, i) {
       ret = callback(ret, item, i, this);
     }, this);
 
@@ -1344,7 +1344,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   invoke(methodName, ...args) {
     let ret = A();
 
-    this.forEach(item => ret.push(tryInvoke(item, methodName, args)));
+    this.forEach((item) => ret.push(tryInvoke(item, methodName, args)));
 
     return ret;
   },
@@ -1358,7 +1358,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   toArray() {
-    return this.map(item => item);
+    return this.map((item) => item);
   },
 
   /**
@@ -1374,7 +1374,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   compact() {
-    return this.filter(value => value != null);
+    return this.filter((value) => value != null);
   },
 
   /**
@@ -1516,7 +1516,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     }
 
     // SameValueZero comparison (NaN !== NaN)
-    let predicate = value === value ? item => item !== value : item => item === item;
+    let predicate = value === value ? (item) => item !== value : (item) => item === item;
     return this.filter(predicate);
   },
 });
@@ -1894,7 +1894,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
   */
   addObjects(objects) {
     beginPropertyChanges();
-    objects.forEach(obj => this.addObject(obj));
+    objects.forEach((obj) => this.addObject(obj));
     endPropertyChanges();
     return this;
   },
@@ -1971,7 +1971,7 @@ let NativeArray = Mixin.create(MutableArray, Observable, {
 
 // Remove any methods implemented natively so we don't override them
 const ignore = ['length'];
-NativeArray.keys().forEach(methodName => {
+NativeArray.keys().forEach((methodName) => {
   if (Array.prototype[methodName]) {
     ignore.push(methodName);
   }
@@ -1984,7 +1984,7 @@ let A;
 if (ENV.EXTEND_PROTOTYPES.Array) {
   NativeArray.apply(Array.prototype, true);
 
-  A = function(arr) {
+  A = function (arr) {
     assert(
       'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
       !(this instanceof A)
@@ -1993,7 +1993,7 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
     return arr || [];
   };
 } else {
-  A = function(arr) {
+  A = function (arr) {
     assert(
       'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
       !(this instanceof A)

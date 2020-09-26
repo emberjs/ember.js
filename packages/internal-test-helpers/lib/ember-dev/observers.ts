@@ -2,7 +2,7 @@ import { ASYNC_OBSERVERS, SYNC_OBSERVERS } from '@ember/-internals/metal';
 import { run } from '@ember/runloop';
 
 export function setupObserversCheck(hooks: NestedHooks) {
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     let { assert } = QUnit.config.current;
 
     if (ASYNC_OBSERVERS.size > 0) {

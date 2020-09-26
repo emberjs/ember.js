@@ -45,7 +45,7 @@ const TestArray = EmberObject.extend(EmberArray, {
     return this._content[idx];
   },
 
-  length: computed(function() {
+  length: computed(function () {
     return this._content.length;
   }),
 });
@@ -102,7 +102,7 @@ moduleFor(
   class extends AbstractTestCase {
     async ['@test should notify observers of []'](assert) {
       obj = DummyArray.extend({
-        enumerablePropertyDidChange: emberObserver('[]', function() {
+        enumerablePropertyDidChange: emberObserver('[]', function () {
           this._count++;
         }),
       }).create({
@@ -134,7 +134,7 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach(assert) {
       obj = DummyArray.extend({
-        lengthDidChange: emberObserver('length', function() {
+        lengthDidChange: emberObserver('length', function () {
           this._after++;
         }),
       }).create({
@@ -362,7 +362,7 @@ moduleFor(
           set(this, 'resources', emberA());
         },
 
-        common: computed('resources.@each.common', function() {
+        common: computed('resources.@each.common', function () {
           return get(objectAt(get(this, 'resources'), 0), 'common');
         }),
       }).create();

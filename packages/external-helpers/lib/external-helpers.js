@@ -131,7 +131,7 @@ export function objectDestructuringEmpty(obj) {
   Original source: https://github.com/babel/babel/blob/v7.9.2/packages/babel-helpers/src/helpers.js#L738-L757
 */
 export function createSuper(Derived) {
-  return function() {
+  return function () {
     let Super = getPrototypeOf(Derived);
     let result;
 
@@ -182,7 +182,7 @@ export function createForOfIteratorHelperLoose(o) {
   if (typeof Symbol === 'undefined' || o[Symbol.iterator] == null) {
     // Fallback for engines without symbol support
     if (Array.isArray(o) || (o = unsupportedIterableToArray(o)))
-      return function() {
+      return function () {
         if (i >= o.length) return { done: true };
         return { done: false, value: o[i++] };
       };

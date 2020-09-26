@@ -5,22 +5,22 @@ const templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
 // We store the global symbols beforehand so that we can reset the state
 // properly to avoid the @glimmer/validator assertion
-const originalGlobalSymbols = Object.getOwnPropertySymbols(global).map(sym => [sym, global[sym]]);
+const originalGlobalSymbols = Object.getOwnPropertySymbols(global).map((sym) => [sym, global[sym]]);
 
 module.exports.emberPath = require.resolve(emberPath);
 
-module.exports.loadEmber = function() {
+module.exports.loadEmber = function () {
   let Ember = require(emberPath);
 
   let _precompile = require(templateCompilerPath).precompile;
 
-  let precompile = function(templateString, options) {
+  let precompile = function (templateString, options) {
     let templateSpec = _precompile(templateString, options);
 
     return `Ember.HTMLBars.template(${templateSpec})`;
   };
 
-  let compile = function(templateString, options) {
+  let compile = function (templateString, options) {
     let templateSpec = _precompile(templateString, options);
     let template = new Function('return ' + templateSpec)();
 
@@ -30,10 +30,10 @@ module.exports.loadEmber = function() {
   return { Ember, compile, precompile };
 };
 
-module.exports.clearEmber = function() {
+module.exports.clearEmber = function () {
   delete global.Ember;
 
-  Object.getOwnPropertySymbols(global).forEach(sym => {
+  Object.getOwnPropertySymbols(global).forEach((sym) => {
     delete global[sym];
   });
 

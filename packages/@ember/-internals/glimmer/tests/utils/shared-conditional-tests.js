@@ -401,8 +401,8 @@ const IfUnlessWithTestCases = [
     EmberObject.create({ foo: 'bar' }),
     ObjectProxy.create({ content: true }),
     Object,
-    function() {},
-    async function() {},
+    function () {},
+    async function () {},
     new String('hello'),
     new String(''),
     new Boolean(true),
@@ -567,13 +567,13 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     let truthyEvaluated;
     let falsyEvaluated;
 
-    let withoutEvaluatingTruthy = callback => {
+    let withoutEvaluatingTruthy = (callback) => {
       truthyEvaluated = false;
       callback();
       assert.ok(!truthyEvaluated, 'x-truthy is not evaluated');
     };
 
-    let withoutEvaluatingFalsy = callback => {
+    let withoutEvaluatingFalsy = (callback) => {
       falsyEvaluated = false;
       callback();
       assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');
@@ -908,13 +908,13 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     let truthyEvaluated;
     let falsyEvaluated;
 
-    let withoutEvaluatingTruthy = callback => {
+    let withoutEvaluatingTruthy = (callback) => {
       truthyEvaluated = false;
       callback();
       assert.ok(!truthyEvaluated, 'x-truthy is not evaluated');
     };
 
-    let withoutEvaluatingFalsy = callback => {
+    let withoutEvaluatingFalsy = (callback) => {
       falsyEvaluated = false;
       callback();
       assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');

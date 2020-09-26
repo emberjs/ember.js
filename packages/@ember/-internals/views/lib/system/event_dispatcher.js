@@ -164,8 +164,9 @@ export default EmberObject.extend({
       }
 
       assert(
-        `You cannot use the same root element (${get(this, 'rootElement') ||
-          rootElement.tagName}) multiple times in an Ember.Application`,
+        `You cannot use the same root element (${
+          get(this, 'rootElement') || rootElement.tagName
+        }) multiple times in an Ember.Application`,
         !rootElement.classList.contains(ROOT_ELEMENT_CLASS)
       );
       assert(
@@ -191,15 +192,17 @@ export default EmberObject.extend({
       rootElement.classList.add(ROOT_ELEMENT_CLASS);
 
       assert(
-        `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${get(this, 'rootElement') ||
-          rootElement.tagName}). Make sure you set rootElement to the body or an element in the body.`,
+        `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${
+          get(this, 'rootElement') || rootElement.tagName
+        }). Make sure you set rootElement to the body or an element in the body.`,
         rootElement.classList.contains(ROOT_ELEMENT_CLASS)
       );
     } else {
       rootElement = jQuery(rootElementSelector);
       assert(
-        `You cannot use the same root element (${rootElement.selector ||
-          rootElement[0].tagName}) multiple times in an Ember.Application`,
+        `You cannot use the same root element (${
+          rootElement.selector || rootElement[0].tagName
+        }) multiple times in an Ember.Application`,
         !rootElement.is(ROOT_ELEMENT_SELECTOR)
       );
       assert(
@@ -215,9 +218,9 @@ export default EmberObject.extend({
 
       if (!rootElement.is(ROOT_ELEMENT_SELECTOR)) {
         throw new TypeError(
-          `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${rootElement.selector ||
-            rootElement[0]
-              .tagName}). Make sure you set rootElement to the body or an element in the body.`
+          `Unable to add '${ROOT_ELEMENT_CLASS}' class to root element (${
+            rootElement.selector || rootElement[0].tagName
+          }). Make sure you set rootElement to the body or an element in the body.`
         );
       }
     }
@@ -336,7 +339,7 @@ export default EmberObject.extend({
           return fakeEvent;
         };
 
-        let handleMappedEvent = (this._eventHandlers[mappedEventType] = event => {
+        let handleMappedEvent = (this._eventHandlers[mappedEventType] = (event) => {
           let target = event.target;
           let related = event.relatedTarget;
 
@@ -360,7 +363,7 @@ export default EmberObject.extend({
 
         rootElement.addEventListener(mappedEventType, handleMappedEvent);
       } else {
-        let handleEvent = (this._eventHandlers[event] = event => {
+        let handleEvent = (this._eventHandlers[event] = (event) => {
           let target = event.target;
 
           do {
@@ -388,7 +391,7 @@ export default EmberObject.extend({
         rootElement.addEventListener(event, handleEvent);
       }
     } else {
-      rootElement.on(`${event}.ember`, '.ember-view', function(evt) {
+      rootElement.on(`${event}.ember`, '.ember-view', function (evt) {
         let view = getElementView(this);
         let result = true;
 
@@ -399,7 +402,7 @@ export default EmberObject.extend({
         return result;
       });
 
-      rootElement.on(`${event}.ember`, '[data-ember-action]', evt => {
+      rootElement.on(`${event}.ember`, '[data-ember-action]', (evt) => {
         let attributes = evt.currentTarget.attributes;
         let handledActions = [];
 

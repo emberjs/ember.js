@@ -9,21 +9,21 @@ const useEditionDetector = require('../edition-detector');
 module.exports = useEditionDetector({
   description: 'Generates a component class.',
 
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
-      __path__: function(options) {
+      __path__: function (options) {
         if (options.pod) {
           return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
         }
         return 'components';
       },
-      __name__: function(options) {
+      __name__: function (options) {
         if (options.pod) {
           return 'component';
         }
         return options.dasherizedModuleName;
       },
-      __root__: function(options) {
+      __root__: function (options) {
         if (options.inRepoAddon) {
           return path.join('lib', options.inRepoAddon, 'app');
         }
@@ -32,11 +32,11 @@ module.exports = useEditionDetector({
     };
   },
 
-  normalizeEntityName: function(entityName) {
+  normalizeEntityName: function (entityName) {
     return normalizeEntityName(entityName);
   },
 
-  locals: function(options) {
+  locals: function (options) {
     let addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
     let addonName = stringUtil.dasherize(addonRawName);
     let fileName = stringUtil.dasherize(options.entity.name);

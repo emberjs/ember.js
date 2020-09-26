@@ -283,7 +283,7 @@ export const INVOKE: unique symbol = symbol('INVOKE') as any;
   @for Ember.Templates.helpers
   @public
 */
-export default function(args: VMArguments): Reference<Function> {
+export default function (args: VMArguments): Reference<Function> {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -434,9 +434,11 @@ function makeClosureAction(
     } else {
       // tslint:disable-next-line:max-line-length
       assert(
-        `An action could not be made for \`${debugKey ||
-          action}\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${debugKey ||
-          'myAction'}')\`) or a function available in ${target}.`,
+        `An action could not be made for \`${
+          debugKey || action
+        }\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${
+          debugKey || 'myAction'
+        }')\`) or a function available in ${target}.`,
         false
       );
     }

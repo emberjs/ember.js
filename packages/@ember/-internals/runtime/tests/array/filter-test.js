@@ -11,7 +11,7 @@ class FilterTest extends AbstractTestCase {
     let result;
 
     // return true on all but the last two
-    result = obj.filter(function(i) {
+    result = obj.filter(function (i) {
       found.push(i);
       return --cnt >= 0;
     });

@@ -49,7 +49,7 @@ moduleFor(
             },
           },
           actions: {
-            [actionName]: function() {
+            [actionName]: function () {
               return loadingReturn;
             },
           },
@@ -57,7 +57,7 @@ moduleFor(
             indexModelCount++;
             if (indexModelCount === 2) {
               assert.deepEqual(params, { omg: 'lex' });
-              return new RSVP.Promise(function(resolve) {
+              return new RSVP.Promise(function (resolve) {
                 promiseResolve = resolve;
                 return;
               });
@@ -86,7 +86,7 @@ moduleFor(
       assert.equal(appModelCount, 1, 'appModelCount is 1');
       assert.equal(indexModelCount, 3);
 
-      run(function() {
+      run(function () {
         promiseResolve();
       });
 
@@ -106,8 +106,8 @@ moduleFor(
     ) {
       assert.expect(2);
 
-      this.router.map(function() {
-        this.route('parent', function() {
+      this.router.map(function () {
+        this.route('parent', function () {
           this.route('child');
           this.route('sibling');
         });
@@ -142,7 +142,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -216,7 +216,7 @@ moduleFor(
       assert.expect(3);
 
       this.setSingleQPController('index', 'a', 0, {
-        queryParams: computed(function() {
+        queryParams: computed(function () {
           return ['c'];
         }),
         c: true,
@@ -272,7 +272,7 @@ moduleFor(
     ['@test model hooks receives query params with dynamic segment params'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/:id' });
       });
 
@@ -293,7 +293,7 @@ moduleFor(
     ['@test model hooks receives query params (overridden by incoming url value)'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/:id' });
       });
 
@@ -312,7 +312,7 @@ moduleFor(
     }
 
     async ['@test error is thrown if dynamic segment and query param have same name'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/:foo' });
       });
 
@@ -369,7 +369,7 @@ moduleFor(
     ['@test Route#paramsFor fetches query params with default value'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/:something' });
       });
 
@@ -394,7 +394,7 @@ moduleFor(
     ['@test Route#paramsFor fetches query params with non-default value'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/:something' });
       });
 
@@ -419,7 +419,7 @@ moduleFor(
     ['@test Route#paramsFor fetches default falsy query params'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/:something' });
       });
 
@@ -444,7 +444,7 @@ moduleFor(
     ['@test Route#paramsFor fetches non-default falsy query params'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/:something' });
       });
 
@@ -922,8 +922,8 @@ moduleFor(
         "{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}"
       );
 
-      this.router.map(function() {
-        this.route('parent', function() {
+      this.router.map(function () {
+        this.route('parent', function () {
           this.route('child');
         });
       });
@@ -981,7 +981,7 @@ moduleFor(
     async ['@test can override incoming QP values in setupController'](assert) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1011,7 +1011,7 @@ moduleFor(
     async ['@test can override incoming QP array values in setupController'](assert) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1055,8 +1055,8 @@ moduleFor(
     ['@test Subresource naming style is supported'](assert) {
       assert.expect(5);
 
-      this.router.map(function() {
-        this.route('abc.def', { path: '/abcdef' }, function() {
+      this.router.map(function () {
+        this.route('abc.def', { path: '/abcdef' }, function () {
           this.route('zoo');
         });
       });
@@ -1198,7 +1198,7 @@ moduleFor(
     async ['@test Array query params can be set'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1242,7 +1242,7 @@ moduleFor(
     async ['@test Array query params can be pushed/popped'](assert) {
       assert.expect(17);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1295,7 +1295,7 @@ moduleFor(
     async ["@test Overwriting with array with same content shouldn't refire update"](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1326,7 +1326,7 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('other');
       });
 
@@ -1356,7 +1356,7 @@ moduleFor(
     ) {
       assert.expect(9);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
       });
 
@@ -1394,7 +1394,7 @@ moduleFor(
         "{{link-to 'Home' 'home' (query-params foo=nullValue) id='null-link'}}{{link-to 'Home' 'home' (query-params foo=undefinedValue) id='undefined-link'}}"
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
       });
 
@@ -1451,7 +1451,7 @@ moduleFor(
         "{{link-to 'Foo' 'foo' id='foo-link'}}{{link-to 'Bar' 'bar' id='bar-no-qp-link'}}{{link-to 'Bar' 'bar' (query-params raytiley='isthebest') id='bar-link'}}{{outlet}}"
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('foo');
         this.route('bar');
       });
@@ -1491,7 +1491,7 @@ moduleFor(
     ["@test undefined isn't serialized or deserialized into a string"](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('example');
       });
 
@@ -1561,7 +1561,7 @@ moduleFor(
     async ['@test handle route names that clash with Object.prototype properties'](assert) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('constructor');
       });
 
@@ -1587,7 +1587,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1616,7 +1616,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 

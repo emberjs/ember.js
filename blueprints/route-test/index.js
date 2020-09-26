@@ -14,7 +14,7 @@ module.exports = useTestFrameworkDetector({
     },
   ],
 
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
       __root__() {
         return 'tests';
@@ -22,7 +22,7 @@ module.exports = useTestFrameworkDetector({
       __testType__() {
         return 'unit';
       },
-      __test__: function(options) {
+      __test__: function (options) {
         let moduleName = options.locals.moduleName;
 
         if (options.pod) {
@@ -31,7 +31,7 @@ module.exports = useTestFrameworkDetector({
 
         return `${moduleName}-test`;
       },
-      __path__: function(options) {
+      __path__: function (options) {
         if (options.pod) {
           return path.join(options.podPath, options.locals.moduleName);
         }
@@ -40,7 +40,7 @@ module.exports = useTestFrameworkDetector({
     };
   },
 
-  locals: function(options) {
+  locals: function (options) {
     let moduleName = options.entity.name;
 
     if (options.resetNamespace) {

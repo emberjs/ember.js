@@ -9,7 +9,7 @@ moduleFor(
     constructor() {
       let originalMacros = _experimentalMacros.slice();
 
-      _registerMacros(blocks => {
+      _registerMacros((blocks) => {
         blocks.add('-test-block', (params, _hash, blocks) => {
           return invokeStaticBlockWithStack(blocks.get('default'));
         });
@@ -21,7 +21,7 @@ moduleFor(
 
     teardown() {
       _experimentalMacros.length = 0;
-      this.originalMacros.forEach(macro => _experimentalMacros.push(macro));
+      this.originalMacros.forEach((macro) => _experimentalMacros.push(macro));
 
       super.teardown();
     }

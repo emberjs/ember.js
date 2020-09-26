@@ -9,7 +9,7 @@ moduleFor(
     ['@test Unbound dashed helpers registered on the container can be late-invoked'](assert) {
       this.addTemplate('application', `<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`);
 
-      let myHelper = helper(params => params[0] || 'BORF');
+      let myHelper = helper((params) => params[0] || 'BORF');
       this.application.register('helper:x-borf', myHelper);
 
       return this.visit('/').then(() => {
@@ -33,13 +33,8 @@ moduleFor(
 
       this.application.register(
         'helper:x-reverse',
-        helper(function([value]) {
-          return value
-            ? value
-                .split('')
-                .reverse()
-                .join('')
-            : '--';
+        helper(function ([value]) {
+          return value ? value.split('').reverse().join('') : '--';
         })
       );
 
@@ -58,9 +53,15 @@ moduleFor(
         `<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`
       );
 
-      this.application.register('helper:omg', helper(() => 'OMG'));
+      this.application.register(
+        'helper:omg',
+        helper(() => 'OMG')
+      );
 
-      this.application.register('helper:yorp', helper(([value]) => value));
+      this.application.register(
+        'helper:yorp',
+        helper(([value]) => value)
+      );
 
       return this.visit('/').then(() => {
         assert.equal(

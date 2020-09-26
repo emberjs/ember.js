@@ -206,7 +206,7 @@ moduleFor(
     ['@test updates controller QP properties on other route after transitioning to that route'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -238,7 +238,7 @@ moduleFor(
     ['@feature(!EMBER_ROUTING_MODEL_ARG) generates proper href for `LinkTo` with no @route after transitioning to an error route GH#17963'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('bad');
       });
 
@@ -309,7 +309,7 @@ moduleFor(
     async ['@feature(EMBER_ROUTING_MODEL_ARG) generates proper href for `LinkTo` with no @route after transitioning to an error route GH#17963'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('bad');
       });
 
@@ -472,8 +472,8 @@ moduleFor(
         `<LinkTo id='close-link' @route='cars'>Close create form</LinkTo>`
       );
 
-      this.router.map(function() {
-        this.route('cars', function() {
+      this.router.map(function () {
+        this.route('cars', function () {
           this.route('create');
         });
       });
@@ -545,8 +545,8 @@ moduleFor(
         `
       );
 
-      this.router.map(function() {
-        this.route('search', function() {
+      this.router.map(function () {
+        this.route('search', function () {
           this.route('results');
         });
       });
@@ -691,8 +691,8 @@ moduleFor(
         });
     }
     ['@test the <LinkTo /> component applies active class to the parent route'](assert) {
-      this.router.map(function() {
-        this.route('parent', function() {
+      this.router.map(function () {
+        this.route('parent', function () {
           this.route('child');
         });
       });
@@ -733,7 +733,7 @@ moduleFor(
     ) {
       let appLink;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('parent');
       });
 
@@ -802,7 +802,7 @@ moduleFor(
     ['@test the <LinkTo /> component default query params while in active transition regression test'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('foos');
         this.route('bars');
       });

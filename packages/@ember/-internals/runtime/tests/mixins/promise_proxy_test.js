@@ -29,12 +29,12 @@ moduleFor(
     ['@test no promise, invoking then should raise'](assert) {
       proxy = ObjectPromiseProxy.create();
 
-      assert.throws(function() {
+      assert.throws(function () {
         proxy.then(
-          function() {
+          function () {
             return this;
           },
-          function() {
+          function () {
             return this;
           }
         );
@@ -56,7 +56,10 @@ moduleFor(
       let didFulfillCount = 0;
       let didRejectCount = 0;
 
-      proxy.then(() => didFulfillCount++, () => didRejectCount++);
+      proxy.then(
+        () => didFulfillCount++,
+        () => didRejectCount++
+      );
 
       assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
       assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
@@ -162,7 +165,10 @@ moduleFor(
       let didFulfillCount = 0;
       let didRejectCount = 0;
 
-      proxy.then(() => didFulfillCount++, () => didRejectCount++);
+      proxy.then(
+        () => didFulfillCount++,
+        () => didRejectCount++
+      );
 
       assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
       assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
@@ -262,7 +268,10 @@ moduleFor(
       let didFulfillCount = 0;
       let didRejectCount = 0;
 
-      proxy.then(() => didFulfillCount++, () => didRejectCount++);
+      proxy.then(
+        () => didFulfillCount++,
+        () => didRejectCount++
+      );
 
       assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
       assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
@@ -497,7 +506,10 @@ moduleFor(
         promise: deferred.promise,
       });
 
-      proxy.then(() => {}, () => {});
+      proxy.then(
+        () => {},
+        () => {}
+      );
 
       run(proxy, 'destroy');
 
@@ -516,7 +528,10 @@ moduleFor(
         promise: deferred.promise,
       });
 
-      proxy.then(() => {}, () => {});
+      proxy.then(
+        () => {},
+        () => {}
+      );
 
       run(proxy, 'destroy');
 
@@ -541,7 +556,7 @@ moduleFor(
       });
 
       proxy.then(
-        value => {
+        (value) => {
           receivedValue = value;
           didResolveCount++;
         },
@@ -574,7 +589,7 @@ moduleFor(
 
       proxy.then(
         () => {},
-        reason => {
+        (reason) => {
           receivedReason = reason;
           didRejectCount++;
         }

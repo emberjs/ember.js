@@ -53,7 +53,7 @@ export default function inject(
 
   let name = calledAsDecorator ? undefined : args[0];
 
-  let getInjection = function(this: any, propertyName: string) {
+  let getInjection = function (this: any, propertyName: string) {
     let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
     assert(

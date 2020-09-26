@@ -10,7 +10,7 @@ import { getHash } from './util';
 let popstateFired = false;
 
 function _uuid() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     let r, v;
     r = (Math.random() * 16) | 0;
     v = c === 'x' ? r : (r & 3) | 8;

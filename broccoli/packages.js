@@ -135,7 +135,7 @@ module.exports.handlebarsES = function _handlebars() {
 function handlebarsFix() {
   let HANDLEBARS_PARSER = /[/\\]parser.js$/;
   return {
-    load: function(id) {
+    load: function (id) {
       if (HANDLEBARS_PARSER.test(id)) {
         let code = readFileSync(id, 'utf8');
         return {

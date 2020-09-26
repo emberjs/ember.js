@@ -231,7 +231,7 @@ export default class CustomComponentManager<ComponentInstance>
         };
 
         if (DEBUG) {
-          handler.set = function(_target, prop) {
+          handler.set = function (_target, prop) {
             assert(
               `You attempted to set ${definition.ComponentClass.class}#${String(
                 prop
@@ -250,7 +250,7 @@ export default class CustomComponentManager<ComponentInstance>
           value: getTag,
         });
 
-        Object.keys(namedArgs).forEach(name => {
+        Object.keys(namedArgs).forEach((name) => {
           Object.defineProperty(namedArgsProxy, name, {
             enumerable: true,
             configurable: true,

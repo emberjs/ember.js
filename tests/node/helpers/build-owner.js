@@ -3,7 +3,7 @@ module.exports = function buildOwner(Ember, resolver) {
 
   let namespace = Ember.Object.create({
     Resolver: {
-      create: function() {
+      create: function () {
         return resolver;
       },
     },

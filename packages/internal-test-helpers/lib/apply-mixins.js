@@ -6,7 +6,7 @@ function isGenerator(mixin) {
 }
 
 export default function applyMixins(TestClass, ...mixins) {
-  mixins.forEach(mixinOrGenerator => {
+  mixins.forEach((mixinOrGenerator) => {
     let mixin;
 
     if (isGenerator(mixinOrGenerator)) {
@@ -22,8 +22,8 @@ export default function applyMixins(TestClass, ...mixins) {
       let properties = getAllPropertyNames(mixinOrGenerator);
       mixin = new mixinOrGenerator();
 
-      properties.forEach(name => {
-        TestClass.prototype[name] = function() {
+      properties.forEach((name) => {
+        TestClass.prototype[name] = function () {
           return mixin[name].apply(mixin, arguments);
         };
       });

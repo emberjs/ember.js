@@ -8,7 +8,7 @@ moduleFor(
   'Helpers test: {{fn}}',
   class extends RenderingTestCase {
     beforeEach() {
-      this.registerHelper('invoke', function([fn]) {
+      this.registerHelper('invoke', function ([fn]) {
         return fn();
       });
 

@@ -135,7 +135,7 @@ export default EmberObject.extend({
     let releaseMethods = emberA();
     let typesToSend;
 
-    typesToSend = modelTypes.map(type => {
+    typesToSend = modelTypes.map((type) => {
       let klass = type.klass;
       let wrapped = this.wrapModelType(klass, type.name);
       releaseMethods.push(this.observeModelType(type.name, typesUpdated));
@@ -145,7 +145,7 @@ export default EmberObject.extend({
     typesAdded(typesToSend);
 
     let release = () => {
-      releaseMethods.forEach(fn => fn());
+      releaseMethods.forEach((fn) => fn());
       this.releaseMethods.removeObject(release);
     };
     this.releaseMethods.pushObject(release);
@@ -195,7 +195,7 @@ export default EmberObject.extend({
       recordsUpdated([updatedRecord]);
     }
 
-    let recordsToSend = records.map(record => {
+    let recordsToSend = records.map((record) => {
       releaseMethods.push(this.observeRecord(record, recordUpdated));
       return this.wrapRecord(record);
     });
@@ -222,7 +222,7 @@ export default EmberObject.extend({
     addArrayObserver(records, this, observer);
 
     release = () => {
-      releaseMethods.forEach(fn => fn());
+      releaseMethods.forEach((fn) => fn());
       removeArrayObserver(records, this, observer);
       this.releaseMethods.removeObject(release);
     };
@@ -240,7 +240,7 @@ export default EmberObject.extend({
   */
   willDestroy() {
     this._super(...arguments);
-    this.releaseMethods.forEach(fn => fn());
+    this.releaseMethods.forEach((fn) => fn());
   },
 
   /**
@@ -357,13 +357,13 @@ export default EmberObject.extend({
     }
 
     // New adapters return strings instead of classes.
-    types = emberA(types).map(name => {
+    types = emberA(types).map((name) => {
       return {
         klass: this._nameToClass(name),
         name,
       };
     });
-    types = emberA(types).filter(type => this.detect(type.klass));
+    types = emberA(types).filter((type) => this.detect(type.klass));
 
     return emberA(types);
   },
@@ -380,7 +380,7 @@ export default EmberObject.extend({
     let namespaces = emberA(Namespace.NAMESPACES);
     let types = emberA();
 
-    namespaces.forEach(namespace => {
+    namespaces.forEach((namespace) => {
       for (let key in namespace) {
         if (!Object.prototype.hasOwnProperty.call(namespace, key)) {
           continue;
@@ -488,6 +488,6 @@ export default EmberObject.extend({
     @return {Function} The function to call to remove all observers.
   */
   observeRecord() {
-    return function() {};
+    return function () {};
   },
 });

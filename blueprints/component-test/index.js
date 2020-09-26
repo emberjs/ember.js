@@ -10,7 +10,7 @@ const useTestFrameworkDetector = require('../test-framework-detector');
 
 function invocationFor(options) {
   let parts = options.entity.name.split('/');
-  return parts.map(p => stringUtil.classify(p)).join('::');
+  return parts.map((p) => stringUtil.classify(p)).join('::');
 }
 
 module.exports = useTestFrameworkDetector({
@@ -30,7 +30,7 @@ module.exports = useTestFrameworkDetector({
     },
   ],
 
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
       __root__() {
         return 'tests';
@@ -47,7 +47,7 @@ module.exports = useTestFrameworkDetector({
     };
   },
 
-  locals: function(options) {
+  locals: function (options) {
     let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
     let componentPathName = dasherizedModuleName;
     let testType = options.testType || 'integration';
@@ -68,9 +68,9 @@ module.exports = useTestFrameworkDetector({
 
     let templateInvocation = invocationFor(options);
     let componentName = templateInvocation;
-    let openComponent = descriptor => `<${descriptor}>`;
-    let closeComponent = descriptor => `</${descriptor}>`;
-    let selfCloseComponent = descriptor => `<${descriptor} />`;
+    let openComponent = (descriptor) => `<${descriptor}>`;
+    let closeComponent = (descriptor) => `</${descriptor}>`;
+    let selfCloseComponent = (descriptor) => `<${descriptor} />`;
 
     return {
       path: getPathOption(options),
@@ -87,7 +87,7 @@ module.exports = useTestFrameworkDetector({
   },
 
   _useNamedHbsImport() {
-    let htmlbarsAddon = this.project.addons.find(a => a.name === 'ember-cli-htmlbars');
+    let htmlbarsAddon = this.project.addons.find((a) => a.name === 'ember-cli-htmlbars');
 
     if (htmlbarsAddon && semver.gte(htmlbarsAddon.pkg.version, '4.0.0-alpha.1')) {
       return true;
@@ -96,7 +96,7 @@ module.exports = useTestFrameworkDetector({
     return false;
   },
 
-  afterInstall: function(options) {
+  afterInstall: function (options) {
     if (
       !options.dryRun &&
       options.testType === 'integration' &&

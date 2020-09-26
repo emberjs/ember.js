@@ -124,7 +124,7 @@ moduleFor(
 
     async ['@test Overriding a computed property with an observer'](assert) {
       let Parent = EmberObject.extend({
-        foo: computed(function() {
+        foo: computed(function () {
           return 'FOO';
         }),
       });
@@ -132,7 +132,7 @@ moduleFor(
       let seen = [];
 
       let Child = Parent.extend({
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           seen.push(this.get('bar'));
         }),
       });

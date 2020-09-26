@@ -15,7 +15,7 @@ if (JQUERY_INTEGRATION && hasDOM) {
     } else {
       // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dndevents
       ['dragstart', 'drag', 'dragenter', 'dragleave', 'dragover', 'drop', 'dragend'].forEach(
-        eventName => {
+        (eventName) => {
           jQuery.event.fixHooks[eventName] = {
             props: ['dataTransfer'],
           };

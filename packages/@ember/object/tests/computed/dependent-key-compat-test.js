@@ -42,7 +42,7 @@ moduleFor(
           },
         }),
 
-        fullName: computed('givenName', 'lastName', function() {
+        fullName: computed('givenName', 'lastName', function () {
           return `${this.givenName} ${this.lastName}`;
         }),
       });

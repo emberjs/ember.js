@@ -20,7 +20,7 @@ module.exports = {
     };
   },
 
-  normalizeEntityName: function(entityName) {
+  normalizeEntityName: function (entityName) {
     return normalizeEntityName(
       entityName.replace(/\.js$/, '') //Prevent generation of ".js.js" files
     );

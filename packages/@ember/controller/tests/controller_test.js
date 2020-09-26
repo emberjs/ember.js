@@ -173,7 +173,7 @@ moduleFor(
       assert.expect(2);
       let controller;
 
-      ignoreDeprecation(function() {
+      ignoreDeprecation(function () {
         controller = Controller.extend({
           content: 'foo-bar',
         }).create();
@@ -215,7 +215,7 @@ moduleFor(
   'Controller deprecations -> Controller injected properties',
   class extends AbstractTestCase {
     ['@test defining a controller on a non-controller should fail assertion']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         let owner = buildOwner();
 
         let AnObject = EmberObject.extend({

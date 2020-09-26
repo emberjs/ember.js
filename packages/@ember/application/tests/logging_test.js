@@ -23,7 +23,7 @@ class LoggingApplicationTestCase extends ApplicationTestCase {
       this.logs[fullName]++;
     };
 
-    this.router.map(function() {
+    this.router.map(function () {
       this.route('posts', { resetNamespace: true });
     });
   }

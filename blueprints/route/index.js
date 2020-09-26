@@ -27,7 +27,7 @@ module.exports = useEditionDetector({
     },
   ],
 
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
       __name__(options) {
         if (options.pod) {
@@ -71,7 +71,7 @@ module.exports = useEditionDetector({
     };
   },
 
-  locals: function(options) {
+  locals: function (options) {
     let moduleName = options.entity.name;
 
     if (options.resetNamespace) {
@@ -83,7 +83,7 @@ module.exports = useEditionDetector({
     };
   },
 
-  shouldEntityTouchRouter: function(name) {
+  shouldEntityTouchRouter: function (name) {
     let isIndex = name === 'index';
     let isBasic = name === 'basic';
     let isApplication = name === 'application';
@@ -91,7 +91,7 @@ module.exports = useEditionDetector({
     return !isBasic && !isIndex && !isApplication;
   },
 
-  shouldTouchRouter: function(name, options) {
+  shouldTouchRouter: function (name, options) {
     let entityTouchesRouter = this.shouldEntityTouchRouter(name);
     let isDummy = Boolean(options.dummy);
     let isAddon = Boolean(options.project.isEmberCLIAddon());
@@ -106,14 +106,14 @@ module.exports = useEditionDetector({
     );
   },
 
-  afterInstall: function(options) {
+  afterInstall: function (options) {
     updateRouter.call(this, 'add', options);
   },
 
-  afterUninstall: function(options) {
+  afterUninstall: function (options) {
     updateRouter.call(this, 'remove', options);
   },
-  normalizeEntityName: function(entityName) {
+  normalizeEntityName: function (entityName) {
     return entityName.replace(/\.js$/, ''); //Prevent generation of ".js.js" files
   },
 });

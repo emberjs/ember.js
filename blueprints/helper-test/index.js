@@ -23,7 +23,7 @@ module.exports = useTestFrameworkDetector({
     },
   ],
 
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
       __root__() {
         return 'tests';
@@ -37,7 +37,7 @@ module.exports = useTestFrameworkDetector({
     };
   },
 
-  locals: function(options) {
+  locals: function (options) {
     let testType = options.testType || 'integration';
     let testName = testType === 'integration' ? 'Integration' : 'Unit';
     let friendlyTestName = [testName, 'Helper', options.entity.name].join(' | ');
@@ -56,7 +56,7 @@ module.exports = useTestFrameworkDetector({
   },
 
   _useNamedHbsImport() {
-    let htmlbarsAddon = this.project.addons.find(a => a.name === 'ember-cli-htmlbars');
+    let htmlbarsAddon = this.project.addons.find((a) => a.name === 'ember-cli-htmlbars');
 
     if (htmlbarsAddon && semver.gte(htmlbarsAddon.pkg.version, '4.0.0-alpha.1')) {
       return true;
@@ -65,7 +65,7 @@ module.exports = useTestFrameworkDetector({
     return false;
   },
 
-  afterInstall: function(options) {
+  afterInstall: function (options) {
     if (
       !options.dryRun &&
       options.testType === 'integration' &&

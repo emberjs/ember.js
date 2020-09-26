@@ -60,7 +60,7 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            Object.keys(engineRegistrations).forEach(fullName => {
+            Object.keys(engineRegistrations).forEach((fullName) => {
               this.register(fullName, engineRegistrations[fullName]);
             });
           },
@@ -112,7 +112,7 @@ moduleFor(
     }
 
     async ['@test it emits a useful backtracking re-render assertion message'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('route-with-mount');
       });
 
@@ -121,7 +121,9 @@ moduleFor(
 
       this.engineRegistrations['template:application'] = compile(
         'hi {{person.name}} [{{component-with-backtracking-set person=person}}]',
-        { moduleName: 'my-app/templates/application.hbs' }
+        {
+          moduleName: 'my-app/templates/application.hbs',
+        }
       );
       this.engineRegistrations['controller:application'] = Controller.extend({
         person: {
@@ -155,7 +157,7 @@ moduleFor(
     }
 
     ['@test it renders with a bound engine name']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('bound-engine-name');
       });
       let controller;
@@ -236,7 +238,7 @@ moduleFor(
     }
 
     ['@test it declares the event dispatcher as a singleton']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-event-dispatcher-singleton');
       });
 
@@ -336,7 +338,7 @@ moduleFor(
     }
 
     ['@test it renders with static parameters']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-params-static');
       });
       this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
@@ -347,7 +349,7 @@ moduleFor(
     }
 
     ['@test it renders with bound parameters']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-params-bound');
       });
       let controller;
@@ -396,7 +398,7 @@ moduleFor(
     }
 
     ['@test it renders contextual components passed as parameter values']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-params-contextual-component');
       });
 
@@ -465,7 +467,7 @@ if (!EMBER_ROUTING_MODEL_ARG) {
       }
 
       ['@test it cannot access the model via @model']() {
-        this.router.map(function() {
+        this.router.map(function () {
           this.route('engine-params');
         });
         this.addTemplate('engine-params', '{{mount "paramEngine" model="foo"}}');

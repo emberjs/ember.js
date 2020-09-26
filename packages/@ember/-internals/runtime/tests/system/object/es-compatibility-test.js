@@ -290,11 +290,11 @@ moduleFor(
       let someEventA = 0;
       let someEventB = 0;
       class A extends EmberObject.extend({
-        fooDidChange: observer('foo', function() {
+        fooDidChange: observer('foo', function () {
           fooDidChangeBase++;
         }),
 
-        onSomeEvent: on('someEvent', function() {
+        onSomeEvent: on('someEvent', function () {
           someEventBase++;
         }),
       }) {

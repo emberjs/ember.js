@@ -19,7 +19,7 @@ export function setComponentManager(
         url: 'https://emberjs.com/deprecations/v3.x/#toc_component-manager-string-lookup',
       }
     );
-    factory = function(owner: Owner) {
+    factory = function (owner: Owner) {
       return owner.lookup(`component-manager:${stringOrFunction}`);
     };
   } else {

@@ -880,7 +880,7 @@ const Application = Engine.extend({
     }
 
     if (this._applicationInstances.size) {
-      this._applicationInstances.forEach(i => i.destroy());
+      this._applicationInstances.forEach((i) => i.destroy());
       this._applicationInstances.clear();
     }
   },
@@ -1096,7 +1096,7 @@ const Application = Engine.extend({
       return instance
         .boot(options)
         .then(() => instance.visit(url))
-        .catch(error => {
+        .catch((error) => {
           run(instance, 'destroy');
           throw error;
         });

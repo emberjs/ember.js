@@ -42,7 +42,7 @@ import { reifyPositional } from '@glimmer/runtime';
    @public
  */
 
-export default function(args: VMArguments): Reference<unknown[]> {
+export default function (args: VMArguments): Reference<unknown[]> {
   let captured = args.positional.capture();
 
   return createComputeRef(() => reifyPositional(captured), null, 'array');

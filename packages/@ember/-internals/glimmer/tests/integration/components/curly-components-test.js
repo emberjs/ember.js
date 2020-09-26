@@ -164,7 +164,7 @@ moduleFor(
     ['@test layout supports computed property']() {
       let FooBarComponent = Component.extend({
         elementId: 'blahzorz',
-        layout: computed(function() {
+        layout: computed(function () {
           return compile('so much layout wat {{lulz}}');
         }),
         init() {
@@ -313,7 +313,7 @@ moduleFor(
 
     ['@test tagName can not be a computed property']() {
       let FooBarComponent = Component.extend({
-        tagName: computed(function() {
+        tagName: computed(function () {
           return 'foo-bar';
         }),
       });
@@ -3010,7 +3010,7 @@ moduleFor(
     }
 
     ['@test should toggle visibility with isVisible'](assert) {
-      let assertStyle = expected => {
+      let assertStyle = (expected) => {
         let matcher = styles(expected);
         let actual = this.firstChild.getAttribute('style');
 
@@ -3102,7 +3102,7 @@ moduleFor(
     ['@test adds isVisible binding when style binding is missing and other bindings exist'](
       assert
     ) {
-      let assertStyle = expected => {
+      let assertStyle = (expected) => {
         let matcher = styles(expected);
         let actual = this.firstChild.getAttribute('style');
 
@@ -3154,7 +3154,7 @@ moduleFor(
 
     ['@test it can use readDOMAttr to read input value']() {
       let component;
-      let assertElement = expectedValue => {
+      let assertElement = (expectedValue) => {
         // value is a property, not an attribute
         this.assertHTML(`<input class="ember-view" id="${component.elementId}">`);
         this.assert.equal(this.firstChild.value, expectedValue, 'value property is correct');
@@ -3260,7 +3260,7 @@ moduleFor(
             this.get('select').registerOption(this);
           },
 
-          selected: computed('select.value', function() {
+          selected: computed('select.value', function () {
             return this.get('value') === this.get('select.value');
           }),
 
@@ -3456,7 +3456,7 @@ moduleFor(
             );
           },
 
-          listenerForSomeMethod: on('someMethod', function(...data) {
+          listenerForSomeMethod: on('someMethod', function (...data) {
             assert.deepEqual(
               data,
               payload,
@@ -3464,7 +3464,7 @@ moduleFor(
             );
           }),
 
-          listenerForSomeTruthyProperty: on('someTruthyProperty', function(...data) {
+          listenerForSomeTruthyProperty: on('someTruthyProperty', function (...data) {
             assert.deepEqual(
               data,
               payload,
@@ -3676,7 +3676,7 @@ moduleFor(
           barInstance = this;
         },
 
-        bar: computed('target.foo', function() {
+        bar: computed('target.foo', function () {
           if (this.target) {
             return this.target.foo.toUpperCase();
           }

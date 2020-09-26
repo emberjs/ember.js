@@ -125,7 +125,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   */
   onUpdateURL(callback: UpdateCallback) {
     this._removeEventListener();
-    this._hashchangeHandler = bind(this, function(this: HashLocation) {
+    this._hashchangeHandler = bind(this, function (this: HashLocation) {
       let path = this.getURL();
       if (this.lastSetURL === path) {
         return;

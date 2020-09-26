@@ -33,8 +33,8 @@ export default function setupQUnit() {
 
   let originalModule = QUnit.module;
 
-  QUnit.module = function(name: string, callback: any) {
-    return originalModule(name, function(hooks) {
+  QUnit.module = function (name: string, callback: any) {
+    return originalModule(name, function (hooks) {
       setupContainersCheck(hooks);
       setupNamespacesCheck(hooks);
       setupObserversCheck(hooks);
@@ -47,7 +47,7 @@ export default function setupQUnit() {
     });
   } as typeof QUnit.module;
 
-  QUnit.assert.rejects = async function(
+  QUnit.assert.rejects = async function (
     promise: Promise<any>,
     expected?: RegExp | string,
     message?: string
@@ -78,7 +78,7 @@ export default function setupQUnit() {
     Ember.onerror = prevOnError;
   };
 
-  QUnit.assert.throwsAssertion = function(
+  QUnit.assert.throwsAssertion = function (
     block: () => any,
     expected?: string | RegExp,
     message?: string
@@ -91,7 +91,7 @@ export default function setupQUnit() {
     return QUnit.assert.throws(block, expected, message);
   };
 
-  QUnit.assert.rejectsAssertion = async function(
+  QUnit.assert.rejectsAssertion = async function (
     promise: Promise<any>,
     expected?: string | RegExp,
     message?: string

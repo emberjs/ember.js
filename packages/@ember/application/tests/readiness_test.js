@@ -27,13 +27,13 @@ moduleFor(
         },
       };
 
-      jQuery = function() {
+      jQuery = function () {
         return jQueryInstance;
       };
       jQuery.isReady = false;
 
       let domReadyCalled = 0;
-      domReady = function() {
+      domReady = function () {
         if (domReadyCalled !== 0) {
           return;
         }

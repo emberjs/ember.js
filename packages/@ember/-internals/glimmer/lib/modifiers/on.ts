@@ -134,12 +134,12 @@ export class OnModifierState {
     );
 
     let needsCustomCallback =
-        (SUPPORTS_EVENT_OPTIONS === false && once) /* needs manual once implementation */ ||
-        (DEBUG && passive) /* needs passive enforcement */;
+      (SUPPORTS_EVENT_OPTIONS === false && once) /* needs manual once implementation */ ||
+      (DEBUG && passive); /* needs passive enforcement */
 
     if (this.shouldUpdate) {
       if (needsCustomCallback) {
-        let callback = (this.callback = function(this: Element, event) {
+        let callback = (this.callback = function (this: Element, event) {
           if (DEBUG && passive) {
             event.preventDefault = () => {
               assert(

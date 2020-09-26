@@ -12,16 +12,16 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
-describe('Blueprint: service-test', function() {
+describe('Blueprint: service-test', function () {
   setupTestHooks(this);
 
-  describe('in app', function() {
-    beforeEach(function() {
+  describe('in app', function () {
+    beforeEach(function () {
       return emberNew();
     });
 
-    describe('with ember-cli-qunit@4.1.0', function() {
-      beforeEach(function() {
+    describe('with ember-cli-qunit@4.1.0', function () {
+      beforeEach(function () {
         modifyPackages([
           { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-qunit', dev: true },
@@ -29,8 +29,8 @@ describe('Blueprint: service-test', function() {
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
           expect(_file('tests/unit/services/foo-test.js')).to.equal(
             fixture('service-test/default.js')
           );
@@ -38,8 +38,8 @@ describe('Blueprint: service-test', function() {
       });
     });
 
-    describe('with ember-cli-mocha@0.11.0', function() {
-      beforeEach(function() {
+    describe('with ember-cli-mocha@0.11.0', function () {
+      beforeEach(function () {
         modifyPackages([
           { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
@@ -47,16 +47,16 @@ describe('Blueprint: service-test', function() {
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
       });
 
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
           expect(_file('tests/unit/services/foo-test.js')).to.equal(
             fixture('service-test/mocha.js')
           );
         });
       });
 
-      it('service-test foo --pod', function() {
-        return emberGenerateDestroy(['service-test', 'foo', '--pod'], _file => {
+      it('service-test foo --pod', function () {
+        return emberGenerateDestroy(['service-test', 'foo', '--pod'], (_file) => {
           expect(_file('tests/unit/foo/service-test.js')).to.equal(
             fixture('service-test/mocha.js')
           );
@@ -64,8 +64,8 @@ describe('Blueprint: service-test', function() {
       });
     });
 
-    describe('with ember-cli-mocha@0.12.0', function() {
-      beforeEach(function() {
+    describe('with ember-cli-mocha@0.12.0', function () {
+      beforeEach(function () {
         modifyPackages([
           { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
@@ -73,16 +73,16 @@ describe('Blueprint: service-test', function() {
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
       });
 
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
           expect(_file('tests/unit/services/foo-test.js')).to.equal(
             fixture('service-test/mocha-0.12.js')
           );
         });
       });
 
-      it('service-test foo --pod', function() {
-        return emberGenerateDestroy(['service-test', 'foo', '--pod'], _file => {
+      it('service-test foo --pod', function () {
+        return emberGenerateDestroy(['service-test', 'foo', '--pod'], (_file) => {
           expect(_file('tests/unit/foo/service-test.js')).to.equal(
             fixture('service-test/mocha-0.12.js')
           );
@@ -90,14 +90,17 @@ describe('Blueprint: service-test', function() {
       });
     });
 
-    describe('with ember-mocha@0.14.0', function() {
-      beforeEach(function() {
-        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+    describe('with ember-mocha@0.14.0', function () {
+      beforeEach(function () {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
         generateFakePackageManifest('ember-mocha', '0.14.0');
       });
 
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
           expect(_file('tests/unit/services/foo-test.js')).to.equal(
             fixture('service-test/mocha-rfc232.js')
           );
@@ -105,8 +108,8 @@ describe('Blueprint: service-test', function() {
       });
     });
 
-    describe('with ember-cli-qunit@4.2.0', function() {
-      beforeEach(function() {
+    describe('with ember-cli-qunit@4.2.0', function () {
+      beforeEach(function () {
         modifyPackages([
           { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-qunit', dev: true },
@@ -114,8 +117,8 @@ describe('Blueprint: service-test', function() {
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
           expect(_file('tests/unit/services/foo-test.js')).to.equal(
             fixture('service-test/rfc232.js')
           );
@@ -124,13 +127,13 @@ describe('Blueprint: service-test', function() {
     });
   });
 
-  describe('in addon', function() {
-    beforeEach(function() {
+  describe('in addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'addon' });
     });
 
-    describe('with ember-cli-qunit@4.1.0', function() {
-      beforeEach(function() {
+    describe('with ember-cli-qunit@4.1.0', function () {
+      beforeEach(function () {
         modifyPackages([
           { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-qunit', dev: true },
@@ -138,8 +141,8 @@ describe('Blueprint: service-test', function() {
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
-      it('service-test foo', function() {
-        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
           expect(_file('tests/unit/services/foo-test.js')).to.equal(
             fixture('service-test/default.js')
           );

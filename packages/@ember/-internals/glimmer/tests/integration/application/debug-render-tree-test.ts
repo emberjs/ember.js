@@ -73,11 +73,11 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.addTemplate('bar.index', 'index');
         this.addTemplate('bar.inner', '{{@model}}');
 
-        this.router.map(function(this: any) {
-          this.route('foo', function(this: any) {
+        this.router.map(function (this: any) {
+          this.route('foo', function (this: any) {
             this.route('inner', { path: '/:model' });
           });
-          this.route('foo', function(this: any) {
+          this.route('foo', function (this: any) {
             this.route('inner', { path: '/:model' });
           });
         });
@@ -719,11 +719,11 @@ if (ENV._DEBUG_RENDER_TREE) {
           }
         );
 
-        this.router.map(function(this: any) {
+        this.router.map(function (this: any) {
           this.mount('foo');
         });
 
-        this.add('route-map:foo', function() {});
+        this.add('route-map:foo', function () {});
 
         await this.visit('/');
 
@@ -1178,7 +1178,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         );
 
         this.addComponent('hello-world', {
-          ComponentClass: setComponentManager(_owner => {
+          ComponentClass: setComponentManager((_owner) => {
             return {
               capabilities: capabilities('3.13', {}),
 
@@ -1270,7 +1270,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'text' && '__ARGS__' in args.named,
+            args: (args) => args.named.type === 'text' && '__ARGS__' in args.named,
             instance: (instance: object) => instance['type'] === 'text',
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
@@ -1294,7 +1294,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'text' && '__ARGS__' in args.named,
+            args: (args) => args.named.type === 'text' && '__ARGS__' in args.named,
             instance: (instance: object) => instance['type'] === 'text',
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
@@ -1313,7 +1313,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'checkbox' && '__ARGS__' in args.named,
+            args: (args) => args.named.type === 'checkbox' && '__ARGS__' in args.named,
             instance: (instance: object) => instance['type'] === 'checkbox',
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.lastChild),
@@ -1337,7 +1337,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'text' && '__ARGS__' in args.named,
+            args: (args) => args.named.type === 'text' && '__ARGS__' in args.named,
             instance: (instance: object) => instance['type'] === 'text',
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
@@ -1502,7 +1502,7 @@ if (ENV._DEBUG_RENDER_TREE) {
       ): ExpectedRenderNode;
       outlet(node: ExpectedRenderNode & { type: 'engine' | 'route-template' }): ExpectedRenderNode;
       outlet(
-        nodeOrName: string | ExpectedRenderNode & { type: 'engine' | 'route-template' },
+        nodeOrName: string | (ExpectedRenderNode & { type: 'engine' | 'route-template' }),
         node?: ExpectedRenderNode & { type: 'engine' | 'route-template' }
       ): ExpectedRenderNode {
         let name: string;

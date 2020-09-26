@@ -113,7 +113,7 @@ import { setManager } from '../utils/managers';
   @public
 */
 const Input = EmberObject.extend({
-  isCheckbox: computed('type', function(this: { type?: unknown }) {
+  isCheckbox: computed('type', function (this: { type?: unknown }) {
     return this.type === 'checkbox';
   }),
 });

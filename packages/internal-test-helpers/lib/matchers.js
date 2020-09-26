@@ -49,15 +49,7 @@ export function classes(expected) {
       actual = actual.trim();
       return (
         actual &&
-        expected
-          .split(/\s+/)
-          .sort()
-          .join(' ') ===
-          actual
-            .trim()
-            .split(/\s+/)
-            .sort()
-            .join(' ')
+        expected.split(/\s+/).sort().join(' ') === actual.trim().split(/\s+/).sort().join(' ')
       );
     },
 
@@ -84,14 +76,14 @@ export function styles(expected) {
       return (
         expected
           .split(';')
-          .map(s => s.trim())
-          .filter(s => s)
+          .map((s) => s.trim())
+          .filter((s) => s)
           .sort()
           .join('; ') ===
         actual
           .split(';')
-          .map(s => s.trim())
-          .filter(s => s)
+          .map((s) => s.trim())
+          .filter((s) => s)
           .sort()
           .join('; ')
       );

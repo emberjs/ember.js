@@ -193,7 +193,7 @@ AutoLocation.reopen({
 });
 
 function delegateToConcreteImplementation(methodName: string) {
-  return function(this: AutoLocation, ...args: any[]) {
+  return function (this: AutoLocation, ...args: any[]) {
     let { concreteImplementation } = this;
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",

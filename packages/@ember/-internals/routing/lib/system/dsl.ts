@@ -161,7 +161,7 @@ export default class DSLImpl implements DSL {
       this.route('index', { path: '/' });
     }
 
-    return match => {
+    return (match) => {
       for (let i = 0; i < dslMatches.length; i += 3) {
         match(dslMatches[i]).to(dslMatches[i + 1], dslMatches[i + 2]);
       }

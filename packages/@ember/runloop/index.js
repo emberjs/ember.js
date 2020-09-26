@@ -219,7 +219,7 @@ export function join() {
 export const bind = (...curried) => {
   assert(
     'could not find a suitable method to bind',
-    (function(methodOrTarget, methodOrArg) {
+    (function (methodOrTarget, methodOrArg) {
       // Applies the same logic as backburner parseArgs for detecting if a method
       // is actually being passed.
       let length = arguments.length;

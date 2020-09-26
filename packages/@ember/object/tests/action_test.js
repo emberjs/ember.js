@@ -233,7 +233,7 @@ moduleFor(
     '@test action decorator throws an error if passed a function in native classes'() {
       expectAssertion(() => {
         class TestObject extends EmberObject {
-          @action(function() {}) foo = 'bar';
+          @action(function () {}) foo = 'bar';
         }
 
         new TestObject();
@@ -242,7 +242,7 @@ moduleFor(
 
     '@test action decorator can be used as a classic decorator with strings'(assert) {
       let FooComponent = Component.extend({
-        foo: action(function() {
+        foo: action(function () {
           assert.ok(true, 'called!');
         }),
       });
@@ -259,7 +259,7 @@ moduleFor(
 
     '@test action decorator can be used as a classic decorator directly'(assert) {
       let FooComponent = Component.extend({
-        foo: action(function() {
+        foo: action(function () {
           assert.ok(true, 'called!');
         }),
       });

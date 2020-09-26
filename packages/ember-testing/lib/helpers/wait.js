@@ -37,7 +37,7 @@ import { pendingRequests } from '../test/pending_requests';
   @since 1.0.0
 */
 export default function wait(app, value) {
-  return new RSVP.Promise(function(resolve) {
+  return new RSVP.Promise(function (resolve) {
     let router = app.__container__.lookup('router:main');
 
     // Every 10ms, poll for the async thing to have finished

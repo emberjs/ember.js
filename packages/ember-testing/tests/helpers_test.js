@@ -21,7 +21,7 @@ import { registerWaiter, unregisterWaiter } from '../lib/test/waiters';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalInfo = getDebugFunction('info');
-const noop = function() {};
+const noop = function () {};
 
 function registerHelper() {
   Test.registerHelper('LeakyMcLeakLeak', () => {});
@@ -187,7 +187,7 @@ if (!jQueryDisabled) {
         // bind(this) so Babel doesn't leak _this
         // into the context onInjectHelpers.
         runTask(
-          function() {
+          function () {
             this.createApplication();
             this.application.setupForTesting();
           }.bind(this)
@@ -312,19 +312,19 @@ if (!jQueryDisabled) {
         } = this;
         return testHelpers
           .wait('text')
-          .then(val => {
+          .then((val) => {
             assert.equal(val, 'text', 'can resolve to a string');
             return testHelpers.wait(1);
           })
-          .then(val => {
+          .then((val) => {
             assert.equal(val, 1, 'can resolve to an integer');
             return testHelpers.wait(objectValue);
           })
-          .then(val => {
+          .then((val) => {
             assert.equal(val, objectValue, 'can resolve to an object');
             return testHelpers.wait(RSVP.resolve(promiseObjectValue));
           })
-          .then(val => {
+          .then((val) => {
             assert.equal(val, promiseObjectValue, 'can resolve to a promise resolution value');
           });
       }
@@ -339,10 +339,10 @@ if (!jQueryDisabled) {
 
             didInsertElement() {
               let wrapper = document.querySelector('.index-wrapper');
-              wrapper.addEventListener('mousedown', e => events.push(e.type));
-              wrapper.addEventListener('mouseup', e => events.push(e.type));
-              wrapper.addEventListener('click', e => events.push(e.type));
-              wrapper.addEventListener('focusin', e => {
+              wrapper.addEventListener('mousedown', (e) => events.push(e.type));
+              wrapper.addEventListener('mouseup', (e) => events.push(e.type));
+              wrapper.addEventListener('click', (e) => events.push(e.type));
+              wrapper.addEventListener('focusin', (e) => {
                 // IE11 _sometimes_ triggers focusin **twice** in a row
                 // (we believe this is when it is under higher load)
                 //
@@ -458,7 +458,7 @@ if (!jQueryDisabled) {
             classNames: 'index-wrapper',
 
             didInsertElement() {
-              let pushEvent = e => events.push(e);
+              let pushEvent = (e) => events.push(e);
               this.element.addEventListener('mousedown', pushEvent);
               this.element.addEventListener('mouseup', pushEvent);
               this.element.addEventListener('click', pushEvent);
@@ -489,7 +489,7 @@ if (!jQueryDisabled) {
             return click('.index-wrapper');
           })
           .then(() => {
-            events.forEach(e => {
+            events.forEach((e) => {
               assert.ok(e instanceof window.Event, 'The event is an instance of MouseEvent');
               assert.ok(typeof e.screenX === 'number', 'screenX is correct');
               assert.ok(typeof e.screenY === 'number', 'screenY is correct');
@@ -510,7 +510,7 @@ if (!jQueryDisabled) {
           Component.extend({
             classNames: 'index-wrapper',
             didInsertElement() {
-              this.element.addEventListener('mouseenter', e => (evt = e));
+              this.element.addEventListener('mouseenter', (e) => (evt = e));
             },
           })
         );
@@ -616,8 +616,8 @@ if (!jQueryDisabled) {
           Component.extend({
             didInsertElement() {
               let domElem = document.querySelector('.input');
-              domElem.addEventListener('change', e => (event = e));
-              domElem.addEventListener('keydown', e => (event = e));
+              domElem.addEventListener('change', (e) => (event = e));
+              domElem.addEventListener('keydown', (e) => (event = e));
             },
           })
         );
@@ -663,11 +663,11 @@ if (!jQueryDisabled) {
           Component.extend({
             didInsertElement() {
               let firstInput = document.querySelector('.input');
-              firstInput.addEventListener('blur', e => (event = e));
-              firstInput.addEventListener('change', e => (event = e));
+              firstInput.addEventListener('blur', (e) => (event = e));
+              firstInput.addEventListener('change', (e) => (event = e));
               let secondInput = document.querySelector('#limited .input');
-              secondInput.addEventListener('blur', e => (event = e));
-              secondInput.addEventListener('change', e => (event = e));
+              secondInput.addEventListener('blur', (e) => (event = e));
+              secondInput.addEventListener('change', (e) => (event = e));
             },
           })
         );
@@ -715,8 +715,8 @@ if (!jQueryDisabled) {
           Component.extend({
             didInsertElement() {
               let foo = document.getElementById('foo');
-              foo.addEventListener('blur', e => (event = e));
-              foo.addEventListener('change', e => (event = e));
+              foo.addEventListener('blur', (e) => (event = e));
+              foo.addEventListener('change', (e) => (event = e));
             },
           })
         );
@@ -914,11 +914,11 @@ if (!jQueryDisabled) {
           Component.extend({
             didInsertElement() {
               let firstInput = document.querySelector('.input');
-              firstInput.addEventListener('keydown', e => (event = e), false);
-              firstInput.addEventListener('change', e => (event = e), false);
+              firstInput.addEventListener('keydown', (e) => (event = e), false);
+              firstInput.addEventListener('change', (e) => (event = e), false);
               let secondInput = document.querySelector('#limited .input');
-              secondInput.addEventListener('keydown', e => (event = e), false);
-              secondInput.addEventListener('change', e => (event = e), false);
+              secondInput.addEventListener('keydown', (e) => (event = e), false);
+              secondInput.addEventListener('change', (e) => (event = e), false);
             },
           })
         );
@@ -1029,8 +1029,8 @@ if (!jQueryDisabled) {
           this.createApplication();
           this.application.setupForTesting();
           this.application.injectTestHelpers();
-          this.router.map(function() {
-            this.route('posts', { resetNamespace: true }, function() {
+          this.router.map(function () {
+            this.route('posts', { resetNamespace: true }, function () {
               this.route('new');
               this.route('edit', { resetNamespace: true });
             });
@@ -1116,7 +1116,7 @@ if (!jQueryDisabled) {
         assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
         this.trigger('ajaxComplete', xhr);
-        setTimeout(function() {
+        setTimeout(function () {
           assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
           done();
         }, 0);
@@ -1168,8 +1168,8 @@ if (!jQueryDisabled) {
         runTask(() => {
           this.createApplication();
 
-          this.router.map(function() {
-            this.route('user', { resetNamespace: true }, function() {
+          this.router.map(function () {
+            this.route('user', { resetNamespace: true }, function () {
               this.route('profile');
               this.route('edit');
             });
@@ -1177,7 +1177,7 @@ if (!jQueryDisabled) {
 
           // Emulate a long-running unscheduled async operation.
           let resolveLater = () =>
-            new RSVP.Promise(resolve => {
+            new RSVP.Promise((resolve) => {
               /*
                * The wait() helper has a 10ms tick. We should resolve() after
                * at least one tick to test whether wait() held off while the

@@ -41,7 +41,7 @@ moduleFor(
       defineProperty(
         obj,
         'abc',
-        computed('a', 'b', 'c', function(key) {
+        computed('a', 'b', 'c', function (key) {
           cpCount++;
           return 'computed ' + key;
         })
@@ -51,7 +51,7 @@ moduleFor(
 
       cpCount = 0;
 
-      addObserver(obj, 'abc', function() {
+      addObserver(obj, 'abc', function () {
         obsCount++;
       });
 
@@ -79,12 +79,12 @@ moduleFor(
       defineProperty(
         obj.bar.baz,
         'bam',
-        computed(function() {
+        computed(function () {
           count++;
         })
       );
 
-      addObserver(obj, 'bar.baz.bam', function() {});
+      addObserver(obj, 'bar.baz.bam', function () {});
 
       notifyPropertyChange(get(obj, 'bar.baz'), 'bam');
 

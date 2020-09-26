@@ -210,7 +210,7 @@ export function on(...args: Array<string | Function>): Function {
   assert('on expects function as last argument', typeof func === 'function');
   assert(
     'on called without valid event names',
-    events.length > 0 && events.every(p => typeof p === 'string' && p.length > 0)
+    events.length > 0 && events.every((p) => typeof p === 'string' && p.length > 0)
   );
 
   setListeners(func, events);

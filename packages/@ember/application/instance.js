@@ -129,7 +129,7 @@ const ApplicationInstance = EngineInstance.extend({
     this.constructor.setupRegistry(this.__registry__, options);
   },
 
-  router: computed(function() {
+  router: computed(function () {
     return this.lookup('router:main');
   }).readOnly(),
 
@@ -256,7 +256,7 @@ const ApplicationInstance = EngineInstance.extend({
       }
     };
 
-    let handleTransitionReject = error => {
+    let handleTransitionReject = (error) => {
       if (error.error) {
         throw error.error;
       } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {

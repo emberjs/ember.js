@@ -6,7 +6,7 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Component } from '../../utils/helpers';
 
 const originalDebug = getDebugFunction('debug');
-const noop = function() {};
+const noop = function () {};
 
 moduleFor(
   'Application test: actions',

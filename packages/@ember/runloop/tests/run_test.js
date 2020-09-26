@@ -15,7 +15,11 @@ moduleFor(
         },
       };
 
-      assert.equal(run(() => 'FOO'), 'FOO', 'pass function only');
+      assert.equal(
+        run(() => 'FOO'),
+        'FOO',
+        'pass function only'
+      );
       assert.deepEqual(run(obj, obj.foo), ['BAR', 'FOO'], 'pass obj and obj.method');
       assert.deepEqual(run(obj, 'foo'), ['BAR', 'FOO'], 'pass obj and "method"');
       assert.deepEqual(

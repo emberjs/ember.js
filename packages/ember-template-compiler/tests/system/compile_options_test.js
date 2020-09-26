@@ -38,7 +38,7 @@ class LegacyCustomTransform {
   transform(ast) {
     let walker = new this.syntax.Walker();
 
-    walker.visit(ast, node => {
+    walker.visit(ast, (node) => {
       if (node.type !== 'ElementNode') {
         return;
       }

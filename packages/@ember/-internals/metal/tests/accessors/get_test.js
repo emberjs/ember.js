@@ -99,7 +99,7 @@ moduleFor(
     }
 
     ['@test get works with paths correctly'](assert) {
-      let func = function() {};
+      let func = function () {};
       func.bar = 'awesome';
 
       let destroyedObj = EmberObject.create({ bar: 'great' });
@@ -110,49 +110,52 @@ moduleFor(
       assert.equal(get({ foo: func }, 'foo.bar'), 'awesome');
       assert.equal(get({ foo: func }, 'foo.bar.length'), 7);
       assert.equal(get({}, 'foo.bar.length'), undefined);
-      assert.equal(get(function() {}, 'foo.bar.length'), undefined);
+      assert.equal(
+        get(function () {}, 'foo.bar.length'),
+        undefined
+      );
       assert.equal(get('', 'foo.bar.length'), undefined);
       assert.equal(get({ foo: destroyedObj }, 'foo.bar'), undefined);
     }
 
     ['@test warn on attempts to call get with no arguments']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get('aProperty');
       }, /Get must be called with two arguments;/i);
     }
 
     ['@test warn on attempts to call get with only one argument']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get('aProperty');
       }, /Get must be called with two arguments;/i);
     }
 
     ['@test warn on attempts to call get with more then two arguments']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get({}, 'aProperty', true);
       }, /Get must be called with two arguments;/i);
     }
 
     ['@test warn on attempts to get a property of undefined']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get(undefined, 'aProperty');
       }, /Cannot call get with 'aProperty' on an undefined object/i);
     }
 
     ['@test warn on attempts to get a property path of undefined']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get(undefined, 'aProperty.on.aPath');
       }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
     }
 
     ['@test warn on attempts to get a property of null']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get(null, 'aProperty');
       }, /Cannot call get with 'aProperty' on an undefined object/);
     }
 
     ['@test warn on attempts to get a property path of null']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get(null, 'aProperty.on.aPath');
       }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
     }

@@ -482,11 +482,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'yellow');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some value');
       assert.strictEqual(get(this.context, 'source.banana'), 'some value');
@@ -515,11 +511,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'yellow');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some value');
       assert.strictEqual(get(this.context, 'source.banana'), 'some value');
@@ -528,11 +520,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'apple');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some other value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some other value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some other value');
       assert.strictEqual(get(this.context, 'source.apple'), 'some other value');
@@ -569,11 +557,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'red');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some value');
       assert.strictEqual(get(this.context, 'source.apple.mcintosh'), 'some value');
@@ -582,11 +566,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'gala');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some other value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some other value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some other value');
       assert.strictEqual(get(this.context, 'source.apple.gala'), 'some other value');
@@ -595,11 +575,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('yet another value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('yet another value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'yet another value');
       assert.strictEqual(get(this.context, 'source.banana'), 'yet another value');

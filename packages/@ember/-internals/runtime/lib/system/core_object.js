@@ -1070,7 +1070,7 @@ if (DEBUG) {
     @return {Object} Hash of all lazy injected property keys to container names
     @private
   */
-  CoreObject._lazyInjections = function() {
+  CoreObject._lazyInjections = function () {
     let injections = {};
     let proto = this.proto();
     let key;

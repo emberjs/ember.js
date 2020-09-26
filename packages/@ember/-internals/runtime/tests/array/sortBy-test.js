@@ -12,7 +12,10 @@ class SortByTests extends AbstractTestCase {
   }
 
   '@test supports multiple propertyNames'() {
-    let obj = this.newObject([{ a: 1, b: 2 }, { a: 1, b: 1 }]);
+    let obj = this.newObject([
+      { a: 1, b: 2 },
+      { a: 1, b: 1 },
+    ]);
     let sorted = obj.sortBy('a', 'b');
 
     this.assert.equal(get(sorted[0], 'b'), 1);

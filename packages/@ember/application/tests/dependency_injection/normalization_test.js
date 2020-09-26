@@ -67,7 +67,7 @@ moduleFor(
         'template:foo_bar',
       ];
 
-      examples.forEach(example => {
+      examples.forEach((example) => {
         assert.equal(registry.normalize(registry.normalize(example)), registry.normalize(example));
       });
     }

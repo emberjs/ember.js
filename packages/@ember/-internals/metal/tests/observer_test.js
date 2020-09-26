@@ -76,7 +76,7 @@ moduleFor(
       obj = {};
       let count = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         assert.equal(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
         count++;
       });
@@ -92,7 +92,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed('bar', function() {
+        computed('bar', function () {
           return get(this, 'bar').toUpperCase();
         })
       );
@@ -100,7 +100,7 @@ moduleFor(
       get(obj, 'foo');
 
       let count = 0;
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         assert.equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
         count++;
       });
@@ -130,7 +130,7 @@ moduleFor(
       get(obj, 'foo');
 
       let count = 0;
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         assert.equal(get(obj, 'foo'), 'baz', 'should have invoked after prop change');
         count++;
       });
@@ -151,19 +151,19 @@ moduleFor(
       defineProperty(
         obj,
         'prop',
-        computed(function() {
+        computed(function () {
           return Math.random();
         })
       );
       defineProperty(
         obj,
         'anotherProp',
-        computed('prop', function() {
+        computed('prop', function () {
           return get(this, 'prop') + Math.random();
         })
       );
 
-      addObserver(obj, 'prop', function() {
+      addObserver(obj, 'prop', function () {
         observerCount++;
       });
 
@@ -186,7 +186,7 @@ moduleFor(
 
         expectDeprecation(() => {
           mixin(obj, {
-            observeFooAndBar: function() {
+            observeFooAndBar: function () {
               count++;
             }.observes('{foo,bar}'),
           });
@@ -221,7 +221,7 @@ moduleFor(
         defineProperty(
           obj,
           'foo',
-          computed('bar', function() {
+          computed('bar', function () {
             return get(this, 'bar').toLowerCase();
           })
         );
@@ -229,14 +229,14 @@ moduleFor(
         defineProperty(
           obj,
           'bar',
-          computed('baz', function() {
+          computed('baz', function () {
             return get(this, 'baz').toUpperCase();
           })
         );
 
         expectDeprecation(() => {
           mixin(obj, {
-            fooAndBarWatcher: function() {
+            fooAndBarWatcher: function () {
               count++;
             }.observes('{foo,bar}'),
           });
@@ -269,7 +269,7 @@ moduleFor(
       let count = 0;
 
       mixin(obj, {
-        observeFooAndBar: observer('{foo,bar}', function() {
+        observeFooAndBar: observer('{foo,bar}', function () {
           count++;
         }),
       });
@@ -299,7 +299,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed('bar', function() {
+        computed('bar', function () {
           return get(this, 'bar').toLowerCase();
         })
       );
@@ -307,13 +307,13 @@ moduleFor(
       defineProperty(
         obj,
         'bar',
-        computed('baz', function() {
+        computed('baz', function () {
           return get(this, 'baz').toUpperCase();
         })
       );
 
       mixin(obj, {
-        fooAndBarWatcher: observer('{foo,bar}', function() {
+        fooAndBarWatcher: observer('{foo,bar}', function () {
           count++;
         }),
       });
@@ -385,7 +385,7 @@ moduleFor(
       obj = { foo: 'foo' };
       let fooCount = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         fooCount++;
       });
 
@@ -510,11 +510,11 @@ moduleFor(
       let barObserved = 0;
 
       let MyMixin = Mixin.create({
-        foo1: observer('bar', function() {
+        foo1: observer('bar', function () {
           barObserved++;
         }),
 
-        foo2: observer('bar', function() {
+        foo2: observer('bar', function () {
           barObserved++;
         }),
       });
@@ -623,13 +623,13 @@ moduleFor(
       defineProperty(
         obj,
         'computed',
-        computed(function() {
+        computed(function () {
           return { foo: 'bar' };
         })
       );
 
       let changed = 0;
-      addObserver(obj, 'computed.foo', function() {
+      addObserver(obj, 'computed.foo', function () {
         changed++;
       });
 
@@ -647,7 +647,7 @@ moduleFor(
 
     async ['@test depending on a simple chain'](assert) {
       let val;
-      addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
+      addObserver(obj, 'foo.bar.baz.biff', function (target, key) {
         val = get(target, key);
         count++;
       });
@@ -699,7 +699,7 @@ moduleFor(
     async ['@test depending on a chain with a capitalized first key'](assert) {
       let val;
 
-      addObserver(obj, 'Capital.foo.bar.baz.biff', function(target, key) {
+      addObserver(obj, 'Capital.foo.bar.baz.biff', function (target, key) {
         val = get(obj, key);
         count++;
       });
@@ -771,7 +771,7 @@ moduleFor(
       obj = { foo: 'bar' };
       let count = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         count++;
       });
 
@@ -803,10 +803,10 @@ moduleFor(
         obj,
         'foo',
         computed('baz', {
-          get: function() {
+          get: function () {
             return get(this, 'baz');
           },
-          set: function(key, value) {
+          set: function (key, value) {
             return value;
           },
         })
@@ -814,7 +814,7 @@ moduleFor(
 
       let count = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         count++;
       });
       set(obj, 'foo', 'bar');
@@ -1027,7 +1027,7 @@ moduleFor(
       removedBeforeFirstChangeObserver.add();
       removedBeforeLastChangeObserver.add();
       removedAfterLastChangeObserver.add();
-      changeProperties(function() {
+      changeProperties(function () {
         removedBeforeFirstChangeObserver.remove();
         addedBeforeFirstChangeObserver.add();
 

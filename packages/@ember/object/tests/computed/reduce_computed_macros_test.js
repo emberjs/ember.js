@@ -39,8 +39,8 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       obj = EmberObject.extend({
-        mapped: map('array.@each.v', item => item.v),
-        mappedObjects: map('arrayObjects.@each.v', item => ({
+        mapped: map('array.@each.v', (item) => item.v),
+        mappedObjects: map('arrayObjects.@each.v', (item) => ({
           name: item.v.name,
         })),
       }).create({
@@ -55,7 +55,7 @@ moduleFor(
     }
 
     ['@test map is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('mapped', 1);
       }, /Cannot set read-only property "mapped" on object:/);
     }
@@ -76,7 +76,7 @@ moduleFor(
       let array = emberA();
 
       obj = EmberObject.extend({
-        mapped: map('array', item => item.toUpperCase()),
+        mapped: map('array', (item) => item.toUpperCase()),
       }).create({
         array,
       });
@@ -96,7 +96,7 @@ moduleFor(
 
     ['@test it has the correct `this`'](assert) {
       obj = EmberObject.extend({
-        mapped: map('array', function(item) {
+        mapped: map('array', function (item) {
           assert.equal(this, obj, 'should have correct context');
           return this.upperCase(item);
         }),
@@ -153,7 +153,7 @@ moduleFor(
       let cObj = { v: 'c' };
 
       obj = EmberObject.extend({
-        mapped: map('array.@each.v', item => get(item, 'v').toUpperCase()),
+        mapped: map('array.@each.v', (item) => get(item, 'v').toUpperCase()),
       }).create({
         array,
       });
@@ -174,7 +174,7 @@ moduleFor(
 
     ['@test it updates if additional dependent keys are modified'](assert) {
       obj = EmberObject.extend({
-        mapped: map('array', ['key'], function(item) {
+        mapped: map('array', ['key'], function (item) {
           return item[this.key];
         }),
       }).create({
@@ -202,11 +202,11 @@ moduleFor(
       }, /The final parameter provided to map must be a callback function/);
 
       expectAssertion(() => {
-        map('items.@each.{prop}', 'foo', function() {});
+        map('items.@each.{prop}', 'foo', function () {});
       }, /The second parameter provided to map must either be the callback or an array of additional dependent keys/);
 
       expectAssertion(() => {
-        map('items.@each.{prop}', function() {}, ['foo']);
+        map('items.@each.{prop}', function () {}, ['foo']);
       }, /The final parameter provided to map must be a callback function/);
 
       expectAssertion(() => {
@@ -232,7 +232,7 @@ moduleFor(
     }
 
     ['@test mapBy is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('mapped', 1);
       }, /Cannot set read-only property "mapped" on object:/);
     }
@@ -269,7 +269,7 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       obj = EmberObject.extend({
-        filtered: filter('array', item => item % 2 === 0),
+        filtered: filter('array', (item) => item % 2 === 0),
       }).create({
         array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
       });
@@ -280,7 +280,7 @@ moduleFor(
     }
 
     ['@test filter is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('filtered', 1);
       }, /Cannot set read-only property "filtered" on object:/);
     }
@@ -305,7 +305,7 @@ moduleFor(
 
     ['@test it has the correct `this`'](assert) {
       obj = EmberObject.extend({
-        filtered: filter('array', function(item, index) {
+        filtered: filter('array', function (item, index) {
           assert.equal(this, obj);
           return this.isOne(index);
         }),
@@ -430,7 +430,7 @@ moduleFor(
       let item = EmberObject.create({ prop: true });
 
       obj = EmberObject.extend({
-        filtered: filter('items.@each.{prop}', function(item) {
+        filtered: filter('items.@each.{prop}', function (item) {
           return item.get('prop') === true;
         }),
       }).create({
@@ -446,7 +446,7 @@ moduleFor(
 
     ['@test it updates if additional dependent keys are modified'](assert) {
       obj = EmberObject.extend({
-        filtered: filter('array', ['modulo'], function(item) {
+        filtered: filter('array', ['modulo'], function (item) {
           return item % this.modulo === 0;
         }),
       }).create({
@@ -474,11 +474,11 @@ moduleFor(
       }, /The final parameter provided to filter must be a callback function/);
 
       expectAssertion(() => {
-        filter('items.@each.{prop}', 'foo', function() {});
+        filter('items.@each.{prop}', 'foo', function () {});
       }, /The second parameter provided to filter must either be the callback or an array of additional dependent keys/);
 
       expectAssertion(() => {
-        filter('items.@each.{prop}', function() {}, ['foo']);
+        filter('items.@each.{prop}', function () {}, ['foo']);
       }, /The final parameter provided to filter must be a callback function/);
 
       expectAssertion(() => {
@@ -511,7 +511,7 @@ moduleFor(
     }
 
     ['@test filterBy is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('as', 1);
       }, /Cannot set read-only property "as" on object:/);
     }
@@ -639,7 +639,10 @@ moduleFor(
   }
 );
 
-[['uniq', uniq], ['union', union]].forEach(tuple => {
+[
+  ['uniq', uniq],
+  ['union', union],
+].forEach((tuple) => {
   let [name, macro] = tuple;
 
   moduleFor(
@@ -660,7 +663,7 @@ moduleFor(
       }
 
       [`@test ${name} is readOnly`](assert) {
-        assert.throws(function() {
+        assert.throws(function () {
           obj.set('union', 1);
         }, /Cannot set read-only property "union" on object:/);
       }
@@ -745,7 +748,11 @@ moduleFor(
         list: null,
         uniqueById: uniqBy('list', 'id'),
       }).create({
-        list: emberA([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 1, value: 'one' }]),
+        list: emberA([
+          { id: 1, value: 'one' },
+          { id: 2, value: 'two' },
+          { id: 1, value: 'one' },
+        ]),
       });
     }
 
@@ -754,12 +761,15 @@ moduleFor(
     }
 
     ['@test uniqBy is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('uniqueById', 1);
       }, /Cannot set read-only property "uniqueById" on object:/);
     }
     ['@test does not include duplicates'](assert) {
-      assert.deepEqual(obj.get('uniqueById'), [{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
+      assert.deepEqual(obj.get('uniqueById'), [
+        { id: 1, value: 'one' },
+        { id: 2, value: 'two' },
+      ]);
     }
 
     ['@test it does not share state among instances'](assert) {
@@ -784,7 +794,11 @@ moduleFor(
 
       assert.deepEqual(
         obj.get('uniqueById'),
-        [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+        [
+          { id: 1, value: 'one' },
+          { id: 2, value: 'two' },
+          { id: 3, value: 'three' },
+        ],
         'The list includes three'
       );
 
@@ -792,7 +806,11 @@ moduleFor(
 
       assert.deepEqual(
         obj.get('uniqueById'),
-        [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+        [
+          { id: 1, value: 'one' },
+          { id: 2, value: 'two' },
+          { id: 3, value: 'three' },
+        ],
         'The list does not include a duplicate three'
       );
     }
@@ -827,7 +845,7 @@ moduleFor(
     }
 
     ['@test intersect is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('intersection', 1);
       }, /Cannot set read-only property "intersection" on object:/);
     }
@@ -902,14 +920,14 @@ moduleFor(
     }
 
     ['@test setDiff is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('diff', 1);
       }, /Cannot set read-only property "diff" on object:/);
     }
 
     ['@test it asserts if given fewer or more than two dependent properties']() {
       expectAssertion(
-        function() {
+        function () {
           EmberObject.extend({
             diff: setDiff('array'),
           }).create({
@@ -922,7 +940,7 @@ moduleFor(
       );
 
       expectAssertion(
-        function() {
+        function () {
           EmberObject.extend({
             diff: setDiff('array', 'array2', 'array3'),
           }).create({
@@ -1583,7 +1601,7 @@ moduleFor(
 
     ['@test sort has correct `this`'](assert) {
       let obj = EmberObject.extend({
-        sortedItems: sort('items.@each.fname', function(a, b) {
+        sortedItems: sort('items.@each.fname', function (a, b) {
           assert.equal(this, obj, 'expected the object to be `this`');
           return this.sortByLastName(a, b);
         }),
@@ -1603,7 +1621,7 @@ moduleFor(
     }
 
     ['@test sort (with function) is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('sortedItems', 1);
       }, /Cannot set read-only property "sortedItems" on object:/);
     }
@@ -1789,7 +1807,7 @@ moduleFor(
 
     ['@test sort updates if additional dependent keys are present'](assert) {
       obj = EmberObject.extend({
-        sortedItems: sort('items', ['sortFunction'], function() {
+        sortedItems: sort('items', ['sortFunction'], function () {
           return this.sortFunction(...arguments);
         }),
       }).create({
@@ -1835,11 +1853,11 @@ moduleFor(
       }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
 
       expectAssertion(() => {
-        sort('foo', 'bar', function() {});
+        sort('foo', 'bar', function () {});
       }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
 
       expectAssertion(() => {
-        sort('foo', ['bar'], function() {}, 'baz');
+        sort('foo', ['bar'], function () {}, 'baz');
       }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
     }
   }
@@ -1959,10 +1977,10 @@ moduleFor(
     ) {
       let obj2 = klass
         .extend({
-          items: computed('sibling.sortedItems.[]', function() {
+          items: computed('sibling.sortedItems.[]', function () {
             return this.get('sibling.sortedItems');
           }),
-          asdf: observer('sibling.sortedItems.[]', function() {
+          asdf: observer('sibling.sortedItems.[]', function () {
             this.get('sibling.sortedItems');
           }),
         })
@@ -2046,7 +2064,7 @@ moduleFor(
     }
 
     ['@test max is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('max', 1);
       }, /Cannot set read-only property "max" on object:/);
     }
@@ -2095,7 +2113,7 @@ moduleFor(
     }
 
     ['@test min is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('min', 1);
       }, /Cannot set read-only property "min" on object:/);
     }
@@ -2313,7 +2331,7 @@ moduleFor(
     }
 
     ['@test sum is readOnly'](assert) {
-      assert.throws(function() {
+      assert.throws(function () {
         obj.set('total', 1);
       }, /Cannot set read-only property "total" on object:/);
     }

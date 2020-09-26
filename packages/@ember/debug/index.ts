@@ -71,12 +71,12 @@ let runInDebug: RunInDebugFunc = noop;
 let setDebugFunction: SetDebugFunction = noop as any;
 let getDebugFunction: GetDebugFunction = noop as any;
 
-let deprecateFunc: DeprecateFuncFunc = function() {
+let deprecateFunc: DeprecateFuncFunc = function () {
   return arguments[arguments.length - 1];
 };
 
 if (DEBUG) {
-  setDebugFunction = function(type: DebugFunctionType, callback: Function) {
+  setDebugFunction = function (type: DebugFunctionType, callback: Function) {
     switch (type) {
       case 'assert':
         return (assert = callback as AssertFunc);
@@ -99,7 +99,7 @@ if (DEBUG) {
     }
   } as any;
 
-  getDebugFunction = function(type: DebugFunctionType) {
+  getDebugFunction = function (type: DebugFunctionType) {
     switch (type) {
       case 'assert':
         return assert;
@@ -244,13 +244,13 @@ if (DEBUG) {
   setDebugFunction('deprecateFunc', function deprecateFunc(...args: any[]) {
     if (args.length === 3) {
       let [message, options, func] = args as [string, DeprecationOptions, (...args: any[]) => any];
-      return function(this: any, ...args: any[]) {
+      return function (this: any, ...args: any[]) {
         deprecate(message, false, options);
         return func.apply(this, args);
       };
     } else {
       let [message, func] = args;
-      return function(this: any) {
+      return function (this: any) {
         deprecate(message);
         return func.apply(this, arguments);
       };

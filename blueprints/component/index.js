@@ -53,7 +53,7 @@ module.exports = {
     this._super && this._super.init.apply(this, arguments);
     let isOctane = has('octane');
 
-    this.availableOptions.forEach(option => {
+    this.availableOptions.forEach((option) => {
       if (option.name === 'component-class') {
         if (isOctane) {
           option.default = '--no-component-class';
@@ -121,7 +121,7 @@ module.exports = {
   afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
 
-    this.skippedJsFiles.forEach(file => {
+    this.skippedJsFiles.forEach((file) => {
       let mapped = this.mapFile(file, this.savedLocals);
       this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
     });
@@ -202,7 +202,7 @@ module.exports = {
     let files = this._super.files.apply(this, arguments);
 
     if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && this.options.componentClass === '') {
-      files = files.filter(file => {
+      files = files.filter((file) => {
         if (file.endsWith('.js')) {
           this.skippedJsFiles.add(file);
           return false;

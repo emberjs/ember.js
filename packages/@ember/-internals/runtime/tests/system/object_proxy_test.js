@@ -105,7 +105,7 @@ moduleFor(
         let proxy = ObjectProxy.extend({
           init() {
             if (!this.foobar) {
-              this.foobar = function() {
+              this.foobar = function () {
                 let content = get(this, 'content');
                 return content.foobar.apply(content, []);
               };
@@ -173,7 +173,7 @@ moduleFor(
       let last;
 
       let Proxy = ObjectProxy.extend({
-        fullName: computed('firstName', 'lastName', function() {
+        fullName: computed('firstName', 'lastName', function () {
           let firstName = this.get('firstName');
           let lastName = this.get('lastName');
 
@@ -191,11 +191,11 @@ moduleFor(
       });
 
       // We need separate observers for each property for async observers
-      addObserver(proxy, 'firstName', function() {
+      addObserver(proxy, 'firstName', function () {
         count++;
       });
 
-      addObserver(proxy, 'lastName', function() {
+      addObserver(proxy, 'lastName', function () {
         count++;
       });
 
@@ -253,7 +253,7 @@ moduleFor(
       assert.equal(proxy.get('foo.bar'), 'hello');
       assert.equal(proxy.get('content.foo.bar'), 'hello');
 
-      proxy.addObserver('foo.bar', function() {
+      proxy.addObserver('foo.bar', function () {
         count++;
       });
 
@@ -339,7 +339,7 @@ moduleFor(
       assert.expect(0);
 
       let obj = ObjectProxy.extend({
-        observe: observer('foo', function() {}),
+        observe: observer('foo', function () {}),
       }).create();
 
       obj.destroy();
@@ -361,7 +361,7 @@ moduleFor(
 
       let count = 0;
 
-      proxy.addObserver('foo', function() {
+      proxy.addObserver('foo', function () {
         count++;
       });
 

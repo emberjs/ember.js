@@ -252,7 +252,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
@@ -272,7 +272,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
@@ -304,7 +304,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.positional', function() {
+          salutation: computed('args.positional', function () {
             return this.args.positional[0] + ' ' + this.args.positional[1];
           }),
         })
@@ -324,7 +324,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.positional', function() {
+          salutation: computed('args.positional', function () {
             return this.args.positional[0] + ' ' + this.args.positional[1];
           }),
         })
@@ -486,7 +486,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
@@ -519,7 +519,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
