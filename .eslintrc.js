@@ -5,13 +5,12 @@ module.exports = {
   parser: 'babel-eslint',
   extends: [
     'eslint:recommended',
-    'prettier',
     'plugin:import/errors',
     'plugin:qunit/recommended',
+    'plugin:prettier/recommended',
   ],
   plugins: [
     'ember-internal',
-    'prettier',
     'import',
     'qunit',
     'disable-features',
@@ -22,7 +21,6 @@ module.exports = {
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-var': 'error',
-    'prettier/prettier': 'error',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
     'disable-features/disable-async-await': 'error',
@@ -55,6 +53,8 @@ module.exports = {
       files: [ '**/*.ts' ],
 
       parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+      extends: ['plugin:@typescript-eslint/eslint-recommended', 'prettier/@typescript-eslint'],
 
       parserOptions: {
         sourceType: 'module',
@@ -75,7 +75,7 @@ module.exports = {
       }
     },
     {
-      files: [ 'packages/**/*.js' ],
+      files: ['packages/**/*.js'],
 
       parserOptions: {
         ecmaVersion: 2017,
@@ -130,6 +130,7 @@ module.exports = {
     {
       // matches all node-land files
       files: [
+        '.eslintrc.js',
         'node-tests/**/*.js',
         'tests/node/**/*.js',
         'blueprints/**/*.js',
