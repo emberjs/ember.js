@@ -1266,12 +1266,14 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         let target = this.controllerFor('application');
 
+        let inputToString = /<@ember\/component\/input:ember[0-9]+>/;
+
         this.assertRenderTree([
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'text' && '__ARGS__' in args.named,
-            instance: (instance: object) => instance['type'] === 'text',
+            args: { positional: [], named: { type: 'text', value: 'first' } },
+            instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
             children: [
@@ -1294,8 +1296,8 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'text' && '__ARGS__' in args.named,
-            instance: (instance: object) => instance['type'] === 'text',
+            args: { positional: [], named: { type: 'text', value: 'first' } },
+            instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
             children: [
@@ -1313,8 +1315,8 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'checkbox' && '__ARGS__' in args.named,
-            instance: (instance: object) => instance['type'] === 'checkbox',
+            args: { positional: [], named: { type: 'checkbox', checked: false } },
+            instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.lastChild),
             children: [
@@ -1337,8 +1339,8 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'input',
-            args: args => args.named.type === 'text' && '__ARGS__' in args.named,
-            instance: (instance: object) => instance['type'] === 'text',
+            args: { positional: [], named: { type: 'text', value: 'first' } },
+            instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
             children: [

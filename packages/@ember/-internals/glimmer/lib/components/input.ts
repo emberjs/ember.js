@@ -1,10 +1,9 @@
 /**
 @module @ember/component
 */
-import { computed } from '@ember/-internals/metal';
-import { Object as EmberObject } from '@ember/-internals/runtime';
-import { InputComponentManagerFactory } from '../component-managers/input';
+import InternalManager from '../component-managers/internal';
 import { setManager } from '../utils/managers';
+import InternalComponent from './internal';
 
 /**
   See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
@@ -112,15 +111,15 @@ import { setManager } from '../utils/managers';
   @param {Hash} options
   @public
 */
-const Input = EmberObject.extend({
-  isCheckbox: computed('type', function(this: { type?: unknown }) {
-    return this.type === 'checkbox';
-  }),
-});
+export default class Input extends InternalComponent {
+  get isCheckbox(): boolean {
+    return this.arg('type') === 'checkbox';
+  }
+}
 
 setManager(
   {
-    factory: InputComponentManagerFactory,
+    factory: InternalManager.for('input'),
     internal: true,
     type: 'component',
   },
@@ -128,5 +127,3 @@ setManager(
 );
 
 Input.toString = () => '@ember/component/input';
-
-export default Input;

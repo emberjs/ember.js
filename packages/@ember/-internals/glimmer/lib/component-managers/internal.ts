@@ -1,33 +1,138 @@
-import { Factory, Owner } from '@ember/-internals/owner';
-import { ComponentDefinition, WithStaticLayout } from '@glimmer/interfaces';
+import { ENV } from '@ember/-internals/environment';
+import { Owner } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
+import {
+  Bounds,
+  ComponentCapabilities,
+  ComponentDefinition,
+  Destroyable,
+  DynamicScope,
+  VMArguments,
+  WithStaticLayout,
+} from '@glimmer/interfaces';
+import { createConstRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
+import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
+import InternalComponent from '../components/internal';
+import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractComponentManager from './abstract';
 
+const CAPABILITIES: ComponentCapabilities = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: true,
+  attributeHook: false,
+  elementHook: false,
+  createCaller: true,
+  dynamicScope: false,
+  updateHook: true,
+  createInstance: true,
+  wrapped: false,
+  willDestroy: false,
+};
+
 export interface InternalDefinitionState {
-  ComponentClass: Factory<any, any>;
+  ComponentClass: typeof InternalComponent;
   layout: OwnedTemplate;
 }
 
-export class InternalComponentDefinition<T>
-  implements ComponentDefinition<InternalDefinitionState, T, InternalManager<T>> {
+export interface InternalComponentState {
+  env: EmberVMEnvironment;
+  instance: Destroyable;
+}
+
+export class InternalComponentDefinition
+  implements ComponentDefinition<InternalDefinitionState, InternalComponentState, InternalManager> {
   public state: InternalDefinitionState;
 
   constructor(
-    public manager: InternalManager<T>,
-    ComponentClass: Factory<any, any>,
+    public manager: InternalManager,
+    ComponentClass: typeof InternalComponent,
     layout: OwnedTemplate
   ) {
     this.state = { ComponentClass, layout };
   }
 }
 
-export default abstract class InternalManager<T>
-  extends AbstractComponentManager<T, InternalDefinitionState>
-  implements WithStaticLayout<T, InternalDefinitionState, RuntimeResolver> {
-  constructor(protected owner: Owner) {
+export default class InternalManager
+  extends AbstractComponentManager<InternalComponentState, InternalDefinitionState>
+  implements WithStaticLayout<InternalComponentState, InternalDefinitionState, RuntimeResolver> {
+  static for(name: string): (owner: Owner) => InternalManager {
+    return (owner: Owner) => new InternalManager(owner, name);
+  }
+
+  constructor(private owner: Owner, private name: string) {
     super();
+  }
+
+  getCapabilities(): ComponentCapabilities {
+    return CAPABILITIES;
+  }
+
+  create(
+    env: EmberVMEnvironment,
+    { ComponentClass, layout }: InternalDefinitionState,
+    args: VMArguments,
+    _dynamicScope: DynamicScope,
+    caller: Reference
+  ): InternalComponentState {
+    assert('caller must be const', isConstRef(caller));
+
+    assert(
+      `The ${this.name} component does not take any positional arguments`,
+      args.positional.length === 0
+    );
+
+    let instance = new ComponentClass(this.owner, args.named.capture(), valueForRef(caller));
+
+    let state = { env, instance };
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      env.extra.debugRenderTree.create(state, {
+        type: 'component',
+        name: this.getDebugName(),
+        args: args.capture(),
+        instance,
+        template: layout,
+      });
+
+      registerDestructor(instance, () => env.extra.debugRenderTree.willDestroy(state));
+    }
+
+    return state;
+  }
+
+  getDebugName(): string {
+    return this.name;
+  }
+
+  getSelf({ instance }: InternalComponentState): Reference {
+    return createConstRef(instance, 'this');
+  }
+
+  didRenderLayout(state: InternalComponentState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.extra.debugRenderTree.didRender(state, bounds);
+    }
+  }
+
+  update(state: InternalComponentState): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.extra.debugRenderTree.update(state);
+    }
+  }
+
+  didUpdateLayout(state: InternalComponentState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.extra.debugRenderTree.didRender(state, bounds);
+    }
+  }
+
+  getDestroyable(state: InternalComponentState): Destroyable {
+    return state.instance;
   }
 
   getStaticLayout({ layout: template }: InternalDefinitionState) {

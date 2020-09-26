@@ -24,6 +24,7 @@ import InternalComponentManager, {
   InternalComponentDefinition,
 } from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
+import InternalComponent from './components/internal';
 import { isClassHelper, isHelperFactory } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
@@ -473,8 +474,8 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
           assert(`missing layout for internal component ${name}`, pair.layout !== null);
 
           definition = new InternalComponentDefinition(
-            factory(owner) as InternalComponentManager<unknown>,
-            ComponentClass as Factory<any, any>,
+            factory(owner) as InternalComponentManager,
+            ComponentClass as typeof InternalComponent,
             layout!
           );
         } else {
