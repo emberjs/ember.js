@@ -218,7 +218,14 @@ export default class CurlyComponentManager
       assign(named, args.named.capture());
 
       for (let i = 0; i < count; i++) {
-        const name = positionalParams[i];
+        // As of TS 3.7, tsc is giving us the following error on this line without the type annotation
+        //
+        //   TS7022: 'name' implicitly has type 'any' because it does not have a type annotation and is
+        //   referenced directly or indirectly in its own initializer.
+        //
+        // This is almost certainly a TypeScript bug, feel free to try and remove the annotation after
+        // upgrading if it is not needed anymore.
+        const name: string = positionalParams[i];
 
         assert(
           `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
