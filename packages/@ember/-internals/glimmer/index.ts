@@ -404,8 +404,12 @@ export { INVOKE } from './lib/helpers/action';
 export { default as OutletView } from './lib/views/outlet';
 export { OutletState } from './lib/utils/outlet';
 export { capabilities } from './lib/component-managers/custom';
-export { setComponentManager, getComponentManager } from './lib/utils/custom-component-manager';
-export { setModifierManager, getModifierManager } from './lib/utils/custom-modifier-manager';
+export {
+  setComponentManager,
+  getComponentManager,
+  setModifierManager,
+  getModifierManager,
+} from './lib/utils/managers';
 export { capabilities as modifierCapabilities } from './lib/modifiers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
 export { setComponentTemplate, getComponentTemplate } from './lib/utils/component-template';
