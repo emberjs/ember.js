@@ -19,10 +19,8 @@ import {
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition, registerDestructor } from '@glimmer/runtime';
 import { CurlyComponentDefinition } from './component-managers/curly';
-import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
-import InternalComponentManager, {
-  InternalComponentDefinition,
-} from './component-managers/internal';
+import { CustomManagerDefinition } from './component-managers/custom';
+import { InternalComponentDefinition, isInternalManager } from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import InternalComponent from './components/internal';
 import { isClassHelper, isHelperFactory } from './helper';
@@ -44,14 +42,13 @@ import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
-import { CustomModifierDefinition, ModifierManagerDelegate } from './modifiers/custom';
+import { CustomModifierDefinition } from './modifiers/custom';
 import OnModifierManager from './modifiers/on';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { getComponentTemplate } from './utils/component-template';
-import { getModifierManager } from './utils/custom-modifier-manager';
-import { getManager } from './utils/managers';
+import { getComponentManager, getModifierManager } from './utils/managers';
 import { createHelperRef } from './utils/references';
 
 function instrumentationPayload(name: string) {
@@ -404,10 +401,9 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       let owner = meta.owner;
       let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
       if (modifier !== undefined) {
-        let managerFactory = getModifierManager<ModifierManagerDelegate<unknown>>(modifier.class);
-        let manager = managerFactory!(owner);
+        let manager = getModifierManager(owner, modifier.class!);
 
-        return new CustomModifierDefinition(name, modifier, manager, this.isInteractive);
+        return new CustomModifierDefinition(name, modifier, manager!, this.isInteractive);
       }
     }
 
@@ -465,16 +461,14 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       assert(`missing component class ${name}`, pair.component.class !== undefined);
 
       let ComponentClass = pair.component.class!;
-      let wrapper = getManager(ComponentClass);
+      let manager = getComponentManager(owner, ComponentClass);
 
-      if (wrapper !== null && wrapper.type === 'component') {
-        let { factory } = wrapper;
-
-        if (wrapper.internal) {
+      if (manager !== undefined) {
+        if (isInternalManager(manager)) {
           assert(`missing layout for internal component ${name}`, pair.layout !== null);
 
           definition = new InternalComponentDefinition(
-            factory(owner) as InternalComponentManager,
+            manager,
             ComponentClass as typeof InternalComponent,
             layout!
           );
@@ -482,7 +476,7 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
           definition = new CustomManagerDefinition(
             name,
             pair.component,
-            factory(owner) as ManagerDelegate<unknown>,
+            manager,
             layout !== undefined
               ? layout
               : owner.lookup<TemplateFactory>(P`template:components/-default`)!(owner)

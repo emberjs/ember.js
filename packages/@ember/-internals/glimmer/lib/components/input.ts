@@ -2,7 +2,7 @@
 @module @ember/component
 */
 import InternalManager from '../component-managers/internal';
-import { setManager } from '../utils/managers';
+import { setComponentManager } from '../utils/managers';
 import InternalComponent from './internal';
 
 /**
@@ -117,13 +117,6 @@ export default class Input extends InternalComponent {
   }
 }
 
-setManager(
-  {
-    factory: InternalManager.for('input'),
-    internal: true,
-    type: 'component',
-  },
-  Input
-);
+setComponentManager(InternalManager.for('input'), Input);
 
 Input.toString = () => '@ember/component/input';

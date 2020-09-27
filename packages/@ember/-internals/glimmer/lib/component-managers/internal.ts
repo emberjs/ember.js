@@ -12,7 +12,7 @@ import {
 } from '@glimmer/interfaces';
 import { createConstRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
+import { _WeakSet, unwrapTemplate } from '@glimmer/util';
 import InternalComponent from '../components/internal';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
@@ -57,6 +57,12 @@ export class InternalComponentDefinition
   }
 }
 
+const INTERNAL_MANAGERS = new _WeakSet();
+
+export function isInternalManager(manager: object): manager is InternalManager {
+  return INTERNAL_MANAGERS.has(manager);
+}
+
 export default class InternalManager
   extends AbstractComponentManager<InternalComponentState, InternalDefinitionState>
   implements WithStaticLayout<InternalComponentState, InternalDefinitionState, RuntimeResolver> {
@@ -66,6 +72,7 @@ export default class InternalManager
 
   constructor(private owner: Owner, private name: string) {
     super();
+    INTERNAL_MANAGERS.add(this);
   }
 
   getCapabilities(): ComponentCapabilities {
