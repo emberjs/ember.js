@@ -1530,20 +1530,20 @@ if (ENV._DEBUG_RENDER_TREE) {
 
       nodeBounds(node: Node): CapturedBounds {
         return {
-          parentElement: (expect(
+          parentElement: ((expect(
             node.parentNode,
             'BUG: detached node'
-          ) as SimpleNode) as SimpleElement,
-          firstNode: node as SimpleNode,
-          lastNode: node as SimpleNode,
+          ) as unknown) as SimpleNode) as SimpleElement,
+          firstNode: (node as unknown) as SimpleNode,
+          lastNode: (node as unknown) as SimpleNode,
         };
       }
 
       elementBounds(element: Element): CapturedBounds {
         return {
-          parentElement: element as SimpleElement,
-          firstNode: element.firstChild! as SimpleNode,
-          lastNode: element.lastChild! as SimpleNode,
+          parentElement: (element as unknown) as SimpleElement,
+          firstNode: (element.firstChild! as unknown) as SimpleNode,
+          lastNode: (element.lastChild! as unknown) as SimpleNode,
         };
       }
 

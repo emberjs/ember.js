@@ -171,8 +171,8 @@ export function getViewRange(view: View): Range {
   let bounds = getViewBounds(view);
 
   let range = document.createRange();
-  range.setStartBefore(bounds.firstNode as Node);
-  range.setEndAfter(bounds.lastNode as Node);
+  range.setStartBefore((bounds.firstNode as unknown) as Node);
+  range.setEndAfter((bounds.lastNode as unknown) as Node);
 
   return range;
 }

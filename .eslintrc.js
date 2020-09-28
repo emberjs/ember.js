@@ -68,6 +68,7 @@ module.exports = {
         'no-dupe-class-members': 'off',
         'no-unused-vars': 'off',
         'no-undef': 'off',
+        'no-redeclare': 'off',
 
         'import/export': 'off',
         'import/named': 'off',
