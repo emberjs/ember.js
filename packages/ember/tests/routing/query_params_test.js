@@ -1611,6 +1611,46 @@ moduleFor(
       this.assertCurrentPath('/?foo=987');
     }
 
+    async ['@test Single query params defined with tracked properties can be linked to (and log is present)'](
+      assert
+    ) {
+      assert.expect(3);
+
+      this.addTemplate(
+        'application',
+        `
+          <LinkTo @route="application" id="the-link">
+            Home
+          </LinkTo>
+          <LinkTo @route="application" @query={{hash foo=(array 123)}} id="the-link-with-params">
+            'Home (with params)'
+          </LinkTo>
+
+          <!-- this log caused a failure previously, so we leave it to make sure this case is tested -->
+          {{log this.foo}}
+        `
+      );
+
+      this.add(
+        `controller:application`,
+        class extends Controller {
+          queryParams = ['foo', 'bar'];
+          @tracked foo = [];
+          @tracked bar = [];
+        }
+      );
+
+      await this.visitAndAssert('/');
+
+      document.getElementById('the-link').click();
+      await runLoopSettled();
+      this.assertCurrentPath('/');
+
+      document.getElementById('the-link-with-params').click();
+      await runLoopSettled();
+      this.assertCurrentPath('/?foo=%5B123%5D');
+    }
+
     async ['@test Single query params defined with native getters and tracked properties can be on the controller and reflected in the url'](
       assert
     ) {
