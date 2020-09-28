@@ -1,5 +1,11 @@
-import { Object as EmberObject, A } from '@ember/-internals/runtime';
-import { get, set, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { Object as EmberObject, A, MutableArray } from '@ember/-internals/runtime';
+import {
+  get,
+  set,
+  tracked,
+  nativeDescDecorator as descriptor,
+  notifyPropertyChange,
+} from '@ember/-internals/metal';
 import Service, { inject } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
@@ -141,6 +147,61 @@ moduleFor(
     '@test array properties rerender when updated'() {
       let NumListComponent = Component.extend({
         numbers: tracked({ initializer: () => A([1, 2, 3]) }),
+
+        addNumber() {
+          this.numbers.pushObject(4);
+        },
+      });
+
+      this.registerComponent('num-list', {
+        ComponentClass: NumListComponent,
+        template: strip`
+            <button {{action this.addNumber}}>
+              {{join this.numbers}}
+            </button>
+          `,
+      });
+
+      this.registerHelper('join', ([value]) => {
+        return value.join(', ');
+      });
+
+      this.render('<NumList />');
+
+      this.assertText('1, 2, 3');
+
+      runTask(() => this.$('button').click());
+
+      this.assertText('1, 2, 3, 4');
+    }
+
+    '@test custom ember array properties rerender when updated'() {
+      let CustomArray = EmberObject.extend(MutableArray, {
+        init() {
+          this._super(...arguments);
+          this._vals = [1, 2, 3];
+        },
+
+        objectAt(index) {
+          return this._vals[index];
+        },
+
+        replace(start, deleteCount, items = []) {
+          this._vals.splice(start, deleteCount, ...items);
+          notifyPropertyChange(this, '[]');
+        },
+
+        join() {
+          return this._vals.join(...arguments);
+        },
+
+        get length() {
+          return this._vals.length;
+        },
+      });
+
+      let NumListComponent = Component.extend({
+        numbers: tracked({ initializer: () => CustomArray.create() }),
 
         addNumber() {
           this.numbers.pushObject(4);

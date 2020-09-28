@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { meta as metaFor } from '@ember/-internals/meta';
+=======
+>>>>>>> ef26b1fa4 ([BUGFIX lts] Entangles custom EmberArray implementations when accessed)
 import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
