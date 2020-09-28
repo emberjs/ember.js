@@ -3,13 +3,17 @@ import {
   setHelperManager,
   setModifierManager,
   helperCapabilities,
+  invokeHelper,
+  Helper,
+  Component as EmberComponent,
 } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
-import { setOwner } from '@ember/-internals/owner';
+import { setOwner, getOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { inject as service } from '@ember/service';
 import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 import { registerDestructor } from '@glimmer/runtime';
+import { getValue } from '@glimmer/validator';
 
 class TestHelperManager {
   capabilities = helperCapabilities('3.23', {
@@ -289,6 +293,107 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
         runTask(() => this.rerender());
 
         this.assertText('hello');
+      }
+    }
+  );
+
+  moduleFor(
+    'Helpers test: invokeHelper',
+    class extends RenderingTestCase {
+      ['@test it works with the example from the RFC Summary']() {
+        class PlusOneHelper extends Helper {
+          compute([num]) {
+            return num + 1;
+          }
+        }
+
+        class PlusOne extends EmberComponent {
+          plusOne = invokeHelper(this, PlusOneHelper, () => {
+            return {
+              positional: [this.number],
+            };
+          });
+
+          get value() {
+            return getValue(this.plusOne);
+          }
+        }
+
+        this.registerComponent('plus-one', {
+          template: `{{this.value}}`,
+          ComponentClass: PlusOne,
+        });
+
+        this.render(`<PlusOne @number={{4}} />`);
+
+        this.assertText('5');
+
+        runTask(() => this.rerender());
+
+        this.assertText('5');
+      }
+
+      ['@test there is an owner'](assert) {
+        class PlusOneHelper extends Helper {
+          compute([num]) {
+            return num + 1;
+          }
+        }
+
+        let cache;
+        class PlusOne {
+          constructor(number) {
+            this.number = number;
+          }
+
+          get plusOne() {
+            if (cache) return cache;
+
+            cache = invokeHelper(this, PlusOneHelper, () => {
+              return { positional: [this.number] };
+            });
+
+            return cache;
+          }
+
+          get value() {
+            return getValue(this.plusOne);
+          }
+        }
+
+        let instance = new PlusOne(4);
+
+        setOwner(instance, this.owner);
+
+        assert.ok(getOwner(instance));
+        assert.equal(instance.value, 5);
+      }
+
+      ['@test there is no owner'](assert) {
+        class PlusOneHelper extends Helper {
+          compute([num]) {
+            return num + 1;
+          }
+        }
+
+        class PlusOne {
+          constructor(number) {
+            this.number = number;
+          }
+
+          plusOne = invokeHelper(this, PlusOneHelper, () => {
+            return { positional: [this.number] };
+          });
+
+          get value() {
+            return getValue(this.plusOne);
+          }
+        }
+
+        let instance = new PlusOne(4);
+
+        assert.notOk(getOwner(instance));
+        assert.equal(instance.value, 5);
       }
     }
   );

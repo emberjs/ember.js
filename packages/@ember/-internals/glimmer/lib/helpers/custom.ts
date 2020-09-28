@@ -1,8 +1,12 @@
+import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, Helper as GlimmerHelper } from '@glimmer/interfaces';
 import { createComputeRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/runtime';
+import { Cache, createCache } from '@glimmer/validator';
 import { argsProxyFor } from '../utils/args-proxy';
+import { getHelperManager } from '../utils/managers';
 
 export type HelperDefinition = object;
 
@@ -46,7 +50,7 @@ export interface HelperManager<HelperStateBucket = unknown> {
 
 export interface HelperManagerWithValue<HelperStateBucket = unknown>
   extends HelperManager<HelperStateBucket> {
-  getValue(bucket: HelperStateBucket): unknown;
+  getValue(bucket: HelperStateBucket, args: Arguments): unknown;
 }
 
 function hasValue(manager: HelperManager): manager is HelperManagerWithValue {
@@ -62,12 +66,68 @@ function hasDestroyable(manager: HelperManager): manager is HelperManagerWithDes
   return manager.capabilities.hasDestroyable;
 }
 
+// Tests:
+//  manager does not have value
+//  tracked args
+//  internal helper state
+//  injecting services
+//   - with component
+//  destruction
+//   - context
+//   - cache
+//   - when component gets destroyed
+//   - call getValue after cache is destroyed: error
+//   - destroying the context also destroys the cache
+export function invokeHelper(
+  context: object,
+  definition: HelperDefinition,
+  computeArgs: (context: object) => Arguments
+) {
+  // TODO: make one test where there is no owner
+  //       example:
+  //       class {}
+  const owner = getOwner(context);
+  const manager = getHelperManager(owner, definition)!;
+
+  // TODO: figure out why assert isn't using the TS assert thing
+  assert(`Expected helper manager to exist`, manager);
+
+  let helper: unknown;
+
+  // Cache reference needed by associateDestroyableChild
+  let cache: Cache<unknown> = createCache(() => {
+    // assert(`Cache has already been destroyed`, isDestroying(cache) || isDestroyed(cache));
+
+    let args = computeArgs(context);
+
+    if (helper === undefined) {
+      helper = manager.createHelper(definition, args);
+
+      if (hasDestroyable(manager)) {
+        let destroyable = manager.getDestroyable(helper);
+
+        associateDestroyableChild(context, cache);
+        associateDestroyableChild(cache, destroyable);
+      }
+    }
+
+    if (hasValue(manager)) {
+      return manager.getValue(helper, args);
+    }
+
+    return;
+  });
+
+  return cache;
+}
+
 export default function customHelper(
   manager: HelperManager<unknown>,
   definition: HelperDefinition
 ): GlimmerHelper {
-  return (args, vm) => {
-    const bucket = manager.createHelper(definition, argsProxyFor(args.capture(), 'helper'));
+  return (vmArgs, vm) => {
+    const args = argsProxyFor(vmArgs.capture(), 'helper');
+    const bucket = manager.createHelper(definition, args);
 
     if (hasDestroyable(manager)) {
       vm.associateDestroyable(manager.getDestroyable(bucket));
@@ -75,7 +135,7 @@ export default function customHelper(
 
     if (hasValue(manager)) {
       return createComputeRef(
-        () => manager.getValue(bucket),
+        () => manager.getValue(bucket, args),
         null,
         DEBUG && manager.getDebugName && manager.getDebugName(definition)
       );
