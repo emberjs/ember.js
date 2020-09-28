@@ -1258,6 +1258,15 @@ moduleFor(
 moduleFor(
   'Element modifiers on AngleBracket components',
   class extends RenderingTestCase {
+    assertNamedArgs(actual, expected, message) {
+      // `actual` is likely to be a named args proxy, while the `deepEqual` below would see
+      // the values as the same it would still flag as not deep equals because the constructors
+      // of the two objects do not match (one is a proxy, one is Object)
+      let reifiedActual = Object.assign({}, actual);
+
+      this.assert.deepEqual(reifiedActual, expected, message);
+    }
+
     '@test modifiers are forwarded to a single element receiving the splattributes'(assert) {
       let modifierParams = null;
       let modifierNamedArgs = null;
@@ -1277,8 +1286,8 @@ moduleFor(
         })
       );
       this.render('<TheFoo {{bar "something" foo="else"}}/>', {});
-      assert.deepEqual(modifierParams, ['something']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+      assert.deepEqual(modifierParams, ['something'], 'positional arguments');
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'else' }, 'named arguments');
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1293,12 +1302,13 @@ moduleFor(
         template:
           '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>',
       });
+      let test = this;
       this.registerModifier(
         'bar',
         BaseModifier.extend({
           didInsertElement(params, namedArgs) {
             assert.deepEqual(params, ['something']);
-            assert.deepEqual(namedArgs, { foo: 'else' });
+            test.assertNamedArgs(namedArgs, { foo: 'else' });
             if (this.element) {
               elementIds.push(this.element.getAttribute('id'));
             }
@@ -1341,7 +1351,7 @@ moduleFor(
         foo: 'else',
       });
       assert.deepEqual(modifierParams, ['something']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'else' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1349,7 +1359,7 @@ moduleFor(
       );
       runTask(() => setProperties(this.context, { something: 'another', foo: 'thingy' }));
       assert.deepEqual(modifierParams, ['another']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'thingy' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'thingy' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1435,7 +1445,7 @@ moduleFor(
         { foo: 'bar' }
       );
       assert.deepEqual(modifierParams, ['bar']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'bar' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1443,7 +1453,7 @@ moduleFor(
       );
       runTask(() => setProperties(this.context, { foo: 'qux' }));
       assert.deepEqual(modifierParams, ['qux']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'qux' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'qux' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1486,7 +1496,7 @@ moduleFor(
         { foo: 'bar' }
       );
       assert.deepEqual(modifierParams, ['bar']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'bar' });
       assert.deepEqual(
         elementIds,
         ['outer-div', 'inner-div'],
