@@ -2,8 +2,10 @@ import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { inspect, toString } from '@ember/-internals/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
+import { DEBUG } from '@glimmer/env';
 import { isDestroyed } from '@glimmer/runtime';
 import {
+  ALLOW_CYCLES,
   consumeTag,
   tagFor,
   tagMetaFor,
@@ -320,6 +322,10 @@ export class ComputedProperty extends ComputedDescriptor {
         (typeof propertyDesc.get === 'function' || typeof propertyDesc.set === 'function')
       )
     );
+
+    if (DEBUG) {
+      ALLOW_CYCLES!.set(tagFor(obj, keyName), true);
+    }
 
     if (this._hasConfig === false) {
       assert(

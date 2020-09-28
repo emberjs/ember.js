@@ -1,9 +1,8 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
+import { _WeakSet } from '@ember/polyfills';
 import {
-  ALLOW_CYCLES,
   combine,
   createUpdatableTag,
   Tag,
@@ -14,6 +13,8 @@ import {
 } from '@glimmer/validator';
 import { objectAt } from './array';
 import { tagForProperty } from './tags';
+
+export const CHAIN_PASS_THROUGH = new _WeakSet();
 
 export function finishLazyChains(meta: Meta, key: string, value: any) {
   let lazyTags = meta.readableLazyChainsFor(key);
@@ -166,7 +167,7 @@ function getChainTags(
       // If the key was an alias, we should always get the next value in order to
       // bootstrap the alias. This is because aliases, unlike other CPs, should
       // always be in sync with the aliased value.
-      if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
+      if (CHAIN_PASS_THROUGH.has(descriptor)) {
         // tslint:disable-next-line: no-unused-expression
         current[segment];
       }
@@ -182,7 +183,7 @@ function getChainTags(
       } else {
         current = current[segment];
       }
-    } else if (typeof descriptor.altKey === 'string') {
+    } else if (CHAIN_PASS_THROUGH.has(descriptor)) {
       current = current[segment];
     } else {
       // If the descriptor is defined, then its a normal CP (not an alias, which
@@ -216,10 +217,6 @@ function getChainTags(
 
     currentTagMeta = tagMetaFor(current);
     currentMeta = peekMeta(current);
-  }
-
-  if (DEBUG) {
-    chainTags.forEach(t => ALLOW_CYCLES!.set(t, true));
   }
 
   return chainTags;
