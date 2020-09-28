@@ -1,3 +1,4 @@
+import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
@@ -162,7 +163,7 @@ function descriptorForField([_target, key, desc]: [
 
       // Add the tag of the returned value if it is an array, since arrays
       // should always cause updates if they are consumed and then changed
-      if (Array.isArray(value)) {
+      if (Array.isArray(value) || isEmberArray(value)) {
         consumeTag(tagFor(value, '[]'));
       }
 
