@@ -4,10 +4,18 @@
 
 import { Factory } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
-import { symbol } from '@ember/-internals/utils';
+import { getDebugName, symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
-import { Dict } from '@glimmer/interfaces';
-import { createTag, dirtyTag } from '@glimmer/validator';
+import { DEBUG } from '@glimmer/env';
+import { Arguments, Dict } from '@glimmer/interfaces';
+import {
+  consumeTag,
+  createTag,
+  deprecateMutationsInTrackingTransaction,
+  dirtyTag,
+} from '@glimmer/validator';
+import { helperCapabilities, HelperManager } from './helpers/custom';
+import { setHelperManager } from './utils/managers';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -28,18 +36,6 @@ export interface HelperInstance<T = unknown> {
 
 export interface SimpleHelper<T = unknown> {
   compute: HelperFunction<T>;
-}
-
-export function isHelperFactory(
-  helper: any | undefined | null
-): helper is Factory<SimpleHelper | HelperInstance, HelperFactory<SimpleHelper | HelperInstance>> {
-  return (
-    typeof helper === 'object' && helper !== null && helper.class && helper.class.isHelperFactory
-  );
-}
-
-export function isClassHelper(helper: SimpleHelper | HelperInstance): helper is HelperInstance {
-  return (helper as any).destroy !== undefined;
 }
 
 /**
@@ -138,6 +134,56 @@ let Helper = FrameworkObject.extend({
 
 Helper.isHelperFactory = true;
 
+interface ClassicHelperStateBucket {
+  instance: HelperInstance;
+  args: Arguments;
+}
+
+class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
+  capabilities = helperCapabilities('3.23', {
+    hasValue: true,
+    hasDestroyable: true,
+  });
+
+  createHelper(definition: ClassHelperFactory, args: Arguments) {
+    return {
+      instance: definition.create(),
+      args,
+    };
+  }
+
+  getDestroyable({ instance }: ClassicHelperStateBucket) {
+    return instance;
+  }
+
+  getValue({ instance, args }: ClassicHelperStateBucket) {
+    let ret;
+    let { positional, named } = args;
+
+    if (DEBUG) {
+      deprecateMutationsInTrackingTransaction!(() => {
+        ret = instance.compute(positional, named);
+      });
+    } else {
+      ret = instance.compute(positional, named);
+    }
+
+    consumeTag(instance[RECOMPUTE_TAG]);
+
+    return ret;
+  }
+
+  getDebugName(definition: ClassHelperFactory) {
+    return getDebugName!(definition.class!['prototype']);
+  }
+}
+
+export const CLASSIC_HELPER_MANAGER = new ClassicHelperManager();
+
+setHelperManager(() => CLASSIC_HELPER_MANAGER, Helper);
+
+///////////
+
 class Wrapper implements HelperFactory<SimpleHelper> {
   isHelperFactory: true = true;
 
@@ -150,6 +196,40 @@ class Wrapper implements HelperFactory<SimpleHelper> {
     };
   }
 }
+
+class SimpleClassicHelperManager implements HelperManager<() => unknown> {
+  capabilities = helperCapabilities('3.23', {
+    hasValue: true,
+  });
+
+  createHelper(definition: Wrapper, args: Arguments) {
+    if (DEBUG) {
+      return () => {
+        let ret;
+
+        deprecateMutationsInTrackingTransaction!(() => {
+          ret = definition.compute.call(null, args.positional, args.named);
+        });
+
+        return ret;
+      };
+    }
+
+    return definition.compute.bind(null, args.positional, args.named);
+  }
+
+  getValue(fn: () => unknown) {
+    return fn();
+  }
+
+  getDebugName(definition: Wrapper) {
+    return getDebugName!(definition.compute);
+  }
+}
+
+export const SIMPLE_CLASSIC_HELPER_MANAGER = new SimpleClassicHelperManager();
+
+setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
 
 /**
   In many cases it is not necessary to use the full `Helper` class.

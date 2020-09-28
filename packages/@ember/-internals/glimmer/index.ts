@@ -403,14 +403,10 @@ export { default as AbstractComponentManager } from './lib/component-managers/ab
 export { INVOKE } from './lib/helpers/action';
 export { default as OutletView } from './lib/views/outlet';
 export { OutletState } from './lib/utils/outlet';
+export { setComponentManager, setModifierManager, setHelperManager } from './lib/utils/managers';
 export { capabilities } from './lib/component-managers/custom';
-export {
-  setComponentManager,
-  getComponentManager,
-  setModifierManager,
-  getModifierManager,
-} from './lib/utils/managers';
 export { capabilities as modifierCapabilities } from './lib/modifiers/custom';
+export { helperCapabilities, HelperManager } from './lib/helpers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
 export { setComponentTemplate, getComponentTemplate } from './lib/utils/component-template';
 export { CapturedRenderNode } from './lib/utils/debug-render-tree';

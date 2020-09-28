@@ -1,5 +1,9 @@
 import Ember from '../index';
-import { FEATURES, EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
+import {
+  FEATURES,
+  EMBER_GLIMMER_HELPER_MANAGER,
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
+} from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
@@ -225,6 +229,12 @@ let allExports = [
     : null,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
     ? ['_templateOnlyComponent', '@ember/component/template-only', 'default']
+    : null,
+  EMBER_GLIMMER_HELPER_MANAGER
+    ? ['_setHelperManager', '@ember/-internals/glimmer', 'setHelperManager']
+    : null,
+  EMBER_GLIMMER_HELPER_MANAGER
+    ? ['_helperManagerCapabilities', '@ember/-internals/glimmer', 'helperCapabilities']
     : null,
   ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
 
