@@ -1,7 +1,11 @@
+import { meta as metaFor } from '@ember/-internals/meta';
+import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+import { CHAIN_PASS_THROUGH } from './chain-tags';
 import {
+  CP_SETTER_FUNCS,
   Decorator,
   DecoratorPropertyDescriptor,
   isElementDescriptor,
@@ -141,7 +145,7 @@ if (DEBUG) {
   setClassicDecorator(tracked);
 }
 
-function descriptorForField([_target, key, desc]: [
+function descriptorForField([target, key, desc]: [
   object,
   string,
   DecoratorPropertyDescriptor
@@ -153,25 +157,36 @@ function descriptorForField([_target, key, desc]: [
 
   let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
 
-  return {
+  function get(this: object): unknown {
+    let value = getter(this);
+
+    // Add the tag of the returned value if it is an array, since arrays
+    // should always cause updates if they are consumed and then changed
+    if (Array.isArray(value) || isEmberArray(value)) {
+      consumeTag(tagFor(value, '[]'));
+    }
+
+    return value;
+  }
+
+  function set(this: object, newValue: unknown): void {
+    setter(this, newValue);
+    dirtyTagFor(this, SELF_TAG);
+  }
+
+  let newDesc = {
     enumerable: true,
     configurable: true,
+    isTracked: true,
 
-    get(): any {
-      let value = getter(this);
-
-      // Add the tag of the returned value if it is an array, since arrays
-      // should always cause updates if they are consumed and then changed
-      if (Array.isArray(value)) {
-        consumeTag(tagFor(value, '[]'));
-      }
-
-      return value;
-    },
-
-    set(newValue: any): void {
-      setter(this, newValue);
-      dirtyTagFor(this, SELF_TAG);
-    },
+    get,
+    set,
   };
+
+  metaFor(target).writeDescriptors(key, newDesc);
+
+  CP_SETTER_FUNCS.add(set);
+  CHAIN_PASS_THROUGH.add(newDesc);
+
+  return newDesc;
 }
