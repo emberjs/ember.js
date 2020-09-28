@@ -304,7 +304,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.positional', function() {
+          salutation: computed('args.positional.[]', function() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
           }),
         })
@@ -320,14 +320,78 @@ moduleFor(
       this.assertHTML(`<p>Yehuda Katz</p>`);
     }
 
-    ['@test positional params are updated if they change']() {
+    ['@test positional params are updated if they change (computed, arr tag)']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.positional', function() {
+          salutation: computed('args.positional.[]', function() {
             return this.args.positional[0] + ' ' + this.args.positional[1];
           }),
         })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{salutation}}</p>`,
+        ComponentClass,
+      });
+
+      this.render('{{foo-bar firstName lastName}}', {
+        firstName: 'Yehuda',
+        lastName: 'Katz',
+      });
+
+      this.assertHTML(`<p>Yehuda Katz</p>`);
+
+      runTask(() =>
+        setProperties(this.context, {
+          firstName: 'Chad',
+          lastName: 'Hietala',
+        })
+      );
+
+      this.assertHTML(`<p>Chad Hietala</p>`);
+    }
+
+    ['@test positional params are updated if they change (computed, individual tags)']() {
+      let ComponentClass = setComponentManager(
+        createBasicManager,
+        EmberObject.extend({
+          salutation: computed('args.positional.0', 'args.positional.1', function() {
+            return this.args.positional[0] + ' ' + this.args.positional[1];
+          }),
+        })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{salutation}}</p>`,
+        ComponentClass,
+      });
+
+      this.render('{{foo-bar firstName lastName}}', {
+        firstName: 'Yehuda',
+        lastName: 'Katz',
+      });
+
+      this.assertHTML(`<p>Yehuda Katz</p>`);
+
+      runTask(() =>
+        setProperties(this.context, {
+          firstName: 'Chad',
+          lastName: 'Hietala',
+        })
+      );
+
+      this.assertHTML(`<p>Chad Hietala</p>`);
+    }
+
+    ['@test positional params are updated if they change (native)']() {
+      let ComponentClass = setComponentManager(
+        createBasicManager,
+        class extends EmberObject {
+          get salutation() {
+            return this.args.positional[0] + ' ' + this.args.positional[1];
+          }
+        }
       );
 
       this.registerComponent('foo-bar', {
