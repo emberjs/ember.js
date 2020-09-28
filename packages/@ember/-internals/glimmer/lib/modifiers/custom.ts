@@ -1,10 +1,11 @@
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { Arguments, ModifierManager, VMArguments } from '@glimmer/interfaces';
 import { registerDestructor, reifyArgs } from '@glimmer/runtime';
-import { createUpdatableTag, untrack } from '@glimmer/validator';
+import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
+import { argsProxyFor } from '../utils/args-proxy';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
@@ -13,21 +14,33 @@ export interface CustomModifierDefinitionState<ModifierInstance> {
 }
 
 export interface OptionalCapabilities {
-  disableAutoTracking?: boolean;
+  '3.13': {
+    disableAutoTracking?: boolean;
+  };
+
+  // uses args proxy, does not provide a way to opt-out
+  '3.22': {
+    disableAutoTracking?: boolean;
+  };
 }
 
 export interface Capabilities {
   disableAutoTracking: boolean;
+  useArgsProxy: boolean;
 }
 
-export function capabilities(
-  managerAPI: string,
-  optionalFeatures: OptionalCapabilities = {}
+export function capabilities<Version extends keyof OptionalCapabilities>(
+  managerAPI: Version,
+  optionalFeatures: OptionalCapabilities[Version] = {}
 ): Capabilities {
-  assert('Invalid modifier manager compatibility specified', managerAPI === '3.13');
+  assert(
+    'Invalid modifier manager compatibility specified',
+    managerAPI === '3.13' || managerAPI === '3.22'
+  );
 
   return {
     disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
+    useArgsProxy: managerAPI === '3.13' ? false : true,
   };
 }
 
@@ -53,32 +66,21 @@ export class CustomModifierDefinition<ModifierInstance> {
   }
 }
 
-export class CustomModifierState<ModifierInstance> {
-  public tag = createUpdatableTag();
+export interface CustomModifierState<ModifierInstance> {
+  tag: UpdatableTag;
+  element: SimpleElement;
+  delegate: ModifierManagerDelegate<ModifierInstance>;
+  modifier: ModifierInstance;
+  args: Arguments;
   debugName?: string;
-
-  constructor(
-    public element: SimpleElement,
-    public delegate: ModifierManagerDelegate<ModifierInstance>,
-    public modifier: ModifierInstance,
-    public args: CapturedArguments
-  ) {
-    registerDestructor(this, () => delegate.destroyModifier(modifier, reifyArgs(args)));
-  }
-}
-
-// TODO: export ICapturedArgumentsValue from glimmer and replace this
-export interface Args {
-  named: Dict<unknown>;
-  positional: unknown[];
 }
 
 export interface ModifierManagerDelegate<ModifierInstance> {
   capabilities: Capabilities;
-  createModifier(factory: unknown, args: Args): ModifierInstance;
-  installModifier(instance: ModifierInstance, element: SimpleElement, args: Args): void;
-  updateModifier(instance: ModifierInstance, args: Args): void;
-  destroyModifier(instance: ModifierInstance, args: Args): void;
+  createModifier(factory: unknown, args: Arguments): ModifierInstance;
+  installModifier(instance: ModifierInstance, element: SimpleElement, args: Arguments): void;
+  updateModifier(instance: ModifierInstance, args: Arguments): void;
+  destroyModifier(instance: ModifierInstance, args: Arguments): void;
 }
 
 /**
@@ -114,17 +116,48 @@ class InteractiveCustomModifierManager<ModifierInstance>
   create(
     element: SimpleElement,
     definition: CustomModifierDefinitionState<ModifierInstance>,
-    args: VMArguments
+    vmArgs: VMArguments
   ) {
     let { delegate, ModifierClass } = definition;
-    const capturedArgs = args.capture();
+    let capturedArgs = vmArgs.capture();
 
-    let instance = definition.delegate.createModifier(ModifierClass, reifyArgs(capturedArgs));
-    let state = new CustomModifierState(element, delegate, instance, capturedArgs);
+    assert(
+      'Custom modifier managers must define their capabilities using the capabilities() helper function',
+      typeof delegate.capabilities === 'object' && delegate.capabilities !== null
+    );
+
+    let useArgsProxy = delegate.capabilities.useArgsProxy;
+
+    let args = useArgsProxy ? argsProxyFor(capturedArgs, 'modifier') : reifyArgs(capturedArgs);
+    let instance = delegate.createModifier(ModifierClass, args);
+
+    let tag = createUpdatableTag();
+    let state: CustomModifierState<ModifierInstance>;
+    if (useArgsProxy) {
+      state = {
+        tag,
+        element,
+        delegate,
+        args,
+        modifier: instance,
+      };
+    } else {
+      state = {
+        tag,
+        element,
+        delegate,
+        modifier: instance,
+        get args() {
+          return reifyArgs(capturedArgs);
+        },
+      };
+    }
 
     if (DEBUG) {
       state.debugName = definition.name;
     }
+
+    registerDestructor(state, () => delegate.destroyModifier(instance, state.args));
 
     return state;
   }
@@ -140,30 +173,23 @@ class InteractiveCustomModifierManager<ModifierInstance>
   install(state: CustomModifierState<ModifierInstance>) {
     let { element, args, delegate, modifier } = state;
 
-    assert(
-      'Custom modifier managers must define their capabilities using the capabilities() helper function',
-      typeof delegate.capabilities === 'object' && delegate.capabilities !== null
-    );
-
     let { capabilities } = delegate;
-    let argsValue = reifyArgs(args);
 
     if (capabilities.disableAutoTracking === true) {
-      untrack(() => delegate.installModifier(modifier, element, argsValue));
+      untrack(() => delegate.installModifier(modifier, element, args));
     } else {
-      delegate.installModifier(modifier, element, argsValue);
+      delegate.installModifier(modifier, element, args);
     }
   }
 
   update(state: CustomModifierState<ModifierInstance>) {
     let { args, delegate, modifier } = state;
     let { capabilities } = delegate;
-    let argsValue = reifyArgs(args);
 
     if (capabilities.disableAutoTracking === true) {
-      untrack(() => delegate.updateModifier(modifier, argsValue));
+      untrack(() => delegate.updateModifier(modifier, args));
     } else {
-      delegate.updateModifier(modifier, argsValue);
+      delegate.updateModifier(modifier, args);
     }
   }
 
