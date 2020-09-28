@@ -26,9 +26,9 @@ import { InternalComponentDefinition, isInternalManager } from './component-mana
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import InternalComponent from './components/internal';
 import {
-  CLASSIC_HELPER_MANAGER,
   HelperFactory,
   HelperInstance,
+  isClassicHelperManager,
   SIMPLE_CLASSIC_HELPER_MANAGER,
   SimpleHelper,
 } from './helper';
@@ -384,14 +384,14 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     assert(
       'helper managers have not been enabled yet, you must use classic helpers',
       EMBER_GLIMMER_HELPER_MANAGER ||
-        manager === CLASSIC_HELPER_MANAGER ||
+        isClassicHelperManager(manager) ||
         manager === SIMPLE_CLASSIC_HELPER_MANAGER
     );
 
     // For classic class based helpers, we need to pass the factoryFor result itself rather
     // than the raw value (`factoryFor(...).class`). This is because injections are already
     // bound in the factoryFor result, including type-based injections
-    return customHelper(manager, CLASSIC_HELPER_MANAGER === manager ? factory : factory.class);
+    return customHelper(manager, isClassicHelperManager(manager) ? factory : factory.class);
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
