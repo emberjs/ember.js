@@ -3,7 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
-import { EMBER_ARRAY, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
+import { setEmberArray, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
 import {
   get,
   set,
@@ -216,7 +216,10 @@ function mapBy(key) {
   @public
 */
 const ArrayMixin = Mixin.create(Enumerable, {
-  [EMBER_ARRAY]: true,
+  init() {
+    this._super(...arguments);
+    setEmberArray(this);
+  },
 
   /**
     __Required.__ You must implement this method to apply this mixin.

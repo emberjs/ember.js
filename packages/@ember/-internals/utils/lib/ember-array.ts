@@ -1,6 +1,6 @@
-import { symbol } from './symbol';
+import { _WeakSet } from '@ember/polyfills';
 
-export const EMBER_ARRAY = symbol('EMBER_ARRAY');
+const EMBER_ARRAYS = new _WeakSet();
 
 export interface EmberArray<T> {
   length: number;
@@ -10,6 +10,10 @@ export interface EmberArray<T> {
   splice(start: number, deleteCount: number, ...items: T[]): void;
 }
 
-export function isEmberArray(obj: any): obj is EmberArray<unknown> {
-  return obj && obj[EMBER_ARRAY];
+export function setEmberArray(obj: object) {
+  EMBER_ARRAYS.add(obj);
+}
+
+export function isEmberArray(obj: unknown): obj is EmberArray<unknown> {
+  return EMBER_ARRAYS.has(obj as object);
 }
