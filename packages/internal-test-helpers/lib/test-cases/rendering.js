@@ -147,6 +147,10 @@ export default class RenderingTestCase extends AbstractTestCase {
     }
   }
 
+  registerCustomHelper(name, definition) {
+    this.owner.register(`helper:${name}`, definition);
+  }
+
   registerPartial(name, template) {
     let owner = this.owner;
     if (typeof template === 'string') {

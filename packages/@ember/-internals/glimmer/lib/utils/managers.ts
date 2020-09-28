@@ -3,12 +3,14 @@ import { deprecate } from '@ember/debug';
 import { COMPONENT_MANAGER_STRING_LOOKUP } from '@ember/deprecated-features';
 import { ManagerDelegate as ComponentManagerDelegate } from '../component-managers/custom';
 import InternalComponentManager from '../component-managers/internal';
+import { HelperManager } from '../helpers/custom';
 import { ModifierManagerDelegate } from '../modifiers/custom';
 
 type ManagerDelegate =
   | ComponentManagerDelegate<unknown>
   | InternalComponentManager
-  | ModifierManagerDelegate<unknown>;
+  | ModifierManagerDelegate<unknown>
+  | HelperManager;
 
 const COMPONENT_MANAGERS = new WeakMap<
   object,
@@ -16,6 +18,8 @@ const COMPONENT_MANAGERS = new WeakMap<
 >();
 
 const MODIFIER_MANAGERS = new WeakMap<object, ManagerFactory<ModifierManagerDelegate<unknown>>>();
+
+const HELPER_MANAGERS = new WeakMap<object, ManagerFactory<HelperManager<unknown>>>();
 
 const MANAGER_INSTANCES: WeakMap<Owner, WeakMap<ManagerFactory, unknown>> = new WeakMap();
 
@@ -88,6 +92,26 @@ export function getModifierManager(
   definition: object
 ): ModifierManagerDelegate<unknown> | undefined {
   const factory = getManager(MODIFIER_MANAGERS, definition);
+
+  if (factory !== undefined) {
+    return getManagerInstanceForOwner(owner, factory);
+  }
+
+  return undefined;
+}
+
+export function setHelperManager(
+  factory: ManagerFactory<HelperManager<unknown>>,
+  definition: object
+) {
+  return setManager(HELPER_MANAGERS, factory, definition);
+}
+
+export function getHelperManager(
+  owner: Owner,
+  definition: object
+): HelperManager<unknown> | undefined {
+  const factory = getManager(HELPER_MANAGERS, definition);
 
   if (factory !== undefined) {
     return getManagerInstanceForOwner(owner, factory);
