@@ -1,13 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
-import { CUSTOM_TAG_FOR } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
 import {
+  Arguments,
   Bounds,
-  CapturedArguments,
-  CapturedNamedArguments,
   ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
@@ -17,12 +13,12 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, PathReference } from '@glimmer/reference';
-import { registerDestructor, reifyPositional } from '@glimmer/runtime';
+import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
-import { track } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
+import { argsProxyFor } from '../utils/args-proxy';
 import AbstractComponentManager from './abstract';
 
 const CAPABILITIES = {
@@ -149,86 +145,6 @@ export interface ComponentArguments {
   named: Dict<unknown>;
 }
 
-let namedArgsProxyFor: (namedArgs: CapturedNamedArguments, debugName?: string) => Dict<unknown>;
-
-if (HAS_NATIVE_PROXY) {
-  namedArgsProxyFor = <NamedArgs extends CapturedNamedArguments>(
-    namedArgs: NamedArgs,
-    debugName?: string
-  ) => {
-    let getTag = (key: keyof Args) => track(() => namedArgs[key].value());
-
-    let handler: ProxyHandler<{}> = {
-      get(_target, prop) {
-        let ref = namedArgs[prop as string];
-
-        if (ref !== undefined) {
-          return ref.value();
-        } else if (prop === CUSTOM_TAG_FOR) {
-          return getTag;
-        }
-      },
-
-      has(_target, prop) {
-        return namedArgs[prop as string] !== undefined;
-      },
-
-      ownKeys(_target) {
-        return Object.keys(namedArgs);
-      },
-
-      getOwnPropertyDescriptor(_target, prop) {
-        assert(
-          'args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys()',
-          namedArgs[prop as string] !== undefined
-        );
-
-        return {
-          enumerable: true,
-          configurable: true,
-        };
-      },
-    };
-
-    if (DEBUG) {
-      handler.set = function(_target, prop) {
-        assert(
-          `You attempted to set ${debugName}#${String(
-            prop
-          )} on a components arguments. Component arguments are immutable and cannot be updated directly, they always represent the values that are passed to your component. If you want to set default values, you should use a getter instead`
-        );
-
-        return false;
-      };
-    }
-
-    return new Proxy({}, handler);
-  };
-} else {
-  namedArgsProxyFor = <NamedArgs extends CapturedNamedArguments>(namedArgs: NamedArgs) => {
-    let getTag = (key: keyof Args) => track(() => namedArgs[key].value());
-    let proxy = {};
-
-    Object.defineProperty(proxy, CUSTOM_TAG_FOR, {
-      configurable: false,
-      enumerable: false,
-      value: getTag,
-    });
-
-    Object.keys(namedArgs).forEach(name => {
-      Object.defineProperty(proxy, name, {
-        enumerable: true,
-        configurable: true,
-        get() {
-          return namedArgs[name].value();
-        },
-      });
-    });
-
-    return proxy;
-  };
-}
-
 /**
   The CustomComponentManager allows addons to provide custom component
   implementations that integrate seamlessly into Ember. This is accomplished
@@ -268,26 +184,20 @@ export default class CustomComponentManager<ComponentInstance>
   create(
     env: EmberVMEnvironment,
     definition: CustomComponentDefinitionState<ComponentInstance>,
-    args: VMArguments
+    vmArgs: VMArguments
   ): CustomComponentState<ComponentInstance> {
     let { delegate } = definition;
-    let capturedArgs = args.capture();
-    let { named, positional } = capturedArgs;
-    let ComponentClass = definition.ComponentClass.class;
-    let namedArgsProxy = namedArgsProxyFor(named, DEBUG ? String(ComponentClass) : undefined);
+    let args = argsProxyFor(vmArgs.capture(), 'component');
 
-    let component = delegate.createComponent(ComponentClass, {
-      named: namedArgsProxy,
-      positional: reifyPositional(positional),
-    });
+    let component = delegate.createComponent(definition.ComponentClass.class, args);
 
-    let bucket = new CustomComponentState(delegate, component, capturedArgs, env, namedArgsProxy);
+    let bucket = new CustomComponentState(delegate, component, args, env);
 
     if (ENV._DEBUG_RENDER_TREE) {
       env.extra.debugRenderTree.create(bucket, {
         type: 'component',
         name: definition.name,
-        args: args.capture(),
+        args: vmArgs.capture(),
         instance: component,
         template: definition.template,
       });
@@ -310,12 +220,9 @@ export default class CustomComponentManager<ComponentInstance>
     }
 
     if (hasUpdateHook(bucket.delegate)) {
-      let { delegate, component, args, namedArgsProxy } = bucket;
+      let { delegate, component, args } = bucket;
 
-      delegate.updateComponent(component, {
-        named: namedArgsProxy,
-        positional: reifyPositional(args.positional),
-      });
+      delegate.updateComponent(component, args);
     }
   }
 
@@ -379,9 +286,8 @@ export class CustomComponentState<ComponentInstance> {
   constructor(
     public delegate: ManagerDelegate<ComponentInstance>,
     public component: ComponentInstance,
-    public args: CapturedArguments,
-    public env: EmberVMEnvironment,
-    public namedArgsProxy: Args['named']
+    public args: Arguments,
+    public env: EmberVMEnvironment
   ) {
     if (hasDestructors(delegate)) {
       registerDestructor(this, () => delegate.destroyComponent(component));
