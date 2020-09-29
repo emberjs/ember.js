@@ -1,20 +1,20 @@
+import { DebugAssertFunction, DebugAssertType, GenericDebugAssertArgs } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { checkTest, DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
+import { DebugEnv } from '../utils';
 
-type Actual = [string, boolean, DebugFunctionOptions];
-type Message = string | RegExp;
-type OptionList = ReadonlyArray<string> | undefined;
+export type Message = string | RegExp;
+export type OptionList = ReadonlyArray<string> | undefined;
 
-export default class MethodCallTracker {
+export default class MethodCallTracker<T extends DebugAssertType = DebugAssertType> {
   private _env: DebugEnv;
-  private _methodName: string;
+  private _methodName: T;
   private _isExpectingNoCalls: boolean;
   private _expectedMessages: Message[];
   private _expectedOptionLists: OptionList[];
-  private _actuals: Actual[];
-  private _originalMethod: DebugFunction | undefined;
+  private _actuals: GenericDebugAssertArgs[];
+  private _originalMethod: DebugAssertFunction | undefined;
 
-  constructor(env: DebugEnv, methodName: string) {
+  constructor(env: DebugEnv, methodName: T) {
     this._env = env;
     this._methodName = methodName;
     this._isExpectingNoCalls = false;
@@ -35,20 +35,18 @@ export default class MethodCallTracker {
 
     this._originalMethod = env.getDebugFunction(methodName);
 
-    env.setDebugFunction(methodName, (message, test, options) => {
-      let resultOfTest = checkTest(test);
-
-      this._actuals.push([message, resultOfTest, options]);
+    env.setDebugFunction<DebugAssertType>(methodName, (...args: GenericDebugAssertArgs) => {
+      this._actuals.push(args);
     });
   }
 
   restoreMethod() {
     if (this._originalMethod) {
-      this._env.setDebugFunction(this._methodName, this._originalMethod);
+      this._env.setDebugFunction<DebugAssertType>(this._methodName, this._originalMethod);
     }
   }
 
-  expectCall(message: Message, options?: OptionList) {
+  expectCall(message?: Message, options?: OptionList) {
     this.stubMethod();
     this._expectedMessages.push(message || /.*/);
     this._expectedOptionLists.push(options);
@@ -99,8 +97,8 @@ export default class MethodCallTracker {
       return;
     }
 
-    let actual: Actual | undefined;
-    let match: Actual | undefined = undefined;
+    let actual: GenericDebugAssertArgs | undefined;
+    let match: GenericDebugAssertArgs | undefined = undefined;
 
     for (o = 0; o < expectedMessages.length; o++) {
       const expectedMessage = expectedMessages[o];

@@ -1,52 +1,13 @@
 import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { dictionary, HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import { leakTracker } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry, Injection } from './registry';
 
-declare global {
-  export function gc(): void;
-}
-
-interface LeakTracking {
-  hasContainers(): boolean;
-  reset(): void;
-}
-
 interface CacheMember {
   destroy?: () => void;
-}
-
-let leakTracking: LeakTracking;
-let containers: WeakSet<Container>;
-if (DEBUG) {
-  // requires v8
-  // chrome --js-flags="--allow-natives-syntax --expose-gc"
-  // node --allow-natives-syntax --expose-gc
-  try {
-    if (typeof gc === 'function') {
-      leakTracking = (() => {
-        // avoid syntax errors when --allow-natives-syntax not present
-        let GetWeakSetValues = new Function('weakSet', 'return %GetWeakSetValues(weakSet, 0)');
-        containers = new WeakSet<Container>();
-        return {
-          hasContainers() {
-            gc();
-            return GetWeakSetValues(containers).length > 0;
-          },
-          reset() {
-            let values = GetWeakSetValues(containers);
-            for (let i = 0; i < values.length; i++) {
-              containers.delete(values[i]);
-            }
-          },
-        };
-      })();
-    }
-  } catch (e) {
-    // ignore
-  }
 }
 
 export interface ContainerOptions {
@@ -70,8 +31,6 @@ export interface ContainerOptions {
  @class Container
  */
 export default class Container {
-  static _leakTracking: LeakTracking;
-
   readonly owner: Owner | null;
   readonly registry: Registry & DebugRegistry;
   cache: { [key: string]: CacheMember };
@@ -90,8 +49,8 @@ export default class Container {
 
     if (DEBUG) {
       this.validationCache = dictionary(options.validationCache || null);
-      if (containers !== undefined) {
-        containers.add(this);
+      if (leakTracker !== undefined) {
+        leakTracker.track(this);
       }
     }
   }
@@ -232,11 +191,6 @@ export default class Container {
     return factoryFor<T, C>(this, normalizedName, fullName) as Factory<T, C> | undefined;
   }
 }
-
-if (DEBUG) {
-  Container._leakTracking = leakTracking!;
-}
-
 /*
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.

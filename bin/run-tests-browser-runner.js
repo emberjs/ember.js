@@ -65,7 +65,12 @@ module.exports = class BrowserRunner {
   }
 
   async newBrowser() {
-    let browser = await puppeteer.launch({ dumpio: true });
+    let browser = await puppeteer.launch({
+      dumpio: true,
+      args: [
+        '--js-flags=--harmony-weak-refs --expose-gc --no-incremental-marking --retain-maps-for-n-gc=0',
+      ],
+    });
     return browser;
   }
 
@@ -73,6 +78,8 @@ module.exports = class BrowserRunner {
     let browser = await this.browser();
     let oldPages = await browser.pages();
     let newPage = await browser.newPage();
+    // corresponds to Inspector.targetCrashed
+    newPage.once('error', this.onError.bind(this));
 
     // close existing pages
     for (let oldPage of oldPages) {
@@ -82,9 +89,6 @@ module.exports = class BrowserRunner {
         console.error(e);
       }
     }
-
-    // corresponds to Inspector.targetCrashed
-    newPage.once('error', this.onError.bind(this));
 
     await newPage.evaluateOnNewDocument(
       fs.readFileSync(__dirname + '/run-tests-injection.js', 'utf8')

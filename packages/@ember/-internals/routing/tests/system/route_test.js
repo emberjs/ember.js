@@ -256,6 +256,7 @@ moduleFor(
 
     teardown() {
       runDestroy(route);
+      super.teardown();
     }
 
     ['@test returns the models properties if params does not include *_id'](assert) {
@@ -313,6 +314,7 @@ moduleFor(
     teardown() {
       runDestroy(routeOne);
       runDestroy(routeTwo);
+      super.teardown();
     }
 
     ['@test route._qp does not crash if the controller has no QP, or setProperties'](assert) {

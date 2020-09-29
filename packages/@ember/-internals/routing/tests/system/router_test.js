@@ -40,6 +40,7 @@ moduleFor(
     teardown() {
       runDestroy(owner);
       owner = null;
+      super.teardown();
     }
 
     ['@test can create a router without an owner'](assert) {

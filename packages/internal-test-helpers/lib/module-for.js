@@ -41,9 +41,14 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
     // promise when it is not needed
     let filteredPromises = promises.filter(Boolean);
     if (filteredPromises.length > 0) {
-      return all(filteredPromises).finally(() => unsetContext());
+      return all(filteredPromises).finally(() => {
+        unsetContext();
+        promises.length = 0;
+        filteredPromises.length = 0;
+      });
     }
 
+    promises.length = 0;
     unsetContext();
   });
 

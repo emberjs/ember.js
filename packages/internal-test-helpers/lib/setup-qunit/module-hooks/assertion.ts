@@ -1,13 +1,13 @@
 import { DEBUG } from '@glimmer/env';
-import { callWithStub, checkTest, DebugEnv, Message } from './utils';
+import { callWithStub, DebugEnv, Message } from './utils';
 
 type ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => void;
 type IgnoreAssertionFunc = (func: () => void) => void;
 
 declare global {
   interface Window {
-    expectAssertion: ExpectAssertionFunc | null;
-    ignoreAssertion: IgnoreAssertionFunc | null;
+    expectAssertion?: ExpectAssertionFunc;
+    ignoreAssertion?: IgnoreAssertionFunc;
   }
 }
 
@@ -34,7 +34,7 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
   let originalAssertFunc = env.getDebugFunction('assert');
 
   hooks.beforeEach(function(assert) {
-    let expectAssertion: ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => {
+    self.expectAssertion = (func: () => void, expectedMessage: Message) => {
       if (!DEBUG) {
         assert.ok(true, 'Assertions disabled in production builds.');
         return;
@@ -48,7 +48,7 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
       try {
         callWithStub(env, 'assert', func, (message, test) => {
           sawCall = true;
-          if (checkTest(test)) {
+          if (test) {
             return;
           }
           actualMessage = message;
@@ -63,12 +63,9 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
       check(assert, sawCall, actualMessage, expectedMessage);
     };
 
-    let ignoreAssertion: IgnoreAssertionFunc = func => {
+    self.ignoreAssertion = func => {
       callWithStub(env, 'assert', func);
     };
-
-    window.expectAssertion = expectAssertion;
-    window.ignoreAssertion = ignoreAssertion;
   });
 
   hooks.afterEach(function() {
@@ -76,8 +73,8 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
     // sure we restore the original assert function
     env.setDebugFunction('assert', originalAssertFunc);
 
-    window.expectAssertion = null;
-    window.ignoreAssertion = null;
+    delete self.expectAssertion;
+    delete self.ignoreAssertion;
   });
 }
 

@@ -1,16 +1,21 @@
-import DebugAssert from './debug';
 import { callWithStub, DebugEnv, Message } from './utils';
+import DebugAssert from './utils/debug';
 
-type ExpectNoDeprecationFunc = (func?: () => void) => void;
-type ExpectDeprecationAsyncFunc = (
-  func: () => void | undefined | Message | Promise<any>,
+export type Block = () => void;
+export type AsyncBlock<T> = () => PromiseLike<T>;
+
+export type ExpectNoDeprecationFunc = (func?: Block) => void;
+export type ExpectDeprecationAsyncFunc = <T>(
+  func: AsyncBlock<T>,
   expectedMessage: Message
-) => Promise<any>;
-type ExpectDeprecationFunc = (
-  func: () => void | undefined | Message,
-  expectedMessage: Message
-) => void;
-type IgnoreDeprecationFunc = (func: () => void) => void;
+) => Promise<T>;
+
+export type ExpectDeprecationFunc = {
+  (block?: Block, expectedMessage?: Message): void;
+  (expectedMessage?: Message): void;
+};
+
+export type IgnoreDeprecationFunc = (func: () => void) => void;
 
 declare global {
   interface Window {
@@ -35,7 +40,7 @@ export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv) {
   });
 }
 
-class DeprecationAssert extends DebugAssert {
+class DeprecationAssert extends DebugAssert<'deprecate'> {
   constructor(env: DebugEnv) {
     super('deprecate', env);
   }
@@ -77,16 +82,19 @@ class DeprecationAssert extends DebugAssert {
     // expectDeprecation(/* optionalStringOrRegex */);
     // Ember.deprecate("Old And Busted");
     //
-    let expectDeprecation: ExpectDeprecationFunc = (func, message) => {
-      let actualFunc: (() => void) | undefined;
-      if (typeof func !== 'function') {
-        message = func as Message;
-        actualFunc = undefined;
-      } else {
-        actualFunc = func;
-      }
+    let expectDeprecation: ExpectDeprecationFunc = (
+      messageOrBlock?: Message | Block,
+      maybeMessage?: Message
+    ) => {
+      const message =
+        maybeMessage === undefined
+          ? typeof messageOrBlock === 'string'
+            ? messageOrBlock
+            : undefined
+          : maybeMessage;
+      const func = typeof messageOrBlock === 'function' ? messageOrBlock : undefined;
 
-      this.runExpectation(actualFunc, tracker => {
+      this.runExpectation(func, tracker => {
         if (tracker.isExpectingNoCalls()) {
           throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
         }
@@ -96,16 +104,8 @@ class DeprecationAssert extends DebugAssert {
     };
 
     let expectDeprecationAsync: ExpectDeprecationAsyncFunc = async (func, message) => {
-      let actualFunc: (() => void) | undefined;
-      if (typeof func !== 'function') {
-        message = func as Message;
-        actualFunc = undefined;
-      } else {
-        actualFunc = func;
-      }
-
-      await this.runExpectation(
-        actualFunc,
+      return await this.runExpectation(
+        func,
         tracker => {
           if (tracker.isExpectingNoCalls()) {
             throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
@@ -121,18 +121,18 @@ class DeprecationAssert extends DebugAssert {
       callWithStub(this.env, 'deprecate', func);
     };
 
-    window.expectNoDeprecation = expectNoDeprecation;
-    window.expectDeprecation = expectDeprecation;
-    window.expectDeprecationAsync = expectDeprecationAsync;
-    window.ignoreDeprecation = ignoreDeprecation;
+    self.expectNoDeprecation = expectNoDeprecation;
+    self.expectDeprecation = expectDeprecation;
+    self.expectDeprecationAsync = expectDeprecationAsync;
+    self.ignoreDeprecation = ignoreDeprecation;
   }
 
   restore() {
     super.restore();
-    window.expectDeprecation = null;
-    window.expectDeprecationAsync = null;
-    window.expectNoDeprecation = null;
-    window.ignoreDeprecation = null;
+    delete self.expectDeprecation;
+    delete self.expectDeprecationAsync;
+    delete self.expectNoDeprecation;
+    delete self.ignoreDeprecation;
   }
 }
 
