@@ -1,6 +1,6 @@
 'use strict';
 
-const { readFileSync, existsSync } = require('fs');
+const { existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
@@ -118,37 +118,18 @@ module.exports.getPackagesES = function getPackagesES() {
 };
 
 module.exports.handlebarsES = function _handlebars() {
-  return new Rollup(findLib('handlebars', 'lib'), {
-    annotation: 'handlebars',
+  return new Rollup(findLib('@handlebars/parser', 'dist/esm'), {
+    annotation: '@handlebars/parser',
     rollup: {
-      input: 'handlebars/compiler/base.js',
+      input: 'index.js',
       output: {
-        file: 'handlebars.js',
+        file: '@handlebars/parser/index.js',
         format: 'es',
         exports: 'named',
       },
-      plugins: [handlebarsFix()],
     },
   });
 };
-
-function handlebarsFix() {
-  let HANDLEBARS_PARSER = /[/\\]parser.js$/;
-  return {
-    load: function(id) {
-      if (HANDLEBARS_PARSER.test(id)) {
-        let code = readFileSync(id, 'utf8');
-        return {
-          code: code
-            .replace('exports.__esModule = true;', '')
-            .replace("exports['default'] = handlebars;", 'export default handlebars;'),
-
-          map: { mappings: null },
-        };
-      }
-    },
-  };
-}
 
 module.exports.rsvpES = function _rsvpES() {
   let lib = path.resolve(path.dirname(require.resolve('rsvp')), '../lib');
