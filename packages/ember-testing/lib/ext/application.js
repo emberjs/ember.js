@@ -160,11 +160,11 @@ EmberApplication.reopen({
 // But still here for backwards compatibility
 // of helper chaining
 function protoWrap(proto, name, callback, isAsync) {
-  proto[name] = function(...args) {
+  proto[name] = function (...args) {
     if (isAsync) {
       return callback.apply(this, args);
     } else {
-      return this.then(function() {
+      return this.then(function () {
         return callback.apply(this, args);
       });
     }

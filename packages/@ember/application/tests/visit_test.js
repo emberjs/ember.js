@@ -76,7 +76,7 @@ moduleFor(
       ENV._APPLICATION_TEMPLATE_WRAPPER = false;
 
       return this.visit('/', bootOptions)
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             isSerializationFirstNode(instance.rootElement.firstChild),
             'glimmer-vm comment node was not found'
@@ -95,7 +95,7 @@ moduleFor(
             _renderMode: 'rehydrate',
           };
 
-          this.application.visit('/', bootOptions).then(instance => {
+          this.application.visit('/', bootOptions).then((instance) => {
             assert.equal(
               instance.rootElement.innerHTML,
               indexTemplate,
@@ -113,7 +113,7 @@ moduleFor(
     // does not fire.
     [`@test Applications with autoboot set to false do not autoboot`](assert) {
       function delay(time) {
-        return new RSVP.Promise(resolve => later(resolve, time));
+        return new RSVP.Promise((resolve) => later(resolve, time));
       }
 
       let appBooted = 0;
@@ -220,7 +220,7 @@ moduleFor(
            * Visit on the application a second time. The application should remain
            * booted, but a new instance will be created.
            */
-          return this.application.visit('/').then(instance => {
+          return this.application.visit('/').then((instance) => {
             this.applicationInstance = instance;
           });
         })
@@ -244,7 +244,7 @@ moduleFor(
         () => {
           assert.ok(false, 'It should not resolve the promise');
         },
-        error => {
+        (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'boot failure');
         }
@@ -265,7 +265,7 @@ moduleFor(
         () => {
           assert.ok(false, 'It should not resolve the promise');
         },
-        error => {
+        (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'boot failure');
         }
@@ -273,7 +273,7 @@ moduleFor(
     }
 
     [`@test visit() follows redirects`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b', { path: '/b/:b' });
         this.route('c', { path: '/c/:c' });
@@ -301,7 +301,7 @@ moduleFor(
        * First call to `visit` is `this.application.visit` and returns the
        * applicationInstance.
        */
-      return this.visit('/a').then(instance => {
+      return this.visit('/a').then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -311,7 +311,7 @@ moduleFor(
     }
 
     [`@test visit() rejects if an error occurred during a transition`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b', { path: '/b/:b' });
         this.route('c', { path: '/c/:c' });
@@ -350,7 +350,7 @@ moduleFor(
         () => {
           assert.ok(false, 'It should not resolve the promise');
         },
-        error => {
+        (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'transition failure');
         }
@@ -358,14 +358,14 @@ moduleFor(
     }
 
     [`@test visit() chain`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b');
         this.route('c');
       });
 
       return this.visit('/')
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -374,7 +374,7 @@ moduleFor(
 
           return instance.visit('/a');
         })
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -383,7 +383,7 @@ moduleFor(
 
           return instance.visit('/b');
         })
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -392,7 +392,7 @@ moduleFor(
 
           return instance.visit('/c');
         })
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -406,7 +406,7 @@ moduleFor(
 
       this.assertEmptyFixture();
 
-      return this.visit('/').then(instance => {
+      return this.visit('/').then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -428,7 +428,7 @@ moduleFor(
 
       this.assertEmptyFixture();
 
-      return this.visit('/', { shouldRender: false }).then(instance => {
+      return this.visit('/', { shouldRender: false }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -445,7 +445,7 @@ moduleFor(
 
       this.assertEmptyFixture();
 
-      return this.visit('/', { shouldRender: true }).then(instance => {
+      return this.visit('/', { shouldRender: true }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -463,7 +463,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -476,12 +476,12 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
 
-      return this.visit('/blog', { shouldRender: false }).then(instance => {
+      return this.visit('/blog', { shouldRender: false }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -496,7 +496,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -526,12 +526,12 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
 
-      return this.visit('/blog', { isInteractive: false }).then(instance => {
+      return this.visit('/blog', { isInteractive: false }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -547,7 +547,7 @@ moduleFor(
     [`@test visit() on engine resolves engine component`](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -570,7 +570,7 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
@@ -587,7 +587,7 @@ moduleFor(
     [`@test visit() on engine resolves engine helper`](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -600,7 +600,7 @@ moduleFor(
           this.register('template:application', compile('{{swag}}'));
           this.register(
             'helper:swag',
-            helper(function() {
+            helper(function () {
               return 'turnt up';
             })
           );
@@ -609,7 +609,7 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
@@ -626,7 +626,7 @@ moduleFor(
       let xBarInitCalled = false;
       let xBarDidInsertElementCalled = false;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('show', { path: '/:component_name' });
       });
 
@@ -746,7 +746,7 @@ moduleFor(
           return this.application.visit('/x-bar', { rootElement: bar });
         }),
       ])
-        .then(_instances => {
+        .then((_instances) => {
           instances = _instances;
 
           assert.ok(xFooInitCalled);
@@ -789,7 +789,7 @@ moduleFor(
         })
         .finally(() => {
           runTask(() => {
-            instances.forEach(instance => {
+            instances.forEach((instance) => {
               instance.destroy();
             });
           });
@@ -803,7 +803,7 @@ moduleFor(
       let xBarInitCalled = false;
       let xBarDidInsertElementCalled = false;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('show', { path: '/:component_name' });
       });
 
@@ -920,7 +920,7 @@ moduleFor(
           return this.application.visit('/x-bar', { rootElement: bar });
         }),
       ])
-        .then(_instances => {
+        .then((_instances) => {
           instances = _instances;
 
           assert.ok(xFooInitCalled);
@@ -963,7 +963,7 @@ moduleFor(
         })
         .finally(() => {
           runTask(() => {
-            instances.forEach(instance => {
+            instances.forEach((instance) => {
               instance.destroy();
             });
           });

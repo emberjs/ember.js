@@ -50,7 +50,7 @@ moduleFor(
 
     ['@test [GH#15237] EmberError is imported correctly'](assert) {
       // If we get the right message it means Error is being imported correctly.
-      assert.throws(function() {
+      assert.throws(function () {
         triggerEvent(null, false, []);
       }, /because your app hasn't finished transitioning/);
     }
@@ -118,7 +118,7 @@ moduleFor(
       createRouter();
 
       function routePath() {
-        let routeInfos = Array.prototype.slice.call(arguments).map(function(s) {
+        let routeInfos = Array.prototype.slice.call(arguments).map(function (s) {
           return { name: s };
         });
         routeInfos.unshift({ name: 'ignored' });
@@ -275,11 +275,11 @@ moduleFor(
 
       router.currentRouteName = 'route-a';
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         router.transitionTo('route-b');
       }, "A transition was attempted from 'route-a' to 'route-b' but the application instance has already been destroyed.");
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         router.transitionTo('./route-b/1');
       }, "A transition was attempted from 'route-a' to './route-b/1' but the application instance has already been destroyed.");
     }

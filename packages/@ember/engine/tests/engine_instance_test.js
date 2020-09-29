@@ -83,7 +83,7 @@ moduleFor(
 
       // Stub `cloneParentDependencies`, the internals of which are tested along
       // with application instances.
-      engineInstance.cloneParentDependencies = function() {
+      engineInstance.cloneParentDependencies = function () {
         assert.ok(true, 'parent dependencies are cloned');
       };
 

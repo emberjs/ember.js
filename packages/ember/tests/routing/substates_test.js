@@ -39,7 +39,7 @@ moduleFor(
     ['@test Slow promise from a child route of application enters nested loading state'](assert) {
       let turtleDeferred = RSVP.defer();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('turtle');
       });
 
@@ -122,7 +122,7 @@ moduleFor(
     [`@test Don't enter loading route unless either route or template defined`](assert) {
       let deferred = RSVP.defer();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('dummy');
       });
       this.add(
@@ -157,7 +157,7 @@ moduleFor(
     ['@test Enter loading route only if loadingRoute is defined'](assert) {
       let deferred = RSVP.defer();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('dummy');
       });
 
@@ -266,9 +266,9 @@ moduleFor(
       this.addTemplate('foo.bar_loading', 'FOOBAR LOADING');
       this.addTemplate('foo.bar.index', 'YAY');
 
-      this.router.map(function() {
-        this.route('foo', function() {
-          this.route('bar', { path: '/bar' }, function() {});
+      this.router.map(function () {
+        this.route('foo', function () {
+          this.route('bar', { path: '/bar' }, function () {});
         });
       });
 
@@ -306,9 +306,9 @@ moduleFor(
       this.addTemplate('bar_loading', 'BAR LOADING');
       this.addTemplate('bar.index', 'YAY');
 
-      this.router.map(function() {
-        this.route('foo', function() {
-          this.route('bar', { path: '/bar', resetNamespace: true }, function() {});
+      this.router.map(function () {
+        this.route('foo', function () {
+          this.route('bar', { path: '/bar', resetNamespace: true }, function () {});
         });
       });
 
@@ -349,8 +349,8 @@ moduleFor(
       this.addTemplate('foo.bar_loading', 'FOOBAR LOADING');
       this.addTemplate('foo.bar', 'YAY');
 
-      this.router.map(function() {
-        this.route('foo', function() {
+      this.router.map(function () {
+        this.route('foo', function () {
           this.route('bar');
         });
       });
@@ -387,8 +387,8 @@ moduleFor(
       this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{this.model.msg}}');
       this.addTemplate('foo.bar', 'YAY');
 
-      this.router.map(function() {
-        this.route('foo', function() {
+      this.router.map(function () {
+        this.route('foo', function () {
           this.route('bar');
         });
       });
@@ -422,8 +422,8 @@ moduleFor(
       this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{@model.msg}}');
       this.addTemplate('foo.bar', 'YAY');
 
-      this.router.map(function() {
-        this.route('foo', function() {
+      this.router.map(function () {
+        this.route('foo', function () {
           this.route('bar');
         });
       });
@@ -456,8 +456,8 @@ moduleFor(
       this.addTemplate('foo.index', 'YAY');
       this.addTemplate('foo', '{{outlet}}');
 
-      this.router.map(function() {
-        this.route('foo', function() {
+      this.router.map(function () {
+        this.route('foo', function () {
           this.route('bar');
         });
       });
@@ -499,8 +499,8 @@ moduleFor(
       this.addTemplate('foo.index', 'YAY');
       this.addTemplate('foo', '{{outlet}}');
 
-      this.router.map(function() {
-        this.route('foo', function() {
+      this.router.map(function () {
+        this.route('foo', function () {
           this.route('bar');
         });
       });
@@ -540,8 +540,8 @@ moduleFor(
       this.addTemplate('foo.index', 'YAY');
       this.addTemplate('foo', '{{outlet}}');
 
-      this.router.map(function() {
-        this.route('foo', function() {
+      this.router.map(function () {
+        this.route('foo', function () {
           this.route('bar');
         });
       });
@@ -675,15 +675,15 @@ moduleFor(
       this.addTemplate('grandma', 'GRANDMA {{outlet}}');
       this.addTemplate('mom', 'MOM');
 
-      this.router.map(function() {
-        this.route('grandma', function() {
-          this.route('mom', { resetNamespace: true }, function() {
+      this.router.map(function () {
+        this.route('grandma', function () {
+          this.route('mom', { resetNamespace: true }, function () {
             this.route('sally');
             this.route('this-route-throws');
           });
           this.route('puppies');
         });
-        this.route('memere', { path: '/memere/:seg' }, function() {});
+        this.route('memere', { path: '/memere/:seg' }, function () {});
       });
     }
 
@@ -884,7 +884,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/grandma/mom/sally'),
-        function(err) {
+        function (err) {
           return err.msg === 'did it broke?';
         },
         'it broke'
@@ -929,7 +929,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/grandma/mom/sally'),
-        function(err) {
+        function (err) {
           return err.msg === 'did it broke?';
         },
         `it broke`
@@ -959,7 +959,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/grandma/mom/sally'),
-        function(err) {
+        function (err) {
           return err.msg == 'did it broke?';
         },
         'Correct error was thrown'
@@ -1004,7 +1004,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/grandma/mom/sally'),
-        function(err) {
+        function (err) {
           return err.msg === 'did it broke?';
         },
         'it broke'
@@ -1273,7 +1273,7 @@ moduleFor(
       this.add(
         'route:grandma',
         Route.extend({
-          beforeModel: function() {
+          beforeModel: function () {
             this.transitionTo('memere', 1);
           },
         })

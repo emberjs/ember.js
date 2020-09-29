@@ -31,7 +31,7 @@ moduleFor(
     constructor() {
       super();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -376,7 +376,7 @@ moduleFor(
         })
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -499,7 +499,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
       constructor() {
         super();
 
-        this.router.map(function() {
+        this.router.map(function () {
           this.route('about');
         });
 
@@ -587,8 +587,8 @@ moduleFor(
   'The {{link-to}} component - nested routes and link-to arguments',
   class extends ApplicationTestCase {
     ['@test The {{link-to}} component supports leaving off .index for nested routes'](assert) {
-      this.router.map(function() {
-        this.route('about', function() {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('item');
         });
       });
@@ -603,8 +603,8 @@ moduleFor(
     }
 
     [`@test The {{link-to}} component supports custom, nested, current-when`](assert) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
 
@@ -629,12 +629,12 @@ moduleFor(
     [`@test The {{link-to}} component does not disregard current-when when it is given explicitly for a route`](
       assert
     ) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
 
-        this.route('items', function() {
+        this.route('items', function () {
           this.route('item');
         });
       });
@@ -657,12 +657,12 @@ moduleFor(
     ['@test The {{link-to}} component does not disregard current-when when it is set via a bound param'](
       assert
     ) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
 
-        this.route('items', function() {
+        this.route('items', function () {
           this.route('item');
         });
       });
@@ -690,8 +690,8 @@ moduleFor(
     }
 
     ['@test The {{link-to}} component supports multiple current-when routes'](assert) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
         this.route('item');
@@ -741,8 +741,8 @@ moduleFor(
     }
 
     ['@test The {{link-to}} component supports boolean values for current-when'](assert) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
         this.route('item');
@@ -791,8 +791,8 @@ moduleFor(
 
       this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
-      this.router.map(function() {
-        this.route('about', function() {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('contact');
         });
       });
@@ -835,8 +835,8 @@ moduleFor(
       );
       this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
-      this.router.map(function() {
-        this.route('about', function() {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('contact');
         });
       });
@@ -887,8 +887,8 @@ moduleFor(
         })
       );
 
-      this.router.map(function() {
-        this.route('about', function() {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('contact');
         });
       });
@@ -919,7 +919,7 @@ moduleFor(
     [`@feature(!EMBER_ROUTING_MODEL_ARG) The {{link-to}} component moves into the named route with context`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
         this.route('item', { path: '/item/:id' });
       });
@@ -1007,7 +1007,7 @@ moduleFor(
     async [`@feature(EMBER_ROUTING_MODEL_ARG) The {{link-to}} component moves into the named route with context`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
         this.route('item', { path: '/item/:id' });
       });
@@ -1143,7 +1143,7 @@ moduleFor(
     }
 
     [`@test the {{link-to}} component calls preventDefault`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1157,7 +1157,7 @@ moduleFor(
     [`@test the {{link-to}} component does not call preventDefault if 'preventDefault=false' is passed as an option`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1174,7 +1174,7 @@ moduleFor(
     [`@test the {{link-to}} component does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1237,7 +1237,7 @@ moduleFor(
         `
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1258,7 +1258,7 @@ moduleFor(
     }
 
     [`@test The {{link-to}} component accepts string/numeric arguments`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('filter', { path: '/filters/:filter' });
         this.route('post', { path: '/post/:post_id' });
         this.route('repo', { path: '/repo/:owner/:name' });
@@ -1301,8 +1301,8 @@ moduleFor(
       assert
     ) {
       assert.expect(2);
-      this.router.map(function() {
-        this.route('lobby', function() {
+      this.router.map(function () {
+        this.route('lobby', function () {
           this.route('index', { path: ':lobby_id' });
           this.route('list');
         });
@@ -1334,7 +1334,7 @@ moduleFor(
     }
 
     [`@test Quoteless route param performs property lookup`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1353,7 +1353,7 @@ moduleFor(
         })
       );
 
-      let assertEquality = href => {
+      let assertEquality = (href) => {
         assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
         assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
       };
@@ -1369,7 +1369,7 @@ moduleFor(
     }
 
     [`@test The {{link-to}} component refreshes href element when one of params changes`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
 
@@ -1409,8 +1409,8 @@ moduleFor(
     }
 
     [`@test The {{link-to}} component is active when a route is active`](assert) {
-      this.router.map(function() {
-        this.route('about', function() {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('item');
         });
       });
@@ -1440,7 +1440,7 @@ moduleFor(
     }
 
     [`@test The {{link-to}} component works in an #each'd array of string route names`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('foo');
         this.route('bar');
         this.route('rar');
@@ -1500,7 +1500,7 @@ moduleFor(
 
     [`@test The non-block form {{link-to}} component moves into the named route`](assert) {
       assert.expect(3);
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('contact');
       });
 
@@ -1544,7 +1544,7 @@ moduleFor(
       assert
     ) {
       assert.expect(8);
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('contact');
       });
 
@@ -1629,7 +1629,7 @@ moduleFor(
     ) {
       assert.expect(5);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('item', { path: '/item/:id' });
       });
 
@@ -1690,7 +1690,7 @@ moduleFor(
     ) {
       assert.expect(5);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('item', { path: '/item/:id' });
       });
 
@@ -1744,7 +1744,7 @@ moduleFor(
     }
 
     [`@test The non-block form {{link-to}} performs property lookup`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1764,7 +1764,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        let assertEquality = href => {
+        let assertEquality = (href) => {
           assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
           assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
         };
@@ -1805,7 +1805,7 @@ moduleFor(
         return;
       }
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: 'post/:post_id' });
       });
 
@@ -1820,7 +1820,7 @@ moduleFor(
     [`@test the {{link-to}} component does not throw an error if its route has exited`](assert) {
       assert.expect(0);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: 'post/:post_id' });
       });
 
@@ -1866,8 +1866,8 @@ moduleFor(
     }
 
     [`@test {{link-to}} active property respects changing parent route context`](assert) {
-      this.router.map(function() {
-        this.route('things', { path: '/things/:name' }, function() {
+      this.router.map(function () {
+        this.route('things', { path: '/things/:name' }, function () {
           this.route('other');
         });
       });
@@ -1933,7 +1933,7 @@ moduleFor(
     }
 
     [`@test {{link-to}} with only query-params and a block updates when route changes`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1971,7 +1971,7 @@ moduleFor(
     }
 
     [`@test Block-less {{link-to}} with only query-params updates when route changes`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -2009,7 +2009,7 @@ moduleFor(
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) [GH#17018] passing model to link-to with `hash` helper works']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
 
@@ -2046,7 +2046,7 @@ moduleFor(
     }
 
     ['@feature(EMBER_ROUTING_MODEL_ARG) [GH#17018] passing model to link-to with `hash` helper works']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
 
@@ -2080,7 +2080,7 @@ moduleFor(
     }
 
     [`@test The {{link-to}} component can use dynamic params`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('foo', { path: 'foo/:some/:thing' });
         this.route('bar', { path: 'bar/:some/:thing/:else' });
       });
@@ -2122,8 +2122,8 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      this.router.map(function() {
-        this.route('parent', function() {
+      this.router.map(function () {
+        this.route('parent', function () {
           this.route('child');
         });
       });
@@ -2160,7 +2160,7 @@ moduleFor(
       let warningMessage =
         'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('thing', { path: '/thing/:thing_id' });
         this.route('about');
       });

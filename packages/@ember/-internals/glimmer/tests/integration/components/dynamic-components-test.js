@@ -380,7 +380,7 @@ moduleFor(
       this.registerComponent('foo-bar', {
         template: 'foo-bar {{location}} {{locationCopy}} {{yield}}',
         ComponentClass: Component.extend({
-          init: function() {
+          init: function () {
             this._super(...arguments);
             this.set('locationCopy', this.get('location'));
           },
@@ -390,7 +390,7 @@ moduleFor(
       this.registerComponent('foo-bar-baz', {
         template: 'foo-bar-baz {{location}} {{locationCopy}} {{yield}}',
         ComponentClass: Component.extend({
-          init: function() {
+          init: function () {
             this._super(...arguments);
             this.set('locationCopy', this.get('location'));
           },
@@ -400,7 +400,7 @@ moduleFor(
       this.registerComponent('outer-component', {
         template: '{{#component componentName location=location}}arepas!{{/component}}',
         ComponentClass: Component.extend({
-          componentName: computed('location', function() {
+          componentName: computed('location', function () {
             if (this.get('location') === 'Caracas') {
               return 'foo-bar';
             } else {

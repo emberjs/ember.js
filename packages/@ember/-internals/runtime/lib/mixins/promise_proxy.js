@@ -12,7 +12,7 @@ function tap(proxy, promise) {
   });
 
   return promise.then(
-    value => {
+    (value) => {
       if (!proxy.isDestroyed && !proxy.isDestroying) {
         setProperties(proxy, {
           content: value,
@@ -21,7 +21,7 @@ function tap(proxy, promise) {
       }
       return value;
     },
-    reason => {
+    (reason) => {
       if (!proxy.isDestroyed && !proxy.isDestroying) {
         setProperties(proxy, {
           reason,
@@ -115,7 +115,7 @@ export default Mixin.create({
     @default true
     @public
   */
-  isPending: computed('isSettled', function() {
+  isPending: computed('isSettled', function () {
     return !get(this, 'isSettled');
   }).readOnly(),
 
@@ -126,7 +126,7 @@ export default Mixin.create({
     @default false
     @public
   */
-  isSettled: computed('isRejected', 'isFulfilled', function() {
+  isSettled: computed('isRejected', 'isFulfilled', function () {
     return get(this, 'isRejected') || get(this, 'isFulfilled');
   }).readOnly(),
 
@@ -217,7 +217,7 @@ export default Mixin.create({
 });
 
 function promiseAlias(name) {
-  return function() {
+  return function () {
     let promise = get(this, 'promise');
     return promise[name](...arguments);
   };

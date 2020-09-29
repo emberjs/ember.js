@@ -70,7 +70,7 @@ export default function deprecateSendAction(env: EmberASTPluginEnvironment): AST
             return;
           }
 
-          node.hash.pairs.forEach(pair => {
+          node.hash.pairs.forEach((pair) => {
             if (EVENTS.indexOf(pair.key) > -1 && pair.value.type === 'StringLiteral') {
               deprecate(deprecationMessage(node, pair.key, pair.value.original), false, {
                 id: 'ember-component.send-action',

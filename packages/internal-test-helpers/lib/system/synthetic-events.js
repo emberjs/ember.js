@@ -53,7 +53,7 @@ export function focus(el) {
     return;
   }
   if (isFocusable(el)) {
-    run(null, function() {
+    run(null, function () {
       let browserIsNotFocused = document.hasFocus && !document.hasFocus();
 
       // Firefox does not trigger the `focusin` event if the window
@@ -76,7 +76,7 @@ export function focus(el) {
 
 export function blur(el) {
   if (isFocusable(el)) {
-    run(null, function() {
+    run(null, function () {
       let browserIsNotFocused = document.hasFocus && !document.hasFocus();
 
       fireEvent(el, 'focusout');

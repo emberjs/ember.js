@@ -22,11 +22,11 @@ function GlimmerTemplatePrecompiler(inputTree, options) {
 GlimmerTemplatePrecompiler.prototype.extensions = ['hbs'];
 GlimmerTemplatePrecompiler.prototype.targetExtension = 'js';
 
-GlimmerTemplatePrecompiler.prototype.baseDir = function() {
+GlimmerTemplatePrecompiler.prototype.baseDir = function () {
   return __dirname;
 };
 
-GlimmerTemplatePrecompiler.prototype.processString = function(content, relativePath) {
+GlimmerTemplatePrecompiler.prototype.processString = function (content, relativePath) {
   let compiled = this.precompile(content, {
     meta: { moduleName: relativePath },
   });

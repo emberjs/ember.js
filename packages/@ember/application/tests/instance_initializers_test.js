@@ -318,7 +318,7 @@ moduleFor(
         initialize() {},
       });
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         FirstApp.instanceInitializer({
           name: 'abc',
           initialize() {},

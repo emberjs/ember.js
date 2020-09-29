@@ -19,7 +19,7 @@ moduleFor(
       let MyMixin = Mixin.create({
         count: 0,
 
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -37,7 +37,7 @@ moduleFor(
       let MyMixin = Mixin.create({
         count: 0,
 
-        foo: observer('bar', 'baz', function() {
+        foo: observer('bar', 'baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -61,13 +61,13 @@ moduleFor(
       let MyMixin = Mixin.create({
         count: 0,
 
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
 
       let Mixin2 = Mixin.create({
-        foo: observer('baz', function() {
+        foo: observer('baz', function () {
           set(this, 'count', get(this, 'count') + 10);
         }),
       });
@@ -92,7 +92,7 @@ moduleFor(
       let MyMixin = Mixin.create({
         count: 0,
         bar: obj2,
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -111,7 +111,7 @@ moduleFor(
 
       let MyMixin = Mixin.create({
         count: 0,
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
         bar: obj2,
@@ -131,7 +131,7 @@ moduleFor(
 
       let MyMixin = Mixin.create({
         count: 0,
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -155,7 +155,7 @@ moduleFor(
 
       let MyMixin = Mixin.create({
         count: 0,
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -175,7 +175,7 @@ moduleFor(
 
       let MyMixin = Mixin.create({
         count: 0,
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -195,7 +195,7 @@ moduleFor(
 
       let MyMixin = Mixin.create({
         count: 0,
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -217,7 +217,7 @@ moduleFor(
 
       let MyMixin = Mixin.create({
         count: 0,
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });

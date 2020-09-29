@@ -4,7 +4,7 @@ const path = require('path');
 const file = require('ember-cli-blueprint-test-helpers/chai').file;
 const fs = require('fs');
 
-module.exports = function(filePath, options) {
+module.exports = function (filePath, options) {
   if (!options) {
     return file(path.join(__dirname, '../fixtures', filePath));
   }

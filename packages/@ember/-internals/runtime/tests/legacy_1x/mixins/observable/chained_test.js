@@ -32,7 +32,7 @@ moduleFor(
       set(momma, 'children', emberA([child1, child2, child3]));
 
       let observerFiredCount = 0;
-      addObserver(family, 'momma.children.@each.name', this, function() {
+      addObserver(family, 'momma.children.@each.name', this, function () {
         observerFiredCount++;
       });
 

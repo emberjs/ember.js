@@ -591,7 +591,7 @@ moduleFor(
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
       this.render('{{foo-bar foo=foo}}', {
-        foo: function() {
+        foo: function () {
           return this;
         }.call('bar'),
       });
@@ -612,7 +612,7 @@ moduleFor(
         set(
           this.context,
           'foo',
-          function() {
+          function () {
             return this;
           }.call('baz')
         )
@@ -627,7 +627,7 @@ moduleFor(
         set(
           this.context,
           'foo',
-          function() {
+          function () {
             return this;
           }.call('bar')
         )

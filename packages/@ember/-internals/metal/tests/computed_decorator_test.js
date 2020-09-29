@@ -57,7 +57,7 @@ moduleFor(
         first = 'rob';
         last = 'jackson';
 
-        @computed('first', 'last', function() {
+        @computed('first', 'last', function () {
           assert.equal(this.first, 'rob');
           assert.equal(this.last, 'jackson');
         })

@@ -13,7 +13,7 @@ import {
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
-const noop = function() {};
+const noop = function () {};
 
 let application, appInstance;
 
@@ -69,7 +69,7 @@ moduleFor(
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
-      eventDispatcher.setup = function(events) {
+      eventDispatcher.setup = function (events) {
         assert.equal(events.awesome, 'sauce');
       };
 
@@ -87,7 +87,7 @@ moduleFor(
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
-      eventDispatcher.setup = function(events) {
+      eventDispatcher.setup = function (events) {
         assert.equal(events.awesome, 'sauce');
       };
 
@@ -105,7 +105,7 @@ moduleFor(
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
-      eventDispatcher.setup = function(events) {
+      eventDispatcher.setup = function (events) {
         assert.equal(events.awesome, 'sauce');
       };
 
@@ -195,7 +195,7 @@ moduleFor(
 
         let registrations = ['route:basic', 'service:-routing'];
 
-        registrations.forEach(key => {
+        registrations.forEach((key) => {
           assert.strictEqual(
             chatEngineInstance.resolveRegistration(key),
             appInstance.resolveRegistration(key),
@@ -215,7 +215,7 @@ moduleFor(
         let env = appInstance.lookup('-environment:main');
         singletons.push(env.isInteractive ? 'renderer:-dom' : 'renderer:-inert');
 
-        singletons.forEach(key => {
+        singletons.forEach((key) => {
           assert.strictEqual(
             chatEngineInstance.lookup(key),
             appInstance.lookup(key),
@@ -229,7 +229,7 @@ moduleFor(
       assert
     ) {
       let namespace = EmberObject.create({
-        Resolver: { create: function() {} },
+        Resolver: { create: function () {} },
       });
 
       let registry = Application.buildRegistry(namespace);

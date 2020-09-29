@@ -167,7 +167,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
   private captureRefs(refs: Set<Ref<Bucket>>): CapturedRenderNode[] {
     let captured: CapturedRenderNode[] = [];
 
-    refs.forEach(ref => {
+    refs.forEach((ref) => {
       let state = ref.get();
 
       if (state) {

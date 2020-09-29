@@ -34,7 +34,7 @@ import { createUnboundRef, valueForRef } from '@glimmer/reference';
   @public
 */
 
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
     args.positional.length === 1 && args.named.length === 0

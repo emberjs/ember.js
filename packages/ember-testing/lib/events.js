@@ -23,7 +23,7 @@ export function focus(el) {
   if (el.isContentEditable || isFormControl(el)) {
     let type = el.getAttribute('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
-      run(null, function() {
+      run(null, function () {
         let browserIsNotFocused = document.hasFocus && !document.hasFocus();
 
         // makes `document.activeElement` be `element`. If the browser is focused, it also fires a focus event

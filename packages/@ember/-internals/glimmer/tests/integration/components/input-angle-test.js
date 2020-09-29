@@ -57,7 +57,7 @@ class InputRenderingTest extends RenderingTestCase {
   }
 
   assertAllAttrs(names, expected) {
-    names.forEach(name => this.assertAttr(name, expected));
+    names.forEach((name) => this.assertAttr(name, expected));
   }
 
   assertSelectionRange(start, end) {
@@ -131,7 +131,7 @@ class InputRenderingTest extends RenderingTestCase {
         args.push(`@type="${type}"`);
       }
 
-      Object.keys(events).forEach(event => {
+      Object.keys(events).forEach((event) => {
         args.push(`@${events[event]}={{action "didTrigger" "${id}" "${event}"}}`);
       });
 
@@ -152,7 +152,7 @@ class InputRenderingTest extends RenderingTestCase {
 
     this.assert.equal($standard.type, $custom.type);
 
-    Object.keys(events).forEach(event => {
+    Object.keys(events).forEach((event) => {
       this.triggerEvent(event, null, '#standard');
       this.triggerEvent(event, null, '#custom');
     });
@@ -784,7 +784,7 @@ moduleFor(
 
     ['@test triggers a method with `<Input @key-up={{this.didTrigger}} />`'](assert) {
       this.render(`<Input @key-up={{this.didTrigger}} />`, {
-        didTrigger: action(function() {
+        didTrigger: action(function () {
           assert.ok(true, 'action was triggered');
         }),
       });
@@ -1206,7 +1206,7 @@ moduleFor(
   '@min="-5" @max="50" @value="%x" @type="range"',
   '@value="%x" @min="-5" @max="50" @type="range"',
   '@value="%x" @type="range" @min="-5" @max="50"',
-].forEach(attrs => {
+].forEach((attrs) => {
   moduleFor(
     `[GH#15675] Components test: <Input ${attrs} />`,
     class extends InputRenderingTest {

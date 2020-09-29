@@ -7,7 +7,7 @@ const path = require('path');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a controller unit test.',
-  locals: function(options) {
+  locals: function (options) {
     let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
     let controllerPathName = dasherizedModuleName;
 
@@ -16,7 +16,7 @@ module.exports = useTestFrameworkDetector({
       friendlyTestDescription: ['Unit', 'Controller', dasherizedModuleName].join(' | '),
     };
   },
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
       __root__() {
         return 'tests';

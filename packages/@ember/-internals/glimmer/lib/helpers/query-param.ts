@@ -29,7 +29,7 @@ import { reifyNamed } from '@glimmer/runtime';
   @return {Object} A `QueryParams` object for `{{link-to}}`
   @public
 */
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let { positional, named } = args.capture();
 
   return createComputeRef(() => {

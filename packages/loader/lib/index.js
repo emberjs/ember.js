@@ -4,7 +4,7 @@ let define, require, Ember;
 // Used in @ember/-internals/environment/lib/global.js
 mainContext = this; // eslint-disable-line no-undef
 
-(function() {
+(function () {
   let registry;
   let seen;
 
@@ -73,7 +73,7 @@ mainContext = this; // eslint-disable-line no-undef
     registry = Object.create(null);
     seen = Object.create(null);
 
-    define = function(name, deps, callback) {
+    define = function (name, deps, callback) {
       let value = {};
 
       if (!callback) {
@@ -87,7 +87,7 @@ mainContext = this; // eslint-disable-line no-undef
       registry[name] = value;
     };
 
-    require = function(name) {
+    require = function (name) {
       return internalRequire(name, null);
     };
 

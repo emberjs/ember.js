@@ -62,7 +62,7 @@ moduleFor(
         })
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('bar', { path: '/bar' });
       });
 

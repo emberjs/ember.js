@@ -141,7 +141,7 @@ let templateFor: { owner: Owner; underscored: string; name: string } | any;
 let parseUnderscoredName: { templateName: string } | any;
 
 if (PARTIALS) {
-  lookupPartial = function(templateName: string, owner: Owner) {
+  lookupPartial = function (templateName: string, owner: Owner) {
     deprecate(
       `The use of \`{{partial}}\` is deprecated, please refactor the "${templateName}" partial to a component`,
       false,
@@ -163,7 +163,7 @@ if (PARTIALS) {
     return template;
   };
 
-  templateFor = function(owner: any, underscored: string, name: string) {
+  templateFor = function (owner: any, underscored: string, name: string) {
     if (PARTIALS) {
       if (!name) {
         return;
@@ -182,7 +182,7 @@ if (PARTIALS) {
     }
   };
 
-  parseUnderscoredName = function(templateName: string) {
+  parseUnderscoredName = function (templateName: string) {
     let nameParts = templateName.split('/');
     let lastPart = nameParts[nameParts.length - 1];
 

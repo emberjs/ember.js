@@ -18,7 +18,7 @@ if (!jQueryDisabled) {
     'ember-testing Acceptance',
     class extends AutobootApplicationTestCase {
       constructor() {
-        setDebugFunction('debug', function() {});
+        setDebugFunction('debug', function () {});
         super();
         this._originalAdapter = Test.adapter;
 
@@ -26,7 +26,7 @@ if (!jQueryDisabled) {
 
         runTask(() => {
           this.createApplication();
-          this.router.map(function() {
+          this.router.map(function () {
             this.route('posts');
             this.route('comments');
 
@@ -102,7 +102,7 @@ if (!jQueryDisabled) {
           this.application.setupForTesting();
 
           Test.registerAsyncHelper('slowHelper', () => {
-            return new RSVP.Promise(resolve => later(resolve, 10));
+            return new RSVP.Promise((resolve) => later(resolve, 10));
           });
 
           this.application.injectTestHelpers();
@@ -152,7 +152,7 @@ if (!jQueryDisabled) {
             );
             return window.click('.does-not-exist');
           })
-          .catch(e => {
+          .catch((e) => {
             assert.equal(
               e.message,
               'Element .does-not-exist not found.',
@@ -176,7 +176,7 @@ if (!jQueryDisabled) {
               'hello',
               'Fillin successfully works'
             );
-            window.find('.ember-text-field').one('keypress', e => {
+            window.find('.ember-text-field').one('keypress', (e) => {
               assert.equal(e.keyCode, 13, 'keyevent chained with correct keyCode.');
               assert.equal(e.which, 13, 'keyevent chained with correct which.');
             });
@@ -327,7 +327,7 @@ if (!jQueryDisabled) {
 
         window.visit('/posts');
 
-        window.click('.invalid-element').catch(error => {
+        window.click('.invalid-element').catch((error) => {
           assert.equal(
             error.message,
             'Element .invalid-element not found.',
@@ -441,7 +441,7 @@ if (!jQueryDisabled) {
 
         window.visit('/posts');
 
-        window.andThen(function() {
+        window.andThen(function () {
           assert.equal(window.currentURL(), '/posts', 'First visited URL is correct');
         });
 

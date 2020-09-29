@@ -9,7 +9,7 @@ class EveryTest extends AbstractTestCase {
     let found = [];
     let result;
 
-    result = obj.every(function(i) {
+    result = obj.every(function (i) {
       found.push(i);
       return true;
     });
@@ -25,7 +25,7 @@ class EveryTest extends AbstractTestCase {
     let found = [];
     let result;
 
-    result = obj.every(function(i) {
+    result = obj.every(function (i) {
       found.push(i);
       return --cnt > 0;
     });

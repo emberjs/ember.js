@@ -5,8 +5,8 @@ let Router = Ember.Router.extend({
   location: 'none',
   rootURL: '/',
 });
-Router.map(function() {
-  this.route('my-route', { path: '/my-route' }, function() {});
+Router.map(function () {
+  this.route('my-route', { path: '/my-route' }, function () {});
 });
 Ember.TEMPLATES['index'] = Ember.HTMLBars.template({
   id: null,
@@ -35,19 +35,19 @@ let options = {
 };
 app
   .visit('/', options)
-  .then(function(instance) {
+  .then(function (instance) {
     print(serializer.serialize(doc.body));
     let router = instance.lookup('router:main');
     return router.transitionTo('/my-route');
   })
-  .then(function() {
-    return new Ember.RSVP.Promise(function(resolve) {
+  .then(function () {
+    return new Ember.RSVP.Promise(function (resolve) {
       Ember.run.schedule('afterRender', resolve);
     });
   })
-  .then(function() {
+  .then(function () {
     print(serializer.serialize(doc.body));
   })
-  .catch(function(err) {
+  .catch(function (err) {
     print(err.stack);
   });

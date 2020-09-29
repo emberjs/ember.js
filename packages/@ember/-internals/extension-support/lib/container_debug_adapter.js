@@ -81,7 +81,7 @@ export default EmberObject.extend({
     let types = emberA();
     let typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
-    namespaces.forEach(namespace => {
+    namespaces.forEach((namespace) => {
       for (let key in namespace) {
         if (!Object.prototype.hasOwnProperty.call(namespace, key)) {
           continue;

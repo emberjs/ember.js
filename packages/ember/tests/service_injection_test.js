@@ -64,7 +64,7 @@ moduleFor(
         })
       );
       let MyService = Service.extend({
-        name: computed(function() {
+        name: computed(function () {
           return 'The service name';
         }),
       });

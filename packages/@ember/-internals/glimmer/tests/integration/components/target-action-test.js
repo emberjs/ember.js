@@ -116,7 +116,7 @@ moduleFor(
       this.renderDelegate();
       expectSendActionDeprecation(() => {
         runTask(() => {
-          set(this.delegate, 'action', actualArgument => {
+          set(this.delegate, 'action', (actualArgument) => {
             this.assert.deepEqual(argument, actualArgument, 'argument is passed');
           });
           this.delegate.sendAction('action', argument);
@@ -348,10 +348,10 @@ moduleFor(
 
       let component;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b');
-        this.route('c', function() {
+        this.route('c', function () {
           this.route('d');
           this.route('e');
         });

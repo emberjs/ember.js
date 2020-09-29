@@ -38,7 +38,7 @@ moduleFor(
     ) {
       if (DEBUG) {
         let obj = EmberObject.extend({
-          fooDidChange: observer('foo', function() {}),
+          fooDidChange: observer('foo', function () {}),
         }).create({
           foo: 'bar',
         });
@@ -54,7 +54,7 @@ moduleFor(
     async ['@test observers should not fire after an object has been destroyed'](assert) {
       let count = 0;
       let obj = EmberObject.extend({
-        fooDidChange: observer('foo', function() {
+        fooDidChange: observer('foo', function () {
           count++;
         }),
       }).create();
@@ -87,10 +87,10 @@ moduleFor(
         willDestroy() {
           this.set('isAlive', false);
         },
-        bDidChange: observer('objs.b.isAlive', function() {
+        bDidChange: observer('objs.b.isAlive', function () {
           shouldNotChange++;
         }),
-        cDidChange: observer('objs.c.isAlive', function() {
+        cDidChange: observer('objs.c.isAlive', function () {
           shouldNotChange++;
         }),
       });
@@ -101,10 +101,10 @@ moduleFor(
         willDestroy() {
           this.set('isAlive', false);
         },
-        aDidChange: observer('objs.a.isAlive', function() {
+        aDidChange: observer('objs.a.isAlive', function () {
           shouldNotChange++;
         }),
-        cDidChange: observer('objs.c.isAlive', function() {
+        cDidChange: observer('objs.c.isAlive', function () {
           shouldNotChange++;
         }),
       });
@@ -115,17 +115,17 @@ moduleFor(
         willDestroy() {
           this.set('isAlive', false);
         },
-        aDidChange: observer('objs.a.isAlive', function() {
+        aDidChange: observer('objs.a.isAlive', function () {
           shouldNotChange++;
         }),
-        bDidChange: observer('objs.b.isAlive', function() {
+        bDidChange: observer('objs.b.isAlive', function () {
           shouldNotChange++;
         }),
       });
 
       let LongLivedObject = EmberObject.extend({
         objs: objs,
-        isAliveDidChange: observer('objs.a.isAlive', function() {
+        isAliveDidChange: observer('objs.a.isAlive', function () {
           shouldChange++;
         }),
       });

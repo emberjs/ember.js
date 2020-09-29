@@ -344,7 +344,7 @@ moduleFor(
 
       ENV.LOG_VERSION = true;
 
-      setDebugFunction('debug', message => messages.push(message));
+      setDebugFunction('debug', (message) => messages.push(message));
 
       libraries.register('my-lib', '2.0.0a');
 
@@ -399,7 +399,7 @@ moduleFor(
       assert
     ) {
       let namespace = EmberObject.create({
-        Resolver: { create: function() {} },
+        Resolver: { create: function () {} },
       });
 
       let registry = Application.buildRegistry(namespace);

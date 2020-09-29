@@ -764,7 +764,7 @@ moduleFor(
       });
 
       let OuterComponent = Component.extend({
-        otherComponent: computed(function() {
+        otherComponent: computed(function () {
           return {
             actions: {
               outerAction() {
@@ -1058,7 +1058,7 @@ moduleFor(
 
         let OuterComponent = Component.extend({
           foo: 123,
-          submitTask: computed(function() {
+          submitTask: computed(function () {
             return {
               [INVOKE]: (...args) => {
                 invokableArgs = args;
@@ -1165,7 +1165,7 @@ moduleFor(
         clicked: 0,
 
         actions: {
-          'on-click': function() {
+          'on-click': function () {
             this.incrementProperty('clicked');
           },
         },
@@ -1219,7 +1219,7 @@ moduleFor(
       assert.equal(didReceiveAttrsFired, 3);
 
       runTask(() =>
-        set(outer, 'onClick', function() {
+        set(outer, 'onClick', function () {
           outer.incrementProperty('clicked');
         })
       );

@@ -6,7 +6,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test toString'](assert) {
       let obj = {};
-      defineProperty(obj, 'toString', undefined, function() {
+      defineProperty(obj, 'toString', undefined, function () {
         return 'FOO';
       });
       assert.equal(obj.toString(), 'FOO', 'should replace toString');

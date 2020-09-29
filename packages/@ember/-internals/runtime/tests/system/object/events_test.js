@@ -7,7 +7,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test a listener can be added to an object'](assert) {
       let count = 0;
-      let F = function() {
+      let F = function () {
         count++;
       };
 
@@ -27,7 +27,7 @@ moduleFor(
       assert
     ) {
       let count = 0;
-      let F = function() {
+      let F = function () {
         count++;
       };
 
@@ -48,7 +48,7 @@ moduleFor(
 
       let obj = EmberObject.extend(Evented).create();
 
-      obj.on('event!', function() {
+      obj.on('event!', function () {
         args = [].slice.call(arguments);
         self = this;
       });
@@ -65,7 +65,7 @@ moduleFor(
 
       let obj = EmberObject.extend(Evented).create();
 
-      obj.one('event!', function() {
+      obj.one('event!', function () {
         args = [].slice.call(arguments);
         self = this;
         count++;
@@ -90,7 +90,7 @@ moduleFor(
       let obj = EmberObject.extend(Evented).create();
       let target = {};
 
-      obj.on('event!', target, function() {
+      obj.on('event!', target, function () {
         args = [].slice.call(arguments);
         self = this;
       });
@@ -106,7 +106,7 @@ moduleFor(
     ) {
       let count = 0;
       let target = {};
-      target.fn = function() {
+      target.fn = function () {
         count++;
       };
 
@@ -126,7 +126,7 @@ moduleFor(
       let obj = EmberObject.extend(Evented, {
         F() {},
       }).create();
-      let F = function() {};
+      let F = function () {};
 
       obj.one('event!', F);
       obj.one('event!', obj, 'F');
@@ -141,7 +141,7 @@ moduleFor(
 
     ['@test adding and removing listeners should be chainable'](assert) {
       let obj = EmberObject.extend(Evented).create();
-      let F = function() {};
+      let F = function () {};
 
       let ret = obj.on('event!', F);
       assert.equal(ret, obj, '#on returns self');

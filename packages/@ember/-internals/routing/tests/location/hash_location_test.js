@@ -55,7 +55,7 @@ moduleFor(
   'HashLocation',
   class extends AbstractTestCase {
     teardown() {
-      run(function() {
+      run(function () {
         if (location) {
           location.destroy();
         }
@@ -148,7 +148,7 @@ moduleFor(
         assert
       );
 
-      let callback = function(param) {
+      let callback = function (param) {
         assert.equal(param, '/foo/bar', 'path is passed as param');
       };
 
@@ -170,7 +170,7 @@ moduleFor(
         assert
       );
 
-      let callback = function() {
+      let callback = function () {
         assert.ok(false, 'callback should not be called');
       };
 
@@ -190,7 +190,7 @@ moduleFor(
 
       createLocation({}, assert);
 
-      let callback = function() {
+      let callback = function () {
         assert.ok(true, 'should invoke callback once');
       };
 

@@ -21,10 +21,10 @@ const DEPRECATED_FEATURES = (function getFeatures() {
   let sourceFile = ts.createSourceFile(fileName, contents, ts.ScriptTarget.ES2017);
   let flags = {};
 
-  sourceFile.statements.forEach(statement => {
+  sourceFile.statements.forEach((statement) => {
     if (
       statement.kind === ts.SyntaxKind.VariableStatement &&
-      statement.modifiers.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+      statement.modifiers.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
     ) {
       handleExportedDeclaration(statement, flags);
     }

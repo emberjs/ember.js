@@ -49,7 +49,7 @@ function process(b: Builders, node: AST.BlockStatement | AST.MustacheStatement) 
     node.hash.pairs.push(classPair);
   }
 
-  each(allOfTheMicrosyntaxIndexes, index => {
+  each(allOfTheMicrosyntaxIndexes, (index) => {
     node.hash.pairs.splice(index, 1);
   });
 

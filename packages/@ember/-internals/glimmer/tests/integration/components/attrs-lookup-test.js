@@ -226,7 +226,7 @@ moduleFor(
     ['@test bound computed properties can be overridden in extensions, set during init, and passed in as attrs']() {
       let FooClass = Component.extend({
         attributeBindings: ['style'],
-        style: computed('height', 'color', function() {
+        style: computed('height', 'color', function () {
           let height = this.get('height');
           let color = this.get('color');
           return htmlSafe(`height: ${height}px; background-color: ${color};`);

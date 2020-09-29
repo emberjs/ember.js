@@ -10,7 +10,7 @@ moduleFor(
       this.addTemplate('index', `<h1>Index</h1>`);
       this.addTemplate('posts', `<h1>Posts</h1>`);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts');
       });
     }

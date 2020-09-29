@@ -242,7 +242,7 @@ moduleFor(
     ['@test updates controller QP properties on other route after transitioning to that route'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -361,8 +361,8 @@ moduleFor(
         `{{#link-to 'cars' id='close-link'}}Close create form{{/link-to}}`
       );
 
-      this.router.map(function() {
-        this.route('cars', function() {
+      this.router.map(function () {
+        this.route('cars', function () {
           this.route('create');
         });
       });
@@ -432,8 +432,8 @@ moduleFor(
         `
       );
 
-      this.router.map(function() {
-        this.route('search', function() {
+      this.router.map(function () {
+        this.route('search', function () {
           this.route('results');
         });
       });
@@ -578,8 +578,8 @@ moduleFor(
         });
     }
     ['@test the {{link-to}} component applies active class to the parent route'](assert) {
-      this.router.map(function() {
-        this.route('parent', function() {
+      this.router.map(function () {
+        this.route('parent', function () {
           this.route('child');
         });
       });
@@ -620,7 +620,7 @@ moduleFor(
     ) {
       let appLink;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('parent');
       });
 
@@ -687,7 +687,7 @@ moduleFor(
     }
 
     ['@test {{link-to}} default query params while in active transition regression test'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('foos');
         this.route('bars');
       });
@@ -810,7 +810,7 @@ moduleFor(
     }
 
     ['@test [GH#17869] it does not cause shadowing assertion with `hash` local variable']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:id' });
       });
 

@@ -5,13 +5,13 @@ import { setContext, unsetContext } from './test-context';
 import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
-  QUnit.module(description, function(hooks) {
+  QUnit.module(description, function (hooks) {
     setupTestClass(hooks, TestClass, ...mixins);
   });
 }
 
 export function setupTestClass(hooks, TestClass, ...mixins) {
-  hooks.beforeEach(function(assert) {
+  hooks.beforeEach(function (assert) {
     let instance = new TestClass(assert);
     this.instance = instance;
 
@@ -22,7 +22,7 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
     }
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     let promises = [];
     let instance = this.instance;
     this.instance = null;
@@ -55,7 +55,7 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
   properties.forEach(generateTest);
 
   function shouldTest(features) {
-    return features.every(feature => {
+    return features.every((feature) => {
       if (feature[0] === '!') {
         return !isEnabled(feature.slice(1));
       } else {
@@ -66,16 +66,16 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
 
   function generateTest(name) {
     if (name.indexOf('@test ') === 0) {
-      QUnit.test(name.slice(5), function(assert) {
+      QUnit.test(name.slice(5), function (assert) {
         return this.instance[name](assert);
       });
     } else if (name.indexOf('@only ') === 0) {
       // eslint-disable-next-line qunit/no-only
-      QUnit.only(name.slice(5), function(assert) {
+      QUnit.only(name.slice(5), function (assert) {
         return this.instance[name](assert);
       });
     } else if (name.indexOf('@skip ') === 0) {
-      QUnit.skip(name.slice(5), function(assert) {
+      QUnit.skip(name.slice(5), function (assert) {
         return this.instance[name](assert);
       });
     } else {
@@ -85,7 +85,7 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
         let features = match[1].replace(/ /g, '').split(',');
 
         if (shouldTest(features)) {
-          QUnit.test(name.slice(match[0].length), function(assert) {
+          QUnit.test(name.slice(match[0].length), function (assert) {
             return this.instance[name](assert);
           });
         }

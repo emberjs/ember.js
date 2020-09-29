@@ -31,7 +31,7 @@ export function isElementDescriptor(
 }
 
 export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
-  let decorator = function() {
+  let decorator = function () {
     return propertyDesc;
   };
 

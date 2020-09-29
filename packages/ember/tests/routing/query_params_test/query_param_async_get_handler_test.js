@@ -25,14 +25,14 @@ moduleFor(
           let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
           let getRoute = this._routerMicrolib.getRoute;
 
-          this._routerMicrolib.getRoute = function(routeName) {
+          this._routerMicrolib.getRoute = function (routeName) {
             fetchedHandlers.push(routeName);
 
             // Cache the returns so we don't have more than one Promise for a
             // given handler.
             return (
               handlerPromises[routeName] ||
-              (handlerPromises[routeName] = new RSVP.Promise(resolve => {
+              (handlerPromises[routeName] = new RSVP.Promise((resolve) => {
                 setTimeout(() => {
                   let handler = getRoute(routeName);
 
@@ -59,7 +59,7 @@ moduleFor(
     ) {
       assert.expect(4);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:id' });
       });
 
@@ -100,7 +100,7 @@ moduleFor(
     ['@test can transitionTo to an asynchronously loaded route with simple query params'](assert) {
       assert.expect(6);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:id' });
         this.route('posts');
       });
@@ -145,7 +145,7 @@ moduleFor(
     ['@test can transitionTo to an asynchronously loaded route with array query params'](assert) {
       assert.expect(5);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:id' });
       });
 
@@ -181,8 +181,8 @@ moduleFor(
     ['@test can transitionTo to an asynchronously loaded route with mapped query params'](assert) {
       assert.expect(7);
 
-      this.router.map(function() {
-        this.route('post', { path: '/post/:id' }, function() {
+      this.router.map(function () {
+        this.route('post', { path: '/post/:id' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -236,8 +236,8 @@ moduleFor(
     ['@test can transitionTo with a URL'](assert) {
       assert.expect(7);
 
-      this.router.map(function() {
-        this.route('post', { path: '/post/:id' }, function() {
+      this.router.map(function () {
+        this.route('post', { path: '/post/:id' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -287,7 +287,7 @@ moduleFor(
     ["@test undefined isn't serialized or deserialized into a string"](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('example');
       });
 

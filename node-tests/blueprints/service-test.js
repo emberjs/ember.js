@@ -16,11 +16,11 @@ const fixture = require('../helpers/fixture');
 const setupTestEnvironment = require('../helpers/setup-test-environment');
 const enableOctane = setupTestEnvironment.enableOctane;
 
-describe('Blueprint: service', function() {
+describe('Blueprint: service', function () {
   setupTestHooks(this);
 
-  describe('in app', function() {
-    beforeEach(function() {
+  describe('in app', function () {
+    beforeEach(function () {
       return emberNew()
         .then(() =>
           modifyPackages([
@@ -31,8 +31,8 @@ describe('Blueprint: service', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('service foo', function() {
-      return emberGenerateDestroy(['service', 'foo'], _file => {
+    it('service foo', function () {
+      return emberGenerateDestroy(['service', 'foo'], (_file) => {
         expect(_file('app/services/foo.js')).to.equal(fixture('service/service.js'));
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
@@ -41,8 +41,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo.js', function() {
-      return emberGenerateDestroy(['service', 'foo.js'], _file => {
+    it('service foo.js', function () {
+      return emberGenerateDestroy(['service', 'foo.js'], (_file) => {
         expect(_file('app/services/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/services/foo-test.js.js')).to.not.exist;
 
@@ -54,8 +54,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar', function() {
-      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
+    it('service foo/bar', function () {
+      return emberGenerateDestroy(['service', 'foo/bar'], (_file) => {
         expect(_file('app/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
 
         expect(_file('tests/unit/services/foo/bar-test.js')).to.equal(
@@ -64,8 +64,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo --pod', function() {
-      return emberGenerateDestroy(['service', 'foo', '--pod'], _file => {
+    it('service foo --pod', function () {
+      return emberGenerateDestroy(['service', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo/service.js')).to.equal(fixture('service/service.js'));
 
         expect(_file('tests/unit/foo/service-test.js')).to.equal(
@@ -74,8 +74,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo.js --pod', function() {
-      return emberGenerateDestroy(['service', 'foo.js', '--pod'], _file => {
+    it('service foo.js --pod', function () {
+      return emberGenerateDestroy(['service', 'foo.js', '--pod'], (_file) => {
         expect(_file('app/foo.js/service.js')).to.not.exist;
         expect(_file('tests/unit/foo.js/service-test.js')).to.not.exist;
 
@@ -87,8 +87,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar --pod', function() {
-      return emberGenerateDestroy(['service', 'foo/bar', '--pod'], _file => {
+    it('service foo/bar --pod', function () {
+      return emberGenerateDestroy(['service', 'foo/bar', '--pod'], (_file) => {
         expect(_file('app/foo/bar/service.js')).to.equal(fixture('service/service-nested.js'));
 
         expect(_file('tests/unit/foo/bar/service-test.js')).to.equal(
@@ -97,13 +97,13 @@ describe('Blueprint: service', function() {
       });
     });
 
-    describe('with podModulePrefix', function() {
-      beforeEach(function() {
+    describe('with podModulePrefix', function () {
+      beforeEach(function () {
         setupPodConfig({ podModulePrefix: true });
       });
 
-      it('service foo --pod', function() {
-        return emberGenerateDestroy(['service', 'foo', '--pod'], _file => {
+      it('service foo --pod', function () {
+        return emberGenerateDestroy(['service', 'foo', '--pod'], (_file) => {
           expect(_file('app/pods/foo/service.js')).to.equal(fixture('service/service.js'));
 
           expect(_file('tests/unit/pods/foo/service-test.js')).to.equal(
@@ -112,8 +112,8 @@ describe('Blueprint: service', function() {
         });
       });
 
-      it('service foo.js --pod', function() {
-        return emberGenerateDestroy(['service', 'foo.js', '--pod'], _file => {
+      it('service foo.js --pod', function () {
+        return emberGenerateDestroy(['service', 'foo.js', '--pod'], (_file) => {
           expect(_file('app/pods/foo.js/service.js')).to.not.exist;
           expect(_file('tests/unit/pods/foo.js/service-test.js')).to.not.exist;
 
@@ -125,8 +125,8 @@ describe('Blueprint: service', function() {
         });
       });
 
-      it('service foo/bar --pod', function() {
-        return emberGenerateDestroy(['service', 'foo/bar', '--pod'], _file => {
+      it('service foo/bar --pod', function () {
+        return emberGenerateDestroy(['service', 'foo/bar', '--pod'], (_file) => {
           expect(_file('app/pods/foo/bar/service.js')).to.equal(
             fixture('service/service-nested.js')
           );
@@ -139,10 +139,10 @@ describe('Blueprint: service', function() {
     });
   });
 
-  describe('in app - octane', function() {
+  describe('in app - octane', function () {
     enableOctane();
 
-    beforeEach(function() {
+    beforeEach(function () {
       return emberNew()
         .then(() =>
           modifyPackages([
@@ -153,8 +153,8 @@ describe('Blueprint: service', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('service foo', function() {
-      return emberGenerateDestroy(['service', 'foo'], _file => {
+    it('service foo', function () {
+      return emberGenerateDestroy(['service', 'foo'], (_file) => {
         expect(_file('app/services/foo.js')).to.equal(fixture('service/native-service.js'));
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
@@ -163,8 +163,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo.js', function() {
-      return emberGenerateDestroy(['service', 'foo.js'], _file => {
+    it('service foo.js', function () {
+      return emberGenerateDestroy(['service', 'foo.js'], (_file) => {
         expect(_file('app/services/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/services/foo.js-test.js')).to.not.exist;
 
@@ -176,8 +176,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar', function() {
-      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
+    it('service foo/bar', function () {
+      return emberGenerateDestroy(['service', 'foo/bar'], (_file) => {
         expect(_file('app/services/foo/bar.js')).to.equal(
           fixture('service/native-service-nested.js')
         );
@@ -188,8 +188,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo --pod', function() {
-      return emberGenerateDestroy(['service', 'foo', '--pod'], _file => {
+    it('service foo --pod', function () {
+      return emberGenerateDestroy(['service', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo/service.js')).to.equal(fixture('service/native-service.js'));
 
         expect(_file('tests/unit/foo/service-test.js')).to.equal(
@@ -198,8 +198,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo.js --pod', function() {
-      return emberGenerateDestroy(['service', 'foo.js', '--pod'], _file => {
+    it('service foo.js --pod', function () {
+      return emberGenerateDestroy(['service', 'foo.js', '--pod'], (_file) => {
         expect(_file('app/foo.js/service.js')).to.not.exist;
         expect(_file('tests/unit/foo.js/service-test.js')).to.not.exist;
 
@@ -211,8 +211,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar --pod', function() {
-      return emberGenerateDestroy(['service', 'foo/bar', '--pod'], _file => {
+    it('service foo/bar --pod', function () {
+      return emberGenerateDestroy(['service', 'foo/bar', '--pod'], (_file) => {
         expect(_file('app/foo/bar/service.js')).to.equal(
           fixture('service/native-service-nested.js')
         );
@@ -223,13 +223,13 @@ describe('Blueprint: service', function() {
       });
     });
 
-    describe('with podModulePrefix', function() {
-      beforeEach(function() {
+    describe('with podModulePrefix', function () {
+      beforeEach(function () {
         setupPodConfig({ podModulePrefix: true });
       });
 
-      it('service foo --pod', function() {
-        return emberGenerateDestroy(['service', 'foo', '--pod'], _file => {
+      it('service foo --pod', function () {
+        return emberGenerateDestroy(['service', 'foo', '--pod'], (_file) => {
           expect(_file('app/pods/foo/service.js')).to.equal(fixture('service/native-service.js'));
 
           expect(_file('tests/unit/pods/foo/service-test.js')).to.equal(
@@ -238,8 +238,8 @@ describe('Blueprint: service', function() {
         });
       });
 
-      it('service foo.js --pod', function() {
-        return emberGenerateDestroy(['service', 'foo.js', '--pod'], _file => {
+      it('service foo.js --pod', function () {
+        return emberGenerateDestroy(['service', 'foo.js', '--pod'], (_file) => {
           expect(_file('app/pods/foo.js/service.js')).to.not.exist;
           expect(_file('tests/unit/pods/foo.js/service-test.js')).to.not.exist;
 
@@ -251,8 +251,8 @@ describe('Blueprint: service', function() {
         });
       });
 
-      it('service foo/bar --pod', function() {
-        return emberGenerateDestroy(['service', 'foo/bar', '--pod'], _file => {
+      it('service foo/bar --pod', function () {
+        return emberGenerateDestroy(['service', 'foo/bar', '--pod'], (_file) => {
           expect(_file('app/pods/foo/bar/service.js')).to.equal(
             fixture('service/native-service-nested.js')
           );
@@ -265,8 +265,8 @@ describe('Blueprint: service', function() {
     });
   });
 
-  describe('in addon', function() {
-    beforeEach(function() {
+  describe('in addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
           modifyPackages([
@@ -277,8 +277,8 @@ describe('Blueprint: service', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('service foo', function() {
-      return emberGenerateDestroy(['service', 'foo'], _file => {
+    it('service foo', function () {
+      return emberGenerateDestroy(['service', 'foo'], (_file) => {
         expect(_file('addon/services/foo.js')).to.equal(fixture('service/service.js'));
 
         expect(_file('app/services/foo.js')).to.contain(
@@ -291,8 +291,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo.js', function() {
-      return emberGenerateDestroy(['service', 'foo.js'], _file => {
+    it('service foo.js', function () {
+      return emberGenerateDestroy(['service', 'foo.js'], (_file) => {
         expect(_file('addon/services/foo.js.js')).to.not.exist;
         expect(_file('app/services/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/services/foo.js-test.js')).to.not.exist;
@@ -309,8 +309,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar', function() {
-      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
+    it('service foo/bar', function () {
+      return emberGenerateDestroy(['service', 'foo/bar'], (_file) => {
         expect(_file('addon/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
 
         expect(_file('app/services/foo/bar.js')).to.contain(
@@ -323,8 +323,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar --dummy', function() {
-      return emberGenerateDestroy(['service', 'foo/bar', '--dummy'], _file => {
+    it('service foo/bar --dummy', function () {
+      return emberGenerateDestroy(['service', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/services/foo/bar.js')).to.equal(
           fixture('service/service-nested.js')
         );
@@ -332,8 +332,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar.js --dummy', function() {
-      return emberGenerateDestroy(['service', 'foo/bar.js', '--dummy'], _file => {
+    it('service foo/bar.js --dummy', function () {
+      return emberGenerateDestroy(['service', 'foo/bar.js', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/services/foo/bar.js.js')).to.not.exist;
 
         expect(_file('tests/dummy/app/services/foo/bar.js')).to.equal(
@@ -344,10 +344,10 @@ describe('Blueprint: service', function() {
     });
   });
 
-  describe('in addon - octane', function() {
+  describe('in addon - octane', function () {
     enableOctane();
 
-    beforeEach(function() {
+    beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
           modifyPackages([
@@ -358,8 +358,8 @@ describe('Blueprint: service', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('service foo', function() {
-      return emberGenerateDestroy(['service', 'foo'], _file => {
+    it('service foo', function () {
+      return emberGenerateDestroy(['service', 'foo'], (_file) => {
         expect(_file('addon/services/foo.js')).to.equal(fixture('service/native-service.js'));
 
         expect(_file('app/services/foo.js')).to.contain(
@@ -372,8 +372,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo.js', function() {
-      return emberGenerateDestroy(['service', 'foo.js'], _file => {
+    it('service foo.js', function () {
+      return emberGenerateDestroy(['service', 'foo.js'], (_file) => {
         expect(_file('addon/services/foo.js.js')).to.not.exist;
         expect(_file('app/services/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/services/foo.js-test.js')).to.not.exist;
@@ -390,8 +390,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar', function() {
-      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
+    it('service foo/bar', function () {
+      return emberGenerateDestroy(['service', 'foo/bar'], (_file) => {
         expect(_file('addon/services/foo/bar.js')).to.equal(
           fixture('service/native-service-nested.js')
         );
@@ -406,8 +406,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar --dummy', function() {
-      return emberGenerateDestroy(['service', 'foo/bar', '--dummy'], _file => {
+    it('service foo/bar --dummy', function () {
+      return emberGenerateDestroy(['service', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/services/foo/bar.js')).to.equal(
           fixture('service/native-service-nested.js')
         );
@@ -415,8 +415,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar.js --dummy', function() {
-      return emberGenerateDestroy(['service', 'foo/bar.js', '--dummy'], _file => {
+    it('service foo/bar.js --dummy', function () {
+      return emberGenerateDestroy(['service', 'foo/bar.js', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/services/foo/bar.js.js')).to.not.exist;
 
         expect(_file('tests/dummy/app/services/foo/bar.js')).to.equal(
@@ -427,8 +427,8 @@ describe('Blueprint: service', function() {
     });
   });
 
-  describe('in in-repo-addon', function() {
-    beforeEach(function() {
+  describe('in in-repo-addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'in-repo-addon' })
         .then(() =>
           modifyPackages([
@@ -439,8 +439,8 @@ describe('Blueprint: service', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('service foo --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['service', 'foo', '--in-repo-addon=my-addon'], _file => {
+    it('service foo --in-repo-addon=my-addon', function () {
+      return emberGenerateDestroy(['service', 'foo', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/services/foo.js')).to.equal(fixture('service/service.js'));
 
         expect(_file('lib/my-addon/app/services/foo.js')).to.contain(
@@ -453,8 +453,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo.js --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['service', 'foo.js', '--in-repo-addon=my-addon'], _file => {
+    it('service foo.js --in-repo-addon=my-addon', function () {
+      return emberGenerateDestroy(['service', 'foo.js', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/services/foo.js.js')).to.not.exist;
         expect(_file('lib/my-addon/app/services/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/services/foo.js-test.js')).to.not.exist;
@@ -471,8 +471,8 @@ describe('Blueprint: service', function() {
       });
     });
 
-    it('service foo/bar --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['service', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
+    it('service foo/bar --in-repo-addon=my-addon', function () {
+      return emberGenerateDestroy(['service', 'foo/bar', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/services/foo/bar.js')).to.equal(
           fixture('service/service-nested.js')
         );

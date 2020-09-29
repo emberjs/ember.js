@@ -82,7 +82,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         adapter = this.applicationInstance.lookup('data-adapter:main');
-        adapter.watchModelTypes(function() {});
+        adapter.watchModelTypes(function () {});
       });
     }
 
@@ -256,7 +256,7 @@ moduleFor(
               recordUpdated(self.wrapRecord(record));
             }
             addObserver(record, 'title', callback);
-            return function() {
+            return function () {
               removeObserver(record, 'title', callback);
             };
           },

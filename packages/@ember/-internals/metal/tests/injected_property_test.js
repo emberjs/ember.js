@@ -22,7 +22,7 @@ moduleFor(
       let obj = {};
       defineProperty(obj, 'foo', inject('type', 'name'));
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         get(obj, 'foo');
       }, /Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container./);
     }

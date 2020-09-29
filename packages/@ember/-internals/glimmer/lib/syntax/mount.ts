@@ -69,7 +69,7 @@ export function mountHelper(
 
   if (DEBUG && args.named) {
     let keys = args.named.names;
-    let extra = keys.filter(k => k !== 'model');
+    let extra = keys.filter((k) => k !== 'model');
 
     assert(
       'You can only pass a `model` argument to the {{mount}} helper, ' +

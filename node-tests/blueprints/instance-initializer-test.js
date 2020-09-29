@@ -13,11 +13,11 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
-describe('Blueprint: instance-initializer', function() {
+describe('Blueprint: instance-initializer', function () {
   setupTestHooks(this);
 
-  describe('in app', function() {
-    beforeEach(function() {
+  describe('in app', function () {
+    beforeEach(function () {
       return emberNew()
         .then(() =>
           modifyPackages([
@@ -28,8 +28,8 @@ describe('Blueprint: instance-initializer', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('instance-initializer foo', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo'], _file => {
+    it('instance-initializer foo', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo'], (_file) => {
         expect(_file('app/instance-initializers/foo.js')).to.equal(
           fixture('instance-initializer/instance-initializer.js')
         );
@@ -40,8 +40,8 @@ describe('Blueprint: instance-initializer', function() {
       });
     });
 
-    it('instance-initializer foo/bar', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo/bar'], _file => {
+    it('instance-initializer foo/bar', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo/bar'], (_file) => {
         expect(_file('app/instance-initializers/foo/bar.js')).to.equal(
           fixture('instance-initializer/instance-initializer-nested.js')
         );
@@ -52,37 +52,37 @@ describe('Blueprint: instance-initializer', function() {
       });
     });
 
-    it('instance-initializer foo --pod', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo', '--pod'], _file => {
+    it('instance-initializer foo --pod', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo', '--pod'], (_file) => {
         expect(_file('app/instance-initializers/foo.js')).to.equal(
           fixture('instance-initializer/instance-initializer.js')
         );
       });
     });
 
-    it('instance-initializer foo/bar --pod', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo/bar', '--pod'], _file => {
+    it('instance-initializer foo/bar --pod', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo/bar', '--pod'], (_file) => {
         expect(_file('app/instance-initializers/foo/bar.js')).to.equal(
           fixture('instance-initializer/instance-initializer-nested.js')
         );
       });
     });
 
-    describe('with podModulePrefix', function() {
-      beforeEach(function() {
+    describe('with podModulePrefix', function () {
+      beforeEach(function () {
         setupPodConfig({ podModulePrefix: true });
       });
 
-      it('instance-initializer foo --pod', function() {
-        return emberGenerateDestroy(['instance-initializer', 'foo', '--pod'], _file => {
+      it('instance-initializer foo --pod', function () {
+        return emberGenerateDestroy(['instance-initializer', 'foo', '--pod'], (_file) => {
           expect(_file('app/instance-initializers/foo.js')).to.equal(
             fixture('instance-initializer/instance-initializer.js')
           );
         });
       });
 
-      it('instance-initializer foo/bar --pod', function() {
-        return emberGenerateDestroy(['instance-initializer', 'foo/bar', '--pod'], _file => {
+      it('instance-initializer foo/bar --pod', function () {
+        return emberGenerateDestroy(['instance-initializer', 'foo/bar', '--pod'], (_file) => {
           expect(_file('app/instance-initializers/foo/bar.js')).to.equal(
             fixture('instance-initializer/instance-initializer-nested.js')
           );
@@ -91,8 +91,8 @@ describe('Blueprint: instance-initializer', function() {
     });
   });
 
-  describe('in addon', function() {
-    beforeEach(function() {
+  describe('in addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
           modifyPackages([
@@ -103,8 +103,8 @@ describe('Blueprint: instance-initializer', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('instance-initializer foo', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo'], _file => {
+    it('instance-initializer foo', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo'], (_file) => {
         expect(_file('addon/instance-initializers/foo.js')).to.equal(
           fixture('instance-initializer/instance-initializer.js')
         );
@@ -117,8 +117,8 @@ describe('Blueprint: instance-initializer', function() {
       });
     });
 
-    it('instance-initializer foo/bar', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo/bar'], _file => {
+    it('instance-initializer foo/bar', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo/bar'], (_file) => {
         expect(_file('addon/instance-initializers/foo/bar.js')).to.equal(
           fixture('instance-initializer/instance-initializer-nested.js')
         );
@@ -131,8 +131,8 @@ describe('Blueprint: instance-initializer', function() {
       });
     });
 
-    it('instance-initializer foo --dummy', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo', '--dummy'], _file => {
+    it('instance-initializer foo --dummy', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/instance-initializers/foo.js')).to.equal(
           fixture('instance-initializer/instance-initializer.js')
         );
@@ -143,8 +143,8 @@ describe('Blueprint: instance-initializer', function() {
       });
     });
 
-    it('instance-initializer foo/bar --dummy', function() {
-      return emberGenerateDestroy(['instance-initializer', 'foo/bar', '--dummy'], _file => {
+    it('instance-initializer foo/bar --dummy', function () {
+      return emberGenerateDestroy(['instance-initializer', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/instance-initializers/foo/bar.js')).to.equal(
           fixture('instance-initializer/instance-initializer-nested.js')
         );
@@ -156,8 +156,8 @@ describe('Blueprint: instance-initializer', function() {
     });
   });
 
-  describe('in in-repo-addon', function() {
-    beforeEach(function() {
+  describe('in in-repo-addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'in-repo-addon' })
         .then(() =>
           modifyPackages([
@@ -168,10 +168,10 @@ describe('Blueprint: instance-initializer', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('instance-initializer foo --in-repo-addon=my-addon', function() {
+    it('instance-initializer foo --in-repo-addon=my-addon', function () {
       return emberGenerateDestroy(
         ['instance-initializer', 'foo', '--in-repo-addon=my-addon'],
-        _file => {
+        (_file) => {
           expect(_file('lib/my-addon/addon/instance-initializers/foo.js')).to.equal(
             fixture('instance-initializer/instance-initializer.js')
           );
@@ -185,10 +185,10 @@ describe('Blueprint: instance-initializer', function() {
       );
     });
 
-    it('instance-initializer foo/bar --in-repo-addon=my-addon', function() {
+    it('instance-initializer foo/bar --in-repo-addon=my-addon', function () {
       return emberGenerateDestroy(
         ['instance-initializer', 'foo/bar', '--in-repo-addon=my-addon'],
-        _file => {
+        (_file) => {
           expect(_file('lib/my-addon/addon/instance-initializers/foo/bar.js')).to.equal(
             fixture('instance-initializer/instance-initializer.js')
           );

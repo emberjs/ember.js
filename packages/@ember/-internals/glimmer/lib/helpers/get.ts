@@ -94,7 +94,7 @@ import {
   @for Ember.Templates.helpers
   @since 2.1.0
  */
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let sourceRef = args.positional.at(0);
   let pathRef = args.positional.at(1);
 
@@ -120,7 +120,7 @@ export default function(args: VMArguments) {
           return get(source, String(valueForRef(pathRef)));
         }
       },
-      value => {
+      (value) => {
         let source = valueForRef(sourceRef);
 
         if (isObject(source)) {

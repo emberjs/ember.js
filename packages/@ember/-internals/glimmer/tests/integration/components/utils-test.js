@@ -42,7 +42,7 @@ moduleFor(
         isExpanded: true,
 
         actions: {
-          toggle: function() {
+          toggle: function () {
             this.toggleProperty('isExpanded');
           },
         },
@@ -127,8 +127,8 @@ moduleFor(
     `
       );
 
-      this.router.map(function() {
-        this.route('zomg', function() {
+      this.router.map(function () {
+        this.route('zomg', function () {
           this.route('lol');
         });
       });
@@ -166,7 +166,7 @@ moduleFor(
       let owner = this.applicationInstance;
 
       let actual = getRootViews(owner)
-        .map(view => view.id)
+        .map((view) => view.id)
         .sort();
       let expected = ids.sort();
 
@@ -245,7 +245,7 @@ moduleFor(
       let parentView = this.viewFor(parentId);
       let childViews = getChildViews(parentView);
 
-      let actual = childViews.map(view => view.id).sort();
+      let actual = childViews.map((view) => view.id).sort();
       let expected = childIds.sort();
 
       this.assert.deepEqual(actual, expected, `child views for #${parentId}`);
@@ -262,7 +262,7 @@ moduleFor(
 let hasGetClientRects, hasGetBoundingClientRect;
 let ClientRectListCtor, ClientRectCtor;
 
-(function() {
+(function () {
   if (document.createRange) {
     let range = document.createRange();
 

@@ -40,13 +40,13 @@ const originalLookup = context.lookup;
 class ObservableTestCase extends AbstractTestCase {
   afterEach() {
     let destroyables = [object, objectA, objectB, objectC, objectD, objectE, objectF].filter(
-      obj => obj && obj.destroy
+      (obj) => obj && obj.destroy
     );
 
     object = objectA = objectC = objectD = objectE = objectF = undefined;
     context.lookup = originalLookup;
     lookup = undefined;
-    destroyables.forEach(obj => obj.destroy());
+    destroyables.forEach((obj) => obj.destroy());
     return runLoopSettled();
   }
 }
@@ -60,7 +60,7 @@ moduleFor(
   class extends ObservableTestCase {
     beforeEach() {
       object = ObservableObject.extend(Observable, {
-        computed: computed(function() {
+        computed: computed(function () {
           return 'value';
         }),
         method() {
@@ -109,7 +109,7 @@ moduleFor(
   class extends ObservableTestCase {
     beforeEach() {
       objectA = ObservableObject.extend({
-        computed: computed(function() {
+        computed: computed(function () {
           return 'value';
         }),
         method() {
@@ -163,7 +163,7 @@ moduleFor(
     }
 
     ['@test raise if the provided object is undefined']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         get(undefined, 'key');
       }, /Cannot call get with 'key' on an undefined object/i);
     }
@@ -176,7 +176,7 @@ moduleFor(
     ['@test should return a property at a given path relative to the passed object'](assert) {
       let foo = ObservableObject.create({
         bar: ObservableObject.extend({
-          baz: computed(function() {
+          baz: computed(function () {
             return 'blargh';
           }),
         }).create(),
@@ -315,7 +315,7 @@ moduleFor(
               this.computedCachedCalls.push('getter-called');
               return 'computedCached';
             },
-            set: function(key, value) {
+            set: function (key, value) {
               this.computedCachedCalls.push(value);
             },
           }),
@@ -348,11 +348,11 @@ moduleFor(
             },
           }),
 
-          inc: computed('changer', function() {
+          inc: computed('changer', function () {
             return this.incCallCount++;
           }),
 
-          nestedInc: computed('inc', function() {
+          nestedInc: computed('inc', function () {
             get(this, 'inc');
             return this.nestedIncCallCount++;
           }),
@@ -394,17 +394,17 @@ moduleFor(
       // get each property twice. Verify return.
       let keys = w('computed computedCached dependent dependentFront dependentCached');
 
-      keys.forEach(function(key) {
+      keys.forEach(function (key) {
         assert.equal(object.get(key), key, `Try #1: object.get(${key}) should run function`);
         assert.equal(object.get(key), key, `Try #2: object.get(${key}) should run function`);
       });
 
       // verify each call count.  cached should only be called once
-      w('computedCalls dependentFrontCalls dependentCalls').forEach(key => {
+      w('computedCalls dependentFrontCalls dependentCalls').forEach((key) => {
         assert.equal(object[key].length, 2, `non-cached property ${key} should be called 2x`);
       });
 
-      w('computedCachedCalls dependentCachedCalls').forEach(key => {
+      w('computedCachedCalls dependentCachedCalls').forEach((key) => {
         assert.equal(object[key].length, 1, `non-cached property ${key} should be called 1x`);
       });
     }
@@ -414,7 +414,7 @@ moduleFor(
       let keys = w('computed dependent dependentFront computedCached dependentCached');
       let values = w('value1 value2');
 
-      keys.forEach(key => {
+      keys.forEach((key) => {
         assert.equal(
           object.set(key, values[0]),
           values[0],
@@ -435,7 +435,7 @@ moduleFor(
       });
 
       // verify each call count.  cached should only be called once
-      keys.forEach(key => {
+      keys.forEach((key) => {
         let calls = object[key + 'Calls'];
         let idx, expectedLength;
 
@@ -524,7 +524,7 @@ moduleFor(
       assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       // add observer to verify change...
-      object.addObserver('inc', this, function() {
+      object.addObserver('inc', this, function () {
         assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
       });
 
@@ -547,7 +547,7 @@ moduleFor(
 
     ['@test dependent keys should be able to be specified as property paths'](assert) {
       let depObj = ObservableObject.extend({
-        menuPrice: computed('menu.price', function() {
+        menuPrice: computed('menu.price', function () {
           return this.get('menu.price');
         }),
       }).create({
@@ -572,9 +572,9 @@ moduleFor(
 
       let DepObj;
 
-      run(function() {
+      run(function () {
         lookup.DepObj = DepObj = ObservableObject.extend({
-          price: computed('restaurant.menu.price', function() {
+          price: computed('restaurant.menu.price', function () {
             return this.get('restaurant.menu.price');
           }),
         }).create({
@@ -588,7 +588,7 @@ moduleFor(
 
       assert.equal(DepObj.get('price'), 5, 'precond - computed property is correct');
 
-      run(function() {
+      run(function () {
         DepObj.set('restaurant.menu.price', 10);
       });
       assert.equal(
@@ -597,7 +597,7 @@ moduleFor(
         'cacheable computed properties are invalidated even if no run loop occurred'
       );
 
-      run(function() {
+      run(function () {
         DepObj.set('restaurant.menu.price', 20);
       });
       assert.equal(
@@ -611,7 +611,7 @@ moduleFor(
         'precond - computed properties remain correct after a run loop'
       );
 
-      run(function() {
+      run(function () {
         DepObj.set(
           'restaurant.menu',
           ObservableObject.create({
@@ -626,7 +626,7 @@ moduleFor(
         'cacheable computed properties are invalidated after a middle property changes'
       );
 
-      run(function() {
+      run(function () {
         DepObj.set(
           'restaurant.menu',
           ObservableObject.create({
@@ -666,11 +666,11 @@ moduleFor(
           this.abnormal = 'changedValueObserved';
         },
 
-        testObserver: observer('normal', function() {
+        testObserver: observer('normal', function () {
           this.abnormal = 'removedObserver';
         }),
 
-        testArrayObserver: observer('normalArray.[]', function() {
+        testArrayObserver: observer('normalArray.[]', function () {
           this.abnormal = 'notifiedObserver';
         }),
       }).create({
@@ -701,15 +701,15 @@ moduleFor(
       newValue = object.incrementProperty('numberVal', 0);
       assert.equal(25, newValue, 'zero numerical value incremented by specified increment');
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         newValue = object.incrementProperty('numberVal', 0 - void 0); // Increment by NaN
       }, /Must pass a numeric value to incrementProperty/i);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         newValue = object.incrementProperty('numberVal', 'Ember'); // Increment by non-numeric String
       }, /Must pass a numeric value to incrementProperty/i);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         newValue = object.incrementProperty('numberVal', 1 / 0); // Increment by Infinity
       }, /Must pass a numeric value to incrementProperty/i);
 
@@ -729,15 +729,15 @@ moduleFor(
       newValue = object.decrementProperty('numberVal', 0);
       assert.equal(25, newValue, 'zero numerical value decremented by specified increment');
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         newValue = object.decrementProperty('numberVal', 0 - void 0); // Decrement by NaN
       }, /Must pass a numeric value to decrementProperty/i);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         newValue = object.decrementProperty('numberVal', 'Ember'); // Decrement by non-numeric String
       }, /Must pass a numeric value to decrementProperty/i);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         newValue = object.decrementProperty('numberVal', 1 / 0); // Decrement by Infinity
       }, /Must pass a numeric value to decrementProperty/i);
 

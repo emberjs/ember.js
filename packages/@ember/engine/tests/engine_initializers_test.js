@@ -274,7 +274,7 @@ moduleFor(
       assert.equal(firstInitializerRunCount, 1, 'second initializer only was run');
       assert.equal(secondInitializerRunCount, 1, 'second initializer only was run');
 
-      run(function() {
+      run(function () {
         firstEngineInstance.destroy();
         secondEngineInstance.destroy();
 
@@ -331,7 +331,7 @@ moduleFor(
         'second initializers was run when subclass created'
       );
 
-      run(function() {
+      run(function () {
         firstEngineInstance.destroy();
         secondEngineInstance.destroy();
 
@@ -352,7 +352,7 @@ moduleFor(
         initialize() {},
       });
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         FirstEngine.initializer({
           name: 'abc',
           initialize() {},

@@ -78,7 +78,7 @@ if (FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
       configurable: true,
       enumerable: false,
       writable: true,
-      value: function() {
+      value: function () {
         deprecate(
           `Function prototype extensions have been deprecated, please migrate from function(){}.property('bar') to computed('bar', function() {}).`,
           false,
@@ -123,7 +123,7 @@ if (FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
       configurable: true,
       enumerable: false,
       writable: true,
-      value: function() {
+      value: function () {
         deprecate(
           `Function prototype extensions have been deprecated, please migrate from function(){}.observes('foo') to observer('foo', function() {}).`,
           false,
@@ -167,7 +167,7 @@ if (FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
       configurable: true,
       enumerable: false,
       writable: true,
-      value: function() {
+      value: function () {
         deprecate(
           `Function prototype extensions have been deprecated, please migrate from function(){}.on('foo') to on('foo', function() {}).`,
           false,

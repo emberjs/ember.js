@@ -18,7 +18,7 @@ export default function addJQueryEventDeprecation(jqEvent) {
           case 'originalEvent':
             deprecate(
               'Accessing jQuery.Event specific properties is deprecated. Either use the ember-jquery-legacy addon to normalize events to native events, or explicitly opt into jQuery integration using @ember/optional-features.',
-              (EmberENV => {
+              ((EmberENV) => {
                 // this deprecation is intentionally checking `global.EmberENV` so
                 // that we can ensure we _only_ deprecate in the case where jQuery
                 // integration is enabled implicitly (e.g. "defaulted" to enabled)

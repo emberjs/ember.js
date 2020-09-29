@@ -57,7 +57,7 @@ class InputRenderingTest extends RenderingTestCase {
   }
 
   assertAllAttrs(names, expected) {
-    names.forEach(name => this.assertAttr(name, expected));
+    names.forEach((name) => this.assertAttr(name, expected));
   }
 
   assertSelectionRange(start, end) {
@@ -111,21 +111,21 @@ class InputRenderingTest extends RenderingTestCase {
 
     let triggeredEvents = [];
     let actions = {};
-    Object.keys(events).forEach(evt => {
-      actions[`run_${evt}`] = function() {
+    Object.keys(events).forEach((evt) => {
+      actions[`run_${evt}`] = function () {
         triggeredEvents.push(evt);
       };
     });
 
     let typeAttr = type ? `type="${type}" ` : '';
     let actionAttrs = Object.keys(events)
-      .map(evt => `${events[evt]}=(action 'run_${evt}')`)
+      .map((evt) => `${events[evt]}=(action 'run_${evt}')`)
       .join(' ');
     let template = `{{test-component ${typeAttr}${actionAttrs}}}{{input ${typeAttr}${actionAttrs}}}`;
 
     this.render(template, { actions });
 
-    Object.keys(events).forEach(evt => this.triggerEvent(evt, null, 'input:first-of-type'));
+    Object.keys(events).forEach((evt) => this.triggerEvent(evt, null, 'input:first-of-type'));
     let normallyTriggeredEvents = [].concat(triggeredEvents);
     triggeredEvents.length = 0;
 
@@ -134,7 +134,7 @@ class InputRenderingTest extends RenderingTestCase {
       'sanity check that most events are triggered'
     );
 
-    normallyTriggeredEvents.forEach(evt => this.triggerEvent(evt, null, 'input:last-of-type'));
+    normallyTriggeredEvents.forEach((evt) => this.triggerEvent(evt, null, 'input:last-of-type'));
 
     this.assert.deepEqual(triggeredEvents, normallyTriggeredEvents, 'called for all events');
   }
@@ -635,7 +635,7 @@ moduleFor(
 
     ['@test triggers a method with `{{input key-up=this.didTrigger}}`'](assert) {
       this.render(`{{input key-up=this.didTrigger}}`, {
-        didTrigger: action(function() {
+        didTrigger: action(function () {
           assert.ok(true, 'action was triggered');
         }),
       });
@@ -912,7 +912,7 @@ moduleFor(
   'min="-5" max="50" value="%x" type="range"',
   'value="%x" min="-5" max="50" type="range"',
   'value="%x" type="range" min="-5" max="50"',
-].forEach(attrs => {
+].forEach((attrs) => {
   moduleFor(
     `[GH#15675] Components test: {{input ${attrs}}}`,
     class extends InputRenderingTest {

@@ -21,7 +21,7 @@ moduleFor(
 
     ['@test toString() returns the same value if called twice'](assert) {
       let Foo = Namespace.create();
-      Foo.toString = function() {
+      Foo.toString = function () {
         return 'Foo';
       };
 
@@ -44,7 +44,7 @@ moduleFor(
       let obj;
 
       let Foo = Namespace.create();
-      Foo.toString = function() {
+      Foo.toString = function () {
         return 'Foo';
       };
 

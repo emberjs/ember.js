@@ -10,7 +10,7 @@ moduleFor(
       let MyClass = EmberObject.extend({
         count: 0,
 
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -29,7 +29,7 @@ moduleFor(
     async ['@test setting `undefined` value on observed property behaves correctly'](assert) {
       let MyClass = EmberObject.extend({
         mood: 'good',
-        foo: observer('mood', function() {}),
+        foo: observer('mood', function () {}),
       });
 
       let obj = MyClass.create();
@@ -57,13 +57,13 @@ moduleFor(
       let MyClass = EmberObject.extend({
         count: 0,
 
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
 
       let Subclass = MyClass.extend({
-        foo: observer('baz', function() {
+        foo: observer('baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -86,7 +86,7 @@ moduleFor(
 
     async ['@test observer on instance'](assert) {
       let obj = EmberObject.extend({
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       }).create({
@@ -108,13 +108,13 @@ moduleFor(
       let MyClass = EmberObject.extend({
         count: 0,
 
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
 
       let obj = MyClass.extend({
-        foo: observer('baz', function() {
+        foo: observer('baz', function () {
           // <-- change property we observe
           set(this, 'count', get(this, 'count') + 1);
         }),
@@ -138,7 +138,7 @@ moduleFor(
     async ['@test observer should not fire after being destroyed'](assert) {
       let obj = EmberObject.extend({
         count: 0,
-        foo: observer('bar', function() {
+        foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       }).create();
@@ -147,7 +147,7 @@ moduleFor(
 
       run(() => obj.destroy());
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         set(obj, 'bar', 'BAZ');
       }, `calling set on destroyed object: ${obj}.bar = BAZ`);
 
@@ -164,7 +164,7 @@ moduleFor(
       let MyClass = EmberObject.extend({
         count: 0,
 
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -200,7 +200,7 @@ moduleFor(
       let MyClass = EmberObject.extend({
         count: 0,
 
-        foo: observer('bar.baz', function() {
+        foo: observer('bar.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       });
@@ -210,7 +210,7 @@ moduleFor(
       });
 
       let obj2 = MyClass.extend({
-        foo: observer('bar2.baz', function() {
+        foo: observer('bar2.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
       }).create({
@@ -250,7 +250,7 @@ moduleFor(
 
       let ChildClass = EmberObject.extend({
         parent: null,
-        parentOneTwoDidChange: observer('parent.one.two', function() {
+        parentOneTwoDidChange: observer('parent.one.two', function () {
           changed = true;
         }),
       });

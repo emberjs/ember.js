@@ -49,7 +49,7 @@ module.exports = {
     this._super && this._super.init.apply(this, arguments);
     let isOctane = has('octane');
 
-    this.availableOptions.forEach(option => {
+    this.availableOptions.forEach((option) => {
       if (option.name === 'component-class') {
         if (isOctane) {
           option.default = '@glimmer/component';

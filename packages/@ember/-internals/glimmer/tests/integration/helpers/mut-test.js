@@ -291,7 +291,7 @@ moduleFor(
       this.registerComponent('middle-mut', {
         ComponentClass: Component.extend({
           baseValue: 12,
-          val: computed('baseValue', function() {
+          val: computed('baseValue', function () {
             return this.get('baseValue');
           }),
           didInsertElement() {
@@ -452,7 +452,7 @@ moduleFor(
           didInsertElement() {
             output = this;
           },
-          style: computed('height', function() {
+          style: computed('height', function () {
             let height = this.get('height');
             return htmlSafe(`height: ${height}px;`);
           }),
@@ -520,7 +520,7 @@ moduleFor(
           didInsertElement() {
             output = this;
           },
-          style: computed('height', 'width', function() {
+          style: computed('height', 'width', function () {
             let height = this.get('height');
             let width = this.get('width');
             return htmlSafe(`height: ${height}px; width: ${width}px;`);

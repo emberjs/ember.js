@@ -126,7 +126,7 @@ if (GLOBALS_RESOLVER) {
       );
 
       if (type !== 'template') {
-        let result = name.replace(/(\.|_|-)./g, m => m.charAt(1).toUpperCase());
+        let result = name.replace(/(\.|_|-)./g, (m) => m.charAt(1).toUpperCase());
 
         return `${type}:${result}`;
       } else {
@@ -443,7 +443,7 @@ if (GLOBALS_RESOLVER) {
         @param {Object} parsedName
         @private
       */
-    DefaultResolver.prototype._logLookup = function(found, parsedName) {
+    DefaultResolver.prototype._logLookup = function (found, parsedName) {
       let symbol = found ? '[✓]' : '[ ]';
 
       let padding;

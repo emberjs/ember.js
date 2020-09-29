@@ -11,7 +11,7 @@ moduleFor(
       assert.throws(
         () => {
           run(() => {
-            schedule('actions', function() {
+            schedule('actions', function () {
               throw new EmberError('boom!');
             });
           });
@@ -36,7 +36,7 @@ moduleFor(
 
       assert.throws(
         () => {
-          run(function() {
+          run(function () {
             throw new EmberError('boom!');
           });
         },

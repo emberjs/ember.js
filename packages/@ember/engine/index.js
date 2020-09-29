@@ -458,7 +458,7 @@ function resolverFor(namespace) {
 }
 
 function buildInitializerMethod(bucketName, humanName) {
-  return function(initializer) {
+  return function (initializer) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would

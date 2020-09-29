@@ -706,7 +706,7 @@ export declare class DebugRegistry extends Registry {
 
 if (DEBUG) {
   const proto = Registry.prototype as DebugRegistry;
-  proto.normalizeInjectionsHash = function(hash: { [key: string]: LazyInjection }) {
+  proto.normalizeInjectionsHash = function (hash: { [key: string]: LazyInjection }) {
     let injections: Injection[] = [];
 
     for (let key in hash) {
@@ -729,7 +729,7 @@ if (DEBUG) {
     return injections;
   };
 
-  proto.validateInjections = function(injections: Injection[]) {
+  proto.validateInjections = function (injections: Injection[]) {
     if (!injections) {
       return;
     }
