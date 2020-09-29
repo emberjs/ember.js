@@ -2,13 +2,15 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
+import {
+  EMBER_GLIMMER_HELPER_MANAGER,
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
+} from '@ember/canary-features';
 import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert, deprecate } from '@ember/debug';
 import { PARTIALS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
-import { DEBUG } from '@glimmer/env';
 import {
   ComponentDefinition,
   Helper,
@@ -17,13 +19,19 @@ import {
   RuntimeResolver,
 } from '@glimmer/interfaces';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import { getDynamicVar, ModifierDefinition, registerDestructor } from '@glimmer/runtime';
+import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition } from './component-managers/custom';
 import { InternalComponentDefinition, isInternalManager } from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import InternalComponent from './components/internal';
-import { isClassHelper, isHelperFactory } from './helper';
+import {
+  CLASSIC_HELPER_MANAGER,
+  HelperFactory,
+  HelperInstance,
+  SIMPLE_CLASSIC_HELPER_MANAGER,
+  SimpleHelper,
+} from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -31,6 +39,7 @@ import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
 import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
+import customHelper from './helpers/custom';
 import { default as eachIn } from './helpers/each-in';
 import { default as fn } from './helpers/fn';
 import { default as get } from './helpers/get';
@@ -48,8 +57,7 @@ import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { getComponentTemplate } from './utils/component-template';
-import { getComponentManager, getModifierManager } from './utils/managers';
-import { createHelperRef } from './utils/references';
+import { getComponentManager, getHelperManager, getModifierManager } from './utils/managers';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -358,32 +366,32 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     const options: LookupOptions = makeOptions(moduleName, namespace);
 
     const factory =
-      owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
+      owner.factoryFor<SimpleHelper | HelperInstance, HelperFactory<SimpleHelper | HelperInstance>>(
+        `helper:${name}`,
+        options
+      ) || owner.factoryFor(`helper:${name}`);
 
-    if (!isHelperFactory(factory)) {
+    if (factory === undefined || factory.class === undefined) {
       return null;
     }
 
-    return (args, vm) => {
-      const helper = factory.create();
+    const manager = getHelperManager(owner, factory.class);
 
-      if (isClassHelper(helper)) {
-        let helperDestroyable = {};
+    if (manager === undefined) {
+      return null;
+    }
 
-        // Do this so that `destroy` gets called correctly
-        registerDestructor(helperDestroyable, () => helper.destroy(), true);
-        vm.associateDestroyable(helperDestroyable);
-      } else if (DEBUG) {
-        // Bind to null in case someone accidentally passed an unbound function
-        // in, and attempts use `this` on it.
-        //
-        // TODO: Update buildUntouchableThis to be flexible enough to provide a
-        // nice error message here.
-        helper.compute = helper.compute.bind(null);
-      }
+    assert(
+      'helper managers have not been enabled yet, you must use classic helpers',
+      EMBER_GLIMMER_HELPER_MANAGER ||
+        manager === CLASSIC_HELPER_MANAGER ||
+        manager === SIMPLE_CLASSIC_HELPER_MANAGER
+    );
 
-      return createHelperRef(helper, args.capture());
-    };
+    // For classic class based helpers, we need to pass the factoryFor result itself rather
+    // than the raw value (`factoryFor(...).class`). This is because injections are already
+    // bound in the factoryFor result, including type-based injections
+    return customHelper(manager, CLASSIC_HELPER_MANAGER === manager ? factory : factory.class);
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {

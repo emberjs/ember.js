@@ -10,6 +10,7 @@ import * as metal from '@ember/-internals/metal';
 import {
   FEATURES,
   isEnabled,
+  EMBER_GLIMMER_HELPER_MANAGER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_CACHE_API,
   EMBER_DESTROYABLES,
@@ -103,11 +104,13 @@ import {
   Checkbox,
   Component,
   setComponentManager,
+  setHelperManager,
   capabilities,
   escapeExpression,
   getTemplates,
   Helper,
   helper,
+  helperCapabilities,
   htmlSafe,
   isHTMLSafe,
   LinkComponent,
@@ -561,6 +564,10 @@ if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
   Ember._getComponentTemplate = getComponentTemplate;
   Ember._setComponentTemplate = setComponentTemplate;
   Ember._templateOnlyComponent = templateOnlyComponent;
+}
+if (EMBER_GLIMMER_HELPER_MANAGER) {
+  Ember._helperManagerCapabilities = helperCapabilities;
+  Ember._setHelperManager = setHelperManager;
 }
 Ember._captureRenderTree = captureRenderTree;
 Ember.Handlebars = {
