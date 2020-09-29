@@ -33,7 +33,7 @@ function tagForPositionalArg(positionalArgs: CapturedPositionalArguments, key: s
   return track(() => {
     if (key === '[]') {
       // consume all of the tags in the positional array
-      positionalArgs.forEach((ref) => ref.value());
+      positionalArgs.forEach(ref => ref.value());
     }
 
     const parsed = convertToInt(key);
