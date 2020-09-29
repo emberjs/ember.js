@@ -96,7 +96,7 @@
     "backburner.js": "^2.6.0",
     "broccoli-babel-transpiler": "^7.4.0",
     "broccoli-file-creator": "^2.1.1",
-    "broccoli-persistent-filter": "^2.3.1",
+    "broccoli-persistent-filter": "^3.1.1",
     "broccoli-plugin": "^4.0.3",
     "broccoli-rollup": "^2.1.1",
     "broccoli-source": "^3.0.0",
