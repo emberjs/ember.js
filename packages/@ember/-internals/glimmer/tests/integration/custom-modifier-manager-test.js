@@ -5,30 +5,6 @@ import { setModifierManager, modifierCapabilities } from '@ember/-internals/glim
 import { set, tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/backtracking-rerender';
 
-class CustomModifierManager {
-  constructor(owner) {
-    this.owner = owner;
-  }
-
-  createModifier(factory, args) {
-    return factory.create(args);
-  }
-
-  installModifier(instance, element, args) {
-    instance.element = element;
-    let { positional, named } = args;
-    instance.didInsertElement(positional, named);
-  }
-
-  updateModifier(instance, args) {
-    let { positional, named } = args;
-    instance.didUpdate(positional, named);
-  }
-
-  destroyModifier(instance) {
-    instance.willDestroyElement();
-  }
-}
 class ModifierManagerTest extends RenderingTestCase {
   '@test throws a useful error when missing capabilities'() {
     this.registerModifier(
@@ -295,8 +271,32 @@ class ModifierManagerTest extends RenderingTestCase {
 moduleFor(
   'Basic Custom Modifier Manager: 3.13',
   class extends ModifierManagerTest {
-    CustomModifierManager = class extends CustomModifierManager {
+    CustomModifierManager = class CustomModifierManager {
       capabilities = modifierCapabilities('3.13');
+
+      constructor(owner) {
+        this.owner = owner;
+      }
+
+      createModifier(factory, args) {
+        // factory is the owner.factoryFor result
+        return factory.create(args);
+      }
+
+      installModifier(instance, element, args) {
+        instance.element = element;
+        let { positional, named } = args;
+        instance.didInsertElement(positional, named);
+      }
+
+      updateModifier(instance, args) {
+        let { positional, named } = args;
+        instance.didUpdate(positional, named);
+      }
+
+      destroyModifier(instance) {
+        instance.willDestroyElement();
+      }
     };
 
     '@test modifers consume all arguments'(assert) {
@@ -355,8 +355,31 @@ moduleFor(
 moduleFor(
   'Basic Custom Modifier Manager: 3.22',
   class extends ModifierManagerTest {
-    CustomModifierManager = class extends CustomModifierManager {
+    CustomModifierManager = class CustomModifierManager {
       capabilities = modifierCapabilities('3.22');
+
+      constructor(owner) {
+        this.owner = owner;
+      }
+
+      createModifier(Modifier, args) {
+        return Modifier.create(args);
+      }
+
+      installModifier(instance, element, args) {
+        instance.element = element;
+        let { positional, named } = args;
+        instance.didInsertElement(positional, named);
+      }
+
+      updateModifier(instance, args) {
+        let { positional, named } = args;
+        instance.didUpdate(positional, named);
+      }
+
+      destroyModifier(instance) {
+        instance.willDestroyElement();
+      }
     };
 
     '@test modifers only track positional arguments they consume'(assert) {
@@ -475,7 +498,89 @@ moduleFor(
       return { isInteractive: false };
     }
 
-    [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
+    [`@test doesn't trigger lifecycle hooks when non-interactive: modifierCapabilities('3.13')`](
+      assert
+    ) {
+      class CustomModifierManager {
+        capabilities = modifierCapabilities('3.13');
+
+        constructor(owner) {
+          this.owner = owner;
+        }
+
+        createModifier(factory, args) {
+          return factory.create(args);
+        }
+
+        installModifier(instance, element, args) {
+          instance.element = element;
+          let { positional, named } = args;
+          instance.didInsertElement(positional, named);
+        }
+
+        updateModifier(instance, args) {
+          let { positional, named } = args;
+          instance.didUpdate(positional, named);
+        }
+
+        destroyModifier(instance) {
+          instance.willDestroyElement();
+        }
+      }
+      let ModifierClass = setModifierManager(
+        owner => {
+          return new CustomModifierManager(owner);
+        },
+        EmberObject.extend({
+          didInsertElement() {
+            assert.ok(false);
+          },
+          didUpdate() {
+            assert.ok(false);
+          },
+          willDestroyElement() {
+            assert.ok(false);
+          },
+        })
+      );
+
+      this.registerModifier('foo-bar', ModifierClass);
+
+      this.render('<h1 {{foo-bar baz}}>hello world</h1>');
+      runTask(() => this.context.set('baz', 'Hello'));
+
+      this.assertHTML('<h1>hello world</h1>');
+    }
+
+    [`@test doesn't trigger lifecycle hooks when non-interactive: modifierCapabilities('3.22')`](
+      assert
+    ) {
+      class CustomModifierManager {
+        capabilities = modifierCapabilities('3.22');
+
+        constructor(owner) {
+          this.owner = owner;
+        }
+
+        createModifier(Modifier, args) {
+          return Modifier.create(args);
+        }
+
+        installModifier(instance, element, args) {
+          instance.element = element;
+          let { positional, named } = args;
+          instance.didInsertElement(positional, named);
+        }
+
+        updateModifier(instance, args) {
+          let { positional, named } = args;
+          instance.didUpdate(positional, named);
+        }
+
+        destroyModifier(instance) {
+          instance.willDestroyElement();
+        }
+      }
       let ModifierClass = setModifierManager(
         owner => {
           return new CustomModifierManager(owner);

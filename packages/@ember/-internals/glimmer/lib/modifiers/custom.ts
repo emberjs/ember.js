@@ -18,6 +18,7 @@ export interface OptionalCapabilities {
     disableAutoTracking?: boolean;
   };
 
+  // passes factoryFor(...).class to `.createModifier`
   // uses args proxy, does not provide a way to opt-out
   '3.22': {
     disableAutoTracking?: boolean;
@@ -27,6 +28,7 @@ export interface OptionalCapabilities {
 export interface Capabilities {
   disableAutoTracking: boolean;
   useArgsProxy: boolean;
+  passFactoryToCreate: boolean;
 }
 
 export function capabilities<Version extends keyof OptionalCapabilities>(
@@ -41,6 +43,7 @@ export function capabilities<Version extends keyof OptionalCapabilities>(
   return {
     disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
     useArgsProxy: managerAPI === '3.13' ? false : true,
+    passFactoryToCreate: managerAPI === '3.13',
   };
 }
 
@@ -126,10 +129,13 @@ class InteractiveCustomModifierManager<ModifierInstance>
       typeof delegate.capabilities === 'object' && delegate.capabilities !== null
     );
 
-    let useArgsProxy = delegate.capabilities.useArgsProxy;
+    let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
 
     let args = useArgsProxy ? argsProxyFor(capturedArgs, 'modifier') : reifyArgs(capturedArgs);
-    let instance = delegate.createModifier(ModifierClass, args);
+    let instance = delegate.createModifier(
+      passFactoryToCreate ? ModifierClass : ModifierClass.class,
+      args
+    );
 
     let tag = createUpdatableTag();
     let state: CustomModifierState<ModifierInstance>;
