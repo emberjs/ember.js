@@ -6,6 +6,7 @@ import { registerDestructor, reifyArgs } from '@glimmer/runtime';
 import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { argsProxyFor } from '../utils/args-proxy';
+import { buildCapabilities, InternalCapabilities } from '../utils/managers';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
@@ -25,7 +26,7 @@ export interface OptionalCapabilities {
   };
 }
 
-export interface Capabilities {
+export interface Capabilities extends InternalCapabilities {
   disableAutoTracking: boolean;
   useArgsProxy: boolean;
   passFactoryToCreate: boolean;
@@ -40,11 +41,11 @@ export function capabilities<Version extends keyof OptionalCapabilities>(
     managerAPI === '3.13' || managerAPI === '3.22'
   );
 
-  return {
+  return buildCapabilities({
     disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
     useArgsProxy: managerAPI === '3.13' ? false : true,
     passFactoryToCreate: managerAPI === '3.13',
-  };
+  }) as Capabilities;
 }
 
 export class CustomModifierDefinition<ModifierInstance> {
@@ -123,11 +124,6 @@ class InteractiveCustomModifierManager<ModifierInstance>
   ) {
     let { delegate, ModifierClass } = definition;
     let capturedArgs = vmArgs.capture();
-
-    assert(
-      'Custom modifier managers must define their capabilities using the capabilities() helper function',
-      typeof delegate.capabilities === 'object' && delegate.capabilities !== null
-    );
 
     let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
 

@@ -19,6 +19,7 @@ import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import { argsProxyFor } from '../utils/args-proxy';
+import { buildCapabilities, InternalCapabilities } from '../utils/managers';
 import AbstractComponentManager from './abstract';
 
 const CAPABILITIES = {
@@ -49,6 +50,12 @@ export interface OptionalCapabilities {
   };
 }
 
+export interface Capabilities extends InternalCapabilities {
+  asyncLifeCycleCallbacks: boolean;
+  destructor: boolean;
+  updateHook: boolean;
+}
+
 export function capabilities<Version extends keyof OptionalCapabilities>(
   managerAPI: Version,
   options: OptionalCapabilities[Version] = {}
@@ -64,11 +71,11 @@ export function capabilities<Version extends keyof OptionalCapabilities>(
     updateHook = Boolean((options as OptionalCapabilities['3.13']).updateHook);
   }
 
-  return {
+  return buildCapabilities({
     asyncLifeCycleCallbacks: Boolean(options.asyncLifecycleCallbacks),
     destructor: Boolean(options.destructor),
     updateHook,
-  };
+  }) as Capabilities;
 }
 
 export interface DefinitionState<ComponentInstance> {
@@ -77,21 +84,9 @@ export interface DefinitionState<ComponentInstance> {
   template: OwnedTemplate;
 }
 
-export interface Capabilities {
-  asyncLifeCycleCallbacks: boolean;
-  destructor: boolean;
-  updateHook: boolean;
-}
-
-// TODO: export ICapturedArgumentsValue from glimmer and replace this
-export interface Args {
-  named: Dict<unknown>;
-  positional: unknown[];
-}
-
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
-  createComponent(factory: unknown, args: Args): ComponentInstance;
+  createComponent(factory: unknown, args: Arguments): ComponentInstance;
   getContext(instance: ComponentInstance): unknown;
 }
 
@@ -114,7 +109,7 @@ export function hasUpdateHook<ComponentInstance>(
 
 export interface ManagerDelegateWithUpdateHook<ComponentInstance>
   extends ManagerDelegate<ComponentInstance> {
-  updateComponent(instance: ComponentInstance, args: Args): void;
+  updateComponent(instance: ComponentInstance, args: Arguments): void;
 }
 
 export function hasAsyncUpdateHook<ComponentInstance>(

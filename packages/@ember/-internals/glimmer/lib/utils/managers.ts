@@ -1,8 +1,10 @@
 import { Owner } from '@ember/-internals/owner';
-import { deprecate } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { COMPONENT_MANAGER_STRING_LOOKUP } from '@ember/deprecated-features';
+import { DEBUG } from '@glimmer/env';
+import { _WeakSet } from '@glimmer/util';
 import { ManagerDelegate as ComponentManagerDelegate } from '../component-managers/custom';
-import InternalComponentManager from '../component-managers/internal';
+import InternalComponentManager, { isInternalManager } from '../component-managers/internal';
 import { HelperManager } from '../helpers/custom';
 import { ModifierManagerDelegate } from '../modifiers/custom';
 
@@ -16,6 +18,8 @@ const COMPONENT_MANAGERS = new WeakMap<
   object,
   ManagerFactory<ComponentManagerDelegate<unknown> | InternalComponentManager>
 >();
+
+const FROM_CAPABILITIES = DEBUG ? new _WeakSet() : undefined;
 
 const MODIFIER_MANAGERS = new WeakMap<object, ManagerFactory<ModifierManagerDelegate<unknown>>>();
 
@@ -71,6 +75,7 @@ function getManagerInstanceForOwner<D extends ManagerDelegate>(
 
   if (instance === undefined) {
     instance = factory(owner);
+
     managers.set(factory, instance!);
   }
 
@@ -94,7 +99,15 @@ export function getModifierManager(
   const factory = getManager(MODIFIER_MANAGERS, definition);
 
   if (factory !== undefined) {
-    return getManagerInstanceForOwner(owner, factory);
+    let manager = getManagerInstanceForOwner(owner, factory);
+    assert(
+      `Custom modifier managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.13' | '3.22')\` (imported via \`import { capabilities } from '@ember/modifier';\`). Received: \`${JSON.stringify(
+        manager.capabilities
+      )}\` for: \`${manager}\``,
+      FROM_CAPABILITIES!.has(manager.capabilities)
+    );
+
+    return manager;
   }
 
   return undefined;
@@ -114,7 +127,16 @@ export function getHelperManager(
   const factory = getManager(HELPER_MANAGERS, definition);
 
   if (factory !== undefined) {
-    return getManagerInstanceForOwner(owner, factory);
+    let manager = getManagerInstanceForOwner(owner, factory);
+
+    assert(
+      `Custom helper managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.23')\` (imported via \`import { capabilities } from '@ember/helper';\`). Received: \`${JSON.stringify(
+        manager.capabilities
+      )}\` for: \`${manager}\``,
+      FROM_CAPABILITIES!.has(manager.capabilities)
+    );
+
+    return manager;
   }
 
   return undefined;
@@ -161,8 +183,32 @@ export function getComponentManager(
   );
 
   if (factory !== undefined) {
-    return getManagerInstanceForOwner(owner, factory);
+    let manager = getManagerInstanceForOwner(owner, factory);
+
+    assert(
+      `Custom component managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.4' | '3.13')\` (imported via \`import { capabilities } from '@ember/component';\`). Received: \`${JSON.stringify(
+        (manager as ComponentManagerDelegate<unknown>).capabilities
+      )}\` for: \`${manager}\``,
+      isInternalManager(manager) || FROM_CAPABILITIES!.has(manager.capabilities)
+    );
+
+    return manager;
   }
 
   return undefined;
+}
+
+declare const INTERNAL_CAPABILITIES: unique symbol;
+
+export interface InternalCapabilities {
+  [INTERNAL_CAPABILITIES]: true;
+}
+
+export function buildCapabilities<T extends object>(capabilities: T): T & InternalCapabilities {
+  if (DEBUG) {
+    FROM_CAPABILITIES!.add(capabilities);
+    Object.freeze(capabilities);
+  }
+
+  return capabilities as T & InternalCapabilities;
 }

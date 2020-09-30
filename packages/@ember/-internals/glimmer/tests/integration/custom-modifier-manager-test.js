@@ -21,7 +21,7 @@ class ModifierManagerTest extends RenderingTestCase {
 
     expectAssertion(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
-    }, /Custom modifier managers must define their capabilities/);
+    }, /Custom modifier managers must have a `capabilities` property /);
   }
 
   '@test can register a custom element modifier and render it'(assert) {
@@ -265,6 +265,41 @@ class ModifierManagerTest extends RenderingTestCase {
     expectAssertion(() => {
       this.render('<h1 {{foo-bar this.person}}>hello world</h1>', { person: new Person() });
     }, expectedMessage);
+  }
+
+  '@test capabilities helper function must be used to generate capabilities'(assert) {
+    class OverrideCustomModifierManager extends this.CustomModifierManager {
+      capabilities = {
+        disableAutoTracking: false,
+        useArgsProxy: true,
+        passFactoryToCreate: false,
+      };
+    }
+
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new OverrideCustomModifierManager(owner);
+      },
+      EmberObject.extend({
+        didInsertElement() {
+          assert.step('didInsertElement');
+        },
+        didUpdate() {
+          assert.step('didUpdate');
+        },
+        willDestroyElement() {
+          assert.step('willDestroyElement');
+        },
+      })
+    );
+
+    this.registerModifier('foo-bar', ModifierClass.extend());
+
+    expectAssertion(() => {
+      this.render('<h1 {{foo-bar}}>hello world</h1>');
+    }, /Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13' \| '3.22'\)` \(imported via `import \{ capabilities \} from '@ember\/modifier';`\). /);
+
+    assert.verifySteps([]);
   }
 }
 

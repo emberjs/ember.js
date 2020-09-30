@@ -289,6 +289,34 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
 
         this.assertText('hello');
       }
+
+      '@test capabilities helper function must be used to generate capabilities'(assert) {
+        class OverrideTestHelperManager extends TestHelperManager {
+          capabilities = {
+            hasValue: true,
+            hasDestroyable: true,
+            hasScheduledEffect: false,
+          };
+        }
+
+        class TestHelper {}
+
+        setHelperManager((owner) => new OverrideTestHelperManager(owner), TestHelper);
+        this.registerCustomHelper(
+          'hello',
+          class extends TestHelper {
+            value() {
+              return 'hello';
+            }
+          }
+        );
+
+        expectAssertion(() => {
+          this.render('{{hello}}');
+        }, /Custom helper managers must have a `capabilities` property that is the result of calling the `capabilities\('3.23'\)` \(imported via `import \{ capabilities \} from '@ember\/helper';`\). /);
+
+        assert.verifySteps([]);
+      }
     }
   );
 }

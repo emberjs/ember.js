@@ -522,6 +522,62 @@ moduleFor(
       this.assertHTML(`<p>hello max</p>`);
       assert.verifySteps(['updateComponent', 'didUpdateComponent']);
     }
+
+    '@test capabilities helper function must be used to generate capabilities'(assert) {
+      let ComponentClass = setComponentManager(
+        () => {
+          return EmberObject.create({
+            capabilities: {
+              asyncLifecycleCallbacks: true,
+              destructor: true,
+              update: false,
+            },
+
+            createComponent(factory, args) {
+              assert.step('createComponent');
+              return factory.create({ args });
+            },
+
+            updateComponent(component, args) {
+              assert.step('updateComponent');
+              set(component, 'args', args);
+            },
+
+            destroyComponent(component) {
+              assert.step('destroyComponent');
+              component.destroy();
+            },
+
+            getContext(component) {
+              assert.step('getContext');
+              return component;
+            },
+
+            didCreateComponent() {
+              assert.step('didCreateComponent');
+            },
+
+            didUpdateComponent() {
+              assert.step('didUpdateComponent');
+            },
+          });
+        },
+        EmberObject.extend({
+          greeting: 'hello',
+        })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{greeting}} {{@name}}</p>`,
+        ComponentClass,
+      });
+
+      expectAssertion(() => {
+        this.render('{{foo-bar name=name}}', { name: 'world' });
+      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
+
+      assert.verifySteps([]);
+    }
   }
 );
 
@@ -772,6 +828,62 @@ moduleFor(
       assert.verifySteps(['createComponent', 'getContext']);
 
       runTask(() => this.context.set('value', 'bar'));
+      assert.verifySteps([]);
+    }
+
+    '@test capabilities helper function must be used to generate capabilities'(assert) {
+      let ComponentClass = setComponentManager(
+        () => {
+          return EmberObject.create({
+            capabilities: {
+              asyncLifecycleCallbacks: true,
+              destructor: true,
+              update: false,
+            },
+
+            createComponent(factory, args) {
+              assert.step('createComponent');
+              return factory.create({ args });
+            },
+
+            updateComponent(component, args) {
+              assert.step('updateComponent');
+              set(component, 'args', args);
+            },
+
+            destroyComponent(component) {
+              assert.step('destroyComponent');
+              component.destroy();
+            },
+
+            getContext(component) {
+              assert.step('getContext');
+              return component;
+            },
+
+            didCreateComponent() {
+              assert.step('didCreateComponent');
+            },
+
+            didUpdateComponent() {
+              assert.step('didUpdateComponent');
+            },
+          });
+        },
+        EmberObject.extend({
+          greeting: 'hello',
+        })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{greeting}} {{@name}}</p>`,
+        ComponentClass,
+      });
+
+      expectAssertion(() => {
+        this.render('<FooBar @name={{name}} />', { name: 'world' });
+      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
+
       assert.verifySteps([]);
     }
   }

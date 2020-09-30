@@ -3,10 +3,11 @@ import { DEBUG } from '@glimmer/env';
 import { Arguments, Helper as GlimmerHelper } from '@glimmer/interfaces';
 import { createComputeRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { argsProxyFor } from '../utils/args-proxy';
+import { buildCapabilities, InternalCapabilities } from '../utils/managers';
 
 export type HelperDefinition = object;
 
-export interface HelperCapabilities {
+export interface HelperCapabilities extends InternalCapabilities {
   hasValue: boolean;
   hasDestroyable: boolean;
   hasScheduledEffect: boolean;
@@ -29,11 +30,11 @@ export function helperCapabilities(
     !options.hasScheduledEffect
   );
 
-  return {
+  return buildCapabilities({
     hasValue: Boolean(options.hasValue),
     hasDestroyable: Boolean(options.hasDestroyable),
     hasScheduledEffect: Boolean(options.hasScheduledEffect),
-  };
+  });
 }
 
 export interface HelperManager<HelperStateBucket = unknown> {
