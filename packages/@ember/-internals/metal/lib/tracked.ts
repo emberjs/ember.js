@@ -5,7 +5,6 @@ import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import {
-  CP_SETTER_FUNCS,
   Decorator,
   DecoratorPropertyDescriptor,
   isElementDescriptor,
@@ -183,10 +182,21 @@ function descriptorForField([target, key, desc]: [
     set,
   };
 
-  metaFor(target).writeDescriptors(key, newDesc);
-
-  CP_SETTER_FUNCS.add(set);
-  CHAIN_PASS_THROUGH.add(newDesc);
+  metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
 
   return newDesc;
+}
+
+class TrackedDescriptor {
+  constructor(private _get: () => unknown, private _set: (value: unknown) => void) {
+    CHAIN_PASS_THROUGH.add(this);
+  }
+
+  get(obj: object) {
+    return this._get.call(obj);
+  }
+
+  set(obj: object, _key: string, value: unknown) {
+    this._set.call(obj, value);
+  }
 }
