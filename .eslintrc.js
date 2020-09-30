@@ -9,12 +9,7 @@ module.exports = {
     'plugin:qunit/recommended',
     'plugin:prettier/recommended',
   ],
-  plugins: [
-    'ember-internal',
-    'import',
-    'qunit',
-    'disable-features',
-  ],
+  plugins: ['ember-internal', 'import', 'qunit', 'disable-features'],
   rules: {
     'no-implicit-coercion': 'error',
     'no-new-wrappers': 'error',
@@ -28,33 +23,27 @@ module.exports = {
   },
 
   settings: {
-    'import/core-modules': [
-      'require',
-      'backburner',
-      'router',
-      'ember/version',
-      'node-module',
-    ],
+    'import/core-modules': ['require', 'backburner', 'router', 'ember/version', 'node-module'],
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts'],
     },
     'import/resolver': {
       node: {
-        extensions: [ '.js', '.ts' ],
-        paths: [
-          path.resolve('./packages/'),
-        ]
-      }
-    }
+        extensions: ['.js', '.ts'],
+        paths: [path.resolve('./packages/')],
+      },
+    },
   },
 
   overrides: [
     {
-      files: [ '**/*.ts' ],
+      files: ['**/*.ts'],
 
       parser: '@typescript-eslint/parser',
       extends: [
-        'prettier/@typescript-eslint'
+        'plugin:@typescript-eslint/eslint-recommended',
+        'plugin:import/typescript',
+        'prettier/@typescript-eslint',
       ],
 
       parserOptions: {
@@ -66,20 +55,23 @@ module.exports = {
       rules: {
         // the TypeScript compiler already takes care of this and
         // leaving it enabled results in false positives for interface imports
-        'no-dupe-class-members': 'off',
         'no-unused-vars': 'off',
-        'no-undef': 'off',
-        'no-redeclare': 'off',
+
+        // TODO: Enable and fix these rules
+        // Typescript provides better types with these rules enabled
+        'prefer-spread': 'off',
+        'prefer-const': 'off',
+        'prefer-rest-params': 'off',
 
         'import/export': 'off',
         // TODO: Remove with typescript 3.8
         // Use `import type` instead
         'import/named': 'off',
         'import/no-unresolved': 'off',
-      }
+      },
     },
     {
-      files: [ 'packages/**/*.js' ],
+      files: ['packages/**/*.js'],
 
       parserOptions: {
         ecmaVersion: 2017,
@@ -88,17 +80,17 @@ module.exports = {
 
       globals: {
         // A safe subset of 'browser:true':
-        'window': true,
-        'document': true,
-        'setTimeout': true,
-        'clearTimeout': true,
-        'setInterval': true,
-        'clearInterval': true,
-        'console': true,
-        'Map': true,
-        'Set': true,
-        'Symbol': true,
-        'WeakMap': true,
+        window: true,
+        document: true,
+        setTimeout: true,
+        clearTimeout: true,
+        setInterval: true,
+        clearInterval: true,
+        console: true,
+        Map: true,
+        Set: true,
+        Symbol: true,
+        WeakMap: true,
       },
 
       rules: {
@@ -117,19 +109,19 @@ module.exports = {
         qunit: true,
       },
       globals: {
-        'expectAssertion': true,
-        'expectDeprecation': true,
-        'expectDeprecationAsync': true,
-        'expectNoDeprecation': true,
-        'expectWarning': true,
-        'expectNoWarning': true,
-        'ignoreAssertion': true,
-        'ignoreDeprecation': true,
+        expectAssertion: true,
+        expectDeprecation: true,
+        expectDeprecationAsync: true,
+        expectNoDeprecation: true,
+        expectWarning: true,
+        expectNoWarning: true,
+        ignoreAssertion: true,
+        ignoreDeprecation: true,
       },
       rules: {
         'disable-features/disable-async-await': 'off',
         'disable-features/disable-generator-functions': 'off',
-      }
+      },
     },
     {
       // matches all node-land files
@@ -172,21 +164,18 @@ module.exports = {
       }),
     },
     {
-      files: [ 'node-tests/**/*.js' ],
+      files: ['node-tests/**/*.js'],
 
       env: {
         mocha: true,
       },
     },
     {
-      files: [
-        'tests/docs/**/*.js',
-        'tests/node/**/*.js',
-      ],
+      files: ['tests/docs/**/*.js', 'tests/node/**/*.js'],
 
       env: {
-        qunit: true
+        qunit: true,
       },
     },
-  ]
+  ],
 };

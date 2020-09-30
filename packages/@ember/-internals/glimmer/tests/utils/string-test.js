@@ -18,7 +18,7 @@ moduleFor(
       this.assert.equal(safeString.toString(), '', 'should return an empty string');
     }
 
-    ['@test htmlSafe should return an instance of SafeString']() {
+    ['@test htmlSafe should return an instance of SafeString for an empty string']() {
       let safeString = htmlSafe();
 
       this.assert.equal(safeString instanceof SafeString, true, 'should be a SafeString');

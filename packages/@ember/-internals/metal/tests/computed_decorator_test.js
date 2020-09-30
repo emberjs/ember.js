@@ -301,6 +301,7 @@ moduleFor(
         }
         set foo(value) {
           this.__foo = `computed ${value}`;
+          // eslint-disable-next-line no-setter-return
           return this.__foo;
         }
       }
