@@ -2,7 +2,7 @@ import { dasherize } from '@ember/string';
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let positional = args.positional.capture();
 
   return createComputeRef(() => {

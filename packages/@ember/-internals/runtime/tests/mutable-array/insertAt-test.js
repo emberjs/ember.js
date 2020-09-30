@@ -169,7 +169,7 @@ class InsertAtTests extends AbstractTestCase {
     let objectAtCalls = [];
 
     let objectAt = obj.objectAt;
-    obj.objectAt = ix => {
+    obj.objectAt = (ix) => {
       objectAtCalls.push(ix);
       return objectAt.call(obj, ix);
     };

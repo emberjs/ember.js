@@ -213,7 +213,7 @@ moduleFor(
 
     ['@test triggers a method with `<Textarea @key-up={{this.didTrigger}} />`'](assert) {
       this.render(`<Textarea @key-up={{this.didTrigger}} />`, {
-        didTrigger: action(function() {
+        didTrigger: action(function () {
           assert.ok(true, 'action was triggered');
         }),
       });

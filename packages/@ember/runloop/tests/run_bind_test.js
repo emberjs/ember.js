@@ -40,7 +40,7 @@ moduleFor(
     ['@test [GH#16652] bind throws an error if callback is undefined']() {
       let assertBindThrows = (msg, ...args) => {
         expectAssertion(
-          function() {
+          function () {
             bind(...args);
           },
           /could not find a suitable method to bind/,

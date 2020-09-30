@@ -48,7 +48,7 @@ function updateClassReferencesInNamespaces(data) {
   }
 }
 
-module.exports = function(data) {
+module.exports = function (data) {
   let featuresToFilter = gatherFeatures();
   data.classes = gatherClassesToDocument(data, featuresToFilter);
   updateClassReferencesInNamespaces(data);

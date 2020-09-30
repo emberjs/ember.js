@@ -19,7 +19,7 @@ moduleFor(
       ENV._APPLICATION_TEMPLATE_WRAPPER = false;
       ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
 
-      let didCreateReloader = reloader => {
+      let didCreateReloader = (reloader) => {
         this.reloader = reloader;
       };
 
@@ -51,7 +51,7 @@ moduleFor(
 
             this.revisions[name] = ++revision;
 
-            this.callbacks.forEach(callback => callback());
+            this.callbacks.forEach((callback) => callback());
           },
         })
       );

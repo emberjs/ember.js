@@ -17,7 +17,7 @@ moduleFor(
       this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
       this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -43,10 +43,10 @@ moduleFor(
         }
 
         result.then(
-          function() {
+          function () {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
-          function(reason) {
+          function (reason) {
             assert.ok(
               reason && reason.message === 'TransitionAborted',
               'url: `' + path + '` was to be aborted'
@@ -147,7 +147,7 @@ moduleFor(
     }
 
     async [`@test The template will pull in an alternate controller via key/value`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('homepage', { path: '/' });
       });
 
@@ -337,9 +337,9 @@ moduleFor(
       this.addTemplate('bar', "<div class='bottom'>{{outlet}}</div>");
       this.addTemplate('bar.baz', '<p>{{name}}Bottom!</p>');
 
-      this.router.map(function() {
-        this.route('foo', { path: '/top' }, function() {
-          this.route('bar', { path: '/middle', resetNamespace: true }, function() {
+      this.router.map(function () {
+        this.route('foo', { path: '/top' }, function () {
+          this.route('bar', { path: '/middle', resetNamespace: true }, function () {
             this.route('baz', { path: '/bottom' });
           });
         });
@@ -397,9 +397,9 @@ moduleFor(
       this.addTemplate('middle', "<div class='bottom'>{{outlet}}</div>");
       this.addTemplate('middle.bottom', '<p>Bottom!</p>');
 
-      this.router.map(function() {
-        this.route('top', function() {
-          this.route('middle', { resetNamespace: true }, function() {
+      this.router.map(function () {
+        this.route('top', function () {
+          this.route('middle', { resetNamespace: true }, function () {
             this.route('bottom');
           });
         });
@@ -423,9 +423,9 @@ moduleFor(
       this.addTemplate('middle', "<div class='bottom'>{{outlet}}</div>");
       this.addTemplate('middle.bottom', '<p>Bottom!</p>');
 
-      this.router.map(function() {
-        this.route('top', function() {
-          this.route('middle', { resetNamespace: true }, function() {
+      this.router.map(function () {
+        this.route('top', function () {
+          this.route('middle', { resetNamespace: true }, function () {
             this.route('bottom');
           });
         });
@@ -460,7 +460,7 @@ moduleFor(
       this.addTemplate('person.profile', 'profile {{outlet}}');
       this.addTemplate('person.details', 'details!');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -490,8 +490,8 @@ moduleFor(
       this.addTemplate('posts.index', '<p class="posts-index">postsIndex</p>');
       this.addTemplate('posts.menu', '<div class="posts-menu">postsMenu</div>');
 
-      this.router.map(function() {
-        this.route('posts', function() {});
+      this.router.map(function () {
+        this.route('posts', function () {});
       });
 
       this.add(
@@ -526,7 +526,7 @@ moduleFor(
     ['@test Application template does not duplicate when re-rendered'](assert) {
       this.addTemplate('application', '<h3 class="render-once">I render once</h3>{{outlet}}');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts');
       });
 
@@ -552,7 +552,7 @@ moduleFor(
       this.addTemplate('application', '<h3>App</h3> {{outlet}}');
       this.addTemplate('posts', 'posts');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts');
         this.route('photos');
       });
@@ -575,7 +575,7 @@ moduleFor(
     ["@feature(!EMBER_ROUTING_MODEL_ARG) The template is not re-rendered when the route's context changes"](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('page', { path: '/page/:name' });
       });
 
@@ -624,7 +624,7 @@ moduleFor(
     async ["@feature(EMBER_ROUTING_MODEL_ARG) The template is not re-rendered when the route's model changes"](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('page', { path: '/page/:name' });
       });
 
@@ -673,7 +673,7 @@ moduleFor(
     ['@test The template is not re-rendered when two routes present the exact same template & controller'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('first');
         this.route('second');
         this.route('third');
@@ -729,10 +729,10 @@ moduleFor(
               .lookup('router:main')
               .transitionTo('third')
               .then(
-                function() {
+                function () {
                   assert.ok(true, 'expected transition');
                 },
-                function(reason) {
+                function (reason) {
                   assert.ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
                 }
               );
@@ -758,9 +758,9 @@ moduleFor(
       this.addTemplate('posts.menu', '<div class="posts-menu">postsMenu</div>');
       this.addTemplate('posts.footer', '<div class="posts-footer">postsFooter</div>');
 
-      this.router.map(function() {
-        this.route('posts', function() {});
-        this.route('users', function() {});
+      this.router.map(function () {
+        this.route('posts', function () {});
+        this.route('users', function () {});
       });
 
       this.add(
@@ -832,9 +832,9 @@ moduleFor(
       this.addTemplate('posts.modal', '<div class="posts-modal">postsModal</div>');
       this.addTemplate('posts.extra', '<div class="posts-extra">postsExtra</div>');
 
-      this.router.map(function() {
-        this.route('posts', function() {});
-        this.route('users', function() {});
+      this.router.map(function () {
+        this.route('posts', function () {});
+        this.route('users', function () {});
       });
 
       this.add(
@@ -911,7 +911,7 @@ moduleFor(
             null,
             'The posts/extra template was removed'
           );
-          run(function() {
+          run(function () {
             router.send('showModal');
           });
           assert.equal(
@@ -919,7 +919,7 @@ moduleFor(
             'postsModal',
             'The posts/modal template was rendered'
           );
-          run(function() {
+          run(function () {
             router.send('showExtra');
           });
           assert.equal(
@@ -955,9 +955,9 @@ moduleFor(
       this.addTemplate('posts.index', '<div class="posts-index">postsIndex {{outlet}}</div>');
       this.addTemplate('posts.modal', '<div class="posts-modal">postsModal</div>');
 
-      this.router.map(function() {
-        this.route('posts', function() {});
-        this.route('users', function() {});
+      this.router.map(function () {
+        this.route('posts', function () {});
+        this.route('users', function () {});
       });
 
       this.add(
@@ -1021,7 +1021,7 @@ moduleFor(
       this.addTemplate('posts', "{{outlet 'modal'}}");
       this.addTemplate('modal', 'A Yo.');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts');
       });
 
@@ -1057,7 +1057,7 @@ moduleFor(
     ['@test Specifying non-existent controller name in route#render throws'](assert) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1081,8 +1081,8 @@ moduleFor(
       this.addTemplate('sample', 'Hi{{#if showTheThing}}{{outlet}}{{/if}}Bye');
       this.addTemplate('sample.inner', 'Yay');
       this.addTemplate('sample.inner2', 'Boo');
-      this.router.map(function() {
-        this.route('sample', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('sample', { path: '/' }, function () {
           this.route('inner', { path: '/' });
           this.route('inner2', { path: '/2' });
         });
@@ -1108,7 +1108,7 @@ moduleFor(
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
       this.addTemplate('index', 'The index');
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
       this.add(
@@ -1138,7 +1138,7 @@ moduleFor(
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
       this.addTemplate('index', 'The index');
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
       this.add(
@@ -1180,7 +1180,7 @@ moduleFor(
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('hasNoTemplate', { path: '/' });
       });
 
@@ -1207,7 +1207,7 @@ moduleFor(
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
       this.addTemplate('index', 'The index');
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
       this.add(
@@ -1245,8 +1245,8 @@ moduleFor(
       this.addTemplate('common', '<div id="common"></div>');
       this.addTemplate('sub', '<div id="sub"></div>');
 
-      this.router.map(function() {
-        this.route('app', { path: '/app' }, function() {
+      this.router.map(function () {
+        this.route('app', { path: '/app' }, function () {
           this.route('sub', { path: '/sub', resetNamespace: true });
         });
       });
@@ -1308,7 +1308,7 @@ moduleFor(
       this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
       this.addTemplate('index', 'hi');
       this.addTemplate('layer', 'layer');
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
       this.add(
@@ -1349,8 +1349,8 @@ moduleFor(
       this.addTemplate('exports.root', '<div class="b">{{outlet}}</div>');
       this.addTemplate('exports.index', '<div class="c"></div>');
 
-      this.router.map(function() {
-        this.route('root', function() {});
+      this.router.map(function () {
+        this.route('root', function () {});
       });
 
       this.add(
@@ -1381,7 +1381,7 @@ moduleFor(
       this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
       this.addTemplate('index', 'hi');
       this.addTemplate('layer', 'layer');
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
       this.add(
@@ -1434,7 +1434,7 @@ moduleFor(
       let otherComponentCounter = 0;
       let indexController;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
 

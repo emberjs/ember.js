@@ -292,7 +292,7 @@ class DynamicContentTest extends RenderingTestCase {
 
   ['@test it can render a computed property']() {
     let Formatter = EmberObject.extend({
-      formattedMessage: computed('message', function() {
+      formattedMessage: computed('message', function () {
         return this.get('message').toUpperCase();
       }),
     });
@@ -318,7 +318,7 @@ class DynamicContentTest extends RenderingTestCase {
 
   ['@test it can render a computed property with nested dependency']() {
     let Formatter = EmberObject.extend({
-      formattedMessage: computed('messenger.message', function() {
+      formattedMessage: computed('messenger.message', function () {
         return this.get('messenger.message').toUpperCase();
       }),
     });
@@ -1622,7 +1622,7 @@ class StyleTest extends RenderingTestCase {
     super(...arguments);
     warnings = [];
     originalWarn = getDebugFunction('warn');
-    setDebugFunction('warn', function(message, test) {
+    setDebugFunction('warn', function (message, test) {
       if (!test) {
         warnings.push(message);
       }

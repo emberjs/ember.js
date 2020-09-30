@@ -22,7 +22,7 @@ export default Mixin.create({
   action: null,
   actionContext: null,
 
-  actionContextObject: computed('actionContext', function() {
+  actionContextObject: computed('actionContext', function () {
     let actionContext = get(this, 'actionContext');
 
     if (typeof actionContext === 'string') {

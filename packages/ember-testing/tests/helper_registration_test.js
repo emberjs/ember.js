@@ -6,7 +6,7 @@ import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-t
 let App, appBooted, helperContainer;
 
 function registerHelper() {
-  Test.registerHelper('boot', function(app) {
+  Test.registerHelper('boot', function (app) {
     run(app, app.advanceReadiness);
     appBooted = true;
     return app.testHelpers.wait();
@@ -23,7 +23,7 @@ function setupApp() {
   appBooted = false;
   helperContainer = {};
 
-  run(function() {
+  run(function () {
     App = EmberApplication.create({
       Resolver: ModuleBasedTestResolver,
     });
@@ -67,7 +67,7 @@ moduleFor(
 
       App.testHelpers
         .boot()
-        .then(function() {
+        .then(function () {
           assert.ok(appBooted);
         })
         .finally(done);

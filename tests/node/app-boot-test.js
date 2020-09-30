@@ -2,15 +2,15 @@ const setupAppTest = require('./helpers/setup-app');
 
 require('./helpers/assert-html-matches').register();
 
-QUnit.module('App Boot', function(hooks) {
+QUnit.module('App Boot', function (hooks) {
   setupAppTest(hooks);
 
-  QUnit.test('App boots and routes to a URL', function(assert) {
+  QUnit.test('App boots and routes to a URL', function (assert) {
     this.visit('/');
     assert.ok(this.app);
   });
 
-  QUnit.test('nested {{component}}', function(assert) {
+  QUnit.test('nested {{component}}', function (assert) {
     this.template('index', '{{root-component}}');
 
     this.template(
@@ -30,7 +30,7 @@ QUnit.module('App Boot', function(hooks) {
       <p>The files are *inside* the computer?!</p>\
     ');
 
-    return this.renderToHTML('/').then(function(html) {
+    return this.renderToHTML('/').then(function (html) {
       assert.htmlMatches(
         html,
         '<body><div id="EMBER_ID" class="ember-view"><div id="EMBER_ID" class="ember-view"><h1>Hello World</h1><div><div id="EMBER_ID" class="ember-view"><p>The files are *inside* the computer?!</p></div></div></div></div></body>'
@@ -38,13 +38,13 @@ QUnit.module('App Boot', function(hooks) {
     });
   });
 
-  QUnit.test('{{link-to}}', function(assert) {
+  QUnit.test('{{link-to}}', function (assert) {
     this.template('application', "<h1>{{#link-to 'photos'}}Go to photos{{/link-to}}</h1>");
-    this.routes(function() {
+    this.routes(function () {
       this.route('photos');
     });
 
-    return this.renderToHTML('/').then(function(html) {
+    return this.renderToHTML('/').then(function (html) {
       assert.htmlMatches(
         html,
         '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a></h1></div></body>'
@@ -52,8 +52,8 @@ QUnit.module('App Boot', function(hooks) {
     });
   });
 
-  QUnit.test('non-escaped content', function(assert) {
-    this.routes(function() {
+  QUnit.test('non-escaped content', function (assert) {
+    this.routes(function () {
       this.route('photos');
     });
 
@@ -62,7 +62,7 @@ QUnit.module('App Boot', function(hooks) {
       title: '<b>Hello world</b>',
     });
 
-    return this.renderToHTML('/').then(function(html) {
+    return this.renderToHTML('/').then(function (html) {
       assert.htmlMatches(
         html,
         '<body><div id="EMBER_ID" class="ember-view"><h1><b>Hello world</b></h1></div></body>'
@@ -70,8 +70,8 @@ QUnit.module('App Boot', function(hooks) {
     });
   });
 
-  QUnit.test('outlets', function(assert) {
-    this.routes(function() {
+  QUnit.test('outlets', function (assert) {
+    this.routes(function () {
       this.route('photos');
     });
 
@@ -81,7 +81,7 @@ QUnit.module('App Boot', function(hooks) {
 
     let promises = [];
     promises.push(
-      this.renderToHTML('/').then(function(html) {
+      this.renderToHTML('/').then(function (html) {
         assert.htmlMatches(
           html,
           '<body><div id="EMBER_ID" class="ember-view"><p><span>index</span></p></div></body>'
@@ -90,7 +90,7 @@ QUnit.module('App Boot', function(hooks) {
     );
 
     promises.push(
-      this.renderToHTML('/photos').then(function(html) {
+      this.renderToHTML('/photos').then(function (html) {
         assert.htmlMatches(
           html,
           '<body><div id="EMBER_ID" class="ember-view"><p><em>photos</em></p></div></body>'
@@ -101,7 +101,7 @@ QUnit.module('App Boot', function(hooks) {
     return this.all(promises);
   });
 
-  QUnit.test('lifecycle hooks disabled', function(assert) {
+  QUnit.test('lifecycle hooks disabled', function (assert) {
     assert.expect(1);
 
     this.template('application', "{{my-component foo='bar'}}{{outlet}}");
@@ -127,12 +127,12 @@ QUnit.module('App Boot', function(hooks) {
     return this.renderToHTML('/');
   });
 
-  QUnit.test('Should not attempt to render element modifiers GH#14220', function(assert) {
+  QUnit.test('Should not attempt to render element modifiers GH#14220', function (assert) {
     assert.expect(1);
 
     this.template('application', "<div {{action 'foo'}}></div>");
 
-    return this.renderToHTML('/').then(function(html) {
+    return this.renderToHTML('/').then(function (html) {
       assert.htmlMatches(
         html,
         '<body><div id="EMBER_ID" class="ember-view"><div></div></div></body>'

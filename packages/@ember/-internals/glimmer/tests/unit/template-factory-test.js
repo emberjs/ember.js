@@ -97,7 +97,7 @@ moduleFor(
 
 function diff(state, lastState) {
   let res = {};
-  Object.keys(state).forEach(key => {
+  Object.keys(state).forEach((key) => {
     let delta = state[key] - lastState[key];
     if (delta !== 0) {
       res[key] = state[key] - lastState[key];

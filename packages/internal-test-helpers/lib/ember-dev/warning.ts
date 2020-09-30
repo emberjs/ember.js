@@ -19,12 +19,12 @@ declare global {
 export function setupWarningHelpers(hooks: NestedHooks, env: DebugEnv) {
   let assertion = new WarningAssert(env);
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     assertion.reset();
     assertion.inject();
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     assertion.assert();
     assertion.restore();
   });
@@ -46,12 +46,12 @@ class WarningAssert extends DebugAssert {
     // expectNoWarning();
     // Ember.warn("Oh snap, didn't expect that");
     //
-    let expectNoWarning: ExpectNoWarningFunc = func => {
+    let expectNoWarning: ExpectNoWarningFunc = (func) => {
       if (typeof func !== 'function') {
         func = undefined;
       }
 
-      this.runExpectation(func, tracker => {
+      this.runExpectation(func, (tracker) => {
         if (tracker.isExpectingCalls()) {
           throw new Error('expectNoWarning was called after expectWarning was called!');
         }
@@ -81,7 +81,7 @@ class WarningAssert extends DebugAssert {
         actualFunc = func;
       }
 
-      this.runExpectation(actualFunc, tracker => {
+      this.runExpectation(actualFunc, (tracker) => {
         if (tracker.isExpectingNoCalls()) {
           throw new Error('expectWarning was called after expectNoWarning was called!');
         }
@@ -90,7 +90,7 @@ class WarningAssert extends DebugAssert {
       });
     };
 
-    let ignoreWarning: IgnoreWarningFunc = func => {
+    let ignoreWarning: IgnoreWarningFunc = (func) => {
       callWithStub(this.env, 'warn', func);
     };
 

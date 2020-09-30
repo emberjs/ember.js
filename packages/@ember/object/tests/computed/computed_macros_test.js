@@ -109,7 +109,7 @@ moduleFor(
       defineProperty(
         obj,
         'bay',
-        computed(function() {
+        computed(function () {
           return 'apple';
         })
       );
@@ -145,10 +145,10 @@ moduleFor(
         obj,
         'original',
         computed({
-          get: function() {
+          get: function () {
             return constantValue;
           },
-          set: function() {
+          set: function () {
             return constantValue;
           },
         })
@@ -403,11 +403,11 @@ moduleFor(
 
     ['@test computed.or and computed.and warn about dependent keys with spaces']() {
       let obj = { one: true, two: true };
-      expectAssertion(function() {
+      expectAssertion(function () {
         defineProperty(obj, 'oneOrTwo', or('one', 'two three'));
       }, /Dependent keys passed to computed\.or\(\) can't have spaces\./);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         defineProperty(obj, 'oneAndTwo', and('one', 'two three'));
       }, /Dependent keys passed to computed\.and\(\) can't have spaces\./);
     }
@@ -448,7 +448,7 @@ moduleFor(
       assert.equal(get(obj, 'lastName'), 'Zeenny');
       assert.equal(get(obj, 'nickName'), 'Teddy');
 
-      assert.throws(function() {
+      assert.throws(function () {
         set(obj, 'nickName', 'TeddyBear');
       }, / /);
 
@@ -467,7 +467,7 @@ moduleFor(
       defineProperty(
         obj,
         'bay',
-        computed(function() {
+        computed(function () {
           return 'apple';
         })
       );
@@ -493,31 +493,31 @@ moduleFor(
         deprecatingAlias('bay', { id: 'bay-deprecation', until: 'some.version' })
       );
 
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         assert.equal(get(obj, 'barAlias'), 'asdf');
       }, 'Usage of `barAlias` is deprecated, use `bar` instead.');
 
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         assert.equal(get(obj, 'bazAlias'), null);
       }, 'Usage of `bazAlias` is deprecated, use `baz` instead.');
 
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         assert.equal(get(obj, 'quzAlias'), false);
       }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
 
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         assert.equal(get(obj, 'bayAlias'), 'apple');
       }, 'Usage of `bayAlias` is deprecated, use `bay` instead.');
 
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         set(obj, 'barAlias', 'newBar');
       }, 'Usage of `barAlias` is deprecated, use `bar` instead.');
 
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         set(obj, 'bazAlias', 'newBaz');
       }, 'Usage of `bazAlias` is deprecated, use `baz` instead.');
 
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         set(obj, 'quzAlias', null);
       }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
 

@@ -13,7 +13,7 @@ function checkElementIdShadowing(value: any | null | undefined) {
 
 // export real global
 export default checkGlobal(checkElementIdShadowing(typeof global === 'object' && global)) ||
-checkGlobal(typeof self === 'object' && self) ||
-checkGlobal(typeof window === 'object' && window) ||
-(typeof mainContext !== 'undefined' && mainContext) || // set before strict mode in Ember loader/wrapper
+  checkGlobal(typeof self === 'object' && self) ||
+  checkGlobal(typeof window === 'object' && window) ||
+  (typeof mainContext !== 'undefined' && mainContext) || // set before strict mode in Ember loader/wrapper
   new Function('return this')(); // eval outside of strict mode

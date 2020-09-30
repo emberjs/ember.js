@@ -164,7 +164,7 @@ moduleFor(
     }
 
     async ['@feature(EMBER_ROUTING_MODEL_ARG) interior mutations on the model with set'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
 
@@ -231,7 +231,7 @@ moduleFor(
         }
       }
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
 
@@ -287,7 +287,7 @@ moduleFor(
     }
 
     async ['@feature(EMBER_ROUTING_MODEL_ARG) exterior mutations on the model with set'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
 
@@ -346,7 +346,7 @@ moduleFor(
     async ['@feature(EMBER_ROUTING_MODEL_ARG) exterior mutations on the model with tracked properties'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
 
@@ -409,9 +409,9 @@ moduleFor(
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) it can render a nested route']() {
-      this.router.map(function() {
-        this.route('lists', function() {
-          this.route('colors', function() {
+      this.router.map(function () {
+        this.route('lists', function () {
+          this.route('colors', function () {
             this.route('favorite');
           });
         });
@@ -450,9 +450,9 @@ moduleFor(
     }
 
     ['@feature(EMBER_ROUTING_MODEL_ARG) it can render a nested route']() {
-      this.router.map(function() {
-        this.route('lists', function() {
-          this.route('colors', function() {
+      this.router.map(function () {
+        this.route('lists', function () {
+          this.route('colors', function () {
             this.route('favorite');
           });
         });
@@ -491,7 +491,7 @@ moduleFor(
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) it can render into named outlets']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('colors');
       });
 
@@ -560,7 +560,7 @@ moduleFor(
     }
 
     ['@feature(EMBER_ROUTING_MODEL_ARG) it can render into named outlets']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('colors');
       });
 
@@ -629,9 +629,9 @@ moduleFor(
     }
 
     ['@test it should update the outlets when switching between routes']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
-        this.route('b', function() {
+        this.route('b', function () {
           this.route('c');
           this.route('d');
         });
@@ -660,7 +660,7 @@ moduleFor(
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when the model changes']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/colors/:color' });
       });
 
@@ -688,7 +688,7 @@ moduleFor(
     }
 
     ['@feature(EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when the model changes']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/colors/:color' });
       });
 
@@ -716,7 +716,7 @@ moduleFor(
     }
 
     ['@test it should have the right controller in scope for the route template']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b');
       });
@@ -747,7 +747,7 @@ moduleFor(
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) it should update correctly when the controller changes']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/colors/:color' });
       });
 
@@ -791,7 +791,7 @@ moduleFor(
     }
 
     ['@feature(EMBER_ROUTING_MODEL_ARG) it should update correctly when the controller changes']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('color', { path: '/colors/:color' });
       });
 
@@ -835,7 +835,7 @@ moduleFor(
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when two routes render the same template']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b');
       });
@@ -888,7 +888,7 @@ moduleFor(
     }
 
     ['@feature(EMBER_ROUTING_MODEL_ARG) it should produce a stable DOM when two routes render the same template']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b');
       });
@@ -953,7 +953,7 @@ moduleFor(
     }
 
     ['@test it allows a transition during route activate']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
       });
 
@@ -976,7 +976,7 @@ moduleFor(
     async ['@feature(!EMBER_ROUTING_MODEL_ARG) it emits a useful backtracking re-render assertion message'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('routeWithError');
       });
 
@@ -1027,7 +1027,7 @@ moduleFor(
     async ['@feature(EMBER_ROUTING_MODEL_ARG) it emits a useful backtracking re-render assertion message'](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('routeWithError');
       });
 
@@ -1067,7 +1067,7 @@ moduleFor(
     }
 
     ['@test route templates with {{{undefined}}} [GH#14924] [GH#16172]']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('first');
         this.route('second');
       });

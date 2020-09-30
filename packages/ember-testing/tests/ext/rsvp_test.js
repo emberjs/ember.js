@@ -53,23 +53,23 @@ moduleFor(
       assert.equal(asyncEnded, 0);
 
       user
-        .then(function(user) {
+        .then(function (user) {
           assert.equal(asyncStarted, 1);
           assert.equal(asyncEnded, 1);
 
           assert.equal(user.name, 'tomster');
 
-          return RSVP.Promise.resolve(1).then(function() {
+          return RSVP.Promise.resolve(1).then(function () {
             assert.equal(asyncStarted, 1);
             assert.equal(asyncEnded, 1);
           });
         })
-        .then(function() {
+        .then(function () {
           assert.equal(asyncStarted, 1);
           assert.equal(asyncEnded, 1);
 
-          return new RSVP.Promise(function(resolve) {
-            setTimeout(function() {
+          return new RSVP.Promise(function (resolve) {
+            setTimeout(function () {
               assert.equal(asyncStarted, 1);
               assert.equal(asyncEnded, 1);
 
@@ -80,7 +80,7 @@ moduleFor(
             }, 0);
           });
         })
-        .then(function(user) {
+        .then(function (user) {
           assert.equal(user.name, 'async tomster');
           assert.equal(asyncStarted, 2);
           assert.equal(asyncEnded, 2);
@@ -95,11 +95,11 @@ moduleFor(
   class extends AbstractTestCase {
     ['does not throw error when falsy value passed to then'](assert) {
       assert.expect(1);
-      return new TestPromise(function(resolve) {
+      return new TestPromise(function (resolve) {
         resolve();
       })
         .then(null)
-        .then(function() {
+        .then(function () {
           assert.ok(true);
         });
     }
@@ -107,13 +107,13 @@ moduleFor(
     ['able to get last Promise'](assert) {
       assert.expect(2);
 
-      let p1 = new TestPromise(function(resolve) {
+      let p1 = new TestPromise(function (resolve) {
         resolve();
-      }).then(function() {
+      }).then(function () {
         assert.ok(true);
       });
 
-      let p2 = new TestPromise(function(resolve) {
+      let p2 = new TestPromise(function (resolve) {
         resolve();
       });
 

@@ -38,7 +38,7 @@ class ReplaceTests extends AbstractTestCase {
     let called = 0;
     exp = newFixture(1);
     obj = this.newObject([]);
-    obj.objectAt = function() {
+    obj.objectAt = function () {
       called++;
     };
     observer = this.newObserver(obj, 'firstObject', 'lastObject');

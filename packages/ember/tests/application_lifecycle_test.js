@@ -5,7 +5,7 @@ import { Component } from '@ember/-internals/glimmer';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
-const noop = function() {};
+const noop = function () {};
 
 moduleFor(
   'Application Lifecycle - route hooks',

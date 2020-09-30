@@ -115,7 +115,7 @@ moduleFor(
           })
         );
 
-        this.router.map(function() {
+        this.router.map(function () {
           this.route('one');
           this.route('two');
         });

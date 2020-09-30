@@ -28,7 +28,7 @@ moduleFor(
           this._enginePromises = Object.create(null);
           this._resolvedEngines = Object.create(null);
 
-          this._routerMicrolib.getRoute = name => {
+          this._routerMicrolib.getRoute = (name) => {
             let engineInfo = this._engineInfoByRoute[name];
             if (!engineInfo) {
               return getRoute(name);
@@ -42,7 +42,7 @@ moduleFor(
             let enginePromise = this._enginePromises[engineName];
 
             if (!enginePromise) {
-              enginePromise = new RSVP.Promise(resolve => {
+              enginePromise = new RSVP.Promise((resolve) => {
                 setTimeout(() => {
                   this._resolvedEngines[engineName] = true;
 
@@ -63,11 +63,11 @@ moduleFor(
 
       this.addTemplate('application', 'Application{{outlet}}');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
-      this.add('route-map:blog', function() {
-        this.route('post', function() {
+      this.add('route-map:blog', function () {
+        this.route('post', function () {
           this.route('comments');
           this.route('likes');
         });
@@ -161,10 +161,10 @@ moduleFor(
     setupAppAndRoutableEngineWithPartial(hooks) {
       this.addTemplate('application', 'Application{{outlet}}');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
-      this.add('route-map:blog', function() {});
+      this.add('route-map:blog', function () {});
       this.add(
         'route:application',
         Route.extend({
@@ -297,10 +297,10 @@ moduleFor(
         })
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
-      this.add('route-map:blog', function() {});
+      this.add('route-map:blog', function () {});
 
       this.add(
         'engine:blog',
@@ -354,10 +354,10 @@ moduleFor(
 
       this.add('component:my-component', sharedComponent);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
-      this.add('route-map:blog', function() {});
+      this.add('route-map:blog', function () {});
 
       this.add(
         'engine:blog',
@@ -543,7 +543,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_error',
           Route.extend({
@@ -587,7 +587,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:error',
           Route.extend({
@@ -631,7 +631,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:post_error',
           Route.extend({
@@ -675,7 +675,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:post.error',
           Route.extend({
@@ -721,7 +721,7 @@ moduleFor(
       let resolveLoading = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_loading',
           Route.extend({
@@ -768,7 +768,7 @@ moduleFor(
       let resolveLoading = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:loading',
           Route.extend({
@@ -813,7 +813,7 @@ moduleFor(
       let resolveLoading;
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:post', compile('{{outlet}}'));
         this.register('template:post.comments', compile('Comments'));
         this.register('template:post.likes_loading', compile('Loading'));
@@ -822,7 +822,7 @@ moduleFor(
           'route:post.likes',
           Route.extend({
             model() {
-              return new RSVP.Promise(resolve => {
+              return new RSVP.Promise((resolve) => {
                 resolveLoading = resolve;
               });
             },
@@ -853,7 +853,7 @@ moduleFor(
       let resolveLoading = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:post', compile('{{outlet}}'));
         this.register('template:post.comments', compile('Comments'));
         this.register(
@@ -898,7 +898,7 @@ moduleFor(
       assert.expect(1);
       let tmpl = '{{#link-to "blog.category" 1337}}Category 1337{{/link-to}}';
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:category', compile(tmpl));
       });
 
@@ -918,7 +918,7 @@ moduleFor(
       let tmpl =
         '{{#link-to "blog.author" 1337 class="author-1337"}}Author 1337{{/link-to}}{{#link-to "blog.author" 1 class="author-1"}}Author 1{{/link-to}}';
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:author', compile(tmpl));
       });
 
@@ -939,7 +939,7 @@ moduleFor(
 
       let hooks = [];
 
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:application',
           Route.extend({
@@ -956,7 +956,7 @@ moduleFor(
         .then(() => {
           return this.visit('/blog');
         })
-        .catch(error => {
+        .catch((error) => {
           assert.equal(error.message, 'Whoops! Something went wrong...');
         });
     }

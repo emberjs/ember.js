@@ -60,8 +60,8 @@ function withTargets(project, fn) {
   };
 }
 
-module.exports = function({ project }) {
-  let emberSource = project.addons.find(a => a.name === 'ember-source');
+module.exports = function ({ project }) {
+  let emberSource = project.addons.find((a) => a.name === 'ember-source');
 
   let transpileTree = withTargets(project, emberSource.transpileTree.bind(emberSource));
   let emberBundles = withTargets(project, emberSource.buildEmberBundles.bind(emberSource));

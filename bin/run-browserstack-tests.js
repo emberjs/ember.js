@@ -13,7 +13,7 @@ function run(command, args = []) {
   return p;
 }
 
-(async function() {
+(async function () {
   await run('ember', ['browserstack:connect']);
 
   try {

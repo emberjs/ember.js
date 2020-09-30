@@ -12,7 +12,7 @@ moduleFor(
     }
 
     setupApplication() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('dashboard');
       });

@@ -36,11 +36,11 @@ if (DEBUG) {
     { [key: string | symbol]: PropertyDescriptorWithMeta }
   > = new WeakMap();
 
-  let propertyIsEnumerable = function(obj: object, key: string | symbol) {
+  let propertyIsEnumerable = function (obj: object, key: string | symbol) {
     return Object.prototype.propertyIsEnumerable.call(obj, key);
   };
 
-  setupMandatorySetter = function(tag: Tag, obj: object, keyName: string | symbol) {
+  setupMandatorySetter = function (tag: Tag, obj: object, keyName: string | symbol) {
     if (SEEN_TAGS.has(tag)) {
       return;
     }
@@ -99,7 +99,7 @@ if (DEBUG) {
     });
   };
 
-  teardownMandatorySetter = function(obj: object, keyName: string | symbol) {
+  teardownMandatorySetter = function (obj: object, keyName: string | symbol) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
@@ -109,7 +109,7 @@ if (DEBUG) {
     }
   };
 
-  setWithMandatorySetter = function(obj: object, keyName: string | symbol, value: any) {
+  setWithMandatorySetter = function (obj: object, keyName: string | symbol, value: any) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {

@@ -15,12 +15,12 @@ const { module, test } = QUnit;
   `@ember/test-helpers` here (will make a nested module for each significant
   revision).
 */
-module('@ember/test-helpers emulation test', function() {
-  module('v1.6.0', function() {
+module('@ember/test-helpers emulation test', function () {
+  module('v1.6.0', function () {
     let EMPTY_TEMPLATE = compile('');
 
     function settled() {
-      return new Promise(function(resolve) {
+      return new Promise(function (resolve) {
         let watcher = setInterval(() => {
           if (getCurrentRunLoop() || hasScheduledTimers()) {
             return;
@@ -106,8 +106,8 @@ module('@ember/test-helpers emulation test', function() {
       return settled();
     }
 
-    module('setupRenderingContext', function(hooks) {
-      hooks.beforeEach(async function() {
+    module('setupRenderingContext', function (hooks) {
+      hooks.beforeEach(async function () {
         this.application = Application.create({
           rootElement: '#qunit-fixture',
           autoboot: false,
@@ -118,12 +118,12 @@ module('@ember/test-helpers emulation test', function() {
         await setupRenderingContext(this);
       });
 
-      hooks.afterEach(function() {
+      hooks.afterEach(function () {
         run(this.owner, 'destroy');
         run(this.application, 'destroy');
       });
 
-      test('it basically works', async function(assert) {
+      test('it basically works', async function (assert) {
         await render(compile('Hi!'), this);
 
         assert.equal(this.element.textContent, 'Hi!');

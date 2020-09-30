@@ -25,7 +25,7 @@ moduleFor(
       this.newsDefer = RSVP.defer();
       let _this = this;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
         this.route('other');
         this.route('news');
@@ -160,8 +160,8 @@ moduleFor(
       this.otherDefer = RSVP.defer();
       let _this = this;
 
-      this.router.map(function() {
-        this.route('parent-route', function() {
+      this.router.map(function () {
+        this.route('parent-route', function () {
           this.route('about');
           this.route('other');
         });

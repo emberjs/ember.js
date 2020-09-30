@@ -42,7 +42,7 @@ function clone<T extends object>(node: T): T {
   let out = Object.create(null);
   let keys = Object.keys(node);
 
-  keys.forEach(key => {
+  keys.forEach((key) => {
     let value = node[key];
 
     if (value !== null && typeof value === 'object') {
@@ -59,7 +59,7 @@ function deloc<T extends object, U extends { loc?: AST.SourceLocation }>(node: T
   let out = Object.create(null);
   let keys = Object.keys(node);
 
-  keys.forEach(key => {
+  keys.forEach((key) => {
     let value = node[key];
 
     if (key === 'loc') {

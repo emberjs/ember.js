@@ -15,25 +15,25 @@ moduleFor(
       window.testStarted = true;
 
       MixinA = Mixin.create({
-        aProp: computed(function() {
+        aProp: computed(function () {
           return 'A';
         }),
       });
 
       MixinB = Mixin.create(MixinA, {
-        aProp: computed(function() {
+        aProp: computed(function () {
           return this._super(...arguments) + 'B';
         }),
       });
 
       MixinC = Mixin.create(MixinA, {
-        aProp: computed(function() {
+        aProp: computed(function () {
           return this._super(...arguments) + 'C';
         }),
       });
 
       MixinD = Mixin.create({
-        aProp: computed(function() {
+        aProp: computed(function () {
           return this._super(...arguments) + 'D';
         }),
       });
@@ -56,7 +56,7 @@ moduleFor(
       defineProperty(
         obj,
         'aProp',
-        computed(function() {
+        computed(function () {
           return 'obj';
         })
       );
@@ -137,7 +137,7 @@ moduleFor(
           },
         }),
 
-        cpWithoutSetter: computed(function() {
+        cpWithoutSetter: computed(function () {
           cpWasCalled = true;
         }),
       });

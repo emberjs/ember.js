@@ -4,12 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const VersionChecker = require('ember-cli-version-checker');
 
-module.exports = function(blueprint) {
-  blueprint.supportsAddon = function() {
+module.exports = function (blueprint) {
+  blueprint.supportsAddon = function () {
     return false;
   };
 
-  blueprint.filesPath = function() {
+  blueprint.filesPath = function () {
     let type;
 
     let dependencies = this.project.dependencies();

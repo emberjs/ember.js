@@ -84,7 +84,9 @@ let mixin = {
   nearestOfType(klass) {
     let view = this.parentView;
     let isOfType =
-      klass instanceof Mixin ? view => klass.detect(view) : view => klass.detect(view.constructor);
+      klass instanceof Mixin
+        ? (view) => klass.detect(view)
+        : (view) => klass.detect(view.constructor);
 
     while (view) {
       if (isOfType(view)) {

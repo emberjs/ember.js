@@ -79,7 +79,7 @@ const context = buildUntouchableThis('`fn` helper');
   @since 3.11.0
 */
 
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let positional = args.positional.capture();
 
   return createComputeRef(

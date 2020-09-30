@@ -17,7 +17,7 @@ moduleFor(
       this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
       this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -43,10 +43,10 @@ moduleFor(
         }
 
         result.then(
-          function() {
+          function () {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
-          function(reason) {
+          function (reason) {
             assert.ok(
               reason && reason.message === 'TransitionAborted',
               'url: `' + path + '` was to be aborted'
@@ -73,7 +73,7 @@ moduleFor(
     ['@test properties that autotrack the model update when the model changes'](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('track', { path: '/track/:id' });
       });
 
@@ -204,7 +204,7 @@ moduleFor(
     }
 
     [`@test The route controller specified via controllerName is used in render`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -249,7 +249,7 @@ moduleFor(
     [`@test The route controller specified via controllerName is used in render even when a controller with the routeName is available`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -296,7 +296,7 @@ moduleFor(
     }
 
     [`@test The Homepage with a 'setupController' hook modifying other controllers`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -327,14 +327,14 @@ moduleFor(
     }
 
     [`@test The Homepage with a computed model that does not get overridden`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
       this.add(
         'controller:home',
         Controller.extend({
-          model: computed(function() {
+          model: computed(function () {
             return [
               'Monday through Friday: 9am to 5pm',
               'Saturday: Noon to Midnight',
@@ -361,7 +361,7 @@ moduleFor(
     }
 
     [`@test The Homepage getting its controller context via model`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -400,7 +400,7 @@ moduleFor(
     [`@feature(!EMBER_ROUTING_MODEL_ARG) The Specials Page getting its controller context by deserializing the params hash`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -428,7 +428,7 @@ moduleFor(
     [`@feature(EMBER_ROUTING_MODEL_ARG) The Specials Page getting its model by deserializing the params hash`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -462,7 +462,7 @@ moduleFor(
       });
       this.add('model:menu_item', MenuItem);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -483,7 +483,7 @@ moduleFor(
       });
       this.add('model:menu_item', MenuItem);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -500,7 +500,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -535,7 +535,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -583,8 +583,8 @@ moduleFor(
         },
       });
 
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('root', { path: '/' }, function () {
           this.route('special', {
             path: '/specials/:menu_item_id',
             resetNamespace: true,
@@ -649,7 +649,7 @@ moduleFor(
         let router = this.applicationInstance.lookup('router:main');
         let menuItem = MenuItem.create({ id: 1 });
 
-        return router.transitionTo('special', menuItem).then(function() {
+        return router.transitionTo('special', menuItem).then(function () {
           assert.equal(rootSetup, 1, 'The root setup was not triggered again');
           assert.equal(rootRender, 1, 'The root render was not triggered again');
           assert.equal(rootSerialize, 0, 'The root serialize was not called');
@@ -681,8 +681,8 @@ moduleFor(
         },
       });
 
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('root', { path: '/' }, function () {
           this.route('special', {
             path: '/specials/:menu_item_id',
             resetNamespace: true,
@@ -747,7 +747,7 @@ moduleFor(
         let router = this.applicationInstance.lookup('router:main');
         let menuItem = MenuItem.create({ id: 1 });
 
-        return router.transitionTo('special', menuItem).then(function() {
+        return router.transitionTo('special', menuItem).then(function () {
           assert.equal(rootSetup, 1, 'The root setup was not triggered again');
           assert.equal(rootRender, 1, 'The root render was not triggered again');
           assert.equal(rootSerialize, 0, 'The root serialize was not called');
@@ -764,11 +764,11 @@ moduleFor(
     ['@test Route inherits model from parent route'](assert) {
       assert.expect(9);
 
-      this.router.map(function() {
-        this.route('the-post', { path: '/posts/:post_id' }, function() {
+      this.router.map(function () {
+        this.route('the-post', { path: '/posts/:post_id' }, function () {
           this.route('comments');
 
-          this.route('shares', { path: '/shares/:share_id', resetNamespace: true }, function() {
+          this.route('shares', { path: '/shares/:share_id', resetNamespace: true }, function () {
             this.route('share');
           });
         });
@@ -861,9 +861,9 @@ moduleFor(
     ['@test Routes with { resetNamespace: true } inherits model from parent route'](assert) {
       assert.expect(6);
 
-      this.router.map(function() {
-        this.route('the-post', { path: '/posts/:post_id' }, function() {
-          this.route('comments', { resetNamespace: true }, function() {});
+      this.router.map(function () {
+        this.route('the-post', { path: '/posts/:post_id' }, function () {
+          this.route('comments', { resetNamespace: true }, function () {});
         });
       });
 
@@ -914,8 +914,8 @@ moduleFor(
     ['@test It is possible to get the model from a parent route'](assert) {
       assert.expect(6);
 
-      this.router.map(function() {
-        this.route('the-post', { path: '/posts/:post_id' }, function() {
+      this.router.map(function () {
+        this.route('the-post', { path: '/posts/:post_id' }, function () {
           this.route('comments', { resetNamespace: true });
         });
       });
@@ -976,9 +976,9 @@ moduleFor(
       this.addTemplate('post/index', 'showing');
       this.addTemplate('post/edit', 'editing');
 
-      this.router.map(function() {
-        this.route('posts', function() {
-          this.route('post', { path: '/:postId', resetNamespace: true }, function() {
+      this.router.map(function () {
+        this.route('posts', function () {
+          this.route('post', { path: '/:postId', resetNamespace: true }, function () {
             this.route('edit');
           });
         });
@@ -1048,7 +1048,7 @@ moduleFor(
       // TODO: FIXME:
       let model = {};
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
 
@@ -1083,7 +1083,7 @@ moduleFor(
         },
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:post_id' });
       });
 
@@ -1093,8 +1093,8 @@ moduleFor(
     }
 
     ['@test Routes can refresh themselves causing their model hooks to be re-run'](assert) {
-      this.router.map(function() {
-        this.route('parent', { path: '/parent/:parent_id' }, function() {
+      this.router.map(function () {
+        this.route('parent', { path: '/parent/:parent_id' }, function () {
           this.route('child');
         });
       });

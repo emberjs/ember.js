@@ -9,7 +9,7 @@ const useTestFrameworkDetector = require('../test-framework-detector');
 module.exports = useTestFrameworkDetector({
   description: 'Generates an instance initializer unit test.',
 
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
       __root__() {
         return 'tests';
@@ -19,7 +19,7 @@ module.exports = useTestFrameworkDetector({
       },
     };
   },
-  locals: function(options) {
+  locals: function (options) {
     let modulePrefix = stringUtils.dasherize(options.project.config().modulePrefix);
 
     return {

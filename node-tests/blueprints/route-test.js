@@ -20,11 +20,11 @@ const fixture = require('../helpers/fixture');
 const setupTestEnvironment = require('../helpers/setup-test-environment');
 const enableOctane = setupTestEnvironment.enableOctane;
 
-describe('Blueprint: route', function() {
+describe('Blueprint: route', function () {
   setupTestHooks(this);
 
-  describe('in app', function() {
-    beforeEach(function() {
+  describe('in app', function () {
+    beforeEach(function () {
       return emberNew()
         .then(() =>
           modifyPackages([
@@ -35,8 +35,8 @@ describe('Blueprint: route', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('route foo', function() {
-      return emberGenerateDestroy(['route', 'foo'], _file => {
+    it('route foo', function () {
+      return emberGenerateDestroy(['route', 'foo'], (_file) => {
         expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -49,8 +49,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js', function() {
-      return emberGenerateDestroy(['route', 'foo.js'], _file => {
+    it('route foo.js', function () {
+      return emberGenerateDestroy(['route', 'foo.js'], (_file) => {
         expect(_file('app/routes/foo.js.js')).to.not.exist;
         expect(_file('app/templates/foo.js.hbs')).to.not.exist;
         expect(_file('tests/unit/routes/foo.js-test.js')).to.not.exist;
@@ -68,8 +68,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --skip-router', function() {
-      return emberGenerateDestroy(['route', 'foo', '--skip-router'], _file => {
+    it('route foo --skip-router', function () {
+      return emberGenerateDestroy(['route', 'foo', '--skip-router'], (_file) => {
         expect(_file('app/routes/foo.js')).to.exist;
         expect(_file('app/templates/foo.hbs')).to.exist;
         expect(_file('tests/unit/routes/foo-test.js')).to.exist;
@@ -79,8 +79,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --path=:foo_id/show', function() {
-      return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], _file => {
+    it('route foo --path=:foo_id/show', function () {
+      return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], (_file) => {
         expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -98,8 +98,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route parent/child --reset-namespace', function() {
-      return emberGenerateDestroy(['route', 'parent/child', '--reset-namespace'], _file => {
+    it('route parent/child --reset-namespace', function () {
+      return emberGenerateDestroy(['route', 'parent/child', '--reset-namespace'], (_file) => {
         expect(_file('app/routes/child.js')).to.equal(fixture('route/route-child.js'));
 
         expect(_file('app/templates/child.hbs')).to.equal('{{outlet}}');
@@ -116,10 +116,10 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route parent/child --reset-namespace --pod', function() {
+    it('route parent/child --reset-namespace --pod', function () {
       return emberGenerateDestroy(
         ['route', 'parent/child', '--reset-namespace', '--pod'],
-        _file => {
+        (_file) => {
           expect(_file('app/child/route.js')).to.equal(fixture('route/route-child.js'));
 
           expect(_file('app/child/template.hbs')).to.equal('{{outlet}}');
@@ -137,8 +137,8 @@ describe('Blueprint: route', function() {
       );
     });
 
-    it('route index', function() {
-      return emberGenerateDestroy(['route', 'index'], _file => {
+    it('route index', function () {
+      return emberGenerateDestroy(['route', 'index'], (_file) => {
         expect(_file('app/routes/index.js')).to.exist;
         expect(_file('app/templates/index.hbs')).to.exist;
         expect(_file('tests/unit/routes/index-test.js')).to.exist;
@@ -148,15 +148,15 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route application', function() {
+    it('route application', function () {
       fs.removeSync('app/templates/application.hbs');
       return emberGenerate(['route', 'application']).then(() => {
         expect(file('app/router.js')).to.not.contain("this.route('application')");
       });
     });
 
-    it('route basic', function() {
-      return emberGenerateDestroy(['route', 'basic'], _file => {
+    it('route basic', function () {
+      return emberGenerateDestroy(['route', 'basic'], (_file) => {
         expect(_file('app/routes/basic.js')).to.exist;
         expect(file('app/router.js')).to.not.contain("this.route('basic')");
       }).then(() => {
@@ -164,8 +164,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --pod', function() {
-      return emberGenerateDestroy(['route', 'foo', '--pod'], _file => {
+    it('route foo --pod', function () {
+      return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo.js/route.js')).to.not.exist;
         expect(_file('app/foo.js/template.hbs')).to.not.exist;
         expect(_file('tests/unit/foo.js/route-test.js')).to.not.exist;
@@ -183,8 +183,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js --pod', function() {
-      return emberGenerateDestroy(['route', 'foo.js', '--pod'], _file => {
+    it('route foo.js --pod', function () {
+      return emberGenerateDestroy(['route', 'foo.js', '--pod'], (_file) => {
         expect(_file('app/foo/route.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/foo/template.hbs')).to.equal('{{outlet}}');
@@ -197,7 +197,7 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --pod with --path', function() {
+    it('route foo --pod with --path', function () {
       return emberGenerate(['route', 'foo', '--pod', '--path=:foo_id/show'])
         .then(() =>
           expect(file('app/router.js'))
@@ -214,33 +214,33 @@ describe('Blueprint: route', function() {
         );
     });
 
-    it('route index --pod', function() {
+    it('route index --pod', function () {
       return emberGenerate(['route', 'index', '--pod']).then(() =>
         expect(file('app/router.js')).to.not.contain("this.route('index')")
       );
     });
 
-    it('route application --pod', function() {
+    it('route application --pod', function () {
       return emberGenerate(['route', 'application', '--pod'])
         .then(() => expect(file('app/application/route.js')).to.exist)
         .then(() => expect(file('app/application/template.hbs')).to.exist)
         .then(() => expect(file('app/router.js')).to.not.contain("this.route('application')"));
     });
 
-    it('route basic --pod', function() {
-      return emberGenerateDestroy(['route', 'basic', '--pod'], _file => {
+    it('route basic --pod', function () {
+      return emberGenerateDestroy(['route', 'basic', '--pod'], (_file) => {
         expect(_file('app/basic/route.js')).to.exist;
         expect(file('app/router.js')).to.not.contain("this.route('index')");
       });
     });
 
-    describe('with podModulePrefix', function() {
-      beforeEach(function() {
+    describe('with podModulePrefix', function () {
+      beforeEach(function () {
         setupPodConfig({ podModulePrefix: true });
       });
 
-      it('route foo --pod', function() {
-        return emberGenerateDestroy(['route', 'foo', '--pod'], _file => {
+      it('route foo --pod', function () {
+        return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
           expect(_file('app/pods/foo/route.js')).to.equal(fixture('route/route.js'));
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{outlet}}');
@@ -255,8 +255,8 @@ describe('Blueprint: route', function() {
         });
       });
 
-      it('route foo.js --pod', function() {
-        return emberGenerateDestroy(['route', 'foo', '--pod'], _file => {
+      it('route foo.js --pod', function () {
+        return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
           expect(_file('app/pods/foo.js/route.js')).to.not.exist;
           expect(_file('app/pods/foo.js/template.hbs')).to.not.exist;
           expect(_file('tests/unit/pods/foo.js/route-test.js')).to.not.exist;
@@ -278,8 +278,8 @@ describe('Blueprint: route', function() {
     });
   });
 
-  describe('in addon', function() {
-    beforeEach(function() {
+  describe('in addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
           modifyPackages([
@@ -290,8 +290,8 @@ describe('Blueprint: route', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('route foo', function() {
-      return emberGenerateDestroy(['route', 'foo'], _file => {
+    it('route foo', function () {
+      return emberGenerateDestroy(['route', 'foo'], (_file) => {
         expect(_file('addon/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('addon/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -312,8 +312,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js', function() {
-      return emberGenerateDestroy(['route', 'foo.js'], _file => {
+    it('route foo.js', function () {
+      return emberGenerateDestroy(['route', 'foo.js'], (_file) => {
         expect(_file('addon/routes/foo.js.js')).to.not.exist;
         expect(_file('addon/templates/foo.js.hbs')).to.not.exist;
         expect(_file('app/routes/foo.js.js')).to.not.exist;
@@ -341,8 +341,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo/bar', function() {
-      return emberGenerateDestroy(['route', 'foo/bar'], _file => {
+    it('route foo/bar', function () {
+      return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
         expect(_file('addon/routes/foo/bar.js')).to.equal(fixture('route/route-nested.js'));
 
         expect(_file('addon/templates/foo/bar.hbs')).to.equal('{{outlet}}');
@@ -365,8 +365,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --dummy', function() {
-      return emberGenerateDestroy(['route', 'foo', '--dummy'], _file => {
+    it('route foo --dummy', function () {
+      return emberGenerateDestroy(['route', 'foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('tests/dummy/app/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -381,8 +381,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js --dummy', function() {
-      return emberGenerateDestroy(['route', 'foo.js', '--dummy'], _file => {
+    it('route foo.js --dummy', function () {
+      return emberGenerateDestroy(['route', 'foo.js', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo.js.js')).to.not.exist;
         expect(_file('tests/dummy/app/templates/foo.js.hbs')).to.not.exist;
 
@@ -401,8 +401,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo/bar --dummy', function() {
-      return emberGenerateDestroy(['route', 'foo/bar', '--dummy'], _file => {
+    it('route foo/bar --dummy', function () {
+      return emberGenerateDestroy(['route', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo/bar.js')).to.equal(
           fixture('route/route-nested.js')
         );
@@ -421,8 +421,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --pod', function() {
-      return emberGenerateDestroy(['route', 'foo', '--pod'], _file => {
+    it('route foo --pod', function () {
+      return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
         expect(_file('addon/foo/route.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('addon/foo/template.hbs')).to.equal('{{outlet}}');
@@ -439,8 +439,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js --pod', function() {
-      return emberGenerateDestroy(['route', 'foo.js', '--pod'], _file => {
+    it('route foo.js --pod', function () {
+      return emberGenerateDestroy(['route', 'foo.js', '--pod'], (_file) => {
         expect(_file('addon/foo.js/route.js')).to.not.exist;
         expect(_file('addon/foo.js/template.hbs')).to.not.exist;
         expect(_file('app/foo.js/route.js')).to.not.exist;
@@ -464,10 +464,10 @@ describe('Blueprint: route', function() {
     });
   });
 
-  describe('in app - octane', function() {
+  describe('in app - octane', function () {
     enableOctane();
 
-    beforeEach(function() {
+    beforeEach(function () {
       return emberNew()
         .then(() =>
           modifyPackages([
@@ -478,8 +478,8 @@ describe('Blueprint: route', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('route foo', function() {
-      return emberGenerateDestroy(['route', 'foo'], _file => {
+    it('route foo', function () {
+      return emberGenerateDestroy(['route', 'foo'], (_file) => {
         expect(_file('app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -492,8 +492,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js', function() {
-      return emberGenerateDestroy(['route', 'foo.js'], _file => {
+    it('route foo.js', function () {
+      return emberGenerateDestroy(['route', 'foo.js'], (_file) => {
         expect(_file('app/routes/foo.js.js')).to.not.exist;
         expect(_file('app/templates/foo.js.hbs')).to.not.exist;
         expect(_file('tests/unit/routes/foo.js-test.js')).to.not.exist;
@@ -511,8 +511,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --skip-router', function() {
-      return emberGenerateDestroy(['route', 'foo', '--skip-router'], _file => {
+    it('route foo --skip-router', function () {
+      return emberGenerateDestroy(['route', 'foo', '--skip-router'], (_file) => {
         expect(_file('app/routes/foo.js')).to.exist;
         expect(_file('app/templates/foo.hbs')).to.exist;
         expect(_file('tests/unit/routes/foo-test.js')).to.exist;
@@ -522,8 +522,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --path=:foo_id/show', function() {
-      return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], _file => {
+    it('route foo --path=:foo_id/show', function () {
+      return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], (_file) => {
         expect(_file('app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -541,8 +541,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route parent/child --reset-namespace', function() {
-      return emberGenerateDestroy(['route', 'parent/child', '--reset-namespace'], _file => {
+    it('route parent/child --reset-namespace', function () {
+      return emberGenerateDestroy(['route', 'parent/child', '--reset-namespace'], (_file) => {
         expect(_file('app/routes/child.js')).to.equal(fixture('route/native-route-child.js'));
 
         expect(_file('app/templates/child.hbs')).to.equal('{{outlet}}');
@@ -559,10 +559,10 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route parent/child --reset-namespace --pod', function() {
+    it('route parent/child --reset-namespace --pod', function () {
       return emberGenerateDestroy(
         ['route', 'parent/child', '--reset-namespace', '--pod'],
-        _file => {
+        (_file) => {
           expect(_file('app/child/route.js')).to.equal(fixture('route/native-route-child.js'));
 
           expect(_file('app/child/template.hbs')).to.equal('{{outlet}}');
@@ -580,8 +580,8 @@ describe('Blueprint: route', function() {
       );
     });
 
-    it('route index', function() {
-      return emberGenerateDestroy(['route', 'index'], _file => {
+    it('route index', function () {
+      return emberGenerateDestroy(['route', 'index'], (_file) => {
         expect(_file('app/routes/index.js')).to.exist;
         expect(_file('app/templates/index.hbs')).to.exist;
         expect(_file('tests/unit/routes/index-test.js')).to.exist;
@@ -591,15 +591,15 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route application', function() {
+    it('route application', function () {
       fs.removeSync('app/templates/application.hbs');
       return emberGenerate(['route', 'application']).then(() => {
         expect(file('app/router.js')).to.not.contain("this.route('application')");
       });
     });
 
-    it('route basic', function() {
-      return emberGenerateDestroy(['route', 'basic'], _file => {
+    it('route basic', function () {
+      return emberGenerateDestroy(['route', 'basic'], (_file) => {
         expect(_file('app/routes/basic.js')).to.exist;
         expect(file('app/router.js')).to.not.contain("this.route('basic')");
       }).then(() => {
@@ -607,8 +607,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --pod', function() {
-      return emberGenerateDestroy(['route', 'foo', '--pod'], _file => {
+    it('route foo --pod', function () {
+      return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo/route.js')).to.equal(fixture('route/native-route.js'));
 
         expect(_file('app/foo/template.hbs')).to.equal('{{outlet}}');
@@ -621,8 +621,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js --pod', function() {
-      return emberGenerateDestroy(['route', 'foo.js', '--pod'], _file => {
+    it('route foo.js --pod', function () {
+      return emberGenerateDestroy(['route', 'foo.js', '--pod'], (_file) => {
         expect(_file('app/foo.js/route.js')).to.not.exist;
         expect(_file('app/foo.js/template.hbs')).to.not.exist;
         expect(_file('tests/unit/foo.js/route-test.js')).to.not.exist;
@@ -640,7 +640,7 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --pod with --path', function() {
+    it('route foo --pod with --path', function () {
       return emberGenerate(['route', 'foo', '--pod', '--path=:foo_id/show'])
         .then(() =>
           expect(file('app/router.js'))
@@ -657,33 +657,33 @@ describe('Blueprint: route', function() {
         );
     });
 
-    it('route index --pod', function() {
+    it('route index --pod', function () {
       return emberGenerate(['route', 'index', '--pod']).then(() =>
         expect(file('app/router.js')).to.not.contain("this.route('index')")
       );
     });
 
-    it('route application --pod', function() {
+    it('route application --pod', function () {
       return emberGenerate(['route', 'application', '--pod'])
         .then(() => expect(file('app/application/route.js')).to.exist)
         .then(() => expect(file('app/application/template.hbs')).to.exist)
         .then(() => expect(file('app/router.js')).to.not.contain("this.route('application')"));
     });
 
-    it('route basic --pod', function() {
-      return emberGenerateDestroy(['route', 'basic', '--pod'], _file => {
+    it('route basic --pod', function () {
+      return emberGenerateDestroy(['route', 'basic', '--pod'], (_file) => {
         expect(_file('app/basic/route.js')).to.exist;
         expect(file('app/router.js')).to.not.contain("this.route('index')");
       });
     });
 
-    describe('with podModulePrefix', function() {
-      beforeEach(function() {
+    describe('with podModulePrefix', function () {
+      beforeEach(function () {
         setupPodConfig({ podModulePrefix: true });
       });
 
-      it('route foo --pod', function() {
-        return emberGenerateDestroy(['route', 'foo', '--pod'], _file => {
+      it('route foo --pod', function () {
+        return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
           expect(_file('app/pods/foo/route.js')).to.equal(fixture('route/native-route.js'));
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{outlet}}');
@@ -698,8 +698,8 @@ describe('Blueprint: route', function() {
         });
       });
 
-      it('route foo.js --pod', function() {
-        return emberGenerateDestroy(['route', 'foo.js', '--pod'], _file => {
+      it('route foo.js --pod', function () {
+        return emberGenerateDestroy(['route', 'foo.js', '--pod'], (_file) => {
           expect(_file('app/pods/foo.js/route.js')).to.not.exist;
           expect(_file('app/pods/foo.js/template.hbs')).to.not.exist;
           expect(_file('tests/unit/pods/foo.js/route-test.js')).to.not.exist;
@@ -721,10 +721,10 @@ describe('Blueprint: route', function() {
     });
   });
 
-  describe('in addon - octane', function() {
+  describe('in addon - octane', function () {
     enableOctane();
 
-    beforeEach(function() {
+    beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
           modifyPackages([
@@ -735,8 +735,8 @@ describe('Blueprint: route', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('route foo', function() {
-      return emberGenerateDestroy(['route', 'foo'], _file => {
+    it('route foo', function () {
+      return emberGenerateDestroy(['route', 'foo'], (_file) => {
         expect(_file('addon/routes/foo.js')).to.equal(fixture('route/native-route.js'));
 
         expect(_file('addon/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -757,8 +757,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js', function() {
-      return emberGenerateDestroy(['route', 'foo.js'], _file => {
+    it('route foo.js', function () {
+      return emberGenerateDestroy(['route', 'foo.js'], (_file) => {
         expect(_file('addon/routes/foo.js.js')).to.not.exist;
         expect(_file('addon/templates/foo.js.hbs')).to.not.exist;
         expect(_file('app/routes/foo.js.js')).to.not.exist;
@@ -786,8 +786,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo/bar', function() {
-      return emberGenerateDestroy(['route', 'foo/bar'], _file => {
+    it('route foo/bar', function () {
+      return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
         expect(_file('addon/routes/foo/bar.js')).to.equal(fixture('route/native-route-nested.js'));
 
         expect(_file('addon/templates/foo/bar.hbs')).to.equal('{{outlet}}');
@@ -810,8 +810,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --dummy', function() {
-      return emberGenerateDestroy(['route', 'foo', '--dummy'], _file => {
+    it('route foo --dummy', function () {
+      return emberGenerateDestroy(['route', 'foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
 
         expect(_file('tests/dummy/app/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -826,8 +826,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js --dummy', function() {
-      return emberGenerateDestroy(['route', 'foo.js', '--dummy'], _file => {
+    it('route foo.js --dummy', function () {
+      return emberGenerateDestroy(['route', 'foo.js', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo.js.js')).to.not.exist;
         expect(_file('tests/dummy/app/templates/foo.js.hbs')).to.not.exist;
 
@@ -846,8 +846,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo/bar --dummy', function() {
-      return emberGenerateDestroy(['route', 'foo/bar', '--dummy'], _file => {
+    it('route foo/bar --dummy', function () {
+      return emberGenerateDestroy(['route', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo/bar.js')).to.equal(
           fixture('route/native-route-nested.js')
         );
@@ -866,8 +866,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo --pod', function() {
-      return emberGenerateDestroy(['route', 'foo', '--pod'], _file => {
+    it('route foo --pod', function () {
+      return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
         expect(_file('addon/foo/route.js')).to.equal(fixture('route/native-route.js'));
 
         expect(_file('addon/foo/template.hbs')).to.equal('{{outlet}}');
@@ -884,8 +884,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js --pod', function() {
-      return emberGenerateDestroy(['route', 'foo.js', '--pod'], _file => {
+    it('route foo.js --pod', function () {
+      return emberGenerateDestroy(['route', 'foo.js', '--pod'], (_file) => {
         expect(_file('addon/foo.js/route.js')).to.not.exist;
         expect(_file('addon/foo.js/template.hbs')).to.not.exist;
         expect(_file('app/foo.js/route.js')).to.not.exist;
@@ -909,8 +909,8 @@ describe('Blueprint: route', function() {
     });
   });
 
-  describe('in in-repo-addon', function() {
-    beforeEach(function() {
+  describe('in in-repo-addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'in-repo-addon' })
         .then(() =>
           modifyPackages([
@@ -921,8 +921,8 @@ describe('Blueprint: route', function() {
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
-    it('route foo --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['route', 'foo', '--in-repo-addon=my-addon'], _file => {
+    it('route foo --in-repo-addon=my-addon', function () {
+      return emberGenerateDestroy(['route', 'foo', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal('{{outlet}}');
@@ -939,8 +939,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo.js --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['route', 'foo.js', '--in-repo-addon=my-addon'], _file => {
+    it('route foo.js --in-repo-addon=my-addon', function () {
+      return emberGenerateDestroy(['route', 'foo.js', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/routes/foo.js.js')).to.not.exist;
         expect(_file('lib/my-addon/addon/templates/foo.js.hbs')).to.not.exist;
         expect(_file('lib/my-addon/app/routes/foo.js.js')).to.not.exist;
@@ -963,8 +963,8 @@ describe('Blueprint: route', function() {
       });
     });
 
-    it('route foo/bar --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['route', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
+    it('route foo/bar --in-repo-addon=my-addon', function () {
+      return emberGenerateDestroy(['route', 'foo/bar', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/routes/foo/bar.js')).to.equal(
           fixture('route/route-nested.js')
         );

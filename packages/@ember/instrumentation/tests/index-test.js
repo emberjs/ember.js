@@ -9,7 +9,7 @@ moduleFor(
     }
 
     ['@test execute block even if no listeners'](assert) {
-      let result = instrument('render', {}, function() {
+      let result = instrument('render', {}, function () {
         return 'hello';
       });
       assert.equal(result, 'hello', 'called block');
@@ -47,9 +47,9 @@ moduleFor(
         },
       });
 
-      instrument('render', sentPayload, function() {});
+      instrument('render', sentPayload, function () {});
 
-      instrument('render.handlebars', sentPayload, function() {});
+      instrument('render.handlebars', sentPayload, function () {});
     }
 
     ['@test returning a value from the before callback passes it to the after callback'](assert) {
@@ -76,7 +76,7 @@ moduleFor(
         },
       });
 
-      instrument('render', null, function() {});
+      instrument('render', null, function () {});
     }
 
     ['@test instrument with 2 args (name, callback) no payload'](assert) {
@@ -89,7 +89,7 @@ moduleFor(
         after() {},
       });
 
-      instrument('render', function() {});
+      instrument('render', function () {});
     }
 
     ['@test instrument with 3 args (name, callback, binding) no payload'](assert) {
@@ -105,7 +105,7 @@ moduleFor(
 
       instrument(
         'render',
-        function() {
+        function () {
           assert.deepEqual(this, binding);
         },
         binding
@@ -123,7 +123,7 @@ moduleFor(
         after() {},
       });
 
-      instrument('render', expectedPayload, function() {});
+      instrument('render', expectedPayload, function () {});
     }
 
     ['@test instrument with 4 args (name, payload, callback, binding) with payload'](assert) {
@@ -141,7 +141,7 @@ moduleFor(
       instrument(
         'render',
         expectedPayload,
-        function() {
+        function () {
           assert.deepEqual(this, binding);
         },
         binding
@@ -177,7 +177,7 @@ moduleFor(
     }
 
     ['@test it is possible to add a new subscriber after the first instrument'](assert) {
-      instrument('render.handlebars', null, function() {});
+      instrument('render.handlebars', null, function () {});
 
       subscribe('render', {
         before() {
@@ -188,7 +188,7 @@ moduleFor(
         },
       });
 
-      instrument('render.handlebars', null, function() {});
+      instrument('render.handlebars', null, function () {});
     }
 
     ['@test it is possible to remove a subscriber'](assert) {
@@ -208,11 +208,11 @@ moduleFor(
         },
       });
 
-      instrument('render.handlebars', null, function() {});
+      instrument('render.handlebars', null, function () {});
 
       unsubscribe(subscriber);
 
-      instrument('render.handlebars', null, function() {});
+      instrument('render.handlebars', null, function () {});
     }
   }
 );

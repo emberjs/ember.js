@@ -190,7 +190,7 @@ moduleFor(
 
     // semantics here is not guaranteed
     ['@test sexpr form does not update no matter what']() {
-      this.registerHelper('capitalize', args => args[0].toUpperCase());
+      this.registerHelper('capitalize', (args) => args[0].toUpperCase());
 
       this.render(`{{capitalize (unbound foo)}}`, {
         foo: 'bork',
@@ -222,9 +222,9 @@ moduleFor(
     }
 
     ['@test sexpr in helper form does not update on parent re-render']() {
-      this.registerHelper('capitalize', params => params[0].toUpperCase());
+      this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
-      this.registerHelper('doublize', params => `${params[0]} ${params[0]}`);
+      this.registerHelper('doublize', (params) => `${params[0]} ${params[0]}`);
 
       this.render(`{{capitalize (unbound (doublize foo))}}`, {
         foo: 'bork',
@@ -332,7 +332,7 @@ moduleFor(
     }
 
     ['@test should be able to render unbound forms of multi-arg helpers']() {
-      this.registerHelper('fauxconcat', params => params.join(''));
+      this.registerHelper('fauxconcat', (params) => params.join(''));
 
       this.render(
         `{{fauxconcat this.model.foo this.model.bar this.model.bing}} {{unbound (fauxconcat this.model.foo this.model.bar this.model.bing)}}`,
@@ -437,7 +437,7 @@ moduleFor(
     }
 
     ['@test should be able to render an unbound helper invocation in #each helper']() {
-      this.registerHelper('capitalize', params => params[0].toUpperCase());
+      this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
       this.render(
         `{{#each people as |person|}}{{capitalize person.firstName}} {{unbound (capitalize person.firstName)}}{{/each}}`,

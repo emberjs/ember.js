@@ -29,8 +29,8 @@ export default function compileOptions(
     options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
   } else {
     let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
-    let providedPlugins = options.plugins.ast.map(plugin => wrapLegacyPluginIfNeeded(plugin));
-    let pluginsToAdd = potententialPugins.filter(plugin => {
+    let providedPlugins = options.plugins.ast.map((plugin) => wrapLegacyPluginIfNeeded(plugin));
+    let pluginsToAdd = potententialPugins.filter((plugin) => {
       return options.plugins.ast.indexOf(plugin) === -1;
     });
     options.plugins.ast = providedPlugins.concat(pluginsToAdd);
@@ -103,6 +103,6 @@ export function unregisterPlugin(type: string, PluginClass: PluginFunc | LegacyP
   }
 
   USER_PLUGINS = USER_PLUGINS.filter(
-    plugin => plugin !== PluginClass && plugin.__raw !== PluginClass
+    (plugin) => plugin !== PluginClass && plugin.__raw !== PluginClass
   );
 }

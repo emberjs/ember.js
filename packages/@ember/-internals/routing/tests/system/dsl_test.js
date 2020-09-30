@@ -21,11 +21,11 @@ moduleFor(
 
       assert.expect(reservedNames.length);
 
-      reservedNames.forEach(reservedName => {
+      reservedNames.forEach((reservedName) => {
         expectAssertion(() => {
           Router = EmberRouter.extend();
 
-          Router.map(function() {
+          Router.map(function () {
             this.route(reservedName);
           });
 
@@ -39,7 +39,7 @@ moduleFor(
       expectAssertion(() => {
         Router = EmberRouter.extend();
 
-        Router.map(function() {
+        Router.map(function () {
           this.route('resource/:id');
         });
 
@@ -49,9 +49,9 @@ moduleFor(
     }
 
     ['@test should retain resource namespace if nested with routes'](assert) {
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      Router = Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.route('blork');
           });
         });
@@ -75,7 +75,7 @@ moduleFor(
     }
 
     ['@test should add loading and error routes if _isRouterMapResult is true'](assert) {
-      Router.map(function() {
+      Router.map(function () {
         this.route('blork');
       });
 
@@ -96,7 +96,7 @@ moduleFor(
     }
 
     ['@test should not add loading and error routes if _isRouterMapResult is false'](assert) {
-      Router.map(function() {
+      Router.map(function () {
         this.route('blork');
       });
 
@@ -117,8 +117,8 @@ moduleFor(
     ['@test should reset namespace of loading and error routes for routes with resetNamespace'](
       assert
     ) {
-      Router.map(function() {
-        this.route('blork', function() {
+      Router.map(function () {
+        this.route('blork', function () {
           this.route('blorp');
           this.route('bleep', { resetNamespace: true });
         });
@@ -167,9 +167,9 @@ moduleFor(
     }
 
     ['@test should throw an error when defining a route serializer outside an engine'](assert) {
-      Router.map(function() {
+      Router.map(function () {
         assert.throws(() => {
-          this.route('posts', { serialize: function() {} });
+          this.route('posts', { serialize: function () {} });
         }, /Defining a route serializer on route 'posts' outside an Engine is not allowed/);
       });
 
@@ -193,9 +193,9 @@ moduleFor(
     ['@test should allow mounting of engines'](assert) {
       assert.expect(3);
 
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      Router = Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.mount('chat');
           });
         });
@@ -226,9 +226,9 @@ moduleFor(
     ['@test should allow mounting of engines at a custom path'](assert) {
       assert.expect(1);
 
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      Router = Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.mount('chat', { path: 'custom-chat' });
           });
         });
@@ -245,7 +245,7 @@ moduleFor(
       assert.deepEqual(
         router._routerMicrolib.recognizer.names['bleep.bloop.chat'].segments
           .slice(1, 4)
-          .map(s => s.value),
+          .map((s) => s.value),
         ['bleep', 'bloop', 'custom-chat'],
         'segments are properly associated with mounted engine'
       );
@@ -254,9 +254,9 @@ moduleFor(
     ['@test should allow aliasing of engine names with `as`'](assert) {
       assert.expect(1);
 
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      Router = Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.mount('chat', { as: 'blork' });
           });
         });
@@ -273,14 +273,14 @@ moduleFor(
       assert.deepEqual(
         router._routerMicrolib.recognizer.names['bleep.bloop.blork'].segments
           .slice(1, 4)
-          .map(s => s.value),
+          .map((s) => s.value),
         ['bleep', 'bloop', 'blork'],
         'segments are properly associated with mounted engine with aliased name'
       );
     }
 
     ['@test should add loading and error routes to a mount if _isRouterMapResult is true'](assert) {
-      Router.map(function() {
+      Router.map(function () {
         this.mount('chat');
       });
 
@@ -304,7 +304,7 @@ moduleFor(
     ['@test should add loading and error routes to a mount alias if _isRouterMapResult is true'](
       assert
     ) {
-      Router.map(function() {
+      Router.map(function () {
         this.mount('chat', { as: 'shoutbox' });
       });
 
@@ -331,7 +331,7 @@ moduleFor(
     ['@test should not add loading and error routes to a mount if _isRouterMapResult is false'](
       assert
     ) {
-      Router.map(function() {
+      Router.map(function () {
         this.mount('chat');
       });
 
@@ -357,8 +357,8 @@ moduleFor(
     ['@test should reset namespace of loading and error routes for mounts with resetNamespace'](
       assert
     ) {
-      Router.map(function() {
-        this.route('news', function() {
+      Router.map(function () {
+        this.route('news', function () {
           this.mount('chat');
           this.mount('blog', { resetNamespace: true });
         });

@@ -92,7 +92,7 @@ moduleFor(
       let Test = CoreObject.extend({
         myProp: null,
         anotherProp: undefined,
-        didChangeMyProp: observer('myProp', function() {
+        didChangeMyProp: observer('myProp', function () {
           callCount++;
         }),
       });

@@ -21,7 +21,7 @@ class UniqByTests extends AbstractTestCase {
       { id: 1, value: 'doom' },
     ]);
 
-    let keyFunction = val => {
+    let keyFunction = (val) => {
       this.assert.equal(arguments.length, 1);
       return val.value;
     };

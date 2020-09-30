@@ -7,7 +7,7 @@ RSVP.configure('async', (callback, promise) => {
   backburner.schedule('actions', null, callback, promise);
 });
 
-RSVP.configure('after', cb => {
+RSVP.configure('after', (cb) => {
   backburner.schedule(_rsvpErrorQueue, null, cb);
 });
 

@@ -29,7 +29,7 @@ function testCheckboxClick(handler) {
 }
 
 if (hasDOM && !jQueryDisabled) {
-  $(function() {
+  $(function () {
     /*
       Determine whether a checkbox checked using jQuery's "click" method will have
       the correct value for its checked property.
@@ -38,7 +38,7 @@ if (hasDOM && !jQueryDisabled) {
       patch it to work correctly as in the commit for the actual fix:
       https://github.com/jquery/jquery/commit/1fb2f92.
     */
-    testCheckboxClick(function() {
+    testCheckboxClick(function () {
       if (!this.checked && !$.event.special.click) {
         $.event.special.click = {
           // For checkbox, fire native event so checked state will be right
@@ -53,7 +53,7 @@ if (hasDOM && !jQueryDisabled) {
     });
 
     // Try again to verify that the patch took effect or blow up.
-    testCheckboxClick(function() {
+    testCheckboxClick(function () {
       warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked, {
         id: 'ember-testing.test-checkbox-click',
       });

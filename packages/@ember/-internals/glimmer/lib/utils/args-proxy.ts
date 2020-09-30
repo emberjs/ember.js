@@ -127,7 +127,7 @@ if (HAS_NATIVE_PROXY) {
     const positionalTarget: unknown[] = [];
 
     if (DEBUG) {
-      const setHandler = function(_target: unknown, prop: symbol | string | number): never {
+      const setHandler = function (_target: unknown, prop: symbol | string | number): never {
         throw new Error(
           `You attempted to set ${String(
             prop
@@ -166,7 +166,7 @@ if (HAS_NATIVE_PROXY) {
       value: getNamedTag,
     });
 
-    Object.keys(named).forEach(name => {
+    Object.keys(named).forEach((name) => {
       Object.defineProperty(namedProxy, name, {
         enumerable: true,
         configurable: true,

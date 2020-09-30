@@ -365,7 +365,7 @@ let followMethodAlias: (
 ) => { desc: any; value: any };
 
 if (ALIAS_METHOD) {
-  followMethodAlias = function(
+  followMethodAlias = function (
     obj: object,
     alias: Alias,
     descs: { [key: string]: any },
@@ -738,7 +738,7 @@ function _detect(curMixin: Mixin, targetMixin: Mixin, seen = new Set()): boolean
   }
   let mixins = curMixin.mixins;
   if (mixins) {
-    return mixins.some(mixin => _detect(mixin, targetMixin, seen));
+    return mixins.some((mixin) => _detect(mixin, targetMixin, seen));
   }
 
   return false;
@@ -890,7 +890,7 @@ export function observer(...args: (string | Function | ObserverDefinition)[]) {
     'observer called without valid path',
     Array.isArray(dependentKeys) &&
       dependentKeys.length > 0 &&
-      dependentKeys.every(p => typeof p === 'string' && Boolean(p.length))
+      dependentKeys.every((p) => typeof p === 'string' && Boolean(p.length))
   );
   assert('observer called without sync', typeof sync === 'boolean');
 

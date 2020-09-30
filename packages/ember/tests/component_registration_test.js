@@ -65,9 +65,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('div.testing123')
-          .text()
-          .trim();
+        let text = this.$('div.testing123').text().trim();
         assert.equal(text, 'hello world', 'The component is composed correctly');
       });
     }
@@ -89,9 +87,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(
           text,
           'there goes watch him as he GOES',
@@ -125,9 +121,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(
           text,
           'hello world funkytowny-funkytowny!!!',
@@ -155,9 +149,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(
           text,
           'hello world goodfreakingTIMES-goodfreakingTIMES!!!',
@@ -200,9 +192,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(text, 'inner-outer', 'The component is composed correctly');
       });
     }
@@ -242,9 +232,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(text, 'inner-outer', 'The component is composed correctly');
       });
     }
