@@ -15,6 +15,11 @@
 - [#18984](https://github.com/emberjs/ember.js/pull/18984) / [#19067](https://github.com/emberjs/ember.js/pull/19067) [FEATURE] Add low-level Cache API per [Autotracking Memoization RFC](https://github.com/emberjs/rfcs/blob/master/text/0615-autotracking-memoization.md)
 - [#19086](https://github.com/emberjs/ember.js/pull/19086) [FEATURE] Pass transition object to activate/deactivate hooks and events
 
+### v3.21.2 (September 30, 2020)
+
+- [#19138](https://github.com/emberjs/ember.js/pull/19138) [BUGFIX] Fix tag cycles in query parameters
+- [#19164](https://github.com/emberjs/ember.js/pull/19164) [BUGFIX] Entangles custom EmberArray implementations when accessed with `Ember.get`
+
 ### v3.21.1 (August 28, 2020)
 
 - [#19106](https://github.com/emberjs/ember.js/pull/19106) [BUGFIX] Ensure `destroy` methods on `CoreObject` are invoked.
