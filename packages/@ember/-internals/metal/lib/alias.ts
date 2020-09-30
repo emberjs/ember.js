@@ -12,7 +12,7 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import { finishLazyChains, getChainTagsForKey } from './chain-tags';
+import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import {
   ComputedDescriptor,
   Decorator,
@@ -70,6 +70,7 @@ export class AliasedProperty extends ComputedDescriptor {
   setup(obj: object, keyName: string, propertyDesc: PropertyDescriptor, meta: Meta): void {
     assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
     super.setup(obj, keyName, propertyDesc, meta);
+    CHAIN_PASS_THROUGH.add(this);
   }
 
   get(obj: object, keyName: string): any {
