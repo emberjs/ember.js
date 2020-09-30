@@ -408,16 +408,92 @@ if (LOGGER) {
 
 // ****@ember/-internals/runtime****
 Ember.A = A;
-Ember.String = {
-  loc,
-  w,
-  dasherize,
-  decamelize,
-  camelize,
-  classify,
-  underscore,
-  capitalize,
+
+if (ENV.EXTEND_PROTOTYPES.String) {
+  String.prototype.htmlSafe = function() {
+    deprecate(
+      'Using string extensions is deprecated, please import htmlSafe from `@ember/template` instead.',
+      false,
+      {
+        id: 'ember-string.prototype_extensions',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-prototype_extensions',
+      }
+    );
+
+    return htmlSafe(this);
+  };
+}
+
+function deprecateStringHTMLSafe(fn) {
+  return (...args) => {
+    deprecate(
+      'This is deprecated, please import utilities from `@ember/template` instead.',
+      false,
+      {
+        id: 'ember-string.html_safe',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-html_safe',
+      }
+    );
+
+    fn(...args);
+  };
+}
+
+function deprecateStringNamespace(fn) {
+  return function() {
+    deprecate(
+      `Importing ${fn.name} \`@ember/string\` without the addon installed is deprecated`,
+      false,
+      {
+        id: 'ember-string.namespace',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-namespace',
+      }
+    );
+
+    fn(...arguments);
+  };
+}
+
+let deprecatedEmberString = {
+  loc: (...args) => {
+    deprecate(
+      '`loc` is deprecated. Please, use an internationalization addon instead. See https://emberobserver.com/categories/internationalization for a list of them.',
+      false,
+      {
+        id: 'ember-string.loc',
+        until: '4.0.0',
+        url: 'TBD: https://emberjs.com/deprecations/v3.x/#toc_ember-string-loc',
+      }
+    );
+
+    return loc(...args);
+  },
+  w: deprecateStringNamespace(w),
+  dasherize: deprecateStringNamespace(dasherize),
+  decamelize: deprecateStringNamespace(decamelize),
+  camelize: deprecateStringNamespace(camelize),
+  classify: deprecateStringNamespace(classify),
+  underscore: deprecateStringNamespace(underscore),
+  capitalize: deprecateStringNamespace(capitalize),
+  htmlSafe: deprecateStringHTMLSafe(htmlSafe),
+  isHTMLSafe: deprecateStringHTMLSafe(isHTMLSafe),
 };
+
+Object.defineProperty(Ember, 'String', {
+  get() {
+    deprecate(`Accessing Ember.String is deprecated.`, false, {
+      id: 'ember-string.namespace',
+      until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-namespace',
+    });
+
+    return deprecatedEmberString;
+  },
+});
+
 Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
 Ember._ContainerProxyMixin = ContainerProxyMixin;
@@ -579,14 +655,6 @@ Ember.Handlebars = {
 Ember.HTMLBars = {
   template,
 };
-
-if (ENV.EXTEND_PROTOTYPES.String) {
-  String.prototype.htmlSafe = function() {
-    return htmlSafe(this);
-  };
-}
-Ember.String.htmlSafe = htmlSafe;
-Ember.String.isHTMLSafe = isHTMLSafe;
 
 /**
   Global hash of shared templates. This will automatically be populated
