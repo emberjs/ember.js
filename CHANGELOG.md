@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.21.3 (September 30, 2020)
+
+- [#19172](https://github.com/emberjs/ember.js/pull/19172) [BUGFIX lts] Ensures that tracked properties initialize property
+
 ### v3.21.2 (September 30, 2020)
 
 - [#19138](https://github.com/emberjs/ember.js/pull/19138) [BUGFIX] Fix tag cycles in query parameters
