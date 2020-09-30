@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.21.2 (September 30, 2020)
+
+- [#19138](https://github.com/emberjs/ember.js/pull/19138) [BUGFIX] Fix tag cycles in query parameters
+- [#19164](https://github.com/emberjs/ember.js/pull/19164) [BUGFIX] Entangles custom EmberArray implementations when accessed with `Ember.get`
+
 ### v3.21.1 (August 28, 2020)
 
 - [#19106](https://github.com/emberjs/ember.js/pull/19106) [BUGFIX] Ensure `destroy` methods on `CoreObject` are invoked.
