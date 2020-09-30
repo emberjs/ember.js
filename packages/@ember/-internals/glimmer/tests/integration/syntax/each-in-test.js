@@ -622,7 +622,7 @@ moduleFor(
   class extends EachInTest {
     createHash(pojo) {
       let map = new Map();
-      Object.keys(pojo).forEach(key => {
+      Object.keys(pojo).forEach((key) => {
         map.set(key, pojo[key]);
       });
       return {

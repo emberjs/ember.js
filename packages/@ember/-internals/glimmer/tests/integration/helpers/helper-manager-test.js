@@ -49,7 +49,7 @@ class TestHelper {
   willDestroy() {}
 }
 
-setHelperManager(owner => new TestHelperManager(owner), TestHelper);
+setHelperManager((owner) => new TestHelperManager(owner), TestHelper);
 
 if (EMBER_GLIMMER_HELPER_MANAGER) {
   moduleFor(

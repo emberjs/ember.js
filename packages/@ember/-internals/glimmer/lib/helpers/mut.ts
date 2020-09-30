@@ -79,7 +79,7 @@ import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
   @public
 */
 
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let ref = args.positional.at(0);
 
   // TODO: Improve this error message. This covers at least two distinct

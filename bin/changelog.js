@@ -32,7 +32,7 @@ compareCommits({
 })
   .then(processPages)
   .then(console.log)
-  .catch(err => console.error(err));
+  .catch((err) => console.error(err));
 
 function getCommitMessage(commitInfo) {
   let message = commitInfo.commit.message;
@@ -81,7 +81,7 @@ function processPages(res) {
   let contributions = res.commits
     .filter(excludeDependabot)
     .filter(isMergeOrCherryPick)
-    .map(commitInfo => {
+    .map((commitInfo) => {
       let message = getCommitMessage(commitInfo);
 
       let mergeFromBranchRegex = /#(\d+) from (.*)\//;
@@ -107,7 +107,7 @@ function processPages(res) {
       return result;
     })
     .sort(comparePrNumber)
-    .map(pr => {
+    .map((pr) => {
       let title = pr.title;
       let link;
       if (pr.number) {
@@ -123,7 +123,7 @@ function processPages(res) {
     .join('\n');
 
   if (github.hasNextPage(res)) {
-    return github.getNextPage(res).then(nextPage => {
+    return github.getNextPage(res).then((nextPage) => {
       contributions += processPages(nextPage);
     });
   } else {

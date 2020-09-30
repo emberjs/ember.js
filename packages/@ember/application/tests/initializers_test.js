@@ -80,7 +80,7 @@ moduleFor(
             () => {
               assert.ok(false, 'The boot promise should not resolve when there is a boot error');
             },
-            error => {
+            (error) => {
               assert.ok(error instanceof Error, 'The boot promise should reject with an error');
               assert.equal(error.message, 'boot failure');
             }

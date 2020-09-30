@@ -15,7 +15,7 @@ let InstrumentedRoute = Route.extend({
   init() {
     this._super(...arguments);
     let service = get(this, 'routerService');
-    service.on('routeWillChange', transition => {
+    service.on('routeWillChange', (transition) => {
       results.push([
         service.get('currentRouteName'),
         `${this.routeName} routeWillChange: ${transition.from && transition.from.name} - ${
@@ -24,7 +24,7 @@ let InstrumentedRoute = Route.extend({
         service.get('currentURL'),
       ]);
     });
-    service.on('routeDidChange', transition => {
+    service.on('routeDidChange', (transition) => {
       results.push([
         service.get('currentRouteName'),
         `${this.routeName} routeDidChange: ${transition.from && transition.from.name} - ${
@@ -69,7 +69,7 @@ let InstrumentedRoute = Route.extend({
       `${this.routeName} model`,
       service.get('currentURL'),
     ]);
-    return new RSVP.Promise(resolve => {
+    return new RSVP.Promise((resolve) => {
       setTimeout(resolve, 200);
     });
   },
@@ -115,7 +115,7 @@ moduleFor(
 
       results = [];
 
-      ROUTE_NAMES.forEach(name => {
+      ROUTE_NAMES.forEach((name) => {
         let routeName = `parent.${name}`;
         this.add(`route:${routeName}`, InstrumentedRoute.extend());
         this.addTemplate(routeName, '{{current-url}}');

@@ -268,7 +268,7 @@ moduleFor(
     ['@test capture array values in JS to assert deep equal']() {
       let captured;
 
-      this.registerHelper('capture', function([array]) {
+      this.registerHelper('capture', function ([array]) {
         captured = array;
         return 'captured';
       });

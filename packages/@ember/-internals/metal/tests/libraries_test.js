@@ -72,7 +72,7 @@ moduleFor(
 
       libs.register('magic', 1.23);
 
-      setDebugFunction('warn', function(msg, test) {
+      setDebugFunction('warn', function (msg, test) {
         if (!test) {
           assert.equal(msg, 'Library "magic" is already registered with Ember.');
         }

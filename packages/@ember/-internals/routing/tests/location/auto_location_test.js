@@ -84,7 +84,7 @@ moduleFor(
 
       let concreteImplementation = get(location, 'concreteImplementation');
 
-      concreteImplementation.getURL = function() {
+      concreteImplementation.getURL = function () {
         return '/lincoln/park';
       };
 
@@ -246,18 +246,18 @@ moduleFor(
       location = createLocation(browserLocation);
       location.rootURL = 'app';
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         location.detect();
       }, expectedMsg);
 
       location.rootURL = '/app';
-      expectAssertion(function() {
+      expectAssertion(function () {
         location.detect();
       }, expectedMsg);
 
       // Note the trailing whitespace
       location.rootURL = '/app/ ';
-      expectAssertion(function() {
+      expectAssertion(function () {
         location.detect();
       }, expectedMsg);
     }

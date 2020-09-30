@@ -15,13 +15,13 @@ moduleFor(
     ['@test if a load hook is registered, it is executed when runLoadHooks are exected'](assert) {
       let count = 0;
 
-      run(function() {
-        onLoad('__test_hook__', function(object) {
+      run(function () {
+        onLoad('__test_hook__', function (object) {
           count += object;
         });
       });
 
-      run(function() {
+      run(function () {
         runLoadHooks('__test_hook__', 1);
       });
 
@@ -31,14 +31,14 @@ moduleFor(
     ['@test if runLoadHooks was already run, it executes newly added hooks immediately'](assert) {
       let count = 0;
       run(() => {
-        onLoad('__test_hook__', object => (count += object));
+        onLoad('__test_hook__', (object) => (count += object));
       });
 
       run(() => runLoadHooks('__test_hook__', 1));
 
       count = 0;
       run(() => {
-        onLoad('__test_hook__', object => (count += object));
+        onLoad('__test_hook__', (object) => (count += object));
       });
 
       assert.equal(count, 1, 'the original object was passed into the load hook');
@@ -67,7 +67,7 @@ moduleFor(
       ) {
         let eventObject = 'super duper awesome events';
 
-        window.addEventListener('__test_hook_for_events__', function(e) {
+        window.addEventListener('__test_hook_for_events__', function (e) {
           assert.ok(true, 'custom event was fired');
           assert.equal(e.detail, eventObject, 'event details are provided properly');
         });

@@ -7,7 +7,7 @@ moduleFor(
   'Ember Type Checking',
   class extends AbstractTestCase {
     ['@test Ember.typeOf'](assert) {
-      let MockedDate = function() {};
+      let MockedDate = function () {};
       MockedDate.prototype = new Date();
 
       let mockedDate = new MockedDate();

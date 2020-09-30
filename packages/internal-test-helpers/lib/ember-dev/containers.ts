@@ -3,7 +3,7 @@ import { Container } from '@ember/-internals/container';
 const { _leakTracking: containerLeakTracking } = Container;
 
 export function setupContainersCheck(hooks: NestedHooks) {
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     if (containerLeakTracking === undefined) return;
 
     let { config } = QUnit;
@@ -15,11 +15,11 @@ export function setupContainersCheck(hooks: NestedHooks) {
       finish: originalFinish,
     } = config.current;
 
-    config.current.finish = function() {
+    config.current.finish = function () {
       originalFinish.call(this);
       originalFinish = undefined;
 
-      (config as any).queue.unshift(function() {
+      (config as any).queue.unshift(function () {
         if (containerLeakTracking.hasContainers()) {
           containerLeakTracking.reset();
           // eslint-disable-next-line no-console

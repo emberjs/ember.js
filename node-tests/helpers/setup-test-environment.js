@@ -1,11 +1,11 @@
 const { setEdition, clearEdition } = require('@ember/edition-utils');
 
 function enableOctane() {
-  beforeEach(function() {
+  beforeEach(function () {
     setEdition('octane');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     clearEdition();
   });
 }

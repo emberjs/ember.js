@@ -33,7 +33,7 @@ class CustomModifierManager {
   }
 }
 let BaseModifier = setModifierManager(
-  owner => {
+  (owner) => {
     return new CustomModifierManager(owner);
   },
   EmberObject.extend({

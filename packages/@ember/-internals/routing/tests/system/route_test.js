@@ -106,7 +106,7 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         route.findModel('post', 1);
       }, 'Post has no method `find`.');
 
@@ -121,7 +121,7 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         route.model({ post_id: 1 });
       }, /You used the dynamic segment post_id in your route undefined, but <Ember.Object:ember\d+>.Post did not exist and you did not override your route's `model` hook./);
 
@@ -137,7 +137,7 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      ignoreAssertion(function() {
+      ignoreAssertion(function () {
         route.model({ post_id: 1 });
       });
 

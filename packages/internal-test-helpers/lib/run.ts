@@ -24,14 +24,14 @@ export function runTask(callback: Function) {
 }
 
 export function runTaskNext(): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     return next(resolve);
   });
 }
 
 // TODO: Find a better name 😎
 export function runLoopSettled(event?: any): Promise<void> {
-  return new Promise(function(resolve) {
+  return new Promise(function (resolve) {
     // Every 5ms, poll for the async thing to have finished
     let watcher = setInterval(() => {
       // If there are scheduled timers or we are inside of a run loop, keep polling

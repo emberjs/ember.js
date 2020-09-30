@@ -15,11 +15,11 @@ class AbstractAppendTest extends RenderingTestCase {
   teardown() {
     this.component = null;
 
-    this.components.forEach(component => {
+    this.components.forEach((component) => {
       runTask(() => component.destroy());
     });
 
-    this.ids.forEach(id => {
+    this.ids.forEach((id) => {
       let $element = document.getElementById(id);
       if ($element) {
         $element.parentNode.removeChild($element);
@@ -44,7 +44,7 @@ class AbstractAppendTest extends RenderingTestCase {
     let componentsByName = {};
 
     // TODO: refactor/combine with other life-cycle tests
-    this.registerComponent = function(name, _options) {
+    this.registerComponent = function (name, _options) {
       function pushHook(hookName) {
         hooks.push([name, hookName]);
       }
@@ -523,7 +523,7 @@ class AbstractAppendTest extends RenderingTestCase {
   ['@test can appendTo while rendering']() {
     let owner = this.owner;
 
-    let append = component => {
+    let append = (component) => {
       return this.append(component);
     };
 
@@ -563,7 +563,7 @@ class AbstractAppendTest extends RenderingTestCase {
   ['@test can appendTo and remove while rendering'](assert) {
     let owner = this.owner;
 
-    let append = component => {
+    let append = (component) => {
       return this.append(component);
     };
 

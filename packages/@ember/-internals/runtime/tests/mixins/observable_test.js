@@ -86,7 +86,7 @@ moduleFor(
       assert
     ) {
       let obj = EmberObject.extend({
-        foo: computed(function() {
+        foo: computed(function () {
           return 'foo';
         }),
       }).create({

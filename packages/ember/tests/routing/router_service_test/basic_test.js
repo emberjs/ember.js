@@ -75,7 +75,7 @@ moduleFor(
         .then(() => {
           return this.routerService.transitionTo('/child');
         })
-        .catch(e => {
+        .catch((e) => {
           assert.equal(this.routerService.currentRouteName, 'parent.sister');
           assert.equal(e.message, 'TransitionAborted');
         });

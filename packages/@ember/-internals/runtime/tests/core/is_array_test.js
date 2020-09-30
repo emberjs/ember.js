@@ -17,8 +17,8 @@ moduleFor(
       let object = {};
       let length = { length: 12 };
       let strangeLength = { length: 'yes' };
-      let fn = function() {};
-      let asyncFn = async function() {};
+      let fn = function () {};
+      let asyncFn = async function () {};
       let arrayProxy = ArrayProxy.create({ content: emberA() });
 
       assert.equal(isArray(numarray), true, '[1,2,3]');

@@ -280,8 +280,8 @@ moduleFor(
   'Query Params - model-dependent state',
   class extends ModelDependentQPTestCase {
     setupApplication() {
-      this.router.map(function() {
-        this.route('article', { path: '/a/:id' }, function() {
+      this.router.map(function () {
+        this.route('article', { path: '/a/:id' }, function () {
           this.route('comments', { resetNamespace: true });
         });
         this.route('about');
@@ -384,9 +384,9 @@ moduleFor(
   'Query Params - model-dependent state (nested)',
   class extends ModelDependentQPTestCase {
     setupApplication() {
-      this.router.map(function() {
-        this.route('site', function() {
-          this.route('article', { path: '/a/:id' }, function() {
+      this.router.map(function () {
+        this.route('site', function () {
+          this.route('article', { path: '/a/:id' }, function () {
             this.route('comments');
           });
         });
@@ -490,9 +490,9 @@ moduleFor(
   'Query Params - model-dependent state (nested & more than 1 dynamic segment)',
   class extends ModelDependentQPTestCase {
     setupApplication() {
-      this.router.map(function() {
-        this.route('site', { path: '/site/:site_id' }, function() {
-          this.route('article', { path: '/a/:article_id' }, function() {
+      this.router.map(function () {
+        this.route('site', { path: '/site/:site_id' }, function () {
+          this.route('article', { path: '/a/:article_id' }, function () {
             this.route('comments');
           });
         });
@@ -511,9 +511,9 @@ moduleFor(
               let ret = [];
               let siteArticles = this.siteArticles;
               let sites = this.sites;
-              sites.forEach(site => {
+              sites.forEach((site) => {
                 ret = ret.concat(
-                  siteArticles.map(article => {
+                  siteArticles.map((article) => {
                     return {
                       id: `${site.id}-${article.id}`,
                       site_id: site.id,

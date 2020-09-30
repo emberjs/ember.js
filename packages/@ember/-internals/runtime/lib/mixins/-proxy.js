@@ -54,7 +54,7 @@ export default Mixin.create({
     this._super(...arguments);
   },
 
-  isTruthy: computed('content', function() {
+  isTruthy: computed('content', function () {
     return Boolean(get(this, 'content'));
   }),
 

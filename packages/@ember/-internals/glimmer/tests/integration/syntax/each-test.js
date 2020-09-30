@@ -99,11 +99,11 @@ const makeSet = (() => {
   let set = new Set([1, 2, 3]);
 
   if (set.size === 3) {
-    return items => new Set(items);
+    return (items) => new Set(items);
   } else {
-    return items => {
+    return (items) => {
       let s = new Set();
-      items.forEach(value => s.add(value));
+      items.forEach((value) => s.add(value));
       return s;
     };
   }
@@ -112,14 +112,14 @@ const makeSet = (() => {
 class SetDelegate extends ArrayDelegate {
   constructor(set) {
     let array = [];
-    set.forEach(value => array.push(value));
+    set.forEach((value) => array.push(value));
     super(array, set);
     this._set = set;
   }
 
   arrayContentDidChange() {
     this._set.clear();
-    this._array.forEach(value => this._set.add(value));
+    this._array.forEach((value) => this._set.add(value));
     super.arrayContentDidChange();
   }
 }
@@ -218,7 +218,7 @@ applyMixins(
     'hello',
     1,
     Object,
-    function() {},
+    function () {},
     {},
     { foo: 'bar' },
     Object.create(null),
@@ -650,7 +650,7 @@ class EachTest extends AbstractEachTest {
     this.assertText('HelloHelloHello');
 
     runTask(() => {
-      this.forEach(hash => set(hash, 'text', 'Goodbye'));
+      this.forEach((hash) => set(hash, 'text', 'Goodbye'));
     });
 
     this.assertText('GoodbyeGoodbyeGoodbye');
@@ -1101,7 +1101,7 @@ moduleFor(
     createList(items) {
       let wrapped = emberA(items);
       let proxy = ArrayProxy.extend({
-        arrangedContent: computed('wrappedItems.[]', function() {
+        arrangedContent: computed('wrappedItems.[]', function () {
           // Slice the items to ensure that updates must be propogated
           return this.wrappedItems.slice();
         }),
@@ -1120,7 +1120,7 @@ moduleFor(
     createList(items) {
       let wrapped = emberA(items);
       let proxy = ArrayProxy.extend({
-        setup: on('init', function() {
+        setup: on('init', function () {
           this.set('content', emberA(wrapped));
         }),
       }).create();
@@ -1200,7 +1200,7 @@ if (typeof MutationObserver === 'function') {
       }
 
       observe(element) {
-        let observer = (this.observer = new MutationObserver(function() {}));
+        let observer = (this.observer = new MutationObserver(function () {}));
         observer.observe(element, { childList: true, characterData: true });
       }
 

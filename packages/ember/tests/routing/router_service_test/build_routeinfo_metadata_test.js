@@ -13,12 +13,12 @@ moduleFor(
           router: service('router'),
           init() {
             this._super(...arguments);
-            this.router.on('routeWillChange', transition => {
+            this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata, 'parent-index-page');
             });
 
-            this.router.on('routeDidChange', transition => {
+            this.router.on('routeDidChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata, 'parent-index-page');
             });
@@ -49,7 +49,7 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.router.on('routeWillChange', transition => {
+            this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata, 'parent-index-page');
               assert.equal(transition.to.parent.name, 'parent');
@@ -58,7 +58,7 @@ moduleFor(
               assert.equal(transition.to.parent.parent.metadata, 'application-shell');
             });
 
-            this.router.on('routeDidChange', transition => {
+            this.router.on('routeDidChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata, 'parent-index-page');
               assert.equal(transition.to.parent.name, 'parent');
@@ -99,13 +99,13 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.router.on('routeWillChange', transition => {
+            this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata.name, 'parent-index-page');
               assert.equal(transition.to.metadata.title('PARENT'), 'My Name is PARENT');
             });
 
-            this.router.on('routeDidChange', transition => {
+            this.router.on('routeDidChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata.name, 'parent-index-page');
               assert.equal(transition.to.metadata.title('PARENT'), 'My Name is PARENT');
@@ -122,7 +122,7 @@ moduleFor(
           buildRouteInfoMetadata() {
             return {
               name: 'parent-index-page',
-              title: name => `My Name is ${name}`,
+              title: (name) => `My Name is ${name}`,
             };
           },
         })
@@ -140,7 +140,7 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.router.on('routeWillChange', transition => {
+            this.router.on('routeWillChange', (transition) => {
               if (transition.to.name === 'parent.index') {
                 assert.equal(transition.to.metadata.name, 'parent-index-page');
                 assert.equal(transition.to.metadata.title('INDEX'), 'My Name is INDEX');
@@ -152,7 +152,7 @@ moduleFor(
               }
             });
 
-            this.router.on('routeDidChange', transition => {
+            this.router.on('routeDidChange', (transition) => {
               if (transition.to.name === 'parent.index') {
                 assert.equal(transition.to.metadata.name, 'parent-index-page');
                 assert.equal(transition.to.metadata.title('INDEX'), 'My Name is INDEX');
@@ -175,7 +175,7 @@ moduleFor(
           buildRouteInfoMetadata() {
             return {
               name: 'parent-index-page',
-              title: name => `My Name is ${name}`,
+              title: (name) => `My Name is ${name}`,
             };
           },
         })
@@ -187,7 +187,7 @@ moduleFor(
           buildRouteInfoMetadata() {
             return {
               name: 'parent-child-page',
-              title: name => `My Name is ${name}!!`,
+              title: (name) => `My Name is ${name}!!`,
             };
           },
         })
@@ -207,7 +207,7 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.router.on('routeDidChange', transition => {
+            this.router.on('routeDidChange', (transition) => {
               if (transition.to.name === 'parent.index') {
                 assert.equal(transition.to.metadata.name, 'parent-index-page');
                 assert.equal(
@@ -242,7 +242,7 @@ moduleFor(
           buildRouteInfoMetadata() {
             return {
               name: 'parent-index-page',
-              title: model => `My Name is ${model.name}`,
+              title: (model) => `My Name is ${model.name}`,
             };
           },
         })
@@ -257,7 +257,7 @@ moduleFor(
           buildRouteInfoMetadata() {
             return {
               name: 'parent-child-page',
-              title: model => `My Name is ${model.name}!!`,
+              title: (model) => `My Name is ${model.name}!!`,
             };
           },
         })

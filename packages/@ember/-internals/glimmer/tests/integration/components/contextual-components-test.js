@@ -1288,7 +1288,7 @@ moduleFor(
     }
 
     ['@test GH#17121 local variable should win over helper (with arguments)']() {
-      this.registerHelper('foo', params => `foo helper: ${params.join(' ')}`);
+      this.registerHelper('foo', (params) => `foo helper: ${params.join(' ')}`);
 
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend().reopenClass({

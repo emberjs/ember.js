@@ -119,6 +119,6 @@ import { createReadOnlyRef } from '@glimmer/reference';
   @for Ember.Templates.helpers
   @private
 */
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   return createReadOnlyRef(args.positional.at(0));
 }

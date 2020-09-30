@@ -1,7 +1,7 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { get, getWithDefault, tracked } from '../..';
 
-let createObj = function() {
+let createObj = function () {
   class Obj {
     @tracked string = 'string';
     @tracked number = 23;

@@ -27,7 +27,7 @@ function getActionAttributes(element) {
 }
 
 function getActionIds(element) {
-  return getActionAttributes(element).map(attribute =>
+  return getActionAttributes(element).map((attribute) =>
     attribute.slice('data-ember-action-'.length)
   );
 }
@@ -1227,15 +1227,13 @@ moduleFor(
 
       let test = this;
 
-      let testBoundAction = propertyValue => {
+      let testBoundAction = (propertyValue) => {
         runTask(() => {
           component.set('hookMeUp', propertyValue);
         });
 
         runTask(() => {
-          this.wrap(component.element)
-            .findAll('#bound-param')
-            .click();
+          this.wrap(component.element).findAll('#bound-param').click();
         });
 
         test.assert.ok(lastAction, propertyValue, `lastAction set to ${propertyValue}`);
@@ -1293,11 +1291,9 @@ moduleFor(
 
       let test = this;
 
-      let testBoundAction = propertyValue => {
+      let testBoundAction = (propertyValue) => {
         runTask(() => {
-          this.wrap(component.element)
-            .findAll(`#${propertyValue}`)
-            .click();
+          this.wrap(component.element).findAll(`#${propertyValue}`).click();
         });
 
         test.assert.ok(lastAction, propertyValue, `lastAction set to ${propertyValue}`);
@@ -1610,12 +1606,7 @@ moduleFor(
         { show: true }
       );
 
-      this.assert.equal(
-        this.$('button')
-          .text()
-          .trim(),
-        'Show (true)'
-      );
+      this.assert.equal(this.$('button').text().trim(), 'Show (true)');
       // We need to focus in to simulate an actual click.
       runTask(() => {
         document.getElementById('ddButton').focus();

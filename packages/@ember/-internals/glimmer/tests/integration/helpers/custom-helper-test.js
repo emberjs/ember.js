@@ -236,7 +236,7 @@ moduleFor(
     }
 
     ['@test helper params can be returned']() {
-      this.registerHelper('hello-world', values => {
+      this.registerHelper('hello-world', (values) => {
         return values;
       });
 

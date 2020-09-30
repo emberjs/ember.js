@@ -13,7 +13,7 @@ const fs = require('fs');
 const serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
 
 // Create server.
-const server = http.createServer(function(req, res) {
+const server = http.createServer(function (req, res) {
   let done = finalhandler(req, res);
   serve(req, res, done);
 });
@@ -71,15 +71,15 @@ function generateTestsFor(packageName) {
 
 function generateEachPackageTests() {
   fs.readdirSync('packages/@ember')
-    .filter(e => e !== '-internals')
-    .forEach(e => generateTestsFor(`@ember/${e}`));
+    .filter((e) => e !== '-internals')
+    .forEach((e) => generateTestsFor(`@ember/${e}`));
 
-  fs.readdirSync('packages/@ember/-internals').forEach(e =>
+  fs.readdirSync('packages/@ember/-internals').forEach((e) =>
     generateTestsFor(`@ember/-internals/${e}`)
   );
 
   fs.readdirSync('packages')
-    .filter(e => e !== '@ember')
+    .filter((e) => e !== '@ember')
     .forEach(generateTestsFor);
 }
 
@@ -108,11 +108,11 @@ function runInSequence(tasks) {
 
 function runAndExit() {
   runInSequence(testFunctions)
-    .then(function() {
+    .then(function () {
       console.log(chalk.green('Passed!'));
       process.exit(0);
     })
-    .catch(function(err) {
+    .catch(function (err) {
       console.error(chalk.red(err.toString()));
       console.error(chalk.red('Failed!'));
       process.exit(1);

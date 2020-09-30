@@ -32,7 +32,7 @@ QUnit.module('buildVersion', () => {
     ],
     padEmptyArgs(3, [null, ''])
   ).forEach(({ args, expected }) => {
-    QUnit.test(JSON.stringify(args), assert => {
+    QUnit.test(JSON.stringify(args), (assert) => {
       assert.equal(buildVersion(...args), expected);
     });
   });
@@ -49,12 +49,12 @@ QUnit.module('parseTagVersion', () => {
       expected: '3.1.1-beta.2',
     },
   ].forEach(({ tag, expected }) => {
-    QUnit.test(JSON.stringify(tag), assert => {
+    QUnit.test(JSON.stringify(tag), (assert) => {
       assert.equal(parseTagVersion(tag), expected);
     });
   });
 
-  QUnit.test('parseTagVersion raises on non-semver tags', assert => {
+  QUnit.test('parseTagVersion raises on non-semver tags', (assert) => {
     assert.throws(() => {
       parseTagVersion('some-non-version-tag');
     });
@@ -127,7 +127,7 @@ QUnit.module('buildFromParts', () => {
       },
     },
   ].forEach(({ args, expected }) => {
-    QUnit.test(JSON.stringify(args), assert => {
+    QUnit.test(JSON.stringify(args), (assert) => {
       assert.deepEqual(buildFromParts(...args), expected);
     });
   });
@@ -146,11 +146,11 @@ QUnit.module('buildFromParts', () => {
  */
 function padEmptyArgs(count, replacements) {
   /** @type {function(MatrixEntry): MatrixEntry[]} */
-  let expand = entry => {
+  let expand = (entry) => {
     let expanded = [entry];
     let { args, expected } = entry;
     if (args.length < count) {
-      replacements.forEach(replacement => {
+      replacements.forEach((replacement) => {
         expanded.push({ args: padArgs(args, count, replacement), expected });
       });
     }

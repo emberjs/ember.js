@@ -64,7 +64,8 @@ const CAPABILITIES: ComponentCapabilities = {
   willDestroy: false,
 };
 
-class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
+class OutletComponentManager
+  extends AbstractManager<OutletInstanceState, OutletDefinitionState>
   implements WithStaticLayout<OutletInstanceState, OutletDefinitionState, RuntimeResolver> {
   create(
     environment: EmberVMEnvironment,
@@ -226,7 +227,8 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
       wrapped: true,
     });
 
-    const WrappedOutletComponentManager = class extends OutletComponentManager
+    const WrappedOutletComponentManager = class
+      extends OutletComponentManager
       implements WithDynamicTagName<OutletInstanceState> {
       getTagName(_component: OutletInstanceState) {
         return 'div';

@@ -2,7 +2,7 @@
 import { cancelTimers, end, getCurrentRunLoop, hasScheduledTimers } from '@ember/runloop';
 
 export function setupRunLoopCheck(hooks: NestedHooks) {
-  hooks.afterEach(function(assert) {
+  hooks.afterEach(function (assert) {
     if (getCurrentRunLoop() || hasScheduledTimers()) {
       let done = assert.async();
       // use a setTimeout to allow the current run loop to flush via autorun

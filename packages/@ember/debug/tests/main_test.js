@@ -23,7 +23,7 @@ let originalDeprecateHandler;
 let originalWarnHandler;
 
 const originalConsoleWarn = console.warn; // eslint-disable-line no-console
-const noop = function() {};
+const noop = function () {};
 
 moduleFor(
   'ember-debug',
@@ -91,7 +91,7 @@ moduleFor(
       assert.expect(3);
 
       ENV.RAISE_ON_DEPRECATION = true;
-      registerHandler(function(message, options, next) {
+      registerHandler(function (message, options, next) {
         if (!options || options.id !== 'my-deprecation') {
           next(...arguments);
         }
@@ -140,7 +140,7 @@ moduleFor(
 
       deprecate(
         'Deprecation is thrown',
-        function() {
+        function () {
           assert.ok(false, 'this function should not be invoked');
         },
         { id: 'test', until: 'forever' }
@@ -204,7 +204,7 @@ moduleFor(
       let until = 'forever';
       let shouldThrow = false;
 
-      registerHandler(function(message, options) {
+      registerHandler(function (message, options) {
         if (options && options.id === id) {
           if (shouldThrow) {
             throw new Error(message);
@@ -228,11 +228,11 @@ moduleFor(
 
       shouldThrow = true;
 
-      assert.throws(function() {
+      assert.throws(function () {
         deprecate('Deprecation is thrown', false, { id, until });
       });
 
-      assert.throws(function() {
+      assert.throws(function () {
         deprecate('Deprecation is thrown', false, { id, until });
       });
     }
@@ -306,7 +306,7 @@ moduleFor(
     ['@test warn without test but with options does not trigger an assertion'](assert) {
       assert.expect(1);
 
-      registerWarnHandler(function(message) {
+      registerWarnHandler(function (message) {
         assert.equal(message, 'foo', 'warning was triggered');
       });
 

@@ -29,12 +29,12 @@ moduleFor(
     ['@test no promise, invoking then should raise'](assert) {
       proxy = ObjectPromiseProxy.create();
 
-      assert.throws(function() {
+      assert.throws(function () {
         proxy.then(
-          function() {
+          function () {
             return this;
           },
-          function() {
+          function () {
             return this;
           }
         );
@@ -556,7 +556,7 @@ moduleFor(
       });
 
       proxy.then(
-        value => {
+        (value) => {
           receivedValue = value;
           didResolveCount++;
         },
@@ -589,7 +589,7 @@ moduleFor(
 
       proxy.then(
         () => {},
-        reason => {
+        (reason) => {
           receivedReason = reason;
           didRejectCount++;
         }

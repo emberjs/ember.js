@@ -19,7 +19,7 @@ import { reifyPositional } from '@glimmer/runtime';
   @param {Array} params
   @public
 */
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let positional = args.positional.capture();
 
   return createComputeRef(() => {

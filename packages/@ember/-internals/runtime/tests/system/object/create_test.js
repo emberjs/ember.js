@@ -35,7 +35,7 @@ moduleFor(
         let MyClass = EmberObject.extend({
           foo: null,
           bar: null,
-          fooDidChange: observer('foo', function() {}),
+          fooDidChange: observer('foo', function () {}),
         });
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
@@ -58,7 +58,7 @@ moduleFor(
         let MyClass = EmberObject.extend({
           foo: null,
           bar: null,
-          fooAlias: computed('foo', function() {
+          fooAlias: computed('foo', function () {
             return this.foo;
           }),
         });
@@ -107,7 +107,7 @@ moduleFor(
           get foo() {
             return 'bar';
           },
-          fooDidChange: observer('foo', function() {}),
+          fooDidChange: observer('foo', function () {}),
         });
 
         let o = MyClass.create({});
@@ -127,7 +127,7 @@ moduleFor(
       if (DEBUG) {
         let arr = [123];
 
-        addObserver(arr, 0, function() {});
+        addObserver(arr, 0, function () {});
 
         let descriptor = Object.getOwnPropertyDescriptor(arr, 0);
         assert.ok(!descriptor.set, 'Mandatory setter was not setup');
@@ -152,15 +152,15 @@ moduleFor(
     }
 
     ['@test throws if you try to define a computed property']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         EmberObject.create({
-          foo: computed(function() {}),
+          foo: computed(function () {}),
         });
       }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
     }
 
     ['@test throws if you try to call _super in a method']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         EmberObject.create({
           foo() {
             this._super(...arguments);
@@ -176,7 +176,7 @@ moduleFor(
         },
       });
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         EmberObject.create(myMixin);
       }, 'EmberObject.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
     }

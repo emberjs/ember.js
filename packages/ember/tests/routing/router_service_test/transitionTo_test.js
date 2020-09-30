@@ -118,7 +118,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        run(function() {
+        run(function () {
           componentInstance.send('transitionToSister');
         });
 
@@ -150,7 +150,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        run(function() {
+        run(function () {
           componentInstance.send('transitionToSister');
         });
 
@@ -184,7 +184,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        run(function() {
+        run(function () {
           componentInstance.send('transitionToDynamic');
         });
 
@@ -223,7 +223,7 @@ moduleFor(
 
       await this.visit('/');
 
-      run(function() {
+      run(function () {
         componentInstance.send('transitionToDynamic');
       });
 
@@ -269,7 +269,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        run(function() {
+        run(function () {
           componentInstance.send('transitionToDynamic');
         });
 
@@ -317,7 +317,7 @@ moduleFor(
 
       await this.visit('/');
 
-      run(function() {
+      run(function () {
         componentInstance.send('transitionToDynamic');
       });
 

@@ -43,7 +43,7 @@ function generateComputedWithPredicate(name, predicate) {
 
     let dependentKeys = expandPropertiesToArray(name, properties);
 
-    let computedFunc = computed(...dependentKeys, function() {
+    let computedFunc = computed(...dependentKeys, function () {
       let lastIdx = dependentKeys.length - 1;
 
       for (let i = 0; i < lastIdx; i++) {
@@ -123,7 +123,7 @@ export function empty(dependentKey) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(`${dependentKey}.length`, function() {
+  return computed(`${dependentKey}.length`, function () {
     return isEmpty(get(this, dependentKey));
   });
 }
@@ -188,7 +188,7 @@ export function notEmpty(dependentKey) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(`${dependentKey}.length`, function() {
+  return computed(`${dependentKey}.length`, function () {
     return !isEmpty(get(this, dependentKey));
   });
 }
@@ -252,7 +252,7 @@ export function none(dependentKey) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return isNone(get(this, dependentKey));
   });
 }
@@ -313,7 +313,7 @@ export function not(dependentKey) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return !get(this, dependentKey);
   });
 }
@@ -386,7 +386,7 @@ export function bool(dependentKey) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return Boolean(get(this, dependentKey));
   });
 }
@@ -453,7 +453,7 @@ export function match(dependentKey, regexp) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     let value = get(this, dependentKey);
     return regexp.test(value);
   });
@@ -520,7 +520,7 @@ export function equal(dependentKey, value) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return get(this, dependentKey) === value;
   });
 }
@@ -586,7 +586,7 @@ export function gt(dependentKey, value) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return get(this, dependentKey) > value;
   });
 }
@@ -652,7 +652,7 @@ export function gte(dependentKey, value) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return get(this, dependentKey) >= value;
   });
 }
@@ -718,7 +718,7 @@ export function lt(dependentKey, value) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return get(this, dependentKey) < value;
   });
 }
@@ -784,7 +784,7 @@ export function lte(dependentKey, value) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return computed(dependentKey, function() {
+  return computed(dependentKey, function () {
     return get(this, dependentKey) <= value;
   });
 }
@@ -861,7 +861,7 @@ export function lte(dependentKey, value) {
   the values of all the original values for properties.
   @public
 */
-export const and = generateComputedWithPredicate('and', value => value);
+export const and = generateComputedWithPredicate('and', (value) => value);
 
 /**
   A computed property which performs a logical `or` on the original values for
@@ -929,7 +929,7 @@ export const and = generateComputedWithPredicate('and', value => value);
   the values of all the original values for properties.
   @public
 */
-export const or = generateComputedWithPredicate('or', value => !value);
+export const or = generateComputedWithPredicate('or', (value) => !value);
 
 /**
   Creates a new property that is an alias for another property on an object.

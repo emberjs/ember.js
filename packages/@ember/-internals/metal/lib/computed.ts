@@ -283,7 +283,7 @@ export class ComputedProperty extends ComputedDescriptor {
         );
         assert(
           'Config object passed to computed can only contain `get` and `set` keys.',
-          Object.keys(objectConfig).every(key => key === 'get' || key === 'set')
+          Object.keys(objectConfig).every((key) => key === 'get' || key === 'set')
         );
         assert(
           'Computed properties must receive a getter or a setter, you passed none.',

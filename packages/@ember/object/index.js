@@ -157,7 +157,7 @@ export function action(target, key, desc) {
   if (!isElementDescriptor([target, key, desc])) {
     actionFn = target;
 
-    let decorator = function(target, key, desc, meta, isClassicDecorator) {
+    let decorator = function (target, key, desc, meta, isClassicDecorator) {
       assert(
         'The @action decorator may only be passed a method when used in classic classes. You should decorate methods directly in native classes',
         isClassicDecorator

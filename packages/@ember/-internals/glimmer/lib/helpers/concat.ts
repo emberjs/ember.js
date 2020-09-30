@@ -39,14 +39,11 @@ const normalizeTextValue = (value: any): string => {
   @for Ember.Templates.helpers
   @since 1.13.0
 */
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let captured = args.positional.capture();
 
   return createComputeRef(
-    () =>
-      reifyPositional(captured)
-        .map(normalizeTextValue)
-        .join(''),
+    () => reifyPositional(captured).map(normalizeTextValue).join(''),
     null,
     'concat'
   );

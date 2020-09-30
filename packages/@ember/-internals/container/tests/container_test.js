@@ -177,7 +177,7 @@ moduleFor(
       let registry = new Registry();
       let container = registry.container();
 
-      let template = function() {};
+      let template = function () {};
       registry.register('template:foo', template, { instantiate: false });
       assert.equal(container.lookup('template:foo'), template);
     }
@@ -250,7 +250,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
       let PostView = factory();
-      let template = function() {};
+      let template = function () {};
 
       registry.register('controller:post', PostController);
       registry.register('view:post', PostView, { singleton: false });
@@ -292,7 +292,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
 
-      registry.normalizeFullName = function() {
+      registry.normalizeFullName = function () {
         return 'controller:post';
       };
 
@@ -307,7 +307,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
 
-      registry.normalizeFullName = function() {
+      registry.normalizeFullName = function () {
         return 'controller:post';
       };
 
@@ -394,7 +394,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
       let resolveWasCalled = [];
-      registry.resolve = function(fullName) {
+      registry.resolve = function (fullName) {
         resolveWasCalled.push(fullName);
         return PostController;
       };
@@ -412,7 +412,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
       let resolveWasCalled = [];
-      registry.resolve = function(fullName) {
+      registry.resolve = function (fullName) {
         resolveWasCalled.push(fullName);
         return PostController;
       };
@@ -431,7 +431,7 @@ moduleFor(
       let PostController = {};
       let resolveWasCalled = [];
 
-      registry.resolve = function(fullName) {
+      registry.resolve = function (fullName) {
         resolveWasCalled.push(fullName);
         return PostController;
       };

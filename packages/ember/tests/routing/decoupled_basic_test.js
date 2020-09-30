@@ -26,7 +26,7 @@ function handleURLRejectsWith(context, assert, path, expectedReason) {
     .then(() => {
       assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
     })
-    .catch(reason => {
+    .catch((reason) => {
       assert.equal(reason.message, expectedReason);
     });
 }
@@ -40,7 +40,7 @@ moduleFor(
       this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
       this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -66,10 +66,10 @@ moduleFor(
         }
 
         result.then(
-          function() {
+          function () {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
-          function(reason) {
+          function (reason) {
             assert.ok(
               reason && reason.message === 'TransitionAborted',
               'url: `' + path + '` was to be aborted'
@@ -103,7 +103,7 @@ moduleFor(
     }
 
     [`@test The Homepage and the Camelot page with multiple Router.map calls`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('camelot', { path: '/camelot' });
       });
 
@@ -125,7 +125,7 @@ moduleFor(
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -137,7 +137,7 @@ moduleFor(
         find(id) {
           menuItem = MenuItem.create({ id: id });
 
-          return new RSVP.Promise(function(res) {
+          return new RSVP.Promise(function (res) {
             resolve = res;
           });
         },
@@ -159,7 +159,7 @@ moduleFor(
     }
 
     ['@feature(EMBER_ROUTING_MODEL_ARG) The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -171,7 +171,7 @@ moduleFor(
         find(id) {
           menuItem = MenuItem.create({ id: id });
 
-          return new RSVP.Promise(function(res) {
+          return new RSVP.Promise(function (res) {
             resolve = res;
           });
         },
@@ -195,7 +195,7 @@ moduleFor(
     [`@feature(!EMBER_ROUTING_MODEL_ARG) The loading state doesn't get entered for promises that resolve on the same run loop`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -231,7 +231,7 @@ moduleFor(
     [`@feature(EMBER_ROUTING_MODEL_ARG) The loading state doesn't get entered for promises that resolve on the same run loop`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -265,7 +265,7 @@ moduleFor(
     }
 
     ["@test The Special page returning an error invokes SpecialRoute's error handler"](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -276,7 +276,7 @@ moduleFor(
       MenuItem.reopenClass({
         find(id) {
           menuItem = MenuItem.create({ id: id });
-          promise = new RSVP.Promise(res => (resolve = res));
+          promise = new RSVP.Promise((res) => (resolve = res));
 
           return promise;
         },
@@ -311,7 +311,7 @@ moduleFor(
     ["@test ApplicationRoute's default error handler can be overridden"](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -323,7 +323,7 @@ moduleFor(
       MenuItem.reopenClass({
         find(id) {
           menuItem = MenuItem.create({ id: id });
-          return new RSVP.Promise(res => (resolve = res));
+          return new RSVP.Promise((res) => (resolve = res));
         },
       });
       this.add('model:menu_item', MenuItem);
@@ -365,7 +365,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -403,10 +403,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@feature(EMBER_ROUTING_MODEL_ARG) Events are triggered on the controller if a matching action name is implemented'](
@@ -414,7 +411,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -452,10 +449,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events are triggered on the current state when defined in `actions` object'](
@@ -463,7 +457,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -491,10 +485,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@feature(EMBER_ROUTING_MODEL_ARG) Events are triggered on the current state when defined in `actions` object'](
@@ -502,7 +493,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -530,10 +521,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events defined in `actions` object are triggered on the current state when routes are nested'](
@@ -541,8 +529,8 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('root', { path: '/' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -579,10 +567,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@feature(EMBER_ROUTING_MODEL_ARG) Events defined in `actions` object are triggered on the current state when routes are nested'](
@@ -590,8 +575,8 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('root', { path: '/' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -625,10 +610,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     ['@test Events can be handled by inherited event handlers'](assert) {
@@ -686,7 +668,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -724,10 +706,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@feature(EMBER_ROUTING_MODEL_ARG) Actions are not triggered on the controller if a matching action name is implemented as a method'](
@@ -735,7 +714,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -773,16 +752,13 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@test actions can be triggered with multiple arguments'](assert) {
       let done = assert.async();
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('root', { path: '/' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -823,14 +799,11 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     ['@test transitioning multiple times in a single run loop only sets the URL once'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo');
         this.route('bar');
@@ -840,14 +813,14 @@ moduleFor(
         let urlSetCount = 0;
         let router = this.applicationInstance.lookup('router:main');
 
-        router.get('location').setURL = function(path) {
+        router.get('location').setURL = function (path) {
           urlSetCount++;
           set(this, 'path', path);
         };
 
         assert.equal(urlSetCount, 0);
 
-        run(function() {
+        run(function () {
           router.transitionTo('foo');
           router.transitionTo('bar');
         });
@@ -860,7 +833,7 @@ moduleFor(
     ['@test navigating away triggers a url property change'](assert) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo', { path: '/foo' });
         this.route('bar', { path: '/bar' });
@@ -869,10 +842,10 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
 
-        addObserver(router, 'url', function() {
+        addObserver(router, 'url', function () {
           assert.ok(true, 'url change event was fired');
         });
-        ['foo', 'bar', '/foo'].forEach(destination => run(router, 'transitionTo', destination));
+        ['foo', 'bar', '/foo'].forEach((destination) => run(router, 'transitionTo', destination));
       });
     }
 
@@ -893,7 +866,7 @@ moduleFor(
         }),
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo');
       });
@@ -923,7 +896,7 @@ moduleFor(
         }),
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo');
       });
@@ -939,7 +912,7 @@ moduleFor(
     }
 
     ['@test A redirection hook is provided'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('choose', { path: '/' });
         this.route('home');
       });
@@ -981,10 +954,10 @@ moduleFor(
     ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
-        this.route('foo', function() {
-          this.route('bar', { resetNamespace: true }, function() {
+        this.route('foo', function () {
+          this.route('bar', { resetNamespace: true }, function () {
             this.route('baz');
           });
         });
@@ -1030,10 +1003,10 @@ moduleFor(
     ) {
       assert.expect(6);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
-        this.route('foo', function() {
-          this.route('bar', { resetNamespace: true }, function() {
+        this.route('foo', function () {
+          this.route('bar', { resetNamespace: true }, function () {
             this.route('baz');
           });
         });
@@ -1045,7 +1018,7 @@ moduleFor(
         'route:bar',
         Route.extend({
           redirect() {
-            return this.transitionTo('bar.baz').then(function() {
+            return this.transitionTo('bar.baz').then(function () {
               successCount++;
             });
           },
@@ -1083,10 +1056,10 @@ moduleFor(
     ) {
       assert.expect(5);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
-        this.route('foo', function() {
-          this.route('bar', { path: 'bar/:id', resetNamespace: true }, function() {
+        this.route('foo', function () {
+          this.route('bar', { path: 'bar/:id', resetNamespace: true }, function () {
             this.route('baz');
           });
         });
@@ -1128,10 +1101,7 @@ moduleFor(
         }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
         assert.equal(currentPath, 'foo.bar.baz');
         assert.equal(
-          this.applicationInstance
-            .lookup('router:main')
-            .get('location')
-            .getURL(),
+          this.applicationInstance.lookup('router:main').get('location').getURL(),
           '/foo/bar/2/baz'
         );
       });
@@ -1140,9 +1110,9 @@ moduleFor(
     ['@test Transitioning from a parent event does not prevent currentPath from being set'](
       assert
     ) {
-      this.router.map(function() {
-        this.route('foo', function() {
-          this.route('bar', { resetNamespace: true }, function() {
+      this.router.map(function () {
+        this.route('foo', function () {
+          this.route('bar', { resetNamespace: true }, function () {
             this.route('baz');
           });
           this.route('qux');
@@ -1184,7 +1154,7 @@ moduleFor(
       let postsTemplateRendered = false;
       let setHistory;
 
-      setHistory = function(obj, path) {
+      setHistory = function (obj, path) {
         obj.set('history', { state: { path: path } });
       };
 
@@ -1214,7 +1184,7 @@ moduleFor(
         rootURL: rootURL,
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts', { path: '/posts' });
       });
 
@@ -1266,7 +1236,7 @@ moduleFor(
     }
 
     ['@test Generating a URL should not affect currentModel'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
 
@@ -1297,8 +1267,8 @@ moduleFor(
     }
 
     ["@test Nested index route is not overridden by parent's implicit index route"](assert) {
-      this.router.map(function() {
-        this.route('posts', function() {
+      this.router.map(function () {
+        this.route('posts', function () {
           this.route('index', { path: ':category' });
         });
       });
@@ -1318,7 +1288,7 @@ moduleFor(
       assert.expect(2);
 
       let deferred = RSVP.defer();
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
 
@@ -1360,7 +1330,7 @@ moduleFor(
         },
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('nork');
         this.route('about');
       });
@@ -1407,7 +1377,7 @@ moduleFor(
     ) {
       assert.expect(5);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index');
         this.route('nork');
         this.route('about');
@@ -1492,20 +1462,20 @@ moduleFor(
     async ['@test `didTransition` event fires on the router'](assert) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('nork');
       });
 
       await this.visit('/');
 
       let router = this.applicationInstance.lookup('router:main');
-      router.one('didTransition', function() {
+      router.one('didTransition', function () {
         assert.ok(true, 'didTransition fired on initial routing');
       });
 
       await this.visit('/');
 
-      router.one('didTransition', function() {
+      router.one('didTransition', function () {
         assert.ok(true, 'didTransition fired on the router');
         assert.equal(
           router.get('url'),
@@ -1522,7 +1492,7 @@ moduleFor(
 
       let eventFired = 0;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('nork');
       });
 
@@ -1532,7 +1502,7 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.on('activate', function(transition) {
+            this.on('activate', function (transition) {
               assert.equal(++eventFired, 1, 'activate event is fired once');
               assert.ok(transition, 'transition is passed to activate event');
             });
@@ -1553,7 +1523,7 @@ moduleFor(
 
       let eventFired = 0;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('nork');
         this.route('dork');
       });
@@ -1564,7 +1534,7 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.on('deactivate', function(transition) {
+            this.on('deactivate', function (transition) {
               assert.equal(++eventFired, 1, 'deactivate event is fired once');
               assert.ok(transition, 'transition is passed');
             });
@@ -1634,7 +1604,7 @@ moduleFor(
     ['@test transitionTo returns Transition when passed a route name'](assert) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('bar');
       });
@@ -1649,9 +1619,9 @@ moduleFor(
     ['@test transitionTo returns Transition when passed a url'](assert) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
-        this.route('bar', function() {
+        this.route('bar', function () {
           this.route('baz');
         });
       });
@@ -1668,12 +1638,12 @@ moduleFor(
     ) {
       assert.expect(36);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
-        this.route('be', function() {
-          this.route('excellent', { resetNamespace: true }, function() {
-            this.route('to', { resetNamespace: true }, function() {
-              this.route('each', { resetNamespace: true }, function() {
+        this.route('be', function () {
+          this.route('excellent', { resetNamespace: true }, function () {
+            this.route('to', { resetNamespace: true }, function () {
+              this.route('each', { resetNamespace: true }, function () {
                 this.route('other');
               });
             });
@@ -1716,7 +1686,7 @@ moduleFor(
     }
 
     ["@test Redirecting with null model doesn't error out"](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('about', { path: '/about/:hurhurhur' });
       });
@@ -1724,7 +1694,7 @@ moduleFor(
       this.add(
         'route:about',
         Route.extend({
-          serialize: function(model) {
+          serialize: function (model) {
             if (model === null) {
               return { hurhurhur: 'TreeklesMcGeekles' };
             }
@@ -1755,11 +1725,11 @@ moduleFor(
       let rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
       let rejectedStack = 'Yeah, buddy: stack gets printed too.';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yippie', { path: '/' });
       });
 
-      console.error = function(initialMessage, errorMessage, errorStack) {
+      console.error = function (initialMessage, errorMessage, errorStack) {
         assert.equal(
           initialMessage,
           'Error while processing route: yippie',
@@ -1787,7 +1757,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/'),
-        function(err) {
+        function (err) {
           assert.equal(err.message, rejectedMessage);
           return true;
         },
@@ -1802,11 +1772,11 @@ moduleFor(
       let rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
       let rejectedStack = 'Yeah, buddy: stack gets printed too.';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yippie', { path: '/' });
       });
 
-      console.error = function(initialMessage, errorMessage, errorStack) {
+      console.error = function (initialMessage, errorMessage, errorStack) {
         assert.equal(
           initialMessage,
           'Error while processing route: yippie',
@@ -1833,7 +1803,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/'),
-        function({ errorThrown: err }) {
+        function ({ errorThrown: err }) {
           assert.equal(err.message, rejectedMessage);
           return true;
         },
@@ -1843,11 +1813,11 @@ moduleFor(
 
     async ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
       assert.expect(2);
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('wowzers', { path: '/' });
       });
 
-      console.error = function(initialMessage) {
+      console.error = function (initialMessage) {
         assert.equal(
           initialMessage,
           'Error while processing route: wowzers',
@@ -1871,11 +1841,11 @@ moduleFor(
       assert.expect(3);
       let rejectedMessage = 'Supercalifragilisticexpialidocious';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yondo', { path: '/' });
       });
 
-      console.error = function(initialMessage, errorMessage) {
+      console.error = function (initialMessage, errorMessage) {
         assert.equal(
           initialMessage,
           'Error while processing route: yondo',
@@ -1905,7 +1875,7 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1940,7 +1910,7 @@ moduleFor(
       assert.expect(4);
       let actual = [];
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yondo', { path: '/' });
         this.route('stink-bomb');
       });
@@ -1954,7 +1924,7 @@ moduleFor(
         })
       );
 
-      console.error = function() {
+      console.error = function () {
         // push the arguments onto an array so we can detect if the error gets logged twice
         actual.push(arguments);
       };
@@ -1974,7 +1944,7 @@ moduleFor(
     ['@test Errors in transition show error template if available'](assert) {
       this.addTemplate('error', "<div id='error'>Error!</div>");
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yondo', { path: '/' });
         this.route('stink-bomb');
       });
@@ -2002,10 +1972,10 @@ moduleFor(
     ['@test Route#resetController gets fired when changing models and exiting routes'](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
-        this.route('a', function() {
-          this.route('b', { path: '/b/:id', resetNamespace: true }, function() {});
-          this.route('c', { path: '/c/:id', resetNamespace: true }, function() {});
+      this.router.map(function () {
+        this.route('a', function () {
+          this.route('b', { path: '/b/:id', resetNamespace: true }, function () {});
+          this.route('c', { path: '/c/:id', resetNamespace: true }, function () {});
         });
         this.route('out');
       });
@@ -2060,7 +2030,7 @@ moduleFor(
     }
 
     async ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('boom');
       });
       this.add(
@@ -2076,7 +2046,7 @@ moduleFor(
     }
 
     async ['@test Exception during initialization of initial route is not swallowed'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('boom', { path: '/' });
       });
       this.add(
@@ -2097,9 +2067,9 @@ moduleFor(
       this.addTemplate('index', 'index');
       this.addTemplate('other', 'other');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
-        this.route('other', function() {});
+        this.route('other', function () {});
       });
 
       this.add(
@@ -2131,13 +2101,13 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let postSerialize = function(params) {
+      let postSerialize = function (params) {
         assert.ok(true, 'serialize hook runs');
         return {
           post_id: params.id,
         };
       };
-      let BlogMap = function() {
+      let BlogMap = function () {
         this.route('post', {
           path: '/post/:post_id',
           serialize: postSerialize,
@@ -2145,7 +2115,7 @@ moduleFor(
       };
       this.add('route-map:blog', BlogMap);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -2169,12 +2139,12 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {
+      let BlogMap = function () {
         this.route('post');
       };
       this.add('route-map:blog', BlogMap);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -2211,12 +2181,12 @@ moduleFor(
       });
 
       // Register engine route map
-      let BlogMap = function() {
+      let BlogMap = function () {
         this.route('post');
       };
       this.add('route-map:blog', BlogMap);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -2246,7 +2216,7 @@ moduleFor(
     ["@test Generated route should be an instance of App's default route if provided"](assert) {
       let generatedRoute;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts');
       });
 

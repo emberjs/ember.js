@@ -64,6 +64,6 @@ export function runLoadHooks(name, object) {
   }
 
   if (loadHooks[name]) {
-    loadHooks[name].forEach(callback => callback(object));
+    loadHooks[name].forEach((callback) => callback(object));
   }
 }

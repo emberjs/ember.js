@@ -8,11 +8,11 @@ import {
 import { assert } from '@ember/debug';
 import { consumeTag, tagFor, track, UpdatableTag, updateTag } from '@glimmer/validator';
 
-let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDescriptor) {
+let wrapGetterSetter = function (_target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
 
   if (originalGet !== undefined) {
-    desc.get = function() {
+    desc.get = function () {
       let propertyTag = tagFor(this, key) as UpdatableTag;
       let ret;
 
@@ -128,7 +128,7 @@ export function dependentKeyCompat(
   if (!isElementDescriptor([target, key, desc])) {
     desc = target as PropertyDescriptor;
 
-    let decorator = function(
+    let decorator = function (
       target: object,
       key: string,
       _desc: DecoratorPropertyDescriptor,

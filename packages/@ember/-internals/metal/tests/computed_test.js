@@ -29,7 +29,7 @@ moduleFor(
   class extends ComputedTestCase {
     ['@test isComputed is true for computed property on a factory'](assert) {
       let Obj = EmberObject.extend({
-        foo: computed(function() {}),
+        foo: computed(function () {}),
       });
 
       Obj.proto(); // ensure the prototype is "collapsed" / merged
@@ -39,25 +39,25 @@ moduleFor(
 
     ['@test isComputed is true for computed property on an instance'](assert) {
       obj = EmberObject.extend({
-        foo: computed(function() {}),
+        foo: computed(function () {}),
       }).create();
 
       assert.ok(isComputed(obj, 'foo'));
     }
 
     ['@test computed property should be an instance of descriptor'](assert) {
-      assert.ok(isClassicDecorator(computed(function() {})));
+      assert.ok(isClassicDecorator(computed(function () {})));
     }
 
     ['@test computed properties assert the presence of a getter or setter function']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         obj = {};
         defineProperty(obj, 'someProp', computed('nogetternorsetter', {}));
       }, 'Computed properties must receive a getter or a setter, you passed none.');
     }
 
     ['@test computed properties check for the presence of a function or configuration object']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         obj = {};
         defineProperty(obj, 'someProp', computed('nolastargument'));
       }, 'Attempted to use @computed on someProp, but it did not have a getter or a setter. You must either pass a get a function or getter/setter to @computed directly (e.g. `@computed({ get() { ... } })`) or apply @computed directly to a getter/setter');
@@ -65,7 +65,7 @@ moduleFor(
 
     // non valid properties are stripped away in the process of creating a computed property descriptor
     ['@test computed properties defined with an object only allow `get` and `set` keys']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         obj = EmberObject.extend({
           someProp: computed({
             get() {},
@@ -84,7 +84,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function(key) {
+        computed(function (key) {
           count++;
           return 'computed ' + key;
         })
@@ -100,7 +100,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function(key) {
+        computed(function (key) {
           count++;
           return 'computed ' + key;
         })
@@ -117,7 +117,7 @@ moduleFor(
       Obj.reopenClass({
         bar: 123,
 
-        foo: computed(function() {
+        foo: computed(function () {
           count++;
           return this.bar;
         }),
@@ -133,7 +133,7 @@ moduleFor(
       obj = {};
 
       expectDeprecation(() => {
-        defineProperty(obj, 'foo', computed(function() {}).volatile());
+        defineProperty(obj, 'foo', computed(function () {}).volatile());
       }, 'Setting a computed property as volatile has been deprecated. Instead, consider using a native getter with native class syntax.');
 
       expectDeprecation(() => {
@@ -391,7 +391,7 @@ moduleFor(
   'computed - metadata',
   class extends AbstractTestCase {
     ['@test can set metadata on a computed property'](assert) {
-      let computedProperty = computed(function() {});
+      let computedProperty = computed(function () {});
       computedProperty.meta({ key: 'keyValue' });
 
       assert.equal(
@@ -402,7 +402,7 @@ moduleFor(
     }
 
     ['@test meta should return an empty hash if no meta is set'](assert) {
-      let computedProperty = computed(function() {});
+      let computedProperty = computed(function () {});
       assert.deepEqual(computedProperty.meta(), {}, 'returned value is an empty hash');
     }
   }
@@ -418,7 +418,7 @@ moduleFor(
     beforeEach() {
       obj = {};
       count = 0;
-      let func = function() {
+      let func = function () {
         count++;
         return 'bar ' + count;
       };
@@ -466,7 +466,7 @@ moduleFor(
       defineProperty(
         obj,
         'falsy',
-        computed(function() {
+        computed(function () {
           return false;
         })
       );
@@ -521,7 +521,7 @@ moduleFor(
     beforeEach() {
       obj = { bar: 'baz' };
       count = 0;
-      let getterAndSetter = function() {
+      let getterAndSetter = function () {
         count++;
         get(this, 'bar');
         return 'bar ' + count;
@@ -537,7 +537,7 @@ moduleFor(
     }
 
     ['@test circular keys should not blow up'](assert) {
-      let func = function() {
+      let func = function () {
         count++;
         return 'bar ' + count;
       };
@@ -546,7 +546,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed('bar', function() {
+        computed('bar', function () {
           count++;
           return 'foo ' + count;
         })
@@ -567,7 +567,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed('baz', function() {
+        computed('baz', function () {
           count++;
           return 'baz ' + count;
         })
@@ -588,7 +588,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed('qux.{bar,baz}', function() {
+        computed('qux.{bar,baz}', function () {
           count++;
           return 'foo ' + count;
         })
@@ -612,11 +612,11 @@ moduleFor(
     }
 
     ['@test throws assertion if brace expansion notation has spaces']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         defineProperty(
           obj,
           'roo',
-          computed('fee.{bar, baz,bop , }', function() {
+          computed('fee.{bar, baz,bop , }', function () {
             count++;
             return 'roo ' + count;
           })
@@ -641,7 +641,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function() {
+        computed(function () {
           return 'baz';
         })
       );
@@ -672,7 +672,7 @@ moduleFor(
       };
 
       count = 0;
-      func = function() {
+      func = function () {
         count++;
         return get(obj, 'foo.bar.baz.biff') + ' ' + count;
       };
@@ -726,7 +726,7 @@ moduleFor(
       defineProperty(
         obj.foo,
         'c',
-        computed('bar.b', function() {})
+        computed('bar.b', function () {})
       );
       assert.equal(count, 0, 'b should not run');
     }
@@ -833,7 +833,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function() {})
+        computed(function () {})
       );
 
       let found = [];
@@ -903,13 +903,13 @@ moduleFor(
       let fullNameDidChange = 0;
       let firstNameDidChange = 0;
       let lastNameDidChange = 0;
-      addObserver(obj, 'fullName', function() {
+      addObserver(obj, 'fullName', function () {
         fullNameDidChange++;
       });
-      addObserver(obj, 'firstName', function() {
+      addObserver(obj, 'firstName', function () {
         firstNameDidChange++;
       });
-      addObserver(obj, 'lastName', function() {
+      addObserver(obj, 'lastName', function () {
         lastNameDidChange++;
       });
 
@@ -950,7 +950,7 @@ moduleFor(
       );
 
       let plusOneDidChange = 0;
-      addObserver(obj, 'plusOne', function() {
+      addObserver(obj, 'plusOne', function () {
         plusOneDidChange++;
       });
 
@@ -986,7 +986,7 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function() {
+        computed(function () {
           return 'foo';
         })
       );
@@ -1011,7 +1011,7 @@ moduleFor(
   'computed - readOnly',
   class extends ComputedTestCase {
     ['@test is chainable'](assert) {
-      let cp = computed(function() {});
+      let cp = computed(function () {});
       let readOnlyCp = cp.readOnly();
 
       assert.equal(cp, readOnlyCp);
@@ -1037,7 +1037,7 @@ moduleFor(
       defineProperty(
         obj,
         'bar',
-        computed(function() {
+        computed(function () {
           return 'barValue';
         }).readOnly()
       );

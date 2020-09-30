@@ -24,7 +24,7 @@ if (!buildInfo.isBuildForTag) {
     TRAVIS_COMMIT: buildInfo.sha,
   });
 
-  publisher.currentBranch = function() {
+  publisher.currentBranch = function () {
     return buildInfo.channel;
   };
 

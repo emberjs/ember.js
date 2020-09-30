@@ -24,12 +24,12 @@ declare global {
 export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv) {
   let assertion = new DeprecationAssert(env);
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     assertion.reset();
     assertion.inject();
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     assertion.assert();
     assertion.restore();
   });
@@ -51,12 +51,12 @@ class DeprecationAssert extends DebugAssert {
     // expectNoDeprecation();
     // Ember.deprecate("Old And Busted");
     //
-    let expectNoDeprecation: ExpectNoDeprecationFunc = func => {
+    let expectNoDeprecation: ExpectNoDeprecationFunc = (func) => {
       if (typeof func !== 'function') {
         func = undefined;
       }
 
-      this.runExpectation(func, tracker => {
+      this.runExpectation(func, (tracker) => {
         if (tracker.isExpectingCalls()) {
           throw new Error('expectNoDeprecation was called after expectDeprecation was called!');
         }
@@ -86,7 +86,7 @@ class DeprecationAssert extends DebugAssert {
         actualFunc = func;
       }
 
-      this.runExpectation(actualFunc, tracker => {
+      this.runExpectation(actualFunc, (tracker) => {
         if (tracker.isExpectingNoCalls()) {
           throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
         }
@@ -106,7 +106,7 @@ class DeprecationAssert extends DebugAssert {
 
       await this.runExpectation(
         actualFunc,
-        tracker => {
+        (tracker) => {
           if (tracker.isExpectingNoCalls()) {
             throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
           }
@@ -117,7 +117,7 @@ class DeprecationAssert extends DebugAssert {
       );
     };
 
-    let ignoreDeprecation: IgnoreDeprecationFunc = func => {
+    let ignoreDeprecation: IgnoreDeprecationFunc = (func) => {
       callWithStub(this.env, 'deprecate', func);
     };
 

@@ -1,4 +1,4 @@
-export const HAS_NATIVE_SYMBOL = (function() {
+export const HAS_NATIVE_SYMBOL = (function () {
   if (typeof Symbol !== 'function') {
     return false;
   }

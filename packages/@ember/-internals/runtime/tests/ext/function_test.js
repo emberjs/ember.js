@@ -23,7 +23,7 @@ moduleFor(
         MyMixin = Mixin.create({
           count: 0,
 
-          foo: function() {
+          foo: function () {
             set(this, 'count', get(this, 'count') + 1);
           }.observes('bar', 'baz'),
         });
@@ -62,7 +62,7 @@ moduleFor(
         MyMixin = Mixin.create({
           count: 0,
 
-          foo: function() {
+          foo: function () {
             set(this, 'count', get(this, 'count') + 1);
           }.on('bar', 'baz'),
         });
@@ -83,11 +83,11 @@ moduleFor(
       }
 
       let MyMixin;
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         MyMixin = Mixin.create({
           count: 0,
           bay: 'bay',
-          foo: function() {
+          foo: function () {
             set(this, 'count', get(this, 'count') + 1);
           }
             .observes('bay')
@@ -122,11 +122,11 @@ moduleFor(
       }
 
       let MyClass;
-      expectDeprecation(function() {
+      expectDeprecation(function () {
         MyClass = EmberObject.extend({
           firstName: null,
           lastName: null,
-          fullName: function() {
+          fullName: function () {
             return get(this, 'firstName') + ' ' + get(this, 'lastName');
           }.property('firstName', 'lastName'),
         });

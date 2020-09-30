@@ -26,7 +26,7 @@ class ModifierManagerTest extends RenderingTestCase {
 
   '@test can register a custom element modifier and render it'(assert) {
     let ModifierClass = setModifierManager(
-      owner => {
+      (owner) => {
         return new this.CustomModifierManager(owner);
       },
       EmberObject.extend({
@@ -52,7 +52,7 @@ class ModifierManagerTest extends RenderingTestCase {
   '@test custom lifecycle hooks'(assert) {
     assert.expect(9);
     let ModifierClass = setModifierManager(
-      owner => {
+      (owner) => {
         return new this.CustomModifierManager(owner);
       },
       EmberObject.extend({
@@ -94,7 +94,7 @@ class ModifierManagerTest extends RenderingTestCase {
   '@test associates manager even through an inheritance structure'(assert) {
     assert.expect(5);
     let ModifierClass = setModifierManager(
-      owner => {
+      (owner) => {
         return new this.CustomModifierManager(owner);
       },
       EmberObject.extend({
@@ -132,7 +132,7 @@ class ModifierManagerTest extends RenderingTestCase {
   '@test can give consistent access to underlying DOM element'(assert) {
     assert.expect(4);
     let ModifierClass = setModifierManager(
-      owner => {
+      (owner) => {
         return new this.CustomModifierManager(owner);
       },
       EmberObject.extend({
@@ -182,7 +182,7 @@ class ModifierManagerTest extends RenderingTestCase {
     let updateCount = 0;
 
     let ModifierClass = setModifierManager(
-      owner => {
+      (owner) => {
         return new this.CustomModifierManager(owner);
       },
       EmberObject.extend({
@@ -234,7 +234,7 @@ class ModifierManagerTest extends RenderingTestCase {
     }
 
     let ModifierClass = setModifierManager(
-      owner => {
+      (owner) => {
         return new this.CustomModifierManager(owner);
       },
       class {
@@ -304,7 +304,7 @@ moduleFor(
       let updateCount = 0;
 
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new this.CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -387,7 +387,7 @@ moduleFor(
       let updateCount = 0;
 
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new this.CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -443,7 +443,7 @@ moduleFor(
       let updateCount = 0;
 
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new this.CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -528,7 +528,7 @@ moduleFor(
         }
       }
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({
@@ -582,7 +582,7 @@ moduleFor(
         }
       }
       let ModifierClass = setModifierManager(
-        owner => {
+        (owner) => {
           return new CustomModifierManager(owner);
         },
         EmberObject.extend({

@@ -126,7 +126,7 @@ moduleFor(
       let registry = new Registry();
       let PostController = factory();
 
-      registry.normalizeFullName = function() {
+      registry.normalizeFullName = function () {
         return 'controller:post';
       };
 
@@ -140,7 +140,7 @@ moduleFor(
       let registry = new Registry();
       let PostController = factory();
 
-      registry.normalizeFullName = function(fullName) {
+      registry.normalizeFullName = function (fullName) {
         return fullName === 'controller:normalized' ? 'controller:post' : fullName;
       };
 
@@ -159,7 +159,7 @@ moduleFor(
       let PostController = factory();
       let user = { name: 'Stef' };
 
-      registry.normalize = function() {
+      registry.normalize = function () {
         return 'controller:post';
       };
 
@@ -201,7 +201,7 @@ moduleFor(
       registry.register('controller:apple', FirstApple);
       assert.strictEqual(registry.resolve('controller:apple'), FirstApple);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         registry.register('controller:apple', SecondApple);
       }, /Cannot re-register: 'controller:apple', as it has already been resolved\./);
 
@@ -217,7 +217,7 @@ moduleFor(
       let FirstApple = factory('first');
       let SecondApple = factory('second');
 
-      SecondApple.extend = function() {
+      SecondApple.extend = function () {
         assert.ok(
           false,
           'should not extend or touch the injected model, merely to inspect existence of another'
@@ -768,7 +768,7 @@ moduleFor(
           return 'yippie!';
         },
 
-        expandLocalLookup: targetFullName => {
+        expandLocalLookup: (targetFullName) => {
           assert.ok(true, 'expandLocalLookup is called on the resolver');
 
           if (targetFullName === 'foo:bar') {

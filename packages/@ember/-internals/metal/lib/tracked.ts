@@ -109,7 +109,7 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
     let initializer = propertyDesc ? propertyDesc.initializer : undefined;
     let value = propertyDesc ? propertyDesc.value : undefined;
 
-    let decorator = function(
+    let decorator = function (
       target: object,
       key: string,
       _desc: DecoratorPropertyDescriptor,

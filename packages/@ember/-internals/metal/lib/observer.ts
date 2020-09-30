@@ -160,7 +160,7 @@ export function resumeObserverDeactivation() {
  */
 export function revalidateObservers(target: object) {
   if (ASYNC_OBSERVERS.has(target)) {
-    ASYNC_OBSERVERS.get(target)!.forEach(observer => {
+    ASYNC_OBSERVERS.get(target)!.forEach((observer) => {
       observer.tag = getChainTagsForKey(
         target,
         observer.path,
@@ -172,7 +172,7 @@ export function revalidateObservers(target: object) {
   }
 
   if (SYNC_OBSERVERS.has(target)) {
-    SYNC_OBSERVERS.get(target)!.forEach(observer => {
+    SYNC_OBSERVERS.get(target)!.forEach((observer) => {
       observer.tag = getChainTagsForKey(
         target,
         observer.path,

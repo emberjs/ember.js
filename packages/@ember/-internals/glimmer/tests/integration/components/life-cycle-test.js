@@ -70,7 +70,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     let topLevelId = getViewId(this.component);
     let actual = Object.keys(viewRegistry)
       .sort()
-      .filter(id => id !== topLevelId);
+      .filter((id) => id !== topLevelId);
 
     if (this.isInteractive) {
       let expected = this.componentRegistry.sort();
@@ -82,12 +82,12 @@ class LifeCycleHooksTest extends RenderingTestCase {
   }
 
   registerComponent(name, { template = null }) {
-    let pushComponent = instance => {
+    let pushComponent = (instance) => {
       this.components[name] = instance;
       this.componentRegistry.push(getViewId(instance));
     };
 
-    let removeComponent = instance => {
+    let removeComponent = (instance) => {
       let index = this.componentRegistry.indexOf(getViewId(instance));
       this.componentRegistry.splice(index, 1);
 
@@ -299,7 +299,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
   assertHooks({ label, interactive, nonInteractive }) {
     let rawHooks = this.isInteractive ? interactive : nonInteractive;
-    let hooks = rawHooks.map(raw => hook(...raw));
+    let hooks = rawHooks.map((raw) => hook(...raw));
     this.assert.deepEqual(json(this.hooks), json(hooks), label);
     this.hooks = [];
   }
@@ -1281,7 +1281,7 @@ class CurlyComponentsTest extends LifeCycleHooksTest {
 
   invocationFor(name, namedArgs = {}) {
     let attrs = Object.keys(namedArgs)
-      .map(k => `${k}=${this.val(namedArgs[k])}`)
+      .map((k) => `${k}=${this.val(namedArgs[k])}`)
       .join(' ');
     return `{{${name} ${attrs}}}`;
   }

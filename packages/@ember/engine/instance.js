@@ -77,7 +77,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       return this._bootPromise;
     }
 
-    this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
+    this._bootPromise = new RSVP.Promise((resolve) => resolve(this._bootSync(options)));
 
     return this._bootPromise;
   },
@@ -175,7 +175,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     let registrations = ['route:basic', 'service:-routing'];
 
-    registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
+    registrations.forEach((key) => this.register(key, parent.resolveRegistration(key)));
 
     let env = parent.lookup('-environment:main');
     this.register('-environment:main', env, { instantiate: false });
@@ -192,7 +192,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       singletons.push('event_dispatcher:main');
     }
 
-    singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
+    singletons.forEach((key) => this.register(key, parent.lookup(key), { instantiate: false }));
 
     this.inject('view', '_environment', '-environment:main');
     this.inject('route', '_environment', '-environment:main');

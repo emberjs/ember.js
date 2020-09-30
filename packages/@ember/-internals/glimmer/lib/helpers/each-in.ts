@@ -158,7 +158,7 @@ export class EachInWrapper {
   constructor(public inner: unknown) {}
 }
 
-export default function(args: VMArguments) {
+export default function (args: VMArguments) {
   let inner = args.positional.at(0);
 
   return createComputeRef(() => {

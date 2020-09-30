@@ -334,7 +334,7 @@ moduleFor(
       this.application.ScoobyDoo = EmberObject.extend();
       this.application.toString = () => 'App';
 
-      setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
+      setDebugFunction('info', function (symbol, name, padding, lookupDescription) {
         assert.equal(symbol, '[✓]', 'proper symbol is printed when a module is found');
         assert.equal(name, 'doo:scooby', 'proper lookup value is logged');
         assert.equal(lookupDescription, 'App.ScoobyDoo');
@@ -355,7 +355,7 @@ moduleFor(
       this.application.LOG_RESOLVER = true;
       this.application.toString = () => 'App';
 
-      setDebugFunction('info', function(symbol, name, padding, lookupDescription) {
+      setDebugFunction('info', function (symbol, name, padding, lookupDescription) {
         assert.equal(symbol, '[ ]', 'proper symbol is printed when a module is not found');
         assert.equal(name, 'doo:scooby', 'proper lookup value is logged');
         assert.equal(lookupDescription, 'App.ScoobyDoo');

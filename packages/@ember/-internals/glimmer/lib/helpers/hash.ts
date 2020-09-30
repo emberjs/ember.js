@@ -44,7 +44,7 @@ import { reifyNamed } from '@glimmer/runtime';
    @since 2.3.0
    @public
  */
-export default function(args: VMArguments): Reference<Dict<unknown>> {
+export default function (args: VMArguments): Reference<Dict<unknown>> {
   let positional = args.named.capture();
 
   return createComputeRef(() => reifyNamed(positional), null, 'hash');

@@ -32,7 +32,7 @@ export default function assertAgainstNamedBlocks(env: EmberASTPluginEnvironment)
 
       MustacheStatement(node: AST.MustacheStatement) {
         if (node.path.type === 'PathExpression' && node.path.original === 'yield') {
-          let to = node.hash.pairs.filter(pair => pair.key === 'to')[0];
+          let to = node.hash.pairs.filter((pair) => pair.key === 'to')[0];
 
           // Glimmer template compiler ensures yield must receive a string literal,
           // so we only need to check if it is not "default" or "inverse"

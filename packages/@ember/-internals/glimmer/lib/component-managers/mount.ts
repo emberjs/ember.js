@@ -44,7 +44,8 @@ const CAPABILITIES = {
   willDestroy: false,
 };
 
-class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
+class MountManager
+  extends AbstractManager<EngineState, EngineDefinitionState>
   implements WithDynamicLayout<EngineState, RuntimeResolver> {
   getDynamicLayout(state: EngineState, _: RuntimeResolver) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;

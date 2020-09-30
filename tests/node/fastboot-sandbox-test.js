@@ -97,17 +97,17 @@ var app = Ember.Application.extend().create({
   return context;
 }
 
-QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
-  hooks.beforeEach(function() {
+QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
+  hooks.beforeEach(function () {
     let { precompile } = loadEmber();
     this.context = buildSandboxContext(precompile);
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     clearEmber();
   });
 
-  QUnit.test('FastBoot: basic', async function(assert) {
+  QUnit.test('FastBoot: basic', async function (assert) {
     let result = await fastbootVisit(this.context, '/');
 
     assert.equal(result.url, '/', 'landed on correct url');

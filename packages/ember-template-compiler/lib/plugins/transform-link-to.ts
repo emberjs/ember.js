@@ -48,7 +48,7 @@ function transformPositionalLinkToIntoNamedArguments(
     hash: { pairs },
   } = node;
 
-  let keys = pairs.map(pair => pair.key);
+  let keys = pairs.map((pair) => pair.key);
 
   if (params.length === 0) {
     assert(

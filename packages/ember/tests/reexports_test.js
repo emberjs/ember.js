@@ -13,7 +13,7 @@ moduleFor(
   'ember reexports',
   class extends AbstractTestCase {
     [`@test Ember exports correctly`](assert) {
-      allExports.forEach(reexport => {
+      allExports.forEach((reexport) => {
         let [path, moduleId, exportName] = reexport;
 
         // default path === exportName if none present

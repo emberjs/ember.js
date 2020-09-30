@@ -28,7 +28,7 @@ moduleFor(
     ['@test asyncStart waits for asyncEnd to finish a test'](assert) {
       adapter.asyncStart();
 
-      setTimeout(function() {
+      setTimeout(function () {
         assert.ok(true);
         adapter.asyncEnd();
       }, 50);
@@ -41,7 +41,7 @@ moduleFor(
       adapter.asyncStart();
       adapter.asyncEnd();
 
-      setTimeout(function() {
+      setTimeout(function () {
         assert.ok(true);
         adapter.asyncEnd();
       }, 50);

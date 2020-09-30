@@ -61,7 +61,7 @@ moduleFor(
       run(() => {
         later(
           obj,
-          function() {
+          function () {
             this.invoked = true;
           },
           100
@@ -81,7 +81,7 @@ moduleFor(
       run(() => {
         later(
           obj,
-          function(amt) {
+          function (amt) {
             this.invoked += amt;
           },
           10,
@@ -105,7 +105,7 @@ moduleFor(
 
         later(
           obj,
-          function(amt) {
+          function (amt) {
             this.invoked += amt;
             secondRunLoop = getCurrentRunLoop();
           },

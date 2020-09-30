@@ -12,7 +12,7 @@ function reduceMacro(dependentKey, callback, initialValue, name) {
     !/[[\]{}]/g.test(dependentKey)
   );
 
-  return computed(`${dependentKey}.[]`, function() {
+  return computed(`${dependentKey}.[]`, function () {
     let arr = get(this, dependentKey);
     if (arr === null || typeof arr !== 'object') {
       return initialValue;
@@ -31,7 +31,7 @@ function arrayMacro(dependentKey, additionalDependentKeys, callback) {
     dependentKey += '.[]';
   }
 
-  return computed(dependentKey, ...additionalDependentKeys, function() {
+  return computed(dependentKey, ...additionalDependentKeys, function () {
     let value = get(this, propertyName);
     if (isArray(value)) {
       return emberA(callback.call(this, value));
@@ -44,11 +44,11 @@ function arrayMacro(dependentKey, additionalDependentKeys, callback) {
 function multiArrayMacro(_dependentKeys, callback, name) {
   assert(
     `Dependent keys passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
-    _dependentKeys.every(dependentKey => !/[[\]{}]/g.test(dependentKey))
+    _dependentKeys.every((dependentKey) => !/[[\]{}]/g.test(dependentKey))
   );
-  let dependentKeys = _dependentKeys.map(key => `${key}.[]`);
+  let dependentKeys = _dependentKeys.map((key) => `${key}.[]`);
 
-  return computed(...dependentKeys, function() {
+  return computed(...dependentKeys, function () {
     return emberA(callback.call(this, _dependentKeys));
   }).readOnly();
 }
@@ -421,7 +421,7 @@ export function map(dependentKey, additionalDependentKeys, callback) {
     Array.isArray(additionalDependentKeys)
   );
 
-  return arrayMacro(dependentKey, additionalDependentKeys, function(value) {
+  return arrayMacro(dependentKey, additionalDependentKeys, function (value) {
     return value.map(callback, this);
   });
 }
@@ -525,7 +525,7 @@ export function mapBy(dependentKey, propertyKey) {
     !/[[\]{}]/g.test(dependentKey)
   );
 
-  return map(`${dependentKey}.@each.${propertyKey}`, item => get(item, propertyKey));
+  return map(`${dependentKey}.@each.${propertyKey}`, (item) => get(item, propertyKey));
 }
 
 /**
@@ -677,7 +677,7 @@ export function filter(dependentKey, additionalDependentKeys, callback) {
     Array.isArray(additionalDependentKeys)
   );
 
-  return arrayMacro(dependentKey, additionalDependentKeys, function(value) {
+  return arrayMacro(dependentKey, additionalDependentKeys, function (value) {
     return value.filter(callback, this);
   });
 }
@@ -751,9 +751,9 @@ export function filterBy(dependentKey, propertyKey, value) {
 
   let callback;
   if (arguments.length === 2) {
-    callback = item => get(item, propertyKey);
+    callback = (item) => get(item, propertyKey);
   } else {
-    callback = item => get(item, propertyKey) === value;
+    callback = (item) => get(item, propertyKey) === value;
   }
 
   return filter(`${dependentKey}.@each.${propertyKey}`, callback);
@@ -825,14 +825,14 @@ export function uniq(...args) {
 
   return multiArrayMacro(
     args,
-    function(dependentKeys) {
+    function (dependentKeys) {
       let uniq = emberA();
       let seen = new Set();
 
-      dependentKeys.forEach(dependentKey => {
+      dependentKeys.forEach((dependentKey) => {
         let value = get(this, dependentKey);
         if (isArray(value)) {
-          value.forEach(item => {
+          value.forEach((item) => {
             if (!seen.has(item)) {
               seen.add(item);
               uniq.push(item);
@@ -917,7 +917,7 @@ export function uniqBy(dependentKey, propertyKey) {
     !/[[\]{}]/g.test(dependentKey)
   );
 
-  return computed(`${dependentKey}.[]`, function() {
+  return computed(`${dependentKey}.[]`, function () {
     let list = get(this, dependentKey);
     return isArray(list) ? uniqByArray(list, propertyKey) : emberA();
   }).readOnly();
@@ -1059,13 +1059,13 @@ export function intersect(...args) {
 
   return multiArrayMacro(
     args,
-    function(dependentKeys) {
-      let arrays = dependentKeys.map(dependentKey => {
+    function (dependentKeys) {
+      let arrays = dependentKeys.map((dependentKey) => {
         let array = get(this, dependentKey);
         return isArray(array) ? array : [];
       });
 
-      let results = arrays.pop().filter(candidate => {
+      let results = arrays.pop().filter((candidate) => {
         for (let i = 0; i < arrays.length; i++) {
           let found = false;
           let array = arrays[i];
@@ -1170,7 +1170,7 @@ export function setDiff(setAProperty, setBProperty) {
     !/[[\]{}]/g.test(setAProperty) && !/[[\]{}]/g.test(setBProperty)
   );
 
-  return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function() {
+  return computed(`${setAProperty}.[]`, `${setBProperty}.[]`, function () {
     let setA = get(this, setAProperty);
     let setB = get(this, setBProperty);
 
@@ -1181,7 +1181,7 @@ export function setDiff(setAProperty, setBProperty) {
       return emberA(setA);
     }
 
-    return setA.filter(x => setB.indexOf(x) === -1);
+    return setA.filter((x) => setB.indexOf(x) === -1);
   }).readOnly();
 }
 
@@ -1243,8 +1243,8 @@ export function collect(...dependentKeys) {
 
   return multiArrayMacro(
     dependentKeys,
-    function() {
-      let res = dependentKeys.map(key => {
+    function () {
+      let res = dependentKeys.map((key) => {
         let val = get(this, key);
         return val === undefined ? null : val;
       });
@@ -1466,7 +1466,7 @@ export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
 }
 
 function customSort(itemsKey, additionalDependentKeys, comparator) {
-  return arrayMacro(itemsKey, additionalDependentKeys, function(value) {
+  return arrayMacro(itemsKey, additionalDependentKeys, function (value) {
     return value.slice().sort((x, y) => comparator.call(this, x, y));
   });
 }
@@ -1474,12 +1474,12 @@ function customSort(itemsKey, additionalDependentKeys, comparator) {
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
 function propertySort(itemsKey, sortPropertiesKey) {
-  let cp = autoComputed(function(key) {
+  let cp = autoComputed(function (key) {
     let sortProperties = get(this, sortPropertiesKey);
 
     assert(
       `The sort definition for '${key}' on ${this} must be a function or an array of strings`,
-      isArray(sortProperties) && sortProperties.every(s => typeof s === 'string')
+      isArray(sortProperties) && sortProperties.every((s) => typeof s === 'string')
     );
 
     let itemsKeyIsAtThis = itemsKey === '@this';
@@ -1501,7 +1501,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
 }
 
 function normalizeSortProperties(sortProperties) {
-  return sortProperties.map(p => {
+  return sortProperties.map((p) => {
     let [prop, direction] = p.split(':');
     direction = direction || 'asc';
 

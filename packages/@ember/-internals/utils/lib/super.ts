@@ -6,7 +6,7 @@ const fnToString = Function.prototype.toString;
 export const checkHasSuper = (() => {
   let sourceAvailable =
     fnToString
-      .call(function(this: any) {
+      .call(function (this: any) {
         return this;
       })
       .indexOf('return this') > -1;
@@ -24,7 +24,7 @@ export const checkHasSuper = (() => {
 
 const HAS_SUPER_MAP = new WeakMap();
 
-export const ROOT = Object.freeze(function() {});
+export const ROOT = Object.freeze(function () {});
 HAS_SUPER_MAP.set(ROOT, false);
 
 function hasSuper(func: Function) {

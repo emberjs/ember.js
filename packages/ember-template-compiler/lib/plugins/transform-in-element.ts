@@ -64,7 +64,7 @@ export default function transformInElement(env: EmberASTPluginEnvironment): ASTP
               node.params.unshift(subExpr);
             }
 
-            node.hash.pairs.forEach(pair => {
+            node.hash.pairs.forEach((pair) => {
               if (pair.key === 'insertBefore') {
                 assert(
                   `Can only pass null to insertBefore in in-element, received: ${JSON.stringify(
@@ -97,7 +97,7 @@ export default function transformInElement(env: EmberASTPluginEnvironment): ASTP
           // https://github.com/glimmerjs/glimmer-vm/blob/ba9b37d44b85fa1385eeeea71910ff5798198c8e/packages/%40glimmer/syntax/lib/parser/handlebars-node-visitors.ts#L340-L363
           let needsInsertBefore = true;
           let hash = node.hash;
-          hash.pairs.forEach(pair => {
+          hash.pairs.forEach((pair) => {
             if (pair.key === 'insertBefore') {
               assert(
                 `Can only pass a null or undefined literals to insertBefore in -in-element, received: ${JSON.stringify(

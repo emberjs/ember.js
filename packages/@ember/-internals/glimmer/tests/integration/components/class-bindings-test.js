@@ -654,7 +654,7 @@ moduleFor(
 
     ['@test using a computed property for classNameBindings triggers an assertion']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: computed(function() {
+        classNameBindings: computed(function () {
           return ['isHappy:happy:sad'];
         }),
       });

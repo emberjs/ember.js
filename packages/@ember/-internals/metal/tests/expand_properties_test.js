@@ -87,7 +87,7 @@ moduleFor(
         'model.{bar,baz',
       ];
 
-      nestedBraceProperties.forEach(invalidProperties => {
+      nestedBraceProperties.forEach((invalidProperties) => {
         expectAssertion(() => expandProperties(invalidProperties, addProperty));
       }, /Brace expanded properties have to be balanced and cannot be nested/);
     }
@@ -111,7 +111,7 @@ moduleFor(
     ['@test A pattern must not contain a space'](assert) {
       assert.expect(1);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         expandProperties('{a, b}', addProperty);
       }, /Brace expanded properties cannot contain spaces, e.g. "user.{firstName, lastName}" should be "user.{firstName,lastName}"/);
     }
