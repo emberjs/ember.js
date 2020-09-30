@@ -1,13 +1,8 @@
-import {
-  HAS_NATIVE_PROXY,
-  lookupDescriptor,
-  setWithMandatorySetter,
-  toString,
-} from '@ember/-internals/utils';
+import { HAS_NATIVE_PROXY, setWithMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { CP_SETTER_FUNCS } from './decorator';
+import { descriptorForProperty } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
@@ -72,11 +67,10 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let descriptor = lookupDescriptor(obj, keyName);
-  let setter = descriptor === null ? undefined : descriptor.set;
+  let descriptor = descriptorForProperty(obj, keyName);
 
-  if (setter !== undefined && CP_SETTER_FUNCS.has(setter)) {
-    obj[keyName] = value;
+  if (descriptor !== undefined) {
+    descriptor.set(obj, keyName, value);
     return value;
   }
 

@@ -15,6 +15,44 @@ import { Component } from '../../utils/helpers';
 moduleFor(
   'Component Tracked Properties',
   class extends RenderingTestCase {
+    '@test simple test using classic component'() {
+      let personId = 0;
+      class Person {
+        @tracked first;
+        @tracked last;
+
+        constructor(first, last) {
+          this.id = personId++;
+          this.first = first;
+          this.last = last;
+        }
+      }
+
+      class PersonComponent extends Component {
+        @tracked first;
+        @tracked last;
+
+        get person() {
+          return new Person(this.first, this.last);
+        }
+      }
+
+      this.registerComponent('person-wrapper', {
+        ComponentClass: PersonComponent,
+        template: '{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}',
+      });
+
+      this.render('<PersonWrapper @first={{first}} @last={{last}} />', {
+        first: 'robert',
+        last: 'jackson',
+      });
+
+      this.assertText('robert jackson | robert jackson');
+
+      runTask(() => this.context.set('first', 'max'));
+      this.assertText('max jackson | max jackson');
+    }
+
     '@test simple test using glimmerish component'() {
       let personId = 0;
       class Person {
