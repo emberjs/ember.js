@@ -1,4 +1,4 @@
-import { _WeakSet } from '@glimmer/util';
+import { _WeakSet } from '@ember/polyfills';
 
 const EMBER_ARRAYS = new _WeakSet();
 
