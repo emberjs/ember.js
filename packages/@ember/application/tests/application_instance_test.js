@@ -76,24 +76,6 @@ moduleFor(
       appInstance.setupEventDispatcher();
     }
 
-    ['@test customEvents added to the application before setupEventDispatcher'](assert) {
-      assert.expect(1);
-
-      appInstance = run(() => ApplicationInstance.create({ application }));
-      appInstance.setupRegistry();
-
-      application.customEvents = {
-        awesome: 'sauce',
-      };
-
-      let eventDispatcher = appInstance.lookup('event_dispatcher:main');
-      eventDispatcher.setup = function (events) {
-        assert.equal(events.awesome, 'sauce');
-      };
-
-      appInstance.setupEventDispatcher();
-    }
-
     ['@test customEvents added to the application instance before setupEventDispatcher'](assert) {
       assert.expect(1);
 

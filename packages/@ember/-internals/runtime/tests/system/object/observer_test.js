@@ -196,7 +196,7 @@ moduleFor(
       obj2.destroy();
     }
 
-    async ['@test chain observer on class'](assert) {
+    async ['@test clobbering a chain observer on subclass'](assert) {
       let MyClass = EmberObject.extend({
         count: 0,
 

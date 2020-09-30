@@ -43,7 +43,7 @@ moduleFor(
       this.assert.equal(get(obj, 'path.key.value'), 'value for some-key');
     }
 
-    ['@test should get arbitrary properties on an object']() {
+    ['@test should get arbitrary properties on an object (getWithDefault DEPRECATED)']() {
       expectDeprecation(() => {
         let obj = createObj();
 

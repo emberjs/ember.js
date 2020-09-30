@@ -74,7 +74,7 @@ moduleFor(
       run(Foo, 'destroy');
     }
 
-    ['@test toString on a namespace finds the namespace in lookup'](assert) {
+    ['@test toString on a nested namespace finds the namespace in lookup'](assert) {
       let Foo = (lookup.Foo = Namespace.create());
       let obj;
 
