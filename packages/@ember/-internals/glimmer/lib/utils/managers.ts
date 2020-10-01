@@ -16,18 +16,27 @@ type ManagerDelegate =
 
 const COMPONENT_MANAGERS = new WeakMap<
   object,
-  ManagerFactory<ComponentManagerDelegate<unknown> | InternalComponentManager>
+  ManagerFactory<Owner, ComponentManagerDelegate<unknown> | InternalComponentManager>
 >();
 
 const FROM_CAPABILITIES = DEBUG ? new _WeakSet() : undefined;
 
-const MODIFIER_MANAGERS = new WeakMap<object, ManagerFactory<ModifierManagerDelegate<unknown>>>();
+const MODIFIER_MANAGERS = new WeakMap<
+  object,
+  ManagerFactory<Owner, ModifierManagerDelegate<unknown>>
+>();
 
-const HELPER_MANAGERS = new WeakMap<object, ManagerFactory<HelperManager<unknown>>>();
+const HELPER_MANAGERS = new WeakMap<
+  object,
+  ManagerFactory<Owner | undefined, HelperManager<unknown>>
+>();
 
-const MANAGER_INSTANCES: WeakMap<Owner, WeakMap<ManagerFactory, unknown>> = new WeakMap();
+const OWNER_MANAGER_INSTANCES: WeakMap<Owner, WeakMap<ManagerFactory, unknown>> = new WeakMap();
+const UNDEFINED_MANAGER_INSTANCES: WeakMap<ManagerFactory, unknown> = new WeakMap();
 
-export type ManagerFactory<D extends ManagerDelegate = ManagerDelegate> = (owner: Owner) => D;
+export type ManagerFactory<O = Owner, D extends ManagerDelegate = ManagerDelegate> = (
+  owner: O
+) => D;
 
 ///////////
 
@@ -42,10 +51,10 @@ function setManager<Def extends object>(
   return obj;
 }
 
-function getManager<D extends ManagerDelegate>(
-  map: WeakMap<object, ManagerFactory<D>>,
+function getManager<O, D extends ManagerDelegate>(
+  map: WeakMap<object, ManagerFactory<O, D>>,
   obj: object
-): ManagerFactory<D> | undefined {
+): ManagerFactory<O, D> | undefined {
   let pointer = obj;
   while (pointer !== undefined && pointer !== null) {
     const manager = map.get(pointer);
@@ -61,21 +70,26 @@ function getManager<D extends ManagerDelegate>(
 }
 
 function getManagerInstanceForOwner<D extends ManagerDelegate>(
-  owner: Owner,
-  factory: ManagerFactory<D>
+  owner: Owner | undefined,
+  factory: ManagerFactory<Owner, D>
 ): D {
-  let managers = MANAGER_INSTANCES.get(owner);
+  let managers;
 
-  if (managers === undefined) {
-    managers = new WeakMap();
-    MANAGER_INSTANCES.set(owner, managers);
+  if (owner === undefined) {
+    managers = UNDEFINED_MANAGER_INSTANCES;
+  } else {
+    managers = OWNER_MANAGER_INSTANCES.get(owner);
+
+    if (managers === undefined) {
+      managers = new WeakMap();
+      OWNER_MANAGER_INSTANCES.set(owner, managers);
+    }
   }
 
   let instance = managers.get(factory);
 
   if (instance === undefined) {
-    instance = factory(owner);
-
+    instance = factory(owner!);
     managers.set(factory, instance!);
   }
 
@@ -86,14 +100,14 @@ function getManagerInstanceForOwner<D extends ManagerDelegate>(
 ///////////
 
 export function setModifierManager(
-  factory: ManagerFactory<ModifierManagerDelegate<unknown>>,
+  factory: ManagerFactory<Owner, ModifierManagerDelegate<unknown>>,
   definition: object
 ) {
   return setManager(MODIFIER_MANAGERS, factory, definition);
 }
 
 export function getModifierManager(
-  owner: Owner,
+  owner: Owner | undefined,
   definition: object
 ): ModifierManagerDelegate<unknown> | undefined {
   const factory = getManager(MODIFIER_MANAGERS, definition);
@@ -114,14 +128,14 @@ export function getModifierManager(
 }
 
 export function setHelperManager(
-  factory: ManagerFactory<HelperManager<unknown>>,
+  factory: ManagerFactory<Owner | undefined, HelperManager<unknown>>,
   definition: object
 ) {
   return setManager(HELPER_MANAGERS, factory, definition);
 }
 
 export function getHelperManager(
-  owner: Owner,
+  owner: Owner | undefined,
   definition: object
 ): HelperManager<unknown> | undefined {
   const factory = getManager(HELPER_MANAGERS, definition);
@@ -145,10 +159,10 @@ export function getHelperManager(
 export function setComponentManager(
   stringOrFunction:
     | string
-    | ManagerFactory<ComponentManagerDelegate<unknown> | InternalComponentManager>,
+    | ManagerFactory<Owner, ComponentManagerDelegate<unknown> | InternalComponentManager>,
   obj: object
 ) {
-  let factory: ManagerFactory<ComponentManagerDelegate<unknown> | InternalComponentManager>;
+  let factory: ManagerFactory<Owner, ComponentManagerDelegate<unknown> | InternalComponentManager>;
   if (COMPONENT_MANAGER_STRING_LOOKUP && typeof stringOrFunction === 'string') {
     deprecate(
       'Passing the name of the component manager to "setupComponentManager" is deprecated. Please pass a function that produces an instance of the manager.',
@@ -166,6 +180,7 @@ export function setComponentManager(
     };
   } else {
     factory = stringOrFunction as ManagerFactory<
+      Owner,
       ComponentManagerDelegate<unknown> | InternalComponentManager
     >;
   }
@@ -174,10 +189,10 @@ export function setComponentManager(
 }
 
 export function getComponentManager(
-  owner: Owner,
+  owner: Owner | undefined,
   definition: object
 ): ComponentManagerDelegate<unknown> | InternalComponentManager | undefined {
-  const factory = getManager<ComponentManagerDelegate<unknown> | InternalComponentManager>(
+  const factory = getManager<Owner, ComponentManagerDelegate<unknown> | InternalComponentManager>(
     COMPONENT_MANAGERS,
     definition
   );

@@ -2,6 +2,7 @@ import Ember from '../index';
 import {
   FEATURES,
   EMBER_GLIMMER_HELPER_MANAGER,
+  EMBER_GLIMMER_INVOKE_HELPER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
 } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
@@ -235,6 +236,9 @@ let allExports = [
     : null,
   EMBER_GLIMMER_HELPER_MANAGER
     ? ['_helperManagerCapabilities', '@ember/-internals/glimmer', 'helperCapabilities']
+    : null,
+  EMBER_GLIMMER_INVOKE_HELPER
+    ? ['_invokeHelper', '@ember/-internals/glimmer', 'invokeHelper']
     : null,
   ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
 

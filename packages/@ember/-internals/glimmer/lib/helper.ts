@@ -2,12 +2,13 @@
 @module @ember/component
 */
 
-import { Factory } from '@ember/-internals/owner';
+import { Factory, Owner, setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName, symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, Dict } from '@glimmer/interfaces';
+import { _WeakSet as WeakSet } from '@glimmer/util';
 import {
   consumeTag,
   createTag,
@@ -36,6 +37,12 @@ export interface HelperInstance<T = unknown> {
 
 export interface SimpleHelper<T = unknown> {
   compute: HelperFunction<T>;
+}
+
+const CLASSIC_HELPER_MANAGERS = new WeakSet();
+
+export function isClassicHelperManager(obj: object) {
+  return CLASSIC_HELPER_MANAGERS.has(obj);
 }
 
 /**
@@ -145,9 +152,21 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
     hasDestroyable: true,
   });
 
-  createHelper(definition: ClassHelperFactory, args: Arguments) {
+  private ownerInjection: object;
+
+  constructor(owner: Owner | undefined) {
+    CLASSIC_HELPER_MANAGERS.add(this);
+    let ownerInjection = {};
+    setOwner(ownerInjection, owner!);
+    this.ownerInjection = ownerInjection;
+  }
+
+  createHelper(definition: ClassHelperFactory | typeof Helper, args: Arguments) {
+    let instance =
+      definition.class === undefined ? definition.create(this.ownerInjection) : definition.create();
+
     return {
-      instance: definition.create(),
+      instance,
       args,
     };
   }
@@ -178,9 +197,7 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 }
 
-export const CLASSIC_HELPER_MANAGER = new ClassicHelperManager();
-
-setHelperManager(() => CLASSIC_HELPER_MANAGER, Helper);
+setHelperManager((owner) => new ClassicHelperManager(owner), Helper);
 
 ///////////
 
@@ -203,19 +220,21 @@ class SimpleClassicHelperManager implements HelperManager<() => unknown> {
   });
 
   createHelper(definition: Wrapper, args: Arguments) {
+    let { compute } = definition;
+
     if (DEBUG) {
       return () => {
         let ret;
 
         deprecateMutationsInTrackingTransaction!(() => {
-          ret = definition.compute.call(null, args.positional, args.named);
+          ret = compute.call(null, args.positional, args.named);
         });
 
         return ret;
       };
     }
 
-    return definition.compute.bind(null, args.positional, args.named);
+    return () => compute.call(null, args.positional, args.named);
   }
 
   getValue(fn: () => unknown) {
