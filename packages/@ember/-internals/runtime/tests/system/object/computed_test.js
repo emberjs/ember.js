@@ -6,6 +6,7 @@ import {
   getWithDefault,
   observer,
   defineProperty,
+  notifyPropertyChange,
 } from '@ember/-internals/metal';
 import { oneWay as reads } from '@ember/object/computed';
 import { A as EmberArray, isArray } from '../../..';
@@ -534,6 +535,29 @@ moduleFor(
       let obj = CycleObject.create();
 
       obj.bar;
+      obj.foo;
+
+      assert.ok(true);
+    }
+
+    ['@test computeds can have cycles'](assert) {
+      class CycleObject {
+        // eslint-disable-next-line getter-return
+        @computed('bar')
+        get foo() {}
+
+        // eslint-disable-next-line getter-return
+        @computed('foo')
+        get bar() {}
+      }
+
+      let obj = new CycleObject();
+
+      obj.bar;
+      obj.foo;
+
+      notifyPropertyChange(obj, 'bar');
+
       obj.foo;
 
       assert.ok(true);

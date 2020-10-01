@@ -323,10 +323,6 @@ export class ComputedProperty extends ComputedDescriptor {
       )
     );
 
-    if (DEBUG) {
-      ALLOW_CYCLES!.set(tagFor(obj, keyName), true);
-    }
-
     if (this._hasConfig === false) {
       assert(
         `Attempted to use @computed on ${keyName}, but it did not have a getter or a setter. You must either pass a get a function or getter/setter to @computed directly (e.g. \`@computed({ get() { ... } })\`) or apply @computed directly to a getter/setter`,
@@ -408,6 +404,10 @@ export class ComputedProperty extends ComputedDescriptor {
 
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag!, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
+
+        if (DEBUG) {
+          ALLOW_CYCLES!.set(propertyTag, true);
+        }
       }
 
       meta.setValueFor(keyName, ret);
@@ -483,6 +483,10 @@ export class ComputedProperty extends ComputedDescriptor {
 
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
+
+        if (DEBUG) {
+          ALLOW_CYCLES!.set(propertyTag, true);
+        }
       }
 
       meta.setRevisionFor(keyName, valueForTag(propertyTag));
