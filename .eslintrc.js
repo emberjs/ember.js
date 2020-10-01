@@ -57,8 +57,6 @@ module.exports = {
         'prefer-spread': 'off',
         'prefer-const': 'off',
         'prefer-rest-params': 'off',
-
-        'import/export': 'off',
       },
     },
     {
