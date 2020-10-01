@@ -1,4 +1,10 @@
-import { Object as EmberObject, A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
+import {
+  Object as EmberObject,
+  A,
+  ArrayProxy,
+  MutableArray,
+  PromiseProxyMixin,
+} from '@ember/-internals/runtime';
 import {
   computed,
   get,
@@ -577,6 +583,84 @@ moduleFor(
       this.render('<Test @data={{this.data.records}} />', {
         data: new List(),
       });
+
+      this.assertText('1');
+    }
+
+    '@test getters update when native array is updated'() {
+      class ChildrenComponent extends GlimmerishComponent {
+        get countAlias() {
+          return get(this, 'args.children.length');
+        }
+
+        addChild() {
+          this.args.children.pushObject({ id: '1' });
+        }
+      }
+
+      this.registerComponent('child-count', {
+        ComponentClass: ChildrenComponent,
+        template: '<button {{action this.addChild}}>{{this.countAlias}}</button>',
+      });
+
+      this.render('<ChildCount @children={{this.children}} />', {
+        children: A(),
+      });
+
+      this.assertText('0');
+
+      runTask(() => this.$('button').click());
+
+      this.assertText('1');
+    }
+
+    '@test getters update when MutableArray is updated'() {
+      let ArrayOfChildren = EmberObject.extend(MutableArray, {
+        _content: null,
+
+        init() {
+          this._content = A();
+          this._length = 0;
+        },
+
+        addObject(obj) {
+          this._content.pushObject(obj);
+        },
+
+        objectAt(idx) {
+          return this._content[idx];
+        },
+
+        get length() {
+          return this._length;
+        },
+        set length(value) {
+          this._length = value;
+        },
+      });
+
+      class ChildrenComponent extends GlimmerishComponent {
+        get countAlias() {
+          return get(this, 'args.children.length');
+        }
+
+        addChild() {
+          this.args.children.addObject({ id: '1' });
+        }
+      }
+
+      this.registerComponent('child-count', {
+        ComponentClass: ChildrenComponent,
+        template: '<button {{action this.addChild}}>{{this.countAlias}}</button>',
+      });
+
+      this.render('<ChildCount @children={{this.children}} />', {
+        children: ArrayOfChildren.create(),
+      });
+
+      this.assertText('0');
+
+      runTask(() => this.$('button').click());
 
       this.assertText('1');
     }
