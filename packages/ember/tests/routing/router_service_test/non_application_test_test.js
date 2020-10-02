@@ -12,14 +12,14 @@ moduleFor(
       super(...arguments);
 
       this.resolver.add('router:main', Router.extend(this.routerOptions));
-      this.router.map(function() {
-        this.route('parent', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('parent', { path: '/' }, function () {
           this.route('child');
           this.route('sister');
           this.route('brother');
         });
         this.route('dynamic', { path: '/dynamic/:dynamic_id' });
-        this.route('dynamicWithChild', { path: '/dynamic-with-child/:dynamic_id' }, function() {
+        this.route('dynamicWithChild', { path: '/dynamic-with-child/:dynamic_id' }, function () {
           this.route('child', { path: '/:child_id' });
         });
       });
@@ -81,7 +81,7 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      run(function() {
+      run(function () {
         componentInstance.send('transitionToSister');
       });
 
