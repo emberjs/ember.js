@@ -12,7 +12,6 @@
 
 </p>
 
-# About 
 **Ember.js** is a JavaScript framework that greatly reduces the time, effort and resources needed to build any web application. It is focused on making you, the developer, as productive as possible by doing all the common, repetitive, yet essential, tasks involved in most web development projects.
 
 With Ember, you get all of these things:
@@ -32,7 +31,7 @@ With Ember, you get all of these things:
 
 
 
-## Find out more: 
+- Find out more: 
 
 - [Website](https://emberjs.com)
 - [Guides](https://guides.emberjs.com)
