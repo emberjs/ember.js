@@ -13,6 +13,8 @@ on:
       - cron*
     tags:
       - 'v*'
+    paths-ignore:
+      - 'CHANGELOG.md'
   pull_request:
 
 jobs:
