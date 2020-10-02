@@ -91,8 +91,6 @@
     "@typescript-eslint/parser": "^4.3.0",
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.686.0",
-    "babel-eslint": "^10.1.0",
-    "babel-plugin-module-resolver": "^4.0.0",
     "babel-template": "^6.26.0",
     "backburner.js": "^2.6.0",
     "broccoli-babel-transpiler": "^7.4.0",

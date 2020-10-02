@@ -2,10 +2,11 @@ const path = require('path');
 
 module.exports = {
   root: true,
-  parser: 'babel-eslint',
+  parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
     'plugin:import/errors',
+    'plugin:import/typescript',
     'plugin:qunit/recommended',
     'plugin:prettier/recommended',
   ],
@@ -23,13 +24,10 @@ module.exports = {
   },
 
   settings: {
-    'import/core-modules': ['require', 'backburner', 'router', 'ember/version', 'node-module'],
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts'],
-    },
+    'import/core-modules': ['require', 'backburner', 'router', '@glimmer/interfaces'],
     'import/resolver': {
       node: {
-        extensions: ['.js', '.ts'],
+        extensions: ['.js', '.ts', '.d.ts'],
         paths: [path.resolve('./packages/')],
       },
     },
@@ -37,14 +35,9 @@ module.exports = {
 
   overrides: [
     {
-      files: ['**/*.ts'],
+      files: ['*.ts'],
 
-      parser: '@typescript-eslint/parser',
-      extends: [
-        'plugin:@typescript-eslint/eslint-recommended',
-        'plugin:import/typescript',
-        'prettier/@typescript-eslint',
-      ],
+      extends: ['plugin:@typescript-eslint/recommended', 'prettier/@typescript-eslint'],
 
       parserOptions: {
         sourceType: 'module',
@@ -53,24 +46,21 @@ module.exports = {
       },
 
       rules: {
-        // the TypeScript compiler already takes care of this and
-        // leaving it enabled results in false positives for interface imports
-        'no-unused-vars': 'off',
+        '@typescript-eslint/ban-ts-comment': 'warn',
+        '@typescript-eslint/ban-types': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-this-alias': 'off',
+        '@typescript-eslint/no-var-requires': 'warn',
 
         // TODO: Enable and fix these rules
         // Typescript provides better types with these rules enabled
         'prefer-spread': 'off',
         'prefer-const': 'off',
         'prefer-rest-params': 'off',
-
-        'import/export': 'off',
-        // TODO: Remove with typescript 3.8
-        // Use `import type` instead
-        'import/named': 'off',
-        'import/no-unresolved': 'off',
       },
     },
     {
+      // TODO: files: ['packages/**/*.[jt]s'],
       files: ['packages/**/*.js'],
 
       parserOptions: {

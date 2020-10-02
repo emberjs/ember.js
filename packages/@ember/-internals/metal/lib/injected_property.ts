@@ -31,21 +31,14 @@ export interface InjectedPropertyOptions {
          to the property's name
   @private
 */
-export default function inject(
-  type: string,
-  name: string,
-  options?: InjectedPropertyOptions
-): Decorator;
-export default function inject(
+function inject(type: string, name: string, options?: InjectedPropertyOptions): Decorator;
+function inject(
   type: string,
   target: object,
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
-export default function inject(
-  type: string,
-  ...args: any[]
-): Decorator | DecoratorPropertyDescriptor {
+function inject(type: string, ...args: any[]): Decorator | DecoratorPropertyDescriptor {
   assert('a string type must be provided to inject', typeof type === 'string');
 
   let calledAsDecorator = isElementDescriptor(args);
@@ -87,3 +80,5 @@ export default function inject(
     return decorator;
   }
 }
+
+export default inject;
