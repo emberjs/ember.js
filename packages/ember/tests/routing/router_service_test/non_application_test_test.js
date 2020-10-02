@@ -3,11 +3,11 @@ import { Router, NoneLocation } from '@ember/-internals/routing';
 import { get } from '@ember/-internals/metal';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
-import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+import { RouterNonApplicationTestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor(
   'Router Service - non application test',
-  class extends RenderingTestCase {
+  class extends RouterNonApplicationTestCase {
     constructor() {
       super(...arguments);
 
