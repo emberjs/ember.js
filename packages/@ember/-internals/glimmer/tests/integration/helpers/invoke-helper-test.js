@@ -433,7 +433,7 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
       '@test asserts if no manager exists for the helper definition'() {
         expectAssertion(() => {
           invokeHelper({}, class {});
-        }, /Expected a helper definition to be passed as the second parameter to invokeHelper, but no helper manager was found. The definition value that was passed was `\(unknown function\)`. Did you use setHelperManager to associate a helper manager with this value?/);
+        }, /Expected a helper definition to be passed as the second parameter to invokeHelper, but no helper manager was found. The definition value that was passed was `.*`. Did you use setHelperManager to associate a helper manager with this value?/);
       }
     }
   );
@@ -583,9 +583,12 @@ if (EMBER_GLIMMER_HELPER_MANAGER && EMBER_GLIMMER_INVOKE_HELPER) {
         if (!DEBUG) {
           assert.expect(0);
         } else {
+          assert.expect(1);
+
           class PlusOneHelper extends TestHelper {
             value() {
-              this.args.foo = 123;
+              assert.ok(Object.isFrozen(this.args), 'args are frozen');
+              return 123;
             }
           }
 
@@ -605,12 +608,8 @@ if (EMBER_GLIMMER_HELPER_MANAGER && EMBER_GLIMMER_INVOKE_HELPER) {
             }
           }
 
-          let instance = new PlusOne(4);
-
-          assert.throws(
-            () => instance.value,
-            /TypeError: Cannot add property foo, object is not extensible/
-          );
+          // get the value to trigger the assertion
+          new PlusOne(4).value;
         }
       }
     }
