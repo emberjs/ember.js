@@ -23,6 +23,7 @@ export const DEFAULT_FEATURES = {
   EMBER_DESTROYABLES: true,
   EMBER_GLIMMER_HELPER_MANAGER: true,
   EMBER_GLIMMER_INVOKE_HELPER: true,
+  EMBER_MODERNIZED_BUILT_IN_COMPONENTS: null,
 };
 
 /**
@@ -52,10 +53,10 @@ export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
   @public
 */
 export function isEnabled(feature: string): boolean {
-  let featureValue = FEATURES[feature];
+  let value = FEATURES[feature];
 
-  if (featureValue === true || featureValue === false) {
-    return featureValue;
+  if (value === true || value === false) {
+    return value;
   } else if (ENV.ENABLE_OPTIONAL_FEATURES) {
     return true;
   } else {
@@ -83,3 +84,6 @@ export const EMBER_CACHE_API = featureValue(FEATURES.EMBER_CACHE_API);
 export const EMBER_DESTROYABLES = featureValue(FEATURES.EMBER_DESTROYABLES);
 export const EMBER_GLIMMER_HELPER_MANAGER = featureValue(FEATURES.EMBER_GLIMMER_HELPER_MANAGER);
 export const EMBER_GLIMMER_INVOKE_HELPER = featureValue(FEATURES.EMBER_GLIMMER_INVOKE_HELPER);
+export const EMBER_MODERNIZED_BUILT_IN_COMPONENTS = featureValue(
+  FEATURES.EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+);
