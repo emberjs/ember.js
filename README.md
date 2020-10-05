@@ -40,7 +40,7 @@ Find out more:
 - [Blog](https://emberjs.com/blog)
 - [Builds](https://emberjs.com/builds)
 
-# Contribution
+## Contributions
 
 See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md)
 
