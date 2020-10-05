@@ -1,31 +1,14 @@
 # Ember Changelog
 
-### v3.22.0-beta.5 (September 30, 2020)
-
-- [#19172](https://github.com/emberjs/ember.js/pull/19172) [BUGFIX] Ensures that tracked properties initialize property
-
-### v3.22.0-beta.4 (September 30, 2020)
-
-- [#19138](https://github.com/emberjs/ember.js/pull/19138) [BUGFIX] Fix tag cycles in query parameters
-- [#19094](https://github.com/emberjs/ember.js/pull/19094) [BUGFIX] Fix RouterService#isActive() to work with tracking 
-- [#19163](https://github.com/emberjs/ember.js/pull/19163) [BUGFIX] Use args proxy for modifier managers.
-- [#19164](https://github.com/emberjs/ember.js/pull/19164) [BUGFIX] Entangles custom EmberArray implementations when accessed with `Ember.get`
-- [#19170](https://github.com/emberjs/ember.js/pull/19170) [BUGFIX] Make modifier manager 3.22 accept the resolved value directly.
-
-### v3.22.0-beta.3 (September 09, 2020)
-
-- [#19124](https://github.com/emberjs/ember.js/pull/19124) Fix rendering engine usage within a `fastboot` sandbox
-
-### v3.22.0-beta.2 (August 31, 2020)
-
-- [#19106](https://github.com/emberjs/ember.js/pull/19106) [BUGFIX] Ensure `destroy` methods on `CoreObject` are invoked.
-- [#19111](https://github.com/emberjs/ember.js/pull/19111) [BUGFIX] Fixes `ArrayProxy` length reactivity.
-
-### v3.22.0-beta.1 (August 24, 2020)
+### v3.22.0 (October 5, 2020)
 
 - [#19062](https://github.com/emberjs/ember.js/pull/19062) / [#19068](https://github.com/emberjs/ember.js/pull/19068) [FEATURE] Add @ember/destroyable feature from the [Destroyables RFC](https://github.com/emberjs/rfcs/blob/master/text/0580-destroyables.md).
 - [#18984](https://github.com/emberjs/ember.js/pull/18984) / [#19067](https://github.com/emberjs/ember.js/pull/19067) [FEATURE] Add low-level Cache API per [Autotracking Memoization RFC](https://github.com/emberjs/rfcs/blob/master/text/0615-autotracking-memoization.md)
 - [#19086](https://github.com/emberjs/ember.js/pull/19086) [FEATURE] Pass transition object to activate/deactivate hooks and events
+- [#19094](https://github.com/emberjs/ember.js/pull/19094) [BUGFIX] Fix RouterService#isActive() to work with tracking 
+- [#19163](https://github.com/emberjs/ember.js/pull/19163) [BUGFIX] Use args proxy for modifier managers.
+- [#19170](https://github.com/emberjs/ember.js/pull/19170) [BUGFIX] Make modifier manager 3.22 accept the resolved value directly.
+- [#19124](https://github.com/emberjs/ember.js/pull/19124) [BUGFIX] Fix rendering engine usage within a `fastboot` sandbox
 
 ### v3.21.3 (September 30, 2020)
 
