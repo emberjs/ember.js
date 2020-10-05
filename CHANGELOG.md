@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v3.23.0-beta.1 (October 5, 2020)
+
+- [#19160](https://github.com/emberjs/ember.js/pull/19160) / [#19182](https://github.com/emberjs/ember.js/pull/19182) [FEATURE] Implements the helper manager feature specified in the [Helper Managers RFC](https://github.com/emberjs/rfcs/blob/master/text/0625-helper-managers.md).
+- [#19171](https://github.com/emberjs/ember.js/pull/19171) / [#19182](https://github.com/emberjs/ember.js/pull/19182) [FEATURE] Implements `invokeHelper` from the [JavaScript Helper Invocation API RFC](https://github.com/emberjs/rfcs/blob/master/text/0626-invoke-helper.md).
+- [#19148](https://github.com/emberjs/ember.js/pull/19148) / [#19119](https://github.com/emberjs/ember.js/pull/19119) Update rendering engine to `@glimmer/*` 0.62.1 
+- [#19122](https://github.com/emberjs/ember.js/pull/19122) [BUGFIX] Prevents dynamic invocations of string values when referenced directly in angle brackets
+- [#19136](https://github.com/emberjs/ember.js/pull/19136) [BUGFIX] Update router microlib to improve Transition related debugging
+- [#19173](https://github.com/emberjs/ember.js/pull/19173) [BUGFIX] Enforce usage of `capabilities` generation.
+
 ### v3.22.0 (October 5, 2020)
 
 - [#19062](https://github.com/emberjs/ember.js/pull/19062) / [#19068](https://github.com/emberjs/ember.js/pull/19068) [FEATURE] Add @ember/destroyable feature from the [Destroyables RFC](https://github.com/emberjs/rfcs/blob/master/text/0580-destroyables.md).
