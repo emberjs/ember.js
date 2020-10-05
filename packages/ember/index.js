@@ -15,6 +15,7 @@ import {
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_CACHE_API,
   EMBER_DESTROYABLES,
+  EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
 } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
@@ -554,10 +555,44 @@ Object.defineProperty(Ember, 'BOOTED', {
 Ember.Component = Component;
 Helper.helper = helper;
 Ember.Helper = Helper;
-Ember.Checkbox = Checkbox;
-Ember.TextField = TextField;
-Ember.TextArea = TextArea;
-Ember.LinkComponent = LinkComponent;
+if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  [
+    ['Checkbox', '@ember/component/checkbox', Checkbox],
+    ['TextField', '@ember/component/text-field', TextField],
+    ['TextArea', '@ember/component/text-area', TextArea],
+    ['LinkComponent', '@ember/routing/link-component', LinkComponent],
+    ['TextSupport', '@ember/-internals/views', views.TextSupport],
+  ].forEach(([name, path, value]) => {
+    Object.defineProperty(Ember, name, {
+      get() {
+        deprecate(
+          `Using Ember.${name} or importing from '${path}' has been deprecated, install the ` +
+            `\`ember-legacy-built-in-components\` addon and use \`import { ${name} } from ` +
+            `'ember-legacy-built-in-components';\` instead`,
+          false,
+          {
+            id: 'ember.legacy-built-in-components',
+            until: '4.0.0',
+          }
+        );
+
+        return value;
+      },
+
+      configurable: true,
+      enumerable: true,
+    });
+
+    // Expose a non-deprecated version for tests and the ember-legacy-built-in-components addon
+    Ember[`_Legacy${name}`] = value;
+  });
+} else {
+  Ember.Checkbox = Checkbox;
+  Ember.TextField = TextField;
+  Ember.TextArea = TextArea;
+  Ember.LinkComponent = LinkComponent;
+  Ember.TextSupport = views.TextSupport;
+}
 Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = capabilities;
 Ember._setModifierManager = setModifierManager;
@@ -652,7 +687,6 @@ Ember.ViewUtils = {
   getChildViews: views.getChildViews,
   isSerializationFirstNode: isSerializationFirstNode,
 };
-Ember.TextSupport = views.TextSupport;
 Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
