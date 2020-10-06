@@ -181,10 +181,10 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
 
     if (DEBUG) {
       deprecateMutationsInTrackingTransaction!(() => {
-        ret = instance.compute(positional, named);
+        ret = instance.compute(positional as unknown[], named);
       });
     } else {
-      ret = instance.compute(positional, named);
+      ret = instance.compute(positional as unknown[], named);
     }
 
     consumeTag(instance[RECOMPUTE_TAG]);
@@ -227,14 +227,14 @@ class SimpleClassicHelperManager implements HelperManager<() => unknown> {
         let ret;
 
         deprecateMutationsInTrackingTransaction!(() => {
-          ret = compute.call(null, args.positional, args.named);
+          ret = compute.call(null, args.positional as unknown[], args.named);
         });
 
         return ret;
       };
     }
 
-    return () => compute.call(null, args.positional, args.named);
+    return () => compute.call(null, args.positional as unknown[], args.named);
   }
 
   getValue(fn: () => unknown) {
