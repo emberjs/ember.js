@@ -218,7 +218,7 @@ moduleFor(
         }),
       });
 
-      this.triggerEvent('keyup', { keyCode: 65 });
+      this.triggerEvent('keyup', { key: 'A' });
     }
   }
 );
