@@ -978,7 +978,10 @@ moduleFor(
               });
             },
             hideModal() {
-              this.disconnectOutlet('modal');
+              expectDeprecation(
+                () => this.disconnectOutlet('modal'),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })
@@ -1022,7 +1025,7 @@ moduleFor(
     }
 
     ['@test Route silently fails when cleaning an outlet from an inactive view'](assert) {
-      assert.expect(1); // handleURL
+      assert.expect(3); // handleURL
 
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('posts', "{{outlet 'modal'}}");
@@ -1037,16 +1040,23 @@ moduleFor(
         Route.extend({
           actions: {
             hideSelf() {
-              this.disconnectOutlet({
-                outlet: 'main',
-                parentView: 'application',
-              });
+              expectDeprecation(
+                () =>
+                  this.disconnectOutlet({
+                    outlet: 'main',
+                    parentView: 'application',
+                  }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
             showModal() {
               this.render('modal', { into: 'posts', outlet: 'modal' });
             },
             hideModal() {
-              this.disconnectOutlet({ outlet: 'modal', parentView: 'posts' });
+              expectDeprecation(
+                () => this.disconnectOutlet({ outlet: 'modal', parentView: 'posts' }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })
@@ -1160,10 +1170,14 @@ moduleFor(
           },
           actions: {
             banish() {
-              this.disconnectOutlet({
-                parentView: 'application',
-                outlet: 'other',
-              });
+              expectDeprecation(
+                () =>
+                  this.disconnectOutlet({
+                    parentView: 'application',
+                    outlet: 'other',
+                  }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })
@@ -1329,10 +1343,14 @@ moduleFor(
               });
             },
             close() {
-              this.disconnectOutlet({
-                outlet: 'modal',
-                parentView: 'application',
-              });
+              expectDeprecation(
+                () =>
+                  this.disconnectOutlet({
+                    outlet: 'modal',
+                    parentView: 'application',
+                  }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })
@@ -1409,10 +1427,14 @@ moduleFor(
         Route.extend({
           actions: {
             close() {
-              this.disconnectOutlet({
-                parentView: 'application',
-                outlet: 'modal',
-              });
+              expectDeprecation(
+                () =>
+                  this.disconnectOutlet({
+                    parentView: 'application',
+                    outlet: 'modal',
+                  }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })
@@ -1518,10 +1540,14 @@ moduleFor(
               });
             },
             hideModal() {
-              this.disconnectOutlet({
-                outlet: undefined,
-                parentView: 'application',
-              });
+              expectDeprecation(
+                () =>
+                  this.disconnectOutlet({
+                    outlet: undefined,
+                    parentView: 'application',
+                  }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })

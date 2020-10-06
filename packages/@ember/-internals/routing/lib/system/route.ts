@@ -1705,6 +1705,7 @@ class Route extends EmberObject implements IRoute {
       // backward compatibility with our existing semantics, which allow
       // any route to disconnectOutlet things originally rendered by any
       // other route. This should all get cut in 2.0.
+      // or 4.0.0?
       routeInfos[i].route!._disconnectOutlet(outletName, parentView);
     }
   }
