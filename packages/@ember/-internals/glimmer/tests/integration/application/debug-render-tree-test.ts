@@ -25,6 +25,9 @@ import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { compile } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
 
+// FIXME: make this globally available to all TypeScript test files
+declare function expectDeprecation(callback: () => void, message: string | RegExp): void;
+
 interface CapturedBounds {
   parentElement: SimpleElement;
   firstNode: SimpleNode;
@@ -224,7 +227,10 @@ if (ENV._DEBUG_RENDER_TREE) {
               if (showHeader) {
                 this.render('header', { outlet: 'header' });
               } else {
-                this.disconnectOutlet('header');
+                expectDeprecation(
+                  () => this.disconnectOutlet('header'),
+                  'The "disconnectOutlet" method has been deprecated.'
+                );
               }
             }
           }

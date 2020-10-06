@@ -848,10 +848,14 @@ moduleFor(
               });
             },
             hideModal() {
-              this.disconnectOutlet({
-                outlet: 'modal',
-                parentView: 'application',
-              });
+              expectDeprecation(
+                () =>
+                  this.disconnectOutlet({
+                    outlet: 'modal',
+                    parentView: 'application',
+                  }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })
@@ -867,7 +871,10 @@ moduleFor(
               });
             },
             hideExtra() {
-              this.disconnectOutlet({ parentView: 'posts/index' });
+              expectDeprecation(
+                () => this.disconnectOutlet({ parentView: 'posts/index' }),
+                'The "disconnectOutlet" method has been deprecated.'
+              );
             },
           },
         })
