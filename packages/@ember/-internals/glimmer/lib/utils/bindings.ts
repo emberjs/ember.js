@@ -112,6 +112,10 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
             id: 'ember-component.is-visible',
             until: '4.0.0',
             url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-is-visible',
+            for: 'ember-source',
+            since: {
+              enabled: '3.15.0-beta.1',
+            },
           }
         );
       }

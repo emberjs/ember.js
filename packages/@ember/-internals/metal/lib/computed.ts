@@ -511,6 +511,10 @@ export class ComputedProperty extends ComputedDescriptor {
         id: 'computed-property.override',
         until: '4.0.0',
         url: 'https://emberjs.com/deprecations/v3.x#toc_computed-property-override',
+        for: 'ember-source',
+        since: {
+          enabled: '3.9.0-beta.1',
+        },
       }
     );
 
@@ -719,6 +723,10 @@ class ComputedDecoratorImpl extends Function {
         id: 'computed-property.volatile',
         until: '4.0.0',
         url: 'https://emberjs.com/deprecations/v3.x#toc_computed-property-volatile',
+        for: 'ember-source',
+        since: {
+          enabled: '3.9.0-beta.1',
+        },
       }
     );
     (descriptorForDecorator(this) as ComputedProperty)._volatile = true;
@@ -790,6 +798,10 @@ class ComputedDecoratorImpl extends Function {
         id: 'computed-property.property',
         until: '4.0.0',
         url: 'https://emberjs.com/deprecations/v3.x#toc_computed-property-property',
+        for: 'ember-source',
+        since: {
+          enabled: '3.9.0-beta.1',
+        },
       }
     );
     (descriptorForDecorator(this) as ComputedProperty)._property(...keys);

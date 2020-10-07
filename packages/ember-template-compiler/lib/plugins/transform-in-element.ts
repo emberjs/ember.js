@@ -86,6 +86,10 @@ export default function transformInElement(env: EmberASTPluginEnvironment): ASTP
               {
                 id: 'glimmer.private-in-element',
                 until: '3.25.0',
+                for: 'ember-source',
+                since: {
+                  enabled: '3.20.0',
+                },
               }
             );
           }
