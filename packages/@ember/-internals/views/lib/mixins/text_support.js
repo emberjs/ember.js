@@ -9,8 +9,8 @@ import { SEND_ACTION } from '@ember/deprecated-features';
 import { MUTABLE_CELL } from '@ember/-internals/views';
 
 const KEY_EVENTS = {
-  13: 'insertNewline',
-  27: 'cancel',
+  Enter: 'insertNewline',
+  Escape: 'cancel',
 };
 
 /**
@@ -162,8 +162,7 @@ export default Mixin.create(TargetActionSupport, {
   bubbles: false,
 
   interpretKeyEvents(event) {
-    let map = KEY_EVENTS;
-    let method = map[event.keyCode];
+    let method = KEY_EVENTS[event.key];
 
     this._elementValueDidChange();
     if (method) {

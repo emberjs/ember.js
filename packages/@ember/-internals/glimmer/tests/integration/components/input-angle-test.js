@@ -504,7 +504,7 @@ moduleFor(
       }, 'Passing actions to components as strings (like `<Input @enter="foo" />`) is deprecated. Please use closure actions instead (`<Input @enter={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
 
       expectDeprecation(() => {
-        this.triggerEvent('keyup', { keyCode: 13 });
+        this.triggerEvent('keyup', { key: 'Enter' });
       }, 'Passing actions to components as strings (like `<Input @enter="foo" />`) is deprecated. Please use closure actions instead (`<Input @enter={{action "foo"}} />`).');
     }
 
@@ -527,7 +527,7 @@ moduleFor(
       });
 
       this.triggerEvent('keyup', {
-        keyCode: 13,
+        key: 'Enter',
       });
     }
 
@@ -552,7 +552,7 @@ moduleFor(
       }, 'Passing actions to components as strings (like `<Input @key-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-press={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
 
       expectDeprecation(() => {
-        this.triggerEvent('keypress', { keyCode: 65 });
+        this.triggerEvent('keypress', { key: 'A' });
       }, 'Passing actions to components as strings (like `<Input @key-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-press={{action "foo"}} />`).');
     }
 
@@ -574,7 +574,7 @@ moduleFor(
         },
       });
 
-      this.triggerEvent('keypress', { keyCode: 65 });
+      this.triggerEvent('keypress', { key: 'A' });
     }
 
     ['@test sends an action to the parent level when `bubbles=true` is provided'](assert) {
@@ -630,7 +630,7 @@ moduleFor(
       });
 
       this.triggerEvent('keyup', {
-        keyCode: 13,
+        key: 'Enter',
       });
     }
 
@@ -655,7 +655,7 @@ moduleFor(
       }, 'Passing actions to components as strings (like `<Input @escape-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @escape-press={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
 
       expectDeprecation(() => {
-        this.triggerEvent('keyup', { keyCode: 27 });
+        this.triggerEvent('keyup', { key: 'Escape' });
       }, 'Passing actions to components as strings (like `<Input @escape-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @escape-press={{action "foo"}} />`).');
     }
 
@@ -677,7 +677,7 @@ moduleFor(
         },
       });
 
-      this.triggerEvent('keyup', { keyCode: 27 });
+      this.triggerEvent('keyup', { key: 'Escape' });
     }
 
     ['@test [DEPRECATED] sends an action with `<Input @key-down="foo" />` when a key is pressed'](
@@ -701,7 +701,7 @@ moduleFor(
       }, 'Passing actions to components as strings (like `<Input @key-down="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-down={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
 
       expectDeprecation(() => {
-        this.triggerEvent('keydown', { keyCode: 65 });
+        this.triggerEvent('keydown', { key: 'A' });
       }, 'Passing actions to components as strings (like `<Input @key-down="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-down={{action "foo"}} />`).');
     }
 
@@ -723,7 +723,7 @@ moduleFor(
         },
       });
 
-      this.triggerEvent('keydown', { keyCode: 65 });
+      this.triggerEvent('keydown', { key: 'A' });
     }
 
     ['@test [DEPRECATED] sends an action with `<Input @key-up="foo" />` when a key is pressed'](
@@ -747,7 +747,7 @@ moduleFor(
       }, 'Passing actions to components as strings (like `<Input @key-up="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-up={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
 
       expectDeprecation(() => {
-        this.triggerEvent('keyup', { keyCode: 65 });
+        this.triggerEvent('keyup', { key: 'A' });
       }, 'Passing actions to components as strings (like `<Input @key-up="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-up={{action "foo"}} />`).');
     }
 
@@ -768,7 +768,7 @@ moduleFor(
           },
         },
       });
-      this.triggerEvent('keyup', { keyCode: 65 });
+      this.triggerEvent('keyup', { key: 'A' });
     }
 
     ['@test GH#14727 can render a file input after having had render an input of other type']() {
@@ -789,7 +789,7 @@ moduleFor(
         }),
       });
 
-      this.triggerEvent('keyup', { keyCode: 65 });
+      this.triggerEvent('keyup', { key: 'A' });
     }
   }
 );
