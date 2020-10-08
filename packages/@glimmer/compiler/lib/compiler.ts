@@ -121,3 +121,5 @@ export function precompile(
   // JSON is javascript
   return JSON.stringify(templateJSONObject);
 }
+
+export { PrecompileOptions };

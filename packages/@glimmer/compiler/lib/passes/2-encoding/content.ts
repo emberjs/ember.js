@@ -166,13 +166,7 @@ export class ContentEncoder {
   }
 
   NamedBlock({ name, body, scope }: mir.NamedBlock): WireFormat.Core.NamedBlock {
-    return [
-      name.chars,
-      {
-        parameters: scope.slots,
-        statements: CONTENT.list(body),
-      },
-    ];
+    return [name.chars, [CONTENT.list(body), scope.slots]];
   }
 }
 

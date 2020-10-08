@@ -36,7 +36,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
-    let [[, componentNameExpr]] = block.statements as [WireFormat.Statements.Component];
+    let [[, componentNameExpr]] = block[0] as [WireFormat.Statements.Component];
 
     glimmerAssert(
       Array.isArray(componentNameExpr) &&
@@ -44,7 +44,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       `component name is a free variable lookup`
     );
 
-    let componentName = block.upvars[componentNameExpr[1]];
+    let componentName = block[3][componentNameExpr[1]];
     assert.equal(componentName, 'ooFX', 'customized component name was used');
   });
 });

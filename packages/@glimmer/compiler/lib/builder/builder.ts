@@ -349,7 +349,7 @@ export function buildAngleInvocation(
     buildExpression(head, VariableResolutionContext.ResolveAsComponentHead, symbols),
     isPresent(paramList) ? paramList : null,
     args,
-    [['default'], [{ parameters: [], statements: blockList }]],
+    [['default'], [[blockList, []]]],
   ];
 }
 
@@ -695,15 +695,9 @@ export function buildBlocks(
     if (name === 'default') {
       let symbols = parent.child(blockParams || []);
 
-      values.push({
-        parameters: symbols.paramSymbols,
-        statements: buildNormalizedStatements(blocks[name], symbols),
-      });
+      values.push([buildNormalizedStatements(blocks[name], symbols), symbols.paramSymbols]);
     } else {
-      values.push({
-        parameters: [],
-        statements: buildNormalizedStatements(blocks[name], parent),
-      });
+      values.push([buildNormalizedStatements(blocks[name], parent), []]);
     }
   });
 

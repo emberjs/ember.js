@@ -13,7 +13,7 @@ export default class WireFormatDebugger {
   private upvars: string[];
   private symbols: string[];
 
-  constructor({ upvars, symbols }: { upvars: string[]; symbols: string[] }) {
+  constructor([_statements, symbols, _hasEval, upvars]: SerializedTemplateBlock) {
     this.upvars = upvars;
     this.symbols = symbols;
   }
@@ -21,7 +21,7 @@ export default class WireFormatDebugger {
   format(program: SerializedTemplateBlock): unknown {
     let out = [];
 
-    for (let statement of program.statements) {
+    for (let statement of program[0]) {
       out.push(this.formatOpcode(statement));
     }
 
@@ -232,8 +232,8 @@ export default class WireFormatDebugger {
 
   private formatBlock(block: SerializedInlineBlock): object {
     return {
-      parameters: block.parameters,
-      statements: block.statements.map((s) => this.formatOpcode(s)),
+      statements: block[0].map((s) => this.formatOpcode(s)),
+      parameters: block[1],
     };
   }
 }

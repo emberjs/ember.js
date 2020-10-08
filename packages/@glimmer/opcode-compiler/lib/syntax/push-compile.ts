@@ -64,7 +64,7 @@ function DynamicComponent(
 ): StatementCompileActions {
   let { definition, elementBlock, params, args, blocks, atNames, curried } = action.op1;
 
-  let elementParamsBlock = elementBlock ? compilableBlock(elementBlock, context.meta) : null;
+  let elementParamsBlock = elementBlock ? compilableBlock([elementBlock], context.meta) : null;
 
   let compiled =
     Array.isArray(blocks) || blocks === null ? namedBlocks(blocks, context.meta) : blocks;
@@ -95,7 +95,7 @@ function IfResolvedComponent(
   if (component !== null) {
     let { handle, capabilities, compilable } = component;
 
-    let attrsBlock = elementBlock ? compilableBlock(elementBlock, meta) : null;
+    let attrsBlock = elementBlock ? compilableBlock([elementBlock], meta) : null;
 
     let compilableBlocks = namedBlocks(blocks, meta);
 
