@@ -388,22 +388,28 @@ export type SyntaxWithInternal =
 /**
  * A JSON object that the Block was serialized into.
  */
-export interface SerializedBlock {
-  statements: Statements.Statement[];
-}
+export type SerializedBlock = [Statements.Statement[]];
 
-export interface SerializedInlineBlock extends SerializedBlock {
-  parameters: number[];
-}
+export type SerializedInlineBlock = [
+  // statements
+  Statements.Statement[],
+  // params
+  number[]
+];
 
 /**
  * A JSON object that the compiled TemplateBlock was serialized into.
  */
-export interface SerializedTemplateBlock extends SerializedBlock {
-  symbols: string[];
-  hasEval: boolean;
-  upvars: string[];
-}
+export type SerializedTemplateBlock = [
+  // statements
+  Statements.Statement[],
+  // symbols
+  string[],
+  // hasEval
+  boolean,
+  // upvars
+  string[]
+];
 
 /**
  * A JSON object that the compiled Template was serialized into.

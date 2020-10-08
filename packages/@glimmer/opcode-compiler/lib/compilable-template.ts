@@ -12,6 +12,7 @@ import {
   CompilableProgram,
   HandleResult,
   BlockSymbolTable,
+  SerializedBlock,
 } from '@glimmer/interfaces';
 import { meta } from './opcode-builder/helpers/shared';
 import { EMPTY_ARRAY } from '@glimmer/util';
@@ -41,10 +42,10 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
 }
 
 export function compilable(layout: LayoutWithContext): CompilableProgram {
-  let block = layout.block;
-  return new CompilableTemplateImpl(block.statements, meta(layout), {
-    symbols: block.symbols,
-    hasEval: block.hasEval,
+  let [statements, symbols, hasEval] = layout.block;
+  return new CompilableTemplateImpl(statements, meta(layout), {
+    symbols,
+    hasEval,
   });
 }
 
@@ -87,14 +88,10 @@ export function compileStatements(
 }
 
 export function compilableBlock(
-  overloadBlock: SerializedInlineBlock | WireFormat.Statement[],
+  block: SerializedInlineBlock | SerializedBlock,
   containing: ContainingMetadata
 ): CompilableBlock {
-  let block = Array.isArray(overloadBlock)
-    ? { statements: overloadBlock, parameters: EMPTY_ARRAY as number[] }
-    : overloadBlock;
-
-  return new CompilableTemplateImpl<BlockSymbolTable>(block.statements, containing, {
-    parameters: block.parameters,
+  return new CompilableTemplateImpl<BlockSymbolTable>(block[0], containing, {
+    parameters: block[1] || (EMPTY_ARRAY as number[]),
   });
 }

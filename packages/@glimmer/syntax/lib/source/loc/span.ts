@@ -229,7 +229,7 @@ export class SourceSpan implements SourceLocation {
 
     return new SourceSlice({
       loc: this,
-      chars,
+      chars: expected || chars,
     });
   }
 

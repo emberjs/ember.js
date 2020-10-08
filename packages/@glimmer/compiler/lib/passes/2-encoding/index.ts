@@ -9,19 +9,20 @@ import * as mir from './mir';
 export function visit(template: mir.Template): WireFormat.SerializedTemplateBlock {
   let statements = CONTENT.list(template.body);
   let scope = template.scope;
+  let block: WireFormat.SerializedTemplateBlock = [
+    statements,
+    scope.symbols,
+    scope.hasEval,
+    scope.upvars,
+  ];
 
   if (LOCAL_SHOULD_LOG) {
-    let debug = new WireFormatDebugger(scope);
+    let debug = new WireFormatDebugger(block);
     LOCAL_LOGGER.log(
       `-> `,
       statements.map((s) => debug.formatOpcode(s))
     );
   }
 
-  return {
-    symbols: scope.symbols,
-    statements,
-    hasEval: scope.hasEval,
-    upvars: scope.upvars,
-  };
+  return block;
 }

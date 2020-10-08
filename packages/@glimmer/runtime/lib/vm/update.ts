@@ -53,6 +53,7 @@ export default class UpdatingVM {
         hasErrored = false;
       } finally {
         if (hasErrored) {
+          // eslint-disable-next-line no-console
           console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
         }
       }

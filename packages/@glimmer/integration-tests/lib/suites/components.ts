@@ -705,10 +705,11 @@ export class GlimmerishComponents extends RenderTest {
 
   @test({ kind: 'templateOnly' })
   'throwing an error during rendering gives a readable error stack'(assert: Assert) {
+    // eslint-disable-next-line no-console
     let originalConsoleError = console.error;
 
+    // eslint-disable-next-line no-console
     console.error = (message: string) => {
-      console.log(message);
       this.assert.ok(
         message.match(/Error occurred:\n\n(- While rendering:\nBar\n {2}Foo)?/),
         'message logged'
@@ -748,6 +749,7 @@ export class GlimmerishComponents extends RenderTest {
 
       this.assertHTML('', 'destroys correctly');
     } finally {
+      // eslint-disable-next-line no-console
       console.error = originalConsoleError;
     }
   }

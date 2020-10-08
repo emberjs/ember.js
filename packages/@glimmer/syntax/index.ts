@@ -7,6 +7,7 @@ export { SymbolTable, BlockSymbolTable, ProgramSymbolTable } from './lib/symbol-
 export { GlimmerSyntaxError } from './lib/syntax-error';
 export {
   preprocess,
+  ASTPlugin,
   ASTPluginBuilder,
   ASTPluginEnvironment,
   Syntax,

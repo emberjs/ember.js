@@ -568,6 +568,7 @@ export default class VM implements PublicVM, InternalVM {
             elements.popBlock();
           }
 
+          // eslint-disable-next-line no-console
           console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
         }
       }
