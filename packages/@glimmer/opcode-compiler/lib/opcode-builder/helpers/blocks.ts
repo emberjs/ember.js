@@ -1,5 +1,5 @@
 import {
-  BuilderOp,
+  OpcodeWrapperOp,
   CompilableBlock,
   MachineOp,
   Op,
@@ -8,6 +8,8 @@ import {
   SymbolTable,
   WireFormat,
   CompilableTemplate,
+  HighLevelResolutionOpcode,
+  HighLevelBuilderOpcode,
 } from '@glimmer/interfaces';
 import { $fp } from '@glimmer/vm';
 import { op } from '../encoder';
@@ -25,10 +27,10 @@ export function YieldBlock(
   params: Option<WireFormat.Core.Params>
 ): StatementCompileActions {
   return [
-    op('SimpleArgs', { params, hash: null, atNames: true }),
+    op(HighLevelResolutionOpcode.SimpleArgs, { params, hash: null, atNames: true }),
     op(Op.GetBlock, to),
     op(Op.SpreadBlock),
-    op('Option', op(Op.CompileBlock)),
+    op(HighLevelBuilderOpcode.Option, op(Op.CompileBlock)),
     op(Op.InvokeYield),
     op(Op.PopScope),
     op(MachineOp.PopFrame),
@@ -109,7 +111,7 @@ export function InvokeStaticBlockWithStack(
   return out;
 }
 
-export function PushSymbolTable(table: Option<SymbolTable>): BuilderOp {
+export function PushSymbolTable(table: Option<SymbolTable>): OpcodeWrapperOp {
   if (table) {
     return op(Op.PushSymbolTable, serializable(table));
   } else {
@@ -117,7 +119,7 @@ export function PushSymbolTable(table: Option<SymbolTable>): BuilderOp {
   }
 }
 
-export function PushCompilable(block: Option<CompilableTemplate>): BuilderOp {
+export function PushCompilable(block: Option<CompilableTemplate>): OpcodeWrapperOp {
   if (block === null) {
     return PushPrimitive(null);
   } else {

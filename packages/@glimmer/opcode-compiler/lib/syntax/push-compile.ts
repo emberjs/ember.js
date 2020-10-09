@@ -84,7 +84,7 @@ function IfResolvedComponent(
   context: TemplateCompilationContext,
   action: IfResolvedComponentOp
 ): StatementCompileActions {
-  let { name, elementBlock, blocks, staticTemplate, dynamicTemplate, orElse } = action.op1;
+  let { name, elementBlock, blocks, staticTemplate, dynamicTemplate } = action.op1;
   let component = resolveLayoutForTag(name, {
     resolver: context.syntax.program.resolver,
     meta: context.meta,
@@ -110,8 +110,6 @@ function IfResolvedComponent(
         blocks: compilableBlocks,
       });
     }
-  } else if (orElse) {
-    return orElse();
   } else {
     throw new Error(`Compile Error: Cannot find component ${name}`);
   }

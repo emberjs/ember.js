@@ -7,6 +7,7 @@ import {
   StatementCompileActions,
   WireFormat,
   ArgsOptions,
+  HighLevelResolutionOpcode,
 } from '@glimmer/interfaces';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { op } from '../encoder';
@@ -53,7 +54,7 @@ export function CompileArgs({
     names = hash[0];
     let val = hash[1];
     for (let i = 0; i < val.length; i++) {
-      out.push(op('Expr', val[i]));
+      out.push(op(HighLevelResolutionOpcode.Expr, val[i]));
     }
   }
 
@@ -76,7 +77,7 @@ export function CompilePositional(
   let actions: ExpressionCompileActions = [];
 
   for (let i = 0; i < params.length; i++) {
-    actions.push(op('Expr', params[i]));
+    actions.push(op(HighLevelResolutionOpcode.Expr, params[i]));
   }
 
   return { count: params.length, actions };

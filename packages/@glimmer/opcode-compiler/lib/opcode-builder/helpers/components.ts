@@ -5,6 +5,8 @@ import {
   CompileTimeComponent,
   ContainingMetadata,
   ExpressionCompileActions,
+  HighLevelBuilderOpcode,
+  HighLevelResolutionOpcode,
   LayoutWithContext,
   MachineOp,
   NamedBlocks,
@@ -213,7 +215,7 @@ export function InvokeStaticComponent({
       for (let i = 0; i < val.length; i++) {
         let symbol = symbols.indexOf(names[i]);
 
-        out.push(op('Expr', val[i]));
+        out.push(op(HighLevelResolutionOpcode.Expr, val[i]));
         argSymbols.push(symbol);
       }
     }
@@ -238,7 +240,7 @@ export function InvokeStaticComponent({
       let symbol = symbols.indexOf(name);
 
       if (symbol !== -1) {
-        out.push(op('Expr', val[i]));
+        out.push(op(HighLevelResolutionOpcode.Expr, val[i]));
         argSymbols.push(symbol);
         argNames.push(name);
       }
@@ -320,7 +322,7 @@ export function InvokeDynamicComponent(
     args: () => {
       return {
         count: 2,
-        actions: [op('Expr', definition), op(Op.Dup, $sp, 0)],
+        actions: [op(HighLevelResolutionOpcode.Expr, definition), op(Op.Dup, $sp, 0)],
       };
     },
 
@@ -339,7 +341,7 @@ export function InvokeDynamicComponent(
           atNames,
           blocks,
         }),
-        op('Label', 'ELSE'),
+        op(HighLevelBuilderOpcode.Label, 'ELSE'),
       ];
     },
   });
@@ -350,7 +352,7 @@ export function WrappedComponent(
   attrsBlockNumber: number
 ): StatementCompileActions {
   return [
-    op('StartLabels'),
+    op(HighLevelBuilderOpcode.StartLabels),
     WithSavedRegister($s1, () => [
       op(Op.GetComponentTagName, $s0),
       op(Op.PrimitiveReference),
@@ -363,14 +365,14 @@ export function WrappedComponent(
     op(Op.DidCreateElement, $s0),
     YieldBlock(attrsBlockNumber, null),
     op(Op.FlushElement),
-    op('Label', 'BODY'),
+    op(HighLevelBuilderOpcode.Label, 'BODY'),
     InvokeStaticBlock(blockForLayout(layout)),
     op(Op.Fetch, $s1),
     op(Op.JumpUnless, label('END')),
     op(Op.CloseElement),
-    op('Label', 'END'),
+    op(HighLevelBuilderOpcode.Label, 'END'),
     op(Op.Load, $s1),
-    op('StopLabels'),
+    op(HighLevelBuilderOpcode.StopLabels),
   ];
 }
 
@@ -518,9 +520,9 @@ export function curryComponent(
 ): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
-    op('SimpleArgs', { params, hash, atNames }),
+    op(HighLevelResolutionOpcode.SimpleArgs, { params, hash, atNames }),
     op(Op.CaptureArgs),
-    op('Expr', definition),
+    op(HighLevelResolutionOpcode.Expr, definition),
     op(Op.CurryComponent, other(owner)),
     op(MachineOp.PopFrame),
     op(Op.Fetch, $v0),

@@ -1,5 +1,11 @@
 import { label } from '../operands';
-import { Op, MachineOp, CompileActions, StatementCompileActions } from '@glimmer/interfaces';
+import {
+  Op,
+  MachineOp,
+  CompileActions,
+  StatementCompileActions,
+  HighLevelBuilderOpcode,
+} from '@glimmer/interfaces';
 import { op } from '../encoder';
 
 export type When = (match: number, callback: () => CompileActions) => void;
@@ -18,7 +24,11 @@ export function ContentTypeSwitchCases(callback: (when: When) => void): CompileA
   callback(when);
 
   // Emit the opcodes for the switch
-  let out: CompileActions = [op(Op.Enter, 1), op(Op.ContentType), op('StartLabels')];
+  let out: CompileActions = [
+    op(Op.Enter, 1),
+    op(Op.ContentType),
+    op(HighLevelBuilderOpcode.StartLabels),
+  ];
 
   // First, emit the jump opcodes. We don't need a jump for the last
   // opcode, since it bleeds directly into its clause.
@@ -31,7 +41,7 @@ export function ContentTypeSwitchCases(callback: (when: When) => void): CompileA
   for (let i = clauses.length - 1; i >= 0; i--) {
     let clause = clauses[i];
 
-    out.push(op('Label', clause.label), op(Op.Pop, 1), clause.callback());
+    out.push(op(HighLevelBuilderOpcode.Label, clause.label), op(Op.Pop, 1), clause.callback());
 
     // The first match is special: it is placed directly before the END
     // label, so no additional jump is needed at the end of it.
@@ -40,7 +50,11 @@ export function ContentTypeSwitchCases(callback: (when: When) => void): CompileA
     }
   }
 
-  out.push(op('Label', 'END'), op('StopLabels'), op(Op.Exit));
+  out.push(
+    op(HighLevelBuilderOpcode.Label, 'END'),
+    op(HighLevelBuilderOpcode.StopLabels),
+    op(Op.Exit)
+  );
 
   return out;
 }
@@ -121,7 +135,7 @@ export function Replayable<T extends CompileActions | StatementCompileActions>({
   // Start a new label frame, to give END and RETURN
   // a unique meaning.
   return [
-    op('StartLabels'),
+    op(HighLevelBuilderOpcode.StartLabels),
     op(MachineOp.PushFrame),
 
     // If the body invokes a block, its return will return to
@@ -150,7 +164,7 @@ export function Replayable<T extends CompileActions | StatementCompileActions>({
     // All execution paths in the body should run the FINALLY once
     // they are done. It is executed both during initial execution
     // and during updating execution.
-    op('Label', 'FINALLY'),
+    op(HighLevelBuilderOpcode.Label, 'FINALLY'),
 
     // Finalize the DOM.
     op(Op.Exit),
@@ -162,9 +176,9 @@ export function Replayable<T extends CompileActions | StatementCompileActions>({
 
     // Cleanup code for the block. Runs on initial execution
     // but not on updating.
-    op('Label', 'ENDINITIAL'),
+    op(HighLevelBuilderOpcode.Label, 'ENDINITIAL'),
     op(MachineOp.PopFrame),
-    op('StopLabels'),
+    op(HighLevelBuilderOpcode.StopLabels),
   ] as T;
 }
 
@@ -205,7 +219,7 @@ export function ReplayableIf<T extends CompileActions | StatementCompileActions>
         // the cleanup code. In the updating VM, it exits the updating
         // routine.
         op(MachineOp.Jump, label('FINALLY')),
-        op('Label', 'ELSE'),
+        op(HighLevelBuilderOpcode.Label, 'ELSE'),
       ];
 
       // If the conditional is false, and code associatied ith the

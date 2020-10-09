@@ -432,6 +432,7 @@ export interface SerializedTemplateWithLazyBlock {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
   moduleName: string;
+  scope?: () => unknown[];
 }
 
 /**

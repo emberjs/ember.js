@@ -8,6 +8,7 @@ import {
   Dict,
   TemplateCompilationContext,
   CompileTimeConstants,
+  HighLevelOpcodeType,
 } from '@glimmer/interfaces';
 import pushBuilderOp from './push-builder';
 import pushCompileOp from './push-compile';
@@ -37,7 +38,7 @@ export function concat(context: TemplateCompilationContext, action: CompileActio
     for (let item of action) {
       concat(context, item);
     }
-  } else if (action.type === 'Simple') {
+  } else if (action.type === HighLevelOpcodeType.Builder) {
     pushBuilderOp(context, action);
   } else {
     pushOp(context.encoder, context.syntax.program.constants, action);
@@ -56,13 +57,13 @@ export function concatExpressions(
     for (let item of action) {
       concatExpressions(encoder, context, item, constants);
     }
-  } else if (action.type === 'Number') {
+  } else if (action.type === HighLevelOpcodeType.OpcodeWrapper) {
     pushOp(encoder, constants, action);
-  } else if (action.type === 'Resolution') {
+  } else if (action.type === HighLevelOpcodeType.Resolution) {
     pushResolutionOp(encoder, context, action, constants);
-  } else if (action.type === 'Simple') {
+  } else if (action.type === HighLevelOpcodeType.Builder) {
     pushBuilderOp(context, action);
-  } else if (action.type === 'Error') {
+  } else if (action.type === HighLevelOpcodeType.Error) {
     encoder.error({
       problem: action.op1.problem,
       span: {
@@ -85,16 +86,16 @@ export function concatStatements(
     for (let item of action) {
       concatStatements(context, item);
     }
-  } else if (action.type === 'Number') {
+  } else if (action.type === HighLevelOpcodeType.OpcodeWrapper) {
     pushOp(context.encoder, context.syntax.program.constants, action);
   } else {
-    if (action.type === 'Compile') {
+    if (action.type === HighLevelOpcodeType.Compile) {
       pushCompileOp(context, action);
-    } else if (action.type === 'Resolution') {
+    } else if (action.type === HighLevelOpcodeType.Resolution) {
       pushResolutionOp(context.encoder, context, action, context.syntax.program.constants);
-    } else if (action.type === 'Simple') {
+    } else if (action.type === HighLevelOpcodeType.Builder) {
       pushBuilderOp(context, action);
-    } else if (action.type === 'Error') {
+    } else if (action.type === HighLevelOpcodeType.Error) {
     } else {
       throw assertNever(action, `unexpected action type`);
     }

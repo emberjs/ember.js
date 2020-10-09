@@ -9,7 +9,7 @@ import {
   Op,
   BuilderOpcode,
   HighLevelBuilderOpcode,
-  BuilderOp,
+  OpcodeWrapperOp,
   MachineOp,
   SingleBuilderOperand,
   SingleBuilderOperands,
@@ -24,10 +24,11 @@ import {
   Operands,
   NonlabelBuilderOperand,
   Dict,
-  ErrorOpcode,
+  HighLevelErrorOpcode,
   EncoderError,
   HandleResult,
   CompileErrorOp,
+  HighLevelOpcodeType,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
 import {
@@ -66,42 +67,48 @@ export class LabelsImpl implements Labels<InstructionEncoder> {
 }
 
 export function error(problem: string, start: number, end: number): CompileErrorOp {
-  return op('Error', {
+  return op(HighLevelErrorOpcode.Error, {
     problem,
     start,
     end,
   });
 }
 
-export function op(name: BuilderOpcode, ...ops: SingleBuilderOperands): BuilderOp;
+export function op(name: BuilderOpcode, ...ops: SingleBuilderOperands): OpcodeWrapperOp;
 export function op<K extends AllOpcode>(name: K, ...operands: Operands<AllOpMap[K]>): AllOpMap[K];
 export function op<K extends AllOpcode>(
   name: K | BuilderOpcode,
   op1?: AllOpMap[K]['op1'] | SingleBuilderOperand,
   op2?: SingleBuilderOperand,
   op3?: SingleBuilderOperand
-): AllOpMap[K] | BuilderOp {
-  if (typeof name === 'number') {
+): AllOpMap[K] | OpcodeWrapperOp {
+  if (!isHighLevelOpcode(name)) {
     if (op3 !== undefined) {
-      return { type: 'Number', op: name, op1, op2, op3 } as BuilderOp;
+      return {
+        type: HighLevelOpcodeType.OpcodeWrapper,
+        op: name,
+        op1,
+        op2,
+        op3,
+      } as OpcodeWrapperOp;
     } else if (op2 !== undefined) {
-      return { type: 'Number', op: name, op1, op2 } as BuilderOp;
+      return { type: HighLevelOpcodeType.OpcodeWrapper, op: name, op1, op2 } as OpcodeWrapperOp;
     } else if (op1 !== undefined) {
-      return { type: 'Number', op: name, op1: op1 } as BuilderOp;
+      return { type: HighLevelOpcodeType.OpcodeWrapper, op: name, op1: op1 } as OpcodeWrapperOp;
     } else {
-      return { type: 'Number', op: name };
+      return { type: HighLevelOpcodeType.OpcodeWrapper, op: name };
     }
   } else {
     let type: HighLevelOp['type'];
 
     if (isCompileOpcode(name)) {
-      type = 'Compile';
+      type = HighLevelOpcodeType.Compile;
     } else if (isResolutionOpcode(name)) {
-      type = 'Resolution';
-    } else if (isSimpleOpcode(name)) {
-      type = 'Simple';
+      type = HighLevelOpcodeType.Resolution;
+    } else if (isBuilderOpcode(name)) {
+      type = HighLevelOpcodeType.Builder;
     } else if (isErrorOpcode(name)) {
-      type = 'Error';
+      type = HighLevelOpcodeType.Error;
     } else {
       throw new Error(`Exhausted ${name}`);
     }
@@ -229,29 +236,22 @@ function constant(
   }
 }
 
-function isSimpleOpcode(op: AllOpcode): op is HighLevelBuilderOpcode {
-  return op === 'Label' || op === 'Option' || op === 'StartLabels' || op === 'StopLabels';
+function isHighLevelOpcode(op: number): op is AllOpcode {
+  return op >= HighLevelBuilderOpcode.Start;
+}
+
+function isBuilderOpcode(op: AllOpcode): op is HighLevelBuilderOpcode {
+  return op >= HighLevelBuilderOpcode.Start && op <= HighLevelBuilderOpcode.End;
 }
 
 function isCompileOpcode(op: AllOpcode): op is HighLevelCompileOpcode {
-  return (
-    op === 'CompileInline' ||
-    op === 'CompileBlock' ||
-    op === 'IfResolvedComponent' ||
-    op === 'DynamicComponent'
-  );
+  return op >= HighLevelCompileOpcode.Start && op <= HighLevelCompileOpcode.End;
 }
 
 function isResolutionOpcode(op: AllOpcode): op is HighLevelResolutionOpcode {
-  return (
-    op === 'IfResolved' ||
-    op === 'Expr' ||
-    op === 'SimpleArgs' ||
-    op === 'ResolveFree' ||
-    op === 'ResolveAmbiguous'
-  );
+  return op >= HighLevelResolutionOpcode.Start && op <= HighLevelResolutionOpcode.End;
 }
 
-function isErrorOpcode(op: AllOpcode): op is ErrorOpcode {
-  return op === 'Error';
+function isErrorOpcode(op: AllOpcode): op is HighLevelErrorOpcode {
+  return op === HighLevelErrorOpcode.Error;
 }
