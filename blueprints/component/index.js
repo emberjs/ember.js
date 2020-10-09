@@ -15,7 +15,6 @@ const OCTANE = has('octane');
 // TODO: this should be reading from the @ember/canary-features module
 // need to refactor broccoli/features.js to be able to work more similarly
 // to https://github.com/emberjs/data/pull/6231
-const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = false;
 
 // intentionally avoiding use-edition-detector
 module.exports = {
@@ -76,7 +75,7 @@ module.exports = {
     this.skippedJsFiles = new Set();
     this.savedLocals = {};
 
-    this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = EMBER_GLIMMER_SET_COMPONENT_TEMPLATE || isOctane;
+    this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true || isOctane;
   },
 
   install(options) {
