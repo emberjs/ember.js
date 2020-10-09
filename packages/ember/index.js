@@ -12,7 +12,6 @@ import {
   isEnabled,
   EMBER_GLIMMER_HELPER_MANAGER,
   EMBER_GLIMMER_INVOKE_HELPER,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_CACHE_API,
   EMBER_DESTROYABLES,
 } from '@ember/canary-features';
@@ -562,11 +561,9 @@ Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = capabilities;
 Ember._setModifierManager = setModifierManager;
 Ember._modifierManagerCapabilities = modifierCapabilities;
-if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-  Ember._getComponentTemplate = getComponentTemplate;
-  Ember._setComponentTemplate = setComponentTemplate;
-  Ember._templateOnlyComponent = templateOnlyComponent;
-}
+Ember._getComponentTemplate = getComponentTemplate;
+Ember._setComponentTemplate = setComponentTemplate;
+Ember._templateOnlyComponent = templateOnlyComponent;
 if (EMBER_GLIMMER_HELPER_MANAGER) {
   Ember._helperManagerCapabilities = helperCapabilities;
   Ember._setHelperManager = setHelperManager;

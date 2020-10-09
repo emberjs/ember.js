@@ -2,10 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import {
-  EMBER_GLIMMER_HELPER_MANAGER,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-} from '@ember/canary-features';
+import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert, deprecate } from '@ember/debug';
 import { PARTIALS } from '@ember/deprecated-features';
@@ -106,13 +103,11 @@ function lookupComponentPair(
 ): Option<LookupResult> {
   let component = componentFor(name, owner, options);
 
-  if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-    if (component !== null && component.class !== undefined) {
-      let layout = getComponentTemplate(component.class);
+  if (component !== null && component.class !== undefined) {
+    let layout = getComponentTemplate(component.class);
 
-      if (layout !== null) {
-        return { component, layout };
-      }
+    if (layout !== null) {
+      return { component, layout };
     }
   }
 
@@ -458,10 +453,7 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
         definition = new TemplateOnlyComponentDefinition(name, layout!);
       }
-    } else if (
-      EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      isTemplateOnlyComponent(pair.component.class)
-    ) {
+    } else if (isTemplateOnlyComponent(pair.component.class)) {
       definition = new TemplateOnlyComponentDefinition(name, layout!);
     }
 
