@@ -274,7 +274,7 @@ export default class RouterService extends Service {
        @service router;
 
        displayComments() {
-         return this.get('router').isActive('posts');
+         return this.router.isActive('posts');
        }
      });
      ```
@@ -290,7 +290,7 @@ export default class RouterService extends Service {
        @service router;
 
        displayComments(post) {
-         return this.get('router').isActive('posts', post.id);
+         return this.router.isActive('posts', post.id);
        }
      });
      ```
