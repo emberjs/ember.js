@@ -1,8 +1,10 @@
 import {
   ContainingMetadata,
+  HighLevelErrorOpcode,
   ExpressionCompileActions,
   Expressions,
   ExpressionSexpOpcode,
+  HighLevelResolutionOpcode,
   Op,
   ResolveHandle,
   SexpOpcodes,
@@ -20,7 +22,7 @@ EXPRESSIONS.add(SexpOpcodes.Concat, ([, parts]) => {
   let out = [];
 
   for (let part of parts) {
-    out.push(op('Expr', part));
+    out.push(op(HighLevelResolutionOpcode.Expr, part));
   }
 
   out.push(op(Op.Concat, parts.length));
@@ -35,7 +37,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
 
   if (isComponent(name, meta)) {
     if (!params || params.length === 0) {
-      return op('Error', {
+      return op(HighLevelErrorOpcode.Error, {
         problem: 'component helper requires at least one argument',
         start: start,
         end: start + offset,
@@ -60,7 +62,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
     return nameOrError;
   }
 
-  return op('IfResolved', {
+  return op(HighLevelResolutionOpcode.IfResolved, {
     kind: ResolveHandle.Helper,
     name: nameOrError,
     andThen: (handle) => Call({ handle, params, hash }),
@@ -97,7 +99,7 @@ function isComponent(expr: Expressions.Expression, meta: ContainingMetadata): bo
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, sym, path]) => withPath(op(Op.GetVariable, sym), path));
 EXPRESSIONS.add(SexpOpcodes.GetStrictFree, ([, sym, path]) =>
-  withPath(op('ResolveFree', sym), path)
+  withPath(op(HighLevelResolutionOpcode.ResolveFree, sym), path)
 );
 EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, ([, freeVar, path], meta) => {
   if (meta.asPartial) {
@@ -117,7 +119,10 @@ EXPRESSIONS.add(
 
       return withPath(op(Op.ResolveMaybeLocal, name), path);
     } else {
-      return withPath(op('ResolveAmbiguous', { upvar: freeVar, allowComponents: true }), path);
+      return withPath(
+        op(HighLevelResolutionOpcode.ResolveAmbiguous, { upvar: freeVar, allowComponents: true }),
+        path
+      );
     }
   }
 );
@@ -128,7 +133,10 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, ([, freeVar, path
 
     return withPath(op(Op.ResolveMaybeLocal, name), path);
   } else {
-    return withPath(op('ResolveAmbiguous', { upvar: freeVar, allowComponents: false }), path);
+    return withPath(
+      op(HighLevelResolutionOpcode.ResolveAmbiguous, { upvar: freeVar, allowComponents: false }),
+      path
+    );
   }
 });
 
@@ -145,11 +153,11 @@ function withPath(expr: ExpressionCompileActions, path?: string[]) {
 
 EXPRESSIONS.add(SexpOpcodes.Undefined, () => PushPrimitiveReference(undefined));
 EXPRESSIONS.add(SexpOpcodes.HasBlock, ([, block]) => {
-  return [op('Expr', block), op(Op.HasBlock)];
+  return [op(HighLevelResolutionOpcode.Expr, block), op(Op.HasBlock)];
 });
 
 EXPRESSIONS.add(SexpOpcodes.HasBlockParams, ([, block]) => [
-  op('Expr', block),
+  op(HighLevelResolutionOpcode.Expr, block),
   op(Op.SpreadBlock),
   op(Op.CompileBlock),
   op(Op.HasBlockParams),

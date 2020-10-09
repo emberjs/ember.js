@@ -1,4 +1,5 @@
 import {
+  HighLevelCompileOpcode,
   HighLevelResolutionOpcode,
   MachineOp,
   Op,
@@ -52,12 +53,12 @@ STATEMENTS.add(SexpOpcodes.Modifier, (sexp, meta) => {
     return stringName;
   }
 
-  return op('IfResolved', {
+  return op(HighLevelResolutionOpcode.IfResolved, {
     kind: ResolveHandle.Modifier,
     name: stringName,
     andThen: (handle) => [
       op(MachineOp.PushFrame),
-      op('SimpleArgs', { params, hash, atNames: false }),
+      op(HighLevelResolutionOpcode.SimpleArgs, { params, hash, atNames: false }),
       op(Op.Modifier, handle),
       op(MachineOp.PopFrame),
     ],
@@ -77,22 +78,22 @@ STATEMENTS.add(SexpOpcodes.StaticComponentAttr, ([, name, value, namespace]) =>
 );
 
 STATEMENTS.add(SexpOpcodes.DynamicAttr, ([, name, value, namespace]) => [
-  op('Expr', value),
+  op(HighLevelResolutionOpcode.Expr, value),
   op(Op.DynamicAttr, inflateAttrName(name), false, namespace ?? null),
 ]);
 
 STATEMENTS.add(SexpOpcodes.TrustingDynamicAttr, ([, name, value, namespace]) => [
-  op('Expr', value),
+  op(HighLevelResolutionOpcode.Expr, value),
   op(Op.DynamicAttr, inflateAttrName(name), true, namespace ?? null),
 ]);
 
 STATEMENTS.add(SexpOpcodes.ComponentAttr, ([, name, value, namespace]) => [
-  op('Expr', value),
+  op(HighLevelResolutionOpcode.Expr, value),
   op(Op.ComponentAttr, inflateAttrName(name), false, namespace ?? null),
 ]);
 
 STATEMENTS.add(SexpOpcodes.TrustingComponentAttr, ([, name, value, namespace]) => [
-  op('Expr', value),
+  op(HighLevelResolutionOpcode.Expr, value),
   op(Op.ComponentAttr, inflateAttrName(name), true, namespace ?? null),
 ]);
 
@@ -114,7 +115,7 @@ STATEMENTS.add(SexpOpcodes.Component, ([, tag, elementBlock, args, blocks], meta
   if (componentName !== null) {
     // The component name was a free variable lookup; in non-strict mode, this means we'll
     // use the runtime resolver to resolve the component
-    return op('IfResolvedComponent', {
+    return op(HighLevelCompileOpcode.IfResolvedComponent, {
       name: componentName,
       elementBlock,
       blocks,
@@ -153,7 +154,7 @@ STATEMENTS.add(SexpOpcodes.Component, ([, tag, elementBlock, args, blocks], meta
   } else {
     // otherwise, the component name was an expression, so resolve the expression and invoke it as a dynamic
     // component
-    return op('DynamicComponent', {
+    return op(HighLevelCompileOpcode.DynamicComponent, {
       definition: tag,
       elementBlock,
       params: null,
@@ -170,7 +171,7 @@ STATEMENTS.add(SexpOpcodes.Partial, ([, name, evalInfo], meta) =>
     args() {
       return {
         count: 2,
-        actions: [op('Expr', name), op(Op.Dup, $sp, 0)],
+        actions: [op(HighLevelResolutionOpcode.Expr, name), op(Op.Dup, $sp, 0)],
       };
     },
 
@@ -205,7 +206,7 @@ STATEMENTS.add(SexpOpcodes.Append, (sexp) => {
     return op(Op.Text, getStringFromValue(value));
   }
 
-  return op('CompileInline', {
+  return op(HighLevelCompileOpcode.CompileInline, {
     inline: sexp,
     ifUnhandled: () => [
       op(MachineOp.PushFrame),
@@ -239,7 +240,7 @@ STATEMENTS.add(SexpOpcodes.TrustingAppend, (sexp) => {
 });
 
 STATEMENTS.add(SexpOpcodes.Block, (sexp) => {
-  return op('CompileBlock', sexp);
+  return op(HighLevelCompileOpcode.CompileBlock, sexp);
 });
 
 STATEMENTS.add(SexpOpcodes.InElement, ([, block, guid, destination, insertBefore], meta) => {
@@ -248,15 +249,15 @@ STATEMENTS.add(SexpOpcodes.InElement, ([, block, guid, destination, insertBefore
       let actions: StatementCompileActions = [];
 
       // this order is important
-      actions.push(op('Expr', guid));
+      actions.push(op(HighLevelResolutionOpcode.Expr, guid));
 
       if (insertBefore === undefined) {
         actions.push(PushPrimitiveReference(undefined));
       } else {
-        actions.push(op('Expr', insertBefore));
+        actions.push(op(HighLevelResolutionOpcode.Expr, insertBefore));
       }
 
-      actions.push(op('Expr', destination), op(Op.Dup, $sp, 0));
+      actions.push(op(HighLevelResolutionOpcode.Expr, destination), op(Op.Dup, $sp, 0));
 
       return { count: 4, actions };
     },

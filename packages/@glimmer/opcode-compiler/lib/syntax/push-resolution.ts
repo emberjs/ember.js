@@ -118,7 +118,7 @@ export function compileSimpleArgs(
     names = hash[0];
     let val = hash[1];
     for (let i = 0; i < val.length; i++) {
-      out.push(op('Expr', val[i]));
+      out.push(op(HighLevelResolutionOpcode.Expr, val[i]));
     }
   }
 
@@ -131,14 +131,12 @@ function ifResolved(
   context: TemplateCompilationContext,
   { op1 }: IfResolvedOp
 ): ExpressionCompileActions {
-  let { kind, name, andThen, orElse, span } = op1;
+  let { kind, name, andThen, span } = op1;
 
   let resolved = resolve(context.syntax.program.resolver, kind, name, context.meta.owner);
 
   if (resolved !== null) {
     return andThen(resolved);
-  } else if (orElse) {
-    return orElse();
   } else {
     return error(`Unexpected ${kind} ${name}`, span.start, span.end);
   }

@@ -1,4 +1,7 @@
 import {
+  HighLevelBuilderOpcode,
+  HighLevelCompileOpcode,
+  HighLevelResolutionOpcode,
   MachineOp,
   MacroBlocks,
   MacroInlines,
@@ -33,7 +36,7 @@ export function populateBuiltins(
       args() {
         return {
           count: 1,
-          actions: [op('Expr', params[0]), op(Op.ToBoolean)],
+          actions: [op(HighLevelResolutionOpcode.Expr, params[0]), op(Op.ToBoolean)],
         };
       },
 
@@ -60,7 +63,7 @@ export function populateBuiltins(
       args() {
         return {
           count: 1,
-          actions: [op('Expr', params[0]), op(Op.ToBoolean)],
+          actions: [op(HighLevelResolutionOpcode.Expr, params[0]), op(Op.ToBoolean)],
         };
       },
 
@@ -87,7 +90,11 @@ export function populateBuiltins(
       args() {
         return {
           count: 2,
-          actions: [op('Expr', params[0]), op(Op.Dup, $sp, 0), op(Op.ToBoolean)],
+          actions: [
+            op(HighLevelResolutionOpcode.Expr, params[0]),
+            op(Op.Dup, $sp, 0),
+            op(Op.ToBoolean),
+          ],
         };
       },
 
@@ -120,12 +127,14 @@ export function populateBuiltins(
         let actions: StatementCompileActions;
 
         if (hash && hash[0][0] === 'key') {
-          actions = [op('Expr', hash[1][0])];
+          actions = [op(HighLevelResolutionOpcode.Expr, hash[1][0])];
         } else {
           actions = [PushPrimitiveReference(null)];
         }
 
-        actions.push(op('Expr', expect(params, 'params in #each must exist')[0]));
+        actions.push(
+          op(HighLevelResolutionOpcode.Expr, expect(params, 'params in #each must exist')[0])
+        );
 
         return { count: 2, actions };
       },
@@ -136,17 +145,17 @@ export function populateBuiltins(
           op(MachineOp.PushFrame),
           op(Op.Dup, $fp, 1),
           op(MachineOp.ReturnTo, label('ITER')),
-          op('Label', 'ITER'),
+          op(HighLevelBuilderOpcode.Label, 'ITER'),
           op(Op.Iterate, label('BREAK')),
-          op('Label', 'BODY'),
+          op(HighLevelBuilderOpcode.Label, 'BODY'),
           InvokeStaticBlockWithStack(unwrap(blocks.get('default')), 2),
           op(Op.Pop, 2),
           op(MachineOp.Jump, label('FINALLY')),
-          op('Label', 'BREAK'),
+          op(HighLevelBuilderOpcode.Label, 'BREAK'),
           op(MachineOp.PopFrame),
           op(Op.ExitList),
           op(MachineOp.Jump, label('FINALLY')),
-          op('Label', 'ELSE'),
+          op(HighLevelBuilderOpcode.Label, 'ELSE'),
         ];
 
         if (blocks.has('else')) {
@@ -192,7 +201,7 @@ export function populateBuiltins(
 
     let [definition, ...params] = _params!;
 
-    return op('DynamicComponent', {
+    return op(HighLevelCompileOpcode.DynamicComponent, {
       definition,
       elementBlock: null,
       params: isPresent(params) ? params : null,

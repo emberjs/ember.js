@@ -4,11 +4,12 @@ import {
   Option,
   Op,
   MachineOp,
-  BuilderOp,
+  OpcodeWrapperOp,
   CompileActions,
   StatementCompileActions,
   ExpressionCompileActions,
   WireFormat,
+  HighLevelResolutionOpcode,
 } from '@glimmer/interfaces';
 import { op } from '../encoder';
 import { isSmallInt } from '@glimmer/util';
@@ -35,7 +36,7 @@ export function PushPrimitiveReference(value: Primitive): CompileActions {
  *
  * @param value A JavaScript primitive (undefined, null, boolean, number or string)
  */
-export function PushPrimitive(primitive: Primitive): BuilderOp {
+export function PushPrimitive(primitive: Primitive): OpcodeWrapperOp {
   let p =
     typeof primitive === 'number' && isSmallInt(primitive) ? immediate(primitive) : prim(primitive);
 
@@ -52,7 +53,7 @@ export function PushPrimitive(primitive: Primitive): BuilderOp {
 export function Call({ handle, params, hash }: CompileHelper): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
-    op('SimpleArgs', { params, hash, atNames: false }),
+    op(HighLevelResolutionOpcode.SimpleArgs, { params, hash, atNames: false }),
     op(Op.Helper, handle),
     op(MachineOp.PopFrame),
     op(Op.Fetch, $v0),
