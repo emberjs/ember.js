@@ -29,14 +29,6 @@ export default function pushResolutionOp(
   constants: CompileTimeConstants
 ): void {
   switch (operation.op) {
-    case HighLevelResolutionOpcode.SimpleArgs:
-      concatExpressions(
-        encoder,
-        context,
-        compileSimpleArgs(operation.op1.params, operation.op1.hash, operation.op1.atNames),
-        constants
-      );
-      break;
     case HighLevelResolutionOpcode.Expr:
       concatExpressions(encoder, context, expr(operation.op1, context.meta), constants);
       break;

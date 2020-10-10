@@ -8,8 +8,9 @@ import {
   WireFormat,
   ArgsOptions,
   HighLevelResolutionOpcode,
+  SimpleArgsOptions,
 } from '@glimmer/interfaces';
-import { EMPTY_ARRAY } from '@glimmer/util';
+import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { op } from '../encoder';
 import { strArray } from '../operands';
 import { PushYieldableBlock } from './blocks';
@@ -59,6 +60,32 @@ export function CompileArgs({
   }
 
   out.push(op(Op.PushArgs, strArray(names), strArray(blockNames), flags));
+
+  return out;
+}
+
+export function SimpleArgs({ params, hash, atNames }: SimpleArgsOptions): ExpressionCompileActions {
+  let out: ExpressionCompileActions = [];
+
+  let { count, actions } = CompilePositional(params);
+
+  out.push(actions);
+
+  let flags = count << 4;
+
+  if (atNames) flags |= 0b1000;
+
+  let names = EMPTY_STRING_ARRAY;
+
+  if (hash) {
+    names = hash[0];
+    let val = hash[1];
+    for (let i = 0; i < val.length; i++) {
+      out.push(op(HighLevelResolutionOpcode.Expr, val[i]));
+    }
+  }
+
+  out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_STRING_ARRAY), flags));
 
   return out;
 }

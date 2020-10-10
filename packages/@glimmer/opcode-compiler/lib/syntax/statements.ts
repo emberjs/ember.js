@@ -18,6 +18,7 @@ import { op } from '../opcode-builder/encoder';
 import { InvokeStaticBlock, YieldBlock } from '../opcode-builder/helpers/blocks';
 import { InvokeComponent, InvokeStaticComponent } from '../opcode-builder/helpers/components';
 import { ReplayableIf } from '../opcode-builder/helpers/conditional';
+import { SimpleArgs } from '../opcode-builder/helpers/shared';
 import { PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { arr, strArray, other } from '../opcode-builder/operands';
 import { expectLooseFreeVariable, isStrictFreeVariable } from '../utils';
@@ -58,7 +59,7 @@ STATEMENTS.add(SexpOpcodes.Modifier, (sexp, meta) => {
     name: stringName,
     andThen: (handle) => [
       op(MachineOp.PushFrame),
-      op(HighLevelResolutionOpcode.SimpleArgs, { params, hash, atNames: false }),
+      SimpleArgs({ params, hash, atNames: false }),
       op(Op.Modifier, handle),
       op(MachineOp.PopFrame),
     ],

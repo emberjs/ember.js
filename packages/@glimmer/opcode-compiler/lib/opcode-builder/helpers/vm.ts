@@ -9,10 +9,10 @@ import {
   StatementCompileActions,
   ExpressionCompileActions,
   WireFormat,
-  HighLevelResolutionOpcode,
 } from '@glimmer/interfaces';
 import { op } from '../encoder';
 import { isSmallInt } from '@glimmer/util';
+import { SimpleArgs } from './shared';
 
 export type StatementBlock = () => StatementCompileActions;
 export type Primitive = undefined | null | boolean | number | string;
@@ -53,7 +53,7 @@ export function PushPrimitive(primitive: Primitive): OpcodeWrapperOp {
 export function Call({ handle, params, hash }: CompileHelper): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
-    op(HighLevelResolutionOpcode.SimpleArgs, { params, hash, atNames: false }),
+    SimpleArgs({ params, hash, atNames: false }),
     op(Op.Helper, handle),
     op(MachineOp.PopFrame),
     op(Op.Fetch, $v0),

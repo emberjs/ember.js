@@ -24,7 +24,7 @@ import {
 import { label, other, strArray } from '../operands';
 import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
-import { meta, CompileArgs, CompilePositional } from './shared';
+import { meta, CompileArgs, CompilePositional, SimpleArgs } from './shared';
 import {
   InvokeStaticBlock,
   PushCompilable,
@@ -520,7 +520,7 @@ export function curryComponent(
 ): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
-    op(HighLevelResolutionOpcode.SimpleArgs, { params, hash, atNames }),
+    SimpleArgs({ params, hash, atNames }),
     op(Op.CaptureArgs),
     op(HighLevelResolutionOpcode.Expr, definition),
     op(Op.CurryComponent, other(owner)),
