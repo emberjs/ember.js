@@ -8,13 +8,13 @@ import {
   SymbolTable,
   WireFormat,
   CompilableTemplate,
-  HighLevelResolutionOpcode,
   HighLevelBuilderOpcode,
 } from '@glimmer/interfaces';
 import { $fp } from '@glimmer/vm';
 import { op } from '../encoder';
 import { PushPrimitive } from './vm';
 import { serializable, other } from '../operands';
+import { SimpleArgs } from './shared';
 
 /**
  * Yield to a block located at a particular symbol location.
@@ -27,7 +27,7 @@ export function YieldBlock(
   params: Option<WireFormat.Core.Params>
 ): StatementCompileActions {
   return [
-    op(HighLevelResolutionOpcode.SimpleArgs, { params, hash: null, atNames: true }),
+    SimpleArgs({ params, hash: null, atNames: true }),
     op(Op.GetBlock, to),
     op(Op.SpreadBlock),
     op(HighLevelBuilderOpcode.Option, op(Op.CompileBlock)),

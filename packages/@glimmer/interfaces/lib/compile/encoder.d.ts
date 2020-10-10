@@ -37,7 +37,6 @@ export interface AllOpMap {
   [HighLevelResolutionOpcode.Expr]: ExprOp;
   [HighLevelResolutionOpcode.ResolveFree]: ResolveFreeOp;
   [HighLevelResolutionOpcode.ResolveAmbiguous]: ResolveAmbiguousOp;
-  [HighLevelResolutionOpcode.SimpleArgs]: SimpleArgsOp;
 
   [HighLevelCompileOpcode.CompileInline]: CompileInlineOp;
   [HighLevelCompileOpcode.CompileBlock]: CompileBlockOp;
@@ -102,10 +101,9 @@ export const enum HighLevelResolutionOpcode {
   Expr = 1009,
   ResolveFree = 1010,
   ResolveAmbiguous = 1011,
-  SimpleArgs = 1012,
 
   Start = IfResolved,
-  End = SimpleArgs,
+  End = ResolveAmbiguous,
 }
 
 export const enum HighLevelErrorOpcode {
@@ -133,11 +131,15 @@ export interface CompileBlockOp extends HighLevelOpcode {
   op1: WireFormat.Statements.Block;
 }
 
-export interface ArgsOptions {
+export interface SimpleArgsOptions {
   params: Option<WireFormat.Core.Params>;
+  hash: Option<WireFormat.Core.Hash>;
+  atNames: boolean;
+}
+
+export interface ArgsOptions extends SimpleArgsOptions {
   hash: WireFormat.Core.Hash;
   blocks: NamedBlocks;
-  atNames: boolean;
 }
 
 export interface IfResolvedOp extends HighLevelOpcode {
@@ -248,16 +250,6 @@ export interface LabelOp extends HighLevelOpcode {
   type: HighLevelOpcodeType.Builder;
   op: HighLevelBuilderOpcode.Label;
   op1: string;
-}
-
-export interface SimpleArgsOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Resolution;
-  op: HighLevelResolutionOpcode.SimpleArgs;
-  op1: {
-    params: Option<WireFormat.Core.Params>;
-    hash: WireFormat.Core.Hash;
-    atNames: boolean;
-  };
 }
 
 export interface ExprOp extends HighLevelOpcode {
