@@ -8,7 +8,6 @@ import {
   SymbolTable,
   WireFormat,
   CompilableTemplate,
-  HighLevelBuilderOpcode,
 } from '@glimmer/interfaces';
 import { $fp } from '@glimmer/vm';
 import { op } from '../encoder';
@@ -30,7 +29,7 @@ export function YieldBlock(
     SimpleArgs({ params, hash: null, atNames: true }),
     op(Op.GetBlock, to),
     op(Op.SpreadBlock),
-    op(HighLevelBuilderOpcode.Option, op(Op.CompileBlock)),
+    op(Op.CompileBlock),
     op(Op.InvokeYield),
     op(Op.PopScope),
     op(MachineOp.PopFrame),
