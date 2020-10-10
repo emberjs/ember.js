@@ -29,7 +29,6 @@ export type HighLevelOp =
 
 export interface AllOpMap {
   [HighLevelBuilderOpcode.Label]: LabelOp;
-  [HighLevelBuilderOpcode.Option]: OptionOp;
   [HighLevelBuilderOpcode.StartLabels]: StartLabelsOp;
   [HighLevelBuilderOpcode.StopLabels]: StopLabelsOp;
 
@@ -78,7 +77,6 @@ export const enum HighLevelOpcodeType {
 // start them at a higher value to prevent collisions
 export const enum HighLevelBuilderOpcode {
   Label = 1000,
-  Option = 1001,
   StartLabels = 1002,
   StopLabels = 1003,
 
@@ -226,12 +224,6 @@ export interface OpcodeWrapperOp extends HighLevelOpcode {
   op1?: SingleBuilderOperand | BuilderHandleThunk;
   op2?: SingleBuilderOperand | BuilderHandleThunk;
   op3?: SingleBuilderOperand | BuilderHandleThunk;
-}
-
-export interface OptionOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Builder;
-  op: HighLevelBuilderOpcode.Option;
-  op1: Option<CompileActions>;
 }
 
 export interface StartLabelsOp extends HighLevelOpcode {
