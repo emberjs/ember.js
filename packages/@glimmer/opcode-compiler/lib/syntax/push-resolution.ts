@@ -42,7 +42,7 @@ export default function pushResolutionOp(
 
     case HighLevelResolutionOpcode.ResolveAmbiguous: {
       let { upvar, allowComponents } = operation.op1;
-      let resolver = context.syntax.program.resolver;
+      let resolver = context.program.resolver;
       let name = context.meta.upvars![upvar];
 
       let resolvedHelper = resolver.lookupHelper(
@@ -125,7 +125,7 @@ function ifResolved(
 ): ExpressionCompileActions {
   let { kind, name, andThen, span } = op1;
 
-  let resolved = resolve(context.syntax.program.resolver, kind, name, context.meta.owner);
+  let resolved = resolve(context.program.resolver, kind, name, context.meta.owner);
 
   if (resolved !== null) {
     return andThen(resolved);

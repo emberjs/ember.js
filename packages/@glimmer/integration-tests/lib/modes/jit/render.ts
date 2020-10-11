@@ -8,14 +8,14 @@ import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 
 export function renderTemplate(
   src: string,
-  { runtime, syntax }: JitTestDelegateContext,
+  { runtime, program }: JitTestDelegateContext,
   self: Reference,
   builder: ElementBuilder,
   options?: PrecompileOptions
 ): RenderResult {
   let template = preprocess(src, options);
-  let handle = unwrapTemplate(template).asLayout().compile(syntax);
+  let handle = unwrapTemplate(template).asLayout().compile(program);
 
-  let iterator = renderMain(runtime, syntax, self, builder, unwrapHandle(handle));
+  let iterator = renderMain(runtime, program, self, builder, unwrapHandle(handle));
   return renderSync(runtime.env, iterator);
 }

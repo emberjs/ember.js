@@ -12,7 +12,6 @@ import {
 } from '@glimmer/interfaces';
 import { ContentTypeSwitchCases } from './conditional';
 import { concat } from '../../syntax/concat';
-import { MacrosImpl } from '../../syntax/macros';
 
 export function main(): CompileActions {
   return [op(Op.Main, $s0), invokePreparedComponent(false, false, true)];
@@ -71,15 +70,11 @@ const STDLIB_META = {
 
 function build(program: CompileTimeCompilationContext, callback: () => CompileActions): number {
   let encoder = new EncoderImpl();
-  let macros = new MacrosImpl();
 
   let stdContext: TemplateCompilationContext = {
     encoder,
     meta: STDLIB_META,
-    syntax: {
-      macros,
-      program,
-    },
+    program,
   };
 
   concat(stdContext, callback());

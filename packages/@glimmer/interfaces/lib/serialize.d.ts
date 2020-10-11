@@ -58,7 +58,7 @@ import { Option } from './core';
 import { ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
 import { CompilableProgram, Template, HandleResult } from './template';
-import { SyntaxCompilationContext } from './program';
+import { CompileTimeCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
 import { Owner } from './runtime';
@@ -95,7 +95,7 @@ export interface PartialDefinition {
   name: string; // for debugging
 
   getPartial(
-    context: SyntaxCompilationContext
+    context: CompileTimeCompilationContext
   ): { symbolTable: ProgramSymbolTable; handle: HandleResult };
 }
 

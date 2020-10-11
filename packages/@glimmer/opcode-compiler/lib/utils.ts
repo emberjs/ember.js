@@ -86,7 +86,15 @@ export function tryLooseFreeVariable(
   }
 
   if (isGet(expr)) {
-    return loosePathName(expr, meta);
+    if (expr.length === 3) {
+      return null;
+    }
+
+    if (isLooseGetFree(expr, expr[0])) {
+      return meta.upvars![expr[1]];
+    }
+
+    return null;
   }
 
   return null;
@@ -110,21 +118,6 @@ export function expectLooseFreeVariable(
   }
 }
 
-export function loosePathName(
-  opcode: Expressions.GetPath | Expressions.GetVar,
-  meta: ContainingMetadata
-): Option<string> {
-  if (opcode.length === 3) {
-    return null;
-  }
-
-  if (isLooseGetFree(opcode)) {
-    return meta.upvars![opcode[1]];
-  }
-
-  return null;
-}
-
 export function isGet(
   opcode: Expressions.TupleExpression
 ): opcode is Expressions.GetVar | Expressions.GetPath {
@@ -138,7 +131,8 @@ export function isStrictGetFree(
 }
 
 export function isLooseGetFree(
-  opcode: Expressions.GetVar | Expressions.GetPath
-): opcode is Expressions.GetContextualFree {
-  return opcode[0] >= SexpOpcodes.GetLooseFreeStart && opcode[0] <= SexpOpcodes.GetLooseFreeEnd;
+  _opcode: Expressions.TupleExpression,
+  opcodeType: number
+): _opcode is Expressions.GetContextualFree {
+  return opcodeType >= SexpOpcodes.GetLooseFreeStart && opcodeType <= SexpOpcodes.GetLooseFreeEnd;
 }

@@ -6,12 +6,12 @@ import {
   StatementCompileActions,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
+import { expect } from '@glimmer/util';
 import { compilableBlock } from '../compilable-template';
-import { compileBlock, compileInline } from '../compiler';
+import { MINIMAL_CAPABILITIES } from '../opcode-builder/delegate';
 import { InvokeDynamicComponent } from '../opcode-builder/helpers/components';
-import { resolveLayoutForTag } from '../resolver';
 import { namedBlocks } from '../utils';
-import { concatStatements, isHandled } from './concat';
+import { concatStatements } from './concat';
 
 export default function pushCompileOp(
   context: TemplateCompilationContext,
@@ -25,36 +25,10 @@ function compileOp(
   action: HighLevelCompileOp
 ): StatementCompileActions {
   switch (action.op) {
-    case HighLevelCompileOpcode.CompileBlock:
-      return CompileBlockOp(context, action);
-    case HighLevelCompileOpcode.CompileInline:
-      return CompileInlineOp(context, action);
     case HighLevelCompileOpcode.DynamicComponent:
       return DynamicComponent(context, action);
     case HighLevelCompileOpcode.IfResolvedComponent:
       return IfResolvedComponent(context, action);
-  }
-}
-
-function CompileBlockOp(
-  context: TemplateCompilationContext,
-  op: import('@glimmer/interfaces').CompileBlockOp
-) {
-  return compileBlock(op.op1, context);
-}
-
-function CompileInlineOp(
-  context: TemplateCompilationContext,
-  op: import('@glimmer/interfaces').CompileInlineOp
-): StatementCompileActions {
-  let { inline, ifUnhandled } = op.op1;
-
-  let returned = compileInline(inline, context);
-
-  if (isHandled(returned)) {
-    return returned;
-  } else {
-    return ifUnhandled(inline);
   }
 }
 
@@ -84,16 +58,16 @@ function IfResolvedComponent(
   context: TemplateCompilationContext,
   action: IfResolvedComponentOp
 ): StatementCompileActions {
-  let { name, elementBlock, blocks, staticTemplate, dynamicTemplate } = action.op1;
-  let component = resolveLayoutForTag(name, {
-    resolver: context.syntax.program.resolver,
-    meta: context.meta,
-  });
+  let { name, elementBlock, blocks, staticTemplate, dynamicTemplate, orElse } = action.op1;
+  let { program, meta } = context;
 
-  let { meta } = context;
+  let component = program.resolver.lookupComponent(
+    name,
+    expect(meta.owner, 'expected owner to exist when looking up component')
+  );
 
   if (component !== null) {
-    let { handle, capabilities, compilable } = component;
+    let { handle, capabilities = MINIMAL_CAPABILITIES, compilable } = component;
 
     let attrsBlock = elementBlock ? compilableBlock([elementBlock], meta) : null;
 
@@ -110,6 +84,8 @@ function IfResolvedComponent(
         blocks: compilableBlocks,
       });
     }
+  } else if (orElse) {
+    return orElse();
   } else {
     throw new Error(`Compile Error: Cannot find component ${name}`);
   }

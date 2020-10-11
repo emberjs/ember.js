@@ -3,7 +3,7 @@ import {
   CompilableProgram,
   LayoutWithContext,
   Option,
-  SyntaxCompilationContext,
+  CompileTimeCompilationContext,
   HandleResult,
 } from '@glimmer/interfaces';
 
@@ -40,7 +40,7 @@ export class WrappedBuilder implements CompilableProgram {
     };
   }
 
-  compile(syntax: SyntaxCompilationContext): HandleResult {
+  compile(syntax: CompileTimeCompilationContext): HandleResult {
     if (this.compiled !== null) return this.compiled;
 
     let m = meta(this.layout);
@@ -50,7 +50,7 @@ export class WrappedBuilder implements CompilableProgram {
 
     concatStatements(context, actions);
 
-    let handle = context.encoder.commit(context.syntax.program.heap, m.size);
+    let handle = context.encoder.commit(context.program.heap, m.size);
 
     if (typeof handle !== 'number') {
       return handle;
@@ -62,7 +62,7 @@ export class WrappedBuilder implements CompilableProgram {
       debugCompiler(context, handle);
     }
 
-    patchStdlibs(context.syntax.program);
+    patchStdlibs(context.program);
     return handle;
   }
 }

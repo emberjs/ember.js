@@ -7,7 +7,7 @@ import {
   SymbolTable,
   CompilableTemplate,
   Statement,
-  SyntaxCompilationContext,
+  CompileTimeCompilationContext,
   CompilableBlock,
   CompilableProgram,
   HandleResult,
@@ -36,7 +36,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   ) {}
 
   // Part of CompilableTemplate
-  compile(context: SyntaxCompilationContext): HandleResult {
+  compile(context: CompileTimeCompilationContext): HandleResult {
     return maybeCompile(this, context);
   }
 }
@@ -51,7 +51,7 @@ export function compilable(layout: LayoutWithContext): CompilableProgram {
 
 function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
-  context: SyntaxCompilationContext
+  context: CompileTimeCompilationContext
 ): HandleResult {
   if (compilable.compiled !== null) return compilable.compiled!;
 
@@ -60,7 +60,7 @@ function maybeCompile(
   let { statements, meta } = compilable;
 
   let result = compileStatements(statements, meta, context);
-  patchStdlibs(context.program);
+  patchStdlibs(context);
   compilable.compiled = result;
 
   return result;
@@ -69,7 +69,7 @@ function maybeCompile(
 export function compileStatements(
   statements: Statement[],
   meta: ContainingMetadata,
-  syntaxContext: SyntaxCompilationContext
+  syntaxContext: CompileTimeCompilationContext
 ): HandleResult {
   let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
@@ -78,7 +78,7 @@ export function compileStatements(
     concatStatements(context, sCompiler.compile(statements[i], context.meta));
   }
 
-  let handle = context.encoder.commit(syntaxContext.program.heap, meta.size);
+  let handle = context.encoder.commit(syntaxContext.heap, meta.size);
 
   if (LOCAL_SHOULD_LOG) {
     debugCompiler(context, handle);

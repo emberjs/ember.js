@@ -22,6 +22,47 @@ export class InElement extends node('InElement').fields<{
   block: NamedBlock;
 }>() {}
 
+export class If extends node('If').fields<{
+  condition: ExpressionNode;
+  block: NamedBlock;
+  inverse: NamedBlock | null;
+}>() {}
+
+export class Unless extends node('Unless').fields<{
+  condition: ExpressionNode;
+  block: NamedBlock;
+  inverse: NamedBlock | null;
+}>() {}
+
+export class Each extends node('Each').fields<{
+  value: ExpressionNode;
+  key: ExpressionNode | null;
+  block: NamedBlock;
+  inverse: NamedBlock | null;
+}>() {}
+
+export class With extends node('With').fields<{
+  value: ExpressionNode;
+  block: NamedBlock;
+  inverse: NamedBlock | null;
+}>() {}
+
+export class Let extends node('Let').fields<{
+  positional: Positional;
+  block: NamedBlock;
+}>() {}
+
+export class WithDynamicVars extends node('WithDynamicVars').fields<{
+  named: NamedArguments;
+  block: NamedBlock;
+}>() {}
+
+export class InvokeComponent extends node('InvokeComponent').fields<{
+  definition: ExpressionNode;
+  args: Args;
+  blocks: NamedBlocks | null;
+}>() {}
+
 export class NamedBlocks extends node('NamedBlocks').fields<{
   blocks: OptionalList<NamedBlock>;
 }>() {}
@@ -177,4 +218,11 @@ export type Statement =
   | SimpleElement
   | InvokeBlock
   | Partial
-  | AppendComment;
+  | AppendComment
+  | If
+  | Unless
+  | Each
+  | With
+  | Let
+  | WithDynamicVars
+  | InvokeComponent;

@@ -13,16 +13,13 @@ import {
   InternalComponentCapabilities,
   Owner,
   StatementCompileActions,
-  Unhandled,
   WireFormat,
   Option,
   Op,
-  MacroContext,
   NestedStatementCompileActions,
 } from '@glimmer/interfaces';
 
 import { label, other, strArray } from '../operands';
-import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
 import { meta, CompileArgs, CompilePositional, SimpleArgs } from './shared';
 import {
@@ -34,8 +31,7 @@ import {
 } from './blocks';
 import { Replayable } from './conditional';
 import { op } from '../encoder';
-import { NamedBlocksImpl } from '../../utils';
-import { NONE, UNHANDLED } from '../../syntax/concat';
+import { NONE } from '../../syntax/concat';
 import { EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { MINIMAL_CAPABILITIES } from '@glimmer/runtime';
 import { compilableBlock } from '../../compilable-template';
@@ -83,44 +79,6 @@ export interface Component extends AnyComponent {
 
   // do we have the layout statically or will we need to look it up at runtime?
   layout?: CompilableProgram;
-}
-
-export function StaticComponentHelper(
-  context: MacroContext,
-  tag: string,
-  hash: WireFormat.Core.Hash,
-  template: Option<CompilableBlock>
-): StatementCompileActions | Unhandled {
-  let component = resolveLayoutForTag(tag, context);
-
-  if (component !== null) {
-    let { compilable, handle, capabilities } = component;
-
-    if (compilable) {
-      if (hash) {
-        for (let i = 0; i < hash[0].length; i = i + 1) {
-          hash[0][i] = `@${hash[0][i]}`;
-        }
-      }
-
-      let out: StatementCompileActions = [op(Op.PushComponentDefinition, handle)];
-
-      out.push(
-        InvokeStaticComponent({
-          capabilities,
-          layout: compilable,
-          elementBlock: null,
-          params: null,
-          hash,
-          blocks: new NamedBlocksImpl({ default: template }),
-        })
-      );
-
-      return out;
-    }
-  }
-
-  return UNHANDLED;
 }
 
 export function InvokeStaticComponent({

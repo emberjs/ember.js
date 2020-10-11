@@ -37,6 +37,7 @@ export const enum HeadKind {
   DynamicComponent = 'DynamicComponent',
   Comment = 'Comment',
   Splat = 'Splat',
+  Keyword = 'Keyword',
 }
 
 export enum VariableKind {
@@ -78,6 +79,15 @@ export interface AppendPath {
   trusted: boolean;
 }
 
+export interface NormalizedKeywordStatement {
+  kind: HeadKind.Keyword;
+  name: string;
+  params: Option<NormalizedParams>;
+  hash: Option<NormalizedHash>;
+  blockParams: Option<string[]>;
+  blocks: NormalizedBlocks;
+}
+
 export type NormalizedStatement =
   | {
       kind: HeadKind.Call;
@@ -94,6 +104,7 @@ export type NormalizedStatement =
       blockParams: Option<string[]>;
       blocks: NormalizedBlocks;
     }
+  | NormalizedKeywordStatement
   | {
       kind: HeadKind.Element;
       name: string;
@@ -153,6 +164,7 @@ function isSugaryArrayStatement(statement: BuilderStatement): statement is Sugar
       case '(':
       case '#':
       case '<':
+      case '!':
         return true;
       default:
         return false;
@@ -202,6 +214,22 @@ export function normalizeSugaryArrayStatement(
       return {
         kind: HeadKind.Block,
         head: path,
+        params,
+        hash,
+        blocks,
+        blockParams,
+      };
+    }
+
+    case '!': {
+      let name = statement[0].slice(1);
+      let { params, hash, blocks, blockParams } = normalizeBuilderBlockStatement(
+        statement as BuilderBlockStatement
+      );
+
+      return {
+        kind: HeadKind.Keyword,
+        name,
         params,
         hash,
         blocks,
@@ -277,13 +305,13 @@ function normalizeVerboseStatement(statement: VerboseStatement): NormalizedState
 }
 
 function extractBlockHead(name: string): NormalizedHead {
-  let result = /^#(.*)$/.exec(name);
+  let result = /^(#|!)(.*)$/.exec(name);
 
   if (result === null) {
     throw new Error(`Unexpected missing # in block head`);
   }
 
-  return normalizeDottedPath(result[1]);
+  return normalizeDottedPath(result[2]);
 }
 
 function normalizeCallHead(name: string): NormalizedHead {

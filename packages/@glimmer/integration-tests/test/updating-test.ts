@@ -1040,7 +1040,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'block helpers whose template has a morph at the edge'() {
-    this.render('{{#identity}}{{this.value}}{{/identity}}', { value: 'hello world' });
+    this.render('{{#if true}}{{this.value}}{{/if}}', { value: 'hello world' });
     this.assertHTML('hello world');
 
     let firstNode = this.element.firstChild;
