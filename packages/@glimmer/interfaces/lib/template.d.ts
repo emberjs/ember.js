@@ -2,7 +2,7 @@ import { Operand, SerializedTemplateBlock, SerializedInlineBlock } from './compi
 import { EncoderError } from './compile/encoder';
 import { Option } from './core';
 import { InternalComponentCapabilities } from './managers/internal/component';
-import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
+import { ConstantPool, SerializedHeap, CompileTimeCompilationContext } from './program';
 import { Owner } from './runtime';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
@@ -101,11 +101,7 @@ export interface CompilerArtifacts {
   constants: ConstantPool;
 }
 
-export interface Unhandled {
-  'not-handled': true;
-}
-
 export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
-  compile(context: SyntaxCompilationContext): HandleResult;
+  compile(context: CompileTimeCompilationContext): HandleResult;
 }

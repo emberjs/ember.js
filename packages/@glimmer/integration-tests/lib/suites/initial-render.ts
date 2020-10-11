@@ -1281,22 +1281,15 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Elements inside a yielded block'() {
-    this.render('{{#identity}}<div id="test">123</div>{{/identity}}');
+    this.render('{{#if true}}<div id="test">123</div>{{/if}}');
     this.assertHTML('<div id="test">123</div>');
     this.assertStableRerender();
   }
 
   @test
   'A simple block helper can return text'() {
-    this.render('{{#identity}}test{{else}}not shown{{/identity}}');
+    this.render('{{#if true}}test{{else}}not shown{{/if}}');
     this.assertHTML('test');
-    this.assertStableRerender();
-  }
-
-  @test
-  'A block helper can have an else block'() {
-    this.render('{{#render-else}}Nope{{else}}<div id="test">123</div>{{/render-else}}');
-    this.assertHTML('<div id="test">123</div>');
     this.assertStableRerender();
   }
 }

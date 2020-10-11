@@ -62,6 +62,20 @@ export class ContentEncoder {
         return this.InElement(stmt);
       case 'InvokeBlock':
         return this.InvokeBlock(stmt);
+      case 'If':
+        return this.If(stmt);
+      case 'Unless':
+        return this.Unless(stmt);
+      case 'Each':
+        return this.Each(stmt);
+      case 'With':
+        return this.With(stmt);
+      case 'Let':
+        return this.Let(stmt);
+      case 'WithDynamicVars':
+        return this.WithDynamicVars(stmt);
+      case 'InvokeComponent':
+        return this.InvokeComponent(stmt);
     }
   }
 
@@ -167,6 +181,65 @@ export class ContentEncoder {
 
   NamedBlock({ name, body, scope }: mir.NamedBlock): WireFormat.Core.NamedBlock {
     return [name.chars, [CONTENT.list(body), scope.slots]];
+  }
+
+  If({ condition, block, inverse }: mir.If): WireFormat.Statements.If {
+    return [
+      SexpOpcodes.If,
+      EXPR.expr(condition),
+      CONTENT.NamedBlock(block)[1],
+      inverse ? CONTENT.NamedBlock(inverse)[1] : null,
+    ];
+  }
+
+  Unless({ condition, block, inverse }: mir.Unless): WireFormat.Statements.Unless {
+    return [
+      SexpOpcodes.Unless,
+      EXPR.expr(condition),
+      CONTENT.NamedBlock(block)[1],
+      inverse ? CONTENT.NamedBlock(inverse)[1] : null,
+    ];
+  }
+
+  Each({ value, key, block, inverse }: mir.Each): WireFormat.Statements.Each {
+    return [
+      SexpOpcodes.Each,
+      EXPR.expr(value),
+      key ? EXPR.expr(key) : null,
+      CONTENT.NamedBlock(block)[1],
+      inverse ? CONTENT.NamedBlock(inverse)[1] : null,
+    ];
+  }
+
+  With({ value, block, inverse }: mir.With): WireFormat.Statements.With {
+    return [
+      SexpOpcodes.With,
+      EXPR.expr(value),
+      CONTENT.NamedBlock(block)[1],
+      inverse ? CONTENT.NamedBlock(inverse)[1] : null,
+    ];
+  }
+
+  Let({ positional, block }: mir.Let): WireFormat.Statements.Let {
+    return [SexpOpcodes.Let, EXPR.Positional(positional), CONTENT.NamedBlock(block)[1]];
+  }
+
+  WithDynamicVars({ named, block }: mir.WithDynamicVars): WireFormat.Statements.WithDynamicVars {
+    return [SexpOpcodes.WithDynamicVars, EXPR.NamedArguments(named), CONTENT.NamedBlock(block)[1]];
+  }
+
+  InvokeComponent({
+    definition,
+    args,
+    blocks,
+  }: mir.InvokeComponent): WireFormat.Statements.InvokeComponent {
+    return [
+      SexpOpcodes.InvokeComponent,
+      EXPR.expr(definition),
+      EXPR.Positional(args.positional),
+      EXPR.NamedArguments(args.named),
+      blocks ? CONTENT.NamedBlocks(blocks) : null,
+    ];
   }
 }
 

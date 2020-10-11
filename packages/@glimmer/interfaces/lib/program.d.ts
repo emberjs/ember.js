@@ -1,5 +1,5 @@
 import { STDLib, ContainingMetadata, HandleResult } from './template';
-import { StdlibOperand, Encoder, Macros } from './compile';
+import { StdlibOperand, Encoder } from './compile';
 import { Op } from './vm-opcodes';
 import { CompileTimeResolver } from './serialize';
 
@@ -59,23 +59,12 @@ export interface CompileTimeCompilationContext {
 }
 
 /**
- * Options for compiling a template for a given "syntax"
- *
- * This allows a single compiled whole program to be composed
- * of templates that use different macros.
- */
-export interface SyntaxCompilationContext {
-  readonly program: CompileTimeCompilationContext;
-  readonly macros: Macros;
-}
-
-/**
  * Options for compiling a specific template. This carries
  * along the static information associated with the entire
  * template when compiling blocks nested inside of it.
  */
 export interface TemplateCompilationContext {
-  readonly syntax: SyntaxCompilationContext;
+  readonly program: CompileTimeCompilationContext;
   readonly encoder: Encoder;
   readonly meta: ContainingMetadata;
 }

@@ -77,9 +77,8 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
 
   @test
   'Null literals do not have representation in DOM'() {
-    let b = blockStack();
     this.render('{{null}}');
-    this.assertHTML(strip`${b(1)}<!--% %-->${b(1)}`);
+    this.assertHTML(strip`<!--% %-->`);
   }
 
   @test

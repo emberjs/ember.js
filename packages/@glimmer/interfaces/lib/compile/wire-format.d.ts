@@ -81,8 +81,15 @@ export const enum SexpOpcodes {
   GetFreeAsModifierHead = 39,
   GetFreeAsComponentHead = 40,
 
-  // InElement
+  // Keyword Statements
   InElement = 41,
+  If = 42,
+  Unless = 43,
+  Each = 46,
+  With = 44,
+  Let = 45,
+  WithDynamicVars = 47,
+  InvokeComponent = 48,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -257,7 +264,7 @@ export namespace Statements {
   export type TrustingAppend = [SexpOpcodes.TrustingAppend, Expression];
   export type Comment = [SexpOpcodes.Comment, string];
   export type Modifier = [SexpOpcodes.Modifier, Expression, Params, Hash];
-  export type Block = [SexpOpcodes.Block, Expression, Option<Params>, Hash, Blocks];
+  export type Block = [SexpOpcodes.Block, Expression, Params, Hash, Blocks];
   export type Component = [
     op: SexpOpcodes.Component,
     tag: Expression,
@@ -330,6 +337,51 @@ export namespace Statements {
     insertBefore?: Expression
   ];
 
+  export type If = [
+    op: SexpOpcodes.If,
+    condition: Expression,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type Unless = [
+    op: SexpOpcodes.Unless,
+    condition: Expression,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type Each = [
+    op: SexpOpcodes.Each,
+    condition: Expression,
+    key: Option<Expression>,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type With = [
+    op: SexpOpcodes.With,
+    value: Expression,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type Let = [op: SexpOpcodes.Let, positional: Core.Params, block: SerializedInlineBlock];
+
+  export type WithDynamicVars = [
+    op: SexpOpcodes.WithDynamicVars,
+    args: Core.Hash,
+    block: SerializedInlineBlock
+  ];
+
+  export type InvokeComponent = [
+    op: SexpOpcodes.InvokeComponent,
+    definition: Expression,
+    positional: Core.Params,
+    named: Core.Hash,
+    blocks: Blocks | null
+  ];
+
   /**
    * A Handlebars statement
    */
@@ -351,7 +403,14 @@ export namespace Statements {
     | StaticArg
     | DynamicArg
     | Debugger
-    | InElement;
+    | InElement
+    | If
+    | Unless
+    | Each
+    | With
+    | Let
+    | WithDynamicVars
+    | InvokeComponent;
 
   export type Attribute =
     | StaticAttr

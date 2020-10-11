@@ -2,10 +2,10 @@ import { SimpleElement } from '@simple-dom/interface';
 import {
   Dict,
   RuntimeResolver,
-  SyntaxCompilationContext,
   ComponentDefinition,
   CompilableProgram,
   RuntimeArtifacts,
+  CompileTimeCompilationContext,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, childRefFor } from '@glimmer/reference';
 import { NewElementBuilder, runtimeContext, renderComponent, renderSync } from '@glimmer/runtime';
@@ -16,7 +16,7 @@ import { UpdateBenchmark } from '../interfaces';
 
 export default async function renderBenchmark(
   artifacts: RuntimeArtifacts,
-  context: SyntaxCompilationContext,
+  context: CompileTimeCompilationContext,
   runtimeResolver: RuntimeResolver,
   component: ComponentDefinition,
   layout: CompilableProgram,

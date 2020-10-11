@@ -1,7 +1,7 @@
 import {
   ProgramSymbolTable,
   Template,
-  SyntaxCompilationContext,
+  CompileTimeCompilationContext,
   HandleResult,
   PartialDefinition,
 } from '@glimmer/interfaces';
@@ -14,7 +14,7 @@ export class PartialDefinitionImpl implements PartialDefinition {
   ) {}
 
   getPartial(
-    context: SyntaxCompilationContext
+    context: CompileTimeCompilationContext
   ): { symbolTable: ProgramSymbolTable; handle: HandleResult } {
     let partial = unwrapTemplate(this.template).asPartial();
     let handle = partial.compile(context);

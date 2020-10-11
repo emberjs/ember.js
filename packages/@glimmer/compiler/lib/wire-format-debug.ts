@@ -196,6 +196,54 @@ export default class WireFormatDebugger {
             return ['get-symbol', this.symbols[opcode[1] - 1], opcode[2]];
           }
         }
+
+        case Op.If:
+          return [
+            'if',
+            this.formatOpcode(opcode[1]),
+            this.formatBlock(opcode[2]),
+            opcode[3] ? this.formatBlock(opcode[3]) : null,
+          ];
+
+        case Op.Unless:
+          return [
+            'unless',
+            this.formatOpcode(opcode[1]),
+            this.formatBlock(opcode[2]),
+            opcode[3] ? this.formatBlock(opcode[3]) : null,
+          ];
+
+        case Op.Each:
+          return [
+            'each',
+            this.formatOpcode(opcode[1]),
+            opcode[2] ? this.formatOpcode(opcode[2]) : null,
+            this.formatBlock(opcode[3]),
+            opcode[4] ? this.formatBlock(opcode[4]) : null,
+          ];
+
+        case Op.With:
+          return [
+            'with',
+            this.formatOpcode(opcode[1]),
+            this.formatBlock(opcode[2]),
+            opcode[3] ? this.formatBlock(opcode[3]) : null,
+          ];
+
+        case Op.Let:
+          return ['let', this.formatParams(opcode[1]), this.formatBlock(opcode[2])];
+
+        case Op.WithDynamicVars:
+          return ['-with-dynamic-vars', this.formatHash(opcode[1]), this.formatBlock(opcode[2])];
+
+        case Op.InvokeComponent:
+          return [
+            'component',
+            this.formatOpcode(opcode[1]),
+            this.formatParams(opcode[2]),
+            this.formatHash(opcode[3]),
+            this.formatBlocks(opcode[4]),
+          ];
       }
     } else {
       return opcode;

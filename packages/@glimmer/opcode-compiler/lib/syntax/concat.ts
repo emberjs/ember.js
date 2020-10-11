@@ -4,7 +4,6 @@ import {
   ExpressionCompileActions,
   NO_ACTION,
   StatementCompileActions,
-  Unhandled,
   Dict,
   TemplateCompilationContext,
   CompileTimeConstants,
@@ -17,7 +16,6 @@ import pushResolutionOp from './push-resolution';
 import { assertNever } from '@glimmer/util';
 
 export const NONE: NO_ACTION = { 'no-action': true };
-export const UNHANDLED: Unhandled = { 'not-handled': true };
 
 export function isNoAction(
   actions: CompileActions | StatementCompileActions
@@ -26,7 +24,7 @@ export function isNoAction(
 }
 
 export function isHandled(
-  actions: CompileActions | StatementCompileActions | Unhandled
+  actions: CompileActions | StatementCompileActions
 ): actions is CompileActions | StatementCompileActions {
   return !actions || !(actions as Dict)['not-handled'];
 }
@@ -41,7 +39,7 @@ export function concat(context: TemplateCompilationContext, action: CompileActio
   } else if (action.type === HighLevelOpcodeType.Builder) {
     pushBuilderOp(context, action);
   } else {
-    pushOp(context.encoder, context.syntax.program.constants, action);
+    pushOp(context.encoder, context.program.constants, action);
   }
 }
 
@@ -87,12 +85,12 @@ export function concatStatements(
       concatStatements(context, item);
     }
   } else if (action.type === HighLevelOpcodeType.OpcodeWrapper) {
-    pushOp(context.encoder, context.syntax.program.constants, action);
+    pushOp(context.encoder, context.program.constants, action);
   } else {
     if (action.type === HighLevelOpcodeType.Compile) {
       pushCompileOp(context, action);
     } else if (action.type === HighLevelOpcodeType.Resolution) {
-      pushResolutionOp(context.encoder, context, action, context.syntax.program.constants);
+      pushResolutionOp(context.encoder, context, action, context.program.constants);
     } else if (action.type === HighLevelOpcodeType.Builder) {
       pushBuilderOp(context, action);
     } else if (action.type === HighLevelOpcodeType.Error) {

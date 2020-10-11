@@ -37,8 +37,6 @@ export interface AllOpMap {
   [HighLevelResolutionOpcode.ResolveFree]: ResolveFreeOp;
   [HighLevelResolutionOpcode.ResolveAmbiguous]: ResolveAmbiguousOp;
 
-  [HighLevelCompileOpcode.CompileInline]: CompileInlineOp;
-  [HighLevelCompileOpcode.CompileBlock]: CompileBlockOp;
   [HighLevelCompileOpcode.IfResolvedComponent]: IfResolvedComponentOp;
   [HighLevelCompileOpcode.DynamicComponent]: DynamicComponentOp;
 
@@ -77,56 +75,39 @@ export const enum HighLevelOpcodeType {
 // start them at a higher value to prevent collisions
 export const enum HighLevelBuilderOpcode {
   Label = 1000,
-  StartLabels = 1002,
-  StopLabels = 1003,
+  StartLabels = 1001,
+  StopLabels = 1002,
 
   Start = Label,
   End = StopLabels,
 }
 
 export const enum HighLevelCompileOpcode {
-  CompileInline = 1004,
-  CompileBlock = 1005,
-  IfResolvedComponent = 1006,
-  DynamicComponent = 1007,
+  IfResolvedComponent = 1003,
+  DynamicComponent = 1004,
 
-  Start = CompileInline,
+  Start = IfResolvedComponent,
   End = DynamicComponent,
 }
 
 export const enum HighLevelResolutionOpcode {
-  IfResolved = 1008,
-  Expr = 1009,
-  ResolveFree = 1010,
-  ResolveAmbiguous = 1011,
+  IfResolved = 1005,
+  Expr = 1006,
+  ResolveFree = 1007,
+  ResolveAmbiguous = 1008,
 
   Start = IfResolved,
   End = ResolveAmbiguous,
 }
 
 export const enum HighLevelErrorOpcode {
-  Error = 1013,
+  Error = 1009,
 }
 
 export const enum ResolveHandle {
   Modifier = 'Modifier',
   Helper = 'Helper',
   ComponentDefinition = 'ComponentDefinition',
-}
-
-export interface CompileInlineOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Compile;
-  op: HighLevelCompileOpcode.CompileInline;
-  op1: {
-    inline: WireFormat.Statements.Append;
-    ifUnhandled: (sexp: WireFormat.Statements.Append) => ExpressionCompileActions;
-  };
-}
-
-export interface CompileBlockOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Compile;
-  op: HighLevelCompileOpcode.CompileBlock;
-  op1: WireFormat.Statements.Block;
 }
 
 export interface SimpleArgsOptions {
@@ -179,6 +160,7 @@ export interface IfResolvedComponentOp extends HighLevelOpcode {
       capabilities: InternalComponentCapabilities,
       blocks: IfResolvedComponentBlocks
     ) => StatementCompileActions;
+    orElse?: () => StatementCompileActions;
   };
 }
 
