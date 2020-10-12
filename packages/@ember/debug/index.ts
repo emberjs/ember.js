@@ -173,9 +173,7 @@ if (DEBUG) {
   /**
     Display a debug notice.
 
-    Calls to this function are removed from production builds, so they can be
-    freely added for documentation and debugging purposes without worries of
-    incuring any performance penalty.
+    Calls to this function are not invoked in production builds.
 
     ```javascript
     import { debug } from '@ember/debug';
