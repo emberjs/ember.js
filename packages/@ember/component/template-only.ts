@@ -34,7 +34,6 @@ export class TemplateOnlyComponent {
   @public
   @method templateOnly
   @param {String} moduleName the module name that the template only component represents, this will be used for debugging purposes
-  @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
 export default function templateOnlyComponent(moduleName?: string): TemplateOnlyComponent {
   return new TemplateOnlyComponent(moduleName);
