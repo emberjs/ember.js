@@ -31,5 +31,21 @@ moduleFor(
         assert.equal(get(newObj, key), obj[key], 'should set value');
       }
     }
+
+    ['@test set should not throw an error when setting on shadowed properties'](assert) {
+      class Obj {
+        @tracked value = 'emberjs';
+
+        constructor() {
+          Object.defineProperty(this, 'value', { writable: true, value: 'emberjs' });
+        }
+      }
+
+      let newObj = new Obj();
+
+      set(newObj, 'value', 123);
+
+      assert.equal(newObj.value, 123, 'it worked');
+    }
   }
 );
