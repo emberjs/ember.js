@@ -5,6 +5,8 @@ import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import {
+  CPGETTERS,
+  CPSETTERS,
   Decorator,
   DecoratorPropertyDescriptor,
   isElementDescriptor,
@@ -181,6 +183,11 @@ function descriptorForField([target, key, desc]: [
     get,
     set,
   };
+
+  if (DEBUG) {
+    CPGETTERS.add(get);
+    CPSETTERS.add(set);
+  }
 
   metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
 

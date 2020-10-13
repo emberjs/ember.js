@@ -663,7 +663,7 @@ class EmberRouter extends EmberObject {
     let owner = getOwner(this);
 
     if ('string' === typeof location && owner) {
-      let resolvedLocation = owner.lookup(`location:${location}`);
+      let resolvedLocation = owner.lookup<IEmberLocation>(`location:${location}`);
 
       if (resolvedLocation !== undefined) {
         location = set(this, 'location', resolvedLocation);
