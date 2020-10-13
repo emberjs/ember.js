@@ -886,4 +886,52 @@ export class BasicComponents extends RenderTest {
 
     this.assertHTML('', 'destroys correctly');
   }
+
+  @test({ kind: 'fragment' })
+  'throwing an error during rendering gives a readable error stack'(assert: Assert) {
+    let originalConsoleError = console.error;
+
+    console.error = (message: string) => {
+      this.assert.ok(
+        message.match(/Error occurred while rendering:(\n\nBar\n {2}Foo)?/),
+        'message logged'
+      );
+    };
+
+    try {
+      assert.expect(7);
+
+      this.registerComponent(
+        'Glimmer',
+        'Foo',
+        'Hello',
+        class extends EmberishGlimmerComponent {
+          constructor(args: EmberishGlimmerArgs) {
+            super(args);
+            throw new Error('something went wrong!');
+          }
+        }
+      );
+
+      this.registerComponent('Basic', 'Bar', '<div class="second"></div><Foo/>');
+
+      this.render('{{#if showing}}<div class="first"></div><Bar/>{{/if}}', {
+        showing: false,
+      });
+
+      this.assert.throws(() => {
+        this.rerender({ showing: true });
+      }, /something went wrong!/);
+
+      this.assertHTML(
+        '<div class="first"></div><div class="second"></div><!---->',
+        'values rendered before the error rendered correctly'
+      );
+      this.destroy();
+
+      this.assertHTML('', 'destroys correctly');
+    } finally {
+      console.error = originalConsoleError;
+    }
+  }
 }
