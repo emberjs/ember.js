@@ -548,6 +548,35 @@ export default class VM implements PublicVM, InternalVM {
   /// EXECUTION
 
   execute(initialize?: (vm: this) => void): RenderResult {
+    if (DEBUG) {
+      let hasErrored = true;
+      try {
+        let value = this._execute(initialize);
+
+        // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
+        // which would happen with a `catch` + `throw`
+        hasErrored = false;
+
+        return value;
+      } finally {
+        if (hasErrored) {
+          // If any existing blocks are open, due to an error or something like
+          // that, we need to close them all and clean things up properly.
+          let elements = this.elements();
+
+          while (elements.hasBlocks) {
+            elements.popBlock();
+          }
+
+          resetTracking();
+        }
+      }
+    } else {
+      return this._execute(initialize);
+    }
+  }
+
+  private _execute(initialize?: (vm: this) => void): RenderResult {
     if (LOCAL_SHOULD_LOG) {
       console.log(`EXECUTING FROM ${this[INNER_VM].fetchRegister($pc)}`);
     }
@@ -556,23 +585,9 @@ export default class VM implements PublicVM, InternalVM {
 
     let result: RichIteratorResult<null, RenderResult>;
 
-    try {
-      while (true) {
-        result = this.next();
-        if (result.done) break;
-      }
-    } catch (e) {
-      // If any existing blocks are open, due to an error or something like
-      // that, we need to close them all and clean things up properly.
-      let elements = this.elements();
-
-      while (elements.hasBlocks) {
-        elements.popBlock();
-      }
-
-      resetTracking();
-
-      throw e;
+    while (true) {
+      result = this.next();
+      if (result.done) break;
     }
 
     return result.value;
