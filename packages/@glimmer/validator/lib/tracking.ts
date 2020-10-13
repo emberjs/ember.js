@@ -110,7 +110,7 @@ export function endUntrackFrame(): void {
 }
 
 // This function is only for handling errors and resetting to a valid state
-export function resetTracking(): void {
+export function resetTracking(): string | void {
   while (OPEN_TRACK_FRAMES.length > 0) {
     OPEN_TRACK_FRAMES.pop();
   }
@@ -118,7 +118,7 @@ export function resetTracking(): void {
   CURRENT_TRACKER = null;
 
   if (DEBUG) {
-    unwrap(resetTrackingTransaction)();
+    return unwrap(resetTrackingTransaction)();
   }
 }
 

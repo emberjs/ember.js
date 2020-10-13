@@ -52,7 +52,7 @@ export default class UpdatingVM {
         hasErrored = false;
       } finally {
         if (hasErrored) {
-          resetTracking();
+          console.error(`\n\nError occurred while rendering:\n\n${resetTracking()}\n\n`);
         }
       }
     } else {

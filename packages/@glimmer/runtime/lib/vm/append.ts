@@ -568,7 +568,7 @@ export default class VM implements PublicVM, InternalVM {
             elements.popBlock();
           }
 
-          resetTracking();
+          console.error(`\n\nError occurred while rendering:\n\n${resetTracking()}\n\n`);
         }
       }
     } else {
