@@ -90,10 +90,18 @@ function fn({ positional }: CapturedArguments, env?: Environment<unknown>) {
   if (DEBUG && typeof callbackRef[INVOKE] !== 'function') {
     let callback = callbackRef.value();
 
+    let debugContext: string;
+
+    try {
+      debugContext = env!.getTemplatePathDebugContext(callbackRef);
+    } catch (e) {
+      debugContext = '';
+    }
+
     assert(
       `You must pass a function as the \`fn\` helpers first argument, you passed ${
         callback === null ? 'null' : typeof callback
-      }. ${env!.getTemplatePathDebugContext(callbackRef)}`,
+      }. ${debugContext}`,
       typeof callback === 'function'
     );
   }
