@@ -147,6 +147,8 @@ ControllerMixin.reopen({
       containing a mapping of query parameters
     @for Ember.ControllerMixin
     @method transitionToRoute
+    @return {Transition} the transition object associated with this
+      attempted transition
     @public
   */
   transitionToRoute(...args: any[]) {
@@ -211,6 +213,8 @@ ControllerMixin.reopen({
     while transitioning to the route.
     @for Ember.ControllerMixin
     @method replaceRoute
+    @return {Transition} the transition object associated with this
+      attempted transition
     @public
   */
   replaceRoute(...args: string[]) {
