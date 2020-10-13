@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   DynamicScope,
@@ -41,27 +42,40 @@ export default class UpdatingVM {
   }
 
   execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
+    if (DEBUG) {
+      let hasErrored = true;
+      try {
+        this._execute(opcodes, handler);
+
+        // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
+        // which would happen with a `catch` + `throw`
+        hasErrored = false;
+      } finally {
+        if (hasErrored) {
+          resetTracking();
+        }
+      }
+    } else {
+      this._execute(opcodes, handler);
+    }
+  }
+
+  private _execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
     let { frameStack } = this;
 
     this.try(opcodes, handler);
 
-    try {
-      while (true) {
-        if (frameStack.isEmpty()) break;
+    while (true) {
+      if (frameStack.isEmpty()) break;
 
-        let opcode = this.frame.nextStatement();
+      let opcode = this.frame.nextStatement();
 
-        if (opcode === undefined) {
-          frameStack.pop();
-          continue;
-        }
-
-        opcode.evaluate(this);
+      if (opcode === undefined) {
+        frameStack.pop();
+        continue;
       }
-    } catch (e) {
-      resetTracking();
 
-      throw e;
+      opcode.evaluate(this);
     }
   }
 
