@@ -10,7 +10,7 @@ export let runInTrackingTransaction:
   | ((fn: () => void, debuggingContext?: string | false) => void);
 export let deprecateMutationsInTrackingTransaction: undefined | ((fn: () => void) => void);
 
-export let resetTrackingTransaction: undefined | (() => void);
+export let resetTrackingTransaction: undefined | (() => string);
 export let setTrackingTransactionEnv:
   | undefined
   | ((env: {
@@ -99,8 +99,16 @@ if (DEBUG) {
   };
 
   resetTrackingTransaction = () => {
+    let stack = '';
+
+    if (TRANSACTION_STACK.length > 0) {
+      stack = logTrackingStack!(TRANSACTION_STACK[TRANSACTION_STACK.length - 1]);
+    }
+
     TRANSACTION_STACK = [];
     CONSUMED_TAGS = null;
+
+    return stack;
   };
 
   /**
