@@ -1,15 +1,11 @@
 import {
-  ContainingMetadata,
-  HighLevelErrorOpcode,
   ExpressionCompileActions,
-  Expressions,
   ExpressionSexpOpcode,
   HighLevelResolutionOpcode,
   Op,
   ResolveHandle,
   SexpOpcodes,
 } from '@glimmer/interfaces';
-import { isPresent } from '@glimmer/util';
 import { op } from '../opcode-builder/encoder';
 import { curryComponent } from '../opcode-builder/helpers/components';
 import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
@@ -35,27 +31,6 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
   let start = 0;
   let offset = 0;
 
-  if (isComponent(name, meta)) {
-    if (!params || params.length === 0) {
-      return op(HighLevelErrorOpcode.Error, {
-        problem: 'component helper requires at least one argument',
-        start: start,
-        end: start + offset,
-      });
-    }
-
-    let [definition, ...restArgs] = params as Expressions.Expression[];
-    return curryComponent(
-      {
-        definition,
-        params: isPresent(restArgs) ? restArgs : null,
-        hash,
-        atNames: false,
-      },
-      meta.owner
-    );
-  }
-
   let nameOrError = expectLooseFreeVariable(name, meta, 'Expected call head to be a string');
 
   if (typeof nameOrError !== 'string') {
@@ -73,29 +48,17 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
   });
 });
 
-function isGetContextualFree(
-  opcode: Expressions.TupleExpression
-): opcode is Expressions.GetContextualFree {
-  return opcode[0] >= SexpOpcodes.GetContextualFreeStart;
-}
-
-function isComponent(expr: Expressions.Expression, meta: ContainingMetadata): boolean {
-  if (!Array.isArray(expr)) {
-    return false;
-  }
-
-  if (isGetContextualFree(expr)) {
-    let head = expr[1];
-
-    if (meta.upvars && meta.upvars[head] === 'component') {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  return false;
-}
+EXPRESSIONS.add(SexpOpcodes.CurryComponent, ([, definition, params, hash], meta) => {
+  return curryComponent(
+    {
+      definition,
+      params,
+      hash,
+      atNames: false,
+    },
+    meta.owner
+  );
+});
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, sym, path]) => withPath(op(Op.GetVariable, sym), path));
 EXPRESSIONS.add(SexpOpcodes.GetStrictFree, ([, sym, path]) =>

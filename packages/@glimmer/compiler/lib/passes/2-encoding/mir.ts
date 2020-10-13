@@ -170,6 +170,10 @@ export class HasBlockParams extends node('HasBlockParams').fields<{
   target: SourceSlice;
   symbol: number;
 }>() {}
+export class CurryComponent extends node('CurryComponent').fields<{
+  definition: ExpressionNode;
+  args: Args;
+}>() {}
 export class Positional extends node('Positional').fields<{
   list: OptionalList<ExpressionNode>;
 }>() {}
@@ -194,7 +198,8 @@ export type ExpressionNode =
   | InterpolateExpression
   | CallExpression
   | HasBlock
-  | HasBlockParams;
+  | HasBlockParams
+  | CurryComponent;
 
 export type ElementParameter = StaticAttr | DynamicAttr | Modifier | SplatAttr;
 

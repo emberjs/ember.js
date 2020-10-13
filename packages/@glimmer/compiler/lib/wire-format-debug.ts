@@ -147,6 +147,14 @@ export default class WireFormatDebugger {
         case Op.HasBlockParams:
           return ['has-block-params', this.formatOpcode(opcode[1])];
 
+        case Op.CurryComponent:
+          return [
+            'component',
+            this.formatOpcode(opcode[1]),
+            this.formatParams(opcode[2]),
+            this.formatHash(opcode[3]),
+          ];
+
         case Op.Undefined:
           return ['undefined'];
 
