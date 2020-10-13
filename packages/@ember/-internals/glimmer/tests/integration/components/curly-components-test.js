@@ -12,7 +12,7 @@ import {
 
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { alias, set, get, observer, on, computed } from '@ember/-internals/metal';
+import { alias, set, get, observer, on, computed, tracked } from '@ember/-internals/metal';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
@@ -3731,6 +3731,75 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
+    }
+
+    '@test lifecycle hooks are not tracked'() {
+      this.registerComponent('foo-bar', {
+        ComponentClass: class extends Component {
+          @tracked foo;
+
+          willInsertElement() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          willRender() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          didRender() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          didReceiveAttrs() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          didUpdate() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          didUpdateAttrs() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          didInsertElement() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          willClearRender() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          willDestroyElement() {
+            this.foo;
+            this.foo = 123;
+          }
+
+          didDestroyElement() {
+            this.foo;
+            this.foo = 123;
+          }
+        },
+        template: '{{this.baz}}',
+      });
+
+      this.render('{{#if cond}}{{foo-bar baz=this.value}}{{/if}}', { cond: true, value: 'hello' });
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+      runTask(() => set(this.context, 'value', 'world'));
+
+      this.assertComponentElement(this.firstChild, { content: 'world' });
+
+      runTask(() => set(this.context, 'cond', false));
     }
   }
 );

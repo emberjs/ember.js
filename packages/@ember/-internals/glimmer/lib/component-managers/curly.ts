@@ -430,7 +430,9 @@ export default class CurlyComponentManager
     component._transitionTo('hasElement');
 
     if (environment.isInteractive) {
+      beginUntrackFrame();
       component.trigger('willInsertElement');
+      endUntrackFrame();
     }
   }
 

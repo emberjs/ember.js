@@ -2,7 +2,7 @@ import { clearElementView, clearViewElement, getViewElement } from '@ember/-inte
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
-import { Revision, Tag, valueForTag } from '@glimmer/validator';
+import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import { Renderer } from '../renderer';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
@@ -64,8 +64,10 @@ export default class ComponentStateBucket {
     let { component, environment } = this;
 
     if (environment.isInteractive) {
+      beginUntrackFrame();
       component.trigger('willDestroyElement');
       component.trigger('willClearRender');
+      endUntrackFrame();
 
       let element = getViewElement(component);
 
