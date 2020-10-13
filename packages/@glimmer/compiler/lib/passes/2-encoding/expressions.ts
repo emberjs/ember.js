@@ -28,6 +28,8 @@ export class ExpressionEncoder {
         return this.HasBlock(expr);
       case 'HasBlockParams':
         return this.HasBlockParams(expr);
+      case 'CurryComponent':
+        return this.CurryComponent(expr);
       case 'InterpolateExpression':
         return this.InterpolateExpression(expr);
     }
@@ -53,6 +55,15 @@ export class ExpressionEncoder {
 
   HasBlockParams({ symbol }: mir.HasBlockParams): WireFormat.Expressions.HasBlockParams {
     return [SexpOpcodes.HasBlockParams, [SexpOpcodes.GetSymbol, symbol]];
+  }
+
+  CurryComponent({ definition, args }: mir.CurryComponent): WireFormat.Expressions.CurryComponent {
+    return [
+      SexpOpcodes.CurryComponent,
+      EXPR.expr(definition),
+      EXPR.Positional(args.positional),
+      EXPR.NamedArguments(args.named),
+    ];
   }
 
   Free({

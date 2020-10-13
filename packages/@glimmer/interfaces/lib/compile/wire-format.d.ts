@@ -57,39 +57,42 @@ export const enum SexpOpcodes {
   Debugger = 26,
 
   // Expressions
-  HasBlock = 27,
-  HasBlockParams = 28,
-  Undefined = 29,
-  Call = 30,
-  Concat = 31,
+  Undefined = 27,
+  Call = 28,
+  Concat = 29,
 
   // Get
-  GetSymbol = 32, // GetPath + 0-2,
-  GetStrictFree = 33,
+  GetSymbol = 30, // GetPath + 0-2,
+  GetStrictFree = 31,
 
   // falls back to `this.` (or locals in the case of partials), but
   // never turns into a component or helper invocation
-  GetFreeAsFallback = 34,
+  GetFreeAsFallback = 32,
   // `{{x}}` in append position (might be a helper or component invocation, otherwise fall back to `this`)
-  GetFreeAsComponentOrHelperHeadOrThisFallback = 35,
+  GetFreeAsComponentOrHelperHeadOrThisFallback = 33,
   // a component or helper (`{{<expr> x}}` in append position)
-  GetFreeAsComponentOrHelperHead = 36,
+  GetFreeAsComponentOrHelperHead = 34,
   // a helper or `this` fallback `attr={{x}}`
-  GetFreeAsHelperHeadOrThisFallback = 37,
+  GetFreeAsHelperHeadOrThisFallback = 35,
   // a call head `(x)`
-  GetFreeAsHelperHead = 38,
-  GetFreeAsModifierHead = 39,
-  GetFreeAsComponentHead = 40,
+  GetFreeAsHelperHead = 36,
+  GetFreeAsModifierHead = 37,
+  GetFreeAsComponentHead = 38,
 
   // Keyword Statements
-  InElement = 41,
-  If = 42,
-  Unless = 43,
-  Each = 46,
-  With = 44,
-  Let = 45,
-  WithDynamicVars = 47,
-  InvokeComponent = 48,
+  InElement = 39,
+  If = 40,
+  Unless = 41,
+  Each = 42,
+  With = 43,
+  Let = 44,
+  WithDynamicVars = 45,
+  InvokeComponent = 46,
+
+  // Keyword Expressions
+  HasBlock = 47,
+  HasBlockParams = 48,
+  CurryComponent = 49,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -219,7 +222,14 @@ export namespace Expressions {
   export type Value = StringValue | NumberValue | BooleanValue | NullValue;
   export type Undefined = [SexpOpcodes.Undefined];
 
-  export type TupleExpression = Get | Concat | HasBlock | HasBlockParams | Helper | Undefined;
+  export type TupleExpression =
+    | Get
+    | Concat
+    | HasBlock
+    | HasBlockParams
+    | CurryComponent
+    | Helper
+    | Undefined;
 
   // TODO get rid of undefined, which is just here to allow trailing undefined in attrs
   // it would be better to handle that as an over-the-wire encoding concern
@@ -229,6 +239,7 @@ export namespace Expressions {
   export type Helper = [SexpOpcodes.Call, Expression, Option<Params>, Hash];
   export type HasBlock = [SexpOpcodes.HasBlock, Expression];
   export type HasBlockParams = [SexpOpcodes.HasBlockParams, Expression];
+  export type CurryComponent = [SexpOpcodes.CurryComponent, Expression, Params, Hash];
 }
 
 export type Expression = Expressions.Expression;
