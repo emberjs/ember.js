@@ -71,12 +71,10 @@ export abstract class ComputedDescriptor {
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 }
 
-export let CPGETTERS: WeakSet<() => unknown>;
-export let CPSETTERS: WeakSet<(value: unknown) => void>;
+export let COMPUTED_GETTERS: WeakSet<() => unknown>;
 
 if (DEBUG) {
-  CPGETTERS = new WeakSet();
-  CPSETTERS = new WeakSet();
+  COMPUTED_GETTERS = new WeakSet();
 }
 
 function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor): () => unknown {
@@ -85,7 +83,7 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor
   }
 
   if (DEBUG) {
-    CPGETTERS.add(getter);
+    COMPUTED_GETTERS.add(getter);
   }
 
   return getter;
@@ -94,17 +92,17 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor
 function DESCRIPTOR_SETTER_FUNCTION(
   name: string,
   descriptor: ComputedDescriptor
-): (value: unknown) => void {
-  function setter(this: object, value: unknown): void {
+): (value: any) => void {
+  let set = function CPSETTER_FUNCTION(this: object, value: any): void {
     return descriptor.set(this, name, value);
-  }
+  };
 
-  if (DEBUG) {
-    CPSETTERS.add(setter);
-  }
+  COMPUTED_SETTERS.add(set);
 
-  return setter;
+  return set;
 }
+
+export const COMPUTED_SETTERS = new WeakSet();
 
 export function makeComputedDecorator(
   desc: ComputedDescriptor,
@@ -119,7 +117,10 @@ export function makeComputedDecorator(
   ): DecoratorPropertyDescriptor {
     assert(
       `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
-      isClassicDecorator || !propertyDesc || !propertyDesc.get || !CPGETTERS.has(propertyDesc.get)
+      isClassicDecorator ||
+        !propertyDesc ||
+        !propertyDesc.get ||
+        !COMPUTED_GETTERS.has(propertyDesc.get)
     );
 
     let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
