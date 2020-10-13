@@ -1,7 +1,13 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { VMArguments } from '@glimmer/interfaces';
-import { createComputeRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
+import {
+  createComputeRef,
+  isInvokableRef,
+  Reference,
+  updateRef,
+  valueForRef,
+} from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import buildUntouchableThis from '../utils/untouchable-this';
 
@@ -78,32 +84,18 @@ const context = buildUntouchableThis('`fn` helper');
   @public
   @since 3.11.0
 */
-
 export default function (args: VMArguments) {
   let positional = args.positional.capture();
+  let callbackRef = positional[0];
+
+  if (DEBUG) assertCallbackIsFn(callbackRef);
 
   return createComputeRef(
     () => {
-      let callbackRef = positional[0];
-
-      assert(
-        `You must pass a function as the \`fn\` helpers first argument.`,
-        callbackRef !== undefined
-      );
-
-      if (DEBUG && !isInvokableRef(callbackRef)) {
-        let callback = valueForRef(callbackRef);
-
-        assert(
-          `You must pass a function as the \`fn\` helpers first argument, you passed ${
-            callback === null ? 'null' : typeof callback
-          }. While rendering:\n\n${callbackRef.debugLabel}`,
-          typeof callback === 'function'
-        );
-      }
-
       return (...invocationArgs: unknown[]) => {
         let [fn, ...args] = reifyPositional(positional);
+
+        if (DEBUG) assertCallbackIsFn(callbackRef);
 
         if (isInvokableRef(callbackRef)) {
           let value = args[0] || invocationArgs[0];
@@ -115,5 +107,14 @@ export default function (args: VMArguments) {
     },
     null,
     'fn'
+  );
+}
+
+function assertCallbackIsFn(callbackRef: Reference) {
+  assert(
+    `You must pass a function as the \`fn\` helpers first argument, you passed ${
+      callbackRef ? valueForRef(callbackRef) : callbackRef
+    }. While rendering:\n\n${callbackRef?.debugLabel}`,
+    callbackRef && (isInvokableRef(callbackRef) || typeof valueForRef(callbackRef) === 'function')
   );
 }

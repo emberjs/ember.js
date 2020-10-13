@@ -122,7 +122,7 @@ moduleFor(
 
     '@test asserts if no argument given'() {
       expectAssertion(() => {
-        this.render(`{{invoke (fn)}}`, {
+        this.render(`{{fn}}`, {
           myFunc: null,
           arg1: 'foo',
           arg2: 'bar',
@@ -132,7 +132,7 @@ moduleFor(
 
     '@test asserts if the first argument is undefined'() {
       expectAssertion(() => {
-        this.render(`{{invoke (fn this.myFunc this.arg1 this.arg2)}}`, {
+        this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
           myFunc: undefined,
           arg1: 'foo',
           arg2: 'bar',
@@ -142,7 +142,7 @@ moduleFor(
 
     '@test asserts if the first argument is null'() {
       expectAssertion(() => {
-        this.render(`{{invoke (fn this.myFunc this.arg1 this.arg2)}}`, {
+        this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
           myFunc: null,
           arg1: 'foo',
           arg2: 'bar',
