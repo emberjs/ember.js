@@ -1,27 +1,14 @@
 import { moduleFor, RenderingTestCase, strip, equalTokens, runTask } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
-import { EMBER_GLIMMER_IN_ELEMENT } from '@ember/canary-features';
 
 const deprecationMessage = /The use of the private `{{-in-element}}` is deprecated, please refactor to the public `{{in-element}}`/;
 
 moduleFor(
   '{{-in-element}}',
   class extends RenderingTestCase {
-    ['@feature(!EMBER_GLIMMER_IN_ELEMENT) using {{#in-element whatever}} asserts']() {
-      // the in-element keyword is not yet public API this test should be removed
-      // once https://github.com/emberjs/rfcs/pull/287 lands and is enabled
-
-      let el = document.createElement('div');
-      expectAssertion(() => {
-        this.render(strip`{{#in-element el}}{{/in-element}}`, { el });
-      }, /The {{in-element}} helper cannot be used. \('-top-level' @ L1:C0\)/);
-    }
-
     ['@test allows rendering into an external element']() {
-      if (EMBER_GLIMMER_IN_ELEMENT) {
-        expectDeprecation(deprecationMessage);
-      }
+      expectDeprecation(deprecationMessage);
 
       let someElement = document.createElement('div');
 
@@ -54,9 +41,7 @@ moduleFor(
     }
 
     ['@test it appends to the external element by default']() {
-      if (EMBER_GLIMMER_IN_ELEMENT) {
-        expectDeprecation(deprecationMessage);
-      }
+      expectDeprecation(deprecationMessage);
 
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
@@ -90,9 +75,7 @@ moduleFor(
     }
 
     ['@test allows appending to the external element with insertBefore=null']() {
-      if (EMBER_GLIMMER_IN_ELEMENT) {
-        expectDeprecation(deprecationMessage);
-      }
+      expectDeprecation(deprecationMessage);
 
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
@@ -126,9 +109,7 @@ moduleFor(
     }
 
     ['@test allows clearing the external element with insertBefore=undefined']() {
-      if (EMBER_GLIMMER_IN_ELEMENT) {
-        expectDeprecation(deprecationMessage);
-      }
+      expectDeprecation(deprecationMessage);
 
       let someElement = document.createElement('div');
       someElement.appendChild(document.createTextNode('foo '));
@@ -162,9 +143,7 @@ moduleFor(
     }
 
     ['@test does not allow insertBefore=non-null-value']() {
-      if (EMBER_GLIMMER_IN_ELEMENT) {
-        expectDeprecation(deprecationMessage);
-      }
+      expectDeprecation(deprecationMessage);
 
       let someElement = document.createElement('div');
 
@@ -184,9 +163,7 @@ moduleFor(
     }
 
     ['@test components are cleaned up properly'](assert) {
-      if (EMBER_GLIMMER_IN_ELEMENT) {
-        expectDeprecation(deprecationMessage);
-      }
+      expectDeprecation(deprecationMessage);
 
       let hooks = [];
 
@@ -256,9 +233,7 @@ moduleFor(
     }
 
     ['@test appending to the root element should not cause double clearing']() {
-      if (EMBER_GLIMMER_IN_ELEMENT) {
-        expectDeprecation(deprecationMessage);
-      }
+      expectDeprecation(deprecationMessage);
 
       this.render(
         strip`
