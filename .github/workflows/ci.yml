@@ -24,8 +24,7 @@ jobs:
       - name: install dependencies
         run: yarn install --frozen-lockfile
 
-      - run: yarn eslint
-      - run: yarn problems
+      - run: yarn lint
 
   test-chrome:
     name: Chrome
