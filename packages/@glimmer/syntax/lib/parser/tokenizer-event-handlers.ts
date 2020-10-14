@@ -396,7 +396,7 @@ export function preprocess(html: string, options: PreprocessOptions = {}): AST.T
     entityParser = new EntityParser({});
   }
 
-  let program = new TokenizerEventHandlers(html, entityParser).acceptTemplate(ast);
+  let program = new TokenizerEventHandlers(html, entityParser, mode).acceptTemplate(ast);
 
   if (options && options.plugins && options.plugins.ast) {
     for (let i = 0, l = options.plugins.ast.length; i < l; i++) {
