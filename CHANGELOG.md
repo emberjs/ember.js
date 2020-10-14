@@ -1,3 +1,13 @@
+## v0.62.3 (2020-10-14)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1174](https://github.com/glimmerjs/glimmer-vm/pull/1174) Update simple-html-tokenizer and use its codemod mode. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.62.2 (2020-10-14)
 
 #### :rocket: Enhancement
