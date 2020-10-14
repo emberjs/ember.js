@@ -1,3 +1,18 @@
+## v0.62.2 (2020-10-14)
+
+#### :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1169](https://github.com/glimmerjs/glimmer-vm/pull/1169) [FEAT] Adds better logging for render errors ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1172](https://github.com/glimmerjs/glimmer-vm/pull/1172) Ensure "pause on uncaught" exceptions pauses in correct location. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.62.1 (2020-09-24)
 
 #### :bug: Bug Fix
