@@ -4,8 +4,8 @@ import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { tryInvoke } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { EmberLocation, UpdateCallback } from './api';
 import {
+  EmberLocation,
   getFullPath,
   getHash,
   getPath,
@@ -13,8 +13,8 @@ import {
   replacePath,
   supportsHashChange,
   supportsHistory,
+  UpdateCallback,
 } from './util';
-
 /**
 @module @ember/routing
 */
