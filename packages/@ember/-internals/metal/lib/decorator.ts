@@ -1,5 +1,6 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
+import { _WeakSet } from '@ember/polyfills';
 
 export type DecoratorPropertyDescriptor = PropertyDescriptor & { initializer?: any } | undefined;
 
@@ -79,10 +80,16 @@ function DESCRIPTOR_SETTER_FUNCTION(
   name: string,
   descriptor: ComputedDescriptor
 ): (value: any) => void {
-  return function CPSETTER_FUNCTION(this: object, value: any): void {
+  let set = function CPSETTER_FUNCTION(this: object, value: any): void {
     return descriptor.set(this, name, value);
   };
+
+  COMPUTED_SETTERS.add(set);
+
+  return set;
 }
+
+export const COMPUTED_SETTERS = new _WeakSet();
 
 export function makeComputedDecorator(
   desc: ComputedDescriptor,
