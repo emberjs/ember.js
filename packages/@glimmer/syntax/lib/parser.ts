@@ -39,9 +39,13 @@ export abstract class Parser {
   > = null;
   public tokenizer: EventedTokenizer;
 
-  constructor(source: string, entityParser = new EntityParser(namedCharRefs)) {
+  constructor(
+    source: string,
+    entityParser = new EntityParser(namedCharRefs),
+    mode: 'precompile' | 'codemod' = 'precompile'
+  ) {
     this.source = source.split(/(?:\r\n?|\n)/g);
-    this.tokenizer = new EventedTokenizer(this, entityParser);
+    this.tokenizer = new EventedTokenizer(this, entityParser, mode);
   }
 
   abstract Program(node: HBS.Program): HBS.Output<'Program'>;
