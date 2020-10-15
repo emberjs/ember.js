@@ -1,3 +1,5 @@
+import { DEBUG } from '@glimmer/env';
+
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
@@ -43,7 +45,11 @@ moduleFor(
 
       runTask(() => set(this.context, 'switch', true));
 
-      this.assertText('hello');
+      if (DEBUG) {
+        this.assertText('', 'it does not rerender after error in development');
+      } else {
+        this.assertText('hello', 'it rerenders after error in production');
+      }
     }
 
     ['@skip it can recover resets the transaction when an error is thrown during rerender'](
@@ -91,7 +97,11 @@ moduleFor(
 
       runTask(() => set(this.context, 'switch', true));
 
-      this.assertText('hello');
+      if (DEBUG) {
+        this.assertText('', 'it does not rerender after error in development');
+      } else {
+        this.assertText('hello', 'it does rerender after error in production');
+      }
     }
 
     ['@test it can recover resets the transaction when an error is thrown during didInsertElement'](
