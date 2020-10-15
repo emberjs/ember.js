@@ -1,10 +1,8 @@
 import {
   HighLevelBuilderOpcode,
-  HighLevelCompileOpcode,
   HighLevelResolutionOpcode,
   MachineOp,
   Op,
-  ResolveHandle,
   SexpOpcodes,
   StatementCompileActions,
   StatementSexpOpcode,
@@ -21,14 +19,19 @@ import {
   InvokeStaticBlockWithStack,
   YieldBlock,
 } from '../opcode-builder/helpers/blocks';
-import { InvokeComponent, InvokeStaticComponent } from '../opcode-builder/helpers/components';
+import { InvokeComponent, InvokeDynamicComponent } from '../opcode-builder/helpers/components';
 import { Replayable, ReplayableIf } from '../opcode-builder/helpers/conditional';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
-import { DynamicScope, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
+import { Call, DynamicScope, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { arr, label, strArray, other } from '../opcode-builder/operands';
-import { expectLooseFreeVariable, isLooseGetFree, isStrictFreeVariable } from '../utils';
+import { lookupLocal } from '../utils';
 import { Compilers } from './compilers';
 import { NONE } from './concat';
+import {
+  isGetFreeComponent,
+  isGetFreeComponentOrHelper,
+  isGetFreeOptionalComponentOrHelper,
+} from './push-resolution';
 
 export const STATEMENTS = new Compilers<StatementSexpOpcode, StatementCompileActions>();
 
@@ -51,28 +54,15 @@ STATEMENTS.add(SexpOpcodes.Comment, (sexp) => op(Op.Comment, sexp[1]));
 STATEMENTS.add(SexpOpcodes.CloseElement, () => op(Op.CloseElement));
 STATEMENTS.add(SexpOpcodes.FlushElement, () => op(Op.FlushElement));
 
-STATEMENTS.add(SexpOpcodes.Modifier, (sexp, meta) => {
-  let [, name, params, hash] = sexp;
-
-  let stringName = expectLooseFreeVariable(name, meta, 'Expected modifier head to be a string');
-
-  if (typeof stringName !== 'string') {
-    return stringName;
-  }
-
-  return op(HighLevelResolutionOpcode.IfResolved, {
-    kind: ResolveHandle.Modifier,
-    name: stringName,
-    andThen: (handle) => [
+STATEMENTS.add(SexpOpcodes.Modifier, ([, expr, params, hash]) => {
+  return op(HighLevelResolutionOpcode.ResolveModifier, {
+    expr,
+    then: (handle) => [
       op(MachineOp.PushFrame),
-      SimpleArgs({ params, hash, atNames: false }),
+      SimpleArgs({ positional: params, named: hash, atNames: false }),
       op(Op.Modifier, handle),
       op(MachineOp.PopFrame),
     ],
-    span: {
-      start: 0,
-      end: 0,
-    },
   });
 });
 
@@ -112,64 +102,18 @@ STATEMENTS.add(SexpOpcodes.OpenElementWithSplat, ([, tag]) => {
   return [op(Op.PutComponentOperations), op(Op.OpenElement, inflateTagName(tag))];
 });
 
-STATEMENTS.add(SexpOpcodes.Component, ([, tag, elementBlock, args, blocks], meta) => {
-  let componentName: string | null = null;
-
-  if (Array.isArray(tag) && tag[0] === SexpOpcodes.GetFreeAsComponentHead) {
-    componentName = meta.upvars![tag[1]];
-  }
-
-  if (componentName !== null) {
-    // The component name was a free variable lookup; in non-strict mode, this means we'll
-    // use the runtime resolver to resolve the component
-    return op(HighLevelCompileOpcode.IfResolvedComponent, {
-      name: componentName,
-      elementBlock,
-      blocks,
-      staticTemplate: (layoutHandle, capabilities, template, { blocks, elementBlock }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeStaticComponent({
-            capabilities,
-            layout: template,
-            elementBlock,
-            params: null,
-            hash: args,
-            blocks,
-          }),
-        ];
-      },
-      dynamicTemplate: (layoutHandle, capabilities, { elementBlock, blocks }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeComponent({
-            capabilities,
-            elementBlock,
-            params: null,
-            hash: args,
-            atNames: true,
-            blocks,
-          }),
-        ];
+STATEMENTS.add(SexpOpcodes.Component, ([, expr, elementBlock, named, blocks], meta) => {
+  if (isGetFreeComponent(expr)) {
+    return op(HighLevelResolutionOpcode.ResolveComponent, {
+      expr,
+      then(component) {
+        return InvokeComponent(meta, component, elementBlock, null, named, blocks);
       },
     });
-  } else if (isStrictFreeVariable(tag)) {
-    // Strict Mode Note: In strict mode, a free variable (without context) is a variable whose value is known
-    // at compile-time, and therefore this should not be compiled as a DynamicComponent (which needs to insert
-    // guards to handle dynamic changes to the value of the component at runtime)
-    throw new Error(`unimplemented strict mode`);
   } else {
-    // otherwise, the component name was an expression, so resolve the expression and invoke it as a dynamic
-    // component
-    return op(HighLevelCompileOpcode.DynamicComponent, {
-      definition: tag,
-      elementBlock,
-      params: null,
-      args,
-      blocks,
-      atNames: true,
-      curried: true,
-    });
+    // otherwise, the component name was an expression, so resolve the expression
+    // and invoke it as a dynamic component
+    return InvokeDynamicComponent(meta, expr, elementBlock, null, named, blocks, true, true);
   }
 });
 
@@ -211,56 +155,30 @@ STATEMENTS.add(SexpOpcodes.Append, ([, value], meta) => {
     return op(Op.Text, value === null || value === undefined ? '' : String(value));
   }
 
-  let [opcode] = value;
+  if (isGetFreeOptionalComponentOrHelper(value)) {
+    return op(HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper, {
+      expr: value,
+      then(componentOrHandleOrName) {
+        if (typeof componentOrHandleOrName === 'object') {
+          // Resolved component handle, invoke the component directly
+          return InvokeComponent(meta, componentOrHandleOrName, null, null, null, null);
+        } else if (typeof componentOrHandleOrName === 'number') {
+          // Resolved a helper handle, invoke the helper directly
+          return [
+            op(MachineOp.PushFrame),
+            Call({ handle: componentOrHandleOrName, positional: null, named: null }),
+            op(MachineOp.InvokeStatic, {
+              type: 'stdlib',
+              value: 'cautious-append',
+            }),
+            op(MachineOp.PopFrame),
+          ];
+        }
 
-  if (opcode === SexpOpcodes.Call) {
-    let nameOrError = expectLooseFreeVariable(
-      value[1] as WireFormat.Expression,
-      meta,
-      'Expected head of call to be a string'
-    );
-
-    if (typeof nameOrError !== 'string') {
-      return nameOrError;
-    }
-
-    let positional = value[2] as WireFormat.Core.Params;
-    let named = hashToArgs(value[3] as WireFormat.Core.Hash);
-
-    return op(HighLevelCompileOpcode.IfResolvedComponent, {
-      name: nameOrError,
-      elementBlock: null,
-      blocks: null,
-      staticTemplate: (layoutHandle, capabilities, template, { blocks, elementBlock }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeStaticComponent({
-            capabilities,
-            layout: template,
-            elementBlock,
-            params: positional,
-            hash: named,
-            blocks,
-          }),
-        ];
-      },
-      dynamicTemplate: (layoutHandle, capabilities, { elementBlock, blocks }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeComponent({
-            capabilities,
-            elementBlock,
-            params: positional,
-            hash: named,
-            atNames: true,
-            blocks,
-          }),
-        ];
-      },
-      orElse() {
+        // Fallback to {{this}} lookup
         return [
           op(MachineOp.PushFrame),
-          op(HighLevelResolutionOpcode.Expr, value),
+          lookupLocal(meta, componentOrHandleOrName),
           op(MachineOp.InvokeStatic, {
             type: 'stdlib',
             value: 'cautious-append',
@@ -269,43 +187,28 @@ STATEMENTS.add(SexpOpcodes.Append, ([, value], meta) => {
         ];
       },
     });
-  } else if (isLooseGetFree(value, opcode) && value.length === 2) {
-    let name = meta.upvars![value[1]];
+  } else if (value[0] === SexpOpcodes.Call && isGetFreeComponentOrHelper(value[1])) {
+    let [, expr, positional, named] = value;
 
-    return op(HighLevelCompileOpcode.IfResolvedComponent, {
-      name,
-      elementBlock: null,
-      blocks: null,
-      staticTemplate: (layoutHandle, capabilities, template, { blocks, elementBlock }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeStaticComponent({
-            capabilities,
-            layout: template,
-            elementBlock,
-            params: null,
-            hash: null,
-            blocks,
-          }),
-        ];
-      },
-      dynamicTemplate: (layoutHandle, capabilities, { elementBlock, blocks }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeComponent({
-            capabilities,
-            elementBlock,
-            params: null,
-            hash: null,
-            atNames: true,
-            blocks,
-          }),
-        ];
-      },
-      orElse() {
+    return op(HighLevelResolutionOpcode.ResolveComponentOrHelper, {
+      expr,
+      then(componentOrHandle) {
+        if (typeof componentOrHandle === 'object') {
+          // Resolved component handle, invoke the component directly
+          return InvokeComponent(
+            meta,
+            componentOrHandle,
+            null,
+            positional,
+            hashToArgs(named),
+            null
+          );
+        }
+
+        // Resolved a helper handle, invoke the helper directly
         return [
           op(MachineOp.PushFrame),
-          op(HighLevelResolutionOpcode.Expr, value),
+          Call({ handle: componentOrHandle, positional, named }),
           op(MachineOp.InvokeStatic, {
             type: 'stdlib',
             value: 'cautious-append',
@@ -346,53 +249,13 @@ STATEMENTS.add(SexpOpcodes.TrustingAppend, (sexp) => {
   ];
 });
 
-STATEMENTS.add(SexpOpcodes.Block, ([, tag, positional, named, blocks], meta) => {
-  let componentName: string | null = null;
-
-  if (Array.isArray(tag) && tag[0] === SexpOpcodes.GetFreeAsComponentHead) {
-    componentName = meta.upvars![tag[1]];
-  }
-
-  named = hashToArgs(named);
-
-  if (typeof componentName === 'string') {
-    return op(HighLevelCompileOpcode.IfResolvedComponent, {
-      name: componentName,
-      elementBlock: null,
-      blocks,
-      staticTemplate: (layoutHandle, capabilities, template, { blocks, elementBlock }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeStaticComponent({
-            capabilities,
-            layout: template,
-            elementBlock,
-            params: positional,
-            hash: named,
-            blocks,
-          }),
-        ];
-      },
-      dynamicTemplate: (layoutHandle, capabilities, { elementBlock, blocks }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeComponent({
-            capabilities,
-            elementBlock,
-            params: positional,
-            hash: named,
-            atNames: true,
-            blocks,
-          }),
-        ];
-      },
-    });
-  } else {
-    // Strict Mode Note: In strict mode, a free variable (without context) is a variable whose value is known
-    // at compile-time, and therefore this should not be compiled as a DynamicComponent (which needs to insert
-    // guards to handle dynamic changes to the value of the component at runtime)
-    throw new Error(`unimplemented strict mode`);
-  }
+STATEMENTS.add(SexpOpcodes.Block, ([, expr, positional, named, blocks], meta) => {
+  return op(HighLevelResolutionOpcode.ResolveComponent, {
+    expr,
+    then(component) {
+      return InvokeComponent(meta, component, null, positional, hashToArgs(named), blocks);
+    },
+  });
 });
 
 STATEMENTS.add(SexpOpcodes.InElement, ([, block, guid, destination, insertBefore], meta) => {
@@ -559,56 +422,17 @@ STATEMENTS.add(SexpOpcodes.WithDynamicVars, ([, named, block], meta) => {
   }
 });
 
-STATEMENTS.add(SexpOpcodes.InvokeComponent, ([, tag, positional, named, blocks], meta) => {
-  let componentName: string | null = null;
-
-  if (Array.isArray(tag) && tag[0] === SexpOpcodes.GetFreeAsComponentHead) {
-    componentName = meta.upvars![tag[1]];
-  }
-
-  if (typeof componentName === 'string') {
-    return op(HighLevelCompileOpcode.IfResolvedComponent, {
-      name: componentName,
-      elementBlock: null,
-      blocks,
-      staticTemplate: (layoutHandle, capabilities, template, { blocks, elementBlock }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeStaticComponent({
-            capabilities,
-            layout: template,
-            elementBlock,
-            params: positional,
-            hash: named,
-            blocks,
-          }),
-        ];
-      },
-      dynamicTemplate: (layoutHandle, capabilities, { elementBlock, blocks }) => {
-        return [
-          op(Op.PushComponentDefinition, layoutHandle),
-          InvokeComponent({
-            capabilities,
-            elementBlock,
-            params: positional,
-            hash: named,
-            atNames: true,
-            blocks,
-          }),
-        ];
+STATEMENTS.add(SexpOpcodes.InvokeComponent, ([, expr, positional, named, blocks], meta) => {
+  if (isGetFreeComponent(expr)) {
+    return op(HighLevelResolutionOpcode.ResolveComponent, {
+      expr,
+      then(component) {
+        return InvokeComponent(meta, component, null, positional, named, blocks);
       },
     });
   }
 
-  return op(HighLevelCompileOpcode.DynamicComponent, {
-    definition: tag,
-    elementBlock: null,
-    params: positional,
-    args: named,
-    atNames: false,
-    blocks,
-    curried: false,
-  });
+  return InvokeDynamicComponent(meta, expr, null, positional, named, blocks, false, false);
 });
 
 function hashToArgs(hash: WireFormat.Core.Hash | null): WireFormat.Core.Hash | null {

@@ -19,8 +19,8 @@ export type Primitive = undefined | null | boolean | number | string;
 
 export interface CompileHelper {
   handle: number;
-  params: Option<WireFormat.Core.Params>;
-  hash: WireFormat.Core.Hash;
+  positional: Option<WireFormat.Core.Params>;
+  named: WireFormat.Core.Hash;
 }
 
 /**
@@ -50,10 +50,10 @@ export function PushPrimitive(primitive: Primitive): OpcodeWrapperOp {
  * @param compile.params An optional list of expressions to compile
  * @param compile.hash An optional list of named arguments (name + expression) to compile
  */
-export function Call({ handle, params, hash }: CompileHelper): ExpressionCompileActions {
+export function Call({ handle, positional, named }: CompileHelper): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
-    SimpleArgs({ params, hash, atNames: false }),
+    SimpleArgs({ positional, named, atNames: false }),
     op(Op.Helper, handle),
     op(MachineOp.PopFrame),
     op(Op.Fetch, $v0),

@@ -25,8 +25,8 @@ import { NONE } from '../../syntax/concat';
  * @param args.atNames
  */
 export function CompileArgs({
-  params,
-  hash,
+  positional: params,
+  named: hash,
   blocks,
   atNames,
 }: ArgsOptions): StatementCompileActions {
@@ -64,10 +64,14 @@ export function CompileArgs({
   return out;
 }
 
-export function SimpleArgs({ params, hash, atNames }: SimpleArgsOptions): ExpressionCompileActions {
+export function SimpleArgs({
+  positional,
+  named,
+  atNames,
+}: SimpleArgsOptions): ExpressionCompileActions {
   let out: ExpressionCompileActions = [];
 
-  let { count, actions } = CompilePositional(params);
+  let { count, actions } = CompilePositional(positional);
 
   out.push(actions);
 
@@ -77,9 +81,9 @@ export function SimpleArgs({ params, hash, atNames }: SimpleArgsOptions): Expres
 
   let names = EMPTY_STRING_ARRAY;
 
-  if (hash) {
-    names = hash[0];
-    let val = hash[1];
+  if (named) {
+    names = named[0];
+    let val = named[1];
     for (let i = 0; i < val.length; i++) {
       out.push(op(HighLevelResolutionOpcode.Expr, val[i]));
     }

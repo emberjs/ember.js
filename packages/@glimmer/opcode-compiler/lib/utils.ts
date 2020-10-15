@@ -4,13 +4,12 @@ import {
   CompilableBlock,
   WireFormat,
   ContainingMetadata,
-  CompileErrorOp,
-  Expressions,
-  SexpOpcodes,
+  ExpressionCompileActions,
+  Op,
 } from '@glimmer/interfaces';
 import { dict, assign } from '@glimmer/util';
 import { compilableBlock } from './compilable-template';
-import { error } from './opcode-builder/encoder';
+import { op } from './opcode-builder/encoder';
 
 interface NamedBlocksDict {
   [key: string]: Option<CompilableBlock>;
@@ -67,72 +66,10 @@ export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMeta
   return new NamedBlocksImpl(out);
 }
 
-export function isStrictFreeVariable(
-  expr: WireFormat.Expression
-): expr is WireFormat.Expressions.GetStrictFree {
-  return Array.isArray(expr) && expr[0] === SexpOpcodes.GetStrictFree;
-}
-
-export function tryLooseFreeVariable(
-  expr: WireFormat.Expression,
-  meta: ContainingMetadata
-): Option<string> {
-  if (!meta.upvars) {
-    return null;
-  }
-
-  if (!Array.isArray(expr)) {
-    return null;
-  }
-
-  if (isGet(expr)) {
-    if (expr.length === 3) {
-      return null;
-    }
-
-    if (isLooseGetFree(expr, expr[0])) {
-      return meta.upvars![expr[1]];
-    }
-
-    return null;
-  }
-
-  return null;
-}
-
-export function expectLooseFreeVariable(
-  expr: WireFormat.Expression,
-  meta: ContainingMetadata,
-  desc: string
-): string | CompileErrorOp {
-  if (!meta.upvars) {
-    return error(`${desc}, but there were no free variables in the template`, 0, 0);
-  }
-
-  let stringHead = tryLooseFreeVariable(expr, meta);
-
-  if (stringHead === null) {
-    throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
+export function lookupLocal(meta: ContainingMetadata, name: string): ExpressionCompileActions {
+  if (meta.asPartial) {
+    return op(Op.ResolveMaybeLocal, name);
   } else {
-    return stringHead;
+    return [op(Op.GetVariable, 0), op(Op.GetProperty, name)];
   }
-}
-
-export function isGet(
-  opcode: Expressions.TupleExpression
-): opcode is Expressions.GetVar | Expressions.GetPath {
-  return opcode[0] >= SexpOpcodes.GetStart && opcode[0] <= SexpOpcodes.GetEnd;
-}
-
-export function isStrictGetFree(
-  opcode: Expressions.GetVar | Expressions.GetPath
-): opcode is Expressions.GetContextualFree {
-  return opcode[0] === SexpOpcodes.GetStrictFree;
-}
-
-export function isLooseGetFree(
-  _opcode: Expressions.TupleExpression,
-  opcodeType: number
-): _opcode is Expressions.GetContextualFree {
-  return opcodeType >= SexpOpcodes.GetLooseFreeStart && opcodeType <= SexpOpcodes.GetLooseFreeEnd;
 }

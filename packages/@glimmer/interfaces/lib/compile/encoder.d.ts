@@ -1,16 +1,11 @@
 import { CompileTimeConstants, CompileTimeHeap } from '../program';
 import { Dict, Option } from '../core';
 import { SingleBuilderOperand, BuilderHandleThunk, SingleBuilderOperands } from './operands';
-import {
-  NamedBlocks,
-  CompilableBlock,
-  CompilableProgram,
-  CompilableTemplate,
-  HandleResult,
-} from '../template';
+import { NamedBlocks, HandleResult } from '../template';
 import { Op, MachineOp } from '../vm-opcodes';
 import * as WireFormat from './wire-format';
 import { InternalComponentCapabilities } from '../managers/internal/component';
+import { CompileTimeComponent } from '../..';
 
 export interface Labels<InstructionEncoder> {
   readonly labels: Dict<number>;
@@ -21,26 +16,21 @@ export interface Labels<InstructionEncoder> {
   patch(encoder: InstructionEncoder): void;
 }
 
-export type HighLevelOp =
-  | HighLevelBuilderOp
-  | HighLevelCompileOp
-  | HighLevelResolutionOp
-  | CompileErrorOp;
+export type HighLevelOp = HighLevelBuilderOp | HighLevelResolutionOp;
 
 export interface AllOpMap {
   [HighLevelBuilderOpcode.Label]: LabelOp;
   [HighLevelBuilderOpcode.StartLabels]: StartLabelsOp;
   [HighLevelBuilderOpcode.StopLabels]: StopLabelsOp;
 
-  [HighLevelResolutionOpcode.IfResolved]: IfResolvedOp;
   [HighLevelResolutionOpcode.Expr]: ExprOp;
+  [HighLevelResolutionOpcode.ResolveModifier]: ResolveModifierOp;
+  [HighLevelResolutionOpcode.ResolveComponent]: ResolveComponentOp;
+  [HighLevelResolutionOpcode.ResolveHelper]: ResolveHelperOp;
+  [HighLevelResolutionOpcode.ResolveComponentOrHelper]: ResolveComponentOrHelperOp;
+  [HighLevelResolutionOpcode.ResolveOptionalHelper]: ResolveOptionalHelperOp;
+  [HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper]: ResolveOptionalComponentOrHelperOp;
   [HighLevelResolutionOpcode.ResolveFree]: ResolveFreeOp;
-  [HighLevelResolutionOpcode.ResolveAmbiguous]: ResolveAmbiguousOp;
-
-  [HighLevelCompileOpcode.IfResolvedComponent]: IfResolvedComponentOp;
-  [HighLevelCompileOpcode.DynamicComponent]: DynamicComponentOp;
-
-  [HighLevelErrorOpcode.Error]: CompileErrorOp;
 }
 
 export type AllOpcode = keyof AllOpMap;
@@ -60,15 +50,11 @@ export const enum HighLevelOpcodeType {
   // Used for basic structure, such as adding labels to the output for jumps
   Builder = 1,
 
-  // Used for statements that can be compiled. These are either macros, or
-  // component invocations.
-  Compile = 2,
-
   // Used for expressions and statements that require the resolver
-  Resolution = 3,
+  Resolution = 2,
 
   // Used for errors
-  Error = 4,
+  Error = 3,
 }
 
 // These values are used in the same space as standard opcodes, so we need to
@@ -82,107 +68,98 @@ export const enum HighLevelBuilderOpcode {
   End = StopLabels,
 }
 
-export const enum HighLevelCompileOpcode {
-  IfResolvedComponent = 1003,
-  DynamicComponent = 1004,
-
-  Start = IfResolvedComponent,
-  End = DynamicComponent,
-}
-
 export const enum HighLevelResolutionOpcode {
-  IfResolved = 1005,
-  Expr = 1006,
-  ResolveFree = 1007,
-  ResolveAmbiguous = 1008,
+  ResolveModifier = 1003,
 
-  Start = IfResolved,
-  End = ResolveAmbiguous,
-}
+  ResolveComponent = 1004,
 
-export const enum HighLevelErrorOpcode {
-  Error = 1009,
-}
+  ResolveHelper = 1005,
+  ResolveOptionalHelper = 1006,
 
-export const enum ResolveHandle {
-  Modifier = 'Modifier',
-  Helper = 'Helper',
-  ComponentDefinition = 'ComponentDefinition',
+  ResolveComponentOrHelper = 1007,
+  ResolveOptionalComponentOrHelper = 1008,
+
+  ResolveFree = 1009,
+
+  Expr = 1010,
+
+  Start = ResolveModifier,
+  End = Expr,
 }
 
 export interface SimpleArgsOptions {
-  params: Option<WireFormat.Core.Params>;
-  hash: Option<WireFormat.Core.Hash>;
+  positional: Option<WireFormat.Core.Params>;
+  named: Option<WireFormat.Core.Hash>;
   atNames: boolean;
 }
 
 export interface ArgsOptions extends SimpleArgsOptions {
-  hash: WireFormat.Core.Hash;
+  named: WireFormat.Core.Hash;
   blocks: NamedBlocks;
 }
 
-export interface IfResolvedOp extends HighLevelOpcode {
+export interface ResolveModifierOp extends HighLevelOpcode {
   type: HighLevelOpcodeType.Resolution;
-  op: HighLevelResolutionOpcode.IfResolved;
+  op: HighLevelResolutionOpcode.ResolveModifier;
   op1: {
-    kind: ResolveHandle;
-    name: string;
-    andThen: (handle: number) => ExpressionCompileActions;
-    span: {
-      start: number;
-      end: number;
-    };
+    expr: WireFormat.Expressions.Expression;
+    then: (handle: number) => ExpressionCompileActions;
   };
 }
 
-export interface IfResolvedComponentBlocks {
-  elementBlock: Option<CompilableBlock>;
-  blocks: NamedBlocks;
-}
-
-export interface IfResolvedComponentOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Compile;
-  op: HighLevelCompileOpcode.IfResolvedComponent;
+export interface ResolveComponentOp extends HighLevelOpcode {
+  type: HighLevelOpcodeType.Resolution;
+  op: HighLevelResolutionOpcode.ResolveComponent;
   op1: {
-    name: string;
-    elementBlock: Option<
-      [WireFormat.Statements.ElementParameter, ...WireFormat.Statements.ElementParameter[]]
-    >;
-    blocks: WireFormat.Core.Blocks;
-    staticTemplate: (
-      handle: number,
-      capabilities: InternalComponentCapabilities,
-      template: CompilableProgram,
-      blocks: IfResolvedComponentBlocks
-    ) => StatementCompileActions;
-    dynamicTemplate: (
-      handle: number,
-      capabilities: InternalComponentCapabilities,
-      blocks: IfResolvedComponentBlocks
-    ) => StatementCompileActions;
-    orElse?: () => StatementCompileActions;
+    expr: WireFormat.Expressions.Expression;
+    then: (component: CompileTimeComponent) => ExpressionCompileActions;
+  };
+}
+export interface ResolveComponentOrHelperOp extends HighLevelOpcode {
+  type: HighLevelOpcodeType.Resolution;
+  op: HighLevelResolutionOpcode.ResolveComponentOrHelper;
+  op1: {
+    expr: WireFormat.Expressions.Expression;
+    then: (componentOrHandle: CompileTimeComponent | number) => ExpressionCompileActions;
   };
 }
 
-export interface DynamicComponentOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Compile;
-  op: HighLevelCompileOpcode.DynamicComponent;
+export interface ResolveHelperOp extends HighLevelOpcode {
+  type: HighLevelOpcodeType.Resolution;
+  op: HighLevelResolutionOpcode.ResolveHelper;
   op1: {
-    definition: WireFormat.Expression;
-    elementBlock: Option<
-      [WireFormat.Statements.ElementParameter, ...WireFormat.Statements.ElementParameter[]]
-    >;
-    params: WireFormat.Core.Params;
-    args: WireFormat.Core.Hash;
-    blocks: WireFormat.Core.Blocks | NamedBlocks;
-    atNames: boolean;
-    curried: boolean;
+    expr: WireFormat.Expressions.Expression;
+    then: (handle: number) => ExpressionCompileActions;
+  };
+}
+export interface ResolveOptionalHelperOp extends HighLevelOpcode {
+  type: HighLevelOpcodeType.Resolution;
+  op: HighLevelResolutionOpcode.ResolveOptionalHelper;
+  op1: {
+    expr: WireFormat.Expressions.Expression;
+    then: (handleOrName: number | string) => ExpressionCompileActions;
   };
 }
 
-export type HighLevelCompileOp = AllOpMap[HighLevelCompileOpcode];
+export interface ResolveOptionalComponentOrHelperOp extends HighLevelOpcode {
+  type: HighLevelOpcodeType.Resolution;
+  op: HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper;
+  op1: {
+    expr: WireFormat.Expressions.Expression;
+    then: (
+      componentOrHandleOrName: CompileTimeComponent | number | string
+    ) => ExpressionCompileActions;
+  };
+}
 
-export type HighLevelCompileOperands = [HighLevelCompileOp['op1']];
+export interface ResolveFreeOp extends HighLevelOpcode {
+  type: HighLevelOpcodeType.Resolution;
+  op: HighLevelResolutionOpcode.ResolveFree;
+  op1: {
+    sym: number;
+    then: (handle: number) => ExpressionCompileActions;
+  };
+}
 
 export type HighLevelResolutionOp = AllOpMap[HighLevelResolutionOpcode];
 
@@ -232,31 +209,7 @@ export interface ExprOp extends HighLevelOpcode {
   op1: WireFormat.Expression;
 }
 
-export interface ResolveFreeOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Resolution;
-  op: HighLevelResolutionOpcode.ResolveFree;
-  op1: number;
-}
-
-export interface ResolveAmbiguousOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Resolution;
-  op: HighLevelResolutionOpcode.ResolveAmbiguous;
-  op1: { upvar: number; allowComponents: boolean };
-}
-
-export interface CompileErrorOp extends HighLevelOpcode {
-  type: HighLevelOpcodeType.Error;
-  op: HighLevelErrorOpcode.Error;
-  op1: {
-    problem: string;
-    start: number;
-    end: number;
-  };
-}
-
 export type HighLevelBuilderOp = AllOpMap[HighLevelBuilderOpcode];
-
-export type HighLevelErrorOp = AllOpMap[HighLevelErrorOpcode];
 
 export type HighLevelBuilderOperands = [HighLevelBuilderOp['op1']];
 
@@ -267,14 +220,14 @@ export type CompileAction = OpcodeWrapperOp | HighLevelBuilderOp | NO_ACTION;
 export interface NestedCompileActions extends Array<CompileActions | CompileAction> {}
 export type CompileActions = CompileAction | NestedCompileActions;
 
-export type StatementCompileOp = CompileOp | HighLevelCompileOp | HighLevelResolutionOp;
-export type StatementCompileAction = StatementCompileOp | CompileErrorOp | NO_ACTION;
+export type StatementCompileOp = CompileOp | HighLevelResolutionOp;
+export type StatementCompileAction = StatementCompileOp | NO_ACTION;
 export interface NestedStatementCompileActions
   extends Array<StatementCompileAction | NestedStatementCompileActions> {}
 export type StatementCompileActions = NestedStatementCompileActions | StatementCompileAction;
 
 export type ExpressionCompileOp = CompileOp | HighLevelResolutionOp | ExprOp;
-export type ExpressionCompileAction = ExpressionCompileOp | CompileErrorOp | NO_ACTION;
+export type ExpressionCompileAction = ExpressionCompileOp | NO_ACTION;
 export interface NestedExpressionCompileActions
   extends Array<ExpressionCompileAction | NestedExpressionCompileActions> {}
 

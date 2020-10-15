@@ -18,7 +18,7 @@ export const enum VariableResolutionContext {
   Strict = 0,
   AmbiguousAppend = 1,
   AmbiguousAppendInvoke = 2,
-  AmbiguousAttr = 3,
+  AmbiguousInvoke = 3,
   LooseFreeVariable = 4,
   ResolveAsCallHead = 5,
   ResolveAsModifierHead = 6,
@@ -179,7 +179,8 @@ export namespace Expressions {
     | GetFreeAsHelperHead
     | GetFreeAsModifierHead
     | GetFreeAsComponentHead;
-  export type GetVar = GetSymbol | GetStrictFree | GetContextualFree;
+  export type GetFree = GetStrictFree | GetContextualFree;
+  export type GetVar = GetSymbol | GetFree;
 
   export type GetPathSymbol = [SexpOpcodes.GetSymbol, number, Path];
   export type GetPathStrictFree = [SexpOpcodes.GetStrictFree, number, Path];
@@ -211,7 +212,8 @@ export namespace Expressions {
     | GetPathFreeAsHelperHead
     | GetPathFreeAsModifierHead
     | GetPathFreeAsComponentHead;
-  export type GetPath = GetPathSymbol | GetPathStrictFree | GetPathContextualFree;
+  export type GetPathFree = GetPathStrictFree | GetPathContextualFree;
+  export type GetPath = GetPathSymbol | GetPathFree;
 
   export type Get = GetVar | GetPath;
 
