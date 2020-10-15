@@ -11,17 +11,15 @@ import {
   MachineOp,
   NamedBlocks,
   InternalComponentCapabilities,
-  Owner,
   StatementCompileActions,
   WireFormat,
   Option,
   Op,
   NestedStatementCompileActions,
 } from '@glimmer/interfaces';
-
+import { $s0, $s1, $sp, $v0, SavedRegister } from '@glimmer/vm';
+import { namedBlocks } from '../../utils';
 import { label, other, strArray } from '../operands';
-import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
-import { meta, CompileArgs, CompilePositional, SimpleArgs } from './shared';
 import {
   InvokeStaticBlock,
   PushCompilable,
@@ -35,6 +33,7 @@ import { NONE } from '../../syntax/concat';
 import { EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { MINIMAL_CAPABILITIES } from '@glimmer/runtime';
 import { compilableBlock } from '../../compilable-template';
+import { CompileArgs, CompilePositional, meta, SimpleArgs } from './shared';
 
 export const ATTRS_BLOCK = '&attrs';
 
@@ -42,8 +41,8 @@ export type Block = () => CompileActions;
 
 interface AnyComponent {
   elementBlock: Option<CompilableBlock>;
-  params: Option<WireFormat.Core.Params>;
-  hash: WireFormat.Core.Hash;
+  positional: WireFormat.Core.Params;
+  named: WireFormat.Core.Hash;
   blocks: NamedBlocks;
 }
 
@@ -57,8 +56,8 @@ export interface DynamicComponent extends AnyComponent {
 // (component)
 export interface CurryComponent {
   definition: WireFormat.Expression;
-  params: Option<WireFormat.Core.Params>;
-  hash: WireFormat.Core.Hash;
+  positional: WireFormat.Core.Params;
+  named: WireFormat.Core.Hash;
   atNames: boolean;
 }
 
@@ -81,12 +80,94 @@ export interface Component extends AnyComponent {
   layout?: CompilableProgram;
 }
 
-export function InvokeStaticComponent({
+export function InvokeComponent(
+  meta: ContainingMetadata,
+  component: CompileTimeComponent,
+  _elementBlock: WireFormat.Core.ElementParameters,
+  positional: WireFormat.Core.Params,
+  named: WireFormat.Core.Hash,
+  _blocks: WireFormat.Core.Blocks
+): StatementCompileActions {
+  let { compilable, capabilities, handle } = component;
+
+  let elementBlock = _elementBlock ? compilableBlock([_elementBlock], meta) : null;
+  let blocks = Array.isArray(_blocks) || _blocks === null ? namedBlocks(_blocks, meta) : _blocks;
+
+  if (compilable) {
+    return [
+      op(Op.PushComponentDefinition, handle),
+      InvokeStaticComponent({
+        capabilities: capabilities || MINIMAL_CAPABILITIES,
+        layout: compilable,
+        elementBlock,
+        positional,
+        named,
+        blocks,
+      }),
+    ];
+  } else {
+    return [
+      op(Op.PushComponentDefinition, handle),
+      InvokeNonStaticComponent({
+        capabilities: capabilities || MINIMAL_CAPABILITIES,
+        elementBlock,
+        positional,
+        named,
+        atNames: true,
+        blocks,
+      }),
+    ];
+  }
+}
+
+export function InvokeDynamicComponent(
+  meta: ContainingMetadata,
+  definition: WireFormat.Core.Expression,
+  _elementBlock: WireFormat.Core.ElementParameters,
+  positional: WireFormat.Core.Params,
+  named: WireFormat.Core.Hash,
+  _blocks: WireFormat.Core.Blocks,
+  atNames: boolean,
+  curried: boolean
+): StatementCompileActions {
+  let elementBlock = _elementBlock ? compilableBlock([_elementBlock], meta) : null;
+  let blocks = Array.isArray(_blocks) || _blocks === null ? namedBlocks(_blocks, meta) : _blocks;
+
+  return Replayable({
+    args: () => {
+      return {
+        count: 2,
+        actions: [op(HighLevelResolutionOpcode.Expr, definition), op(Op.Dup, $sp, 0)],
+      };
+    },
+
+    body: () => {
+      return [
+        op(Op.JumpUnless, label('ELSE')),
+        curried
+          ? op(Op.ResolveCurriedComponent)
+          : op(Op.ResolveDynamicComponent, other(meta.owner)),
+        op(Op.PushDynamicComponentInstance),
+        InvokeNonStaticComponent({
+          capabilities: true,
+          elementBlock,
+          positional,
+          named,
+          atNames,
+          blocks,
+        }),
+        op(HighLevelBuilderOpcode.Label, 'ELSE'),
+      ];
+    },
+  });
+}
+
+function InvokeStaticComponent({
   capabilities,
   layout,
   elementBlock,
-  params,
-  hash,
+  positional,
+  named,
   blocks,
 }: StaticComponent): StatementCompileActions {
   let { symbolTable } = layout;
@@ -94,11 +175,11 @@ export function InvokeStaticComponent({
   let bailOut = symbolTable.hasEval || capabilities.prepareArgs;
 
   if (bailOut) {
-    return InvokeComponent({
+    return InvokeNonStaticComponent({
       capabilities,
       elementBlock,
-      params,
-      hash,
+      positional,
+      named,
       atNames: true,
       blocks,
       layout,
@@ -151,7 +232,7 @@ export function InvokeStaticComponent({
   // or not an argument is used, so we have to give access to all of them.
   if (capabilities.createArgs) {
     // First we push positional arguments
-    let { count, actions } = CompilePositional(params);
+    let { count, actions } = CompilePositional(positional);
 
     out.push(actions);
 
@@ -166,9 +247,9 @@ export function InvokeStaticComponent({
     // in the invoked component (e.g. they are used within its template), we push
     // that symbol. If not, we still push the expression as it may be used, and
     // we store the symbol as -1 (this is used later).
-    if (hash !== null) {
-      names = hash[0];
-      let val = hash[1];
+    if (named !== null) {
+      names = named[0];
+      let val = named[1];
 
       for (let i = 0; i < val.length; i++) {
         let symbol = symbols.indexOf(names[i]);
@@ -186,12 +267,12 @@ export function InvokeStaticComponent({
     // And push an extra pop operation to remove the args before we begin setting
     // variables on the local context
     argSymbols.push(-1);
-  } else if (hash !== null) {
+  } else if (named !== null) {
     // If the component does not have the `createArgs` capability, then the only
     // expressions we need to push onto the stack are those that are actually
     // referenced in the template of the invoked component (e.g. have symbols).
-    let names = hash[0];
-    let val = hash[1];
+    let names = named[0];
+    let val = named[1];
 
     for (let i = 0; i < val.length; i++) {
       let name = names[i];
@@ -247,8 +328,8 @@ export function InvokeStaticComponent({
   }
 
   // if any positional params exist, pop them off the stack as well
-  if (params !== null) {
-    out.push(op(Op.Pop, params.length));
+  if (positional !== null) {
+    out.push(op(Op.Pop, positional.length));
   }
 
   // Finish up by popping off and assigning blocks
@@ -272,37 +353,43 @@ export function InvokeStaticComponent({
   return out;
 }
 
-export function InvokeDynamicComponent(
-  meta: ContainingMetadata,
-  { definition, elementBlock, params, hash, atNames, blocks, curried }: DynamicComponent
-): StatementCompileActions {
-  return Replayable({
-    args: () => {
-      return {
-        count: 2,
-        actions: [op(HighLevelResolutionOpcode.Expr, definition), op(Op.Dup, $sp, 0)],
-      };
-    },
+function InvokeNonStaticComponent({
+  capabilities,
+  elementBlock,
+  positional,
+  named,
+  atNames,
+  blocks: namedBlocks,
+  layout,
+}: Component): StatementCompileActions {
+  let bindableBlocks = !!namedBlocks;
+  let bindableAtNames =
+    capabilities === true || capabilities.prepareArgs || !!(named && named[0].length !== 0);
 
-    body: () => {
-      return [
-        op(Op.JumpUnless, label('ELSE')),
-        curried
-          ? op(Op.ResolveCurriedComponent)
-          : op(Op.ResolveDynamicComponent, other(meta.owner)),
-        op(Op.PushDynamicComponentInstance),
-        InvokeComponent({
-          capabilities: true,
-          elementBlock,
-          params,
-          hash,
-          atNames,
-          blocks,
-        }),
-        op(HighLevelBuilderOpcode.Label, 'ELSE'),
-      ];
-    },
-  });
+  let blocks = namedBlocks.with('attrs', elementBlock);
+
+  return [
+    op(Op.Fetch, $s0),
+    op(Op.Dup, $sp, 1),
+    op(Op.Load, $s0),
+
+    op(MachineOp.PushFrame),
+    CompileArgs({ positional, named, blocks, atNames }),
+    op(Op.PrepareArgs, $s0),
+    invokePreparedComponent(blocks.has('default'), bindableBlocks, bindableAtNames, () => {
+      let out: NestedStatementCompileActions;
+
+      if (layout) {
+        out = [PushSymbolTable(layout.symbolTable), PushCompilable(layout), op(Op.CompileBlock)];
+      } else {
+        out = [op(Op.GetComponentLayout, $s0)];
+      }
+
+      out.push(op(Op.PopulateLayout, $s0));
+      return out;
+    }),
+    op(Op.Load, $s0),
+  ];
 }
 
 export function WrappedComponent(
@@ -331,82 +418,6 @@ export function WrappedComponent(
     op(HighLevelBuilderOpcode.Label, 'END'),
     op(Op.Load, $s1),
     op(HighLevelBuilderOpcode.StopLabels),
-  ];
-}
-
-export function StaticComponent(
-  component: Option<CompileTimeComponent>,
-  args: [WireFormat.Core.Params, WireFormat.Core.Hash, NamedBlocks]
-): StatementCompileActions {
-  let [params, hash, blocks] = args;
-
-  if (component === null) return NONE;
-
-  let { compilable, capabilities, handle } = component;
-
-  if (compilable) {
-    return [
-      op(Op.PushComponentDefinition, handle),
-      InvokeStaticComponent({
-        capabilities: capabilities || MINIMAL_CAPABILITIES,
-        layout: compilable,
-        elementBlock: null,
-        params,
-        hash,
-        blocks,
-      }),
-    ];
-  } else {
-    return [
-      op(Op.PushComponentDefinition, handle),
-      InvokeComponent({
-        capabilities: capabilities || MINIMAL_CAPABILITIES,
-        elementBlock: null,
-        params,
-        hash,
-        atNames: true,
-        blocks,
-      }),
-    ];
-  }
-}
-
-export function InvokeComponent({
-  capabilities,
-  elementBlock,
-  params,
-  hash,
-  atNames,
-  blocks: namedBlocks,
-  layout,
-}: Component): StatementCompileActions {
-  let bindableBlocks = !!namedBlocks;
-  let bindableAtNames =
-    capabilities === true || capabilities.prepareArgs || !!(hash && hash[0].length !== 0);
-
-  let blocks = namedBlocks.with('attrs', elementBlock);
-
-  return [
-    op(Op.Fetch, $s0),
-    op(Op.Dup, $sp, 1),
-    op(Op.Load, $s0),
-
-    op(MachineOp.PushFrame),
-    CompileArgs({ params, hash, blocks, atNames }),
-    op(Op.PrepareArgs, $s0),
-    invokePreparedComponent(blocks.has('default'), bindableBlocks, bindableAtNames, () => {
-      let out: NestedStatementCompileActions;
-
-      if (layout) {
-        out = [PushSymbolTable(layout.symbolTable), PushCompilable(layout), op(Op.CompileBlock)];
-      } else {
-        out = [op(Op.GetComponentLayout, $s0)];
-      }
-
-      out.push(op(Op.PopulateLayout, $s0));
-      return out;
-    }),
-    op(Op.Load, $s0),
   ];
 }
 
@@ -472,16 +483,18 @@ export function InvokeBareComponent(): CompileActions {
   ];
 }
 
-export function curryComponent(
-  { definition, params, hash, atNames }: CurryComponent,
-  owner: Owner | null
+export function CurryComponent(
+  meta: ContainingMetadata,
+  definition: WireFormat.Expression,
+  positional: WireFormat.Core.Params,
+  named: WireFormat.Core.Hash
 ): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
-    SimpleArgs({ params, hash, atNames }),
+    SimpleArgs({ positional, named, atNames: false }),
     op(Op.CaptureArgs),
     op(HighLevelResolutionOpcode.Expr, definition),
-    op(Op.CurryComponent, other(owner)),
+    op(Op.CurryComponent, other(meta.owner)),
     op(MachineOp.PopFrame),
     op(Op.Fetch, $v0),
   ];

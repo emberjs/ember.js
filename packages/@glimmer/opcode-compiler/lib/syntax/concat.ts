@@ -10,7 +10,6 @@ import {
   HighLevelOpcodeType,
 } from '@glimmer/interfaces';
 import pushBuilderOp from './push-builder';
-import pushCompileOp from './push-compile';
 import pushOp from './push-op';
 import pushResolutionOp from './push-resolution';
 import { assertNever } from '@glimmer/util';
@@ -61,14 +60,6 @@ export function concatExpressions(
     pushResolutionOp(encoder, context, action, constants);
   } else if (action.type === HighLevelOpcodeType.Builder) {
     pushBuilderOp(context, action);
-  } else if (action.type === HighLevelOpcodeType.Error) {
-    encoder.error({
-      problem: action.op1.problem,
-      span: {
-        start: action.op1.start,
-        end: action.op1.end,
-      },
-    });
   } else {
     throw assertNever(action, 'unexpected action kind');
   }
@@ -87,13 +78,10 @@ export function concatStatements(
   } else if (action.type === HighLevelOpcodeType.OpcodeWrapper) {
     pushOp(context.encoder, context.program.constants, action);
   } else {
-    if (action.type === HighLevelOpcodeType.Compile) {
-      pushCompileOp(context, action);
-    } else if (action.type === HighLevelOpcodeType.Resolution) {
+    if (action.type === HighLevelOpcodeType.Resolution) {
       pushResolutionOp(context.encoder, context, action, context.program.constants);
     } else if (action.type === HighLevelOpcodeType.Builder) {
       pushBuilderOp(context, action);
-    } else if (action.type === HighLevelOpcodeType.Error) {
     } else {
       throw assertNever(action, `unexpected action type`);
     }

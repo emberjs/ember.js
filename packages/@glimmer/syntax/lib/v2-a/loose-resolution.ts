@@ -69,9 +69,12 @@ export function AttrValueSyntaxContext(node: ASTv1.MustacheStatement): ASTv2.Fre
 export function AppendSyntaxContext(node: ASTv1.MustacheStatement): ASTv2.FreeVarResolution {
   let isSimple = isSimpleCallee(node);
   let isInvoke = isInvokeNode(node);
+  let trusting = node.trusting;
 
   if (isSimple) {
-    return ASTv2.LooseModeResolution.append({ invoke: isInvoke });
+    return trusting
+      ? ASTv2.LooseModeResolution.trustingAppend({ invoke: isInvoke })
+      : ASTv2.LooseModeResolution.append({ invoke: isInvoke });
   } else {
     return isInvoke ? ASTv2.STRICT_RESOLUTION : ASTv2.LooseModeResolution.fallback();
   }

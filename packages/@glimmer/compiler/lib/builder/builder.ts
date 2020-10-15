@@ -215,7 +215,11 @@ export function buildStatement(
       return [
         [
           normalized.trusted ? Op.TrustingAppend : Op.Append,
-          buildExpression(normalized.expr, 'Append', symbols),
+          buildExpression(
+            normalized.expr,
+            normalized.trusted ? 'TrustedAppend' : 'Append',
+            symbols
+          ),
         ],
       ];
     }
@@ -228,7 +232,9 @@ export function buildStatement(
       let builtHash: WireFormat.Core.Hash = hash ? buildHash(hash, symbols) : null;
       let builtExpr: WireFormat.Expression = buildCallHead(
         path,
-        VariableResolutionContext.AmbiguousAppendInvoke,
+        trusted
+          ? VariableResolutionContext.AmbiguousInvoke
+          : VariableResolutionContext.AmbiguousAppendInvoke,
         symbols
       );
 
@@ -480,6 +486,7 @@ export function buildAttributeValue(
 type ExprResolution =
   | VariableResolutionContext
   | 'Append'
+  | 'TrustedAppend'
   | 'AttrValue'
   | 'SubExpression'
   | 'Generic'
@@ -489,6 +496,8 @@ function varContext(context: ExprResolution, bare: boolean): VarResolution {
   switch (context) {
     case 'Append':
       return bare ? 'AppendBare' : 'AppendInvoke';
+    case 'TrustedAppend':
+      return bare ? 'TrustedAppendBare' : 'TrustedAppendInvoke';
     case 'AttrValue':
       return bare ? 'AttrValueBare' : 'AttrValueInvoke';
     default:
@@ -586,6 +595,8 @@ type VarResolution =
   | VariableResolutionContext
   | 'AppendBare'
   | 'AppendInvoke'
+  | 'TrustedAppendBare'
+  | 'TrustedAppendInvoke'
   | 'AttrValueBare'
   | 'AttrValueInvoke'
   | 'SubExpression'
@@ -619,6 +630,10 @@ export function buildVar(
         op = SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback;
       } else if (context === 'AppendInvoke') {
         op = SexpOpcodes.GetFreeAsComponentOrHelperHead;
+      } else if (context === 'TrustedAppendBare') {
+        op = SexpOpcodes.GetFreeAsHelperHeadOrThisFallback;
+      } else if (context === 'TrustedAppendInvoke') {
+        op = SexpOpcodes.GetFreeAsHelperHead;
       } else if (context === 'AttrValueBare') {
         op = SexpOpcodes.GetFreeAsHelperHeadOrThisFallback;
       } else if (context === 'AttrValueInvoke') {
@@ -671,7 +686,7 @@ export function expressionContextOp(context: VariableResolutionContext): GetCont
       return Op.GetFreeAsComponentOrHelperHeadOrThisFallback;
     case VariableResolutionContext.AmbiguousAppendInvoke:
       return Op.GetFreeAsComponentOrHelperHead;
-    case VariableResolutionContext.AmbiguousAttr:
+    case VariableResolutionContext.AmbiguousInvoke:
       return Op.GetFreeAsHelperHeadOrThisFallback;
     case VariableResolutionContext.LooseFreeVariable:
       return Op.GetFreeAsFallback;

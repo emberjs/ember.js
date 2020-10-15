@@ -23,10 +23,10 @@ import { SimpleArgs } from './shared';
  */
 export function YieldBlock(
   to: number,
-  params: Option<WireFormat.Core.Params>
+  positional: Option<WireFormat.Core.Params>
 ): StatementCompileActions {
   return [
-    SimpleArgs({ params, hash: null, atNames: true }),
+    SimpleArgs({ positional, named: null, atNames: true }),
     op(Op.GetBlock, to),
     op(Op.SpreadBlock),
     op(Op.CompileBlock),

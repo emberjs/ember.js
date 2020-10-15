@@ -3,13 +3,12 @@ import {
   ExpressionSexpOpcode,
   HighLevelResolutionOpcode,
   Op,
-  ResolveHandle,
   SexpOpcodes,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
-import { curryComponent } from '../opcode-builder/helpers/components';
+import { CurryComponent } from '../opcode-builder/helpers/components';
 import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
-import { expectLooseFreeVariable } from '../utils';
+import { lookupLocal } from '../utils';
 import { Compilers } from './compilers';
 
 export const EXPRESSIONS = new Compilers<ExpressionSexpOpcode, ExpressionCompileActions>();
@@ -26,80 +25,58 @@ EXPRESSIONS.add(SexpOpcodes.Concat, ([, parts]) => {
   return out;
 });
 
-EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
-  // TODO: triage this in the WF compiler
-  let start = 0;
-  let offset = 0;
+EXPRESSIONS.add(SexpOpcodes.Call, ([, expr, params, hash]) => {
+  return op(HighLevelResolutionOpcode.ResolveHelper, {
+    expr,
+    then: (handle) => Call({ handle, positional: params, named: hash }),
+  });
+});
 
-  let nameOrError = expectLooseFreeVariable(name, meta, 'Expected call head to be a string');
+EXPRESSIONS.add(SexpOpcodes.CurryComponent, ([, expr, positional, named], meta) => {
+  return CurryComponent(meta, expr, positional, named);
+});
 
-  if (typeof nameOrError !== 'string') {
-    return nameOrError;
-  }
+EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, sym, path]) => withPath(op(Op.GetVariable, sym), path));
 
-  return op(HighLevelResolutionOpcode.IfResolved, {
-    kind: ResolveHandle.Helper,
-    name: nameOrError,
-    andThen: (handle) => Call({ handle, params, hash }),
-    span: {
-      start,
-      end: start + offset,
+EXPRESSIONS.add(SexpOpcodes.GetStrictFree, ([, sym, _path]) => {
+  return op(HighLevelResolutionOpcode.ResolveFree, {
+    sym,
+    then(_handle) {
+      // TODO: Implement in strict mode
+
+      return [];
     },
   });
 });
 
-EXPRESSIONS.add(SexpOpcodes.CurryComponent, ([, definition, params, hash], meta) => {
-  return curryComponent(
-    {
-      definition,
-      params,
-      hash,
-      atNames: false,
-    },
-    meta.owner
-  );
-});
-
-EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, sym, path]) => withPath(op(Op.GetVariable, sym), path));
-EXPRESSIONS.add(SexpOpcodes.GetStrictFree, ([, sym, path]) =>
-  withPath(op(HighLevelResolutionOpcode.ResolveFree, sym), path)
-);
 EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, ([, freeVar, path], meta) => {
-  if (meta.asPartial) {
-    let name = meta.upvars![freeVar];
-
-    return withPath(op(Op.ResolveMaybeLocal, name), path);
-  } else {
-    return withPath([op(Op.GetVariable, 0), op(Op.GetProperty, meta.upvars![freeVar])], path);
-  }
+  return withPath(lookupLocal(meta, meta.upvars![freeVar]), path);
 });
 
-EXPRESSIONS.add(
-  SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
-  ([, freeVar, path], meta) => {
-    if (meta.asPartial) {
-      let name = meta.upvars![freeVar];
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, () => {
+  // TODO: The logic for this opcode currently exists in STATEMENTS.Append, since
+  // we want different wrapping logic depending on if we are invoking a component,
+  // helper, or {{this}} fallback. Eventually we fix the opcodes so that we can
+  // traverse the subexpression tree like normal in this location.
+  throw new Error('unimplemented opcode');
+});
 
-      return withPath(op(Op.ResolveMaybeLocal, name), path);
-    } else {
-      return withPath(
-        op(HighLevelResolutionOpcode.ResolveAmbiguous, { upvar: freeVar, allowComponents: true }),
-        path
-      );
-    }
-  }
-);
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (expr, meta) => {
+  // <Foo @arg={{baz}}>
 
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, ([, freeVar, path], meta) => {
   if (meta.asPartial) {
-    let name = meta.upvars![freeVar];
+    let name = meta.upvars![expr[1]];
 
-    return withPath(op(Op.ResolveMaybeLocal, name), path);
+    return op(Op.ResolveMaybeLocal, name);
   } else {
-    return withPath(
-      op(HighLevelResolutionOpcode.ResolveAmbiguous, { upvar: freeVar, allowComponents: false }),
-      path
-    );
+    return op(HighLevelResolutionOpcode.ResolveOptionalHelper, {
+      expr,
+      then(handleOrName) {
+        return typeof handleOrName === 'number'
+          ? Call({ handle: handleOrName, positional: null, named: null })
+          : [op(Op.GetVariable, 0), op(Op.GetProperty, handleOrName)];
+      },
+    });
   }
 });
 

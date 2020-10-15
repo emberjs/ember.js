@@ -14,7 +14,6 @@ import {
   SingleBuilderOperand,
   SingleBuilderOperands,
   Encoder,
-  HighLevelCompileOpcode,
   HighLevelResolutionOpcode,
   HighLevelOp,
   OpcodeSize,
@@ -24,10 +23,8 @@ import {
   Operands,
   NonlabelBuilderOperand,
   Dict,
-  HighLevelErrorOpcode,
   EncoderError,
   HandleResult,
-  CompileErrorOp,
   HighLevelOpcodeType,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
@@ -66,14 +63,6 @@ export class LabelsImpl implements Labels<InstructionEncoder> {
   }
 }
 
-export function error(problem: string, start: number, end: number): CompileErrorOp {
-  return op(HighLevelErrorOpcode.Error, {
-    problem,
-    start,
-    end,
-  });
-}
-
 export function op(name: BuilderOpcode, ...ops: SingleBuilderOperands): OpcodeWrapperOp;
 export function op<K extends AllOpcode>(name: K, ...operands: Operands<AllOpMap[K]>): AllOpMap[K];
 export function op<K extends AllOpcode>(
@@ -101,14 +90,10 @@ export function op<K extends AllOpcode>(
   } else {
     let type: HighLevelOp['type'];
 
-    if (isCompileOpcode(name)) {
-      type = HighLevelOpcodeType.Compile;
-    } else if (isResolutionOpcode(name)) {
+    if (isResolutionOpcode(name)) {
       type = HighLevelOpcodeType.Resolution;
     } else if (isBuilderOpcode(name)) {
       type = HighLevelOpcodeType.Builder;
-    } else if (isErrorOpcode(name)) {
-      type = HighLevelOpcodeType.Error;
     } else {
       throw new Error(`Exhausted ${name}`);
     }
@@ -244,14 +229,6 @@ function isBuilderOpcode(op: AllOpcode): op is HighLevelBuilderOpcode {
   return op >= HighLevelBuilderOpcode.Start && op <= HighLevelBuilderOpcode.End;
 }
 
-function isCompileOpcode(op: AllOpcode): op is HighLevelCompileOpcode {
-  return op >= HighLevelCompileOpcode.Start && op <= HighLevelCompileOpcode.End;
-}
-
 function isResolutionOpcode(op: AllOpcode): op is HighLevelResolutionOpcode {
   return op >= HighLevelResolutionOpcode.Start && op <= HighLevelResolutionOpcode.End;
-}
-
-function isErrorOpcode(op: AllOpcode): op is HighLevelErrorOpcode {
-  return op === HighLevelErrorOpcode.Error;
 }
