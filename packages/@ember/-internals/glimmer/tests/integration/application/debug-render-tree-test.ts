@@ -1644,6 +1644,28 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.assert.strictEqual(actual, expected, `Matching ${path}`);
         }
       }
+
+      async '@test cleans up correctly after errors'(assert: Assert) {
+        this.addTemplate(
+          'application',
+          strip`
+            <HelloWorld @name="first" />
+          `
+        );
+
+        this.addComponent('hello-world', {
+          ComponentClass: Component.extend({
+            init() {
+              throw new Error('oops!');
+            },
+          }),
+          template: 'Hello World',
+        });
+
+        await assert.rejectsAssertion(this.visit('/'), /oops!/);
+
+        assert.deepEqual(captureRenderTree(this.owner), [], 'there was no output');
+      }
     }
   );
 }
