@@ -128,6 +128,15 @@ export default class DebugRenderTree<Bucket extends object = object> {
 
       // TODO: We could warn here? But this happens all the time in our tests?
 
+      // Clean up the root reference to prevent errors from happening if we
+      // attempt to capture the render tree (Ember Inspector may do this)
+      let root = expect(this.stack.toArray()[0], 'expected root state when resetting render tree');
+      let ref = this.refs.get(root);
+
+      if (ref !== undefined) {
+        this.roots.delete(ref);
+      }
+
       while (!this.stack.isEmpty()) {
         this.stack.pop();
       }
