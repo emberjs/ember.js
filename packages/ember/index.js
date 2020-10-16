@@ -6,12 +6,7 @@ import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
 import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import {
-  FEATURES,
-  isEnabled,
-  EMBER_GLIMMER_HELPER_MANAGER,
-  EMBER_GLIMMER_INVOKE_HELPER,
-} from '@ember/canary-features';
+import { FEATURES, isEnabled, EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
@@ -430,9 +425,7 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
   Ember._helperManagerCapabilities = helperCapabilities;
   Ember._setHelperManager = setHelperManager;
 }
-if (EMBER_GLIMMER_INVOKE_HELPER) {
-  Ember._invokeHelper = invokeHelper;
-}
+Ember._invokeHelper = invokeHelper;
 Ember._captureRenderTree = captureRenderTree;
 
 const deprecateImportFromString = function (
