@@ -73,6 +73,6 @@ export type SingleBuilderOperand =
   | number[]
   | string[];
 
-export type Operand = number | StdLibOperand;
+export type Operand = number;
 
 export type EncoderOperands = [] | [Operand] | [Operand, Operand] | [Operand, Operand, Operand];

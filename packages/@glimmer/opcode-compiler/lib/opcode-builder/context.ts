@@ -19,7 +19,7 @@ export function templateCompilationContext(
   program: CompileTimeCompilationContext,
   meta: ContainingMetadata
 ): TemplateCompilationContext {
-  let encoder = new EncoderImpl(meta, program.stdlib);
+  let encoder = new EncoderImpl(program.heap, meta, program.stdlib);
 
   return {
     program,

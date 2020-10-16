@@ -1,7 +1,6 @@
 import { InstructionEncoderImpl } from '@glimmer/encoder';
 import {
   CompileTimeConstants,
-  Labels,
   Operand,
   CompileTimeHeap,
   Op,
@@ -24,8 +23,7 @@ import {
   STDLib,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
-import { Stack, dict, expect, EMPTY_STRING_ARRAY, encodeHandle } from '@glimmer/util';
-import { commit } from '../compiler';
+import { Stack, dict, expect, EMPTY_STRING_ARRAY, encodeHandle, assert } from '@glimmer/util';
 import {
   resolveComponent,
   resolveComponentOrHelper,
@@ -35,10 +33,9 @@ import {
   resolveOptionalHelper,
 } from './helpers/resolution';
 import { compilableBlock } from '../compilable-template';
+import { DEBUG } from '@glimmer/env';
 
-export type OpcodeBuilderLabels = Labels<InstructionEncoder>;
-
-export class LabelsImpl implements Labels<InstructionEncoder> {
+export class Labels {
   labels: Dict<number> = dict();
   targets: Array<{ at: number; target: string }> = [];
 
@@ -50,12 +47,15 @@ export class LabelsImpl implements Labels<InstructionEncoder> {
     this.targets.push({ at, target });
   }
 
-  patch(encoder: InstructionEncoder): void {
+  patch(heap: CompileTimeHeap): void {
     let { targets, labels } = this;
     for (let i = 0; i < targets.length; i++) {
       let { at, target } = targets[i];
       let address = labels[target] - at;
-      encoder.patch(at, address);
+
+      assert(heap.getbyaddr(at) === -1, 'Expected heap to contain a placeholder, but it did not');
+
+      heap.setbyaddr(at, address);
     }
   }
 }
@@ -116,20 +116,29 @@ export function encodeOp(
 }
 
 export class EncoderImpl implements Encoder {
-  private labelsStack = new Stack<OpcodeBuilderLabels>();
+  private labelsStack = new Stack<Labels>();
   private encoder: InstructionEncoder = new InstructionEncoderImpl([]);
   private errors: EncoderError[] = [];
+  private handle: number;
 
-  constructor(private meta: ContainingMetadata, private stdlib?: STDLib) {}
+  constructor(
+    private heap: CompileTimeHeap,
+    private meta: ContainingMetadata,
+    private stdlib?: STDLib
+  ) {
+    this.handle = heap.malloc();
+  }
 
   error(error: EncoderError): void {
     this.encoder.encode(Op.Primitive, 0);
     this.errors.push(error);
   }
 
-  commit(heap: CompileTimeHeap, size: number): HandleResult {
-    this.encoder.encode(MachineOp.Return, OpcodeSize.MACHINE_MASK);
-    let handle = commit(heap, size, this.encoder.buffer);
+  commit(size: number): HandleResult {
+    let handle = this.handle;
+
+    this.heap.push(MachineOp.Return | OpcodeSize.MACHINE_MASK);
+    this.heap.finishMalloc(handle, size);
 
     if (this.errors.length) {
       return { errors: this.errors, handle };
@@ -140,23 +149,27 @@ export class EncoderImpl implements Encoder {
 
   push(
     constants: CompileTimeConstants,
-    name: BuilderOpcode,
+    type: BuilderOpcode,
     ...args: SingleBuilderOperand[]
   ): void {
-    if (isMachineOp(name)) {
-      let operands = args.map((operand, i) => this.operand(constants, operand, i));
-      return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, ...operands);
-    } else {
-      let operands = args.map((operand, i) => this.operand(constants, operand, i));
-      return this.encoder.encode(name, 0, ...operands);
+    let { heap } = this;
+
+    if (DEBUG && (type as number) > OpcodeSize.TYPE_SIZE) {
+      throw new Error(`Opcode type over 8-bits. Got ${type}.`);
+    }
+
+    let machine = isMachineOp(type) ? OpcodeSize.MACHINE_MASK : 0;
+    let first = type | machine | (args.length << OpcodeSize.ARG_SHIFT);
+
+    heap.push(first);
+
+    for (let i = 0; i < args.length; i++) {
+      let op = args[i];
+      heap.push(this.operand(constants, op));
     }
   }
 
-  private operand(
-    constants: CompileTimeConstants,
-    operand: SingleBuilderOperand,
-    index?: number
-  ): Operand {
+  private operand(constants: CompileTimeConstants, operand: SingleBuilderOperand): Operand {
     if (typeof operand === 'number') {
       return operand;
     }
@@ -167,7 +180,7 @@ export class EncoderImpl implements Encoder {
       } else {
         switch (operand.type) {
           case HighLevelOperand.Label:
-            this.currentLabels.target(this.encoder.size + index!, operand.value);
+            this.currentLabels.target(this.heap.offset, operand.value);
             return -1;
 
           case HighLevelOperand.Owner:
@@ -196,21 +209,21 @@ export class EncoderImpl implements Encoder {
     return encodeHandle(constants.value(operand));
   }
 
-  private get currentLabels(): OpcodeBuilderLabels {
+  private get currentLabels(): Labels {
     return expect(this.labelsStack.current, 'bug: not in a label stack');
   }
 
   label(name: string) {
-    this.currentLabels.label(name, this.encoder.size);
+    this.currentLabels.label(name, this.heap.offset + 1);
   }
 
   startLabels() {
-    this.labelsStack.push(new LabelsImpl());
+    this.labelsStack.push(new Labels());
   }
 
   stopLabels() {
     let label = expect(this.labelsStack.pop(), 'unbalanced push and pop labels');
-    label.patch(this.encoder);
+    label.patch(this.heap);
   }
 }
 

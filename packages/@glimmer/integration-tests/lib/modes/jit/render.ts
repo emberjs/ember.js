@@ -4,7 +4,7 @@ import { Reference } from '@glimmer/reference';
 import { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import { preprocess } from '../../compile';
 import { renderMain, renderSync } from '@glimmer/runtime';
-import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/util';
 
 export function renderTemplate(
   src: string,
@@ -14,8 +14,7 @@ export function renderTemplate(
   options?: PrecompileOptions
 ): RenderResult {
   let template = preprocess(src, options);
-  let handle = unwrapTemplate(template).asLayout().compile(program);
 
-  let iterator = renderMain(runtime, program, self, builder, unwrapHandle(handle));
+  let iterator = renderMain(runtime, program, self, builder, unwrapTemplate(template).asLayout());
   return renderSync(runtime.env, iterator);
 }

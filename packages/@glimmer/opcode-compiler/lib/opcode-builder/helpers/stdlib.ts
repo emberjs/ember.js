@@ -83,8 +83,8 @@ function build(
   program: CompileTimeCompilationContext,
   callback: (op: PushStatementOp) => void
 ): number {
-  let encoder = new EncoderImpl(STDLIB_META);
-  let { constants, resolver } = program;
+  let { constants, heap, resolver } = program;
+  let encoder = new EncoderImpl(heap, STDLIB_META);
 
   function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
     encodeOp(encoder, constants, resolver, STDLIB_META, op as BuilderOp | HighLevelOp);
@@ -92,7 +92,7 @@ function build(
 
   callback(pushOp);
 
-  let result = encoder.commit(program.heap, 0);
+  let result = encoder.commit(0);
 
   if (typeof result !== 'number') {
     // This shouldn't be possible

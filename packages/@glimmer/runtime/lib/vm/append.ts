@@ -317,10 +317,9 @@ export default class VM implements PublicVM, InternalVM {
   static initial(
     runtime: RuntimeContext,
     context: CompileTimeCompilationContext,
-    { handle, self, dynamicScope, treeBuilder }: InitOptions
+    { handle, self, dynamicScope, treeBuilder, numSymbols }: InitOptions
   ) {
-    let scopeSize = runtime.program.heap.scopesizeof(handle);
-    let scope = PartialScopeImpl.root(self, scopeSize);
+    let scope = PartialScopeImpl.root(self, numSymbols);
     let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
     let vm = initVM(context)(runtime, state, treeBuilder);
     vm.pushUpdating();
@@ -649,6 +648,7 @@ export interface MinimalInitOptions {
 
 export interface InitOptions extends MinimalInitOptions {
   self: Reference;
+  numSymbols: number;
 }
 
 export type VmInitCallback = (

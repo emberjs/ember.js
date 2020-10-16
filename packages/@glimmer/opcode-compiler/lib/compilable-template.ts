@@ -21,7 +21,6 @@ import { EMPTY_ARRAY } from '@glimmer/util';
 import { templateCompilationContext } from './opcode-builder/context';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { debugCompiler } from './compiler';
-import { patchStdlibs } from '@glimmer/program';
 import { STATEMENTS } from './syntax/statements';
 import { HighLevelStatementOp } from './syntax/compilers';
 import { encodeOp } from './opcode-builder/encoder';
@@ -63,7 +62,6 @@ function maybeCompile(
   let { statements, meta } = compilable;
 
   let result = compileStatements(statements, meta, context);
-  patchStdlibs(context);
   compilable.compiled = result;
 
   return result;
@@ -90,7 +88,7 @@ export function compileStatements(
     sCompiler.compile(pushOp, statements[i]);
   }
 
-  let handle = context.encoder.commit(syntaxContext.heap, meta.size);
+  let handle = context.encoder.commit(meta.size);
 
   if (LOCAL_SHOULD_LOG) {
     debugCompiler(context, handle);

@@ -1,4 +1,4 @@
-import { Option, } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { createConstRef, createPrimitiveRef, createComputeRef } from '@glimmer/reference';
 import {
   RenderTest,

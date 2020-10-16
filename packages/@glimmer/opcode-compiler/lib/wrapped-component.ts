@@ -14,7 +14,6 @@ import { meta } from './opcode-builder/helpers/shared';
 import { ATTRS_BLOCK, WrappedComponent } from './opcode-builder/helpers/components';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { debugCompiler } from './compiler';
-import { patchStdlibs } from '@glimmer/program';
 import { encodeOp } from './opcode-builder/encoder';
 import { HighLevelStatementOp } from './syntax/compilers';
 
@@ -60,7 +59,7 @@ export class WrappedBuilder implements CompilableProgram {
 
     WrappedComponent(pushOp, this.layout, this.attrsBlockNumber);
 
-    let handle = context.encoder.commit(context.program.heap, m.size);
+    let handle = context.encoder.commit(m.size);
 
     if (typeof handle !== 'number') {
       return handle;
@@ -72,7 +71,6 @@ export class WrappedBuilder implements CompilableProgram {
       debugCompiler(context, handle);
     }
 
-    patchStdlibs(context.program);
     return handle;
   }
 }
