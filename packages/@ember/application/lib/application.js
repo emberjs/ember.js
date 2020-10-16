@@ -1143,7 +1143,7 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
-  registry.register('router:main', Router.extend());
+  registry.register('router:main', Router);
   registry.register('-view-registry:main', {
     create() {
       return dictionary(null);
@@ -1167,7 +1167,6 @@ function commonSetupRegistry(registry) {
   });
 
   registry.register('service:router', RouterService);
-  registry.injection('service:router', '_router', 'router:main');
 }
 
 function registerLibraries() {

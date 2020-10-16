@@ -16,6 +16,7 @@ export { default as AbstractApplicationTestCase } from './lib/test-cases/abstrac
 export { default as ApplicationTestCase } from './lib/test-cases/application';
 export { default as QueryParamTestCase } from './lib/test-cases/query-param';
 export { default as RenderingTestCase } from './lib/test-cases/rendering';
+export { default as RouterNonApplicationTestCase } from './lib/test-cases/router-non-application';
 export { default as RouterTestCase } from './lib/test-cases/router';
 export { default as AutobootApplicationTestCase } from './lib/test-cases/autoboot-application';
 export { default as DefaultResolverApplicationTestCase } from './lib/test-cases/default-resolver-application';
