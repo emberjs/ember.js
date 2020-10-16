@@ -6,7 +6,7 @@ import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
 import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import { FEATURES, isEnabled, EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
+import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
@@ -421,10 +421,8 @@ Ember._get = get;
 Ember._on = on;
 Ember._fn = fn;
 
-if (EMBER_GLIMMER_HELPER_MANAGER) {
-  Ember._helperManagerCapabilities = helperCapabilities;
-  Ember._setHelperManager = setHelperManager;
-}
+Ember._helperManagerCapabilities = helperCapabilities;
+Ember._setHelperManager = setHelperManager;
 Ember._invokeHelper = invokeHelper;
 Ember._captureRenderTree = captureRenderTree;
 

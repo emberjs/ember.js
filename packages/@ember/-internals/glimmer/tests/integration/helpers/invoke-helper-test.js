@@ -3,7 +3,6 @@ import { helperCapabilities, setHelperManager } from '@glimmer/manager';
 import { Helper, helper, Component as EmberComponent } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
@@ -447,94 +446,160 @@ moduleFor(
   }
 );
 
-if (EMBER_GLIMMER_HELPER_MANAGER) {
-  class TestHelperManager {
-    capabilities = helperCapabilities('3.23', {
-      hasValue: true,
-      hasDestroyable: true,
-    });
+class TestHelperManager {
+  capabilities = helperCapabilities('3.23', {
+    hasValue: true,
+    hasDestroyable: true,
+  });
 
-    createHelper(Helper, args) {
-      return new Helper(args);
-    }
-
-    getValue(instance) {
-      return instance.value();
-    }
-
-    getDestroyable(instance) {
-      return instance;
-    }
+  createHelper(Helper, args) {
+    return new Helper(args);
   }
 
-  class TestHelper {
-    constructor(args) {
-      this.args = args;
-
-      registerDestructor(this, () => this.willDestroy());
-    }
-
-    willDestroy() {}
+  getValue(instance) {
+    return instance.value();
   }
 
-  setHelperManager((owner) => new TestHelperManager(owner), TestHelper);
+  getDestroyable(instance) {
+    return instance;
+  }
+}
 
-  moduleFor(
-    'Helpers test: invokeHelper with custom helper managers',
-    class extends RenderingTestCase {
-      '@test it works with custom helper managers'() {
-        class PlusOneHelper extends TestHelper {
-          value() {
-            return this.args.positional[0] + 1;
-          }
+class TestHelper {
+  constructor(args) {
+    this.args = args;
+
+    registerDestructor(this, () => this.willDestroy());
+  }
+
+  willDestroy() {}
+}
+
+setHelperManager((owner) => new TestHelperManager(owner), TestHelper);
+
+moduleFor(
+  'Helpers test: invokeHelper with custom helper managers',
+  class extends RenderingTestCase {
+    '@test it works with custom helper managers'() {
+      class PlusOneHelper extends TestHelper {
+        value() {
+          return this.args.positional[0] + 1;
         }
-
-        class PlusOne extends EmberComponent {
-          @tracked number;
-
-          plusOne = invokeHelper(this, PlusOneHelper, () => {
-            return {
-              positional: [this.number],
-            };
-          });
-
-          get value() {
-            return getValue(this.plusOne);
-          }
-        }
-
-        this.registerComponent('plus-one', {
-          template: `{{this.value}}`,
-          ComponentClass: PlusOne,
-        });
-
-        this.render(`<PlusOne @number={{this.value}} />`, {
-          value: 4,
-        });
-
-        this.assertText('5');
-
-        runTask(() => this.rerender());
-
-        this.assertText('5');
-
-        runTask(() => set(this.context, 'value', 5));
-
-        this.assertText('6');
       }
 
-      '@test helper that accesses no args is constant'(assert) {
-        let count = 0;
+      class PlusOne extends EmberComponent {
+        @tracked number;
+
+        plusOne = invokeHelper(this, PlusOneHelper, () => {
+          return {
+            positional: [this.number],
+          };
+        });
+
+        get value() {
+          return getValue(this.plusOne);
+        }
+      }
+
+      this.registerComponent('plus-one', {
+        template: `{{this.value}}`,
+        ComponentClass: PlusOne,
+      });
+
+      this.render(`<PlusOne @number={{this.value}} />`, {
+        value: 4,
+      });
+
+      this.assertText('5');
+
+      runTask(() => this.rerender());
+
+      this.assertText('5');
+
+      runTask(() => set(this.context, 'value', 5));
+
+      this.assertText('6');
+    }
+
+    '@test helper that accesses no args is constant'(assert) {
+      let count = 0;
+
+      class PlusOneHelper extends TestHelper {
+        value() {
+          count++;
+          return 123;
+        }
+      }
+
+      class PlusOne {
+        @tracked number;
+
+        constructor(number) {
+          this.number = number;
+        }
+
+        plusOne = invokeHelper(this, PlusOneHelper, () => {
+          return { positional: [this.number] };
+        });
+
+        get value() {
+          return getValue(this.plusOne);
+        }
+      }
+
+      let instance = new PlusOne(4);
+
+      assert.equal(instance.value, 123, 'helper works');
+      assert.equal(instance.value, 123, 'helper works');
+      assert.equal(count, 1, 'helper only called once');
+
+      instance.number = 5;
+
+      assert.equal(instance.value, 123, 'helper works');
+      assert.equal(count, 1, 'helper not called a second time');
+    }
+
+    '@test helper destroys correctly when context object is destroyed'(assert) {
+      let context = {};
+      let instance;
+
+      class MyTestHelper extends TestHelper {
+        constructor() {
+          super(...arguments);
+          instance = this;
+        }
+      }
+
+      let cache = invokeHelper(context, MyTestHelper);
+
+      registerDestructor(context, () => assert.step('context'));
+      registerDestructor(cache, () => assert.step('cache'));
+      registerDestructor(instance, () => assert.step('instance'));
+
+      runTask(() => destroy(context));
+
+      assert.ok(isDestroyed(context), 'context destroyed');
+      assert.ok(isDestroyed(cache), 'cache destroyed');
+      assert.ok(isDestroyed(instance), 'instance destroyed');
+
+      assert.verifySteps(['instance', 'cache', 'context'], 'destructors ran in correct order');
+    }
+
+    '@test args are frozen in debug builds'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+      } else {
+        assert.expect(1);
 
         class PlusOneHelper extends TestHelper {
           value() {
-            count++;
+            assert.ok(Object.isFrozen(this.args), 'args are frozen');
             return 123;
           }
         }
 
         class PlusOne {
-          @tracked number;
+          number;
 
           constructor(number) {
             this.number = number;
@@ -549,77 +614,9 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
           }
         }
 
-        let instance = new PlusOne(4);
-
-        assert.equal(instance.value, 123, 'helper works');
-        assert.equal(instance.value, 123, 'helper works');
-        assert.equal(count, 1, 'helper only called once');
-
-        instance.number = 5;
-
-        assert.equal(instance.value, 123, 'helper works');
-        assert.equal(count, 1, 'helper not called a second time');
-      }
-
-      '@test helper destroys correctly when context object is destroyed'(assert) {
-        let context = {};
-        let instance;
-
-        class MyTestHelper extends TestHelper {
-          constructor() {
-            super(...arguments);
-            instance = this;
-          }
-        }
-
-        let cache = invokeHelper(context, MyTestHelper);
-
-        registerDestructor(context, () => assert.step('context'));
-        registerDestructor(cache, () => assert.step('cache'));
-        registerDestructor(instance, () => assert.step('instance'));
-
-        runTask(() => destroy(context));
-
-        assert.ok(isDestroyed(context), 'context destroyed');
-        assert.ok(isDestroyed(cache), 'cache destroyed');
-        assert.ok(isDestroyed(instance), 'instance destroyed');
-
-        assert.verifySteps(['instance', 'cache', 'context'], 'destructors ran in correct order');
-      }
-
-      '@test args are frozen in debug builds'(assert) {
-        if (!DEBUG) {
-          assert.expect(0);
-        } else {
-          assert.expect(1);
-
-          class PlusOneHelper extends TestHelper {
-            value() {
-              assert.ok(Object.isFrozen(this.args), 'args are frozen');
-              return 123;
-            }
-          }
-
-          class PlusOne {
-            number;
-
-            constructor(number) {
-              this.number = number;
-            }
-
-            plusOne = invokeHelper(this, PlusOneHelper, () => {
-              return { positional: [this.number] };
-            });
-
-            get value() {
-              return getValue(this.plusOne);
-            }
-          }
-
-          // get the value to trigger the assertion
-          new PlusOne(4).value;
-        }
+        // get the value to trigger the assertion
+        new PlusOne(4).value;
       }
     }
-  );
-}
+  }
+);
