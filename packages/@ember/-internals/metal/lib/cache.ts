@@ -8,7 +8,6 @@ export { createCache, getValue, isConst } from '@glimmer/validator';
   updated.
 
   @module @glimmer/tracking/primitives/cache
-  @category EMBER_CACHE_API
   @public
 */
 
@@ -49,7 +48,6 @@ export { createCache, getValue, isConst } from '@glimmer/validator';
   ```
 
   @method createCache
-  @category EMBER_CACHE_API
   @static
   @for @glimmer/tracking/primitives/cache
   @public
@@ -72,7 +70,6 @@ export { createCache, getValue, isConst } from '@glimmer/validator';
   ```
 
   @method getValue
-  @category EMBER_CACHE_API
   @static
   @for @glimmer/tracking/primitives/cache
   @public
@@ -120,7 +117,6 @@ export { createCache, getValue, isConst } from '@glimmer/validator';
   accident.
 
   @method isConst
-  @category EMBER_CACHE_API
   @static
   @for @glimmer/tracking/primitives/cache
   @public
