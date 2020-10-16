@@ -13,7 +13,6 @@ import {
   EMBER_GLIMMER_HELPER_MANAGER,
   EMBER_GLIMMER_INVOKE_HELPER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-  EMBER_CACHE_API,
   EMBER_DESTROYABLES,
   EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
 } from '@ember/canary-features';
@@ -351,11 +350,9 @@ Ember.observer = metal.observer;
 Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;
 
-if (EMBER_CACHE_API) {
-  Ember._createCache = metal.createCache;
-  Ember._cacheGetValue = metal.getValue;
-  Ember._cacheIsConst = metal.isConst;
-}
+Ember._createCache = metal.createCache;
+Ember._cacheGetValue = metal.getValue;
+Ember._cacheIsConst = metal.isConst;
 
 if (EMBER_DESTROYABLES) {
   Ember._registerDestructor = registerDestructor;
