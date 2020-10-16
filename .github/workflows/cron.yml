@@ -30,7 +30,7 @@ jobs:
           git add cron.txt
           git commit -m "Cron $(date +%Y-%m-%d) for ${{matrix.branch}}"
           export SHA=`git rev-parse HEAD`
-          echo "::set-env name=SHA::$SHA"
+          echo "SHA=$SHA" >> $GITHUB_ENV
 
       - name: Push branch to trigger Build workflow
         # This must use a personal access token because of a Github Actions
