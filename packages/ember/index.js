@@ -14,7 +14,6 @@ import {
   EMBER_GLIMMER_INVOKE_HELPER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_CACHE_API,
-  EMBER_DESTROYABLES,
   EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
 } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
@@ -357,15 +356,13 @@ if (EMBER_CACHE_API) {
   Ember._cacheIsConst = metal.isConst;
 }
 
-if (EMBER_DESTROYABLES) {
-  Ember._registerDestructor = registerDestructor;
-  Ember._unregisterDestructor = unregisterDestructor;
-  Ember._associateDestroyableChild = associateDestroyableChild;
-  Ember._assertDestroyablesDestroyed = assertDestroyablesDestroyed;
-  Ember._enableDestroyableTracking = enableDestroyableTracking;
-  Ember._isDestroying = isDestroying;
-  Ember._isDestroyed = isDestroyed;
-}
+Ember._registerDestructor = registerDestructor;
+Ember._unregisterDestructor = unregisterDestructor;
+Ember._associateDestroyableChild = associateDestroyableChild;
+Ember._assertDestroyablesDestroyed = assertDestroyablesDestroyed;
+Ember._enableDestroyableTracking = enableDestroyableTracking;
+Ember._isDestroying = isDestroying;
+Ember._isDestroyed = isDestroyed;
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
