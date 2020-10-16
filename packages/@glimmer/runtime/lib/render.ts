@@ -49,10 +49,12 @@ export function renderMain(
   context: CompileTimeCompilationContext,
   self: Reference,
   treeBuilder: ElementBuilder,
-  handle: number,
+  layout: CompilableProgram,
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
-  let vm = VM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle });
+  let handle = unwrapHandle(layout.compile(context));
+  let numSymbols = layout.symbolTable.symbols.length;
+  let vm = VM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle, numSymbols });
   return new TemplateIteratorImpl(vm);
 }
 

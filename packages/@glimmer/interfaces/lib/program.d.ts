@@ -25,23 +25,21 @@ export interface OpcodeHeap {
 
 export interface CompileTimeHeap extends OpcodeHeap {
   push(name: Op, op1?: number, op2?: number, op3?: number): void;
-  pushPlaceholder(valueFunc: () => HandleResult): void;
-  pushStdlib(stdlib: StdLibOperand): void;
-  patchStdlibs(stdlib: STDLib): void;
   malloc(): number;
   finishMalloc(handle: number, scopeSize: number): void;
-  capture(stdlib: STDLib, offset?: number): SerializedHeap;
+  capture(offset?: number): SerializedHeap;
+  offset: number;
 
   // for debugging
   getaddr(handle: number): number;
   sizeof(handle: number): number;
   getbyaddr(address: number): number;
+  setbyaddr(address: number, value: number): void;
 }
 
 export interface RuntimeHeap extends OpcodeHeap {
   getaddr(handle: number): number;
   sizeof(handle: number): number;
-  scopesizeof(handle: number): number;
 }
 
 export interface CompileTimeCompilationContext {

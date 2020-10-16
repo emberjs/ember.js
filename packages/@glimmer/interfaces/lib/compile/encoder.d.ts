@@ -7,15 +7,6 @@ import * as WireFormat from './wire-format';
 import { InternalComponentCapabilities } from '../managers/internal/component';
 import { CompileTimeComponent } from '../..';
 
-export interface Labels<InstructionEncoder> {
-  readonly labels: Dict<number>;
-  readonly targets: Array<{ at: number; target: string }>;
-
-  label(name: string, index: number): void;
-  target(at: number, target: string): void;
-  patch(encoder: InstructionEncoder): void;
-}
-
 // These values are used in the same space as standard opcodes, so we need to
 // start them at a higher value to prevent collisions
 export const enum HighLevelBuilderOpcode {
@@ -154,7 +145,7 @@ export interface Encoder {
    * @param compiler
    * @param size
    */
-  commit(heap: CompileTimeHeap, size: number): HandleResult;
+  commit(size: number): HandleResult;
 
   /**
    * Push a syscall into the program with up to three optional
