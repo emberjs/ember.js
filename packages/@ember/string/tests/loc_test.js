@@ -6,10 +6,12 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 let oldString;
 
 function test(assert, given, args, expected, description) {
-  assert.equal(loc(given, args), expected, description);
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    assert.deepEqual(given.loc(...args), expected, description);
-  }
+  expectDeprecation(() => {
+    assert.equal(loc(given, args), expected, description);
+    if (ENV.EXTEND_PROTOTYPES.String) {
+      assert.deepEqual(given.loc(...args), expected, description);
+    }
+  }, /loc is deprecated/);
 }
 
 moduleFor(
@@ -69,8 +71,10 @@ moduleFor(
     }
 
     ['@test works with argument form'](assert) {
-      assert.equal(loc('_Hello %@', 'John'), 'Bonjour John');
-      assert.equal(loc('_Hello %@ %@', ['John'], 'Doe'), 'Bonjour John Doe');
+      expectDeprecation(() => {
+        assert.equal(loc('_Hello %@', 'John'), 'Bonjour John');
+        assert.equal(loc('_Hello %@ %@', ['John'], 'Doe'), 'Bonjour John Doe');
+      }, /loc is deprecated/);
     }
   }
 );
