@@ -1,5 +1,7 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
+import { _WeakSet as WeakSet } from '@glimmer/util';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
@@ -69,19 +71,39 @@ export abstract class ComputedDescriptor {
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 }
 
-function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor): () => any {
-  return function CPGETTER_FUNCTION(this: object): any {
+export let CPGETTERS: WeakSet<() => unknown>;
+export let CPSETTERS: WeakSet<(value: unknown) => void>;
+
+if (DEBUG) {
+  CPGETTERS = new WeakSet();
+  CPSETTERS = new WeakSet();
+}
+
+function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor): () => unknown {
+  function getter(this: object): unknown {
     return descriptor.get(this, name);
-  };
+  }
+
+  if (DEBUG) {
+    CPGETTERS.add(getter);
+  }
+
+  return getter;
 }
 
 function DESCRIPTOR_SETTER_FUNCTION(
   name: string,
   descriptor: ComputedDescriptor
-): (value: any) => void {
-  return function CPSETTER_FUNCTION(this: object, value: any): void {
+): (value: unknown) => void {
+  function setter(this: object, value: unknown): void {
     return descriptor.set(this, name, value);
-  };
+  }
+
+  if (DEBUG) {
+    CPSETTERS.add(setter);
+  }
+
+  return setter;
 }
 
 export function makeComputedDecorator(
@@ -97,10 +119,7 @@ export function makeComputedDecorator(
   ): DecoratorPropertyDescriptor {
     assert(
       `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
-      isClassicDecorator ||
-        !propertyDesc ||
-        !propertyDesc.get ||
-        propertyDesc.get.toString().indexOf('CPGETTER_FUNCTION') === -1
+      isClassicDecorator || !propertyDesc || !propertyDesc.get || !CPGETTERS.has(propertyDesc.get)
     );
 
     let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;

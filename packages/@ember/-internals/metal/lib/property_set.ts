@@ -1,8 +1,13 @@
-import { HAS_NATIVE_PROXY, setWithMandatorySetter, toString } from '@ember/-internals/utils';
+import {
+  HAS_NATIVE_PROXY,
+  lookupDescriptor,
+  setWithMandatorySetter,
+  toString,
+} from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { descriptorForProperty } from './decorator';
+import { CPSETTERS, descriptorForProperty } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
@@ -37,7 +42,7 @@ interface ExtendedObject {
   @return {Object} the passed value.
   @public
 */
-export function set(obj: object, keyName: string, value: any, tolerant?: boolean): any {
+export function set<T = unknown>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -60,7 +65,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
       `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
     );
-    return;
+    return value;
   }
 
   if (isPath(keyName)) {
@@ -70,6 +75,17 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
   let descriptor = descriptorForProperty(obj, keyName);
 
   if (descriptor !== undefined) {
+    if (DEBUG) {
+      let instanceDesc = lookupDescriptor(obj, keyName);
+
+      assert(
+        `Attempted to set \`${toString(
+          obj
+        )}.${keyName}\` using Ember.set(), but the property was a computed or tracked property that was shadowed by another property declaration. This can happen if you defined a tracked or computed property on a parent class, and then redefined it on a subclass.`,
+        instanceDesc && instanceDesc.set && CPSETTERS.has(instanceDesc.set)
+      );
+    }
+
     descriptor.set(obj, keyName, value);
     return value;
   }
