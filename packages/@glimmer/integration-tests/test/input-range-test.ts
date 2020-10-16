@@ -76,26 +76,8 @@ class EmberInputRangeComponent extends EmberishCurlyComponent {
   type = 'range';
 }
 
-abstract class EmberComponentRangeTests extends RangeTests {
-  abstract component(): EmberishCurlyComponentFactory;
-
-  renderRange(value: number): void {
-    this.registerComponent('Curly', 'range-input', '', this.component());
-    this.render(`{{range-input max=max min=min value=value}}`, {
-      max: this.max,
-      min: this.min,
-      value,
-    });
-  }
-
-  assertRangeValue(value: number): void {
-    let attr = (this.element.firstChild as any)['value'];
-    this.assert.equal(attr, value.toString());
-  }
-}
-
 jitSuite(
-  class extends EmberComponentRangeTests {
+  class EmberComponentRangeTests extends RangeTests {
     static suiteName = `Components - [emberjs/ember.js#15675] - type value min max`;
 
     component(): EmberishCurlyComponentFactory {
@@ -103,26 +85,74 @@ jitSuite(
         attributeBindings = ['type', 'value', 'min', 'max'];
       } as any;
     }
+
+    renderRange(value: number): void {
+      this.registerComponent('Curly', 'range-input', '', this.component());
+      this.render(`{{range-input max=max min=min value=value}}`, {
+        max: this.max,
+        min: this.min,
+        value,
+      });
+    }
+
+    assertRangeValue(value: number): void {
+      let attr = (this.element.firstChild as any)['value'];
+      this.assert.equal(attr, value.toString());
+    }
   }
 );
 
-class BasicComponentImplicitAttributesRangeTest extends RangeTests {
-  attrs!: string;
-
-  renderRange(value: number): void {
-    this.registerComponent('Glimmer', 'RangeInput', '<input ...attributes/>');
-    this.render(`<RangeInput ${this.attrs.replace('%x', value.toString())} />`);
-  }
-
-  assertRangeValue(value: number): void {
-    let attr = this.readDOMAttr('value');
-    this.assert.equal(attr, value.toString());
-  }
-}
-
 jitSuite(
-  class extends BasicComponentImplicitAttributesRangeTest {
+  class BasicComponentImplicitAttributesRangeTest extends RangeTests {
     static suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type="range" value="%x" min="-5" max="50" />`;
     attrs = 'type="range" value="%x" min="-5" max="50"';
+
+    renderRange(value: number): void {
+      this.registerComponent('Glimmer', 'RangeInput', '<input ...attributes/>');
+      this.render(`<RangeInput ${this.attrs.replace('%x', value.toString())} />`);
+    }
+
+    assertRangeValue(value: number): void {
+      let attr = this.readDOMAttr('value');
+      this.assert.equal(attr, value.toString());
+    }
+  }
+);
+
+jitSuite(
+  class BasicComponentSplattributesLastRangeTest extends RangeTests {
+    static suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type="range" value="%x" min="-5" max="50" />`;
+    attrs = 'type="range" value="%x" min="-5" max="50"';
+
+    renderRange(value: number): void {
+      this.registerComponent('Glimmer', 'RangeInput', '<input type="text" ...attributes/>');
+      this.render(`<RangeInput ${this.attrs.replace('%x', value.toString())} />`);
+    }
+
+    assertRangeValue(value: number): void {
+      let attr = this.readDOMAttr('value');
+      this.assert.equal(attr, value.toString());
+    }
+  }
+);
+
+jitSuite(
+  class BasicComponentSplattributesFirstRangeTest extends RangeTests {
+    static suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type="range" value="%x" min="-5" max="50" />`;
+    attrs = 'type="text" min="-5" max="50"';
+
+    renderRange(value: number): void {
+      this.registerComponent(
+        'Glimmer',
+        'RangeInput',
+        `<input ...attributes type="range" value="${value}" />`
+      );
+      this.render(`<RangeInput ${this.attrs.replace('%x', value.toString())} />`);
+    }
+
+    assertRangeValue(value: number): void {
+      let attr = this.readDOMAttr('value');
+      this.assert.equal(attr, value.toString());
+    }
   }
 );
