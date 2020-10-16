@@ -2,42 +2,39 @@ import { InstructionEncoderImpl } from '@glimmer/encoder';
 import {
   CompileTimeConstants,
   Labels,
-  LabelOperand,
-  BuilderHandleThunk,
   Operand,
   CompileTimeHeap,
   Op,
   BuilderOpcode,
   HighLevelBuilderOpcode,
-  OpcodeWrapperOp,
   MachineOp,
   SingleBuilderOperand,
-  SingleBuilderOperands,
   Encoder,
   HighLevelResolutionOpcode,
   HighLevelOp,
   OpcodeSize,
   InstructionEncoder,
-  AllOpcode,
-  AllOpMap,
-  Operands,
-  NonlabelBuilderOperand,
   Dict,
   EncoderError,
   HandleResult,
-  HighLevelOpcodeType,
+  BuilderOp,
+  CompileTimeResolver,
+  ContainingMetadata,
+  HighLevelOperand,
+  STDLib,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
-import {
-  Stack,
-  dict,
-  expect,
-  encodeImmediate,
-  exhausted,
-  unreachable,
-  encodeHandle,
-} from '@glimmer/util';
+import { Stack, dict, expect, EMPTY_STRING_ARRAY, encodeHandle } from '@glimmer/util';
 import { commit } from '../compiler';
+import {
+  resolveComponent,
+  resolveComponentOrHelper,
+  resolveHelper,
+  resolveModifier,
+  resolveOptionalComponentOrHelper,
+  resolveOptionalHelper,
+} from './helpers/resolution';
+import { compilableBlock } from '../compilable-template';
 
 export type OpcodeBuilderLabels = Labels<InstructionEncoder>;
 
@@ -63,45 +60,57 @@ export class LabelsImpl implements Labels<InstructionEncoder> {
   }
 }
 
-export function op(name: BuilderOpcode, ...ops: SingleBuilderOperands): OpcodeWrapperOp;
-export function op<K extends AllOpcode>(name: K, ...operands: Operands<AllOpMap[K]>): AllOpMap[K];
-export function op<K extends AllOpcode>(
-  name: K | BuilderOpcode,
-  op1?: AllOpMap[K]['op1'] | SingleBuilderOperand,
-  op2?: SingleBuilderOperand,
-  op3?: SingleBuilderOperand
-): AllOpMap[K] | OpcodeWrapperOp {
-  if (!isHighLevelOpcode(name)) {
-    if (op3 !== undefined) {
-      return {
-        type: HighLevelOpcodeType.OpcodeWrapper,
-        op: name,
-        op1,
-        op2,
-        op3,
-      } as OpcodeWrapperOp;
-    } else if (op2 !== undefined) {
-      return { type: HighLevelOpcodeType.OpcodeWrapper, op: name, op1, op2 } as OpcodeWrapperOp;
-    } else if (op1 !== undefined) {
-      return { type: HighLevelOpcodeType.OpcodeWrapper, op: name, op1: op1 } as OpcodeWrapperOp;
-    } else {
-      return { type: HighLevelOpcodeType.OpcodeWrapper, op: name };
-    }
+export function encodeOp(
+  encoder: Encoder,
+  constants: CompileTimeConstants,
+  resolver: CompileTimeResolver,
+  meta: ContainingMetadata,
+  op: BuilderOp | HighLevelOp
+): void {
+  if (isBuilderOpcode(op[0])) {
+    let [type, ...operands] = op;
+    encoder.push(constants, type, ...(operands as SingleBuilderOperand[]));
   } else {
-    let type: HighLevelOp['type'];
+    switch (op[0]) {
+      case HighLevelBuilderOpcode.Label:
+        return encoder.label(op[1]);
+      case HighLevelBuilderOpcode.StartLabels:
+        return encoder.startLabels();
+      case HighLevelBuilderOpcode.StopLabels:
+        return encoder.stopLabels();
 
-    if (isResolutionOpcode(name)) {
-      type = HighLevelOpcodeType.Resolution;
-    } else if (isBuilderOpcode(name)) {
-      type = HighLevelOpcodeType.Builder;
-    } else {
-      throw new Error(`Exhausted ${name}`);
-    }
+      case HighLevelResolutionOpcode.ResolveComponent:
+        return resolveComponent(resolver, meta, op);
+      case HighLevelResolutionOpcode.ResolveModifier:
+        return resolveModifier(resolver, meta, op);
+      case HighLevelResolutionOpcode.ResolveHelper:
+        return resolveHelper(resolver, meta, op);
+      case HighLevelResolutionOpcode.ResolveComponentOrHelper:
+        return resolveComponentOrHelper(resolver, meta, op);
+      case HighLevelResolutionOpcode.ResolveOptionalHelper:
+        return resolveOptionalHelper(resolver, meta, op);
+      case HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper:
+        return resolveOptionalComponentOrHelper(resolver, meta, op);
 
-    if (op1 === undefined) {
-      return { type, op: name, op1: undefined } as any;
-    } else {
-      return { type, op: name, op1 } as any;
+      case HighLevelResolutionOpcode.ResolveLocal:
+        let freeVar = op[1];
+        let name = expect(meta.upvars, 'attempted to resolve value but no upvars found')[freeVar];
+
+        if (meta.asPartial === true) {
+          encoder.push(constants, Op.ResolveMaybeLocal, name);
+        } else {
+          let then = op[2];
+
+          then(name);
+        }
+
+        break;
+
+      case HighLevelResolutionOpcode.ResolveFree:
+        throw new Error('Unimplemented HighLevelResolutionOpcode.ResolveFree');
+
+      default:
+        throw new Error(`Unexpected high level opcode ${op[0]}`);
     }
   }
 }
@@ -110,6 +119,8 @@ export class EncoderImpl implements Encoder {
   private labelsStack = new Stack<OpcodeBuilderLabels>();
   private encoder: InstructionEncoder = new InstructionEncoderImpl([]);
   private errors: EncoderError[] = [];
+
+  constructor(private meta: ContainingMetadata, private stdlib?: STDLib) {}
 
   error(error: EncoderError): void {
     this.encoder.encode(Op.Primitive, 0);
@@ -127,7 +138,11 @@ export class EncoderImpl implements Encoder {
     }
   }
 
-  push(constants: CompileTimeConstants, name: BuilderOpcode, ...args: SingleBuilderOperands): void {
+  push(
+    constants: CompileTimeConstants,
+    name: BuilderOpcode,
+    ...args: SingleBuilderOperand[]
+  ): void {
     if (isMachineOp(name)) {
       let operands = args.map((operand, i) => this.operand(constants, operand, i));
       return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, ...operands);
@@ -137,28 +152,48 @@ export class EncoderImpl implements Encoder {
     }
   }
 
-  private operand(constants: CompileTimeConstants, operand: LabelOperand, index: number): number;
-  private operand(
-    constants: CompileTimeConstants,
-    operand: BuilderHandleThunk,
-    index?: number
-  ): BuilderHandleThunk;
   private operand(
     constants: CompileTimeConstants,
     operand: SingleBuilderOperand,
     index?: number
-  ): number;
-  private operand(
-    constants: CompileTimeConstants,
-    operand: SingleBuilderOperand | BuilderHandleThunk,
-    index?: number
   ): Operand {
-    if (operand && typeof operand === 'object' && operand.type === 'label') {
-      this.currentLabels.target(this.encoder.size + index!, operand.value);
-      return -1;
+    if (typeof operand === 'number') {
+      return operand;
     }
 
-    return constant(constants, operand as NonlabelBuilderOperand);
+    if (typeof operand === 'object' && operand !== null) {
+      if (Array.isArray(operand)) {
+        return encodeHandle(constants.array(operand));
+      } else {
+        switch (operand.type) {
+          case HighLevelOperand.Label:
+            this.currentLabels.target(this.encoder.size + index!, operand.value);
+            return -1;
+
+          case HighLevelOperand.Owner:
+            return encodeHandle(constants.value(this.meta.owner));
+
+          case HighLevelOperand.EvalSymbols:
+            return encodeHandle(constants.array(this.meta.evalSymbols || EMPTY_STRING_ARRAY));
+
+          case HighLevelOperand.Block:
+            return encodeHandle(constants.value(compilableBlock(operand.value, this.meta)));
+
+          case HighLevelOperand.StdLib:
+            return expect(
+              this.stdlib,
+              'attempted to encode a stdlib operand, but the encoder did not have a stdlib. Are you currently building the stdlib?'
+            )[operand.value];
+
+          case HighLevelOperand.NonSmallInt:
+          case HighLevelOperand.SymbolTable:
+          case HighLevelOperand.Layout:
+            return constants.value(operand.value);
+        }
+      }
+    }
+
+    return encodeHandle(constants.value(operand));
   }
 
   private get currentLabels(): OpcodeBuilderLabels {
@@ -179,56 +214,6 @@ export class EncoderImpl implements Encoder {
   }
 }
 
-function constant(constants: CompileTimeConstants, operand: BuilderHandleThunk): BuilderHandleThunk;
-function constant(constants: CompileTimeConstants, operand: NonlabelBuilderOperand): number;
-function constant(
-  constants: CompileTimeConstants,
-  operand: NonlabelBuilderOperand | BuilderHandleThunk
-): Operand {
-  if (typeof operand === 'number' || typeof operand === 'function') {
-    return operand;
-  }
-
-  if (typeof operand === 'boolean') {
-    return operand === true ? 1 : 0;
-  }
-
-  if (typeof operand === 'string') {
-    return constants.value(operand);
-  }
-
-  if (operand === null) {
-    return 0;
-  }
-
-  switch (operand.type) {
-    case 'string-array':
-      return constants.array(operand.value);
-    case 'serializable':
-      return constants.serializable(operand.value);
-    case 'stdlib':
-      return operand;
-    case 'immediate':
-      return encodeImmediate(operand.value);
-    case 'primitive':
-    case 'array':
-    case 'other':
-      return encodeHandle(constants.value(operand.value));
-    case 'lookup':
-      throw unreachable('lookup not reachable');
-    default:
-      return exhausted(operand);
-  }
-}
-
-function isHighLevelOpcode(op: number): op is AllOpcode {
-  return op >= HighLevelBuilderOpcode.Start;
-}
-
-function isBuilderOpcode(op: AllOpcode): op is HighLevelBuilderOpcode {
-  return op >= HighLevelBuilderOpcode.Start && op <= HighLevelBuilderOpcode.End;
-}
-
-function isResolutionOpcode(op: AllOpcode): op is HighLevelResolutionOpcode {
-  return op >= HighLevelResolutionOpcode.Start && op <= HighLevelResolutionOpcode.End;
+function isBuilderOpcode(op: number): op is BuilderOpcode {
+  return op < HighLevelBuilderOpcode.Start;
 }

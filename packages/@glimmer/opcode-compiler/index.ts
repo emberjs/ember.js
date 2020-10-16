@@ -1,7 +1,5 @@
 export * from './lib/program-context';
 
-export { NONE } from './lib/syntax/concat';
-
 export { debugCompiler } from './lib/compiler';
 
 export { compileStatements, compilable } from './lib/compilable-template';

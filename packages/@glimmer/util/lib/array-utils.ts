@@ -1,7 +1,7 @@
 export const EMPTY_ARRAY: readonly unknown[] = Object.freeze([]) as readonly unknown[];
 
-export function emptyArray<T extends unknown>(): readonly T[] {
-  return EMPTY_ARRAY as readonly T[];
+export function emptyArray<T extends unknown>(): T[] {
+  return EMPTY_ARRAY as T[];
 }
 
 export const EMPTY_STRING_ARRAY = emptyArray<string>();

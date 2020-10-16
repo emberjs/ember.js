@@ -5,6 +5,8 @@ import {
   Option,
   CompileTimeCompilationContext,
   HandleResult,
+  BuilderOp,
+  HighLevelOp,
 } from '@glimmer/interfaces';
 
 import { templateCompilationContext } from './opcode-builder/context';
@@ -12,8 +14,9 @@ import { meta } from './opcode-builder/helpers/shared';
 import { ATTRS_BLOCK, WrappedComponent } from './opcode-builder/helpers/components';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { debugCompiler } from './compiler';
-import { concatStatements } from './syntax/concat';
 import { patchStdlibs } from '@glimmer/program';
+import { encodeOp } from './opcode-builder/encoder';
+import { HighLevelStatementOp } from './syntax/compilers';
 
 export class WrappedBuilder implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
@@ -46,9 +49,16 @@ export class WrappedBuilder implements CompilableProgram {
     let m = meta(this.layout);
     let context = templateCompilationContext(syntax, m);
 
-    let actions = WrappedComponent(this.layout, this.attrsBlockNumber);
+    let {
+      encoder,
+      program: { constants, resolver },
+    } = context;
 
-    concatStatements(context, actions);
+    function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
+      encodeOp(encoder, constants, resolver, m, op as BuilderOp | HighLevelOp);
+    }
+
+    WrappedComponent(pushOp, this.layout, this.attrsBlockNumber);
 
     let handle = context.encoder.commit(context.program.heap, m.size);
 

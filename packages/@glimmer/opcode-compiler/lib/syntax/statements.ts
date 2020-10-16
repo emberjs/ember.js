@@ -1,19 +1,16 @@
 import {
+  CompileTimeComponent,
   HighLevelBuilderOpcode,
   HighLevelResolutionOpcode,
   MachineOp,
   Op,
   SexpOpcodes,
-  StatementCompileActions,
   StatementSexpOpcode,
   WellKnownAttrName,
   WellKnownTagName,
   WireFormat,
 } from '@glimmer/interfaces';
-import { EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { $fp, $sp } from '@glimmer/vm';
-import { compilableBlock } from '../compilable-template';
-import { op } from '../opcode-builder/encoder';
 import {
   InvokeStaticBlock,
   InvokeStaticBlockWithStack,
@@ -21,19 +18,23 @@ import {
 } from '../opcode-builder/helpers/blocks';
 import { InvokeComponent, InvokeDynamicComponent } from '../opcode-builder/helpers/components';
 import { Replayable, ReplayableIf } from '../opcode-builder/helpers/conditional';
+import { expr } from '../opcode-builder/helpers/expr';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
 import { Call, DynamicScope, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
-import { arr, label, strArray, other } from '../opcode-builder/operands';
-import { lookupLocal } from '../utils';
-import { Compilers } from './compilers';
-import { NONE } from './concat';
+import {
+  evalSymbolsOperand,
+  labelOperand,
+  stdlibOperand,
+  ownerOperand,
+} from '../opcode-builder/operands';
+import { Compilers, PushStatementOp } from './compilers';
 import {
   isGetFreeComponent,
   isGetFreeComponentOrHelper,
   isGetFreeOptionalComponentOrHelper,
-} from './push-resolution';
+} from '../opcode-builder/helpers/resolution';
 
-export const STATEMENTS = new Compilers<StatementSexpOpcode, StatementCompileActions>();
+export const STATEMENTS = new Compilers<PushStatementOp, StatementSexpOpcode>();
 
 const INFLATE_ATTR_TABLE: {
   [I in WellKnownAttrName]: string;
@@ -50,389 +51,330 @@ export function inflateAttrName(attrName: string | WellKnownAttrName): string {
   return typeof attrName === 'string' ? attrName : INFLATE_ATTR_TABLE[attrName];
 }
 
-STATEMENTS.add(SexpOpcodes.Comment, (sexp) => op(Op.Comment, sexp[1]));
-STATEMENTS.add(SexpOpcodes.CloseElement, () => op(Op.CloseElement));
-STATEMENTS.add(SexpOpcodes.FlushElement, () => op(Op.FlushElement));
+STATEMENTS.add(SexpOpcodes.Comment, (op, sexp) => op(Op.Comment, sexp[1]));
+STATEMENTS.add(SexpOpcodes.CloseElement, (op) => op(Op.CloseElement));
+STATEMENTS.add(SexpOpcodes.FlushElement, (op) => op(Op.FlushElement));
 
-STATEMENTS.add(SexpOpcodes.Modifier, ([, expr, params, hash]) => {
-  return op(HighLevelResolutionOpcode.ResolveModifier, {
-    expr,
-    then: (handle) => [
-      op(MachineOp.PushFrame),
-      SimpleArgs({ positional: params, named: hash, atNames: false }),
-      op(Op.Modifier, handle),
-      op(MachineOp.PopFrame),
-    ],
+STATEMENTS.add(SexpOpcodes.Modifier, (op, [, expr, positional, named]) => {
+  op(HighLevelResolutionOpcode.ResolveModifier, expr, (handle: number) => {
+    op(MachineOp.PushFrame);
+    SimpleArgs(op, positional, named, false);
+    op(Op.Modifier, handle);
+    op(MachineOp.PopFrame);
   });
 });
 
-STATEMENTS.add(SexpOpcodes.StaticAttr, ([, name, value, namespace]) =>
-  op(Op.StaticAttr, inflateAttrName(name), value as string, namespace ?? null)
-);
-
-STATEMENTS.add(SexpOpcodes.StaticComponentAttr, ([, name, value, namespace]) =>
-  op(Op.StaticComponentAttr, inflateAttrName(name), value as string, namespace ?? null)
-);
-
-STATEMENTS.add(SexpOpcodes.DynamicAttr, ([, name, value, namespace]) => [
-  op(HighLevelResolutionOpcode.Expr, value),
-  op(Op.DynamicAttr, inflateAttrName(name), false, namespace ?? null),
-]);
-
-STATEMENTS.add(SexpOpcodes.TrustingDynamicAttr, ([, name, value, namespace]) => [
-  op(HighLevelResolutionOpcode.Expr, value),
-  op(Op.DynamicAttr, inflateAttrName(name), true, namespace ?? null),
-]);
-
-STATEMENTS.add(SexpOpcodes.ComponentAttr, ([, name, value, namespace]) => [
-  op(HighLevelResolutionOpcode.Expr, value),
-  op(Op.ComponentAttr, inflateAttrName(name), false, namespace ?? null),
-]);
-
-STATEMENTS.add(SexpOpcodes.TrustingComponentAttr, ([, name, value, namespace]) => [
-  op(HighLevelResolutionOpcode.Expr, value),
-  op(Op.ComponentAttr, inflateAttrName(name), true, namespace ?? null),
-]);
-
-STATEMENTS.add(SexpOpcodes.OpenElement, ([, tag]) => {
-  return op(Op.OpenElement, inflateTagName(tag));
+STATEMENTS.add(SexpOpcodes.StaticAttr, (op, [, name, value, namespace]) => {
+  op(Op.StaticAttr, inflateAttrName(name), value as string, namespace ?? null);
 });
 
-STATEMENTS.add(SexpOpcodes.OpenElementWithSplat, ([, tag]) => {
-  return [op(Op.PutComponentOperations), op(Op.OpenElement, inflateTagName(tag))];
+STATEMENTS.add(SexpOpcodes.StaticComponentAttr, (op, [, name, value, namespace]) => {
+  op(Op.StaticComponentAttr, inflateAttrName(name), value as string, namespace ?? null);
 });
 
-STATEMENTS.add(SexpOpcodes.Component, ([, expr, elementBlock, named, blocks], meta) => {
+STATEMENTS.add(SexpOpcodes.DynamicAttr, (op, [, name, value, namespace]) => {
+  expr(op, value);
+  op(Op.DynamicAttr, inflateAttrName(name), false, namespace ?? null);
+});
+
+STATEMENTS.add(SexpOpcodes.TrustingDynamicAttr, (op, [, name, value, namespace]) => {
+  expr(op, value);
+  op(Op.DynamicAttr, inflateAttrName(name), true, namespace ?? null);
+});
+
+STATEMENTS.add(SexpOpcodes.ComponentAttr, (op, [, name, value, namespace]) => {
+  expr(op, value);
+  op(Op.ComponentAttr, inflateAttrName(name), false, namespace ?? null);
+});
+
+STATEMENTS.add(SexpOpcodes.TrustingComponentAttr, (op, [, name, value, namespace]) => {
+  expr(op, value);
+  op(Op.ComponentAttr, inflateAttrName(name), true, namespace ?? null);
+});
+
+STATEMENTS.add(SexpOpcodes.OpenElement, (op, [, tag]) => {
+  op(Op.OpenElement, inflateTagName(tag));
+});
+
+STATEMENTS.add(SexpOpcodes.OpenElementWithSplat, (op, [, tag]) => {
+  op(Op.PutComponentOperations);
+  op(Op.OpenElement, inflateTagName(tag));
+});
+
+STATEMENTS.add(SexpOpcodes.Component, (op, [, expr, elementBlock, named, blocks]) => {
   if (isGetFreeComponent(expr)) {
-    return op(HighLevelResolutionOpcode.ResolveComponent, {
-      expr,
-      then(component) {
-        return InvokeComponent(meta, component, elementBlock, null, named, blocks);
-      },
+    op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
+      InvokeComponent(op, component, elementBlock, null, named, blocks);
     });
   } else {
     // otherwise, the component name was an expression, so resolve the expression
     // and invoke it as a dynamic component
-    return InvokeDynamicComponent(meta, expr, elementBlock, null, named, blocks, true, true);
+    InvokeDynamicComponent(op, expr, elementBlock, null, named, blocks, true, true);
   }
 });
 
-STATEMENTS.add(SexpOpcodes.Partial, ([, name, evalInfo], meta) =>
-  ReplayableIf({
-    args() {
-      return {
-        count: 2,
-        actions: [op(HighLevelResolutionOpcode.Expr, name), op(Op.Dup, $sp, 0)],
-      };
+STATEMENTS.add(SexpOpcodes.Partial, (op, [, name, evalInfo]) => {
+  ReplayableIf(
+    op,
+    () => {
+      expr(op, name);
+      op(Op.Dup, $sp, 0);
+
+      return 2;
     },
 
-    ifTrue() {
-      return [
-        op(
-          Op.InvokePartial,
-          other(meta.owner),
-          strArray(meta.evalSymbols || EMPTY_STRING_ARRAY),
-          arr(evalInfo)
-        ),
-        op(Op.PopScope),
-        op(MachineOp.PopFrame),
-      ];
-    },
-  })
+    () => {
+      op(Op.InvokePartial, ownerOperand(), evalSymbolsOperand(), evalInfo);
+      op(Op.PopScope);
+      op(MachineOp.PopFrame);
+    }
+  );
+});
+
+STATEMENTS.add(SexpOpcodes.Yield, (op, [, to, params]) => YieldBlock(op, to, params));
+
+STATEMENTS.add(SexpOpcodes.AttrSplat, (op, [, to]) => YieldBlock(op, to, null));
+
+STATEMENTS.add(SexpOpcodes.Debugger, (op, [, evalInfo]) =>
+  op(Op.Debugger, evalSymbolsOperand(), evalInfo)
 );
 
-STATEMENTS.add(SexpOpcodes.Yield, ([, to, params]) => YieldBlock(to, params));
-
-STATEMENTS.add(SexpOpcodes.AttrSplat, ([, to]) => YieldBlock(to, null));
-
-STATEMENTS.add(SexpOpcodes.Debugger, ([, evalInfo], meta) =>
-  op(Op.Debugger, strArray(meta.evalSymbols || EMPTY_STRING_ARRAY), arr(evalInfo))
-);
-
-STATEMENTS.add(SexpOpcodes.Append, ([, value], meta) => {
+STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
   // Special case for static values
   if (!Array.isArray(value)) {
-    return op(Op.Text, value === null || value === undefined ? '' : String(value));
-  }
-
-  if (isGetFreeOptionalComponentOrHelper(value)) {
-    return op(HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper, {
-      expr: value,
-      then(componentOrHandleOrName) {
+    op(Op.Text, value === null || value === undefined ? '' : String(value));
+  } else if (isGetFreeOptionalComponentOrHelper(value)) {
+    op(
+      HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper,
+      value,
+      (componentOrHandleOrName: CompileTimeComponent | number | string) => {
         if (typeof componentOrHandleOrName === 'object') {
           // Resolved component handle, invoke the component directly
-          return InvokeComponent(meta, componentOrHandleOrName, null, null, null, null);
-        } else if (typeof componentOrHandleOrName === 'number') {
-          // Resolved a helper handle, invoke the helper directly
-          return [
-            op(MachineOp.PushFrame),
-            Call({ handle: componentOrHandleOrName, positional: null, named: null }),
-            op(MachineOp.InvokeStatic, {
-              type: 'stdlib',
-              value: 'cautious-append',
-            }),
-            op(MachineOp.PopFrame),
-          ];
-        }
+          InvokeComponent(op, componentOrHandleOrName, null, null, null, null);
+        } else {
+          op(MachineOp.PushFrame);
 
-        // Fallback to {{this}} lookup
-        return [
-          op(MachineOp.PushFrame),
-          lookupLocal(meta, componentOrHandleOrName),
-          op(MachineOp.InvokeStatic, {
-            type: 'stdlib',
-            value: 'cautious-append',
-          }),
-          op(MachineOp.PopFrame),
-        ];
-      },
-    });
+          if (typeof componentOrHandleOrName === 'number') {
+            // Resolved a helper handle, invoke the helper directly
+            Call(op, componentOrHandleOrName, null, null);
+          } else {
+            // Fallback to {{this}} lookup
+            op(HighLevelResolutionOpcode.ResolveLocal, value[1], (name: string) => {
+              op(Op.GetVariable, 0);
+              op(Op.GetProperty, name);
+            });
+          }
+          op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+          op(MachineOp.PopFrame);
+        }
+      }
+    );
   } else if (value[0] === SexpOpcodes.Call && isGetFreeComponentOrHelper(value[1])) {
     let [, expr, positional, named] = value;
 
-    return op(HighLevelResolutionOpcode.ResolveComponentOrHelper, {
+    op(
+      HighLevelResolutionOpcode.ResolveComponentOrHelper,
       expr,
-      then(componentOrHandle) {
+      (componentOrHandle: CompileTimeComponent | number) => {
         if (typeof componentOrHandle === 'object') {
           // Resolved component handle, invoke the component directly
-          return InvokeComponent(
-            meta,
-            componentOrHandle,
-            null,
-            positional,
-            hashToArgs(named),
-            null
-          );
+          InvokeComponent(op, componentOrHandle, null, positional, hashToArgs(named), null);
+        } else {
+          // Resolved a helper handle, invoke the helper directly
+          op(MachineOp.PushFrame);
+          Call(op, componentOrHandle, positional, named);
+          op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+          op(MachineOp.PopFrame);
         }
-
-        // Resolved a helper handle, invoke the helper directly
-        return [
-          op(MachineOp.PushFrame),
-          Call({ handle: componentOrHandle, positional, named }),
-          op(MachineOp.InvokeStatic, {
-            type: 'stdlib',
-            value: 'cautious-append',
-          }),
-          op(MachineOp.PopFrame),
-        ];
-      },
-    });
+      }
+    );
   } else {
-    return [
-      op(MachineOp.PushFrame),
-      op(HighLevelResolutionOpcode.Expr, value),
-      op(MachineOp.InvokeStatic, {
-        type: 'stdlib',
-        value: 'cautious-append',
-      }),
-      op(MachineOp.PopFrame),
-    ];
+    op(MachineOp.PushFrame);
+    expr(op, value);
+    op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+    op(MachineOp.PopFrame);
   }
 });
 
-STATEMENTS.add(SexpOpcodes.TrustingAppend, (sexp) => {
-  let [, value] = sexp;
-
-  if (typeof value === 'string') {
-    return op(Op.Text, value);
+STATEMENTS.add(SexpOpcodes.TrustingAppend, (op, [, value]) => {
+  if (!Array.isArray(value)) {
+    op(Op.Text, value === null || value === undefined ? '' : String(value));
+  } else {
+    op(MachineOp.PushFrame);
+    expr(op, value);
+    op(MachineOp.InvokeStatic, stdlibOperand('trusting-append'));
+    op(MachineOp.PopFrame);
   }
-  // macro was ignoring trusting flag doesn't seem like {{{}}} should
-  // even be passed to macros, there is no {{{component}}}
-  return [
-    op(MachineOp.PushFrame),
-    op(HighLevelResolutionOpcode.Expr, value),
-    op(MachineOp.InvokeStatic, {
-      type: 'stdlib',
-      value: 'trusting-append',
-    }),
-    op(MachineOp.PopFrame),
-  ];
 });
 
-STATEMENTS.add(SexpOpcodes.Block, ([, expr, positional, named, blocks], meta) => {
-  return op(HighLevelResolutionOpcode.ResolveComponent, {
-    expr,
-    then(component) {
-      return InvokeComponent(meta, component, null, positional, hashToArgs(named), blocks);
-    },
+STATEMENTS.add(SexpOpcodes.Block, (op, [, expr, positional, named, blocks]) => {
+  op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
+    InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
   });
 });
 
-STATEMENTS.add(SexpOpcodes.InElement, ([, block, guid, destination, insertBefore], meta) => {
-  return ReplayableIf({
-    args() {
-      let actions: StatementCompileActions = [];
+STATEMENTS.add(SexpOpcodes.InElement, (op, [, block, guid, destination, insertBefore]) => {
+  ReplayableIf(
+    op,
 
-      // this order is important
-      actions.push(op(HighLevelResolutionOpcode.Expr, guid));
+    () => {
+      expr(op, guid);
 
       if (insertBefore === undefined) {
-        actions.push(PushPrimitiveReference(undefined));
+        PushPrimitiveReference(op, undefined);
       } else {
-        actions.push(op(HighLevelResolutionOpcode.Expr, insertBefore));
+        expr(op, insertBefore);
       }
 
-      actions.push(op(HighLevelResolutionOpcode.Expr, destination), op(Op.Dup, $sp, 0));
+      expr(op, destination);
+      op(Op.Dup, $sp, 0);
 
-      return { count: 4, actions };
+      return 4;
     },
 
-    ifTrue() {
-      return [
-        op(Op.PushRemoteElement),
-        InvokeStaticBlock(compilableBlock(block, meta)),
-        op(Op.PopRemoteElement),
-      ];
-    },
-  });
+    () => {
+      op(Op.PushRemoteElement);
+      InvokeStaticBlock(op, block);
+      op(Op.PopRemoteElement);
+    }
+  );
 });
 
-STATEMENTS.add(SexpOpcodes.If, ([, condition, block, inverse], meta) =>
-  ReplayableIf({
-    args() {
-      return {
-        count: 1,
-        actions: [op(HighLevelResolutionOpcode.Expr, condition), op(Op.ToBoolean)],
-      };
+STATEMENTS.add(SexpOpcodes.If, (op, [, condition, block, inverse]) =>
+  ReplayableIf(
+    op,
+    () => {
+      expr(op, condition);
+      op(Op.ToBoolean);
+
+      return 1;
     },
 
-    ifTrue() {
-      return InvokeStaticBlock(compilableBlock(block, meta));
+    () => {
+      InvokeStaticBlock(op, block);
     },
 
-    ifFalse() {
+    () => {
       if (inverse) {
-        return InvokeStaticBlock(compilableBlock(inverse, meta));
-      } else {
-        return NONE;
+        InvokeStaticBlock(op, inverse);
       }
-    },
-  })
+    }
+  )
 );
 
-STATEMENTS.add(SexpOpcodes.Unless, ([, condition, block, inverse], meta) =>
-  ReplayableIf({
-    args() {
-      return {
-        count: 1,
-        actions: [op(HighLevelResolutionOpcode.Expr, condition), op(Op.ToBoolean)],
-      };
+STATEMENTS.add(SexpOpcodes.Unless, (op, [, condition, block, inverse]) =>
+  ReplayableIf(
+    op,
+
+    () => {
+      expr(op, condition);
+      op(Op.ToBoolean);
+
+      return 1;
     },
 
-    ifTrue() {
+    () => {
       if (inverse) {
-        return InvokeStaticBlock(compilableBlock(inverse, meta));
-      } else {
-        return NONE;
+        InvokeStaticBlock(op, inverse);
       }
     },
 
-    ifFalse() {
-      return InvokeStaticBlock(compilableBlock(block, meta));
-    },
-  })
+    () => {
+      InvokeStaticBlock(op, block);
+    }
+  )
 );
 
-STATEMENTS.add(SexpOpcodes.Each, ([, value, key, block, inverse], meta) =>
-  Replayable({
-    args() {
-      let actions: StatementCompileActions;
+STATEMENTS.add(SexpOpcodes.Each, (op, [, value, key, block, inverse]) =>
+  Replayable(
+    op,
 
+    () => {
       if (key) {
-        actions = [op(HighLevelResolutionOpcode.Expr, key)];
+        expr(op, key);
       } else {
-        actions = [PushPrimitiveReference(null)];
+        PushPrimitiveReference(op, null);
       }
 
-      actions.push(op(HighLevelResolutionOpcode.Expr, value));
+      expr(op, value);
 
-      return { count: 2, actions };
+      return 2;
     },
 
-    body() {
-      let out: StatementCompileActions = [
-        op(Op.EnterList, label('BODY'), label('ELSE')),
-        op(MachineOp.PushFrame),
-        op(Op.Dup, $fp, 1),
-        op(MachineOp.ReturnTo, label('ITER')),
-        op(HighLevelBuilderOpcode.Label, 'ITER'),
-        op(Op.Iterate, label('BREAK')),
-        op(HighLevelBuilderOpcode.Label, 'BODY'),
-        InvokeStaticBlockWithStack(compilableBlock(block, meta), 2),
-        op(Op.Pop, 2),
-        op(MachineOp.Jump, label('FINALLY')),
-        op(HighLevelBuilderOpcode.Label, 'BREAK'),
-        op(MachineOp.PopFrame),
-        op(Op.ExitList),
-        op(MachineOp.Jump, label('FINALLY')),
-        op(HighLevelBuilderOpcode.Label, 'ELSE'),
-      ];
+    () => {
+      op(Op.EnterList, labelOperand('BODY'), labelOperand('ELSE'));
+      op(MachineOp.PushFrame);
+      op(Op.Dup, $fp, 1);
+      op(MachineOp.ReturnTo, labelOperand('ITER'));
+      op(HighLevelBuilderOpcode.Label, 'ITER');
+      op(Op.Iterate, labelOperand('BREAK'));
+      op(HighLevelBuilderOpcode.Label, 'BODY');
+      InvokeStaticBlockWithStack(op, block, 2);
+      op(Op.Pop, 2);
+      op(MachineOp.Jump, labelOperand('FINALLY'));
+      op(HighLevelBuilderOpcode.Label, 'BREAK');
+      op(MachineOp.PopFrame);
+      op(Op.ExitList);
+      op(MachineOp.Jump, labelOperand('FINALLY'));
+      op(HighLevelBuilderOpcode.Label, 'ELSE');
 
       if (inverse) {
-        out.push(InvokeStaticBlock(compilableBlock(inverse, meta)));
+        InvokeStaticBlock(op, inverse);
       }
-
-      return out;
-    },
-  })
+    }
+  )
 );
 
-STATEMENTS.add(SexpOpcodes.With, ([, value, block, inverse], meta) => {
-  return ReplayableIf({
-    args() {
-      return {
-        count: 2,
-        actions: [op(HighLevelResolutionOpcode.Expr, value), op(Op.Dup, $sp, 0), op(Op.ToBoolean)],
-      };
+STATEMENTS.add(SexpOpcodes.With, (op, [, value, block, inverse]) => {
+  ReplayableIf(
+    op,
+
+    () => {
+      expr(op, value);
+      op(Op.Dup, $sp, 0);
+      op(Op.ToBoolean);
+
+      return 2;
     },
 
-    ifTrue() {
-      return InvokeStaticBlockWithStack(compilableBlock(block, meta), 1);
+    () => {
+      InvokeStaticBlockWithStack(op, block, 1);
     },
 
-    ifFalse() {
+    () => {
       if (inverse) {
-        return InvokeStaticBlock(compilableBlock(inverse, meta));
-      } else {
-        return NONE;
+        InvokeStaticBlock(op, inverse);
       }
-    },
-  });
+    }
+  );
 });
 
-STATEMENTS.add(SexpOpcodes.Let, ([, positional, block], meta) => {
-  let { count, actions } = CompilePositional(positional);
-  return [actions, InvokeStaticBlockWithStack(compilableBlock(block, meta), count)];
+STATEMENTS.add(SexpOpcodes.Let, (op, [, positional, block]) => {
+  let count = CompilePositional(op, positional);
+  InvokeStaticBlockWithStack(op, block, count);
 });
 
-STATEMENTS.add(SexpOpcodes.WithDynamicVars, ([, named, block], meta) => {
+STATEMENTS.add(SexpOpcodes.WithDynamicVars, (op, [, named, block]) => {
   if (named) {
     let [names, expressions] = named;
 
-    let { actions } = CompilePositional(expressions);
-
-    return [
-      actions,
-      DynamicScope(names, () => {
-        return InvokeStaticBlock(compilableBlock(block, meta));
-      }),
-    ];
+    CompilePositional(op, expressions);
+    DynamicScope(op, names, () => {
+      InvokeStaticBlock(op, block);
+    });
   } else {
-    return InvokeStaticBlock(compilableBlock(block, meta));
+    InvokeStaticBlock(op, block);
   }
 });
 
-STATEMENTS.add(SexpOpcodes.InvokeComponent, ([, expr, positional, named, blocks], meta) => {
+STATEMENTS.add(SexpOpcodes.InvokeComponent, (op, [, expr, positional, named, blocks]) => {
   if (isGetFreeComponent(expr)) {
-    return op(HighLevelResolutionOpcode.ResolveComponent, {
-      expr,
-      then(component) {
-        return InvokeComponent(meta, component, null, positional, named, blocks);
-      },
+    op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
+      InvokeComponent(op, component, null, positional, named, blocks);
     });
+  } else {
+    InvokeDynamicComponent(op, expr, null, positional, named, blocks, false, false);
   }
-
-  return InvokeDynamicComponent(meta, expr, null, positional, named, blocks, false, false);
 });
 
 function hashToArgs(hash: WireFormat.Core.Hash | null): WireFormat.Core.Hash | null {

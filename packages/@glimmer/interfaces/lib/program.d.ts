@@ -1,5 +1,5 @@
 import { STDLib, ContainingMetadata, HandleResult } from './template';
-import { StdlibOperand, Encoder } from './compile';
+import { StdLibOperand, Encoder } from './compile';
 import { Op } from './vm-opcodes';
 import { CompileTimeResolver } from './serialize';
 
@@ -26,7 +26,7 @@ export interface OpcodeHeap {
 export interface CompileTimeHeap extends OpcodeHeap {
   push(name: Op, op1?: number, op2?: number, op3?: number): void;
   pushPlaceholder(valueFunc: () => HandleResult): void;
-  pushStdlib(stdlib: StdlibOperand): void;
+  pushStdlib(stdlib: StdLibOperand): void;
   patchStdlibs(stdlib: STDLib): void;
   malloc(): number;
   finishMalloc(handle: number, scopeSize: number): void;

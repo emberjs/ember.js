@@ -1,110 +1,78 @@
-import { Option } from '../core';
 import * as WireFormat from './wire-format';
-import { HandleResult } from '../template';
-import { HighLevelBuilderOp, CompileActions, ArgsOptions } from './encoder';
+import { SymbolTable } from '../tier1/symbol-table';
+import { CompilableTemplate } from '../template';
 
-export interface ArrayOperand {
-  type: 'array';
-  value: number[];
-}
-
-export interface StringArrayOperand {
-  type: 'string-array';
-  value: readonly string[];
+export const enum HighLevelOperand {
+  Label = 1,
+  Owner = 2,
+  EvalSymbols = 3,
+  Block = 4,
+  StdLib = 5,
+  NonSmallInt = 6,
+  SymbolTable = 8,
+  Layout = 9,
 }
 
 export interface LabelOperand {
-  type: 'label';
+  type: HighLevelOperand.Label;
   value: string;
 }
 
-export interface SerializableOperand {
-  type: 'serializable';
-  value: unknown;
+export interface OwnerOperand {
+  type: HighLevelOperand.Owner;
+  value: undefined;
 }
 
-export interface OtherOperand {
-  type: 'other';
-  value: unknown;
+export interface EvalSymbolsOperand {
+  type: HighLevelOperand.EvalSymbols;
+  value: undefined;
 }
 
-export interface StdlibOperand {
-  type: 'stdlib';
+export interface BlockOperand {
+  type: HighLevelOperand.Block;
+  value: WireFormat.SerializedInlineBlock | WireFormat.SerializedBlock;
+}
+
+export interface StdLibOperand {
+  type: HighLevelOperand.StdLib;
   value: 'main' | 'trusting-append' | 'cautious-append';
 }
 
-export interface LookupHandleOperand {
-  type: 'lookup';
-  value: {
-    kind: 'helper';
-    value: string;
-  };
-}
-
-export interface ExpressionOperand {
-  type: 'expr';
-  value: WireFormat.Expression;
-}
-
-export interface ArgsOperand {
-  type: 'args';
-  value: ArgsOptions;
-}
-
-export interface OptionOperand {
-  type: 'option';
-  value: Option<CompileActions>;
-}
-
-export interface InlineBlockOperand {
-  type: 'inline-block';
-  value: WireFormat.SerializedInlineBlock;
-}
-
-export interface PrimitiveOperand {
-  type: 'primitive';
-  value: string | number | boolean | null | undefined;
-}
-
-export interface ImmediateOperand {
-  type: 'immediate';
+export interface NonSmallIntOperand {
+  type: HighLevelOperand.NonSmallInt;
   value: number;
 }
 
-export type NonlabelBuilderOperand =
-  | ArrayOperand
-  | StringArrayOperand
-  | SerializableOperand
-  | OtherOperand
-  | StdlibOperand
-  | LookupHandleOperand
-  | PrimitiveOperand
-  | ImmediateOperand
+export interface SymbolTableOperand {
+  type: HighLevelOperand.SymbolTable;
+  value: SymbolTable;
+}
+
+export interface LayoutOperand {
+  type: HighLevelOperand.Layout;
+  value: CompilableTemplate;
+}
+
+export type HighLevelBuilderOperand =
+  | LabelOperand
+  | OwnerOperand
+  | EvalSymbolsOperand
+  | StdLibOperand
+  | BlockOperand
+  | NonSmallIntOperand
+  | SymbolTableOperand
+  | LayoutOperand;
+
+export type SingleBuilderOperand =
+  | HighLevelBuilderOperand
   | number
   | string
   | boolean
-  | null;
+  | undefined
+  | null
+  | number[]
+  | string[];
 
-export type SingleBuilderOperand = NonlabelBuilderOperand | LabelOperand | BuilderHandleThunk;
-export type BuilderOperand = SingleBuilderOperand | HighLevelBuilderOp;
-export type CompileOperand = InlineBlockOperand;
-
-export type SingleBuilderOperandsTuple =
-  | []
-  | [SingleBuilderOperand]
-  | [SingleBuilderOperand, SingleBuilderOperand]
-  | [SingleBuilderOperand, SingleBuilderOperand, SingleBuilderOperand];
-
-export type BuilderOperandsTuple =
-  | []
-  | [BuilderOperand]
-  | [BuilderOperand, BuilderOperand]
-  | [BuilderOperand, BuilderOperand, BuilderOperand];
-
-export type SingleBuilderOperands = SingleBuilderOperandsTuple & SingleBuilderOperand[];
-
-export type BuilderHandleThunk = () => HandleResult;
-
-export type Operand = number | BuilderHandleThunk | StdlibOperand;
+export type Operand = number | StdLibOperand;
 
 export type EncoderOperands = [] | [Operand] | [Operand, Operand] | [Operand, Operand, Operand];
