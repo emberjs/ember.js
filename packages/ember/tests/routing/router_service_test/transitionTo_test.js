@@ -158,9 +158,7 @@ moduleFor(
       });
     }
 
-    async ['@test RouterService#transitionTo with dynamic segment'](
-      assert
-    ) {
+    async ['@test RouterService#transitionTo with dynamic segment'](assert) {
       assert.expect(3);
 
       let componentInstance;
@@ -196,9 +194,7 @@ moduleFor(
       this.assertText('much dynamicism');
     }
 
-    async ['@test RouterService#transitionTo with dynamic segment and model hook'](
-      assert
-    ) {
+    async ['@test RouterService#transitionTo with dynamic segment and model hook'](assert) {
       assert.expect(3);
 
       let componentInstance;

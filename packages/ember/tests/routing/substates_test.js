@@ -676,9 +676,7 @@ moduleFor(
       return promise;
     }
 
-    async ['@test Default error event moves into nested route'](
-      assert
-    ) {
+    async ['@test Default error event moves into nested route'](assert) {
       await this.visit('/');
 
       this.addTemplate('grandma.error', 'ERROR: {{@model.msg}}');

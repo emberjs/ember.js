@@ -194,9 +194,7 @@ moduleFor(
       `);
     }
 
-    async ['@test interior mutations on the model with tracked properties'](
-      assert
-    ) {
+    async ['@test interior mutations on the model with tracked properties'](assert) {
       class Model {
         @tracked color;
 
@@ -317,9 +315,7 @@ moduleFor(
       `);
     }
 
-    async ['@test exterior mutations on the model with tracked properties'](
-      assert
-    ) {
+    async ['@test exterior mutations on the model with tracked properties'](assert) {
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -712,9 +708,7 @@ moduleFor(
       });
     }
 
-    async ['@test it emits a useful backtracking re-render assertion message'](
-      assert
-    ) {
+    async ['@test it emits a useful backtracking re-render assertion message'](assert) {
       this.router.map(function () {
         this.route('routeWithError');
       });

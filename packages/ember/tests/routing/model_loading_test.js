@@ -397,9 +397,7 @@ moduleFor(
       });
     }
 
-    [`@test The Specials Page getting its model by deserializing the params hash`](
-      assert
-    ) {
+    [`@test The Specials Page getting its model by deserializing the params hash`](assert) {
       this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
@@ -446,9 +444,7 @@ moduleFor(
       });
     }
 
-    ['@test Moving from one page to another triggers the correct callbacks'](
-      assert
-    ) {
+    ['@test Moving from one page to another triggers the correct callbacks'](assert) {
       assert.expect(3);
 
       this.router.map(function () {
@@ -481,9 +477,7 @@ moduleFor(
         });
     }
 
-    ['@test Nested callbacks are not exited when moving to siblings'](
-      assert
-    ) {
+    ['@test Nested callbacks are not exited when moving to siblings'](assert) {
       let rootSetup = 0;
       let rootRender = 0;
       let rootModel = 0;

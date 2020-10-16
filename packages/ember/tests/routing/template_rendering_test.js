@@ -204,9 +204,7 @@ moduleFor(
       assert.equal(this.$('p').text(), 'YES I AM HOME', 'The homepage template was rendered');
     }
 
-    async [`@test Model passed via renderTemplate model is set as controller's model`](
-      assert
-    ) {
+    async [`@test Model passed via renderTemplate model is set as controller's model`](assert) {
       this.addTemplate(
         'bio',
         '<p>Model: {{@model.name}}</p><p>Controller: {{this.model.name}}</p>'
@@ -550,9 +548,7 @@ moduleFor(
       });
     }
 
-    async ["@test The template is not re-rendered when the route's model changes"](
-      assert
-    ) {
+    async ["@test The template is not re-rendered when the route's model changes"](assert) {
       this.router.map(function () {
         this.route('page', { path: '/page/:name' });
       });

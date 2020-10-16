@@ -7,10 +7,7 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 moduleFor(
   'The example renders correctly',
   class extends ApplicationTestCase {
-
-    async ['@test Render index template into application outlet'](
-      assert
-    ) {
+    async ['@test Render index template into application outlet'](assert) {
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate(
         'index',

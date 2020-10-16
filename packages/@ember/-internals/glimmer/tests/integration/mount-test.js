@@ -322,12 +322,9 @@ moduleFor(
             this._super(...arguments);
             this.register(
               'template:application',
-              compile(
-                '<h2>Param Engine: {{@model.foo}}</h2>',
-                {
-                  moduleName: 'my-app/templates/application.hbs',
-                }
-              )
+              compile('<h2>Param Engine: {{@model.foo}}</h2>', {
+                moduleName: 'my-app/templates/application.hbs',
+              })
             );
           },
         })

@@ -551,12 +551,7 @@ moduleFor(
             },
           })
         );
-        this.register(
-          'template:application_error',
-          compile(
-            'Error! {{@model.message}}'
-          )
-        );
+        this.register('template:application_error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
           Route.extend({
@@ -595,12 +590,7 @@ moduleFor(
             },
           })
         );
-        this.register(
-          'template:error',
-          compile(
-            'Error! {{@model.message}}'
-          )
-        );
+        this.register('template:error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
           Route.extend({
@@ -639,12 +629,7 @@ moduleFor(
             },
           })
         );
-        this.register(
-          'template:post_error',
-          compile(
-           'Error! {{@model.message}}'
-          )
-        );
+        this.register('template:post_error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
           Route.extend({
@@ -683,12 +668,7 @@ moduleFor(
             },
           })
         );
-        this.register(
-          'template:post.error',
-          compile(
-            'Error! {{@model.message}}'
-          )
-        );
+        this.register('template:post.error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post.comments',
           Route.extend({

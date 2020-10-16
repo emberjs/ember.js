@@ -916,9 +916,7 @@ moduleFor(
         });
     }
 
-    async [`@test The {{link-to}} component moves into the named route with context`](
-      assert
-    ) {
+    async [`@test The {{link-to}} component moves into the named route with context`](assert) {
       this.router.map(function () {
         this.route('about');
         this.route('item', { path: '/item/:id' });
