@@ -2,10 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import {
-  EMBER_GLIMMER_HELPER_MANAGER,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-} from '@ember/canary-features';
+import { EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
 import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert, deprecate } from '@ember/debug';
 import { PARTIALS } from '@ember/deprecated-features';
@@ -387,9 +384,7 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
 
     assert(
       'helper managers have not been enabled yet, you must use classic helpers',
-      EMBER_GLIMMER_HELPER_MANAGER ||
-        isClassicHelperManager(manager) ||
-        manager === SIMPLE_CLASSIC_HELPER_MANAGER
+      isClassicHelperManager(manager) || manager === SIMPLE_CLASSIC_HELPER_MANAGER
     );
 
     // For classic class based helpers, we need to pass the factoryFor result itself rather

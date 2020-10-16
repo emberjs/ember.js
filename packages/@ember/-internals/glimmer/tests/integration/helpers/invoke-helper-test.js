@@ -9,7 +9,7 @@ import {
 } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_GLIMMER_INVOKE_HELPER, EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
+import { EMBER_GLIMMER_INVOKE_HELPER } from '@ember/canary-features';
 import Service, { inject as service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
@@ -439,7 +439,7 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
   );
 }
 
-if (EMBER_GLIMMER_HELPER_MANAGER && EMBER_GLIMMER_INVOKE_HELPER) {
+if (EMBER_GLIMMER_INVOKE_HELPER) {
   class TestHelperManager {
     capabilities = helperCapabilities('3.23', {
       hasValue: true,

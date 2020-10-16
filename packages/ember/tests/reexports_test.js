@@ -2,7 +2,6 @@ import Ember from '../index';
 import require from 'require';
 import {
   FEATURES,
-  EMBER_GLIMMER_HELPER_MANAGER,
   EMBER_GLIMMER_INVOKE_HELPER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
@@ -274,12 +273,8 @@ let allExports = [
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
     ? ['_templateOnlyComponent', '@ember/component/template-only', 'default']
     : null,
-  EMBER_GLIMMER_HELPER_MANAGER
-    ? ['_setHelperManager', '@ember/-internals/glimmer', 'setHelperManager']
-    : null,
-  EMBER_GLIMMER_HELPER_MANAGER
-    ? ['_helperManagerCapabilities', '@ember/-internals/glimmer', 'helperCapabilities']
-    : null,
+  ['_setHelperManager', '@ember/-internals/glimmer', 'setHelperManager'],
+  ['_helperManagerCapabilities', '@ember/-internals/glimmer', 'helperCapabilities'],
   EMBER_GLIMMER_INVOKE_HELPER
     ? ['_invokeHelper', '@ember/-internals/glimmer', 'invokeHelper']
     : null,
