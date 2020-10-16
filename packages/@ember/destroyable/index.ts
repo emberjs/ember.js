@@ -25,7 +25,6 @@ import {
     when the associated parent object is destroyed.
 
   @module @ember/destroyable
-  @category EMBER_DESTROYABLES
   @public
 */
 
@@ -46,7 +45,6 @@ import {
   Returns the associated child for convenience.
 
   @method associateDestroyableChild
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @param {Object|Function} parent the destroyable to entangle the child destroyables lifetime with
   @param {Object|Function} child the destroyable to be entangled with the parents lifetime
@@ -71,7 +69,6 @@ import {
   ```
 
   @method isDestroying
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @param {Object|Function} destroyable the object to check
   @returns {Boolean}
@@ -95,7 +92,6 @@ import {
   ```
 
   @method isDestroyed
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @param {Object|Function} destroyable the object to check
   @returns {Boolean}
@@ -132,7 +128,6 @@ import {
   destroying, while others are not.
 
   @method destroy
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @param {Object|Function} destroyable the object to destroy
   @static
@@ -148,7 +143,6 @@ import {
   available in non-production builds.
 
   @method assertDestroyablesDestroyed
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @static
   @public
@@ -161,7 +155,6 @@ import {
   have completed when `assertDestroyablesDestroyed` is called.
 
   @method enableDestroyableTracking
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @static
   @public
@@ -213,7 +206,6 @@ import {
   ```
 
   @method registerDestructor
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @param {Object|Function} destroyable the destroyable to register the destructor function with
   @param {Function} destructor the destructor to run when the destroyable object is destroyed
@@ -250,7 +242,6 @@ export function registerDestructor<T extends object>(
   ```
 
   @method unregisterDestructor
-  @category EMBER_DESTROYABLES
   @for @ember/destroyable
   @param {Object|Function} destroyable the destroyable to unregister the destructor function from
   @param {Function} destructor the destructor to remove from the destroyable
