@@ -1,56 +1,51 @@
 import {
-  ExpressionCompileActions,
   ExpressionSexpOpcode,
   HighLevelResolutionOpcode,
   Op,
   SexpOpcodes,
 } from '@glimmer/interfaces';
-import { op } from '../opcode-builder/encoder';
 import { CurryComponent } from '../opcode-builder/helpers/components';
+import { expr } from '../opcode-builder/helpers/expr';
 import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
-import { lookupLocal } from '../utils';
-import { Compilers } from './compilers';
+import { Compilers, PushExpressionOp } from './compilers';
 
-export const EXPRESSIONS = new Compilers<ExpressionSexpOpcode, ExpressionCompileActions>();
+export const EXPRESSIONS = new Compilers<PushExpressionOp, ExpressionSexpOpcode>();
 
-EXPRESSIONS.add(SexpOpcodes.Concat, ([, parts]) => {
-  let out = [];
-
+EXPRESSIONS.add(SexpOpcodes.Concat, (op, [, parts]) => {
   for (let part of parts) {
-    out.push(op(HighLevelResolutionOpcode.Expr, part));
+    expr(op, part);
   }
 
-  out.push(op(Op.Concat, parts.length));
-
-  return out;
+  op(Op.Concat, parts.length);
 });
 
-EXPRESSIONS.add(SexpOpcodes.Call, ([, expr, params, hash]) => {
-  return op(HighLevelResolutionOpcode.ResolveHelper, {
-    expr,
-    then: (handle) => Call({ handle, positional: params, named: hash }),
+EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expr, positional, named]) => {
+  op(HighLevelResolutionOpcode.ResolveHelper, expr, (handle: number) => {
+    Call(op, handle, positional, named);
   });
 });
 
-EXPRESSIONS.add(SexpOpcodes.CurryComponent, ([, expr, positional, named], meta) => {
-  return CurryComponent(meta, expr, positional, named);
+EXPRESSIONS.add(SexpOpcodes.CurryComponent, (op, [, expr, positional, named]) => {
+  CurryComponent(op, expr, positional, named);
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, sym, path]) => withPath(op(Op.GetVariable, sym), path));
+EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {
+  op(Op.GetVariable, sym);
+  withPath(op, path);
+});
 
-EXPRESSIONS.add(SexpOpcodes.GetStrictFree, ([, sym, _path]) => {
-  return op(HighLevelResolutionOpcode.ResolveFree, {
-    sym,
-    then(_handle) {
-      // TODO: Implement in strict mode
-
-      return [];
-    },
+EXPRESSIONS.add(SexpOpcodes.GetStrictFree, (op, [, sym, _path]) => {
+  op(HighLevelResolutionOpcode.ResolveFree, sym, (_handle: unknown) => {
+    // TODO: Implement in strict mode
   });
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, ([, freeVar, path], meta) => {
-  return withPath(lookupLocal(meta, meta.upvars![freeVar]), path);
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, (op, [, freeVar, path]) => {
+  op(HighLevelResolutionOpcode.ResolveLocal, freeVar, (name: string) => {
+    op(Op.GetVariable, 0);
+    op(Op.GetProperty, name);
+  });
+  withPath(op, path);
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, () => {
@@ -61,44 +56,38 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, () => 
   throw new Error('unimplemented opcode');
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (expr, meta) => {
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (op, expr) => {
   // <Foo @arg={{baz}}>
 
-  if (meta.asPartial) {
-    let name = meta.upvars![expr[1]];
-
-    return op(Op.ResolveMaybeLocal, name);
-  } else {
-    return op(HighLevelResolutionOpcode.ResolveOptionalHelper, {
-      expr,
-      then(handleOrName) {
-        return typeof handleOrName === 'number'
-          ? Call({ handle: handleOrName, positional: null, named: null })
-          : [op(Op.GetVariable, 0), op(Op.GetProperty, handleOrName)];
-      },
+  op(HighLevelResolutionOpcode.ResolveLocal, expr[1], (_name: string) => {
+    op(HighLevelResolutionOpcode.ResolveOptionalHelper, expr, (handleOrName: number | string) => {
+      if (typeof handleOrName === 'number') {
+        Call(op, handleOrName, null, null);
+      } else {
+        op(Op.GetVariable, 0);
+        op(Op.GetProperty, handleOrName);
+      }
     });
-  }
+  });
 });
 
-function withPath(expr: ExpressionCompileActions, path?: string[]) {
-  if (path === undefined || path.length === 0) return expr;
-  if (!Array.isArray(expr)) expr = [expr];
+function withPath(op: PushExpressionOp, path?: string[]) {
+  if (path === undefined || path.length === 0) return;
 
   for (let i = 0; i < path.length; i++) {
-    expr.push(op(Op.GetProperty, path[i]));
+    op(Op.GetProperty, path[i]);
   }
-
-  return expr;
 }
 
-EXPRESSIONS.add(SexpOpcodes.Undefined, () => PushPrimitiveReference(undefined));
-EXPRESSIONS.add(SexpOpcodes.HasBlock, ([, block]) => {
-  return [op(HighLevelResolutionOpcode.Expr, block), op(Op.HasBlock)];
+EXPRESSIONS.add(SexpOpcodes.Undefined, (op) => PushPrimitiveReference(op, undefined));
+EXPRESSIONS.add(SexpOpcodes.HasBlock, (op, [, block]) => {
+  expr(op, block);
+  op(Op.HasBlock);
 });
 
-EXPRESSIONS.add(SexpOpcodes.HasBlockParams, ([, block]) => [
-  op(HighLevelResolutionOpcode.Expr, block),
-  op(Op.SpreadBlock),
-  op(Op.CompileBlock),
-  op(Op.HasBlockParams),
-]);
+EXPRESSIONS.add(SexpOpcodes.HasBlockParams, (op, [, block]) => {
+  expr(op, block);
+  op(Op.SpreadBlock);
+  op(Op.CompileBlock);
+  op(Op.HasBlockParams);
+});

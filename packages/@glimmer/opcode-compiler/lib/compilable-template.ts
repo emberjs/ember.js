@@ -13,15 +13,18 @@ import {
   HandleResult,
   BlockSymbolTable,
   SerializedBlock,
+  BuilderOp,
+  HighLevelOp,
 } from '@glimmer/interfaces';
 import { meta } from './opcode-builder/helpers/shared';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { templateCompilationContext } from './opcode-builder/context';
-import { concatStatements } from './syntax/concat';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { debugCompiler } from './compiler';
 import { patchStdlibs } from '@glimmer/program';
 import { STATEMENTS } from './syntax/statements';
+import { HighLevelStatementOp } from './syntax/compilers';
+import { encodeOp } from './opcode-builder/encoder';
 
 export const PLACEHOLDER_HANDLE = -1;
 
@@ -74,8 +77,17 @@ export function compileStatements(
   let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
 
+  let {
+    encoder,
+    program: { constants, resolver },
+  } = context;
+
+  function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
+    encodeOp(encoder, constants, resolver, meta, op as BuilderOp | HighLevelOp);
+  }
+
   for (let i = 0; i < statements.length; i++) {
-    concatStatements(context, sCompiler.compile(statements[i], context.meta));
+    sCompiler.compile(pushOp, statements[i]);
   }
 
   let handle = context.encoder.commit(syntaxContext.heap, meta.size);

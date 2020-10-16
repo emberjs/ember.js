@@ -1,4 +1,4 @@
-import { Operand, SerializedTemplateBlock, SerializedInlineBlock } from './compile';
+import { Operand, SerializedTemplateBlock, SerializedInlineBlock, BlockOperand } from './compile';
 import { EncoderError } from './compile/encoder';
 import { Option } from './core';
 import { InternalComponentCapabilities } from './managers/internal/component';
@@ -80,9 +80,9 @@ export interface ErrHandle {
 export type HandleResult = OkHandle | ErrHandle;
 
 export interface NamedBlocks {
-  get(name: string): Option<CompilableBlock>;
+  get(name: string): Option<SerializedInlineBlock>;
   has(name: string): boolean;
-  with(name: string, block: Option<CompilableBlock>): NamedBlocks;
+  with(name: string, block: Option<SerializedInlineBlock>): NamedBlocks;
   hasAny: boolean;
   names: string[];
 }

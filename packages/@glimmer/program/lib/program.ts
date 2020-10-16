@@ -3,7 +3,7 @@ import {
   SerializedHeap,
   STDLib,
   RuntimeHeap,
-  StdlibOperand,
+  StdLibOperand,
   RuntimeConstants,
   RuntimeProgram,
 } from '@glimmer/interfaces';
@@ -43,7 +43,7 @@ function changeState(info: number, newState: number) {
 }
 
 export type Placeholder = [number, () => number];
-export type StdlibPlaceholder = [number, StdlibOperand];
+export type StdlibPlaceholder = [number, StdLibOperand];
 
 const PAGE_SIZE = 0x100000;
 
@@ -239,7 +239,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
     this.placeholders.push([address, valueFunc]);
   }
 
-  pushStdlib(operand: StdlibOperand): void {
+  pushStdlib(operand: StdLibOperand): void {
     this.sizeCheck();
     let address = this.offset++;
     this.heap[address] = Size.MAX_SIZE;

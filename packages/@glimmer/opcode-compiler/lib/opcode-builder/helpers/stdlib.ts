@@ -2,19 +2,20 @@ import { $s0 } from '@glimmer/vm';
 
 import { invokePreparedComponent, InvokeBareComponent } from './components';
 import { StdLib } from '../stdlib';
-import { EncoderImpl, op } from '../encoder';
+import { encodeOp, EncoderImpl } from '../encoder';
 import {
   ContentType,
   Op,
-  CompileActions,
   CompileTimeCompilationContext,
-  TemplateCompilationContext,
+  HighLevelOp,
+  BuilderOp,
 } from '@glimmer/interfaces';
 import { ContentTypeSwitchCases } from './conditional';
-import { concat } from '../../syntax/concat';
+import { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
 
-export function main(): CompileActions {
-  return [op(Op.Main, $s0), invokePreparedComponent(false, false, true)];
+export function main(op: PushStatementOp): void {
+  op(Op.Main, $s0);
+  invokePreparedComponent(op, false, false, true);
 }
 
 /**
@@ -25,34 +26,44 @@ export function main(): CompileActions {
  * @param trusting whether to interpolate a string as raw HTML (corresponds to
  * triple curlies)
  */
-export function StdAppend(trusting: boolean): CompileActions {
-  return [
-    ContentTypeSwitchCases((when) => {
-      when(ContentType.String, () => {
-        if (trusting) {
-          return [op(Op.AssertSame), op(Op.AppendHTML)];
-        } else {
-          return op(Op.AppendText);
-        }
-      });
+export function StdAppend(op: PushStatementOp, trusting: boolean): void {
+  ContentTypeSwitchCases(op, (when) => {
+    when(ContentType.String, () => {
+      if (trusting) {
+        op(Op.AssertSame);
+        op(Op.AppendHTML);
+      } else {
+        op(Op.AppendText);
+      }
+    });
 
-      when(ContentType.Component, () => [
-        op(Op.PushCurriedComponent),
-        op(Op.PushDynamicComponentInstance),
-        InvokeBareComponent(),
-      ]);
+    when(ContentType.Component, () => [
+      op(Op.PushCurriedComponent),
+      op(Op.PushDynamicComponentInstance),
+      InvokeBareComponent(op),
+    ]);
 
-      when(ContentType.SafeString, () => [op(Op.AssertSame), op(Op.AppendSafeHTML)]);
-      when(ContentType.Fragment, () => [op(Op.AssertSame), op(Op.AppendDocumentFragment)]);
-      when(ContentType.Node, () => [op(Op.AssertSame), op(Op.AppendNode)]);
-    }),
-  ];
+    when(ContentType.SafeString, () => {
+      op(Op.AssertSame);
+      op(Op.AppendSafeHTML);
+    });
+
+    when(ContentType.Fragment, () => {
+      op(Op.AssertSame);
+      op(Op.AppendDocumentFragment);
+    });
+
+    when(ContentType.Node, () => {
+      op(Op.AssertSame);
+      op(Op.AppendNode);
+    });
+  });
 }
 
 export function compileStd(context: CompileTimeCompilationContext): StdLib {
-  let mainHandle = build(context, main);
-  let trustingGuardedAppend = build(context, () => StdAppend(true));
-  let cautiousGuardedAppend = build(context, () => StdAppend(false));
+  let mainHandle = build(context, (op) => main(op));
+  let trustingGuardedAppend = build(context, (op) => StdAppend(op, true));
+  let cautiousGuardedAppend = build(context, (op) => StdAppend(op, false));
 
   return new StdLib(mainHandle, trustingGuardedAppend, cautiousGuardedAppend);
 }
@@ -68,16 +79,18 @@ const STDLIB_META = {
   size: 0,
 };
 
-function build(program: CompileTimeCompilationContext, callback: () => CompileActions): number {
-  let encoder = new EncoderImpl();
+function build(
+  program: CompileTimeCompilationContext,
+  callback: (op: PushStatementOp) => void
+): number {
+  let encoder = new EncoderImpl(STDLIB_META);
+  let { constants, resolver } = program;
 
-  let stdContext: TemplateCompilationContext = {
-    encoder,
-    meta: STDLIB_META,
-    program,
-  };
+  function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
+    encodeOp(encoder, constants, resolver, STDLIB_META, op as BuilderOp | HighLevelOp);
+  }
 
-  concat(stdContext, callback());
+  callback(pushOp);
 
   let result = encoder.commit(program.heap, 0);
 

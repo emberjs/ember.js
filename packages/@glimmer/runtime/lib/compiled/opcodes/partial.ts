@@ -14,7 +14,7 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _owner, op2: _symbols, op3: _ev
 
   let owner = constants.getValue<Owner>(decodeHandle(_owner));
   let outerSymbols = constants.getArray<string>(_symbols);
-  let evalInfo = constants.getValue<number[]>(decodeHandle(_evalInfo));
+  let evalInfo = constants.getArray<number>(decodeHandle(_evalInfo));
 
   let handle = vm.runtime.resolver.lookupPartial(name as string, owner);
 

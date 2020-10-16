@@ -1,22 +1,16 @@
-import { label } from '../operands';
-import {
-  Op,
-  MachineOp,
-  CompileActions,
-  StatementCompileActions,
-  HighLevelBuilderOpcode,
-} from '@glimmer/interfaces';
-import { op } from '../encoder';
+import { labelOperand } from '../operands';
+import { Op, MachineOp, HighLevelBuilderOpcode } from '@glimmer/interfaces';
+import { PushStatementOp } from '../../syntax/compilers';
 
-export type When = (match: number, callback: () => CompileActions) => void;
+export type When = (match: number, callback: () => void) => void;
 
-export function ContentTypeSwitchCases(callback: (when: When) => void): CompileActions {
+export function ContentTypeSwitchCases(op: PushStatementOp, callback: (when: When) => void): void {
   // Setup the switch DSL
-  let clauses: Array<{ match: number; label: string; callback: () => CompileActions }> = [];
+  let clauses: Array<{ match: number; label: string; callback: () => void }> = [];
 
   let count = 0;
 
-  function when(match: number, callback: () => CompileActions): void {
+  function when(match: number, callback: () => void): void {
     clauses.push({ match, callback, label: `CLAUSE${count++}` });
   }
 
@@ -24,16 +18,14 @@ export function ContentTypeSwitchCases(callback: (when: When) => void): CompileA
   callback(when);
 
   // Emit the opcodes for the switch
-  let out: CompileActions = [
-    op(Op.Enter, 1),
-    op(Op.ContentType),
-    op(HighLevelBuilderOpcode.StartLabels),
-  ];
+  op(Op.Enter, 1);
+  op(Op.ContentType);
+  op(HighLevelBuilderOpcode.StartLabels);
 
   // First, emit the jump opcodes. We don't need a jump for the last
   // opcode, since it bleeds directly into its clause.
   for (let clause of clauses.slice(0, -1)) {
-    out.push(op(Op.JumpEq, label(clause.label), clause.match));
+    op(Op.JumpEq, labelOperand(clause.label), clause.match);
   }
 
   // Enumerate the clauses in reverse order. Earlier matches will
@@ -41,22 +33,20 @@ export function ContentTypeSwitchCases(callback: (when: When) => void): CompileA
   for (let i = clauses.length - 1; i >= 0; i--) {
     let clause = clauses[i];
 
-    out.push(op(HighLevelBuilderOpcode.Label, clause.label), op(Op.Pop, 1), clause.callback());
+    op(HighLevelBuilderOpcode.Label, clause.label);
+    op(Op.Pop, 1);
+    clause.callback();
 
     // The first match is special: it is placed directly before the END
     // label, so no additional jump is needed at the end of it.
     if (i !== 0) {
-      out.push(op(MachineOp.Jump, label('END')));
+      op(MachineOp.Jump, labelOperand('END'));
     }
   }
 
-  out.push(
-    op(HighLevelBuilderOpcode.Label, 'END'),
-    op(HighLevelBuilderOpcode.StopLabels),
-    op(Op.Exit)
-  );
-
-  return out;
+  op(HighLevelBuilderOpcode.Label, 'END');
+  op(HighLevelBuilderOpcode.StopLabels);
+  op(Op.Exit);
 }
 
 /**
@@ -120,66 +110,57 @@ export function ContentTypeSwitchCases(callback: (when: When) => void): CompileA
  * encountered, the program jumps to -1 rather than the END label,
  * and the PopFrame opcode is not needed.
  */
-export function Replayable<T extends CompileActions | StatementCompileActions>({
-  args,
-  body,
-}: {
-  args(): { count: number; actions: T };
-  body(): T;
-}): T {
+export function Replayable(op: PushStatementOp, args: () => number, body: () => void): void {
+  // Start a new label frame, to give END and RETURN
+  // a unique meaning.
+
+  op(HighLevelBuilderOpcode.StartLabels);
+  op(MachineOp.PushFrame);
+
+  // If the body invokes a block, its return will return to
+  // END. Otherwise, the return in RETURN will return to END.
+  op(MachineOp.ReturnTo, labelOperand('ENDINITIAL'));
+
   // Push the arguments onto the stack. The args() function
   // tells us how many stack elements to retain for re-execution
   // when updating.
-  let { count, actions } = args();
+  let count = args();
 
-  // Start a new label frame, to give END and RETURN
-  // a unique meaning.
-  return [
-    op(HighLevelBuilderOpcode.StartLabels),
-    op(MachineOp.PushFrame),
+  // Start a new updating closure, remembering `count` elements
+  // from the stack. Everything after this point, and before END,
+  // will execute both initially and to update the block.
+  //
+  // The enter and exit opcodes also track the area of the DOM
+  // associated with this block. If an assertion inside the block
+  // fails (for example, the test value changes from true to false
+  // in an #if), the DOM is cleared and the program is re-executed,
+  // restoring `count` elements to the stack and executing the
+  // instructions between the enter and exit.
+  op(Op.Enter, count);
 
-    // If the body invokes a block, its return will return to
-    // END. Otherwise, the return in RETURN will return to END.
-    op(MachineOp.ReturnTo, label('ENDINITIAL')),
+  // Evaluate the body of the block. The body of the block may
+  // return, which will jump execution to END during initial
+  // execution, and exit the updating routine.
+  body();
 
-    actions,
+  // All execution paths in the body should run the FINALLY once
+  // they are done. It is executed both during initial execution
+  // and during updating execution.
+  op(HighLevelBuilderOpcode.Label, 'FINALLY');
 
-    // Start a new updating closure, remembering `count` elements
-    // from the stack. Everything after this point, and before END,
-    // will execute both initially and to update the block.
-    //
-    // The enter and exit opcodes also track the area of the DOM
-    // associated with this block. If an assertion inside the block
-    // fails (for example, the test value changes from true to false
-    // in an #if), the DOM is cleared and the program is re-executed,
-    // restoring `count` elements to the stack and executing the
-    // instructions between the enter and exit.
-    op(Op.Enter, count),
+  // Finalize the DOM.
+  op(Op.Exit);
 
-    // Evaluate the body of the block. The body of the block may
-    // return, which will jump execution to END during initial
-    // execution, and exit the updating routine.
-    body(),
+  // In initial execution, this is a noop: it returns to the
+  // immediately following opcode. In updating execution, this
+  // exits the updating routine.
+  op(MachineOp.Return);
 
-    // All execution paths in the body should run the FINALLY once
-    // they are done. It is executed both during initial execution
-    // and during updating execution.
-    op(HighLevelBuilderOpcode.Label, 'FINALLY'),
-
-    // Finalize the DOM.
-    op(Op.Exit),
-
-    // In initial execution, this is a noop: it returns to the
-    // immediately following opcode. In updating execution, this
-    // exits the updating routine.
-    op(MachineOp.Return),
-
-    // Cleanup code for the block. Runs on initial execution
-    // but not on updating.
-    op(HighLevelBuilderOpcode.Label, 'ENDINITIAL'),
-    op(MachineOp.PopFrame),
-    op(HighLevelBuilderOpcode.StopLabels),
-  ] as T;
+  // Cleanup code for the block. Runs on initial execution
+  // but not on updating.
+  op(HighLevelBuilderOpcode.Label, 'ENDINITIAL');
+  op(MachineOp.PopFrame);
+  op(HighLevelBuilderOpcode.StopLabels);
 }
 
 /**
@@ -197,40 +178,29 @@ export function Replayable<T extends CompileActions | StatementCompileActions>({
  * routine, as it can reuse the DOM block and is always only a single
  * frame deep.
  */
-export function ReplayableIf<T extends CompileActions | StatementCompileActions>({
-  args,
-  ifTrue,
-  ifFalse,
-}: {
-  args(): { count: number; actions: T };
-  ifTrue(): T;
-  ifFalse?(): T;
-}): T {
-  return Replayable({
-    args,
+export function ReplayableIf(
+  op: PushStatementOp,
+  args: () => number,
+  ifTrue: () => void,
+  ifFalse?: () => void
+): void {
+  return Replayable(op, args, () => {
+    // If the conditional is false, jump to the ELSE label.
+    op(Op.JumpUnless, labelOperand('ELSE'));
+    // Otherwise, execute the code associated with the true branch.
+    ifTrue();
+    // We're done, so return. In the initial execution, this runs
+    // the cleanup code. In the updating VM, it exits the updating
+    // routine.
+    op(MachineOp.Jump, labelOperand('FINALLY'));
+    op(HighLevelBuilderOpcode.Label, 'ELSE');
 
-    body: () => {
-      let out = [
-        // If the conditional is false, jump to the ELSE label.
-        op(Op.JumpUnless, label('ELSE')),
-        // Otherwise, execute the code associated with the true branch.
-        ifTrue(),
-        // We're done, so return. In the initial execution, this runs
-        // the cleanup code. In the updating VM, it exits the updating
-        // routine.
-        op(MachineOp.Jump, label('FINALLY')),
-        op(HighLevelBuilderOpcode.Label, 'ELSE'),
-      ];
-
-      // If the conditional is false, and code associatied ith the
-      // false branch was provided, execute it. If there was no code
-      // associated with the false branch, jumping to the else statement
-      // has no other behavior.
-      if (ifFalse) {
-        out.push(ifFalse());
-      }
-
-      return out as T;
-    },
+    // If the conditional is false, and code associatied ith the
+    // false branch was provided, execute it. If there was no code
+    // associated with the false branch, jumping to the else statement
+    // has no other behavior.
+    if (ifFalse !== undefined) {
+      ifFalse();
+    }
   });
 }

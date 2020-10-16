@@ -1,18 +1,8 @@
-import {
-  NamedBlocks,
-  Option,
-  CompilableBlock,
-  WireFormat,
-  ContainingMetadata,
-  ExpressionCompileActions,
-  Op,
-} from '@glimmer/interfaces';
+import { NamedBlocks, Option, WireFormat, SerializedInlineBlock } from '@glimmer/interfaces';
 import { dict, assign } from '@glimmer/util';
-import { compilableBlock } from './compilable-template';
-import { op } from './opcode-builder/encoder';
 
 interface NamedBlocksDict {
-  [key: string]: Option<CompilableBlock>;
+  [key: string]: Option<WireFormat.SerializedInlineBlock>;
 }
 
 export class NamedBlocksImpl implements NamedBlocks {
@@ -22,7 +12,7 @@ export class NamedBlocksImpl implements NamedBlocks {
     this.names = blocks ? Object.keys(blocks) : [];
   }
 
-  get(name: string): Option<CompilableBlock> {
+  get(name: string): Option<SerializedInlineBlock> {
     if (!this.blocks) return null;
 
     return this.blocks[name] || null;
@@ -33,7 +23,7 @@ export class NamedBlocksImpl implements NamedBlocks {
     return blocks !== null && name in blocks;
   }
 
-  with(name: string, block: Option<CompilableBlock>): NamedBlocks {
+  with(name: string, block: Option<SerializedInlineBlock>): NamedBlocks {
     let { blocks } = this;
 
     if (blocks) {
@@ -50,7 +40,7 @@ export class NamedBlocksImpl implements NamedBlocks {
 
 export const EMPTY_BLOCKS = new NamedBlocksImpl(null);
 
-export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMetadata): NamedBlocks {
+export function namedBlocks(blocks: WireFormat.Core.Blocks): NamedBlocks {
   if (blocks === null) {
     return EMPTY_BLOCKS;
   }
@@ -60,16 +50,8 @@ export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMeta
   let [keys, values] = blocks;
 
   for (let i = 0; i < keys.length; i++) {
-    out[keys[i]] = compilableBlock(values[i]!, meta);
+    out[keys[i]] = values[i];
   }
 
   return new NamedBlocksImpl(out);
-}
-
-export function lookupLocal(meta: ContainingMetadata, name: string): ExpressionCompileActions {
-  if (meta.asPartial) {
-    return op(Op.ResolveMaybeLocal, name);
-  } else {
-    return [op(Op.GetVariable, 0), op(Op.GetProperty, name)];
-  }
 }

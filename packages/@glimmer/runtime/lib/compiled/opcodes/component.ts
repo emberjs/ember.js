@@ -562,7 +562,7 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
     if (vm.stack.peek() === vm[ARGS]) {
       args = vm[ARGS].capture();
     } else {
-      let names = vm[CONSTANTS].getValue<string[]>(_names);
+      let names = vm[CONSTANTS].getArray<string>(_names);
       vm[ARGS].setup(vm.stack, names, [], 0, true);
       args = vm[ARGS].capture();
     }
