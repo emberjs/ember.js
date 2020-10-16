@@ -38,7 +38,13 @@ import InternalComponent from './internal';
 
   ### Actions
 
-  The `Input` component takes a number of arguments with callbacks that are invoked in response to
+  There are multiple ways to pass actions to the input component. Starting with Ember Octane, we recommend using the `{{on}}` modifier to call an action on specific events such as the input event.
+
+  ```handlebars
+  <Input @value={{this.name}} {{on "input" this.validateName}} />
+  ```
+
+  The `Input` component also takes a number of arguments with callbacks that are invoked in response to
   user events.
 
   * `enter`
