@@ -916,95 +916,7 @@ moduleFor(
         });
     }
 
-    [`@feature(!EMBER_ROUTING_MODEL_ARG) The <LinkTo /> component moves into the named route with context`](
-      assert
-    ) {
-      this.router.map(function () {
-        this.route('about');
-        this.route('item', { path: '/item/:id' });
-      });
-
-      this.addTemplate(
-        'about',
-        `
-        <h3 class="list">List</h3>
-        <ul>
-          {{#each this.model as |person|}}
-            <li>
-              <LinkTo id={{person.id}} @route='item' @model={{person}}>
-                {{person.name}}
-              </LinkTo>
-            </li>
-          {{/each}}
-        </ul>
-        <LinkTo id='home-link' @route='index'>Home</LinkTo>
-        `
-      );
-
-      this.addTemplate(
-        'item',
-        `
-        <h3 class="item">Item</h3>
-        <p>{{this.model.name}}</p>
-        <LinkTo id='home-link' @route='index'>Home</LinkTo>
-        `
-      );
-
-      this.addTemplate(
-        'index',
-        `
-        <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about'>About</LinkTo>
-        `
-      );
-
-      this.add(
-        'route:about',
-        Route.extend({
-          model() {
-            return [
-              { id: 'yehuda', name: 'Yehuda Katz' },
-              { id: 'tom', name: 'Tom Dale' },
-              { id: 'erik', name: 'Erik Brynroflsson' },
-            ];
-          },
-        })
-      );
-
-      return this.visit('/about')
-        .then(() => {
-          assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-          assert.equal(
-            normalizeUrl(this.$('#home-link').attr('href')),
-            '/',
-            'The home link points back at /'
-          );
-
-          return this.click('#yehuda');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-          assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
-
-          return this.click('#home-link');
-        })
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
-          assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
-          assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
-
-          return this.click('#erik');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-          assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
-        });
-    }
-
-    async [`@feature(EMBER_ROUTING_MODEL_ARG) The <LinkTo /> component moves into the named route with context`](
+    async [`@test The <LinkTo /> component moves into the named route with context`](
       assert
     ) {
       this.router.map(function () {
@@ -1676,45 +1588,7 @@ moduleFor(
         });
     }
 
-    ['@feature(!EMBER_ROUTING_MODEL_ARG) [GH#17018] passing model to <LinkTo /> with `hash` helper works']() {
-      this.router.map(function () {
-        this.route('post', { path: '/posts/:post_id' });
-      });
-
-      this.add(
-        'route:index',
-        Route.extend({
-          model() {
-            return RSVP.hash({
-              user: { name: 'Papa Smurf' },
-            });
-          },
-        })
-      );
-
-      this.addTemplate(
-        'index',
-        `<LinkTo @route='post' @model={{hash id="someId" user=this.model.user}}>Post</LinkTo>`
-      );
-
-      this.addTemplate('post', 'Post: {{this.model.user.name}}');
-
-      return this.visit('/')
-        .then(() => {
-          this.assertComponentElement(this.firstChild, {
-            tagName: 'a',
-            attrs: { href: '/posts/someId' },
-            content: 'Post',
-          });
-
-          return this.click('a');
-        })
-        .then(() => {
-          this.assertText('Post: Papa Smurf');
-        });
-    }
-
-    ['@feature(EMBER_ROUTING_MODEL_ARG) [GH#17018] passing model to <LinkTo /> with `hash` helper works']() {
+    ['@test [GH#17018] passing model to <LinkTo /> with `hash` helper works']() {
       this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
