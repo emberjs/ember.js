@@ -42,12 +42,19 @@ Observable.apply(FrameworkObject.prototype);
 
 if (DEBUG) {
   let INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
+  let WILL_DESTROY_WAS_CALLED = symbol('WILL_DESTROY_WAS_CALLED');
   let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
+  let ASSERT_WILL_DESTROY_WAS_CALLED = symbol('ASSERT_WILL_DESTROY_WAS_CALLED');
 
   FrameworkObject = class DebugFrameworkObject extends EmberObject {
     init() {
       super.init(...arguments);
       this[INIT_WAS_CALLED] = true;
+    }
+
+    willDestroy() {
+      super.willDestroy(...arguments);
+      this[WILL_DESTROY_WAS_CALLED] = true;
     }
 
     [ASSERT_INIT_WAS_CALLED]() {
@@ -56,7 +63,15 @@ if (DEBUG) {
         this[INIT_WAS_CALLED]
       );
     }
+
+    [ASSERT_WILL_DESTROY_WAS_CALLED]() {
+      assert(
+        `You must call \`super.willDestroy(...arguments);\` or \`this._super(...arguments)\` when overriding \`willDestroy\` on a framework object. Please update ${this} to call \`super.willDestroy(...arguments);\` from \`willDestroy\` when using native classes or \`this._super(...arguments)\` when using \`EmberObject.extend()\`.`,
+        this[WILL_DESTROY_WAS_CALLED]
+      );
+    }
   };
 
   addListener(FrameworkObject.prototype, 'init', null, ASSERT_INIT_WAS_CALLED);
+  addListener(FrameworkObject.prototype, 'willDestroy', null, ASSERT_WILL_DESTROY_WAS_CALLED);
 }

@@ -594,6 +594,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
 
         willDestroy() {
+          this._super(...arguments);
           this._instance.destroy();
         },
       }),
@@ -623,6 +624,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
 
         willDestroy() {
+          this._super(...arguments);
           this._instance.destroy();
         },
       }),
