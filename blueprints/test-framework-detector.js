@@ -11,37 +11,40 @@ module.exports = function (blueprint) {
 
   blueprint.filesPath = function () {
     let type;
+    const qunitRfcVersion = 'qunit-rfc-232';
+    const mochaRfcVersion = 'mocha-rfc-232';
+    const mochaVersion = 'mocha-0.12';
 
     let dependencies = this.project.dependencies();
     if ('ember-qunit' in dependencies) {
-      type = 'qunit-rfc-232';
+      type = qunitRfcVersion;
     } else if ('ember-cli-qunit' in dependencies) {
       let checker = new VersionChecker(this.project);
       if (
-        fs.existsSync(this.path + '/qunit-rfc-232-files') &&
+        fs.existsSync(`${this.path}/${qunitRfcVersion}-files`) &&
         checker.for('ember-cli-qunit', 'npm').gte('4.2.0')
       ) {
-        type = 'qunit-rfc-232';
+        type = qunitRfcVersion;
       } else {
         type = 'qunit';
       }
     } else if ('ember-mocha' in dependencies) {
       let checker = new VersionChecker(this.project);
       if (
-        fs.existsSync(this.path + '/mocha-rfc-232-files') &&
+        fs.existsSync(`${this.path}/${mochaRfcVersion}-files`) &&
         checker.for('ember-mocha', 'npm').gte('0.14.0')
       ) {
-        type = 'mocha-rfc-232';
+        type = mochaRfcVersion;
       } else {
-        type = 'mocha-0.12';
+        type = mochaVersion;
       }
     } else if ('ember-cli-mocha' in dependencies) {
       let checker = new VersionChecker(this.project);
       if (
-        fs.existsSync(this.path + '/mocha-0.12-files') &&
+        fs.existsSync(`${this.path}/${mochaVersion}-files`) &&
         checker.for('ember-cli-mocha', 'npm').gte('0.12.0')
       ) {
-        type = 'mocha-0.12';
+        type = mochaVersion;
       } else {
         type = 'mocha';
       }
