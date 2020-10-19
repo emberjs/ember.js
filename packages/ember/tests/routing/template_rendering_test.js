@@ -204,31 +204,7 @@ moduleFor(
       assert.equal(this.$('p').text(), 'YES I AM HOME', 'The homepage template was rendered');
     }
 
-    [`@feature(!EMBER_ROUTING_MODEL_ARG) Model passed via renderTemplate model is set as controller's model`](
-      assert
-    ) {
-      this.addTemplate('bio', '<p>{{this.model.name}}</p>');
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render('bio', {
-              model: { name: 'emberjs' },
-            });
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, 'emberjs', `Passed model was set as controller's model`);
-      });
-    }
-
-    async [`@feature(EMBER_ROUTING_MODEL_ARG) Model passed via renderTemplate model is set as controller's model`](
-      assert
-    ) {
+    async [`@test Model passed via renderTemplate model is set as controller's model`](assert) {
       this.addTemplate(
         'bio',
         '<p>Model: {{@model.name}}</p><p>Controller: {{this.model.name}}</p>'
@@ -572,58 +548,7 @@ moduleFor(
       });
     }
 
-    ["@feature(!EMBER_ROUTING_MODEL_ARG) The template is not re-rendered when the route's context changes"](
-      assert
-    ) {
-      this.router.map(function () {
-        this.route('page', { path: '/page/:name' });
-      });
-
-      this.add(
-        'route:page',
-        Route.extend({
-          model(params) {
-            return EmberObject.create({ name: params.name });
-          },
-        })
-      );
-
-      let insertionCount = 0;
-      this.add(
-        'component:foo-bar',
-        Component.extend({
-          didInsertElement() {
-            insertionCount += 1;
-          },
-        })
-      );
-
-      this.addTemplate('page', '<p>{{this.model.name}}{{foo-bar}}</p>');
-
-      let rootElement = document.getElementById('qunit-fixture');
-      return this.visit('/page/first')
-        .then(() => {
-          assert.ok(true, '/page/first has been handled');
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'first');
-          assert.equal(insertionCount, 1);
-          return this.visit('/page/second');
-        })
-        .then(() => {
-          assert.ok(true, '/page/second has been handled');
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'second');
-          assert.equal(insertionCount, 1, 'view should have inserted only once');
-          let router = this.applicationInstance.lookup('router:main');
-          return run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
-        })
-        .then(() => {
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
-          assert.equal(insertionCount, 1, 'view should still have inserted only once');
-        });
-    }
-
-    async ["@feature(EMBER_ROUTING_MODEL_ARG) The template is not re-rendered when the route's model changes"](
-      assert
-    ) {
+    async ["@test The template is not re-rendered when the route's model changes"](assert) {
       this.router.map(function () {
         this.route('page', { path: '/page/:name' });
       });

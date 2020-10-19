@@ -124,41 +124,7 @@ moduleFor(
         });
     }
 
-    ['@feature(!EMBER_ROUTING_MODEL_ARG) The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      let menuItem, resolve;
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          menuItem = MenuItem.create({ id: id });
-
-          return new RSVP.Promise(function (res) {
-            resolve = res;
-          });
-        },
-      });
-
-      this.add('model:menu_item', MenuItem);
-
-      this.addTemplate('special', '<p>{{this.model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
-
-      let visited = runTask(() => this.visit('/specials/1'));
-      this.assertText('LOADING!', 'The app is in the loading state');
-
-      resolve(menuItem);
-
-      return visited.then(() => {
-        this.assertText('1', 'The app is now in the specials state');
-      });
-    }
-
-    ['@feature(EMBER_ROUTING_MODEL_ARG) The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
+    ['@test The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
       this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
@@ -192,43 +158,7 @@ moduleFor(
       });
     }
 
-    [`@feature(!EMBER_ROUTING_MODEL_ARG) The loading state doesn't get entered for promises that resolve on the same run loop`](
-      assert
-    ) {
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          return { id: id };
-        },
-      });
-
-      this.add('model:menu_item', MenuItem);
-
-      this.add(
-        'route:loading',
-        Route.extend({
-          enter() {
-            assert.ok(false, "LoadingRoute shouldn't have been entered.");
-          },
-        })
-      );
-
-      this.addTemplate('special', '<p>{{this.model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
-
-      return this.visit('/specials/1').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, '1', 'The app is now in the specials state');
-      });
-    }
-
-    [`@feature(EMBER_ROUTING_MODEL_ARG) The loading state doesn't get entered for promises that resolve on the same run loop`](
+    [`@test The loading state doesn't get entered for promises that resolve on the same run loop`](
       assert
     ) {
       this.router.map(function () {
@@ -360,53 +290,7 @@ moduleFor(
       return promise;
     }
 
-    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events are triggered on the controller if a matching action name is implemented'](
-      assert
-    ) {
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      let model = { name: 'Tom Dale' };
-      let stateIsNotCalled = true;
-
-      this.add(
-        'route:home',
-        Route.extend({
-          model() {
-            return model;
-          },
-
-          actions: {
-            showStuff() {
-              stateIsNotCalled = false;
-            },
-          },
-        })
-      );
-
-      this.addTemplate('home', '<a {{action "showStuff" this.model}}>{{this.name}}</a>');
-      this.add(
-        'controller:home',
-        Controller.extend({
-          actions: {
-            showStuff(context) {
-              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
-              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
-              done();
-            },
-          },
-        })
-      );
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    async ['@feature(EMBER_ROUTING_MODEL_ARG) Events are triggered on the controller if a matching action name is implemented'](
+    async ['@test Events are triggered on the controller if a matching action name is implemented'](
       assert
     ) {
       let done = assert.async();
@@ -452,43 +336,7 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events are triggered on the current state when defined in `actions` object'](
-      assert
-    ) {
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      let model = { name: 'Tom Dale' };
-      let HomeRoute = Route.extend({
-        model() {
-          return model;
-        },
-
-        actions: {
-          showStuff(obj) {
-            assert.ok(this instanceof HomeRoute, 'the handler is an App.HomeRoute');
-            assert.deepEqual(
-              Object.assign({}, obj),
-              { name: 'Tom Dale' },
-              'the context is correct'
-            );
-            done();
-          },
-        },
-      });
-
-      this.add('route:home', HomeRoute);
-      this.addTemplate('home', '<a {{action "showStuff" this.model}}>{{this.model.name}}</a>');
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    async ['@feature(EMBER_ROUTING_MODEL_ARG) Events are triggered on the current state when defined in `actions` object'](
+    async ['@test Events are triggered on the current state when defined in `actions` object'](
       assert
     ) {
       let done = assert.async();
@@ -524,53 +372,7 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Events defined in `actions` object are triggered on the current state when routes are nested'](
-      assert
-    ) {
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('root', { path: '/' }, function () {
-          this.route('index', { path: '/' });
-        });
-      });
-
-      let model = { name: 'Tom Dale' };
-
-      let RootRoute = Route.extend({
-        actions: {
-          showStuff(obj) {
-            assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            assert.deepEqual(
-              Object.assign({}, obj),
-              { name: 'Tom Dale' },
-              'the context is correct'
-            );
-            done();
-          },
-        },
-      });
-      this.add('route:root', RootRoute);
-      this.add(
-        'route:root.index',
-        Route.extend({
-          model() {
-            return model;
-          },
-        })
-      );
-
-      this.addTemplate(
-        'root.index',
-        '<a {{action "showStuff" this.model}}>{{this.model.name}}</a>'
-      );
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    async ['@feature(EMBER_ROUTING_MODEL_ARG) Events defined in `actions` object are triggered on the current state when routes are nested'](
+    async ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
       assert
     ) {
       let done = assert.async();
@@ -663,53 +465,7 @@ moduleFor(
       });
     }
 
-    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Actions are not triggered on the controller if a matching action name is implemented as a method'](
-      assert
-    ) {
-      let done = assert.async();
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      let model = { name: 'Tom Dale' };
-      let stateIsNotCalled = true;
-
-      this.add(
-        'route:home',
-        Route.extend({
-          model() {
-            return model;
-          },
-
-          actions: {
-            showStuff(context) {
-              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
-              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
-              done();
-            },
-          },
-        })
-      );
-
-      this.addTemplate('home', '<a {{action "showStuff" this.model}}>{{this.name}}</a>');
-
-      this.add(
-        'controller:home',
-        Controller.extend({
-          showStuff() {
-            stateIsNotCalled = false;
-            assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
-          },
-        })
-      );
-
-      await this.visit('/');
-
-      document.getElementById('qunit-fixture').querySelector('a').click();
-    }
-
-    async ['@feature(EMBER_ROUTING_MODEL_ARG) Actions are not triggered on the controller if a matching action name is implemented as a method'](
+    async ['@test Actions are not triggered on the controller if a matching action name is implemented as a method'](
       assert
     ) {
       let done = assert.async();

@@ -8,7 +8,6 @@ import {
 
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
 
@@ -323,14 +322,9 @@ moduleFor(
             this._super(...arguments);
             this.register(
               'template:application',
-              compile(
-                EMBER_ROUTING_MODEL_ARG
-                  ? '<h2>Param Engine: {{@model.foo}}</h2>'
-                  : '<h2>Param Engine: {{this.model.foo}}</h2>',
-                {
-                  moduleName: 'my-app/templates/application.hbs',
-                }
-              )
+              compile('<h2>Param Engine: {{@model.foo}}</h2>', {
+                moduleName: 'my-app/templates/application.hbs',
+              })
             );
           },
         })
@@ -419,7 +413,7 @@ moduleFor(
             this._super(...arguments);
             this.register(
               'template:application',
-              compile(EMBER_ROUTING_MODEL_ARG ? '{{@model.foo}}' : '{{this.model.foo}}', {
+              compile('{{@model.foo}}', {
                 moduleName: 'my-app/templates/application.hbs',
               })
             );
@@ -439,43 +433,3 @@ moduleFor(
     }
   }
 );
-
-if (!EMBER_ROUTING_MODEL_ARG) {
-  moduleFor(
-    '{{mount}} params tests without @model',
-    class extends ApplicationTestCase {
-      constructor() {
-        super(...arguments);
-
-        this.add(
-          'engine:paramEngine',
-          Engine.extend({
-            router: null,
-            Resolver: ModuleBasedTestResolver,
-
-            init() {
-              this._super(...arguments);
-              this.register(
-                'template:application',
-                compile('<h2>@model: {{@model}}, this.model: {{this.model}}</h2>', {
-                  moduleName: 'my-app/templates/application.hbs',
-                })
-              );
-            },
-          })
-        );
-      }
-
-      ['@test it cannot access the model via @model']() {
-        this.router.map(function () {
-          this.route('engine-params');
-        });
-        this.addTemplate('engine-params', '{{mount "paramEngine" model="foo"}}');
-
-        return this.visit('/engine-params').then(() => {
-          this.assertInnerHTML('<h2>@model: , this.model: foo</h2>');
-        });
-      }
-    }
-  );
-}

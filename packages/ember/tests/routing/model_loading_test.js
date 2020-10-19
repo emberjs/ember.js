@@ -397,37 +397,7 @@ moduleFor(
       });
     }
 
-    [`@feature(!EMBER_ROUTING_MODEL_ARG) The Specials Page getting its controller context by deserializing the params hash`](
-      assert
-    ) {
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      this.add(
-        'route:special',
-        Route.extend({
-          model(params) {
-            return EmberObject.create({
-              menuItemId: params.menu_item_id,
-            });
-          },
-        })
-      );
-
-      this.addTemplate('special', '<p>{{this.model.menuItemId}}</p>');
-
-      return this.visit('/specials/1').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, '1', 'The model was used to render the template');
-      });
-    }
-
-    [`@feature(EMBER_ROUTING_MODEL_ARG) The Specials Page getting its model by deserializing the params hash`](
-      assert
-    ) {
+    [`@test The Specials Page getting its model by deserializing the params hash`](assert) {
       this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
@@ -453,28 +423,7 @@ moduleFor(
       });
     }
 
-    ['@feature(!EMBER_ROUTING_MODEL_ARG) The Specials Page defaults to looking models up via `find`']() {
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          return MenuItem.create({ id });
-        },
-      });
-      this.add('model:menu_item', MenuItem);
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      this.addTemplate('special', '{{this.model.id}}');
-
-      return this.visit('/specials/1').then(() => {
-        this.assertText('1', 'The model was used to render the template');
-      });
-    }
-
-    ['@feature(EMBER_ROUTING_MODEL_ARG) The Specials Page defaults to looking models up via `find`']() {
+    ['@test The Specials Page defaults to looking models up via `find`']() {
       let MenuItem = EmberObject.extend();
       MenuItem.reopenClass({
         find(id) {
@@ -495,44 +444,7 @@ moduleFor(
       });
     }
 
-    ['@feature(!EMBER_ROUTING_MODEL_ARG) Moving from one page to another triggers the correct callbacks'](
-      assert
-    ) {
-      assert.expect(3);
-
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          return MenuItem.create({ id: id });
-        },
-      });
-      this.add('model:menu_item', MenuItem);
-
-      this.addTemplate('home', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{this.model.id}}</p>');
-
-      return this.visit('/')
-        .then(() => {
-          this.assertText('Home', 'The app is now in the initial state');
-
-          let promiseContext = MenuItem.create({ id: 1 });
-
-          return this.visit('/specials/1', promiseContext);
-        })
-        .then(() => {
-          assert.equal(this.currentURL, '/specials/1');
-          this.assertText('1', 'The app is now transitioned');
-        });
-    }
-
-    ['@feature(EMBER_ROUTING_MODEL_ARG) Moving from one page to another triggers the correct callbacks'](
-      assert
-    ) {
+    ['@test Moving from one page to another triggers the correct callbacks'](assert) {
       assert.expect(3);
 
       this.router.map(function () {
@@ -565,107 +477,7 @@ moduleFor(
         });
     }
 
-    ['@feature(!EMBER_ROUTING_MODEL_ARG) Nested callbacks are not exited when moving to siblings'](
-      assert
-    ) {
-      let rootSetup = 0;
-      let rootRender = 0;
-      let rootModel = 0;
-      let rootSerialize = 0;
-      let menuItem;
-      let rootElement;
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          menuItem = MenuItem.create({ id: id });
-          return menuItem;
-        },
-      });
-
-      this.router.map(function () {
-        this.route('root', { path: '/' }, function () {
-          this.route('special', {
-            path: '/specials/:menu_item_id',
-            resetNamespace: true,
-          });
-        });
-      });
-
-      this.add(
-        'route:root',
-        Route.extend({
-          model() {
-            rootModel++;
-            return this._super(...arguments);
-          },
-
-          setupController() {
-            rootSetup++;
-          },
-
-          renderTemplate() {
-            rootRender++;
-          },
-
-          serialize() {
-            rootSerialize++;
-            return this._super(...arguments);
-          },
-        })
-      );
-
-      this.add('route:loading', Route.extend({}));
-      this.add('route:home', Route.extend({}));
-      this.add(
-        'route:special',
-        Route.extend({
-          model({ menu_item_id }) {
-            return MenuItem.find(menu_item_id);
-          },
-          setupController(controller, model) {
-            set(controller, 'model', model);
-          },
-        })
-      );
-
-      this.addTemplate('root.index', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{this.model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
-
-      return this.visit('/').then(() => {
-        rootElement = document.getElementById('qunit-fixture');
-
-        assert.equal(
-          getTextOf(rootElement.querySelector('h3')),
-          'Home',
-          'The app is now in the initial state'
-        );
-        assert.equal(rootSetup, 1, 'The root setup was triggered');
-        assert.equal(rootRender, 1, 'The root render was triggered');
-        assert.equal(rootSerialize, 0, 'The root serialize was not called');
-        assert.equal(rootModel, 1, 'The root model was called');
-
-        let router = this.applicationInstance.lookup('router:main');
-        let menuItem = MenuItem.create({ id: 1 });
-
-        return router.transitionTo('special', menuItem).then(function () {
-          assert.equal(rootSetup, 1, 'The root setup was not triggered again');
-          assert.equal(rootRender, 1, 'The root render was not triggered again');
-          assert.equal(rootSerialize, 0, 'The root serialize was not called');
-
-          // TODO: Should this be changed?
-          assert.equal(rootModel, 1, 'The root model was called again');
-
-          assert.deepEqual(router.location.path, '/specials/1');
-          assert.equal(router.currentPath, 'root.special');
-        });
-      });
-    }
-
-    ['@feature(EMBER_ROUTING_MODEL_ARG) Nested callbacks are not exited when moving to siblings'](
-      assert
-    ) {
+    ['@test Nested callbacks are not exited when moving to siblings'](assert) {
       let rootSetup = 0;
       let rootRender = 0;
       let rootModel = 0;
