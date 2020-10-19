@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.23.0-beta.2 (October 19, 2020)
+
+- [#19193](https://github.com/emberjs/ember.js/pull/19193) [BUGFIX] Ensure user lifecycle hooks are untracked
+- [#19213](https://github.com/emberjs/ember.js/pull/19213) [BUGFIX] Update rendering engine to improve error ergonomics.
+
 ### v3.23.0-beta.1 (October 5, 2020)
 
 - [#19160](https://github.com/emberjs/ember.js/pull/19160) / [#19182](https://github.com/emberjs/ember.js/pull/19182) [FEATURE] Implements the helper manager feature specified in the [Helper Managers RFC](https://github.com/emberjs/rfcs/blob/master/text/0625-helper-managers.md).
