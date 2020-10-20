@@ -1,7 +1,91 @@
-{{~#let (component '-checkbox') (component '-text-field') as |Checkbox TextField|~}}
-  {{~#if this.isCheckbox~}}
-    <Checkbox @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
-  {{~else~}}
-    <TextField @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
-  {{~/if~}}
-{{~/let~}}
+{{~#if this.modernized ~}}
+  <input
+    {{!-- for compatibility --}}
+    id={{this.id}}
+    class={{this.class}}
+
+    {{!-- deprecated attribute bindings --}}
+    autocapitalize={{this._autocapitalize}}
+    autocorrect={{this._autocorrect}}
+    autofocus={{this._autofocus}}
+    disabled={{this._disabled}}
+    form={{this._form}}
+    maxlength={{this._maxlength}}
+    minlength={{this._minlength}}
+    placeholder={{this._placeholder}}
+    readonly={{this._readonly}}
+    required={{this._required}}
+    selectionDirection={{this._selectionDirection}}
+    spellcheck={{this._spellcheck}}
+    tabindex={{this._tabindex}}
+    title={{this._title}}
+    accept={{this._accept}}
+    autocomplete={{this._autocomplete}}
+    autosave={{this._autosave}}
+    dir={{this._dir}}
+    formaction={{this._formaction}}
+    formenctype={{this._formenctype}}
+    formmethod={{this._formmethod}}
+    formnovalidate={{this._formnovalidate}}
+    formtarget={{this._formtarget}}
+    height={{this._height}}
+    inputmode={{this._inputmode}}
+    lang={{this._lang}}
+    list={{this._list}}
+    max={{this._max}}
+    min={{this._min}}
+    multiple={{this._multiple}}
+    name={{this._name}}
+    pattern={{this._pattern}}
+    size={{this._size}}
+    step={{this._step}}
+    width={{this._width}}
+    indeterminate={{this._indeterminate}}
+
+    ...attributes
+
+    type={{this.type}}
+    checked={{this.checked}}
+    value={{this.value}}
+
+    {{on "change" this.change}}
+    {{on "input" this.input}}
+    {{on "keyup" this.keyUp}}
+    {{on "paste" this.valueDidChange}}
+    {{on "cut" this.valueDidChange}}
+
+    {{!-- deprecated native event callbacks --}}
+    {{on "touchstart" this._touchStart}}
+    {{on "touchmove" this._touchMove}}
+    {{on "touchend" this._touchEnd}}
+    {{on "touchcancel" this._touchCancel}}
+    {{on "keydown" this._keyDown}}
+    {{on "keypress" this._keyPress}}
+    {{on "mousedown" this._mouseDown}}
+    {{on "mouseup" this._mouseUp}}
+    {{on "contextmenu" this._contextMenu}}
+    {{on "click" this._click}}
+    {{on "dblclick" this._doubleClick}}
+    {{on "focusin" this._focusIn}}
+    {{on "focusout" this._focusOut}}
+    {{on "submit" this._submit}}
+    {{on "dragstart" this._dragStart}}
+    {{on "drag" this._drag}}
+    {{on "dragenter" this._dragEnter}}
+    {{on "dragleave" this._dragLeave}}
+    {{on "dragover" this._dragOver}}
+    {{on "drop" this._drop}}
+    {{on "dragend" this._dragEnd}}
+    {{on "mouseenter" this._mouseEnter}}
+    {{on "mouseleave" this._mouseLeave}}
+    {{on "mousemove" this._mouseMove}}
+  />
+{{~else~}}
+  {{~#let (component '-checkbox') (component '-text-field') as |Checkbox TextField|~}}
+    {{~#if this.isCheckbox~}}
+      <Checkbox @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
+    {{~else~}}
+      <TextField @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
+    {{~/if~}}
+  {{~/let~}}
+{{/if}}

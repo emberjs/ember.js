@@ -761,12 +761,33 @@ moduleFor(
       this.assertAttr('tabindex', '10');
     }
 
-    ['@test `value` property assertion']() {
+    ['@feature(!EMBER_MODERNIZED_BUILT_IN_COMPONENTS) `value` property assertion']() {
       expectAssertion(() => {
         this.render(`{{input type="checkbox" value=value}}`, {
           value: 'value',
         });
       }, /checkbox.+value.+not supported.+use.+checked.+instead/);
+    }
+
+    ['@feature(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) `value` property warning']() {
+      let message =
+        '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
+        'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
+        'Did you mean `<Input @type="checkbox" @checked={{...}} />`?';
+
+      expectWarning(() => {
+        this.render(`{{input type="checkbox" value=value}}`, {
+          value: true,
+        });
+      }, message);
+
+      this.assert.strictEqual(this.context.value, true);
+      this.assertCheckboxIsNotChecked();
+
+      expectWarning(() => this.$input()[0].click(), message);
+
+      this.assert.strictEqual(this.context.value, true);
+      this.assertCheckboxIsChecked();
     }
 
     ['@test with a bound type']() {

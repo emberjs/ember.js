@@ -9,6 +9,7 @@ import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
 import { EngineInstanceOptions, Owner } from '@ember/-internals/owner';
 import { Route } from '@ember/-internals/routing';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
@@ -1276,17 +1277,19 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
-            children: [
-              {
-                type: 'component',
-                name: '-text-field',
-                args: { positional: [], named: { target, type: 'text', value: 'first' } },
-                instance: (instance: object) => instance['value'] === 'first',
-                template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                bounds: this.nodeBounds(this.element.firstChild),
-                children: [],
-              },
-            ],
+            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+              ? []
+              : [
+                  {
+                    type: 'component',
+                    name: '-text-field',
+                    args: { positional: [], named: { target, type: 'text', value: 'first' } },
+                    instance: (instance: object) => instance['value'] === 'first',
+                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
+                    bounds: this.nodeBounds(this.element.firstChild),
+                    children: [],
+                  },
+                ],
           },
         ]);
 
@@ -1300,17 +1303,19 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
-            children: [
-              {
-                type: 'component',
-                name: '-text-field',
-                args: { positional: [], named: { target, type: 'text', value: 'first' } },
-                instance: (instance: object) => instance['value'] === 'first',
-                template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                bounds: this.nodeBounds(this.element.firstChild),
-                children: [],
-              },
-            ],
+            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+              ? []
+              : [
+                  {
+                    type: 'component',
+                    name: '-text-field',
+                    args: { positional: [], named: { target, type: 'text', value: 'first' } },
+                    instance: (instance: object) => instance['value'] === 'first',
+                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
+                    bounds: this.nodeBounds(this.element.firstChild),
+                    children: [],
+                  },
+                ],
           },
           {
             type: 'component',
@@ -1319,17 +1324,19 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.lastChild),
-            children: [
-              {
-                type: 'component',
-                name: '-checkbox',
-                args: { positional: [], named: { target, type: 'checkbox', checked: false } },
-                instance: (instance: object) => instance['checked'] === false,
-                template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                bounds: this.nodeBounds(this.element.lastChild),
-                children: [],
-              },
-            ],
+            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+              ? []
+              : [
+                  {
+                    type: 'component',
+                    name: '-checkbox',
+                    args: { positional: [], named: { target, type: 'checkbox', checked: false } },
+                    instance: (instance: object) => instance['checked'] === false,
+                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
+                    bounds: this.nodeBounds(this.element.lastChild),
+                    children: [],
+                  },
+                ],
           },
         ]);
 
@@ -1343,17 +1350,19 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
-            children: [
-              {
-                type: 'component',
-                name: '-text-field',
-                args: { positional: [], named: { target, type: 'text', value: 'first' } },
-                instance: (instance: object) => instance['value'] === 'first',
-                template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                bounds: this.nodeBounds(this.element.firstChild),
-                children: [],
-              },
-            ],
+            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+              ? []
+              : [
+                  {
+                    type: 'component',
+                    name: '-text-field',
+                    args: { positional: [], named: { target, type: 'text', value: 'first' } },
+                    instance: (instance: object) => instance['value'] === 'first',
+                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
+                    bounds: this.nodeBounds(this.element.firstChild),
+                    children: [],
+                  },
+                ],
           },
         ]);
       }

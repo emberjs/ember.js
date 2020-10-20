@@ -75,6 +75,7 @@ import { SELF_TAG } from './tags';
   @param dependencies Optional dependents to be tracked.
 */
 export function tracked(propertyDesc: { value: any; initializer: () => any }): Decorator;
+export function tracked(target: object, key: string): void;
 export function tracked(
   target: object,
   key: string,
