@@ -56,8 +56,8 @@ export class RehydrationDelegate implements RenderDelegate {
   private clientResolver: TestJitRuntimeResolver;
   private serverResolver: TestJitRuntimeResolver;
 
-  private clientRegistry: TestJitRegistry;
-  private serverRegistry: TestJitRegistry;
+  protected clientRegistry: TestJitRegistry;
+  protected serverRegistry: TestJitRegistry;
 
   public clientDoc: SimpleDocument;
   public serverDoc: SimpleDocument;
