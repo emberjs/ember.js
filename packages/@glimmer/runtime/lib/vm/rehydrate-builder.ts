@@ -37,6 +37,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   private unmatchedAttributes: Option<SimpleAttr[]> = null;
   [CURSOR_STACK]!: Stack<RehydratingCursor>; // Hides property on base class
   blockDepth = 0;
+  startingBlockOffset: number;
 
   constructor(env: Environment, parentNode: SimpleElement, nextSibling: Option<SimpleNode>) {
     super(env, parentNode, nextSibling);
@@ -45,17 +46,38 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let node = this.currentCursor!.element.firstChild;
 
     while (node !== null) {
-      if (isComment(node) && isSerializationFirstNode(node)) {
+      if (isOpenBlock(node)) {
         break;
       }
       node = node.nextSibling;
     }
 
-    assert(
-      node,
-      `Must have opening comment <!--${SERIALIZATION_FIRST_NODE_STRING}--> for rehydration.`
-    );
+    assert(node, 'Must have opening comment for rehydration.');
     this.candidate = node;
+    const startingBlockOffset = getBlockDepth(node as SimpleComment);
+    if (startingBlockOffset !== 0) {
+      // We are rehydrating from a partial tree and not the root component
+      // We need to add an extra block before the first block to rehydrate correctly
+      const newBlockDepth = startingBlockOffset - 1;
+      const newCandidate = this.dom.createComment(`%+b:${newBlockDepth}%`);
+
+      node!.parentNode!.insertBefore(newCandidate, this.candidate);
+      let closingNode = node!.nextSibling;
+      while (closingNode !== null) {
+        if (isCloseBlock(closingNode) && getBlockDepth(closingNode) === startingBlockOffset) {
+          break;
+        }
+        closingNode = closingNode.nextSibling;
+      }
+
+      assert(closingNode, 'Must have closing comment for starting block comment');
+      const newClosingBlock = this.dom.createComment(`%-b:${newBlockDepth}%`)
+      node!.parentNode!.insertBefore(newClosingBlock, closingNode!.nextSibling);
+      this.candidate = newCandidate;
+      this.startingBlockOffset = newBlockDepth;
+    } else {
+      this.startingBlockOffset = 0;
+    }
   }
 
   get currentCursor(): Option<RehydratingCursor> {
@@ -132,7 +154,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       if (openBlockDepth >= currentCursor.startingBlockDepth) {
         while (current) {
           if (isCloseBlock(current)) {
-            let closeBlockDepth = getBlockDepth(current);
+            let closeBlockDepth = getBlockDepthWithOffset(current, this.startingBlockOffset);
             if (openBlockDepth >= closeBlockDepth) {
               break;
             }
@@ -163,7 +185,10 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     let { tagName } = currentCursor.element;
 
-    if (isOpenBlock(candidate) && getBlockDepth(candidate) === blockDepth) {
+    if (
+      isOpenBlock(candidate) &&
+      getBlockDepthWithOffset(candidate, this.startingBlockOffset) === blockDepth
+    ) {
       this.candidate = this.remove(candidate);
       currentCursor.openBlockDepth = blockDepth;
     } else if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
@@ -192,7 +217,10 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       //  'when rehydrating, openBlockDepth should match this.blockDepth here'
       //);
 
-      if (isCloseBlock(candidate) && getBlockDepth(candidate) === openBlockDepth) {
+      if (
+        isCloseBlock(candidate) &&
+        getBlockDepthWithOffset(candidate, this.startingBlockOffset) === openBlockDepth
+      ) {
         let nextSibling = this.remove(candidate);
         this.candidate = nextSibling;
         currentCursor.openBlockDepth--;
@@ -213,7 +241,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       if (
         nextSibling !== null &&
         isCloseBlock(nextSibling) &&
-        getBlockDepth(nextSibling) === this.blockDepth
+        getBlockDepthWithOffset(nextSibling, this.startingBlockOffset) === this.blockDepth
       ) {
         // restore rehydration state
         let candidate = this.remove(nextSibling);
@@ -479,6 +507,10 @@ function isCloseBlock(node: SimpleNode): node is SimpleComment {
 
 function getBlockDepth(node: SimpleComment): number {
   return parseInt(node.nodeValue.slice(4), 10);
+}
+
+function getBlockDepthWithOffset(node: SimpleComment, offset: number): number {
+  return getBlockDepth(node) - offset;
 }
 
 function isElement(node: SimpleNode): node is SimpleElement {

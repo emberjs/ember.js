@@ -183,20 +183,8 @@ export class TestJitRegistry {
     return {
       handle: definitionHandle,
       capabilities: this.getCapabilities(definitionHandle),
-      compilable: template.asWrappedLayout(),
+      compilable: template.asLayout(),
     };
-
-    // let handle = this.resolver.lookupComponentHandle(name, referrer);
-
-    // if (handle === null) {
-    //   return null;
-    // }
-
-    // return {
-    //   handle,
-    //   capabilities: this.getCapabilities(handle),
-    //   compilable: this.getLayout(handle),
-    // };
   }
 
   resolve<T>(handle: number): T {
