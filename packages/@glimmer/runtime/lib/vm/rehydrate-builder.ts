@@ -71,7 +71,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       }
 
       assert(closingNode, 'Must have closing comment for starting block comment');
-      const newClosingBlock = this.dom.createComment(`%-b:${newBlockDepth}%`)
+      const newClosingBlock = this.dom.createComment(`%-b:${newBlockDepth}%`);
       node!.parentNode!.insertBefore(newClosingBlock, closingNode!.nextSibling);
       this.candidate = newCandidate;
       this.startingBlockOffset = newBlockDepth;
