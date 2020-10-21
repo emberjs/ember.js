@@ -58,6 +58,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     if (startingBlockOffset !== 0) {
       // We are rehydrating from a partial tree and not the root component
       // We need to add an extra block before the first block to rehydrate correctly
+      // The extra block is needed since the renderComponent API creates a synthetic component invocation which generates the extra block
       const newBlockDepth = startingBlockOffset - 1;
       const newCandidate = this.dom.createComment(`%+b:${newBlockDepth}%`);
 
