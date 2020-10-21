@@ -106,7 +106,7 @@ export default function (args: VMArguments) {
         let [fn, ...args] = reifyPositional(positional);
 
         if (isInvokableRef(callbackRef)) {
-          let value = args[0] || invocationArgs[0];
+          let value = args.length > 0 ? args[0] : invocationArgs[0];
           return updateRef(callbackRef, value);
         } else {
           return (fn as Function).call(context, ...args, ...invocationArgs);

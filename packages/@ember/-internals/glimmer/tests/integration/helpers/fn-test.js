@@ -244,5 +244,18 @@ moduleFor(
 
       this.assertText('bar');
     }
+
+    '@test can be used on the result of `mut` with a falsy value'() {
+      this.render(`{{this.arg1}}{{stash stashedFn=(fn (mut this.arg1) this.arg2)}}`, {
+        arg1: 'foo',
+        arg2: false,
+      });
+
+      this.assertText('foo');
+
+      runTask(() => this.stashedFn());
+
+      this.assertText('false');
+    }
   }
 );
