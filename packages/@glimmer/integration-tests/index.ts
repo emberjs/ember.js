@@ -9,6 +9,7 @@ export * from './lib/modes/jit/delegate';
 export * from './lib/modes/jit/register';
 export * from './lib/modes/node/env';
 export * from './lib/modes/rehydration/delegate';
+export * from './lib/modes/rehydration/partial-rehydration-delegate';
 export * from './lib/render-test';
 export * from './lib/snapshot';
 export * from './lib/suites';
