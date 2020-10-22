@@ -3,6 +3,7 @@ import { getOwner, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   Cursor,
@@ -77,6 +78,34 @@ export class DynamicScope implements GlimmerDynamicScope {
   }
 }
 
+// This wrapper logic prevents us from rerendering in case of a hard failure
+// during render. This prevents infinite revalidation type loops from occuring,
+// and ensures that errors are not swallowed by subsequent follow on failures.
+function errorLoopTransaction(fn: () => void) {
+  if (DEBUG) {
+    return () => {
+      let didError = true;
+
+      try {
+        fn();
+        didError = false;
+      } finally {
+        if (didError) {
+          // Noop the function so that we won't keep calling it and causing
+          // infinite looping failures;
+          fn = () => {
+            console.warn(
+              'Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.'
+            );
+          };
+        }
+      }
+    };
+  } else {
+    return fn;
+  }
+}
+
 class RootState {
   public id: string;
   public result: RenderResult | undefined;
@@ -102,7 +131,7 @@ class RootState {
     this.result = undefined;
     this.destroyed = false;
 
-    this.render = () => {
+    this.render = errorLoopTransaction(() => {
       let layout = unwrapTemplate(template).asLayout();
       let handle = layout.compile(context);
 
@@ -118,8 +147,8 @@ class RootState {
       let result = (this.result = iterator.sync());
 
       // override .render function after initial render
-      this.render = () => result.rerender({ alwaysRevalidate: false });
-    };
+      this.render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
+    });
   }
 
   isFor(possibleRoot: unknown): boolean {
