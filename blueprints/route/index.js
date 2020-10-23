@@ -73,13 +73,17 @@ module.exports = useEditionDetector({
 
   locals: function (options) {
     let moduleName = options.entity.name;
+    let rawRouteName = moduleName.split('/').pop();
+    let emberPageTitleExists = 'ember-page-title' in options.project.dependencies();
 
     if (options.resetNamespace) {
-      moduleName = moduleName.split('/').pop();
+      moduleName = rawRouteName;
     }
 
     return {
       moduleName: stringUtil.dasherize(moduleName),
+      routeName: stringUtil.classify(rawRouteName),
+      addTitle: emberPageTitleExists,
     };
   },
 
