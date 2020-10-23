@@ -1,7 +1,7 @@
 import { ComponentCapabilities } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 
-export const BASIC_CAPABILITIES: ComponentCapabilities = {
+export const TEMPLATE_ONLY_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
@@ -11,21 +11,6 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: false,
   createCaller: false,
   updateHook: false,
-  createInstance: true,
-  wrapped: false,
-  willDestroy: false,
-};
-
-export const STATIC_TAGLESS_CAPABILITIES = {
-  dynamicLayout: false,
-  dynamicTag: false,
-  prepareArgs: false,
-  createArgs: false,
-  attributeHook: false,
-  elementHook: false,
-  dynamicScope: false,
-  updateHook: false,
-  createCaller: false,
   createInstance: false,
   wrapped: false,
   willDestroy: false,

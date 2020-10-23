@@ -403,7 +403,7 @@ export class InElementSuite extends RenderTest {
     }
 
     this.testType = 'Dynamic';
-    this.registerComponent('Basic', 'FooBar', '<p>{{@value}}</p>');
+    this.registerComponent('TemplateOnly', 'FooBar', '<p>{{@value}}</p>');
 
     this.registerHelper('log', () => {});
 
@@ -454,7 +454,7 @@ export class InElementSuite extends RenderTest {
     equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
-    this.testType = 'Basic';
+    this.testType = 'TemplateOnly';
   }
 
   @test

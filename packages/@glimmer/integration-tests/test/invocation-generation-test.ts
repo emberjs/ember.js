@@ -281,7 +281,7 @@ module(
     });
 
     test('Can build basic component invocation', (assert) => {
-      renderTests['testType'] = 'Basic';
+      renderTests['testType'] = 'TemplateOnly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello',
       });
@@ -290,7 +290,7 @@ module(
     });
 
     test('Can build basic component invocation with template', (assert) => {
-      renderTests['testType'] = 'Basic';
+      renderTests['testType'] = 'TemplateOnly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
         template: 'World',
@@ -300,7 +300,7 @@ module(
     });
 
     test('Can build basic component invocation with args', (assert) => {
-      renderTests['testType'] = 'Basic';
+      renderTests['testType'] = 'TemplateOnly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
         template: 'World',
@@ -314,7 +314,7 @@ module(
     });
 
     test('Can build basic component invocation with attributes', (assert) => {
-      renderTests['testType'] = 'Basic';
+      renderTests['testType'] = 'TemplateOnly';
       let invocation = renderTests.buildComponent({
         layout: 'Hello {{yield}}',
         template: 'World',
@@ -329,7 +329,7 @@ module(
     });
 
     test('Can build basic component invocation with custom tag name', (assert) => {
-      renderTests['testType'] = 'Basic';
+      renderTests['testType'] = 'TemplateOnly';
       let invocation = renderTests.buildComponent({
         name: 'Lol',
         layout: 'Hello {{yield}}',
@@ -345,7 +345,7 @@ module(
     });
 
     test('Can build basic component invocation with block params', (assert) => {
-      renderTests['testType'] = 'Basic';
+      renderTests['testType'] = 'TemplateOnly';
       let invocation = renderTests.buildComponent({
         name: 'Lol',
         layout: 'Hello {{yield}}',

@@ -1307,7 +1307,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       (params: ReadonlyArray<unknown>) => (params[0] as number) % 2 === 0
     );
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
-    this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
+    this.registerComponent('TemplateOnly', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
     let args = { items: 'items' };
 
@@ -1407,7 +1407,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       (params: ReadonlyArray<unknown>) => (params[0] as number) % 2 === 0
     );
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
-    this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
+    this.registerComponent('TemplateOnly', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
     let args = { items: 'items' };
 
@@ -1516,7 +1516,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       (params: ReadonlyArray<unknown>) => (params[0] as number) % 2 === 0
     );
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
-    this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
+    this.registerComponent('TemplateOnly', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
     let args = { items: 'items', things: 'things' };
 

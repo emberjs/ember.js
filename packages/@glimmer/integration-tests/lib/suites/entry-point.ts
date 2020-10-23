@@ -16,7 +16,12 @@ export class EntryPointTest extends RenderTest {
   @test
   'an entry point'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
+    delegate.registerComponent(
+      'TemplateOnly',
+      'TemplateOnly',
+      'Title',
+      `<h1>hello {{@title}}</h1>`
+    );
 
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
@@ -28,7 +33,12 @@ export class EntryPointTest extends RenderTest {
   @test
   'does not leak args between invocations'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
+    delegate.registerComponent(
+      'TemplateOnly',
+      'TemplateOnly',
+      'Title',
+      `<h1>hello {{@title}}</h1>`
+    );
 
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
@@ -44,8 +54,13 @@ export class EntryPointTest extends RenderTest {
   @test
   'can render different components per call'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
-    delegate.registerComponent('Basic', 'Basic', 'Body', `<p>body {{@body}}</p>`);
+    delegate.registerComponent(
+      'TemplateOnly',
+      'TemplateOnly',
+      'Title',
+      `<h1>hello {{@title}}</h1>`
+    );
+    delegate.registerComponent('TemplateOnly', 'TemplateOnly', 'Body', `<p>body {{@body}}</p>`);
 
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
@@ -61,7 +76,12 @@ export class EntryPointTest extends RenderTest {
   @test
   'supports passing in an initial dynamic context'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent('Basic', 'Basic', 'Locale', `{{-get-dynamic-var "locale"}}`);
+    delegate.registerComponent(
+      'TemplateOnly',
+      'TemplateOnly',
+      'Locale',
+      `{{-get-dynamic-var "locale"}}`
+    );
 
     let element = delegate.getInitialElement();
     let dynamicScope = new DynamicScopeImpl({

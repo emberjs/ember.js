@@ -96,11 +96,8 @@ export class RenderTest implements IRenderTest {
       case 'Dynamic':
         invocation = this.buildDynamicComponent(blueprint);
         break;
-      case 'Basic':
-        invocation = this.buildBasicComponent(blueprint);
-        break;
-      case 'Fragment':
-        invocation = this.buildFragmentComponent(blueprint);
+      case 'TemplateOnly':
+        invocation = this.buildTemplateOnlyComponent(blueprint);
         break;
 
       default:
@@ -115,7 +112,7 @@ export class RenderTest implements IRenderTest {
     let sigil = '';
     let needsCurlies = false;
 
-    if (testType === 'Glimmer' || testType === 'Basic' || testType === 'Fragment') {
+    if (testType === 'Glimmer' || testType === 'TemplateOnly') {
       sigil = '@';
       needsCurlies = true;
     }
@@ -275,26 +272,12 @@ export class RenderTest implements IRenderTest {
     return invocation;
   }
 
-  private buildFragmentComponent(blueprint: ComponentBlueprint): string {
+  private buildTemplateOnlyComponent(blueprint: ComponentBlueprint): string {
     let { layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated fragment layout as ${layout}`);
-    this.delegate.registerComponent('Basic', this.testType, name, `${layout}`);
+    this.delegate.registerComponent('TemplateOnly', this.testType, name, `${layout}`);
     this.assert.ok(true, `generated fragment invocation as ${invocation}`);
-    return invocation;
-  }
-
-  private buildBasicComponent(blueprint: ComponentBlueprint): string {
-    let { tag = 'div', layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
-    let invocation = this.buildAngleBracketComponent(blueprint);
-    this.assert.ok(true, `generated basic layout as ${layout}`);
-    this.delegate.registerComponent(
-      'Basic',
-      this.testType,
-      name,
-      `<${tag} ...attributes>${layout}</${tag}>`
-    );
-    this.assert.ok(true, `generated basic invocation as ${invocation}`);
     return invocation;
   }
 
