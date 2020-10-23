@@ -111,8 +111,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
     glimmer: [],
     curly: [],
     dynamic: [],
-    basic: [],
-    fragment: [],
+    templateOnly: [],
   };
 
   function createTest(prop: string, test: any, skip?: boolean) {
@@ -154,11 +153,8 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
             tests.dynamic.push(createTest(prop, test, true));
             break;
           case true:
-            if (test['kind'] === 'basic') {
-              // Basic components are not part of matrix testing
-              tests.basic.push(createTest(prop, test, true));
-            } else if (test['kind'] === 'fragment') {
-              tests.fragment.push(createTest(prop, test, true));
+            if (test['kind'] === 'templateOnly') {
+              tests.templateOnly.push(createTest(prop, test, true));
             } else {
               ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
                 tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
@@ -188,12 +184,8 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
         tests.dynamic.push(createTest(prop, test));
       }
 
-      if (kind === 'basic') {
-        tests.basic.push(createTest(prop, test));
-      }
-
-      if (kind === 'fragment') {
-        tests.fragment.push(createTest(prop, test));
+      if (kind === 'templateOnly') {
+        tests.templateOnly.push(createTest(prop, test));
       }
     }
   }
@@ -206,8 +198,7 @@ interface ComponentTests {
   glimmer: Function[];
   curly: Function[];
   dynamic: Function[];
-  basic: Function[];
-  fragment: Function[];
+  templateOnly: Function[];
 }
 
 function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>(

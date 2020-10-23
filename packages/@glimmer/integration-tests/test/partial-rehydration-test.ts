@@ -18,9 +18,9 @@ export class PartialRehydrationTest extends RenderTest {
 
   @test
   'can rehydrate from non starting blocks'() {
-    this.delegate.registerBasicComponent('RehydratingComponent', '{{@a}}{{@b}}{{@c}}');
+    this.delegate.registerTemplateOnlyComponent('RehydratingComponent', '{{@a}}{{@b}}{{@c}}');
 
-    this.delegate.registerBasicComponent(
+    this.delegate.registerTemplateOnlyComponent(
       'Root',
       '<div id="placeholder"><RehydratingComponent @a={{@a}} @b={{@b}} @c={{@c}}/></div>'
     );
@@ -74,11 +74,11 @@ export class PartialRehydrationTest extends RenderTest {
 
   @test
   'can rehydrate multiple call sites'() {
-    this.delegate.registerBasicComponent('Nav', '{{@title}}');
-    this.delegate.registerBasicComponent('Carousel', '{{@name}}');
-    this.delegate.registerBasicComponent('Header', '<h1>I am a test</h1>');
+    this.delegate.registerTemplateOnlyComponent('Nav', '{{@title}}');
+    this.delegate.registerTemplateOnlyComponent('Carousel', '{{@name}}');
+    this.delegate.registerTemplateOnlyComponent('Header', '<h1>I am a test</h1>');
 
-    this.delegate.registerBasicComponent(
+    this.delegate.registerTemplateOnlyComponent(
       'Root',
       stripTight`
         <div class="nav-container">

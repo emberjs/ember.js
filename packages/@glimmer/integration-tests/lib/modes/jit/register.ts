@@ -1,10 +1,6 @@
 import { TestJitRegistry } from './registry';
-import { BasicComponentManager, BasicComponent } from '../../components/basic';
-import {
-  BASIC_CAPABILITIES,
-  STATIC_TAGLESS_CAPABILITIES,
-  CURLY_CAPABILITIES,
-} from '../../components/capabilities';
+import { TemplateOnlyComponentManager } from '../../components/template-only';
+import { TEMPLATE_ONLY_CAPABILITIES, CURLY_CAPABILITIES } from '../../components/capabilities';
 import {
   Option,
   Helper as GlimmerHelper,
@@ -36,11 +32,9 @@ import { TestComponentDefinitionState } from '../../components/test-component';
 import { locatorFor } from '../../locator';
 import { CurriedComponentDefinition, curry } from '@glimmer/runtime';
 import { preprocess } from '../../compile';
-import { StaticTaglessComponentManager } from '../../components/static-tagless';
 
-const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
+const TEMPLATE_ONLY_COMPONENT_MANAGER = new TemplateOnlyComponentManager();
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
-const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 
 export function registerTemplate(
   registry: TestJitRegistry,
@@ -50,33 +44,9 @@ export function registerTemplate(
   return { name, handle: registry.register('template-source', name, source) };
 }
 
-export function registerBasicComponent(
+export function registerTemplateOnlyComponent(
   registry: TestJitRegistry,
   name: string,
-  Component: ComponentTypes['Basic'],
-  layoutSource: string
-): void {
-  if (name.indexOf('-') !== -1) {
-    throw new Error('DEPRECATED: dasherized components');
-  }
-
-  let { handle } = registerTemplate(registry, name, layoutSource);
-
-  registerSomeComponent(
-    registry,
-    name,
-    'Basic',
-    BASIC_COMPONENT_MANAGER,
-    handle,
-    Component,
-    BASIC_CAPABILITIES
-  );
-}
-
-export function registerStaticTaglessComponent(
-  registry: TestJitRegistry,
-  name: string,
-  Component: ComponentTypes['Basic'],
   layoutSource: string
 ): void {
   let { handle } = registerTemplate(registry, name, layoutSource);
@@ -84,11 +54,11 @@ export function registerStaticTaglessComponent(
   registerSomeComponent(
     registry,
     name,
-    'Fragment',
-    STATIC_TAGLESS_COMPONENT_MANAGER,
+    'TemplateOnly',
+    TEMPLATE_ONLY_COMPONENT_MANAGER,
     handle,
-    Component,
-    STATIC_TAGLESS_CAPABILITIES
+    null,
+    TEMPLATE_ONLY_CAPABILITIES
   );
 }
 
@@ -231,9 +201,8 @@ export function registerComponent<K extends ComponentKind>(
         layout
       );
       break;
-    case 'Basic':
-    case 'Fragment':
-      registerBasicComponent(registry, name, Class as typeof BasicComponent, layout);
+    case 'TemplateOnly':
+      registerTemplateOnlyComponent(registry, name, layout);
       break;
   }
 }

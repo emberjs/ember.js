@@ -278,7 +278,7 @@ class CurlyScopeTest extends CurlyTest {
   @test
   'correct scope - accessing local variable in yielded block (glimmer component)'() {
     this.registerComponent(
-      'Basic',
+      'TemplateOnly',
       'FooBar',
       `<div>[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}</div>`
     );
@@ -446,7 +446,7 @@ class CurlyScopeTest extends CurlyTest {
 
   @test
   'correct scope - simple'() {
-    this.registerComponent('Basic', 'SubItem', `<p>{{@name}}</p>`);
+    this.registerComponent('TemplateOnly', 'SubItem', `<p>{{@name}}</p>`);
 
     let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
 
@@ -465,7 +465,7 @@ class CurlyScopeTest extends CurlyTest {
 
   @test
   'correct scope - self lookup inside #each'() {
-    this.registerComponent('Basic', 'SubItem', `<p>{{@name}}</p>`);
+    this.registerComponent('TemplateOnly', 'SubItem', `<p>{{@name}}</p>`);
 
     let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
 
@@ -494,10 +494,10 @@ class CurlyScopeTest extends CurlyTest {
 
   @test
   'correct scope - complex'() {
-    this.registerComponent('Basic', 'SubItem', `<p>{{@name}}</p>`);
+    this.registerComponent('TemplateOnly', 'SubItem', `<p>{{@name}}</p>`);
 
     this.registerComponent(
-      'Basic',
+      'TemplateOnly',
       'MyItem',
       stripTight`
         <aside>{{@item.id}}:
@@ -1984,7 +1984,7 @@ class CurlyTeardownTest extends CurlyTest {
 
   @test
   'tagless components render properly'() {
-    this.registerComponent('Basic', 'foo-bar', `Michael Jordan says "Go Tagless"`);
+    this.registerComponent('TemplateOnly', 'foo-bar', `Michael Jordan says "Go Tagless"`);
 
     this.render(`{{foo-bar}}`);
     this.assertHTML('Michael Jordan says "Go Tagless"');

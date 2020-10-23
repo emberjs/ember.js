@@ -15,8 +15,8 @@ function dictToReference(dict: Dict<unknown>): Dict<Reference> {
 }
 
 export class PartialRehydrationDelegate extends RehydrationDelegate {
-  registerBasicComponent(name: string, layout: string) {
-    this.registerComponent('Basic', 'Basic', name, layout);
+  registerTemplateOnlyComponent(name: string, layout: string) {
+    this.registerComponent('TemplateOnly', 'TemplateOnly', name, layout);
   }
 
   renderComponentClientSide(
