@@ -91,7 +91,6 @@ export class Meta {
   _isInit: boolean;
   _lazyChains: ObjMap<[UpdatableTag, unknown][]> | undefined;
   _values: ObjMap<unknown> | undefined;
-  _tags: ObjMap<UpdatableTag> | undefined;
   _revisions: ObjMap<Revision> | undefined;
   source: object;
   proto: object | undefined;
@@ -112,7 +111,6 @@ export class Meta {
     this._mixins = undefined;
     this._lazyChains = undefined;
     this._values = undefined;
-    this._tags = undefined;
     this._revisions = undefined;
 
     // initial value for all flags right now is false
