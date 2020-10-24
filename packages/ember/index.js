@@ -671,6 +671,7 @@ if (JQUERY_INTEGRATION && !views.jQueryDisabled) {
 }
 
 Ember.ViewUtils = {
+  VIEW_REGISTRY: views.VIEW_REGISTRY,
   isSimpleClick: views.isSimpleClick,
   getElementView: views.getElementView,
   getViewElement: views.getViewElement,

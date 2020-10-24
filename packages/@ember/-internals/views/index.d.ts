@@ -22,8 +22,11 @@ export const ViewMixin: any;
 export const ViewStateSupport: any;
 export const TextSupport: any;
 
+export const VIEW_REGISTRY: unknown;
 export function getElementView(element: SimpleElement): unknown;
 export function getViewElement(view: unknown): Option<SimpleElement>;
+export function registerView(view: unknown): Option<SimpleElement>;
+export function unregisterView(view: unknown): Option<SimpleElement>;
 export function setElementView(element: SimpleElement, view: unknown): void;
 export function setViewElement(view: unknown, element: SimpleElement): void;
 export function clearElementView(element: SimpleElement): void;

@@ -307,7 +307,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
     function assertResources(url, resources) {
       return App.visit(url, { isBrowser: false, shouldRender: false }).then(function (instance) {
         try {
-          let viewRegistry = instance.lookup('-view-registry:main');
+          let viewRegistry = App.VIEW_REGISTRY;
           assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
 
           let networkService = instance.lookup('service:network');

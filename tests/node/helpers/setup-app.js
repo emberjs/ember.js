@@ -94,6 +94,7 @@ function createApplication() {
     autoboot: false,
   });
 
+  app.VIEW_REGISTRY = this.Ember.ViewUtils.VIEW_REGISTRY;
   app.Router = this.Ember.Router.extend({
     location: 'none',
   });

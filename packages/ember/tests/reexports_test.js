@@ -237,6 +237,7 @@ let allExports = [
   ['Logger', '@ember/-internals/console', 'default'],
 
   // @ember/-internals/views
+  ['ViewUtils.VIEW_REGISTRY', '@ember/-internals/views', 'VIEW_REGISTRY'],
   ['ViewUtils.isSimpleClick', '@ember/-internals/views', 'isSimpleClick'],
   ['ViewUtils.getElementView', '@ember/-internals/views', 'getElementView'],
   ['ViewUtils.getViewElement', '@ember/-internals/views', 'getViewElement'],

@@ -1,4 +1,9 @@
-import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
+import {
+  clearElementView,
+  clearViewElement,
+  getViewElement,
+  unregisterView,
+} from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
@@ -77,7 +82,7 @@ export default class ComponentStateBucket {
       }
     }
 
-    component.renderer.unregister(component);
+    unregisterView(component);
   }
 
   finalize() {
