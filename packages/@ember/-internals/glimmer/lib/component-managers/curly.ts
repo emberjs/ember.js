@@ -116,7 +116,9 @@ debugFreeze(EMPTY_POSITIONAL_ARGS);
 
 function _setupLazyEventsForComponent(dispatcher: any, component: object) {
   // non-interactive rendering (e.g. SSR) has no event dispatcher
-  if (dispatcher === undefined) { return; }
+  if (dispatcher === undefined) {
+    return;
+  }
 
   let lazyEvents = dispatcher._lazyEvents;
 
@@ -331,7 +333,7 @@ export default class CurlyComponentManager
       }
     }
 
-    _setupLazyEventsForComponent(environment.eventDispatcher, component);
+    _setupLazyEventsForComponent(environment.extra.eventDispatcher, component);
 
     // Track additional lifecycle metadata about this component in a state bucket.
     // Essentially we're saving off all the state we'll need in the future.
