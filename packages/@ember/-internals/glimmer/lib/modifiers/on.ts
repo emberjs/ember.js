@@ -69,7 +69,7 @@ export class OnModifierState {
     this.args = args;
   }
 
-  updateFromArgs() {
+  updateFromArgs(): void {
     let { args } = this;
 
     let { once, passive, capture }: AddEventListenerOptions = reifyNamed(args.named);
@@ -321,15 +321,15 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     this.owner = owner;
   }
 
-  getDebugName() {
+  getDebugName(): string {
     return 'on';
   }
 
-  get counters() {
+  get counters(): {adds: number, removes: number} {
     return { adds, removes };
   }
 
-  create(element: SimpleElement | Element, _state: unknown, args: VMArguments) {
+  create(element: SimpleElement | Element, _state: unknown, args: VMArguments): OnModifierState | null {
     if (!this.isInteractive) {
       return null;
     }
@@ -347,7 +347,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     return state.tag;
   }
 
-  install(state: OnModifierState | null) {
+  install(state: OnModifierState | null): void {
     if (state === null) {
       return;
     }
@@ -363,7 +363,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     state.shouldUpdate = false;
   }
 
-  update(state: OnModifierState | null) {
+  update(state: OnModifierState | null): void {
     if (state === null) {
       return;
     }
@@ -386,7 +386,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     state.shouldUpdate = false;
   }
 
-  getDestroyable(state: OnModifierState | null) {
+  getDestroyable(state: OnModifierState | null): OnModifierState | null {
     return state;
   }
 }

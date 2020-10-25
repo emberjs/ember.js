@@ -1,7 +1,7 @@
 import { ASYNC_OBSERVERS, SYNC_OBSERVERS } from '@ember/-internals/metal';
 import { run } from '@ember/runloop';
 
-export function setupObserversCheck(hooks: NestedHooks) {
+export function setupObserversCheck(hooks: NestedHooks): void {
   hooks.afterEach(function () {
     let { assert } = QUnit.config.current;
 

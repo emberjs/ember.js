@@ -24,7 +24,7 @@ export default class MethodCallTracker {
     this._originalMethod = undefined;
   }
 
-  stubMethod() {
+  stubMethod(): void {
     if (this._originalMethod) {
       // Method is already stubbed
       return;
@@ -42,32 +42,32 @@ export default class MethodCallTracker {
     });
   }
 
-  restoreMethod() {
+  restoreMethod(): void {
     if (this._originalMethod) {
       this._env.setDebugFunction(this._methodName, this._originalMethod);
     }
   }
 
-  expectCall(message: Message, options?: OptionList) {
+  expectCall(message: Message, options?: OptionList): void {
     this.stubMethod();
     this._expectedMessages.push(message || /.*/);
     this._expectedOptionLists.push(options);
   }
 
-  expectNoCalls() {
+  expectNoCalls(): void {
     this.stubMethod();
     this._isExpectingNoCalls = true;
   }
 
-  isExpectingNoCalls() {
+  isExpectingNoCalls(): boolean {
     return this._isExpectingNoCalls;
   }
 
-  isExpectingCalls() {
+  isExpectingCalls(): boolean | number {
     return !this._isExpectingNoCalls && this._expectedMessages.length;
   }
 
-  assert() {
+  assert(): void {
     let { assert } = QUnit.config.current;
     let methodName = this._methodName;
     let isExpectingNoCalls = this._isExpectingNoCalls;

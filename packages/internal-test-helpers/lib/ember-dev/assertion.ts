@@ -30,7 +30,7 @@ const BREAK = {};
   In particular, this prevents `Ember.assert` from throw errors that would
   disrupt the control flow.
 */
-export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
+export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv): void {
   let originalAssertFunc = env.getDebugFunction('assert');
 
   hooks.beforeEach(function (assert) {

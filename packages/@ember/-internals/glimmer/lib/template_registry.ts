@@ -7,11 +7,11 @@ interface TemplatesRegistry {
 }
 let TEMPLATES: TemplatesRegistry = {};
 
-export function setTemplates(templates: TemplatesRegistry) {
+export function setTemplates(templates: TemplatesRegistry): void {
   TEMPLATES = templates;
 }
 
-export function getTemplates() {
+export function getTemplates(): TemplatesRegistry {
   return TEMPLATES;
 }
 
