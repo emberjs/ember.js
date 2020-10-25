@@ -1,7 +1,7 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
-import { getCurrentRunLoop, run } from '@ember/runloop';
+import { getCurrentRunLoop } from '@ember/runloop';
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
@@ -420,10 +420,13 @@ moduleFor(
     constructor() {
       super(...arguments);
 
-      let dispatcher = this.owner.lookup('event_dispatcher:main');
-      run(dispatcher, 'destroy');
-      this.owner.__container__.reset('event_dispatcher:main');
       this.dispatcher = this.owner.lookup('event_dispatcher:main');
+    }
+
+    getBootOptions() {
+      return {
+        skipEventDispatcher: true,
+      };
     }
 
     ['@test additional events can be specified'](assert) {

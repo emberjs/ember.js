@@ -31,7 +31,10 @@ export default class RenderingTestCase extends AbstractTestCase {
     this.element = document.querySelector('#qunit-fixture');
     this.component = null;
 
-    if (!bootOptions || bootOptions.isInteractive !== false) {
+    if (
+      !bootOptions ||
+      (bootOptions.isInteractive !== false && bootOptions.skipEventDispatcher !== true)
+    ) {
       owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
     }
   }
