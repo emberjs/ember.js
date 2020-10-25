@@ -325,11 +325,15 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     return 'on';
   }
 
-  get counters(): {adds: number, removes: number} {
+  get counters(): { adds: number; removes: number } {
     return { adds, removes };
   }
 
-  create(element: SimpleElement | Element, _state: unknown, args: VMArguments): OnModifierState | null {
+  create(
+    element: SimpleElement | Element,
+    _state: unknown,
+    args: VMArguments
+  ): OnModifierState | null {
     if (!this.isInteractive) {
       return null;
     }
