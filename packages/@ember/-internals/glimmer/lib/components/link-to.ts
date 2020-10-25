@@ -12,6 +12,7 @@ import { flaggedInstrument } from '@ember/instrumentation';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent, { HAS_BLOCK } from '../component';
+import { EmberVMEnvironment } from '../environment';
 import layout from '../templates/link-to';
 
 /**
@@ -503,9 +504,12 @@ const LinkComponent = EmberComponent.extend({
 
     // As our EventDispatcher adds event listeners lazily, and does not recognize the dynamic event pattern here,
     // we must tell it explicitly that we need to listen to `eventName` events
-    let eventDispatcher = getOwner(this).lookup<EventDispatcher>('event_dispatcher:main');
-    if (eventDispatcher) {
-      eventDispatcher.setupHandlerForEmberEvent(eventName);
+    let owner = getOwner(this);
+    if (owner.lookup<EmberVMEnvironment>('-environment:main')!.isInteractive) {
+      let eventDispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
+      if (eventDispatcher) {
+        eventDispatcher.setupHandlerForEmberEvent(eventName);
+      }
     }
   },
 
