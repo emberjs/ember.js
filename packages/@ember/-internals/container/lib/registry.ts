@@ -629,7 +629,8 @@ export default class Registry implements IRegistry {
     return assign({}, fallbackKnown, localKnown, resolverKnown);
   }
 
-  fullNameErrorMessage = 'Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase.';
+  fullNameErrorMessage =
+    'Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase.';
 
   isValidFullName(fullName: string): boolean {
     return VALID_FULL_NAME_REGEXP.test(fullName);
