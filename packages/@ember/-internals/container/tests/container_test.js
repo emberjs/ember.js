@@ -550,7 +550,7 @@ moduleFor(
       let container = registry.container();
       expectAssertion(() => {
         container.factoryFor('chad-bar');
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
     }
 
     ['@test #factoryFor returns a factory manager'](assert) {

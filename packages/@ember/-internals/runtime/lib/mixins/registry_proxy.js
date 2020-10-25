@@ -24,7 +24,7 @@ export default Mixin.create({
    @return {Function} fullName's factory
    */
   resolveRegistration(fullName, options) {
-    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+    assert('Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase.', this.__registry__.isValidFullName(fullName));
     return this.__registry__.resolve(fullName, options);
   },
 
