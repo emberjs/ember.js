@@ -252,7 +252,7 @@ export default EmberObject.extend({
     @param event the name of the event in the browser
   */
   setupHandlerForBrowserEvent(event) {
-    this._setupHandler(this._sanitizedRootElement, event, this.finalEventNameMapping[event]);
+    this.setupHandler(this._sanitizedRootElement, event, this.finalEventNameMapping[event]);
   },
 
   /**
@@ -263,7 +263,7 @@ export default EmberObject.extend({
     @param eventName
   */
   setupHandlerForEmberEvent(eventName) {
-    this._setupHandler(
+    this.setupHandler(
       this._sanitizedRootElement,
       this._reverseEventNameMapping[eventName],
       eventName
@@ -279,12 +279,12 @@ export default EmberObject.extend({
     bubble to each successive parent view until it reaches the top.
 
     @private
-    @method _setupHandler
+    @method setupHandler
     @param {Element} rootElement
     @param {String} event the name of the event in the browser
     @param {String} eventName the name of the method to call on the view
   */
-  _setupHandler(rootElement, event, eventName) {
+  setupHandler(rootElement, event, eventName) {
     if (eventName === null || !this.lazyEvents.has(event)) {
       return; // nothing to do
     }

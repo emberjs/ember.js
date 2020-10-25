@@ -528,6 +528,8 @@ module.exports = {
     'setupController',
     'setupForTesting',
     'setupHandler',
+    'setupHandlerForBrowserEvent',
+    'setupHandlerForEmberEvent',
     'setupRegistry',
     'shiftObject',
     'shouldRender',
