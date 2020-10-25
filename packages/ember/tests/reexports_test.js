@@ -264,9 +264,8 @@ let allExports = [
   ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
   ['_setComponentManager', '@ember/-internals/glimmer', 'setComponentManager'],
   ['_componentManagerCapabilities', '@ember/-internals/glimmer', 'capabilities'],
-
   ['_setComponentTemplate', '@ember/-internals/glimmer', 'setComponentTemplate'],
-  ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate'], 
+  ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate'],
   ['_templateOnlyComponent', '@ember/component/template-only', 'default'],
   EMBER_GLIMMER_HELPER_MANAGER
     ? ['_setHelperManager', '@ember/-internals/glimmer', 'setHelperManager']

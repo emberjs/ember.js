@@ -264,7 +264,6 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
   );
 }
 
-
 moduleFor(
   'Components test: template-only components (using `templateOnlyComponent()`)',
   class extends RenderingTestCase {
@@ -316,4 +315,3 @@ moduleFor(
     }
   }
 );
-
