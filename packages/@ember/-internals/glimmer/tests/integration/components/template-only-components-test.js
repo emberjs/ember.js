@@ -1,6 +1,4 @@
 import { moduleFor, RenderingTestCase, classes, runTask } from 'internal-test-helpers';
-import { EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
-
 import { ENV } from '@ember/-internals/environment';
 import { setComponentTemplate } from '@ember/-internals/glimmer';
 import templateOnly from '@ember/component/template-only';
@@ -266,56 +264,56 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
   );
 }
 
-if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-  moduleFor(
-    'Components test: template-only components (using `templateOnlyComponent()`)',
-    class extends RenderingTestCase {
-      ['@test it can render a component']() {
-        this.registerComponent('foo-bar', { ComponentClass: templateOnly(), template: 'hello' });
 
-        this.render('{{foo-bar}}');
+moduleFor(
+  'Components test: template-only components (using `templateOnlyComponent()`)',
+  class extends RenderingTestCase {
+    ['@test it can render a component']() {
+      this.registerComponent('foo-bar', { ComponentClass: templateOnly(), template: 'hello' });
 
-        this.assertInnerHTML('hello');
+      this.render('{{foo-bar}}');
 
-        this.assertStableRerender();
-      }
+      this.assertInnerHTML('hello');
 
-      ['@test it can render a component when template was not registered']() {
-        let ComponentClass = templateOnly();
-        setComponentTemplate(compile('hello'), ComponentClass);
-
-        this.registerComponent('foo-bar', { ComponentClass });
-
-        this.render('{{foo-bar}}');
-
-        this.assertInnerHTML('hello');
-
-        this.assertStableRerender();
-      }
-
-      ['@test setComponentTemplate takes precedence over registered layout']() {
-        let ComponentClass = templateOnly();
-        setComponentTemplate(compile('hello'), ComponentClass);
-
-        this.registerComponent('foo-bar', {
-          ComponentClass,
-          template: 'this should not be rendered',
-        });
-
-        this.render('{{foo-bar}}');
-
-        this.assertInnerHTML('hello');
-
-        this.assertStableRerender();
-      }
-
-      ['@test templateOnly accepts a moduleName to be used for debugging / toString purposes'](
-        assert
-      ) {
-        let ComponentClass = templateOnly('my-app/components/foo');
-
-        assert.equal(`${ComponentClass}`, 'my-app/components/foo');
-      }
+      this.assertStableRerender();
     }
-  );
-}
+
+    ['@test it can render a component when template was not registered']() {
+      let ComponentClass = templateOnly();
+      setComponentTemplate(compile('hello'), ComponentClass);
+
+      this.registerComponent('foo-bar', { ComponentClass });
+
+      this.render('{{foo-bar}}');
+
+      this.assertInnerHTML('hello');
+
+      this.assertStableRerender();
+    }
+
+    ['@test setComponentTemplate takes precedence over registered layout']() {
+      let ComponentClass = templateOnly();
+      setComponentTemplate(compile('hello'), ComponentClass);
+
+      this.registerComponent('foo-bar', {
+        ComponentClass,
+        template: 'this should not be rendered',
+      });
+
+      this.render('{{foo-bar}}');
+
+      this.assertInnerHTML('hello');
+
+      this.assertStableRerender();
+    }
+
+    ['@test templateOnly accepts a moduleName to be used for debugging / toString purposes'](
+      assert
+    ) {
+      let ComponentClass = templateOnly('my-app/components/foo');
+
+      assert.equal(`${ComponentClass}`, 'my-app/components/foo');
+    }
+  }
+);
+
