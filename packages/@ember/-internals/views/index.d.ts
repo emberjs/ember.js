@@ -1,5 +1,6 @@
 import { Option } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 
 export const ActionSupport: any;
 export const ChildViewsSupport: any;
@@ -31,3 +32,14 @@ export const ActionManager: {
     [id: string]: any | undefined;
   };
 };
+
+export declare class EventDispatcher extends EmberObject {
+  events: Record<string, string>;
+  finalEventNameMapping: Record<string, string>;
+  rootElement: string | HTMLElement;
+  lazyEvents: Map<string, string>;
+
+  setup(addedEvents: object, rootElement?: string | HTMLElement): void;
+  setupHandlerForBrowserEvent(event: string): void;
+  setupHandlerForEmberEvent(event: string): void;
+}

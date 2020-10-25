@@ -1,5 +1,6 @@
+import { Owner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
-import { ActionManager, isSimpleClick } from '@ember/-internals/views';
+import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
@@ -17,7 +18,6 @@ import { registerDestructor } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../helpers/action';
-import { Owner } from '@ember/-internals/owner';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -214,8 +214,8 @@ export default class ActionModifierManager
 
   get setupEventHandler(): (eventName: string) => void {
     if (this._setupEventHandler === undefined) {
-      let dispatcher = this.owner.lookup('event_dispatcher:main') as any; // @todo
-      this._setupEventHandler = (eventName) => dispatcher.setupHandlerForEmberEvent(eventName);
+      let dispatcher = this.owner.lookup<EventDispatcher>('event_dispatcher:main');
+      this._setupEventHandler = (eventName) => dispatcher?.setupHandlerForEmberEvent(eventName);
     }
 
     return this._setupEventHandler;

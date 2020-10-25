@@ -7,6 +7,7 @@ import {
   ChildViewsSupport,
   ClassNamesSupport,
   CoreView,
+  EventDispatcher,
   getViewElement,
   ViewMixin,
   ViewStateSupport,
@@ -726,8 +727,8 @@ const Component = CoreView.extend(
 
       if (DEBUG && this.renderer._destinedForDOM && this.tagName === '') {
         let eventNames = [];
-        let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
-        let events = (eventDispatcher && eventDispatcher._finalEventNameMapping) || {};
+        let eventDispatcher = getOwner(this).lookup<EventDispatcher>('event_dispatcher:main');
+        let events = (eventDispatcher && eventDispatcher.finalEventNameMapping) || {};
 
         // tslint:disable-next-line:forin
         for (let key in events) {

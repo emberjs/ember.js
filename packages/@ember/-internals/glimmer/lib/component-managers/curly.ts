@@ -1,7 +1,12 @@
 import { privatize as P } from '@ember/-internals/container';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
+import {
+  addChildView,
+  EventDispatcher,
+  setElementView,
+  setViewElement,
+} from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -114,13 +119,13 @@ const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
-function _setupLazyEventsForComponent(dispatcher: any, component: object) {
+function _setupLazyEventsForComponent(dispatcher: EventDispatcher | undefined, component: object) {
   // non-interactive rendering (e.g. SSR) has no event dispatcher
   if (dispatcher === undefined) {
     return;
   }
 
-  let lazyEvents = dispatcher._lazyEvents;
+  let lazyEvents = dispatcher.lazyEvents;
 
   lazyEvents.forEach((mappedEventName: string, event: string) => {
     if (mappedEventName !== null && typeof component[mappedEventName] === 'function') {

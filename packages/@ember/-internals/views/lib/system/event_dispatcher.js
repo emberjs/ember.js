@@ -133,9 +133,9 @@ export default EmberObject.extend({
     );
 
     this._eventHandlers = Object.create(null);
-    this._finalEventNameMapping = null;
+    this.finalEventNameMapping = null;
     this._sanitizedRootElement = null;
-    this._lazyEvents = new Map();
+    this.lazyEvents = new Map();
   },
 
   /**
@@ -151,12 +151,12 @@ export default EmberObject.extend({
     @param addedEvents {Object}
   */
   setup(addedEvents, _rootElement) {
-    let events = (this._finalEventNameMapping = assign({}, get(this, 'events'), addedEvents));
+    let events = (this.finalEventNameMapping = assign({}, get(this, 'events'), addedEvents));
     this._reverseEventNameMapping = Object.keys(events).reduce(
       (result, key) => assign(result, { [events[key]]: key }),
       {}
     );
-    let lazyEvents = this._lazyEvents;
+    let lazyEvents = this.lazyEvents;
 
     if (_rootElement !== undefined && _rootElement !== null) {
       set(this, 'rootElement', _rootElement);
@@ -252,7 +252,7 @@ export default EmberObject.extend({
     @param event the name of the event in the browser
   */
   setupHandlerForBrowserEvent(event) {
-    this.setupHandler(this._sanitizedRootElement, event, this._finalEventNameMapping[event]);
+    this._setupHandler(this._sanitizedRootElement, event, this.finalEventNameMapping[event]);
   },
 
   /**
@@ -263,7 +263,7 @@ export default EmberObject.extend({
     @param eventName
   */
   setupHandlerForEmberEvent(eventName) {
-    this.setupHandler(
+    this._setupHandler(
       this._sanitizedRootElement,
       this._reverseEventNameMapping[eventName],
       eventName
@@ -279,13 +279,13 @@ export default EmberObject.extend({
     bubble to each successive parent view until it reaches the top.
 
     @private
-    @method setupHandler
+    @method _setupHandler
     @param {Element} rootElement
     @param {String} event the name of the event in the browser
     @param {String} eventName the name of the method to call on the view
   */
-  setupHandler(rootElement, event, eventName) {
-    if (eventName === null || !this._lazyEvents.has(event)) {
+  _setupHandler(rootElement, event, eventName) {
+    if (eventName === null || !this.lazyEvents.has(event)) {
       return; // nothing to do
     }
 
@@ -468,7 +468,7 @@ export default EmberObject.extend({
       });
     }
 
-    this._lazyEvents.delete(event);
+    this.lazyEvents.delete(event);
   },
 
   destroy() {
