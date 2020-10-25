@@ -103,7 +103,6 @@ function lookupComponentPair(
 ): Option<LookupResult> {
   let component = componentFor(name, owner, options);
 
-
   if (component !== null && component.class !== undefined) {
     let layout = getComponentTemplate(component.class);
 
@@ -111,7 +110,6 @@ function lookupComponentPair(
       return { component, layout };
     }
   }
-
 
   let layout = layoutFor(name, owner, options);
 
