@@ -215,7 +215,7 @@ export default class ActionModifierManager
   get setupEventHandler(): (eventName: string) => void {
     if (this._setupEventHandler === undefined) {
       let dispatcher = this.owner.lookup('event_dispatcher:main') as any; // @todo
-      this._setupEventHandler = (eventName) => dispatcher['setupHandler'](eventName);
+      this._setupEventHandler = (eventName) => dispatcher.setupHandler(eventName);
     }
 
     return this._setupEventHandler;

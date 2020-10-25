@@ -250,10 +250,10 @@ export default EmberObject.extend({
 
     @private
     @method setupHandler
-    @param {Element} rootElement
     @param {String} event the name of the event in the browser
     @param {String} eventName the name of the method to call on the view
-  */
+    @param {Element} rootElement
+   */
   setupHandler(
     event,
     eventName = this._finalEventNameMapping[event],

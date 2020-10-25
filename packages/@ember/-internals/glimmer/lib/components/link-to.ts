@@ -13,6 +13,7 @@ import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent, { HAS_BLOCK } from '../component';
 import layout from '../templates/link-to';
+import { getOwner } from '@ember/-internals/owner';
 
 /**
   The `LinkTo` component renders a link to the supplied `routeName` passing an optionally
@@ -500,6 +501,11 @@ const LinkComponent = EmberComponent.extend({
     // Map desired event name to invoke function
     let { eventName } = this;
     this.on(eventName, this, this._invoke);
+
+    // As our EventDispatcher adds event listeners lazily, and does not recognize the dynamic event pattern here,
+    // we must tell it explicitly that we need to listen to `eventName` events
+    let eventDispatcher = getOwner(this).lookup('event_dispatcher:main') as any;
+    eventDispatcher.setupHandler(eventName);
   },
 
   _routing: injectService('-routing'),
