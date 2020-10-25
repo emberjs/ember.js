@@ -124,7 +124,7 @@ function _setupLazyEventsForComponent(dispatcher: any, component: object) {
 
   lazyEvents.forEach((mappedEventName: string, event: string) => {
     if (mappedEventName !== null && typeof component[mappedEventName] === 'function') {
-      dispatcher.setupHandler(event, mappedEventName);
+      dispatcher.setupHandlerForBrowserEvent(event);
     }
   });
 }

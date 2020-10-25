@@ -152,6 +152,10 @@ export default EmberObject.extend({
   */
   setup(addedEvents, _rootElement) {
     let events = (this._finalEventNameMapping = assign({}, get(this, 'events'), addedEvents));
+    this._reverseEventNameMapping = Object.keys(events).reduce(
+      (result, key) => assign(result, { [events[key]]: key }),
+      {}
+    );
     let lazyEvents = this._lazyEvents;
 
     if (_rootElement !== undefined && _rootElement !== null) {
@@ -241,6 +245,32 @@ export default EmberObject.extend({
   },
 
   /**
+    Setup event listeners for the given browser event name
+
+    @private
+    @method setupHandlerForBrowserEvent
+    @param event the name of the event in the browser
+  */
+  setupHandlerForBrowserEvent(event) {
+    this.setupHandler(this._sanitizedRootElement, event, this._finalEventNameMapping[event]);
+  },
+
+  /**
+    Setup event listeners for the given Ember event name (camel case)
+
+    @private
+    @method setupHandlerForEmberEvent
+    @param eventName
+  */
+  setupHandlerForEmberEvent(eventName) {
+    this.setupHandler(
+      this._sanitizedRootElement,
+      this._reverseEventNameMapping[eventName],
+      eventName
+    );
+  },
+
+  /**
     Registers an event listener on the rootElement. If the given event is
     triggered, the provided event handler will be triggered on the target view.
 
@@ -250,15 +280,11 @@ export default EmberObject.extend({
 
     @private
     @method setupHandler
+    @param {Element} rootElement
     @param {String} event the name of the event in the browser
     @param {String} eventName the name of the method to call on the view
-    @param {Element} rootElement
-   */
-  setupHandler(
-    event,
-    eventName = this._finalEventNameMapping[event],
-    rootElement = this._sanitizedRootElement
-  ) {
+  */
+  setupHandler(rootElement, event, eventName) {
     if (eventName === null || !this._lazyEvents.has(event)) {
       return; // nothing to do
     }

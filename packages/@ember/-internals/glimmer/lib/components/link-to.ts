@@ -505,7 +505,7 @@ const LinkComponent = EmberComponent.extend({
     // As our EventDispatcher adds event listeners lazily, and does not recognize the dynamic event pattern here,
     // we must tell it explicitly that we need to listen to `eventName` events
     let eventDispatcher = getOwner(this).lookup('event_dispatcher:main') as any;
-    eventDispatcher.setupHandler(eventName);
+    eventDispatcher.setupHandlerForEmberEvent(eventName);
   },
 
   _routing: injectService('-routing'),
