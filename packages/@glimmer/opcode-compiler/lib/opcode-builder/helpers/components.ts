@@ -233,10 +233,7 @@ export function InvokeStaticComponent({
   }
 
   out.push([op(Op.Constant, other(layout)), op(Op.CompileBlock), op(MachineOp.InvokeVirtual)]);
-
-  if (capabilities.createInstance) {
-    out.push(op(Op.DidRenderLayout, $s0));
-  }
+  out.push(op(Op.DidRenderLayout, $s0));
 
   out.push(op(MachineOp.PopFrame), op(Op.PopScope));
 

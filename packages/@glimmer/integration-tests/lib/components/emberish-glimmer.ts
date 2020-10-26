@@ -16,7 +16,7 @@ import {
   Destroyable,
 } from '@glimmer/interfaces';
 import { keys, assign, unwrapTemplate } from '@glimmer/util';
-import { BASIC_CAPABILITIES } from './capabilities';
+import { TEMPLATE_ONLY_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
 import { EmberishCurlyComponentFactory } from './emberish-curly';
@@ -69,7 +69,7 @@ export interface EmberishGlimmerComponentFactory
   new (...args: unknown[]): this;
 }
 
-export const EMBERISH_GLIMMER_CAPABILITIES = assign({}, BASIC_CAPABILITIES, {
+export const EMBERISH_GLIMMER_CAPABILITIES = assign({}, TEMPLATE_ONLY_CAPABILITIES, {
   dynamicTag: true,
   createArgs: true,
   attributeHook: true,

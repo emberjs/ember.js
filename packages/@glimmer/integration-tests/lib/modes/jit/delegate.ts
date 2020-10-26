@@ -37,7 +37,6 @@ import {
 import { preprocess } from '../../compile';
 import { TestMacros } from '../../compile/macros';
 import { ComponentKind, ComponentTypes } from '../../components';
-import { BasicComponentFactory } from '../../components/basic';
 import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
 import { EmberishGlimmerComponentFactory } from '../../components/emberish-glimmer';
 import { UserHelper } from '../../helpers';
@@ -53,7 +52,7 @@ import {
   registerInternalHelper,
   registerModifier,
   registerPartial,
-  registerStaticTaglessComponent,
+  registerTemplateOnlyComponent,
   registerTemplate,
 } from './register';
 import { TestJitRegistry } from './registry';
@@ -136,7 +135,7 @@ export class JitRenderDelegate implements RenderDelegate {
     this.plugins.push(plugin);
   }
 
-  registerComponent<K extends 'Basic' | 'Fragment' | 'Glimmer', L extends ComponentKind>(
+  registerComponent<K extends 'TemplateOnly' | 'Glimmer', L extends ComponentKind>(
     type: K,
     _testType: L,
     name: string,
@@ -158,14 +157,8 @@ export class JitRenderDelegate implements RenderDelegate {
     Class?: ComponentTypes[K]
   ) {
     switch (type) {
-      case 'Basic':
-      case 'Fragment':
-        return registerStaticTaglessComponent(
-          this.registry,
-          name,
-          Class as BasicComponentFactory,
-          layout!
-        );
+      case 'TemplateOnly':
+        return registerTemplateOnlyComponent(this.registry, name, layout!);
       case 'Curly':
       case 'Dynamic':
         return registerEmberishCurlyComponent(
