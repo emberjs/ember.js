@@ -330,7 +330,10 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   ));
 
   if (!managerHasCapability(manager, capabilities, Capability.CreateInstance)) {
-    throw new Error(`BUG`);
+    // TODO: Closure and Main components are always invoked dynamically, so this
+    // opcode may run even if this capability is not enabled. In the future we
+    // should handle this in a better way.
+    return;
   }
 
   let dynamicScope: Option<DynamicScope> = null;
@@ -698,17 +701,14 @@ APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
   let { manager, state, capabilities } = check(vm.fetchValue(_state), CheckComponentInstance);
   let bounds = vm.elements().popBlock();
 
-  if (!managerHasCapability(manager, capabilities, Capability.CreateInstance)) {
-    throw new Error(`BUG`);
-  }
-
   let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
 
   mgr.didRenderLayout(state, bounds);
 
-  vm.env.didCreate(state, manager);
-
-  vm.updateWith(new DidUpdateLayoutOpcode(manager, state, bounds));
+  if (managerHasCapability(manager, capabilities, Capability.CreateInstance)) {
+    vm.env.didCreate(state, manager);
+    vm.updateWith(new DidUpdateLayoutOpcode(manager, state, bounds));
+  }
 });
 
 APPEND_OPCODES.add(Op.CommitComponentTransaction, (vm) => {

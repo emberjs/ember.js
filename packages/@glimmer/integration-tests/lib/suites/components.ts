@@ -5,11 +5,11 @@ import { stripTight } from '../test-helpers/strings';
 import { EmberishGlimmerArgs } from '../components/emberish-glimmer';
 import { tracked } from '../test-helpers/tracked';
 
-export class FragmentComponents extends RenderTest {
-  static suiteName = 'Fragments';
+export class TemplateOnlyComponents extends RenderTest {
+  static suiteName = 'TemplateOnly';
 
   @test({
-    kind: 'fragment',
+    kind: 'templateOnly',
   })
   'creating a new component'() {
     this.render(
@@ -35,7 +35,7 @@ export class FragmentComponents extends RenderTest {
   }
 
   @test({
-    kind: 'fragment',
+    kind: 'templateOnly',
   })
   'inner ...attributes'() {
     this.render(
@@ -62,170 +62,8 @@ export class FragmentComponents extends RenderTest {
   }
 }
 
-export class BasicComponents extends RenderTest {
-  static suiteName = 'Basic';
-
-  @test({
-    kind: 'basic',
-  })
-  'creating a new component'() {
-    this.render(
-      {
-        name: 'MyComponent',
-        layout: '{{yield}}',
-        template: 'hello!',
-        attributes: { color: '{{color}}' },
-      },
-      { color: 'red' }
-    );
-
-    this.assertHTML(`<div color='red'>hello!</div>`);
-    this.assertStableRerender();
-
-    this.rerender({ color: 'green' });
-    this.assertHTML(`<div color='green'>hello!</div>`);
-    this.assertStableNodes();
-
-    this.rerender({ color: 'red' });
-    this.assertHTML(`<div color='red'>hello!</div>`);
-    this.assertStableNodes();
-  }
-
-  @test({
-    kind: 'basic',
-  })
-  'creating a new component passing args'() {
-    this.render(
-      {
-        name: 'MyComponent',
-        layout: '{{@arg1}}{{yield}}',
-        template: 'hello!',
-        args: { arg1: "'hello - '" },
-        attributes: { color: '{{color}}' },
-      },
-      { color: 'red' }
-    );
-
-    this.assertHTML("<div color='red'>hello - hello!</div>");
-    this.assertStableRerender();
-
-    this.rerender({ color: 'green' });
-    this.assertHTML("<div color='green'>hello - hello!</div>");
-    this.assertStableNodes();
-
-    this.rerender({ color: 'red' });
-    this.assertHTML("<div color='red'>hello - hello!</div>");
-    this.assertStableNodes();
-  }
-
-  @test({
-    kind: 'basic',
-  })
-  'creating a new component passing named blocks'() {
-    this.render(
-      {
-        name: 'MyComponent',
-        layout: '{{@arg1}}{{yield to="hello"}}',
-        template: '<:hello>world!</:hello>',
-        args: { arg1: "'hello - '" },
-        attributes: { color: '{{color}}' },
-      },
-      { color: 'red' }
-    );
-
-    this.assertHTML("<div color='red'>hello - world!</div>");
-    this.assertStableRerender();
-
-    this.rerender({ color: 'green' });
-    this.assertHTML("<div color='green'>hello - world!</div>");
-    this.assertStableNodes();
-
-    this.rerender({ color: 'red' });
-    this.assertHTML("<div color='red'>hello - world!</div>");
-    this.assertStableNodes();
-  }
-
-  @test({
-    kind: 'basic',
-  })
-  'creating a new component passing named blocks that take block params'() {
-    this.render(
-      {
-        name: 'MyComponent',
-        layout: '{{@arg1}}{{yield "!" to="hello"}}',
-        template: '<:hello as |punc|>world{{punc}}</:hello>',
-        args: { arg1: "'hello - '" },
-        attributes: { color: '{{color}}' },
-      },
-      { color: 'red' }
-    );
-
-    this.assertHTML("<div color='red'>hello - world!</div>");
-    this.assertStableRerender();
-
-    this.rerender({ color: 'green' });
-    this.assertHTML("<div color='green'>hello - world!</div>");
-    this.assertStableNodes();
-
-    this.rerender({ color: 'red' });
-    this.assertHTML("<div color='red'>hello - world!</div>");
-    this.assertStableNodes();
-  }
-
-  @test({
-    kind: 'basic',
-  })
-  'creating a new component passing dynamic args'() {
-    this.render(
-      {
-        name: 'MyComponent',
-        layout: '{{@arg1}}{{yield}}',
-        template: 'hello!',
-        args: { arg1: 'left' },
-        attributes: { color: '{{color}}' },
-      },
-      { color: 'red', left: 'left - ' }
-    );
-
-    this.assertHTML("<div color='red'>left - hello!</div>");
-    this.assertStableRerender();
-
-    this.rerender({ color: 'green', left: 'LEFT - ' });
-    this.assertHTML("<div color='green'>LEFT - hello!</div>");
-    this.assertStableNodes();
-
-    this.rerender({ color: 'red', left: 'left - ' });
-    this.assertHTML("<div color='red'>left - hello!</div>");
-    this.assertStableNodes();
-  }
-
-  @test({
-    kind: 'basic',
-  })
-  'creating a new component yielding values'() {
-    this.render(
-      {
-        name: 'MyComponent',
-        layout: '{{@arg1}}{{yield @yieldme}}',
-        template: 'hello! {{yielded}}',
-        blockParams: ['yielded'],
-        args: { arg1: 'left', yieldme: "'yield me'" },
-        attributes: { color: '{{color}}' },
-      },
-      { color: 'red', left: 'left - ' }
-    );
-
-    this.assertHTML("<div color='red'>left - hello! yield me</div>");
-    this.assertStableRerender();
-
-    this.rerender({ color: 'green', left: 'LEFT - ' });
-    this.assertHTML("<div color='green'>LEFT - hello! yield me</div>");
-    this.assertStableNodes();
-
-    this.rerender({ color: 'red', left: 'left - ' });
-    this.assertHTML("<div color='red'>left - hello! yield me</div>");
-    this.assertStableNodes();
-  }
+export class GlimmerishComponents extends RenderTest {
+  static suiteName = 'Glimmerish';
 
   @test({
     kind: 'glimmer',
@@ -795,7 +633,7 @@ export class BasicComponents extends RenderTest {
     this.assertHTML('<div class="top foo bar qux"></div>');
   }
 
-  @test({ kind: 'fragment' })
+  @test({ kind: 'templateOnly' })
   'throwing an error during component construction does not put result into a bad state'() {
     this.registerComponent(
       'Glimmer',
@@ -823,7 +661,7 @@ export class BasicComponents extends RenderTest {
     this.assertHTML('', 'destroys correctly');
   }
 
-  @test({ kind: 'fragment' })
+  @test({ kind: 'templateOnly' })
   'throwing an error during component construction does not put result into a bad state with multiple prior nodes'() {
     this.registerComponent(
       'Glimmer',
@@ -854,7 +692,7 @@ export class BasicComponents extends RenderTest {
     this.assertHTML('', 'destroys correctly');
   }
 
-  @test({ kind: 'fragment' })
+  @test({ kind: 'templateOnly' })
   'throwing an error during component construction does not put result into a bad state with nested components'() {
     this.registerComponent(
       'Glimmer',
@@ -868,7 +706,7 @@ export class BasicComponents extends RenderTest {
       }
     );
 
-    this.registerComponent('Basic', 'Bar', '<div class="second"></div><Foo/>');
+    this.registerComponent('TemplateOnly', 'Bar', '<div class="second"></div><Foo/>');
 
     this.render('{{#if showing}}<div class="first"></div><Bar/>{{/if}}', {
       showing: false,
@@ -887,7 +725,7 @@ export class BasicComponents extends RenderTest {
     this.assertHTML('', 'destroys correctly');
   }
 
-  @test({ kind: 'fragment' })
+  @test({ kind: 'templateOnly' })
   'throwing an error during rendering gives a readable error stack'(assert: Assert) {
     let originalConsoleError = console.error;
 
@@ -913,7 +751,7 @@ export class BasicComponents extends RenderTest {
         }
       );
 
-      this.registerComponent('Basic', 'Bar', '<div class="second"></div><Foo/>');
+      this.registerComponent('TemplateOnly', 'Bar', '<div class="second"></div><Foo/>');
 
       this.render('{{#if showing}}<div class="first"></div><Bar/>{{/if}}', {
         showing: false,
