@@ -54,16 +54,16 @@ function createObserverListenerMetaFor(fn: Function) {
   return meta;
 }
 
-export function observerListenerMetaFor(fn: Function) {
+export function observerListenerMetaFor(fn: Function): ObserverListenerMeta | undefined {
   return OBSERVERS_LISTENERS_MAP.get(fn);
 }
 
-export function setObservers(func: Function, observers: { paths: string[]; sync: boolean }) {
+export function setObservers(func: Function, observers: { paths: string[]; sync: boolean }): void {
   let meta = createObserverListenerMetaFor(func);
   meta.observers = observers;
 }
 
-export function setListeners(func: Function, listeners: string[]) {
+export function setListeners(func: Function, listeners: string[]): void {
   let meta = createObserverListenerMetaFor(func);
   meta.listeners = listeners;
 }
@@ -82,7 +82,7 @@ const IS_WRAPPED_FUNCTION_SET = new WeakSet();
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
-export function wrap(func: Function, superFunc: Function) {
+export function wrap(func: Function, superFunc: Function): Function {
   if (!hasSuper(func)) {
     return func;
   }

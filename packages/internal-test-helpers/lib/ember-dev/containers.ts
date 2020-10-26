@@ -2,7 +2,7 @@ import { Container } from '@ember/-internals/container';
 
 const { _leakTracking: containerLeakTracking } = Container;
 
-export function setupContainersCheck(hooks: NestedHooks) {
+export function setupContainersCheck(hooks: NestedHooks): void {
   hooks.afterEach(function () {
     if (containerLeakTracking === undefined) return;
 

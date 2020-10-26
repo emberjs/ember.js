@@ -5,7 +5,7 @@ import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
 
 export default class extends AbstractTestCase {
-  assertTransformed(before: string, after: string) {
+  assertTransformed(before: string, after: string): void {
     this.assert.deepEqual(deloc(ast(before)), deloc(ast(after)));
   }
 }
@@ -31,7 +31,9 @@ function ast(template: string): AST.Program {
     moduleName: '-top-level',
   });
 
-  options.plugins!.ast!.push(extractProgram);
+  if (options.plugins.ast) {
+    options.plugins.ast.push(extractProgram);
+  }
 
   precompile(template, options as any);
 

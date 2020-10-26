@@ -12,13 +12,13 @@ class DebugAssert {
     this.tracker = null;
   }
 
-  inject() {}
+  inject(): void {}
 
-  restore() {
+  restore(): void {
     this.reset();
   }
 
-  reset() {
+  reset(): void {
     if (this.tracker) {
       this.tracker.restoreMethod();
     }
@@ -26,7 +26,7 @@ class DebugAssert {
     this.tracker = null;
   }
 
-  assert() {
+  assert(): void {
     if (this.tracker) {
       this.tracker.assert();
     }
@@ -38,7 +38,7 @@ class DebugAssert {
     func: (() => any) | undefined,
     callback: (tracker: MethodCallTracker) => void,
     async = false
-  ) {
+  ): void {
     let originalTracker: MethodCallTracker | null = null;
 
     // When helpers are passed a callback, they get a new tracker context

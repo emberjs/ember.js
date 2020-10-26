@@ -9,14 +9,14 @@ import { Dict, Option } from '@glimmer/interfaces';
 @module ember
 */
 
-export function isSimpleClick(event: MouseEvent) {
+export function isSimpleClick(event: MouseEvent): boolean {
   let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
   let secondaryClick = event.which > 1; // IE9 may return undefined
 
   return !modifier && !secondaryClick;
 }
 
-export function constructStyleDeprecationMessage(affectedStyle: string) {
+export function constructStyleDeprecationMessage(affectedStyle: string): string {
   return (
     '' +
     'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
@@ -116,7 +116,7 @@ const CHILD_VIEW_IDS: WeakMap<View, Set<string>> = new WeakMap();
   @method getChildViews
   @param {Ember.View} view
 */
-export function getChildViews(view: View) {
+export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
   let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
   return collectChildViews(view, registry);
@@ -227,12 +227,12 @@ export const elMatches: typeof Element.prototype.matches | undefined =
       Element.prototype['webkitMatchesSelector']
     : undefined;
 
-export function matches(el: Element, selector: string) {
+export function matches(el: Element, selector: string): boolean {
   assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
   return elMatches!.call(el, selector);
 }
 
-export function contains(a: Node, b: Node) {
+export function contains(a: Node, b: Node): boolean {
   if (a.contains !== undefined) {
     return a.contains(b);
   }

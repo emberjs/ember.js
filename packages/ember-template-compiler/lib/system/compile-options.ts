@@ -76,7 +76,7 @@ function wrapLegacyPluginIfNeeded(_plugin: PluginFunc | LegacyPluginClass): Plug
   return plugin as PluginFunc;
 }
 
-export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginClass) {
+export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginClass): void {
   if (type !== 'ast') {
     throw new Error(
       `Attempting to register ${_plugin} as "${type}" which is not a valid Glimmer plugin type.`
@@ -95,7 +95,7 @@ export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginC
   USER_PLUGINS = [plugin, ...USER_PLUGINS];
 }
 
-export function unregisterPlugin(type: string, PluginClass: PluginFunc | LegacyPluginClass) {
+export function unregisterPlugin(type: string, PluginClass: PluginFunc | LegacyPluginClass): void {
   if (type !== 'ast') {
     throw new Error(
       `Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`

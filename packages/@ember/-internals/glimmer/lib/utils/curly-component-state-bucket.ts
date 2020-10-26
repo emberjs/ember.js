@@ -60,7 +60,7 @@ export default class ComponentStateBucket {
     registerDestructor(this, () => this.component.destroy());
   }
 
-  willDestroy() {
+  willDestroy(): void {
     let { component, environment } = this;
 
     if (environment.isInteractive) {
@@ -80,7 +80,7 @@ export default class ComponentStateBucket {
     component.renderer.unregister(component);
   }
 
-  finalize() {
+  finalize(): void {
     let { finalizer } = this;
     finalizer();
     this.finalizer = NOOP;
