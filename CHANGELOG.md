@@ -1,3 +1,22 @@
+## v0.62.4 (2020-10-26)
+
+#### :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1179](https://github.com/glimmerjs/glimmer-vm/pull/1179) Adding support for partial rehydration ([@chiragpat](https://github.com/chiragpat))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1181](https://github.com/glimmerjs/glimmer-vm/pull/1181) [REFACTOR] Combines/refactors Basic and Fragment components ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* [#1175](https://github.com/glimmerjs/glimmer-vm/pull/1175) Add `yarn lint` script and stop aliasing `yarn eslint`. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chirag Patel ([@chiragpat](https://github.com/chiragpat))
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.62.3 (2020-10-14)
 
 #### :bug: Bug Fix

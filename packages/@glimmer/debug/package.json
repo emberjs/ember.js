@@ -1,13 +1,13 @@
 {
   "name": "@glimmer/debug",
-  "version": "0.62.3",
+  "version": "0.62.4",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/debug",
   "private": true,
   "dependencies": {
-    "@glimmer/interfaces": "0.62.3",
-    "@glimmer/program": "0.62.3",
-    "@glimmer/util": "0.62.3",
-    "@glimmer/vm": "0.62.3",
+    "@glimmer/interfaces": "0.62.4",
+    "@glimmer/program": "0.62.4",
+    "@glimmer/util": "0.62.4",
+    "@glimmer/vm": "0.62.4",
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
