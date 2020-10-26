@@ -1,17 +1,17 @@
 {
   "name": "@glimmer/benchmark-env",
-  "version": "0.62.3",
+  "version": "0.62.4",
   "private": true,
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/benchmark-env",
   "dependencies": {
-    "@glimmer/global-context": "0.62.3",
-    "@glimmer/program": "0.62.3",
-    "@glimmer/reference": "0.62.3",
-    "@glimmer/runtime": "0.62.3",
-    "@glimmer/validator": "0.62.3",
-    "@glimmer/util": "0.62.3",
-    "@glimmer/interfaces": "0.62.3",
-    "@glimmer/opcode-compiler": "0.62.3",
+    "@glimmer/global-context": "0.62.4",
+    "@glimmer/program": "0.62.4",
+    "@glimmer/reference": "0.62.4",
+    "@glimmer/runtime": "0.62.4",
+    "@glimmer/validator": "0.62.4",
+    "@glimmer/util": "0.62.4",
+    "@glimmer/interfaces": "0.62.4",
+    "@glimmer/opcode-compiler": "0.62.4",
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
