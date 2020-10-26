@@ -3,7 +3,6 @@ import require from 'require';
 import {
   FEATURES,
   EMBER_GLIMMER_HELPER_MANAGER,
-  EMBER_GLIMMER_INVOKE_HELPER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
 } from '@ember/canary-features';
@@ -280,9 +279,7 @@ let allExports = [
   EMBER_GLIMMER_HELPER_MANAGER
     ? ['_helperManagerCapabilities', '@ember/-internals/glimmer', 'helperCapabilities']
     : null,
-  EMBER_GLIMMER_INVOKE_HELPER
-    ? ['_invokeHelper', '@ember/-internals/glimmer', 'invokeHelper']
-    : null,
+  ['_invokeHelper', '@ember/-internals/glimmer', 'invokeHelper'],
   ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
 
   // @ember/-internals/runtime

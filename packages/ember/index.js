@@ -11,7 +11,6 @@ import {
   FEATURES,
   isEnabled,
   EMBER_GLIMMER_HELPER_MANAGER,
-  EMBER_GLIMMER_INVOKE_HELPER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
 } from '@ember/canary-features';
@@ -600,9 +599,7 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
   Ember._helperManagerCapabilities = helperCapabilities;
   Ember._setHelperManager = setHelperManager;
 }
-if (EMBER_GLIMMER_INVOKE_HELPER) {
-  Ember._invokeHelper = invokeHelper;
-}
+Ember._invokeHelper = invokeHelper;
 Ember._captureRenderTree = captureRenderTree;
 Ember.Handlebars = {
   template,
