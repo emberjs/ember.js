@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.23.0-beta.3 (October 26, 2020)
+
+- [#19199](https://github.com/emberjs/ember.js/pull/19199) [BUGFIX] Fix Ember Inspector to not be in a broken state after render errors
+- [#19221](https://github.com/emberjs/ember.js/pull/19221) [BUGFIX] Ensure fn and (mut) work with falsy values
+
 ### v3.23.0-beta.2 (October 19, 2020)
 
 - [#19193](https://github.com/emberjs/ember.js/pull/19193) [BUGFIX] Ensure user lifecycle hooks are untracked
