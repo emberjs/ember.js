@@ -4,7 +4,6 @@ import {
   FEATURES,
   EMBER_GLIMMER_HELPER_MANAGER,
   EMBER_GLIMMER_INVOKE_HELPER,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
 } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
@@ -265,15 +264,9 @@ let allExports = [
   ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
   ['_setComponentManager', '@ember/-internals/glimmer', 'setComponentManager'],
   ['_componentManagerCapabilities', '@ember/-internals/glimmer', 'capabilities'],
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
-    ? ['_setComponentTemplate', '@ember/-internals/glimmer', 'setComponentTemplate']
-    : null,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
-    ? ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate']
-    : null,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
-    ? ['_templateOnlyComponent', '@ember/component/template-only', 'default']
-    : null,
+  ['_setComponentTemplate', '@ember/-internals/glimmer', 'setComponentTemplate'],
+  ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate'],
+  ['_templateOnlyComponent', '@ember/component/template-only', 'default'],
   EMBER_GLIMMER_HELPER_MANAGER
     ? ['_setHelperManager', '@ember/-internals/glimmer', 'setHelperManager']
     : null,
