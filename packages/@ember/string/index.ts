@@ -288,7 +288,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     return function (this: string) {
       deprecate(message, false, {
         id: 'ember-string.prototype-extensions',
-        for: '@ember/string',
+        for: 'ember-source',
         since: {
           available: '3.24',
         },
