@@ -12,7 +12,7 @@ export interface ComponentDefinition<
   M extends ComponentManager<I, D> = ComponentManager<I, D>
 > {
   state: D;
-  manager: ComponentManager<I, D>;
+  manager: M;
 }
 
 export interface PreparedArguments {

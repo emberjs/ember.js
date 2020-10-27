@@ -138,12 +138,17 @@ class PartialTest extends RenderTest {
       tagName = '';
     }
 
-    this.registerComponent('Curly', 'foo-bar', `<p>{{partial 'test'}}</p>`, TaglessComponent);
+    this.registerComponent(
+      'Curly',
+      'foo-bar',
+      `<p>{{partial 'test'}}</p>`,
+      class extends TaglessComponent {}
+    );
     this.registerComponent(
       'Curly',
       'foo-bar-baz',
       `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`,
-      TaglessComponent
+      class extends TaglessComponent {}
     );
     this.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
 
@@ -213,12 +218,17 @@ class PartialTest extends RenderTest {
       tagName = '';
     }
 
-    this.registerComponent('Curly', 'foo-bar', `<p>{{partial 'test'}}</p>`, TaglessComponent);
+    this.registerComponent(
+      'Curly',
+      'foo-bar',
+      `<p>{{partial 'test'}}</p>`,
+      class extends TaglessComponent {}
+    );
     this.registerComponent(
       'Curly',
       'foo-bar-baz',
       `<p>{{partial 'test'}}-{{has-block-params}}-{{has-block-params "inverse"}}</p>`,
-      TaglessComponent
+      class extends TaglessComponent {}
     );
     this.registerPartial('test', `{{has-block-params}}-{{has-block-params "inverse"}}`);
 
@@ -288,12 +298,17 @@ class PartialTest extends RenderTest {
       tagName = '';
     }
 
-    this.registerComponent('Curly', 'foo-bar', `<p>{{partial 'test'}}</p>`, TaglessComponent);
+    this.registerComponent(
+      'Curly',
+      'foo-bar',
+      `<p>{{partial 'test'}}</p>`,
+      class extends TaglessComponent {}
+    );
     this.registerComponent(
       'Curly',
       'foo-bar-baz',
       `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`,
-      TaglessComponent
+      class extends TaglessComponent {}
     );
     this.registerPartial('test', `{{yield "partial"}}-{{yield to='inverse'}}`);
 

@@ -3,11 +3,9 @@ import {
   AnnotatedModuleLocator,
   Option,
   ComponentDefinition,
-  Template,
   Invocation,
 } from '@glimmer/interfaces';
 import { LookupType, TestJitRegistry } from './registry';
-import { createTemplate } from '../../compile';
 
 export default class TestJitRuntimeResolver implements RuntimeResolver {
   readonly registry = new TestJitRegistry();
@@ -22,16 +20,6 @@ export default class TestJitRuntimeResolver implements RuntimeResolver {
 
   getInvocation(_locator: AnnotatedModuleLocator): Invocation {
     throw new Error(`getInvocation is not supported in JIT mode`);
-  }
-
-  compilable(locator: AnnotatedModuleLocator): Template {
-    let compile = (source: string) => {
-      return createTemplate(source).create();
-    };
-
-    let handle = this.lookup('template-source', locator.module)!;
-
-    return this.registry.customCompilableTemplate(handle, name, compile);
   }
 
   lookupHelper(name: string, referrer?: Option<AnnotatedModuleLocator>): Option<number> {
