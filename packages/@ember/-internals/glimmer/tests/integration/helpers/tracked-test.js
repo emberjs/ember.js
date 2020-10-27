@@ -418,6 +418,13 @@ moduleFor(
       });
 
       expectDeprecation(() => {
+        // TODO: this must be a bug??
+        expectDeprecation(
+          backtrackingMessageFor('undefined', undefined, {
+            renderTree: ['\\(result of a `.*` helper\\)'],
+          })
+        );
+
         this.render('{{hello-world this.model}}', { model: {} });
       }, expectedMessage);
     }

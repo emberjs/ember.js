@@ -1418,7 +1418,7 @@ moduleFor(
           expectDeprecation(() => {
             assert.equal(appController.get('currentPath'), expectedPath);
             assert.equal(appController.get('currentRouteName'), expectedRouteName);
-          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+          }, /Accessing `(currentPath|currentRouteName)` on `controller:application` is deprecated, use the `(currentPath|currentRouteName)` property on `service:router` instead\./);
         }
 
         transitionAndCheck(null, 'index', 'index');
