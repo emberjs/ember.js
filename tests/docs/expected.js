@@ -22,6 +22,7 @@ module.exports = {
     '_applicationInstances',
     '_deserializeQueryParam',
     '_deserializeQueryParams',
+    '_document',
     '_fullyScopeQueryParams',
     '_getHashPath',
     '_getObjectsOnNamespaces',
