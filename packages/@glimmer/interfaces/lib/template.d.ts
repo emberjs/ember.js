@@ -63,6 +63,8 @@ export interface TemplateError {
 
 export type Template<M = unknown> = TemplateOk<M> | TemplateError;
 
+export type TemplateFactory = (owner: unknown) => Template;
+
 export interface STDLib {
   main: number;
   'cautious-append': number;

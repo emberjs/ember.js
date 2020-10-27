@@ -15,7 +15,7 @@ import {
   CompilableProgram,
   Destroyable,
 } from '@glimmer/interfaces';
-import { keys, assign, unwrapTemplate } from '@glimmer/util';
+import { keys, assign, unwrapTemplate, expect } from '@glimmer/util';
 import { TEMPLATE_ONLY_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
@@ -101,7 +101,7 @@ export class EmberishGlimmerComponentManager
 
   create(
     _env: Environment,
-    definition: TestComponentDefinitionState,
+    definition: TestComponentDefinitionState<typeof EmberishGlimmerComponent>,
     _args: VMArguments,
     _dynamicScope: DynamicScope,
     _callerSelf: Reference<unknown>,
@@ -126,11 +126,8 @@ export class EmberishGlimmerComponentManager
     return { args, component, selfRef };
   }
 
-  getStaticLayout(
-    state: TestComponentDefinitionState,
-    resolver: RuntimeResolver
-  ): CompilableProgram {
-    return unwrapTemplate(resolver.compilable(state.locator)).asLayout();
+  getStaticLayout({ template }: TestComponentDefinitionState): CompilableProgram {
+    return unwrapTemplate(expect(template, 'expected component layout')).asLayout();
   }
 
   getSelf({ selfRef }: EmberishGlimmerComponentState): Reference<unknown> {
