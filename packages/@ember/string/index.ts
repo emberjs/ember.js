@@ -6,6 +6,7 @@ export { getStrings as _getStrings, setStrings as _setStrings } from './lib/stri
 
 import { ENV } from '@ember/-internals/environment';
 import { Cache } from '@ember/-internals/utils';
+import { deprecate } from '@ember/debug';
 import { getString } from './lib/string_registry';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
@@ -279,6 +280,26 @@ export function capitalize(str: string): string {
 }
 
 if (ENV.EXTEND_PROTOTYPES.String) {
+  let deprecateEmberStringPrototypeExtension = function (
+    name: string,
+    fn: (utility: string, ...options: any) => string | string[],
+    message = `String prototype extensions are deprecated. Please import ${name} from '@ember/string' instead.`
+  ) {
+    return function (this: string) {
+      deprecate(message, false, {
+        id: 'ember-string.prototype-extensions',
+        for: '@ember/string',
+        since: {
+          available: '3.24',
+        },
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-prototype_extensions',
+      });
+
+      return fn(this, ...arguments);
+    };
+  };
+
   Object.defineProperties(String.prototype, {
     /**
       See [String.w](/ember/release/classes/String/methods/w?anchor=w).
@@ -292,9 +313,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return w(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('w', w),
     },
 
     /**
@@ -326,9 +345,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return camelize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('camelize', camelize),
     },
 
     /**
@@ -343,9 +360,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return decamelize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('decamelize', decamelize),
     },
 
     /**
@@ -360,9 +375,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return dasherize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('dasherize', dasherize),
     },
 
     /**
@@ -377,9 +390,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return underscore(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('underscore', underscore),
     },
 
     /**
@@ -394,9 +405,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return classify(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('classify', classify),
     },
 
     /**
@@ -411,9 +420,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value() {
-        return capitalize(this);
-      },
+      value: deprecateEmberStringPrototypeExtension('capitalize', capitalize),
     },
   });
 }
