@@ -48,10 +48,11 @@ function _uuid() {
   the browser `history` API with the following schema:
 
   ```
-    window.history.state -> { path: '/', uuid: '3552e730-b4a6-46bd-b8bf-d8c3c1a97e0a' }
+  window.history.state -> { path: '/', uuid: '3552e730-b4a6-46bd-b8bf-d8c3c1a97e0a' }
   ```
 
-  This allows each location state to be tracked uniquely on history state changes via the `uuid` field.
+  This allows each in-app location state to be tracked uniquely across history
+  state changes via the `uuid` field.
 
   @class HistoryLocation
   @extends EmberObject
