@@ -28,7 +28,7 @@ import { keys, EMPTY_ARRAY, assign, expect } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { registerDestructor, reifyNamed, reifyPositional } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
-import TestJitRuntimeResolver from '../modes/jit/resolver';
+import { TestJitRuntimeResolver } from '../modes/jit/resolver';
 
 export interface EmberishCurlyComponentFactory
   extends TestComponentConstructor<EmberishCurlyComponent> {

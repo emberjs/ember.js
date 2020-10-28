@@ -50,7 +50,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
         hash,
         atNames: false,
       },
-      meta.referrer
+      meta.owner
     );
   }
 

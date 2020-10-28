@@ -1,8 +1,4 @@
-import { ComponentCapabilities, ModuleLocator, Template } from '@glimmer/interfaces';
-
-export interface WrappedLocator {
-  locator: ModuleLocator;
-}
+import { ComponentCapabilities, Template } from '@glimmer/interfaces';
 
 export interface TestComponentDefinitionState<T extends object = object> {
   /* Manager-related */

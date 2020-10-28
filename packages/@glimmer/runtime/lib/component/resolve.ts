@@ -1,12 +1,15 @@
-import { ComponentDefinition, RuntimeResolver } from '@glimmer/interfaces';
-import { Option, assert } from '@glimmer/util';
+import { ComponentDefinition, Owner, RuntimeResolver } from '@glimmer/interfaces';
+import { Option, assert, expect } from '@glimmer/util';
 
-export function resolveComponent<L>(
-  resolver: RuntimeResolver<L>,
+export function resolveComponent(
+  resolver: RuntimeResolver,
   name: string,
-  meta?: L
+  owner: Owner | null
 ): Option<ComponentDefinition> {
-  let definition = resolver.lookupComponent(name, meta);
+  let definition = resolver.lookupComponent(
+    name,
+    expect(owner, 'BUG: expected owner when looking up component')
+  );
   assert(definition, `Could not find a component named "${name}"`);
   return definition;
 }

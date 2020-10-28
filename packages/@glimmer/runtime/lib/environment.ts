@@ -213,12 +213,12 @@ export interface EnvironmentDelegate<Extra = undefined> {
   onTransactionCommit: () => void;
 }
 
-export function runtimeContext<R, E>(
+export function runtimeContext<E>(
   options: EnvironmentOptions,
   delegate: EnvironmentDelegate<E>,
   artifacts: RuntimeArtifacts,
-  resolver: RuntimeResolver<R>
-): RuntimeContext<R, E> {
+  resolver: RuntimeResolver
+): RuntimeContext<E> {
   return {
     env: new EnvironmentImpl(options, delegate),
     program: new RuntimeProgramImpl(artifacts.constants, artifacts.heap),

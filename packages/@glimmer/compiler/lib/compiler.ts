@@ -8,6 +8,13 @@ export interface TemplateIdFn {
 }
 
 export interface PrecompileOptions extends CompileOptions, PreprocessOptions {
+  // TODO(template-refactors): This should be removed in the near future, and
+  // replaced with a top level `moduleName` API. It is used by ember-cli-htmlbars,
+  // and possibly other libraries in the ecosystem, so it should go through a
+  // deprecation process.
+  meta?: {
+    moduleName?: string;
+  };
   id?: TemplateIdFn;
 }
 
@@ -39,7 +46,6 @@ export const defaultId: TemplateIdFn = (() => {
 
 const defaultOptions: PrecompileOptions = {
   id: defaultId,
-  meta: {},
 };
 
 /*
@@ -56,20 +62,19 @@ const defaultOptions: PrecompileOptions = {
  * @param {string} string a Glimmer template string
  * @return {string} a template javascript string
  */
-export function precompile(string: string, options?: PrecompileOptions): TemplateJavascript;
 export function precompile(
   string: string,
   options: PrecompileOptions = defaultOptions
 ): TemplateJavascript {
   let ast = preprocess(string, options);
-  let { meta } = options;
+  let moduleName = options.meta?.moduleName;
   let { block } = TemplateCompiler.compile(ast, string, options);
   let idFn = options.id || defaultId;
   let blockJSON = JSON.stringify(block.toJSON());
-  let templateJSONObject: SerializedTemplateWithLazyBlock<unknown> = {
-    id: idFn(JSON.stringify(meta) + blockJSON),
+  let templateJSONObject: SerializedTemplateWithLazyBlock = {
+    id: idFn(moduleName + blockJSON),
     block: blockJSON,
-    meta,
+    moduleName: moduleName ?? '(unknown template module)',
   };
 
   // JSON is javascript

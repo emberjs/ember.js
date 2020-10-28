@@ -13,7 +13,7 @@ export function renderTemplate(
   builder: ElementBuilder,
   options?: PrecompileOptions
 ): RenderResult {
-  let template = preprocess(src, undefined, options);
+  let template = preprocess(src, options);
   let handle = unwrapTemplate(template).asLayout().compile(syntax);
 
   let iterator = renderMain(runtime, syntax, self, builder, unwrapHandle(handle));

@@ -7,10 +7,8 @@ import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 import { templateFactory } from '@glimmer/opcode-compiler';
 import { SyntaxCompilationContext } from '@glimmer/interfaces';
 
-export function createProgram(
-  template: SerializedTemplateWithLazyBlock<unknown>
-): CompilableProgram {
-  return unwrapTemplate(templateFactory(template).create()).asLayout();
+export function createProgram(template: SerializedTemplateWithLazyBlock): CompilableProgram {
+  return unwrapTemplate(templateFactory(template)()).asLayout();
 }
 
 export function compileEntry(entry: CompileTimeComponent, context: SyntaxCompilationContext) {

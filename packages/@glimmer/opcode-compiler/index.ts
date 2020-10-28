@@ -22,7 +22,12 @@ export { StdLib } from './lib/opcode-builder/stdlib';
 
 export { PartialDefinitionImpl } from './lib/partial-template';
 
-export { default as templateFactory, TemplateFactory, Component } from './lib/template';
+export {
+  default as templateFactory,
+  templateCacheCounters,
+  TemplateFactoryWithIdAndMeta,
+  TemplateWithIdAndReferrer,
+} from './lib/template';
 
 export { WrappedBuilder } from './lib/wrapped-component';
 

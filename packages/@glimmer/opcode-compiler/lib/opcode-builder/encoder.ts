@@ -219,7 +219,6 @@ function constant(
     case 'immediate':
       return encodeImmediate(operand.value);
     case 'primitive':
-    case 'template-meta':
     case 'array':
     case 'other':
       return encodeHandle(constants.value(operand.value));

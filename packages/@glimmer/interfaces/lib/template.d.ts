@@ -3,47 +3,35 @@ import { EncoderError } from './compile/encoder';
 import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
-import { CompileTimeResolver } from './serialize';
+import { Owner } from './runtime';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
 export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
-export interface LayoutWithContext<R> {
-  readonly id?: Option<string>;
+export interface LayoutWithContext {
+  readonly id: string;
   readonly block: SerializedTemplateBlock;
-  readonly referrer: R;
+  readonly moduleName: string;
+  readonly owner: Owner | null;
   readonly asPartial?: boolean;
 }
 
-export interface BlockWithContext<R> {
+export interface BlockWithContext {
   readonly block: SerializedInlineBlock;
-  readonly containingLayout: LayoutWithContext<R>;
+  readonly containingLayout: LayoutWithContext;
 }
 
 /**
  * Environment specific template.
  */
-export interface TemplateOk<R = unknown> {
+export interface TemplateOk {
   result: 'ok';
 
   /**
-   * Template identifier, if precompiled will be the id of the
-   * precompiled template.
+   * Module name associated with the template, used for debugging purposes
    */
-  id: string;
-
-  /**
-   * Template meta (both compile time and environment specific).
-   */
-  referrer: R;
-
-  hasEval: boolean;
-
-  /**
-   * Symbols computed at compile time.
-   */
-  symbols: string[];
+  moduleName: string;
 
   // internal casts, these are lazily created and cached
   asLayout(): CompilableProgram;
@@ -61,9 +49,9 @@ export interface TemplateError {
   };
 }
 
-export type Template<M = unknown> = TemplateOk<M> | TemplateError;
+export type Template = TemplateOk | TemplateError;
 
-export type TemplateFactory = (owner: unknown) => Template;
+export type TemplateFactory = (owner?: Owner) => Template;
 
 export interface STDLib {
   main: number;
@@ -103,7 +91,8 @@ export interface ContainingMetadata {
   asPartial: boolean;
   evalSymbols: Option<string[]>;
   upvars: Option<string[]>;
-  referrer: unknown;
+  moduleName: string;
+  owner: Owner | null;
   size: number;
 }
 
