@@ -4,8 +4,6 @@ import {
   Bounds,
   WithDynamicTagName,
   WithDynamicLayout,
-  ModuleLocator,
-  ProgramSymbolTable,
   Template,
   VMArguments,
   PreparedArguments,
@@ -15,7 +13,6 @@ import {
   Destroyable,
   Dict,
   ComponentCapabilities,
-  RuntimeResolver,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
 import {
@@ -27,12 +24,11 @@ import {
   createComputeRef,
 } from '@glimmer/reference';
 import { createTag, dirtyTag, DirtyableTag, consumeTag, dirtyTagFor } from '@glimmer/validator';
-import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
+import { keys, EMPTY_ARRAY, assign, expect } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { registerDestructor, reifyNamed, reifyPositional } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
-import { TestJitRegistry } from '../modes/jit/registry';
 
 export interface EmberishCurlyComponentFactory
   extends TestComponentConstructor<EmberishCurlyComponent> {
@@ -48,7 +44,7 @@ export class EmberishCurlyComponent {
   public static positionalParams: string[] | string = [];
 
   public dirtinessTag: DirtyableTag = createTag();
-  public layout!: { name: string; handle: number };
+  public layout!: Template;
   public name!: string;
   public tagName: Option<string> = null;
   public attributeBindings: Option<string[]> = null;
@@ -113,20 +109,10 @@ export interface EmberishCurlyComponentState {
   selfRef: Reference;
 }
 
-export interface EmberishCurlyComponentDefinitionState {
-  name: string;
-  ComponentClass: EmberishCurlyComponentFactory;
-  locator: ModuleLocator;
-  layout: Option<number>;
-  symbolTable?: ProgramSymbolTable;
-}
-
 export class EmberishCurlyComponentManager
   implements
     WithDynamicTagName<EmberishCurlyComponentState>,
     WithDynamicLayout<EmberishCurlyComponentState, TestJitRuntimeResolver> {
-  constructor(private registry?: TestJitRegistry) {}
-
   getDebugName(state: TestComponentDefinitionState) {
     return state.name;
   }
@@ -135,32 +121,12 @@ export class EmberishCurlyComponentManager
     return state.capabilities;
   }
 
-  getDynamicLayout(
-    { component: { layout } }: EmberishCurlyComponentState,
-    resolver: RuntimeResolver
-  ): Template {
-    if (!this.registry) {
-      throw new Error(
-        'BUG: Must provide a test registry to component managers when attempting to lookup component layouts dynamically'
-      );
-    }
-
-    if (!layout) {
-      throw new Error('BUG: missing dynamic layout');
-    }
-
-    // TODO: What's going on with this weird resolve?
-    let source = (resolver.resolve(layout.handle) as unknown) as string;
-
-    if (source === null) {
-      throw new Error(`BUG: Missing dynamic layout for ${layout.name}`);
-    }
-
-    return this.registry.templateFromSource(source, layout.name);
+  getDynamicLayout({ component: { layout } }: EmberishCurlyComponentState): Template {
+    return expect(layout, 'expected component layout');
   }
 
   prepareArgs(
-    state: EmberishCurlyComponentDefinitionState,
+    state: TestComponentDefinitionState<EmberishCurlyComponentFactory>,
     args: VMArguments
   ): Option<PreparedArguments> {
     const { positionalParams } = state.ComponentClass || EmberishCurlyComponent;
@@ -204,7 +170,7 @@ export class EmberishCurlyComponentManager
 
   create(
     _env: Environment,
-    state: EmberishCurlyComponentDefinitionState,
+    state: TestComponentDefinitionState<EmberishCurlyComponentFactory>,
     _args: VMArguments,
     dynamicScope: DynamicScope,
     callerSelf: Reference,
@@ -227,13 +193,11 @@ export class EmberishCurlyComponentManager
     component.name = state.name;
     component.args = args;
 
-    if (state.layout !== null) {
-      component.layout = { name: component.name, handle: state.layout };
+    if (state.template !== null) {
+      component.layout = state.template;
     }
 
-    let dyn: Option<string[]> = state.ComponentClass
-      ? state.ComponentClass['fromDynamicScope'] || null
-      : null;
+    let dyn: Option<string[]> = klass.fromDynamicScope || null;
 
     if (dyn) {
       for (let i = 0; i < dyn.length; i++) {

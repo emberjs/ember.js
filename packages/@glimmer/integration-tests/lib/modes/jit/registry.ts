@@ -2,7 +2,6 @@ import {
   AnnotatedModuleLocator,
   CompilableProgram,
   CompileTimeComponent,
-  ComponentCapabilities,
   ComponentDefinition,
   Helper as GlimmerHelper,
   Invocation,
@@ -10,10 +9,18 @@ import {
   Option,
   PartialDefinition,
   Template,
+  WithStaticLayout,
 } from '@glimmer/interfaces';
-import { dict } from '@glimmer/util';
-import { createTemplate } from '../../compile';
-import { unwrapTemplate } from '@glimmer/util';
+import { assert, dict } from '@glimmer/util';
+import { getComponentTemplate } from '@glimmer/runtime';
+import { TestComponentDefinitionState } from '../../components/test-component';
+
+// This is used to replicate a requirement of Ember's template referrers, which
+// assign the `owner` to the template meta. The requirement is that the template
+// metas should not be serialized, and this prevents serialization by adding a
+// circular reference to the template meta.
+const CIRCULAR_OBJECT: { inner: { outer?: object } } = { inner: {} };
+CIRCULAR_OBJECT.inner.outer = CIRCULAR_OBJECT;
 
 export interface Lookup {
   helper: GlimmerHelper;
@@ -27,13 +34,6 @@ export interface Lookup {
 
 export type LookupType = keyof Lookup;
 export type LookupValue = Lookup[LookupType];
-
-// This is used to replicate a requirement of Ember's template referrers, which
-// assign the `owner` to the template meta. The requirement is that the template
-// metas should not be serialized, and this prevents serialization by adding a
-// circular reference to the template meta.
-const CIRCULAR_OBJECT: { inner: { outer?: object } } = { inner: {} };
-CIRCULAR_OBJECT.inner.outer = CIRCULAR_OBJECT;
 
 export class TypedRegistry<T> {
   private byName: { [key: string]: number } = dict<number>();
@@ -83,56 +83,6 @@ export class TestJitRegistry {
     return handle;
   }
 
-  customCompilableTemplate(
-    sourceHandle: number,
-    templateName: string,
-    create: (source: string) => Template
-  ): Template {
-    let compilableHandle = this.lookup('compilable', templateName);
-
-    if (compilableHandle) {
-      return this.resolve<Template>(compilableHandle);
-    }
-
-    let source = this.resolve<string>(sourceHandle);
-
-    let compilable = create(source);
-    this.register('compilable', templateName, compilable);
-    return compilable;
-  }
-
-  templateFromSource(source: string, templateName: string): Template {
-    let compilableHandle = this.lookup('compilable', templateName);
-
-    if (compilableHandle) {
-      return this.resolve<Template>(compilableHandle);
-    }
-
-    let factory = createTemplate(source, undefined, CIRCULAR_OBJECT);
-    let template = factory.create();
-
-    this.register('compilable', templateName, template);
-    return template;
-  }
-
-  compileTemplate(
-    sourceHandle: number,
-    templateName: string,
-    create: (source: string) => Invocation
-  ): Invocation {
-    let invocationHandle = this.lookup('template', templateName);
-
-    if (invocationHandle) {
-      return this.resolve<Invocation>(invocationHandle);
-    }
-
-    let source = this.resolve<string>(sourceHandle);
-
-    let invocation = create(source);
-    this.register('template', templateName, invocation);
-    return invocation;
-  }
-
   lookup(
     type: LookupType,
     name: string,
@@ -146,44 +96,62 @@ export class TestJitRegistry {
   }
 
   lookupComponentHandle(name: string, referrer?: Option<AnnotatedModuleLocator>): Option<number> {
-    return this.lookup('component', name, referrer);
-  }
+    let handle = this.lookup('component', name, referrer);
 
-  private getCapabilities(handle: number): ComponentCapabilities {
-    let definition = this.resolve<Option<ComponentDefinition>>(handle);
-    let { manager, state } = definition!;
-    return manager.getCapabilities(state);
+    if (handle === null) {
+      return null;
+    }
+
+    let { manager, state } = this.resolve<
+      ComponentDefinition<TestComponentDefinitionState, unknown>
+    >(handle);
+
+    let capabilities = manager.getCapabilities(state);
+
+    if (state.template === null) {
+      let templateFactory = getComponentTemplate(state.ComponentClass);
+
+      assert(
+        templateFactory || capabilities.dynamicLayout,
+        'expected a template to be associated with this component'
+      );
+
+      if (templateFactory) {
+        state.template = templateFactory(CIRCULAR_OBJECT);
+      }
+    }
+
+    return handle;
   }
 
   lookupCompileTimeComponent(
     name: string,
     referrer: Option<AnnotatedModuleLocator>
   ): Option<CompileTimeComponent> {
-    let definitionHandle = this.lookupComponentHandle(name, referrer);
+    let handle = this.lookupComponentHandle(name, referrer);
 
-    if (definitionHandle === null) {
+    if (handle === null) {
       return null;
     }
 
-    let templateHandle = this.lookup('template-source', name, null);
-
-    if (templateHandle === null) {
-      throw new Error('BUG: missing dynamic layout');
-    }
-
-    // TODO: This whole thing probably should have a more first-class
-    // structure.
-    let template = unwrapTemplate(
-      this.customCompilableTemplate(templateHandle, name, (source) => {
-        let factory = createTemplate(source, undefined, CIRCULAR_OBJECT);
-        return factory.create();
-      })
+    let { manager, state } = this.resolve<ComponentDefinition<unknown, unknown, WithStaticLayout>>(
+      handle
     );
 
+    let capabilities = manager.getCapabilities(state);
+
+    if (capabilities.dynamicLayout) {
+      return {
+        handle: handle,
+        capabilities,
+        compilable: null,
+      };
+    }
+
     return {
-      handle: definitionHandle,
-      capabilities: this.getCapabilities(definitionHandle),
-      compilable: template.asLayout(),
+      handle: handle,
+      capabilities,
+      compilable: manager.getStaticLayout(state),
     };
   }
 

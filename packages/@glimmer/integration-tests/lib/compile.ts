@@ -4,9 +4,10 @@ import {
   Environment,
   SerializedTemplateWithLazyBlock,
   Template,
+  TemplateFactory,
   WireFormat,
 } from '@glimmer/interfaces';
-import { templateFactory, TemplateFactory } from '@glimmer/opcode-compiler';
+import { templateFactory } from '@glimmer/opcode-compiler';
 import { assign } from '@glimmer/util';
 
 export const DEFAULT_TEST_META: AnnotatedModuleLocator = Object.freeze({
@@ -31,18 +32,15 @@ export function preprocess(
 
 export function createTemplate(
   templateSource: string,
-  options?: PrecompileOptions,
-  runtimeMeta?: unknown
-): TemplateFactory<AnnotatedModuleLocator> {
+  options?: PrecompileOptions
+): TemplateFactory {
   let wrapper: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator> = JSON.parse(
     rawPrecompile(templateSource, options)
   );
 
-  if (runtimeMeta) {
-    wrapper.meta.meta = runtimeMeta;
-  }
+  let factory = templateFactory<AnnotatedModuleLocator>(wrapper);
 
-  return templateFactory<AnnotatedModuleLocator>(wrapper);
+  return (owner: unknown) => factory.create(owner);
 }
 
 export interface TestCompileOptions extends PrecompileOptions {

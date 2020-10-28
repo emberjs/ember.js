@@ -579,7 +579,7 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let layout: CompilableTemplate;
 
   if (hasStaticLayout(capabilities, manager)) {
-    layout = manager.getStaticLayout(definition.state, vm.runtime.resolver);
+    layout = manager.getStaticLayout(definition.state);
   } else {
     let template = unwrapTemplate(manager.getDynamicLayout(instance.state, vm.runtime.resolver));
 

@@ -154,9 +154,6 @@ export default function createRegistry(): Registry {
           },
           lookupComponent: () => null,
           lookupPartial: () => null,
-          compilable() {
-            throw new Error('not implemented');
-          },
         },
         component.definition,
         component.compilable,

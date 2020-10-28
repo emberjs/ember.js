@@ -84,7 +84,7 @@ export interface WithStaticLayout<
   D = ComponentDefinitionState,
   R extends RuntimeResolver = RuntimeResolver
 > extends ComponentManager<I, D> {
-  getStaticLayout(state: D, resolver: R): CompilableProgram;
+  getStaticLayout(state: D): CompilableProgram;
 }
 
 export interface WithDynamicLayout<
