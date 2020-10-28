@@ -43,6 +43,15 @@ function _uuid() {
 
   Keep in mind that your server must serve the Ember app at all the routes you
   define.
+  
+  Using `HistoryLocation` will also result in location states being recorded by
+  the browser `history` API with the following schema:
+
+  ```
+    window.history.state -> { path: '/', uuid: '3552e730-b4a6-46bd-b8bf-d8c3c1a97e0a' }
+  ```
+  
+  This allows each location state to be tracked uniquely on history state changes via the `uuid` field. 
 
   @class HistoryLocation
   @extends EmberObject
