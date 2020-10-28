@@ -43,7 +43,7 @@ function _uuid() {
 
   Keep in mind that your server must serve the Ember app at all the routes you
   define.
-  
+
   Using `HistoryLocation` will also result in location states being recorded by
   the browser `history` API with the following schema:
 
