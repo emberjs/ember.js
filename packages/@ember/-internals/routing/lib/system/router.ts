@@ -14,6 +14,7 @@ import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL 
 import DSL from './dsl';
 import Route, {
   defaultSerialize,
+  getFullQueryParams,
   hasDefaultSerialize,
   RenderOptions,
   ROUTE_CONNECTIONS,
@@ -28,7 +29,6 @@ import { MatchCallback } from 'route-recognizer';
 import Router, {
   InternalRouteInfo,
   logAbort,
-  QUERY_PARAMS_SYMBOL,
   STATE_SYMBOL,
   Transition,
   TransitionError,
@@ -861,7 +861,7 @@ class EmberRouter extends EmberObject {
 
     let unchangedQPs = {};
     let qpUpdates = this._qpUpdates;
-    let params = this._routerMicrolib.activeTransition[QUERY_PARAMS_SYMBOL];
+    let params = getFullQueryParams(this, this._routerMicrolib.activeTransition[STATE_SYMBOL]);
     for (let key in params) {
       if (!qpUpdates.has(key)) {
         unchangedQPs[key] = params[key];

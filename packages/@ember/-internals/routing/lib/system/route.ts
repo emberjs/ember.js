@@ -1935,7 +1935,7 @@ interface PartialRenderOptions {
   model?: {};
 }
 
-function getFullQueryParams(router: EmberRouter, state: TransitionState<Route>) {
+export function getFullQueryParams(router: EmberRouter, state: TransitionState<Route>) {
   if (state['fullQueryParams']) {
     return state['fullQueryParams'];
   }
