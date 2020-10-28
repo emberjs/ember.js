@@ -81,5 +81,6 @@ export {
   isTemplateOnlyComponent,
   TemplateOnlyComponent,
 } from './lib/template';
+export { getOwner, setOwner } from './lib/owner';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;

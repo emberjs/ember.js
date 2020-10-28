@@ -83,10 +83,6 @@ export class ConstantsImpl extends CompileTimeConstantImpl implements RuntimeCon
     [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],
   };
 
-  templateMeta(meta: unknown): number {
-    return this.value(meta);
-  }
-
   getValue<T>(index: number) {
     assert(index > 0, `cannot get value for handle: ${index}`);
 

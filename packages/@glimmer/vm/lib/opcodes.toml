@@ -626,7 +626,7 @@ notes = "The new reference represents a ContentType"
 
 [syscall.curry]
 
-format = ["CurryComponent", "templateMeta:meta"]
+format = ["CurryComponent", "owner:owner"]
 operation = "Curry a component definition for a later invocation."
 operand-stack = [
   ["Reference", "Reference...", "Arguments"],
@@ -672,7 +672,7 @@ operand-stack = [
 
 [syscall.cdload]
 
-format = ["ResolveDynamicComponent", "templateMeta:meta"]
+format = ["ResolveDynamicComponent", "owner:owner"]
 operation = "Push a resolved component definition onto the stack"
 operand-stack = [
   ["Reference"],
@@ -844,7 +844,7 @@ operation = "Invoke didRenderLayout on the current component manager"
 
 [syscall.invokepartial]
 
-format = ["InvokePartial", "templateMeta:meta", "symbols:str-array", "evalInfo:array"]
+format = ["InvokePartial", "owner:owner", "symbols:str-array", "evalInfo:array"]
 operation = "Lookup and invoke a partial template."
 operand-stack = [
   ["Reference"],

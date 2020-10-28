@@ -15,9 +15,10 @@ import {
   ComponentCapabilities,
   CompilableProgram,
   CompileTimeComponent,
+  Owner,
 } from '@glimmer/interfaces';
 
-import { label, templateMeta, other, strArray } from '../operands';
+import { label, other, strArray } from '../operands';
 import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
 import { meta, CompileArgs, CompilePositional } from './shared';
@@ -323,7 +324,7 @@ export function InvokeDynamicComponent(
         op(Op.JumpUnless, label('ELSE')),
         curried
           ? op(Op.ResolveCurriedComponent)
-          : op(Op.ResolveDynamicComponent, templateMeta(meta.referrer)),
+          : op(Op.ResolveDynamicComponent, other(meta.owner)),
         op(Op.PushDynamicComponentInstance),
         InvokeComponent({
           capabilities: true,
@@ -339,8 +340,8 @@ export function InvokeDynamicComponent(
   });
 }
 
-export function WrappedComponent<R>(
-  layout: LayoutWithContext<R>,
+export function WrappedComponent(
+  layout: LayoutWithContext,
   attrsBlockNumber: number
 ): StatementCompileActions {
   return [
@@ -508,20 +509,20 @@ export function InvokeBareComponent(): CompileActions {
 
 export function curryComponent(
   { definition, params, hash, atNames }: CurryComponent,
-  referrer: unknown
+  owner: Owner | null
 ): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
     op('SimpleArgs', { params, hash, atNames }),
     op(Op.CaptureArgs),
     op('Expr', definition),
-    op(Op.CurryComponent, templateMeta(referrer)),
+    op(Op.CurryComponent, other(owner)),
     op(MachineOp.PopFrame),
     op(Op.Fetch, $v0),
   ];
 }
 
-function blockForLayout<R>(layout: LayoutWithContext<R>): CompilableBlock {
+function blockForLayout(layout: LayoutWithContext): CompilableBlock {
   return compilableBlock(layout.block.statements, meta(layout));
 }
 

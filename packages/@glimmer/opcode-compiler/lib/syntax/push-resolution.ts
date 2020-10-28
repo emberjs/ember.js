@@ -13,9 +13,10 @@ import {
   ContainingMetadata,
   TemplateCompilationContext,
   ExpressionContext,
+  Owner,
 } from '@glimmer/interfaces';
 import { CompilePositional } from '../opcode-builder/helpers/shared';
-import { exhausted, EMPTY_ARRAY } from '@glimmer/util';
+import { exhausted, EMPTY_ARRAY, expect } from '@glimmer/util';
 import { op, error } from '../opcode-builder/encoder';
 import { strArray } from '../opcode-builder/operands';
 import { PushPrimitive, Call } from '../opcode-builder/helpers/vm';
@@ -77,7 +78,10 @@ export default function pushResolutionOp(
           let resolver = context.syntax.program.resolver;
           let name = context.meta.upvars![freeVar];
 
-          let resolvedHelper = resolver.lookupHelper(name, context.meta.referrer);
+          let resolvedHelper = resolver.lookupHelper(
+            name,
+            expect(context.meta.owner, 'BUG: expected owner when resolving helper')
+          );
           let expressions: ExpressionCompileActions;
 
           if (resolvedHelper) {
@@ -152,7 +156,7 @@ function ifResolved(
 ): ExpressionCompileActions {
   let { kind, name, andThen, orElse, span } = op1;
 
-  let resolved = resolve(context.syntax.program.resolver, kind, name, context.meta.referrer);
+  let resolved = resolve(context.syntax.program.resolver, kind, name, context.meta.owner);
 
   if (resolved !== null) {
     return andThen(resolved);
@@ -167,15 +171,24 @@ function resolve(
   resolver: CompileTimeResolver,
   kind: ResolveHandle,
   name: string,
-  referrer: unknown
+  owner: Owner | null
 ): Option<number> {
   switch (kind) {
     case ResolveHandle.Modifier:
-      return resolver.lookupModifier(name, referrer);
+      return resolver.lookupModifier(
+        name,
+        expect(owner, 'BUG: expected owner when resolving modifier')
+      );
     case ResolveHandle.Helper:
-      return resolver.lookupHelper(name, referrer);
+      return resolver.lookupHelper(
+        name,
+        expect(owner, 'BUG: expected owner when resolving helper')
+      );
     case ResolveHandle.ComponentDefinition: {
-      let component = resolver.lookupComponent(name, referrer);
+      let component = resolver.lookupComponent(
+        name,
+        expect(owner, 'BUG: expected owner when resolving component')
+      );
       return component && component.handle;
     }
   }

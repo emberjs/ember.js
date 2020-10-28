@@ -39,7 +39,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   }
 }
 
-export function compilable<R>(layout: LayoutWithContext<R>): CompilableProgram {
+export function compilable(layout: LayoutWithContext): CompilableProgram {
   let block = layout.block;
   return new CompilableTemplateImpl(block.statements, meta(layout), {
     symbols: block.symbols,

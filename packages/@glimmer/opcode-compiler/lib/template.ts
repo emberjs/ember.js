@@ -2,91 +2,124 @@ import {
   CompilableProgram,
   LayoutWithContext,
   Option,
+  Owner,
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   Template,
+  TemplateFactory,
   TemplateOk,
 } from '@glimmer/interfaces';
-import { assign, unwrapTemplate } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 import { compilable } from './compilable-template';
 import { WrappedBuilder } from './wrapped-component';
 
-export interface TemplateFactory<M> {
-  /**
-   * Template identifier, if precompiled will be the id of the
-   * precompiled template.
-   */
-  id: string;
+let clientId = 0;
 
-  /**
-   * Compile time meta.
-   */
-  meta: M;
+export let templateCacheCounters = {
+  cacheHit: 0,
+  cacheMiss: 0,
+};
 
-  /**
-   * Used to create an environment specific singleton instance
-   * of the template.
-   *
-   * @param {Environment} env glimmer Environment
-   */
-  create(): Template<M>;
-  /**
-   * Used to create an environment specific singleton instance
-   * of the template.
-   *
-   * @param {Environment} env glimmer Environment
-   * @param {Object} meta environment specific injections into meta
-   */
-  create<U>(meta: U): Template<M & U>;
+// These interfaces are for backwards compatibility, some addons use these intimate APIs
+export interface TemplateFactoryWithIdAndMeta extends TemplateFactory {
+  __id?: string;
+  __meta?: { moduleName: string };
 }
 
-let clientId = 0;
+export interface TemplateWithIdAndReferrer extends TemplateOk {
+  id: string;
+  referrer: {
+    moduleName: string;
+    owner: Owner | null;
+  };
+}
 
 /**
  * Wraps a template js in a template module to change it into a factory
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
-export default function templateFactory<M>(
-  serializedTemplate: SerializedTemplateWithLazyBlock<M>
-): TemplateFactory<M>;
-export default function templateFactory<M, U>(
-  serializedTemplate: SerializedTemplateWithLazyBlock<M>
-): TemplateFactory<M & U>;
-export default function templateFactory<M>({
+export default function templateFactory({
   id: templateId,
-  meta,
+  moduleName,
   block,
-}: SerializedTemplateWithLazyBlock<M>): TemplateFactory<M> {
-  let parsedBlock: SerializedTemplateBlock;
+}: SerializedTemplateWithLazyBlock): TemplateFactory {
+  // TODO(template-refactors): This should be removed in the near future, as it
+  // appears that id is unused. It is currently kept for backwards compat reasons.
   let id = templateId || `client-${clientId++}`;
-  let create = (envMeta?: {}) => {
-    let newMeta = envMeta ? assign({}, envMeta, meta) : meta;
-    if (!parsedBlock) {
+
+  // TODO: This caches JSON serialized output once in case a template is
+  // compiled by multiple owners, but we haven't verified if this is actually
+  // helpful. We should benchmark this in the future.
+  let parsedBlock: SerializedTemplateBlock;
+
+  let ownerlessTemplate: Template | null = null;
+  let templateCache = new WeakMap<object, Template>();
+
+  let factory: TemplateFactoryWithIdAndMeta = (owner?: Owner) => {
+    if (parsedBlock === undefined) {
       parsedBlock = JSON.parse(block);
     }
-    return new TemplateImpl({ id, block: parsedBlock, referrer: newMeta });
+
+    if (owner === undefined) {
+      if (ownerlessTemplate === null) {
+        templateCacheCounters.cacheMiss++;
+        ownerlessTemplate = new TemplateImpl({
+          id,
+          block: parsedBlock,
+          moduleName,
+          owner: null,
+        });
+      } else {
+        templateCacheCounters.cacheHit++;
+      }
+
+      return ownerlessTemplate;
+    }
+
+    let result = templateCache.get(owner) as Template;
+
+    if (result === undefined) {
+      templateCacheCounters.cacheMiss++;
+      result = new TemplateImpl({ id, block: parsedBlock, moduleName, owner });
+      templateCache.set(owner, result);
+    } else {
+      templateCacheCounters.cacheHit++;
+    }
+
+    return result;
   };
-  return { id, meta, create };
+
+  factory.__id = id;
+  factory.__meta = { moduleName };
+
+  return factory;
 }
 
-class TemplateImpl<R> implements TemplateOk<R> {
+class TemplateImpl implements TemplateWithIdAndReferrer {
   readonly result = 'ok';
 
   private layout: Option<CompilableProgram> = null;
   private partial: Option<CompilableProgram> = null;
   private wrappedLayout: Option<CompilableProgram> = null;
-  public symbols: string[];
-  public hasEval: boolean;
-  public id: string;
-  public referrer: R;
 
-  constructor(private parsedLayout: Pick<LayoutWithContext<R>, 'id' | 'block' | 'referrer'>) {
-    let { block } = parsedLayout;
-    this.symbols = block.symbols;
-    this.hasEval = block.hasEval;
-    this.referrer = parsedLayout.referrer;
-    this.id = parsedLayout.id || `client-${clientId++}`;
+  constructor(private parsedLayout: Omit<LayoutWithContext, 'asPartial'>) {}
+
+  get moduleName() {
+    return this.parsedLayout.moduleName;
+  }
+
+  get id() {
+    return this.parsedLayout.id;
+  }
+
+  // TODO(template-refactors): This should be removed in the near future, it is
+  // only being exposed for backwards compatibility
+  get referrer() {
+    return {
+      moduleName: this.parsedLayout.moduleName,
+      owner: this.parsedLayout.owner,
+    };
   }
 
   asLayout(): CompilableProgram {
@@ -115,12 +148,4 @@ class TemplateImpl<R> implements TemplateOk<R> {
       })
     ));
   }
-}
-
-export function Component(serialized: string, envMeta?: {}): CompilableProgram {
-  let parsed = JSON.parse(serialized);
-  let factory = templateFactory(parsed);
-
-  let template = unwrapTemplate(factory.create(envMeta));
-  return template.asLayout();
 }

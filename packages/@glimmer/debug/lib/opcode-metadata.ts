@@ -918,8 +918,8 @@ METADATA[Op.CurryComponent] = {
   stackChange: null,
   ops: [
     {
-      name: 'templateMeta',
-      type: 'meta',
+      name: 'owner',
+      type: 'owner',
     },
   ],
   operands: 1,
@@ -968,8 +968,8 @@ METADATA[Op.ResolveDynamicComponent] = {
   stackChange: 0,
   ops: [
     {
-      name: 'templateMeta',
-      type: 'meta',
+      name: 'owner',
+      type: 'owner',
     },
   ],
   operands: 1,
@@ -1250,8 +1250,8 @@ METADATA[Op.InvokePartial] = {
   stackChange: 1,
   ops: [
     {
-      name: 'templateMeta',
-      type: 'meta',
+      name: 'owner',
+      type: 'owner',
     },
     {
       name: 'symbols',

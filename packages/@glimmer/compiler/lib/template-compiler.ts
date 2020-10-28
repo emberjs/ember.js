@@ -10,7 +10,6 @@ import { ExpressionContext } from '@glimmer/interfaces';
 import { locationToOffset } from './location';
 
 export interface CompileOptions {
-  meta?: object;
   customizeComponentName?(tag: string): string;
 }
 

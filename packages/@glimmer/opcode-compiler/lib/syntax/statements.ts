@@ -11,7 +11,7 @@ import {
   WellKnownTagName,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
-import { templateMeta, strArray, arr } from '../opcode-builder/operands';
+import { strArray, arr, other } from '../opcode-builder/operands';
 import { InvokeStaticComponent, InvokeComponent } from '../opcode-builder/helpers/components';
 import { ReplayableIf } from '../opcode-builder/helpers/conditional';
 import { YieldBlock } from '../opcode-builder/helpers/blocks';
@@ -158,12 +158,7 @@ STATEMENTS.add(SexpOpcodes.Partial, ([, name, evalInfo], meta) =>
 
     ifTrue() {
       return [
-        op(
-          Op.InvokePartial,
-          templateMeta(meta.referrer),
-          strArray(meta.evalSymbols!),
-          arr(evalInfo)
-        ),
+        op(Op.InvokePartial, other(meta.owner), strArray(meta.evalSymbols!), arr(evalInfo)),
         op(Op.PopScope),
         op(MachineOp.PopFrame),
       ];
