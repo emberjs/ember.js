@@ -19,8 +19,10 @@ import {
   assertElementShape,
   RenderTest,
   JitRenderDelegate,
+  createTemplate,
+  EmberishGlimmerArgs,
+  EmberishCurlyComponentFactory,
 } from '..';
-import { EmberishGlimmerArgs, EmberishCurlyComponentFactory } from '../lib/components';
 
 function assertFired(component: HookedComponent, name: string, count = 1) {
   let hooks = component.hooks;
@@ -1999,10 +2001,8 @@ class CurlyLateLayoutTest extends CurlyTest {
 
   @test
   'can bind the layout late'() {
-    let self = this;
-
     class FooBar extends EmberishCurlyComponent {
-      layout = self.delegate.registerTemplate('my-dynamic-layout', 'Swap - {{yield}}');
+      layout = createTemplate('Swap - {{yield}}')(undefined);
     }
 
     this.delegate.registerComponent('Curly', 'Curly', 'foo-bar', null, FooBar);

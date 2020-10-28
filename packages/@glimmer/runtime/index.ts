@@ -74,5 +74,12 @@ export {
   assertDestroyablesDestroyed,
   destroyChildren as _destroyChildren,
 } from './lib/destroyables';
+export {
+  getComponentTemplate,
+  setComponentTemplate,
+  templateOnlyComponent,
+  isTemplateOnlyComponent,
+  TemplateOnlyComponent,
+} from './lib/template';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;

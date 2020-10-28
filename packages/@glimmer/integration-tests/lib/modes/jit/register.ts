@@ -9,6 +9,7 @@ import {
   ComponentCapabilities,
   ComponentDefinition,
   PartialDefinition,
+  TemplateFactory,
 } from '@glimmer/interfaces';
 import {
   EmberishCurlyComponent,
@@ -29,35 +30,29 @@ import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import TestJitRuntimeResolver from './resolver';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { TestComponentDefinitionState } from '../../components/test-component';
-import { locatorFor } from '../../locator';
-import { CurriedComponentDefinition, curry } from '@glimmer/runtime';
-import { preprocess } from '../../compile';
+import {
+  CurriedComponentDefinition,
+  curry,
+  setComponentTemplate,
+  templateOnlyComponent,
+} from '@glimmer/runtime';
+import { createTemplate, preprocess } from '../../compile';
 
 const TEMPLATE_ONLY_COMPONENT_MANAGER = new TemplateOnlyComponentManager();
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
-
-export function registerTemplate(
-  registry: TestJitRegistry,
-  name: string,
-  source: string
-): { name: string; handle: number } {
-  return { name, handle: registry.register('template-source', name, source) };
-}
+const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
 
 export function registerTemplateOnlyComponent(
   registry: TestJitRegistry,
   name: string,
   layoutSource: string
 ): void {
-  let { handle } = registerTemplate(registry, name, layoutSource);
-
   registerSomeComponent(
     registry,
     name,
-    'TemplateOnly',
     TEMPLATE_ONLY_COMPONENT_MANAGER,
-    handle,
-    null,
+    createTemplate(layoutSource),
+    templateOnlyComponent(),
     TEMPLATE_ONLY_CAPABILITIES
   );
 }
@@ -68,21 +63,13 @@ export function registerEmberishCurlyComponent(
   Component: Option<ComponentTypes['Curly']>,
   layoutSource: Option<string>
 ): void {
-  let layout: Option<{ name: string; handle: number }> = null;
-
-  if (layoutSource !== null) {
-    layout = registerTemplate(registry, name, layoutSource);
-  }
-
-  let handle = layout ? layout.handle : null;
-  let ComponentClass = Component || EmberishCurlyComponent;
+  let ComponentClass = Component || class extends EmberishCurlyComponent {};
 
   registerSomeComponent(
     registry,
     name,
-    'Curly',
-    new EmberishCurlyComponentManager(registry),
-    handle,
+    EMBERISH_CURLY_COMPONENT_MANAGER,
+    layoutSource !== null ? createTemplate(layoutSource) : null,
     ComponentClass,
     CURLY_CAPABILITIES
   );
@@ -97,17 +84,13 @@ export function registerEmberishGlimmerComponent(
   if (name.indexOf('-') !== -1) {
     throw new Error('DEPRECATED: dasherized components');
   }
-
-  let { handle } = registerTemplate(registry, name, layoutSource);
-
-  let ComponentClass = Component || EmberishGlimmerComponent;
+  let ComponentClass = Component || class extends EmberishGlimmerComponent {};
 
   registerSomeComponent(
     registry,
     name,
-    'Glimmer',
     EMBERISH_GLIMMER_COMPONENT_MANAGER,
-    handle,
+    createTemplate(layoutSource),
     ComponentClass,
     EMBERISH_GLIMMER_CAPABILITIES
   );
@@ -210,20 +193,21 @@ export function registerComponent<K extends ComponentKind>(
 function registerSomeComponent(
   registry: TestJitRegistry,
   name: string,
-  type: ComponentKind,
   manager: ComponentManager<unknown, unknown>,
-  layout: Option<number>,
-  ComponentClass: unknown,
+  templateFactory: TemplateFactory | null,
+  ComponentClass: object,
   capabilities: ComponentCapabilities
 ) {
   let state: TestComponentDefinitionState = {
     name,
-    type,
-    layout,
-    locator: locatorFor({ module: name, name: 'default' }),
     capabilities,
     ComponentClass,
+    template: null,
   };
+
+  if (templateFactory) {
+    setComponentTemplate(templateFactory, ComponentClass);
+  }
 
   let definition = {
     state,

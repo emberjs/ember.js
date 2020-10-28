@@ -98,5 +98,4 @@ export interface RuntimeResolver<R = unknown> extends HandleResolver {
   lookupComponent(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
   lookupPartial(name: string, referrer?: Option<R>): Option<number>;
   resolve<U extends ResolvedValue>(handle: number): U;
-  compilable(locator: R): Template;
 }
