@@ -6,6 +6,7 @@ import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import EmberRouter, { QueryParam } from '../system/router';
+import RouterState from '../system/router_state';
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for
@@ -57,11 +58,10 @@ export default class RoutingService extends Service {
 
   isActiveForRoute(
     contexts: {}[],
-    queryParams: {},
+    queryParams: QueryParam | undefined,
     routeName: string,
-    routerState: any,
-    isCurrentWhenSpecified: any
-  ) {
+    routerState: RouterState
+  ): boolean {
     let handlers = this.router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
     let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
@@ -80,7 +80,7 @@ export default class RoutingService extends Service {
       routeName = leafName;
     }
 
-    return routerState.isActiveIntent(routeName, contexts, queryParams, !isCurrentWhenSpecified);
+    return routerState.isActiveIntent(routeName, contexts, queryParams);
   }
 }
 
