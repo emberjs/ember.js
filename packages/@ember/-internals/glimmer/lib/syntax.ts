@@ -62,14 +62,11 @@ function refineBlockSyntax(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
     !(() => {
       const resolver = context.resolver['resolver'];
-      const { moduleName, owner } = context.meta.referrer as OwnedTemplateMeta;
+      const { owner } = context.meta.referrer as OwnedTemplateMeta;
       if (name === 'component' || resolver['builtInHelpers'][name]) {
         return true;
       }
-      let options = { source: `template:${moduleName}` };
-      return (
-        owner.hasRegistration(`helper:${name}`, options) || owner.hasRegistration(`helper:${name}`)
-      );
+      return owner.hasRegistration(`helper:${name}`);
     })()
   );
 

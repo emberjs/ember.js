@@ -60,13 +60,6 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-function makeOptions(moduleName: string, namespace?: string): LookupOptions {
-  return {
-    source: moduleName !== undefined ? `template:${moduleName}` : undefined,
-    namespace,
-  };
-}
-
 function componentFor(
   name: string,
   owner: Owner,
@@ -118,17 +111,6 @@ function lookupComponentPair(
   } else {
     return { component, layout } as LookupResult;
   }
-}
-
-function lookupComponent(owner: Owner, name: string, options: LookupOptions): Option<LookupResult> {
-  if (options.source || options.namespace) {
-    let pair = lookupComponentPair(owner, name, options);
-
-    if (pair !== null) {
-      return pair;
-    }
-  }
-  return lookupComponentPair(owner, name);
 }
 
 let lookupPartial: { templateName: string; owner: Owner } | any;
@@ -356,18 +338,12 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       return helper;
     }
 
-    const { moduleName } = meta;
     let owner = meta.owner;
-
     let name = _name;
-    let namespace = undefined;
-
-    const options: LookupOptions = makeOptions(moduleName, namespace);
 
     const factory =
       owner.factoryFor<SimpleHelper | HelperInstance, HelperFactory<SimpleHelper | HelperInstance>>(
-        `helper:${name}`,
-        options
+        `helper:${name}`
       ) || owner.factoryFor(`helper:${name}`);
 
     if (factory === undefined || factory.class === undefined) {
@@ -422,11 +398,9 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     meta: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
     let name = _name;
-    let namespace = undefined;
     let owner = meta.owner;
-    let { moduleName } = meta;
 
-    let pair = lookupComponent(owner, name, makeOptions(moduleName, namespace));
+    let pair = lookupComponentPair(owner, name);
     if (pair === null) {
       return null;
     }

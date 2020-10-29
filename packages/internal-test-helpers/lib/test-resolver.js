@@ -18,25 +18,6 @@ class Resolver {
   resolve(specifier) {
     return this._registered[specifier] || this._registered[serializeKey(specifier)];
   }
-  expandLocalLookup(specifier, source, namespace) {
-    if (specifier.indexOf('://') !== -1) {
-      return specifier; // an already expanded specifier
-    }
-
-    if (source || namespace) {
-      let key = serializeKey(specifier, source, namespace);
-      if (this._registered[key]) {
-        return key; // like local lookup
-      }
-
-      key = serializeKey(specifier);
-      if (this._registered[key]) {
-        return specifier; // top level resolution despite source/namespace
-      }
-    }
-
-    return specifier; // didn't know how to expand it
-  }
   add(lookup, factory) {
     let key;
     switch (typeof lookup) {
