@@ -308,6 +308,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     w: {
       configurable: true,
@@ -340,6 +341,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     camelize: {
       configurable: true,
@@ -355,6 +357,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     decamelize: {
       configurable: true,
@@ -370,6 +373,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     dasherize: {
       configurable: true,
@@ -385,6 +389,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     underscore: {
       configurable: true,
@@ -400,6 +405,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     classify: {
       configurable: true,
@@ -415,6 +421,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     capitalize: {
       configurable: true,
