@@ -214,7 +214,6 @@ module.exports = {
     'every',
     'exception',
     'exit',
-    'expandLocalLookup',
     'expandProperties',
     'extend',
     'factoryFor',

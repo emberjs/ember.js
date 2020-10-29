@@ -1,26 +1,17 @@
-import { Factory, LookupOptions } from '@ember/-internals/owner';
+import { Factory } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import Container, { ContainerOptions, LazyInjection } from './container';
 
-interface HasOptions {
-  source?: string;
-  namespace?: string;
-}
-
 export interface Injection {
-  namespace?: string;
   property: string;
-  source?: string;
   specifier: string;
 }
 
 export type ResolveOptions = {
   specifier?: string;
-  source?: string | undefined;
-  namespace?: string | undefined;
 };
 
 export interface TypeOptions {
@@ -34,7 +25,6 @@ export interface KnownForTypeResult {
 
 export interface IRegistry {
   describe(fullName: string): string;
-  expandLocalLookup(fullName: string, options: LookupOptions): string;
   getInjections(fullName: string): Injection[];
   getOption<K extends keyof TypeOptions>(
     fullName: string,
@@ -50,7 +40,6 @@ export interface IRegistry {
 }
 
 export type NotResolver = {
-  expandLocalLookup: never;
   knownForType: never;
   lookupDescription: never;
   makeToString: never;
@@ -61,11 +50,6 @@ export type NotResolver = {
 export type Resolve = <T, C>(name: string) => Factory<T, C> | undefined;
 
 export interface Resolver {
-  expandLocalLookup?: (
-    normalizedName: string,
-    normalizedSource: string,
-    namespace?: string | undefined
-  ) => string;
   knownForType?: (type: string) => KnownForTypeResult;
   lookupDescription?: (fullName: string) => string;
   makeToString?: <T, C>(factory: Factory<T, C>, fullName: string) => string;
@@ -300,8 +284,8 @@ export default class Registry implements IRegistry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Function} fullName's factory
    */
-  resolve<T, C>(fullName: string, options?: ResolveOptions): Factory<T, C> | undefined {
-    let factory = resolve<T, C>(this, this.normalize(fullName), options);
+  resolve<T, C>(fullName: string): Factory<T, C> | undefined {
+    let factory = resolve<T, C>(this, this.normalize(fullName));
     if (factory === undefined && this.fallback !== null) {
       factory = (this.fallback as any).resolve(...arguments);
     }
@@ -393,15 +377,12 @@ export default class Registry implements IRegistry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Boolean}
    */
-  has(fullName: string, options?: HasOptions) {
+  has(fullName: string) {
     if (!this.isValidFullName(fullName)) {
       return false;
     }
 
-    let source = options && options.source && this.normalize(options.source);
-    let namespace = (options && options.namespace) || undefined;
-
-    return has(this, this.normalize(fullName), source, namespace);
+    return has(this, this.normalize(fullName));
   }
 
   /**
@@ -660,43 +641,6 @@ export default class Registry implements IRegistry {
 
     return injections;
   }
-
-  /**
-   Given a fullName and a source fullName returns the fully resolved
-   fullName. Used to allow for local lookup.
-
-   ```javascript
-   let registry = new Registry();
-
-   // the twitter factory is added to the module system
-   registry.expandLocalLookup('component:post-title', { source: 'template:post' }) // => component:post/post-title
-   ```
-
-   @private
-   @method expandLocalLookup
-   @param {String} fullName
-   @param {Object} [options]
-   @param {String} [options.source] the fullname of the request source (used for local lookups)
-   @return {String} fullName
-   */
-  expandLocalLookup(fullName: string, options: LookupOptions) {
-    if (this.resolver !== null && this.resolver.expandLocalLookup) {
-      assert('fullName must be a proper full name', this.isValidFullName(fullName));
-      assert(
-        'options.source must be a proper full name',
-        !options.source || this.isValidFullName(options.source)
-      );
-
-      let normalizedFullName = this.normalize(fullName);
-      let normalizedSource = this.normalize(options.source!);
-
-      return expandLocalLookup(this, normalizedFullName, normalizedSource, options.namespace);
-    } else if (this.fallback !== null) {
-      return this.fallback.expandLocalLookup(fullName, options);
-    } else {
-      return null;
-    }
-  }
 }
 
 export declare class DebugRegistry extends Registry {
@@ -711,7 +655,7 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (Object.prototype.hasOwnProperty.call(hash, key)) {
-        let { specifier, source, namespace } = hash[key];
+        let { specifier } = hash[key];
         assert(
           `Expected a proper full name, given '${specifier}'`,
           this.isValidFullName(specifier)
@@ -720,8 +664,6 @@ if (DEBUG) {
         injections.push({
           property: key,
           specifier,
-          source,
-          namespace,
         });
       }
     }
@@ -735,56 +677,15 @@ if (DEBUG) {
     }
 
     for (let i = 0; i < injections.length; i++) {
-      let { specifier, source, namespace } = injections[i];
+      let { specifier } = injections[i];
 
-      assert(
-        `Attempting to inject an unknown injection: '${specifier}'`,
-        this.has(specifier, { source, namespace })
-      );
+      assert(`Attempting to inject an unknown injection: '${specifier}'`, this.has(specifier));
     }
   };
 }
 
-function expandLocalLookup(
-  registry: Registry,
-  normalizedName: string,
-  normalizedSource: string,
-  namespace: string | undefined
-) {
-  let cache = registry._localLookupCache;
-  let normalizedNameCache = cache[normalizedName];
-
-  if (!normalizedNameCache) {
-    normalizedNameCache = cache[normalizedName] = Object.create(null);
-  }
-
-  let cacheKey = namespace || normalizedSource;
-
-  let cached = normalizedNameCache[cacheKey];
-
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  let expanded = registry.resolver!.expandLocalLookup!(normalizedName, normalizedSource, namespace);
-
-  return (normalizedNameCache[cacheKey] = expanded);
-}
-
-function resolve<T, C>(
-  registry: Registry,
-  _normalizedName: string,
-  options?: ResolveOptions
-): Factory<T, C> | undefined {
+function resolve<T, C>(registry: Registry, _normalizedName: string): Factory<T, C> | undefined {
   let normalizedName = _normalizedName;
-  // when `source` is provided expand normalizedName
-  // and source into the full normalizedName
-  if (options !== undefined && (options.source || options.namespace)) {
-    normalizedName = registry.expandLocalLookup(_normalizedName, options as LookupOptions);
-    if (!normalizedName) {
-      return;
-    }
-  }
 
   let cached = registry._resolveCache[normalizedName];
   if (cached !== undefined) {
@@ -813,13 +714,8 @@ function resolve<T, C>(
   return resolved;
 }
 
-function has(
-  registry: Registry,
-  fullName: string,
-  source: string | undefined,
-  namespace: string | undefined
-) {
-  return registry.resolve(fullName, { source, namespace }) !== undefined;
+function has(registry: Registry, fullName: string) {
+  return registry.resolve(fullName) !== undefined;
 }
 
 const privateNames: { [key: string]: string } = dictionary(null);

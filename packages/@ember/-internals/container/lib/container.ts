@@ -214,20 +214,13 @@ export default class Container {
    @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  factoryFor<T, C>(fullName: string, options: LookupOptions = {}): Factory<T, C> | undefined {
+  factoryFor<T, C>(fullName: string): Factory<T, C> | undefined {
     if (this.isDestroyed) {
       throw new Error(`Can not call \`.factoryFor\` after the owner has been destroyed`);
     }
     let normalizedName = this.registry.normalize(fullName);
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
-
-    if (options.source || options.namespace) {
-      normalizedName = this.registry.expandLocalLookup(fullName, options);
-      if (!normalizedName) {
-        return;
-      }
-    }
 
     return factoryFor<T, C>(this, normalizedName, fullName) as Factory<T, C> | undefined;
   }
@@ -278,13 +271,6 @@ function isInstantiatable(container: Container, fullName: string) {
 
 function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
   let normalizedName = fullName;
-
-  if (options.source || options.namespace) {
-    normalizedName = container.registry.expandLocalLookup(fullName, options);
-    if (!normalizedName) {
-      return;
-    }
-  }
 
   if (options.singleton !== false) {
     let cached = container.cache[normalizedName];
@@ -439,13 +425,9 @@ function processInjections(
   let hash = result.injections;
 
   for (let i = 0; i < injections.length; i++) {
-    let { property, specifier, source } = injections[i];
+    let { property, specifier } = injections[i];
 
-    if (source) {
-      hash[property] = lookup(container, specifier, { source });
-    } else {
-      hash[property] = lookup(container, specifier);
-    }
+    hash[property] = lookup(container, specifier);
 
     if (!result.isDynamic) {
       result.isDynamic = !isSingleton(container, specifier);
