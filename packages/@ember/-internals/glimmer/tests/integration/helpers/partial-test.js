@@ -239,7 +239,7 @@ moduleFor(
             names: emberA(['Alex', 'Ben']),
           }
         );
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "outer-partial" partial to a component');
+      }, /The use of `{{partial}}` is deprecated, please refactor the "(inner|outer)-partial" partial to a component/);
 
       this.assertStableRerender();
 
@@ -247,7 +247,7 @@ moduleFor(
 
       expectDeprecation(() => {
         runTask(() => this.context.names.pushObject('Sophie'));
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "outer-partial" partial to a component');
+      }, /The use of `{{partial}}` is deprecated, please refactor the "(inner|outer)-partial" partial to a component/);
 
       this.assertText(
         '0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]2: [outer: Sophie] [inner: Sophie]'
@@ -294,7 +294,7 @@ moduleFor(
         {{/with}}`,
           { age: 0 }
         );
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "person2-partial" partial to a component');
+      }, /The use of `{{partial}}` is deprecated, please refactor the "person(2|3|4)-partial" partial to a component/);
 
       this.assertStableRerender();
 
@@ -332,7 +332,7 @@ moduleFor(
             },
           }
         );
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "odd" partial to a component');
+      }, /The use of `{{partial}}` is deprecated, please refactor the "(odd|even)" partial to a component/);
 
       this.assertStableRerender();
 

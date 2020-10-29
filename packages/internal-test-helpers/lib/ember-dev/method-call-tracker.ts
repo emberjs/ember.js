@@ -101,6 +101,7 @@ export default class MethodCallTracker {
 
     let actual: Actual | undefined;
     let match: Actual | undefined = undefined;
+    let matched: Set<number> = new Set();
 
     for (o = 0; o < expectedMessages.length; o++) {
       const expectedMessage = expectedMessages[o];
@@ -135,7 +136,8 @@ export default class MethodCallTracker {
 
         if (matchesMessage && matchesOptionList) {
           match = actual;
-          break;
+          matched.add(i);
+          continue;
         }
       }
 
@@ -169,6 +171,12 @@ export default class MethodCallTracker {
           false,
           `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was failure with '${actual[0]}' ${actualOptionsMessage}`
         );
+      }
+    }
+
+    for (i = 0; i < actuals.length; i++) {
+      if (!matched.has(i) && actuals[i][1] !== true) {
+        assert.ok(false, `Unexpected Ember.${methodName} call: ${actuals[i][0]}`);
       }
     }
   }

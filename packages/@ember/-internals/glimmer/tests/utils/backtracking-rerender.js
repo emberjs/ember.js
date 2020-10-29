@@ -1,6 +1,12 @@
 export function backtrackingMessageFor(key, obj, { renderTree } = {}) {
   // Start off with standard backtracking assertion
-  let regex = [`You attempted to update \`${key}\` on \`${obj}\``];
+  let regex;
+
+  if (obj) {
+    regex = [`You attempted to update \`${key}\` on \`${obj}\``];
+  } else {
+    regex = [`You attempted to update \`${key}\``];
+  }
 
   if (renderTree) {
     // match the renderTree if it was included
