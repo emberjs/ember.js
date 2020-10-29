@@ -1,4 +1,3 @@
-import { OwnedTemplate, TemplateFactory } from '@ember/-internals/glimmer';
 import {
   addObserver,
   computed,
@@ -28,6 +27,7 @@ import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
+import { Template, TemplateFactory } from '@glimmer/interfaces';
 import {
   InternalRouteInfo,
   PARAMS_SYMBOL,
@@ -1925,7 +1925,7 @@ export interface RenderOptions {
   name: string;
   controller: unknown;
   model: unknown;
-  template: OwnedTemplate;
+  template: Template;
 }
 
 interface PartialRenderOptions {

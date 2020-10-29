@@ -1,9 +1,8 @@
 import { assert } from '@ember/debug';
-import { Arguments, Bounds, CapturedArguments, Option } from '@glimmer/interfaces';
+import { Arguments, Bounds, CapturedArguments, Option, Template } from '@glimmer/interfaces';
 import { reifyArgs } from '@glimmer/runtime';
 import { expect, Stack, unwrapTemplate } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
-import { OwnedTemplate } from '../template';
 
 export type RenderNodeType = 'outlet' | 'engine' | 'route-template' | 'component';
 
@@ -12,7 +11,7 @@ export interface RenderNode {
   name: string;
   args: CapturedArguments;
   instance: unknown;
-  template?: OwnedTemplate;
+  template?: Template;
 }
 
 interface InternalRenderNode<T extends object> extends RenderNode {
@@ -97,7 +96,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
   }
 
   // for dynamic layouts
-  setTemplate(state: Bucket, template: OwnedTemplate): void {
+  setTemplate(state: Bucket, template: Template): void {
     this.nodeFor(state).template = template;
   }
 
@@ -199,7 +198,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
   }
 
   private captureTemplate({ template }: InternalRenderNode<Bucket>): Option<string> {
-    return (template && unwrapTemplate(template).referrer.moduleName) || null;
+    return (template && unwrapTemplate(template).moduleName) || null;
   }
 
   private captureBounds(node: InternalRenderNode<Bucket>): CapturedRenderNode['bounds'] {

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
@@ -37,39 +38,49 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
 
-    '@test calling it with primitives asserts'() {
-      expectAssertion(() => {
+    '@test calling it with primitives asserts'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
         setComponentTemplate(compile('foo'), null);
       }, /Cannot call `setComponentTemplate` on `null`/);
 
-      expectAssertion(() => {
+      assert.throws(() => {
         setComponentTemplate(compile('foo'), undefined);
       }, /Cannot call `setComponentTemplate` on `undefined`/);
 
-      expectAssertion(() => {
+      assert.throws(() => {
         setComponentTemplate(compile('foo'), true);
       }, /Cannot call `setComponentTemplate` on `true`/);
 
-      expectAssertion(() => {
+      assert.throws(() => {
         setComponentTemplate(compile('foo'), false);
       }, /Cannot call `setComponentTemplate` on `false`/);
 
-      expectAssertion(() => {
+      assert.throws(() => {
         setComponentTemplate(compile('foo'), 123);
       }, /Cannot call `setComponentTemplate` on `123`/);
 
-      expectAssertion(() => {
+      assert.throws(() => {
         setComponentTemplate(compile('foo'), 'foo');
       }, /Cannot call `setComponentTemplate` on `foo`/);
 
       if (HAS_NATIVE_SYMBOL) {
-        expectAssertion(() => {
+        assert.throws(() => {
           setComponentTemplate(compile('foo'), Symbol('foo'));
         }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
       }
     }
 
-    '@test calling it twice on the same object asserts'() {
+    '@test calling it twice on the same object asserts'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       let Thing = setComponentTemplate(
         compile('hello'),
         Component.extend().reopenClass({
@@ -79,9 +90,9 @@ moduleFor(
         })
       );
 
-      expectAssertion(() => {
+      assert.throws(() => {
         setComponentTemplate(compile('foo'), Thing);
-      }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Thing`\)/);
+      }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Class`\)/);
     }
 
     '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {

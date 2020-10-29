@@ -11,6 +11,7 @@ import {
   Destroyable,
   ElementOperations,
   Option,
+  Template,
   VMArguments,
   WithDynamicTagName,
   WithStaticLayout,
@@ -23,7 +24,6 @@ import { SimpleElement } from '@simple-dom/interface';
 import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
-import { OwnedTemplate } from '../template';
 import { OutletState } from '../utils/outlet';
 import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
@@ -44,7 +44,7 @@ export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
   outlet: string;
-  template: OwnedTemplate;
+  template: Template;
   controller: unknown;
   model: unknown;
 }
@@ -148,7 +148,7 @@ class OutletComponentManager
     return name;
   }
 
-  getStaticLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver) {
+  getStaticLayout({ template }: OutletDefinitionState) {
     // The router has already resolved the template
     return unwrapTemplate(template).asLayout();
   }

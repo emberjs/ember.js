@@ -7,10 +7,9 @@ import { assert, deprecate, warn } from '@ember/debug';
 import { backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
-import { Environment } from '@glimmer/interfaces';
+import { Environment, Template } from '@glimmer/interfaces';
 import { EnvironmentDelegate } from '@glimmer/runtime';
 import { setTrackingTransactionEnv } from '@glimmer/validator';
-import { OwnedTemplate } from './template';
 import DebugRenderTree from './utils/debug-render-tree';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
@@ -87,7 +86,7 @@ if (DEBUG) {
 
 export interface CompilerFactory {
   id: string;
-  new (template: OwnedTemplate): any;
+  new (template: Template): any;
 }
 
 export class EmberEnvironmentExtra {

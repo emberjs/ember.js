@@ -1,4 +1,4 @@
-import { OWNER, getOwner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { Container, Registry } from '@ember/-internals/container';
 import ContainerProxy from '../../lib/mixins/container_proxy';
 import EmberObject from '../../lib/system/object';
@@ -23,7 +23,7 @@ moduleFor(
     ['@test provides ownerInjection helper method'](assert) {
       let result = this.instance.ownerInjection();
 
-      assert.equal(result[OWNER], this.instance, 'returns an object with the OWNER symbol');
+      assert.equal(getOwner(result), this.instance, 'returns an object with an associated owner');
     }
 
     ['@test actions queue completes before destruction'](assert) {

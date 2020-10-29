@@ -1,4 +1,4 @@
-import { OWNER } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
@@ -498,7 +498,7 @@ moduleFor(
 
       let result = container.ownerInjection();
 
-      assert.equal(result[OWNER], owner, 'owner is properly included');
+      assert.equal(getOwner(result), owner, 'owner is properly included');
     }
 
     ['@test ownerInjection should be usable to create a service for testing'](assert) {

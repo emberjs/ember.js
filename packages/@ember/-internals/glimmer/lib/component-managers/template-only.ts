@@ -4,6 +4,7 @@ import {
   ComponentCapabilities,
   ComponentDefinition,
   Option,
+  Template,
   VMArguments,
   WithStaticLayout,
 } from '@glimmer/interfaces';
@@ -12,7 +13,6 @@ import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
-import { OwnedTemplate } from '../template';
 import AbstractManager from './abstract';
 
 const CAPABILITIES: ComponentCapabilities = {
@@ -115,7 +115,7 @@ const MANAGER = new TemplateOnlyComponentManager();
 
 export interface TemplateOnlyComponentDefinitionState {
   name: string;
-  template: OwnedTemplate;
+  template: Template;
 }
 
 export class TemplateOnlyComponentDefinition
@@ -127,7 +127,7 @@ export class TemplateOnlyComponentDefinition
       TemplateOnlyComponentManager
     > {
   manager = MANAGER;
-  constructor(public name: string, public template: OwnedTemplate) {}
+  constructor(public name: string, public template: Template) {}
 
   get state(): TemplateOnlyComponentDefinitionState {
     return this;

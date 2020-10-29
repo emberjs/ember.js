@@ -1,4 +1,4 @@
-import { OWNER, getOwner, setOwner } from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -13,8 +13,6 @@ moduleFor(
       setOwner(obj, owner);
 
       assert.strictEqual(getOwner(obj), owner, 'owner has been set');
-
-      assert.strictEqual(obj[OWNER], owner, 'owner has been set to the OWNER symbol');
     }
 
     ['@test getOwner deprecates using LEGACY_OWNER'](assert) {
