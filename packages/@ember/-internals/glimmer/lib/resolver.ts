@@ -2,10 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import {
-  EMBER_GLIMMER_HELPER_MANAGER,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-} from '@ember/canary-features';
+import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert, deprecate } from '@ember/debug';
 import { PARTIALS } from '@ember/deprecated-features';
@@ -63,13 +60,6 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-function makeOptions(moduleName: string, namespace?: string): LookupOptions {
-  return {
-    source: moduleName !== undefined ? `template:${moduleName}` : undefined,
-    namespace,
-  };
-}
-
 function componentFor(
   name: string,
   owner: Owner,
@@ -106,13 +96,11 @@ function lookupComponentPair(
 ): Option<LookupResult> {
   let component = componentFor(name, owner, options);
 
-  if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-    if (component !== null && component.class !== undefined) {
-      let layout = getComponentTemplate(component.class);
+  if (component !== null && component.class !== undefined) {
+    let layout = getComponentTemplate(component.class);
 
-      if (layout !== null) {
-        return { component, layout };
-      }
+    if (layout !== null) {
+      return { component, layout };
     }
   }
 
@@ -123,17 +111,6 @@ function lookupComponentPair(
   } else {
     return { component, layout } as LookupResult;
   }
-}
-
-function lookupComponent(owner: Owner, name: string, options: LookupOptions): Option<LookupResult> {
-  if (options.source || options.namespace) {
-    let pair = lookupComponentPair(owner, name, options);
-
-    if (pair !== null) {
-      return pair;
-    }
-  }
-  return lookupComponentPair(owner, name);
 }
 
 let lookupPartial: { templateName: string; owner: Owner } | any;
@@ -361,18 +338,12 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       return helper;
     }
 
-    const { moduleName } = meta;
     let owner = meta.owner;
-
     let name = _name;
-    let namespace = undefined;
-
-    const options: LookupOptions = makeOptions(moduleName, namespace);
 
     const factory =
       owner.factoryFor<SimpleHelper | HelperInstance, HelperFactory<SimpleHelper | HelperInstance>>(
-        `helper:${name}`,
-        options
+        `helper:${name}`
       ) || owner.factoryFor(`helper:${name}`);
 
     if (factory === undefined || factory.class === undefined) {
@@ -427,11 +398,9 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     meta: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
     let name = _name;
-    let namespace = undefined;
     let owner = meta.owner;
-    let { moduleName } = meta;
 
-    let pair = lookupComponent(owner, name, makeOptions(moduleName, namespace));
+    let pair = lookupComponentPair(owner, name);
     if (pair === null) {
       return null;
     }
@@ -462,10 +431,7 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
         definition = new TemplateOnlyComponentDefinition(name, layout!);
       }
-    } else if (
-      EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      isTemplateOnlyComponent(pair.component.class)
-    ) {
+    } else if (isTemplateOnlyComponent(pair.component.class)) {
       definition = new TemplateOnlyComponentDefinition(name, layout!);
     }
 

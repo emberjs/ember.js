@@ -1,11 +1,19 @@
-import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
+import {
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  moduleFor,
+  runLoopSettled,
+  runTask,
+} from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
+import { compile } from '../../../utils/helpers';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -347,6 +355,209 @@ moduleFor(
           'The about-link was rendered with the truthy class after toggling the property'
         );
       });
+    }
+
+    async ['@test Using <LinkTo> inside a non-routable engine errors'](assert) {
+      this.add(
+        'engine:not-routable',
+        class NotRoutableEngine extends Engine {
+          Resolver = ModuleBasedTestResolver;
+
+          init() {
+            super.init(...arguments);
+            this.register(
+              'template:application',
+              compile(`<LinkTo @route='about'>About</LinkTo>`, {
+                moduleName: 'non-routable/templates/application.hbs',
+              })
+            );
+          }
+        }
+      );
+
+      this.addTemplate('index', `{{mount 'not-routable'}}`);
+
+      await assert.rejectsAssertion(
+        this.visit('/'),
+        'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
+          'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
+          'See https://ember-engines.com/docs/links for more info.'
+      );
+    }
+
+    async ['@test Using <LinkTo> inside a routable engine link within the engine'](assert) {
+      this.add(
+        'engine:routable',
+        class RoutableEngine extends Engine {
+          Resolver = ModuleBasedTestResolver;
+
+          init() {
+            super.init(...arguments);
+            this.register(
+              'template:application',
+              compile(
+                `
+                <h2 id='engine-layout'>Routable Engine</h2>
+                {{outlet}}
+                <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
+                `,
+                {
+                  moduleName: 'routable/templates/application.hbs',
+                }
+              )
+            );
+            this.register(
+              'template:index',
+              compile(
+                `
+                <h3 class='engine-home'>Engine Home</h3>
+                <LinkTo @route='about' id='engine-about-link'>Engine About</LinkTo>
+                <LinkTo @route='index' id='engine-self-link'>Engine Self</LinkTo>
+                `,
+                {
+                  moduleName: 'routable/templates/index.hbs',
+                }
+              )
+            );
+            this.register(
+              'template:about',
+              compile(
+                `
+                <h3 class='engine-about'>Engine About</h3>
+                <LinkTo @route='index' id='engine-home-link'>Engine Home</LinkTo>
+                <LinkTo @route='about' id='engine-self-link'>Engine Self</LinkTo>
+                `,
+                {
+                  moduleName: 'routable/templates/about.hbs',
+                }
+              )
+            );
+          }
+        }
+      );
+
+      this.router.map(function () {
+        this.mount('routable');
+      });
+
+      this.add('route-map:routable', function () {
+        this.route('about');
+      });
+
+      this.addTemplate(
+        'application',
+        `
+        <h1 id='application-layout'>Application</h1>
+        {{outlet}}
+        <LinkTo @route='application' id='application-link'>Appliction</LinkTo>
+        <LinkTo @route='routable' id='engine-link'>Engine</LinkTo>
+        `
+      );
+
+      await this.visit('/');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link:not(.active)').length, 1, 'The engine link is not active');
+
+      assert.equal(this.$('h3.home').length, 1, 'The application index page is rendered');
+      assert.equal(this.$('#self-link.active').length, 1, 'The application index link is active');
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The application about link is not active'
+      );
+
+      await this.click('#about-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link:not(.active)').length, 1, 'The engine link is not active');
+
+      assert.equal(this.$('h3.about').length, 1, 'The application about page is rendered');
+      assert.equal(this.$('#self-link.active').length, 1, 'The application about link is active');
+      assert.equal(
+        this.$('#home-link:not(.active)').length,
+        1,
+        'The application home link is not active'
+      );
+
+      await this.click('#engine-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link.active').length, 1, 'The engine link is active');
+      assert.equal(
+        this.$('#engine-application-link.active').length,
+        1,
+        'The engine application link is active'
+      );
+
+      assert.equal(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
+      assert.equal(this.$('#engine-self-link.active').length, 1, 'The engine index link is active');
+      assert.equal(
+        this.$('#engine-about-link:not(.active)').length,
+        1,
+        'The engine about link is not active'
+      );
+
+      await this.click('#engine-about-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link.active').length, 1, 'The engine link is active');
+      assert.equal(
+        this.$('#engine-application-link.active').length,
+        1,
+        'The engine application link is active'
+      );
+
+      assert.equal(this.$('h3.engine-about').length, 1, 'The engine about page is rendered');
+      assert.equal(this.$('#engine-self-link.active').length, 1, 'The engine about link is active');
+      assert.equal(
+        this.$('#engine-home-link:not(.active)').length,
+        1,
+        'The engine home link is not active'
+      );
+
+      await this.click('#engine-application-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link.active').length, 1, 'The engine link is active');
+      assert.equal(
+        this.$('#engine-application-link.active').length,
+        1,
+        'The engine application link is active'
+      );
+
+      assert.equal(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
+      assert.equal(this.$('#engine-self-link.active').length, 1, 'The engine index link is active');
+      assert.equal(
+        this.$('#engine-about-link:not(.active)').length,
+        1,
+        'The engine about link is not active'
+      );
+
+      await this.click('#application-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link:not(.active)').length, 1, 'The engine link is not active');
+
+      assert.equal(this.$('h3.home').length, 1, 'The application index page is rendered');
+      assert.equal(this.$('#self-link.active').length, 1, 'The application index link is active');
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The application about link is not active'
+      );
     }
   }
 );

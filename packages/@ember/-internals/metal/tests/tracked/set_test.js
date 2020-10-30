@@ -32,7 +32,7 @@ moduleFor(
       }
     }
 
-    ['@test set should throw an error when setting on shadowed properties']() {
+    ['@test set should not throw an error when setting on shadowed properties'](assert) {
       class Obj {
         @tracked value = 'emberjs';
 
@@ -43,9 +43,9 @@ moduleFor(
 
       let newObj = new Obj();
 
-      expectAssertion(() => {
-        set(newObj, 'value', 123);
-      }, /Attempted to set `\[object Object\].value` using Ember.set\(\), but the property was a computed or tracked property that was shadowed by another property declaration. This can happen if you defined a tracked or computed property on a parent class, and then redefined it on a subclass/);
+      set(newObj, 'value', 123);
+
+      assert.equal(newObj.value, 123, 'it worked');
     }
   }
 );

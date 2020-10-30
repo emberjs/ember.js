@@ -3,8 +3,11 @@
 */
 
 import { alias, computed } from '@ember/-internals/metal';
+import { getOwner } from '@ember/-internals/owner';
+import RouterState from '@ember/-internals/routing/lib/system/router_state';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, warn } from '@ember/debug';
+import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
@@ -487,6 +490,13 @@ const LinkComponent = EmberComponent.extend({
   init() {
     this._super(...arguments);
 
+    assert(
+      'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
+        'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
+        'See https://ember-engines.com/docs/links for more info.',
+      !this._isEngine || this._engineMountPoint !== undefined
+    );
+
     // Map desired event name to invoke function
     let { eventName } = this;
     this.on(eventName, this, this._invoke);
@@ -497,9 +507,17 @@ const LinkComponent = EmberComponent.extend({
   _currentRouterState: alias('_routing.currentState'),
   _targetRouterState: alias('_routing.targetState'),
 
+  _isEngine: computed(function (this: any) {
+    return getEngineParent(getOwner(this) as EngineInstance) !== undefined;
+  }),
+
+  _engineMountPoint: computed(function (this: any) {
+    return (getOwner(this) as EngineInstance).mountPoint;
+  }),
+
   _route: computed('route', '_currentRouterState', function computeLinkToComponentRoute(this: any) {
     let { route } = this;
-    return route === UNDEFINED ? this._currentRoute : route;
+    return this._namespaceRoute(route === UNDEFINED ? this._currentRoute : route);
   }),
 
   _models: computed('model', 'models', function computeLinkToComponentModels(this: any) {
@@ -608,7 +626,7 @@ const LinkComponent = EmberComponent.extend({
     }
   ),
 
-  _isActive(routerState: any) {
+  _isActive(routerState: RouterState): boolean {
     if (this.loading) {
       return false;
     }
@@ -619,25 +637,17 @@ const LinkComponent = EmberComponent.extend({
       return currentWhen;
     }
 
-    let isCurrentWhenSpecified = Boolean(currentWhen);
+    let { _models: models, _routing: routing } = this;
 
-    if (isCurrentWhenSpecified) {
-      currentWhen = currentWhen.split(' ');
+    if (typeof currentWhen === 'string') {
+      return currentWhen
+        .split(' ')
+        .some((route) =>
+          routing.isActiveForRoute(models, undefined, this._namespaceRoute(route), routerState)
+        );
     } else {
-      currentWhen = [this._route];
+      return routing.isActiveForRoute(models, this._query, this._route, routerState);
     }
-
-    let { _models: models, _query: query, _routing: routing } = this;
-
-    for (let i = 0; i < currentWhen.length; i++) {
-      if (
-        routing.isActiveForRoute(models, query, currentWhen[i], routerState, isCurrentWhenSpecified)
-      ) {
-        return true;
-      }
-    }
-
-    return false;
   },
 
   transitioningIn: computed(
@@ -663,6 +673,18 @@ const LinkComponent = EmberComponent.extend({
       }
     }
   ),
+
+  _namespaceRoute(route: string): string {
+    let { _engineMountPoint: mountPoint } = this;
+
+    if (mountPoint === undefined) {
+      return route;
+    } else if (route === 'application') {
+      return mountPoint;
+    } else {
+      return `${mountPoint}.${route}`;
+    }
+  },
 
   /**
     Event handler that invokes the link, activating the associated route.

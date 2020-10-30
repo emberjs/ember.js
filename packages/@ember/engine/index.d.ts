@@ -1,5 +1,7 @@
-import { Owner, LookupOptions, Factory, EngineInstanceOptions } from '@ember/-internals/owner';
-import EngineInstance from './instance';
+export { default as EngineInstance } from './instance';
+export function getEngineParent(instance: EngineInstance): EngineInstance | undefined;
+
+import { EngineInstanceOptions, Factory } from '@ember/-internals/owner';
 
 export default class Engine {
   constructor(...args: any[]);

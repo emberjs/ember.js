@@ -24,7 +24,7 @@ export default class MethodCallTracker {
     this._originalMethod = undefined;
   }
 
-  stubMethod() {
+  stubMethod(): void {
     if (this._originalMethod) {
       // Method is already stubbed
       return;
@@ -42,32 +42,32 @@ export default class MethodCallTracker {
     });
   }
 
-  restoreMethod() {
+  restoreMethod(): void {
     if (this._originalMethod) {
       this._env.setDebugFunction(this._methodName, this._originalMethod);
     }
   }
 
-  expectCall(message: Message, options?: OptionList) {
+  expectCall(message: Message, options?: OptionList): void {
     this.stubMethod();
     this._expectedMessages.push(message || /.*/);
     this._expectedOptionLists.push(options);
   }
 
-  expectNoCalls() {
+  expectNoCalls(): void {
     this.stubMethod();
     this._isExpectingNoCalls = true;
   }
 
-  isExpectingNoCalls() {
+  isExpectingNoCalls(): boolean {
     return this._isExpectingNoCalls;
   }
 
-  isExpectingCalls() {
+  isExpectingCalls(): boolean | number {
     return !this._isExpectingNoCalls && this._expectedMessages.length;
   }
 
-  assert() {
+  assert(): void {
     let { assert } = QUnit.config.current;
     let methodName = this._methodName;
     let isExpectingNoCalls = this._isExpectingNoCalls;
@@ -101,6 +101,7 @@ export default class MethodCallTracker {
 
     let actual: Actual | undefined;
     let match: Actual | undefined = undefined;
+    let matched: Set<number> = new Set();
 
     for (o = 0; o < expectedMessages.length; o++) {
       const expectedMessage = expectedMessages[o];
@@ -135,7 +136,8 @@ export default class MethodCallTracker {
 
         if (matchesMessage && matchesOptionList) {
           match = actual;
-          break;
+          matched.add(i);
+          continue;
         }
       }
 
@@ -169,6 +171,12 @@ export default class MethodCallTracker {
           false,
           `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was failure with '${actual[0]}' ${actualOptionsMessage}`
         );
+      }
+    }
+
+    for (i = 0; i < actuals.length; i++) {
+      if (!matched.has(i) && actuals[i][1] !== true) {
+        assert.ok(false, `Unexpected Ember.${methodName} call: ${actuals[i][0]}`);
       }
     }
   }

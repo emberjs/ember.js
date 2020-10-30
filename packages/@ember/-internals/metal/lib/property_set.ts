@@ -7,7 +7,7 @@ import {
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { CPSETTERS, descriptorForProperty } from './decorator';
+import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
@@ -72,21 +72,10 @@ export function set<T = unknown>(obj: object, keyName: string, value: T, toleran
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let descriptor = descriptorForProperty(obj, keyName);
+  let descriptor = lookupDescriptor(obj, keyName);
 
-  if (descriptor !== undefined) {
-    if (DEBUG) {
-      let instanceDesc = lookupDescriptor(obj, keyName);
-
-      assert(
-        `Attempted to set \`${toString(
-          obj
-        )}.${keyName}\` using Ember.set(), but the property was a computed or tracked property that was shadowed by another property declaration. This can happen if you defined a tracked or computed property on a parent class, and then redefined it on a subclass.`,
-        instanceDesc && instanceDesc.set && CPSETTERS.has(instanceDesc.set)
-      );
-    }
-
-    descriptor.set(obj, keyName, value);
+  if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
+    obj[keyName] = value;
     return value;
   }
 

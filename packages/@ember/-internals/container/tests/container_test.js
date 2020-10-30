@@ -513,27 +513,6 @@ moduleFor(
       Service.create(result);
     }
 
-    ['@test lookup passes options through to expandlocallookup'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-
-      registry.register('controller:post', PostController);
-      registry.expandLocalLookup = (fullName, options) => {
-        assert.ok(true, 'expandLocalLookup was called');
-        assert.equal(fullName, 'foo:bar');
-        assert.deepEqual(options, { source: 'baz:qux' });
-
-        return 'controller:post';
-      };
-
-      let PostControllerLookupResult = container.lookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.ok(PostControllerLookupResult instanceof PostController);
-    }
-
     ['@test #factoryFor class is registered class'](assert) {
       let registry = new Registry();
       let container = registry.container();

@@ -718,6 +718,13 @@ moduleFor(
       });
 
       expectDeprecation(() => {
+        // TODO: this must be a bug??
+        expectDeprecation(
+          backtrackingMessageFor('undefined', undefined, {
+            renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
+          })
+        );
+
         this.render('{{hello-world}}');
       }, expectedMessage);
     }

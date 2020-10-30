@@ -21,7 +21,7 @@ declare global {
   }
 }
 
-export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv) {
+export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv): void {
   let assertion = new DeprecationAssert(env);
 
   hooks.beforeEach(function () {
@@ -40,7 +40,7 @@ class DeprecationAssert extends DebugAssert {
     super('deprecate', env);
   }
 
-  inject() {
+  inject(): void {
     // Expects no deprecation to happen within a function, or if no function is
     // passed, from the time of calling until the end of the test.
     //
@@ -127,7 +127,7 @@ class DeprecationAssert extends DebugAssert {
     window.ignoreDeprecation = ignoreDeprecation;
   }
 
-  restore() {
+  restore(): void {
     super.restore();
     window.expectDeprecation = null;
     window.expectDeprecationAsync = null;

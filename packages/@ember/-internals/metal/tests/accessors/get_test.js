@@ -314,6 +314,11 @@ moduleFor(
       let obj = new EmberObject();
 
       expectDeprecation(() => {
+        // TODO: this must be a bug??
+        expectDeprecation(
+          /You attempted to update `undefined`, but it had already been used previously in the same computation/
+        );
+
         track(() => {
           get(obj, 'bar');
         });

@@ -11,10 +11,6 @@ if (DEBUG) {
   DEBUG_INJECTION_FUNCTIONS = new WeakMap();
 }
 
-export interface InjectedPropertyOptions {
-  source: string;
-}
-
 /**
  @module ember
  @private
@@ -31,7 +27,7 @@ export interface InjectedPropertyOptions {
          to the property's name
   @private
 */
-function inject(type: string, name: string, options?: InjectedPropertyOptions): Decorator;
+function inject(type: string, name: string): Decorator;
 function inject(
   type: string,
   target: object,
@@ -42,7 +38,6 @@ function inject(type: string, ...args: any[]): Decorator | DecoratorPropertyDesc
   assert('a string type must be provided to inject', typeof type === 'string');
 
   let calledAsDecorator = isElementDescriptor(args);
-  let source: string | undefined, namespace: string | undefined;
 
   let name = calledAsDecorator ? undefined : args[0];
 
@@ -54,13 +49,11 @@ function inject(type: string, ...args: any[]): Decorator | DecoratorPropertyDesc
       Boolean(owner)
     );
 
-    return owner.lookup(`${type}:${name || propertyName}`, { source, namespace });
+    return owner.lookup(`${type}:${name || propertyName}`);
   };
 
   if (DEBUG) {
     DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
-      namespace,
-      source,
       type,
       name,
     });
