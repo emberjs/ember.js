@@ -5,14 +5,13 @@
 import { alias, computed } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import RouterState from '@ember/-internals/routing/lib/system/router_state';
-import { EventDispatcher, isSimpleClick } from '@ember/-internals/views';
+import { isSimpleClick } from '@ember/-internals/views';
 import { assert, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent, { HAS_BLOCK } from '../component';
-import { EmberVMEnvironment } from '../environment';
 import layout from '../templates/link-to';
 
 /**
@@ -501,16 +500,6 @@ const LinkComponent = EmberComponent.extend({
     // Map desired event name to invoke function
     let { eventName } = this;
     this.on(eventName, this, this._invoke);
-
-    // As our EventDispatcher adds event listeners lazily, and does not recognize the dynamic event pattern here,
-    // we must tell it explicitly that we need to listen to `eventName` events
-    let owner = getOwner(this);
-    if (owner.lookup<EmberVMEnvironment>('-environment:main')!.isInteractive) {
-      let eventDispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
-      if (eventDispatcher) {
-        eventDispatcher.setupHandlerForEmberEvent(eventName);
-      }
-    }
   },
 
   _routing: injectService('-routing'),

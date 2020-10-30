@@ -20,9 +20,108 @@ function fireNativeWithDataTransfer(node, type, dataTransfer) {
   node.dispatchEvent(event);
 }
 
+function triggerEvent(node, event) {
+  switch (event) {
+    case 'focusin':
+      return node.focus();
+    case 'focusout':
+      return node.blur();
+    default:
+      return node.trigger(event);
+  }
+}
+
+const SUPPORTED_EMBER_EVENTS = {
+  touchstart: 'touchStart',
+  touchmove: 'touchMove',
+  touchend: 'touchEnd',
+  touchcancel: 'touchCancel',
+  keydown: 'keyDown',
+  keyup: 'keyUp',
+  keypress: 'keyPress',
+  mousedown: 'mouseDown',
+  mouseup: 'mouseUp',
+  contextmenu: 'contextMenu',
+  click: 'click',
+  dblclick: 'doubleClick',
+  focusin: 'focusIn',
+  focusout: 'focusOut',
+  submit: 'submit',
+  input: 'input',
+  change: 'change',
+  dragstart: 'dragStart',
+  drag: 'drag',
+  dragenter: 'dragEnter',
+  dragleave: 'dragLeave',
+  dragover: 'dragOver',
+  drop: 'drop',
+  dragend: 'dragEnd',
+};
+
 moduleFor(
   'EventDispatcher',
   class extends RenderingTestCase {
+    ['@test event handler methods are called when event is triggered'](assert) {
+      let receivedEvent;
+      let browserEvent;
+
+      this.registerComponent('x-button', {
+        ComponentClass: Component.extend(
+          {
+            tagName: 'button',
+          },
+          Object.keys(SUPPORTED_EMBER_EVENTS)
+            .map((browerEvent) => ({
+              [SUPPORTED_EMBER_EVENTS[browerEvent]](event) {
+                receivedEvent = event;
+              },
+            }))
+            .reduce((result, singleEventHandler) => ({ ...result, ...singleEventHandler }), {})
+        ),
+      });
+
+      this.render(`{{x-button}}`);
+
+      let elementNode = this.$('button');
+      let element = elementNode[0];
+
+      for (browserEvent in SUPPORTED_EMBER_EVENTS) {
+        receivedEvent = null;
+        runTask(() => triggerEvent(elementNode, browserEvent));
+        assert.ok(receivedEvent, `${browserEvent} event was triggered`);
+        assert.strictEqual(receivedEvent.target, element);
+      }
+    }
+
+    ['@test event listeners are called when event is triggered'](assert) {
+      let receivedEvent;
+      let browserEvent;
+
+      this.registerComponent('x-button', {
+        ComponentClass: Component.extend({
+          tagName: 'button',
+          init() {
+            this._super();
+            Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
+              this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
+            });
+          },
+        }),
+      });
+
+      this.render(`{{x-button}}`);
+
+      let elementNode = this.$('button');
+      let element = elementNode[0];
+
+      for (browserEvent in SUPPORTED_EMBER_EVENTS) {
+        receivedEvent = null;
+        runTask(() => triggerEvent(elementNode, browserEvent));
+        assert.ok(receivedEvent, `${browserEvent} event was triggered`);
+        assert.strictEqual(receivedEvent.target, element);
+      }
+    }
+
     ['@test events bubble view hierarchy for form elements'](assert) {
       let receivedEvent;
 

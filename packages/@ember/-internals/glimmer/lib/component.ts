@@ -18,6 +18,7 @@ import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirtyTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
+import { EmberVMEnvironment } from './environment';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
@@ -785,6 +786,27 @@ const Component = CoreView.extend(
           },
         }
       );
+    },
+
+    get setupEventHandler(): (eventName: string) => void | null {
+      if (this._setupEventHandler === undefined) {
+        let owner = getOwner(this);
+        if (owner.lookup<EmberVMEnvironment>('-environment:main')!.isInteractive) {
+          let dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
+          this._setupEventHandler = (eventName: string) =>
+            dispatcher!.setupHandlerForEmberEvent(eventName);
+        } else {
+          // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
+          this._setupEventHandler = null;
+        }
+      }
+
+      return this._setupEventHandler;
+    },
+
+    on(eventName: string) {
+      this.setupEventHandler?.(eventName);
+      return this._super(...arguments);
     },
 
     rerender() {
