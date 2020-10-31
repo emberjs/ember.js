@@ -137,6 +137,55 @@ moduleFor(
       });
     }
 
+    ['@test Calling transitionTo does not serialize query params already serialized on the activeTransition'](
+      assert
+    ) {
+      assert.expect(3);
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+          this.route('sibling');
+        });
+      });
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          afterModel() {
+            this.transitionTo('parent.sibling');
+          },
+        })
+      );
+
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          queryParams: ['array', 'string'],
+          array: [],
+          string: '',
+        })
+      );
+
+      // `/parent/child?array=["one",2]&string=hello`
+      return this.visit('/parent/child?array=%5B%22one%22%2C2%5D&string=hello').then(() => {
+        this.assertCurrentPath(
+          '/parent/sibling?array=%5B%22one%22%2C2%5D&string=hello',
+          'redirected to the sibling route, instead of child route'
+        );
+        assert.equal(
+          this.getController('parent').get('string'),
+          'hello',
+          'controller has value from the active transition'
+        );
+        assert.deepEqual(
+          this.getController('parent').get('array'),
+          ['one', 2],
+          'controller has value from the active transition'
+        );
+      });
+    }
+
     async ['@test Single query params can be set on the controller and reflected in the url'](
       assert
     ) {
