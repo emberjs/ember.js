@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.23.0-beta.4 (November 2, 2020)
+
+- [#19142](https://github.com/emberjs/ember.js/pull/19142) [BUGFIX] Fix App booting before DOM ready without jQuery
+- [#19198](https://github.com/emberjs/ember.js/pull/19198) / [#19232](https://github.com/emberjs/ember.js/pull/19232) [BUGFIX] Restores the shadowed property set behavior
+
 ### v3.23.0-beta.3 (October 26, 2020)
 
 - [#19199](https://github.com/emberjs/ember.js/pull/19199) [BUGFIX] Fix Ember Inspector to not be in a broken state after render errors
