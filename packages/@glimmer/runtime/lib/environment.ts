@@ -12,11 +12,13 @@ import {
   RuntimeResolver,
   Option,
   RuntimeArtifacts,
+  Owner,
 } from '@glimmer/interfaces';
 import { assert, expect, symbol, debugToString } from '@glimmer/util';
 import { track, updateTag } from '@glimmer/validator';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { RuntimeProgramImpl } from '@glimmer/program';
+import DebugRenderTree from './debug-render-tree';
 
 export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
 
@@ -112,17 +114,20 @@ class TransactionImpl implements Transaction {
   }
 }
 
-export class EnvironmentImpl<Extra> implements Environment<Extra> {
+export class EnvironmentImpl implements Environment {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
   protected appendOperations!: GlimmerTreeConstruction;
   protected updateOperations?: GlimmerTreeChanges;
 
   // Delegate methods and values
-  public extra = this.delegate.extra;
   public isInteractive = this.delegate.isInteractive;
+  public owner = this.delegate.owner;
 
-  constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate<Extra>) {
+  private enableDebugTooling = this.delegate.enableDebugTooling;
+  private _debugRenderTree = this.enableDebugTooling ? new DebugRenderTree() : undefined;
+
+  constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate) {
     if (options.appendOperations) {
       this.appendOperations = options.appendOperations;
       this.updateOperations = options.updateOperations;
@@ -131,6 +136,16 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
       this.updateOperations = new DOMChangesImpl(options.document);
     } else if (DEBUG) {
       throw new Error('you must pass document or appendOperations to a new runtime');
+    }
+  }
+
+  get debugRenderTree(): DebugRenderTree {
+    if (this.enableDebugTooling) {
+      return this._debugRenderTree!;
+    } else {
+      throw new Error(
+        "Can't access debug render tree outside of the inspector (_DEBUG_RENDER_TREE flag is disabled)"
+      );
     }
   }
 
@@ -151,7 +166,9 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
 
-    this.delegate.onTransactionBegin();
+    if (this.enableDebugTooling) {
+      this.debugRenderTree.begin();
+    }
 
     this[TRANSACTION] = new TransactionImpl();
   }
@@ -185,11 +202,15 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     this[TRANSACTION] = null;
     transaction.commit();
 
+    if (this.enableDebugTooling) {
+      this.debugRenderTree.commit();
+    }
+
     this.delegate.onTransactionCommit();
   }
 }
 
-export interface EnvironmentDelegate<Extra = undefined> {
+export interface EnvironmentDelegate {
   /**
    * Used to determine the the environment is interactive (e.g. SSR is not
    * interactive). Interactive environments schedule modifiers, among other things.
@@ -197,15 +218,16 @@ export interface EnvironmentDelegate<Extra = undefined> {
   isInteractive: boolean;
 
   /**
-   * Slot for any extra values that the embedding environment wants to add,
-   * providing/passing around additional context to various users in the VM.
+   * Used to enable debug tooling
    */
-  extra: Extra;
+  enableDebugTooling: boolean;
 
   /**
-   * Callback to be called when an environment transaction begins
+   * Owner passed into the environment
+   *
+   * TODO: This should likely use the templating system owner instead
    */
-  onTransactionBegin: () => void;
+  owner: Owner;
 
   /**
    * Callback to be called when an environment transaction commits
@@ -213,12 +235,12 @@ export interface EnvironmentDelegate<Extra = undefined> {
   onTransactionCommit: () => void;
 }
 
-export function runtimeContext<E>(
+export function runtimeContext(
   options: EnvironmentOptions,
-  delegate: EnvironmentDelegate<E>,
+  delegate: EnvironmentDelegate,
   artifacts: RuntimeArtifacts,
   resolver: RuntimeResolver
-): RuntimeContext<E> {
+): RuntimeContext {
   return {
     env: new EnvironmentImpl(options, delegate),
     program: new RuntimeProgramImpl(artifacts.constants, artifacts.heap),

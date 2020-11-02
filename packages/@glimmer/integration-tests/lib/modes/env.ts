@@ -99,9 +99,9 @@ export class NativeIteratorDelegate<T = unknown> implements IteratorDelegate {
 export const BaseEnv: EnvironmentDelegate = {
   isInteractive: true,
 
-  extra: undefined,
+  enableDebugTooling: false,
 
-  onTransactionBegin() {},
+  owner: {},
 
   onTransactionCommit() {
     for (let i = 0; i < scheduledDestroyables.length; i++) {
