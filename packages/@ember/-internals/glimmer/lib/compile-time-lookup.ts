@@ -8,10 +8,11 @@ import {
   Option,
   WithStaticLayout,
 } from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/util';
 import RuntimeResolver from './resolver';
 
 interface StaticComponentManager
-  extends WithStaticLayout<unknown, unknown, RuntimeResolver>,
+  extends WithStaticLayout<unknown, unknown>,
     ComponentManager<unknown, unknown> {}
 
 function isStaticComponentManager(
@@ -52,10 +53,13 @@ export default class CompileTimeResolverImpl implements CompileTimeResolver<Owne
       };
     }
 
+    let template = unwrapTemplate(manager.getStaticLayout(state));
+    let layout = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
+
     return {
       handle: definitionHandle,
       capabilities,
-      compilable: manager.getStaticLayout(state),
+      compilable: layout,
     };
   }
 

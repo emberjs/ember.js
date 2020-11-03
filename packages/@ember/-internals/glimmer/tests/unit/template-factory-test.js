@@ -1,3 +1,4 @@
+import { ENV } from '@ember/-internals/environment';
 import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
 
 import { template, templateCacheCounters } from '@ember/-internals/glimmer';
@@ -70,7 +71,7 @@ moduleFor(
 
       this.expectCacheChanges(
         {
-          templateCacheHits: 2,
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 5 : 2,
           // from this.render
           templateCacheMisses: 1,
         },

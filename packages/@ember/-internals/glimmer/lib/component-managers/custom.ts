@@ -1,13 +1,12 @@
-import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import {
   Arguments,
-  Bounds,
   ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
   Dict,
+  Environment,
   Option,
   Template,
   VMArguments,
@@ -15,9 +14,6 @@ import {
 } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
-import { EmberVMEnvironment } from '../environment';
-import RuntimeResolver from '../resolver';
 import { argsProxyFor } from '../utils/args-proxy';
 import { buildCapabilities, InternalCapabilities } from '../utils/managers';
 import AbstractComponentManager from './abstract';
@@ -173,11 +169,10 @@ export default class CustomComponentManager<ComponentInstance>
   implements
     WithStaticLayout<
       CustomComponentState<ComponentInstance>,
-      CustomComponentDefinitionState<ComponentInstance>,
-      RuntimeResolver
+      CustomComponentDefinitionState<ComponentInstance>
     > {
   create(
-    env: EmberVMEnvironment,
+    env: Environment,
     definition: CustomComponentDefinitionState<ComponentInstance>,
     vmArgs: VMArguments
   ): CustomComponentState<ComponentInstance> {
@@ -188,32 +183,14 @@ export default class CustomComponentManager<ComponentInstance>
 
     let bucket = new CustomComponentState(delegate, component, args, env);
 
-    if (ENV._DEBUG_RENDER_TREE) {
-      env.extra.debugRenderTree.create(bucket, {
-        type: 'component',
-        name: definition.name,
-        args: vmArgs.capture(),
-        instance: component,
-        template: definition.template,
-      });
-
-      registerDestructor(bucket, () => {
-        env.extra.debugRenderTree.willDestroy(bucket);
-      });
-    }
-
     return bucket;
   }
 
-  getDebugName({ name }: CustomComponentDefinitionState<ComponentInstance>) {
+  getDebugName({ name }: CustomComponentDefinitionState<ComponentInstance>): string {
     return name;
   }
 
-  update(bucket: CustomComponentState<ComponentInstance>) {
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.extra.debugRenderTree.update(bucket);
-    }
-
+  update(bucket: CustomComponentState<ComponentInstance>): void {
     if (hasUpdateHook(bucket.delegate)) {
       let { delegate, component, args } = bucket;
 
@@ -221,21 +198,21 @@ export default class CustomComponentManager<ComponentInstance>
     }
   }
 
-  didCreate({ delegate, component }: CustomComponentState<ComponentInstance>) {
+  didCreate({ delegate, component }: CustomComponentState<ComponentInstance>): void {
     if (hasAsyncLifeCycleCallbacks(delegate)) {
       delegate.didCreateComponent(component);
     }
   }
 
-  didUpdate({ delegate, component }: CustomComponentState<ComponentInstance>) {
+  didUpdate({ delegate, component }: CustomComponentState<ComponentInstance>): void {
     if (hasAsyncUpdateHook(delegate)) {
       delegate.didUpdateComponent(component);
     }
   }
 
-  getContext({ delegate, component }: CustomComponentState<ComponentInstance>) {
-    delegate.getContext(component);
-  }
+  didRenderLayout(): void {}
+
+  didUpdateLayout(): void {}
 
   getSelf({ delegate, component }: CustomComponentState<ComponentInstance>): Reference {
     return createConstRef(delegate.getContext(component), 'this');
@@ -245,28 +222,12 @@ export default class CustomComponentManager<ComponentInstance>
     return bucket;
   }
 
-  getCapabilities({
-    delegate,
-  }: CustomComponentDefinitionState<ComponentInstance>): ComponentCapabilities {
-    return Object.assign({}, CAPABILITIES, {
-      updateHook: ENV._DEBUG_RENDER_TREE || delegate.capabilities.updateHook,
-    });
+  getCapabilities(): ComponentCapabilities {
+    return CAPABILITIES;
   }
 
-  didRenderLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
-    }
-  }
-
-  didUpdateLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
-    }
-  }
-
-  getStaticLayout(state: DefinitionState<ComponentInstance>) {
-    return unwrapTemplate(state.template).asLayout();
+  getStaticLayout(state: DefinitionState<ComponentInstance>): Template {
+    return state.template;
   }
 }
 const CUSTOM_COMPONENT_MANAGER = new CustomComponentManager();
@@ -279,7 +240,7 @@ export class CustomComponentState<ComponentInstance> {
     public delegate: ManagerDelegate<ComponentInstance>,
     public component: ComponentInstance,
     public args: Arguments,
-    public env: EmberVMEnvironment
+    public env: Environment
   ) {
     if (hasDestructors(delegate)) {
       registerDestructor(this, () => delegate.destroyComponent(component));

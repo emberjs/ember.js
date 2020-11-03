@@ -1,22 +1,18 @@
-import { ENV } from '@ember/-internals/environment';
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import {
-  Bounds,
   ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
   DynamicScope,
+  Environment,
   Template,
   VMArguments,
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { registerDestructor } from '@glimmer/runtime';
-import { _WeakSet, unwrapTemplate } from '@glimmer/util';
+import { _WeakSet } from '@glimmer/util';
 import InternalComponent from '../components/internal';
-import { EmberVMEnvironment } from '../environment';
-import RuntimeResolver from '../resolver';
 import AbstractComponentManager from './abstract';
 
 const CAPABILITIES: ComponentCapabilities = {
@@ -28,7 +24,7 @@ const CAPABILITIES: ComponentCapabilities = {
   elementHook: false,
   createCaller: true,
   dynamicScope: false,
-  updateHook: true,
+  updateHook: false,
   createInstance: true,
   wrapped: false,
   willDestroy: false,
@@ -40,7 +36,7 @@ export interface InternalDefinitionState {
 }
 
 export interface InternalComponentState {
-  env: EmberVMEnvironment;
+  env: Environment;
   instance: Destroyable;
 }
 
@@ -65,7 +61,7 @@ export function isInternalManager(manager: object): manager is InternalManager {
 
 export default class InternalManager
   extends AbstractComponentManager<InternalComponentState, InternalDefinitionState>
-  implements WithStaticLayout<InternalComponentState, InternalDefinitionState, RuntimeResolver> {
+  implements WithStaticLayout<InternalComponentState, InternalDefinitionState> {
   static for(name: string): (owner: Owner) => InternalManager {
     return (owner: Owner) => new InternalManager(owner, name);
   }
@@ -80,8 +76,8 @@ export default class InternalManager
   }
 
   create(
-    env: EmberVMEnvironment,
-    { ComponentClass, layout }: InternalDefinitionState,
+    env: Environment,
+    { ComponentClass }: InternalDefinitionState,
     args: VMArguments,
     _dynamicScope: DynamicScope,
     caller: Reference
@@ -97,18 +93,6 @@ export default class InternalManager
 
     let state = { env, instance };
 
-    if (ENV._DEBUG_RENDER_TREE) {
-      env.extra.debugRenderTree.create(state, {
-        type: 'component',
-        name: this.getDebugName(),
-        args: args.capture(),
-        instance,
-        template: layout,
-      });
-
-      registerDestructor(instance, () => env.extra.debugRenderTree.willDestroy(state));
-    }
-
     return state;
   }
 
@@ -120,29 +104,19 @@ export default class InternalManager
     return createConstRef(instance, 'this');
   }
 
-  didRenderLayout(state: InternalComponentState, bounds: Bounds): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      state.env.extra.debugRenderTree.didRender(state, bounds);
-    }
-  }
+  didCreate(): void {}
 
-  update(state: InternalComponentState): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      state.env.extra.debugRenderTree.update(state);
-    }
-  }
+  didUpdate(): void {}
 
-  didUpdateLayout(state: InternalComponentState, bounds: Bounds): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      state.env.extra.debugRenderTree.didRender(state, bounds);
-    }
-  }
+  didRenderLayout(): void {}
+
+  didUpdateLayout(): void {}
 
   getDestroyable(state: InternalComponentState): Destroyable {
     return state.instance;
   }
 
-  getStaticLayout({ layout: template }: InternalDefinitionState) {
-    return unwrapTemplate(template).asLayout();
+  getStaticLayout({ layout: template }: InternalDefinitionState): Template {
+    return template;
   }
 }

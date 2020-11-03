@@ -11,7 +11,7 @@ import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
 
-import { backtrackingMessageFor } from '../utils/backtracking-rerender';
+import { backtrackingMessageFor } from '../utils/debug-stack';
 import { compile, Component } from '../utils/helpers';
 
 moduleFor(

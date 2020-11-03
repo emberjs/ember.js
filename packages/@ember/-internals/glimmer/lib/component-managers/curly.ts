@@ -1,5 +1,4 @@
 import { privatize as P } from '@ember/-internals/container';
-import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
@@ -10,11 +9,11 @@ import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
-  CompilableProgram,
   ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
   ElementOperations,
+  Environment,
   Option,
   PreparedArguments,
   Template,
@@ -22,7 +21,6 @@ import {
   VMArguments,
   WithDynamicLayout,
   WithDynamicTagName,
-  WithStaticLayout,
 } from '@glimmer/interfaces';
 import {
   childRefFor,
@@ -31,8 +29,8 @@ import {
   Reference,
   valueForRef,
 } from '@glimmer/reference';
-import { registerDestructor, reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
+import { reifyPositional } from '@glimmer/runtime';
+import { EMPTY_ARRAY } from '@glimmer/util';
 import {
   beginTrackFrame,
   beginUntrackFrame,
@@ -44,7 +42,6 @@ import {
 } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
-import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
@@ -121,7 +118,6 @@ debugFreeze(EMPTY_POSITIONAL_ARGS);
 export default class CurlyComponentManager
   extends AbstractManager<ComponentStateBucket, DefinitionState>
   implements
-    WithStaticLayout<ComponentStateBucket, DefinitionState, RuntimeResolver>,
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket> {
   protected templateFor(component: Component): Template {
@@ -148,19 +144,8 @@ export default class CurlyComponentManager
     return factory(owner);
   }
 
-  getStaticLayout(state: DefinitionState): CompilableProgram {
-    return unwrapTemplate(state.template!).asLayout();
-  }
-
   getDynamicLayout(bucket: ComponentStateBucket): Template {
-    let component = bucket.component;
-    let template = this.templateFor(component);
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.extra.debugRenderTree.setTemplate(bucket, template);
-    }
-
-    return template;
+    return this.templateFor(bucket.component);
   }
 
   getTagName(state: ComponentStateBucket): Option<string> {
@@ -173,7 +158,7 @@ export default class CurlyComponentManager
     return (component && component.tagName) || 'div';
   }
 
-  getCapabilities(state: DefinitionState) {
+  getCapabilities(state: DefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
 
@@ -251,7 +236,7 @@ export default class CurlyComponentManager
    * etc.
    */
   create(
-    environment: EmberVMEnvironment,
+    environment: Environment,
     state: DefinitionState,
     args: VMArguments,
     dynamicScope: DynamicScope,
@@ -359,20 +344,6 @@ export default class CurlyComponentManager
 
     endUntrackFrame();
 
-    if (ENV._DEBUG_RENDER_TREE) {
-      environment.extra.debugRenderTree.create(bucket, {
-        type: 'component',
-        name: state.name,
-        args: args.capture(),
-        instance: component,
-        template: state.template,
-      });
-
-      registerDestructor(bucket, () => {
-        environment.extra.debugRenderTree.willDestroy(bucket);
-      });
-    }
-
     // consume every argument so we always run again
     consumeTag(bucket.argsTag);
     consumeTag(component[DIRTY_TAG]);
@@ -380,7 +351,7 @@ export default class CurlyComponentManager
     return bucket;
   }
 
-  getDebugName({ name }: DefinitionState) {
+  getDebugName({ name }: DefinitionState): string {
     return name;
   }
 
@@ -442,10 +413,6 @@ export default class CurlyComponentManager
   didRenderLayout(bucket: ComponentStateBucket, bounds: Bounds): void {
     bucket.component[BOUNDS] = bounds;
     bucket.finalize();
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
-    }
   }
 
   didCreate({ component, environment }: ComponentStateBucket): void {
@@ -458,10 +425,6 @@ export default class CurlyComponentManager
 
   update(bucket: ComponentStateBucket): void {
     let { component, args, argsTag, argsRevision, environment } = bucket;
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      environment.extra.debugRenderTree.update(bucket);
-    }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
@@ -493,12 +456,8 @@ export default class CurlyComponentManager
     consumeTag(component[DIRTY_TAG]);
   }
 
-  didUpdateLayout(bucket: ComponentStateBucket, bounds: Bounds): void {
+  didUpdateLayout(bucket: ComponentStateBucket): void {
     bucket.finalize();
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
-    }
   }
 
   didUpdate({ component, environment }: ComponentStateBucket): void {

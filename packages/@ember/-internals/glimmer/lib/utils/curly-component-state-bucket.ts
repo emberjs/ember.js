@@ -1,9 +1,13 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
-import { CapturedNamedArguments, Template, TemplateFactory } from '@glimmer/interfaces';
+import {
+  CapturedNamedArguments,
+  Environment,
+  Template,
+  TemplateFactory,
+} from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
-import { EmberVMEnvironment } from '../environment';
 import { Renderer } from '../renderer';
 
 export interface Component {
@@ -44,7 +48,7 @@ export default class ComponentStateBucket {
   public argsRevision: Revision;
 
   constructor(
-    public environment: EmberVMEnvironment,
+    public environment: Environment,
     public component: Component,
     public args: CapturedNamedArguments | null,
     public argsTag: Tag,

@@ -8,7 +8,7 @@ import { tracked, set } from '@ember/-internals/metal';
 import { setOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { inject as service } from '@ember/service';
-import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
+import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { registerDestructor } from '@glimmer/runtime';
 
 class TestHelperManager {

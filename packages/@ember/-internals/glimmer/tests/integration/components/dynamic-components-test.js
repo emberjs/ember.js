@@ -4,7 +4,7 @@ import { set, computed } from '@ember/-internals/metal';
 import { jQueryDisabled } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
-import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
+import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 moduleFor(
   'Components test: dynamic components',

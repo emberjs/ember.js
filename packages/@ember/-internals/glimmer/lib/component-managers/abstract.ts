@@ -5,6 +5,7 @@ import {
   Destroyable,
   DynamicScope,
   ElementOperations,
+  Environment,
   Option,
   PreparedArguments,
   VM,
@@ -12,7 +13,6 @@ import {
 } from '@glimmer/interfaces';
 import { Reference } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
-import { EmberVMEnvironment } from '../environment';
 
 // implements the ComponentManager interface as defined in glimmer:
 // tslint:disable-next-line:max-line-length
@@ -26,7 +26,7 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
   abstract getDebugName(state: U): string;
 
   abstract create(
-    env: EmberVMEnvironment,
+    env: Environment,
     definition: U,
     args: VMArguments,
     dynamicScope: DynamicScope,

@@ -5,7 +5,7 @@ import templateOnly from '@ember/component/template-only';
 import { compile } from 'ember-template-compiler';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Component } from '../../utils/helpers';
-import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
+import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 class TemplateOnlyComponentsTest extends RenderingTestCase {
   registerTemplateOnlyComponent(name, template) {
