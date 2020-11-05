@@ -879,5 +879,45 @@ moduleFor(
         this.shouldBeActive(assert, '#foos-link');
       });
     }
+
+    ['@test the <LinkTo /> component with dynamic segment and loading route should preserve query parameters'](
+      assert
+    ) {
+      this.router.map(function () {
+        this.route('foo', { path: ':foo' }, function () {
+          this.route('bar', function () {
+            this.route('baz');
+          });
+        });
+      });
+
+      this.addTemplate('foo.bar', `<LinkTo id='baz-link' @route='foo.bar.baz'>Baz</LinkTo>`);
+
+      this.addTemplate('foo.bar.loading', 'Loading');
+
+      this.add(
+        'controller:foo.bar',
+        Controller.extend({
+          queryParams: ['qux'],
+          qux: null,
+        })
+      );
+
+      this.add(
+        'route:foo.bar.baz',
+        Route.extend({
+          model() {
+            return new RSVP.Promise((resolve) => {
+              setTimeout(resolve, 1);
+            });
+          },
+        })
+      );
+
+      return this.visit('/foo/bar/baz?qux=abc').then(() => {
+        let bazLink = this.$('#baz-link');
+        assert.equal(bazLink.attr('href'), '/foo/bar/baz?qux=abc');
+      });
+    }
   }
 );
