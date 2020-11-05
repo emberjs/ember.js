@@ -1687,5 +1687,62 @@ moduleFor(
       await runLoopSettled();
       this.assertCurrentPath('/?foo=987');
     }
+
+    async [`@test Updating single query parameter doesn't affect other query parameters. Issue #14438`](
+      assert
+    ) {
+      assert.expect(5);
+
+      this.router.map(function () {
+        this.route('grandparent', { path: 'grandparent/:foo' }, function () {
+          this.route('parent', function () {
+            this.route('child');
+          });
+        });
+      });
+
+      this.addTemplate('grandparent.parent.loading', 'Loading...');
+
+      this.add(
+        'route:index',
+        Route.extend({
+          redirect() {
+            this.transitionTo('grandparent.parent.child', 1);
+          },
+        })
+      );
+
+      this.add(
+        'route:grandparent.parent.child',
+        Route.extend({
+          model() {
+            return Promise.resolve();
+          },
+        })
+      );
+
+      this.add(
+        'controller:grandparent.parent',
+        Controller.extend({
+          queryParams: ['foo', 'bar'],
+
+          foo: 'FOO',
+          bar: 'BAR',
+        })
+      );
+
+      await this.visit('/');
+
+      this.assertCurrentPath('/grandparent/1/parent/child');
+      let parentController = this.getController('grandparent.parent');
+
+      await this.setAndFlush(parentController, 'foo', 'NEW_FOO');
+      assert.equal(parentController.foo, 'NEW_FOO');
+      this.assertCurrentPath('/grandparent/1/parent/child?foo=NEW_FOO');
+
+      await this.setAndFlush(parentController, 'bar', 'NEW_BAR');
+      assert.equal(parentController.bar, 'NEW_BAR');
+      this.assertCurrentPath('/grandparent/1/parent/child?bar=NEW_BAR&foo=NEW_FOO');
+    }
   }
 );
