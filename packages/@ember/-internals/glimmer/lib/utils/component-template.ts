@@ -1,6 +1,5 @@
 import { toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { Option } from '@glimmer/interfaces';
 import { Factory as TemplateFactory } from '../template';
 
 const TEMPLATES: WeakMap<object, TemplateFactory> = new WeakMap();
@@ -23,7 +22,7 @@ export function setComponentTemplate(factory: TemplateFactory, obj: object) {
   return obj;
 }
 
-export function getComponentTemplate(obj: object): Option<TemplateFactory> {
+export function getComponentTemplate(obj: object): TemplateFactory | undefined {
   let pointer = obj;
   while (pointer !== undefined && pointer !== null) {
     let template = TEMPLATES.get(pointer);
@@ -35,5 +34,5 @@ export function getComponentTemplate(obj: object): Option<TemplateFactory> {
     pointer = getPrototypeOf(pointer);
   }
 
-  return null;
+  return undefined;
 }

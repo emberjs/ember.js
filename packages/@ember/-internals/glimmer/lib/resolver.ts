@@ -99,7 +99,7 @@ function lookupComponentPair(
   if (component !== null && component.class !== undefined) {
     let layout = getComponentTemplate(component.class);
 
-    if (layout !== null) {
+    if (layout !== undefined) {
       return { component, layout };
     }
   }
