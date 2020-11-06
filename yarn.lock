@@ -8150,10 +8150,10 @@ route-recognizer@^0.3.4:
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.4.tgz#39ab1ffbce1c59e6d2bdca416f0932611e4f3ca3"
   integrity sha512-2+MhsfPhvauN1O8KaXpXAOfR/fwe8dnUXVM+xw7yt40lJRfPVQxV6yryZm0cgRvAj5fMF/mdRZbL2ptwbs5i2g==
 
-router_js@^7.1.0:
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/router_js/-/router_js-7.1.0.tgz#d2a47d7224a30f3b6416be20c9c80868fc14ff0c"
-  integrity sha512-03n6mJCD6hTX4bUkowS+HcsyI9ghP3AxmtVSRnMmDWzykNlHE/wXy+hbybdHmnOH2sDe97L/4V7q6MfrVQBoIg==
+router_js@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-7.1.1.tgz#cb7614a96cfb6bc65c066668b2dd32e3ad7ca38d"
+  integrity sha512-kOdKqBj7aj9GusG0umtWgkTtNtDspT9EfJNnJN9B8g0DDNp9CdIwpO+2Qnmf/fNos38Pj9jlfU44l/oycn5goQ==
   dependencies:
     "@glimmer/env" "^0.1.7"
 
