@@ -17,10 +17,10 @@ import {
   CompileTimeComponent,
 } from '@glimmer/interfaces';
 
-import { label, templateMeta, other } from '../operands';
+import { label, templateMeta, other, strArray } from '../operands';
 import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
-import { meta, CompileArgs } from './shared';
+import { meta, CompileArgs, CompilePositional } from './shared';
 import {
   YieldBlock,
   PushSymbolTable,
@@ -148,12 +148,93 @@ export function InvokeStaticComponent({
     op(Op.Fetch, $s0),
     op(Op.Dup, $sp, 1),
     op(Op.Load, $s0),
+    op(MachineOp.PushFrame),
   ];
 
+  // Setup arguments
   let { symbols } = symbolTable;
 
+  // As we push values onto the stack, we store the symbols associated  with them
+  // so that we can set them on the scope later on with SetVariable and SetBlock
+  let blockSymbols: number[] = [];
+  let argSymbols: number[] = [];
+
+  // First we push the blocks onto the stack
+  let blockNames = blocks.names;
+
+  // Starting with the attrs block, if it exists and is referenced in the component
+  if (attrs !== null) {
+    let symbol = symbols.indexOf(ATTRS_BLOCK);
+
+    if (symbol !== -1) {
+      out.push(PushYieldableBlock(attrs));
+      blockSymbols.push(symbol);
+    }
+  }
+
+  // Followed by the other blocks, if they exist and are referenced in the component.
+  // Also store the index of the associated symbol.
+  for (let i = 0; i < blockNames.length; i++) {
+    let name = blockNames[i];
+    let symbol = symbols.indexOf(`&${name}`);
+
+    if (symbol !== -1) {
+      out.push(PushYieldableBlock(blocks.get(name)));
+      blockSymbols.push(symbol);
+    }
+  }
+
+  // Next up we have arguments. If the component has the `createArgs` capability,
+  // then it wants access to the arguments in JavaScript. We can't know whether
+  // or not an argument is used, so we have to give access to all of them.
   if (capabilities.createArgs) {
-    out.push(op(MachineOp.PushFrame), op('SimpleArgs', { params, hash, atNames: true }));
+    // First we push positional arguments
+    let { count, actions } = CompilePositional(params);
+
+    out.push(actions);
+
+    // setup the flags with the count of positionals, and to indicate that atNames
+    // are used
+    let flags = count << 4;
+    flags |= 0b1000;
+
+    let names: string[] = EMPTY_ARRAY;
+
+    // Next, if named args exist, push them all. If they have an associated symbol
+    // in the invoked component (e.g. they are used within its template), we push
+    // that symbol. If not, we still push the expression as it may be used, and
+    // we store the symbol as -1 (this is used later).
+    if (hash !== null) {
+      names = hash[0];
+      let val = hash[1];
+
+      for (let i = 0; i < val.length; i++) {
+        let symbol = symbols.indexOf(names[i]);
+
+        out.push(op('Expr', val[i]));
+        argSymbols.push(symbol);
+      }
+    }
+
+    // Finally, push the VM arguments themselves. These args won't need access
+    // to blocks (they aren't accessible from userland anyways), so we push an
+    // empty array instead of the actual block names.
+    out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_ARRAY), flags));
+  } else if (hash !== null) {
+    // If the component does not have the `createArgs` capability, then the only
+    // expressions we need to push onto the stack are those that are actually
+    // referenced in the template of the invoked component (e.g. have symbols).
+    let names = hash[0];
+    let val = hash[1];
+
+    for (let i = 0; i < val.length; i++) {
+      let symbol = symbols.indexOf(names[i]);
+
+      if (symbol !== -1) {
+        out.push(op('Expr', val[i]));
+        argSymbols.push(symbol);
+      }
+    }
   }
 
   out.push(op(Op.BeginComponentTransaction, $s0));
@@ -167,69 +248,48 @@ export function InvokeStaticComponent({
   }
 
   if (capabilities.createArgs) {
-    out.push(op(MachineOp.PopFrame));
+    // Pop off the VM Args from the stack
+    out.push(op(Op.Pop, 1));
   }
 
-  out.push(op(MachineOp.PushFrame), op(Op.RegisterComponentDestructor, $s0));
+  out.push(
+    op(Op.RegisterComponentDestructor, $s0),
 
-  let bindings: { symbol: number; isBlock: boolean }[] = [];
+    // Push component self onto the stack
+    op(Op.GetComponentSelf, $s0),
 
-  out.push(op(Op.GetComponentSelf, $s0));
+    // Setup the new root scope for the component
+    op(Op.RootScope, symbols.length + 1, Object.keys(blocks).length > 0 ? 1 : 0),
 
-  bindings.push({ symbol: 0, isBlock: false });
+    // Pop the self reference off the stack and set it to the symbol for `this`
+    // in the new scope. This is why all subsequent symbols are increased by one.
+    op(Op.SetVariable, 0)
+  );
 
-  for (let i = 0; i < symbols.length; i++) {
-    let symbol = symbols[i];
+  // Going in reverse, now we pop the args/blocks off the stack, starting with
+  // arguments, and assign them to their symbols in the new scope.
+  for (let i = argSymbols.length - 1; i >= 0; i--) {
+    let symbol = argSymbols[i];
 
-    switch (symbol.charAt(0)) {
-      case '&':
-        let callerBlock: Option<CompilableBlock>;
-
-        if (symbol === ATTRS_BLOCK) {
-          callerBlock = attrs;
-        } else {
-          callerBlock = blocks.get(symbol.slice(1));
-        }
-
-        if (callerBlock) {
-          out.push(PushYieldableBlock(callerBlock));
-          bindings.push({ symbol: i + 1, isBlock: true });
-        } else {
-          out.push(PushYieldableBlock(null));
-          bindings.push({ symbol: i + 1, isBlock: true });
-        }
-
-        break;
-
-      case '@':
-        if (!hash) {
-          break;
-        }
-
-        let [keys, values] = hash;
-        let lookupName = symbol;
-
-        let index = keys.indexOf(lookupName);
-
-        if (index !== -1) {
-          out.push(op('Expr', values[index]));
-          bindings.push({ symbol: i + 1, isBlock: false });
-        }
-
-        break;
-    }
-  }
-
-  out.push(op(Op.RootScope, symbols.length + 1, Object.keys(blocks).length > 0 ? 1 : 0));
-
-  for (let i = bindings.length - 1; i >= 0; i--) {
-    let { symbol, isBlock } = bindings[i];
-
-    if (isBlock) {
-      out.push(op(Op.SetBlock, symbol));
+    if (symbol === -1) {
+      // The expression was not bound to a local symbol, it was only pushed to be
+      // used with VM args in the javascript side
+      out.push(op(Op.Pop, 1));
     } else {
-      out.push(op(Op.SetVariable, symbol));
+      out.push(op(Op.SetVariable, symbol + 1));
     }
+  }
+
+  // if any positional params exist, pop them off the stack as well
+  if (params !== null) {
+    out.push(op(Op.Pop, params.length));
+  }
+
+  // Finish up by popping off and assigning blocks
+  for (let i = blockSymbols.length - 1; i >= 0; i--) {
+    let symbol = blockSymbols[i];
+
+    out.push(op(Op.SetBlock, symbol + 1));
   }
 
   out.push([op(Op.Constant, other(layout)), op(Op.CompileBlock), op(MachineOp.InvokeVirtual)]);

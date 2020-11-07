@@ -28,6 +28,26 @@ export class EmberishComponentTests extends RenderTest {
   }
 
   @test({ kind: 'glimmer' })
+  'Only one arg reference is created per argument'() {
+    let count = 0;
+
+    this.registerHelper('count', () => count++);
+
+    class MainComponent extends EmberishGlimmerComponent {
+      salutation = 'Glimmer';
+    }
+    this.registerComponent(
+      'Glimmer',
+      'Main',
+      '<div><Child @value={{count}} /></div>',
+      MainComponent
+    );
+    this.registerComponent('Glimmer', 'Child', '{{@value}} {{this.value}}');
+    this.render('<Main />');
+    this.assertHTML('<div>0 0</div>');
+  }
+
+  @test({ kind: 'glimmer' })
   '[BUG] Gracefully handles application of curried args when invoke starts with 0 args'() {
     class MainComponent extends EmberishGlimmerComponent {
       salutation = 'Glimmer';

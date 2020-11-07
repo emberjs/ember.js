@@ -1,4 +1,4 @@
-import { Option, Op, ScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
+import { Op, ScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
 import {
   Reference,
   childRefFor,
@@ -52,13 +52,11 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 });
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
-  let handle = check(vm.stack.popJs(), CheckOption(CheckCompilableBlock));
+  let handle = check(vm.stack.popJs(), CheckCompilableBlock);
   let scope = check(vm.stack.popJs(), CheckScope);
-  let table = check(vm.stack.popJs(), CheckOption(CheckBlockSymbolTable));
+  let table = check(vm.stack.popJs(), CheckBlockSymbolTable);
 
-  let block: Option<ScopeBlock> = table ? [handle!, scope, table] : null;
-
-  vm.scope().bindBlock(symbol, block);
+  vm.scope().bindBlock(symbol, [handle, scope, table]);
 });
 
 APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
