@@ -2,7 +2,6 @@ import { history, location, userAgent, window } from '@ember/-internals/browser-
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { tryInvoke } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { EmberLocation, UpdateCallback } from './api';
 import {
@@ -199,7 +198,7 @@ function delegateToConcreteImplementation(methodName: string) {
       "AutoLocation's detect() method should be called before calling any other hooks.",
       Boolean(concreteImplementation)
     );
-    return tryInvoke(concreteImplementation, methodName, args);
+    return concreteImplementation[methodName]?.(...args);
   };
 }
 
