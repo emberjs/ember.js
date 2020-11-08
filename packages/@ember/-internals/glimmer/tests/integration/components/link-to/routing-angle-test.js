@@ -1876,7 +1876,7 @@ moduleFor(
     [`@test GJ: <LinkTo /> to a parent root model hook which performs a 'transitionTo' has correct active class #13256`](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(3);
 
       this.router.map(function () {
         this.route('parent', function () {
@@ -1888,7 +1888,9 @@ moduleFor(
         'route:parent',
         Route.extend({
           afterModel() {
-            this.transitionTo('parent.child');
+            expectDeprecation(() => {
+              this.transitionTo('parent.child');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

@@ -696,7 +696,9 @@ moduleFor(
         'route:index',
         Route.extend({
           activate() {
-            this.transitionTo('a');
+            expectDeprecation(() => {
+              this.transitionTo('a');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

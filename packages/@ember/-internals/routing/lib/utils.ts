@@ -1,5 +1,6 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
+import { deprecate } from '@ember/debug';
 import EmberError from '@ember/error';
 import { assign } from '@ember/polyfills';
 import Router, { STATE_SYMBOL } from 'router_js';
@@ -241,4 +242,20 @@ export function shallowEqual(a: {}, b: {}) {
   }
 
   return aCount === bCount;
+}
+
+export function deprecateTransitionMethods(frameworkClass: string, methodName: string) {
+  deprecate(
+    `Calling ${methodName} on a ${frameworkClass} is deprecated. Use the RouterService instead.`,
+    false,
+    {
+      id: 'routing.transition-methods',
+      for: 'ember-source',
+      since: {
+        available: '3.24.0',
+      },
+      until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_routing-transition-methods',
+    }
+  );
 }

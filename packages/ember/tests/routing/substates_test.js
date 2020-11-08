@@ -754,7 +754,9 @@ moduleFor(
             error(err) {
               step(assert, 2, 'MomSallyRoute#actions.error');
               handledError = err;
-              this.transitionTo('mom.this-route-throws');
+              expectDeprecation(() => {
+                this.transitionTo('mom.this-route-throws');
+              }, /Calling transitionTo on a route is deprecated/);
 
               return false;
             },
@@ -829,7 +831,9 @@ moduleFor(
             error(err) {
               step(assert, 2, 'MomSallyRoute#actions.error');
               handledError = err;
-              this.transitionTo('mom.this-route-throws');
+              expectDeprecation(() => {
+                this.transitionTo('mom.this-route-throws');
+              }, /Calling transitionTo on a route is deprecated/);
 
               return false;
             },
@@ -1080,7 +1084,9 @@ moduleFor(
         'route:grandma',
         Route.extend({
           beforeModel: function () {
-            this.transitionTo('memere', 1);
+            expectDeprecation(() => {
+              this.transitionTo('memere', 1);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

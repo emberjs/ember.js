@@ -1199,7 +1199,11 @@ if (!jQueryDisabled) {
             'route:user.profile',
             Route.extend({
               beforeModel() {
-                return resolveLater().then(() => this.transitionTo('user.edit'));
+                return resolveLater().then(() => {
+                  return expectDeprecation(() => {
+                    return this.transitionTo('user.edit');
+                  }, /Calling transitionTo on a route is deprecated/);
+                });
               },
             })
           );
@@ -1229,7 +1233,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test currentRouteName for '/user/profile'`](assert) {
-        assert.expect(4);
+        assert.expect(5);
 
         let {
           application: { testHelpers },

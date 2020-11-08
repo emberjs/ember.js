@@ -537,7 +537,9 @@ moduleFor(
         'route:application',
         Route.extend({
           afterModel() {
-            this.transitionTo('posts');
+            expectDeprecation(() => {
+              this.transitionTo('posts');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

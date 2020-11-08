@@ -104,7 +104,7 @@ moduleFor(
     ['@test Calling transitionTo does not lose query params already on the activeTransition'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(3);
 
       this.router.map(function () {
         this.route('parent', function () {
@@ -117,7 +117,9 @@ moduleFor(
         'route:parent.child',
         Route.extend({
           afterModel() {
-            this.transitionTo('parent.sibling');
+            expectDeprecation(() => {
+              this.transitionTo('parent.sibling');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -140,7 +142,7 @@ moduleFor(
     ['@test Calling transitionTo does not serialize query params already serialized on the activeTransition'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(4);
 
       this.router.map(function () {
         this.route('parent', function () {
@@ -153,7 +155,9 @@ moduleFor(
         'route:parent.child',
         Route.extend({
           afterModel() {
-            this.transitionTo('parent.sibling');
+            expectDeprecation(() => {
+              this.transitionTo('parent.sibling');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -230,7 +234,7 @@ moduleFor(
       await this.setAndFlush(controller, 'foo', 'WOO');
       this.assertCurrentPath('/?other_foo=WOO', "QP updated correctly without 'as'");
 
-      this.transitionTo('/?other_foo=NAW');
+      await this.transitionTo('/?other_foo=NAW');
       assert.equal(controller.get('foo'), 'NAW', 'QP managed correctly on URL transition');
 
       await this.setAndFlush(controller, 'bar', 'NERK');
@@ -1135,6 +1139,7 @@ moduleFor(
 
       await this.visitAndAssert('/');
       await this.transitionTo({ queryParams: { foo: 'borf' } });
+
       this.assertCurrentPath('/?foo=borf', 'shorthand supported');
 
       await this.transitionTo({ queryParams: { 'index:foo': 'blaf' } });
@@ -1271,8 +1276,10 @@ moduleFor(
       await this.visitAndAssert('/');
       await this.transitionTo({ queryParams: { foo: [2, 3] } });
       this.assertCurrentPath('/?foo=%5B2%2C3%5D', 'shorthand supported');
+
       await this.transitionTo({ queryParams: { 'index:foo': [4, 5] } });
       this.assertCurrentPath('/?foo=%5B4%2C5%5D', 'longform supported');
+
       await this.transitionTo({ queryParams: { foo: [] } });
       this.assertCurrentPath('/?foo=%5B%5D', 'longform supported');
     }
@@ -1396,7 +1403,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        this.transitionTo('other');
+        return this.transitionTo('other');
       });
     }
 
@@ -1740,7 +1747,7 @@ moduleFor(
     async [`@test Updating single query parameter doesn't affect other query parameters. Issue #14438`](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(6);
 
       this.router.map(function () {
         this.route('grandparent', { path: 'grandparent/:foo' }, function () {
@@ -1756,7 +1763,9 @@ moduleFor(
         'route:index',
         Route.extend({
           redirect() {
-            this.transitionTo('grandparent.parent.child', 1);
+            expectDeprecation(() => {
+              this.transitionTo('grandparent.parent.child', 1);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
