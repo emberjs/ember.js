@@ -1,6 +1,6 @@
 {
   "name": "local-linker",
-  "version": "0.62.4",
+  "version": "0.63.0",
   "private": true,
   "keywords": [
     "ember-addon"

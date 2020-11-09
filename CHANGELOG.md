@@ -1,3 +1,18 @@
+## v0.63.0 (2020-11-09)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/vm`
+  * [#1185](https://github.com/glimmerjs/glimmer-vm/pull/1185) [REFACTOR] Upstreams Owner, simplifies template meta/ownership ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`
+  * [#1184](https://github.com/glimmerjs/glimmer-vm/pull/1184) [REFACTOR] Upstream `setComponentTemplate` ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1186](https://github.com/glimmerjs/glimmer-vm/pull/1186) [BUGFIX] Prevent args from being created/evaluated twice ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.62.4 (2020-10-26)
 
 #### :rocket: Enhancement
