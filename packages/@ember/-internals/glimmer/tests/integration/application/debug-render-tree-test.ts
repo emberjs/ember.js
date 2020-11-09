@@ -1662,7 +1662,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           template: 'Hello World',
         });
 
-        await assert.rejectsAssertion(this.visit('/'), /oops!/);
+        await assert.rejects(this.visit('/'), /oops!/);
 
         assert.deepEqual(captureRenderTree(this.owner), [], 'there was no output');
       }
