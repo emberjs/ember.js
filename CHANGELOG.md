@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.23.0-beta.5 (November 9, 2020)
+
+- [#19249](https://github.com/emberjs/ember.js/pull/19249) [BUGFIX] Fix bugs in query params with intermediate transitions
+
 ### v3.23.0-beta.4 (November 2, 2020)
 
 - [#19142](https://github.com/emberjs/ember.js/pull/19142) [BUGFIX] Fix App booting before DOM ready without jQuery
