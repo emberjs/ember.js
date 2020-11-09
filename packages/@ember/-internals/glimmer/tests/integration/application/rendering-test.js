@@ -2,11 +2,13 @@ import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
+import { inject as service } from '@ember/service';
 import { Route } from '@ember/-internals/routing';
-import { Component } from '@ember/-internals/glimmer';
+import { Component, helper } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
+import { Promise } from 'rsvp';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
-import { runTask } from '../../../../../../internal-test-helpers/lib/run';
+import { runLoopSettled, runTask } from '../../../../../../internal-test-helpers/lib/run';
 
 moduleFor(
   'Application test: rendering',
@@ -71,6 +73,106 @@ moduleFor(
         </ul>
       `);
       });
+    }
+
+    async ['@test only the resolved model is visiable to @model when switching between the same route (with different params)'](
+      assert
+    ) {
+      assert.timeout(-1);
+
+      let deferred = () => {
+        let resolve, reject;
+        let promise = new Promise((_resolve, _reject) => {
+          resolve = _resolve;
+          reject = _reject;
+        });
+        return { promise, resolve, reject };
+      };
+
+      this.router.map(function () {
+        this.route('color', { path: '/:color' });
+      });
+
+      let count = 0;
+      let deferredModel;
+
+      this.add(
+        'helper:never-undefined',
+        helper(([model]) => {
+          if (model === undefined) {
+            assert.ok(false, 'should never receive undefined');
+            throw new Error('get outta here');
+          } else {
+            return model;
+          }
+        })
+      );
+
+      let router;
+      this.add(
+        'route:color',
+        Route.extend({
+          router: service(),
+          init() {
+            this._super(...arguments);
+
+            router = this.router;
+          },
+
+          model() {
+            count++;
+            deferredModel = deferred();
+            return deferredModel.promise;
+          },
+        })
+      );
+
+      this.addTemplate('color', '[model: {{never-undefined @model}}]');
+
+      assert.strictEqual(count, 0, 'model hook was never called');
+
+      let visitPromise = this.visit('/red');
+      await runLoopSettled();
+
+      assert.strictEqual(count, 1, 'model hook was called once');
+
+      deferredModel.resolve('RED');
+      await visitPromise;
+
+      assert.strictEqual(count, 1, 'model hook was called once');
+      this.assertInnerHTML(`[model: RED]`);
+
+      visitPromise = router.transitionTo('color', 'blue');
+      await runLoopSettled();
+
+      assert.strictEqual(count, 2, 'model hook was called twice');
+      this.assertInnerHTML(`[model: RED]`);
+
+      deferredModel.resolve('BLUE');
+
+      this.assertInnerHTML(`[model: RED]`);
+
+      await visitPromise;
+      await runLoopSettled();
+
+      assert.strictEqual(count, 2, 'model hook was called twice');
+      this.assertInnerHTML(`[model: BLUE]`);
+
+      visitPromise = this.visit('/green');
+      await runLoopSettled();
+
+      assert.strictEqual(count, 3, 'model hook was called three times');
+      this.assertInnerHTML(`[model: BLUE]`);
+
+      deferredModel.resolve('GREEN');
+
+      this.assertInnerHTML(`[model: BLUE]`);
+
+      await visitPromise;
+
+      this.assertInnerHTML(`[model: GREEN]`);
+
+      assert.strictEqual(count, 3, 'model hook was called three times');
     }
 
     ['@test it can access the model provided by the route via this.model']() {
