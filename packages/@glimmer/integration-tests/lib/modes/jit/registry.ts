@@ -10,7 +10,7 @@ import {
   Template,
   WithStaticLayout,
 } from '@glimmer/interfaces';
-import { assert, dict } from '@glimmer/util';
+import { assert, dict, unwrapTemplate } from '@glimmer/util';
 import { getComponentTemplate } from '@glimmer/runtime';
 import { TestComponentDefinitionState } from '../../components/test-component';
 
@@ -140,10 +140,13 @@ export class TestJitRegistry {
       };
     }
 
+    let template = unwrapTemplate(manager.getStaticLayout(state));
+    let layout = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
+
     return {
       handle: handle,
       capabilities,
-      compilable: manager.getStaticLayout(state),
+      compilable: layout,
     };
   }
 

@@ -18,6 +18,8 @@ import { ARGS } from './symbols';
 import VM, { InternalVM } from './vm/append';
 import { DynamicScopeImpl } from './scope';
 import { inTransaction } from './environment';
+import { DEBUG } from '@glimmer/env';
+import { runInTrackingTransaction } from '@glimmer/validator';
 
 class TemplateIteratorImpl implements TemplateIterator {
   constructor(private vm: InternalVM) {}
@@ -26,7 +28,11 @@ class TemplateIteratorImpl implements TemplateIterator {
   }
 
   sync(): RenderResult {
-    return this.vm.execute();
+    if (DEBUG) {
+      return runInTrackingTransaction!(() => this.vm.execute(), '- While rendering:');
+    } else {
+      return this.vm.execute();
+    }
   }
 }
 

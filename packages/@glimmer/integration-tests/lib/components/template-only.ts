@@ -1,15 +1,10 @@
-import {
-  WithStaticLayout,
-  RuntimeResolver,
-  CompilableProgram,
-  ComponentCapabilities,
-} from '@glimmer/interfaces';
+import { WithStaticLayout, ComponentCapabilities, Template } from '@glimmer/interfaces';
 import { TestComponentDefinitionState } from './test-component';
-import { expect, unwrapTemplate } from '@glimmer/util';
+import { expect } from '@glimmer/util';
 import { Reference, NULL_REFERENCE } from '@glimmer/reference';
 
 export class TemplateOnlyComponentManager
-  implements WithStaticLayout<null, TestComponentDefinitionState, RuntimeResolver> {
+  implements WithStaticLayout<null, TestComponentDefinitionState> {
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
@@ -18,8 +13,8 @@ export class TemplateOnlyComponentManager
     return state.name;
   }
 
-  getStaticLayout({ template }: TestComponentDefinitionState): CompilableProgram {
-    return unwrapTemplate(expect(template, 'expected component layout')).asLayout();
+  getStaticLayout({ template }: TestComponentDefinitionState): Template {
+    return expect(template, 'expected component layout');
   }
 
   getSelf(): Reference {

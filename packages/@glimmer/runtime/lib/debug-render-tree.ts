@@ -5,9 +5,8 @@ import {
   DebugRenderTree,
   Option,
   RenderNode,
-  Template,
 } from '@glimmer/interfaces';
-import { expect, Stack, unwrapTemplate } from '@glimmer/util';
+import { expect, assign, Stack, unwrapTemplate } from '@glimmer/util';
 import { reifyArgs } from './vm/arguments';
 
 interface InternalRenderNode<T extends object> extends RenderNode {
@@ -53,39 +52,33 @@ export class Ref<T extends object> {
   }
 }
 
-export default class DebugRenderTreeImpl<Bucket extends object = object>
-  implements DebugRenderTree<Bucket> {
-  private stack = new Stack<Bucket>();
+export default class DebugRenderTreeImpl<TBucket extends object>
+  implements DebugRenderTree<TBucket> {
+  private stack = new Stack<TBucket>();
 
-  private refs = new WeakMap<Bucket, Ref<Bucket>>();
-  private roots = new Set<Ref<Bucket>>();
-  private nodes = new WeakMap<Bucket, InternalRenderNode<Bucket>>();
+  private refs = new WeakMap<TBucket, Ref<TBucket>>();
+  private roots = new Set<Ref<TBucket>>();
+  private nodes = new WeakMap<TBucket, InternalRenderNode<TBucket>>();
 
   begin(): void {
     this.reset();
   }
 
-  create(state: Bucket, node: RenderNode): void {
-    let internalNode: InternalRenderNode<Bucket> = {
-      ...node,
+  create(state: TBucket, node: RenderNode): void {
+    let internalNode: InternalRenderNode<TBucket> = assign({}, node, {
       bounds: null,
-      refs: new Set(),
-    };
+      refs: new Set<Ref<TBucket>>(),
+    });
     this.nodes.set(state, internalNode);
     this.appendChild(internalNode, state);
     this.enter(state);
   }
 
-  update(state: Bucket): void {
+  update(state: TBucket): void {
     this.enter(state);
   }
 
-  // for dynamic layouts
-  setTemplate(state: Bucket, template: Template): void {
-    this.nodeFor(state).template = template;
-  }
-
-  didRender(state: Bucket, bounds: Bounds): void {
+  didRender(state: TBucket, bounds: Bounds): void {
     if (DEBUG && this.stack.current !== state) {
       throw new Error(`BUG: expecting ${this.stack.current}, got ${state}`);
     }
@@ -94,7 +87,7 @@ export default class DebugRenderTreeImpl<Bucket extends object = object>
     this.exit();
   }
 
-  willDestroy(state: Bucket): void {
+  willDestroy(state: TBucket): void {
     expect(this.refs.get(state), 'BUG: missing ref').release();
   }
 
@@ -130,7 +123,7 @@ export default class DebugRenderTreeImpl<Bucket extends object = object>
     }
   }
 
-  private enter(state: Bucket): void {
+  private enter(state: TBucket): void {
     this.stack.push(state);
   }
 
@@ -142,11 +135,11 @@ export default class DebugRenderTreeImpl<Bucket extends object = object>
     this.stack.pop();
   }
 
-  private nodeFor(state: Bucket): InternalRenderNode<Bucket> {
+  private nodeFor(state: TBucket): InternalRenderNode<TBucket> {
     return expect(this.nodes.get(state), 'BUG: missing node');
   }
 
-  private appendChild(node: InternalRenderNode<Bucket>, state: Bucket): void {
+  private appendChild(node: InternalRenderNode<TBucket>, state: TBucket): void {
     if (DEBUG && this.refs.has(state)) {
       throw new Error('BUG: child already appended');
     }
@@ -165,7 +158,7 @@ export default class DebugRenderTreeImpl<Bucket extends object = object>
     }
   }
 
-  private captureRefs(refs: Set<Ref<Bucket>>): CapturedRenderNode[] {
+  private captureRefs(refs: Set<Ref<TBucket>>): CapturedRenderNode[] {
     let captured: CapturedRenderNode[] = [];
 
     refs.forEach((ref) => {
@@ -181,7 +174,7 @@ export default class DebugRenderTreeImpl<Bucket extends object = object>
     return captured;
   }
 
-  private captureNode(id: string, state: Bucket): CapturedRenderNode {
+  private captureNode(id: string, state: TBucket): CapturedRenderNode {
     let node = this.nodeFor(state);
     let { type, name, args, instance, refs } = node;
     let template = this.captureTemplate(node);
@@ -190,11 +183,11 @@ export default class DebugRenderTreeImpl<Bucket extends object = object>
     return { id, type, name, args: reifyArgs(args), instance, template, bounds, children };
   }
 
-  private captureTemplate({ template }: InternalRenderNode<Bucket>): Option<string> {
+  private captureTemplate({ template }: InternalRenderNode<TBucket>): Option<string> {
     return (template && unwrapTemplate(template).moduleName) || null;
   }
 
-  private captureBounds(node: InternalRenderNode<Bucket>): CapturedRenderNode['bounds'] {
+  private captureBounds(node: InternalRenderNode<TBucket>): CapturedRenderNode['bounds'] {
     let bounds = expect(node.bounds, 'BUG: missing bounds');
     let parentElement = bounds.parentElement();
     let firstNode = bounds.firstNode();

@@ -37,6 +37,6 @@ export interface Environment<O extends Owner = Owner> {
   getAppendOperations(): GlimmerTreeConstruction;
 
   isInteractive: boolean;
-  debugRenderTree: DebugRenderTree;
+  debugRenderTree?: DebugRenderTree;
   owner: O;
 }
