@@ -5,13 +5,14 @@ import ComponentCapabilities from '../component-capabilities';
 import { ComponentDefinitionState, PreparedArguments, ComponentInstanceState } from '../components';
 import { Option, Destroyable } from '../core';
 import { Bounds } from '../dom/bounds';
-import { VMArguments } from '../runtime/arguments';
+import { CapturedArguments, VMArguments } from '../runtime/arguments';
 import { ElementOperations } from '../runtime/element';
 import { Environment } from '../runtime/environment';
 import { RuntimeResolver } from '../serialize';
-import { CompilableProgram, Template } from '../template';
+import { Template } from '../template';
 import { ProgramSymbolTable } from '../tier1/symbol-table';
 import { DynamicScope } from '../runtime/scope';
+import { RenderNode } from '../runtime/debug-render-tree';
 
 export interface ComponentManager<
   ComponentInstanceState = unknown,
@@ -21,6 +22,24 @@ export interface ComponentManager<
   getSelf(state: ComponentInstanceState): Reference;
   getDestroyable(state: ComponentInstanceState): Option<Destroyable>;
   getDebugName(state: ComponentDefinitionState): string;
+}
+
+interface CustomRenderNode extends RenderNode {
+  bucket: object;
+}
+
+export interface WithCustomDebugRenderTree<
+  ComponentInstanceState = unknown,
+  ComponentDefinitionState = unknown
+> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+  // APIs for hooking into the debug render tree, used by components that
+  // represent multiple logical components. Specifically, {{mount}} and {{outlet}}
+  getDebugCustomRenderTree(
+    definition: ComponentDefinitionState,
+    state: ComponentInstanceState,
+    args: CapturedArguments,
+    template?: Template
+  ): CustomRenderNode[];
 }
 
 export interface WithPrepareArgs<
@@ -79,12 +98,9 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
   update(state: ComponentInstanceState, dynamicScope: Option<DynamicScope>): void;
 }
 
-export interface WithStaticLayout<
-  I = ComponentInstanceState,
-  D = ComponentDefinitionState,
-  R extends RuntimeResolver = RuntimeResolver
-> extends ComponentManager<I, D> {
-  getStaticLayout(state: D): CompilableProgram;
+export interface WithStaticLayout<I = ComponentInstanceState, D = ComponentDefinitionState>
+  extends ComponentManager<I, D> {
+  getStaticLayout(state: D): Template;
 }
 
 export interface WithDynamicLayout<

@@ -159,6 +159,7 @@ export function InvokeStaticComponent({
   // so that we can set them on the scope later on with SetVariable and SetBlock
   let blockSymbols: number[] = [];
   let argSymbols: number[] = [];
+  let argNames: string[] = [];
 
   // First we push the blocks onto the stack
   let blockNames = blocks.names;
@@ -221,6 +222,10 @@ export function InvokeStaticComponent({
     // to blocks (they aren't accessible from userland anyways), so we push an
     // empty array instead of the actual block names.
     out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_ARRAY), flags));
+
+    // And push an extra pop operation to remove the args before we begin setting
+    // variables on the local context
+    argSymbols.push(-1);
   } else if (hash !== null) {
     // If the component does not have the `createArgs` capability, then the only
     // expressions we need to push onto the stack are those that are actually
@@ -229,11 +234,13 @@ export function InvokeStaticComponent({
     let val = hash[1];
 
     for (let i = 0; i < val.length; i++) {
-      let symbol = symbols.indexOf(names[i]);
+      let name = names[i];
+      let symbol = symbols.indexOf(name);
 
       if (symbol !== -1) {
         out.push(op('Expr', val[i]));
         argSymbols.push(symbol);
+        argNames.push(name);
       }
     }
   }
@@ -248,17 +255,15 @@ export function InvokeStaticComponent({
     out.push(op(Op.CreateComponent, (blocks.has('default') as any) | 0, $s0));
   }
 
+  out.push(op(Op.RegisterComponentDestructor, $s0));
+
   if (capabilities.createArgs) {
-    // Pop off the VM Args from the stack
-    out.push(op(Op.Pop, 1));
+    out.push(op(Op.GetComponentSelf, $s0));
+  } else {
+    out.push(op(Op.GetComponentSelf, $s0, other(argNames)));
   }
 
   out.push(
-    op(Op.RegisterComponentDestructor, $s0),
-
-    // Push component self onto the stack
-    op(Op.GetComponentSelf, $s0),
-
     // Setup the new root scope for the component
     op(Op.RootScope, symbols.length + 1, Object.keys(blocks).length > 0 ? 1 : 0),
 

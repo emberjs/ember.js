@@ -730,8 +730,9 @@ export class GlimmerishComponents extends RenderTest {
     let originalConsoleError = console.error;
 
     console.error = (message: string) => {
+      console.log(message);
       this.assert.ok(
-        message.match(/Error occurred while rendering:(\n\nBar\n {2}Foo)?/),
+        message.match(/Error occurred:\n\n(- While rendering:\nBar\n {2}Foo)?/),
         'message logged'
       );
     };
