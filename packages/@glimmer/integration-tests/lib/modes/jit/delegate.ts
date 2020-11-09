@@ -56,7 +56,7 @@ import {
 } from './register';
 import { TestJitRegistry } from './registry';
 import { renderTemplate } from './render';
-import TestJitRuntimeResolver from './resolver';
+import { TestJitRuntimeResolver } from './resolver';
 
 export interface JitTestDelegateContext {
   runtime: RuntimeContext;
@@ -66,14 +66,12 @@ export interface JitTestDelegateContext {
 export function JitDelegateContext(
   doc: SimpleDocument,
   resolver: TestJitRuntimeResolver,
-  registry: TestJitRegistry,
   env: EnvironmentDelegate
 ): JitTestDelegateContext {
-  registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
   let sharedArtifacts = artifacts();
   let context = syntaxCompilationContext(
     sharedArtifacts,
-    new JitCompileTimeLookup(resolver, registry),
+    new JitCompileTimeLookup(resolver),
     new TestMacros()
   );
   let runtime = runtimeContext({ document: doc }, env, sharedArtifacts, resolver);
@@ -84,10 +82,11 @@ export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
   static style = 'jit';
 
+  protected registry = new TestJitRegistry();
+  protected resolver: TestJitRuntimeResolver = new TestJitRuntimeResolver(this.registry);
+
   private plugins: ASTPluginBuilder[] = [];
-  private resolver: TestJitRuntimeResolver = new TestJitRuntimeResolver();
-  private registry: TestJitRegistry = this.resolver.registry;
-  private context: JitTestDelegateContext;
+  private _context: JitTestDelegateContext | null = null;
   private self: Option<Reference> = null;
   private doc: SimpleDocument;
   private env: EnvironmentDelegate;
@@ -95,11 +94,15 @@ export class JitRenderDelegate implements RenderDelegate {
   constructor(options?: RenderDelegateOptions) {
     this.doc = options?.doc ?? castToSimple(document);
     this.env = assign(options?.env ?? {}, BaseEnv);
-    this.context = this.getContext();
+    registerInternalHelper(this.registry, '-get-dynamic-var', getDynamicVar);
   }
 
-  getContext(): JitTestDelegateContext {
-    return JitDelegateContext(this.doc, this.resolver, this.registry, this.env);
+  get context(): JitTestDelegateContext {
+    if (this._context === null) {
+      this._context = JitDelegateContext(this.doc, this.resolver, this.env);
+    }
+
+    return this._context;
   }
 
   getInitialElement(): SimpleElement {
@@ -205,7 +208,7 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   compileTemplate(template: string): HandleResult {
-    let compiled = preprocess(template, undefined, this.precompileOptions);
+    let compiled = preprocess(template, this.precompileOptions);
 
     return unwrapTemplate(compiled).asLayout().compile(this.context.syntax);
   }
@@ -234,7 +237,7 @@ export class JitRenderDelegate implements RenderDelegate {
     let { syntax, runtime } = this.context;
     let builder = this.getElementBuilder(runtime.env, cursor);
 
-    let { handle, compilable } = this.registry.lookupCompileTimeComponent(name, null)!;
+    let { handle, compilable } = this.registry.lookupCompileTimeComponent(name)!;
     let component = this.registry.resolve<ComponentDefinition>(handle);
 
     let iterator = renderComponent(

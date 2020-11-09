@@ -6,6 +6,7 @@ import {
   Maybe,
   Dict,
   RuntimeResolver,
+  Owner,
 } from '@glimmer/interfaces';
 
 import {
@@ -17,7 +18,7 @@ import { resolveComponent } from '../component/resolve';
 export default function createCurryComponentRef(
   inner: Reference,
   resolver: RuntimeResolver,
-  meta: unknown,
+  owner: Owner,
   args: Option<CapturedArguments>
 ) {
   let lastValue: Maybe<Dict>, lastDefinition: Option<CurriedComponentDefinition>;
@@ -34,7 +35,7 @@ export default function createCurryComponentRef(
     if (isCurriedComponentDefinition(value)) {
       definition = value;
     } else if (typeof value === 'string' && value) {
-      definition = resolveComponent(resolver, value, meta);
+      definition = resolveComponent(resolver, value, owner);
     }
 
     definition = curry(definition, args);

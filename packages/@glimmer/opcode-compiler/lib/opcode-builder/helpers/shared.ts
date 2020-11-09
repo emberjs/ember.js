@@ -82,17 +82,18 @@ export function CompilePositional(
   return { count: params.length, actions };
 }
 
-export function meta<R>(layout: LayoutWithContext<R>): ContainingMetadata {
+export function meta(layout: LayoutWithContext): ContainingMetadata {
   return {
     asPartial: layout.asPartial || false,
     evalSymbols: evalSymbols(layout),
     upvars: layout.block.upvars,
-    referrer: layout.referrer,
+    moduleName: layout.moduleName,
+    owner: layout.owner,
     size: layout.block.symbols.length,
   };
 }
 
-export function evalSymbols<R>(layout: LayoutWithContext<R>): Option<string[]> {
+export function evalSymbols(layout: LayoutWithContext): Option<string[]> {
   let { block } = layout;
 
   return block.hasEval ? block.symbols : null;

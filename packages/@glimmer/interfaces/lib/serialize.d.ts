@@ -62,7 +62,7 @@ import { CompilableProgram, Template, HandleResult } from './template';
 import { SyntaxCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
-import { Invocation } from './components/component-manager';
+import { Owner } from './runtime';
 
 export interface HandleResolver {
   resolve(handle: number): unknown;
@@ -74,14 +74,14 @@ export interface CompileTimeComponent {
   compilable: Option<CompilableProgram>;
 }
 
-export interface CompileTimeResolver<M = unknown> extends HandleResolver {
-  lookupHelper(name: string, referrer: M): Option<number>;
-  lookupModifier(name: string, referrer: M): Option<number>;
-  lookupComponent(name: string, referrer: M): Option<CompileTimeComponent>;
-  lookupPartial(name: string, referrer: M): Option<number>;
+export interface CompileTimeResolver<O extends Owner = Owner> extends HandleResolver {
+  lookupHelper(name: string, owner: O): Option<number>;
+  lookupModifier(name: string, owner: O): Option<number>;
+  lookupComponent(name: string, owner: O): Option<CompileTimeComponent>;
+  lookupPartial(name: string, owner: O): Option<number>;
 
   // For debugging
-  resolve(handle: number): M;
+  resolve<U extends ResolvedValue>(handle: number): U | null;
 }
 
 export interface PartialDefinition {
@@ -94,8 +94,8 @@ export interface PartialDefinition {
 
 export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;
 
-export interface RuntimeResolver<R = unknown> extends HandleResolver {
-  lookupComponent(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
-  lookupPartial(name: string, referrer?: Option<R>): Option<number>;
+export interface RuntimeResolver<O extends Owner = Owner> extends HandleResolver {
+  lookupComponent(name: string, owner: O): Option<ComponentDefinition>;
+  lookupPartial(name: string, owner: O): Option<number>;
   resolve<U extends ResolvedValue>(handle: number): U;
 }

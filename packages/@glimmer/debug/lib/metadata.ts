@@ -17,7 +17,7 @@ export const OPERAND_TYPES = tuple(
   'scope',
   'symbol-table',
   'register',
-  'meta'
+  'owner'
 );
 
 function isOperandType(s: string): s is OperandType {

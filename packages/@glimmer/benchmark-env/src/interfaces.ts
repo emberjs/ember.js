@@ -17,7 +17,7 @@ export interface Benchmark {
    * @param name
    * @param template
    */
-  templateOnlyComponent(name: string, template: SerializedTemplateWithLazyBlock<unknown>): void;
+  templateOnlyComponent(name: string, template: SerializedTemplateWithLazyBlock): void;
 
   /**
    * Register a basic component
@@ -27,7 +27,7 @@ export interface Benchmark {
    */
   basicComponent<TComponent extends object = object>(
     name: string,
-    template: SerializedTemplateWithLazyBlock<unknown>,
+    template: SerializedTemplateWithLazyBlock,
     component: new (args: ComponentArgs) => TComponent
   ): void;
 

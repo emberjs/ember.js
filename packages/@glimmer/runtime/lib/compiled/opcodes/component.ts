@@ -32,6 +32,7 @@ import {
   WithUpdateHook,
   WithCreateInstance,
   ModifierManager,
+  Owner,
 } from '@glimmer/interfaces';
 import { Reference, valueForRef, isConstRef } from '@glimmer/reference';
 
@@ -131,16 +132,16 @@ export interface PartialComponentDefinition {
   manager: InternalComponentManager;
 }
 
-APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
+APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _owner }) => {
   let stack = vm.stack;
 
   let definition = check(stack.popJs(), CheckReference);
   let capturedArgs = check(stack.popJs(), CheckCapturedArguments);
 
-  let meta = vm[CONSTANTS].getValue(decodeHandle(_meta));
+  let owner = vm[CONSTANTS].getValue<Owner>(decodeHandle(_owner));
   let resolver = vm.runtime.resolver;
 
-  vm.loadValue($v0, createCurryComponentRef(definition, resolver, meta, capturedArgs));
+  vm.loadValue($v0, createCurryComponentRef(definition, resolver, owner, capturedArgs));
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
@@ -164,20 +165,20 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   vm.stack.pushJs(instance);
 });
 
-APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
+APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _owner }) => {
   let stack = vm.stack;
   let component = check(
     valueForRef(check(stack.popJs(), CheckReference)),
     CheckOr(CheckString, CheckCurriedComponentDefinition)
   );
-  let meta = vm[CONSTANTS].getValue(_meta);
+  let owner = vm[CONSTANTS].getValue<Owner>(_owner);
 
   vm.loadValue($t1, null); // Clear the temp register
 
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
   if (typeof component === 'string') {
-    let resolvedDefinition = resolveComponent(vm.runtime.resolver, component, meta);
+    let resolvedDefinition = resolveComponent(vm.runtime.resolver, component, owner);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
   } else {

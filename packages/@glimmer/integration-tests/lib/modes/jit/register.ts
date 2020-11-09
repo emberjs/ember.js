@@ -27,7 +27,7 @@ import {
   TestModifierManager,
 } from '../../modifiers';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import TestJitRuntimeResolver from './resolver';
+import { TestJitRuntimeResolver } from './resolver';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { TestComponentDefinitionState } from '../../components/test-component';
 import {

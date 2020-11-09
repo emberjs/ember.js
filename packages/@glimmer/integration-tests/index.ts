@@ -6,6 +6,7 @@ export * from './lib/dom/blocks';
 export * from './lib/dom/simple-utils';
 export * from './lib/markers';
 export * from './lib/modes/jit/delegate';
+export * from './lib/modes/jit/resolver';
 export * from './lib/modes/jit/register';
 export * from './lib/modes/node/env';
 export * from './lib/modes/rehydration/delegate';

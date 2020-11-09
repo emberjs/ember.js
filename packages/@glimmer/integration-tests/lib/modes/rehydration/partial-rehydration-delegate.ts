@@ -27,7 +27,7 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
     let cursor = { element, nextSibling: null };
     let { syntax, runtime } = this.clientEnv;
     let builder = this.getElementBuilder(runtime.env, cursor) as DebugRehydrationBuilder;
-    let { handle, compilable } = this.clientRegistry.lookupCompileTimeComponent(name, null)!;
+    let { handle, compilable } = this.clientRegistry.lookupCompileTimeComponent(name)!;
     let component = this.clientRegistry.resolve<ComponentDefinition>(handle);
 
     let iterator = renderComponent(
@@ -54,7 +54,7 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
     let { syntax, runtime } = this.serverEnv;
     let builder = this.getElementBuilder(runtime.env, cursor);
 
-    let { handle, compilable } = this.serverRegistry.lookupCompileTimeComponent(name, null)!;
+    let { handle, compilable } = this.serverRegistry.lookupCompileTimeComponent(name)!;
     let component = this.serverRegistry.resolve<ComponentDefinition>(handle);
 
     let iterator = renderComponent(
