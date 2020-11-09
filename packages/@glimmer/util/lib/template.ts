@@ -9,7 +9,7 @@ export function unwrapHandle(handle: HandleResult): number {
   }
 }
 
-export function unwrapTemplate<M>(template: Template<M>): TemplateOk<M> {
+export function unwrapTemplate(template: Template): TemplateOk {
   if (template.result === 'error') {
     throw new Error(
       `Compile Error: ${template.problem} @ ${template.span.start}..${template.span.end}`

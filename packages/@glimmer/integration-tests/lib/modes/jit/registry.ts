@@ -1,5 +1,4 @@
 import {
-  AnnotatedModuleLocator,
   CompilableProgram,
   CompileTimeComponent,
   ComponentDefinition,
@@ -83,11 +82,7 @@ export class TestJitRegistry {
     return handle;
   }
 
-  lookup(
-    type: LookupType,
-    name: string,
-    _referrer?: Option<AnnotatedModuleLocator>
-  ): Option<number> {
+  lookup(type: LookupType, name: string): Option<number> {
     if (this.registry[type].hasName(name)) {
       return this.registry[type].getHandle(name);
     } else {
@@ -95,8 +90,8 @@ export class TestJitRegistry {
     }
   }
 
-  lookupComponentHandle(name: string, referrer?: Option<AnnotatedModuleLocator>): Option<number> {
-    let handle = this.lookup('component', name, referrer);
+  lookupComponentHandle(name: string): Option<number> {
+    let handle = this.lookup('component', name);
 
     if (handle === null) {
       return null;
@@ -124,11 +119,8 @@ export class TestJitRegistry {
     return handle;
   }
 
-  lookupCompileTimeComponent(
-    name: string,
-    referrer: Option<AnnotatedModuleLocator>
-  ): Option<CompileTimeComponent> {
-    let handle = this.lookupComponentHandle(name, referrer);
+  lookupCompileTimeComponent(name: string): Option<CompileTimeComponent> {
+    let handle = this.lookupComponentHandle(name);
 
     if (handle === null) {
       return null;

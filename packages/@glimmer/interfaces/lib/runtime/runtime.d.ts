@@ -1,6 +1,7 @@
 import { Environment } from './environment';
 import { RuntimeHeap, RuntimeConstants, RuntimeOp } from '../program';
 import { RuntimeResolver } from '../serialize';
+import { Owner } from './owner';
 
 /**
   The Runtime is the set of static structures that contain the compiled
@@ -9,10 +10,10 @@ import { RuntimeResolver } from '../serialize';
   The contents of the Runtime do not change as the VM executes, unlike
   the VM state.
  */
-export interface RuntimeContext<R = unknown, E = unknown> {
+export interface RuntimeContext<E = unknown> {
   env: Environment<E>;
   program: RuntimeProgram;
-  resolver: RuntimeResolver<R>;
+  resolver: RuntimeResolver;
 }
 
 export interface RuntimeProgram {

@@ -62,9 +62,10 @@ const STDLIB_META = {
   asPartial: false,
   evalSymbols: null,
   upvars: null,
+  moduleName: 'stdlib',
 
   // TODO: ??
-  referrer: {},
+  owner: null,
   size: 0,
 };
 

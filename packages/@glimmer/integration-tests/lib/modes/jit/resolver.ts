@@ -1,46 +1,38 @@
 import {
   RuntimeResolver,
-  AnnotatedModuleLocator,
   Option,
   ComponentDefinition,
-  Invocation,
+  CompileTimeComponent,
 } from '@glimmer/interfaces';
 import { LookupType, TestJitRegistry } from './registry';
 
-export default class TestJitRuntimeResolver implements RuntimeResolver {
-  readonly registry = new TestJitRegistry();
+export class TestJitRuntimeResolver implements RuntimeResolver {
+  constructor(private registry: TestJitRegistry) {}
 
-  lookup(
-    type: LookupType,
-    name: string,
-    referrer?: Option<AnnotatedModuleLocator>
-  ): Option<number> {
-    return this.registry.lookup(type, name, referrer);
+  lookup(type: LookupType, name: string): Option<number> {
+    return this.registry.lookup(type, name);
   }
 
-  getInvocation(_locator: AnnotatedModuleLocator): Invocation {
-    throw new Error(`getInvocation is not supported in JIT mode`);
+  lookupHelper(name: string): Option<number> {
+    return this.lookup('helper', name);
   }
 
-  lookupHelper(name: string, referrer?: Option<AnnotatedModuleLocator>): Option<number> {
-    return this.lookup('helper', name, referrer);
+  lookupModifier(name: string): Option<number> {
+    return this.lookup('modifier', name);
   }
 
-  lookupModifier(name: string, referrer?: Option<AnnotatedModuleLocator>): Option<number> {
-    return this.lookup('modifier', name, referrer);
-  }
-
-  lookupComponent(
-    name: string,
-    referrer: Option<AnnotatedModuleLocator>
-  ): Option<ComponentDefinition> {
-    let handle = this.registry.lookupComponentHandle(name, referrer);
+  lookupComponent(name: string, _owner?: object): Option<ComponentDefinition> {
+    let handle = this.registry.lookupComponentHandle(name);
     if (handle === null) return null;
     return this.resolve(handle) as ComponentDefinition;
   }
 
-  lookupPartial(name: string, referrer?: Option<AnnotatedModuleLocator>): Option<number> {
-    return this.lookup('partial', name, referrer);
+  lookupCompileTimeComponent(name: string, _owner?: object): Option<CompileTimeComponent> {
+    return this.registry.lookupCompileTimeComponent(name);
+  }
+
+  lookupPartial(name: string): Option<number> {
+    return this.lookup('partial', name);
   }
 
   resolve<T>(handle: number): T {

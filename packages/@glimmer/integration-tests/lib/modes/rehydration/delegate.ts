@@ -35,7 +35,7 @@ import {
 } from '../jit/register';
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
-import TestJitRuntimeResolver from '../jit/resolver';
+import { TestJitRuntimeResolver } from '../jit/resolver';
 import { debugRehydration, DebugRehydrationBuilder } from './builder';
 import { BaseEnv } from '../env';
 import { assign, castToSimple } from '@glimmer/util';
@@ -70,24 +70,14 @@ export class RehydrationDelegate implements RenderDelegate {
     let delegate = assign(options?.env ?? {}, BaseEnv);
 
     this.clientDoc = castToSimple(document);
-    this.clientResolver = new TestJitRuntimeResolver();
-    this.clientRegistry = this.clientResolver.registry;
-    this.clientEnv = JitDelegateContext(
-      this.clientDoc,
-      this.clientResolver,
-      this.clientRegistry,
-      delegate
-    );
+    this.clientRegistry = new TestJitRegistry();
+    this.clientResolver = new TestJitRuntimeResolver(this.clientRegistry);
+    this.clientEnv = JitDelegateContext(this.clientDoc, this.clientResolver, delegate);
 
     this.serverDoc = createHTMLDocument();
-    this.serverResolver = new TestJitRuntimeResolver();
-    this.serverRegistry = this.serverResolver.registry;
-    this.serverEnv = JitDelegateContext(
-      this.serverDoc,
-      this.serverResolver,
-      this.serverRegistry,
-      delegate
-    );
+    this.serverRegistry = new TestJitRegistry();
+    this.serverResolver = new TestJitRuntimeResolver(this.serverRegistry);
+    this.serverEnv = JitDelegateContext(this.serverDoc, this.serverResolver, delegate);
   }
 
   getInitialElement(): SimpleElement {

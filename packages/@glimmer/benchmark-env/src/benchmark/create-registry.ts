@@ -39,7 +39,7 @@ export interface Registry {
    * @param name
    * @param template
    */
-  registerComponent(name: string, template: SerializedTemplateWithLazyBlock<unknown>): void;
+  registerComponent(name: string, template: SerializedTemplateWithLazyBlock): void;
   /**
    * Register a component with a manager
    * @param name
@@ -49,7 +49,7 @@ export interface Registry {
    */
   registerComponent<T>(
     name: string,
-    template: SerializedTemplateWithLazyBlock<unknown>,
+    template: SerializedTemplateWithLazyBlock,
     component: T,
     manager: ComponentManager<unknown, T>
   ): void;
@@ -88,7 +88,7 @@ export default function createRegistry(): Registry {
   return {
     registerComponent: (
       name: string,
-      template: SerializedTemplateWithLazyBlock<unknown>,
+      template: SerializedTemplateWithLazyBlock,
       component: unknown = null,
       manager: ComponentManager = new SimpleComponentManager()
     ) => {

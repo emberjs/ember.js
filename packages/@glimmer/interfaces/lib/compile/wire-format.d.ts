@@ -318,10 +318,10 @@ export interface SerializedTemplateBlock extends SerializedBlock {
 /**
  * A JSON object that the compiled Template was serialized into.
  */
-export interface SerializedTemplate<T> {
+export interface SerializedTemplate {
   block: SerializedTemplateBlock;
   id?: Option<string>;
-  meta: T;
+  moduleName: string;
 }
 
 /**
@@ -332,10 +332,10 @@ export type SerializedTemplateBlockJSON = string;
 /**
  * A JSON object containing the SerializedTemplateBlock as JSON and TemplateMeta.
  */
-export interface SerializedTemplateWithLazyBlock<M> {
+export interface SerializedTemplateWithLazyBlock {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
-  meta: M;
+  moduleName: string;
 }
 
 /**

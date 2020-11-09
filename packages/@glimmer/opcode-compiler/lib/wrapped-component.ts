@@ -20,7 +20,7 @@ export class WrappedBuilder implements CompilableProgram {
   private compiled: Option<number> = null;
   private attrsBlockNumber: number;
 
-  constructor(private layout: LayoutWithContext<unknown>) {
+  constructor(private layout: LayoutWithContext) {
     let { block } = layout;
 
     let symbols = block.symbols.slice();

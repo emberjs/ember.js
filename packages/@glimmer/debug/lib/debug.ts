@@ -109,7 +109,7 @@ export function debug(
       switch (operand.type) {
         case 'u32':
         case 'i32':
-        case 'meta':
+        case 'owner':
           out[operand.name] = actualOperand;
           break;
         case 'handle':
