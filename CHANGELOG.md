@@ -1,3 +1,13 @@
+## v0.63.5 (2020-11-10)
+
+#### :bug: Bug Fix
+* `@glimmer/util`
+  * [#1193](https://github.com/glimmerjs/glimmer-vm/pull/1193) [BUGFIX] Use custom symbol whenever native is not present ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.63.4 (2020-11-10)
 
 #### :bug: Bug Fix
