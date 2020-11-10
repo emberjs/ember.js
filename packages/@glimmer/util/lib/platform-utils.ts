@@ -3,6 +3,15 @@ export type Maybe<T> = Option<T> | undefined | void;
 
 export type Factory<T> = new (...args: unknown[]) => T;
 
+export const HAS_NATIVE_SYMBOL = (function () {
+  if (typeof Symbol !== 'function') {
+    return false;
+  }
+
+  // eslint-disable-next-line symbol-description
+  return typeof Symbol() === 'symbol';
+})();
+
 export function keys<T>(obj: T): Array<keyof T> {
   return Object.keys(obj) as Array<keyof T>;
 }
@@ -29,7 +38,6 @@ export type Lit = string | number | boolean | undefined | null | void | {};
 
 export const tuple = <T extends Lit[]>(...args: T) => args;
 
-export const symbol =
-  typeof Symbol !== 'undefined'
-    ? Symbol
-    : (key: string) => `__${key}${Math.floor(Math.random() * Date.now())}__` as any;
+export const symbol = HAS_NATIVE_SYMBOL
+  ? Symbol
+  : (key: string) => `__${key}${Math.floor(Math.random() * Date.now())}__` as any;
