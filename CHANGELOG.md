@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.22.1 (November 10, 2020)
+
+- [#19193](https://github.com/emberjs/ember.js/pull/19193) [BUGFIX] Ensure `@ember/component` user lifecycle hooks are untracked
+- [#19197](https://github.com/emberjs/ember.js/pull/19197) [BUGFIX] Restore the shadowed property set behavior
+- [#19199](https://github.com/emberjs/ember.js/pull/19199) [BUGFIX] Cleans up the DebugRenderTree more thoroughly on errors
+- [#19249](https://github.com/emberjs/ember.js/pull/19249) [BUGFIX] Fix issues with query params during intermediate transitions
+
 ### v3.22.0 (October 5, 2020)
 
 - [#19062](https://github.com/emberjs/ember.js/pull/19062) / [#19068](https://github.com/emberjs/ember.js/pull/19068) [FEATURE] Add @ember/destroyable feature from the [Destroyables RFC](https://github.com/emberjs/rfcs/blob/master/text/0580-destroyables.md).
