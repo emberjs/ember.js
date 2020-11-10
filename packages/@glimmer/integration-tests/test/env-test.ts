@@ -7,10 +7,10 @@ QUnit.test('assert against nested transactions', (assert) => {
   let env = new EnvironmentImpl(
     { document: castToSimple(document) },
     {
-      onTransactionBegin() {},
+      owner: {},
       onTransactionCommit() {},
       isInteractive: true,
-      extra: undefined,
+      enableDebugTooling: false,
     }
   );
   env.begin();
@@ -24,10 +24,10 @@ QUnit.test('ensure commit cleans up when it can', (assert) => {
   let env = new EnvironmentImpl(
     { document: castToSimple(document) },
     {
-      onTransactionBegin() {},
+      owner: {},
       onTransactionCommit() {},
       isInteractive: true,
-      extra: undefined,
+      enableDebugTooling: false,
     }
   );
   env.begin();

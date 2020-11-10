@@ -10,8 +10,8 @@ import { Owner } from './owner';
   The contents of the Runtime do not change as the VM executes, unlike
   the VM state.
  */
-export interface RuntimeContext<E = unknown> {
-  env: Environment<E>;
+export interface RuntimeContext {
+  env: Environment;
   program: RuntimeProgram;
   resolver: RuntimeResolver;
 }
