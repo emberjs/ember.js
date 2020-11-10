@@ -72,9 +72,9 @@ setGlobalContext({
 
 export default function createEnvDelegate(isInteractive: boolean): EnvironmentDelegate {
   return {
+    owner: {},
     isInteractive,
-    extra: undefined,
-    onTransactionBegin() {},
+    enableDebugTooling: false,
     onTransactionCommit() {
       flush(scheduledDestructors);
       flush(scheduledFinalizers);
