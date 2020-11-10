@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import { HAS_NATIVE_PROXY, setProxy, symbol } from '@ember/-internals/utils';
+import { HAS_NATIVE_PROXY, isEmberArray, setProxy, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {

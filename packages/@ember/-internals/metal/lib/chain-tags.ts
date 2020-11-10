@@ -1,7 +1,7 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
-import { _WeakSet } from '@glimmer/util';
+import { _WeakSet } from '@ember/polyfills';
 import {
   combine,
   createUpdatableTag,

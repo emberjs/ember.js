@@ -542,13 +542,11 @@ moduleFor(
 
     ['@test computeds can have cycles'](assert) {
       class CycleObject {
-        // eslint-disable-next-line getter-return
         @computed('bar')
-        get foo() {}
+        get foo() {} // eslint-disable-line getter-return
 
-        // eslint-disable-next-line getter-return
         @computed('foo')
-        get bar() {}
+        get bar() {} // eslint-disable-line getter-return
       }
 
       let obj = new CycleObject();

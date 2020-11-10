@@ -9,7 +9,7 @@ import {
 import { assert } from '@ember/debug';
 import { consumeTag, tagFor, track, UpdatableTag, updateTag } from '@glimmer/validator';
 
-let wrapGetterSetter = function (target: object, key: string, desc: PropertyDescriptor) {
+let wrapGetterSetter = function(target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
 
   assert(
