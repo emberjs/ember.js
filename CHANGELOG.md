@@ -1,3 +1,12 @@
+## v0.63.1 (2020-11-10)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1187](https://github.com/glimmerjs/glimmer-vm/pull/1187) [BUGFIX] Don't strip out setComponentTemplate assertions ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.63.0 (2020-11-09)
 
 #### :boom: Breaking Change
