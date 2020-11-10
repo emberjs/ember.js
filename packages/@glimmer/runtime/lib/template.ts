@@ -24,7 +24,7 @@ export function setComponentTemplate(factory: TemplateFactory, obj: object) {
   return obj;
 }
 
-export function getComponentTemplate(obj: object): TemplateFactory | null {
+export function getComponentTemplate(obj: object): TemplateFactory | undefined {
   let pointer = obj;
 
   while (pointer !== null) {
@@ -37,7 +37,7 @@ export function getComponentTemplate(obj: object): TemplateFactory | null {
     pointer = getPrototypeOf(pointer);
   }
 
-  return null;
+  return undefined;
 }
 
 // This is only exported for types, don't use this class directly
