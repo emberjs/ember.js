@@ -58,6 +58,14 @@
 - [#19087](https://github.com/emberjs/ember.js/pull/19087) [BUGFIX] Generated initializer tests no longer causes a deprecation warning
 - [#17571](https://github.com/emberjs/ember.js/pull/17571) [BUGFIX] Avoid tampering `queryParam` argument in RouterService#isActive 
 
+### v3.20.6 (November 11, 2020)
+
+- [#19138](https://github.com/emberjs/ember.js/pull/19138) [BUGFIX] Fix tag cycles in query parameters
+- [#19158](https://github.com/emberjs/ember.js/pull/19158) [BUGFIX] `RouterService#isActive()` now consumes `currentURL` to 3.20
+- [#19164](https://github.com/emberjs/ember.js/pull/19164) [BUGFIX] Entangles custom EmberArray implementations when accessed
+- [#19172](https://github.com/emberjs/ember.js/pull/19172) / [#19197](https://github.com/emberjs/ember.js/pull/19197) [BUGFIX] Ensures that tracked properties initialize property
+- [#19178](https://github.com/emberjs/ember.js/pull/19178) [BUGFIX] Allow computeds to have cycles in their deps
+
 ### v3.20.5 (August 28, 2020)
 
 - [#19106](https://github.com/emberjs/ember.js/pull/19106) [BUGFIX] Ensure `destroy` methods on `CoreObject` are invoked.
