@@ -1,3 +1,12 @@
+## v0.63.2 (2020-11-10)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1188](https://github.com/glimmerjs/glimmer-vm/pull/1188) [BUGFIX] Upstream ember.js#19253 ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.63.1 (2020-11-10)
 
 #### :bug: Bug Fix
