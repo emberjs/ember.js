@@ -1,3 +1,12 @@
+## v0.63.4 (2020-11-10)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1191](https://github.com/glimmerjs/glimmer-vm/pull/1191) [BUGFIX] Exports Owner for IE11 ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.63.3 (2020-11-10)
 
 #### :bug: Bug Fix
