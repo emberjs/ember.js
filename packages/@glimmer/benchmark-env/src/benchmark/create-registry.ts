@@ -3,9 +3,9 @@ import {
   ModifierDefinition,
   ComponentDefinition,
   CompileTimeComponent,
-  ComponentManager,
+  InternalComponentManager,
   SerializedTemplateWithLazyBlock,
-  ModifierManager,
+  InternalModifierManager,
   CompilableProgram,
   Dict,
   PartialDefinition,
@@ -51,7 +51,7 @@ export interface Registry {
     name: string,
     template: SerializedTemplateWithLazyBlock,
     component: T,
-    manager: ComponentManager<unknown, T>
+    manager: InternalComponentManager<unknown, T>
   ): void;
   /**
    * Register a helper
@@ -64,7 +64,11 @@ export interface Registry {
    * @param name
    * @param helper
    */
-  registerModifier<T>(name: string, modifier: T, manager: ModifierManager<unknown, T>): void;
+  registerModifier<T>(
+    name: string,
+    modifier: T,
+    manager: InternalModifierManager<unknown, T>
+  ): void;
 
   render(
     entry: string,
@@ -90,7 +94,7 @@ export default function createRegistry(): Registry {
       name: string,
       template: SerializedTemplateWithLazyBlock,
       component: unknown = null,
-      manager: ComponentManager = new SimpleComponentManager()
+      manager: InternalComponentManager = new SimpleComponentManager()
     ) => {
       components.set(
         name,

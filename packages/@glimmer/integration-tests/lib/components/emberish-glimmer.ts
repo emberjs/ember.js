@@ -5,9 +5,9 @@ import {
   Option,
   Bounds,
   CapturedNamedArguments,
-  ComponentManager,
+  InternalComponentManager,
   WithStaticLayout,
-  ComponentCapabilities,
+  InternalComponentCapabilities,
   Environment,
   VMArguments,
   DynamicScope,
@@ -84,9 +84,9 @@ export interface EmberishGlimmerComponentState {
 
 export class EmberishGlimmerComponentManager
   implements
-    ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
+    InternalComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
     WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState> {
-  getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
+  getCapabilities(state: TestComponentDefinitionState): InternalComponentCapabilities {
     return state.capabilities;
   }
 

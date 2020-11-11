@@ -17,7 +17,7 @@ import {
 import {
   CompilableBlock,
   ComponentDefinition,
-  ComponentManager,
+  InternalComponentManager,
   ElementOperations,
   Invocation,
   Scope,
@@ -94,7 +94,7 @@ export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface
 
 export const CheckScope: Checker<Scope> = wrap(() => CheckInstanceof(PartialScopeImpl));
 
-export const CheckComponentManager: Checker<ComponentManager<unknown>> = CheckInterface({
+export const CheckComponentManager: Checker<InternalComponentManager<unknown>> = CheckInterface({
   getCapabilities: CheckFunction,
 });
 

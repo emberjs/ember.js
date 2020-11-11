@@ -8,13 +8,9 @@ import {
   CheckNode,
   CheckMaybe,
 } from '@glimmer/debug';
-import { Op, Option, ModifierManager } from '@glimmer/interfaces';
+import { Op, Option, InternalModifierManager } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
-import {
-  ModifierDefinition,
-  InternalModifierManager,
-  ModifierInstanceState,
-} from '../../modifier/interfaces';
+import { ModifierDefinition } from '../../modifier/interfaces';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { Assert } from './vm';
@@ -67,7 +63,7 @@ APPEND_OPCODES.add(Op.PopRemoteElement, (vm) => {
 
 APPEND_OPCODES.add(Op.FlushElement, (vm) => {
   let operations = check(vm.fetchValue($t0), CheckOperations);
-  let modifiers: Option<[ModifierManager, unknown][]> = null;
+  let modifiers: Option<[InternalModifierManager, unknown][]> = null;
 
   if (operations) {
     modifiers = operations.flush(vm);
@@ -128,7 +124,7 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   constructor(
     public tag: Tag,
     private manager: InternalModifierManager,
-    private modifier: ModifierInstanceState
+    private modifier: unknown
   ) {
     super();
     this.lastUpdated = valueForTag(tag);

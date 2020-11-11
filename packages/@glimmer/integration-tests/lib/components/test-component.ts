@@ -1,8 +1,8 @@
-import { ComponentCapabilities, Template } from '@glimmer/interfaces';
+import { InternalComponentCapabilities, Template } from '@glimmer/interfaces';
 
 export interface TestComponentDefinitionState<T extends object = object> {
   /* Manager-related */
-  capabilities: ComponentCapabilities;
+  capabilities: InternalComponentCapabilities;
 
   /* Component-related */
   name: string;

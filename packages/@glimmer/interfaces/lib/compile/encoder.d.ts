@@ -10,7 +10,7 @@ import {
 } from '../template';
 import { Op, MachineOp } from '../vm-opcodes';
 import * as WireFormat from './wire-format';
-import ComponentCapabilities from '../component-capabilities';
+import { InternalComponentCapabilities } from '../managers/internal/component';
 
 export interface Labels<InstructionEncoder> {
   readonly labels: Dict<number>;
@@ -144,13 +144,13 @@ export interface IfResolvedComponentOp {
     blocks: WireFormat.Core.Blocks;
     staticTemplate: (
       handle: number,
-      capabilities: ComponentCapabilities,
+      capabilities: InternalComponentCapabilities,
       template: CompilableProgram,
       blocks: IfResolvedComponentBlocks
     ) => StatementCompileActions;
     dynamicTemplate: (
       handle: number,
-      capabilities: ComponentCapabilities,
+      capabilities: InternalComponentCapabilities,
       blocks: IfResolvedComponentBlocks
     ) => StatementCompileActions;
     orElse?: () => ExpressionCompileActions;

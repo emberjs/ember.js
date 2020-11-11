@@ -1,7 +1,6 @@
 export * from './lib/compile';
-export { default as ComponentCapabilities } from './lib/component-capabilities';
 export * from './lib/components';
-export * from './lib/components/component-manager';
+export * from './lib/managers';
 export * from './lib/content';
 export * from './lib/core';
 export * from './lib/dom/bounds';

@@ -1,11 +1,11 @@
-import { WithStaticLayout, ComponentCapabilities, Template } from '@glimmer/interfaces';
+import { WithStaticLayout, InternalComponentCapabilities, Template } from '@glimmer/interfaces';
 import { TestComponentDefinitionState } from './test-component';
 import { expect } from '@glimmer/util';
 import { Reference, NULL_REFERENCE } from '@glimmer/reference';
 
 export class TemplateOnlyComponentManager
   implements WithStaticLayout<null, TestComponentDefinitionState> {
-  getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
+  getCapabilities(state: TestComponentDefinitionState): InternalComponentCapabilities {
     return state.capabilities;
   }
 
