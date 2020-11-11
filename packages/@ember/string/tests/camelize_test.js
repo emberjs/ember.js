@@ -5,7 +5,9 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 function test(assert, given, expected, description) {
   assert.deepEqual(camelize(given), expected, description);
   if (ENV.EXTEND_PROTOTYPES.String) {
-    assert.deepEqual(given.camelize(), expected, description);
+    expectDeprecation(() => {
+      assert.deepEqual(given.camelize(), expected, description);
+    }, /String prototype extensions are deprecated/);
   }
 }
 
