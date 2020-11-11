@@ -110,8 +110,23 @@ function _fmt(str: string, formats: any[]) {
   @param {Array} formats Optional array of parameters to interpolate into string.
   @return {String} formatted string
   @public
+  @deprecated
 */
 export function loc(str: string, formats: any[]): string {
+  deprecate(
+    'loc is deprecated, please use a dedicated localization solution like ember-intl. More alternatives listed at https://emberobserver.com/categories/internationalization.',
+    false,
+    {
+      id: 'ember-string.loc',
+      until: '4.0.0',
+      for: 'ember-source',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-loc',
+      since: {
+        available: '3.24',
+      },
+    }
+  );
+
   if (!Array.isArray(formats) || arguments.length > 2) {
     formats = Array.prototype.slice.call(arguments, 1);
   }
@@ -324,6 +339,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       @for @ember/string
       @static
       @private
+      @deprecated
     */
     loc: {
       configurable: true,
