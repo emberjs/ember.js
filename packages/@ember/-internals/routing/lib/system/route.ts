@@ -47,7 +47,10 @@ import EmberRouter, { QueryParam } from './router';
 
 export const ROUTE_CONNECTIONS = new WeakMap();
 
-export function defaultSerialize(model: {}, params: string[]) {
+export function defaultSerialize(
+  model: {},
+  params: string[]
+): { [key: string]: unknown } | undefined {
   if (params.length < 1 || !model) {
     return;
   }
@@ -67,7 +70,7 @@ export function defaultSerialize(model: {}, params: string[]) {
   return object;
 }
 
-export function hasDefaultSerialize(route: Route) {
+export function hasDefaultSerialize(route: Route): boolean {
   return route.serialize === defaultSerialize;
 }
 

@@ -10,7 +10,7 @@ let uuid = 0;
 export interface RouteOptions {
   path?: string;
   resetNamespace?: boolean;
-  serialize?: any;
+  serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined };
   overrideNameAssertion?: boolean;
 }
 
@@ -43,16 +43,14 @@ function isOptions(value?: RouteOptions | DSLCallback): value is RouteOptions {
 }
 export interface DSLImplOptions {
   enableLoadingSubstates: boolean;
-  overrideNameAssertion?: boolean;
   engineInfo?: EngineInfo;
   addRouteForEngine(name: string, routeOptions: EngineRouteInfo): void;
   resolveRouteMap(name: string): Factory<any, any>;
-  path?: string;
 }
 
 export default class DSLImpl implements DSL {
   parent: string | null;
-  matches: any[];
+  matches: Array<Object | undefined>;
   enableLoadingSubstates: boolean;
   explicitIndex = false;
   options: DSLImplOptions;
@@ -69,7 +67,7 @@ export default class DSLImpl implements DSL {
   route(name: string, callback: DSLCallback): void;
   route(name: string, options: RouteOptions): void;
   route(name: string, options: RouteOptions, callback: DSLCallback): void;
-  route(name: string, _options?: RouteOptions | DSLCallback, _callback?: DSLCallback) {
+  route(name: string, _options?: RouteOptions | DSLCallback, _callback?: DSLCallback): void {
     let options: RouteOptions;
     let callback: Option<DSLCallback> = null;
 
@@ -127,9 +125,13 @@ export default class DSLImpl implements DSL {
       createRoute(this, name, options);
     }
   }
-  /* eslint-enable no-dupe-class-members */
 
-  push(url: string, name: string, callback?: MatchCallback, serialize?: any) {
+  push(
+    url: string,
+    name: string,
+    callback?: MatchCallback,
+    serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined }
+  ): void {
     let parts = name.split('.');
 
     if (this.options.engineInfo) {
@@ -163,12 +165,15 @@ export default class DSLImpl implements DSL {
 
     return (match) => {
       for (let i = 0; i < dslMatches.length; i += 3) {
-        match(dslMatches[i]).to(dslMatches[i + 1], dslMatches[i + 2]);
+        match(dslMatches[i] as string).to(
+          dslMatches[i + 1] as string,
+          dslMatches[i + 2] as MatchCallback
+        );
       }
     };
   }
 
-  mount(_name: string, options: MountOptions = {}) {
+  mount(_name: string, options: MountOptions = {}): void {
     let engineRouteMap = this.options.resolveRouteMap(_name);
     let name = _name;
 
