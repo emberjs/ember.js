@@ -7,7 +7,7 @@ import {
   Transaction,
   TransactionSymbol,
   WithCreateInstance,
-  ModifierManager,
+  InternalModifierManager,
   RuntimeContext,
   RuntimeResolver,
   Option,
@@ -23,9 +23,9 @@ import DebugRenderTree from './debug-render-tree';
 export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
 
 class TransactionImpl implements Transaction {
-  public scheduledInstallManagers: ModifierManager[] = [];
+  public scheduledInstallManagers: InternalModifierManager[] = [];
   public scheduledInstallModifiers: unknown[] = [];
-  public scheduledUpdateModifierManagers: ModifierManager[] = [];
+  public scheduledUpdateModifierManagers: InternalModifierManager[] = [];
   public scheduledUpdateModifiers: unknown[] = [];
   public createdComponents: unknown[] = [];
   public createdManagers: WithCreateInstance<unknown>[] = [];
@@ -42,12 +42,12 @@ class TransactionImpl implements Transaction {
     this.updatedManagers.push(manager);
   }
 
-  scheduleInstallModifier(modifier: unknown, manager: ModifierManager) {
+  scheduleInstallModifier(modifier: unknown, manager: InternalModifierManager) {
     this.scheduledInstallModifiers.push(modifier);
     this.scheduledInstallManagers.push(manager);
   }
 
-  scheduleUpdateModifier(modifier: unknown, manager: ModifierManager) {
+  scheduleUpdateModifier(modifier: unknown, manager: InternalModifierManager) {
     this.scheduledUpdateModifiers.push(modifier);
     this.scheduledUpdateModifierManagers.push(manager);
   }
@@ -71,7 +71,7 @@ class TransactionImpl implements Transaction {
 
     let { scheduledInstallManagers, scheduledInstallModifiers } = this;
 
-    let manager: ModifierManager, modifier: unknown;
+    let manager: InternalModifierManager, modifier: unknown;
 
     for (let i = 0; i < scheduledInstallManagers.length; i++) {
       modifier = scheduledInstallModifiers[i];
@@ -172,13 +172,13 @@ export class EnvironmentImpl implements Environment {
     this.transaction.didUpdate(component, manager);
   }
 
-  scheduleInstallModifier(modifier: unknown, manager: ModifierManager) {
+  scheduleInstallModifier(modifier: unknown, manager: InternalModifierManager) {
     if (this.isInteractive) {
       this.transaction.scheduleInstallModifier(modifier, manager);
     }
   }
 
-  scheduleUpdateModifier(modifier: unknown, manager: ModifierManager) {
+  scheduleUpdateModifier(modifier: unknown, manager: InternalModifierManager) {
     if (this.isInteractive) {
       this.transaction.scheduleUpdateModifier(modifier, manager);
     }

@@ -12,7 +12,7 @@ import {
   ExpressionCompileActions,
   Unhandled,
   NamedBlocks,
-  ComponentCapabilities,
+  InternalComponentCapabilities,
   CompilableProgram,
   CompileTimeComponent,
   Owner,
@@ -66,7 +66,7 @@ export interface CurryComponent {
 
 // <Component>
 export interface StaticComponent extends AnyComponent {
-  capabilities: ComponentCapabilities;
+  capabilities: InternalComponentCapabilities;
   layout: CompilableProgram;
 }
 
@@ -74,7 +74,7 @@ export interface StaticComponent extends AnyComponent {
 export interface Component extends AnyComponent {
   // either we know the capabilities statically or we need to be conservative and assume
   // that the component requires all capabilities
-  capabilities: ComponentCapabilities | true;
+  capabilities: InternalComponentCapabilities | true;
 
   // are the arguments supplied as atNames?
   atNames: boolean;

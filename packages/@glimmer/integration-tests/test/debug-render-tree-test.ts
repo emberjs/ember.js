@@ -1,8 +1,8 @@
 import {
   CapturedArguments,
   CapturedRenderNode,
-  ComponentManager,
   CustomRenderNode,
+  InternalComponentManager,
 } from '@glimmer/interfaces';
 import { expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
@@ -50,7 +50,11 @@ interface ExpectedRenderNode {
 }
 
 class DebugRenderTreeDelegate extends JitRenderDelegate {
-  registerCustomComponent(name: string, template: string, Manager: { new (): ComponentManager }) {
+  registerCustomComponent(
+    name: string,
+    template: string,
+    Manager: { new (): InternalComponentManager<unknown> }
+  ) {
     const ComponentClass = templateOnlyComponent();
 
     let state: TestComponentDefinitionState = {

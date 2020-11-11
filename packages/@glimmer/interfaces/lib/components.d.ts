@@ -1,6 +1,6 @@
 // eslint-disable-next-line node/no-extraneous-import
 import { Reference } from '@glimmer/reference';
-import { ComponentManager } from './components/component-manager';
+import { InternalComponentManager } from './managers';
 import { Dict } from './core';
 
 export type ComponentDefinitionState = unknown;
@@ -9,7 +9,7 @@ export type ComponentInstanceState = unknown;
 export interface ComponentDefinition<
   D = ComponentDefinitionState,
   I = ComponentInstanceState,
-  M extends ComponentManager<I, D> = ComponentManager<I, D>
+  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>
 > {
   state: D;
   manager: M;

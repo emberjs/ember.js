@@ -54,7 +54,6 @@
  * the `RuntimeResolver` to do dynamic resolution when necessary.
  */
 
-import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
@@ -63,6 +62,7 @@ import { SyntaxCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
 import { Owner } from './runtime';
+import { InternalComponentCapabilities } from './managers';
 
 export interface HandleResolver {
   resolve(handle: number): unknown;
@@ -70,7 +70,7 @@ export interface HandleResolver {
 
 export interface CompileTimeComponent {
   handle: number;
-  capabilities?: ComponentCapabilities;
+  capabilities?: InternalComponentCapabilities;
   compilable: Option<CompilableProgram>;
 }
 

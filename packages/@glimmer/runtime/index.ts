@@ -82,5 +82,21 @@ export {
   TemplateOnlyComponent,
 } from './lib/template';
 export { getOwner, setOwner, OWNER } from './lib/owner';
+export {
+  getComponentManager,
+  setComponentManager,
+  getHelperManager,
+  setHelperManager,
+  getModifierManager,
+  setModifierManager,
+  buildCapabilities,
+} from './lib/managers/index';
+export {
+  BaseInternalComponentManager,
+  BaseInternalModifierManager,
+  isInternalComponentManager,
+  isInternalModifierManager,
+  isInternalHelper,
+} from './lib/managers/internal';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;

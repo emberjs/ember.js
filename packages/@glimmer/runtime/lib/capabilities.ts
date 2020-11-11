@@ -1,6 +1,6 @@
 import {
-  ComponentCapabilities,
-  ComponentManager,
+  InternalComponentCapabilities,
+  InternalComponentManager,
   WithUpdateHook,
   WithPrepareArgs,
   WithCreateInstance,
@@ -26,7 +26,7 @@ export const enum Capability {
 /**
  * Converts a ComponentCapabilities object into a 32-bit integer representation.
  */
-export function capabilityFlagsFrom(capabilities: ComponentCapabilities): Capability {
+export function capabilityFlagsFrom(capabilities: InternalComponentCapabilities): Capability {
   return (
     0 |
     (capabilities.dynamicLayout ? Capability.DynamicLayout : 0) |
@@ -46,21 +46,21 @@ export function capabilityFlagsFrom(capabilities: ComponentCapabilities): Capabi
 
 export interface CapabilityMap {
   [Capability.DynamicLayout]: WithDynamicLayout;
-  [Capability.DynamicTag]: ComponentManager;
+  [Capability.DynamicTag]: InternalComponentManager;
   [Capability.PrepareArgs]: WithPrepareArgs;
-  [Capability.CreateArgs]: ComponentManager;
-  [Capability.AttributeHook]: ComponentManager;
-  [Capability.ElementHook]: ComponentManager;
-  [Capability.DynamicScope]: ComponentManager;
-  [Capability.CreateCaller]: ComponentManager;
+  [Capability.CreateArgs]: InternalComponentManager;
+  [Capability.AttributeHook]: InternalComponentManager;
+  [Capability.ElementHook]: InternalComponentManager;
+  [Capability.DynamicScope]: InternalComponentManager;
+  [Capability.CreateCaller]: InternalComponentManager;
   [Capability.UpdateHook]: WithUpdateHook;
   [Capability.CreateInstance]: WithCreateInstance;
-  [Capability.Wrapped]: ComponentManager;
-  [Capability.WillDestroy]: ComponentManager;
+  [Capability.Wrapped]: InternalComponentManager;
+  [Capability.WillDestroy]: InternalComponentManager;
 }
 
 export function managerHasCapability<F extends keyof CapabilityMap>(
-  _manager: ComponentManager,
+  _manager: InternalComponentManager,
   capabilities: Capability,
   capability: F
 ): _manager is CapabilityMap[F] {
