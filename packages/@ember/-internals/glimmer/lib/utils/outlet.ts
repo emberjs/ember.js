@@ -1,5 +1,5 @@
 import { Owner } from '@ember/-internals/owner';
-import { Factory as TemplateFactory, OwnedTemplate } from '../template';
+import { Template, TemplateFactory } from '@glimmer/interfaces';
 
 export interface RenderState {
   /**
@@ -37,7 +37,7 @@ export interface RenderState {
   /**
    * template (the layout of the outlet component)
    */
-  template: OwnedTemplate | TemplateFactory | undefined;
+  template: Template | TemplateFactory | undefined;
 }
 
 export interface Outlets {

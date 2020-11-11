@@ -1,7 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert, deprecate } from '@ember/debug';
@@ -14,9 +13,11 @@ import {
   Option,
   PartialDefinition,
   RuntimeResolver,
+  Template,
+  TemplateFactory,
 } from '@glimmer/interfaces';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
+import { getComponentTemplate, getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition } from './component-managers/custom';
 import { InternalComponentDefinition, isInternalManager } from './component-managers/internal';
@@ -52,8 +53,6 @@ import { CustomModifierDefinition } from './modifiers/custom';
 import OnModifierManager from './modifiers/on';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { Factory as TemplateFactory, OwnedTemplate } from './template';
-import { getComponentTemplate } from './utils/component-template';
 import { getComponentManager, getHelperManager, getModifierManager } from './utils/managers';
 
 function instrumentationPayload(name: string) {
@@ -69,7 +68,7 @@ function componentFor(
   return owner.factoryFor(fullName, options) || null;
 }
 
-function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<OwnedTemplate> {
+function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<Template> {
   let templateFullName = `template:components/${name}`;
 
   return owner.lookup(templateFullName, options) || null;
@@ -206,7 +205,7 @@ interface IBuiltInModifiers {
   [name: string]: ModifierDefinition | undefined;
 }
 
-export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplateMeta> {
+export default class RuntimeResolverImpl implements RuntimeResolver<Owner> {
   public isInteractive: boolean;
 
   private handles: any[] = [
@@ -238,8 +237,8 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
    * public componentDefHandleCount = 0;
    * Called while executing Append Op.PushDynamicComponentManager if string
    */
-  lookupComponent(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
-    let handle = this.lookupComponentHandle(name, meta);
+  lookupComponent(name: string, owner: Owner): Option<ComponentDefinition> {
+    let handle = this.lookupComponentHandle(name, owner);
     if (handle === null) {
       assert(
         `Could not find component named "${name}" (no component or template with that name was found)`
@@ -249,9 +248,9 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     return this.resolve(handle);
   }
 
-  lookupComponentHandle(name: string, meta: OwnedTemplateMeta) {
+  lookupComponentHandle(name: string, owner: Owner) {
     let nextHandle = this.handles.length;
-    let handle = this.handle(this._lookupComponentDefinition(name, meta));
+    let handle = this.handle(this._lookupComponentDefinition(name, owner));
 
     assert(
       'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
@@ -275,9 +274,9 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
   /**
    * Called by CompileTimeLookup compiling Unknown or Helper OpCode
    */
-  lookupHelper(name: string, meta: OwnedTemplateMeta): Option<number> {
+  lookupHelper(name: string, owner: Owner): Option<number> {
     let nextHandle = this.handles.length;
-    let helper = this._lookupHelper(name, meta);
+    let helper = this._lookupHelper(name, owner);
     if (helper !== null) {
       let handle = this.handle(helper);
 
@@ -292,16 +291,16 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
   /**
    * Called by CompileTimeLookup compiling the
    */
-  lookupModifier(name: string, meta: OwnedTemplateMeta): Option<number> {
-    return this.handle(this._lookupModifier(name, meta));
+  lookupModifier(name: string, owner: Owner): Option<number> {
+    return this.handle(this._lookupModifier(name, owner));
   }
 
   /**
    * Called by CompileTimeLookup to lookup partial
    */
-  lookupPartial(name: string, meta: OwnedTemplateMeta): Option<number> {
+  lookupPartial(name: string, owner: Owner): Option<number> {
     if (PARTIALS) {
-      let partial = this._lookupPartial(name, meta);
+      let partial = this._lookupPartial(name, owner);
       return this.handle(partial);
     } else {
       return null;
@@ -327,10 +326,10 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     return handle;
   }
 
-  private _lookupHelper(_name: string, meta: OwnedTemplateMeta): Option<Helper> {
+  private _lookupHelper(_name: string, owner: Owner): Option<Helper> {
     assert(
       `You attempted to overwrite the built-in helper "${_name}" which is not allowed. Please rename the helper.`,
-      !(this.builtInHelpers[_name] && meta.owner.hasRegistration(`helper:${_name}`))
+      !(this.builtInHelpers[_name] && owner.hasRegistration(`helper:${_name}`))
     );
 
     const helper = this.builtInHelpers[_name];
@@ -338,7 +337,6 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
       return helper;
     }
 
-    let owner = meta.owner;
     let name = _name;
 
     const factory =
@@ -369,19 +367,17 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     return customHelper(manager, isClassicHelperManager(manager) ? factory : factory.class);
   }
 
-  private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
-    let owner = meta.owner;
+  private _lookupPartial(name: string, owner: Owner): PartialDefinition {
     let templateFactory = lookupPartial(name, owner);
     let template = templateFactory(owner);
 
     return new PartialDefinitionImpl(name, template);
   }
 
-  private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
+  private _lookupModifier(name: string, owner: Owner) {
     let builtin = this.builtInModifiers[name];
 
     if (builtin === undefined) {
-      let owner = meta.owner;
       let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
       if (modifier !== undefined) {
         let manager = getModifierManager(owner, modifier.class!);
@@ -393,19 +389,15 @@ export default class RuntimeResolverImpl implements RuntimeResolver<OwnedTemplat
     return builtin;
   }
 
-  private _lookupComponentDefinition(
-    _name: string,
-    meta: OwnedTemplateMeta
-  ): Option<ComponentDefinition> {
+  private _lookupComponentDefinition(_name: string, owner: Owner): Option<ComponentDefinition> {
     let name = _name;
-    let owner = meta.owner;
 
     let pair = lookupComponentPair(owner, name);
     if (pair === null) {
       return null;
     }
 
-    let layout: OwnedTemplate | undefined;
+    let layout: Template | undefined;
     let key: object;
 
     if (pair.component === null) {

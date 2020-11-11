@@ -1,16 +1,15 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
-import { CapturedNamedArguments } from '@glimmer/interfaces';
+import { CapturedNamedArguments, Template, TemplateFactory } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import { Renderer } from '../renderer';
-import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
 export interface Component {
   _debugContainerKey: string;
   _transitionTo(name: string): void;
-  layout?: TemplateFactory | OwnedTemplate;
+  layout?: TemplateFactory | Template;
   layoutName?: string;
   attributeBindings: Array<string>;
   classNames: Array<string>;

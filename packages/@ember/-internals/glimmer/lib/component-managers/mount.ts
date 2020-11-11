@@ -7,12 +7,12 @@ import {
   ComponentDefinition,
   Destroyable,
   Option,
+  TemplateFactory,
   VMArguments,
   WithDynamicLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
-import { TemplateFactory } from '../..';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import AbstractManager from './abstract';

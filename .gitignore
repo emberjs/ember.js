@@ -45,4 +45,5 @@ npm-debug.log
 *.tgz
 *.tar.gz
 *.log
+/.vscode
 

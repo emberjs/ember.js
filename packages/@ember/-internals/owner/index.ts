@@ -1,3 +1,5 @@
+import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/runtime';
+
 /**
 @module @ember/application
 */
@@ -35,11 +37,10 @@ export interface Owner {
   routable?: boolean;
 }
 
-import { enumerableSymbol, symbol } from '@ember/-internals/utils';
+import { enumerableSymbol } from '@ember/-internals/utils';
 import { deprecate } from '@ember/debug';
 
 export const LEGACY_OWNER: unique symbol = enumerableSymbol('LEGACY_OWNER') as any;
-export const OWNER: unique symbol = symbol('OWNER') as any;
 
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
@@ -86,7 +87,7 @@ export const OWNER: unique symbol = symbol('OWNER') as any;
   @public
 */
 export function getOwner(object: any): Owner {
-  let owner = object[OWNER];
+  let owner = glimmerGetOwner(object) as Owner;
 
   if (owner === undefined) {
     owner = object[LEGACY_OWNER];
@@ -121,6 +122,6 @@ export function getOwner(object: any): Owner {
   @public
 */
 export function setOwner(object: any, owner: Owner): void {
-  object[OWNER] = owner;
+  glimmerSetOwner(object, owner);
   object[LEGACY_OWNER] = owner;
 }

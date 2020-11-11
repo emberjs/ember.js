@@ -1,8 +1,8 @@
-import { OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { window } from '@ember/-internals/browser-environment';
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
+import { setOwner } from '@glimmer/runtime';
 import AutoLocation from '../../lib/location/auto_location';
 import { getHistoryPath, getHashPath } from '../../lib/location/auto_location';
 import HistoryLocation from '../../lib/location/history_location';
@@ -46,12 +46,15 @@ function createLocation(location, history) {
   owner.register('location:hash', HashLocation);
   owner.register('location:none', NoneLocation);
 
-  let autolocation = AutoLocation.create({
-    [OWNER]: owner,
+  let props = {
     location: location,
     history: history,
     global: {},
-  });
+  };
+
+  setOwner(props, owner);
+
+  let autolocation = AutoLocation.create(props);
 
   return autolocation;
 }

@@ -1,4 +1,4 @@
-import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { Owner } from '@ember/-internals/owner';
 import {
   CompileTimeComponent,
   CompileTimeResolver,
@@ -21,19 +21,19 @@ function isStaticComponentManager(
   return !capabilities.dynamicLayout;
 }
 
-export default class CompileTimeResolverImpl implements CompileTimeResolver<OwnedTemplateMeta> {
+export default class CompileTimeResolverImpl implements CompileTimeResolver<Owner> {
   constructor(private resolver: RuntimeResolver) {}
 
-  lookupHelper(name: string, referrer: OwnedTemplateMeta): Option<number> {
-    return this.resolver.lookupHelper(name, referrer);
+  lookupHelper(name: string, owner: Owner): Option<number> {
+    return this.resolver.lookupHelper(name, owner);
   }
 
-  lookupModifier(name: string, referrer: OwnedTemplateMeta): Option<number> {
-    return this.resolver.lookupModifier(name, referrer);
+  lookupModifier(name: string, owner: Owner): Option<number> {
+    return this.resolver.lookupModifier(name, owner);
   }
 
-  lookupComponent(name: string, referrer: OwnedTemplateMeta): Option<CompileTimeComponent> {
-    let definitionHandle = this.resolver.lookupComponentHandle(name, referrer);
+  lookupComponent(name: string, owner: Owner): Option<CompileTimeComponent> {
+    let definitionHandle = this.resolver.lookupComponentHandle(name, owner);
 
     if (definitionHandle === null) {
       return null;
@@ -55,15 +55,15 @@ export default class CompileTimeResolverImpl implements CompileTimeResolver<Owne
     return {
       handle: definitionHandle,
       capabilities,
-      compilable: manager.getStaticLayout(state, this.resolver),
+      compilable: manager.getStaticLayout(state),
     };
   }
 
-  lookupPartial(name: string, referrer: OwnedTemplateMeta): Option<number> {
-    return this.resolver.lookupPartial(name, referrer);
+  lookupPartial(name: string, owner: Owner): Option<number> {
+    return this.resolver.lookupPartial(name, owner);
   }
 
-  resolve(handle: number): OwnedTemplateMeta {
-    return this.resolver.resolve(handle);
+  resolve(): null {
+    return null;
   }
 }

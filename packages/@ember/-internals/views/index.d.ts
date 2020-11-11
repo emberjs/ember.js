@@ -1,18 +1,5 @@
-import { Template, Option } from '@glimmer/interfaces';
-import { Factory, Owner } from '@ember/-internals/owner';
-import { TemplateFactory } from '@ember/-internals/glimmer';
+import { Option } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
-
-export interface StaticTemplateMeta {
-  moduleName: string;
-  managerId?: string;
-}
-
-export interface OwnedTemplateMeta extends StaticTemplateMeta {
-  owner: Owner;
-  moduleName: string;
-  managerId?: string;
-}
 
 export const ActionSupport: any;
 export const ChildViewsSupport: any;

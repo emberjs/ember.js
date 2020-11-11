@@ -1,12 +1,12 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { schedule } from '@ember/runloop';
+import { Template } from '@glimmer/interfaces';
 import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
-import { OwnedTemplate } from '../template';
 import { OutletState } from '../utils/outlet';
 
 export interface BootEnvironment {
@@ -49,7 +49,7 @@ export default class OutletView {
     private _environment: BootEnvironment,
     public renderer: Renderer,
     public owner: Owner,
-    public template: OwnedTemplate
+    public template: Template
   ) {
     let outletStateTag = createTag();
     let outletState: OutletState = {

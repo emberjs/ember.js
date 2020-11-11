@@ -7,6 +7,7 @@ import {
   ComponentDefinition,
   Destroyable,
   DynamicScope,
+  Template,
   VMArguments,
   WithStaticLayout,
 } from '@glimmer/interfaces';
@@ -16,7 +17,6 @@ import { _WeakSet, unwrapTemplate } from '@glimmer/util';
 import InternalComponent from '../components/internal';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
-import { OwnedTemplate } from '../template';
 import AbstractComponentManager from './abstract';
 
 const CAPABILITIES: ComponentCapabilities = {
@@ -36,7 +36,7 @@ const CAPABILITIES: ComponentCapabilities = {
 
 export interface InternalDefinitionState {
   ComponentClass: typeof InternalComponent;
-  layout: OwnedTemplate;
+  layout: Template;
 }
 
 export interface InternalComponentState {
@@ -51,7 +51,7 @@ export class InternalComponentDefinition
   constructor(
     public manager: InternalManager,
     ComponentClass: typeof InternalComponent,
-    layout: OwnedTemplate
+    layout: Template
   ) {
     this.state = { ComponentClass, layout };
   }

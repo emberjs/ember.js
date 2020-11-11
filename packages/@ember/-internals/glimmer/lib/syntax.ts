@@ -1,4 +1,4 @@
-import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import {
   Core,
@@ -27,7 +27,7 @@ function refineInlineSyntax(
   hash: Option<Core.Hash>,
   context: MacroContext
 ): StatementCompileActions | Unhandled {
-  let component = context.resolver.lookupComponent(name, context.meta.referrer);
+  let component = context.resolver.lookupComponent(name, context.meta.owner!);
 
   if (component !== null) {
     return staticComponent(component, [
@@ -47,7 +47,7 @@ function refineBlockSyntax(
   blocks: NamedBlocks,
   context: MacroContext
 ): StatementCompileActions {
-  let handle = context.resolver.lookupComponent(name, context.meta.referrer);
+  let handle = context.resolver.lookupComponent(name, context.meta.owner!);
 
   if (handle !== null) {
     return staticComponent(handle, [params, hashToArgs(hash), blocks]);
@@ -55,14 +55,15 @@ function refineBlockSyntax(
 
   assert(
     `A component or helper named "${name}" could not be found`,
-    (context.meta.referrer as OwnedTemplateMeta).owner.hasRegistration(`helper:${name}`)
+    (context.meta.owner as Owner).hasRegistration(`helper:${name}`)
   );
 
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
     !(() => {
       const resolver = context.resolver['resolver'];
-      const { owner } = context.meta.referrer as OwnedTemplateMeta;
+      const owner = context.meta.owner as Owner;
+
       if (name === 'component' || resolver['builtInHelpers'][name]) {
         return true;
       }

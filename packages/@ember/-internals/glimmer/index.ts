@@ -360,13 +360,10 @@
   @public
 */
 
+export { templateFactory as template, templateCacheCounters } from '@glimmer/opcode-compiler';
+export { setComponentTemplate, getComponentTemplate } from '@glimmer/runtime';
+
 export { default as RootTemplate } from './lib/templates/root';
-export {
-  default as template,
-  counters as templateCacheCounters,
-  Factory as TemplateFactory,
-  OwnedTemplate,
-} from './lib/template';
 export { default as Checkbox } from './lib/components/checkbox';
 export { default as TextField } from './lib/components/text-field';
 export { default as TextArea } from './lib/components/textarea';
@@ -408,5 +405,4 @@ export { capabilities } from './lib/component-managers/custom';
 export { capabilities as modifierCapabilities } from './lib/modifiers/custom';
 export { helperCapabilities, HelperManager, invokeHelper } from './lib/helpers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
-export { setComponentTemplate, getComponentTemplate } from './lib/utils/component-template';
 export { CapturedRenderNode } from './lib/utils/debug-render-tree';

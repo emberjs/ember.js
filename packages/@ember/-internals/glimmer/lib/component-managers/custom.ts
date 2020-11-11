@@ -9,6 +9,7 @@ import {
   Destroyable,
   Dict,
   Option,
+  Template,
   VMArguments,
   WithStaticLayout,
 } from '@glimmer/interfaces';
@@ -17,7 +18,6 @@ import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
-import { OwnedTemplate } from '../template';
 import { argsProxyFor } from '../utils/args-proxy';
 import { buildCapabilities, InternalCapabilities } from '../utils/managers';
 import AbstractComponentManager from './abstract';
@@ -81,7 +81,7 @@ export function capabilities<Version extends keyof OptionalCapabilities>(
 export interface DefinitionState<ComponentInstance> {
   name: string;
   ComponentClass: Factory<ComponentInstance>;
-  template: OwnedTemplate;
+  template: Template;
 }
 
 export interface ManagerDelegate<ComponentInstance> {
@@ -302,7 +302,7 @@ export class CustomManagerDefinition<ComponentInstance> implements ComponentDefi
     public name: string,
     public ComponentClass: Factory<ComponentInstance>,
     public delegate: ManagerDelegate<ComponentInstance>,
-    public template: OwnedTemplate
+    public template: Template
   ) {
     this.state = {
       name,

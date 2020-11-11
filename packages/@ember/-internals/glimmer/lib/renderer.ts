@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { getOwner, Owner } from '@ember/-internals/owner';
-import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
+import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -14,6 +14,8 @@ import {
   RenderResult,
   RuntimeContext,
   SyntaxCompilationContext,
+  Template,
+  TemplateFactory,
 } from '@glimmer/interfaces';
 import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
@@ -41,7 +43,6 @@ import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate, EmberEnvironmentExtra } from './environment';
 import RuntimeResolver from './resolver';
 import { populateMacros } from './syntax';
-import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
@@ -114,9 +115,9 @@ class RootState {
 
   constructor(
     public root: Component | OutletView,
-    public runtime: RuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
+    public runtime: RuntimeContext<EmberEnvironmentExtra>,
     context: SyntaxCompilationContext,
-    template: OwnedTemplate,
+    template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
     dynamicScope: DynamicScope,
@@ -271,7 +272,7 @@ interface ViewRegistry {
 }
 
 export abstract class Renderer {
-  private _rootTemplate: OwnedTemplate;
+  private _rootTemplate: Template;
   private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
   private _roots: RootState[];
@@ -280,7 +281,7 @@ export abstract class Renderer {
   private _inRenderTransaction = false;
 
   private _context: SyntaxCompilationContext;
-  private _runtime: RuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>;
+  private _runtime: RuntimeContext<EmberEnvironmentExtra>;
 
   private _lastRevision = -1;
   private _destroyed = false;

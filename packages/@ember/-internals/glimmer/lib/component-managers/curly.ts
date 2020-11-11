@@ -10,12 +10,15 @@ import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
+  CompilableProgram,
   ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
   ElementOperations,
   Option,
   PreparedArguments,
+  Template,
+  TemplateFactory,
   VMArguments,
   WithDynamicLayout,
   WithDynamicTagName,
@@ -44,7 +47,7 @@ import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component
 import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
-import { Factory as TemplateFactory, isTemplateFactory, OwnedTemplate } from '../template';
+import { isTemplateFactory } from '../template';
 import {
   createClassNameBindingRef,
   createSimpleClassNameBindingRef,
@@ -121,7 +124,7 @@ export default class CurlyComponentManager
     WithStaticLayout<ComponentStateBucket, DefinitionState, RuntimeResolver>,
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket> {
-  protected templateFor(component: Component): OwnedTemplate {
+  protected templateFor(component: Component): Template {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
 
@@ -145,11 +148,11 @@ export default class CurlyComponentManager
     return factory(owner);
   }
 
-  getStaticLayout(state: DefinitionState, _resolver: RuntimeResolver) {
+  getStaticLayout(state: DefinitionState): CompilableProgram {
     return unwrapTemplate(state.template!).asLayout();
   }
 
-  getDynamicLayout(bucket: ComponentStateBucket) {
+  getDynamicLayout(bucket: ComponentStateBucket): Template {
     let component = bucket.component;
     let template = this.templateFor(component);
 
@@ -636,7 +639,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
   constructor(
     public name: string,
     public ComponentClass: any,
-    public template?: OwnedTemplate,
+    public template?: Template,
     public args?: CurriedArgs
   ) {
     this.state = {
