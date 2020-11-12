@@ -7,7 +7,7 @@ export let beginTrackingTransaction:
 export let endTrackingTransaction: undefined | (() => void);
 export let runInTrackingTransaction:
   | undefined
-  | ((fn: () => void, debuggingContext?: string | false) => void);
+  | (<T>(fn: () => T, debuggingContext?: string | false) => T);
 export let deprecateMutationsInTrackingTransaction: undefined | ((fn: () => void) => void);
 
 export let resetTrackingTransaction: undefined | (() => string);
@@ -121,13 +121,18 @@ if (DEBUG) {
    *
    * TODO: Only throw an error if the `track` is consumed.
    */
-  runInTrackingTransaction = (fn: () => void, debugLabel?: string | false) => {
+  runInTrackingTransaction = <T>(fn: () => T, debugLabel?: string | false) => {
     beginTrackingTransaction!(debugLabel);
+    let didError = true;
 
     try {
-      fn();
+      let value = fn();
+      didError = false;
+      return value;
     } finally {
-      endTrackingTransaction!();
+      if (didError !== true) {
+        endTrackingTransaction!();
+      }
     }
   };
 

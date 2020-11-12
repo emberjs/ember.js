@@ -84,7 +84,7 @@ class TransactionImpl implements Transaction {
           // eslint-disable-next-line no-loop-func
           () => manager.install(modifier),
           DEBUG &&
-            `- While rendering:\n\n  (instance of a \`${manager.getDebugName(modifier)}\` modifier)`
+            `- While rendering:\n  (instance of a \`${manager.getDebugName(modifier)}\` modifier)`
         );
         updateTag(modifierTag, tag);
       } else {
@@ -124,8 +124,7 @@ export class EnvironmentImpl implements Environment {
   public isInteractive = this.delegate.isInteractive;
   public owner = this.delegate.owner;
 
-  private enableDebugTooling = this.delegate.enableDebugTooling;
-  private _debugRenderTree = this.enableDebugTooling ? new DebugRenderTree() : undefined;
+  debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
 
   constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate) {
     if (options.appendOperations) {
@@ -136,16 +135,6 @@ export class EnvironmentImpl implements Environment {
       this.updateOperations = new DOMChangesImpl(options.document);
     } else if (DEBUG) {
       throw new Error('you must pass document or appendOperations to a new runtime');
-    }
-  }
-
-  get debugRenderTree(): DebugRenderTree {
-    if (this.enableDebugTooling) {
-      return this._debugRenderTree!;
-    } else {
-      throw new Error(
-        "Can't access debug render tree outside of the inspector (_DEBUG_RENDER_TREE flag is disabled)"
-      );
     }
   }
 
@@ -166,9 +155,7 @@ export class EnvironmentImpl implements Environment {
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
 
-    if (this.enableDebugTooling) {
-      this.debugRenderTree.begin();
-    }
+    this.debugRenderTree?.begin();
 
     this[TRANSACTION] = new TransactionImpl();
   }
@@ -202,9 +189,7 @@ export class EnvironmentImpl implements Environment {
     this[TRANSACTION] = null;
     transaction.commit();
 
-    if (this.enableDebugTooling) {
-      this.debugRenderTree.commit();
-    }
+    this.debugRenderTree?.commit();
 
     this.delegate.onTransactionCommit();
   }

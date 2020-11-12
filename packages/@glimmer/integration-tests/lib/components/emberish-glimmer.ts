@@ -7,15 +7,14 @@ import {
   CapturedNamedArguments,
   ComponentManager,
   WithStaticLayout,
-  RuntimeResolver,
   ComponentCapabilities,
   Environment,
   VMArguments,
   DynamicScope,
-  CompilableProgram,
   Destroyable,
+  Template,
 } from '@glimmer/interfaces';
-import { keys, assign, unwrapTemplate, expect } from '@glimmer/util';
+import { keys, assign, expect } from '@glimmer/util';
 import { TEMPLATE_ONLY_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
@@ -86,7 +85,7 @@ export interface EmberishGlimmerComponentState {
 export class EmberishGlimmerComponentManager
   implements
     ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
-    WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, RuntimeResolver> {
+    WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState> {
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
@@ -126,8 +125,8 @@ export class EmberishGlimmerComponentManager
     return { args, component, selfRef };
   }
 
-  getStaticLayout({ template }: TestComponentDefinitionState): CompilableProgram {
-    return unwrapTemplate(expect(template, 'expected component layout')).asLayout();
+  getStaticLayout({ template }: TestComponentDefinitionState): Template {
+    return expect(template, 'expected component layout');
   }
 
   getSelf({ selfRef }: EmberishGlimmerComponentState): Reference<unknown> {

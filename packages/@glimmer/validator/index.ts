@@ -65,5 +65,7 @@ export {
   logTrackingStack,
   setTrackingTransactionEnv,
   runInTrackingTransaction,
+  beginTrackingTransaction,
+  endTrackingTransaction,
   deprecateMutationsInTrackingTransaction,
 } from './lib/debug';

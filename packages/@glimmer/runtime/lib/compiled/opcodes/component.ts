@@ -10,7 +10,6 @@ import {
 } from '@glimmer/debug';
 import {
   Bounds,
-  CompilableTemplate,
   ComponentDefinition,
   ComponentDefinitionState,
   ComponentInstanceState,
@@ -33,6 +32,7 @@ import {
   WithCreateInstance,
   ModifierManager,
   Owner,
+  CapturedArguments,
 } from '@glimmer/interfaces';
 import { Reference, valueForRef, isConstRef } from '@glimmer/reference';
 
@@ -61,14 +61,14 @@ import {
   resolveCurriedComponentDefinition,
 } from '../../component/curried-component';
 import { resolveComponent } from '../../component/resolve';
-import { hasStaticLayout } from '../../component/interfaces';
+import { hasCustomDebugRenderTreeLifecycle, hasStaticLayout } from '../../component/interfaces';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import createCurryComponentRef from '../../references/curry-component';
 import { ARGS, CONSTANTS } from '../../symbols';
 import { UpdatingVM } from '../../vm';
 import { InternalVM } from '../../vm/append';
-import { BlockArgumentsImpl, VMArgumentsImpl } from '../../vm/arguments';
+import { BlockArgumentsImpl, EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
 import {
   CheckArguments,
   CheckCapturedArguments,
@@ -81,6 +81,7 @@ import {
 } from './-debug-strip';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { DEBUG } from '@glimmer/env';
+import { registerDestructor } from '../../destroyables';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -547,11 +548,73 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
   );
 });
 
-APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {
-  let { definition, state } = check(vm.fetchValue(_state), CheckComponentInstance);
+APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
+  let instance = check(vm.fetchValue(_state), CheckComponentInstance);
+  let { definition, state } = instance;
   let { manager } = definition;
+  let selfRef = manager.getSelf(state);
 
-  vm.stack.pushJs(manager.getSelf(state));
+  if (vm.env.debugRenderTree !== undefined) {
+    let instance = check(vm.fetchValue(_state), CheckComponentInstance);
+    let { definition, manager } = instance;
+
+    let args: CapturedArguments;
+
+    if (vm.stack.peek() === vm[ARGS]) {
+      args = vm[ARGS].capture();
+    } else {
+      let names = vm[CONSTANTS].getValue<string[]>(_names);
+      vm[ARGS].setup(vm.stack, names, [], 0, true);
+      args = vm[ARGS].capture();
+    }
+
+    let template = hasStaticLayout(instance.capabilities, manager)
+      ? manager.getStaticLayout(definition.state)
+      : (manager as WithDynamicLayout).getDynamicLayout(state, vm.runtime.resolver);
+
+    // For tearing down the debugRenderTree
+    vm.associateDestroyable(instance);
+
+    if (hasCustomDebugRenderTreeLifecycle(manager)) {
+      let nodes = manager.getDebugCustomRenderTree(
+        instance.definition.state,
+        instance.state,
+        args,
+        template
+      );
+
+      nodes.forEach((node) => {
+        let { bucket } = node;
+        vm.env.debugRenderTree!.create(bucket, node);
+
+        registerDestructor(instance, () => {
+          vm.env.debugRenderTree?.willDestroy(bucket);
+        });
+
+        vm.updateWith(new DebugRenderTreeUpdateOpcode(bucket));
+      });
+    } else {
+      let name = manager.getDebugName(definition.state);
+
+      vm.env.debugRenderTree.create(instance, {
+        type: 'component',
+        name,
+        args,
+        template,
+        instance: valueForRef(selfRef),
+      });
+
+      vm.associateDestroyable(instance);
+
+      registerDestructor(instance, () => {
+        vm.env.debugRenderTree?.willDestroy(instance);
+      });
+
+      vm.updateWith(new DebugRenderTreeUpdateOpcode(instance));
+    }
+  }
+
+  vm.stack.pushJs(selfRef);
 });
 
 APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
@@ -577,18 +640,20 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
 
   let { capabilities } = instance;
 
-  let layout: CompilableTemplate;
+  let template;
 
   if (hasStaticLayout(capabilities, manager)) {
-    layout = manager.getStaticLayout(definition.state);
+    template = manager.getStaticLayout(definition.state);
   } else {
-    let template = unwrapTemplate(manager.getDynamicLayout(instance.state, vm.runtime.resolver));
+    template = manager.getDynamicLayout(instance.state, vm.runtime.resolver);
+  }
 
-    if (hasCapability(capabilities, Capability.Wrapped)) {
-      layout = template.asWrappedLayout();
-    } else {
-      layout = template.asLayout();
-    }
+  let layout;
+
+  if (hasCapability(capabilities, Capability.Wrapped)) {
+    layout = unwrapTemplate(template).asWrappedLayout();
+  } else {
+    layout = unwrapTemplate(template).asLayout();
   }
 
   let handle = layout.compile(vm.context);
@@ -699,14 +764,32 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, (vm, { op1: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
-  let { manager, state, capabilities } = check(vm.fetchValue(_state), CheckComponentInstance);
+  let instance = check(vm.fetchValue(_state), CheckComponentInstance);
+  let { manager, state, capabilities } = instance;
   let bounds = vm.elements().popBlock();
 
-  let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
+  if (vm.env.debugRenderTree !== undefined) {
+    if (hasCustomDebugRenderTreeLifecycle(manager)) {
+      let nodes = manager.getDebugCustomRenderTree(instance.definition.state, state, EMPTY_ARGS);
 
-  mgr.didRenderLayout(state, bounds);
+      nodes.reverse().forEach((node) => {
+        let { bucket } = node;
+
+        vm.env.debugRenderTree!.didRender(bucket, bounds);
+
+        vm.updateWith(new DebugRenderTreeDidRenderOpcode(bucket, bounds));
+      });
+    } else {
+      vm.env.debugRenderTree.didRender(instance, bounds);
+
+      vm.updateWith(new DebugRenderTreeDidRenderOpcode(instance, bounds));
+    }
+  }
 
   if (managerHasCapability(manager, capabilities, Capability.CreateInstance)) {
+    let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
+    mgr.didRenderLayout(state, bounds);
+
     vm.env.didCreate(state, manager);
     vm.updateWith(new DidUpdateLayoutOpcode(manager, state, bounds));
   }
@@ -751,5 +834,29 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
     manager.didUpdateLayout(component, bounds);
 
     vm.env.didUpdate(component, manager);
+  }
+}
+
+class DebugRenderTreeUpdateOpcode extends UpdatingOpcode {
+  public type = 'debug-render-tree-update';
+
+  constructor(private bucket: object) {
+    super();
+  }
+
+  evaluate(vm: UpdatingVM) {
+    vm.env.debugRenderTree?.update(this.bucket);
+  }
+}
+
+class DebugRenderTreeDidRenderOpcode extends UpdatingOpcode {
+  public type = 'debug-render-tree-did-render';
+
+  constructor(private bucket: object, private bounds: Bounds) {
+    super();
+  }
+
+  evaluate(vm: UpdatingVM) {
+    vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);
   }
 }

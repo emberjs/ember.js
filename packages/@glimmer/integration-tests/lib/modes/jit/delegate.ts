@@ -1,5 +1,6 @@
 import { PrecompileOptions } from '@glimmer/compiler';
 import {
+  CapturedRenderNode,
   ComponentDefinition,
   Cursor,
   Dict,
@@ -26,7 +27,7 @@ import {
   runtimeContext,
 } from '@glimmer/runtime';
 import { ASTPluginBuilder } from '@glimmer/syntax';
-import { assign, castToBrowser, castToSimple, unwrapTemplate } from '@glimmer/util';
+import { assign, castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/util';
 import {
   ElementNamespace,
   SimpleDocument,
@@ -37,8 +38,6 @@ import {
 import { preprocess } from '../../compile';
 import { TestMacros } from '../../compile/macros';
 import { ComponentKind, ComponentTypes } from '../../components';
-import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
-import { EmberishGlimmerComponentFactory } from '../../components/emberish-glimmer';
 import { UserHelper } from '../../helpers';
 import { TestModifierConstructor } from '../../modifiers';
 import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
@@ -46,13 +45,11 @@ import { BaseEnv } from '../env';
 import JitCompileTimeLookup from './compilation-context';
 import {
   componentHelper,
-  registerEmberishCurlyComponent,
-  registerEmberishGlimmerComponent,
+  registerComponent,
   registerHelper,
   registerInternalHelper,
   registerModifier,
   registerPartial,
-  registerTemplateOnlyComponent,
 } from './register';
 import { TestJitRegistry } from './registry';
 import { renderTemplate } from './render';
@@ -93,7 +90,7 @@ export class JitRenderDelegate implements RenderDelegate {
 
   constructor(options?: RenderDelegateOptions) {
     this.doc = options?.doc ?? castToSimple(document);
-    this.env = assign(options?.env ?? {}, BaseEnv);
+    this.env = assign({}, options?.env ?? BaseEnv);
     registerInternalHelper(this.registry, '-get-dynamic-var', getDynamicVar);
   }
 
@@ -103,6 +100,13 @@ export class JitRenderDelegate implements RenderDelegate {
     }
 
     return this._context;
+  }
+
+  getCapturedRenderTree(): CapturedRenderNode[] {
+    return expect(
+      this.context.runtime.env.debugRenderTree,
+      'Attempted to capture the DebugRenderTree during tests, but it was not created. Did you enable it in the environment?'
+    ).capture();
   }
 
   getInitialElement(): SimpleElement {
@@ -158,25 +162,7 @@ export class JitRenderDelegate implements RenderDelegate {
     layout: Option<string>,
     Class?: ComponentTypes[K]
   ) {
-    switch (type) {
-      case 'TemplateOnly':
-        return registerTemplateOnlyComponent(this.registry, name, layout!);
-      case 'Curly':
-      case 'Dynamic':
-        return registerEmberishCurlyComponent(
-          this.registry,
-          name,
-          (Class as any) as EmberishCurlyComponentFactory,
-          layout
-        );
-      case 'Glimmer':
-        return registerEmberishGlimmerComponent(
-          this.registry,
-          name,
-          (Class as any) as EmberishGlimmerComponentFactory,
-          layout!
-        );
-    }
+    registerComponent(this.registry, type, name, layout!, Class);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
