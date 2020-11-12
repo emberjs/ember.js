@@ -2,20 +2,14 @@ import { Meta } from '@ember/-internals/meta';
 import {
   Decorator,
   DecoratorPropertyDescriptor,
-  descriptorForProperty,
   isElementDescriptor,
   setClassicDecorator,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { consumeTag, tagFor, track, UpdatableTag, updateTag } from '@glimmer/validator';
 
-let wrapGetterSetter = function(target: object, key: string, desc: PropertyDescriptor) {
+let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
-
-  assert(
-    'You attempted to use @dependentKeyCompat on a property that already has been decorated with either @computed or @tracked. @dependentKeyCompat is only necessary for native getters that are not decorated with @computed.',
-    descriptorForProperty(target, key) === undefined
-  );
 
   if (originalGet !== undefined) {
     desc.get = function() {
