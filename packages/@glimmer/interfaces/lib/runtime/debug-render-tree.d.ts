@@ -35,9 +35,6 @@ export interface DebugRenderTree<Bucket extends object = object> {
 
   update(state: Bucket): void;
 
-  // for dynamic layouts
-  setTemplate(state: Bucket, template: Template): void;
-
   didRender(state: Bucket, bounds: Bounds): void;
 
   willDestroy(state: Bucket): void;

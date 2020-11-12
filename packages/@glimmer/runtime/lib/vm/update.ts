@@ -19,7 +19,7 @@ import {
   updateRef,
 } from '@glimmer/reference';
 import { expect, Option, Stack, logStep } from '@glimmer/util';
-import { resetTracking } from '@glimmer/validator';
+import { resetTracking, runInTrackingTransaction } from '@glimmer/validator';
 import { SimpleComment } from '@simple-dom/interface';
 import { move as moveBounds, clear } from '../bounds';
 import { UpdatingOpcode } from '../opcodes';
@@ -45,14 +45,14 @@ export default class UpdatingVM {
     if (DEBUG) {
       let hasErrored = true;
       try {
-        this._execute(opcodes, handler);
+        runInTrackingTransaction!(() => this._execute(opcodes, handler), '- While rendering:');
 
         // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
         // which would happen with a `catch` + `throw`
         hasErrored = false;
       } finally {
         if (hasErrored) {
-          console.error(`\n\nError occurred while rendering:\n\n${resetTracking()}\n\n`);
+          console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
         }
       }
     } else {
