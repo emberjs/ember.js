@@ -1,3 +1,16 @@
+## v0.64.0 (2020-11-12)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#1192](https://github.com/glimmerjs/glimmer-vm/pull/1192) [REFACTOR] Integrate DebugRenderTree ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/benchmark-env`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`
+  * [#1189](https://github.com/glimmerjs/glimmer-vm/pull/1189) [UPSTREAM] DebugRenderTree ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.63.5 (2020-11-10)
 
 #### :bug: Bug Fix
