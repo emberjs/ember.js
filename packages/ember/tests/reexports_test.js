@@ -268,7 +268,7 @@ let allExports = [
   ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate'],
   ['_templateOnlyComponent', '@ember/component/template-only', 'default'],
   EMBER_GLIMMER_HELPER_MANAGER
-    ? ['_setHelperManager', '@ember/-internals/glimmer', 'setHelperManager']
+    ? ['_setHelperManager', '@glimmer/runtime', 'setHelperManager']
     : null,
   EMBER_GLIMMER_HELPER_MANAGER
     ? ['_helperManagerCapabilities', '@ember/-internals/glimmer', 'helperCapabilities']

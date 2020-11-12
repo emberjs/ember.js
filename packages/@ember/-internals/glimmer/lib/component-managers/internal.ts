@@ -1,21 +1,21 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import {
-  ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
   DynamicScope,
   Environment,
+  InternalComponentCapabilities,
+  InternalComponentManager,
   Template,
   VMArguments,
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { _WeakSet } from '@glimmer/util';
+import { BaseInternalComponentManager } from '@glimmer/runtime';
 import InternalComponent from '../components/internal';
-import AbstractComponentManager from './abstract';
 
-const CAPABILITIES: ComponentCapabilities = {
+const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
@@ -41,11 +41,12 @@ export interface InternalComponentState {
 }
 
 export class InternalComponentDefinition
-  implements ComponentDefinition<InternalDefinitionState, InternalComponentState, InternalManager> {
+  implements
+    ComponentDefinition<InternalDefinitionState, InternalComponentState, InternalComponentManager> {
   public state: InternalDefinitionState;
 
   constructor(
-    public manager: InternalManager,
+    public manager: InternalComponentManager,
     ComponentClass: typeof InternalComponent,
     layout: Template
   ) {
@@ -53,14 +54,8 @@ export class InternalComponentDefinition
   }
 }
 
-const INTERNAL_MANAGERS = new _WeakSet();
-
-export function isInternalManager(manager: object): manager is InternalManager {
-  return INTERNAL_MANAGERS.has(manager);
-}
-
 export default class InternalManager
-  extends AbstractComponentManager<InternalComponentState, InternalDefinitionState>
+  extends BaseInternalComponentManager<InternalComponentState, InternalDefinitionState>
   implements WithStaticLayout<InternalComponentState, InternalDefinitionState> {
   static for(name: string): (owner: Owner) => InternalManager {
     return (owner: Owner) => new InternalManager(owner, name);
@@ -68,10 +63,9 @@ export default class InternalManager
 
   constructor(private owner: Owner, private name: string) {
     super();
-    INTERNAL_MANAGERS.add(this);
   }
 
-  getCapabilities(): ComponentCapabilities {
+  getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
@@ -103,14 +97,6 @@ export default class InternalManager
   getSelf({ instance }: InternalComponentState): Reference {
     return createConstRef(instance, 'this');
   }
-
-  didCreate(): void {}
-
-  didUpdate(): void {}
-
-  didRenderLayout(): void {}
-
-  didUpdateLayout(): void {}
 
   getDestroyable(state: InternalComponentState): Destroyable {
     return state.instance;

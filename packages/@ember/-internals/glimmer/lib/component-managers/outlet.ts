@@ -6,11 +6,11 @@ import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import {
   CapturedArguments,
-  ComponentCapabilities,
   ComponentDefinition,
   CustomRenderNode,
   Destroyable,
   Environment,
+  InternalComponentCapabilities,
   Option,
   Template,
   VMArguments,
@@ -19,13 +19,12 @@ import {
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { EMPTY_ARGS } from '@glimmer/runtime';
+import { BaseInternalComponentManager, EMPTY_ARGS } from '@glimmer/runtime';
 
 import { SimpleElement } from '@simple-dom/interface';
 import { DynamicScope } from '../renderer';
 import { OutletState } from '../utils/outlet';
 import OutletView from '../views/outlet';
-import AbstractManager from './abstract';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   return { object: `${def.name}:${def.outlet}` };
@@ -48,7 +47,7 @@ export interface OutletDefinitionState {
   model: unknown;
 }
 
-const CAPABILITIES: ComponentCapabilities = {
+const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
@@ -64,7 +63,7 @@ const CAPABILITIES: ComponentCapabilities = {
 };
 
 class OutletComponentManager
-  extends AbstractManager<OutletInstanceState, OutletDefinitionState>
+  extends BaseInternalComponentManager<OutletInstanceState, OutletDefinitionState>
   implements
     WithStaticLayout<OutletInstanceState, OutletDefinitionState>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
@@ -156,7 +155,7 @@ class OutletComponentManager
     return template;
   }
 
-  getCapabilities(): ComponentCapabilities {
+  getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
@@ -204,7 +203,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return template;
       }
 
-      getCapabilities(): ComponentCapabilities {
+      getCapabilities(): InternalComponentCapabilities {
         return WRAPPED_CAPABILITIES;
       }
 

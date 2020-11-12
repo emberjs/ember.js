@@ -1,12 +1,19 @@
+import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
+import { setModifierManager } from '@glimmer/runtime';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { setModifierManager, modifierCapabilities } from '@ember/-internals/glimmer';
+import { modifierCapabilities } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
 
 class ModifierManagerTest extends RenderingTestCase {
-  '@test throws a useful error when missing capabilities'() {
+  '@test throws a useful error when missing capabilities'(assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
     this.registerModifier(
       'foo-bar',
       setModifierManager(() => {
@@ -19,7 +26,7 @@ class ModifierManagerTest extends RenderingTestCase {
       }, {})
     );
 
-    expectAssertion(() => {
+    assert.throws(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
     }, /Custom modifier managers must have a `capabilities` property /);
   }
@@ -269,6 +276,11 @@ class ModifierManagerTest extends RenderingTestCase {
   }
 
   '@test capabilities helper function must be used to generate capabilities'(assert) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
     class OverrideCustomModifierManager extends this.CustomModifierManager {
       capabilities = {
         disableAutoTracking: false,
@@ -296,7 +308,7 @@ class ModifierManagerTest extends RenderingTestCase {
 
     this.registerModifier('foo-bar', ModifierClass.extend());
 
-    expectAssertion(() => {
+    assert.throws(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
     }, /Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13' \| '3.22'\)` \(imported via `import \{ capabilities \} from '@ember\/modifier';`\). /);
 

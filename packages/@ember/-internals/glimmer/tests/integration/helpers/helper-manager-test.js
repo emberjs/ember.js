@@ -1,15 +1,12 @@
+import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import {
-  setHelperManager,
-  setModifierManager,
-  helperCapabilities,
-} from '@ember/-internals/glimmer';
+import { helperCapabilities } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
 import { setOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { inject as service } from '@ember/service';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor, setHelperManager, setModifierManager } from '@glimmer/runtime';
 
 class TestHelperManager {
   capabilities = helperCapabilities('3.23', {
@@ -291,6 +288,11 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
       }
 
       '@test capabilities helper function must be used to generate capabilities'(assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
         class OverrideTestHelperManager extends TestHelperManager {
           capabilities = {
             hasValue: true,
@@ -311,7 +313,7 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
           }
         );
 
-        expectAssertion(() => {
+        assert.throws(() => {
           this.render('{{hello}}');
         }, /Custom helper managers must have a `capabilities` property that is the result of calling the `capabilities\('3.23'\)` \(imported via `import \{ capabilities \} from '@ember\/helper';`\). /);
 

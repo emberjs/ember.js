@@ -9,11 +9,11 @@ import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
-  ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
   ElementOperations,
   Environment,
+  InternalComponentCapabilities,
   Option,
   PreparedArguments,
   Template,
@@ -29,7 +29,7 @@ import {
   Reference,
   valueForRef,
 } from '@glimmer/reference';
-import { reifyPositional } from '@glimmer/runtime';
+import { BaseInternalComponentManager, reifyPositional } from '@glimmer/runtime';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import {
   beginTrackFrame,
@@ -55,7 +55,6 @@ import {
 
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
-import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
@@ -116,7 +115,7 @@ const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
 export default class CurlyComponentManager
-  extends AbstractManager<ComponentStateBucket, DefinitionState>
+  extends BaseInternalComponentManager<ComponentStateBucket, DefinitionState>
   implements
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket> {
@@ -158,7 +157,7 @@ export default class CurlyComponentManager
     return (component && component.tagName) || 'div';
   }
 
-  getCapabilities(state: DefinitionState): ComponentCapabilities {
+  getCapabilities(state: DefinitionState): InternalComponentCapabilities {
     return state.capabilities;
   }
 
@@ -575,7 +574,7 @@ interface CurriedArgs {
   named: any;
 }
 
-export const CURLY_CAPABILITIES: ComponentCapabilities = {
+export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,

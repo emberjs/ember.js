@@ -7,7 +7,8 @@ import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName, symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { Arguments, Dict } from '@glimmer/interfaces';
+import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
+import { setHelperManager } from '@glimmer/runtime';
 import { _WeakSet as WeakSet } from '@glimmer/util';
 import {
   consumeTag,
@@ -15,8 +16,7 @@ import {
   deprecateMutationsInTrackingTransaction,
   dirtyTag,
 } from '@glimmer/validator';
-import { helperCapabilities, HelperManager } from './helpers/custom';
-import { setHelperManager } from './utils/managers';
+import { helperCapabilities } from './helpers/custom';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -197,7 +197,7 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 }
 
-setHelperManager((owner) => new ClassicHelperManager(owner), Helper);
+setHelperManager((owner: Owner | undefined) => new ClassicHelperManager(owner), Helper);
 
 ///////////
 

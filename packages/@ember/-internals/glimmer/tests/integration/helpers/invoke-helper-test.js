@@ -4,7 +4,6 @@ import {
   Helper,
   helper,
   Component as EmberComponent,
-  setHelperManager,
   helperCapabilities,
 } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
@@ -13,7 +12,7 @@ import { EMBER_GLIMMER_INVOKE_HELPER, EMBER_GLIMMER_HELPER_MANAGER } from '@embe
 import Service, { inject as service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
-import { destroy, isDestroyed, registerDestructor } from '@glimmer/runtime';
+import { destroy, isDestroyed, registerDestructor, setHelperManager } from '@glimmer/runtime';
 
 if (EMBER_GLIMMER_INVOKE_HELPER) {
   moduleFor(

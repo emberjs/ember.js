@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { Object as EmberObject } from '@ember/-internals/runtime';
@@ -524,6 +525,11 @@ moduleFor(
     }
 
     '@test capabilities helper function must be used to generate capabilities'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
@@ -572,7 +578,7 @@ moduleFor(
         ComponentClass,
       });
 
-      expectAssertion(() => {
+      assert.throws(() => {
         this.render('{{foo-bar name=name}}', { name: 'world' });
       }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 
@@ -832,6 +838,11 @@ moduleFor(
     }
 
     '@test capabilities helper function must be used to generate capabilities'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
@@ -880,7 +891,7 @@ moduleFor(
         ComponentClass,
       });
 
-      expectAssertion(() => {
+      assert.throws(() => {
         this.render('<FooBar @name={{name}} />', { name: 'world' });
       }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 

@@ -1,8 +1,8 @@
 /**
 @module @ember/component
 */
+import { setComponentManager } from '@glimmer/runtime';
 import InternalManager from '../component-managers/internal';
-import { setComponentManager } from '../utils/managers';
 import InternalComponent from './internal';
 
 /**

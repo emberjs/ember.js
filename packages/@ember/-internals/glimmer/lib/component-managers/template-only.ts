@@ -1,14 +1,14 @@
 import {
-  ComponentCapabilities,
   ComponentDefinition,
   Environment,
+  InternalComponentCapabilities,
   Option,
   Template,
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { NULL_REFERENCE, Reference } from '@glimmer/reference';
 
-const CAPABILITIES: ComponentCapabilities = {
+const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
@@ -33,7 +33,7 @@ export default class TemplateOnlyComponentManager
     return template;
   }
 
-  getCapabilities(): ComponentCapabilities {
+  getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 

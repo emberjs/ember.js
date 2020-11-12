@@ -1,41 +1,29 @@
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Arguments, ModifierManager, VMArguments } from '@glimmer/interfaces';
-import { registerDestructor, reifyArgs } from '@glimmer/runtime';
+import {
+  Arguments,
+  InternalModifierManager,
+  ModifierCapabilities,
+  ModifierCapabilitiesVersions,
+  ModifierManager,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { buildCapabilities, registerDestructor, reifyArgs } from '@glimmer/runtime';
 import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { argsProxyFor } from '../utils/args-proxy';
-import { buildCapabilities, InternalCapabilities } from '../utils/managers';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
   name: string;
-  delegate: ModifierManagerDelegate<ModifierInstance>;
+  delegate: ModifierManager<ModifierInstance>;
 }
 
-export interface OptionalCapabilities {
-  '3.13': {
-    disableAutoTracking?: boolean;
-  };
-
-  // passes factoryFor(...).class to `.createModifier`
-  // uses args proxy, does not provide a way to opt-out
-  '3.22': {
-    disableAutoTracking?: boolean;
-  };
-}
-
-export interface Capabilities extends InternalCapabilities {
-  disableAutoTracking: boolean;
-  useArgsProxy: boolean;
-  passFactoryToCreate: boolean;
-}
-
-export function capabilities<Version extends keyof OptionalCapabilities>(
+export function capabilities<Version extends keyof ModifierCapabilitiesVersions>(
   managerAPI: Version,
-  optionalFeatures: OptionalCapabilities[Version] = {}
-): Capabilities {
+  optionalFeatures: ModifierCapabilitiesVersions[Version] = {}
+): ModifierCapabilities {
   assert(
     'Invalid modifier manager compatibility specified',
     managerAPI === '3.13' || managerAPI === '3.22'
@@ -45,17 +33,20 @@ export function capabilities<Version extends keyof OptionalCapabilities>(
     disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
     useArgsProxy: managerAPI === '3.13' ? false : true,
     passFactoryToCreate: managerAPI === '3.13',
-  }) as Capabilities;
+  });
 }
 
 export class CustomModifierDefinition<ModifierInstance> {
   public state: CustomModifierDefinitionState<ModifierInstance>;
-  public manager: ModifierManager<unknown | null, CustomModifierDefinitionState<ModifierInstance>>;
+  public manager: InternalModifierManager<
+    unknown | null,
+    CustomModifierDefinitionState<ModifierInstance>
+  >;
 
   constructor(
     public name: string,
     public ModifierClass: Factory<ModifierInstance>,
-    public delegate: ModifierManagerDelegate<ModifierInstance>,
+    public delegate: ModifierManager<ModifierInstance>,
     isInteractive: boolean
   ) {
     this.state = {
@@ -73,18 +64,10 @@ export class CustomModifierDefinition<ModifierInstance> {
 export interface CustomModifierState<ModifierInstance> {
   tag: UpdatableTag;
   element: SimpleElement;
-  delegate: ModifierManagerDelegate<ModifierInstance>;
+  delegate: ModifierManager<ModifierInstance>;
   modifier: ModifierInstance;
   args: Arguments;
   debugName?: string;
-}
-
-export interface ModifierManagerDelegate<ModifierInstance> {
-  capabilities: Capabilities;
-  createModifier(factory: unknown, args: Arguments): ModifierInstance;
-  installModifier(instance: ModifierInstance, element: SimpleElement, args: Arguments): void;
-  updateModifier(instance: ModifierInstance, args: Arguments): void;
-  destroyModifier(instance: ModifierInstance, args: Arguments): void;
 }
 
 /**
@@ -113,7 +96,7 @@ export interface ModifierManagerDelegate<ModifierInstance> {
 */
 class InteractiveCustomModifierManager<ModifierInstance>
   implements
-    ModifierManager<
+    InternalModifierManager<
       CustomModifierState<ModifierInstance>,
       CustomModifierDefinitionState<ModifierInstance>
     > {
@@ -201,7 +184,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
 }
 
 class NonInteractiveCustomModifierManager<ModifierInstance>
-  implements ModifierManager<null, CustomModifierDefinitionState<ModifierInstance>> {
+  implements InternalModifierManager<null, CustomModifierDefinitionState<ModifierInstance>> {
   create() {
     return null;
   }

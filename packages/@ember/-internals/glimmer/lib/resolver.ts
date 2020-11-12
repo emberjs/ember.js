@@ -17,10 +17,20 @@ import {
   TemplateFactory,
 } from '@glimmer/interfaces';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import { getComponentTemplate, getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
+import {
+  getComponentManager,
+  getComponentTemplate,
+  getDynamicVar,
+  getHelperManager,
+  getModifierManager,
+  isInternalComponentManager,
+  isInternalHelper,
+  isInternalModifierManager,
+  ModifierDefinition,
+} from '@glimmer/runtime';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition } from './component-managers/custom';
-import { InternalComponentDefinition, isInternalManager } from './component-managers/internal';
+import { InternalComponentDefinition } from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import InternalComponent from './components/internal';
 import {
@@ -53,7 +63,6 @@ import { CustomModifierDefinition } from './modifiers/custom';
 import OnModifierManager from './modifiers/on';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { getComponentManager, getHelperManager, getModifierManager } from './utils/managers';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -361,6 +370,11 @@ export default class RuntimeResolverImpl implements RuntimeResolver<Owner> {
         manager === SIMPLE_CLASSIC_HELPER_MANAGER
     );
 
+    assert(
+      `internal helpers are not supported via \`getHelperManager\` yet, found an internal manager for ${name}`,
+      !isInternalHelper(manager)
+    );
+
     // For classic class based helpers, we need to pass the factoryFor result itself rather
     // than the raw value (`factoryFor(...).class`). This is because injections are already
     // bound in the factoryFor result, including type-based injections
@@ -382,7 +396,14 @@ export default class RuntimeResolverImpl implements RuntimeResolver<Owner> {
       if (modifier !== undefined) {
         let manager = getModifierManager(owner, modifier.class!);
 
-        return new CustomModifierDefinition(name, modifier, manager!, this.isInteractive);
+        assert(`Expected a modifier manager to exist, but did not find one for ${name}`, manager);
+
+        assert(
+          `Internal modifier managers are not supported via \`getModifierManager\` yet, found an internal manager for ${name}`,
+          !isInternalModifierManager(manager)
+        );
+
+        return new CustomModifierDefinition(name, modifier, manager, this.isInteractive);
       }
     }
 
@@ -434,7 +455,7 @@ export default class RuntimeResolverImpl implements RuntimeResolver<Owner> {
       let manager = getComponentManager(owner, ComponentClass);
 
       if (manager !== undefined) {
-        if (isInternalManager(manager)) {
+        if (isInternalComponentManager(manager)) {
           assert(`missing layout for internal component ${name}`, pair.layout !== null);
 
           definition = new InternalComponentDefinition(

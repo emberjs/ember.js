@@ -2,9 +2,9 @@ import { Owner } from '@ember/-internals/owner';
 import {
   CompileTimeComponent,
   CompileTimeResolver,
-  ComponentCapabilities,
   ComponentDefinition,
-  ComponentManager,
+  InternalComponentCapabilities,
+  InternalComponentManager,
   Option,
   WithStaticLayout,
 } from '@glimmer/interfaces';
@@ -13,11 +13,11 @@ import RuntimeResolver from './resolver';
 
 interface StaticComponentManager
   extends WithStaticLayout<unknown, unknown>,
-    ComponentManager<unknown, unknown> {}
+    InternalComponentManager<unknown, unknown> {}
 
 function isStaticComponentManager(
-  _manager: ComponentManager,
-  capabilities: ComponentCapabilities
+  _manager: InternalComponentManager,
+  capabilities: InternalComponentCapabilities
 ): _manager is StaticComponentManager {
   return !capabilities.dynamicLayout;
 }
