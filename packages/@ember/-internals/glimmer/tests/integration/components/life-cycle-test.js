@@ -11,7 +11,6 @@ import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
 import { getViewId, getViewElement, jQueryDisabled } from '@ember/-internals/views';
-import { tryInvoke } from '@ember/-internals/utils';
 
 import { Component } from '../../utils/helpers';
 
@@ -1645,9 +1644,9 @@ if (!jQueryDisabled) {
         expectDeprecation(() => {
           let comp = owner.lookup('component:foo-bar');
           runAppend(comp);
-          runTask(() => tryInvoke(component, 'destroy'));
+          runTask(() => component.destroy?.());
         }, 'Using this.$() in a component has been deprecated, consider using this.element');
-        runTask(() => tryInvoke(component, 'destroy'));
+        runTask(() => component.destroy?.());
       }
     }
   );

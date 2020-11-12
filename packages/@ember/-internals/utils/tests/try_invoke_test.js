@@ -24,25 +24,37 @@ moduleFor(
     }
 
     ["@test should return undefined when the object doesn't exist"](assert) {
-      assert.equal(tryInvoke(undefined, 'aMethodThatDoesNotExist'), undefined);
+      expectDeprecation(
+        () => assert.equal(tryInvoke(undefined, 'aMethodThatDoesNotExist'), undefined),
+        /Use of tryInvoke is deprecated/
+      );
     }
 
     ["@test should return undefined when asked to perform a method that doesn't exist on the object"](
       assert
     ) {
-      assert.equal(tryInvoke(obj, 'aMethodThatDoesNotExist'), undefined);
+      expectDeprecation(
+        () => assert.equal(tryInvoke(obj, 'aMethodThatDoesNotExist'), undefined),
+        /Use of tryInvoke is deprecated/
+      );
     }
 
     ['@test should return what the method returns when asked to perform a method that exists on the object'](
       assert
     ) {
-      assert.equal(tryInvoke(obj, 'aMethodThatExists'), true);
+      expectDeprecation(
+        () => assert.equal(tryInvoke(obj, 'aMethodThatExists'), true),
+        /Use of tryInvoke is deprecated/
+      );
     }
 
     ['@test should return what the method returns when asked to perform a method that takes arguments and exists on the object'](
       assert
     ) {
-      assert.equal(tryInvoke(obj, 'aMethodThatTakesArguments', [true, true]), true);
+      expectDeprecation(
+        () => assert.equal(tryInvoke(obj, 'aMethodThatTakesArguments', [true, true]), true),
+        /Use of tryInvoke is deprecated/
+      );
     }
   }
 );

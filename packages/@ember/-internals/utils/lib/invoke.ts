@@ -1,3 +1,5 @@
+import { deprecate } from '@ember/debug';
+
 /**
   Checks to see if the `methodName` exists on the `obj`.
 
@@ -46,12 +48,27 @@ export function canInvoke(obj: any | null | undefined, methodName: string): obj 
   @param {Array} [args] The arguments to pass to the method
   @return {*} the return value of the invoked method or undefined if it cannot be invoked
   @public
+  @deprecated Use Javascript's optional chaining instead.
 */
 export function tryInvoke(
   obj: any | undefined | null,
   methodName: string,
   args: Array<any | undefined | null>
 ) {
+  deprecate(
+    `Use of tryInvoke is deprecated. Instead, consider using JavaScript's optional chaining.`,
+    false,
+    {
+      id: 'ember-utils.try-invoke',
+      until: '4.0.0',
+      for: 'ember-source',
+      since: {
+        available: '3.24.0',
+      },
+      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-utils-try-invoke',
+    }
+  );
+
   if (canInvoke(obj, methodName)) {
     let method = obj[methodName];
     return method.apply(obj, args);

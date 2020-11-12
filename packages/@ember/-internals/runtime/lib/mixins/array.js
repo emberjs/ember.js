@@ -3,7 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
-import { setEmberArray, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
+import { setEmberArray, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import {
   get,
   set,
@@ -1347,7 +1347,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   invoke(methodName, ...args) {
     let ret = A();
 
-    this.forEach((item) => ret.push(tryInvoke(item, methodName, args)));
+    this.forEach((item) => ret.push(item[methodName]?.(...args)));
 
     return ret;
   },
