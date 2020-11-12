@@ -972,8 +972,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```javascript
     let things = Ember.A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
 
-    things.filterBy('food', 'beans'); // [{ food: 'beans' }]
-    things.filterBy('isFruit'); // [{ food: 'apple' }]
+    things.filterBy('food', 'beans'); // [{ food: 'beans', isFruit: false }]
+    things.filterBy('isFruit'); // [{ food: 'apple', isFruit: true }]
     ```
 
     @method filterBy
