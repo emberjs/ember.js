@@ -3,7 +3,7 @@ import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 import { Helper } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
+import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 moduleFor(
   'Helpers test: custom helpers',

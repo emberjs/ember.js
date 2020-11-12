@@ -5,7 +5,7 @@ import Controller from '@ember/controller';
 import { Route } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
+import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 
 moduleFor(

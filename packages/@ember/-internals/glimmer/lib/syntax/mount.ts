@@ -1,9 +1,10 @@
 /**
 @module ember
 */
+import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, Environment, Option, VM, VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
 import {
   createCapturedArgs,
@@ -12,7 +13,6 @@ import {
   EMPTY_POSITIONAL,
 } from '@glimmer/runtime';
 import { MountDefinition } from '../component-managers/mount';
-import { EmberVMEnvironment } from '../environment';
 
 /**
   The `{{mount}}` helper lets you embed a routeless engine in a template.
@@ -58,7 +58,7 @@ export function mountHelper(
   args: VMArguments,
   vm: VM
 ): Reference<CurriedComponentDefinition | null> {
-  let env = vm.env as EmberVMEnvironment;
+  let env = vm.env as Environment<Owner>;
   let nameRef = args.positional.at(0) as Reference<Option<string>>;
   let captured: Option<CapturedArguments> = null;
 
@@ -102,10 +102,10 @@ export function mountHelper(
 
       assert(
         `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-        env.extra.owner.hasRegistration(`engine:${name}`)
+        env.owner.hasRegistration(`engine:${name}`)
       );
 
-      if (!env.extra.owner.hasRegistration(`engine:${name}`)) {
+      if (!env.owner.hasRegistration(`engine:${name}`)) {
         return null;
       }
 

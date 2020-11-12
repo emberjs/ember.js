@@ -1,19 +1,17 @@
 import { getFactoryFor } from '@ember/-internals/container';
-import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import {
   ComponentCapabilities,
   ComponentDefinition,
+  Environment,
   Option,
+  Template,
   VMArguments,
 } from '@glimmer/interfaces';
-import { EMPTY_ARGS } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
 import { DIRTY_TAG } from '../component';
-import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
@@ -30,18 +28,13 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getDebugName() {
-    return '- While rendering:';
-  }
-
-  getStaticLayout(_state: DefinitionState) {
-    const template = this.templateFor(this.component);
-    return unwrapTemplate(template).asWrappedLayout();
+  getStaticLayout(): Template {
+    return this.templateFor(this.component);
   }
 
   create(
-    environment: EmberVMEnvironment,
-    state: DefinitionState,
+    environment: Environment,
+    _state: DefinitionState,
     _args: Option<VMArguments>,
     dynamicScope: DynamicScope
   ) {
@@ -78,16 +71,6 @@ class RootComponentManager extends CurlyComponentManager {
       finalizer,
       hasWrappedElement
     );
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      environment.extra.debugRenderTree.create(bucket, {
-        type: 'component',
-        name: state.name,
-        args: EMPTY_ARGS,
-        instance: component,
-        template: state.template!,
-      });
-    }
 
     consumeTag(component[DIRTY_TAG]);
 

@@ -1,19 +1,22 @@
-import { ENV } from '@ember/-internals/environment';
+import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import EngineInstance from '@ember/engine/instance';
 import {
-  Bounds,
+  CapturedArguments,
   ComponentCapabilities,
   ComponentDefinition,
+  CustomRenderNode,
   Destroyable,
+  Environment,
   Option,
+  Template,
   TemplateFactory,
   VMArguments,
+  WithCustomDebugRenderTree,
   WithDynamicLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { registerDestructor } from '@glimmer/runtime';
-import { EmberVMEnvironment } from '../environment';
+import { associateDestroyableChild } from '@glimmer/runtime';
 import RuntimeResolver from '../resolver';
 import AbstractManager from './abstract';
 
@@ -21,7 +24,6 @@ interface EngineState {
   engine: EngineInstance;
   controller: any;
   self: Reference;
-  environment: EmberVMEnvironment;
   modelRef?: Reference;
 }
 
@@ -46,29 +48,25 @@ const CAPABILITIES = {
 
 class MountManager
   extends AbstractManager<EngineState, EngineDefinitionState>
-  implements WithDynamicLayout<EngineState, RuntimeResolver> {
-  getDynamicLayout(state: EngineState, _: RuntimeResolver) {
+  implements
+    WithDynamicLayout<EngineState, RuntimeResolver>,
+    WithCustomDebugRenderTree<EngineState, EngineDefinitionState> {
+  getDynamicLayout(state: EngineState) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
-    let template = templateFactory(state.engine);
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.extra.debugRenderTree.setTemplate(state.controller, template);
-    }
-
-    return template;
+    return templateFactory(state.engine);
   }
 
   getCapabilities(): ComponentCapabilities {
     return CAPABILITIES;
   }
 
-  create(environment: EmberVMEnvironment, { name }: EngineDefinitionState, args: VMArguments) {
+  create(env: Environment<Owner>, { name }: EngineDefinitionState, args: VMArguments) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = environment.extra.owner.buildChildEngineInstance(name);
+    let engine = env.owner.buildChildEngineInstance(name);
 
     engine.boot();
 
@@ -86,36 +84,16 @@ class MountManager
     if (modelRef === undefined) {
       controller = controllerFactory.create();
       self = createConstRef(controller, 'this');
-      bucket = { engine, controller, self, environment };
+      bucket = { engine, controller, self, modelRef };
     } else {
       let model = valueForRef(modelRef);
       controller = controllerFactory.create({ model });
       self = createConstRef(controller, 'this');
-      bucket = { engine, controller, self, modelRef, environment };
+      bucket = { engine, controller, self, modelRef };
     }
 
-    if (ENV._DEBUG_RENDER_TREE) {
-      environment.extra.debugRenderTree.create(bucket, {
-        type: 'engine',
-        name,
-        args: args.capture(),
-        instance: engine,
-        template: undefined,
-      });
-
-      environment.extra.debugRenderTree.create(controller, {
-        type: 'route-template',
-        name: 'application',
-        args: args.capture(),
-        instance: controller,
-        // set in getDynamicLayout
-        template: undefined,
-      });
-
-      registerDestructor(engine, () => {
-        environment.extra.debugRenderTree.willDestroy(controller);
-        environment.extra.debugRenderTree.willDestroy(bucket);
-      });
+    if (env.debugRenderTree) {
+      associateDestroyableChild(engine, controller);
     }
 
     return bucket;
@@ -123,6 +101,31 @@ class MountManager
 
   getDebugName({ name }: EngineDefinitionState) {
     return name;
+  }
+
+  getDebugCustomRenderTree(
+    definition: EngineDefinitionState,
+    state: EngineState,
+    args: CapturedArguments,
+    template?: Template
+  ): CustomRenderNode[] {
+    return [
+      {
+        bucket: state.engine,
+        instance: state.engine,
+        type: 'engine',
+        name: definition.name,
+        args,
+      },
+      {
+        bucket: state.controller,
+        instance: state.controller,
+        type: 'route-template',
+        name: 'application',
+        args,
+        template,
+      },
+    ];
   }
 
   getSelf({ self }: EngineState): Reference {
@@ -133,32 +136,17 @@ class MountManager
     return bucket.engine;
   }
 
-  didRenderLayout(bucket: EngineState, bounds: Bounds): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.extra.debugRenderTree.didRender(bucket.controller, bounds);
-      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
-    }
-  }
+  didRenderLayout(): void {}
 
   update(bucket: EngineState): void {
-    let { controller, environment, modelRef } = bucket;
+    let { controller, modelRef } = bucket;
 
     if (modelRef !== undefined) {
       controller.set('model', valueForRef(modelRef!));
     }
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      environment.extra.debugRenderTree.update(bucket);
-      environment.extra.debugRenderTree.update(bucket.controller);
-    }
   }
 
-  didUpdateLayout(bucket: EngineState, bounds: Bounds): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.extra.debugRenderTree.didRender(bucket.controller, bounds);
-      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
-    }
-  }
+  didUpdateLayout(): void {}
 }
 
 const MOUNT_MANAGER = new MountManager();

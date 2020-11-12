@@ -7,10 +7,8 @@ import { assert, deprecate, warn } from '@ember/debug';
 import { backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
-import { Environment, Template } from '@glimmer/interfaces';
 import { EnvironmentDelegate } from '@glimmer/runtime';
 import { setTrackingTransactionEnv } from '@glimmer/validator';
-import DebugRenderTree from './utils/debug-render-tree';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
@@ -84,59 +82,10 @@ if (DEBUG) {
 
 // Define environment delegate
 
-export interface CompilerFactory {
-  id: string;
-  new (template: Template): any;
+export class EmberEnvironmentDelegate implements EnvironmentDelegate {
+  public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
+
+  constructor(public owner: Owner, public isInteractive: boolean) {}
+
+  onTransactionCommit() {}
 }
-
-export class EmberEnvironmentExtra {
-  private _debugRenderTree?: DebugRenderTree;
-
-  constructor(public owner: Owner) {
-    if (ENV._DEBUG_RENDER_TREE) {
-      this._debugRenderTree = new DebugRenderTree();
-    }
-  }
-
-  get debugRenderTree(): DebugRenderTree {
-    if (ENV._DEBUG_RENDER_TREE) {
-      return this._debugRenderTree!;
-    } else {
-      throw new Error(
-        "Can't access debug render tree outside of the inspector (_DEBUG_RENDER_TREE flag is disabled)"
-      );
-    }
-  }
-
-  begin(): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      this.debugRenderTree.begin();
-    }
-  }
-
-  commit(): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      this.debugRenderTree.commit();
-    }
-  }
-}
-
-export class EmberEnvironmentDelegate implements EnvironmentDelegate<EmberEnvironmentExtra> {
-  public isInteractive: boolean;
-  public extra: EmberEnvironmentExtra;
-
-  constructor(owner: Owner, isInteractive: boolean) {
-    this.extra = new EmberEnvironmentExtra(owner);
-    this.isInteractive = isInteractive;
-  }
-
-  onTransactionBegin() {
-    this.extra.begin();
-  }
-
-  onTransactionCommit() {
-    this.extra.commit();
-  }
-}
-
-export type EmberVMEnvironment = Environment<EmberEnvironmentExtra>;

@@ -5,25 +5,24 @@ import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import {
-  Bounds,
+  CapturedArguments,
   ComponentCapabilities,
   ComponentDefinition,
+  CustomRenderNode,
   Destroyable,
-  ElementOperations,
+  Environment,
   Option,
   Template,
   VMArguments,
+  WithCustomDebugRenderTree,
   WithDynamicTagName,
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { EMPTY_ARGS, registerDestructor } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
+import { EMPTY_ARGS } from '@glimmer/runtime';
 
 import { SimpleElement } from '@simple-dom/interface';
-import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
-import RuntimeResolver from '../resolver';
 import { OutletState } from '../utils/outlet';
 import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
@@ -34,9 +33,9 @@ function instrumentationPayload(def: OutletDefinitionState) {
 
 interface OutletInstanceState {
   self: Reference;
-  environment: EmberVMEnvironment;
   outlet?: { name: string };
-  engine?: { mountPoint: string };
+  engineBucket?: { mountPoint: string };
+  engine?: EngineInstance;
   finalize: () => void;
 }
 
@@ -53,12 +52,12 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
-  createArgs: ENV._DEBUG_RENDER_TREE,
+  createArgs: false,
   attributeHook: false,
   elementHook: false,
   createCaller: false,
   dynamicScope: true,
-  updateHook: ENV._DEBUG_RENDER_TREE,
+  updateHook: false,
   createInstance: true,
   wrapped: false,
   willDestroy: false,
@@ -66,11 +65,13 @@ const CAPABILITIES: ComponentCapabilities = {
 
 class OutletComponentManager
   extends AbstractManager<OutletInstanceState, OutletDefinitionState>
-  implements WithStaticLayout<OutletInstanceState, OutletDefinitionState, RuntimeResolver> {
+  implements
+    WithStaticLayout<OutletInstanceState, OutletDefinitionState>,
+    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
   create(
-    environment: EmberVMEnvironment,
+    env: Environment,
     definition: OutletDefinitionState,
-    args: VMArguments,
+    _args: VMArguments,
     dynamicScope: DynamicScope
   ): OutletInstanceState {
     let parentStateRef = dynamicScope.get('outletState');
@@ -80,21 +81,11 @@ class OutletComponentManager
 
     let state: OutletInstanceState = {
       self: createConstRef(definition.controller, 'this'),
-      environment,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
 
-    if (ENV._DEBUG_RENDER_TREE) {
+    if (env.debugRenderTree !== undefined) {
       state.outlet = { name: definition.outlet };
-
-      environment.extra.debugRenderTree.create(state.outlet, {
-        type: 'outlet',
-        name: state.outlet.name,
-        args: EMPTY_ARGS,
-        instance: undefined,
-        template: undefined,
-      });
-
       let parentState = valueForRef(parentStateRef);
       let parentOwner = parentState && parentState.render && parentState.render.owner;
       let currentOwner = valueForRef(currentStateRef)!.render!.owner;
@@ -107,50 +98,62 @@ class OutletComponentManager
 
         let mountPoint = engine.mountPoint!;
 
-        state.engine = { mountPoint };
-
-        environment.extra.debugRenderTree.create(state.engine, {
-          type: 'engine',
-          name: mountPoint,
-          args: EMPTY_ARGS,
-          instance: engine,
-          template: undefined,
-        });
+        state.engine = engine;
+        state.engineBucket = { mountPoint };
       }
-
-      environment.extra.debugRenderTree.create(state, {
-        type: 'route-template',
-        name: definition.name,
-        args: args.capture(),
-        instance: definition.controller,
-        template: definition.template,
-      });
-
-      registerDestructor(state, () => {
-        state.environment.extra.debugRenderTree.willDestroy(state);
-
-        if (state.engine) {
-          state.environment.extra.debugRenderTree.willDestroy(state.engine);
-        }
-
-        state.environment.extra.debugRenderTree.willDestroy(state.outlet!);
-      });
     }
 
     return state;
   }
 
   getDebugName({ name }: OutletDefinitionState) {
-    if (name === '-top-level') {
-      return '- While rendering:';
+    return name;
+  }
+
+  getDebugCustomRenderTree(
+    definition: OutletDefinitionState,
+    state: OutletInstanceState,
+    args: CapturedArguments
+  ): CustomRenderNode[] {
+    let nodes: CustomRenderNode[] = [];
+
+    if (state.outlet) {
+      nodes.push({
+        bucket: state.outlet,
+        type: 'outlet',
+        name: state.outlet.name,
+        args: EMPTY_ARGS,
+        instance: undefined,
+        template: undefined,
+      });
     }
 
-    return name;
+    if (state.engineBucket) {
+      nodes.push({
+        bucket: state.engineBucket,
+        type: 'engine',
+        name: state.engineBucket.mountPoint,
+        args: EMPTY_ARGS,
+        instance: state.engine,
+        template: undefined,
+      });
+    }
+
+    nodes.push({
+      bucket: state,
+      type: 'route-template',
+      name: definition.name,
+      args: args,
+      instance: definition.controller,
+      template: definition.template,
+    });
+
+    return nodes;
   }
 
   getStaticLayout({ template }: OutletDefinitionState) {
     // The router has already resolved the template
-    return unwrapTemplate(template).asLayout();
+    return template;
   }
 
   getCapabilities(): ComponentCapabilities {
@@ -161,50 +164,12 @@ class OutletComponentManager
     return self;
   }
 
-  didRenderLayout(state: OutletInstanceState, bounds: Bounds): void {
+  didRenderLayout(state: OutletInstanceState): void {
     state.finalize();
-
-    if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.extra.debugRenderTree.didRender(state, bounds);
-
-      if (state.engine) {
-        state.environment.extra.debugRenderTree.didRender(state.engine, bounds);
-      }
-
-      state.environment.extra.debugRenderTree.didRender(state.outlet!, bounds);
-    }
   }
 
-  update(state: OutletInstanceState): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.extra.debugRenderTree.update(state.outlet!);
-
-      if (state.engine) {
-        state.environment.extra.debugRenderTree.update(state.engine);
-      }
-
-      state.environment.extra.debugRenderTree.update(state);
-    }
-  }
-
-  didUpdateLayout(state: OutletInstanceState, bounds: Bounds): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.extra.debugRenderTree.didRender(state, bounds);
-
-      if (state.engine) {
-        state.environment.extra.debugRenderTree.didRender(state.engine, bounds);
-      }
-
-      state.environment.extra.debugRenderTree.didRender(state.outlet!, bounds);
-    }
-  }
-
-  getDestroyable(state: OutletInstanceState): Option<Destroyable> {
-    if (ENV._DEBUG_RENDER_TREE) {
-      return state;
-    } else {
-      return null;
-    }
+  getDestroyable(): Option<Destroyable> {
+    return null;
   }
 }
 
@@ -230,24 +195,20 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
     const WrappedOutletComponentManager = class
       extends OutletComponentManager
       implements WithDynamicTagName<OutletInstanceState> {
-      getTagName(_component: OutletInstanceState) {
+      getTagName() {
         return 'div';
       }
 
       getStaticLayout({ template }: OutletDefinitionState) {
         // The router has already resolved the template
-        return unwrapTemplate(template).asWrappedLayout();
+        return template;
       }
 
       getCapabilities(): ComponentCapabilities {
         return WRAPPED_CAPABILITIES;
       }
 
-      didCreateElement(
-        component: OutletInstanceState,
-        element: SimpleElement,
-        _operations: ElementOperations
-      ): void {
+      didCreateElement(component: OutletInstanceState, element: SimpleElement): void {
         // to add GUID id and class
         element.setAttribute('class', 'ember-view');
         element.setAttribute('id', guidFor(component));

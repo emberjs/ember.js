@@ -7,6 +7,7 @@ import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   Cursor,
+  DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
   ElementBuilder,
   Environment,
@@ -40,7 +41,7 @@ import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import { NodeDOMTreeConstruction } from './dom';
-import { EmberEnvironmentDelegate, EmberEnvironmentExtra } from './environment';
+import { EmberEnvironmentDelegate } from './environment';
 import RuntimeResolver from './resolver';
 import { populateMacros } from './syntax';
 import { Component } from './utils/curly-component-state-bucket';
@@ -115,7 +116,7 @@ class RootState {
 
   constructor(
     public root: Component | OutletView,
-    public runtime: RuntimeContext<EmberEnvironmentExtra>,
+    public runtime: RuntimeContext,
     context: SyntaxCompilationContext,
     template: Template,
     self: Reference<unknown>,
@@ -281,7 +282,7 @@ export abstract class Renderer {
   private _inRenderTransaction = false;
 
   private _context: SyntaxCompilationContext;
-  private _runtime: RuntimeContext<EmberEnvironmentExtra>;
+  private _runtime: RuntimeContext;
 
   private _lastRevision = -1;
   private _destroyed = false;
@@ -328,8 +329,15 @@ export abstract class Renderer {
     );
   }
 
-  get debugRenderTree() {
-    return this._runtime.env.extra.debugRenderTree;
+  get debugRenderTree(): DebugRenderTree {
+    let { debugRenderTree } = this._runtime.env;
+
+    assert(
+      'Attempted to access the DebugRenderTree, but it did not exist. Is the Ember Inspector open?',
+      debugRenderTree
+    );
+
+    return debugRenderTree!;
   }
 
   // renderer HOOKS

@@ -3,7 +3,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setModifierManager, modifierCapabilities } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../utils/backtracking-rerender';
+import { backtrackingMessageFor } from '../utils/debug-stack';
 
 class ModifierManagerTest extends RenderingTestCase {
   '@test throws a useful error when missing capabilities'() {
@@ -260,6 +260,7 @@ class ModifierManagerTest extends RenderingTestCase {
 
     let expectedMessage = backtrackingMessageFor('name', 'Person', {
       renderTree: ['\\(instance of a `foo-bar` modifier\\)'],
+      includeTopLevel: false,
     });
 
     expectAssertion(() => {

@@ -8,7 +8,6 @@ import {
 import { ENV } from '@ember/-internals/environment';
 import {
   capabilities,
-  CapturedRenderNode,
   Component,
   setComponentManager,
   setComponentTemplate,
@@ -20,6 +19,7 @@ import Controller from '@ember/controller';
 import { captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
+import { CapturedRenderNode } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { compile } from 'ember-template-compiler';
@@ -885,7 +885,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         this.addComponent('hello-world', {
           ComponentClass: null,
-          template: 'Hello World',
+          template: '{{@name}}',
         });
 
         await this.visit('/');
@@ -958,7 +958,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         this.addComponent('hello-world', {
           ComponentClass: templateOnly(),
-          template: 'Hello World',
+          template: '{{@name}}',
         });
 
         await this.visit('/');
@@ -1031,7 +1031,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         this.addComponent('hello-world', {
           ComponentClass: setComponentTemplate(
-            compile('Hello World', { moduleName: 'my-app/components/hello-world.hbs' }),
+            compile('{{@name}}', { moduleName: 'my-app/components/hello-world.hbs' }),
             templateOnly()
           ),
         });
@@ -1659,7 +1659,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               throw new Error('oops!');
             },
           }),
-          template: 'Hello World',
+          template: '{{@name}}',
         });
 
         await assert.rejects(this.visit('/'), /oops!/);
