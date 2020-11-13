@@ -103,7 +103,6 @@ import {
   Checkbox,
   Component,
   setComponentManager,
-  setHelperManager,
   capabilities,
   escapeExpression,
   getTemplates,
@@ -119,10 +118,7 @@ import {
   TextField,
   TextArea,
   isSerializationFirstNode,
-  setModifierManager,
   modifierCapabilities,
-  setComponentTemplate,
-  getComponentTemplate,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
@@ -141,6 +137,13 @@ import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import templateOnlyComponent from '@ember/component/template-only';
+
+import {
+  setModifierManager,
+  setComponentTemplate,
+  getComponentTemplate,
+  setHelperManager,
+} from '@glimmer/runtime';
 
 import {
   assertDestroyablesDestroyed,

@@ -3,9 +3,9 @@ import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import {
-  ComponentCapabilities,
   ComponentDefinition,
   Environment,
+  InternalComponentCapabilities,
   Option,
   Template,
   VMArguments,
@@ -80,7 +80,7 @@ class RootComponentManager extends CurlyComponentManager {
 
 // ROOT is the top-level template it has nothing but one yield.
 // it is supposed to have a dummy element
-export const ROOT_CAPABILITIES: ComponentCapabilities = {
+export const ROOT_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: true,
   prepareArgs: false,

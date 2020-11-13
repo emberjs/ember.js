@@ -8,12 +8,13 @@ import {
   CapturedNamedArguments,
   CapturedPositionalArguments,
   DynamicScope,
-  ModifierManager,
+  GlimmerTreeChanges,
+  InternalModifierManager,
   VMArguments,
 } from '@glimmer/interfaces';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
-import { createUpdatableTag } from '@glimmer/validator';
+import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../helpers/action';
 
@@ -70,7 +71,7 @@ export class ActionState {
   public namedArgs: CapturedNamedArguments;
   public positional: CapturedPositionalArguments;
   public implicitTarget: any;
-  public dom: any;
+  public dom: GlimmerTreeChanges;
   public eventName: any;
   public tag = createUpdatableTag();
 
@@ -80,7 +81,7 @@ export class ActionState {
     actionArgs: any[],
     namedArgs: CapturedNamedArguments,
     positionalArgs: CapturedPositionalArguments,
-    dom: any
+    dom: GlimmerTreeChanges
   ) {
     this.element = element;
     this.actionId = actionId;
@@ -201,14 +202,15 @@ export class ActionState {
 }
 
 // implements ModifierManager<Action>
-export default class ActionModifierManager implements ModifierManager<ActionState, unknown> {
+export default class ActionModifierManager
+  implements InternalModifierManager<ActionState, unknown> {
   create(
     element: SimpleElement,
     _state: unknown,
     args: VMArguments,
     _dynamicScope: DynamicScope,
-    dom: any
-  ) {
+    dom: GlimmerTreeChanges
+  ): ActionState {
     let { named, positional } = args.capture();
 
     let actionArgs: any[] = [];
@@ -240,11 +242,11 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     return actionState;
   }
 
-  getDebugName() {
+  getDebugName(): string {
     return 'action';
   }
 
-  install(actionState: ActionState) {
+  install(actionState: ActionState): void {
     let { dom, element, actionId, positional } = actionState;
 
     let actionName;
@@ -286,10 +288,10 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     ActionHelper.registerAction(actionState);
 
     dom.setAttribute(element, 'data-ember-action', '');
-    dom.setAttribute(element, `data-ember-action-${actionId}`, actionId);
+    dom.setAttribute(element, `data-ember-action-${actionId}`, String(actionId));
   }
 
-  update(actionState: ActionState) {
+  update(actionState: ActionState): void {
     let { positional } = actionState;
     let actionNameRef = positional[1];
 
@@ -300,11 +302,11 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     actionState.eventName = actionState.getEventName();
   }
 
-  getTag(actionState: ActionState) {
+  getTag(actionState: ActionState): UpdatableTag {
     return actionState.tag;
   }
 
-  getDestroyable(actionState: ActionState) {
+  getDestroyable(actionState: ActionState): object {
     return actionState;
   }
 }

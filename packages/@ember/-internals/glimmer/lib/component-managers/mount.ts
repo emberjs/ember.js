@@ -3,11 +3,11 @@ import { generateControllerFactory } from '@ember/-internals/routing';
 import EngineInstance from '@ember/engine/instance';
 import {
   CapturedArguments,
-  ComponentCapabilities,
   ComponentDefinition,
   CustomRenderNode,
   Destroyable,
   Environment,
+  InternalComponentCapabilities,
   Option,
   Template,
   TemplateFactory,
@@ -16,9 +16,8 @@ import {
   WithDynamicLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { associateDestroyableChild } from '@glimmer/runtime';
+import { associateDestroyableChild, BaseInternalComponentManager } from '@glimmer/runtime';
 import RuntimeResolver from '../resolver';
-import AbstractManager from './abstract';
 
 interface EngineState {
   engine: EngineInstance;
@@ -47,7 +46,7 @@ const CAPABILITIES = {
 };
 
 class MountManager
-  extends AbstractManager<EngineState, EngineDefinitionState>
+  extends BaseInternalComponentManager<EngineState, EngineDefinitionState>
   implements
     WithDynamicLayout<EngineState, RuntimeResolver>,
     WithCustomDebugRenderTree<EngineState, EngineDefinitionState> {
@@ -56,7 +55,7 @@ class MountManager
     return templateFactory(state.engine);
   }
 
-  getCapabilities(): ComponentCapabilities {
+  getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 

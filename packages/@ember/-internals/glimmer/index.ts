@@ -391,7 +391,6 @@ export {
   registerMacros as _registerMacros,
   experimentalMacros as _experimentalMacros,
 } from './lib/syntax';
-export { default as AbstractComponentManager } from './lib/component-managers/abstract';
 
 // needed for test
 // TODO just test these through public API
@@ -400,8 +399,8 @@ export { default as AbstractComponentManager } from './lib/component-managers/ab
 export { INVOKE } from './lib/helpers/action';
 export { default as OutletView } from './lib/views/outlet';
 export { OutletState } from './lib/utils/outlet';
-export { setComponentManager, setModifierManager, setHelperManager } from './lib/utils/managers';
+export { setComponentManager } from './lib/utils/managers';
 export { capabilities } from './lib/component-managers/custom';
 export { capabilities as modifierCapabilities } from './lib/modifiers/custom';
-export { helperCapabilities, HelperManager, invokeHelper } from './lib/helpers/custom';
+export { helperCapabilities, invokeHelper } from './lib/helpers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';

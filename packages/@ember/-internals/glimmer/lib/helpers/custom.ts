@@ -2,31 +2,32 @@ import { getOwner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Arguments, Helper as GlimmerHelper } from '@glimmer/interfaces';
+import {
+  Arguments,
+  Helper as GlimmerHelper,
+  HelperCapabilities,
+  HelperManager,
+  HelperManagerWithDestroyable,
+  HelperManagerWithValue,
+} from '@glimmer/interfaces';
 import { createComputeRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import {
   associateDestroyableChild,
+  buildCapabilities,
   EMPTY_ARGS,
   EMPTY_NAMED,
   EMPTY_POSITIONAL,
+  getHelperManager,
   isDestroyed,
   isDestroying,
+  isInternalHelper,
 } from '@glimmer/runtime';
 import { Cache, createCache, getValue } from '@glimmer/validator';
 import { argsProxyFor } from '../utils/args-proxy';
-import { buildCapabilities, getHelperManager, InternalCapabilities } from '../utils/managers';
 
 /**
 @module @ember/helper
 */
-
-export type HelperDefinition = object;
-
-export interface HelperCapabilities extends InternalCapabilities {
-  hasValue: boolean;
-  hasDestroyable: boolean;
-  hasScheduledEffect: boolean;
-}
 
 /**
   `capabilities` returns a capabilities configuration which can be used to modify
@@ -296,29 +297,13 @@ export function helperCapabilities(
   @return {object} The definition passed into setHelperManager
   @public
 */
-export interface HelperManager<HelperStateBucket = unknown> {
-  capabilities: HelperCapabilities;
-
-  createHelper(definition: HelperDefinition, args: Arguments): HelperStateBucket;
-
-  getDebugName?(definition: HelperDefinition): string;
-}
-
-export interface HelperManagerWithValue<HelperStateBucket = unknown>
-  extends HelperManager<HelperStateBucket> {
-  getValue(bucket: HelperStateBucket): unknown;
-}
-
-function hasValue(manager: HelperManager): manager is HelperManagerWithValue {
+function hasValue(manager: HelperManager<unknown>): manager is HelperManagerWithValue<unknown> {
   return manager.capabilities.hasValue;
 }
 
-export interface HelperManagerWithDestroyable<HelperStateBucket = unknown>
-  extends HelperManager<HelperStateBucket> {
-  getDestroyable(bucket: HelperStateBucket): object;
-}
-
-function hasDestroyable(manager: HelperManager): manager is HelperManagerWithDestroyable {
+function hasDestroyable(
+  manager: HelperManager<unknown>
+): manager is HelperManagerWithDestroyable<unknown> {
   return manager.capabilities.hasDestroyable;
 }
 
@@ -411,7 +396,7 @@ class SimpleArgsProxy {
 */
 export function invokeHelper(
   context: object,
-  definition: HelperDefinition,
+  definition: object,
   computeArgs?: (context: object) => Partial<Arguments>
 ): Cache<unknown> {
   assert(
@@ -429,6 +414,8 @@ export function invokeHelper(
     )}\`. Did you use setHelperManager to associate a helper manager with this value?`,
     manager
   );
+
+  assert('Invoke helper does not support internal helpers yet', !isInternalHelper(manager));
 
   let args = new SimpleArgsProxy(context, computeArgs);
   let bucket = manager.createHelper(definition, args);
@@ -461,7 +448,7 @@ export function invokeHelper(
 
 export default function customHelper(
   manager: HelperManager<unknown>,
-  definition: HelperDefinition
+  definition: object
 ): GlimmerHelper {
   return (vmArgs, vm) => {
     const args = argsProxyFor(vmArgs.capture(), 'helper');

@@ -3,20 +3,28 @@ import { assert } from '@ember/debug';
 import {
   Arguments,
   ComponentCapabilities,
+  ComponentCapabilitiesVersions,
   ComponentDefinition,
+  ComponentManager,
+  ComponentManagerWithAsyncLifeCycleCallbacks,
+  ComponentManagerWithAsyncUpdateHook,
+  ComponentManagerWithDestructors,
+  ComponentManagerWithUpdateHook,
   Destroyable,
-  Dict,
   Environment,
+  InternalComponentCapabilities,
   Option,
   Template,
   VMArguments,
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
-import { registerDestructor } from '@glimmer/runtime';
+import {
+  BaseInternalComponentManager,
+  buildCapabilities,
+  registerDestructor,
+} from '@glimmer/runtime';
 import { argsProxyFor } from '../utils/args-proxy';
-import { buildCapabilities, InternalCapabilities } from '../utils/managers';
-import AbstractComponentManager from './abstract';
 
 const CAPABILITIES = {
   dynamicLayout: false,
@@ -33,29 +41,10 @@ const CAPABILITIES = {
   willDestroy: false,
 };
 
-export interface OptionalCapabilities {
-  '3.4': {
-    asyncLifecycleCallbacks?: boolean;
-    destructor?: boolean;
-  };
-
-  '3.13': {
-    asyncLifecycleCallbacks?: boolean;
-    destructor?: boolean;
-    updateHook?: boolean;
-  };
-}
-
-export interface Capabilities extends InternalCapabilities {
-  asyncLifeCycleCallbacks: boolean;
-  destructor: boolean;
-  updateHook: boolean;
-}
-
-export function capabilities<Version extends keyof OptionalCapabilities>(
+export function capabilities<Version extends keyof ComponentCapabilitiesVersions>(
   managerAPI: Version,
-  options: OptionalCapabilities[Version] = {}
-): Capabilities {
+  options: ComponentCapabilitiesVersions[Version] = {}
+): ComponentCapabilities {
   assert(
     'Invalid component manager compatibility specified',
     managerAPI === '3.4' || managerAPI === '3.13'
@@ -64,14 +53,14 @@ export function capabilities<Version extends keyof OptionalCapabilities>(
   let updateHook = true;
 
   if (managerAPI === '3.13') {
-    updateHook = Boolean((options as OptionalCapabilities['3.13']).updateHook);
+    updateHook = Boolean((options as ComponentCapabilitiesVersions['3.13']).updateHook);
   }
 
   return buildCapabilities({
     asyncLifeCycleCallbacks: Boolean(options.asyncLifecycleCallbacks),
     destructor: Boolean(options.destructor),
     updateHook,
-  }) as Capabilities;
+  });
 }
 
 export interface DefinitionState<ComponentInstance> {
@@ -80,60 +69,28 @@ export interface DefinitionState<ComponentInstance> {
   template: Template;
 }
 
-export interface ManagerDelegate<ComponentInstance> {
-  capabilities: Capabilities;
-  createComponent(factory: unknown, args: Arguments): ComponentInstance;
-  getContext(instance: ComponentInstance): unknown;
-}
-
 export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
-  delegate: ManagerDelegate<ComponentInstance>
-): delegate is ManagerDelegateWithAsyncLifeCycleCallbacks<ComponentInstance> {
+  delegate: ComponentManager<ComponentInstance>
+): delegate is ComponentManagerWithAsyncLifeCycleCallbacks<ComponentInstance> {
   return delegate.capabilities.asyncLifeCycleCallbacks;
 }
 
-export interface ManagerDelegateWithAsyncLifeCycleCallbacks<ComponentInstance>
-  extends ManagerDelegate<ComponentInstance> {
-  didCreateComponent(instance: ComponentInstance): void;
-}
-
 export function hasUpdateHook<ComponentInstance>(
-  delegate: ManagerDelegate<ComponentInstance>
-): delegate is ManagerDelegateWithUpdateHook<ComponentInstance> {
+  delegate: ComponentManager<ComponentInstance>
+): delegate is ComponentManagerWithUpdateHook<ComponentInstance> {
   return delegate.capabilities.updateHook;
 }
 
-export interface ManagerDelegateWithUpdateHook<ComponentInstance>
-  extends ManagerDelegate<ComponentInstance> {
-  updateComponent(instance: ComponentInstance, args: Arguments): void;
-}
-
 export function hasAsyncUpdateHook<ComponentInstance>(
-  delegate: ManagerDelegate<ComponentInstance>
-): delegate is ManagerDelegateWithAsyncUpdateHook<ComponentInstance> {
+  delegate: ComponentManager<ComponentInstance>
+): delegate is ComponentManagerWithAsyncUpdateHook<ComponentInstance> {
   return hasAsyncLifeCycleCallbacks(delegate) && hasUpdateHook(delegate);
 }
 
-export interface ManagerDelegateWithAsyncUpdateHook<ComponentInstance>
-  extends ManagerDelegateWithAsyncLifeCycleCallbacks<ComponentInstance>,
-    ManagerDelegateWithUpdateHook<ComponentInstance> {
-  didUpdateComponent(instance: ComponentInstance): void;
-}
-
 export function hasDestructors<ComponentInstance>(
-  delegate: ManagerDelegate<ComponentInstance>
-): delegate is ManagerDelegateWithDestructors<ComponentInstance> {
+  delegate: ComponentManager<ComponentInstance>
+): delegate is ComponentManagerWithDestructors<ComponentInstance> {
   return delegate.capabilities.destructor;
-}
-
-export interface ManagerDelegateWithDestructors<ComponentInstance>
-  extends ManagerDelegate<ComponentInstance> {
-  destroyComponent(instance: ComponentInstance): void;
-}
-
-export interface ComponentArguments {
-  positional: unknown[];
-  named: Dict<unknown>;
 }
 
 /**
@@ -162,7 +119,7 @@ export interface ComponentArguments {
   * `getContext()` - returns the object that should be
 */
 export default class CustomComponentManager<ComponentInstance>
-  extends AbstractComponentManager<
+  extends BaseInternalComponentManager<
     CustomComponentState<ComponentInstance>,
     CustomComponentDefinitionState<ComponentInstance>
   >
@@ -179,7 +136,7 @@ export default class CustomComponentManager<ComponentInstance>
     let { delegate } = definition;
     let args = argsProxyFor(vmArgs.capture(), 'component');
 
-    let component = delegate.createComponent(definition.ComponentClass.class, args);
+    let component = delegate.createComponent(definition.ComponentClass.class!, args);
 
     let bucket = new CustomComponentState(delegate, component, args, env);
 
@@ -222,7 +179,7 @@ export default class CustomComponentManager<ComponentInstance>
     return bucket;
   }
 
-  getCapabilities(): ComponentCapabilities {
+  getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
@@ -237,7 +194,7 @@ const CUSTOM_COMPONENT_MANAGER = new CustomComponentManager();
  */
 export class CustomComponentState<ComponentInstance> {
   constructor(
-    public delegate: ManagerDelegate<ComponentInstance>,
+    public delegate: ComponentManager<ComponentInstance>,
     public component: ComponentInstance,
     public args: Arguments,
     public env: Environment
@@ -250,7 +207,7 @@ export class CustomComponentState<ComponentInstance> {
 
 export interface CustomComponentDefinitionState<ComponentInstance>
   extends DefinitionState<ComponentInstance> {
-  delegate: ManagerDelegate<ComponentInstance>;
+  delegate: ComponentManager<ComponentInstance>;
 }
 
 export class CustomManagerDefinition<ComponentInstance> implements ComponentDefinition {
@@ -262,7 +219,7 @@ export class CustomManagerDefinition<ComponentInstance> implements ComponentDefi
   constructor(
     public name: string,
     public ComponentClass: Factory<ComponentInstance>,
-    public delegate: ManagerDelegate<ComponentInstance>,
+    public delegate: ComponentManager<ComponentInstance>,
     public template: Template
   ) {
     this.state = {

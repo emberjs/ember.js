@@ -1,7 +1,7 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, InternalModifierManager, VMArguments } from '@glimmer/interfaces';
 import { valueForRef } from '@glimmer/reference';
 import { registerDestructor, reifyNamed } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
@@ -311,7 +311,8 @@ function addEventListener(
   @public
   @since 3.11.0
 */
-export default class OnModifierManager implements ModifierManager<OnModifierState | null, unknown> {
+export default class OnModifierManager
+  implements InternalModifierManager<OnModifierState | null, unknown> {
   public SUPPORTS_EVENT_OPTIONS: boolean = SUPPORTS_EVENT_OPTIONS;
   public isInteractive: boolean;
   private owner: Owner;
