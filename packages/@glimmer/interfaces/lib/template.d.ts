@@ -1,7 +1,7 @@
 import { Operand, SerializedTemplateBlock, SerializedInlineBlock } from './compile';
 import { EncoderError } from './compile/encoder';
-import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
+import { InternalComponentCapabilities } from './managers/internal/component';
 import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
 import { Owner } from './runtime';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
@@ -67,7 +67,7 @@ export type CompilerBuffer = Array<Operand>;
 
 export interface ResolvedLayout {
   handle: number;
-  capabilities: ComponentCapabilities;
+  capabilities: InternalComponentCapabilities;
   compilable: Option<CompilableProgram>;
 }
 

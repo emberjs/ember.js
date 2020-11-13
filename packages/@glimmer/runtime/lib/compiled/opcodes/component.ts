@@ -13,11 +13,10 @@ import {
   ComponentDefinition,
   ComponentDefinitionState,
   ComponentInstanceState,
-  ComponentManager,
+  InternalComponentManager,
   Dict,
   DynamicScope,
   ElementOperations,
-  InternalComponentManager,
   Maybe,
   Op,
   ProgramSymbolTable,
@@ -30,7 +29,7 @@ import {
   WithElementHook,
   WithUpdateHook,
   WithCreateInstance,
-  ModifierManager,
+  InternalModifierManager,
   Owner,
   CapturedArguments,
 } from '@glimmer/interfaces';
@@ -98,7 +97,7 @@ export const COMPONENT_INSTANCE: unique symbol = symbol('COMPONENT_INSTANCE');
 export interface ComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
-  manager: ComponentManager;
+  manager: InternalComponentManager;
   capabilities: Capability;
   state: ComponentInstanceState;
   handle: number;
@@ -120,7 +119,7 @@ export interface InitialComponentInstance {
 export interface PopulatedComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
-  manager: ComponentManager<unknown>;
+  manager: InternalComponentManager;
   capabilities: Capability;
   state: null;
   handle: number;
@@ -436,7 +435,7 @@ type DeferredAttribute = {
 export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
   private classes: (string | Reference<unknown>)[] = [];
-  private modifiers: [ModifierManager<unknown>, unknown][] = [];
+  private modifiers: [InternalModifierManager<unknown>, unknown][] = [];
 
   setAttribute(
     name: string,
@@ -463,11 +462,11 @@ export class ComponentElementOperations implements ElementOperations {
     this.attributes[name] = deferred;
   }
 
-  addModifier<S>(manager: ModifierManager<S>, state: S): void {
+  addModifier<S>(manager: InternalModifierManager<S>, state: S): void {
     this.modifiers.push([manager, state]);
   }
 
-  flush(vm: InternalVM): [ModifierManager<unknown>, unknown][] {
+  flush(vm: InternalVM): [InternalModifierManager<unknown>, unknown][] {
     let type: DeferredAttribute | undefined;
     let attributes = this.attributes;
 

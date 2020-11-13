@@ -1,8 +1,8 @@
 import {
-  ComponentManager,
+  InternalComponentManager,
   ComponentDefinitionState,
   VMArguments,
-  ComponentCapabilities,
+  InternalComponentCapabilities,
   Option,
   DynamicScope,
   ComponentInstanceState,
@@ -14,9 +14,9 @@ import {
 import { MINIMAL_CAPABILITIES } from './interfaces';
 import { Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
-// TODO: This manager appears to be unused
-export class SimpleComponentManager implements ComponentManager {
-  getCapabilities(_state: ComponentDefinitionState): ComponentCapabilities {
+// TODO: This manager is only used by the benchmark env, we should refactor away from it
+export class SimpleComponentManager implements InternalComponentManager {
+  getCapabilities(_state: ComponentDefinitionState): InternalComponentCapabilities {
     return MINIMAL_CAPABILITIES;
   }
 

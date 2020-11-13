@@ -1,8 +1,8 @@
 import {
-  ComponentCapabilities,
+  InternalComponentCapabilities,
   ComponentDefinitionState,
   ComponentInstanceState,
-  ComponentManager,
+  InternalComponentManager,
   WithCustomDebugRenderTree,
   WithStaticLayout,
 } from '@glimmer/interfaces';
@@ -12,18 +12,21 @@ import { hasCapability, Capability } from '../capabilities';
 export function hasStaticLayout<
   D extends ComponentDefinitionState,
   I extends ComponentInstanceState
->(capabilities: Capability, _manager: ComponentManager<I, D>): _manager is WithStaticLayout<I, D> {
+>(
+  capabilities: Capability,
+  _manager: InternalComponentManager<I, D>
+): _manager is WithStaticLayout<I, D> {
   return !hasCapability(capabilities, Capability.DynamicLayout);
 }
 
 export function hasCustomDebugRenderTreeLifecycle<
   D extends ComponentDefinitionState,
   I extends ComponentInstanceState
->(manager: ComponentManager<I, D>): manager is WithCustomDebugRenderTree<I, D> {
+>(manager: InternalComponentManager<I, D>): manager is WithCustomDebugRenderTree<I, D> {
   return 'getDebugCustomRenderTree' in manager;
 }
 
-export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
+export const DEFAULT_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,
@@ -38,7 +41,7 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   willDestroy: false,
 };
 
-export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
+export const MINIMAL_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,

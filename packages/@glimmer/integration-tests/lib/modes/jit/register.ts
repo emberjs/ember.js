@@ -4,9 +4,9 @@ import { TEMPLATE_ONLY_CAPABILITIES, CURLY_CAPABILITIES } from '../../components
 import {
   Option,
   Helper as GlimmerHelper,
-  ModifierManager,
-  ComponentManager,
-  ComponentCapabilities,
+  InternalModifierManager,
+  InternalComponentManager,
+  InternalComponentCapabilities,
   ComponentDefinition,
   PartialDefinition,
   TemplateFactory,
@@ -118,7 +118,7 @@ export function registerInternalHelper(
 export function registerInternalModifier(
   registry: TestJitRegistry,
   name: string,
-  manager: ModifierManager<unknown, unknown>,
+  manager: InternalModifierManager<unknown, unknown>,
   state: unknown
 ) {
   registry.register('modifier', name, { manager, state });
@@ -193,10 +193,10 @@ export function registerComponent<K extends ComponentKind>(
 function registerSomeComponent(
   registry: TestJitRegistry,
   name: string,
-  manager: ComponentManager<unknown, unknown>,
+  manager: InternalComponentManager<unknown, unknown>,
   templateFactory: TemplateFactory | null,
   ComponentClass: object,
-  capabilities: ComponentCapabilities
+  capabilities: InternalComponentCapabilities
 ) {
   let state: TestComponentDefinitionState = {
     name,
