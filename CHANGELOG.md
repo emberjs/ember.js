@@ -1,3 +1,12 @@
+## v0.65.0 (2020-11-13)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1197](https://github.com/glimmerjs/glimmer-vm/pull/1197) [REFACTOR] Upstreams basic manager infrastructure and types ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.64.0 (2020-11-12)
 
 #### :boom: Breaking Change
