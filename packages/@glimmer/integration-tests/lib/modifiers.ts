@@ -2,7 +2,7 @@ import { SimpleElement } from '@simple-dom/interface';
 import {
   Dict,
   Option,
-  ModifierManager,
+  InternalModifierManager,
   GlimmerTreeChanges,
   Destroyable,
   DynamicScope,
@@ -28,7 +28,7 @@ export class TestModifierDefinitionState {
 }
 
 export class TestModifierManager
-  implements ModifierManager<TestModifier, TestModifierDefinitionState> {
+  implements InternalModifierManager<TestModifier, TestModifierDefinitionState> {
   create(
     element: SimpleElement,
     state: TestModifierDefinitionState,

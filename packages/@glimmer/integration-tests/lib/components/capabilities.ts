@@ -1,7 +1,7 @@
-import { ComponentCapabilities } from '@glimmer/interfaces';
+import { InternalComponentCapabilities } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 
-export const TEMPLATE_ONLY_CAPABILITIES: ComponentCapabilities = {
+export const TEMPLATE_ONLY_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
@@ -16,7 +16,7 @@ export const TEMPLATE_ONLY_CAPABILITIES: ComponentCapabilities = {
   willDestroy: false,
 };
 
-export const CURLY_CAPABILITIES: ComponentCapabilities = {
+export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,
@@ -31,7 +31,11 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   willDestroy: true,
 };
 
-export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = assign({}, CURLY_CAPABILITIES, {
-  dynamicLayout: false,
-  attributeHook: false,
-});
+export const EMBERISH_CURLY_CAPABILITIES: InternalComponentCapabilities = assign(
+  {},
+  CURLY_CAPABILITIES,
+  {
+    dynamicLayout: false,
+    attributeHook: false,
+  }
+);

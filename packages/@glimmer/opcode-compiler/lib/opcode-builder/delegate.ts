@@ -1,6 +1,6 @@
-import { ComponentCapabilities, Option, CompileTimeComponent } from '@glimmer/interfaces';
+import { InternalComponentCapabilities, Option, CompileTimeComponent } from '@glimmer/interfaces';
 
-export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
+export const DEFAULT_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: true,
@@ -15,7 +15,7 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   willDestroy: false,
 };
 
-export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
+export const MINIMAL_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,

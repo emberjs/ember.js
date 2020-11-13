@@ -3,7 +3,7 @@ import type {
   Environment,
   Option,
   ElementBuilder,
-  ModifierManager,
+  InternalModifierManager,
   Maybe,
 } from '@glimmer/interfaces';
 import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
@@ -94,7 +94,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return super.__appendText(string);
   }
 
-  closeElement(): Option<[ModifierManager, unknown][]> {
+  closeElement(): Option<[InternalModifierManager, unknown][]> {
     if (NEEDS_EXTRA_CLOSE.has(this.element)) {
       NEEDS_EXTRA_CLOSE.delete(this.element);
       super.closeElement();

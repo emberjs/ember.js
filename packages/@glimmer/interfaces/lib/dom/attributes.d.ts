@@ -8,9 +8,10 @@ import {
 } from '@simple-dom/interface';
 import { Option, Maybe } from '../core';
 import { Bounds, Cursor } from './bounds';
-import { ElementOperations, Environment, ModifierManager } from '../runtime';
+import { ElementOperations, Environment } from '../runtime';
 import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
 import { Stack } from '../stack';
+import { InternalModifierManager } from '../managers';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;
@@ -41,7 +42,7 @@ export interface DOMStack {
   popRemoteElement(): void;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): SimpleElement;
-  flushElement(modifiers: Option<[ModifierManager, unknown][]>): void;
+  flushElement(modifiers: Option<[InternalModifierManager, unknown][]>): void;
   appendText(string: string): SimpleText;
   appendComment(string: string): SimpleComment;
 
@@ -58,7 +59,7 @@ export interface DOMStack {
     namespace: Option<string>
   ): AttributeOperation;
 
-  closeElement(): Option<[ModifierManager, unknown][]>;
+  closeElement(): Option<[InternalModifierManager, unknown][]>;
 }
 
 export interface TreeOperations {
