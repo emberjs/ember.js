@@ -382,6 +382,26 @@ export default EmberObject.extend({
               if (actionHandler(target, event) === false) {
                 break;
               }
+            } else if (event.type === 'click' && target.tagName.toLowerCase() === 'a') {
+              let isSameOrigin = window.location.origin === target.origin;
+
+              if (isSameOrigin) {
+                // in-app-transition
+                let owner = getOwner(this);
+                let router = owner.lookup('service:router');
+                let destination = target.pathname + (target.search || '') + target.hash;
+
+                // It's possible the href is
+                // - mis-typed
+                // - belongs to an ember-engine
+                // - belongs to a separate app on the same domain
+                if (router.recognize(destination)) {
+                  event.preventDefault();
+                  event.stopPropagation();
+
+                  router.transitionTo(destination);
+                }
+              }
             }
 
             target = target.parentNode;

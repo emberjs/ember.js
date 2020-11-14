@@ -1,4 +1,5 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { ApplicationTestCase, RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import Controller from '@ember/controller';
 
 import { Component } from '../utils/helpers';
 import { getCurrentRunLoop, run } from '@ember/runloop';
@@ -613,6 +614,179 @@ if (jQueryDisabled) {
         });
 
         assert.ok(true);
+      }
+    }
+  );
+
+  moduleFor(
+    'EventDispatcher - transitionTo from <a> tags',
+    class extends ApplicationTestCase {
+      constructor() {
+        super();
+
+        this.router.map(function () {
+          this.route('about');
+          this.route('blog', function () {
+            this.route('post', { path: ':id' }, function () {
+              this.route('comments', { path: ':dynamic-param' });
+            });
+          });
+        });
+
+        this.addTemplate(
+          'application',
+          `
+          <nav>
+            <a class="home" href="/">Home</a>
+            <a class="about" href="/about">About</a>
+            <a class="blog" href="/blog">Blog</a>
+            <a class="post" href="/blog/1">Post</a>
+            <a class="deep-nest" href="/blog/1/some-param">Deeply Nested</a>
+            <a class="QPs" href="/blog/1/some-param?applicationQP=1&q=2&foo=3">with QPs</a>
+            <a class="QPHash" href="/blog/1/some-param?applicationQP=1&q=2&foo=3#target">with QPs and hash</a>
+            <a class="hash" href="/blog/1/some-param#target">with hash</a>
+          </nav>
+
+          <XFoo />
+
+          {{outlet}}
+        `
+        );
+        this.addTemplate('index', `<h3>Home</h3>`);
+        this.addTemplate('about', `<h3>About</h3>`);
+        this.addTemplate('blog', `<h3>Blog</h3>{{outlet}}`);
+        this.addTemplate('blog/post', `<h3>Post</h3>{{outlet}}`);
+        this.addTemplate('blog/post/comments', `<h3>Comments</h3>`);
+
+        this.add(
+          'controller:application',
+          class extends Controller {
+            queryParams = ['applicationQP'];
+          }
+        );
+
+        this.add(
+          'controller:blog/post',
+          class extends Controller {
+            queryParams = ['q'];
+          }
+        );
+
+        this.add(
+          'controller:blog/post/comments',
+          class extends Controller {
+            queryParams = ['foo'];
+          }
+        );
+
+        this.addTemplate(
+          'components/x-foo',
+          `
+          <a id="component-foo" href="#">bar</a>
+          <a id="component-nav" href="/blog">blog</a>
+          `
+        );
+      }
+
+      async ['@test <a> link causes a navigation'](assert) {
+        await this.visit('/');
+
+        let router = this.applicationInstance.lookup('service:router');
+
+        assert.equal(router.currentRouteName, 'index');
+
+        await this.click('.about');
+
+        assert.equal(router.currentRouteName, 'about');
+
+        await this.click('.blog');
+
+        assert.equal(router.currentRouteName, 'blog.index');
+
+        await this.click('.post');
+
+        assert.equal(router.currentRouteName, 'blog.post.index');
+        assert.equal(
+          router.currentRoute.parent.params['id'],
+          '1',
+          'id is not present on the index route'
+        );
+
+        await this.click('.deep-nest');
+
+        assert.equal(router.currentRouteName, 'blog.post.comments');
+        assert.equal(router.currentRoute.params['dynamic-param'], 'some-param');
+
+        await this.click('.QPs');
+
+        assert.equal(router.currentRouteName, 'blog.post.comments');
+        assert.equal(router.currentRoute.params['dynamic-param'], 'some-param');
+        assert.deepEqual(router.currentRoute.queryParams, { applicationQP: '1', q: '2', foo: '3' });
+
+        await this.click('.QPHash');
+
+        assert.equal(router.currentRouteName, 'blog.post.comments');
+        assert.equal(router.currentRoute.params['dynamic-param'], 'some-param');
+        assert.deepEqual(router.currentRoute.queryParams, { applicationQP: '1', q: '2', foo: '3' });
+        assert.equal(
+          router.currentURL,
+          '/blog/1/some-param?applicationQP=1',
+          'the hash part of the URL is not supported right now'
+        );
+
+        await this.click('.hash');
+
+        assert.equal(router.currentRouteName, 'blog.post.comments');
+        assert.equal(router.currentRoute.params['dynamic-param'], 'some-param');
+        assert.equal(Object.keys(router.currentRoute.queryParams).length, 0);
+        assert.equal(
+          router.currentURL,
+          '/blog/1/some-param',
+          'the hash part of the URL is not supported right now'
+        );
+
+        await this.click('.about');
+
+        assert.equal(router.currentRouteName, 'about');
+
+        await this.click('.blog');
+
+        assert.equal(router.currentRouteName, 'blog.index');
+      }
+
+      async ['@test <a> link causes a navigation when component also have a click event handler'](
+        assert
+      ) {
+        let receivedEvent = null;
+
+        this.add(
+          'component:x-foo',
+          Component.extend({
+            click(event) {
+              receivedEvent = event;
+            },
+          })
+        );
+
+        await this.visit('/');
+
+        let router = this.applicationInstance.lookup('service:router');
+
+        await this.click('#component-foo');
+
+        assert.ok(
+          receivedEvent,
+          'as long as preventDefault is not called, navigation may continue'
+        );
+
+        receivedEvent = null;
+        await this.click('#component-nav');
+
+        assert.equal(router.currentRouteName, 'blog.index');
+        assert.ok(
+          receivedEvent,
+          'as long as preventDefault is not called, navigation may continue'
+        );
       }
     }
   );
