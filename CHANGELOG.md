@@ -1,25 +1,6 @@
 # Ember Changelog
 
-### v3.23.0-beta.5 (November 9, 2020)
-
-- [#19249](https://github.com/emberjs/ember.js/pull/19249) [BUGFIX] Fix bugs in query params with intermediate transitions
-
-### v3.23.0-beta.4 (November 2, 2020)
-
-- [#19142](https://github.com/emberjs/ember.js/pull/19142) [BUGFIX] Fix App booting before DOM ready without jQuery
-- [#19198](https://github.com/emberjs/ember.js/pull/19198) / [#19232](https://github.com/emberjs/ember.js/pull/19232) [BUGFIX] Restores the shadowed property set behavior
-
-### v3.23.0-beta.3 (October 26, 2020)
-
-- [#19199](https://github.com/emberjs/ember.js/pull/19199) [BUGFIX] Fix Ember Inspector to not be in a broken state after render errors
-- [#19221](https://github.com/emberjs/ember.js/pull/19221) [BUGFIX] Ensure fn and (mut) work with falsy values
-
-### v3.23.0-beta.2 (October 19, 2020)
-
-- [#19193](https://github.com/emberjs/ember.js/pull/19193) [BUGFIX] Ensure user lifecycle hooks are untracked
-- [#19213](https://github.com/emberjs/ember.js/pull/19213) [BUGFIX] Update rendering engine to improve error ergonomics.
-
-### v3.23.0-beta.1 (October 5, 2020)
+### v3.23.0 (November 16, 2020)
 
 - [#19160](https://github.com/emberjs/ember.js/pull/19160) / [#19182](https://github.com/emberjs/ember.js/pull/19182) [FEATURE] Implements the helper manager feature specified in the [Helper Managers RFC](https://github.com/emberjs/rfcs/blob/master/text/0625-helper-managers.md).
 - [#19171](https://github.com/emberjs/ember.js/pull/19171) / [#19182](https://github.com/emberjs/ember.js/pull/19182) [FEATURE] Implements `invokeHelper` from the [JavaScript Helper Invocation API RFC](https://github.com/emberjs/rfcs/blob/master/text/0626-invoke-helper.md).
@@ -27,6 +8,13 @@
 - [#19122](https://github.com/emberjs/ember.js/pull/19122) [BUGFIX] Prevents dynamic invocations of string values when referenced directly in angle brackets
 - [#19136](https://github.com/emberjs/ember.js/pull/19136) [BUGFIX] Update router microlib to improve Transition related debugging
 - [#19173](https://github.com/emberjs/ember.js/pull/19173) [BUGFIX] Enforce usage of `capabilities` generation.
+- [#19236](https://github.com/emberjs/ember.js/pull/19236) [BUGFIX] Only serialize query params once on activeTransition
+- [#19250](https://github.com/emberjs/ember.js/pull/19250) [BUGFIX] Prevents infinite rerenders when errors occur during render
+- [#19249](https://github.com/emberjs/ember.js/pull/19249) [BUGFIX] Fix bugs in query params with intermediate transitions
+- [#19142](https://github.com/emberjs/ember.js/pull/19142) [BUGFIX] Fix App booting before DOM ready without jQuery
+- [#19198](https://github.com/emberjs/ember.js/pull/19198) / [#19232](https://github.com/emberjs/ember.js/pull/19232) [BUGFIX] Restores the shadowed property set behavior
+- [#19221](https://github.com/emberjs/ember.js/pull/19221) [BUGFIX] Ensure fn and (mut) work with falsy values
+- [#19213](https://github.com/emberjs/ember.js/pull/19213) [BUGFIX] Update rendering engine to improve error ergonomics.
 
 ### v3.22.1 (November 10, 2020)
 
