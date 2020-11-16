@@ -24,10 +24,6 @@ export class TestMacros extends MacrosImpl {
     });
 
     blocks.addMissing((name, params, hash, blocks, context) => {
-      if (!params) {
-        params = [];
-      }
-
       let component = resolveLayoutForTag(name, context);
 
       if (component !== null) {
@@ -52,5 +48,5 @@ export class TestMacros extends MacrosImpl {
 function hashToArgs(hash: Option<WireFormat.Core.Hash>): Option<WireFormat.Core.Hash> {
   if (hash === null) return null;
   let names = hash[0].map((key) => `@${key}`);
-  return [names, hash[1]];
+  return [names as [string, ...string[]], hash[1]];
 }

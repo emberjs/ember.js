@@ -17,14 +17,12 @@ import {
 } from './debug';
 import { symbol, unwrap } from './utils';
 
-type Option<T> = T | null;
-
 /**
  * An object that that tracks @tracked properties that were consumed.
  */
 class Tracker {
   private tags = new Set<Tag>();
-  private last: Option<Tag> = null;
+  private last: Tag | null = null;
 
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
@@ -66,9 +64,9 @@ class Tracker {
  * that corresponds to the tracked properties consumed inside of
  * itself, including child tracked computed properties.
  */
-let CURRENT_TRACKER: Option<Tracker> = null;
+let CURRENT_TRACKER: Tracker | null = null;
 
-const OPEN_TRACK_FRAMES: Option<Tracker>[] = [];
+const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 
 export function beginTrackFrame(debuggingContext?: string | false): void {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);

@@ -1,17 +1,14 @@
-import { LowLevelVM, VM, UpdatingVM } from './vm';
-
-import { Option, initializeGuid, fillNulls, assert } from '@glimmer/util';
-import { recordStackSize, opcodeMetadata } from '@glimmer/debug';
-import { $pc, $sp, $ra, $fp } from '@glimmer/vm';
-import { RuntimeOp, Op, Maybe, Dict } from '@glimmer/interfaces';
+import { debug, logOpcode, opcodeMetadata, recordStackSize } from '@glimmer/debug';
+import { Dict, Maybe, Op, Option, RuntimeOp } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-// these import bindings will be stripped from build
-import { debug, logOpcode } from '@glimmer/debug';
-import { DESTROYABLE_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
+import { valueForRef } from '@glimmer/reference';
+import { assert, fillNulls, initializeGuid, LOCAL_LOGGER } from '@glimmer/util';
+import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
+import { isScopeReference } from './scope';
+import { CONSTANTS, DESTROYABLE_STACK, INNER_VM, STACKS } from './symbols';
+import { LowLevelVM, UpdatingVM, VM } from './vm';
 import { InternalVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';
-import { isScopeReference } from './scope';
-import { valueForRef } from '@glimmer/reference';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -66,14 +63,14 @@ export class AppendOpcodes {
       [opName, params] = debug(vm[CONSTANTS], vm.runtime.resolver, opcode, opcode.isMachine)!;
 
       // console.log(`${typePos(vm['pc'])}.`);
-      console.log(`${pos}. ${logOpcode(opName, params)}`);
+      LOCAL_LOGGER.log(`${pos}. ${logOpcode(opName, params)}`);
 
       let debugParams = [];
       for (let prop in params) {
         debugParams.push(prop, '=', params[prop]);
       }
 
-      console.log(...debugParams);
+      LOCAL_LOGGER.log(...debugParams);
     }
 
     let sp: number;
@@ -116,7 +113,7 @@ export class AppendOpcodes {
       }
 
       if (LOCAL_SHOULD_LOG) {
-        console.log(
+        LOCAL_LOGGER.log(
           '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
           'color: orange',
           vm[INNER_VM].registers[$pc],
@@ -129,22 +126,30 @@ export class AppendOpcodes {
           vm['t1'],
           vm['v0']
         );
-        console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
-        console.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
-        console.log('%c -> destructor stack', 'color: violet', vm[DESTROYABLE_STACK].toArray());
+        LOCAL_LOGGER.log('%c -> eval stack', 'color: red', vm.stack.toArray());
+        LOCAL_LOGGER.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
+        LOCAL_LOGGER.log(
+          '%c -> destructor stack',
+          'color: violet',
+          vm[DESTROYABLE_STACK].toArray()
+        );
         if (vm[STACKS].scope.current === null) {
-          console.log('%c -> scope', 'color: green', 'null');
+          LOCAL_LOGGER.log('%c -> scope', 'color: green', 'null');
         } else {
-          console.log(
+          LOCAL_LOGGER.log(
             '%c -> scope',
             'color: green',
             vm.scope().slots.map((s) => (isScopeReference(s) ? valueForRef(s) : s))
           );
         }
 
-        console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK].current!.element);
+        LOCAL_LOGGER.log(
+          '%c -> elements',
+          'color: blue',
+          vm.elements()[CURSOR_STACK].current!.element
+        );
 
-        console.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
+        LOCAL_LOGGER.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
       }
     }
   }

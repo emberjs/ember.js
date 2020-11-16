@@ -33,7 +33,7 @@ export interface CapturedPositionalArguments extends Array<Reference> {
 }
 
 export interface NamedArguments {
-  names: string[];
+  names: readonly string[];
   length: number;
   has(name: string): boolean;
   get(name: string): Reference;
@@ -41,7 +41,7 @@ export interface NamedArguments {
 }
 
 export interface BlockArguments {
-  names: string[];
+  names: readonly string[];
   length: number;
   has(name: string): boolean;
   get(name: string): Option<ScopeBlock>;
@@ -49,7 +49,7 @@ export interface BlockArguments {
 }
 
 export interface CapturedBlockArguments {
-  names: string[];
+  names: readonly string[];
   length: number;
   has(name: string): boolean;
   get(name: string): Option<ScopeBlock>;
@@ -61,6 +61,6 @@ export interface CapturedNamedArguments {
 }
 
 export interface Arguments {
-  positional: unknown[];
+  positional: readonly unknown[];
   named: Record<string, unknown>;
 }

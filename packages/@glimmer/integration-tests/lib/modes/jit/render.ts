@@ -1,5 +1,5 @@
 import { JitTestDelegateContext } from './delegate';
-import { PrecompileOptions } from '@glimmer/compiler';
+import { PrecompileOptions } from '@glimmer/syntax';
 import { Reference } from '@glimmer/reference';
 import { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import { preprocess } from '../../compile';

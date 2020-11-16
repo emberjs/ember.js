@@ -165,7 +165,7 @@ export function assertEmberishElement(
 ): void;
 export function assertEmberishElement(element: SimpleElement, tagName: string): void;
 export function assertEmberishElement(...args: any[]): void {
-  let [element, tagName, attrs, contents] = processAssertElementArgs(args);
+  let [element, tagName, attrs, contents] = processAssertComponentArgs(args);
 
   let fullAttrs = assign({ class: classes('ember-view'), id: regex(/^ember\d*$/) }, attrs);
 
@@ -238,7 +238,9 @@ export function isMatcher(input: unknown): input is Matcher {
 
   TODO: future refactorings should clean up this interface (likely just making all callers pass a POJO)
 */
-export function processAssertElementArgs(args: any[]): [SimpleElement, string, any, string | null] {
+export function processAssertComponentArgs(
+  args: any[]
+): [SimpleElement, string, any, string | null] {
   let element = args[0];
 
   if (args.length === 3) {
@@ -261,7 +263,7 @@ export function assertElementShape(element: SimpleElement, tagName: string, attr
 export function assertElementShape(element: SimpleElement, tagName: string, contents: string): void;
 export function assertElementShape(element: SimpleElement, tagName: string): void;
 export function assertElementShape(...args: any[]): void {
-  let [element, tagName, attrs, contents] = processAssertElementArgs(args);
+  let [element, tagName, attrs, contents] = processAssertComponentArgs(args);
 
   equalsElement(element, tagName, attrs, contents);
 }

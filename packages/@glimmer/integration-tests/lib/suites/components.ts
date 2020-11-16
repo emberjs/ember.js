@@ -434,31 +434,9 @@ export class GlimmerishComponents extends RenderTest {
     kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets does not support implicit `this` fallback'() {
-    class TestHarness extends EmberishGlimmerComponent {
-      public stuff: any;
-
-      constructor(args: EmberishGlimmerArgs) {
-        super(args);
-        this.stuff = {
-          Foo: args.attrs.Foo,
-        };
-      }
-    }
-    this.registerComponent('Glimmer', 'TestHarness', '<stuff.Foo />', TestHarness);
-    this.registerComponent(
-      'Glimmer',
-      'Foo',
-      'hello world!',
-      class extends EmberishGlimmerComponent {
-        constructor(args: EmberishGlimmerArgs) {
-          super(args);
-          throw new Error('Should not have instantiated Foo component.');
-        }
-      }
-    );
-
-    this.render('<TestHarness @Foo={{component "Foo"}} />');
-    this.assertStableRerender();
+    this.assert.throws(() => {
+      this.registerComponent('TemplateOnly', 'Test', '<stuff.Foo />');
+    }, /stuff is not in scope/);
   }
 
   @test({
@@ -727,10 +705,11 @@ export class GlimmerishComponents extends RenderTest {
 
   @test({ kind: 'templateOnly' })
   'throwing an error during rendering gives a readable error stack'(assert: Assert) {
+    // eslint-disable-next-line no-console
     let originalConsoleError = console.error;
 
+    // eslint-disable-next-line no-console
     console.error = (message: string) => {
-      console.log(message);
       this.assert.ok(
         message.match(/Error occurred:\n\n(- While rendering:\nBar\n {2}Foo)?/),
         'message logged'
@@ -770,6 +749,7 @@ export class GlimmerishComponents extends RenderTest {
 
       this.assertHTML('', 'destroys correctly');
     } finally {
+      // eslint-disable-next-line no-console
       console.error = originalConsoleError;
     }
   }

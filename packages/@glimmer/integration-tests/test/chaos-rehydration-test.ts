@@ -1,5 +1,5 @@
 import { Dict, Option } from '@glimmer/interfaces';
-import { castToBrowser, castToSimple, expect } from '@glimmer/util';
+import { castToBrowser, castToSimple, expect, LOCAL_LOGGER } from '@glimmer/util';
 import { NodeType, SimpleElement } from '@simple-dom/interface';
 import {
   blockStack,
@@ -91,7 +91,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     // remove it
     parent.removeChild(nodeToRemove);
 
-    let removedNodeDisplay;
+    let removedNodeDisplay: Option<string>;
     switch (nodeToRemove.nodeType) {
       case NodeType.COMMENT_NODE:
         removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
@@ -104,7 +104,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     }
 
     if (shouldLog) {
-      console.log(
+      LOCAL_LOGGER.log(
         `${removedNodeDisplay} was removed;\noriginal: ${original}\nupdated:  ${element.innerHTML}`
       );
     }

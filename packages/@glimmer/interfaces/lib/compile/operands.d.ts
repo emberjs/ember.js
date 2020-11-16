@@ -10,7 +10,7 @@ export interface ArrayOperand {
 
 export interface StringArrayOperand {
   type: 'string-array';
-  value: string[];
+  value: readonly string[];
 }
 
 export interface LabelOperand {

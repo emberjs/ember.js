@@ -2,6 +2,7 @@
   "compilerOptions": {
     // Compilation Configuration
     "target": "es2017",
+    "lib": ["ES2020", "DOM"],
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
@@ -24,6 +25,6 @@
     "newLine": "LF",
     "noEmit": true
   },
-  "include": ["packages/**/*.ts"],
+  "include": ["packages/**/*.ts", "packages/interfaces/**/*.d.ts"],
   "exclude": ["dist", "ts-dist", "**/dist", "tmp", "node_modules", ".vscode"]
 }

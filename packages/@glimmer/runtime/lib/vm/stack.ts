@@ -1,19 +1,19 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import {
-  isSmallInt,
-  encodeImmediate,
-  encodeHandle,
-  decodeHandle,
-  constants,
-  assert,
-  decodeImmediate,
-  isHandle,
-  ImmediateConstants,
-} from '@glimmer/util';
 import { Stack as WasmStack } from '@glimmer/low-level';
-import { MachineRegister, $sp, $fp } from '@glimmer/vm';
-import { LowLevelRegisters, initializeRegistersWithSP } from './low-level';
+import {
+  assert,
+  constants,
+  decodeHandle,
+  decodeImmediate,
+  encodeHandle,
+  encodeImmediate,
+  ImmediateConstants,
+  isHandle,
+  isSmallInt,
+} from '@glimmer/util';
+import { $fp, $sp, MachineRegister } from '@glimmer/vm';
 import { REGISTERS } from '../symbols';
+import { initializeRegistersWithSP, LowLevelRegisters } from './low-level';
 
 export class InnerStack {
   private js: unknown[] = constants();
@@ -261,7 +261,6 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   toArray() {
-    console.log(this[REGISTERS]);
     return this.stack.slice(this[REGISTERS][$fp], this[REGISTERS][$sp] + 1);
   }
 }

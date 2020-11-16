@@ -1,15 +1,16 @@
-import * as AST from '../types/nodes';
 import { Option } from '@glimmer/interfaces';
+
+import * as ASTv1 from '../v1/api';
 
 export interface TraversalError extends Error {
   constructor: TraversalErrorConstructor;
   key: string;
-  node: AST.Node;
-  parent: Option<AST.Node>;
+  node: ASTv1.Node;
+  parent: Option<ASTv1.Node>;
 }
 
 export interface TraversalErrorConstructor {
-  new (message: string, node: AST.Node, parent: Option<AST.Node>, key: string): TraversalError;
+  new (message: string, node: ASTv1.Node, parent: Option<ASTv1.Node>, key: string): TraversalError;
   readonly prototype: TraversalError;
 }
 
@@ -20,8 +21,8 @@ const TraversalError: TraversalErrorConstructor = (function () {
   function TraversalError(
     this: TraversalError,
     message: string,
-    node: AST.Node,
-    parent: Option<AST.Node>,
+    node: ASTv1.Node,
+    parent: Option<ASTv1.Node>,
     key: string
   ) {
     let error = Error.call(this, message);
@@ -33,12 +34,16 @@ const TraversalError: TraversalErrorConstructor = (function () {
     this.stack = error.stack;
   }
 
-  return TraversalError as any;
+  return (TraversalError as unknown) as TraversalErrorConstructor;
 })();
 
 export default TraversalError;
 
-export function cannotRemoveNode(node: AST.Node, parent: AST.Node, key: string) {
+export function cannotRemoveNode(
+  node: ASTv1.Node,
+  parent: ASTv1.Node,
+  key: string
+): TraversalError {
   return new TraversalError(
     'Cannot remove a node unless it is part of an array',
     node,
@@ -47,7 +52,11 @@ export function cannotRemoveNode(node: AST.Node, parent: AST.Node, key: string) 
   );
 }
 
-export function cannotReplaceNode(node: AST.Node, parent: AST.Node, key: string) {
+export function cannotReplaceNode(
+  node: ASTv1.Node,
+  parent: ASTv1.Node,
+  key: string
+): TraversalError {
   return new TraversalError(
     'Cannot replace a node with multiple nodes unless it is part of an array',
     node,
@@ -56,7 +65,10 @@ export function cannotReplaceNode(node: AST.Node, parent: AST.Node, key: string)
   );
 }
 
-export function cannotReplaceOrRemoveInKeyHandlerYet(node: AST.Node, key: string) {
+export function cannotReplaceOrRemoveInKeyHandlerYet(
+  node: ASTv1.Node,
+  key: string
+): TraversalError {
   return new TraversalError(
     'Replacing and removing in key handlers is not yet supported.',
     node,

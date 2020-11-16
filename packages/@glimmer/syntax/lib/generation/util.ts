@@ -12,7 +12,7 @@ const ATTR_VALUE_REGEX_REPLACE = new RegExp(ATTR_VALUE_REGEX_TEST.source, 'g');
 const TEXT_REGEX_TEST = /[\xA0&<>]/;
 const TEXT_REGEX_REPLACE = new RegExp(TEXT_REGEX_TEST.source, 'g');
 
-function attrValueReplacer(char: string) {
+function attrValueReplacer(char: string): string {
   switch (char.charCodeAt(0)) {
     case Char.NBSP:
       return '&nbsp;';
@@ -25,7 +25,7 @@ function attrValueReplacer(char: string) {
   }
 }
 
-function textReplacer(char: string) {
+function textReplacer(char: string): string {
   switch (char.charCodeAt(0)) {
     case Char.NBSP:
       return '&nbsp;';
@@ -40,14 +40,14 @@ function textReplacer(char: string) {
   }
 }
 
-export function escapeAttrValue(attrValue: string) {
+export function escapeAttrValue(attrValue: string): string {
   if (ATTR_VALUE_REGEX_TEST.test(attrValue)) {
     return attrValue.replace(ATTR_VALUE_REGEX_REPLACE, attrValueReplacer);
   }
   return attrValue;
 }
 
-export function escapeText(text: string) {
+export function escapeText(text: string): string {
   if (TEXT_REGEX_TEST.test(text)) {
     return text.replace(TEXT_REGEX_REPLACE, textReplacer);
   }

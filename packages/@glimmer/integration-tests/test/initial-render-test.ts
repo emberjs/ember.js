@@ -210,7 +210,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     // remove the first `<!--%-b:1%-->`
     let element = castToBrowser(this.element, 'HTML');
-    let [div] = element.children;
+    let div = element.children[0];
     let commentToRemove = div.childNodes[3];
     div.removeChild(commentToRemove);
 
@@ -325,7 +325,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     // remove the attribute
     let element = castToBrowser(this.element, 'HTML');
-    let [div] = element.children;
+    let div = element.children[0];
     div.removeAttribute('data-foo');
 
     this.renderClientSide(template, {});
@@ -342,7 +342,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     // add an extra attribute
     let element = castToBrowser(this.element, 'HTML');
-    let [div] = element.children;
+    let div = element.children[0];
     div.setAttribute('data-bar', 'oops');
 
     this.renderClientSide(template, {});
@@ -359,7 +359,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     // mutate the attribute
     let element = castToBrowser(this.element, 'HTML');
-    let [div] = element.children;
+    let div = element.children[0];
     div.setAttribute('class', 'zomg');
 
     this.renderClientSide(template, {});

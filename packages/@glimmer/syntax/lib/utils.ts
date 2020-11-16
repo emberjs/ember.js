@@ -1,7 +1,9 @@
-import * as AST from './types/nodes';
-import * as HBS from './types/handlebars-ast';
 import { Option } from '@glimmer/interfaces';
-import SyntaxError from './errors/syntax-error';
+import { expect } from '@glimmer/util';
+
+import { GlimmerSyntaxError } from './syntax-error';
+import * as ASTv1 from './v1/api';
+import * as HBS from './v1/handlebars-ast';
 
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
@@ -12,12 +14,12 @@ let ID_INVERSE_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
 // If it does, registers the block params with the program and
 // removes the corresponding attributes from the element.
 
-export function parseElementBlockParams(element: AST.ElementNode) {
+export function parseElementBlockParams(element: ASTv1.ElementNode): void {
   let params = parseBlockParams(element);
   if (params) element.blockParams = params;
 }
 
-function parseBlockParams(element: AST.ElementNode): Option<string[]> {
+function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
   let l = element.attributes.length;
   let attrNames = [];
 
@@ -32,9 +34,12 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
     let paramsString = attrNames.slice(asIndex).join(' ');
     if (
       paramsString.charAt(paramsString.length - 1) !== '|' ||
-      paramsString.match(/\|/g)!.length !== 2
+      expect(paramsString.match(/\|/g), `block params must exist here`).length !== 2
     ) {
-      throw new SyntaxError("Invalid block parameters syntax: '" + paramsString + "'", element.loc);
+      throw new GlimmerSyntaxError(
+        "Invalid block parameters syntax, '" + paramsString + "'",
+        element.loc
+      );
     }
 
     let params = [];
@@ -42,8 +47,8 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
       let param = attrNames[i].replace(/\|/g, '');
       if (param !== '') {
         if (ID_INVERSE_PATTERN.test(param)) {
-          throw new SyntaxError(
-            "Invalid identifier for block parameters: '" + param + "' in '" + paramsString + "'",
+          throw new GlimmerSyntaxError(
+            "Invalid identifier for block parameters, '" + param + "'",
             element.loc
           );
         }
@@ -52,10 +57,7 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
     }
 
     if (params.length === 0) {
-      throw new SyntaxError(
-        "Cannot use zero block parameters: '" + paramsString + "'",
-        element.loc
-      );
+      throw new GlimmerSyntaxError('Cannot use zero block parameters', element.loc);
     }
 
     element.attributes = element.attributes.slice(0, asIndex);
@@ -66,8 +68,8 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
 }
 
 export function childrenFor(
-  node: AST.Block | AST.Template | AST.ElementNode
-): AST.TopLevelStatement[] {
+  node: ASTv1.Block | ASTv1.Template | ASTv1.ElementNode
+): ASTv1.TopLevelStatement[] {
   switch (node.type) {
     case 'Block':
     case 'Template':
@@ -78,17 +80,17 @@ export function childrenFor(
 }
 
 export function appendChild(
-  parent: AST.Block | AST.Template | AST.ElementNode,
-  node: AST.Statement
-) {
+  parent: ASTv1.Block | ASTv1.Template | ASTv1.ElementNode,
+  node: ASTv1.Statement
+): void {
   childrenFor(parent).push(node);
 }
 
-export function isLiteral(path: HBS.Expression): path is HBS.Literal;
-export function isLiteral(path: AST.Expression): path is AST.Literal;
-export function isLiteral(
-  path: HBS.Expression | AST.Expression
-): path is HBS.Literal | AST.Literal {
+export function isHBSLiteral(path: HBS.Expression): path is HBS.Literal;
+export function isHBSLiteral(path: ASTv1.Expression): path is ASTv1.Literal;
+export function isHBSLiteral(
+  path: HBS.Expression | ASTv1.Expression
+): path is HBS.Literal | ASTv1.Literal {
   return (
     path.type === 'StringLiteral' ||
     path.type === 'BooleanLiteral' ||
@@ -98,7 +100,7 @@ export function isLiteral(
   );
 }
 
-export function printLiteral(literal: AST.Literal): string {
+export function printLiteral(literal: ASTv1.Literal): string {
   if (literal.type === 'UndefinedLiteral') {
     return 'undefined';
   } else {

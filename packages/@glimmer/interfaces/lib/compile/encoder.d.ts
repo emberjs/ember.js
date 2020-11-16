@@ -36,7 +36,7 @@ export interface AllOpMap {
   IfResolved: IfResolvedOp;
   Expr: ExprOp;
   ResolveFree: ResolveFreeOp;
-  ResolveContextualFree: ResolveContextualFreeOp;
+  ResolveAmbiguous: ResolveAmbiguousOp;
   SimpleArgs: SimpleArgsOp;
 
   CompileInline: CompileInlineOp;
@@ -73,7 +73,7 @@ export const enum HighLevelResolutionOpcode {
   IfResolved = 'IfResolved',
   Expr = 'Expr',
   ResolveFree = 'ResolveFree',
-  ResolveContextualFree = 'ResolveContextualFree',
+  ResolveAmbiguous = 'ResolveAmbiguous',
   SimpleArgs = 'SimpleArgs',
 }
 
@@ -131,7 +131,7 @@ export interface IfResolvedOp {
 }
 
 export interface IfResolvedComponentBlocks {
-  attrs: CompilableBlock;
+  elementBlock: Option<CompilableBlock>;
   blocks: NamedBlocks;
 }
 
@@ -140,7 +140,9 @@ export interface IfResolvedComponentOp {
   op: HighLevelCompileOpcode.IfResolvedComponent;
   op1: {
     name: string;
-    attrs: WireFormat.Statements.Attribute[];
+    elementBlock: Option<
+      [WireFormat.Statements.ElementParameter, ...WireFormat.Statements.ElementParameter[]]
+    >;
     blocks: WireFormat.Core.Blocks;
     staticTemplate: (
       handle: number,
@@ -162,8 +164,10 @@ export interface DynamicComponentOp {
   op: HighLevelCompileOpcode.DynamicComponent;
   op1: {
     definition: WireFormat.Expression;
-    attrs: Option<WireFormat.Statements.Attribute[]>;
-    params: Option<WireFormat.Core.Params>;
+    elementBlock: Option<
+      [WireFormat.Statements.ElementParameter, ...WireFormat.Statements.ElementParameter[]]
+    >;
+    params: WireFormat.Core.Params;
     args: WireFormat.Core.Hash;
     blocks: WireFormat.Core.Blocks | NamedBlocks;
     atNames: boolean;
@@ -183,7 +187,7 @@ export type HighLevelResolutionOp =
   | IfResolvedOp
   | ExprOp
   | ResolveFreeOp
-  | ResolveContextualFreeOp
+  | ResolveAmbiguousOp
   | SimpleArgsOp;
 
 export type BuilderOpcode = Op | MachineOp;
@@ -250,13 +254,10 @@ export interface ResolveFreeOp {
   op1: number;
 }
 
-export interface ResolveContextualFreeOp {
+export interface ResolveAmbiguousOp {
   type: 'Resolution';
-  op: HighLevelResolutionOpcode.ResolveContextualFree;
-  op1: {
-    freeVar: number;
-    context: WireFormat.ExpressionContext;
-  };
+  op: HighLevelResolutionOpcode.ResolveAmbiguous;
+  op1: { upvar: number; allowComponents: boolean };
 }
 
 export interface CompileErrorOp {
@@ -334,7 +335,7 @@ export interface Encoder {
    * Start a new labels block. A labels block is a scope for labels that
    * can be referred to before they are declared. For example, when compiling
    * an `if`, the `JumpUnless` opcode occurs before the target label. To
-   * accomodate this use-case ergonomically, the `Encoder` allows a syntax
+   * accommodate this use-case ergonomically, the `Encoder` allows a syntax
    * to create a labels block and then refer to labels that have not yet
    * been declared. Once the block is complete, a second pass replaces the
    * label names with offsets.

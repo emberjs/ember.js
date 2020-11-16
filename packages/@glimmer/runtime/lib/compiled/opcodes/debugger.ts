@@ -9,6 +9,7 @@ export type DebugGet = (path: string) => unknown;
 export type DebugCallback = (context: unknown, get: DebugGet) => void;
 
 function debugCallback(context: unknown, get: DebugGet): void {
+  // eslint-disable-next-line no-console
   console.info('Use `context`, and `get(<path>)` to debug this template.');
 
   // for example...

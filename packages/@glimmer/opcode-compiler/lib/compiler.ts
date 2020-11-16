@@ -11,7 +11,7 @@ import {
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { extractHandle } from '@glimmer/util';
-import { namedBlocks, expectString } from './utils';
+import { namedBlocks, expectLooseFreeVariable } from './utils';
 
 export function compileInline(
   sexp: Statements.Append,
@@ -27,13 +27,17 @@ export function compileBlock(
   let [, name, params, hash, named] = block;
   let blocks = namedBlocks(named, context.meta);
 
-  let nameOrError = expectString(name, context.meta, 'Expected block head to be a string');
+  let nameOrError = expectLooseFreeVariable(
+    name,
+    context.meta,
+    'Expected block head to be a string'
+  );
 
   if (typeof nameOrError !== 'string') {
     return nameOrError;
   }
 
-  return context.syntax.macros.blocks.compile(nameOrError, params || [], hash, blocks, context);
+  return context.syntax.macros.blocks.compile(nameOrError, params, hash, blocks, context);
 }
 
 export function commit(heap: CompileTimeHeap, scopeSize: number, buffer: CompilerBuffer): number {

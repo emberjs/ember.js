@@ -1,17 +1,19 @@
 import {
   Bounds,
+  Cursor,
+  CursorStackSymbol,
+  ElementBuilder,
   ElementOperations,
   Environment,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
-  ElementBuilder,
   LiveBlock,
-  CursorStackSymbol,
-  UpdatableBlock,
-  Cursor,
   InternalModifierManager,
+  Maybe,
+  Option,
+  UpdatableBlock,
 } from '@glimmer/interfaces';
-import { assert, expect, Option, Stack, Maybe, symbol } from '@glimmer/util';
+import { assert, expect, Stack, symbol } from '@glimmer/util';
 import {
   AttrNamespace,
   SimpleComment,
@@ -21,8 +23,8 @@ import {
   SimpleText,
 } from '@simple-dom/interface';
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
+import { destroy, registerDestructor } from '../destroyables';
 import { DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
-import { registerDestructor, destroy } from '../destroyables';
 
 export interface FirstNode {
   firstNode(): SimpleNode;

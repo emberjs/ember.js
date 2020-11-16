@@ -6,6 +6,7 @@
   "files.exclude": {
     "**/.DS_Store": true,
     "**/.git": true,
+    "node_modules/**": true,
     "tmp/**": true
   },
   "files.watcherExclude": {
@@ -28,5 +29,11 @@
   "javascript.preferences.importModuleSpecifier": "relative",
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.workspaceSymbols.scope": "currentProject",
-  "eslint.workingDirectories": [{ "mode": "auto" }]
+  "eslint.workingDirectories": [
+    {
+      "directory": ".",
+      "changeProcessCWD": true
+    }
+  ],
+  "eslint.enable": true
 }

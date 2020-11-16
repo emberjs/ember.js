@@ -97,7 +97,7 @@ export default class LowLevelVM {
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
   call(handle: number) {
-    assert(handle < 0xffffffff, `Jumping to placehoder address`);
+    assert(handle < 0xffffffff, `Jumping to placeholder address`);
 
     this.registers[$ra] = this.registers[$pc];
     this.setPc(this.heap.getaddr(handle));

@@ -145,7 +145,7 @@ export class EmberishCurlyComponentManager
       let positional = args.positional.capture();
       named[positionalParams] = createComputeRef(() => reifyPositional(positional));
 
-      return { positional: EMPTY_ARRAY, named };
+      return { positional: EMPTY_ARRAY, named } as PreparedArguments;
     } else if (Array.isArray(positionalParams)) {
       let named = assign({}, args.named.capture());
       let count = Math.min(positionalParams.length, args.positional.length);
@@ -162,7 +162,7 @@ export class EmberishCurlyComponentManager
         named[name] = args.positional.at(i);
       }
 
-      return { positional: EMPTY_ARRAY, named };
+      return { positional: EMPTY_ARRAY, named } as PreparedArguments;
     } else {
       return null;
     }
