@@ -269,6 +269,15 @@ export class SourceSpan implements SourceLocation {
     this.data.locDidUpdate({ end: position });
   }
 
+  /**
+   * For compatibility with SourceLocation in AST plugins
+   *
+   * @deprecated use module instead
+   */
+  get source(): string {
+    return this.module;
+  }
+
   collapse(where: 'start' | 'end'): SourceSpan {
     switch (where) {
       case 'start':
