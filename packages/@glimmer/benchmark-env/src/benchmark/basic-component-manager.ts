@@ -1,6 +1,7 @@
-import { WithCreateInstance, Environment, Dict, VMArguments } from '@glimmer/interfaces';
+import { WithCreateInstance, Environment, Dict, VMArguments, Template } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
+import { getComponentTemplate } from '@glimmer/manager';
 import { ComponentArgs } from '../interfaces';
 import argsProxy from './args-proxy';
 
@@ -68,6 +69,10 @@ class BasicComponentManager
 
   getDestroyable(state: BasicState) {
     return state.instance;
+  }
+
+  getStaticLayout(definition: object): Template {
+    return getComponentTemplate(definition)!();
   }
 }
 

@@ -1,6 +1,5 @@
 import {
   CompilableProgram,
-  CompileTimeComponent,
   ComponentDefinition,
   Helper as GlimmerHelper,
   Invocation,
@@ -8,9 +7,8 @@ import {
   Option,
   PartialDefinition,
   Template,
-  WithStaticLayout,
 } from '@glimmer/interfaces';
-import { assert, dict, unwrapTemplate } from '@glimmer/util';
+import { assert, dict } from '@glimmer/util';
 import { getComponentTemplate } from '@glimmer/manager';
 import { TestComponentDefinitionState } from '../../components/test-component';
 
@@ -35,28 +33,18 @@ export type LookupType = keyof Lookup;
 export type LookupValue = Lookup[LookupType];
 
 export class TypedRegistry<T> {
-  private byName: { [key: string]: number } = dict<number>();
-  private byHandle: { [key: number]: T } = dict<T>();
+  private byName: { [key: string]: T } = dict<T>();
 
-  hasName(name: string): boolean {
+  has(name: string): boolean {
     return name in this.byName;
   }
 
-  getHandle(name: string): Option<number> {
+  get(name: string): Option<T> {
     return this.byName[name];
   }
 
-  hasHandle(name: number): boolean {
-    return name in this.byHandle;
-  }
-
-  getByHandle(handle: number): Option<T> {
-    return this.byHandle[handle];
-  }
-
-  register(handle: number, name: string, value: T): void {
-    this.byHandle[handle] = value;
-    this.byName[name] = handle;
+  register(name: string, value: T): void {
+    this.byName[name] = value;
   }
 }
 
@@ -71,35 +59,32 @@ export default class Registry {
 }
 
 export class TestJitRegistry {
-  private handleLookup: TypedRegistry<unknown>[] = [];
   private registry = new Registry();
 
-  register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
-    let registry = this.registry[type];
-    let handle = this.handleLookup.length;
-    this.handleLookup.push(registry);
-    (this.registry[type] as TypedRegistry<any>).register(handle, name, value);
-    return handle;
+  register<K extends LookupType>(type: K, name: string, value: Lookup[K]): void {
+    let registry = this.registry[type] as TypedRegistry<any>;
+    registry.register(name, value);
   }
 
-  lookup(type: LookupType, name: string): Option<number> {
-    if (this.registry[type].hasName(name)) {
-      return this.registry[type].getHandle(name);
+  lookup<K extends LookupType>(type: K, name: string): Option<Lookup[K]> {
+    if (this.registry[type].has(name)) {
+      return this.registry[type].get(name) as Lookup[K];
     } else {
       return null;
     }
   }
 
-  lookupComponentHandle(name: string): Option<number> {
-    let handle = this.lookup('component', name);
+  lookupComponent(name: string): Option<ComponentDefinition> {
+    let definition = this.lookup('component', name);
 
-    if (handle === null) {
+    if (definition === null) {
       return null;
     }
 
-    let { manager, state } = this.resolve<
-      ComponentDefinition<TestComponentDefinitionState, unknown>
-    >(handle);
+    let { manager, state } = definition as ComponentDefinition<
+      TestComponentDefinitionState,
+      unknown
+    >;
 
     let capabilities = manager.getCapabilities(state);
 
@@ -116,42 +101,6 @@ export class TestJitRegistry {
       }
     }
 
-    return handle;
-  }
-
-  lookupCompileTimeComponent(name: string): Option<CompileTimeComponent> {
-    let handle = this.lookupComponentHandle(name);
-
-    if (handle === null) {
-      return null;
-    }
-
-    let { manager, state } = this.resolve<ComponentDefinition<unknown, unknown, WithStaticLayout>>(
-      handle
-    );
-
-    let capabilities = manager.getCapabilities(state);
-
-    if (capabilities.dynamicLayout) {
-      return {
-        handle: handle,
-        capabilities,
-        compilable: null,
-      };
-    }
-
-    let template = unwrapTemplate(manager.getStaticLayout(state));
-    let layout = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
-
-    return {
-      handle: handle,
-      capabilities,
-      compilable: layout,
-    };
-  }
-
-  resolve<T>(handle: number): T {
-    let registry = this.handleLookup[handle];
-    return registry.getByHandle(handle) as T;
+    return definition;
   }
 }

@@ -2,7 +2,7 @@ import { Reference, valueForRef } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { assert, unwrapHandle, decodeHandle } from '@glimmer/util';
 import { check } from '@glimmer/debug';
-import { Op, Dict, PartialDefinition, Owner } from '@glimmer/interfaces';
+import { Op, Dict, Owner } from '@glimmer/interfaces';
 import { CheckReference } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 
@@ -15,12 +15,9 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _owner, op2: _symbols, op3: _ev
   let owner = constants.getValue<Owner>(decodeHandle(_owner));
   let outerSymbols = constants.getArray<string>(_symbols);
   let evalInfo = constants.getArray<number>(decodeHandle(_evalInfo));
+  let definition = vm.runtime.resolver.lookupPartial(name as string, owner);
 
-  let handle = vm.runtime.resolver.lookupPartial(name as string, owner);
-
-  assert(handle !== null, `Could not find a partial named "${name}"`);
-
-  let definition = vm.runtime.resolver.resolve<PartialDefinition>(handle!);
+  assert(definition !== null, `Could not find a partial named "${name}"`);
 
   let { symbolTable, handle: vmHandle } = definition.getPartial(vm.context);
 

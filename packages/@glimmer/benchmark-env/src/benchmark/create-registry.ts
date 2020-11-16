@@ -2,36 +2,19 @@ import {
   Helper,
   ModifierDefinition,
   ComponentDefinition,
-  CompileTimeComponent,
   InternalComponentManager,
-  SerializedTemplateWithLazyBlock,
   InternalModifierManager,
-  CompilableProgram,
   Dict,
-  PartialDefinition,
 } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import { TemplateOnlyComponentManager } from '@glimmer/runtime';
+import { getComponentTemplate } from '@glimmer/manager';
 import { SimpleElement } from '@simple-dom/interface';
 
 import { UpdateBenchmark } from '../interfaces';
 import { createProgram } from './util';
 import renderBenchmark from './render-benchmark';
-
-interface RegisteredValueBase<TDefinition> {
-  handle: number;
-  name: string;
-  definition: TDefinition;
-}
-interface RegisteredComponent
-  extends CompileTimeComponent,
-    RegisteredValueBase<ComponentDefinition> {
-  compilable: CompilableProgram;
-}
-type RegisteredHelper = RegisteredValueBase<Helper>;
-type RegisteredModifier = RegisteredValueBase<ModifierDefinition>;
-type RegisteredValue = RegisteredComponent | RegisteredHelper | RegisteredModifier;
 
 export interface Registry {
   /**
@@ -39,7 +22,7 @@ export interface Registry {
    * @param name
    * @param template
    */
-  registerComponent(name: string, template: SerializedTemplateWithLazyBlock): void;
+  registerComponent(name: string): void;
   /**
    * Register a component with a manager
    * @param name
@@ -49,7 +32,6 @@ export interface Registry {
    */
   registerComponent<T>(
     name: string,
-    template: SerializedTemplateWithLazyBlock,
     component: T,
     manager: InternalComponentManager<unknown, T>
   ): void;
@@ -79,68 +61,37 @@ export interface Registry {
 }
 
 export default function createRegistry(): Registry {
-  const values: RegisteredValue[] = [];
-  const components = new Map<string, RegisteredComponent>();
-  const helpers = new Map<string, RegisteredHelper>();
-  const modifiers = new Map<string, RegisteredModifier>();
-
-  const pushValue = <T extends RegisteredValue>(create: (handle: number) => T) => {
-    const handle = values.length;
-    return (values[handle] = create(handle));
-  };
+  const components = new Map<string, ComponentDefinition>();
+  const helpers = new Map<string, Helper>();
+  const modifiers = new Map<string, ModifierDefinition>();
 
   return {
     registerComponent: (
       name: string,
-      template: SerializedTemplateWithLazyBlock,
       component: unknown = null,
       manager: InternalComponentManager = new TemplateOnlyComponentManager()
     ) => {
-      components.set(
-        name,
-        pushValue((handle) => ({
-          handle,
-          name,
-          definition: {
-            state: component,
-            manager,
-          },
-          capabilities: manager.getCapabilities(component),
-          compilable: createProgram(template),
-        }))
-      );
+      components.set(name, {
+        state: component,
+        manager,
+      });
     },
     registerHelper: (name, helper) => {
-      helpers.set(
-        name,
-        pushValue((handle) => ({
-          handle,
-          name,
-          definition: helper,
-        }))
-      );
+      helpers.set(name, helper);
     },
     registerModifier: (name, modifier, manager) => {
-      modifiers.set(
-        name,
-        pushValue((handle) => ({
-          handle,
-          name,
-          definition: {
-            state: modifier,
-            manager,
-          },
-        }))
-      );
+      modifiers.set(name, {
+        state: modifier,
+        manager,
+      });
     },
     render: (entry, args, element, isIteractive) => {
       const sharedArtifacts = artifacts();
       const context = programCompilationContext(sharedArtifacts, {
-        lookupHelper: (name) => helpers.get(name)?.handle ?? null,
-        lookupModifier: (name) => modifiers.get(name)?.handle ?? null,
+        lookupHelper: (name) => helpers.get(name) ?? null,
+        lookupModifier: (name) => modifiers.get(name) ?? null,
         lookupComponent: (name) => components.get(name) ?? null,
         lookupPartial: () => null,
-        resolve: () => null,
       });
       const component = components.get(entry);
       if (!component) {
@@ -151,16 +102,11 @@ export default function createRegistry(): Registry {
         sharedArtifacts,
         context,
         {
-          resolve<U extends ComponentDefinition | Helper | ModifierDefinition | PartialDefinition>(
-            handle: number
-          ): U {
-            return values[handle].definition as U;
-          },
           lookupComponent: () => null,
           lookupPartial: () => null,
         },
-        component.definition,
-        component.compilable,
+        component,
+        createProgram(getComponentTemplate(component.state as object)!),
         args,
         element as SimpleElement,
         isIteractive

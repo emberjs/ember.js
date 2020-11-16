@@ -89,7 +89,7 @@ APPEND_OPCODES.add(Op.CloseElement, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
-  let { manager, state } = vm.runtime.resolver.resolve<ModifierDefinition>(handle);
+  let { manager, state } = vm[CONSTANTS].getValue<ModifierDefinition>(handle);
   let stack = vm.stack;
   let args = check(stack.popJs(), CheckArguments);
   let { constructing, updateOperations } = vm.elements();

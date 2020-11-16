@@ -63,10 +63,6 @@ import { ModifierDefinition } from './runtime/modifier';
 import { Owner, Helper } from './runtime';
 import { InternalComponentCapabilities } from './managers';
 
-export interface HandleResolver {
-  resolve(handle: number): unknown;
-}
-
 export interface CompileTimeComponent {
   handle: number;
   capabilities?: InternalComponentCapabilities;
@@ -80,14 +76,11 @@ export const enum ResolverContext {
   HelperOrComponent,
 }
 
-export interface CompileTimeResolver<O extends Owner = Owner> extends HandleResolver {
-  lookupHelper(name: string, owner: O): Option<number>;
-  lookupModifier(name: string, owner: O): Option<number>;
-  lookupComponent(name: string, owner: O): Option<CompileTimeComponent>;
-  lookupPartial(name: string, owner: O): Option<number>;
-
-  // For debugging
-  resolve<U extends ResolvedValue>(handle: number): U | null;
+export interface CompileTimeResolver<O extends Owner = Owner> {
+  lookupHelper(name: string, owner: O): Option<Helper>;
+  lookupModifier(name: string, owner: O): Option<ModifierDefinition>;
+  lookupComponent(name: string, owner: O): Option<ComponentDefinition>;
+  lookupPartial(name: string, owner: O): Option<PartialDefinition>;
 }
 
 export interface PartialDefinition {
@@ -100,8 +93,7 @@ export interface PartialDefinition {
 
 export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;
 
-export interface RuntimeResolver<O extends Owner = Owner> extends HandleResolver {
+export interface RuntimeResolver<O extends Owner = Owner> {
   lookupComponent(name: string, owner: O): Option<ComponentDefinition>;
-  lookupPartial(name: string, owner: O): Option<number>;
-  resolve<U extends ResolvedValue>(handle: number): U;
+  lookupPartial(name: string, owner: O): Option<PartialDefinition>;
 }
