@@ -1,4 +1,4 @@
-import { SerializedTemplateWithLazyBlock, Dict } from '@glimmer/interfaces';
+import { Dict, Template } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
 
 /**
@@ -17,7 +17,7 @@ export interface Benchmark {
    * @param name
    * @param template
    */
-  templateOnlyComponent(name: string, template: SerializedTemplateWithLazyBlock): void;
+  templateOnlyComponent(name: string): void;
 
   /**
    * Register a basic component
@@ -27,7 +27,7 @@ export interface Benchmark {
    */
   basicComponent<TComponent extends object = object>(
     name: string,
-    template: SerializedTemplateWithLazyBlock,
+    _template: Template,
     component: new (args: ComponentArgs) => TComponent
   ): void;
 

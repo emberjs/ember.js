@@ -33,7 +33,7 @@ export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
-  let helper = check(vm.runtime.resolver.resolve(handle), CheckHelper);
+  let helper = check(vm[CONSTANTS].getValue(handle), CheckHelper);
   let args = check(stack.popJs(), CheckArguments);
   let value = helper(args, vm);
 

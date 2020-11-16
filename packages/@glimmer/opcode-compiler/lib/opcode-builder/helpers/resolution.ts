@@ -1,6 +1,9 @@
 import { DEBUG } from '@glimmer/env';
 import {
+  CompilableProgram,
+  CompileTimeConstants,
   CompileTimeResolver,
+  ComponentDefinition,
   ContainingMetadata,
   Expressions,
   Owner,
@@ -11,8 +14,9 @@ import {
   ResolveOptionalComponentOrHelperOp,
   ResolveOptionalHelperOp,
   SexpOpcodes,
+  WithStaticLayout,
 } from '@glimmer/interfaces';
-import { assert } from '@glimmer/util';
+import { assert, unwrapTemplate } from '@glimmer/util';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;
@@ -80,22 +84,23 @@ function assertResolverInvariants(meta: ContainingMetadata): RequiredContainingM
  */
 export function resolveComponent(
   resolver: CompileTimeResolver,
+  constants: CompileTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveComponentOp
 ): void {
   assert(isGetFreeComponent(expr), 'Attempted to resolve a component with incorrect opcode');
   let { upvars, owner } = assertResolverInvariants(meta);
 
-  let name = upvars![expr[1]];
-  let value = resolver.lookupComponent(name, owner!);
+  let name = upvars[expr[1]];
+  let definition = resolver.lookupComponent(name, owner)!;
 
-  if (DEBUG && value === null) {
+  if (DEBUG && definition === null) {
     throw new Error(
       `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
     );
   }
 
-  then(value!);
+  then(convertToCompileTimeComponent(constants, definition));
 }
 
 /**
@@ -104,6 +109,7 @@ export function resolveComponent(
  */
 export function resolveHelper(
   resolver: CompileTimeResolver,
+  constants: CompileTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveHelperOp
 ): void {
@@ -111,15 +117,15 @@ export function resolveHelper(
   let { upvars, owner } = assertResolverInvariants(meta);
 
   let name = upvars[expr[1]];
-  let value = resolver.lookupHelper(name, owner);
+  let helper = resolver.lookupHelper(name, owner)!;
 
-  if (DEBUG && value === null) {
+  if (DEBUG && helper === null) {
     throw new Error(
       `Attempted to resolve ${name}, which was expected to be a component, but nothing was found.`
     );
   }
 
-  then(value!);
+  then(constants.value(helper));
 }
 
 /**
@@ -129,6 +135,7 @@ export function resolveHelper(
  */
 export function resolveModifier(
   resolver: CompileTimeResolver,
+  constants: CompileTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveModifierOp
 ): void {
@@ -136,15 +143,15 @@ export function resolveModifier(
   let { upvars, owner } = assertResolverInvariants(meta);
 
   let name = upvars[expr[1]];
-  let value = resolver.lookupModifier(name, owner);
+  let modifier = resolver.lookupModifier(name, owner)!;
 
-  if (DEBUG && value === null) {
+  if (DEBUG && modifier === null) {
     throw new Error(
       `Attempted to resolve \`${name}\`, which was expected to be a modifier, but nothing was found.`
     );
   }
 
-  then(value!);
+  then(constants.value(modifier));
 }
 
 /**
@@ -152,6 +159,7 @@ export function resolveModifier(
  */
 export function resolveComponentOrHelper(
   resolver: CompileTimeResolver,
+  constants: CompileTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveComponentOrHelperOp
 ): void {
@@ -162,15 +170,21 @@ export function resolveComponentOrHelper(
   let { upvars, owner } = assertResolverInvariants(meta);
 
   let name = upvars[expr[1]];
-  let value = resolver.lookupComponent(name, owner) || resolver.lookupHelper(name, owner);
+  let definition = resolver.lookupComponent(name, owner);
 
-  if (DEBUG && value === null) {
-    throw new Error(
-      `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
-    );
+  if (definition !== null) {
+    then(convertToCompileTimeComponent(constants, definition));
+  } else {
+    let value = resolver.lookupHelper(name, owner);
+
+    if (DEBUG && value === null) {
+      throw new Error(
+        `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
+      );
+    }
+
+    then(constants.value(value));
   }
-
-  then(value!);
 }
 
 /**
@@ -178,6 +192,7 @@ export function resolveComponentOrHelper(
  */
 export function resolveOptionalHelper(
   resolver: CompileTimeResolver,
+  constants: CompileTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveOptionalHelperOp
 ): void {
@@ -187,7 +202,7 @@ export function resolveOptionalHelper(
   let name = upvars[expr[1]];
   let value = resolver.lookupHelper(name, owner);
 
-  then(value || name);
+  then(value !== null ? constants.value(value) : name);
 }
 
 /**
@@ -195,6 +210,7 @@ export function resolveOptionalHelper(
  */
 export function resolveOptionalComponentOrHelper(
   resolver: CompileTimeResolver,
+  constants: CompileTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveOptionalComponentOrHelperOp
 ): void {
@@ -205,7 +221,31 @@ export function resolveOptionalComponentOrHelper(
   let { upvars, owner } = assertResolverInvariants(meta);
 
   let name = upvars[expr[1]];
-  let value = resolver.lookupComponent(name, owner) || resolver.lookupHelper(name, owner);
+  let definition = resolver.lookupComponent(name, owner);
 
-  then(value || name);
+  if (definition !== null) {
+    then(convertToCompileTimeComponent(constants, definition));
+  } else {
+    let value = resolver.lookupHelper(name, owner);
+
+    then(value !== null ? constants.value(value) : name);
+  }
+}
+
+function convertToCompileTimeComponent(
+  constants: CompileTimeConstants,
+  definition: ComponentDefinition
+) {
+  let handle = constants.value(definition);
+  let { manager, state } = definition;
+
+  let capabilities = manager.getCapabilities(state);
+  let compilable: CompilableProgram | null = null;
+
+  if (!capabilities.dynamicLayout) {
+    let template = unwrapTemplate((manager as WithStaticLayout).getStaticLayout(state));
+    compilable = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
+  }
+
+  return { handle, capabilities, compilable };
 }

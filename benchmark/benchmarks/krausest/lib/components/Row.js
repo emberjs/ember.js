@@ -1,3 +1,7 @@
+import { templateFactory } from '@glimmer/opcode-compiler';
+import { setComponentTemplate } from '@glimmer/manager';
+import RowTemplate from './Row.hbs';
+
 export default class Row {
   constructor(args) {
     this.args = args;
@@ -8,3 +12,5 @@ export default class Row {
     };
   }
 }
+
+setComponentTemplate(templateFactory(RowTemplate), Row);

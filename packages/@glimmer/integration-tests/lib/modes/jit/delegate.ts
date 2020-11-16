@@ -2,7 +2,6 @@ import { PrecompileOptions } from '@glimmer/syntax';
 import {
   CapturedRenderNode,
   CompileTimeCompilationContext,
-  ComponentDefinition,
   Cursor,
   Dict,
   DynamicScope,
@@ -53,6 +52,7 @@ import {
 import { TestJitRegistry } from './registry';
 import { renderTemplate } from './render';
 import { TestJitRuntimeResolver } from './resolver';
+import { getCompilable } from './util';
 
 export interface JitTestDelegateContext {
   runtime: RuntimeContext;
@@ -129,7 +129,7 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): Option<CurriedComponentDefinition> {
-    return componentHelper(this.resolver, this.registry, name);
+    return componentHelper(this.registry, name);
   }
 
   registerPlugin(plugin: ASTPluginBuilder): void {
@@ -218,8 +218,8 @@ export class JitRenderDelegate implements RenderDelegate {
     let { program, runtime } = this.context;
     let builder = this.getElementBuilder(runtime.env, cursor);
 
-    let { handle, compilable } = this.registry.lookupCompileTimeComponent(name)!;
-    let component = this.registry.resolve<ComponentDefinition>(handle);
+    let component = this.registry.lookupComponent(name)!;
+    let compilable = getCompilable(component);
 
     let iterator = renderComponent(
       runtime,

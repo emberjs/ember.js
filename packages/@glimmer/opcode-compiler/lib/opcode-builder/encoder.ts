@@ -80,17 +80,17 @@ export function encodeOp(
         return encoder.stopLabels();
 
       case HighLevelResolutionOpcode.ResolveComponent:
-        return resolveComponent(resolver, meta, op);
+        return resolveComponent(resolver, constants, meta, op);
       case HighLevelResolutionOpcode.ResolveModifier:
-        return resolveModifier(resolver, meta, op);
+        return resolveModifier(resolver, constants, meta, op);
       case HighLevelResolutionOpcode.ResolveHelper:
-        return resolveHelper(resolver, meta, op);
+        return resolveHelper(resolver, constants, meta, op);
       case HighLevelResolutionOpcode.ResolveComponentOrHelper:
-        return resolveComponentOrHelper(resolver, meta, op);
+        return resolveComponentOrHelper(resolver, constants, meta, op);
       case HighLevelResolutionOpcode.ResolveOptionalHelper:
-        return resolveOptionalHelper(resolver, meta, op);
+        return resolveOptionalHelper(resolver, constants, meta, op);
       case HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper:
-        return resolveOptionalComponentOrHelper(resolver, meta, op);
+        return resolveOptionalComponentOrHelper(resolver, constants, meta, op);
 
       case HighLevelResolutionOpcode.ResolveLocal:
         let freeVar = op[1];
