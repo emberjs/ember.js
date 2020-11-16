@@ -12,7 +12,7 @@ let _SOURCE: Source | undefined;
 
 function SOURCE(): Source {
   if (!_SOURCE) {
-    _SOURCE = new Source('', '(tests)');
+    _SOURCE = new Source('', '(synthetic)');
   }
 
   return _SOURCE;
@@ -497,7 +497,8 @@ function buildLoc(
   startLine: number,
   startColumn: number,
   endLine?: number,
-  endColumn?: number
+  endColumn?: number,
+  source?: string
 ): SourceSpan;
 
 function buildLoc(...args: any[]): SourceSpan {
@@ -510,8 +511,10 @@ function buildLoc(...args: any[]): SourceSpan {
       return SourceSpan.forHbsLoc(SOURCE(), SYNTHETIC_LOCATION);
     }
   } else {
-    let [startLine, startColumn, endLine, endColumn] = args;
-    return SourceSpan.forHbsLoc(SOURCE(), {
+    let [startLine, startColumn, endLine, endColumn, _source] = args;
+    let source = _source ? new Source('', _source) : SOURCE();
+
+    return SourceSpan.forHbsLoc(source, {
       start: {
         line: startLine,
         column: startColumn,
