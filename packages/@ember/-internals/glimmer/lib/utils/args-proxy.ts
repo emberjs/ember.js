@@ -101,7 +101,7 @@ if (HAS_NATIVE_PROXY) {
 
         const parsed = convertToInt(prop);
 
-        if (parsed !== null && parsed < positional.length) {
+        if (parsed !== null && parsed >= 0 && parsed < positional.length) {
           return valueForRef(positional[parsed]);
         }
 
