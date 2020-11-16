@@ -22,7 +22,7 @@ function SOURCE(): Source {
 
 // Statements
 
-export type BuilderHead = string | ASTv1.PathExpression;
+export type BuilderHead = string | ASTv1.Expression;
 export type TagDescriptor = string | { name: string; selfClosing: boolean };
 
 function buildMustache(
