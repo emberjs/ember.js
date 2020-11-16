@@ -47,7 +47,7 @@ export function CompileArgs({
     flags |= 0b111;
   }
 
-  let names: string[] = EMPTY_ARRAY;
+  let names = EMPTY_ARRAY as readonly string[];
 
   if (hash) {
     names = hash[0];
@@ -83,18 +83,21 @@ export function CompilePositional(
 }
 
 export function meta(layout: LayoutWithContext): ContainingMetadata {
+  let [, symbols, , upvars] = layout.block;
+
   return {
     asPartial: layout.asPartial || false,
     evalSymbols: evalSymbols(layout),
-    upvars: layout.block.upvars,
+    upvars: upvars,
     moduleName: layout.moduleName,
     owner: layout.owner,
-    size: layout.block.symbols.length,
+    size: symbols.length,
   };
 }
 
 export function evalSymbols(layout: LayoutWithContext): Option<string[]> {
   let { block } = layout;
+  let [, symbols, hasEval] = block;
 
-  return block.hasEval ? block.symbols : null;
+  return hasEval ? symbols : null;
 }

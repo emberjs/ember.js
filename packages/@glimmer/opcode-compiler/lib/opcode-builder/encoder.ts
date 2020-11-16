@@ -248,7 +248,7 @@ function isResolutionOpcode(op: AllOpcode): op is HighLevelResolutionOpcode {
     op === 'Expr' ||
     op === 'SimpleArgs' ||
     op === 'ResolveFree' ||
-    op === 'ResolveContextualFree'
+    op === 'ResolveAmbiguous'
   );
 }
 

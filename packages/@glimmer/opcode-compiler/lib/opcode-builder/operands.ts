@@ -21,7 +21,7 @@ export function arr(value: number[]): ArrayOperand {
   };
 }
 
-export function strArray(value: string[]): StringArrayOperand {
+export function strArray(value: readonly string[]): StringArrayOperand {
   return {
     type: 'string-array',
     value,

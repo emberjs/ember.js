@@ -1,21 +1,22 @@
 import {
-  ContainingMetadata,
-  Option,
   CompilableBlock,
-  LayoutWithContext,
-  WireFormat,
-  Op,
-  MachineOp,
+  CompilableProgram,
   CompileActions,
-  StatementCompileActions,
-  NestedStatementCompileActions,
+  CompileTimeComponent,
+  ContainingMetadata,
   ExpressionCompileActions,
-  Unhandled,
+  LayoutWithContext,
+  MachineOp,
   NamedBlocks,
   InternalComponentCapabilities,
-  CompilableProgram,
-  CompileTimeComponent,
   Owner,
+  StatementCompileActions,
+  Unhandled,
+  WireFormat,
+  Option,
+  Op,
+  MacroContext,
+  NestedStatementCompileActions,
 } from '@glimmer/interfaces';
 
 import { label, other, strArray } from '../operands';
@@ -23,27 +24,26 @@ import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
 import { meta, CompileArgs, CompilePositional } from './shared';
 import {
-  YieldBlock,
-  PushSymbolTable,
   InvokeStaticBlock,
-  PushYieldableBlock,
   PushCompilable,
+  PushSymbolTable,
+  PushYieldableBlock,
+  YieldBlock,
 } from './blocks';
 import { Replayable } from './conditional';
-import { EMPTY_ARRAY } from '@glimmer/util';
 import { op } from '../encoder';
-import { UNHANDLED, NONE } from '../../syntax/concat';
-import { compilableBlock } from '../../compilable-template';
 import { NamedBlocksImpl } from '../../utils';
-import { MacroContext } from '../../syntax/macros';
-import { MINIMAL_CAPABILITIES } from '../delegate';
+import { NONE, UNHANDLED } from '../../syntax/concat';
+import { EMPTY_STRING_ARRAY } from '@glimmer/util';
+import { MINIMAL_CAPABILITIES } from '@glimmer/runtime';
+import { compilableBlock } from '../../compilable-template';
 
 export const ATTRS_BLOCK = '&attrs';
 
 export type Block = () => CompileActions;
 
 interface AnyComponent {
-  attrs: Option<CompilableBlock>;
+  elementBlock: Option<CompilableBlock>;
   params: Option<WireFormat.Core.Params>;
   hash: WireFormat.Core.Hash;
   blocks: NamedBlocks;
@@ -107,7 +107,7 @@ export function StaticComponentHelper(
         InvokeStaticComponent({
           capabilities,
           layout: compilable,
-          attrs: null,
+          elementBlock: null,
           params: null,
           hash,
           blocks: new NamedBlocksImpl({ default: template }),
@@ -124,7 +124,7 @@ export function StaticComponentHelper(
 export function InvokeStaticComponent({
   capabilities,
   layout,
-  attrs,
+  elementBlock,
   params,
   hash,
   blocks,
@@ -136,7 +136,7 @@ export function InvokeStaticComponent({
   if (bailOut) {
     return InvokeComponent({
       capabilities,
-      attrs,
+      elementBlock,
       params,
       hash,
       atNames: true,
@@ -165,11 +165,11 @@ export function InvokeStaticComponent({
   let blockNames = blocks.names;
 
   // Starting with the attrs block, if it exists and is referenced in the component
-  if (attrs !== null) {
+  if (elementBlock !== null) {
     let symbol = symbols.indexOf(ATTRS_BLOCK);
 
     if (symbol !== -1) {
-      out.push(PushYieldableBlock(attrs));
+      out.push(PushYieldableBlock(elementBlock));
       blockSymbols.push(symbol);
     }
   }
@@ -200,7 +200,7 @@ export function InvokeStaticComponent({
     let flags = count << 4;
     flags |= 0b1000;
 
-    let names: string[] = EMPTY_ARRAY;
+    let names: string[] = EMPTY_STRING_ARRAY as string[];
 
     // Next, if named args exist, push them all. If they have an associated symbol
     // in the invoked component (e.g. they are used within its template), we push
@@ -221,7 +221,7 @@ export function InvokeStaticComponent({
     // Finally, push the VM arguments themselves. These args won't need access
     // to blocks (they aren't accessible from userland anyways), so we push an
     // empty array instead of the actual block names.
-    out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_ARRAY), flags));
+    out.push(op(Op.PushArgs, strArray(names), strArray(EMPTY_STRING_ARRAY as string[]), flags));
 
     // And push an extra pop operation to remove the args before we begin setting
     // variables on the local context
@@ -314,7 +314,7 @@ export function InvokeStaticComponent({
 
 export function InvokeDynamicComponent(
   meta: ContainingMetadata,
-  { definition, attrs, params, hash, atNames, blocks, curried }: DynamicComponent
+  { definition, elementBlock, params, hash, atNames, blocks, curried }: DynamicComponent
 ): StatementCompileActions {
   return Replayable({
     args: () => {
@@ -333,7 +333,7 @@ export function InvokeDynamicComponent(
         op(Op.PushDynamicComponentInstance),
         InvokeComponent({
           capabilities: true,
-          attrs,
+          elementBlock,
           params,
           hash,
           atNames,
@@ -361,7 +361,7 @@ export function WrappedComponent(
     op(Op.PutComponentOperations),
     op(Op.OpenDynamicElement),
     op(Op.DidCreateElement, $s0),
-    YieldBlock(attrsBlockNumber, EMPTY_ARRAY),
+    YieldBlock(attrsBlockNumber, null),
     op(Op.FlushElement),
     op('Label', 'BODY'),
     InvokeStaticBlock(blockForLayout(layout)),
@@ -390,7 +390,7 @@ export function StaticComponent(
       InvokeStaticComponent({
         capabilities: capabilities || MINIMAL_CAPABILITIES,
         layout: compilable,
-        attrs: null,
+        elementBlock: null,
         params,
         hash,
         blocks,
@@ -401,7 +401,7 @@ export function StaticComponent(
       op(Op.PushComponentDefinition, handle),
       InvokeComponent({
         capabilities: capabilities || MINIMAL_CAPABILITIES,
-        attrs: null,
+        elementBlock: null,
         params,
         hash,
         atNames: true,
@@ -413,7 +413,7 @@ export function StaticComponent(
 
 export function InvokeComponent({
   capabilities,
-  attrs,
+  elementBlock,
   params,
   hash,
   atNames,
@@ -424,7 +424,7 @@ export function InvokeComponent({
   let bindableAtNames =
     capabilities === true || capabilities.prepareArgs || !!(hash && hash[0].length !== 0);
 
-  let blocks = namedBlocks.with('attrs', attrs);
+  let blocks = namedBlocks.with('attrs', elementBlock);
 
   return [
     op(Op.Fetch, $s0),
@@ -528,7 +528,7 @@ export function curryComponent(
 }
 
 function blockForLayout(layout: LayoutWithContext): CompilableBlock {
-  return compilableBlock(layout.block.statements, meta(layout));
+  return compilableBlock([layout.block[0]], meta(layout));
 }
 
 export function WithSavedRegister(register: SavedRegister, block: Block): CompileActions {

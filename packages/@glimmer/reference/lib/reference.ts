@@ -1,16 +1,17 @@
+import { DEBUG } from '@glimmer/env';
 import { getProp, setProp } from '@glimmer/global-context';
-import { Option, expect, symbol, isDict, _WeakSet } from '@glimmer/util';
+import { Option } from '@glimmer/interfaces';
+import { expect, isDict, symbol } from '@glimmer/util';
 import {
-  Tag,
   CONSTANT_TAG,
-  Revision,
-  validateTag,
   consumeTag,
   INITIAL,
-  valueForTag,
+  Revision,
+  Tag,
   track,
+  validateTag,
+  valueForTag,
 } from '@glimmer/validator';
-import { DEBUG } from '@glimmer/env';
 
 export const REFERENCE: unique symbol = symbol('REFERENCE');
 

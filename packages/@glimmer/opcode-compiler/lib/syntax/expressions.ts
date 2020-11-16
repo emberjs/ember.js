@@ -1,18 +1,18 @@
-import { Compilers } from './compilers';
 import {
-  SexpOpcodes,
-  ResolveHandle,
-  Op,
+  ContainingMetadata,
+  ExpressionCompileActions,
   Expressions,
   ExpressionSexpOpcode,
-  ExpressionCompileActions,
-  ContainingMetadata,
-  ExpressionContext,
+  Op,
+  ResolveHandle,
+  SexpOpcodes,
 } from '@glimmer/interfaces';
+import { isPresent } from '@glimmer/util';
 import { op } from '../opcode-builder/encoder';
-import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { curryComponent } from '../opcode-builder/helpers/components';
-import { expectString } from '../utils';
+import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
+import { expectLooseFreeVariable } from '../utils';
+import { Compilers } from './compilers';
 
 export const EXPRESSIONS = new Compilers<ExpressionSexpOpcode, ExpressionCompileActions>();
 
@@ -46,7 +46,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
     return curryComponent(
       {
         definition,
-        params: restArgs,
+        params: isPresent(restArgs) ? restArgs : null,
         hash,
         atNames: false,
       },
@@ -54,7 +54,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, name, params, hash], meta) => {
     );
   }
 
-  let nameOrError = expectString(name, meta, 'Expected call head to be a string');
+  let nameOrError = expectLooseFreeVariable(name, meta, 'Expected call head to be a string');
 
   if (typeof nameOrError !== 'string') {
     return nameOrError;
@@ -96,40 +96,41 @@ function isComponent(expr: Expressions.Expression, meta: ContainingMetadata): bo
 }
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, sym, path]) => withPath(op(Op.GetVariable, sym), path));
-EXPRESSIONS.add(SexpOpcodes.GetFree, ([, sym, path]) => withPath(op('ResolveFree', sym), path));
-EXPRESSIONS.add(SexpOpcodes.GetFreeInAppendSingleId, ([, sym, path]) =>
-  withPath(
-    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.AppendSingleId }),
-    path
-  )
+EXPRESSIONS.add(SexpOpcodes.GetStrictFree, ([, sym, path]) =>
+  withPath(op('ResolveFree', sym), path)
 );
-EXPRESSIONS.add(SexpOpcodes.GetFreeInExpression, ([, sym, path]) =>
-  withPath(
-    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.Expression }),
-    path
-  )
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, ([, freeVar, path], meta) => {
+  if (meta.asPartial) {
+    let name = meta.upvars![freeVar];
+
+    return withPath(op(Op.ResolveMaybeLocal, name), path);
+  } else {
+    return withPath([op(Op.GetVariable, 0), op(Op.GetProperty, meta.upvars![freeVar])], path);
+  }
+});
+
+EXPRESSIONS.add(
+  SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
+  ([, freeVar, path], meta) => {
+    if (meta.asPartial) {
+      let name = meta.upvars![freeVar];
+
+      return withPath(op(Op.ResolveMaybeLocal, name), path);
+    } else {
+      return withPath(op('ResolveAmbiguous', { upvar: freeVar, allowComponents: true }), path);
+    }
+  }
 );
-EXPRESSIONS.add(SexpOpcodes.GetFreeInCallHead, ([, sym, path]) =>
-  withPath(op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.CallHead }), path)
-);
-EXPRESSIONS.add(SexpOpcodes.GetFreeInBlockHead, ([, sym, path]) =>
-  withPath(
-    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.BlockHead }),
-    path
-  )
-);
-EXPRESSIONS.add(SexpOpcodes.GetFreeInModifierHead, ([, sym, path]) =>
-  withPath(
-    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.ModifierHead }),
-    path
-  )
-);
-EXPRESSIONS.add(SexpOpcodes.GetFreeInComponentHead, ([, sym, path]) =>
-  withPath(
-    op('ResolveContextualFree', { freeVar: sym, context: ExpressionContext.ComponentHead }),
-    path
-  )
-);
+
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, ([, freeVar, path], meta) => {
+  if (meta.asPartial) {
+    let name = meta.upvars![freeVar];
+
+    return withPath(op(Op.ResolveMaybeLocal, name), path);
+  } else {
+    return withPath(op('ResolveAmbiguous', { upvar: freeVar, allowComponents: false }), path);
+  }
+});
 
 function withPath(expr: ExpressionCompileActions, path?: string[]) {
   if (path === undefined || path.length === 0) return expr;

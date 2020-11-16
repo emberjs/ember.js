@@ -22,8 +22,9 @@ export class WrappedBuilder implements CompilableProgram {
 
   constructor(private layout: LayoutWithContext) {
     let { block } = layout;
+    let [, symbols, hasEval] = block;
 
-    let symbols = block.symbols.slice();
+    symbols = symbols.slice();
 
     // ensure ATTRS_BLOCK is always included (only once) in the list of symbols
     let attrsBlockIndex = symbols.indexOf(ATTRS_BLOCK);
@@ -34,7 +35,7 @@ export class WrappedBuilder implements CompilableProgram {
     }
 
     this.symbolTable = {
-      hasEval: block.hasEval,
+      hasEval,
       symbols,
     };
   }

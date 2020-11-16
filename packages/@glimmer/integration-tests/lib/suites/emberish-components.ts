@@ -392,7 +392,7 @@ export class EmberishComponentTests extends RenderTest {
     }
     this.registerComponent('Curly', 'FooBar', 'Hello{{yield to="default"}}world!', FooBar);
 
-    this.render(`<FooBar as |baz|><:default> my </:default></FooBar>`);
+    this.render(`<FooBar><:default> my </:default></FooBar>`);
 
     this.assertComponent('Hello my world!');
     this.assertStableRerender();

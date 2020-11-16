@@ -36,9 +36,12 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _owner, op2: _symbols, op3: _ev
 
     for (let i = 0; i < evalInfo.length; i++) {
       let slot = evalInfo[i];
-      let name = outerSymbols[slot - 1];
-      let ref = outerScope.getSymbol(slot);
-      locals[name] = ref;
+
+      if (slot !== -1) {
+        let name = outerSymbols[slot - 1];
+        let ref = outerScope.getSymbol(slot);
+        locals[name] = ref;
+      }
     }
 
     if (evalScope) {

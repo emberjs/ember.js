@@ -10,3 +10,13 @@ export interface Stack<T> {
   isEmpty(): boolean;
   toArray(): T[];
 }
+
+export interface NonemptyStack<T> {
+  current: T;
+
+  size: number;
+  push(item: T): void;
+  pop(): T;
+  nthBack(from: number): Option<T>;
+  toArray(): T[];
+}

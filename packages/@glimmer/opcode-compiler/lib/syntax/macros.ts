@@ -15,7 +15,7 @@ import {
 } from '@glimmer/interfaces';
 import { dict, assert } from '@glimmer/util';
 import { UNHANDLED } from './concat';
-import { expectString, isGet, simplePathName } from '../utils';
+import { expectLooseFreeVariable, isGet, loosePathName } from '../utils';
 
 export class MacrosImpl implements Macros {
   public blocks: MacroBlocks;
@@ -128,7 +128,7 @@ export class Inlines implements MacroInlines {
     let hash: Option<WireFormat.Core.Hash>;
 
     if (value[0] === SexpOpcodes.Call) {
-      let nameOrError = expectString(
+      let nameOrError = expectLooseFreeVariable(
         value[1],
         context.meta,
         'Expected head of call to be a string'
@@ -142,7 +142,7 @@ export class Inlines implements MacroInlines {
       params = value[2];
       hash = value[3];
     } else if (isGet(value)) {
-      let pathName = simplePathName(value, context.meta);
+      let pathName = loosePathName(value, context.meta);
 
       if (pathName === null) {
         return UNHANDLED;

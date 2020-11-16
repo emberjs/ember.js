@@ -1,6 +1,6 @@
-import { Bounds, Cursor } from '@glimmer/interfaces';
-import { expect, Option } from '@glimmer/util';
+import { Bounds, Cursor, Option } from '@glimmer/interfaces';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { expect } from '@glimmer/util';
 
 export class CursorImpl implements Cursor {
   constructor(public element: SimpleElement, public nextSibling: Option<SimpleNode>) {}

@@ -639,7 +639,7 @@ class PartialTest extends RenderTest {
   'partial with more than one argument throws'() {
     assert.throws(() => {
       this.render(`Before {{partial 'turnt' 'up'}} After`);
-    }, strip`Partial found with more than one argument. You can only specify a single template.`);
+    }, strip`Partial found with 2 arguments. You can only specify a single template.`);
   }
 }
 

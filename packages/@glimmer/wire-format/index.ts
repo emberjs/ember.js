@@ -22,6 +22,14 @@ export function isAttribute(val: Statement): val is Statements.Attribute {
   );
 }
 
+export function isStringLiteral(expr: Expression): expr is Expressions.StringValue {
+  return typeof expr === 'string';
+}
+
+export function getStringFromValue(expr: Expressions.StringValue): string {
+  return expr;
+}
+
 export function isArgument(val: Statement): val is Statements.Argument {
   return val[0] === SexpOpcodes.StaticArg || val[0] === SexpOpcodes.DynamicArg;
 }
