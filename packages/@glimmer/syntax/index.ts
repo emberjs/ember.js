@@ -17,6 +17,7 @@ export {
 export { default as print } from './lib/generation/print';
 export { default as Walker } from './lib/traversal/walker';
 export { default as traverse } from './lib/traversal/traverse';
+export { NodeVisitor } from './lib/traversal/visitor';
 export { cannotRemoveNode, cannotReplaceNode } from './lib/traversal/errors';
 export { default as WalkerPath } from './lib/traversal/path';
 
