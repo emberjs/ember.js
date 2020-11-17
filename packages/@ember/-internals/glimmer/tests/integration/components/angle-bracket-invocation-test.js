@@ -613,20 +613,12 @@ moduleFor(
     }
 
     '@test can not invoke curried components with an implicit `this` path'(assert) {
-      assert.expect(0);
-      this.registerComponent('foo-bar', {
-        template: 'hello',
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            assert.ok(false, 'should not have instantiated');
-          },
-        }),
-      });
-      this.registerComponent('test-harness', {
-        template: '<foo.bar />',
-      });
-      this.render(strip`{{test-harness foo=(hash bar=(component 'foo-bar'))}}`);
+      assert.throws(() => {
+        // attempting to compile this template will throw
+        this.registerComponent('test-harness', {
+          template: '<foo.bar />',
+        });
+      }, /Error: You used foo.bar as a tag name, but foo is not in scope/);
     }
 
     '@test has-block'() {

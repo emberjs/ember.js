@@ -30,11 +30,7 @@ function refineInlineSyntax(
   let component = context.resolver.lookupComponent(name, context.meta.owner!);
 
   if (component !== null) {
-    return staticComponent(component, [
-      params === null ? [] : params,
-      hashToArgs(hash),
-      EMPTY_BLOCKS,
-    ]);
+    return staticComponent(component, [params, hashToArgs(hash), EMPTY_BLOCKS]);
   }
 
   return UNHANDLED;
