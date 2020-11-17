@@ -23,8 +23,8 @@ export default class InternalComponent {
 
   constructor(
     protected owner: Owner,
-    public args: Record<string, Reference | undefined>,
-    public caller: unknown
+    protected readonly args: Record<string, Reference | undefined>,
+    protected readonly caller: unknown
   ) {
     setOwner(this, owner);
   }
