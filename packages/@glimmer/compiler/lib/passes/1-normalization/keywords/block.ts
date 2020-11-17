@@ -377,6 +377,12 @@ export const BLOCK_KEYWORDS = keywords('Block')
         );
       }
 
+      if (node.blocks.get('else')) {
+        return Err(
+          new GlimmerSyntaxError(`{{#let}} cannot receive an {{else}} block`, args.positional.loc)
+        );
+      }
+
       return Ok({ positional: args.positional });
     },
 

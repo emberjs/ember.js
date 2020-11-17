@@ -39,7 +39,7 @@ export const EXPR_KEYWORDS = keywords('Expr')
       if (node.type !== 'Call') {
         return Err(
           new GlimmerSyntaxError(
-            '(component) requires a component definition or identifier as its first positional parameter, did not receive any parameters.',
+            'The (component) keyword must be called with arguments in order to curry a component definition. It cannot be used directly as a value.',
             node.loc
           )
         );

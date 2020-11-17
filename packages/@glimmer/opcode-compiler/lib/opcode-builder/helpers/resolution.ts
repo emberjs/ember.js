@@ -18,35 +18,37 @@ function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.T
   return Array.isArray(opcode) && opcode.length === 2;
 }
 
-function makeTypeVerifier(typeToVerify: SexpOpcodes) {
+function makeResolutionTypeVerifier(typeToVerify: SexpOpcodes) {
   return (opcode: Expressions.Expression): opcode is Expressions.GetFree => {
     if (!isGetLikeTuple(opcode)) return false;
 
     let type = opcode[0];
 
     if (DEBUG && type === SexpOpcodes.GetStrictFree) {
-      throw new Error('Attempted to resolve strict free, but this has not been implemented yet');
+      throw new Error(
+        'Strict Mode: Attempted to resolve strict free, but this has not been implemented yet'
+      );
     }
 
     return type === SexpOpcodes.GetStrictFree || type === typeToVerify;
   };
 }
 
-export const isGetFreeComponent = makeTypeVerifier(SexpOpcodes.GetFreeAsComponentHead);
+export const isGetFreeComponent = makeResolutionTypeVerifier(SexpOpcodes.GetFreeAsComponentHead);
 
-export const isGetFreeModifier = makeTypeVerifier(SexpOpcodes.GetFreeAsModifierHead);
+export const isGetFreeModifier = makeResolutionTypeVerifier(SexpOpcodes.GetFreeAsModifierHead);
 
-export const isGetFreeHelper = makeTypeVerifier(SexpOpcodes.GetFreeAsHelperHead);
+export const isGetFreeHelper = makeResolutionTypeVerifier(SexpOpcodes.GetFreeAsHelperHead);
 
-export const isGetFreeComponentOrHelper = makeTypeVerifier(
+export const isGetFreeComponentOrHelper = makeResolutionTypeVerifier(
   SexpOpcodes.GetFreeAsComponentOrHelperHead
 );
 
-export const isGetFreeOptionalHelper = makeTypeVerifier(
+export const isGetFreeOptionalHelper = makeResolutionTypeVerifier(
   SexpOpcodes.GetFreeAsHelperHeadOrThisFallback
 );
 
-export const isGetFreeOptionalComponentOrHelper = makeTypeVerifier(
+export const isGetFreeOptionalComponentOrHelper = makeResolutionTypeVerifier(
   SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback
 );
 
@@ -71,6 +73,11 @@ function assertResolverInvariants(meta: ContainingMetadata): RequiredContainingM
   return (meta as unknown) as RequiredContainingMetadata;
 }
 
+/**
+ * <Foo/>
+ * <Foo></Foo>
+ * <Foo @arg={{true}} />
+ */
 export function resolveComponent(
   resolver: CompileTimeResolver,
   meta: ContainingMetadata,
@@ -84,13 +91,17 @@ export function resolveComponent(
 
   if (DEBUG && value === null) {
     throw new Error(
-      `Attempted to resolve ${name}, which was expected to be a component, but nothing was found.`
+      `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
     );
   }
 
   then(value!);
 }
 
+/**
+ * (helper)
+ * (helper arg)
+ */
 export function resolveHelper(
   resolver: CompileTimeResolver,
   meta: ContainingMetadata,
@@ -111,6 +122,11 @@ export function resolveHelper(
   then(value!);
 }
 
+/**
+ * <div {{modifier}}/>
+ * <div {{modifier arg}}/>
+ * <Foo {{modifier}}/>
+ */
 export function resolveModifier(
   resolver: CompileTimeResolver,
   meta: ContainingMetadata,
@@ -124,13 +140,16 @@ export function resolveModifier(
 
   if (DEBUG && value === null) {
     throw new Error(
-      `Attempted to resolve ${name}, which was expected to be a component, but nothing was found.`
+      `Attempted to resolve \`${name}\`, which was expected to be a modifier, but nothing was found.`
     );
   }
 
   then(value!);
 }
 
+/**
+ * {{component-or-helper arg}}
+ */
 export function resolveComponentOrHelper(
   resolver: CompileTimeResolver,
   meta: ContainingMetadata,
@@ -147,13 +166,16 @@ export function resolveComponentOrHelper(
 
   if (DEBUG && value === null) {
     throw new Error(
-      `Attempted to resolve ${name}, which was expected to be a component or helper, but nothing was found.`
+      `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
     );
   }
 
   then(value!);
 }
 
+/**
+ * <Foo @arg={{helper}}>
+ */
 export function resolveOptionalHelper(
   resolver: CompileTimeResolver,
   meta: ContainingMetadata,
@@ -168,6 +190,9 @@ export function resolveOptionalHelper(
   then(value || name);
 }
 
+/**
+ * {{maybeHelperOrComponent}}
+ */
 export function resolveOptionalComponentOrHelper(
   resolver: CompileTimeResolver,
   meta: ContainingMetadata,

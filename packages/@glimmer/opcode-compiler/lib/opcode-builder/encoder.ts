@@ -107,7 +107,7 @@ export function encodeOp(
         break;
 
       case HighLevelResolutionOpcode.ResolveFree:
-        throw new Error('Unimplemented HighLevelResolutionOpcode.ResolveFree');
+        throw new Error('Strict Mode: Unimplemented HighLevelResolutionOpcode.ResolveFree');
 
       default:
         throw new Error(`Unexpected high level opcode ${op[0]}`);
