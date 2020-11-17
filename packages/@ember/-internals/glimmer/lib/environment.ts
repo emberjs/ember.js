@@ -2,7 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import { _getProp, get, set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
-import { constructStyleDeprecationMessage, EventDispatcher } from '@ember/-internals/views';
+import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { assert, deprecate, warn } from '@ember/debug';
 import { backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';

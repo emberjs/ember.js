@@ -14,11 +14,11 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { Environment } from '@glimmer/interfaces';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirtyTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
-import { EmberVMEnvironment } from './environment';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
@@ -726,10 +726,20 @@ const Component = CoreView.extend(
       this[DIRTY_TAG] = createTag();
       this[BOUNDS] = null;
 
-      if (DEBUG && this.renderer._destinedForDOM && this.tagName === '') {
+      let eventDispatcher = this._dispatcher;
+      if (eventDispatcher) {
+        let lazyEvents = eventDispatcher.lazyEvents;
+
+        lazyEvents.forEach((mappedEventName: string, event: string) => {
+          if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
+            eventDispatcher.setupHandlerForBrowserEvent(event);
+          }
+        });
+      }
+
+      if (DEBUG && eventDispatcher && this.tagName === '') {
         let eventNames = [];
-        let eventDispatcher = getOwner(this).lookup<EventDispatcher>('event_dispatcher:main');
-        let events = (eventDispatcher && eventDispatcher.finalEventNameMapping) || {};
+        let events = eventDispatcher.finalEventNameMapping;
 
         // tslint:disable-next-line:forin
         for (let key in events) {
@@ -788,24 +798,22 @@ const Component = CoreView.extend(
       );
     },
 
-    get setupEventHandler(): (eventName: string) => void | null {
-      if (this._setupEventHandler === undefined) {
+    get _dispatcher(): EventDispatcher | null {
+      if (this.__dispatcher === undefined) {
         let owner = getOwner(this);
-        if (owner.lookup<EmberVMEnvironment>('-environment:main')!.isInteractive) {
-          let dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
-          this._setupEventHandler = (eventName: string) =>
-            dispatcher!.setupHandlerForEmberEvent(eventName);
+        if (owner.lookup<Environment>('-environment:main')!.isInteractive) {
+          this.__dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
         } else {
           // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
-          this._setupEventHandler = null;
+          this.__dispatcher = null;
         }
       }
 
-      return this._setupEventHandler;
+      return this.__dispatcher;
     },
 
     on(eventName: string) {
-      this.setupEventHandler?.(eventName);
+      this._dispatcher?.setupHandlerForEmberEvent(eventName);
       return this._super(...arguments);
     },
 

@@ -1,12 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import {
-  addChildView,
-  EventDispatcher,
-  setElementView,
-  setViewElement,
-} from '@ember/-internals/views';
+import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -118,21 +113,6 @@ const DEFAULT_LAYOUT = P`template:components/-default`;
 const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
-
-function _setupLazyEventsForComponent(dispatcher: EventDispatcher | undefined, component: object) {
-  // non-interactive rendering (e.g. SSR) has no event dispatcher
-  if (dispatcher === undefined) {
-    return;
-  }
-
-  let lazyEvents = dispatcher.lazyEvents;
-
-  lazyEvents.forEach((mappedEventName: string, event: string) => {
-    if (mappedEventName !== null && typeof component[mappedEventName] === 'function') {
-      dispatcher.setupHandlerForBrowserEvent(event);
-    }
-  });
-}
 
 export default class CurlyComponentManager
   extends BaseInternalComponentManager<ComponentStateBucket, DefinitionState>
@@ -337,8 +317,6 @@ export default class CurlyComponentManager
         component.trigger('willInsertElement');
       }
     }
-
-    _setupLazyEventsForComponent(environment.extra.eventDispatcher, component);
 
     // Track additional lifecycle metadata about this component in a state bucket.
     // Essentially we're saving off all the state we'll need in the future.
