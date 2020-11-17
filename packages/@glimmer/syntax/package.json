@@ -1,15 +1,15 @@
 {
   "name": "@glimmer/syntax",
-  "version": "0.65.0",
+  "version": "0.66.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/syntax",
   "dependencies": {
-    "@glimmer/interfaces": "0.65.0",
-    "@glimmer/util": "0.65.0",
+    "@glimmer/interfaces": "0.66.0",
+    "@glimmer/util": "0.66.0",
     "@handlebars/parser": "^1.1.0",
     "simple-html-tokenizer": "^0.5.10"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "0.65.0",
+    "@glimmer/local-debug-flags": "0.66.0",
     "@types/qunit": "^2.9.0"
   }
 }
