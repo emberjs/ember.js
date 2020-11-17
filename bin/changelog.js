@@ -138,7 +138,7 @@ async function getCommitMessage(commitInfo) {
 
     let lines = message.split(/\n\n/);
 
-    if (lines[1] === '') {
+    if (!lines[1]) {
       let pullRequest = await getPullRequest({
         user: 'emberjs',
         repo: 'ember.js',
