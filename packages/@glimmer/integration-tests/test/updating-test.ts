@@ -797,7 +797,7 @@ class UpdatingTest extends RenderTest {
 
     assert.throws(() => {
       this.delegate.compileTemplate('{{helo world}}');
-    }, /Error: Attempted to resolve helo, which was expected to be a component or helper, but nothing was found./);
+    }, /Error: Attempted to resolve `helo`, which was expected to be a component or helper, but nothing was found./);
   }
 
   @test

@@ -1,6 +1,6 @@
 import { SexpOpcodes, WellKnownAttrName, WireFormat } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { LOCAL_LOGGER } from '@glimmer/util';
+import { exhausted, LOCAL_LOGGER } from '@glimmer/util';
 
 import { OptionalList } from '../../shared/list';
 import { deflateAttrName, deflateTagName } from '../../utils';
@@ -76,6 +76,8 @@ export class ContentEncoder {
         return this.WithDynamicVars(stmt);
       case 'InvokeComponent':
         return this.InvokeComponent(stmt);
+      default:
+        return exhausted(stmt);
     }
   }
 
