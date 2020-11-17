@@ -1,3 +1,13 @@
+## v0.66.0 (2020-11-17)
+
+#### :boom: Breaking Change
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/wire-format`
+  * [#1170](https://github.com/glimmerjs/glimmer-vm/pull/1170) Refactor `@glimmer/syntax` and `@glimmer/compiler` to enable future strict mode functionality. ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.65.0 (2020-11-13)
 
 #### :boom: Breaking Change
