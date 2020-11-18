@@ -69,18 +69,18 @@ moduleFor(
     }
 
     ['@test nested aliases should trigger computed property invalidation [GH#19279]'](assert) {
-      const AttributeModel = EmberObject.extend({
+      let AttributeModel = EmberObject.extend({
         countAdditives: alias('additives.length'),
-        additives: A()
+        additives: A(),
       });
 
-      const RootModel = EmberObject.extend({
-        allAdditives: computed('metaAttributes.@each.countAdditives', function(){
-          return this.metaAttributes.reduce((acc, el)=>{
+      let RootModel = EmberObject.extend({
+        allAdditives: computed('metaAttributes.@each.countAdditives', function () {
+          return this.metaAttributes.reduce((acc, el) => {
             return acc.concat(el.additives);
           }, []);
         }),
-        metaAttributes: A([AttributeModel.create()])
+        metaAttributes: A([AttributeModel.create()]),
       });
 
       let model = RootModel.create();
