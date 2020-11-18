@@ -1,4 +1,4 @@
-import { ASTv2, GlimmerSyntaxError } from '@glimmer/syntax';
+import { ASTv2, generateSyntaxError } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
@@ -20,7 +20,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
       let guid = args.get('guid');
 
       if (guid) {
-        return Err(new GlimmerSyntaxError(`Cannot pass \`guid\` to \`{{#in-element}}\``, guid.loc));
+        return Err(generateSyntaxError(`Cannot pass \`guid\` to \`{{#in-element}}\``, guid.loc));
       }
 
       let insertBefore = args.get('insertBefore');
@@ -28,7 +28,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (destination === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#in-element}} requires a target element as its first positional parameter`,
             args.loc
           )
@@ -97,7 +97,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (!args.named.isEmpty()) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#if}} cannot receive named parameters, received ${args.named.entries
               .map((e) => e.name.chars)
               .join(', ')}.`,
@@ -108,7 +108,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (args.positional.size > 1) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#if}} can only receive one positional parameter, the conditional value. Received ${args.positional.size} parameters.`,
             args.positional.loc
           )
@@ -119,7 +119,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (condition === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#if}} requires a condition as its first positional parameter, did not receive any parameters.`,
             args.loc
           )
@@ -161,7 +161,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (!args.named.isEmpty()) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#unless}} cannot receive named parameters, received ${args.named.entries
               .map((e) => e.name.chars)
               .join(', ')}.`,
@@ -172,7 +172,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (args.positional.size > 1) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#unless}} can only receive one positional parameter, the conditional value. Received ${args.positional.size} parameters.`,
             args.positional.loc
           )
@@ -183,7 +183,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (condition === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#unless}} requires a condition as its first positional parameter, did not receive any parameters.`,
             args.loc
           )
@@ -226,7 +226,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (!args.named.entries.every((e) => e.name.chars === 'key')) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#each}} can only receive the 'key' named parameter, received ${args.named.entries
               .filter((e) => e.name.chars !== 'key')
               .map((e) => e.name.chars)
@@ -238,7 +238,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (args.positional.size > 1) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#each}} can only receive one positional parameter, the collection being iterated. Received ${args.positional.size} parameters.`,
             args.positional.loc
           )
@@ -250,7 +250,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (value === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#each}} requires an iterable value to be passed as its first positional parameter, did not receive any parameters.`,
             args.loc
           )
@@ -295,7 +295,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (!args.named.isEmpty()) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#with}} cannot receive named parameters, received ${args.named.entries
               .map((e) => e.name.chars)
               .join(', ')}.`,
@@ -306,7 +306,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (args.positional.size > 1) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#with}} can only receive one positional parameter. Received ${args.positional.size} parameters.`,
             args.positional.loc
           )
@@ -317,7 +317,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (value === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#with}} requires a value as its first positional parameter, did not receive any parameters.`,
             args.loc
           )
@@ -359,7 +359,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (!args.named.isEmpty()) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#let}} cannot receive named parameters, received ${args.named.entries
               .map((e) => e.name.chars)
               .join(', ')}.`,
@@ -370,7 +370,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (args.positional.size === 0) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#let}} requires at least one value as its first positional parameter, did not receive any parameters.`,
             args.positional.loc
           )
@@ -379,7 +379,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (node.blocks.get('else')) {
         return Err(
-          new GlimmerSyntaxError(`{{#let}} cannot receive an {{else}} block`, args.positional.loc)
+          generateSyntaxError(`{{#let}} cannot receive an {{else}} block`, args.positional.loc)
         );
       }
 
@@ -445,7 +445,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
 
       if (definition === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{#component}} requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
             args.loc
           )

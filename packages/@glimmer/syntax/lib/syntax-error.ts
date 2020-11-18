@@ -2,36 +2,23 @@ import { SourceSpan } from './source/span';
 
 export interface GlimmerSyntaxError extends Error {
   location: SourceSpan | null;
-  constructor: SyntaxErrorConstructor;
+  code: string | null;
 }
 
-export interface SyntaxErrorConstructor {
-  new (message: string, location: SourceSpan | null): GlimmerSyntaxError;
-  readonly prototype: GlimmerSyntaxError;
+export function generateSyntaxError(message: string, location: SourceSpan): GlimmerSyntaxError {
+  let { module, loc } = location;
+  let { line, column } = loc.start;
+
+  let code = location.asString();
+  let quotedCode = code ? `\n\n|\n|  ${code.split('\n').join('\n|  ')}\n|\n\n` : '';
+
+  let error = new Error(
+    `${message}: ${quotedCode}(error occurred in '${module}' @ line ${line} : column ${column})`
+  ) as GlimmerSyntaxError;
+
+  error.name = 'SyntaxError';
+  error.location = location;
+  error.code = code;
+
+  return error;
 }
-
-/**
- * Subclass of `Error` with additional information
- * about location of incorrect markup.
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const GlimmerSyntaxError: SyntaxErrorConstructor = (function () {
-  SyntaxError.prototype = Object.create(Error.prototype);
-  SyntaxError.prototype.constructor = SyntaxError;
-
-  function SyntaxError(this: GlimmerSyntaxError, message: string, location: SourceSpan) {
-    let error = Error.call(this, message);
-
-    let { module, loc } = location;
-    let { line, column } = loc.start;
-
-    let code = location.asString();
-    let quotedCode = code ? `\n\n|\n|  ${code.split('\n').join('\n|  ')}\n|\n\n` : '';
-
-    this.message = `Syntax Error: ${message}: ${quotedCode}(error occurred in '${module}' @ line ${line} : column ${column})`;
-    this.stack = error.stack;
-    this.location = location;
-  }
-
-  return (SyntaxError as unknown) as SyntaxErrorConstructor;
-})();

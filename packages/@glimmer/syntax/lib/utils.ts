@@ -1,7 +1,7 @@
 import { Option } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 
-import { GlimmerSyntaxError } from './syntax-error';
+import { generateSyntaxError } from './syntax-error';
 import * as ASTv1 from './v1/api';
 import * as HBS from './v1/handlebars-ast';
 
@@ -36,7 +36,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
       paramsString.charAt(paramsString.length - 1) !== '|' ||
       expect(paramsString.match(/\|/g), `block params must exist here`).length !== 2
     ) {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         "Invalid block parameters syntax, '" + paramsString + "'",
         element.loc
       );
@@ -47,7 +47,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
       let param = attrNames[i].replace(/\|/g, '');
       if (param !== '') {
         if (ID_INVERSE_PATTERN.test(param)) {
-          throw new GlimmerSyntaxError(
+          throw generateSyntaxError(
             "Invalid identifier for block parameters, '" + param + "'",
             element.loc
           );
@@ -57,7 +57,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
     }
 
     if (params.length === 0) {
-      throw new GlimmerSyntaxError('Cannot use zero block parameters', element.loc);
+      throw generateSyntaxError('Cannot use zero block parameters', element.loc);
     }
 
     element.attributes = element.attributes.slice(0, asIndex);

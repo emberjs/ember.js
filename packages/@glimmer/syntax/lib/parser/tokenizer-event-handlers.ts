@@ -8,7 +8,7 @@ import { voidMap } from '../generation/printer';
 import { Tag } from '../parser';
 import { Source } from '../source/source';
 import { SourceOffset, SourceSpan } from '../source/span';
-import { GlimmerSyntaxError } from '../syntax-error';
+import { generateSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
 import { NodeVisitor } from '../traversal/visitor';
 import Walker from '../traversal/walker';
@@ -205,7 +205,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     let tokenizerPos = this.offset();
 
     if (tag.type === 'EndTag') {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `Invalid end tag: closing tag must not have attributes`,
         this.source.spanFor({ start: tag.loc.toJSON(), end: tokenizerPos.toJSON() })
       );
@@ -221,7 +221,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   reportSyntaxError(message: string): void {
-    throw new GlimmerSyntaxError(message, this.offset().collapsed());
+    throw generateSyntaxError(message, this.offset().collapsed());
   }
 
   assembleConcatenatedValue(
@@ -231,7 +231,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       let part: ASTv1.BaseNode = parts[i];
 
       if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
-        throw new GlimmerSyntaxError(
+        throw generateSyntaxError(
           'Unsupported node in quoted attribute value: ' + part['type'],
           part.loc
         );
@@ -265,7 +265,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     }
 
     if (error) {
-      throw new GlimmerSyntaxError(error, tag.loc);
+      throw generateSyntaxError(error, tag.loc);
     }
   }
 
@@ -287,7 +287,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         ) {
           return parts[0];
         } else {
-          throw new GlimmerSyntaxError(
+          throw generateSyntaxError(
             `An unquoted attribute value must be a string or a mustache, ` +
               `preceded by whitespace or a '=' character, and ` +
               `followed by whitespace, a '>' character, or '/>'`,
