@@ -136,7 +136,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
       callback(path);
     });
 
-    window.addEventListener('hashchange', this._hashchangeHandler!);
+    window.addEventListener('hashchange', this._hashchangeHandler);
   }
 
   /**

@@ -1,18 +1,21 @@
-interface IBackburner {
-  join(...args: any[]): void;
-  on(...args: any[]): void;
-  scheduleOnce(...args: any[]): void;
-  schedule(queueName: string, target: Object | null, method: Function | string): void;
-  ensureInstance(): void;
-}
+import { Backburner, DeferredActionQueues, Timer } from 'backburner.js';
 
-export function run(...args: any[]): any;
-export function schedule(...args: any[]): void;
-export function later(...args: any[]): void;
-export function join(...args: any[]): void;
-export const backburner: IBackburner;
-export function getCurrentRunLoop(): boolean;
-export function bind(...args: any[]): any;
-export function cancel(...args: any[]): any;
-export function once(...args: any[]): any;
-export function scheduleOnce(...args: any[]): any;
+export const backburner: Backburner;
+
+export const run = Backburner.run;
+export const schedule = Backburner.schedule;
+export const later = Backburner.later;
+export const join = Backburner.join;
+export const cancel = Backburner.cancel;
+export const scheduleOnce = Backburner.scheduleOnce;
+
+export function getCurrentRunLoop(): DeferredActionQueues;
+
+export function once(method: Function): Timer;
+export function once<T, U extends keyof T>(target: T, method: U, ...args): Timer;
+export function once(target: unknown, method: unknown | Function, ...args): Timer;
+
+export function bind<T extends Function>(target: T): T;
+export function bind<T extends Function, U>(target: unknown, method?: T, ...args: U): T;
+export function bind<T>(target: unknown, method?: string, ...args: T): Function;
+export function bind<T>(target: unknown, method?: T, ...args: unknown[]): T;
