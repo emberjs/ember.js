@@ -1,8 +1,8 @@
-import { Operand, SerializedTemplateBlock, SerializedInlineBlock } from './compile';
+import { Operand, SerializedTemplateBlock, SerializedInlineBlock, BlockOperand } from './compile';
 import { EncoderError } from './compile/encoder';
 import { Option } from './core';
 import { InternalComponentCapabilities } from './managers/internal/component';
-import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
+import { ConstantPool, SerializedHeap, CompileTimeCompilationContext } from './program';
 import { Owner } from './runtime';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
@@ -80,9 +80,9 @@ export interface ErrHandle {
 export type HandleResult = OkHandle | ErrHandle;
 
 export interface NamedBlocks {
-  get(name: string): Option<CompilableBlock>;
+  get(name: string): Option<SerializedInlineBlock>;
   has(name: string): boolean;
-  with(name: string, block: Option<CompilableBlock>): NamedBlocks;
+  with(name: string, block: Option<SerializedInlineBlock>): NamedBlocks;
   hasAny: boolean;
   names: string[];
 }
@@ -101,11 +101,7 @@ export interface CompilerArtifacts {
   constants: ConstantPool;
 }
 
-export interface Unhandled {
-  'not-handled': true;
-}
-
 export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
-  compile(context: SyntaxCompilationContext): HandleResult;
+  compile(context: CompileTimeCompilationContext): HandleResult;
 }

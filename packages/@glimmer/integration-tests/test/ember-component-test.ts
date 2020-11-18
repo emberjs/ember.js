@@ -2230,6 +2230,15 @@ class CurlyBoundsTrackingTest extends CurlyTest {
     assert.equal(instance.bounds.firstNode(), ralphy.previousSibling);
     assert.equal(instance.bounds.lastNode(), ralphy);
   }
+
+  @test
+  'A curly component can have an else block'() {
+    this.registerComponent('Curly', 'render-else', `{{yield to="inverse"}}`);
+
+    this.render('{{#render-else}}Nope{{else}}<div id="test">123</div>{{/render-else}}');
+    this.assertHTML('<div id="ember1" class="ember-view"><div id="test">123</div></div>');
+    this.assertStableRerender();
+  }
 }
 
 jitSuite(CurlyCreateTest);

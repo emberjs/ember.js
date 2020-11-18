@@ -1,9 +1,8 @@
 import {
   CompileTimeHeap,
   SerializedHeap,
-  STDLib,
   RuntimeHeap,
-  StdlibOperand,
+  StdLibOperand,
   RuntimeConstants,
   RuntimeProgram,
 } from '@glimmer/interfaces';
@@ -18,32 +17,8 @@ const enum TableSlotState {
   Pointer,
 }
 
-const enum Size {
-  ENTRY_SIZE = 3,
-  INFO_OFFSET = 1,
-  SIZE_OFFSET = 2,
-  MAX_SIZE = 0b1111111111111111111111111111111,
-  SCOPE_MASK = 0b1111111111111111111111111111100,
-  STATE_MASK = 0b11,
-}
-
-function encodeTableInfo(scopeSize: number, state: number) {
-  assert(scopeSize > -1 && state > -1, 'Size, scopeSize or state were less than 0');
-  assert(state < 1 << 2, 'State is more than 2 bits');
-  assert(scopeSize < 1 << 30, 'Scope is more than 30-bits');
-  return state | (scopeSize << 2);
-}
-
-function changeState(info: number, newState: number) {
-  assert(info > -1 && newState > -1, 'Info or state were less than 0');
-  assert(newState < 1 << 2, 'State is more than 2 bits');
-  assert(info < 1 << 30, 'Info is more than 30 bits');
-
-  return info | (newState << 30);
-}
-
 export type Placeholder = [number, () => number];
-export type StdlibPlaceholder = [number, StdlibOperand];
+export type StdlibPlaceholder = [number, StdLibOperand];
 
 const PAGE_SIZE = 0x100000;
 
@@ -72,10 +47,6 @@ export class RuntimeHeapImpl implements RuntimeHeap {
   sizeof(handle: number): number {
     return sizeof(this.table, handle);
   }
-
-  scopesizeof(handle: number): number {
-    return scopesizeof(this.table, handle);
-  }
 }
 
 export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
@@ -103,17 +74,17 @@ export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
  * over them as you will have a bad memory access exception.
  */
 export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
+  offset = 0;
+
   private heap: Int32Array;
-  private placeholders: Placeholder[] = [];
-  private stdlibs: StdlibPlaceholder[] = [];
-  private table: number[];
-  private offset = 0;
+  private handleTable: number[];
+  private handleState: TableSlotState[];
   private handle = 0;
-  private capacity = PAGE_SIZE;
 
   constructor() {
     this.heap = new Int32Array(PAGE_SIZE);
-    this.table = [];
+    this.handleTable = [];
+    this.handleState = [];
   }
 
   push(item: number): void {
@@ -122,13 +93,13 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   }
 
   private sizeCheck() {
-    if (this.capacity === 0) {
-      let heap = slice(this.heap, 0, this.offset);
-      this.heap = new Int32Array(heap.length + PAGE_SIZE);
-      this.heap.set(heap, 0);
-      this.capacity = PAGE_SIZE;
+    let { heap } = this;
+
+    if (this.offset === this.heap.length) {
+      let newHeap = new Int32Array(heap.length + PAGE_SIZE);
+      newHeap.set(heap, 0);
+      this.heap = newHeap;
     }
-    this.capacity--;
   }
 
   getbyaddr(address: number): number {
@@ -141,20 +112,17 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
 
   malloc(): number {
     // push offset, info, size
-    this.table.push(this.offset, 0, 0);
-    let handle = this.handle;
-    this.handle += Size.ENTRY_SIZE;
-    return handle;
+    this.handleTable.push(this.offset);
+    return this.handleTable.length - 1;
   }
 
-  finishMalloc(handle: number, scopeSize: number): void {
+  finishMalloc(handle: number): void {
+    // @TODO: At the moment, garbage collection isn't actually used, so this is
+    // wrapped to prevent us from allocating extra space in prod. In the future,
+    // if we start using the compact API, we should change this.
     if (LOCAL_DEBUG) {
-      let start = this.table[handle];
-      let finish = this.offset;
-      let instructionSize = finish - start;
-      this.table[handle + Size.SIZE_OFFSET] = instructionSize;
+      this.handleState[handle] = TableSlotState.Allocated;
     }
-    this.table[handle + Size.INFO_OFFSET] = encodeTableInfo(scopeSize, TableSlotState.Allocated);
   }
 
   size(): number {
@@ -165,27 +133,15 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   // may move it. However, it is legal to use this address
   // multiple times between compactions.
   getaddr(handle: number): number {
-    return this.table[handle];
-  }
-
-  gethandle(address: number): number {
-    this.table.push(address, encodeTableInfo(0, TableSlotState.Pointer), 0);
-    let handle = this.handle;
-    this.handle += Size.ENTRY_SIZE;
-    return handle;
+    return this.handleTable[handle];
   }
 
   sizeof(handle: number): number {
-    return sizeof(this.table, handle);
-  }
-
-  scopesizeof(handle: number): number {
-    return scopesizeof(this.table, handle);
+    return sizeof(this.handleTable, handle);
   }
 
   free(handle: number): void {
-    let info = this.table[handle + Size.INFO_OFFSET];
-    this.table[handle + Size.INFO_OFFSET] = changeState(info, TableSlotState.Freed);
+    this.handleState[handle] = TableSlotState.Freed;
   }
 
   /**
@@ -197,18 +153,12 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
    */
   compact(): void {
     let compactedSize = 0;
-    let {
-      table,
-      table: { length },
-      heap,
-    } = this;
+    let { handleTable, handleState, heap } = this;
 
-    for (let i = 0; i < length; i += Size.ENTRY_SIZE) {
-      let offset = table[i];
-      let info = table[i + Size.INFO_OFFSET];
-      // @ts-ignore (this whole function is currently unused)
-      let size = info & Size.SIZE_MASK;
-      let state = info & (Size.STATE_MASK >> 30);
+    for (let i = 0; i < length; i++) {
+      let offset = handleTable[i];
+      let size = handleTable[i + 1] - offset;
+      let state = handleState[i];
 
       if (state === TableSlotState.Purged) {
         continue;
@@ -216,75 +166,28 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
         // transition to "already freed" aka "purged"
         // a good improvement would be to reuse
         // these slots
-        table[i + Size.INFO_OFFSET] = changeState(info, TableSlotState.Purged);
+        handleState[i] = TableSlotState.Purged;
         compactedSize += size;
       } else if (state === TableSlotState.Allocated) {
         for (let j = offset; j <= i + size; j++) {
           heap[j - compactedSize] = heap[j];
         }
 
-        table[i] = offset - compactedSize;
+        handleTable[i] = offset - compactedSize;
       } else if (state === TableSlotState.Pointer) {
-        table[i] = offset - compactedSize;
+        handleTable[i] = offset - compactedSize;
       }
     }
 
     this.offset = this.offset - compactedSize;
   }
 
-  pushPlaceholder(valueFunc: () => number): void {
-    this.sizeCheck();
-    let address = this.offset++;
-    this.heap[address] = Size.MAX_SIZE;
-    this.placeholders.push([address, valueFunc]);
-  }
-
-  pushStdlib(operand: StdlibOperand): void {
-    this.sizeCheck();
-    let address = this.offset++;
-    this.heap[address] = Size.MAX_SIZE;
-    this.stdlibs.push([address, operand]);
-  }
-
-  private patchPlaceholders() {
-    let { placeholders } = this;
-
-    for (let i = 0; i < placeholders.length; i++) {
-      let [address, getValue] = placeholders[i];
-
-      assert(
-        this.getbyaddr(address) === Size.MAX_SIZE,
-        `expected to find a placeholder value at ${address}`
-      );
-      this.setbyaddr(address, getValue());
-    }
-  }
-
-  patchStdlibs(stdlib: STDLib): void {
-    let { stdlibs } = this;
-
-    for (let i = 0; i < stdlibs.length; i++) {
-      let [address, { value }] = stdlibs[i];
-
-      assert(
-        this.getbyaddr(address) === Size.MAX_SIZE,
-        `expected to find a placeholder value at ${address}`
-      );
-      this.setbyaddr(address, stdlib[value]);
-    }
-
-    this.stdlibs = [];
-  }
-
-  capture(stdlib: STDLib, offset = this.offset): SerializedHeap {
-    this.patchPlaceholders();
-    this.patchStdlibs(stdlib);
-
+  capture(offset = this.offset): SerializedHeap {
     // Only called in eager mode
     let buffer = slice(this.heap, 0, offset).buffer;
     return {
       handle: this.handle,
-      table: this.table,
+      table: this.handleTable,
       buffer: buffer as ArrayBuffer,
     };
   }
@@ -321,13 +224,8 @@ function slice(arr: Int32Array, start: number, end: number): Int32Array {
 
 function sizeof(table: number[], handle: number) {
   if (LOCAL_DEBUG) {
-    return table[handle + Size.SIZE_OFFSET];
+    return table[handle + 1] - table[handle];
   } else {
     return -1;
   }
-}
-
-function scopesizeof(table: number[], handle: number) {
-  let info = table[handle + Size.INFO_OFFSET];
-  return info >> 2;
 }

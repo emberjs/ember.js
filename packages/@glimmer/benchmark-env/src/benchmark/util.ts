@@ -5,13 +5,13 @@ import {
 } from '@glimmer/interfaces';
 import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { SyntaxCompilationContext } from '@glimmer/interfaces';
+import { CompileTimeCompilationContext } from '@glimmer/interfaces';
 
 export function createProgram(template: SerializedTemplateWithLazyBlock): CompilableProgram {
   return unwrapTemplate(templateFactory(template)()).asLayout();
 }
 
-export function compileEntry(entry: CompileTimeComponent, context: SyntaxCompilationContext) {
+export function compileEntry(entry: CompileTimeComponent, context: CompileTimeCompilationContext) {
   return unwrapHandle(entry.compilable!.compile(context));
 }
 

@@ -150,13 +150,14 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
   vm.elements().setStaticAttribute(name, value, namespace);
 });
 
-APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
+APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
   let name = vm[CONSTANTS].getValue<string>(_name);
+  let trusting = vm[CONSTANTS].getValue<boolean>(_trusting);
   let reference = check(vm.stack.popJs(), CheckReference);
   let value = valueForRef(reference);
   let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
 
-  let attribute = vm.elements().setDynamicAttribute(name, value, !!trusting, namespace);
+  let attribute = vm.elements().setDynamicAttribute(name, value, trusting, namespace);
 
   if (!isConstRef(reference)) {
     vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));

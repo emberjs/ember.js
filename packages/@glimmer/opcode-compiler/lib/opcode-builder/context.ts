@@ -1,33 +1,28 @@
 import {
   CompileTimeResolver,
   ContainingMetadata,
-  SyntaxCompilationContext,
   TemplateCompilationContext,
   CompileTimeArtifacts,
+  CompileTimeCompilationContext,
 } from '@glimmer/interfaces';
 import { EncoderImpl } from './encoder';
-import { MacrosImpl } from '../syntax/macros';
 import { CompileTimeCompilationContextImpl } from '../program-context';
 
-export function syntaxCompilationContext(
+export function programCompilationContext(
   artifacts: CompileTimeArtifacts,
-  resolver: CompileTimeResolver,
-  macros = new MacrosImpl()
-): SyntaxCompilationContext {
-  return {
-    program: new CompileTimeCompilationContextImpl(artifacts, resolver),
-    macros,
-  };
+  resolver: CompileTimeResolver
+): CompileTimeCompilationContext {
+  return new CompileTimeCompilationContextImpl(artifacts, resolver);
 }
 
 export function templateCompilationContext(
-  syntax: SyntaxCompilationContext,
+  program: CompileTimeCompilationContext,
   meta: ContainingMetadata
 ): TemplateCompilationContext {
-  let encoder = new EncoderImpl();
+  let encoder = new EncoderImpl(program.heap, meta, program.stdlib);
 
   return {
-    syntax,
+    program,
     encoder,
     meta,
   };

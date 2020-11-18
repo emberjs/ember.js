@@ -185,4 +185,53 @@ export const APPEND_KEYWORDS = keywords('Append')
       });
       return Ok(new mir.AppendTextNode({ loc: node.loc, text }));
     },
+  })
+  .kw('component', {
+    assert(
+      node: ASTv2.AppendContent
+    ): Result<{
+      args: ASTv2.Args;
+    }> {
+      let { args } = node;
+
+      let definition = args.nth(0);
+
+      if (definition === null) {
+        return Err(
+          new GlimmerSyntaxError(
+            `{{component}} requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
+            args.loc
+          )
+        );
+      }
+
+      args = new ASTv2.Args({
+        positional: new ASTv2.PositionalArguments({
+          exprs: args.positional.exprs.slice(1),
+          loc: args.positional.loc,
+        }),
+        named: args.named,
+        loc: args.loc,
+      });
+
+      return Ok({ definition, args });
+    },
+
+    translate(
+      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
+      { definition, args }: { definition: ASTv2.ExpressionNode; args: ASTv2.Args }
+    ): Result<mir.InvokeComponent> {
+      let definitionResult = VISIT_EXPRS.visit(definition, state);
+      let argsResult = VISIT_EXPRS.Args(args, state);
+
+      return Result.all(definitionResult, argsResult).mapOk(
+        ([definition, args]) =>
+          new mir.InvokeComponent({
+            loc: node.loc,
+            definition,
+            args,
+            blocks: null,
+          })
+      );
+    },
   });

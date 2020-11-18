@@ -94,6 +94,32 @@ export class LooseModeResolution {
   }
 
   /**
+   * Trusting append resolution is used when the variable should be resolved in both the `component` and
+   * `helper` namespaces. Fallback resolution is optional.
+   *
+   * ```hbs
+   * {{{x}}}
+   * ```
+   *
+   * ^ `x` should be resolved in the `component` and `helper` namespaces with fallback resolution.
+   *
+   * ```hbs
+   * {{{x y}}}
+   * ```
+   *
+   * ^ `x` should be resolved in the `component` and `helper` namespaces without fallback
+   * resolution.
+   *
+   * @see {HelperAmbiguity}
+   */
+  static trustingAppend({ invoke }: { invoke: boolean }): LooseModeResolution {
+    return new LooseModeResolution({
+      namespaces: [FreeVarNamespace.Helper],
+      fallback: !invoke,
+    });
+  }
+
+  /**
    * Attribute resolution is used when the variable should be resolved as a `helper` with fallback
    * resolution.
    *
@@ -198,7 +224,7 @@ type ComponentOrHelperAmbiguity = {
  *
  * ^ `x` is resolved in the `helper` namespace with fallback
  */
-type HelperAmbiguity = { namespaces: [FreeVarNamespace.Helper]; fallback: true };
+type HelperAmbiguity = { namespaces: [FreeVarNamespace.Helper]; fallback: boolean };
 
 /**
  * A `NamespacedAmbiguity` must be resolved in a particular namespace, without fallback.

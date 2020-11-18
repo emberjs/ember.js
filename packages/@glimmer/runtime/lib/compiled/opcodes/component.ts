@@ -401,15 +401,16 @@ APPEND_OPCODES.add(Op.PutComponentOperations, (vm) => {
   vm.loadValue($t0, new ComponentElementOperations());
 });
 
-APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
+APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
   let name = vm[CONSTANTS].getValue<string>(_name);
+  let trusting = vm[CONSTANTS].getValue<boolean>(_trusting);
   let reference = check(vm.stack.popJs(), CheckReference);
   let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
 
   check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
     name,
     reference,
-    !!trusting,
+    trusting,
     namespace
   );
 });
@@ -562,7 +563,7 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
     if (vm.stack.peek() === vm[ARGS]) {
       args = vm[ARGS].capture();
     } else {
-      let names = vm[CONSTANTS].getValue<string[]>(_names);
+      let names = vm[CONSTANTS].getArray<string>(_names);
       vm[ARGS].setup(vm.stack, names, [], 0, true);
       args = vm[ARGS].capture();
     }

@@ -1,18 +1,9 @@
-import {
-  BuilderOp,
-  CompilableBlock,
-  MachineOp,
-  Op,
-  Option,
-  StatementCompileActions,
-  SymbolTable,
-  WireFormat,
-  CompilableTemplate,
-} from '@glimmer/interfaces';
+import { MachineOp, Op, Option, WireFormat } from '@glimmer/interfaces';
 import { $fp } from '@glimmer/vm';
-import { op } from '../encoder';
 import { PushPrimitive } from './vm';
-import { serializable, other } from '../operands';
+import { blockOperand, symbolTableOperand } from '../operands';
+import { SimpleArgs } from './shared';
+import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
 /**
  * Yield to a block located at a particular symbol location.
@@ -21,18 +12,17 @@ import { serializable, other } from '../operands';
  * @param params optional block parameters to yield to the block
  */
 export function YieldBlock(
+  op: PushStatementOp,
   to: number,
-  params: Option<WireFormat.Core.Params>
-): StatementCompileActions {
-  return [
-    op('SimpleArgs', { params, hash: null, atNames: true }),
-    op(Op.GetBlock, to),
-    op(Op.SpreadBlock),
-    op('Option', op(Op.CompileBlock)),
-    op(Op.InvokeYield),
-    op(Op.PopScope),
-    op(MachineOp.PopFrame),
-  ];
+  positional: Option<WireFormat.Core.Params>
+): void {
+  SimpleArgs(op, positional, null, true);
+  op(Op.GetBlock, to);
+  op(Op.SpreadBlock);
+  op(Op.CompileBlock);
+  op(Op.InvokeYield);
+  op(Op.PopScope);
+  op(MachineOp.PopFrame);
 }
 
 /**
@@ -41,12 +31,13 @@ export function YieldBlock(
  *
  * @param block An optional Compilable block
  */
-export function PushYieldableBlock(block: Option<CompilableBlock>): StatementCompileActions {
-  return [
-    PushSymbolTable(block && block.symbolTable),
-    op(Op.PushBlockScope),
-    PushCompilable(block),
-  ];
+export function PushYieldableBlock(
+  op: PushStatementOp,
+  block: Option<WireFormat.SerializedInlineBlock>
+): void {
+  PushSymbolTable(op, block && block[1]);
+  op(Op.PushBlockScope);
+  PushCompilable(op, block);
 }
 
 /**
@@ -54,14 +45,15 @@ export function PushYieldableBlock(block: Option<CompilableBlock>): StatementCom
  *
  * @param block a Compilable block
  */
-export function InvokeStaticBlock(block: CompilableBlock): StatementCompileActions {
-  return [
-    op(MachineOp.PushFrame),
-    PushCompilable(block),
-    op(Op.CompileBlock),
-    op(MachineOp.InvokeVirtual),
-    op(MachineOp.PopFrame),
-  ];
+export function InvokeStaticBlock(
+  op: PushStatementOp,
+  block: WireFormat.SerializedInlineBlock
+): void {
+  op(MachineOp.PushFrame);
+  PushCompilable(op, block);
+  op(Op.CompileBlock);
+  op(MachineOp.InvokeVirtual);
+  op(MachineOp.PopFrame);
 }
 
 /**
@@ -72,55 +64,56 @@ export function InvokeStaticBlock(block: CompilableBlock): StatementCompileActio
  * @param callerCount A number of stack entries to preserve
  */
 export function InvokeStaticBlockWithStack(
-  block: CompilableBlock,
+  op: PushStatementOp,
+  block: WireFormat.SerializedInlineBlock,
   callerCount: number
-): StatementCompileActions {
-  let { parameters } = block.symbolTable;
+): void {
+  let parameters = block[1];
   let calleeCount = parameters.length;
   let count = Math.min(callerCount, calleeCount);
 
   if (count === 0) {
-    return InvokeStaticBlock(block);
+    InvokeStaticBlock(op, block);
+    return;
   }
 
-  let out: StatementCompileActions = [];
-
-  out.push(op(MachineOp.PushFrame));
+  op(MachineOp.PushFrame);
 
   if (count) {
-    out.push(op(Op.ChildScope));
+    op(Op.ChildScope);
 
     for (let i = 0; i < count; i++) {
-      out.push(op(Op.Dup, $fp, callerCount - i));
-      out.push(op(Op.SetVariable, parameters[i]));
+      op(Op.Dup, $fp, callerCount - i);
+      op(Op.SetVariable, parameters[i]);
     }
   }
 
-  out.push(PushCompilable(block));
-  out.push(op(Op.CompileBlock));
-  out.push(op(MachineOp.InvokeVirtual));
+  PushCompilable(op, block);
+  op(Op.CompileBlock);
+  op(MachineOp.InvokeVirtual);
 
   if (count) {
-    out.push(op(Op.PopScope));
+    op(Op.PopScope);
   }
 
-  out.push(op(MachineOp.PopFrame));
-
-  return out;
+  op(MachineOp.PopFrame);
 }
 
-export function PushSymbolTable(table: Option<SymbolTable>): BuilderOp {
-  if (table) {
-    return op(Op.PushSymbolTable, serializable(table));
+export function PushSymbolTable(op: PushExpressionOp, parameters: number[] | null): void {
+  if (parameters !== null) {
+    op(Op.PushSymbolTable, symbolTableOperand({ parameters }));
   } else {
-    return PushPrimitive(null);
+    PushPrimitive(op, null);
   }
 }
 
-export function PushCompilable(block: Option<CompilableTemplate>): BuilderOp {
-  if (block === null) {
-    return PushPrimitive(null);
+export function PushCompilable(
+  op: PushExpressionOp,
+  _block: Option<WireFormat.SerializedInlineBlock>
+): void {
+  if (_block === null) {
+    PushPrimitive(op, null);
   } else {
-    return op(Op.Constant, other(block));
+    op(Op.Constant, blockOperand(_block));
   }
 }

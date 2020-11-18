@@ -1,6 +1,7 @@
 import { PrecompileOptions } from '@glimmer/syntax';
 import {
   CapturedRenderNode,
+  CompileTimeCompilationContext,
   ComponentDefinition,
   Cursor,
   Dict,
@@ -12,9 +13,8 @@ import {
   Option,
   RenderResult,
   RuntimeContext,
-  SyntaxCompilationContext,
 } from '@glimmer/interfaces';
-import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
+import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference } from '@glimmer/reference';
 import {
@@ -36,7 +36,6 @@ import {
   SimpleText,
 } from '@simple-dom/interface';
 import { preprocess } from '../../compile';
-import { TestMacros } from '../../compile/macros';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { UserHelper } from '../../helpers';
 import { TestModifierConstructor } from '../../modifiers';
@@ -57,7 +56,7 @@ import { TestJitRuntimeResolver } from './resolver';
 
 export interface JitTestDelegateContext {
   runtime: RuntimeContext;
-  syntax: SyntaxCompilationContext;
+  program: CompileTimeCompilationContext;
 }
 
 export function JitDelegateContext(
@@ -66,13 +65,9 @@ export function JitDelegateContext(
   env: EnvironmentDelegate
 ): JitTestDelegateContext {
   let sharedArtifacts = artifacts();
-  let context = syntaxCompilationContext(
-    sharedArtifacts,
-    new JitCompileTimeLookup(resolver),
-    new TestMacros()
-  );
+  let context = programCompilationContext(sharedArtifacts, new JitCompileTimeLookup(resolver));
   let runtime = runtimeContext({ document: doc }, env, sharedArtifacts, resolver);
-  return { runtime, syntax: context };
+  return { runtime, program: context };
 }
 
 export class JitRenderDelegate implements RenderDelegate {
@@ -196,7 +191,7 @@ export class JitRenderDelegate implements RenderDelegate {
   compileTemplate(template: string): HandleResult {
     let compiled = preprocess(template, this.precompileOptions);
 
-    return unwrapTemplate(compiled).asLayout().compile(this.context.syntax);
+    return unwrapTemplate(compiled).asLayout().compile(this.context.program);
   }
 
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
@@ -220,7 +215,7 @@ export class JitRenderDelegate implements RenderDelegate {
     dynamicScope?: DynamicScope
   ): RenderResult {
     let cursor = { element, nextSibling: null };
-    let { syntax, runtime } = this.context;
+    let { program, runtime } = this.context;
     let builder = this.getElementBuilder(runtime.env, cursor);
 
     let { handle, compilable } = this.registry.lookupCompileTimeComponent(name)!;
@@ -229,7 +224,7 @@ export class JitRenderDelegate implements RenderDelegate {
     let iterator = renderComponent(
       runtime,
       builder,
-      syntax,
+      program,
       component,
       compilable!,
       args,

@@ -1,12 +1,8 @@
 export * from './lib/program-context';
 
-export { MacrosImpl } from './lib/syntax/macros';
-export { UNHANDLED, NONE } from './lib/syntax/concat';
-
 export { debugCompiler } from './lib/compiler';
 
 export { compileStatements, compilable } from './lib/compilable-template';
-export { StaticComponent as staticComponent } from './lib/opcode-builder/helpers/components';
 
 export * from './lib/opcode-builder/context';
 export * from './lib/opcode-builder/delegate';
@@ -32,5 +28,3 @@ export {
 export { WrappedBuilder } from './lib/wrapped-component';
 
 export { EMPTY_BLOCKS } from './lib/utils';
-
-export { resolveLayoutForTag } from './lib/resolver';

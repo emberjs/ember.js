@@ -5,12 +5,12 @@ import {
   Invocation,
   RenderResult,
   RichIteratorResult,
-  SyntaxCompilationContext,
   TemplateIterator,
   ComponentDefinition,
   RuntimeContext,
   ElementBuilder,
   CompilableProgram,
+  CompileTimeCompilationContext,
 } from '@glimmer/interfaces';
 import { Reference } from '@glimmer/reference';
 import { unwrapHandle } from '@glimmer/util';
@@ -46,13 +46,15 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 
 export function renderMain(
   runtime: RuntimeContext,
-  context: SyntaxCompilationContext,
+  context: CompileTimeCompilationContext,
   self: Reference,
   treeBuilder: ElementBuilder,
-  handle: number,
+  layout: CompilableProgram,
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
-  let vm = VM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle });
+  let handle = unwrapHandle(layout.compile(context));
+  let numSymbols = layout.symbolTable.symbols.length;
+  let vm = VM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle, numSymbols });
   return new TemplateIteratorImpl(vm);
 }
 
@@ -101,7 +103,7 @@ function renderInvocation(
 export function renderComponent(
   runtime: RuntimeContext,
   treeBuilder: ElementBuilder,
-  context: SyntaxCompilationContext,
+  context: CompileTimeCompilationContext,
   definition: ComponentDefinition,
   layout: CompilableProgram,
   args: RenderComponentArgs = {},
@@ -109,10 +111,6 @@ export function renderComponent(
 ): TemplateIterator {
   const handle = unwrapHandle(layout.compile(context));
   const invocation = { handle, symbolTable: layout.symbolTable };
-  let vm = VM.empty(
-    runtime,
-    { treeBuilder, handle: context.program.stdlib.main, dynamicScope },
-    context
-  );
+  let vm = VM.empty(runtime, { treeBuilder, handle: context.stdlib.main, dynamicScope }, context);
   return renderInvocation(vm, invocation, definition, args);
 }

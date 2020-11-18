@@ -3,6 +3,7 @@
   "version": "0.66.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/opcode-compiler",
   "dependencies": {
+    "@glimmer/env": "0.1.7",
     "@glimmer/util": "0.66.0",
     "@glimmer/wire-format": "0.66.0",
     "@glimmer/interfaces": "0.66.0",

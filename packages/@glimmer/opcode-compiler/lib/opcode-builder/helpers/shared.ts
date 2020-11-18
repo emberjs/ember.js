@@ -1,18 +1,15 @@
 import {
   ContainingMetadata,
-  ExpressionCompileActions,
   LayoutWithContext,
   Op,
   Option,
-  StatementCompileActions,
   WireFormat,
-  ArgsOptions,
+  NamedBlocks,
 } from '@glimmer/interfaces';
-import { EMPTY_ARRAY } from '@glimmer/util';
-import { op } from '../encoder';
-import { strArray } from '../operands';
+import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { PushYieldableBlock } from './blocks';
-import { NONE } from '../../syntax/concat';
+import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+import { expr } from './expr';
 
 /**
  * Compile arguments, pushing an Arguments object onto the stack.
@@ -22,22 +19,19 @@ import { NONE } from '../../syntax/concat';
  * @param args.blocks
  * @param args.atNames
  */
-export function CompileArgs({
-  params,
-  hash,
-  blocks,
-  atNames,
-}: ArgsOptions): StatementCompileActions {
-  let out: StatementCompileActions = [];
-
+export function CompileArgs(
+  op: PushStatementOp,
+  positional: WireFormat.Core.Params,
+  named: WireFormat.Core.Hash,
+  blocks: NamedBlocks,
+  atNames: boolean
+): void {
   let blockNames: string[] = blocks.names;
   for (let i = 0; i < blockNames.length; i++) {
-    out.push(PushYieldableBlock(blocks.get(blockNames[i])));
+    PushYieldableBlock(op, blocks.get(blockNames[i]));
   }
 
-  let { count, actions } = CompilePositional(params);
-
-  out.push(actions);
+  let count = CompilePositional(op, positional);
 
   let flags = count << 4;
 
@@ -49,37 +43,59 @@ export function CompileArgs({
 
   let names = EMPTY_ARRAY as readonly string[];
 
-  if (hash) {
-    names = hash[0];
-    let val = hash[1];
+  if (named) {
+    names = named[0];
+    let val = named[1];
     for (let i = 0; i < val.length; i++) {
-      out.push(op('Expr', val[i]));
+      expr(op, val[i]);
     }
   }
 
-  out.push(op(Op.PushArgs, strArray(names), strArray(blockNames), flags));
+  op(Op.PushArgs, names as string[], blockNames, flags);
+}
 
-  return out;
+export function SimpleArgs(
+  op: PushExpressionOp,
+  positional: Option<WireFormat.Core.Params>,
+  named: Option<WireFormat.Core.Hash>,
+  atNames: boolean
+): void {
+  let count = CompilePositional(op, positional);
+
+  let flags = count << 4;
+
+  if (atNames) flags |= 0b1000;
+
+  let names = EMPTY_STRING_ARRAY;
+
+  if (named) {
+    names = named[0];
+    let val = named[1];
+    for (let i = 0; i < val.length; i++) {
+      expr(op, val[i]);
+    }
+  }
+
+  op(Op.PushArgs, names as string[], EMPTY_STRING_ARRAY, flags);
 }
 
 /**
  * Compile an optional list of positional arguments, which pushes each argument
  * onto the stack and returns the number of parameters compiled
  *
- * @param params an optional list of positional arguments
+ * @param positional an optional list of positional arguments
  */
 export function CompilePositional(
-  params: Option<WireFormat.Core.Params>
-): { count: number; actions: ExpressionCompileActions } {
-  if (!params) return { count: 0, actions: NONE };
+  op: PushExpressionOp,
+  positional: Option<WireFormat.Core.Params>
+): number {
+  if (positional === null) return 0;
 
-  let actions: ExpressionCompileActions = [];
-
-  for (let i = 0; i < params.length; i++) {
-    actions.push(op('Expr', params[i]));
+  for (let i = 0; i < positional.length; i++) {
+    expr(op, positional[i]);
   }
 
-  return { count: params.length, actions };
+  return positional.length;
 }
 
 export function meta(layout: LayoutWithContext): ContainingMetadata {
