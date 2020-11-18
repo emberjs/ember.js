@@ -1,16 +1,18 @@
-import { ASTv2 } from '@glimmer/syntax';
+import {
+  ASTv2,
+  generateSyntaxError,
+  isKeyword,
+  KEYWORDS_TYPES,
+  KeywordType,
+} from '@glimmer/syntax';
+import { exhausted } from '@glimmer/util';
 
-import { Result } from '../../../shared/result';
+import { Err, Result } from '../../../shared/result';
 import { NormalizationState } from '../context';
 
 interface KeywordDelegate<Match extends KeywordMatch, V, Out> {
   assert(options: Match, state: NormalizationState): Result<V>;
   translate(options: { node: Match; state: NormalizationState }, param: V): Result<Out>;
-}
-
-interface BlockKeywordDelegate<V, Out> {
-  assert(options: ASTv2.InvokeBlock, state: NormalizationState): Result<V>;
-  translate(options: { node: ASTv2.InvokeBlock; state: NormalizationState }, param: V): Result<Out>;
 }
 
 export interface Keyword<K extends KeywordType = KeywordType, Out = unknown> {
@@ -21,42 +23,25 @@ export interface BlockKeyword<Out = unknown> {
   translate(node: ASTv2.InvokeBlock, state: NormalizationState): Result<Out> | null;
 }
 
-abstract class AbstractKeywordImpl<K extends KeywordType> {
+class KeywordImpl<
+  K extends KeywordType,
+  S extends string = string,
+  Param = unknown,
+  Out = unknown
+> {
   protected types: Set<KeywordCandidates[K]['type']>;
 
-  constructor(protected keyword: string, type: KeywordType) {
+  constructor(
+    protected keyword: S,
+    type: KeywordType,
+    private delegate: KeywordDelegate<KeywordMatches[K], Param, Out>
+  ) {
     let nodes = new Set<KeywordNode['type']>();
     for (let nodeType of KEYWORD_NODES[type]) {
       nodes.add(nodeType);
     }
 
     this.types = nodes;
-  }
-
-  protected match(node: KeywordCandidates[K]): node is KeywordMatches[K] {
-    if (!this.types.has(node.type)) {
-      return false;
-    }
-
-    let path = getPathExpression(node);
-
-    if (path !== null && path.ref.type === 'Free') {
-      return path.ref.name === this.keyword;
-    } else {
-      return false;
-    }
-  }
-}
-
-class KeywordImpl<K extends KeywordType, S extends string = string, Param = unknown, Out = unknown>
-  extends AbstractKeywordImpl<K>
-  implements Keyword<K, Out> {
-  constructor(
-    keyword: S,
-    type: KeywordType,
-    private delegate: KeywordDelegate<KeywordMatches[K], Param, Out>
-  ) {
-    super(keyword, type);
   }
 
   protected match(node: KeywordCandidates[K]): node is KeywordMatches[K] {
@@ -83,27 +68,6 @@ class KeywordImpl<K extends KeywordType, S extends string = string, Param = unkn
   }
 }
 
-class BlockKeywordImpl<Param = unknown, Out = unknown>
-  extends AbstractKeywordImpl<'Block'>
-  implements BlockKeyword<Out> {
-  constructor(
-    keyword: string,
-    type: KeywordType,
-    private delegate: BlockKeywordDelegate<Param, Out>
-  ) {
-    super(keyword, type);
-  }
-
-  translate(node: ASTv2.InvokeBlock, state: NormalizationState): Result<Out> | null {
-    if (this.match(node)) {
-      let param = this.delegate.assert(node, state);
-      return param.andThen((param) => this.delegate.translate({ node, state }, param));
-    } else {
-      return null;
-    }
-  }
-}
-
 export type PossibleNode =
   | ASTv2.PathExpression
   | ASTv2.AppendContent
@@ -111,14 +75,14 @@ export type PossibleNode =
   | ASTv2.InvokeBlock;
 
 export const KEYWORD_NODES = {
-  Expr: ['Call', 'Path'],
+  Call: ['Call'],
   Block: ['InvokeBlock'],
   Append: ['AppendContent'],
   Modifier: ['ElementModifier'],
 } as const;
 
 export interface KeywordCandidates {
-  Expr: ASTv2.ExpressionNode;
+  Call: ASTv2.ExpressionNode;
   Block: ASTv2.InvokeBlock;
   Append: ASTv2.AppendContent;
   Modifier: ASTv2.ElementModifier;
@@ -127,22 +91,21 @@ export interface KeywordCandidates {
 export type KeywordCandidate = KeywordCandidates[keyof KeywordCandidates];
 
 export interface KeywordMatches {
-  Expr: ASTv2.CallExpression | ASTv2.PathExpression;
+  Call: ASTv2.CallExpression;
   Block: ASTv2.InvokeBlock;
   Append: ASTv2.AppendContent;
   Modifier: ASTv2.ElementModifier;
 }
 
-export type KeywordType = keyof KeywordMatches;
 export type KeywordMatch = KeywordMatches[keyof KeywordMatches];
 
-export type ExprKeywordNode = ASTv2.CallExpression | ASTv2.PathExpression;
+export type ExprKeywordNode = ASTv2.CallExpression;
 
 /**
  * A "generic" keyword is something like `has-block`, which makes sense in the context
- * of sub-expression, path, or append
+ * of sub-expression or append
  */
-export type GenericKeywordNode = ASTv2.AppendContent | ASTv2.CallExpression | ASTv2.PathExpression;
+export type GenericKeywordNode = ASTv2.AppendContent | ASTv2.CallExpression;
 
 export type KeywordNode =
   | ExprKeywordNode
@@ -154,26 +117,8 @@ export function keyword<
   K extends KeywordType,
   D extends KeywordDelegate<KeywordMatches[K], unknown, Out>,
   Out = unknown
->(keyword: string, type: K, delegate: D): Keyword<K, Out>;
-export function keyword<Out = unknown>(
-  keyword: string,
-  type: 'Block',
-  delegate: BlockKeywordDelegate<unknown, Out>
-): BlockKeyword<Out>;
-export function keyword(
-  keyword: string,
-  type: KeywordType,
-  delegate: KeywordDelegate<KeywordMatch, unknown, unknown> | BlockKeywordDelegate<unknown, unknown>
-): Keyword<KeywordType, unknown> | BlockKeyword<unknown> {
-  if (type === 'Block') {
-    return new BlockKeywordImpl(keyword, type, delegate);
-  } else {
-    return new KeywordImpl(
-      keyword,
-      type,
-      delegate as KeywordDelegate<KeywordMatch, unknown, unknown>
-    );
-  }
+>(keyword: string, type: K, delegate: D): Keyword<K, Out> {
+  return new KeywordImpl(keyword, type, delegate as KeywordDelegate<KeywordMatch, unknown, Out>);
 }
 
 export type PossibleKeyword = KeywordNode;
@@ -193,6 +138,7 @@ function getPathExpression(node: KeywordNode | ASTv2.ExpressionNode): ASTv2.Path
       return getPathExpression(node.value);
     case 'Call':
     case 'InvokeBlock':
+    case 'ElementModifier':
       return getPathExpression(node.callee);
     default:
       return null;
@@ -228,36 +174,57 @@ export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = ne
       }
     }
 
-    return null;
-  }
-}
+    let path = getPathExpression(node);
 
-export class BlockKeywords<KeywordList extends BlockKeyword = never>
-  implements BlockKeyword<OutFor<KeywordList>> {
-  #keywords: BlockKeyword[] = [];
+    if (path && path.ref.type === 'Free' && isKeyword(path.ref.name)) {
+      let { name } = path.ref;
 
-  kw<S extends string = string, Out = unknown>(
-    name: S,
-    delegate: BlockKeywordDelegate<unknown, Out>
-  ): BlockKeywords<KeywordList | BlockKeyword<Out>> {
-    this.#keywords.push(keyword(name, 'Block', delegate));
+      let usedType = this.#type;
+      let validTypes = KEYWORDS_TYPES[name];
 
-    return this;
-  }
-
-  translate(
-    node: ASTv2.InvokeBlock,
-    state: NormalizationState
-  ): Result<OutFor<KeywordList>> | null {
-    for (let keyword of this.#keywords) {
-      let result = keyword.translate(node, state) as Result<OutFor<KeywordList>>;
-      if (result !== null) {
-        return result;
+      if (validTypes.indexOf(usedType) === -1) {
+        return Err(
+          generateSyntaxError(
+            `The \`${name}\` keyword was used incorrectly. It was used as ${
+              typesToReadableName[usedType]
+            }, but its valid usages are:\n\n${generateTypesMessage(
+              name,
+              validTypes
+            )}\n\nError caused by`,
+            node.loc
+          )
+        );
       }
     }
 
     return null;
   }
+}
+
+const typesToReadableName = {
+  Append: 'an append statement',
+  Block: 'a block statement',
+  Call: 'a call expression',
+  Modifier: 'a modifier',
+};
+
+function generateTypesMessage(name: string, types: KeywordType[]): string {
+  return types
+    .map((type) => {
+      switch (type) {
+        case 'Append':
+          return `- As an append statement, as in: {{${name}}}`;
+        case 'Block':
+          return `- As a block statement, as in: {{#${name}}}{{/${name}}}`;
+        case 'Call':
+          return `- As an expression, as in: (${name})`;
+        case 'Modifier':
+          return `- As a modifier, as in: <div {{${name}}}></div>`;
+        default:
+          return exhausted(type);
+      }
+    })
+    .join('\n\n');
 }
 
 /**
@@ -341,11 +308,6 @@ export class BlockKeywords<KeywordList extends BlockKeyword = never>
  * means that the node matched, but there was a keyword-specific syntax
  * error.
  */
-export function keywords(type: 'Block'): BlockKeywords;
-export function keywords<K extends KeywordType>(type: K): Keywords<K>;
-export function keywords<K extends KeywordType>(type: K): Keywords<K> | BlockKeywords {
-  if (type === 'Block') {
-    return new BlockKeywords();
-  }
+export function keywords<K extends KeywordType>(type: K): Keywords<K> {
   return new Keywords(type);
 }

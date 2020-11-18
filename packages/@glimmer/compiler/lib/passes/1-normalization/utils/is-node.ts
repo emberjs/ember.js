@@ -2,18 +2,6 @@ import { PresentArray } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError, SourceSlice } from '@glimmer/syntax';
 import { unreachable } from '@glimmer/util';
 
-import { KeywordNode } from '../keywords/impl';
-
-export function isPath(node: KeywordNode): node is ASTv2.PathExpression {
-  return node.type === 'Path';
-}
-
-export function isCall(
-  node: ASTv2.ExpressionNode | ASTv2.ContentNode
-): node is ASTv2.CallExpression | ASTv2.AppendContent {
-  return node.type === 'Call' || node.type === 'AppendContent';
-}
-
 export type HasPath<Node extends ASTv2.CallNode = ASTv2.CallNode> = Node & {
   head: ASTv2.PathExpression;
 };

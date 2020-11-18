@@ -16,7 +16,11 @@ export class ArgReference extends node('Arg').fields<{ name: SourceSlice; symbol
  * Corresponds to `<ident>` at the beginning of an expression, when `<ident>` is in the current
  * block's scope.
  */
-export class LocalVarReference extends node('Local').fields<{ name: string; symbol: number }>() {}
+export class LocalVarReference extends node('Local').fields<{
+  name: string;
+  isTemplateLocal: boolean;
+  symbol: number;
+}>() {}
 
 /**
  * Corresponds to `<ident>` at the beginning of an expression, when `<ident>` is *not* in the

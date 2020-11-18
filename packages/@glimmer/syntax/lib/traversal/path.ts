@@ -1,9 +1,11 @@
 import * as ASTv1 from '../v1/api';
+import RootTransformScope, { TransformScope } from './scope';
 
 export default class WalkerPath<N extends ASTv1.Node> {
   node: N;
   parent: WalkerPath<ASTv1.Node> | null;
   parentKey: string | null;
+  scope: TransformScope;
 
   constructor(
     node: N,
@@ -13,6 +15,20 @@ export default class WalkerPath<N extends ASTv1.Node> {
     this.node = node;
     this.parent = parent;
     this.parentKey = parentKey;
+    this.scope = parent ? parent.scope.child(node) : new RootTransformScope(node);
+
+    // Consume in scope values
+    if (node.type === 'PathExpression') {
+      this.scope.useLocal(node);
+    }
+
+    if (node.type === 'ElementNode') {
+      this.scope.useLocal(node);
+
+      (node as ASTv1.ElementNode).children.forEach((node: ASTv1.Statement) =>
+        this.scope.useLocal(node)
+      );
+    }
   }
 
   get parentNode(): ASTv1.Node | null {

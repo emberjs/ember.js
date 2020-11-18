@@ -192,7 +192,12 @@ export class Builder {
     });
   }
 
-  localVar(name: string, symbol: number, loc: SourceSpan): ASTv2.VariableReference {
+  localVar(
+    name: string,
+    symbol: number,
+    isTemplateLocal: boolean,
+    loc: SourceSpan
+  ): ASTv2.VariableReference {
     assert(name !== 'this', `You called builders.var() with 'this'. Call builders.this instead`);
     assert(
       name[0] !== '@',
@@ -202,6 +207,7 @@ export class Builder {
     return new ASTv2.LocalVarReference({
       loc,
       name,
+      isTemplateLocal,
       symbol,
     });
   }
