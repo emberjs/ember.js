@@ -96,11 +96,12 @@ export default {
     need.
     @private
   */
-  create(options: { implementation: string }) {
+  create(options: { implementation: string }): EmberLocation {
     let implementation = options && options.implementation;
     assert("Location.create: you must specify a 'implementation' option", Boolean(implementation));
 
     let implementationClass = this.implementations[implementation];
+
     assert(
       `Location.create: ${implementation} is not a valid implementation`,
       Boolean(implementationClass)

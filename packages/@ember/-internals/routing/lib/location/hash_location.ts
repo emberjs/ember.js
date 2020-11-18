@@ -40,7 +40,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   implementation = 'hash';
   _hashchangeHandler?: EventListener;
 
-  init() {
+  init(): void {
     set(this, 'location', this._location || window.location);
     this._hashchangeHandler = undefined;
   }
@@ -53,7 +53,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @since 1.5.1
     @method getHash
   */
-  getHash() {
+  getHash(): string {
     return getHash(this.location);
   }
 
@@ -68,7 +68,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @private
     @method getURL
   */
-  getURL() {
+  getURL(): string {
     let originalPath = this.getHash().substr(1);
     let outPath = originalPath;
 
@@ -96,7 +96,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @method setURL
     @param path {String}
   */
-  setURL(path: string) {
+  setURL(path: string): void {
     this.location.hash = path;
     set(this, 'lastSetURL', path);
   }
@@ -109,7 +109,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @method replaceURL
     @param path {String}
   */
-  replaceURL(path: string) {
+  replaceURL(path: string): void {
     this.location.replace(`#${path}`);
     set(this, 'lastSetURL', path);
   }
@@ -123,7 +123,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback: UpdateCallback) {
+  onUpdateURL(callback: UpdateCallback): void {
     this._removeEventListener();
     this._hashchangeHandler = bind(this, function (this: HashLocation) {
       let path = this.getURL();
@@ -150,7 +150,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @method formatURL
     @param url {String}
   */
-  formatURL(url: string) {
+  formatURL(url: string): string {
     return `#${url}`;
   }
 
@@ -160,11 +160,11 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @private
     @method willDestroy
   */
-  willDestroy() {
+  willDestroy(): void {
     this._removeEventListener();
   }
 
-  _removeEventListener() {
+  _removeEventListener(): void {
     if (this._hashchangeHandler) {
       window.removeEventListener('hashchange', this._hashchangeHandler);
     }
