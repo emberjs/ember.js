@@ -1,10 +1,10 @@
 declare const Logger: {
-  log(...args: any[]): void;
-  warn(...args: any[]): void;
-  error(...args: any[]): void;
-  info(...args: any[]): void;
-  debug(...args: any[]): void;
-  assert(...args: any[]): void;
+  log(...args: string[]): void;
+  warn(...args: string[]): void;
+  error(...args: string[]): void;
+  info(...args: string[]): void;
+  debug(...args: string[]): void;
+  assert(...args: string[]): void;
 };
 
 export default Logger;
