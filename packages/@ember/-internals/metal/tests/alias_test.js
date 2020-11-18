@@ -8,7 +8,7 @@ import {
   removeObserver,
   tagForProperty,
 } from '..';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import { Object as EmberObject, A } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/runtime';
 import { valueForTag, validateTag } from '@glimmer/validator';
@@ -66,6 +66,27 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(count, 1);
+    }
+
+    ['@test nested aliases should trigger computed property invalidation [GH#19279]'](assert) {
+      const AttributeModel = EmberObject.extend({
+        countAdditives: alias('additives.length'),
+        additives: A()
+      });
+
+      const RootModel = EmberObject.extend({
+        allAdditives: computed('metaAttributes.@each.countAdditives', function(){
+          return this.metaAttributes.reduce((acc, el)=>{
+            return acc.concat(el.additives);
+          }, []);
+        }),
+        metaAttributes: A([AttributeModel.create()])
+      });
+
+      let model = RootModel.create();
+      assert.equal(model.allAdditives.length, 0);
+      model.metaAttributes[0].additives.pushObject('foo');
+      assert.equal(model.allAdditives.length, 1);
     }
 
     async [`@test inheriting an observer of the alias from the prototype then
