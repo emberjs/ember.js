@@ -7,7 +7,7 @@ import { VISIT_EXPRS } from '../visitors/expressions';
 import { assertValidHasBlockUsage } from './has-block';
 import { ExprKeywordNode, keywords } from './impl';
 
-export const EXPR_KEYWORDS = keywords('Expr')
+export const CALL_KEYWORDS = keywords('Call')
   .kw('has-block', {
     assert(node: ExprKeywordNode): Result<SourceSlice> {
       return assertValidHasBlockUsage('has-block', node);
@@ -36,15 +36,6 @@ export const EXPR_KEYWORDS = keywords('Expr')
   })
   .kw('component', {
     assert(node: ExprKeywordNode): Result<{ definition: ASTv2.ExpressionNode; args: ASTv2.Args }> {
-      if (node.type !== 'Call') {
-        return Err(
-          generateSyntaxError(
-            'The (component) keyword must be called with arguments in order to curry a component definition. It cannot be used directly as a value.',
-            node.loc
-          )
-        );
-      }
-
       let { args } = node;
       let definition = args.nth(0);
 
