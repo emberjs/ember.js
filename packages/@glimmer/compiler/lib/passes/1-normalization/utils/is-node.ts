@@ -1,5 +1,5 @@
 import { PresentArray } from '@glimmer/interfaces';
-import { ASTv2, GlimmerSyntaxError, SourceSlice } from '@glimmer/syntax';
+import { ASTv2, generateSyntaxError, SourceSlice } from '@glimmer/syntax';
 import { unreachable } from '@glimmer/util';
 
 import { KeywordNode } from '../keywords/impl';
@@ -87,7 +87,7 @@ export function assertIsValidHelper<N extends HasPath>(
     return;
   }
 
-  throw new GlimmerSyntaxError(
+  throw generateSyntaxError(
     `\`${printPath(helper.callee)}\` is not a valid name for a ${context}`,
     helper.loc
   );

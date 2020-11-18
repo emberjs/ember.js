@@ -319,7 +319,7 @@ export class BlockKeywords<KeywordList extends BlockKeyword = never>
  *     }
  *
  *     if (node.params.length || node.hash) {
- *       return Err(new GlimmerSyntaxError(`(hello) does not take any arguments`), node.loc);
+ *       return Err(generateSyntaxError(`(hello) does not take any arguments`), node.loc);
  *     } else {
  *       return Ok();
  *     }

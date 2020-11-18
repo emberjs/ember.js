@@ -13,7 +13,7 @@ import { Source } from '../source/source';
 import { SourceSpan } from '../source/span';
 import { SpanList } from '../source/span-list';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from '../symbol-table';
-import { GlimmerSyntaxError } from '../syntax-error';
+import { generateSyntaxError } from '../syntax-error';
 import * as ASTv1 from '../v1/api';
 import b from '../v1/parser-builders';
 import * as ASTv2 from './api';
@@ -179,7 +179,7 @@ class ExpressionNormalizer {
         let resolution = this.block.resolutionFor(expr, SexpSyntaxContext);
 
         if (resolution.resolution === 'error') {
-          throw new GlimmerSyntaxError(
+          throw generateSyntaxError(
             `You attempted to invoke a path (\`${resolution.path}\`) but ${resolution.head} was not in scope`,
             expr.loc
           );
@@ -389,7 +389,7 @@ class StatementNormalizer {
     let resolution = this.block.resolutionFor(block, BlockSyntaxContext);
 
     if (resolution.resolution === 'error') {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `You attempted to invoke a path (\`{{#${resolution.path}}}\`) but ${resolution.head} was not in scope`,
         loc
       );
@@ -498,7 +498,7 @@ class ElementNormalizer {
     let resolution = this.ctx.resolutionFor(m, ModifierSyntaxContext);
 
     if (resolution.resolution === 'error') {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `You attempted to invoke a path (\`{{#${resolution.path}}}\`) but ${resolution.head} was not in scope`,
         m.loc
       );
@@ -648,7 +648,7 @@ class ElementNormalizer {
       let resolution = this.ctx.resolutionFor(path, ComponentSyntaxContext);
 
       if (resolution.resolution === 'error') {
-        throw new GlimmerSyntaxError(
+        throw generateSyntaxError(
           `You attempted to invoke a path (\`<${resolution.path}>\`) but ${resolution.head} was not in scope`,
           loc
         );
@@ -660,7 +660,7 @@ class ElementNormalizer {
     // If the tag name wasn't a valid component but contained a `.`, it's
     // a syntax error.
     if (tail.length > 0) {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `You used ${variable}.${tail.join('.')} as a tag name, but ${variable} is not in scope`,
         loc
       );
@@ -710,10 +710,7 @@ class Children {
 class TemplateChildren extends Children {
   assertTemplate(table: ProgramSymbolTable): ASTv2.Template {
     if (isPresent(this.namedBlocks)) {
-      throw new GlimmerSyntaxError(
-        `Unexpected named block at the top-level of a template`,
-        this.loc
-      );
+      throw generateSyntaxError(`Unexpected named block at the top-level of a template`, this.loc);
     }
 
     return this.block.builder.template(table, this.nonBlockChildren, this.block.loc(this.loc));
@@ -723,7 +720,7 @@ class TemplateChildren extends Children {
 class BlockChildren extends Children {
   assertBlock(table: BlockSymbolTable): ASTv2.Block {
     if (isPresent(this.namedBlocks)) {
-      throw new GlimmerSyntaxError(`Unexpected named block nested in a normal block`, this.loc);
+      throw generateSyntaxError(`Unexpected named block nested in a normal block`, this.loc);
     }
 
     return this.block.builder.block(table, this.nonBlockChildren, this.loc);
@@ -742,21 +739,21 @@ class ElementChildren extends Children {
 
   assertNamedBlock(name: SourceSlice, table: BlockSymbolTable): ASTv2.NamedBlock {
     if (this.el.base.selfClosing) {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `<:${name}> is not a valid named block: named blocks cannot be self-closing`,
         this.loc
       );
     }
 
     if (isPresent(this.namedBlocks)) {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `Unexpected named block inside <:${name}> named block: named blocks cannot contain nested named blocks`,
         this.loc
       );
     }
 
     if (!isLowerCase(name.chars)) {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `<:${name}> is not a valid named block: \`${name}\` is uppercase, and named blocks must be lowercase`,
         this.loc
       );
@@ -773,7 +770,7 @@ class ElementChildren extends Children {
 
   assertElement(name: SourceSlice, hasBlockParams: boolean): ASTv2.SimpleElement {
     if (hasBlockParams) {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `Unexpected block params in <${name}>: simple elements cannot have block params`,
         this.loc
       );
@@ -783,13 +780,13 @@ class ElementChildren extends Children {
       let names = this.namedBlocks.map((b) => b.name);
 
       if (names.length === 1) {
-        throw new GlimmerSyntaxError(
+        throw generateSyntaxError(
           `Syntax Error: Unexpected named block <:foo> inside <${name}> HTML element`,
           this.loc
         );
       } else {
         let printedNames = names.map((n) => `<:${n.chars}>`).join(', ');
-        throw new GlimmerSyntaxError(
+        throw generateSyntaxError(
           `Syntax Error: Unexpected named blocks inside <${name}> HTML element (${printedNames})`,
           this.loc
         );
@@ -805,7 +802,7 @@ class ElementChildren extends Children {
     hasBlockParams: boolean
   ): PresentArray<ASTv2.NamedBlock> {
     if (isPresent(this.namedBlocks) && this.hasSemanticContent) {
-      throw new GlimmerSyntaxError(
+      throw generateSyntaxError(
         `Unexpected content inside <${name}> component invocation: when using named blocks, the tag cannot contain other content`,
         this.loc
       );
@@ -813,7 +810,7 @@ class ElementChildren extends Children {
 
     if (isPresent(this.namedBlocks)) {
       if (hasBlockParams) {
-        throw new GlimmerSyntaxError(
+        throw generateSyntaxError(
           `Unexpected block params list on <${name}> component invocation: when passing named blocks, the invocation tag cannot take block params`,
           this.loc
         );

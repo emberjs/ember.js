@@ -1,4 +1,4 @@
-import { ASTv2, GlimmerSyntaxError, SourceSlice } from '@glimmer/syntax';
+import { ASTv2, generateSyntaxError, SourceSlice } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
@@ -38,7 +38,7 @@ export const EXPR_KEYWORDS = keywords('Expr')
     assert(node: ExprKeywordNode): Result<{ definition: ASTv2.ExpressionNode; args: ASTv2.Args }> {
       if (node.type !== 'Call') {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             'The (component) keyword must be called with arguments in order to curry a component definition. It cannot be used directly as a value.',
             node.loc
           )
@@ -50,7 +50,7 @@ export const EXPR_KEYWORDS = keywords('Expr')
 
       if (definition === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `(component) requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
             args.loc
           )
