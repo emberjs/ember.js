@@ -10,7 +10,7 @@ import {
   Dict,
   PartialDefinition,
 } from '@glimmer/interfaces';
-import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
+import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import { SimpleComponentManager } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
@@ -135,7 +135,7 @@ export default function createRegistry(): Registry {
     },
     render: (entry, args, element, isIteractive) => {
       const sharedArtifacts = artifacts();
-      const context = syntaxCompilationContext(sharedArtifacts, {
+      const context = programCompilationContext(sharedArtifacts, {
         lookupHelper: (name) => helpers.get(name)?.handle ?? null,
         lookupModifier: (name) => modifiers.get(name)?.handle ?? null,
         lookupComponent: (name) => components.get(name) ?? null,

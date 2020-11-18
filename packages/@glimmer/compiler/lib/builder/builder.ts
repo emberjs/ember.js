@@ -8,7 +8,7 @@ import {
   VariableResolutionContext,
   WireFormat,
 } from '@glimmer/interfaces';
-import { assert, assertNever, dict, exhausted, isPresent, values } from '@glimmer/util';
+import { assert, assertNever, dict, exhausted, expect, isPresent, values } from '@glimmer/util';
 import { AttrNamespace, Namespace } from '@simple-dom/interface';
 
 import {
@@ -19,11 +19,13 @@ import {
   HeadKind,
   NormalizedAngleInvocation,
   NormalizedAttrs,
+  NormalizedBlock,
   NormalizedBlocks,
   NormalizedElement,
   NormalizedExpression,
   NormalizedHash,
   NormalizedHead,
+  NormalizedKeywordStatement,
   NormalizedParams,
   NormalizedPath,
   NormalizedStatement,
@@ -74,7 +76,9 @@ export class ProgramSymbols implements Symbols {
   }
 
   local(name: string): never {
-    throw new Error(`No local ${name} was found. Maybe you meant ^${name}?`);
+    throw new Error(
+      `No local ${name} was found. Maybe you meant ^${name} for upvar, or !${name} for keyword?`
+    );
   }
 
   this(): number {
@@ -211,7 +215,11 @@ export function buildStatement(
       return [
         [
           normalized.trusted ? Op.TrustingAppend : Op.Append,
-          buildExpression(normalized.expr, 'Append', symbols),
+          buildExpression(
+            normalized.expr,
+            normalized.trusted ? 'TrustedAppend' : 'Append',
+            symbols
+          ),
         ],
       ];
     }
@@ -224,7 +232,9 @@ export function buildStatement(
       let builtHash: WireFormat.Core.Hash = hash ? buildHash(hash, symbols) : null;
       let builtExpr: WireFormat.Expression = buildCallHead(
         path,
-        VariableResolutionContext.AmbiguousAppendInvoke,
+        trusted
+          ? VariableResolutionContext.AmbiguousInvoke
+          : VariableResolutionContext.AmbiguousAppendInvoke,
         symbols
       );
 
@@ -252,6 +262,10 @@ export function buildStatement(
       );
 
       return [[Op.Block, path, params, hash, blocks]];
+    }
+
+    case HeadKind.Keyword: {
+      return [buildKeyword(normalized, symbols)];
     }
 
     case HeadKind.Element:
@@ -294,6 +308,32 @@ export function unicode(charCode: string): string {
 }
 
 export const NEWLINE = '\n';
+
+function buildKeyword(
+  normalized: NormalizedKeywordStatement,
+  symbols: Symbols
+): WireFormat.Statement {
+  let { name } = normalized;
+  let params = buildParams(normalized.params, symbols);
+  let childSymbols = symbols.child(normalized.blockParams || []);
+
+  let block = buildBlock(normalized.blocks.default, childSymbols, childSymbols.paramSymbols);
+  let inverse = normalized.blocks.else ? buildBlock(normalized.blocks.else, symbols, []) : null;
+
+  switch (name) {
+    case 'with':
+      return [Op.With, expect(params, 'with requires params')[0], block, inverse];
+    case 'if':
+      return [Op.If, expect(params, 'if requires params')[0], block, inverse];
+    case 'each':
+      let keyExpr = normalized.hash ? normalized.hash['key'] : null;
+      let key = keyExpr ? buildExpression(keyExpr, 'Generic', symbols) : null;
+
+      return [Op.Each, expect(params, 'if requires params')[0], key, block, inverse];
+    default:
+      throw new Error('unimplemented keyword');
+  }
+}
 
 function buildElement(
   { name, attrs, block }: NormalizedElement,
@@ -446,6 +486,7 @@ export function buildAttributeValue(
 type ExprResolution =
   | VariableResolutionContext
   | 'Append'
+  | 'TrustedAppend'
   | 'AttrValue'
   | 'SubExpression'
   | 'Generic'
@@ -455,6 +496,8 @@ function varContext(context: ExprResolution, bare: boolean): VarResolution {
   switch (context) {
     case 'Append':
       return bare ? 'AppendBare' : 'AppendInvoke';
+    case 'TrustedAppend':
+      return bare ? 'TrustedAppendBare' : 'TrustedAppendInvoke';
     case 'AttrValue':
       return bare ? 'AttrValueBare' : 'AttrValueInvoke';
     default:
@@ -552,6 +595,8 @@ type VarResolution =
   | VariableResolutionContext
   | 'AppendBare'
   | 'AppendInvoke'
+  | 'TrustedAppendBare'
+  | 'TrustedAppendInvoke'
   | 'AttrValueBare'
   | 'AttrValueInvoke'
   | 'SubExpression'
@@ -585,6 +630,10 @@ export function buildVar(
         op = SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback;
       } else if (context === 'AppendInvoke') {
         op = SexpOpcodes.GetFreeAsComponentOrHelperHead;
+      } else if (context === 'TrustedAppendBare') {
+        op = SexpOpcodes.GetFreeAsHelperHeadOrThisFallback;
+      } else if (context === 'TrustedAppendInvoke') {
+        op = SexpOpcodes.GetFreeAsHelperHead;
       } else if (context === 'AttrValueBare') {
         op = SexpOpcodes.GetFreeAsHelperHeadOrThisFallback;
       } else if (context === 'AttrValueInvoke') {
@@ -637,7 +686,7 @@ export function expressionContextOp(context: VariableResolutionContext): GetCont
       return Op.GetFreeAsComponentOrHelperHeadOrThisFallback;
     case VariableResolutionContext.AmbiguousAppendInvoke:
       return Op.GetFreeAsComponentOrHelperHead;
-    case VariableResolutionContext.AmbiguousAttr:
+    case VariableResolutionContext.AmbiguousInvoke:
       return Op.GetFreeAsHelperHeadOrThisFallback;
     case VariableResolutionContext.LooseFreeVariable:
       return Op.GetFreeAsFallback;
@@ -695,11 +744,19 @@ export function buildBlocks(
     if (name === 'default') {
       let symbols = parent.child(blockParams || []);
 
-      values.push([buildNormalizedStatements(blocks[name], symbols), symbols.paramSymbols]);
+      values.push(buildBlock(blocks[name], symbols, symbols.paramSymbols));
     } else {
-      values.push([buildNormalizedStatements(blocks[name], parent), []]);
+      values.push(buildBlock(blocks[name], parent, []));
     }
   });
 
   return [keys, values];
+}
+
+function buildBlock(
+  block: NormalizedBlock,
+  symbols: Symbols,
+  locals: number[] = []
+): WireFormat.SerializedInlineBlock {
+  return [buildNormalizedStatements(block, symbols), locals];
 }

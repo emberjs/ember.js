@@ -81,7 +81,7 @@ test('Text curlies', '<div>{{title}}<span>{{title}}</span></div>', [
 test(
   `Smoke test (blocks don't produce 'this' fallback)`,
   `{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}`,
-  ['#^with', ['^person'], { as: 'name' }, [['#^with', ['this.name'], { as: 'test' }, ['test']]]]
+  ['!with', ['^person'], { as: 'name' }, [['!with', ['this.name'], { as: 'test' }, ['test']]]]
 );
 
 test(
@@ -205,8 +205,8 @@ test('helpers', '<div>{{testing title}}</div>', ['<div>', [['(^testing)', ['^tit
 
 test(
   'Dynamic content within single custom element',
-  '<x-foo>{{#if param name=hash}}Content Here{{parent}}{{/if}}</x-foo>',
-  ['<x-foo>', [['#^if', ['^param'], { name: '^hash' }, [s`Content Here`, '^parent']]]]
+  '<x-foo>{{#test param name=hash}}Content Here{{parent}}{{/test}}</x-foo>',
+  ['<x-foo>', [['#^test', ['^param'], { name: '^hash' }, [s`Content Here`, '^parent']]]]
 );
 
 test('quotes in HTML', `<div>"This is a title," we're on a boat</div>`, [
@@ -416,12 +416,12 @@ test(
 
 test('simple blocks', `<div>{{#if admin}}<p>{{user}}</p>{{/if}}!</div>`, [
   '<div>',
-  [['#^if', ['^admin'], [['<p>', ['^user']]]], s`!`],
+  [['!if', ['^admin'], [['<p>', ['^user']]]], s`!`],
 ]);
 
 test('nested blocks', `<div>{{#if admin}}{{#if access}}<p>{{user}}</p>{{/if}}{{/if}}!</div>`, [
   '<div>',
-  [['#^if', ['^admin'], [['#^if', ['^access'], [['<p>', ['^user']]]]]], s`!`],
+  [['!if', ['^admin'], [['!if', ['^access'], [['<p>', ['^user']]]]]], s`!`],
 ]);
 
 test(
@@ -431,7 +431,7 @@ test(
     '<div>',
     [
       [
-        '#^each',
+        '!each',
         ['^people'],
         { key: s`handle`, as: 'p' },
         [['<span>', ['p.handle']], s` - `, 'p.name'],
@@ -516,7 +516,7 @@ test('Null curly in attributes', `<div class="foo {{null}}">hello</div>`, [
 ]);
 
 test('Null as a block argument', `{{#if null}}NOPE{{else}}YUP{{/if}}`, [
-  '#^if',
+  '!if',
   [null],
   { default: [s`NOPE`], else: [s`YUP`] },
 ]);

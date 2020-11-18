@@ -7,21 +7,23 @@ import {
   SymbolTable,
   CompilableTemplate,
   Statement,
-  SyntaxCompilationContext,
+  CompileTimeCompilationContext,
   CompilableBlock,
   CompilableProgram,
   HandleResult,
   BlockSymbolTable,
   SerializedBlock,
+  BuilderOp,
+  HighLevelOp,
 } from '@glimmer/interfaces';
 import { meta } from './opcode-builder/helpers/shared';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { templateCompilationContext } from './opcode-builder/context';
-import { concatStatements } from './syntax/concat';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { debugCompiler } from './compiler';
-import { patchStdlibs } from '@glimmer/program';
 import { STATEMENTS } from './syntax/statements';
+import { HighLevelStatementOp } from './syntax/compilers';
+import { encodeOp } from './opcode-builder/encoder';
 
 export const PLACEHOLDER_HANDLE = -1;
 
@@ -36,7 +38,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   ) {}
 
   // Part of CompilableTemplate
-  compile(context: SyntaxCompilationContext): HandleResult {
+  compile(context: CompileTimeCompilationContext): HandleResult {
     return maybeCompile(this, context);
   }
 }
@@ -51,7 +53,7 @@ export function compilable(layout: LayoutWithContext): CompilableProgram {
 
 function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
-  context: SyntaxCompilationContext
+  context: CompileTimeCompilationContext
 ): HandleResult {
   if (compilable.compiled !== null) return compilable.compiled!;
 
@@ -60,7 +62,6 @@ function maybeCompile(
   let { statements, meta } = compilable;
 
   let result = compileStatements(statements, meta, context);
-  patchStdlibs(context.program);
   compilable.compiled = result;
 
   return result;
@@ -69,16 +70,25 @@ function maybeCompile(
 export function compileStatements(
   statements: Statement[],
   meta: ContainingMetadata,
-  syntaxContext: SyntaxCompilationContext
+  syntaxContext: CompileTimeCompilationContext
 ): HandleResult {
   let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
 
-  for (let i = 0; i < statements.length; i++) {
-    concatStatements(context, sCompiler.compile(statements[i], context.meta));
+  let {
+    encoder,
+    program: { constants, resolver },
+  } = context;
+
+  function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
+    encodeOp(encoder, constants, resolver, meta, op as BuilderOp | HighLevelOp);
   }
 
-  let handle = context.encoder.commit(syntaxContext.program.heap, meta.size);
+  for (let i = 0; i < statements.length; i++) {
+    sCompiler.compile(pushOp, statements[i]);
+  }
+
+  let handle = context.encoder.commit(meta.size);
 
   if (LOCAL_SHOULD_LOG) {
     debugCompiler(context, handle);

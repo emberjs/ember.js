@@ -133,7 +133,7 @@ class TemplateImpl implements TemplateWithIdAndReferrer {
 
   asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
-    return (this.layout = compilable(
+    return (this.partial = compilable(
       assign({}, this.parsedLayout, {
         asPartial: true,
       })

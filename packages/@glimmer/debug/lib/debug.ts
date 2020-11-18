@@ -28,15 +28,15 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
   if (LOCAL_SHOULD_LOG) {
     LOCAL_LOGGER.group(`%c${start}:${end}`, 'color: #999');
 
-    let heap = context.syntax.program.heap;
+    let heap = context.program.heap;
     let opcode = new RuntimeOpImpl(heap);
 
     let _size = 0;
     for (let i = start; i < end; i = i + _size) {
       opcode.offset = i;
       let [name, params] = debug(
-        context.syntax.program.constants as Recast<CompileTimeConstants, DebugConstants>,
-        context.syntax.program.resolver,
+        context.program.constants as Recast<CompileTimeConstants, DebugConstants>,
+        context.program.resolver,
         opcode,
         opcode.isMachine
       )!;

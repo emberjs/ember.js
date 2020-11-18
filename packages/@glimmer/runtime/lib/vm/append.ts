@@ -15,7 +15,7 @@ import {
   RuntimeHeap,
   RuntimeProgram,
   Scope,
-  SyntaxCompilationContext,
+  CompileTimeCompilationContext,
   VM as PublicVM,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
@@ -78,7 +78,7 @@ export interface InternalVM {
   readonly env: Environment;
   readonly stack: EvaluationStack;
   readonly runtime: RuntimeContext;
-  readonly context: SyntaxCompilationContext;
+  readonly context: CompileTimeCompilationContext;
 
   loadValue(register: MachineRegister, value: number): void;
   loadValue(register: Register, value: unknown): void;
@@ -274,7 +274,7 @@ export default class VM implements PublicVM, InternalVM {
     readonly runtime: RuntimeContext,
     { pc, scope, dynamicScope, stack }: VMState,
     private readonly elementStack: ElementBuilder,
-    readonly context: SyntaxCompilationContext
+    readonly context: CompileTimeCompilationContext
   ) {
     if (DEBUG) {
       assertGlobalContextWasSet!();
@@ -316,11 +316,10 @@ export default class VM implements PublicVM, InternalVM {
 
   static initial(
     runtime: RuntimeContext,
-    context: SyntaxCompilationContext,
-    { handle, self, dynamicScope, treeBuilder }: InitOptions
+    context: CompileTimeCompilationContext,
+    { handle, self, dynamicScope, treeBuilder, numSymbols }: InitOptions
   ) {
-    let scopeSize = runtime.program.heap.scopesizeof(handle);
-    let scope = PartialScopeImpl.root(self, scopeSize);
+    let scope = PartialScopeImpl.root(self, numSymbols);
     let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
     let vm = initVM(context)(runtime, state, treeBuilder);
     vm.pushUpdating();
@@ -330,7 +329,7 @@ export default class VM implements PublicVM, InternalVM {
   static empty(
     runtime: RuntimeContext,
     { handle, treeBuilder, dynamicScope }: MinimalInitOptions,
-    context: SyntaxCompilationContext
+    context: CompileTimeCompilationContext
   ) {
     let vm = initVM(context)(
       runtime,
@@ -649,6 +648,7 @@ export interface MinimalInitOptions {
 
 export interface InitOptions extends MinimalInitOptions {
   self: Reference;
+  numSymbols: number;
 }
 
 export type VmInitCallback = (
@@ -658,6 +658,6 @@ export type VmInitCallback = (
   builder: ElementBuilder
 ) => InternalVM;
 
-function initVM(context: SyntaxCompilationContext): VmInitCallback {
+function initVM(context: CompileTimeCompilationContext): VmInitCallback {
   return (runtime, state, builder) => new VM(runtime, state, builder, context);
 }

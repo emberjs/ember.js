@@ -1,19 +1,8 @@
-import {
-  NamedBlocks,
-  Option,
-  CompilableBlock,
-  WireFormat,
-  ContainingMetadata,
-  CompileErrorOp,
-  Expressions,
-  SexpOpcodes,
-} from '@glimmer/interfaces';
+import { NamedBlocks, Option, WireFormat, SerializedInlineBlock } from '@glimmer/interfaces';
 import { dict, assign } from '@glimmer/util';
-import { compilableBlock } from './compilable-template';
-import { error } from './opcode-builder/encoder';
 
 interface NamedBlocksDict {
-  [key: string]: Option<CompilableBlock>;
+  [key: string]: Option<WireFormat.SerializedInlineBlock>;
 }
 
 export class NamedBlocksImpl implements NamedBlocks {
@@ -23,7 +12,7 @@ export class NamedBlocksImpl implements NamedBlocks {
     this.names = blocks ? Object.keys(blocks) : [];
   }
 
-  get(name: string): Option<CompilableBlock> {
+  get(name: string): Option<SerializedInlineBlock> {
     if (!this.blocks) return null;
 
     return this.blocks[name] || null;
@@ -34,7 +23,7 @@ export class NamedBlocksImpl implements NamedBlocks {
     return blocks !== null && name in blocks;
   }
 
-  with(name: string, block: Option<CompilableBlock>): NamedBlocks {
+  with(name: string, block: Option<SerializedInlineBlock>): NamedBlocks {
     let { blocks } = this;
 
     if (blocks) {
@@ -51,7 +40,7 @@ export class NamedBlocksImpl implements NamedBlocks {
 
 export const EMPTY_BLOCKS = new NamedBlocksImpl(null);
 
-export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMetadata): NamedBlocks {
+export function namedBlocks(blocks: WireFormat.Core.Blocks): NamedBlocks {
   if (blocks === null) {
     return EMPTY_BLOCKS;
   }
@@ -61,84 +50,8 @@ export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMeta
   let [keys, values] = blocks;
 
   for (let i = 0; i < keys.length; i++) {
-    out[keys[i]] = compilableBlock(values[i]!, meta);
+    out[keys[i]] = values[i];
   }
 
   return new NamedBlocksImpl(out);
-}
-
-export function isStrictFreeVariable(
-  expr: WireFormat.Expression
-): expr is WireFormat.Expressions.GetStrictFree {
-  return Array.isArray(expr) && expr[0] === SexpOpcodes.GetStrictFree;
-}
-
-export function tryLooseFreeVariable(
-  expr: WireFormat.Expression,
-  meta: ContainingMetadata
-): Option<string> {
-  if (!meta.upvars) {
-    return null;
-  }
-
-  if (!Array.isArray(expr)) {
-    return null;
-  }
-
-  if (isGet(expr)) {
-    return loosePathName(expr, meta);
-  }
-
-  return null;
-}
-
-export function expectLooseFreeVariable(
-  expr: WireFormat.Expression,
-  meta: ContainingMetadata,
-  desc: string
-): string | CompileErrorOp {
-  if (!meta.upvars) {
-    return error(`${desc}, but there were no free variables in the template`, 0, 0);
-  }
-
-  let stringHead = tryLooseFreeVariable(expr, meta);
-
-  if (stringHead === null) {
-    throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
-  } else {
-    return stringHead;
-  }
-}
-
-export function loosePathName(
-  opcode: Expressions.GetPath | Expressions.GetVar,
-  meta: ContainingMetadata
-): Option<string> {
-  if (opcode.length === 3) {
-    return null;
-  }
-
-  if (isLooseGetFree(opcode)) {
-    return meta.upvars![opcode[1]];
-  }
-
-  return null;
-}
-
-export function isGet(
-  opcode: Expressions.TupleExpression
-): opcode is Expressions.GetVar | Expressions.GetPath {
-  return opcode[0] >= SexpOpcodes.GetStart && opcode[0] <= SexpOpcodes.GetEnd;
-}
-
-export function isStrictGetFree(
-  opcode: Expressions.GetVar | Expressions.GetPath
-): opcode is Expressions.GetContextualFree {
-  return opcode[0] === SexpOpcodes.GetStrictFree;
-}
-
-export function isLooseGetFree(
-  opcode: Expressions.GetVar | Expressions.GetPath
-): opcode is Expressions.GetContextualFree {
-  return opcode[0] >= SexpOpcodes.GetLooseFreeStart && opcode[0] <= SexpOpcodes.GetLooseFreeEnd;
 }

@@ -1,5 +1,4 @@
 export * from './lib/compile';
-export * from './lib/compile/macros';
 export * from './lib/components';
 export * from './lib/dom/assertions';
 export * from './lib/dom/blocks';

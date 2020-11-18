@@ -18,7 +18,7 @@ export const enum VariableResolutionContext {
   Strict = 0,
   AmbiguousAppend = 1,
   AmbiguousAppendInvoke = 2,
-  AmbiguousAttr = 3,
+  AmbiguousInvoke = 3,
   LooseFreeVariable = 4,
   ResolveAsCallHead = 5,
   ResolveAsModifierHead = 6,
@@ -57,32 +57,42 @@ export const enum SexpOpcodes {
   Debugger = 26,
 
   // Expressions
-  HasBlock = 27,
-  HasBlockParams = 28,
-  Undefined = 29,
-  Call = 30,
-  Concat = 31,
+  Undefined = 27,
+  Call = 28,
+  Concat = 29,
 
   // Get
-  GetSymbol = 32, // GetPath + 0-2,
-  GetStrictFree = 33,
+  GetSymbol = 30, // GetPath + 0-2,
+  GetStrictFree = 31,
 
   // falls back to `this.` (or locals in the case of partials), but
   // never turns into a component or helper invocation
-  GetFreeAsFallback = 34,
+  GetFreeAsFallback = 32,
   // `{{x}}` in append position (might be a helper or component invocation, otherwise fall back to `this`)
-  GetFreeAsComponentOrHelperHeadOrThisFallback = 35,
+  GetFreeAsComponentOrHelperHeadOrThisFallback = 33,
   // a component or helper (`{{<expr> x}}` in append position)
-  GetFreeAsComponentOrHelperHead = 36,
+  GetFreeAsComponentOrHelperHead = 34,
   // a helper or `this` fallback `attr={{x}}`
-  GetFreeAsHelperHeadOrThisFallback = 37,
+  GetFreeAsHelperHeadOrThisFallback = 35,
   // a call head `(x)`
-  GetFreeAsHelperHead = 38,
-  GetFreeAsModifierHead = 39,
-  GetFreeAsComponentHead = 40,
+  GetFreeAsHelperHead = 36,
+  GetFreeAsModifierHead = 37,
+  GetFreeAsComponentHead = 38,
 
-  // InElement
-  InElement = 41,
+  // Keyword Statements
+  InElement = 39,
+  If = 40,
+  Unless = 41,
+  Each = 42,
+  With = 43,
+  Let = 44,
+  WithDynamicVars = 45,
+  InvokeComponent = 46,
+
+  // Keyword Expressions
+  HasBlock = 47,
+  HasBlockParams = 48,
+  CurryComponent = 49,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -169,7 +179,8 @@ export namespace Expressions {
     | GetFreeAsHelperHead
     | GetFreeAsModifierHead
     | GetFreeAsComponentHead;
-  export type GetVar = GetSymbol | GetStrictFree | GetContextualFree;
+  export type GetFree = GetStrictFree | GetContextualFree;
+  export type GetVar = GetSymbol | GetFree;
 
   export type GetPathSymbol = [SexpOpcodes.GetSymbol, number, Path];
   export type GetPathStrictFree = [SexpOpcodes.GetStrictFree, number, Path];
@@ -201,7 +212,8 @@ export namespace Expressions {
     | GetPathFreeAsHelperHead
     | GetPathFreeAsModifierHead
     | GetPathFreeAsComponentHead;
-  export type GetPath = GetPathSymbol | GetPathStrictFree | GetPathContextualFree;
+  export type GetPathFree = GetPathStrictFree | GetPathContextualFree;
+  export type GetPath = GetPathSymbol | GetPathFree;
 
   export type Get = GetVar | GetPath;
 
@@ -212,7 +224,14 @@ export namespace Expressions {
   export type Value = StringValue | NumberValue | BooleanValue | NullValue;
   export type Undefined = [SexpOpcodes.Undefined];
 
-  export type TupleExpression = Get | Concat | HasBlock | HasBlockParams | Helper | Undefined;
+  export type TupleExpression =
+    | Get
+    | Concat
+    | HasBlock
+    | HasBlockParams
+    | CurryComponent
+    | Helper
+    | Undefined;
 
   // TODO get rid of undefined, which is just here to allow trailing undefined in attrs
   // it would be better to handle that as an over-the-wire encoding concern
@@ -222,6 +241,7 @@ export namespace Expressions {
   export type Helper = [SexpOpcodes.Call, Expression, Option<Params>, Hash];
   export type HasBlock = [SexpOpcodes.HasBlock, Expression];
   export type HasBlockParams = [SexpOpcodes.HasBlockParams, Expression];
+  export type CurryComponent = [SexpOpcodes.CurryComponent, Expression, Params, Hash];
 }
 
 export type Expression = Expressions.Expression;
@@ -257,7 +277,7 @@ export namespace Statements {
   export type TrustingAppend = [SexpOpcodes.TrustingAppend, Expression];
   export type Comment = [SexpOpcodes.Comment, string];
   export type Modifier = [SexpOpcodes.Modifier, Expression, Params, Hash];
-  export type Block = [SexpOpcodes.Block, Expression, Option<Params>, Hash, Blocks];
+  export type Block = [SexpOpcodes.Block, Expression, Params, Hash, Blocks];
   export type Component = [
     op: SexpOpcodes.Component,
     tag: Expression,
@@ -330,6 +350,51 @@ export namespace Statements {
     insertBefore?: Expression
   ];
 
+  export type If = [
+    op: SexpOpcodes.If,
+    condition: Expression,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type Unless = [
+    op: SexpOpcodes.Unless,
+    condition: Expression,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type Each = [
+    op: SexpOpcodes.Each,
+    condition: Expression,
+    key: Option<Expression>,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type With = [
+    op: SexpOpcodes.With,
+    value: Expression,
+    block: SerializedInlineBlock,
+    inverse: Option<SerializedInlineBlock>
+  ];
+
+  export type Let = [op: SexpOpcodes.Let, positional: Core.Params, block: SerializedInlineBlock];
+
+  export type WithDynamicVars = [
+    op: SexpOpcodes.WithDynamicVars,
+    args: Core.Hash,
+    block: SerializedInlineBlock
+  ];
+
+  export type InvokeComponent = [
+    op: SexpOpcodes.InvokeComponent,
+    definition: Expression,
+    positional: Core.Params,
+    named: Core.Hash,
+    blocks: Blocks | null
+  ];
+
   /**
    * A Handlebars statement
    */
@@ -351,7 +416,14 @@ export namespace Statements {
     | StaticArg
     | DynamicArg
     | Debugger
-    | InElement;
+    | InElement
+    | If
+    | Unless
+    | Each
+    | With
+    | Let
+    | WithDynamicVars
+    | InvokeComponent;
 
   export type Attribute =
     | StaticAttr
@@ -388,14 +460,9 @@ export type SyntaxWithInternal =
 /**
  * A JSON object that the Block was serialized into.
  */
-export type SerializedBlock = [Statements.Statement[]];
+export type SerializedBlock = [statements: Statements.Statement[]];
 
-export type SerializedInlineBlock = [
-  // statements
-  Statements.Statement[],
-  // params
-  number[]
-];
+export type SerializedInlineBlock = [statements: Statements.Statement[], parameters: number[]];
 
 /**
  * A JSON object that the compiled TemplateBlock was serialized into.
@@ -432,6 +499,7 @@ export interface SerializedTemplateWithLazyBlock {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
   moduleName: string;
+  scope?: () => unknown[];
 }
 
 /**

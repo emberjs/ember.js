@@ -117,7 +117,7 @@ APPEND_OPCODES.add(Op.Exit, (vm) => {
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
-  stack.pushJs(vm[CONSTANTS].getSerializable(_table));
+  stack.pushJs(vm[CONSTANTS].getValue(_table));
 });
 
 APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
