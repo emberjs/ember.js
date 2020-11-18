@@ -1,4 +1,4 @@
-import { ASTv2, GlimmerSyntaxError, SourceSlice, SourceSpan } from '@glimmer/syntax';
+import { ASTv2, generateSyntaxError, SourceSlice, SourceSpan } from '@glimmer/syntax';
 import { expect } from '@glimmer/util';
 
 import { Err, Ok, Result } from '../../../shared/result';
@@ -28,7 +28,7 @@ export const APPEND_KEYWORDS = keywords('Append')
 
         if (args.named.size > 1 || target === null) {
           return Err(
-            new GlimmerSyntaxError(`yield only takes a single named argument: 'to'`, args.named.loc)
+            generateSyntaxError(`yield only takes a single named argument: 'to'`, args.named.loc)
           );
         }
 
@@ -36,7 +36,7 @@ export const APPEND_KEYWORDS = keywords('Append')
           return Ok({ target: target.toSlice(), positional: args.positional });
         } else {
           return Err(
-            new GlimmerSyntaxError(`you can only yield to a literal string value`, target.loc)
+            generateSyntaxError(`you can only yield to a literal string value`, target.loc)
           );
         }
       }
@@ -72,14 +72,14 @@ export const APPEND_KEYWORDS = keywords('Append')
 
       if (positional.isEmpty()) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `Partial found with no arguments. You must specify a template name`,
             node.loc
           )
         );
       } else if (positional.size !== 1) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `Partial found with ${positional.exprs.length} arguments. You must specify a template name`,
             node.loc
           )
@@ -89,7 +89,7 @@ export const APPEND_KEYWORDS = keywords('Append')
       if (named.isEmpty()) {
         if (trusting) {
           return Err(
-            new GlimmerSyntaxError(
+            generateSyntaxError(
               `{{{partial ...}}} is not supported, please use {{partial ...}} instea`,
               node.loc
             )
@@ -98,7 +98,7 @@ export const APPEND_KEYWORDS = keywords('Append')
 
         return Ok(expect(positional.nth(0), `already confirmed that positional has a 0th entry`));
       } else {
-        return Err(new GlimmerSyntaxError(`Partial does not take any named argument`, node.loc));
+        return Err(generateSyntaxError(`Partial does not take any named argument`, node.loc));
       }
     },
 
@@ -132,12 +132,10 @@ export const APPEND_KEYWORDS = keywords('Append')
         return Ok(undefined);
       } else {
         if (positional.isEmpty()) {
-          return Err(
-            new GlimmerSyntaxError(`debugger does not take any named arguments`, node.loc)
-          );
+          return Err(generateSyntaxError(`debugger does not take any named arguments`, node.loc));
         } else {
           return Err(
-            new GlimmerSyntaxError(`debugger does not take any positional arguments`, node.loc)
+            generateSyntaxError(`debugger does not take any positional arguments`, node.loc)
           );
         }
       }
@@ -198,7 +196,7 @@ export const APPEND_KEYWORDS = keywords('Append')
 
       if (definition === null) {
         return Err(
-          new GlimmerSyntaxError(
+          generateSyntaxError(
             `{{component}} requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
             args.loc
           )

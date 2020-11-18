@@ -4,7 +4,7 @@ export * as ASTv1 from './lib/v1/api';
 export * as ASTv2 from './lib/v2-a/api';
 export { normalize } from './lib/v2-a/normalize';
 export { SymbolTable, BlockSymbolTable, ProgramSymbolTable } from './lib/symbol-table';
-export { GlimmerSyntaxError } from './lib/syntax-error';
+export { generateSyntaxError, GlimmerSyntaxError } from './lib/syntax-error';
 export {
   preprocess,
   ASTPlugin,

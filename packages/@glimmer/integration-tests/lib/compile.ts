@@ -28,7 +28,11 @@ export function syntaxErrorFor(
 ): Error {
   let quotedCode = code ? `\n\n|\n|  ${code.split('\n').join('\n|  ')}\n|\n\n` : '';
 
-  return new Error(
-    `Syntax Error: ${message}: ${quotedCode}(error occurred in '${moduleName}' @ line ${line} : column ${column})`
+  let error = new Error(
+    `${message}: ${quotedCode}(error occurred in '${moduleName}' @ line ${line} : column ${column})`
   );
+
+  error.name = 'SyntaxError';
+
+  return error;
 }
