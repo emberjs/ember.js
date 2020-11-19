@@ -27,6 +27,8 @@ export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
 export const BOUNDS = symbol('BOUNDS');
 
+let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<any>>();
+
 /**
 @module @ember/component
 */
@@ -728,13 +730,26 @@ const Component = CoreView.extend(
 
       let eventDispatcher = this._dispatcher;
       if (eventDispatcher) {
-        let lazyEvents = eventDispatcher.lazyEvents;
+        let lazyEventsProcessedForComponentClass:
+          | WeakSet<any>
+          | undefined = lazyEventsProcessed.get(eventDispatcher);
+        if (!lazyEventsProcessedForComponentClass) {
+          lazyEventsProcessedForComponentClass = new WeakSet();
+          lazyEventsProcessed.set(eventDispatcher, lazyEventsProcessedForComponentClass);
+        }
 
-        lazyEvents.forEach((mappedEventName: string, event: string) => {
-          if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
-            eventDispatcher.setupHandlerForBrowserEvent(event);
-          }
-        });
+        let proto = Object.getPrototypeOf(this);
+        if (!lazyEventsProcessedForComponentClass.has(proto)) {
+          let lazyEvents = eventDispatcher.lazyEvents;
+
+          lazyEvents.forEach((mappedEventName: string, event: string) => {
+            if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
+              eventDispatcher.setupHandlerForBrowserEvent(event);
+            }
+          });
+
+          lazyEventsProcessedForComponentClass.add(proto);
+        }
       }
 
       if (DEBUG && eventDispatcher && this.tagName === '') {
