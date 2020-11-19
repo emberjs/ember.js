@@ -3839,6 +3839,31 @@ moduleFor(
 
       runTask(() => set(this.context, 'cond', false));
     }
+
+    '@test tracked property mutation in init does not error'() {
+      // TODO: this should issue a deprecation, but since the curly manager
+      // uses an untracked frame for construction we don't (yet)
+      this.registerComponent('foo-bar', {
+        template: `{{this.itemCount}}`,
+        ComponentClass: class extends Component {
+          @tracked itemCount = 0;
+
+          init() {
+            super.init(...arguments);
+
+            // first read the tracked property
+            let { itemCount } = this;
+
+            // then attempt to update the tracked property
+            this.itemCount = itemCount + 1;
+          }
+        },
+      });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { content: '1' });
+    }
   }
 );
 

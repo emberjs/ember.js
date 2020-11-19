@@ -378,7 +378,7 @@ moduleFor(
       }, /You attempted to update `value` on `EmberObject`, but it had already been used previously in the same computation/);
     }
 
-    ['@test gives helpful assertion when a tracked property is mutated after access within unknownProperty within an autotracking transaction']() {
+    ['@test gives helpful deprecation when a tracked property is mutated after access within unknownProperty within an autotracking transaction']() {
       class EmberObject {
         @tracked foo;
 
@@ -390,7 +390,7 @@ moduleFor(
 
       let obj = new EmberObject();
 
-      expectAssertion(() => {
+      expectDeprecation(() => {
         track(() => {
           get(obj, 'bar');
         });

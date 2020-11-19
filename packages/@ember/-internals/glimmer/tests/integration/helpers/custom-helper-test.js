@@ -722,7 +722,7 @@ moduleFor(
       }, expectedMessage);
     }
 
-    ['@test class-based helper gives helpful assertion when mutating a tracked property that was tracked already']() {
+    ['@test class-based helper gives helpful deprecation when mutating a tracked property that was tracked already']() {
       this.add(
         'helper:hello-world',
         class HelloWorld extends Helper {
@@ -739,7 +739,7 @@ moduleFor(
         renderTree: ['\\(result of a `<HelloWorld.*?>` helper\\)'],
       });
 
-      expectAssertion(() => {
+      expectDeprecation(() => {
         this.render('{{hello-world}}');
       }, expectedMessage);
     }
