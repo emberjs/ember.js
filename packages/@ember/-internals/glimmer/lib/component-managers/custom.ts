@@ -1,5 +1,6 @@
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import {
   Arguments,
   ComponentCapabilities,
@@ -24,6 +25,7 @@ import {
   buildCapabilities,
   registerDestructor,
 } from '@glimmer/runtime';
+import { deprecateMutationsInTrackingTransaction } from '@glimmer/validator';
 import { argsProxyFor } from '../utils/args-proxy';
 
 const CAPABILITIES = {
@@ -136,11 +138,19 @@ export default class CustomComponentManager<ComponentInstance>
     let { delegate } = definition;
     let args = argsProxyFor(vmArgs.capture(), 'component');
 
-    let component = delegate.createComponent(definition.ComponentClass.class!, args);
+    let component;
+
+    if (DEBUG && deprecateMutationsInTrackingTransaction !== undefined) {
+      deprecateMutationsInTrackingTransaction(() => {
+        component = delegate.createComponent(definition.ComponentClass.class!, args);
+      });
+    } else {
+      component = delegate.createComponent(definition.ComponentClass.class!, args);
+    }
 
     let bucket = new CustomComponentState(delegate, component, args, env);
 
-    return bucket;
+    return bucket as CustomComponentState<ComponentInstance>;
   }
 
   getDebugName({ name }: CustomComponentDefinitionState<ComponentInstance>): string {

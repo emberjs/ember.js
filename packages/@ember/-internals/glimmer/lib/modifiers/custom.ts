@@ -10,7 +10,12 @@ import {
   VMArguments,
 } from '@glimmer/interfaces';
 import { buildCapabilities, registerDestructor, reifyArgs } from '@glimmer/runtime';
-import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
+import {
+  createUpdatableTag,
+  deprecateMutationsInTrackingTransaction,
+  untrack,
+  UpdatableTag,
+} from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { argsProxyFor } from '../utils/args-proxy';
 
@@ -111,10 +116,22 @@ class InteractiveCustomModifierManager<ModifierInstance>
     let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
 
     let args = useArgsProxy ? argsProxyFor(capturedArgs, 'modifier') : reifyArgs(capturedArgs);
-    let instance = delegate.createModifier(
-      passFactoryToCreate ? ModifierClass : ModifierClass.class,
-      args
-    );
+
+    let instance: ModifierInstance;
+
+    if (DEBUG && deprecateMutationsInTrackingTransaction !== undefined) {
+      deprecateMutationsInTrackingTransaction(() => {
+        instance = delegate.createModifier(
+          passFactoryToCreate ? ModifierClass : ModifierClass.class,
+          args
+        );
+      });
+    } else {
+      instance = delegate.createModifier(
+        passFactoryToCreate ? ModifierClass : ModifierClass.class,
+        args
+      );
+    }
 
     let tag = createUpdatableTag();
     let state: CustomModifierState<ModifierInstance>;
@@ -124,14 +141,14 @@ class InteractiveCustomModifierManager<ModifierInstance>
         element,
         delegate,
         args,
-        modifier: instance,
+        modifier: instance!,
       };
     } else {
       state = {
         tag,
         element,
         delegate,
-        modifier: instance,
+        modifier: instance!,
         get args() {
           return reifyArgs(capturedArgs);
         },
