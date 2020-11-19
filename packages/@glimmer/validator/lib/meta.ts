@@ -35,7 +35,7 @@ export function dirtyTagFor<T extends object>(
       unwrap(assertTagNotConsumed)(propertyTag, obj, key);
     }
 
-    DIRTY_TAG(propertyTag);
+    DIRTY_TAG(propertyTag, true);
   }
 }
 
