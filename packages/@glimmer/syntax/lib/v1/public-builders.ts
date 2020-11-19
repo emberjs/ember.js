@@ -199,7 +199,7 @@ export interface BuildElementOptions {
   children?: ASTv1.Statement[];
   comments?: ElementComment[];
   blockParams?: string[];
-  loc: SourceSpan;
+  loc?: SourceSpan;
 }
 
 function buildElement(tag: TagDescriptor, options: BuildElementOptions): ASTv1.ElementNode {
@@ -228,7 +228,7 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions): ASTv1.E
     modifiers: modifiers || [],
     comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
     children: children || [],
-    loc,
+    loc: buildLoc(loc || null),
   };
 }
 
