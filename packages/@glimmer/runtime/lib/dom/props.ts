@@ -66,6 +66,7 @@ const ATTR_OVERRIDES: Dict<Dict> = {
   FIELDSET: { form: true },
   LEGEND: { form: true },
   OBJECT: { form: true },
+  OUTPUT: { form: true },
   BUTTON: { form: true },
 };
 
