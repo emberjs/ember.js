@@ -76,7 +76,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
 
    @private
   */
-  detect() {
+  detect(): void {
     let rootURL = this.rootURL;
 
     assert(
@@ -101,11 +101,11 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     let concrete = getOwner(this).lookup<EmberLocation>(`location:${implementation}`);
     assert(`Could not find location '${implementation}'.`, concrete !== undefined);
 
-    set(concrete!, 'rootURL', rootURL);
-    set(this, 'concreteImplementation', concrete!);
+    set(concrete, 'rootURL', rootURL);
+    set(this, 'concreteImplementation', concrete);
   }
 
-  willDestroy() {
+  willDestroy(): void {
     let { concreteImplementation } = this;
 
     if (concreteImplementation) {
@@ -192,7 +192,7 @@ AutoLocation.reopen({
 });
 
 function delegateToConcreteImplementation(methodName: string) {
-  return function (this: AutoLocation, ...args: any[]) {
+  return function (this: AutoLocation, ...args: unknown[]) {
     let { concreteImplementation } = this;
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",
@@ -217,8 +217,8 @@ function delegateToConcreteImplementation(methodName: string) {
 */
 
 interface DetectionOptions {
-  location: Location | null;
-  history: History | null;
+  location: Location;
+  history: History;
   userAgent: string;
   rootURL: string;
   documentMode: number | undefined;
@@ -230,24 +230,24 @@ function detectImplementation(options: DetectionOptions) {
 
   let implementation = 'none';
   let cancelRouterSetup = false;
-  let currentPath = getFullPath(location!);
+  let currentPath = getFullPath(location);
 
-  if (supportsHistory(userAgent, history!)) {
-    let historyPath = getHistoryPath(rootURL, location!);
+  if (supportsHistory(userAgent, history)) {
+    let historyPath = getHistoryPath(rootURL, location);
 
     // If the browser supports history and we have a history path, we can use
     // the history location with no redirects.
     if (currentPath === historyPath) {
       implementation = 'history';
     } else if (currentPath.substr(0, 2) === '/#') {
-      history!.replaceState({ path: historyPath }, '', historyPath);
+      history.replaceState({ path: historyPath }, '', historyPath);
       implementation = 'history';
     } else {
       cancelRouterSetup = true;
-      replacePath(location!, historyPath);
+      replacePath(location, historyPath);
     }
   } else if (supportsHashChange(documentMode, global)) {
-    let hashPath = getHashPath(rootURL, location!);
+    let hashPath = getHashPath(rootURL, location);
 
     // Be sure we're using a hashed path, otherwise let's switch over it to so
     // we start off clean and consistent. We'll count an index path with no
@@ -258,7 +258,7 @@ function detectImplementation(options: DetectionOptions) {
       // Our URL isn't in the expected hash-supported format, so we want to
       // cancel the router setup and replace the URL to start off clean
       cancelRouterSetup = true;
-      replacePath(location!, hashPath);
+      replacePath(location, hashPath);
     }
   }
 
@@ -276,12 +276,14 @@ function detectImplementation(options: DetectionOptions) {
   browsers. This may very well differ from the real current path (e.g. if it
   starts off as a hashed URL)
 */
-export function getHistoryPath(rootURL: string, location: Location) {
+export function getHistoryPath(rootURL: string, location: Location): string {
   let path = getPath(location);
   let hash = getHash(location);
   let query = getQuery(location);
   let rootURLIndex = path.indexOf(rootURL);
-  let routeHash, hashParts;
+
+  let routeHash: string;
+  let hashParts;
 
   assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
 
@@ -292,12 +294,12 @@ export function getHistoryPath(rootURL: string, location: Location) {
     // There could be extra hash segments after the route
     hashParts = hash.substr(1).split('#');
     // The first one is always the route url
-    routeHash = hashParts.shift();
+    routeHash = hashParts.shift() as string;
 
     // If the path already has a trailing slash, remove the one
     // from the hashed route so we don't double up.
     if (path.charAt(path.length - 1) === '/') {
-      routeHash = routeHash!.substr(1);
+      routeHash = routeHash.substr(1);
     }
 
     // This is the "expected" final order
@@ -321,7 +323,7 @@ export function getHistoryPath(rootURL: string, location: Location) {
 
   @method _getHashPath
 */
-export function getHashPath(rootURL: string, location: Location) {
+export function getHashPath(rootURL: string, location: Location): string {
   let path = rootURL;
   let historyPath = getHistoryPath(rootURL, location);
   let routePath = historyPath.substr(rootURL.length);
