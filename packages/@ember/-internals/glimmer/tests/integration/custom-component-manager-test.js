@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { set, setProperties, computed } from '@ember/-internals/metal';
+import { set, setProperties, computed, tracked } from '@ember/-internals/metal';
 import { setComponentManager, capabilities } from '@ember/-internals/glimmer';
 
 const BasicComponentManager = EmberObject.extend({
@@ -885,6 +885,36 @@ moduleFor(
       }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 
       assert.verifySteps([]);
+    }
+
+    '@test tracked property mutation in constructor issues a deprecation'() {
+      let ComponentClass = setComponentManager(
+        createBasicManager,
+        class extends EmberObject {
+          @tracked itemCount = 0;
+
+          init() {
+            super.init(...arguments);
+
+            // first read the tracked property
+            let { itemCount } = this;
+
+            // then attempt to update the tracked property
+            this.itemCount = itemCount + 1;
+          }
+        }
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `{{this.itemCount}}`,
+        ComponentClass,
+      });
+
+      expectDeprecation(() => {
+        this.render('<FooBar />');
+      }, /You attempted to update `itemCount` on `<.*>`, but it had already been used previously in the same computation/);
+
+      this.assertHTML(`1`);
     }
   }
 );

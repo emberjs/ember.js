@@ -1,6 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import {
   Arguments,
   Bounds,
@@ -15,6 +16,7 @@ import {
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
+import { deprecateMutationsInTrackingTransaction } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -184,7 +186,15 @@ export default class CustomComponentManager<ComponentInstance>
     let { delegate } = definition;
     let args = argsProxyFor(vmArgs.capture(), 'component');
 
-    let component = delegate.createComponent(definition.ComponentClass.class, args);
+    let component;
+
+    if (DEBUG && deprecateMutationsInTrackingTransaction !== undefined) {
+      deprecateMutationsInTrackingTransaction(() => {
+        component = delegate.createComponent(definition.ComponentClass.class!, args);
+      });
+    } else {
+      component = delegate.createComponent(definition.ComponentClass.class!, args);
+    }
 
     let bucket = new CustomComponentState(delegate, component, args, env);
 
@@ -202,7 +212,7 @@ export default class CustomComponentManager<ComponentInstance>
       });
     }
 
-    return bucket;
+    return bucket as CustomComponentState<ComponentInstance>;
   }
 
   getDebugName({ name }: CustomComponentDefinitionState<ComponentInstance>) {
