@@ -472,6 +472,68 @@ module('@glimmer/validator: tracking', () => {
       setter(foo, 789);
       assert.notOk(validateTag(tag, snapshot));
     });
+
+    if (DEBUG) {
+      test('it errors when attempting to update a value already consumed in the same transaction', (assert) => {
+        class Foo {
+          foo = 123;
+          bar = 456;
+        }
+
+        let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
+          return this.bar;
+        });
+
+        let foo = new Foo();
+
+        assert.throws(() => {
+          runInTrackingTransaction!(() => {
+            track(() => {
+              getter(foo);
+              setter(foo, 789);
+            });
+          });
+        }, /You attempted to update `foo` on `\(an instance of/);
+      });
+
+      test('it can switches to warning/deprecations when attempting to update a value already consumed in the same transaction', (assert) => {
+        class Foo {
+          foo = 123;
+          bar = 456;
+        }
+
+        let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
+          return this.bar;
+        });
+
+        let foo = new Foo();
+
+        // eslint-disable-next-line no-console
+        let originalConsoleWarn = console.warn;
+        // eslint-disable-next-line no-console
+        console.warn = (message: string) => {
+          let expected = 'You attempted to update `foo` on `(an instance of';
+          assert.pushResult({
+            result: message.indexOf(expected) > -1,
+            actual: message,
+            expected,
+            message: `incorrect warning message`,
+          });
+        };
+
+        runInTrackingTransaction!(() => {
+          track(() => {
+            deprecateMutationsInTrackingTransaction!(() => {
+              getter(foo);
+              setter(foo, 789);
+            });
+          });
+        });
+
+        // eslint-disable-next-line no-console
+        console.warn = originalConsoleWarn;
+      });
+    }
   });
 
   if (DEBUG) {

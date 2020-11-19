@@ -203,7 +203,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
     }
   }
 
-  static dirtyTag(tag: DirtyableTag | UpdatableTag) {
+  static dirtyTag(tag: DirtyableTag | UpdatableTag, disableConsumptionAssertion?: boolean) {
     if (
       DEBUG &&
       !(tag[TYPE] === MonomorphicTagTypes.Updatable || tag[TYPE] === MonomorphicTagTypes.Dirtyable)
@@ -211,7 +211,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
       throw new Error('Attempted to dirty a tag that was not dirtyable');
     }
 
-    if (DEBUG) {
+    if (DEBUG && disableConsumptionAssertion !== true) {
       // Usually by this point, we've already asserted with better error information,
       // but this is our last line of defense.
       unwrap(assertTagNotConsumed)(tag);
