@@ -235,6 +235,50 @@ class ModifierManagerTest extends RenderingTestCase {
     assert.equal(updateCount, 2);
   }
 
+  '@test provides a helpful deprecation when mutating a tracked value that was consumed already within constructor'(
+    assert
+  ) {
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class {
+        static create() {
+          return new this();
+        }
+
+        @tracked foo = 123;
+
+        constructor() {
+          // first read the tracked property
+          this.foo;
+
+          // then attempt to update the tracked property
+          this.foo = 456;
+        }
+
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
+    );
+
+    this.registerModifier(
+      'foo-bar',
+      class extends ModifierClass {
+        didInsertElement() {
+          assert.ok(true, 'modifiers didInsertElement was called');
+        }
+      }
+    );
+
+    let expectedMessage = backtrackingMessageFor('foo');
+
+    expectDeprecation(() => {
+      this.render('<h1 {{foo-bar}}>hello world</h1>');
+    }, expectedMessage);
+  }
+
   '@test provides a helpful assertion when mutating a value that was consumed already'() {
     class Person {
       @tracked name = 'bob';
