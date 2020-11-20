@@ -11,7 +11,7 @@ import {
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { assert, dict, unwrapTemplate } from '@glimmer/util';
-import { getComponentTemplate } from '@glimmer/runtime';
+import { getComponentTemplate } from '@glimmer/manager';
 import { TestComponentDefinitionState } from '../../components/test-component';
 
 // This is used to replicate a requirement of Ember's template referrers, which

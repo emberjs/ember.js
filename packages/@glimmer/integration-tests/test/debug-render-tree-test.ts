@@ -17,15 +17,15 @@ import {
   EmberishGlimmerArgs,
   TestComponentDefinitionState,
   createTemplate,
-  TemplateOnlyComponentManager,
   TEMPLATE_ONLY_CAPABILITIES,
 } from '..';
 import {
   EMPTY_ARGS,
-  setComponentTemplate,
   TemplateOnlyComponent,
   templateOnlyComponent,
+  TemplateOnlyComponentManager,
 } from '@glimmer/runtime';
+import { setComponentTemplate } from '@glimmer/manager';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
