@@ -21,7 +21,7 @@ export let setTrackingTransactionEnv:
 
 export let assertTagNotConsumed:
   | undefined
-  | (<T>(tag: Tag, obj?: T, keyName?: keyof T | string | symbol, forceHardError?: boolean) => void);
+  | (<T>(tag: Tag, obj?: T, keyName?: keyof T | string | symbol) => void);
 
 export let markTagAsConsumed: undefined | ((_tag: Tag) => void);
 
@@ -223,12 +223,7 @@ if (DEBUG) {
     }
   };
 
-  assertTagNotConsumed = <T>(
-    tag: Tag,
-    obj?: T,
-    keyName?: keyof T | string | symbol,
-    forceHardError: boolean | undefined = false
-  ) => {
+  assertTagNotConsumed = <T>(tag: Tag, obj?: T, keyName?: keyof T | string | symbol) => {
     if (CONSUMED_TAGS === null) return;
 
     let transaction = CONSUMED_TAGS.get(tag);
@@ -237,7 +232,7 @@ if (DEBUG) {
 
     let currentTransaction = TRANSACTION_STACK[TRANSACTION_STACK.length - 1];
 
-    if (currentTransaction.deprecate && !forceHardError) {
+    if (currentTransaction.deprecate) {
       TRANSACTION_ENV.deprecate(makeTrackingErrorMessage(transaction, obj, keyName));
     } else {
       // This hack makes the assertion message nicer, we can cut off the first

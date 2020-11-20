@@ -1,6 +1,4 @@
-import { DEBUG } from '@glimmer/env';
 import { tagFor, dirtyTagFor } from './meta';
-import { assertTagNotConsumed } from './debug';
 import { consumeTag } from './tracking';
 
 export type Getter<T, K extends keyof T> = (self: T) => T[K] | undefined;
@@ -30,10 +28,6 @@ export function trackedData<T extends object, K extends keyof T>(
   }
 
   function setter(self: T, value: T[K]): void {
-    if (DEBUG) {
-      assertTagNotConsumed!(tagFor(self, key), self, key, true);
-    }
-
     dirtyTagFor(self, key);
     values.set(self, value);
   }
