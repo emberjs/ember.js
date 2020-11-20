@@ -59,9 +59,8 @@ import { ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
 import { CompilableProgram, Template, HandleResult } from './template';
 import { CompileTimeCompilationContext } from './program';
-import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
-import { Owner } from './runtime';
+import { Owner, Helper } from './runtime';
 import { InternalComponentCapabilities } from './managers';
 
 export interface HandleResolver {

@@ -4,7 +4,7 @@ export type ModifierDefinitionState = Unique<'ModifierDefinitionState'>;
 export type ModifierInstanceState = Unique<'ModifierInstanceState'>;
 
 export interface PublicModifierDefinition<
-  ModifierDefinitionState = unknown,
+  ModifierDefinitionState = object,
   Manager = InternalModifierManager<unknown, ModifierDefinitionState>
 > {
   state: ModifierDefinitionState;

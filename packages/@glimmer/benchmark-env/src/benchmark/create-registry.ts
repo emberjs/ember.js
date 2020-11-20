@@ -12,7 +12,7 @@ import {
 } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
-import { SimpleComponentManager } from '@glimmer/runtime';
+import { TemplateOnlyComponentManager } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 
 import { UpdateBenchmark } from '../interfaces';
@@ -94,7 +94,7 @@ export default function createRegistry(): Registry {
       name: string,
       template: SerializedTemplateWithLazyBlock,
       component: unknown = null,
-      manager: InternalComponentManager = new SimpleComponentManager()
+      manager: InternalComponentManager = new TemplateOnlyComponentManager()
     ) => {
       components.set(
         name,

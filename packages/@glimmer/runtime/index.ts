@@ -16,8 +16,11 @@ export {
   curry,
   isCurriedComponentDefinition,
 } from './lib/component/curried-component';
-export { DEFAULT_CAPABILITIES, MINIMAL_CAPABILITIES } from './lib/component/interfaces';
-export * from './lib/component/manager';
+export {
+  TemplateOnlyComponentManager,
+  TemplateOnlyComponent,
+  templateOnlyComponent,
+} from './lib/component/template-only';
 export {
   default as DOMChanges,
   DOMChangesImpl as IDOMChanges,
@@ -74,29 +77,6 @@ export {
   assertDestroyablesDestroyed,
   destroyChildren as _destroyChildren,
 } from './lib/destroyables';
-export {
-  getComponentTemplate,
-  setComponentTemplate,
-  templateOnlyComponent,
-  isTemplateOnlyComponent,
-  TemplateOnlyComponent,
-} from './lib/template';
 export { getOwner, setOwner, OWNER } from './lib/owner';
-export {
-  getComponentManager,
-  setComponentManager,
-  getHelperManager,
-  setHelperManager,
-  getModifierManager,
-  setModifierManager,
-  buildCapabilities,
-} from './lib/managers/index';
-export {
-  BaseInternalComponentManager,
-  BaseInternalModifierManager,
-  isInternalComponentManager,
-  isInternalModifierManager,
-  isInternalHelper,
-} from './lib/managers/internal';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;

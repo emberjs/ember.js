@@ -16,7 +16,3 @@ export interface VM {
   getSelf(): Reference;
   associateDestroyable(child: Destroyable): void;
 }
-
-export interface Helper {
-  (args: VMArguments, vm: VM): Reference;
-}
