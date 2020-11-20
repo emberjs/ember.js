@@ -213,36 +213,24 @@ module('Managers', () => {
 
       let instance1 = getInternalHelperManager(owner1, definition)!;
 
-      assert.ok(
-        instance1.manager instanceof CustomManager,
-        'manager is an instance of the custom manager'
-      );
-      assert.equal((instance1.manager as CustomManager).owner, owner1, 'owner is correct');
+      assert.ok(instance1 instanceof CustomManager, 'manager is an instance of the custom manager');
+      assert.equal((instance1 as CustomManager).owner, owner1, 'owner is correct');
 
       let instance2 = getInternalHelperManager(owner1, definition)!;
 
-      assert.ok(
-        instance2.manager instanceof CustomManager,
-        'manager is an instance of the custom manager'
-      );
+      assert.ok(instance2 instanceof CustomManager, 'manager is an instance of the custom manager');
       assert.equal(instance1, instance2, 'same value returned for same owner');
 
       let owner2 = {};
 
       let instance3 = getInternalHelperManager(owner2, definition)!;
 
-      assert.ok(
-        instance3.manager instanceof CustomManager,
-        'manager is an instance of the custom manager'
-      );
+      assert.ok(instance3 instanceof CustomManager, 'manager is an instance of the custom manager');
       assert.notEqual(instance1, instance3, 'different manager returned for different owner');
 
       let instance4 = getInternalHelperManager(undefined, definition)!;
 
-      assert.ok(
-        instance4.manager instanceof CustomManager,
-        'manager is an instance of the custom manager'
-      );
+      assert.ok(instance4 instanceof CustomManager, 'manager is an instance of the custom manager');
       assert.notEqual(instance1, instance4, 'different manager returned for undefined owner');
     });
 
@@ -251,10 +239,10 @@ module('Managers', () => {
         return UNDEFINED_REFERENCE;
       };
 
-      let definition = setInternalHelperManager(() => ({ helper, manager: null }), {});
+      let definition = setInternalHelperManager(() => helper, {});
       let instance1 = getInternalHelperManager(undefined, definition)!;
 
-      assert.equal(instance1.helper, helper, 'manager is an instance of the custom manager');
+      assert.equal(instance1, helper, 'manager is an instance of the custom manager');
     });
 
     test('throws if multiple helper managers associated with the same definition', (assert) => {

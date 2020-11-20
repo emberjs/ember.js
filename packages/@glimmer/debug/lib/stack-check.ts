@@ -230,6 +230,18 @@ class OpaqueChecker implements Checker<unknown> {
   }
 }
 
+class ObjectChecker implements Checker<unknown> {
+  type!: object;
+
+  validate(obj: unknown): obj is object {
+    return typeof obj === 'object' && obj !== null;
+  }
+
+  expected(): string {
+    return `an object or function (valid WeakMap key)`;
+  }
+}
+
 export interface SafeString {
   toHTML(): string;
 }
@@ -308,6 +320,7 @@ export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckNull: Checker<null> = new NullChecker();
 export const CheckUnknown: Checker<unknown> = new OpaqueChecker();
 export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
+export const CheckObject: Checker<object> = new ObjectChecker();
 
 export function CheckOr<T, U>(left: Checker<T>, right: Checker<U>): Checker<T | U> {
   return new OrChecker(left, right);

@@ -3,7 +3,7 @@ import {
   Arguments,
   ComponentCapabilities,
   ComponentCapabilitiesVersions,
-  ComponentDefinition,
+  ComponentDefinitionState,
   ComponentManager,
   ComponentManagerWithAsyncLifeCycleCallbacks,
   ComponentManagerWithAsyncUpdateHook,
@@ -14,12 +14,11 @@ import {
   InternalComponentCapabilities,
   InternalComponentManager,
   Option,
-  Template,
   VMArguments,
-  WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/destroyable';
+import { deprecateMutationsInTrackingTransaction } from '@glimmer/validator';
 import { buildCapabilities } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
 
@@ -109,29 +108,32 @@ export function hasDestructors<ComponentInstance>(
   * `getContext()` - returns the object that should be
 */
 export class CustomComponentManager<ComponentInstance>
-  implements
-    InternalComponentManager<
-      CustomComponentState<ComponentInstance>,
-      CustomComponentDefinitionState
-    >,
-    WithStaticLayout<CustomComponentState<ComponentInstance>, CustomComponentDefinitionState> {
+  implements InternalComponentManager<CustomComponentState<ComponentInstance>> {
   constructor(private delegate: ComponentManager<ComponentInstance>) {}
 
   create(
     env: Environment,
-    definition: CustomComponentDefinitionState,
+    definition: ComponentDefinitionState,
     vmArgs: VMArguments
   ): CustomComponentState<ComponentInstance> {
     let { delegate } = this;
     let args = argsProxyFor(vmArgs.capture(), 'component');
 
-    let component = delegate.createComponent(definition.ComponentClass!, args);
+    let component: ComponentInstance;
 
-    return new CustomComponentState(component, args, env);
+    if (DEBUG && deprecateMutationsInTrackingTransaction !== undefined) {
+      deprecateMutationsInTrackingTransaction(() => {
+        component = delegate.createComponent(definition, args);
+      });
+    } else {
+      component = delegate.createComponent(definition, args);
+    }
+
+    return new CustomComponentState(component!, args, env);
   }
 
-  getDebugName({ name }: CustomComponentDefinitionState): string {
-    return name;
+  getDebugName(definition: ComponentDefinitionState): string {
+    return typeof definition === 'function' ? definition.name : definition.toString();
   }
 
   update(bucket: CustomComponentState<ComponentInstance>): void {
@@ -183,10 +185,6 @@ export class CustomComponentManager<ComponentInstance>
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
-
-  getStaticLayout(state: CustomComponentDefinitionState): Template {
-    return state.template;
-  }
 }
 
 /**
@@ -198,27 +196,4 @@ export class CustomComponentState<ComponentInstance> {
     public args: Arguments,
     public env: Environment
   ) {}
-}
-
-export interface CustomComponentDefinitionState {
-  name: string;
-  ComponentClass: ComponentDefinition;
-  template: Template;
-}
-
-export class CustomManagerDefinition<ComponentInstance> implements ComponentDefinition {
-  public state: CustomComponentDefinitionState;
-
-  constructor(
-    public manager: CustomComponentManager<ComponentInstance>,
-    public ComponentClass: ComponentDefinition,
-    public name: string,
-    public template: Template
-  ) {
-    this.state = {
-      name,
-      ComponentClass,
-      template,
-    };
-  }
 }

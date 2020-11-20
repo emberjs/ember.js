@@ -5,6 +5,7 @@ import {
   StdLibOperand,
   RuntimeConstants,
   RuntimeProgram,
+  ResolutionTimeConstants,
 } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from './opcode';
@@ -198,7 +199,10 @@ export class RuntimeProgramImpl implements RuntimeProgram {
 
   private _opcode: RuntimeOpImpl;
 
-  constructor(public constants: RuntimeConstants, public heap: RuntimeHeap) {
+  constructor(
+    public constants: RuntimeConstants & ResolutionTimeConstants,
+    public heap: RuntimeHeap
+  ) {
     this._opcode = new RuntimeOpImpl(this.heap);
   }
 

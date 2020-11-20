@@ -6,20 +6,22 @@ import {
   ModifierCapabilities,
   ModifierCapabilitiesVersions,
   ModifierManager,
+  Owner,
   VMArguments,
 } from '@glimmer/interfaces';
 import { registerDestructor } from '@glimmer/destroyable';
+import { setOwner } from '@glimmer/owner';
 import { valueForRef } from '@glimmer/reference';
-import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
 import { dict } from '@glimmer/util';
+import {
+  createUpdatableTag,
+  deprecateMutationsInTrackingTransaction,
+  untrack,
+  UpdatableTag,
+} from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { buildCapabilities } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
-
-export interface CustomModifierDefinitionState {
-  ModifierClass: object;
-  name: string;
-}
 
 export function modifierCapabilities<Version extends keyof ModifierCapabilitiesVersions>(
   managerAPI: Version,
@@ -39,27 +41,16 @@ export function modifierCapabilities<Version extends keyof ModifierCapabilitiesV
   });
 }
 
-export class CustomModifierDefinition<ModifierInstance> {
-  public state: CustomModifierDefinitionState;
-
-  constructor(
-    public manager: CustomModifierManager<ModifierInstance>,
-    public ModifierClass: object,
-    public name: string
-  ) {
-    this.state = {
-      ModifierClass,
-      name,
-    };
-  }
-}
-
 export interface CustomModifierState<ModifierInstance> {
   tag: UpdatableTag;
   element: SimpleElement;
   modifier: ModifierInstance;
   args: Arguments;
   debugName?: string;
+}
+
+interface Factory {
+  create(params: Record<string, unknown>): object;
 }
 
 /**
@@ -87,34 +78,60 @@ export interface CustomModifierState<ModifierInstance> {
   * `destroyModifier()` - invoked when the modifier is about to be destroyed
 */
 export class CustomModifierManager<ModifierInstance>
-  implements
-    InternalModifierManager<CustomModifierState<ModifierInstance>, CustomModifierDefinitionState> {
-  constructor(private delegate: ModifierManager<ModifierInstance>) {}
+  implements InternalModifierManager<CustomModifierState<ModifierInstance>> {
+  constructor(private owner: Owner, private delegate: ModifierManager<ModifierInstance>) {}
 
-  create(element: SimpleElement, definition: CustomModifierDefinitionState, vmArgs: VMArguments) {
+  create(element: SimpleElement, definition: object, vmArgs: VMArguments) {
     let { delegate } = this;
-    let { ModifierClass } = definition;
     let capturedArgs = vmArgs.capture();
 
-    let { useArgsProxy } = delegate.capabilities;
+    let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
 
     let args = useArgsProxy ? argsProxyFor(capturedArgs, 'modifier') : reifyArgs(capturedArgs);
-    let instance = delegate.createModifier(ModifierClass, args);
+
+    let instance: ModifierInstance;
+
+    let factoryOrDefinition = definition;
+
+    if (passFactoryToCreate) {
+      let { owner } = this;
+      // Make a fake factory. While not perfect, this should generally prevent
+      // breakage in users of older modifier capabilities.
+      factoryOrDefinition = {
+        create(args: Record<string, unknown>) {
+          let params = Object.assign({}, args);
+          setOwner(params, owner);
+
+          return (definition as Factory).create(args);
+        },
+
+        class: definition,
+      };
+    }
+
+    if (DEBUG && deprecateMutationsInTrackingTransaction !== undefined) {
+      deprecateMutationsInTrackingTransaction(() => {
+        instance = delegate.createModifier(factoryOrDefinition, args);
+      });
+    } else {
+      instance = delegate.createModifier(factoryOrDefinition, args);
+    }
 
     let tag = createUpdatableTag();
     let state: CustomModifierState<ModifierInstance>;
+
     if (useArgsProxy) {
       state = {
         tag,
         element,
         args,
-        modifier: instance,
+        modifier: instance!,
       };
     } else {
       state = {
         tag,
         element,
-        modifier: instance,
+        modifier: instance!,
         get args() {
           return reifyArgs(capturedArgs);
         },
@@ -122,7 +139,7 @@ export class CustomModifierManager<ModifierInstance>
     }
 
     if (DEBUG) {
-      state.debugName = definition.name;
+      state.debugName = typeof definition === 'function' ? definition.name : definition.toString();
     }
 
     registerDestructor(state, () => delegate.destroyModifier(instance, state.args));

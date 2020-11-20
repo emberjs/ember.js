@@ -4,7 +4,6 @@ import { createConstRef, childRefFor, Reference } from '@glimmer/reference';
 import { RehydrationDelegate } from './delegate';
 import { SimpleElement } from '@simple-dom/interface';
 import { DebugRehydrationBuilder } from './builder';
-import { getCompilable } from '../jit/util';
 
 function dictToReference(dict: Dict<unknown>): Dict<Reference> {
   const root = createConstRef(dict, 'args');
@@ -34,8 +33,8 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
       runtime,
       builder,
       program,
-      component,
-      getCompilable(component),
+      {},
+      component.state,
       dictToReference(args)
     );
 
@@ -60,8 +59,8 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
       runtime,
       builder,
       program,
-      component,
-      getCompilable(component),
+      {},
+      component.state,
       dictToReference(args)
     );
 

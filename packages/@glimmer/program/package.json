@@ -5,6 +5,8 @@
   "dependencies": {
     "@glimmer/env": "0.1.7",
     "@glimmer/util": "0.67.0",
+    "@glimmer/opcode-compiler": "0.67.0",
+    "@glimmer/manager": "0.67.0",
     "@glimmer/interfaces": "0.67.0",
     "@glimmer/encoder": "0.67.0"
   },

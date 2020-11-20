@@ -52,7 +52,6 @@ import {
 import { TestJitRegistry } from './registry';
 import { renderTemplate } from './render';
 import { TestJitRuntimeResolver } from './resolver';
-import { getCompilable } from './util';
 
 export interface JitTestDelegateContext {
   runtime: RuntimeContext;
@@ -129,7 +128,7 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): Option<CurriedComponentDefinition> {
-    return componentHelper(this.registry, name);
+    return componentHelper(this.registry, name, this.context.program.constants);
   }
 
   registerPlugin(plugin: ASTPluginBuilder): void {
@@ -219,14 +218,13 @@ export class JitRenderDelegate implements RenderDelegate {
     let builder = this.getElementBuilder(runtime.env, cursor);
 
     let component = this.registry.lookupComponent(name)!;
-    let compilable = getCompilable(component);
 
     let iterator = renderComponent(
       runtime,
       builder,
       program,
-      component,
-      compilable!,
+      {},
+      component.state,
       args,
       dynamicScope
     );

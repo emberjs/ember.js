@@ -1,9 +1,19 @@
 import { InternalModifierManager } from '../managers';
 
+export type ModifierDefinitionState = object;
+export type ModifierInstanceState = unknown;
+
 export interface ModifierDefinition<
-  ModifierInstanceState = unknown,
-  ModifierDefinitionState = unknown
+  I = unknown,
+  D extends ModifierDefinitionState = ModifierDefinitionState
 > {
-  manager: InternalModifierManager<ModifierInstanceState, ModifierDefinitionState>;
+  resolvedName: string | null;
+  manager: InternalModifierManager<I, D>;
   state: ModifierDefinitionState;
+}
+
+export interface ModifierInstance {
+  definition: ModifierDefinition;
+  state: ModifierInstanceState;
+  manager: InternalModifierManager;
 }

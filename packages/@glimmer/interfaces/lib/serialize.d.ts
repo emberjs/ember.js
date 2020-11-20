@@ -56,17 +56,26 @@
 
 import { Option } from './core';
 import { ProgramSymbolTable } from './tier1/symbol-table';
-import { ComponentDefinition } from './components';
+import { ComponentDefinitionState, ComponentInstanceState } from './components';
 import { CompilableProgram, Template, HandleResult } from './template';
 import { CompileTimeCompilationContext } from './program';
-import { ModifierDefinition } from './runtime/modifier';
-import { Owner, Helper } from './runtime';
-import { InternalComponentCapabilities } from './managers';
+import { Owner, ModifierDefinitionState, HelperDefinitionState } from './runtime';
+import { InternalComponentCapability, InternalComponentManager } from './managers';
 
 export interface CompileTimeComponent {
   handle: number;
-  capabilities?: InternalComponentCapabilities;
+  capabilities: InternalComponentCapability;
   compilable: Option<CompilableProgram>;
+}
+
+export interface ResolvedComponentDefinition<
+  D = ComponentDefinitionState,
+  I = ComponentInstanceState,
+  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>
+> {
+  state: D;
+  manager: M;
+  template: Template | null;
 }
 
 export const enum ResolverContext {
@@ -77,9 +86,9 @@ export const enum ResolverContext {
 }
 
 export interface CompileTimeResolver<O extends Owner = Owner> {
-  lookupHelper(name: string, owner: O): Option<Helper>;
-  lookupModifier(name: string, owner: O): Option<ModifierDefinition>;
-  lookupComponent(name: string, owner: O): Option<ComponentDefinition>;
+  lookupHelper(name: string, owner: O): Option<HelperDefinitionState>;
+  lookupModifier(name: string, owner: O): Option<ModifierDefinitionState>;
+  lookupComponent(name: string, owner: O): Option<ResolvedComponentDefinition>;
   lookupPartial(name: string, owner: O): Option<PartialDefinition>;
 }
 
@@ -91,9 +100,7 @@ export interface PartialDefinition {
   ): { symbolTable: ProgramSymbolTable; handle: HandleResult };
 }
 
-export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;
-
 export interface RuntimeResolver<O extends Owner = Owner> {
-  lookupComponent(name: string, owner: O): Option<ComponentDefinition>;
+  lookupComponent(name: string, owner: O): Option<ResolvedComponentDefinition>;
   lookupPartial(name: string, owner: O): Option<PartialDefinition>;
 }

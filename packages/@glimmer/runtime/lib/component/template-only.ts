@@ -1,10 +1,6 @@
-import {
-  ComponentDefinition,
-  InternalComponentCapabilities,
-  Template,
-  WithStaticLayout,
-} from '@glimmer/interfaces';
+import { InternalComponentCapabilities, InternalComponentManager } from '@glimmer/interfaces';
 import { NULL_REFERENCE, Reference } from '@glimmer/reference';
+import { setInternalComponentManager } from '@glimmer/manager';
 
 const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
@@ -21,17 +17,12 @@ const CAPABILITIES: InternalComponentCapabilities = {
   willDestroy: false,
 };
 
-export class TemplateOnlyComponentManager
-  implements WithStaticLayout<null, TemplateOnlyComponentDefinitionState> {
-  getStaticLayout({ template }: TemplateOnlyComponentDefinitionState): Template {
-    return template;
-  }
-
+export class TemplateOnlyComponentManager implements InternalComponentManager {
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
-  getDebugName({ name }: TemplateOnlyComponentDefinitionState): string {
+  getDebugName({ name }: TemplateOnlyComponentDefinition): string {
     return name;
   }
 
@@ -44,33 +35,24 @@ export class TemplateOnlyComponentManager
   }
 }
 
-const MANAGER = new TemplateOnlyComponentManager();
-
-export interface TemplateOnlyComponentDefinitionState {
-  name: string;
-  template: Template;
-}
-
-export class TemplateOnlyComponentDefinition
-  implements
-    TemplateOnlyComponentDefinitionState,
-    ComponentDefinition<TemplateOnlyComponentDefinitionState, null, TemplateOnlyComponentManager> {
-  manager = MANAGER;
-  constructor(public name: string, public template: Template) {}
-
-  get state(): TemplateOnlyComponentDefinitionState {
-    return this;
-  }
-}
+export const TEMPLATE_ONLY_COMPONENT_MANAGER = new TemplateOnlyComponentManager();
 
 // This is only exported for types, don't use this class directly
-export class TemplateOnlyComponent {
-  constructor(public moduleName = '@glimmer/component/template-only') {}
+export class TemplateOnlyComponentDefinition {
+  constructor(
+    public moduleName = '@glimmer/component/template-only',
+    public name = '(unknown template-only component)'
+  ) {}
 
-  toString(): string {
+  toString() {
     return this.moduleName;
   }
 }
+
+setInternalComponentManager(
+  () => TEMPLATE_ONLY_COMPONENT_MANAGER,
+  TemplateOnlyComponentDefinition.prototype
+);
 
 /**
   This utility function is used to declare a given component has no backing class. When the rendering engine detects this it
@@ -97,10 +79,9 @@ export class TemplateOnlyComponent {
   @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
 
-export function templateOnlyComponent(moduleName?: string): TemplateOnlyComponent {
-  return new TemplateOnlyComponent(moduleName);
-}
-
-export function isTemplateOnlyComponent(component: unknown): component is TemplateOnlyComponent {
-  return component instanceof TemplateOnlyComponent;
+export function templateOnlyComponent(
+  moduleName?: string,
+  name?: string
+): TemplateOnlyComponentDefinition {
+  return new TemplateOnlyComponentDefinition(moduleName, name);
 }

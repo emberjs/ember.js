@@ -34,7 +34,9 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
     readonly statements: WireFormat.Statement[],
     readonly meta: ContainingMetadata,
     // Part of CompilableTemplate
-    readonly symbolTable: S
+    readonly symbolTable: S,
+    // Used for debugging
+    readonly moduleName = 'plain block'
   ) {}
 
   // Part of CompilableTemplate
@@ -43,12 +45,17 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   }
 }
 
-export function compilable(layout: LayoutWithContext): CompilableProgram {
+export function compilable(layout: LayoutWithContext, moduleName: string): CompilableProgram {
   let [statements, symbols, hasEval] = layout.block;
-  return new CompilableTemplateImpl(statements, meta(layout), {
-    symbols,
-    hasEval,
-  });
+  return new CompilableTemplateImpl(
+    statements,
+    meta(layout),
+    {
+      symbols,
+      hasEval,
+    },
+    moduleName
+  );
 }
 
 function maybeCompile(

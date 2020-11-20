@@ -1,40 +1,32 @@
 import {
-  Helper,
-  ModifierDefinition,
-  ComponentDefinition,
-  InternalComponentManager,
+  ResolvedComponentDefinition,
   InternalModifierManager,
   Dict,
+  ModifierDefinitionState,
+  HelperDefinitionState,
+  Helper,
 } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
-import { TemplateOnlyComponentManager } from '@glimmer/runtime';
-import { getComponentTemplate } from '@glimmer/manager';
 import { SimpleElement } from '@simple-dom/interface';
+import {
+  getComponentTemplate,
+  getInternalComponentManager,
+  setInternalHelperManager,
+  setInternalModifierManager,
+} from '@glimmer/manager';
 
 import { UpdateBenchmark } from '../interfaces';
-import { createProgram } from './util';
 import renderBenchmark from './render-benchmark';
 
 export interface Registry {
   /**
-   * Register a template only component
-   * @param name
-   * @param template
-   */
-  registerComponent(name: string): void;
-  /**
    * Register a component with a manager
    * @param name
-   * @param template
    * @param component
    * @param manager
    */
-  registerComponent<T>(
-    name: string,
-    component: T,
-    manager: InternalComponentManager<unknown, T>
-  ): void;
+  registerComponent<T extends object>(name: string, component: T): void;
   /**
    * Register a helper
    * @param name
@@ -46,7 +38,7 @@ export interface Registry {
    * @param name
    * @param helper
    */
-  registerModifier<T>(
+  registerModifier<T extends object>(
     name: string,
     modifier: T,
     manager: InternalModifierManager<unknown, T>
@@ -61,29 +53,28 @@ export interface Registry {
 }
 
 export default function createRegistry(): Registry {
-  const components = new Map<string, ComponentDefinition>();
-  const helpers = new Map<string, Helper>();
-  const modifiers = new Map<string, ModifierDefinition>();
+  const components = new Map<string, ResolvedComponentDefinition>();
+  const helpers = new Map<string, HelperDefinitionState>();
+  const modifiers = new Map<string, ModifierDefinitionState>();
 
   return {
-    registerComponent: (
-      name: string,
-      component: unknown = null,
-      manager: InternalComponentManager = new TemplateOnlyComponentManager()
-    ) => {
+    registerComponent: (name: string, component: object) => {
+      let manager = getInternalComponentManager(undefined, component);
+
       components.set(name, {
         state: component,
         manager,
+        template: getComponentTemplate(component)!({}),
       });
     },
     registerHelper: (name, helper) => {
-      helpers.set(name, helper);
+      let definition = {};
+      setInternalHelperManager(() => helper, definition);
+      helpers.set(name, definition);
     },
     registerModifier: (name, modifier, manager) => {
-      modifiers.set(name, {
-        state: modifier,
-        manager,
-      });
+      setInternalModifierManager(() => manager, modifier);
+      modifiers.set(name, modifier);
     },
     render: (entry, args, element, isIteractive) => {
       const sharedArtifacts = artifacts();
@@ -106,7 +97,6 @@ export default function createRegistry(): Registry {
           lookupPartial: () => null,
         },
         component,
-        createProgram(getComponentTemplate(component.state as object)!),
         args,
         element as SimpleElement,
         isIteractive

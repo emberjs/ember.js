@@ -6,7 +6,10 @@ import { ConstantPool, SerializedHeap, CompileTimeCompilationContext } from './p
 import { Owner } from './runtime';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
-export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
+export interface CompilableProgram extends CompilableTemplate<ProgramSymbolTable> {
+  moduleName: string;
+}
+
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
 export interface LayoutWithContext {
