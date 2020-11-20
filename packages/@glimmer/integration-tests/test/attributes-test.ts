@@ -181,6 +181,19 @@ export class AttributesTests extends RenderTest {
   }
 
   @test
+  'can set attributes on form properties'() {
+    this.render('<form id={{foo}}></form><output form={{foo}}></output>', { foo: 'bar' });
+
+    let outputElement = assertElement(this.element.lastChild);
+
+    this.assert.ok(hasAttribute(outputElement, 'form'));
+    this.assert.equal(this.readDOMAttr('form', outputElement), 'bar');
+
+    this.assertStableRerender();
+    this.assertStableNodes();
+  }
+
+  @test
   'handles null input values'() {
     this.render('<input value={{isNull}} />', { isNull: null });
     this.assert.equal(this.readDOMAttr('value'), '');
