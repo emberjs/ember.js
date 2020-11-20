@@ -1,3 +1,25 @@
+## v0.66.1 (2020-11-20)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1209](https://github.com/glimmerjs/glimmer-vm/pull/1209) Ensure `<output form="some-value">`
+ works properly ([@KrishnaRPatel](https://github.com/KrishnaRPatel))
+
+* `@glimmer/validator`
+  * [#1205](https://github.com/glimmerjs/glimmer-vm/pull/1205) Ensure `@tracked` assertion can be
+made a deprecation. ([@rwjblue](https://github.com/rwjblue))
+
+* `@glimmer/syntax`
+  * [#1204](https://github.com/glimmerjs/glimmer-vm/pull/1204) Ensure `loc` is populated by `build
+ers.element(...)` ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Krishna Patel ([@KrishnaRPatel](https://github.com/KrishnaRPatel))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
+
 ## v0.66.0 (2020-11-17)
 
 #### :boom: Breaking Change
