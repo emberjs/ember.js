@@ -2,8 +2,7 @@ import { SimpleElement } from '@simple-dom/interface';
 import {
   Dict,
   RuntimeResolver,
-  ComponentDefinition,
-  CompilableProgram,
+  ResolvedComponentDefinition,
   RuntimeArtifacts,
   CompileTimeCompilationContext,
 } from '@glimmer/interfaces';
@@ -18,8 +17,7 @@ export default async function renderBenchmark(
   artifacts: RuntimeArtifacts,
   context: CompileTimeCompilationContext,
   runtimeResolver: RuntimeResolver,
-  component: ComponentDefinition,
-  layout: CompilableProgram,
+  component: ResolvedComponentDefinition,
   root: Dict,
   element: SimpleElement,
   isInteractive = true
@@ -49,7 +47,7 @@ export default async function renderBenchmark(
 
     const result = renderSync(
       env,
-      renderComponent(runtime, treeBuilder, context, component, layout, args)
+      renderComponent(runtime, treeBuilder, context, {}, component.state, args)
     );
 
     registerResult(result, () => {

@@ -1,10 +1,11 @@
 import { SimpleDocument } from '@simple-dom/interface';
-import { ComponentInstanceState } from '../components';
-import { InternalComponentManager, InternalModifierManager } from '../managers';
+import { ComponentDefinitionState, ComponentInstance, ComponentInstanceState } from '../components';
 import { Option } from '../core';
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
 import { DebugRenderTree } from './debug-render-tree';
 import { Owner } from './owner';
+import { ModifierInstance } from './modifier';
+import { WithCreateInstance } from '../..';
 
 export interface EnvironmentOptions {
   document?: SimpleDocument;
@@ -17,14 +18,20 @@ export interface Transaction {}
 declare const TransactionSymbol: unique symbol;
 export type TransactionSymbol = typeof TransactionSymbol;
 
+export type ComponentInstanceWithCreate = ComponentInstance<
+  ComponentDefinitionState,
+  ComponentInstanceState,
+  WithCreateInstance
+>;
+
 export interface Environment<O extends Owner = Owner> {
   [TransactionSymbol]: Option<Transaction>;
 
-  didCreate(component: ComponentInstanceState, manager: InternalComponentManager): void;
-  didUpdate(component: ComponentInstanceState, manager: InternalComponentManager): void;
+  didCreate(component: ComponentInstanceWithCreate): void;
+  didUpdate(component: ComponentInstanceWithCreate): void;
 
-  scheduleInstallModifier(modifier: unknown, manager: InternalModifierManager): void;
-  scheduleUpdateModifier(modifier: unknown, manager: InternalModifierManager): void;
+  scheduleInstallModifier(modifier: ModifierInstance): void;
+  scheduleUpdateModifier(modifier: ModifierInstance): void;
 
   begin(): void;
   commit(): void;

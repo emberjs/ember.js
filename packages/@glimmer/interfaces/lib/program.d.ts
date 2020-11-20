@@ -1,7 +1,10 @@
-import { STDLib, ContainingMetadata, HandleResult } from './template';
+import { STDLib, ContainingMetadata, HandleResult, Template } from './template';
 import { StdLibOperand, Encoder } from './compile';
 import { Op } from './vm-opcodes';
-import { CompileTimeResolver } from './serialize';
+import { CompileTimeResolver, ResolvedComponentDefinition } from './serialize';
+import { ComponentDefinitionState, ComponentDefinition } from './components';
+import { Helper, HelperDefinitionState, Owner } from './runtime';
+import { ModifierDefinition, ModifierDefinitionState } from './runtime/modifier';
 
 export interface RuntimeOp {
   offset: number;
@@ -47,7 +50,7 @@ export interface CompileTimeCompilationContext {
   readonly stdlib: STDLib;
 
   // Interned constants
-  readonly constants: CompileTimeConstants;
+  readonly constants: CompileTimeConstants & ResolutionTimeConstants;
 
   // The mechanism of resolving names to values at compile-time
   readonly resolver: CompileTimeResolver;
@@ -79,25 +82,48 @@ export type ConstantPool = unknown[];
 export interface CompileTimeConstants {
   value(value: unknown): number;
   array(values: unknown[] | readonly unknown[]): number;
-  serializable(value: unknown): number;
   toPool(): ConstantPool;
 }
 
 /**
- * In JIT mode, the constant pool is allowed to store arbitrary values,
- * which don't need to be serialized or transmitted over the wire.
+ * Resolution happens when components are first loaded, either via the resolver
+ * or via looking them up in template scope.
  */
-export interface CompileTimeLazyConstants extends CompileTimeConstants {
-  other(value: unknown): number;
+export interface ResolutionTimeConstants {
+  // TODO: The default template is unique per-program. This should likely belong
+  // in StdLib, but it's not really possible to thread it through that way
+  // currently.
+  defaultTemplate: Template;
+
+  helper(
+    owner: Owner | undefined,
+    definitionState: HelperDefinitionState,
+    resolvedName: string | null
+  ): number;
+
+  modifier(
+    owner: Owner | undefined,
+    definitionState: ModifierDefinitionState,
+    resolvedName: string | null
+  ): number;
+
+  component(
+    owner: Owner | undefined,
+    definitionState: ComponentDefinitionState
+  ): ComponentDefinition;
+
+  resolvedComponent(
+    definitionState: ResolvedComponentDefinition,
+    resolvedName: string
+  ): ComponentDefinition;
 }
 
 export interface RuntimeConstants {
   getValue<T>(handle: number): T;
   getArray<T>(handle: number): T[];
-  getSerializable<T>(handle: number): T;
 }
 
 export interface CompileTimeArtifacts {
   heap: CompileTimeHeap;
-  constants: CompileTimeConstants;
+  constants: CompileTimeConstants & ResolutionTimeConstants;
 }

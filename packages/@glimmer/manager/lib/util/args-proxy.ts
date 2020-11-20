@@ -6,10 +6,10 @@ import {
   CapturedPositionalArguments,
 } from '@glimmer/interfaces';
 import { Reference, valueForRef } from '@glimmer/reference';
-import { HAS_NATIVE_PROXY, symbol } from '@glimmer/util';
+import { HAS_NATIVE_PROXY, enumerableSymbol } from '@glimmer/util';
 import { Tag, track } from '@glimmer/validator';
 
-export const CUSTOM_TAG_FOR = symbol('CUSTOM_TAG_FOR');
+export const CUSTOM_TAG_FOR = enumerableSymbol('CUSTOM_TAG_FOR');
 
 function convertToInt(prop: number | string | symbol): number | null {
   if (typeof prop === 'symbol') return null;

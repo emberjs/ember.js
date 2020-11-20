@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { Cache, createCache, getValue } from '@glimmer/validator';
-import { Arguments } from '@glimmer/interfaces';
+import { Arguments, HelperManager } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/util';
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
 
@@ -65,13 +65,13 @@ export function invokeHelper(
     );
   }
 
-  if (DEBUG && !internalManager.manager) {
+  if (DEBUG && typeof internalManager === 'function') {
     throw new Error(
       'Found a helper manager, but it was an internal built-in helper manager. `invokeHelper` does not support internal helpers yet.'
     );
   }
 
-  const manager = internalManager.manager!;
+  const manager = internalManager as HelperManager<unknown>;
   let args = new SimpleArgsProxy(context, computeArgs);
   let bucket = manager.createHelper(definition, args);
 

@@ -1,18 +1,14 @@
 // eslint-disable-next-line node/no-extraneous-import
 import { Reference } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
-import {
-  ComponentDefinitionState,
-  PreparedArguments,
-  ComponentInstanceState,
-} from '../../components';
+import { PreparedArguments, ComponentInstanceState } from '../../components';
 import { Option, Destroyable } from '../../core';
 import { Bounds } from '../../dom/bounds';
 import { CapturedArguments, VMArguments } from '../../runtime/arguments';
 import { ElementOperations } from '../../runtime/element';
 import { Environment } from '../../runtime/environment';
 import { RuntimeResolver } from '../../serialize';
-import { Template } from '../../template';
+import { CompilableProgram } from '../../template';
 import { ProgramSymbolTable } from '../../tier1/symbol-table';
 import { DynamicScope } from '../../runtime/scope';
 import { RenderNode } from '../../runtime/debug-render-tree';
@@ -106,16 +102,35 @@ export interface InternalComponentCapabilities {
   willDestroy: boolean;
 }
 
+/**
+ * Enum used for bit flags version of the capabilities, used once the component
+ * has been loaded for the first time
+ */
+export const enum InternalComponentCapability {
+  DynamicLayout = 0b000000000001,
+  DynamicTag = 0b000000000010,
+  PrepareArgs = 0b000000000100,
+  CreateArgs = 0b000000001000,
+  AttributeHook = 0b000000010000,
+  ElementHook = 0b000000100000,
+  DynamicScope = 0b000001000000,
+  CreateCaller = 0b000010000000,
+  UpdateHook = 0b000100000000,
+  CreateInstance = 0b001000000000,
+  Wrapped = 0b010000000000,
+  WillDestroy = 0b100000000000,
+}
+
 ////////////
 
 export interface InternalComponentManager<
-  ComponentInstanceState = unknown,
-  ComponentDefinitionState = unknown
+  TComponentStateBucket = unknown,
+  TComponentDefinition = object
 > {
-  getCapabilities(state: ComponentDefinitionState): InternalComponentCapabilities;
-  getSelf(state: ComponentInstanceState): Reference;
-  getDestroyable(state: ComponentInstanceState): Option<Destroyable>;
-  getDebugName(state: ComponentDefinitionState): string;
+  getCapabilities(state: TComponentDefinition): InternalComponentCapabilities;
+  getSelf(state: TComponentStateBucket): Reference;
+  getDestroyable(state: TComponentStateBucket): Option<Destroyable>;
+  getDebugName(state: TComponentDefinition): string;
 }
 
 interface CustomRenderNode extends RenderNode {
@@ -132,7 +147,7 @@ export interface WithCustomDebugRenderTree<
     definition: ComponentDefinitionState,
     state: ComponentInstanceState,
     args: CapturedArguments,
-    template?: Template
+    template?: string
   ): CustomRenderNode[];
 }
 
@@ -192,11 +207,6 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
   update(state: ComponentInstanceState, dynamicScope: Option<DynamicScope>): void;
 }
 
-export interface WithStaticLayout<I = ComponentInstanceState, D = ComponentDefinitionState>
-  extends InternalComponentManager<I, D> {
-  getStaticLayout(state: D): Template;
-}
-
 export interface WithDynamicLayout<
   I = ComponentInstanceState,
   R extends RuntimeResolver = RuntimeResolver
@@ -205,7 +215,7 @@ export interface WithDynamicLayout<
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  getDynamicLayout(component: I, resolver: R): Template;
+  getDynamicLayout(component: I, resolver: R): CompilableProgram | null;
 }
 
 export interface WithDynamicTagName<ComponentInstanceState>

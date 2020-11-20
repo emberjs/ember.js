@@ -1,8 +1,16 @@
-import { ComponentDefinition, Option, Owner, RuntimeResolver } from '@glimmer/interfaces';
-import { assert, expect } from '@glimmer/util';
+import { DEBUG } from '@glimmer/env';
+import {
+  ComponentDefinition,
+  Option,
+  Owner,
+  RuntimeResolver,
+  ResolutionTimeConstants,
+} from '@glimmer/interfaces';
+import { expect } from '@glimmer/util';
 
 export function resolveComponent(
   resolver: RuntimeResolver,
+  constants: ResolutionTimeConstants,
   name: string,
   owner: Owner | null
 ): Option<ComponentDefinition> {
@@ -10,6 +18,12 @@ export function resolveComponent(
     name,
     expect(owner, 'BUG: expected owner when looking up component')
   );
-  assert(definition, `Could not find a component named "${name}"`);
-  return definition;
+
+  if (DEBUG && !definition) {
+    throw new Error(
+      `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
+    );
+  }
+
+  return constants.resolvedComponent(definition!, name);
 }

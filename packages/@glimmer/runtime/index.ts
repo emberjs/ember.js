@@ -5,7 +5,6 @@ import { RichIteratorResult } from '@glimmer/interfaces';
 import './lib/bootstrap';
 
 export { clear, ConcreteBounds, CursorImpl } from './lib/bounds';
-export { Capability, capabilityFlagsFrom, hasCapability } from './lib/capabilities';
 export {
   DebugCallback,
   resetDebuggerCallback,
@@ -18,7 +17,8 @@ export {
 } from './lib/component/curried-component';
 export {
   TemplateOnlyComponentManager,
-  TemplateOnlyComponent,
+  TEMPLATE_ONLY_COMPONENT_MANAGER,
+  TemplateOnlyComponentDefinition as TemplateOnlyComponent,
   templateOnlyComponent,
 } from './lib/component/template-only';
 export {
@@ -36,7 +36,6 @@ export {
   inTransaction,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
-export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
 export { RenderComponentArgs, renderComponent, renderMain, renderSync } from './lib/render';
 export { SafeString } from './lib/upsert';
 export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
@@ -66,5 +65,6 @@ export {
   rehydrationBuilder,
   SERIALIZATION_FIRST_NODE_STRING,
 } from './lib/vm/rehydrate-builder';
+export { invokeHelper } from './lib/helpers/invoke';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;

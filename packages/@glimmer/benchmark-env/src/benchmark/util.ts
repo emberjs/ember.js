@@ -1,10 +1,6 @@
-import { CompilableProgram, CompileTimeComponent, TemplateFactory } from '@glimmer/interfaces';
-import { unwrapTemplate, unwrapHandle } from '@glimmer/util';
+import { CompileTimeComponent } from '@glimmer/interfaces';
+import { unwrapHandle } from '@glimmer/util';
 import { CompileTimeCompilationContext } from '@glimmer/interfaces';
-
-export function createProgram(template: TemplateFactory): CompilableProgram {
-  return unwrapTemplate(template()).asLayout();
-}
 
 export function compileEntry(entry: CompileTimeComponent, context: CompileTimeCompilationContext) {
   return unwrapHandle(entry.compilable!.compile(context));

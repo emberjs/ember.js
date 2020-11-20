@@ -13,7 +13,10 @@ import {
   Destroyable,
   Dict,
   InternalComponentCapabilities,
+  WithCreateInstance,
+  CompilableProgram,
 } from '@glimmer/interfaces';
+import { setInternalComponentManager } from '@glimmer/manager';
 import {
   createConstRef,
   createPrimitiveRef,
@@ -23,8 +26,7 @@ import {
   createComputeRef,
 } from '@glimmer/reference';
 import { createTag, dirtyTag, DirtyableTag, consumeTag, dirtyTagFor } from '@glimmer/validator';
-import { keys, EMPTY_ARRAY, assign, expect } from '@glimmer/util';
-import { TestComponentDefinitionState } from './test-component';
+import { keys, EMPTY_ARRAY, assign, unwrapTemplate } from '@glimmer/util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
@@ -112,27 +114,49 @@ export interface EmberishCurlyComponentState {
   selfRef: Reference;
 }
 
+const EMBERISH_CURLY_CAPABILITIES: InternalComponentCapabilities = {
+  dynamicLayout: true,
+  dynamicTag: true,
+  prepareArgs: true,
+  createArgs: true,
+  attributeHook: true,
+  elementHook: true,
+  dynamicScope: true,
+  createCaller: true,
+  updateHook: true,
+  createInstance: true,
+  wrapped: true,
+  willDestroy: true,
+};
+
 export class EmberishCurlyComponentManager
   implements
+    WithCreateInstance<EmberishCurlyComponentState>,
     WithDynamicTagName<EmberishCurlyComponentState>,
     WithDynamicLayout<EmberishCurlyComponentState, TestJitRuntimeResolver> {
-  getDebugName(state: TestComponentDefinitionState) {
+  getDebugName(state: EmberishCurlyComponentFactory) {
     return state.name;
   }
 
-  getCapabilities(state: TestComponentDefinitionState): InternalComponentCapabilities {
-    return state.capabilities;
+  getCapabilities(): InternalComponentCapabilities {
+    return EMBERISH_CURLY_CAPABILITIES;
   }
 
-  getDynamicLayout({ component: { layout } }: EmberishCurlyComponentState): Template {
-    return expect(layout, 'expected component layout');
+  getDynamicLayout({
+    component: { layout },
+  }: EmberishCurlyComponentState): CompilableProgram | null {
+    if (layout) {
+      return unwrapTemplate(layout).asWrappedLayout();
+    }
+
+    return null;
   }
 
   prepareArgs(
-    state: TestComponentDefinitionState<EmberishCurlyComponentFactory>,
+    definition: EmberishCurlyComponentFactory,
     args: VMArguments
   ): Option<PreparedArguments> {
-    const { positionalParams } = state.ComponentClass || EmberishCurlyComponent;
+    const { positionalParams } = definition || EmberishCurlyComponent;
     if (typeof positionalParams === 'string') {
       if (args.named.has(positionalParams)) {
         if (args.positional.length === 0) {
@@ -173,13 +197,13 @@ export class EmberishCurlyComponentManager
 
   create(
     _env: Environment,
-    state: TestComponentDefinitionState<EmberishCurlyComponentFactory>,
+    definition: EmberishCurlyComponentFactory,
     _args: VMArguments,
     dynamicScope: DynamicScope,
     callerSelf: Reference,
     hasDefaultBlock: boolean
   ): EmberishCurlyComponentState {
-    let klass = state.ComponentClass || EmberishCurlyComponent;
+    let klass = definition || EmberishCurlyComponent;
     let self = valueForRef(callerSelf);
     let args = _args.named.capture();
     let attrs = reifyNamed(args);
@@ -193,12 +217,7 @@ export class EmberishCurlyComponentManager
     );
     let component = klass.create(merged);
 
-    component.name = state.name;
     component.args = args;
-
-    if (state.template !== null) {
-      component.layout = state.template;
-    }
 
     let dyn: Option<string[]> = klass.fromDynamicScope || null;
 
@@ -295,3 +314,7 @@ export class EmberishCurlyComponentManager
     return component;
   }
 }
+
+const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
+
+setInternalComponentManager(() => EMBERISH_CURLY_COMPONENT_MANAGER, EmberishCurlyComponent);
