@@ -19,7 +19,7 @@ if (DEBUG) {
     let name;
     let className;
 
-    if (obj.constructor && obj.constructor !== Object) {
+    if (obj.constructor && typeof obj.constructor === 'function') {
       className = getFunctionName(obj.constructor);
     }
 
