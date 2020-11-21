@@ -3,16 +3,16 @@ import { debugToString as maybeDebugToString } from '..';
 QUnit.module('debug-to-string tests');
 
 if (DEBUG) {
-  const debugToString = maybeDebugToString as ((value: unknown) => string);
+  const debugToString = maybeDebugToString as (value: unknown) => string;
   QUnit.test('[debugToString] should be an function in debug mode', (assert) => {
     assert.deepEqual(typeof maybeDebugToString, 'function');
   });
   QUnit.test('should return debug name for named [function]', function (assert) {
-    function foo() { };
+    function foo() {}
     assert.deepEqual(debugToString(foo), 'foo');
   });
   QUnit.test('should return debug name for arrow [function]', function (assert) {
-    let foo = () => { };
+    let foo = () => {};
     assert.deepEqual(debugToString(foo), 'foo');
   });
   QUnit.test('should return debug name for primitive [number]', function (assert) {
@@ -43,16 +43,37 @@ if (DEBUG) {
     assert.deepEqual(debugToString({ constructor: { modelName: 'bar' } }), '(unknown object)');
   });
   QUnit.test('should return debug name for object with toString function', function (assert) {
-    assert.deepEqual(debugToString({ toString() { return '[Glimmer]' } }), '[Glimmer]');
+    assert.deepEqual(
+      debugToString({
+        toString() {
+          return '[Glimmer]';
+        },
+      }),
+      '[Glimmer]'
+    );
   });
   QUnit.test('should return debug name for class', function (assert) {
-    assert.deepEqual(debugToString(class Foo { }), 'Foo');
+    assert.deepEqual(debugToString(class Foo {}), 'Foo');
   });
   QUnit.test('should return debug name for ember-like object #1', function (assert) {
-    assert.deepEqual(debugToString({ toString() { return '<CoreObject:ember205>' } }), '<Object:ember205>');
+    assert.deepEqual(
+      debugToString({
+        toString() {
+          return '<CoreObject:ember205>';
+        },
+      }),
+      '<Object:ember205>'
+    );
   });
   QUnit.test('should return debug name for ember-like object #2', function (assert) {
-    assert.deepEqual(debugToString({ toString() { return '<model:null:ember201:null>' } }), '<model:null:ember201:null>');
+    assert.deepEqual(
+      debugToString({
+        toString() {
+          return '<model:null:ember201:null>';
+        },
+      }),
+      '<model:null:ember201:null>'
+    );
   });
 } else {
   QUnit.test('[debugToString] should be undefined without debug mode', (assert) => {
