@@ -340,7 +340,7 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
           }
         );
 
-        let expectedMessage = backtrackingMessageFor('foo');
+        let expectedMessage = backtrackingMessageFor('foo', '.+');
 
         expectAssertion(() => {
           this.render('{{hello}}');

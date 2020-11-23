@@ -265,7 +265,7 @@ class ModifierManagerTest extends RenderingTestCase {
       }
     );
 
-    let expectedMessage = backtrackingMessageFor('foo');
+    let expectedMessage = backtrackingMessageFor('foo', '.+');
 
     expectDeprecation(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
