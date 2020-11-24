@@ -1,9 +1,5 @@
 # Ember Changelog
 
-### v3.23.1 (November 23, 2020)
-
-- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
-
 ### v3.24.0-beta.1 (November 16, 2020)
 
 - [#19224](https://github.com/emberjs/ember.js/pull/19224) [FEATURE] Add `{{page-title}}` helper to route template blueprints to implement [RFC #0654](https://github.com/emberjs/rfcs/blob/master/text/0645-add-ember-page-title-addon.md). 
@@ -20,6 +16,10 @@
 - [#19229](https://github.com/emberjs/ember.js/pull/19229) [CLEANUP] Remove the EMBER_GLIMMER_SET_COMPONENT_TEMPLATE feature flag
 - [#19238](https://github.com/emberjs/ember.js/pull/19238) [CLEANUP] Removes the `expandLocalLookup` API
 - [#19258](https://github.com/emberjs/ember.js/pull/19258) / [#19261](https://github.com/emberjs/ember.js/pull/19261) / [#19267](https://github.com/emberjs/ember.js/pull/19267) Update rendering engine to 0.65.0
+
+### v3.23.1 (November 23, 2020)
+
+- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
 
 ### v3.23.0 (November 16, 2020)
 
