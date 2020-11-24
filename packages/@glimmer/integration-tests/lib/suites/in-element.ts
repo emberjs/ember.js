@@ -5,7 +5,7 @@ import { test } from '../test-decorator';
 import { equalsElement } from '../dom/assertions';
 import { stripTight } from '../test-helpers/strings';
 import { replaceHTML } from '../dom/simple-utils';
-import { EmberishCurlyComponent } from '../components/emberish-curly';
+import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { tracked } from '../test-helpers/tracked';
 import { destroy } from '@glimmer/runtime';
 
@@ -513,9 +513,9 @@ export class InElementSuite extends RenderTest {
   'Components are destroyed'() {
     let destroyed = 0;
 
-    class DestroyMeComponent extends EmberishCurlyComponent {
-      destroy() {
-        super.destroy();
+    class DestroyMeComponent extends GlimmerishComponent {
+      willDestroy() {
+        super.willDestroy();
         destroyed++;
       }
     }

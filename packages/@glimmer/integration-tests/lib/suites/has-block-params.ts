@@ -1,6 +1,6 @@
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { EmberishGlimmerComponent } from '../components';
+import { GlimmerishComponent } from '../components';
 
 export class HasBlockParamsHelperSuite extends RenderTest {
   static suiteName = 'has-block-params';
@@ -19,7 +19,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
 
   @test({ kind: 'curly' })
   'has-block-params from within a yielded + invoked curried component'() {
-    class TestHarness extends EmberishGlimmerComponent {
+    class TestHarness extends GlimmerishComponent {
       public Foo: any;
     }
     this.registerComponent('Glimmer', 'TestHarness', '{{yield (component "Foo")}}', TestHarness);
