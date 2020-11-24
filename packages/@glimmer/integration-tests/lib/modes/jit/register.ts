@@ -1,5 +1,4 @@
 import { TestJitRegistry } from './registry';
-import { TemplateOnlyComponentManager } from '../../components/template-only';
 import { TEMPLATE_ONLY_CAPABILITIES, CURLY_CAPABILITIES } from '../../components/capabilities';
 import {
   Option,
@@ -33,10 +32,11 @@ import { TestComponentDefinitionState } from '../../components/test-component';
 import {
   CurriedComponentDefinition,
   curry,
-  setComponentTemplate,
   templateOnlyComponent,
+  TemplateOnlyComponentManager,
 } from '@glimmer/runtime';
 import { createTemplate, preprocess } from '../../compile';
+import { setComponentTemplate } from '@glimmer/manager';
 
 const TEMPLATE_ONLY_COMPONENT_MANAGER = new TemplateOnlyComponentManager();
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();

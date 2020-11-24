@@ -1,43 +1,66 @@
-import { DEBUG } from '@glimmer/env';
-import { debugToString } from '@glimmer/util';
-import { TemplateFactory } from '@glimmer/interfaces';
+import {
+  ComponentDefinition,
+  InternalComponentCapabilities,
+  Template,
+  WithStaticLayout,
+} from '@glimmer/interfaces';
+import { NULL_REFERENCE, Reference } from '@glimmer/reference';
 
-const TEMPLATES: WeakMap<object, TemplateFactory> = new WeakMap();
+const CAPABILITIES: InternalComponentCapabilities = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: false,
+  attributeHook: false,
+  elementHook: false,
+  createCaller: false,
+  dynamicScope: false,
+  updateHook: false,
+  createInstance: false,
+  wrapped: false,
+  willDestroy: false,
+};
 
-const getPrototypeOf = Object.getPrototypeOf;
-
-export function setComponentTemplate(factory: TemplateFactory, obj: object) {
-  if (DEBUG && !(obj !== null && (typeof obj === 'object' || typeof obj === 'function'))) {
-    throw new Error(`Cannot call \`setComponentTemplate\` on \`${debugToString!(obj)}\``);
+export class TemplateOnlyComponentManager
+  implements WithStaticLayout<null, TemplateOnlyComponentDefinitionState> {
+  getStaticLayout({ template }: TemplateOnlyComponentDefinitionState): Template {
+    return template;
   }
 
-  if (DEBUG && TEMPLATES.has(obj)) {
-    throw new Error(
-      `Cannot call \`setComponentTemplate\` multiple times on the same class (\`${debugToString!(
-        obj
-      )}\`)`
-    );
+  getCapabilities(): InternalComponentCapabilities {
+    return CAPABILITIES;
   }
 
-  TEMPLATES.set(obj, factory);
+  getDebugName({ name }: TemplateOnlyComponentDefinitionState): string {
+    return name;
+  }
 
-  return obj;
+  getSelf(): Reference {
+    return NULL_REFERENCE;
+  }
+
+  getDestroyable(): null {
+    return null;
+  }
 }
 
-export function getComponentTemplate(obj: object): TemplateFactory | undefined {
-  let pointer = obj;
+const MANAGER = new TemplateOnlyComponentManager();
 
-  while (pointer !== null) {
-    let template = TEMPLATES.get(pointer);
+export interface TemplateOnlyComponentDefinitionState {
+  name: string;
+  template: Template;
+}
 
-    if (template !== undefined) {
-      return template;
-    }
+export class TemplateOnlyComponentDefinition
+  implements
+    TemplateOnlyComponentDefinitionState,
+    ComponentDefinition<TemplateOnlyComponentDefinitionState, null, TemplateOnlyComponentManager> {
+  manager = MANAGER;
+  constructor(public name: string, public template: Template) {}
 
-    pointer = getPrototypeOf(pointer);
+  get state(): TemplateOnlyComponentDefinitionState {
+    return this;
   }
-
-  return undefined;
 }
 
 // This is only exported for types, don't use this class directly
@@ -73,6 +96,7 @@ export class TemplateOnlyComponent {
   @param {String} moduleName the module name that the template only component represents, this will be used for debugging purposes
   @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
+
 export function templateOnlyComponent(moduleName?: string): TemplateOnlyComponent {
   return new TemplateOnlyComponent(moduleName);
 }
