@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/global-context",
-  "version": "0.66.1",
+  "version": "0.67.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/global-context",
   "dependencies": {
     "@glimmer/env": "^0.1.7"
