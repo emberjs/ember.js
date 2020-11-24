@@ -20,6 +20,7 @@ export { default as traverse } from './lib/traversal/traverse';
 export { NodeVisitor } from './lib/traversal/visitor';
 export { cannotRemoveNode, cannotReplaceNode } from './lib/traversal/errors';
 export { default as WalkerPath } from './lib/traversal/path';
+export { isKeyword, KeywordType, KEYWORDS_TYPES } from './lib/keywords';
 
 export { SourceSlice } from './lib/source/slice';
 export { SourceSpan } from './lib/source/span';

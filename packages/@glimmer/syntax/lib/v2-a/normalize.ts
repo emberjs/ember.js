@@ -1,12 +1,8 @@
-import { Option, PresentArray } from '@glimmer/interfaces';
+import { PresentArray } from '@glimmer/interfaces';
 import { assert, assign, isPresent } from '@glimmer/util';
 
 import Printer from '../generation/printer';
-import {
-  PrecompileOptions,
-  preprocess,
-  PreprocessOptions,
-} from '../parser/tokenizer-event-handlers';
+import { PrecompileOptions, preprocess } from '../parser/tokenizer-event-handlers';
 import { SourceLocation } from '../source/location';
 import { SourceSlice } from '../source/slice';
 import { Source } from '../source/source';
@@ -28,17 +24,18 @@ import {
   SexpSyntaxContext,
 } from './loose-resolution';
 
-export function normalize(source: Source, options: GlimmerCompileOptions = {}): ASTv2.Template {
+export function normalize(source: Source, options: PrecompileOptions = {}): ASTv2.Template {
   let ast = preprocess(source, options);
 
   let normalizeOptions = assign(
     {
       strictMode: false,
+      locals: [],
     },
     options
   );
 
-  let top = SymbolTable.top();
+  let top = SymbolTable.top(normalizeOptions.strictMode ? normalizeOptions.locals : []);
   let block = new BlockContext(source, normalizeOptions, top);
   let normalizer = new StatementNormalizer(block);
 
@@ -49,19 +46,13 @@ export function normalize(source: Source, options: GlimmerCompileOptions = {}): 
   ).assertTemplate(top);
 }
 
-export interface GlimmerCompileOptions extends PrecompileOptions, PreprocessOptions {
-  id?: (src: string) => Option<string>;
-  meta?: object;
-  strictMode?: boolean;
-}
-
 /**
  * A `BlockContext` represents the block that a particular AST node is contained inside of.
  *
  * `BlockContext` is aware of template-wide options (such as strict mode), as well as the bindings
  * that are in-scope within that block.
  *
- * Concretely, it has the `GlimmerCompileOptions` and current `SymbolTable`, and provides
+ * Concretely, it has the `PrecompileOptions` and current `SymbolTable`, and provides
  * facilities for working with those options.
  *
  * `BlockContext` is stateless.
@@ -71,7 +62,7 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
 
   constructor(
     readonly source: Source,
-    private readonly options: GlimmerCompileOptions,
+    private readonly options: PrecompileOptions,
     readonly table: Table
   ) {
     this.builder = new Builder();
@@ -268,24 +259,27 @@ class ExpressionNormalizer {
    * the behavior of free variables.
    */
   private ref(head: ASTv1.PathHead, resolution: ASTv2.FreeVarResolution): ASTv2.VariableReference {
-    let offsets = this.block.loc(head.loc);
+    let { block } = this;
+    let { builder, table } = block;
+    let offsets = block.loc(head.loc);
 
     switch (head.type) {
       case 'ThisHead':
-        return this.block.builder.self(offsets);
+        return builder.self(offsets);
       case 'AtHead': {
-        let symbol = this.block.table.allocateNamed(head.name);
-        return this.block.builder.at(head.name, symbol, offsets);
+        let symbol = table.allocateNamed(head.name);
+        return builder.at(head.name, symbol, offsets);
       }
       case 'VarHead': {
-        if (this.block.hasBinding(head.name)) {
-          let symbol = this.block.table.get(head.name);
-          return this.block.builder.localVar(head.name, symbol, offsets);
+        if (block.hasBinding(head.name)) {
+          let symbol = table.isRoot ? table.allocateTemplateLocal(head.name) : table.get(head.name);
+
+          return block.builder.localVar(head.name, symbol, table.isRoot, offsets);
         } else {
-          let symbol = this.block.table.allocateFree(head.name);
-          return this.block.builder.freeVar({
+          let symbol = block.table.allocateFree(head.name);
+          return block.builder.freeVar({
             name: head.name,
-            context: this.block.strict ? ASTv2.STRICT_RESOLUTION : resolution,
+            context: block.strict ? ASTv2.STRICT_RESOLUTION : resolution,
             symbol,
             loc: offsets,
           });
@@ -604,11 +598,11 @@ class ElementNormalizer {
    *
    * 1. If the variable is an `@arg`, return an `AtHead`
    * 2. If the variable is `this`, return a `ThisHead`
-   * 3. If the variable is in the current scope, return a `LocalVarHead`
+   * 3. If the variable is in the current scope:
+   *   a. If the scope is the root scope, then return a Free `LocalVarHead`
+   *   b. Else, return a standard `LocalVarHead`
    * 4. If the tag name is a path and the variable is not in the current scope, Syntax Error
-   * 5. If the variable is uppercase:
-   *   a. if strict mode, return a FreeVar(Strict)
-   *   b. otherwise, return a FreeVar(ResolveAsComponentHead)
+   * 5. If the variable is uppercase return a FreeVar(ResolveAsComponentHead)
    * 6. Otherwise, return `'ElementHead'`
    */
   private classifyTag(

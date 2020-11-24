@@ -334,6 +334,8 @@ export interface PrecompileOptions extends PreprocessOptions {
 }
 
 export interface PreprocessOptions {
+  strictMode?: boolean;
+  locals?: string[];
   meta?: {
     moduleName?: string;
   };
@@ -411,6 +413,10 @@ export function preprocess(
   };
 
   let program = new TokenizerEventHandlers(source, entityParser, mode).acceptTemplate(ast);
+
+  if (options.strictMode) {
+    program.blockParams = options.locals ?? [];
+  }
 
   if (options && options.plugins && options.plugins.ast) {
     for (let i = 0, l = options.plugins.ast.length; i < l; i++) {

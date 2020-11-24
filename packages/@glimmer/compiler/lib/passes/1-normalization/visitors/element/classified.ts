@@ -5,8 +5,9 @@ import { Ok, Result, ResultArray } from '../../../../shared/result';
 import { getAttrNamespace } from '../../../../utils';
 import * as mir from '../../../2-encoding/mir';
 import { NormalizationState } from '../../context';
+import { MODIFIER_KEYWORDS } from '../../keywords';
 import { assertIsValidHelper, isHelperInvocation } from '../../utils/is-node';
-import { VISIT_EXPRS } from '../expressions';
+import { convertPathToCallIfKeyword, VISIT_EXPRS } from '../expressions';
 
 export type ValidAttr = mir.StaticAttr | mir.DynamicAttr | mir.SplatAttr;
 
@@ -56,7 +57,7 @@ export class ClassifiedElement {
       );
     }
 
-    return VISIT_EXPRS.visit(rawValue, this.state).mapOk((value) => {
+    return VISIT_EXPRS.visit(convertPathToCallIfKeyword(rawValue), this.state).mapOk((value) => {
       let isTrusting = attr.trusting;
 
       return new mir.DynamicAttr({
@@ -75,6 +76,12 @@ export class ClassifiedElement {
   private modifier(modifier: ASTv2.ElementModifier): Result<mir.Modifier> {
     if (isHelperInvocation(modifier)) {
       assertIsValidHelper(modifier, 'modifier');
+    }
+
+    let translated = MODIFIER_KEYWORDS.translate(modifier, this.state);
+
+    if (translated !== null) {
+      return translated;
     }
 
     let head = VISIT_EXPRS.visit(modifier.callee, this.state);
