@@ -1166,6 +1166,39 @@ moduleFor(
       checkClick('button', 4, false);
     }
 
+    ['@test it should not trigger action on a disabled button']() {
+      let fooCallCount = 0;
+
+      let ExampleComponent = Component.extend({
+        actions: {
+          foo() {
+            fooCallCount++;
+          },
+        },
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: '<button {{action "foo"}} disabled><span>Click me</span></button>',
+      });
+
+      this.render('{{example-component}}');
+
+      this.assert.equal(fooCallCount, 0, 'foo has not been called');
+
+      runTask(() => {
+        this.element.querySelector('button').click();
+      });
+
+      this.assert.equal(fooCallCount, 0, 'foo has not been called');
+
+      runTask(() => {
+        this.element.querySelector('span').click();
+      });
+
+      this.assert.equal(fooCallCount, 0, 'foo has not been called');
+    }
+
     ['@test it can trigger actions for keyboard events']() {
       let showCalled = false;
 
