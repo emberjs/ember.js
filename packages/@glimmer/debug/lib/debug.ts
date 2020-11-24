@@ -2,7 +2,6 @@ import {
   CompileTimeConstants,
   Recast,
   RuntimeOp,
-  HandleResolver,
   Dict,
   Maybe,
   TemplateCompilationContext,
@@ -36,7 +35,6 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
       opcode.offset = i;
       let [name, params] = debug(
         context.program.constants as Recast<CompileTimeConstants, DebugConstants>,
-        context.program.resolver,
         opcode,
         opcode.isMachine
       )!;
@@ -90,7 +88,6 @@ function json(param: unknown) {
 
 export function debug(
   c: DebugConstants,
-  resolver: HandleResolver,
   op: RuntimeOp,
   isMachine: 0 | 1
 ): [string, Dict] | undefined {
@@ -113,7 +110,7 @@ export function debug(
           out[operand.name] = actualOperand;
           break;
         case 'handle':
-          out[operand.name] = resolver.resolve(actualOperand);
+          out[operand.name] = c.getValue(actualOperand);
           break;
         case 'str':
         case 'option-str':

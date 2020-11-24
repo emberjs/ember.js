@@ -1,4 +1,4 @@
-import { CompileTimeComponent, ComponentDefinition } from '@glimmer/interfaces';
+import { ComponentDefinition } from '@glimmer/interfaces';
 import {
   test,
   suite,
@@ -14,12 +14,6 @@ class OwnerJitRuntimeResolver extends TestJitRuntimeResolver {
     if (typeof owner === 'function') owner();
 
     return super.lookupComponent(name, owner);
-  }
-
-  lookupCompileTimeComponent(name: string, owner: () => void): CompileTimeComponent | null {
-    if (typeof owner === 'function') owner();
-
-    return super.lookupCompileTimeComponent(name, owner);
   }
 }
 
