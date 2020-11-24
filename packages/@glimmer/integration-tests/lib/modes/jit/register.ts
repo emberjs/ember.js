@@ -14,11 +14,7 @@ import {
   EmberishCurlyComponent,
   EmberishCurlyComponentManager,
 } from '../../components/emberish-curly';
-import {
-  EmberishGlimmerComponent,
-  EMBERISH_GLIMMER_CAPABILITIES,
-  EmberishGlimmerComponentManager,
-} from '../../components/emberish-glimmer';
+import { GlimmerishComponent } from '../../components/emberish-glimmer';
 import { UserHelper, createHelperRef } from '../../helpers';
 import {
   TestModifierConstructor,
@@ -36,10 +32,10 @@ import {
   TemplateOnlyComponentManager,
 } from '@glimmer/runtime';
 import { createTemplate, preprocess } from '../../compile';
-import { setComponentTemplate } from '@glimmer/manager';
+import { getInternalComponentManager, setComponentTemplate } from '@glimmer/manager';
+import { expect } from '@glimmer/util';
 
 const TEMPLATE_ONLY_COMPONENT_MANAGER = new TemplateOnlyComponentManager();
-const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
 
 export function registerTemplateOnlyComponent(
@@ -84,15 +80,20 @@ export function registerEmberishGlimmerComponent(
   if (name.indexOf('-') !== -1) {
     throw new Error('DEPRECATED: dasherized components');
   }
-  let ComponentClass = Component || class extends EmberishGlimmerComponent {};
+  let ComponentClass = Component || class extends GlimmerishComponent {};
+
+  let manager = expect(
+    getInternalComponentManager(undefined, ComponentClass),
+    'TEST BUG: expected a component manager'
+  );
 
   registerSomeComponent(
     registry,
     name,
-    EMBERISH_GLIMMER_COMPONENT_MANAGER,
+    manager,
     createTemplate(layoutSource),
     ComponentClass,
-    EMBERISH_GLIMMER_CAPABILITIES
+    manager.getCapabilities({})
   );
 }
 
