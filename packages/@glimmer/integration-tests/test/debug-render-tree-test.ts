@@ -2,7 +2,9 @@ import {
   CapturedArguments,
   CapturedRenderNode,
   CustomRenderNode,
+  Dict,
   InternalComponentManager,
+  Owner,
 } from '@glimmer/interfaces';
 import { expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
@@ -13,8 +15,7 @@ import {
   BaseEnv,
   JitRenderDelegate,
   EmberishCurlyComponent,
-  EmberishGlimmerComponent,
-  EmberishGlimmerArgs,
+  GlimmerishComponent,
   TestComponentDefinitionState,
   createTemplate,
   TEMPLATE_ONLY_CAPABILITIES,
@@ -200,7 +201,7 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
-  @test 'emberish glimmer components'() {
+  @test 'glimmerish components'() {
     this.registerComponent('Glimmer', 'HelloWorld', 'Hello World');
 
     this.render(
@@ -215,7 +216,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: EmberishGlimmerComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerishComponent) => instance.args.arg === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
@@ -229,7 +230,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: EmberishGlimmerComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerishComponent) => instance.args.arg === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -238,7 +239,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
-        instance: (instance: EmberishGlimmerComponent) => (instance as any).arg === 'second',
+        instance: (instance: GlimmerishComponent) => instance.args.arg === 'second',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
@@ -252,7 +253,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: EmberishGlimmerComponent) => (instance as any).arg === 'first',
+        instance: (instance: GlimmerishComponent) => instance.args.arg === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -433,9 +434,9 @@ class DebugRenderTreeTest extends RenderTest {
       'Glimmer',
       'HelloWorld',
       'Hello World',
-      class extends EmberishGlimmerComponent {
-        constructor(args: EmberishGlimmerArgs) {
-          super(args);
+      class extends GlimmerishComponent {
+        constructor(owner: Owner, args: Dict) {
+          super(owner, args);
           throw new Error('oops!');
         }
       }

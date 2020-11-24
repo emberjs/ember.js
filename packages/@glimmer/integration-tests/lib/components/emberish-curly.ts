@@ -14,7 +14,6 @@ import {
   Dict,
   InternalComponentCapabilities,
 } from '@glimmer/interfaces';
-import { Attrs, AttrsDiff } from './emberish-glimmer';
 import {
   createConstRef,
   createPrimitiveRef,
@@ -29,6 +28,9 @@ import { TestComponentDefinitionState } from './test-component';
 import { registerDestructor, reifyNamed, reifyPositional } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
 import { TestJitRuntimeResolver } from '../modes/jit/resolver';
+
+export type Attrs = Dict;
+export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
 
 export interface EmberishCurlyComponentFactory
   extends TestComponentConstructor<EmberishCurlyComponent> {
