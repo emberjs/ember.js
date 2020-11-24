@@ -1,3 +1,24 @@
+## v0.67.0 (2020-11-24)
+
+#### :boom: Breaking Change
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/syntax`
+  * [#1206](https://github.com/glimmerjs/glimmer-vm/pull/1206) [BUGFIX] Ensures keywords and elements can always be shadowed ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/encoder`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`
+  * [#1171](https://github.com/glimmerjs/glimmer-vm/pull/1171) Refactor resolver for strict ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1209](https://github.com/glimmerjs/glimmer-vm/pull/1209) Ensure `<output form="some-value">` works properly ([@KrishnaRPatel](https://github.com/KrishnaRPatel))
+* `@glimmer/validator`
+  * [#1205](https://github.com/glimmerjs/glimmer-vm/pull/1205) Ensure `@tracked` assertion can be made a deprecation. ([@rwjblue](https://github.com/rwjblue))
+* `@glimmer/syntax`
+  * [#1204](https://github.com/glimmerjs/glimmer-vm/pull/1204) Ensure `loc` is populated by `builders.element(...)` ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Krishna Patel ([@KrishnaRPatel](https://github.com/KrishnaRPatel))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
 ## v0.66.1 (2020-11-20)
 
 #### :bug: Bug Fix
