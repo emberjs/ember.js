@@ -62,37 +62,41 @@ export const enum SexpOpcodes {
   Concat = 29,
 
   // Get
+  // Get a local value via symbol
   GetSymbol = 30, // GetPath + 0-2,
+  // Template symbol are values that are in scope in the template in strict mode
+  GetTemplateSymbol = 32,
+  // Free variables are only keywords in strict mode
   GetStrictFree = 31,
 
   // falls back to `this.` (or locals in the case of partials), but
   // never turns into a component or helper invocation
-  GetFreeAsFallback = 32,
+  GetFreeAsFallback = 33,
   // `{{x}}` in append position (might be a helper or component invocation, otherwise fall back to `this`)
-  GetFreeAsComponentOrHelperHeadOrThisFallback = 33,
+  GetFreeAsComponentOrHelperHeadOrThisFallback = 34,
   // a component or helper (`{{<expr> x}}` in append position)
-  GetFreeAsComponentOrHelperHead = 34,
+  GetFreeAsComponentOrHelperHead = 35,
   // a helper or `this` fallback `attr={{x}}`
-  GetFreeAsHelperHeadOrThisFallback = 35,
+  GetFreeAsHelperHeadOrThisFallback = 36,
   // a call head `(x)`
-  GetFreeAsHelperHead = 36,
-  GetFreeAsModifierHead = 37,
-  GetFreeAsComponentHead = 38,
+  GetFreeAsHelperHead = 37,
+  GetFreeAsModifierHead = 38,
+  GetFreeAsComponentHead = 39,
 
   // Keyword Statements
-  InElement = 39,
-  If = 40,
-  Unless = 41,
-  Each = 42,
-  With = 43,
-  Let = 44,
-  WithDynamicVars = 45,
-  InvokeComponent = 46,
+  InElement = 40,
+  If = 41,
+  Unless = 42,
+  Each = 43,
+  With = 44,
+  Let = 45,
+  WithDynamicVars = 46,
+  InvokeComponent = 47,
 
   // Keyword Expressions
-  HasBlock = 47,
-  HasBlockParams = 48,
-  CurryComponent = 49,
+  HasBlock = 48,
+  HasBlockParams = 49,
+  CurryComponent = 50,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -156,6 +160,7 @@ export namespace Expressions {
   export type Hash = Core.Hash;
 
   export type GetSymbol = [SexpOpcodes.GetSymbol, number];
+  export type GetTemplateSymbol = [SexpOpcodes.GetTemplateSymbol, number];
   export type GetStrictFree = [SexpOpcodes.GetStrictFree, number];
   export type GetFreeAsFallback = [SexpOpcodes.GetFreeAsFallback, number];
   export type GetFreeAsComponentOrHelperHeadOrThisFallback = [
@@ -180,9 +185,10 @@ export namespace Expressions {
     | GetFreeAsModifierHead
     | GetFreeAsComponentHead;
   export type GetFree = GetStrictFree | GetContextualFree;
-  export type GetVar = GetSymbol | GetFree;
+  export type GetVar = GetSymbol | GetTemplateSymbol | GetFree;
 
   export type GetPathSymbol = [SexpOpcodes.GetSymbol, number, Path];
+  export type GetPathTemplateSymbol = [SexpOpcodes.GetTemplateSymbol, number, Path];
   export type GetPathStrictFree = [SexpOpcodes.GetStrictFree, number, Path];
   export type GetPathFreeAsFallback = [SexpOpcodes.GetFreeAsFallback, number, Path];
   export type GetPathFreeAsComponentOrHelperHeadOrThisFallback = [
@@ -213,7 +219,7 @@ export namespace Expressions {
     | GetPathFreeAsModifierHead
     | GetPathFreeAsComponentHead;
   export type GetPathFree = GetPathStrictFree | GetPathContextualFree;
-  export type GetPath = GetPathSymbol | GetPathFree;
+  export type GetPath = GetPathSymbol | GetPathTemplateSymbol | GetPathFree;
 
   export type Get = GetVar | GetPath;
 

@@ -205,6 +205,10 @@ export default class WireFormatDebugger {
           }
         }
 
+        case Op.GetTemplateSymbol: {
+          return ['get-template-symbol', opcode[1], opcode[2]];
+        }
+
         case Op.If:
           return [
             'if',

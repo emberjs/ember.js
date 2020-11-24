@@ -18,8 +18,9 @@ export class ExpressionEncoder {
       case 'PathExpression':
         return this.PathExpression(expr);
       case 'Arg':
-      case 'Local':
         return [SexpOpcodes.GetSymbol, expr.symbol];
+      case 'Local':
+        return this.Local(expr);
       case 'This':
         return [SexpOpcodes.GetSymbol, 0];
       case 'Free':
@@ -66,18 +67,14 @@ export class ExpressionEncoder {
     ];
   }
 
-  Free({
+  Local({
+    isTemplateLocal,
     symbol,
-    context,
-  }: mir.GetFreeWithContext):
-    | WireFormat.Expressions.GetContextualFree
-    | WireFormat.Expressions.GetStrictFree {
-    return [context.resolution(), symbol];
+  }: ASTv2.LocalVarReference):
+    | WireFormat.Expressions.GetSymbol
+    | WireFormat.Expressions.GetTemplateSymbol {
+    return [isTemplateLocal ? SexpOpcodes.GetTemplateSymbol : SexpOpcodes.GetSymbol, symbol];
   }
-
-  // GetFree({ symbol }: mir.GetFree): WireFormat.Expressions.GetStrictFree {
-  //   return [SexpOpcodes.GetStrictFree, symbol];
-  // }
 
   GetWithResolver({ symbol }: mir.GetWithResolver): WireFormat.Expressions.GetContextualFree {
     return [SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, symbol];

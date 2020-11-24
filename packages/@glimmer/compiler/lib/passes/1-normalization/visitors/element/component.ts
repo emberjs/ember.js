@@ -3,7 +3,7 @@ import { ASTv2 } from '@glimmer/syntax';
 import { Result } from '../../../../shared/result';
 import * as mir from '../../../2-encoding/mir';
 import { NormalizationState } from '../../context';
-import { VISIT_EXPRS } from '../expressions';
+import { convertPathToCallIfKeyword, VISIT_EXPRS } from '../expressions';
 import { VISIT_STMTS } from '../statements';
 import { Classified, ClassifiedElement, PreparedArgs } from './classified';
 
@@ -15,7 +15,7 @@ export class ClassifiedComponent implements Classified {
   arg(attr: ASTv2.ComponentArg, { state }: ClassifiedElement): Result<mir.NamedArgument> {
     let name = attr.name;
 
-    return VISIT_EXPRS.visit(attr.value, state).mapOk(
+    return VISIT_EXPRS.visit(convertPathToCallIfKeyword(attr.value), state).mapOk(
       (value) =>
         new mir.NamedArgument({
           loc: attr.loc,
