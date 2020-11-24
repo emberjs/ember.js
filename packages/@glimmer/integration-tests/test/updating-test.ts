@@ -1,13 +1,6 @@
 import { Option } from '@glimmer/interfaces';
 import { createConstRef, createPrimitiveRef, createComputeRef } from '@glimmer/reference';
-import {
-  RenderTest,
-  test,
-  jitSuite,
-  JitRenderDelegate,
-  EmberishGlimmerComponent,
-  tracked,
-} from '..';
+import { RenderTest, test, jitSuite, JitRenderDelegate, GlimmerishComponent, tracked } from '..';
 import { SafeString, registerDestructor } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -1891,8 +1884,8 @@ class UpdatingTest extends RenderTest {
       'Glimmer',
       'DestroyableComponent',
       '{{@item}}',
-      class extends EmberishGlimmerComponent {
-        destroy() {
+      class extends GlimmerishComponent {
+        willDestroy() {
           destroyCount++;
         }
       }
@@ -1929,8 +1922,8 @@ class UpdatingTest extends RenderTest {
       'Glimmer',
       'DestroyableComponent',
       '{{@item}}',
-      class extends EmberishGlimmerComponent {
-        destroy() {
+      class extends GlimmerishComponent {
+        willDestroy() {
           destroyCount++;
         }
       }

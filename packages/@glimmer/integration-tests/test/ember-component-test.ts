@@ -6,23 +6,99 @@ import {
   jitSuite,
   assertElement,
   firstElementChild,
-  HookedComponent,
-  ComponentHooks,
   equalsElement,
   classes,
   regex,
   EmberishCurlyComponent,
   stripTight,
   elementId,
-  inspectHooks,
-  EmberishGlimmerComponent,
-  assertElementShape,
+  GlimmerishComponent,
   RenderTest,
   JitRenderDelegate,
   createTemplate,
-  EmberishGlimmerArgs,
   EmberishCurlyComponentFactory,
 } from '..';
+
+interface ComponentHooks {
+  didInitAttrs: number;
+  didUpdateAttrs: number;
+  didReceiveAttrs: number;
+  willInsertElement: number;
+  willUpdate: number;
+  willRender: number;
+  didInsertElement: number;
+  didUpdate: number;
+  didRender: number;
+}
+
+interface HookedComponent {
+  hooks: ComponentHooks;
+}
+
+function inspectHooks<T extends EmberishCurlyComponentFactory>(ComponentClass: T): T {
+  return (class extends (ComponentClass as any) {
+    constructor() {
+      super();
+
+      (this as any).hooks = {
+        didInitAttrs: 0,
+        didUpdateAttrs: 0,
+        didReceiveAttrs: 0,
+        willInsertElement: 0,
+        willUpdate: 0,
+        willRender: 0,
+        didInsertElement: 0,
+        didUpdate: 0,
+        didRender: 0,
+      };
+    }
+
+    didInitAttrs(this: any) {
+      super.didInitAttrs(...arguments);
+      this.hooks['didInitAttrs']++;
+    }
+
+    didUpdateAttrs(this: any) {
+      super.didUpdateAttrs(...arguments);
+      this.hooks['didUpdateAttrs']++;
+    }
+
+    didReceiveAttrs(this: any) {
+      super.didReceiveAttrs(...arguments);
+      this.hooks['didReceiveAttrs']++;
+    }
+
+    willInsertElement(this: any) {
+      super.willInsertElement(...arguments);
+      this.hooks['willInsertElement']++;
+    }
+
+    willUpdate(this: any) {
+      super.willUpdate(...arguments);
+      this.hooks['willUpdate']++;
+    }
+
+    willRender(this: any) {
+      super.willRender(...arguments);
+      this.hooks['willRender']++;
+    }
+
+    didInsertElement(this: any) {
+      super.didInsertElement(...arguments);
+      this.hooks['didInsertElement']++;
+    }
+
+    didUpdate(this: any) {
+      super.didUpdate(...arguments);
+      this.hooks['didUpdate']++;
+    }
+
+    didRender(this: any) {
+      super.didRender(...arguments);
+      this.hooks['didRender']++;
+    }
+  } as any) as T;
+}
 
 function assertFired(component: HookedComponent, name: string, count = 1) {
   let hooks = component.hooks;
@@ -608,7 +684,7 @@ class CurlyScopeTest extends CurlyTest {
 
   @test
   'correct scope - self'() {
-    class FooBar extends EmberishGlimmerComponent {
+    class FooBar extends GlimmerishComponent {
       public foo = 'foo';
       public bar = 'bar';
     }
@@ -1524,139 +1600,6 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     assertFired(instance, 'didUpdate', 1);
     assertFired(instance, 'didRender', 2);
   }
-
-  @test
-  'Glimmer component hooks'() {
-    let instance: (NonBlock & HookedComponent) | undefined;
-
-    class NonBlock extends EmberishGlimmerComponent {
-      constructor(args: EmberishGlimmerArgs) {
-        super(args);
-        instance = this as any;
-      }
-    }
-
-    this.registerComponent(
-      'Glimmer',
-      'NonBlock',
-      '<div ...attributes>In layout - someProp: {{@someProp}}</div>',
-      inspectHooks(NonBlock as any)
-    );
-
-    this.render('<NonBlock @someProp={{someProp}} />', { someProp: 'wycats' });
-
-    assert.ok(instance, 'instance is created');
-
-    if (instance === undefined) {
-      return;
-    }
-
-    assertFired(instance, 'didReceiveAttrs');
-    assertFired(instance, 'willRender');
-    assertFired(instance, 'didInsertElement');
-    assertFired(instance, 'didRender');
-
-    assertElementShape(
-      assertElement(this.element.firstChild),
-      'div',
-      'In layout - someProp: wycats'
-    );
-
-    this.rerender({
-      someProp: 'tomdale',
-    });
-
-    assertElementShape(
-      assertElement(this.element.firstChild),
-      'div',
-      'In layout - someProp: tomdale'
-    );
-
-    assertFired(instance, 'didReceiveAttrs', 2);
-    assertFired(instance, 'willUpdate');
-    assertFired(instance, 'willRender', 2);
-    assertFired(instance, 'didUpdate');
-    assertFired(instance, 'didRender', 2);
-
-    this.rerender({ someProp: 'wycats' });
-
-    assertElementShape(
-      assertElement(this.element.firstChild),
-      'div',
-      'In layout - someProp: wycats'
-    );
-
-    assertFired(instance, 'didReceiveAttrs', 3);
-    assertFired(instance, 'willUpdate', 2);
-    assertFired(instance, 'willRender', 3);
-    assertFired(instance, 'didUpdate', 2);
-    assertFired(instance, 'didRender', 3);
-  }
-
-  @test
-  'Glimmer component hooks (force recompute)'() {
-    let instance: (NonBlock & HookedComponent) | undefined;
-
-    class NonBlock extends EmberishGlimmerComponent {
-      constructor(args: EmberishGlimmerArgs) {
-        super(args);
-        instance = this as any;
-      }
-    }
-
-    this.registerComponent(
-      'Glimmer',
-      'NonBlock',
-      '<div ...attributes>In layout - someProp: {{@someProp}}</div>',
-      inspectHooks(NonBlock as any)
-    );
-
-    this.render('<NonBlock @someProp="wycats" />');
-
-    assert.ok(instance, 'instance is created');
-
-    if (instance === undefined) {
-      return;
-    }
-
-    assertFired(instance, 'didReceiveAttrs', 1);
-    assertFired(instance, 'willRender', 1);
-    assertFired(instance, 'didInsertElement', 1);
-    assertFired(instance, 'didRender', 1);
-
-    assertElementShape(
-      assertElement(this.element.firstChild),
-      'div',
-      'In layout - someProp: wycats'
-    );
-
-    this.rerender();
-
-    assertElementShape(
-      assertElement(this.element.firstChild),
-      'div',
-      'In layout - someProp: wycats'
-    );
-
-    assertFired(instance, 'didReceiveAttrs', 1);
-    assertFired(instance, 'willRender', 1);
-    assertFired(instance, 'didRender', 1);
-
-    instance.recompute();
-    this.rerender();
-
-    assertElementShape(
-      assertElement(this.element.firstChild),
-      'div',
-      'In layout - someProp: wycats'
-    );
-
-    assertFired(instance, 'didReceiveAttrs', 2);
-    assertFired(instance, 'willUpdate', 1);
-    assertFired(instance, 'willRender', 2);
-    assertFired(instance, 'didUpdate', 1);
-    assertFired(instance, 'didRender', 2);
-  }
 }
 
 class CurlyTeardownTest extends CurlyTest {
@@ -1696,9 +1639,9 @@ class CurlyTeardownTest extends CurlyTest {
   'glimmer components are destroyed'() {
     let destroyed = 0;
 
-    class DestroyMeComponent extends EmberishGlimmerComponent {
-      destroy() {
-        super.destroy();
+    class DestroyMeComponent extends GlimmerishComponent {
+      willDestroy() {
+        super.willDestroy();
         destroyed++;
       }
     }
@@ -1939,9 +1882,9 @@ class CurlyTeardownTest extends CurlyTest {
     let glimmerDestroyed = false;
     let curlyDestroyed = false;
 
-    class DestroyMe1Component extends EmberishGlimmerComponent {
-      destroy(this: EmberishGlimmerComponent) {
-        super.destroy();
+    class DestroyMe1Component extends GlimmerishComponent {
+      willDestroy(this: GlimmerishComponent) {
+        super.willDestroy();
         glimmerDestroyed = true;
       }
     }
@@ -2189,46 +2132,6 @@ class CurlyBoundsTrackingTest extends CurlyTest {
       instance.bounds.lastNode(),
       document.querySelector('#before-last-node')!.nextSibling
     );
-  }
-
-  @test
-  'it works for unwrapped components'() {
-    let instance: FooBar | undefined;
-
-    class FooBar extends EmberishGlimmerComponent {
-      constructor(args: EmberishGlimmerArgs) {
-        super(args);
-        instance = this;
-      }
-    }
-
-    this.registerComponent(
-      'Glimmer',
-      'FooBar',
-      '<!-- ohhh --><span id="ralph-the-wrench" ...attributes>foo bar!</span>',
-      FooBar
-    );
-
-    this.render('zomg <FooBar /> wow');
-
-    assert.ok(instance, 'instance is created');
-
-    if (instance === undefined) {
-      return;
-    }
-
-    assertElementShape(
-      assertElement(firstElementChild(this.element)),
-      'span',
-      { id: 'ralph-the-wrench' },
-      'foo bar!'
-    );
-
-    let ralphy = document.getElementById('ralph-the-wrench')!;
-
-    assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
-    assert.equal(instance.bounds.firstNode(), ralphy.previousSibling);
-    assert.equal(instance.bounds.lastNode(), ralphy);
   }
 
   @test
