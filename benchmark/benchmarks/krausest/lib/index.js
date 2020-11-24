@@ -1,8 +1,6 @@
 import { createBenchmark } from '@glimmer/benchmark-env';
 
-import ApplicationTemplate from './components/Application.hbs';
 import Application from './components/Application';
-import RowTemplate from './components/Row.hbs';
 import Row from './components/Row';
 import buildData from './utils/data';
 
@@ -13,8 +11,8 @@ import buildData from './utils/data';
 export default async function render(element, isInteractive) {
   const benchmark = createBenchmark();
 
-  benchmark.basicComponent('Row', RowTemplate, Row);
-  benchmark.basicComponent('Application', ApplicationTemplate, Application);
+  benchmark.basicComponent('Row', Row);
+  benchmark.basicComponent('Application', Application);
 
   /** @type {{[name: string]: any}} */
   const args = {

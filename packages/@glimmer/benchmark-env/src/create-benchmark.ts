@@ -22,7 +22,7 @@ export default function createBenchmark(): Benchmark {
     templateOnlyComponent: (name) => {
       registry.registerComponent(name, null, TEMPLATE_ONLY_COMPONENT_MANAGER);
     },
-    basicComponent: (name, _template, component) => {
+    basicComponent: (name, component) => {
       registry.registerComponent(name, component, basicComponentManager);
     },
     render: registry.render,
