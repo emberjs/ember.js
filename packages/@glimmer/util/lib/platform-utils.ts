@@ -2,6 +2,8 @@ import { Maybe } from '@glimmer/interfaces';
 
 export type Factory<T> = new (...args: unknown[]) => T;
 
+export const HAS_NATIVE_PROXY = typeof Proxy === 'function';
+
 export const HAS_NATIVE_SYMBOL = (function () {
   if (typeof Symbol !== 'function') {
     return false;
