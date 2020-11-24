@@ -6,7 +6,6 @@ import {
   InternalModifierManager,
   InternalComponentManager,
   InternalComponentCapabilities,
-  ComponentDefinition,
   PartialDefinition,
   TemplateFactory,
 } from '@glimmer/interfaces';
@@ -22,7 +21,6 @@ import {
   TestModifierManager,
 } from '../../modifiers';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
-import { TestJitRuntimeResolver } from './resolver';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { TestComponentDefinitionState } from '../../components/test-component';
 import {
@@ -146,22 +144,6 @@ export function registerPartial(
   return definition;
 }
 
-export function resolveHelper(
-  resolver: TestJitRuntimeResolver,
-  helperName: string
-): Option<GlimmerHelper> {
-  let handle = resolver.lookupHelper(helperName);
-  return typeof handle === 'number' ? resolver.resolve<GlimmerHelper>(handle) : null;
-}
-
-export function resolvePartial(
-  resolver: TestJitRuntimeResolver,
-  partialName: string
-): Option<PartialDefinition> {
-  let handle = resolver.lookupPartial(partialName);
-  return typeof handle === 'number' ? resolver.resolve<PartialDefinition>(handle) : null;
-}
-
 export function registerComponent<K extends ComponentKind>(
   registry: TestJitRegistry,
   type: K,
@@ -220,14 +202,12 @@ function registerSomeComponent(
 }
 
 export function componentHelper(
-  resolver: TestJitRuntimeResolver,
   registry: TestJitRegistry,
   name: string
 ): Option<CurriedComponentDefinition> {
-  let handle = registry.lookupComponentHandle(name);
+  let definition = registry.lookupComponent(name);
 
-  if (handle === null) return null;
+  if (definition === null) return null;
 
-  let spec = resolver.resolve<ComponentDefinition>(handle);
-  return curry(spec);
+  return curry(definition);
 }

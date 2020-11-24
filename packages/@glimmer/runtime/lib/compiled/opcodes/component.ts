@@ -144,7 +144,7 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _owner }) => {
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
-  let definition = vm.runtime.resolver.resolve<ComponentDefinition>(handle);
+  let definition = vm[CONSTANTS].getValue<ComponentDefinition>(handle);
   assert(!!definition, `Missing component for ${handle}`);
 
   let { manager } = definition;

@@ -60,7 +60,7 @@ export class AppendOpcodes {
     if (LOCAL_SHOULD_LOG) {
       let pos = vm[INNER_VM].fetchRegister($pc) - opcode.size;
 
-      [opName, params] = debug(vm[CONSTANTS], vm.runtime.resolver, opcode, opcode.isMachine)!;
+      [opName, params] = debug(vm[CONSTANTS], opcode, opcode.isMachine)!;
 
       // console.log(`${typePos(vm['pc'])}.`);
       LOCAL_LOGGER.log(`${pos}. ${logOpcode(opName, params)}`);
