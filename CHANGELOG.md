@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.22.2 (November 25, 2020)
+
+- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
+- [#19263](https://github.com/emberjs/ember.js/pull/19263) [BUGFIX] Remove `@dependentKeyCompat` assertion
+
 ### v3.22.1 (November 10, 2020)
 
 - [#19193](https://github.com/emberjs/ember.js/pull/19193) [BUGFIX] Ensure `@ember/component` user lifecycle hooks are untracked
