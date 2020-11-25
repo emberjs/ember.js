@@ -1,4 +1,4 @@
-import { Dict } from '@glimmer/interfaces';
+import { Dict, Template } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
 
 /**
@@ -27,6 +27,7 @@ export interface Benchmark {
    */
   basicComponent<TComponent extends object = object>(
     name: string,
+    _template: Template,
     component: new (args: ComponentArgs) => TComponent
   ): void;
 
