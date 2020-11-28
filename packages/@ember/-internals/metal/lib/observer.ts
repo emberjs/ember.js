@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import { schedule } from '@ember/runloop';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor } from '@glimmer/destroyable';
 import { CURRENT_TAG, Tag, tagMetaFor, validateTag, valueForTag } from '@glimmer/validator';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';

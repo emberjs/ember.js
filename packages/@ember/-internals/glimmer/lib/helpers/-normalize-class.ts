@@ -1,8 +1,9 @@
 import { dasherize } from '@ember/string';
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   let positional = args.positional.capture();
 
   return createComputeRef(() => {
@@ -18,4 +19,4 @@ export default function (args: VMArguments) {
       return String(value);
     }
   });
-}
+});

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';
@@ -584,14 +585,24 @@ moduleFor(
       this.assertText('hello Alex');
     }
 
-    ['@test raises an assertion when component path is not a component name (static)']() {
-      expectAssertion(() => {
+    ['@test raises an assertion when component path is not a component name (static)'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
         this.render('{{component (component "not-a-component")}}');
       }, 'Could not find component named "not-a-component" (no component or template with that name was found)');
     }
 
-    ['@test raises an assertion when component path is not a component name (dynamic)']() {
-      expectAssertion(() => {
+    ['@test raises an assertion when component path is not a component name (dynamic)'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
         this.render('{{component (component compName)}}', {
           compName: 'not-a-component',
         });

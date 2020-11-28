@@ -7,6 +7,7 @@ import { assign } from '@ember/polyfills';
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef } from '@glimmer/reference';
 import { reifyNamed } from '@glimmer/runtime';
+import { internalHelper } from './internal-helper';
 
 /**
   This is a helper to be used in conjunction with the link-to helper.
@@ -29,7 +30,7 @@ import { reifyNamed } from '@glimmer/runtime';
   @return {Object} A `QueryParams` object for `{{link-to}}`
   @public
 */
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   let { positional, named } = args.capture();
 
   return createComputeRef(() => {
@@ -40,4 +41,4 @@ export default function (args: VMArguments) {
 
     return new QueryParams(assign({}, reifyNamed(named) as any));
   });
-}
+});

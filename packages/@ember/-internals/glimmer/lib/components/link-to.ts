@@ -11,7 +11,8 @@ import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberComponent, { HAS_BLOCK } from '../component';
+import EmberComponent from '../component';
+import { HAS_BLOCK } from '../component-managers/curly';
 import layout from '../templates/link-to';
 
 /**

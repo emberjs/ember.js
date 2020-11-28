@@ -5,12 +5,12 @@ export {
   enableDestroyableTracking,
   isDestroying,
   isDestroyed,
-} from '@glimmer/runtime';
+} from '@glimmer/destroyable';
 
 import {
   registerDestructor as _registerDestructor,
   unregisterDestructor as _unregisterDestructor,
-} from '@glimmer/runtime';
+} from '@glimmer/destroyable';
 
 /**
   Ember manages the lifecycles and lifetimes of many built in constructs, such

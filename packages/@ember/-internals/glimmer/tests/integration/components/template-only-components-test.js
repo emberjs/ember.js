@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTestCase, classes, runTask } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';
-import { setComponentTemplate } from '@ember/-internals/glimmer';
-import templateOnly from '@ember/component/template-only';
+import { setComponentTemplate } from '@glimmer/manager';
+import { templateOnlyComponent } from '@glimmer/runtime';
 import { compile } from 'ember-template-compiler';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Component } from '../../utils/helpers';
@@ -268,7 +268,10 @@ moduleFor(
   'Components test: template-only components (using `templateOnlyComponent()`)',
   class extends RenderingTestCase {
     ['@test it can render a component']() {
-      this.registerComponent('foo-bar', { ComponentClass: templateOnly(), template: 'hello' });
+      this.registerComponent('foo-bar', {
+        ComponentClass: templateOnlyComponent(),
+        template: 'hello',
+      });
 
       this.render('{{foo-bar}}');
 
@@ -278,7 +281,7 @@ moduleFor(
     }
 
     ['@test it can render a component when template was not registered']() {
-      let ComponentClass = templateOnly();
+      let ComponentClass = templateOnlyComponent();
       setComponentTemplate(compile('hello'), ComponentClass);
 
       this.registerComponent('foo-bar', { ComponentClass });
@@ -291,7 +294,7 @@ moduleFor(
     }
 
     ['@test setComponentTemplate takes precedence over registered layout']() {
-      let ComponentClass = templateOnly();
+      let ComponentClass = templateOnlyComponent();
       setComponentTemplate(compile('hello'), ComponentClass);
 
       this.registerComponent('foo-bar', {
@@ -309,7 +312,7 @@ moduleFor(
     ['@test templateOnly accepts a moduleName to be used for debugging / toString purposes'](
       assert
     ) {
-      let ComponentClass = templateOnly('my-app/components/foo');
+      let ComponentClass = templateOnlyComponent('my-app/components/foo');
 
       assert.equal(`${ComponentClass}`, 'my-app/components/foo');
     }

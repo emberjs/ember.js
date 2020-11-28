@@ -5,6 +5,7 @@
 import { assert } from '@ember/debug';
 import { VMArguments } from '@glimmer/interfaces';
 import { createUnboundRef, valueForRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
   The `{{unbound}}` helper disconnects the one-way binding of a property,
@@ -34,11 +35,11 @@ import { createUnboundRef, valueForRef } from '@glimmer/reference';
   @public
 */
 
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
     args.positional.length === 1 && args.named.length === 0
   );
 
   return createUnboundRef(valueForRef(args.positional.at(0)), '(resurt of an `unbound` helper)');
-}
+});

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/-internals/metal';
@@ -517,18 +518,28 @@ moduleFor(
       this.assertText('yippie! Caracas yummy Caracas arepas!');
     }
 
-    ['@test component with dynamic name argument resolving to non-existent component']() {
-      expectAssertion(() => {
+    ['@test component with dynamic name argument resolving to non-existent component'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
         this.render('{{component componentName}}', {
           componentName: 'does-not-exist',
         });
-      }, /Could not find component named "does-not-exist"/);
+      }, /Attempted to resolve `does-not-exist`, which was expected to be a component, but nothing was found./);
     }
 
-    ['@test component with static name argument for non-existent component']() {
-      expectAssertion(() => {
+    ['@test component with static name argument for non-existent component'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
         this.render('{{component "does-not-exist"}}');
-      }, /Could not find component named "does-not-exist"/);
+      }, /Attempted to resolve `does-not-exist`, which was expected to be a component, but nothing was found./);
     }
 
     ['@test component with dynamic component name resolving to a component, then non-existent component']() {

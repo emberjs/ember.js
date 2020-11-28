@@ -2,7 +2,7 @@ import { symbol } from '@ember/-internals/utils';
 import { MUTABLE_CELL } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
-import { ARGS } from '../component';
+import { ARGS } from '../component-managers/curly';
 import { ACTIONS } from '../helpers/action';
 
 // ComponentArgs takes EvaluatedNamedArgs and converts them into the

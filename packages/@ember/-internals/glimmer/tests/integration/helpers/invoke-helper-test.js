@@ -1,18 +1,14 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import {
-  invokeHelper,
-  Helper,
-  helper,
-  Component as EmberComponent,
-  helperCapabilities,
-} from '@ember/-internals/glimmer';
+import { helperCapabilities, setHelperManager } from '@glimmer/manager';
+import { Helper, helper, Component as EmberComponent } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_INVOKE_HELPER, EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { inject as service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
-import { destroy, isDestroyed, registerDestructor, setHelperManager } from '@glimmer/runtime';
+import { destroy, isDestroyed, registerDestructor } from '@glimmer/destroyable';
+import { invokeHelper } from '@glimmer/runtime';
 
 if (EMBER_GLIMMER_INVOKE_HELPER) {
   moduleFor(
@@ -413,8 +409,13 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
         assert.verifySteps(['cache', 'context'], 'destructors ran in correct order');
       }
 
-      '@test throws an error if value is accessed after it is destroyed'() {
-        expectAssertion(() => {
+      '@test throws an error if value is accessed after it is destroyed'(assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
+        assert.throws(() => {
           let helper = invokeHelper({}, class extends Helper {});
 
           runTask(() => destroy(helper));
@@ -423,16 +424,26 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
         }, /You attempted to get the value of a helper after the helper was destroyed, which is not allowed/);
       }
 
-      '@test asserts if no context object is passed'() {
-        expectAssertion(() => {
+      '@test asserts if no context object is passed'(assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
+        assert.throws(() => {
           invokeHelper(undefined, class extends Helper {});
         }, /Expected a context object to be passed as the first parameter to invokeHelper, got undefined/);
       }
 
-      '@test asserts if no manager exists for the helper definition'() {
-        expectAssertion(() => {
+      '@test asserts if no manager exists for the helper definition'(assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
+        assert.throws(() => {
           invokeHelper({}, class {});
-        }, /Expected a helper definition to be passed as the second parameter to invokeHelper, but no helper manager was found. The definition value that was passed was `.*`. Did you use setHelperManager to associate a helper manager with this value?/);
+        }, /Attempted to load a helper, but there wasn't a manager associated with the definition. The definition was:/);
       }
     }
   );

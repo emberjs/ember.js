@@ -3,7 +3,7 @@ import { get, set, observer } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
 import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
-import { destroy } from '@glimmer/runtime';
+import { destroy } from '@glimmer/destroyable';
 import { run } from '@ember/runloop';
 
 moduleFor(

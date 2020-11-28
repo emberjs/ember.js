@@ -10,12 +10,12 @@ import {
   Mixin,
   tagForObject,
   computed,
-  CUSTOM_TAG_FOR,
   tagForProperty,
 } from '@ember/-internals/metal';
 import { setProxy, setupMandatorySetter, isObject } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { CUSTOM_TAG_FOR } from '@glimmer/manager';
 import { combine, updateTag, tagFor, tagMetaFor } from '@glimmer/validator';
 
 export function contentFor(proxy) {

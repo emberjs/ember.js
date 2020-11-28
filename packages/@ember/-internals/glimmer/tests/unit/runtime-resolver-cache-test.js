@@ -224,7 +224,7 @@ moduleFor(
     }
 
     getCacheCounters() {
-      let { componentDefinitionCount, helperDefinitionCount } = this.renderer._runtimeResolver;
+      let { componentDefinitionCount, helperDefinitionCount } = this.renderer._context.constants;
 
       return (this._counters = {
         templateCacheHits: templateCacheCounters.cacheHit || 0,

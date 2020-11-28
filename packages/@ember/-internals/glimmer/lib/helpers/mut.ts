@@ -4,6 +4,7 @@
 import { assert } from '@ember/debug';
 import { VMArguments } from '@glimmer/interfaces';
 import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the
@@ -79,7 +80,7 @@ import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
   @public
 */
 
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   let ref = args.positional.at(0);
 
   // TODO: Improve this error message. This covers at least two distinct
@@ -97,4 +98,4 @@ export default function (args: VMArguments) {
   assert('You can only pass a path to mut', isUpdatableRef(ref));
 
   return createInvokableRef(ref);
-}
+});
