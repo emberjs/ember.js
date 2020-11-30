@@ -232,7 +232,7 @@ class ModifierManagerTest extends RenderingTestCase {
     assert
   ) {
     let ModifierClass = setModifierManager(
-      (owner) => {
+      owner => {
         return new this.CustomModifierManager(owner);
       },
       class {
@@ -265,7 +265,7 @@ class ModifierManagerTest extends RenderingTestCase {
       }
     );
 
-    let expectedMessage = backtrackingMessageFor('foo','.+');
+    let expectedMessage = backtrackingMessageFor('foo', '.+');
 
     expectDeprecation(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
