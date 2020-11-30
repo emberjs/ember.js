@@ -568,6 +568,16 @@ export class GlimmerishComponents extends RenderTest {
   }
 
   @test({ kind: 'glimmer' })
+  'angle bracket invocation can allow invocation side to override the type attribute with ...attributes'() {
+    this.registerComponent('Glimmer', 'Qux', '<div type="qux" ...attributes />');
+    this.registerComponent('Glimmer', 'Bar', '<Qux type="bar" ...attributes />');
+    this.registerComponent('Glimmer', 'Foo', '<Bar type="foo" ...attributes />');
+
+    this.render('<Foo type="top" />');
+    this.assertHTML('<div type="top"></div>');
+  }
+
+  @test({ kind: 'glimmer' })
   'angle bracket invocation can override invocation side attributes with ...attributes'() {
     this.registerComponent('Glimmer', 'Qux', '<div ...attributes id="qux" />');
     this.registerComponent('Glimmer', 'Bar', '<Qux ...attributes id="bar" />');
@@ -575,6 +585,16 @@ export class GlimmerishComponents extends RenderTest {
 
     this.render('<Foo id="top" />');
     this.assertHTML('<div id="qux"></div>');
+  }
+
+  @test({ kind: 'glimmer' })
+  'angle bracket invocation can override invocation side type attribute with ...attributes'() {
+    this.registerComponent('Glimmer', 'Qux', '<div ...attributes type="qux" />');
+    this.registerComponent('Glimmer', 'Bar', '<Qux ...attributes type="bar" />');
+    this.registerComponent('Glimmer', 'Foo', '<Bar ...attributes type="foo" />');
+
+    this.render('<Foo type="top" />');
+    this.assertHTML('<div type="qux"></div>');
   }
 
   @test({ kind: 'glimmer' })

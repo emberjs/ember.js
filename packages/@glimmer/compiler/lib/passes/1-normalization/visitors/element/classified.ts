@@ -101,14 +101,21 @@ export class ClassifiedElement {
     let attrs = new ResultArray<ValidAttr>();
     let args = new ResultArray<mir.NamedArgument>();
 
+    // Unlike most attributes, the `type` attribute can change how
+    // subsequent attributes are interpreted by the browser. To address
+    // this, in simple cases, we special case the `type` attribute to be set
+    // last. For elements with splattributes, where attribute order affects
+    // precedence, this re-ordering happens at runtime instead.
+    // See https://github.com/glimmerjs/glimmer-vm/pull/726
     let typeAttr: ASTv2.AttrNode | null = null;
+    let simple = this.element.attrs.filter((attr) => attr.type === 'SplatAttr').length === 0;
 
     for (let attr of this.element.attrs) {
       if (attr.type === 'SplatAttr') {
         attrs.add(
           Ok(new mir.SplatAttr({ loc: attr.loc, symbol: this.state.scope.allocateBlock('attrs') }))
         );
-      } else if (attr.name.chars === 'type') {
+      } else if (attr.name.chars === 'type' && simple) {
         typeAttr = attr;
       } else {
         attrs.add(this.attr(attr));
