@@ -108,15 +108,14 @@ export class ClassifiedElement {
     // precedence, this re-ordering happens at runtime instead.
     // See https://github.com/glimmerjs/glimmer-vm/pull/726
     let typeAttr: ASTv2.AttrNode | null = null;
-    let simple = true;
+    let simple = this.element.attrs.filter((attr) => attr.type === 'SplatAttr').length === 0;
 
     for (let attr of this.element.attrs) {
       if (attr.type === 'SplatAttr') {
-        simple = false;
         attrs.add(
           Ok(new mir.SplatAttr({ loc: attr.loc, symbol: this.state.scope.allocateBlock('attrs') }))
         );
-      } else if (attr.name.chars === 'type' && !simple) {
+      } else if (attr.name.chars === 'type' && simple) {
         typeAttr = attr;
       } else {
         attrs.add(this.attr(attr));
