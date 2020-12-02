@@ -5,7 +5,7 @@ import {
   destroy,
   isDestroying,
   isDestroyed,
-  _destroyChildren,
+  destroyChildren,
   enableDestroyableTracking,
   assertDestroyablesDestroyed,
 } from '..';
@@ -311,7 +311,7 @@ module('Destroyables', (hooks) => {
     assert.equal(isDestroying(child), false, 'child not destroying at first');
     assert.equal(isDestroyed(child), false, 'child not destroyed at first');
 
-    _destroyChildren(parent);
+    destroyChildren(parent);
 
     assert.equal(isDestroying(parent), false, 'parent not immediately after child destroy()');
     assert.equal(isDestroyed(parent), false, 'parent not destroyed after child destroy()');

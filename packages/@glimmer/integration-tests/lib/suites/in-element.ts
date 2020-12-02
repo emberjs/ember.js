@@ -7,7 +7,7 @@ import { stripTight } from '../test-helpers/strings';
 import { replaceHTML } from '../dom/simple-utils';
 import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { tracked } from '../test-helpers/tracked';
-import { destroy } from '@glimmer/runtime';
+import { destroy } from '@glimmer/destroyable';
 
 export class InElementSuite extends RenderTest {
   static suiteName = '#in-element';

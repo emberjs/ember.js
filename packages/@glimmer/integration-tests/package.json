@@ -4,6 +4,7 @@
   "private": true,
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/integration-tests",
   "dependencies": {
+    "@glimmer/destroyable": "0.67.0",
     "@glimmer/global-context": "0.67.0",
     "@glimmer/reference": "0.67.0",
     "@glimmer/runtime": "0.67.0",
@@ -16,6 +17,7 @@
     "@glimmer/interfaces": "0.67.0",
     "@glimmer/node": "0.67.0",
     "@glimmer/opcode-compiler": "0.67.0",
+    "@glimmer/owner": "0.67.0",
     "@glimmer/program": "0.67.0",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/interface": "^1.4.0",

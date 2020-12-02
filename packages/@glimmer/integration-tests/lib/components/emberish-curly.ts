@@ -25,7 +25,8 @@ import {
 import { createTag, dirtyTag, DirtyableTag, consumeTag, dirtyTagFor } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign, expect } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
-import { registerDestructor, reifyNamed, reifyPositional } from '@glimmer/runtime';
+import { registerDestructor } from '@glimmer/destroyable';
+import { reifyNamed, reifyPositional } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
 import { TestJitRuntimeResolver } from '../modes/jit/resolver';
 
