@@ -1,7 +1,3 @@
-import { templateFactory } from '@glimmer/opcode-compiler';
-import { setComponentTemplate } from '@glimmer/manager';
-import ApplicationTemplate from './Application.hbs';
-
 export default class Application {
   constructor(args) {
     this.args = args;
@@ -20,7 +16,5 @@ export default class Application {
     };
   }
 }
-
-setComponentTemplate(templateFactory(ApplicationTemplate), Application);
 
 /** @typedef {import('../utils/data').Item} Item */
