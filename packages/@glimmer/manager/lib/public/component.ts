@@ -19,7 +19,7 @@ import {
   WithStaticLayout,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
-import { registerDestructor } from '@glimmer/runtime';
+import { registerDestructor } from '@glimmer/destroyable';
 import { buildCapabilities } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
 

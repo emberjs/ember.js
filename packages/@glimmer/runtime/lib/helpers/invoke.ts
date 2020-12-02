@@ -5,8 +5,8 @@ import { debugToString } from '@glimmer/util';
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
 
 import { EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL } from '../vm/arguments';
-import { getOwner } from '../owner';
-import { associateDestroyableChild, isDestroyed, isDestroying } from '../destroyables';
+import { getOwner } from '@glimmer/owner';
+import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
 
 let ARGS_CACHES = DEBUG ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>() : undefined;
 

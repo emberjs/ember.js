@@ -1,14 +1,17 @@
 import { DEBUG } from '@glimmer/env';
 import {
   Arguments,
+  CapturedArguments,
   InternalModifierManager,
   ModifierCapabilities,
   ModifierCapabilitiesVersions,
   ModifierManager,
   VMArguments,
 } from '@glimmer/interfaces';
-import { registerDestructor, reifyArgs } from '@glimmer/runtime';
+import { registerDestructor } from '@glimmer/destroyable';
+import { valueForRef } from '@glimmer/reference';
 import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
+import { dict } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 import { buildCapabilities } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
@@ -160,4 +163,22 @@ export class CustomModifierManager<ModifierInstance>
   getDestroyable(state: CustomModifierState<ModifierInstance>) {
     return state;
   }
+}
+
+export function reifyArgs({
+  named,
+  positional,
+}: CapturedArguments): { named: Record<string, unknown>; positional: unknown[] } {
+  let reifiedNamed = dict();
+
+  for (let key in named) {
+    reifiedNamed[key] = valueForRef(named[key]);
+  }
+
+  let reifiedPositional = positional.map(valueForRef);
+
+  return {
+    named: reifiedNamed,
+    positional: reifiedPositional,
+  };
 }

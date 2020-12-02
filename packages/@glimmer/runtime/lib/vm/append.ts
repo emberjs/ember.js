@@ -43,12 +43,12 @@ import {
   Register,
   SyscallRegister,
 } from '@glimmer/vm';
+import { associateDestroyableChild } from '@glimmer/destroyable';
 import {
   BeginTrackFrameOpcode,
   EndTrackFrameOpcode,
   JumpIfNotModifiedOpcode,
 } from '../compiled/opcodes/vm';
-import { associateDestroyableChild } from '../destroyables';
 import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
 import { PartialScopeImpl } from '../scope';
 import { ARGS, CONSTANTS, DESTROYABLE_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';

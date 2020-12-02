@@ -1,7 +1,8 @@
 import { Option } from '@glimmer/interfaces';
 import { createConstRef, createPrimitiveRef, createComputeRef } from '@glimmer/reference';
 import { RenderTest, test, jitSuite, JitRenderDelegate, GlimmerishComponent, tracked } from '..';
-import { SafeString, registerDestructor } from '@glimmer/runtime';
+import { registerDestructor } from '@glimmer/destroyable';
+import { SafeString } from '@glimmer/runtime';
 import {
   assertNodeTagName,
   getElementByClassName,

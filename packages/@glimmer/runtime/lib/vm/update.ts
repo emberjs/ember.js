@@ -20,11 +20,11 @@ import {
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
+import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { expect, Stack, logStep } from '@glimmer/util';
 import { resetTracking, runInTrackingTransaction } from '@glimmer/validator';
 import { SimpleComment } from '@simple-dom/interface';
 import { clear, move as moveBounds } from '../bounds';
-import { associateDestroyableChild, destroy, destroyChildren } from '../destroyables';
 import { UpdatingOpcode } from '../opcodes';
 import { InternalVM, VmInitCallback } from './append';
 import { LiveBlockList, NewElementBuilder } from './element-builder';

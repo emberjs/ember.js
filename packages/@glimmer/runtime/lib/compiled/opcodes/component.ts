@@ -48,6 +48,7 @@ import {
   unwrapTemplate,
 } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
+import { registerDestructor } from '@glimmer/destroyable';
 import {
   Capability,
   capabilityFlagsFrom,
@@ -79,7 +80,6 @@ import {
   CheckCurriedComponentDefinition,
 } from './-debug-strip';
 import { UpdateDynamicAttributeOpcode } from './dom';
-import { registerDestructor } from '../../destroyables';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
