@@ -6,6 +6,7 @@ import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
+  CompileTimeCompilationContext,
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
@@ -14,11 +15,10 @@ import {
   Option,
   RenderResult,
   RuntimeContext,
-  SyntaxCompilationContext,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
-import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
+import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import {
@@ -32,7 +32,7 @@ import {
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
-import { unwrapHandle, unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -43,7 +43,6 @@ import { RootComponentDefinition } from './component-managers/root';
 import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate } from './environment';
 import RuntimeResolver from './resolver';
-import { populateMacros } from './syntax';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
@@ -117,7 +116,7 @@ class RootState {
   constructor(
     public root: Component | OutletView,
     public runtime: RuntimeContext,
-    context: SyntaxCompilationContext,
+    context: CompileTimeCompilationContext,
     template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
@@ -135,14 +134,13 @@ class RootState {
 
     this.render = errorLoopTransaction(() => {
       let layout = unwrapTemplate(template).asLayout();
-      let handle = layout.compile(context);
 
       let iterator = renderMain(
         runtime,
         context,
         self,
         builder(runtime.env, { element: parentElement, nextSibling: null }),
-        unwrapHandle(handle),
+        layout,
         dynamicScope
       );
 
@@ -281,7 +279,7 @@ export abstract class Renderer {
   private _builder: IBuilder;
   private _inRenderTransaction = false;
 
-  private _context: SyntaxCompilationContext;
+  private _context: CompileTimeCompilationContext;
   private _runtime: RuntimeContext;
 
   private _lastRevision = -1;
@@ -311,9 +309,7 @@ export abstract class Renderer {
 
     let sharedArtifacts = artifacts();
 
-    let context = (this._context = syntaxCompilationContext(sharedArtifacts, compileTimeResolver));
-
-    populateMacros(context.macros);
+    this._context = programCompilationContext(sharedArtifacts, compileTimeResolver);
 
     let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
     this._runtime = runtimeContext(

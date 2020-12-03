@@ -387,10 +387,6 @@ export {
 } from './lib/template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
-export {
-  registerMacros as _registerMacros,
-  experimentalMacros as _experimentalMacros,
-} from './lib/syntax';
 
 // needed for test
 // TODO just test these through public API

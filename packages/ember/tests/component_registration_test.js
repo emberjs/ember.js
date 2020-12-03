@@ -4,6 +4,7 @@ import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';
+import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   'Application Lifecycle - Component Registration',
@@ -240,7 +241,12 @@ moduleFor(
     async ['@test Using name of component that does not exist'](assert) {
       this.addTemplate('application', `<div id='wrapper'>{{#no-good}} {{/no-good}}</div>`);
 
-      await assert.rejectsAssertion(this.visit('/'), /.* named "no-good" .*/);
+      if (DEBUG) {
+        await assert.rejectsAssertion(this.visit('/'), /Attempted to resolve `no-good`/);
+      } else {
+        // Rejects with a worse error message in production
+        await assert.rejects(this.visit('/'));
+      }
     }
   }
 );
