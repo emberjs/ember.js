@@ -213,6 +213,8 @@ if (DEBUG) {
 
   enableDestroyableTracking = () => {
     if (isTesting) {
+      // Reset destroyable meta just in case, before throwing the error
+      DESTROYABLE_META = new WeakMap();
       throw new Error(
         'Attempted to start destroyable testing, but you did not end the previous destroyable test. Did you forget to call `assertDestroyablesDestroyed()`'
       );

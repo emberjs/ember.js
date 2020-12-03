@@ -1,9 +1,9 @@
 import { Environment, RenderResult, LiveBlock } from '@glimmer/interfaces';
+import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { clear } from '../bounds';
 import { UpdatingOpcode } from '../opcodes';
 import UpdatingVM from './update';
-import { associateDestroyableChild, registerDestructor } from '../destroyables';
 
 export default class RenderResultImpl implements RenderResult {
   constructor(

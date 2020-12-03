@@ -10,7 +10,8 @@ import {
   CapturedArguments,
 } from '@glimmer/interfaces';
 import { UpdatableTag, createUpdatableTag } from '@glimmer/validator';
-import { registerDestructor, reifyPositional, reifyNamed } from '@glimmer/runtime';
+import { registerDestructor } from '@glimmer/destroyable';
+import { reifyPositional, reifyNamed } from '@glimmer/runtime';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;

@@ -17,7 +17,8 @@ import { UserHelper } from './helpers';
 import { TestModifierConstructor } from './modifiers';
 import RenderDelegate from './render-delegate';
 import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from './snapshot';
-import { destroy, inTransaction } from '@glimmer/runtime';
+import { destroy } from '@glimmer/destroyable';
+import { inTransaction } from '@glimmer/runtime';
 
 export interface IRenderTest {
   readonly count: Count;

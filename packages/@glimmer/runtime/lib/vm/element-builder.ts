@@ -23,7 +23,7 @@ import {
   SimpleText,
 } from '@simple-dom/interface';
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
-import { destroy, registerDestructor } from '../destroyables';
+import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
