@@ -5,6 +5,7 @@
   "dependencies": {
     "@glimmer/env": "0.1.7",
     "@glimmer/interfaces": "0.67.0",
+    "@glimmer/destroyable": "0.67.0",
     "@glimmer/util": "0.67.0"
   }
 }

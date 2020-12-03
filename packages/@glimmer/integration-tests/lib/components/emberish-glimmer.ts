@@ -1,5 +1,6 @@
 import { Dict, Owner, ComponentManager, Arguments } from '@glimmer/interfaces';
-import { destroy, isDestroyed, isDestroying, registerDestructor, setOwner } from '@glimmer/runtime';
+import { destroy, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
+import { setOwner } from '@glimmer/owner';
 import { componentCapabilities, setComponentManager } from '@glimmer/manager';
 
 export type Args = Dict;
