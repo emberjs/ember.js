@@ -4,11 +4,12 @@
 
 import { Factory, Owner, setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
-import { getDebugName, symbol } from '@ember/-internals/utils';
+import { getDebugName } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
+import { symbol } from '@glimmer/util';
 import {
   consumeTag,
   createTag,

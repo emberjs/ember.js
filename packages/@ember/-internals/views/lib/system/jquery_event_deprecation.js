@@ -1,9 +1,9 @@
 /* global Proxy */
 import { deprecate } from '@ember/debug';
 import { global } from '@ember/-internals/environment';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { DEBUG } from '@glimmer/env';
 import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
+import { DEBUG } from '@glimmer/env';
+import { HAS_NATIVE_PROXY } from '@glimmer/util';
 
 export default function addJQueryEventDeprecation(jqEvent) {
   if (DEBUG && JQUERY_INTEGRATION && HAS_NATIVE_PROXY) {

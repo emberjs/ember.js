@@ -20,7 +20,7 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
-import { isProxy, lookupDescriptor, symbol } from '@ember/-internals/utils';
+import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
@@ -30,6 +30,7 @@ import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import { Template, TemplateFactory } from '@glimmer/interfaces';
+import { symbol } from '@glimmer/util';
 import {
   InternalRouteInfo,
   PARAMS_SYMBOL,

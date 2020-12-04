@@ -1,6 +1,6 @@
 import { set } from '@ember/-internals/metal';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
+import { HAS_NATIVE_PROXY } from '@glimmer/util';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 

@@ -1,8 +1,9 @@
 import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
-import { dictionary, HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
+import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
+import { HAS_NATIVE_PROXY, symbol } from '@glimmer/util';
 import Registry, { DebugRegistry, Injection } from './registry';
 
 declare global {

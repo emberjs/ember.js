@@ -1,4 +1,5 @@
-import { HAS_NATIVE_SYMBOL, inspect } from '..';
+import { inspect } from '..';
+import { HAS_NATIVE_SYMBOL } from '@glimmer/util';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 moduleFor(
