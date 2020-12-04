@@ -103,7 +103,6 @@ moduleFor(
       verifyRegistration(assert, engine, 'component-lookup:main');
 
       verifyRegistration(assert, engine, 'view:-outlet');
-      verifyRegistration(assert, engine, P`template:components/-default`);
       verifyRegistration(assert, engine, 'template:-outlet');
       verifyInjection(assert, engine, 'view:-outlet', 'template', 'template:-outlet');
       assert.deepEqual(

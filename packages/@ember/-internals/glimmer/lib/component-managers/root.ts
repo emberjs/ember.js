@@ -1,5 +1,4 @@
 import { getFactoryFor } from '@ember/-internals/container';
-import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -7,18 +6,17 @@ import {
   Environment,
   InternalComponentCapabilities,
   Option,
-  Template,
   VMArguments,
 } from '@glimmer/interfaces';
+import { capabilityFlagsFrom } from '@glimmer/manager';
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
-import { DIRTY_TAG } from '../component';
 import { DynamicScope } from '../renderer';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
+  DIRTY_TAG,
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
-import DefinitionState from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -28,13 +26,9 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getStaticLayout(): Template {
-    return this.templateFor(this.component);
-  }
-
   create(
     environment: Environment,
-    _state: DefinitionState,
+    _state: unknown,
     _args: Option<VMArguments>,
     dynamicScope: DynamicScope
   ) {
@@ -81,7 +75,7 @@ class RootComponentManager extends CurlyComponentManager {
 // ROOT is the top-level template it has nothing but one yield.
 // it is supposed to have a dummy element
 export const ROOT_CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: false,
+  dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: false,
   createArgs: false,
@@ -96,17 +90,17 @@ export const ROOT_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export class RootComponentDefinition implements ComponentDefinition {
-  state: DefinitionState;
-  manager: RootComponentManager;
+  // handle is not used by this custom definition
+  handle = -1;
 
-  constructor(public component: Component) {
-    let manager = new RootComponentManager(component);
-    this.manager = manager;
-    let factory = getFactoryFor(component);
-    this.state = {
-      name: factory!.fullName.slice(10),
-      capabilities: ROOT_CAPABILITIES,
-      ComponentClass: factory as Factory<any, any>,
-    };
+  resolvedName = '-top-level';
+  state: object;
+  manager: RootComponentManager;
+  capabilities = capabilityFlagsFrom(ROOT_CAPABILITIES);
+  compilable = null;
+
+  constructor(component: Component) {
+    this.manager = new RootComponentManager(component);
+    this.state = getFactoryFor(component);
   }
 }

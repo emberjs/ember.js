@@ -1,12 +1,13 @@
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
+import { internalHelper } from './internal-helper';
 
-const isEmpty = (value: any): boolean => {
-  return value === null || value === undefined || typeof value.toString !== 'function';
+const isEmpty = (value: unknown): boolean => {
+  return value === null || value === undefined || typeof (value as object).toString !== 'function';
 };
 
-const normalizeTextValue = (value: any): string => {
+const normalizeTextValue = (value: unknown): string => {
   if (isEmpty(value)) {
     return '';
   }
@@ -39,7 +40,7 @@ const normalizeTextValue = (value: any): string => {
   @for Ember.Templates.helpers
   @since 1.13.0
 */
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   let captured = args.positional.capture();
 
   return createComputeRef(
@@ -47,4 +48,4 @@ export default function (args: VMArguments) {
     null,
     'concat'
   );
-}
+});

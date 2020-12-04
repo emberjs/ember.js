@@ -16,6 +16,7 @@ import {
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
+import { internalHelper } from '../helpers/internal-helper';
 import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
 import { OutletState } from '../utils/outlet';
@@ -67,7 +68,7 @@ import { OutletState } from '../utils/outlet';
   @for Ember.Templates.helpers
   @public
 */
-export function outletHelper(args: VMArguments, vm: VM) {
+export const outletHelper = internalHelper((args: VMArguments, vm: VM) => {
   let scope = vm.dynamicScope() as DynamicScope;
   let nameRef: Reference<string>;
 
@@ -110,7 +111,7 @@ export function outletHelper(args: VMArguments, vm: VM) {
 
     return definition;
   });
-}
+});
 
 function stateFor(ref: Reference<OutletState | undefined>): OutletDefinitionState | null {
   let outlet = valueForRef(ref);

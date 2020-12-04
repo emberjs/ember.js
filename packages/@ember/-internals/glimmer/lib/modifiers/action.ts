@@ -4,6 +4,7 @@ import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
+import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
   CapturedNamedArguments,
@@ -13,8 +14,8 @@ import {
   InternalModifierManager,
   VMArguments,
 } from '@glimmer/interfaces';
+import { setInternalModifierManager } from '@glimmer/manager';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
-import { registerDestructor } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../helpers/action';
@@ -202,13 +203,10 @@ export class ActionState {
   }
 }
 
-// implements ModifierManager<Action>
-export default class ActionModifierManager
-  implements InternalModifierManager<ActionState, unknown> {
-  public owner: Owner;
+class ActionModifierManager implements InternalModifierManager<ActionState, object> {
   private _setupEventHandler?: (eventName: string) => void;
 
-  constructor(owner: Owner) {
+  constructor(public owner: Owner) {
     this.owner = owner;
   }
 
@@ -223,7 +221,7 @@ export default class ActionModifierManager
 
   create(
     element: SimpleElement,
-    _state: unknown,
+    _state: object,
     args: VMArguments,
     _dynamicScope: DynamicScope,
     dom: GlimmerTreeChanges
@@ -333,3 +331,5 @@ export default class ActionModifierManager
     return actionState;
   }
 }
+
+export default setInternalModifierManager((o: Owner) => new ActionModifierManager(o), {});

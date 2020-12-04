@@ -10,7 +10,6 @@ import {
   addArrayObserver,
   removeArrayObserver,
   replace,
-  CUSTOM_TAG_FOR,
   arrayContentDidChange,
   tagForProperty,
 } from '@ember/-internals/metal';
@@ -18,6 +17,7 @@ import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
+import { CUSTOM_TAG_FOR } from '@glimmer/manager';
 import { combine, consumeTag, validateTag, valueForTag, tagFor } from '@glimmer/validator';
 
 const ARRAY_OBSERVER_MAPPING = {

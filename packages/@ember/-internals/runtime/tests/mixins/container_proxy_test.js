@@ -4,7 +4,7 @@ import ContainerProxy from '../../lib/mixins/container_proxy';
 import EmberObject from '../../lib/system/object';
 import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { destroy } from '@glimmer/runtime';
+import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
   '@ember/-internals/runtime/mixins/container_proxy',

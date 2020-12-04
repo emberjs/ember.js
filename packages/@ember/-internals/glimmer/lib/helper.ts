@@ -8,15 +8,13 @@ import { getDebugName, symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
-import { setHelperManager } from '@glimmer/runtime';
-import { _WeakSet as WeakSet } from '@glimmer/util';
+import { helperCapabilities, setHelperManager } from '@glimmer/manager';
 import {
   consumeTag,
   createTag,
   deprecateMutationsInTrackingTransaction,
   dirtyTag,
 } from '@glimmer/validator';
-import { helperCapabilities } from './helpers/custom';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -37,12 +35,6 @@ export interface HelperInstance<T = unknown> {
 
 export interface SimpleHelper<T = unknown> {
   compute: HelperFunction<T>;
-}
-
-const CLASSIC_HELPER_MANAGERS = new WeakSet();
-
-export function isClassicHelperManager(obj: object) {
-  return CLASSIC_HELPER_MANAGERS.has(obj);
 }
 
 /**
@@ -139,7 +131,14 @@ let Helper = FrameworkObject.extend({
   */
 });
 
+const IS_CLASSIC_HELPER = symbol('IS_CLASSIC_HELPER');
+
 Helper.isHelperFactory = true;
+Helper[IS_CLASSIC_HELPER] = true;
+
+export function isClassicHelper(obj: object): boolean {
+  return obj[IS_CLASSIC_HELPER] === true;
+}
 
 interface ClassicHelperStateBucket {
   instance: HelperInstance;
@@ -155,13 +154,12 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   private ownerInjection: object;
 
   constructor(owner: Owner | undefined) {
-    CLASSIC_HELPER_MANAGERS.add(this);
     let ownerInjection = {};
     setOwner(ownerInjection, owner!);
     this.ownerInjection = ownerInjection;
   }
 
-  createHelper(definition: ClassHelperFactory | typeof Helper, args: Arguments) {
+  createHelper(definition: typeof Helper, args: Arguments) {
     let instance =
       definition.class === undefined ? definition.create(this.ownerInjection) : definition.create();
 
@@ -197,7 +195,11 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 }
 
-setHelperManager((owner: Owner | undefined) => new ClassicHelperManager(owner), Helper);
+export const CLASSIC_HELPER_MANAGER_FACTORY = (owner: Owner | undefined): ClassicHelperManager => {
+  return new ClassicHelperManager(owner);
+};
+
+setHelperManager(CLASSIC_HELPER_MANAGER_FACTORY, Helper);
 
 ///////////
 

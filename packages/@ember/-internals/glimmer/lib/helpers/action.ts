@@ -16,6 +16,7 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { _WeakSet } from '@glimmer/util';
+import { internalHelper } from './internal-helper';
 
 export const ACTIONS = new _WeakSet();
 export const INVOKE: unique symbol = symbol('INVOKE') as any;
@@ -283,40 +284,48 @@ export const INVOKE: unique symbol = symbol('INVOKE') as any;
   @for Ember.Templates.helpers
   @public
 */
-export default function (args: VMArguments): Reference<Function> {
-  let { named, positional } = args;
+export default internalHelper(
+  (args: VMArguments): Reference<Function> => {
+    let { named, positional } = args;
 
-  let capturedArgs = positional.capture();
+    let capturedArgs = positional.capture();
 
-  // The first two argument slots are reserved.
-  // pos[0] is the context (or `this`)
-  // pos[1] is the action name or function
-  // Anything else is an action argument.
-  let [context, action, ...restArgs] = capturedArgs;
+    // The first two argument slots are reserved.
+    // pos[0] is the context (or `this`)
+    // pos[1] is the action name or function
+    // Anything else is an action argument.
+    let [context, action, ...restArgs] = capturedArgs;
 
-  let debugKey: string = action.debugLabel!;
+    let debugKey: string = action.debugLabel!;
 
-  let target = named.has('target') ? named.get('target') : context;
-  let processArgs = makeArgsProcessor(named.has('value') && named.get('value'), restArgs);
+    let target = named.has('target') ? named.get('target') : context;
+    let processArgs = makeArgsProcessor(named.has('value') && named.get('value'), restArgs);
 
-  let fn: Function;
+    let fn: Function;
 
-  if (isInvokableRef(action)) {
-    fn = makeClosureAction(action, action as MaybeActionHandler, invokeRef, processArgs, debugKey);
-  } else {
-    fn = makeDynamicClosureAction(
-      valueForRef(context) as object,
-      target,
-      action,
-      processArgs,
-      debugKey
-    );
+    if (isInvokableRef(action)) {
+      fn = makeClosureAction(
+        action,
+        action as MaybeActionHandler,
+        invokeRef,
+        processArgs,
+        debugKey
+      );
+    } else {
+      fn = makeDynamicClosureAction(
+        valueForRef(context) as object,
+        target,
+        action,
+        processArgs,
+        debugKey
+      );
+    }
+
+    ACTIONS.add(fn);
+
+    return createUnboundRef(fn, '(result of an `action` helper)');
   }
-
-  ACTIONS.add(fn);
-
-  return createUnboundRef(fn, '(result of an `action` helper)');
-}
+);
 
 function NOOP(args: unknown[]) {
   return args;

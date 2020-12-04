@@ -429,7 +429,7 @@ moduleFor(
       }, expectedMessage);
     }
 
-    '@test simple helper gives helpful assertion when mutating a tracked property that was tracked already'() {
+    '@test simple helper gives helpful deprecation when mutating a tracked property that was tracked already'() {
       class Person {
         @tracked name = 'bob';
       }
@@ -443,7 +443,7 @@ moduleFor(
         renderTree: ['\\(result of a `\\(unknown function\\)` helper\\)'],
       });
 
-      expectAssertion(() => {
+      expectDeprecation(() => {
         this.render('{{hello-world this.model}}', { model: new Person() });
       }, expectedMessage);
     }

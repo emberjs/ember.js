@@ -1,6 +1,7 @@
 import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import EngineInstance from '@ember/engine/instance';
+import { associateDestroyableChild } from '@glimmer/destroyable';
 import {
   CapturedArguments,
   ComponentDefinition,
@@ -9,14 +10,15 @@ import {
   Environment,
   InternalComponentCapabilities,
   Option,
-  Template,
   TemplateFactory,
   VMArguments,
+  WithCreateInstance,
   WithCustomDebugRenderTree,
   WithDynamicLayout,
 } from '@glimmer/interfaces';
+import { capabilityFlagsFrom } from '@glimmer/manager';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { associateDestroyableChild, BaseInternalComponentManager } from '@glimmer/runtime';
+import { unwrapTemplate } from '@glimmer/util';
 import RuntimeResolver from '../resolver';
 
 interface EngineState {
@@ -46,13 +48,13 @@ const CAPABILITIES = {
 };
 
 class MountManager
-  extends BaseInternalComponentManager<EngineState, EngineDefinitionState>
   implements
+    WithCreateInstance<EngineState, Environment>,
     WithDynamicLayout<EngineState, RuntimeResolver>,
     WithCustomDebugRenderTree<EngineState, EngineDefinitionState> {
   getDynamicLayout(state: EngineState) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
-    return templateFactory(state.engine);
+    return unwrapTemplate(templateFactory(state.engine)).asLayout();
   }
 
   getCapabilities(): InternalComponentCapabilities {
@@ -106,7 +108,7 @@ class MountManager
     definition: EngineDefinitionState,
     state: EngineState,
     args: CapturedArguments,
-    template?: Template
+    templateModuleName?: string
   ): CustomRenderNode[] {
     return [
       {
@@ -122,7 +124,7 @@ class MountManager
         type: 'route-template',
         name: 'application',
         args,
-        template,
+        template: templateModuleName,
       },
     ];
   }
@@ -135,7 +137,11 @@ class MountManager
     return bucket.engine;
   }
 
+  didCreate() {}
+  didUpdate() {}
+
   didRenderLayout(): void {}
+  didUpdateLayout(): void {}
 
   update(bucket: EngineState): void {
     let { controller, modelRef } = bucket;
@@ -144,17 +150,20 @@ class MountManager
       controller.set('model', valueForRef(modelRef!));
     }
   }
-
-  didUpdateLayout(): void {}
 }
 
 const MOUNT_MANAGER = new MountManager();
 
 export class MountDefinition implements ComponentDefinition {
+  // handle is not used by this custom definition
+  public handle = -1;
+
   public state: EngineDefinitionState;
   public manager = MOUNT_MANAGER;
+  public compilable = null;
+  public capabilities = capabilityFlagsFrom(CAPABILITIES);
 
-  constructor(name: string) {
-    this.state = { name };
+  constructor(public resolvedName: string) {
+    this.state = { name: resolvedName };
   }
 }

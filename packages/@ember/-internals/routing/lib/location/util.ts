@@ -3,7 +3,7 @@
 
   Returns the current `location.pathname`, normalized for IE inconsistencies.
 */
-export function getPath(location: Location) {
+export function getPath(location: Location): string {
   let pathname = location.pathname;
   // Various versions of IE/Opera don't always return a leading slash
   if (pathname[0] !== '/') {
@@ -18,7 +18,7 @@ export function getPath(location: Location) {
 
   Returns the current `location.search`.
 */
-export function getQuery(location: Location) {
+export function getQuery(location: Location): string {
   return location.search;
 }
 
@@ -27,7 +27,7 @@ export function getQuery(location: Location) {
 
   Returns the hash or empty string
 */
-export function getHash(location: Location) {
+export function getHash(location: Location): string {
   if (location.hash !== undefined) {
     return location.hash.substr(0);
   }
@@ -35,11 +35,11 @@ export function getHash(location: Location) {
   return '';
 }
 
-export function getFullPath(location: Location) {
+export function getFullPath(location: Location): string {
   return getPath(location) + getQuery(location) + getHash(location);
 }
 
-export function getOrigin(location: Location) {
+export function getOrigin(location: Location): string {
   let origin = location.origin;
 
   // Older browsers, especially IE, don't have origin
@@ -63,8 +63,13 @@ export function getOrigin(location: Location) {
   @private
   @function supportsHashChange
 */
-export function supportsHashChange(documentMode: number | undefined, global: Window | null) {
-  return global && 'onhashchange' in global && (documentMode === undefined || documentMode > 7);
+export function supportsHashChange(
+  documentMode: number | undefined,
+  global: Window | null
+): boolean {
+  return Boolean(
+    global && 'onhashchange' in global && (documentMode === undefined || documentMode > 7)
+  );
 }
 
 /*
@@ -75,7 +80,7 @@ export function supportsHashChange(documentMode: number | undefined, global: Win
   @private
   @function supportsHistory
 */
-export function supportsHistory(userAgent: string, history: History) {
+export function supportsHistory(userAgent: string, history: History): boolean {
   // Boosted from Modernizr: https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
   // The stock browser on Android 2.2 & 2.3, and 4.0.x returns positive on history support
   // Unfortunately support is really buggy and there is no clean way to detect
@@ -101,6 +106,6 @@ export function supportsHistory(userAgent: string, history: History) {
 
   @private
 */
-export function replacePath(location: Location, path: string) {
+export function replacePath(location: Location, path: string): void {
   location.replace(getOrigin(location) + path);
 }

@@ -103,14 +103,11 @@ import {
   Checkbox,
   Component,
   setComponentManager,
-  capabilities,
   escapeExpression,
   getTemplates,
   Helper,
   helper,
-  helperCapabilities,
   htmlSafe,
-  invokeHelper,
   isHTMLSafe,
   LinkComponent,
   setTemplates,
@@ -118,7 +115,6 @@ import {
   TextField,
   TextArea,
   isSerializationFirstNode,
-  modifierCapabilities,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
@@ -136,14 +132,17 @@ import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
-import templateOnlyComponent from '@ember/component/template-only';
+import { templateOnlyComponent, invokeHelper } from '@glimmer/runtime';
 
 import {
+  componentCapabilities,
+  modifierCapabilities,
+  helperCapabilities,
   setModifierManager,
   setComponentTemplate,
   getComponentTemplate,
   setHelperManager,
-} from '@glimmer/runtime';
+} from '@glimmer/manager';
 
 import {
   assertDestroyablesDestroyed,
@@ -590,7 +589,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   Ember.TextSupport = views.TextSupport;
 }
 Ember._setComponentManager = setComponentManager;
-Ember._componentManagerCapabilities = capabilities;
+Ember._componentManagerCapabilities = componentCapabilities;
 Ember._setModifierManager = setModifierManager;
 Ember._modifierManagerCapabilities = modifierCapabilities;
 

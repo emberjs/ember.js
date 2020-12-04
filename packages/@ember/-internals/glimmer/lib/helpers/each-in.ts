@@ -7,6 +7,7 @@ import { isProxy } from '@ember/-internals/utils';
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { consumeTag } from '@glimmer/validator';
+import { internalHelper } from './internal-helper';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -158,7 +159,7 @@ export class EachInWrapper {
   constructor(public inner: unknown) {}
 }
 
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   let inner = args.positional.at(0);
 
   return createComputeRef(() => {
@@ -174,4 +175,4 @@ export default function (args: VMArguments) {
 
     return new EachInWrapper(iterable);
   });
-}
+});

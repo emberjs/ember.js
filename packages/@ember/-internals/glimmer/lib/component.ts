@@ -1,7 +1,6 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
-import { enumerableSymbol, symbol } from '@ember/-internals/utils';
 import {
   ActionSupport,
   ChildViewsSupport,
@@ -14,18 +13,19 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { setInternalComponentManager } from '@glimmer/manager';
 import { Environment } from '@glimmer/interfaces';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirtyTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
-
-export const ARGS = enumerableSymbol('ARGS');
-export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
-
-export const DIRTY_TAG = symbol('DIRTY_TAG');
-export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = symbol('BOUNDS');
+import {
+  ARGS,
+  BOUNDS,
+  CURLY_COMPONENT_MANAGER,
+  DIRTY_TAG,
+  IS_DISPATCHING_ATTRS,
+} from './component-managers/curly';
 
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<any>>();
 
@@ -1173,5 +1173,7 @@ Component.reopenClass({
   isComponentFactory: true,
   positionalParams: [],
 });
+
+setInternalComponentManager(() => CURLY_COMPONENT_MANAGER, Component);
 
 export default Component;

@@ -25,7 +25,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   updateCallback!: UpdateCallback;
   implementation = 'none';
 
-  detect() {
+  detect(): void {
     let { rootURL } = this;
 
     assert(
@@ -41,7 +41,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method getURL
     @return {String} path
   */
-  getURL() {
+  getURL(): string {
     let { path, rootURL } = this;
 
     // remove trailing slashes if they exists
@@ -59,7 +59,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method setURL
     @param path {String}
   */
-  setURL(path: string) {
+  setURL(path: string): void {
     set(this, 'path', path);
   }
 
@@ -72,7 +72,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback: (url: string) => void) {
+  onUpdateURL(callback: (url: string) => void): void {
     this.updateCallback = callback;
   }
 
@@ -83,7 +83,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method handleURL
     @param url {String}
   */
-  handleURL(url: string) {
+  handleURL(url: string): void {
     set(this, 'path', url);
     this.updateCallback(url);
   }
@@ -100,7 +100,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @param url {String}
     @return {String} url
   */
-  formatURL(url: string) {
+  formatURL(url: string): string {
     let { rootURL } = this;
 
     if (url !== '') {

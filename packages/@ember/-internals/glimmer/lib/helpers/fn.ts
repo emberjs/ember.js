@@ -10,6 +10,7 @@ import {
 } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import buildUntouchableThis from '../utils/untouchable-this';
+import { internalHelper } from './internal-helper';
 
 const context = buildUntouchableThis('`fn` helper');
 
@@ -84,7 +85,7 @@ const context = buildUntouchableThis('`fn` helper');
   @public
   @since 3.11.0
 */
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   let positional = args.positional.capture();
   let callbackRef = positional[0];
 
@@ -108,7 +109,7 @@ export default function (args: VMArguments) {
     null,
     'fn'
   );
-}
+});
 
 function assertCallbackIsFn(callbackRef: Reference) {
   assert(

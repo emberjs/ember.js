@@ -1,19 +1,16 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import {
-  ComponentDefinition,
+  CapturedNamedArguments,
   Destroyable,
   DynamicScope,
   Environment,
   InternalComponentCapabilities,
   InternalComponentManager,
-  Template,
   VMArguments,
-  WithStaticLayout,
+  WithCreateInstance,
 } from '@glimmer/interfaces';
 import { createConstRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { BaseInternalComponentManager } from '@glimmer/runtime';
-import InternalComponent from '../components/internal';
 
 const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
@@ -30,40 +27,24 @@ const CAPABILITIES: InternalComponentCapabilities = {
   willDestroy: false,
 };
 
-export interface InternalDefinitionState {
-  ComponentClass: typeof InternalComponent;
-  layout: Template;
-}
-
 export interface InternalComponentState {
   env: Environment;
   instance: Destroyable;
 }
 
-export class InternalComponentDefinition
-  implements
-    ComponentDefinition<InternalDefinitionState, InternalComponentState, InternalComponentManager> {
-  public state: InternalDefinitionState;
-
-  constructor(
-    public manager: InternalComponentManager,
-    ComponentClass: typeof InternalComponent,
-    layout: Template
-  ) {
-    this.state = { ComponentClass, layout };
-  }
+export interface EmberInternalComponentConstructor {
+  new (owner: Owner, args: CapturedNamedArguments, caller: unknown): Destroyable;
 }
 
 export default class InternalManager
-  extends BaseInternalComponentManager<InternalComponentState, InternalDefinitionState>
-  implements WithStaticLayout<InternalComponentState, InternalDefinitionState> {
+  implements
+    InternalComponentManager<InternalComponentState, EmberInternalComponentConstructor>,
+    WithCreateInstance {
   static for(name: string): (owner: Owner) => InternalManager {
     return (owner: Owner) => new InternalManager(owner, name);
   }
 
-  constructor(private owner: Owner, private name: string) {
-    super();
-  }
+  constructor(private owner: Owner, private name: string) {}
 
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
@@ -71,7 +52,7 @@ export default class InternalManager
 
   create(
     env: Environment,
-    { ComponentClass }: InternalDefinitionState,
+    ComponentClass: EmberInternalComponentConstructor,
     args: VMArguments,
     _dynamicScope: DynamicScope,
     caller: Reference
@@ -90,6 +71,12 @@ export default class InternalManager
     return state;
   }
 
+  didCreate(): void {}
+  didUpdate(): void {}
+
+  didRenderLayout(): void {}
+  didUpdateLayout(): void {}
+
   getDebugName(): string {
     return this.name;
   }
@@ -100,9 +87,5 @@ export default class InternalManager
 
   getDestroyable(state: InternalComponentState): Destroyable {
     return state.instance;
-  }
-
-  getStaticLayout({ layout: template }: InternalDefinitionState): Template {
-    return template;
   }
 }

@@ -2,7 +2,7 @@ import { assign } from '@ember/polyfills';
 import { window } from '@ember/-internals/browser-environment';
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
-import { setOwner } from '@glimmer/runtime';
+import { setOwner } from '@glimmer/owner';
 import AutoLocation from '../../lib/location/auto_location';
 import { getHistoryPath, getHashPath } from '../../lib/location/auto_location';
 import HistoryLocation from '../../lib/location/history_location';

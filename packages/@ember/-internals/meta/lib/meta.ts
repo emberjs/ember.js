@@ -1,7 +1,7 @@
 import { symbol, toString } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { isDestroyed, isDestroying } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { isDestroyed, isDestroying } from '@glimmer/runtime';
 import { Revision, UpdatableTag } from '@glimmer/validator';
 
 type ObjMap<T> = { [key: string]: T };

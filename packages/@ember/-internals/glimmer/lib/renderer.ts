@@ -3,9 +3,11 @@ import { getOwner, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
+import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
+  CompileTimeCompilationContext,
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
@@ -14,36 +16,32 @@ import {
   Option,
   RenderResult,
   RuntimeContext,
-  SyntaxCompilationContext,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
-import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
+import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import {
   clientBuilder,
   CurriedComponentDefinition,
   curry,
-  destroy,
   DOMChanges,
   DOMTreeConstruction,
   inTransaction,
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
-import { unwrapHandle, unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
-import CompileTimeResolverImpl from './compile-time-lookup';
-import { BOUNDS } from './component';
+import { BOUNDS } from './component-managers/curly';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate } from './environment';
-import RuntimeResolver from './resolver';
-import { populateMacros } from './syntax';
+import ResolverImpl from './resolver';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
@@ -117,7 +115,7 @@ class RootState {
   constructor(
     public root: Component | OutletView,
     public runtime: RuntimeContext,
-    context: SyntaxCompilationContext,
+    context: CompileTimeCompilationContext,
     template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
@@ -135,14 +133,13 @@ class RootState {
 
     this.render = errorLoopTransaction(() => {
       let layout = unwrapTemplate(template).asLayout();
-      let handle = layout.compile(context);
 
       let iterator = renderMain(
         runtime,
         context,
         self,
         builder(runtime.env, { element: parentElement, nextSibling: null }),
-        unwrapHandle(handle),
+        layout,
         dynamicScope
       );
 
@@ -281,13 +278,13 @@ export abstract class Renderer {
   private _builder: IBuilder;
   private _inRenderTransaction = false;
 
-  private _context: SyntaxCompilationContext;
+  private _context: CompileTimeCompilationContext;
   private _runtime: RuntimeContext;
 
   private _lastRevision = -1;
   private _destroyed = false;
 
-  readonly _runtimeResolver: RuntimeResolver;
+  readonly _runtimeResolver: ResolverImpl;
 
   constructor(
     owner: Owner,
@@ -306,14 +303,11 @@ export abstract class Renderer {
     this._builder = builder;
 
     // resolver is exposed for tests
-    let runtimeResolver = (this._runtimeResolver = new RuntimeResolver(owner, env.isInteractive));
-    let compileTimeResolver = new CompileTimeResolverImpl(runtimeResolver);
+    let resolver = (this._runtimeResolver = new ResolverImpl());
 
     let sharedArtifacts = artifacts();
 
-    let context = (this._context = syntaxCompilationContext(sharedArtifacts, compileTimeResolver));
-
-    populateMacros(context.macros);
+    this._context = programCompilationContext(sharedArtifacts, resolver);
 
     let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
     this._runtime = runtimeContext(
@@ -325,7 +319,7 @@ export abstract class Renderer {
       },
       runtimeEnvironmentDelegate,
       sharedArtifacts,
-      runtimeResolver
+      resolver
     );
   }
 
@@ -337,19 +331,19 @@ export abstract class Renderer {
       debugRenderTree
     );
 
-    return debugRenderTree!;
+    return debugRenderTree;
   }
 
   // renderer HOOKS
 
-  appendOutletView(view: OutletView, target: SimpleElement) {
+  appendOutletView(view: OutletView, target: SimpleElement): void {
     let definition = createRootOutlet(view);
-    this._appendDefinition(view, curry(definition), target);
+    this._appendDefinition(view, curry(definition, null), target);
   }
 
-  appendTo(view: Component, target: SimpleElement) {
+  appendTo(view: Component, target: SimpleElement): void {
     let definition = new RootComponentDefinition(view);
-    this._appendDefinition(view, curry(definition), target);
+    this._appendDefinition(view, curry(definition, null), target);
   }
 
   _appendDefinition(

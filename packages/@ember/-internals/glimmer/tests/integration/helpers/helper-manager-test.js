@@ -1,12 +1,12 @@
 import { DEBUG } from '@glimmer/env';
+import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import { helperCapabilities } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
 import { setOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { inject as service } from '@ember/service';
+import { registerDestructor } from '@glimmer/destroyable';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
-import { registerDestructor, setHelperManager, setModifierManager } from '@glimmer/runtime';
 
 class TestHelperManager {
   capabilities = helperCapabilities('3.23', {
@@ -235,8 +235,13 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
         }, expectedMessage);
       }
 
-      ['@test asserts against using both `hasValue` and `hasScheduledEffect`']() {
-        expectAssertion(() => {
+      ['@test asserts against using both `hasValue` and `hasScheduledEffect`'](assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
+        assert.throws(() => {
           helperCapabilities('3.23', {
             hasValue: true,
             hasScheduledEffect: true,
@@ -244,22 +249,37 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
         }, /You must pass either the `hasValue` OR the `hasScheduledEffect` capability when defining a helper manager. Passing neither, or both, is not permitted./);
       }
 
-      ['@test asserts requiring either `hasValue` or `hasScheduledEffect`']() {
-        expectAssertion(() => {
+      ['@test asserts requiring either `hasValue` or `hasScheduledEffect`'](assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
+        assert.throws(() => {
           helperCapabilities('3.23', {});
         }, /You must pass either the `hasValue` OR the `hasScheduledEffect` capability when defining a helper manager. Passing neither, or both, is not permitted./);
       }
 
-      ['@test asserts against using `hasScheduledEffect`']() {
-        expectAssertion(() => {
+      ['@test asserts against using `hasScheduledEffect`'](assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
+        assert.throws(() => {
           helperCapabilities('3.23', {
             hasScheduledEffect: true,
           });
         }, /The `hasScheduledEffect` capability has not yet been implemented for helper managers. Please pass `hasValue` instead/);
       }
 
-      ['@test asserts against using incorrect version for capabilities']() {
-        expectAssertion(() => {
+      ['@test asserts against using incorrect version for capabilities'](assert) {
+        if (!DEBUG) {
+          assert.expect(0);
+          return;
+        }
+
+        assert.throws(() => {
           helperCapabilities('aoeu', {
             hasScheduledEffect: true,
           });
@@ -318,6 +338,60 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
         }, /Custom helper managers must have a `capabilities` property that is the result of calling the `capabilities\('3.23'\)` \(imported via `import \{ capabilities \} from '@ember\/helper';`\). /);
 
         assert.verifySteps([]);
+      }
+
+      '@test custom helpers gives helpful assertion when reading then mutating a tracked value within constructor'() {
+        this.registerCustomHelper(
+          'hello',
+          class extends TestHelper {
+            @tracked foo = 123;
+
+            constructor() {
+              super(...arguments);
+
+              // first read the tracked property
+              this.foo;
+
+              // then attempt to update the tracked property
+              this.foo = 456;
+            }
+
+            value() {
+              return this.foo;
+            }
+          }
+        );
+
+        let expectedMessage = backtrackingMessageFor('foo');
+
+        expectAssertion(() => {
+          this.render('{{hello}}');
+        }, expectedMessage);
+      }
+
+      '@test custom helpers gives helpful assertion when reading then mutating a tracked value within value'() {
+        this.registerCustomHelper(
+          'hello',
+          class extends TestHelper {
+            @tracked foo = 123;
+
+            value() {
+              // first read the tracked property
+              this.foo;
+
+              // then attempt to update the tracked property
+              this.foo = 456;
+            }
+          }
+        );
+
+        let expectedMessage = backtrackingMessageFor('foo', '.*', {
+          renderTree: ['\\(result of a `TEST_HELPER` helper\\)'],
+        });
+
+        expectAssertion(() => {
+          this.render('{{hello}}');
+        }, expectedMessage);
       }
     }
   );

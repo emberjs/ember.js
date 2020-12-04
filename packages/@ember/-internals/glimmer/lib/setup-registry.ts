@@ -9,7 +9,6 @@ import TextArea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
-import ComponentTemplate from './templates/component';
 import InputTemplate from './templates/input';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
@@ -53,8 +52,6 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register('view:-outlet', OutletView);
   registry.register('template:-outlet', OutletTemplate as any);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
-
-  registry.register(P`template:components/-default`, ComponentTemplate as any);
 
   registry.optionsForType('helper', { instantiate: false });
 

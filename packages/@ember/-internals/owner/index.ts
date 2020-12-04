@@ -1,4 +1,4 @@
-import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/runtime';
+import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/owner';
 
 /**
 @module @ember/application

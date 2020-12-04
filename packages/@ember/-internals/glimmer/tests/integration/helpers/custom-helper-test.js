@@ -460,40 +460,59 @@ moduleFor(
       this.assertHTML('<div data-foo-bar="baz"></div>');
     }
 
-    ['@test simple helper not usable with a block']() {
+    ['@test simple helper not usable with a block'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
       this.registerHelper('some-helper', () => {});
 
-      expectAssertion(() => {
+      assert.throws(() => {
         this.render(`{{#some-helper}}{{/some-helper}}`);
-      }, /Helpers may not be used in the block form/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a component, but nothing was found./);
     }
 
-    ['@test class-based helper not usable with a block']() {
+    ['@test class-based helper not usable with a block'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       this.registerHelper('some-helper', {
         compute() {},
       });
 
-      expectAssertion(() => {
+      assert.throws(() => {
         this.render(`{{#some-helper}}{{/some-helper}}`);
-      }, /Helpers may not be used in the block form/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a component, but nothing was found./);
     }
 
-    ['@test simple helper not usable within element']() {
+    ['@test simple helper not usable within element'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       this.registerHelper('some-helper', () => {});
 
-      this.assert.throws(() => {
+      assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Error: Compile Error: Unexpected Modifier some-helper @ 0..0/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a modifier, but nothing was found./);
     }
 
-    ['@test class-based helper not usable within element']() {
+    ['@test class-based helper not usable within element'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       this.registerHelper('some-helper', {
         compute() {},
       });
 
-      this.assert.throws(() => {
+      assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Error: Compile Error: Unexpected Modifier some-helper @ 0..0/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a modifier, but nothing was found./);
     }
 
     ['@test class-based helper is torn down'](assert) {
@@ -729,7 +748,7 @@ moduleFor(
       }, expectedMessage);
     }
 
-    ['@test class-based helper gives helpful assertion when mutating a tracked property that was tracked already']() {
+    ['@test class-based helper gives helpful deprecation when mutating a tracked property that was tracked already']() {
       this.add(
         'helper:hello-world',
         class HelloWorld extends Helper {
@@ -746,7 +765,7 @@ moduleFor(
         renderTree: ['\\(result of a `<HelloWorld.*?>` helper\\)'],
       });
 
-      expectAssertion(() => {
+      expectDeprecation(() => {
         this.render('{{hello-world}}');
       }, expectedMessage);
     }

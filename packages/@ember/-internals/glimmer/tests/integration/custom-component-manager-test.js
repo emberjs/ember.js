@@ -1,12 +1,13 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
+import { componentCapabilities } from '@glimmer/manager';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { set, setProperties, computed } from '@ember/-internals/metal';
-import { setComponentManager, capabilities } from '@ember/-internals/glimmer';
+import { set, setProperties, computed, tracked } from '@ember/-internals/metal';
+import { setComponentManager } from '@ember/-internals/glimmer';
 
 const BasicComponentManager = EmberObject.extend({
-  capabilities: capabilities('3.4'),
+  capabilities: componentCapabilities('3.4'),
 
   createComponent(factory, args) {
     return factory.create({ args });
@@ -38,7 +39,7 @@ class ComponentManagerTest extends RenderingTestCase {
     super(...arguments);
 
     InstrumentedComponentManager = EmberObject.extend({
-      capabilities: capabilities('3.4', {
+      capabilities: componentCapabilities('3.4', {
         destructor: true,
         asyncLifecycleCallbacks: true,
       }),
@@ -129,7 +130,7 @@ moduleFor(
     ['@test it can have no template context']() {
       let ComponentClass = setComponentManager(() => {
         return EmberObject.create({
-          capabilities: capabilities('3.4'),
+          capabilities: componentCapabilities('3.4'),
 
           createComponent() {
             return null;
@@ -157,7 +158,7 @@ moduleFor(
       class Base {}
       setComponentManager(() => {
         return EmberObject.create({
-          capabilities: capabilities('3.4'),
+          capabilities: componentCapabilities('3.4'),
 
           createComponent(Factory, args) {
             return new Factory(args);
@@ -216,7 +217,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: capabilities('3.4'),
+            capabilities: componentCapabilities('3.4'),
 
             createComponent(factory) {
               return factory.create();
@@ -421,7 +422,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: capabilities('3.4', {
+            capabilities: componentCapabilities('3.4', {
               destructor: true,
             }),
 
@@ -471,7 +472,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: capabilities('3.4', {
+            capabilities: componentCapabilities('3.4', {
               asyncLifecycleCallbacks: true,
             }),
 
@@ -675,7 +676,7 @@ moduleFor(
 
     ['@test updating attributes triggers updateComponent and didUpdateComponent'](assert) {
       let TestManager = EmberObject.extend({
-        capabilities: capabilities('3.4', {
+        capabilities: componentCapabilities('3.4', {
           destructor: true,
           asyncLifecycleCallbacks: true,
         }),
@@ -742,7 +743,7 @@ moduleFor(
           return new TestManager();
         }
 
-        capabilities = capabilities('3.13', {
+        capabilities = componentCapabilities('3.13', {
           updateHook: true,
         });
 
@@ -798,7 +799,7 @@ moduleFor(
       assert
     ) {
       class TestManager {
-        capabilities = capabilities('3.13', {
+        capabilities = componentCapabilities('3.13', {
           /* implied: updateHook: false */
         });
 
@@ -896,6 +897,36 @@ moduleFor(
       }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 
       assert.verifySteps([]);
+    }
+
+    '@test tracked property mutation in constructor issues a deprecation'() {
+      let ComponentClass = setComponentManager(
+        createBasicManager,
+        class extends EmberObject {
+          @tracked itemCount = 0;
+
+          init() {
+            super.init(...arguments);
+
+            // first read the tracked property
+            let { itemCount } = this;
+
+            // then attempt to update the tracked property
+            this.itemCount = itemCount + 1;
+          }
+        }
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `{{this.itemCount}}`,
+        ComponentClass,
+      });
+
+      expectDeprecation(() => {
+        this.render('<FooBar />');
+      }, /You attempted to update `itemCount` on `<.*>`, but it had already been used previously in the same computation/);
+
+      this.assertHTML(`1`);
     }
   }
 );

@@ -2,7 +2,7 @@ import { Owner } from '@ember/-internals/owner';
 import { deprecate } from '@ember/debug';
 import { COMPONENT_MANAGER_STRING_LOOKUP } from '@ember/deprecated-features';
 import { ComponentManager } from '@glimmer/interfaces';
-import { setComponentManager as glimmerSetComponentManager } from '@glimmer/runtime';
+import { setComponentManager as glimmerSetComponentManager } from '@glimmer/manager';
 
 export function setComponentManager(
   stringOrFunction: string | ((owner: Owner) => ComponentManager<unknown>),

@@ -1,4 +1,5 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
+import { registerDestructor } from '@glimmer/destroyable';
 import {
   CapturedNamedArguments,
   Environment,
@@ -6,7 +7,6 @@ import {
   TemplateFactory,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
-import { registerDestructor } from '@glimmer/runtime';
 import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
 import { Renderer } from '../renderer';
 

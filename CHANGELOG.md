@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.24.0-beta.2 (November 24, 2020)
+
+- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
+
 ### v3.24.0-beta.1 (November 16, 2020)
 
 - [#19224](https://github.com/emberjs/ember.js/pull/19224) [FEATURE] Add `{{page-title}}` helper to route template blueprints to implement [RFC #0654](https://github.com/emberjs/rfcs/blob/master/text/0645-add-ember-page-title-addon.md). 
@@ -17,6 +21,10 @@
 - [#19238](https://github.com/emberjs/ember.js/pull/19238) [CLEANUP] Removes the `expandLocalLookup` API
 - [#19258](https://github.com/emberjs/ember.js/pull/19258) / [#19261](https://github.com/emberjs/ember.js/pull/19261) / [#19267](https://github.com/emberjs/ember.js/pull/19267) Update rendering engine to 0.65.0
 
+### v3.23.1 (November 23, 2020)
+
+- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
+
 ### v3.23.0 (November 16, 2020)
 
 - [#19160](https://github.com/emberjs/ember.js/pull/19160) / [#19182](https://github.com/emberjs/ember.js/pull/19182) [FEATURE] Implements the helper manager feature specified in the [Helper Managers RFC](https://github.com/emberjs/rfcs/blob/master/text/0625-helper-managers.md).
@@ -32,6 +40,11 @@
 - [#19198](https://github.com/emberjs/ember.js/pull/19198) / [#19232](https://github.com/emberjs/ember.js/pull/19232) [BUGFIX] Restores the shadowed property set behavior
 - [#19221](https://github.com/emberjs/ember.js/pull/19221) [BUGFIX] Ensure fn and (mut) work with falsy values
 - [#19213](https://github.com/emberjs/ember.js/pull/19213) [BUGFIX] Update rendering engine to improve error ergonomics.
+
+### v3.22.2 (November 25, 2020)
+
+- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
+- [#19263](https://github.com/emberjs/ember.js/pull/19263) [BUGFIX] Remove `@dependentKeyCompat` assertion
 
 ### v3.22.1 (November 10, 2020)
 

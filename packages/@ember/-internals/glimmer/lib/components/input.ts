@@ -1,7 +1,7 @@
 /**
 @module @ember/component
 */
-import { setComponentManager } from '@glimmer/runtime';
+import { setInternalComponentManager } from '@glimmer/manager';
 import InternalManager from '../component-managers/internal';
 import InternalComponent from './internal';
 
@@ -117,6 +117,6 @@ export default class Input extends InternalComponent {
   }
 }
 
-setComponentManager(InternalManager.for('input'), Input);
+setInternalComponentManager(InternalManager.for('input'), Input);
 
 Input.toString = () => '@ember/component/input';

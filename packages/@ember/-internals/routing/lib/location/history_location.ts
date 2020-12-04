@@ -78,11 +78,11 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
     @method getHash
   */
-  getHash() {
+  getHash(): string {
     return getHash(this.location);
   }
 
-  init() {
+  init(): void {
     this._super(...arguments);
 
     let base = document.querySelector('base');
@@ -103,7 +103,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @private
     @method initState
   */
-  initState() {
+  initState(): void {
     let history = this.history || window.history;
     set(this, 'history', history);
 
@@ -125,7 +125,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method getURL
     @return url {String}
   */
-  getURL() {
+  getURL(): string {
     let { location, rootURL, baseURL } = this;
     let path = location.pathname;
 
@@ -152,7 +152,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method setURL
     @param path {String}
   */
-  setURL(path: string) {
+  setURL(path: string): void {
     let { state } = this.history;
     path = this.formatURL(path);
 
@@ -169,7 +169,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method replaceURL
     @param path {String}
   */
-  replaceURL(path: string) {
+  replaceURL(path: string): void {
     let { state } = this.history;
     path = this.formatURL(path);
 
@@ -185,7 +185,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
    @method pushState
    @param path {String}
   */
-  pushState(path: string) {
+  pushState(path: string): void {
     let state = { path, uuid: _uuid() };
 
     this.history.pushState(state, null, path);
@@ -201,7 +201,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
    @method replaceState
    @param path {String}
   */
-  replaceState(path: string) {
+  replaceState(path: string): void {
     let state = { path, uuid: _uuid() };
 
     this.history.replaceState(state, null, path);
@@ -218,7 +218,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback: UpdateCallback) {
+  onUpdateURL(callback: UpdateCallback): void {
     this._removeEventListener();
 
     this._popstateHandler = () => {
@@ -243,7 +243,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @param url {String}
     @return formatted url {String}
   */
-  formatURL(url: string) {
+  formatURL(url: string): string {
     let { rootURL, baseURL } = this;
 
     if (url !== '') {
@@ -265,11 +265,11 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @private
     @method willDestroy
   */
-  willDestroy() {
+  willDestroy(): void {
     this._removeEventListener();
   }
 
-  _removeEventListener() {
+  _removeEventListener(): void {
     if (this._popstateHandler) {
       window.removeEventListener('popstate', this._popstateHandler);
     }

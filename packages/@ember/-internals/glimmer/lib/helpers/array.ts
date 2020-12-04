@@ -1,6 +1,7 @@
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, Reference } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
+import { internalHelper } from './internal-helper';
 
 /**
 @module ember
@@ -42,8 +43,10 @@ import { reifyPositional } from '@glimmer/runtime';
    @public
  */
 
-export default function (args: VMArguments): Reference<unknown[]> {
-  let captured = args.positional.capture();
+export default internalHelper(
+  (args: VMArguments): Reference<unknown[]> => {
+    let captured = args.positional.capture();
 
-  return createComputeRef(() => reifyPositional(captured), null, 'array');
-}
+    return createComputeRef(() => reifyPositional(captured), null, 'array');
+  }
+);

@@ -6,6 +6,7 @@ import { assert } from '@ember/debug';
 import { toBool } from '@glimmer/global-context';
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
   The `if` helper allows you to conditionally render one of two branches,
@@ -98,7 +99,7 @@ import { createComputeRef, valueForRef } from '@glimmer/reference';
   @for Ember.Templates.helpers
   @public
 */
-export function inlineIf(args: VMArguments) {
+export const inlineIf = internalHelper((args: VMArguments) => {
   let positional = args.positional.capture();
 
   return createComputeRef(
@@ -119,7 +120,7 @@ export function inlineIf(args: VMArguments) {
     null,
     'if'
   );
-}
+});
 
 /**
   The `unless` helper is the inverse of the `if` helper. It displays if a value
@@ -206,7 +207,7 @@ export function inlineIf(args: VMArguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineUnless(args: VMArguments) {
+export const inlineUnless = internalHelper((args: VMArguments) => {
   let positional = args.positional.capture();
 
   return createComputeRef(
@@ -227,4 +228,4 @@ export function inlineUnless(args: VMArguments) {
     null,
     'unless'
   );
-}
+});

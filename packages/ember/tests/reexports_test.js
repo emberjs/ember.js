@@ -220,7 +220,7 @@ let allExports = [
   ['platform.defineProperty', null, { value: true }],
   ['platform.hasPropertyAccessors', null, { value: true }],
   ['defineProperty', '@ember/-internals/metal'],
-  ['destroy', '@glimmer/runtime', 'destroy'],
+  ['destroy', '@glimmer/destroyable', 'destroy'],
   ['libraries', '@ember/-internals/metal'],
   ['getProperties', '@ember/-internals/metal'],
   ['setProperties', '@ember/-internals/metal'],
@@ -263,19 +263,17 @@ let allExports = [
   ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
   ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
   ['_setComponentManager', '@ember/-internals/glimmer', 'setComponentManager'],
-  ['_componentManagerCapabilities', '@ember/-internals/glimmer', 'capabilities'],
-  ['_setComponentTemplate', '@ember/-internals/glimmer', 'setComponentTemplate'],
-  ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate'],
-  ['_templateOnlyComponent', '@ember/component/template-only', 'default'],
+  ['_componentManagerCapabilities', '@glimmer/manager', 'componentCapabilities'],
+  ['_setComponentTemplate', '@glimmer/manager', 'setComponentTemplate'],
+  ['_getComponentTemplate', '@glimmer/manager', 'getComponentTemplate'],
+  ['_templateOnlyComponent', '@glimmer/runtime', 'templateOnlyComponent'],
   EMBER_GLIMMER_HELPER_MANAGER
-    ? ['_setHelperManager', '@glimmer/runtime', 'setHelperManager']
+    ? ['_setHelperManager', '@glimmer/manager', 'setHelperManager']
     : null,
   EMBER_GLIMMER_HELPER_MANAGER
-    ? ['_helperManagerCapabilities', '@ember/-internals/glimmer', 'helperCapabilities']
+    ? ['_helperManagerCapabilities', '@glimmer/manager', 'helperCapabilities']
     : null,
-  EMBER_GLIMMER_INVOKE_HELPER
-    ? ['_invokeHelper', '@ember/-internals/glimmer', 'invokeHelper']
-    : null,
+  EMBER_GLIMMER_INVOKE_HELPER ? ['_invokeHelper', '@glimmer/runtime', 'invokeHelper'] : null,
   ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
 
   // @ember/-internals/runtime

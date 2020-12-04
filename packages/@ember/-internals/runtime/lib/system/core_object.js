@@ -31,7 +31,8 @@ import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet as WeakSet } from '@glimmer/util';
-import { destroy, isDestroying, isDestroyed, registerDestructor, OWNER } from '@glimmer/runtime';
+import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
+import { OWNER } from '@glimmer/owner';
 
 const reopen = Mixin.prototype.reopen;
 

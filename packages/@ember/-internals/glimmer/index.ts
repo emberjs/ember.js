@@ -361,7 +361,6 @@
 */
 
 export { templateFactory as template, templateCacheCounters } from '@glimmer/opcode-compiler';
-export { setComponentTemplate, getComponentTemplate } from '@glimmer/runtime';
 
 export { default as RootTemplate } from './lib/templates/root';
 export { default as Checkbox } from './lib/components/checkbox';
@@ -387,20 +386,14 @@ export {
 } from './lib/template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
-export {
-  registerMacros as _registerMacros,
-  experimentalMacros as _experimentalMacros,
-} from './lib/syntax';
 
 // needed for test
 // TODO just test these through public API
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
 export { INVOKE } from './lib/helpers/action';
+export { default as on } from './lib/modifiers/on';
 export { default as OutletView } from './lib/views/outlet';
 export { OutletState } from './lib/utils/outlet';
 export { setComponentManager } from './lib/utils/managers';
-export { capabilities } from './lib/component-managers/custom';
-export { capabilities as modifierCapabilities } from './lib/modifiers/custom';
-export { helperCapabilities, invokeHelper } from './lib/helpers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
