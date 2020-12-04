@@ -175,7 +175,7 @@ export class PositionalArgumentsImpl implements PositionalArguments {
     return this.references as CapturedPositionalArguments;
   }
 
-  prepend(other: CapturedPositionalArguments) {
+  prepend(other: Reference[]) {
     let additions = other.length;
 
     if (additions > 0) {

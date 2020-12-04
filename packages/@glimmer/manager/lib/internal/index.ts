@@ -4,10 +4,15 @@ import { debugToString, _WeakSet } from '@glimmer/util';
 import {
   InternalComponentManager,
   InternalModifierManager,
-  InternalHelperManager,
+  HelperManager,
+  Helper,
 } from '@glimmer/interfaces';
 
-type InternalManager = InternalComponentManager | InternalModifierManager | InternalHelperManager;
+type InternalManager =
+  | InternalComponentManager
+  | InternalModifierManager
+  | HelperManager<unknown>
+  | Helper;
 
 const COMPONENT_MANAGERS = new WeakMap<
   object,
@@ -21,7 +26,7 @@ const MODIFIER_MANAGERS = new WeakMap<
 
 const HELPER_MANAGERS = new WeakMap<
   object,
-  InternalManagerFactory<Owner | undefined, InternalHelperManager>
+  InternalManagerFactory<Owner | undefined, HelperManager<unknown> | Helper>
 >();
 
 const OWNER_MANAGER_INSTANCES: WeakMap<
@@ -121,18 +126,22 @@ export function setInternalModifierManager<O extends Owner>(
 export function getInternalModifierManager(
   owner: Owner | undefined,
   definition: object
-): InternalModifierManager | undefined {
-  const factory = getManager(MODIFIER_MANAGERS, definition);
+): InternalModifierManager {
+  const factory = getManager(MODIFIER_MANAGERS, definition)!;
 
-  if (factory !== undefined) {
-    return getManagerInstanceForOwner(owner, factory);
+  if (DEBUG && factory === undefined) {
+    throw new Error(
+      `Attempted to load a modifier, but there wasn't a manager associated with the definition. The definition was: ${debugToString!(
+        definition
+      )}`
+    );
   }
 
-  return undefined;
+  return getManagerInstanceForOwner(owner, factory);
 }
 
 export function setInternalHelperManager<O extends Owner>(
-  factory: InternalManagerFactory<O | undefined, InternalHelperManager>,
+  factory: InternalManagerFactory<O | undefined, HelperManager<unknown> | Helper>,
   definition: object
 ) {
   return setManager(HELPER_MANAGERS, factory, definition);
@@ -141,14 +150,18 @@ export function setInternalHelperManager<O extends Owner>(
 export function getInternalHelperManager(
   owner: Owner | undefined,
   definition: object
-): InternalHelperManager | undefined {
-  const factory = getManager(HELPER_MANAGERS, definition);
+): HelperManager<unknown> | Helper {
+  const factory = getManager(HELPER_MANAGERS, definition)!;
 
-  if (factory !== undefined) {
-    return getManagerInstanceForOwner(owner, factory);
+  if (DEBUG && factory === undefined) {
+    throw new Error(
+      `Attempted to load a helper, but there wasn't a manager associated with the definition. The definition was: ${debugToString!(
+        definition
+      )}`
+    );
   }
 
-  return undefined;
+  return getManagerInstanceForOwner(owner, factory);
 }
 
 export function setInternalComponentManager<O extends Owner>(
@@ -161,12 +174,16 @@ export function setInternalComponentManager<O extends Owner>(
 export function getInternalComponentManager(
   owner: Owner | undefined,
   definition: object
-): InternalComponentManager | undefined {
-  const factory = getManager<Owner, InternalComponentManager>(COMPONENT_MANAGERS, definition);
+): InternalComponentManager {
+  const factory = getManager<Owner, InternalComponentManager>(COMPONENT_MANAGERS, definition)!;
 
-  if (factory !== undefined) {
-    return getManagerInstanceForOwner(owner, factory);
+  if (DEBUG && factory === undefined) {
+    throw new Error(
+      `Attempted to load a component, but there wasn't a manager associated with the definition. The definition was: ${debugToString!(
+        definition
+      )}`
+    );
   }
 
-  return undefined;
+  return getManagerInstanceForOwner(owner, factory);
 }

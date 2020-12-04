@@ -9,7 +9,6 @@ import { CustomComponentManager } from './component';
 import { DEBUG } from '@glimmer/env';
 import { FROM_CAPABILITIES } from '../util/capabilities';
 import { CustomModifierManager } from './modifier';
-import customHelper from './helper';
 
 type Manager = ComponentManager<unknown> | ModifierManager<unknown> | HelperManager<unknown>;
 
@@ -51,7 +50,7 @@ export function setModifierManager<O extends Owner>(
       );
     }
 
-    return new CustomModifierManager(manager);
+    return new CustomModifierManager(owner, manager);
   }, obj);
 }
 
@@ -71,6 +70,6 @@ export function setHelperManager<O extends Owner>(
       );
     }
 
-    return { helper: customHelper(manager, obj), manager };
+    return manager;
   }, obj);
 }

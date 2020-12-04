@@ -1,9 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import {
-  CompilableProgram,
   CompileTimeConstants,
   CompileTimeResolver,
-  ComponentDefinition,
   ContainingMetadata,
   Expressions,
   Owner,
@@ -14,9 +12,9 @@ import {
   ResolveOptionalComponentOrHelperOp,
   ResolveOptionalHelperOp,
   SexpOpcodes,
-  WithStaticLayout,
+  ResolutionTimeConstants,
 } from '@glimmer/interfaces';
-import { assert, unwrapTemplate } from '@glimmer/util';
+import { assert } from '@glimmer/util';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;
@@ -84,7 +82,7 @@ function assertResolverInvariants(meta: ContainingMetadata): RequiredContainingM
  */
 export function resolveComponent(
   resolver: CompileTimeResolver,
-  constants: CompileTimeConstants,
+  constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveComponentOp
 ): void {
@@ -100,7 +98,7 @@ export function resolveComponent(
     );
   }
 
-  then(convertToCompileTimeComponent(constants, definition));
+  then(constants.resolvedComponent(definition, name));
 }
 
 /**
@@ -109,7 +107,7 @@ export function resolveComponent(
  */
 export function resolveHelper(
   resolver: CompileTimeResolver,
-  constants: CompileTimeConstants,
+  constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveHelperOp
 ): void {
@@ -125,7 +123,7 @@ export function resolveHelper(
     );
   }
 
-  then(constants.value(helper));
+  then(constants.helper(owner, helper, name));
 }
 
 /**
@@ -135,7 +133,7 @@ export function resolveHelper(
  */
 export function resolveModifier(
   resolver: CompileTimeResolver,
-  constants: CompileTimeConstants,
+  constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveModifierOp
 ): void {
@@ -151,7 +149,7 @@ export function resolveModifier(
     );
   }
 
-  then(constants.value(modifier));
+  then(constants.modifier(owner, modifier, name));
 }
 
 /**
@@ -159,7 +157,7 @@ export function resolveModifier(
  */
 export function resolveComponentOrHelper(
   resolver: CompileTimeResolver,
-  constants: CompileTimeConstants,
+  constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveComponentOrHelperOp
 ): void {
@@ -173,17 +171,17 @@ export function resolveComponentOrHelper(
   let definition = resolver.lookupComponent(name, owner);
 
   if (definition !== null) {
-    then(convertToCompileTimeComponent(constants, definition));
+    then(constants.resolvedComponent(definition, name));
   } else {
-    let value = resolver.lookupHelper(name, owner);
+    let helper = resolver.lookupHelper(name, owner);
 
-    if (DEBUG && value === null) {
+    if (DEBUG && helper === null) {
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
       );
     }
 
-    then(constants.value(value));
+    then(constants.helper(owner, helper!, name));
   }
 }
 
@@ -192,7 +190,7 @@ export function resolveComponentOrHelper(
  */
 export function resolveOptionalHelper(
   resolver: CompileTimeResolver,
-  constants: CompileTimeConstants,
+  constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveOptionalHelperOp
 ): void {
@@ -200,9 +198,9 @@ export function resolveOptionalHelper(
   let { upvars, owner } = assertResolverInvariants(meta);
 
   let name = upvars[expr[1]];
-  let value = resolver.lookupHelper(name, owner);
+  let helper = resolver.lookupHelper(name, owner);
 
-  then(value !== null ? constants.value(value) : name);
+  then(helper !== null ? constants.helper(owner, helper, name) : name);
 }
 
 /**
@@ -210,7 +208,7 @@ export function resolveOptionalHelper(
  */
 export function resolveOptionalComponentOrHelper(
   resolver: CompileTimeResolver,
-  constants: CompileTimeConstants,
+  constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
   [, expr, then]: ResolveOptionalComponentOrHelperOp
 ): void {
@@ -224,28 +222,10 @@ export function resolveOptionalComponentOrHelper(
   let definition = resolver.lookupComponent(name, owner);
 
   if (definition !== null) {
-    then(convertToCompileTimeComponent(constants, definition));
+    then(constants.resolvedComponent(definition, name));
   } else {
-    let value = resolver.lookupHelper(name, owner);
+    let helper = resolver.lookupHelper(name, owner);
 
-    then(value !== null ? constants.value(value) : name);
+    then(helper !== null ? constants.helper(owner, helper, name) : name);
   }
-}
-
-function convertToCompileTimeComponent(
-  constants: CompileTimeConstants,
-  definition: ComponentDefinition
-) {
-  let handle = constants.value(definition);
-  let { manager, state } = definition;
-
-  let capabilities = manager.getCapabilities(state);
-  let compilable: CompilableProgram | null = null;
-
-  if (!capabilities.dynamicLayout) {
-    let template = unwrapTemplate((manager as WithStaticLayout).getStaticLayout(state));
-    compilable = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
-  }
-
-  return { handle, capabilities, compilable };
 }

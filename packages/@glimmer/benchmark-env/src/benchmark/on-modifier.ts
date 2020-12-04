@@ -12,8 +12,8 @@ interface OnModifierState {
   listener: EventListener | null;
 }
 
-class OnModifierManager implements InternalModifierManager<OnModifierState, null> {
-  create(element: SimpleElement, _: null, args: VMArguments) {
+class OnModifierManager implements InternalModifierManager<OnModifierState, object> {
+  create(element: SimpleElement, _: {}, args: VMArguments) {
     return {
       element,
       nameRef: args.positional.at(0) as Reference<string>,
@@ -56,6 +56,6 @@ class OnModifierManager implements InternalModifierManager<OnModifierState, null
   }
 }
 
-const onModifier: InternalModifierManager<unknown, null> = new OnModifierManager();
+const onModifier: InternalModifierManager<unknown, object> = new OnModifierManager();
 
 export default onModifier;

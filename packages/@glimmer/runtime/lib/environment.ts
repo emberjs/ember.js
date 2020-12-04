@@ -6,15 +6,17 @@ import {
   GlimmerTreeConstruction,
   Transaction,
   TransactionSymbol,
-  WithCreateInstance,
-  InternalModifierManager,
   RuntimeContext,
   RuntimeResolver,
   Option,
   RuntimeArtifacts,
   Owner,
+  ComponentInstanceWithCreate,
+  ModifierInstance,
+  InternalModifierManager,
+  ModifierInstanceState,
 } from '@glimmer/interfaces';
-import { assert, expect, symbol, debugToString } from '@glimmer/util';
+import { assert, expect, symbol } from '@glimmer/util';
 import { track, updateTag } from '@glimmer/validator';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { RuntimeProgramImpl } from '@glimmer/program';
@@ -23,92 +25,87 @@ import DebugRenderTree from './debug-render-tree';
 export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
 
 class TransactionImpl implements Transaction {
-  public scheduledInstallManagers: InternalModifierManager[] = [];
-  public scheduledInstallModifiers: unknown[] = [];
-  public scheduledUpdateModifierManagers: InternalModifierManager[] = [];
-  public scheduledUpdateModifiers: unknown[] = [];
-  public createdComponents: unknown[] = [];
-  public createdManagers: WithCreateInstance<unknown>[] = [];
-  public updatedComponents: unknown[] = [];
-  public updatedManagers: WithCreateInstance<unknown>[] = [];
+  public scheduledInstallModifiers: ModifierInstance[] = [];
+  public scheduledUpdateModifiers: ModifierInstance[] = [];
+  public createdComponents: ComponentInstanceWithCreate[] = [];
+  public updatedComponents: ComponentInstanceWithCreate[] = [];
 
-  didCreate(component: unknown, manager: WithCreateInstance) {
+  didCreate(component: ComponentInstanceWithCreate) {
     this.createdComponents.push(component);
-    this.createdManagers.push(manager);
   }
 
-  didUpdate(component: unknown, manager: WithCreateInstance) {
+  didUpdate(component: ComponentInstanceWithCreate) {
     this.updatedComponents.push(component);
-    this.updatedManagers.push(manager);
   }
 
-  scheduleInstallModifier(modifier: unknown, manager: InternalModifierManager) {
+  scheduleInstallModifier(modifier: ModifierInstance) {
     this.scheduledInstallModifiers.push(modifier);
-    this.scheduledInstallManagers.push(manager);
   }
 
-  scheduleUpdateModifier(modifier: unknown, manager: InternalModifierManager) {
+  scheduleUpdateModifier(modifier: ModifierInstance) {
     this.scheduledUpdateModifiers.push(modifier);
-    this.scheduledUpdateModifierManagers.push(manager);
   }
 
   commit() {
-    let { createdComponents, createdManagers } = this;
+    let { createdComponents, updatedComponents } = this;
 
     for (let i = 0; i < createdComponents.length; i++) {
-      let component = createdComponents[i];
-      let manager = createdManagers[i];
-      manager.didCreate(component);
+      let { manager, state } = createdComponents[i];
+      manager.didCreate(state);
     }
-
-    let { updatedComponents, updatedManagers } = this;
 
     for (let i = 0; i < updatedComponents.length; i++) {
-      let component = updatedComponents[i];
-      let manager = updatedManagers[i];
-      manager.didUpdate(component);
+      let { manager, state } = updatedComponents[i];
+      manager.didUpdate(state);
     }
 
-    let { scheduledInstallManagers, scheduledInstallModifiers } = this;
+    let { scheduledInstallModifiers, scheduledUpdateModifiers } = this;
 
-    let manager: InternalModifierManager, modifier: unknown;
+    // Prevent a transpilation issue we guard against in Ember, the
+    // throw-if-closure-required issue
+    let manager: InternalModifierManager, state: ModifierInstanceState;
 
-    for (let i = 0; i < scheduledInstallManagers.length; i++) {
-      modifier = scheduledInstallModifiers[i];
-      manager = scheduledInstallManagers[i];
+    for (let i = 0; i < scheduledInstallModifiers.length; i++) {
+      let modifier = scheduledInstallModifiers[i];
+      manager = modifier.manager;
+      state = modifier.state;
 
-      let modifierTag = manager.getTag(modifier);
+      let modifierTag = manager.getTag(state);
 
       if (modifierTag !== null) {
         let tag = track(
           // eslint-disable-next-line no-loop-func
-          () => manager.install(modifier),
+          () => manager.install(state),
           DEBUG &&
-            `- While rendering:\n  (instance of a \`${manager.getDebugName(modifier)}\` modifier)`
+            `- While rendering:\n  (instance of a \`${
+              modifier.definition.resolvedName || manager.getDebugName(modifier.definition.state)
+            }\` modifier)`
         );
         updateTag(modifierTag, tag);
       } else {
-        manager.install(modifier);
+        manager.install(state);
       }
     }
 
-    let { scheduledUpdateModifierManagers, scheduledUpdateModifiers } = this;
+    for (let i = 0; i < scheduledUpdateModifiers.length; i++) {
+      let modifier = scheduledUpdateModifiers[i];
+      manager = modifier.manager;
+      state = modifier.state;
 
-    for (let i = 0; i < scheduledUpdateModifierManagers.length; i++) {
-      modifier = scheduledUpdateModifiers[i];
-      manager = scheduledUpdateModifierManagers[i];
-
-      let modifierTag = manager.getTag(modifier);
+      let modifierTag = manager.getTag(state);
 
       if (modifierTag !== null) {
         let tag = track(
           // eslint-disable-next-line no-loop-func
-          () => manager.update(modifier),
-          DEBUG && `While rendering an instance of a \`${debugToString!(modifier)}\` modifier`
+          () => manager.update(state),
+          DEBUG &&
+            `- While rendering:\n  (instance of a \`${
+              modifier.definition.resolvedName || manager.getDebugName(modifier.definition.state)
+            }\` modifier)`
         );
         updateTag(modifierTag, tag);
       } else {
-        manager.update(modifier);
+        manager.update(state);
       }
     }
   }
@@ -164,23 +161,23 @@ export class EnvironmentImpl implements Environment {
     return expect(this[TRANSACTION]!, 'must be in a transaction');
   }
 
-  didCreate(component: unknown, manager: WithCreateInstance) {
-    this.transaction.didCreate(component, manager);
+  didCreate(component: ComponentInstanceWithCreate) {
+    this.transaction.didCreate(component);
   }
 
-  didUpdate(component: unknown, manager: WithCreateInstance) {
-    this.transaction.didUpdate(component, manager);
+  didUpdate(component: ComponentInstanceWithCreate) {
+    this.transaction.didUpdate(component);
   }
 
-  scheduleInstallModifier(modifier: unknown, manager: InternalModifierManager) {
+  scheduleInstallModifier(modifier: ModifierInstance) {
     if (this.isInteractive) {
-      this.transaction.scheduleInstallModifier(modifier, manager);
+      this.transaction.scheduleInstallModifier(modifier);
     }
   }
 
-  scheduleUpdateModifier(modifier: unknown, manager: InternalModifierManager) {
+  scheduleUpdateModifier(modifier: ModifierInstance) {
     if (this.isInteractive) {
-      this.transaction.scheduleUpdateModifier(modifier, manager);
+      this.transaction.scheduleUpdateModifier(modifier);
     }
   }
 

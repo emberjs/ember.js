@@ -3,21 +3,9 @@ import {
   ComponentInstanceState,
   InternalComponentManager,
   WithCustomDebugRenderTree,
-  WithStaticLayout,
 } from '@glimmer/interfaces';
-import { hasCapability, Capability } from '../capabilities';
 
 /** @internal */
-export function hasStaticLayout<
-  D extends ComponentDefinitionState,
-  I extends ComponentInstanceState
->(
-  capabilities: Capability,
-  _manager: InternalComponentManager<I, D>
-): _manager is WithStaticLayout<I, D> {
-  return !hasCapability(capabilities, Capability.DynamicLayout);
-}
-
 export function hasCustomDebugRenderTreeLifecycle<
   D extends ComponentDefinitionState,
   I extends ComponentInstanceState

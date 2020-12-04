@@ -16,9 +16,7 @@ import {
   JitRenderDelegate,
   EmberishCurlyComponent,
   GlimmerishComponent,
-  TestComponentDefinitionState,
   createTemplate,
-  TEMPLATE_ONLY_CAPABILITIES,
 } from '..';
 import {
   EMPTY_ARGS,
@@ -58,18 +56,13 @@ class DebugRenderTreeDelegate extends JitRenderDelegate {
   ) {
     const ComponentClass = templateOnlyComponent();
 
-    let state: TestComponentDefinitionState = {
-      name,
-      capabilities: TEMPLATE_ONLY_CAPABILITIES,
-      ComponentClass,
-      template: null,
-    };
-
     setComponentTemplate(createTemplate(template), ComponentClass);
 
     let definition = {
-      state,
+      name,
+      state: ComponentClass,
       manager: new Manager(),
+      template: null,
     };
 
     this.registry.register('component', name, definition);

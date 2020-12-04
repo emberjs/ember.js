@@ -1,7 +1,11 @@
-import { CapturedArguments, ComponentDefinition, Option } from '@glimmer/interfaces';
+import {
+  CapturedArguments,
+  ComponentDefinition,
+  ComponentInstance,
+  Option,
+} from '@glimmer/interfaces';
 import { assert, symbol, _WeakSet } from '@glimmer/util';
-import { capabilityFlagsFrom } from '../capabilities';
-import { ComponentInstance } from '../compiled/opcodes/component';
+import { Reference } from '@glimmer/reference';
 import { VMArgumentsImpl } from '../vm/arguments';
 
 const INNER: unique symbol = symbol('INNER');
@@ -30,60 +34,57 @@ export class CurriedComponentDefinition {
   }
 }
 
-function offset(definition: CurriedComponentDefinition): number {
-  let inner = definition[INNER];
-  let args = definition[ARGS];
-  let length = args ? args.positional.length : 0;
-  return isCurriedComponentDefinition(inner) ? length + offset(inner) : length;
-}
-
-function unwrapCurriedComponentDefinition(
-  _definition: CurriedComponentDefinition,
+export function resolveCurriedComponentDefinition(
+  instance: ComponentInstance,
+  curriedDefinition: CurriedComponentDefinition,
   args: VMArgumentsImpl
-) {
-  let definition = _definition;
-
-  args.realloc(offset(definition));
+): ComponentDefinition {
+  let currentWrapper = curriedDefinition;
+  let prependArgs: Reference[] | undefined;
+  let definition;
 
   while (true) {
-    let { [ARGS]: curriedArgs, [INNER]: inner } = definition;
+    let { [ARGS]: curriedArgs, [INNER]: inner } = currentWrapper;
 
-    if (curriedArgs) {
-      args.positional.prepend(curriedArgs.positional);
+    if (curriedArgs !== null) {
+      if (curriedArgs.positional.length > 0) {
+        prependArgs =
+          prependArgs === undefined
+            ? curriedArgs.positional
+            : curriedArgs.positional.concat(prependArgs);
+      }
+
       args.named.merge(curriedArgs.named);
     }
 
     if (!isCurriedComponentDefinition(inner)) {
-      return inner;
+      definition = inner;
+      break;
     }
 
-    definition = inner;
+    currentWrapper = inner;
   }
-}
 
-export function resolveCurriedComponentDefinition(
-  instance: ComponentInstance,
-  definition: CurriedComponentDefinition,
-  args: VMArgumentsImpl
-): ComponentDefinition {
-  let unwrappedDefinition = (instance.definition = unwrapCurriedComponentDefinition(
-    definition,
-    args
-  ));
-  let { manager, state } = unwrappedDefinition;
+  if (prependArgs !== undefined) {
+    args.realloc(prependArgs.length);
+    args.positional.prepend(prependArgs);
+  }
+
+  let { manager } = definition;
 
   assert(instance.manager === null, 'component instance manager should not be populated yet');
   assert(instance.capabilities === null, 'component instance manager should not be populated yet');
 
+  instance.definition = definition;
   instance.manager = manager;
-  instance.capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
+  instance.capabilities = definition.capabilities;
 
-  return unwrappedDefinition;
+  return definition;
 }
 
 export function curry(
-  spec: ComponentDefinition,
+  spec: ComponentDefinition | CurriedComponentDefinition,
   args: Option<CapturedArguments> = null
 ): CurriedComponentDefinition {
-  return new CurriedComponentDefinition(spec as ComponentDefinition, args);
+  return new CurriedComponentDefinition(spec, args);
 }
