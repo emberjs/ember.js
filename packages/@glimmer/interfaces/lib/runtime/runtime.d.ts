@@ -1,5 +1,5 @@
 import { Environment } from './environment';
-import { RuntimeHeap, RuntimeConstants, RuntimeOp } from '../program';
+import { RuntimeHeap, RuntimeConstants, RuntimeOp, ResolutionTimeConstants } from '../program';
 import { RuntimeResolver } from '../serialize';
 import { Owner } from './owner';
 
@@ -17,13 +17,13 @@ export interface RuntimeContext {
 }
 
 export interface RuntimeProgram {
-  readonly constants: RuntimeConstants;
+  readonly constants: RuntimeConstants & ResolutionTimeConstants;
   readonly heap: RuntimeHeap;
 
   opcode(offset: number): RuntimeOp;
 }
 
 export interface RuntimeArtifacts {
-  readonly constants: RuntimeConstants;
+  readonly constants: RuntimeConstants & ResolutionTimeConstants;
   readonly heap: RuntimeHeap;
 }

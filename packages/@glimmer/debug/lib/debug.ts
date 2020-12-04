@@ -5,6 +5,7 @@ import {
   Dict,
   Maybe,
   TemplateCompilationContext,
+  ResolutionTimeConstants,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -16,11 +17,6 @@ import { Primitive } from './stack-check';
 export interface DebugConstants {
   getValue<T>(handle: number): T;
   getArray<T>(value: number): T[];
-  getSerializable(s: number): unknown;
-}
-
-interface LazyDebugConstants {
-  getOther<T>(s: number): T;
 }
 
 export function debugSlice(context: TemplateCompilationContext, start: number, end: number) {
@@ -34,7 +30,10 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
     for (let i = start; i < end; i = i + _size) {
       opcode.offset = i;
       let [name, params] = debug(
-        context.program.constants as Recast<CompileTimeConstants, DebugConstants>,
+        context.program.constants as Recast<
+          CompileTimeConstants & ResolutionTimeConstants,
+          DebugConstants
+        >,
         opcode,
         opcode.isMachine
       )!;
@@ -130,9 +129,7 @@ export function debug(
           out[operand.name] = decodeRegister(actualOperand);
           break;
         case 'unknown':
-          out[operand.name] = (c as Recast<DebugConstants, LazyDebugConstants>).getOther(
-            actualOperand
-          );
+          out[operand.name] = c.getValue(actualOperand);
           break;
         case 'symbol-table':
         case 'scope':

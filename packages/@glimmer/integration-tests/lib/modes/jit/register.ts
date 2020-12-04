@@ -1,18 +1,13 @@
 import { TestJitRegistry } from './registry';
-import { TEMPLATE_ONLY_CAPABILITIES, CURLY_CAPABILITIES } from '../../components/capabilities';
 import {
   Option,
   Helper as GlimmerHelper,
   InternalModifierManager,
-  InternalComponentManager,
-  InternalComponentCapabilities,
   PartialDefinition,
   TemplateFactory,
+  ResolutionTimeConstants,
 } from '@glimmer/interfaces';
-import {
-  EmberishCurlyComponent,
-  EmberishCurlyComponentManager,
-} from '../../components/emberish-curly';
+import { EmberishCurlyComponent } from '../../components/emberish-curly';
 import { GlimmerishComponent } from '../../components/emberish-glimmer';
 import { UserHelper, createHelperRef } from '../../helpers';
 import {
@@ -22,19 +17,14 @@ import {
 } from '../../modifiers';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import { ComponentKind, ComponentTypes } from '../../components';
-import { TestComponentDefinitionState } from '../../components/test-component';
-import {
-  CurriedComponentDefinition,
-  curry,
-  templateOnlyComponent,
-  TemplateOnlyComponentManager,
-} from '@glimmer/runtime';
+import { CurriedComponentDefinition, curry, templateOnlyComponent } from '@glimmer/runtime';
 import { createTemplate, preprocess } from '../../compile';
-import { getInternalComponentManager, setComponentTemplate } from '@glimmer/manager';
-import { expect } from '@glimmer/util';
-
-const TEMPLATE_ONLY_COMPONENT_MANAGER = new TemplateOnlyComponentManager();
-const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
+import {
+  getInternalComponentManager,
+  setComponentTemplate,
+  setInternalHelperManager,
+  setInternalModifierManager,
+} from '@glimmer/manager';
 
 export function registerTemplateOnlyComponent(
   registry: TestJitRegistry,
@@ -44,10 +34,8 @@ export function registerTemplateOnlyComponent(
   registerSomeComponent(
     registry,
     name,
-    TEMPLATE_ONLY_COMPONENT_MANAGER,
     createTemplate(layoutSource),
-    templateOnlyComponent(),
-    TEMPLATE_ONLY_CAPABILITIES
+    templateOnlyComponent(undefined, name)
   );
 }
 
@@ -62,14 +50,12 @@ export function registerEmberishCurlyComponent(
   registerSomeComponent(
     registry,
     name,
-    EMBERISH_CURLY_COMPONENT_MANAGER,
     layoutSource !== null ? createTemplate(layoutSource) : null,
-    ComponentClass,
-    CURLY_CAPABILITIES
+    ComponentClass
   );
 }
 
-export function registerEmberishGlimmerComponent(
+export function registerGlimmerishComponent(
   registry: TestJitRegistry,
   name: string,
   Component: Option<ComponentTypes['Glimmer']>,
@@ -80,47 +66,34 @@ export function registerEmberishGlimmerComponent(
   }
   let ComponentClass = Component || class extends GlimmerishComponent {};
 
-  let manager = expect(
-    getInternalComponentManager(undefined, ComponentClass),
-    'TEST BUG: expected a component manager'
-  );
-
-  registerSomeComponent(
-    registry,
-    name,
-    manager,
-    createTemplate(layoutSource),
-    ComponentClass,
-    manager.getCapabilities({})
-  );
+  registerSomeComponent(registry, name, createTemplate(layoutSource), ComponentClass);
 }
 
-export function registerHelper(
-  registry: TestJitRegistry,
-  name: string,
-  helper: UserHelper
-): GlimmerHelper {
+export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
+  let state = {};
   let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args.capture());
-  registry.register('helper', name, glimmerHelper);
-  return glimmerHelper;
+  setInternalHelperManager(() => glimmerHelper, state);
+  registry.register('helper', name, state);
 }
 
 export function registerInternalHelper(
   registry: TestJitRegistry,
   name: string,
   helper: GlimmerHelper
-): GlimmerHelper {
-  registry.register('helper', name, helper);
-  return helper;
+) {
+  let state = {};
+  setInternalHelperManager(() => helper, state);
+  registry.register('helper', name, state);
 }
 
 export function registerInternalModifier(
   registry: TestJitRegistry,
   name: string,
-  manager: InternalModifierManager<unknown, unknown>,
-  state: unknown
+  manager: InternalModifierManager<unknown, object>,
+  state: object
 ) {
-  registry.register('modifier', name, { manager, state });
+  setInternalModifierManager(() => manager, state);
+  registry.register('modifier', name, state);
 }
 
 export function registerModifier(
@@ -130,8 +103,8 @@ export function registerModifier(
 ) {
   let state = new TestModifierDefinitionState(ModifierClass);
   let manager = new TestModifierManager();
-  registry.register('modifier', name, { manager, state });
-  return { manager, state };
+  setInternalModifierManager(() => manager, state);
+  registry.register('modifier', name, state);
 }
 
 export function registerPartial(
@@ -153,7 +126,7 @@ export function registerComponent<K extends ComponentKind>(
 ): void {
   switch (type) {
     case 'Glimmer':
-      registerEmberishGlimmerComponent(registry, name, Class as ComponentTypes['Glimmer'], layout);
+      registerGlimmerishComponent(registry, name, Class as ComponentTypes['Glimmer'], layout);
       break;
     case 'Curly':
       registerEmberishCurlyComponent(registry, name, Class as ComponentTypes['Curly'], layout);
@@ -176,25 +149,20 @@ export function registerComponent<K extends ComponentKind>(
 function registerSomeComponent(
   registry: TestJitRegistry,
   name: string,
-  manager: InternalComponentManager<unknown, unknown>,
   templateFactory: TemplateFactory | null,
-  ComponentClass: object,
-  capabilities: InternalComponentCapabilities
+  ComponentClass: object
 ) {
-  let state: TestComponentDefinitionState = {
-    name,
-    capabilities,
-    ComponentClass,
-    template: null,
-  };
-
   if (templateFactory) {
     setComponentTemplate(templateFactory, ComponentClass);
   }
 
+  let manager = getInternalComponentManager(undefined, ComponentClass);
+
   let definition = {
-    state,
+    name,
+    state: ComponentClass,
     manager,
+    template: null,
   };
 
   registry.register('component', name, definition);
@@ -203,11 +171,12 @@ function registerSomeComponent(
 
 export function componentHelper(
   registry: TestJitRegistry,
-  name: string
+  name: string,
+  constants: ResolutionTimeConstants
 ): Option<CurriedComponentDefinition> {
   let definition = registry.lookupComponent(name);
 
   if (definition === null) return null;
 
-  return curry(definition);
+  return curry(constants.resolvedComponent(definition, name), null);
 }

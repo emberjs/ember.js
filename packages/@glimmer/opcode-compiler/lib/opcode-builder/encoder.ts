@@ -21,6 +21,7 @@ import {
   ContainingMetadata,
   HighLevelOperand,
   STDLib,
+  ResolutionTimeConstants,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
 import { Stack, dict, expect, EMPTY_STRING_ARRAY, encodeHandle, assert } from '@glimmer/util';
@@ -62,7 +63,7 @@ export class Labels {
 
 export function encodeOp(
   encoder: Encoder,
-  constants: CompileTimeConstants,
+  constants: CompileTimeConstants & ResolutionTimeConstants,
   resolver: CompileTimeResolver,
   meta: ContainingMetadata,
   op: BuilderOp | HighLevelOp

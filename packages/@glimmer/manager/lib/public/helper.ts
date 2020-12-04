@@ -59,10 +59,7 @@ export function hasDestroyable(
 
 ////////////
 
-export default function customHelper(
-  manager: HelperManager<unknown>,
-  definition: object
-): GlimmerHelper {
+export function customHelper(manager: HelperManager<unknown>, definition: object): GlimmerHelper {
   return (vmArgs, vm) => {
     const args = argsProxyFor(vmArgs.capture(), 'helper');
     const bucket = manager.createHelper(definition, args);

@@ -39,6 +39,8 @@ export type Lit = string | number | boolean | undefined | null | void | {};
 
 export const tuple = <T extends Lit[]>(...args: T) => args;
 
-export const symbol = HAS_NATIVE_SYMBOL
-  ? Symbol
-  : (key: string) => `__${key}${Math.floor(Math.random() * Date.now())}__` as any;
+export function enumerableSymbol(key: string): any {
+  return `__${key}${Math.floor(Math.random() * Date.now())}__`;
+}
+
+export const symbol = HAS_NATIVE_SYMBOL ? Symbol : enumerableSymbol;

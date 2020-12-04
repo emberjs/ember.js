@@ -1,25 +1,25 @@
 import {
   CompileTimeResolver,
   Option,
-  ComponentDefinition,
+  ResolvedComponentDefinition,
   PartialDefinition,
-  Helper,
-  ModifierDefinition,
+  HelperDefinitionState,
+  ModifierDefinitionState,
 } from '@glimmer/interfaces';
 import { TestJitRuntimeResolver } from './resolver';
 
 export default class JitCompileTimeLookup implements CompileTimeResolver {
   constructor(private resolver: TestJitRuntimeResolver) {}
 
-  lookupHelper(name: string): Option<Helper> {
+  lookupHelper(name: string): Option<HelperDefinitionState> {
     return this.resolver.lookupHelper(name);
   }
 
-  lookupModifier(name: string): Option<ModifierDefinition> {
+  lookupModifier(name: string): Option<ModifierDefinitionState> {
     return this.resolver.lookupModifier(name);
   }
 
-  lookupComponent(name: string, owner?: object): Option<ComponentDefinition> {
+  lookupComponent(name: string, owner?: object): Option<ResolvedComponentDefinition> {
     return this.resolver.lookupComponent(name, owner);
   }
 

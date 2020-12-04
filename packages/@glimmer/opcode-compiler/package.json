@@ -7,7 +7,6 @@
     "@glimmer/util": "0.67.0",
     "@glimmer/wire-format": "0.67.0",
     "@glimmer/interfaces": "0.67.0",
-    "@glimmer/program": "0.67.0",
     "@glimmer/vm": "0.67.0",
     "@glimmer/encoder": "0.67.0",
     "@glimmer/reference": "0.67.0"

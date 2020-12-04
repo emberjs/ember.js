@@ -8,13 +8,13 @@ import {
   WireFormat,
   Option,
   Op,
-  InternalComponentCapabilities,
+  InternalComponentCapability,
 } from '@glimmer/interfaces';
+import { hasCapability } from '@glimmer/manager';
 import { $s0, $s1, $sp, $v0, SavedRegister } from '@glimmer/vm';
 import { EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { namedBlocks } from '../../utils';
-import { MINIMAL_CAPABILITIES } from '../delegate';
 import { labelOperand, layoutOperand, symbolTableOperand, ownerOperand } from '../operands';
 import { InvokeStaticBlock, PushYieldableBlock, YieldBlock } from './blocks';
 import { Replayable } from './conditional';
@@ -47,7 +47,7 @@ export interface CurryComponent {
 
 // <Component>
 export interface StaticComponent extends AnyComponent {
-  capabilities: InternalComponentCapabilities;
+  capabilities: InternalComponentCapability;
   layout: CompilableProgram;
 }
 
@@ -55,7 +55,7 @@ export interface StaticComponent extends AnyComponent {
 export interface Component extends AnyComponent {
   // either we know the capabilities statically or we need to be conservative and assume
   // that the component requires all capabilities
-  capabilities: InternalComponentCapabilities | true;
+  capabilities: InternalComponentCapability | true;
 
   // are the arguments supplied as atNames?
   atNames: boolean;
@@ -82,7 +82,7 @@ export function InvokeComponent(
   if (compilable) {
     op(Op.PushComponentDefinition, handle);
     InvokeStaticComponent(op, {
-      capabilities: capabilities || MINIMAL_CAPABILITIES,
+      capabilities: capabilities,
       layout: compilable,
       elementBlock,
       positional,
@@ -92,7 +92,7 @@ export function InvokeComponent(
   } else {
     op(Op.PushComponentDefinition, handle);
     InvokeNonStaticComponent(op, {
-      capabilities: capabilities || MINIMAL_CAPABILITIES,
+      capabilities: capabilities,
       elementBlock,
       positional,
       named,
@@ -155,7 +155,8 @@ function InvokeStaticComponent(
 ): void {
   let { symbolTable } = layout;
 
-  let bailOut = symbolTable.hasEval || capabilities.prepareArgs;
+  let bailOut =
+    symbolTable.hasEval || hasCapability(capabilities, InternalComponentCapability.PrepareArgs);
 
   if (bailOut) {
     InvokeNonStaticComponent(op, {
@@ -213,7 +214,7 @@ function InvokeStaticComponent(
   // Next up we have arguments. If the component has the `createArgs` capability,
   // then it wants access to the arguments in JavaScript. We can't know whether
   // or not an argument is used, so we have to give access to all of them.
-  if (capabilities.createArgs) {
+  if (hasCapability(capabilities, InternalComponentCapability.CreateArgs)) {
     // First we push positional arguments
     let count = CompilePositional(op, positional);
 
@@ -269,17 +270,17 @@ function InvokeStaticComponent(
 
   op(Op.BeginComponentTransaction, $s0);
 
-  if (capabilities.dynamicScope) {
+  if (hasCapability(capabilities, InternalComponentCapability.DynamicScope)) {
     op(Op.PushDynamicScope);
   }
 
-  if (capabilities.createInstance) {
+  if (hasCapability(capabilities, InternalComponentCapability.CreateInstance)) {
     op(Op.CreateComponent, (blocks.has('default') as any) | 0, $s0);
   }
 
   op(Op.RegisterComponentDestructor, $s0);
 
-  if (capabilities.createArgs) {
+  if (hasCapability(capabilities, InternalComponentCapability.CreateArgs)) {
     op(Op.GetComponentSelf, $s0);
   } else {
     op(Op.GetComponentSelf, $s0, argNames);
@@ -326,7 +327,7 @@ function InvokeStaticComponent(
   op(MachineOp.PopFrame);
   op(Op.PopScope);
 
-  if (capabilities.dynamicScope) {
+  if (hasCapability(capabilities, InternalComponentCapability.DynamicScope)) {
     op(Op.PopDynamicScope);
   }
 
@@ -340,7 +341,9 @@ function InvokeNonStaticComponent(
 ): void {
   let bindableBlocks = !!namedBlocks;
   let bindableAtNames =
-    capabilities === true || capabilities.prepareArgs || !!(named && named[0].length !== 0);
+    capabilities === true ||
+    hasCapability(capabilities, InternalComponentCapability.PrepareArgs) ||
+    !!(named && named[0].length !== 0);
 
   let blocks = namedBlocks.with('attrs', elementBlock);
 

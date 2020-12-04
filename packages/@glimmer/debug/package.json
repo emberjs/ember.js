@@ -5,7 +5,6 @@
   "private": true,
   "dependencies": {
     "@glimmer/interfaces": "0.67.0",
-    "@glimmer/program": "0.67.0",
     "@glimmer/util": "0.67.0",
     "@glimmer/vm": "0.67.0",
     "@simple-dom/interface": "^1.4.0"

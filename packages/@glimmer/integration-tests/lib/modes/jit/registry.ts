@@ -1,16 +1,16 @@
 import {
   CompilableProgram,
-  ComponentDefinition,
-  Helper as GlimmerHelper,
+  ResolvedComponentDefinition,
   Invocation,
-  ModifierDefinition,
   Option,
   PartialDefinition,
   Template,
+  HelperDefinitionState,
+  ModifierDefinitionState,
+  InternalComponentManager,
 } from '@glimmer/interfaces';
 import { assert, dict } from '@glimmer/util';
 import { getComponentTemplate } from '@glimmer/manager';
-import { TestComponentDefinitionState } from '../../components/test-component';
 
 // This is used to replicate a requirement of Ember's template referrers, which
 // assign the `owner` to the template meta. The requirement is that the template
@@ -20,10 +20,10 @@ const CIRCULAR_OBJECT: { inner: { outer?: object } } = { inner: {} };
 CIRCULAR_OBJECT.inner.outer = CIRCULAR_OBJECT;
 
 export interface Lookup {
-  helper: GlimmerHelper;
-  modifier: ModifierDefinition;
+  helper: HelperDefinitionState;
+  modifier: ModifierDefinitionState;
   partial: PartialDefinition;
-  component: ComponentDefinition;
+  component: ResolvedComponentDefinition;
   template: Invocation;
   compilable: Template;
   'template-source': string;
@@ -49,10 +49,12 @@ export class TypedRegistry<T> {
 }
 
 export default class Registry {
-  helper = new TypedRegistry<GlimmerHelper>();
-  modifier: TypedRegistry<ModifierDefinition> = new TypedRegistry<ModifierDefinition>();
+  helper = new TypedRegistry<HelperDefinitionState>();
+  modifier = new TypedRegistry<ModifierDefinitionState>();
   partial = new TypedRegistry<PartialDefinition>();
-  component: TypedRegistry<ComponentDefinition> = new TypedRegistry<ComponentDefinition>();
+  component = new TypedRegistry<
+    ResolvedComponentDefinition<object, unknown, InternalComponentManager>
+  >();
   template = new TypedRegistry<Invocation>();
   compilable: TypedRegistry<CompilableProgram> = new TypedRegistry<CompilableProgram>();
   'template-source' = new TypedRegistry<string>();
@@ -74,22 +76,19 @@ export class TestJitRegistry {
     }
   }
 
-  lookupComponent(name: string): Option<ComponentDefinition> {
+  lookupComponent(name: string): Option<ResolvedComponentDefinition> {
     let definition = this.lookup('component', name);
 
     if (definition === null) {
       return null;
     }
 
-    let { manager, state } = definition as ComponentDefinition<
-      TestComponentDefinitionState,
-      unknown
-    >;
+    let { manager, state } = definition as ResolvedComponentDefinition;
 
     let capabilities = manager.getCapabilities(state);
 
-    if (state.template === null) {
-      let templateFactory = getComponentTemplate(state.ComponentClass);
+    if (definition.template === null) {
+      let templateFactory = getComponentTemplate(state);
 
       assert(
         templateFactory || capabilities.dynamicLayout,
@@ -97,7 +96,7 @@ export class TestJitRegistry {
       );
 
       if (templateFactory) {
-        state.template = templateFactory(CIRCULAR_OBJECT);
+        definition.template = templateFactory(CIRCULAR_OBJECT);
       }
     }
 

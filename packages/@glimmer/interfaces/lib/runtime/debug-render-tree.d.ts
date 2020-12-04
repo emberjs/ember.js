@@ -1,6 +1,5 @@
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { Bounds } from '../dom/bounds';
-import { Template } from '../template';
 import { Arguments, CapturedArguments } from './arguments';
 
 export type RenderNodeType = 'outlet' | 'engine' | 'route-template' | 'component';
@@ -10,7 +9,7 @@ export interface RenderNode {
   name: string;
   args: CapturedArguments;
   instance: unknown;
-  template?: Template;
+  template?: string;
 }
 
 export interface CapturedRenderNode {

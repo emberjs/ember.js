@@ -6,7 +6,7 @@ import {
   Option,
   RenderNode,
 } from '@glimmer/interfaces';
-import { expect, assign, Stack, unwrapTemplate } from '@glimmer/util';
+import { expect, assign, Stack } from '@glimmer/util';
 import { reifyArgs } from './vm/arguments';
 
 interface InternalRenderNode<T extends object> extends RenderNode {
@@ -184,7 +184,7 @@ export default class DebugRenderTreeImpl<TBucket extends object>
   }
 
   private captureTemplate({ template }: InternalRenderNode<TBucket>): Option<string> {
-    return (template && unwrapTemplate(template).moduleName) || null;
+    return template || null;
   }
 
   private captureBounds(node: InternalRenderNode<TBucket>): CapturedRenderNode['bounds'] {

@@ -3,8 +3,8 @@ import type {
   Environment,
   Option,
   ElementBuilder,
-  InternalModifierManager,
   Maybe,
+  ModifierInstance,
 } from '@glimmer/interfaces';
 import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
 import { RemoteLiveBlock } from '@glimmer/runtime';
@@ -94,7 +94,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return super.__appendText(string);
   }
 
-  closeElement(): Option<[InternalModifierManager, unknown][]> {
+  closeElement(): Option<ModifierInstance[]> {
     if (NEEDS_EXTRA_CLOSE.has(this.element)) {
       NEEDS_EXTRA_CLOSE.delete(this.element);
       super.closeElement();

@@ -17,6 +17,7 @@ import {
   Scope,
   CompileTimeCompilationContext,
   VM as PublicVM,
+  ResolutionTimeConstants,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -72,7 +73,7 @@ import {
  * the implementation of the Append VM itself.
  */
 export interface InternalVM {
-  readonly [CONSTANTS]: RuntimeConstants;
+  readonly [CONSTANTS]: RuntimeConstants & ResolutionTimeConstants;
   readonly [ARGS]: VMArgumentsImpl;
 
   readonly env: Environment;
@@ -150,7 +151,7 @@ export default class VM implements PublicVM, InternalVM {
   private readonly [HEAP]: RuntimeHeap;
   private readonly destructor: object;
   private readonly [DESTROYABLE_STACK] = new Stack<object>();
-  readonly [CONSTANTS]: RuntimeConstants;
+  readonly [CONSTANTS]: RuntimeConstants & ResolutionTimeConstants;
   readonly [ARGS]: VMArgumentsImpl;
   readonly [INNER_VM]: LowLevelVM;
 
