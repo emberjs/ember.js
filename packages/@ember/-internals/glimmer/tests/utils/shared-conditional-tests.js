@@ -3,6 +3,7 @@
 import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';
+import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/-internals/metal';
 import {
   Object as EmberObject,
@@ -408,6 +409,7 @@ const IfUnlessWithTestCases = [
     new Boolean(true),
     new Boolean(false),
     new Date(),
+    htmlSafe(' '),
   ]),
 
   new StableFalsyGenerator([
@@ -419,6 +421,7 @@ const IfUnlessWithTestCases = [
     [],
     emberA(),
     ObjectProxy.create({ content: undefined }),
+    htmlSafe(''),
   ]),
 
   new ObjectProxyGenerator([

@@ -1,3 +1,4 @@
+import { isHTMLSafe } from '@ember/-internals/glimmer';
 import { get, tagForProperty } from '@ember/-internals/metal';
 import { isArray } from '@ember/-internals/runtime';
 import { isProxy } from '@ember/-internals/utils';
@@ -12,6 +13,8 @@ export default function toBool(predicate: unknown): boolean {
     consumeTag(tagForProperty(predicate as object, '[]'));
 
     return (predicate as { length: number }).length !== 0;
+  } else if (isHTMLSafe(predicate)) {
+    return Boolean(predicate.toString());
   } else {
     return Boolean(predicate);
   }
