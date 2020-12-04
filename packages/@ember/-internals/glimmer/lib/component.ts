@@ -13,8 +13,8 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { setInternalComponentManager } from '@glimmer/manager';
 import { Environment } from '@glimmer/interfaces';
+import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirtyTag } from '@glimmer/validator';
@@ -27,7 +27,10 @@ import {
   IS_DISPATCHING_ATTRS,
 } from './component-managers/curly';
 
-let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<any>>();
+// Keep track of which component classes have already been processed for lazy event setup.
+// Using a WeakSet would be more appropriate here, but this can only be used when IE11 support is dropped.
+// Thus the workaround using a WeakMap<object, true>
+let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakMap<object, true>>();
 
 /**
 @module @ember/component
@@ -730,11 +733,9 @@ const Component = CoreView.extend(
 
       let eventDispatcher = this._dispatcher;
       if (eventDispatcher) {
-        let lazyEventsProcessedForComponentClass:
-          | WeakSet<any>
-          | undefined = lazyEventsProcessed.get(eventDispatcher);
+        let lazyEventsProcessedForComponentClass = lazyEventsProcessed.get(eventDispatcher);
         if (!lazyEventsProcessedForComponentClass) {
-          lazyEventsProcessedForComponentClass = new WeakSet();
+          lazyEventsProcessedForComponentClass = new WeakMap<object, true>();
           lazyEventsProcessed.set(eventDispatcher, lazyEventsProcessedForComponentClass);
         }
 
@@ -748,7 +749,7 @@ const Component = CoreView.extend(
             }
           });
 
-          lazyEventsProcessedForComponentClass.add(proto);
+          lazyEventsProcessedForComponentClass.set(proto, true);
         }
       }
 
