@@ -1,3 +1,31 @@
+## v0.68.0 (2020-12-04)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1222](https://github.com/glimmerjs/glimmer-vm/pull/1222) [REFACTOR] Align resolver and internals with strict mode ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/destroyable`, `@glimmer/integration-tests`, `@glimmer/manager`, `@glimmer/owner`, `@glimmer/runtime`
+  * [#1221](https://github.com/glimmerjs/glimmer-vm/pull/1221) [REFACTOR] Extract Owner and Destroyables into their own packages ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1215](https://github.com/glimmerjs/glimmer-vm/pull/1215) [REFACTOR] Use constants pool for definitions ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1213](https://github.com/glimmerjs/glimmer-vm/pull/1213) [REFACTOR] Upstream custom managers, TO managers ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/integration-tests`
+  * [#1218](https://github.com/glimmerjs/glimmer-vm/pull/1218)  Fix splattributes handling of type attribute. [rebased] ([@locks](https://github.com/locks))
+
+#### :house: Internal
+* `@glimmer/benchmark-env`
+  * [#1220](https://github.com/glimmerjs/glimmer-vm/pull/1220) [BUGFIX] Absorb breakage in benchmark-env instead of benchmark ([@pzuraq](https://github.com/pzuraq))
+  * [#1217](https://github.com/glimmerjs/glimmer-vm/pull/1217) Revert "[BREAKING] Update benchmark-env API" ([@pzuraq](https://github.com/pzuraq))
+  * [#1216](https://github.com/glimmerjs/glimmer-vm/pull/1216) [BREAKING] Update benchmark-env API ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/integration-tests`
+  * [#1214](https://github.com/glimmerjs/glimmer-vm/pull/1214) [REFACTOR] Update tests to match actual Glimmer component API ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Ricardo Mendes ([@locks](https://github.com/locks))
+
 ## v0.67.0 (2020-11-24)
 
 #### :boom: Breaking Change
