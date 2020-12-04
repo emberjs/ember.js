@@ -3,6 +3,7 @@
 */
 import { VMArguments } from '@glimmer/interfaces';
 import { createReadOnlyRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
   The `readonly` helper let's you specify that a binding is one-way only,
@@ -119,6 +120,6 @@ import { createReadOnlyRef } from '@glimmer/reference';
   @for Ember.Templates.helpers
   @private
 */
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   return createReadOnlyRef(args.positional.at(0));
-}
+});

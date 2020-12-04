@@ -6,20 +6,24 @@ import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import {
   CapturedArguments,
+  CompilableProgram,
   ComponentDefinition,
   CustomRenderNode,
   Destroyable,
   Environment,
   InternalComponentCapabilities,
+  InternalComponentCapability,
   Option,
   Template,
   VMArguments,
+  WithCreateInstance,
   WithCustomDebugRenderTree,
   WithDynamicTagName,
-  WithStaticLayout,
 } from '@glimmer/interfaces';
+import { capabilityFlagsFrom } from '@glimmer/manager';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { BaseInternalComponentManager, EMPTY_ARGS } from '@glimmer/runtime';
+import { EMPTY_ARGS } from '@glimmer/runtime';
+import { unwrapTemplate } from '@glimmer/util';
 
 import { SimpleElement } from '@simple-dom/interface';
 import { DynamicScope } from '../renderer';
@@ -63,9 +67,8 @@ const CAPABILITIES: InternalComponentCapabilities = {
 };
 
 class OutletComponentManager
-  extends BaseInternalComponentManager<OutletInstanceState, OutletDefinitionState>
   implements
-    WithStaticLayout<OutletInstanceState, OutletDefinitionState>,
+    WithCreateInstance<OutletInstanceState, Environment>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
   create(
     env: Environment,
@@ -144,15 +147,10 @@ class OutletComponentManager
       name: definition.name,
       args: args,
       instance: definition.controller,
-      template: definition.template,
+      template: unwrapTemplate(definition.template).moduleName,
     });
 
     return nodes;
-  }
-
-  getStaticLayout({ template }: OutletDefinitionState) {
-    // The router has already resolved the template
-    return template;
   }
 
   getCapabilities(): InternalComponentCapabilities {
@@ -163,9 +161,14 @@ class OutletComponentManager
     return self;
   }
 
+  didCreate() {}
+  didUpdate() {}
+
   didRenderLayout(state: OutletInstanceState): void {
     state.finalize();
   }
+
+  didUpdateLayout() {}
 
   getDestroyable(): Option<Destroyable> {
     return null;
@@ -177,10 +180,24 @@ const OUTLET_MANAGER = new OutletComponentManager();
 export class OutletComponentDefinition
   implements
     ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
+  // handle is not used by this custom definition
+  public handle = -1;
+
+  public resolvedName: string;
+  public compilable: CompilableProgram;
+  public capabilities: InternalComponentCapability;
+
   constructor(
     public state: OutletDefinitionState,
     public manager: OutletComponentManager = OUTLET_MANAGER
-  ) {}
+  ) {
+    let capabilities = manager.getCapabilities();
+    this.capabilities = capabilityFlagsFrom(capabilities);
+    this.compilable = capabilities.wrapped
+      ? unwrapTemplate(state.template).asWrappedLayout()
+      : unwrapTemplate(state.template).asLayout();
+    this.resolvedName = state.name;
+  }
 }
 
 export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
@@ -196,11 +213,6 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
       implements WithDynamicTagName<OutletInstanceState> {
       getTagName() {
         return 'div';
-      }
-
-      getStaticLayout({ template }: OutletDefinitionState) {
-        // The router has already resolved the template
-        return template;
       }
 
       getCapabilities(): InternalComponentCapabilities {

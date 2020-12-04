@@ -1,6 +1,5 @@
-import { privatize as P } from '@ember/-internals/container';
-import { getOwner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils';
+import { Factory, getOwner } from '@ember/-internals/owner';
+import { enumerableSymbol, guidFor, symbol } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
@@ -9,16 +8,16 @@ import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
-  ComponentDefinition,
+  CompilableProgram,
   Destroyable,
   ElementOperations,
   Environment,
   InternalComponentCapabilities,
   Option,
   PreparedArguments,
-  Template,
   TemplateFactory,
   VMArguments,
+  WithCreateInstance,
   WithDynamicLayout,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
@@ -29,8 +28,8 @@ import {
   Reference,
   valueForRef,
 } from '@glimmer/reference';
-import { BaseInternalComponentManager, reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY } from '@glimmer/util';
+import { reifyPositional } from '@glimmer/runtime';
+import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import {
   beginTrackFrame,
   beginUntrackFrame,
@@ -41,7 +40,6 @@ import {
   valueForTag,
 } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
@@ -55,7 +53,13 @@ import {
 
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
-import DefinitionState from './definition-state';
+
+export const ARGS = enumerableSymbol('ARGS');
+export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
+
+export const DIRTY_TAG = symbol('DIRTY_TAG');
+export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
+export const BOUNDS = symbol('BOUNDS');
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
@@ -109,17 +113,25 @@ function applyAttributeBindings(
   }
 }
 
-const DEFAULT_LAYOUT = P`template:components/-default`;
 const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
+type ComponentFactory = Factory<
+  Component,
+  {
+    create(props?: any): Component;
+    positionalParams: string | string[] | undefined | null;
+    name: string;
+  }
+>;
+
 export default class CurlyComponentManager
-  extends BaseInternalComponentManager<ComponentStateBucket, DefinitionState>
   implements
+    WithCreateInstance<ComponentStateBucket, Environment>,
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket> {
-  protected templateFor(component: Component): Template {
+  protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
 
@@ -129,21 +141,21 @@ export default class CurlyComponentManager
       if (layoutName !== undefined) {
         let _factory = owner.lookup<TemplateFactory>(`template:${layoutName}`);
         assert(`Layout \`${layoutName}\` not found!`, _factory !== undefined);
-        factory = _factory!;
+        factory = _factory;
       } else {
-        factory = owner.lookup<TemplateFactory>(DEFAULT_LAYOUT)!;
+        return null;
       }
     } else if (isTemplateFactory(layout)) {
       factory = layout;
     } else {
-      // we were provided an instance already
-      return layout;
+      // no layout was found, use the default layout
+      return null;
     }
 
-    return factory(owner);
+    return unwrapTemplate(factory(owner)).asWrappedLayout();
   }
 
-  getDynamicLayout(bucket: ComponentStateBucket): Template {
+  getDynamicLayout(bucket: ComponentStateBucket): CompilableProgram | null {
     return this.templateFor(bucket.component);
   }
 
@@ -157,11 +169,11 @@ export default class CurlyComponentManager
     return (component && component.tagName) || 'div';
   }
 
-  getCapabilities(state: DefinitionState): InternalComponentCapabilities {
-    return state.capabilities;
+  getCapabilities(): InternalComponentCapabilities {
+    return CURLY_CAPABILITIES;
   }
 
-  prepareArgs(state: DefinitionState, args: VMArguments): Option<PreparedArguments> {
+  prepareArgs(ComponentClass: ComponentFactory, args: VMArguments): Option<PreparedArguments> {
     if (args.named.has('__ARGS__')) {
       let { __ARGS__, ...rest } = args.named.capture();
 
@@ -176,7 +188,7 @@ export default class CurlyComponentManager
       return prepared;
     }
 
-    const { positionalParams } = state.ComponentClass.class!;
+    const { positionalParams } = ComponentClass.class!;
 
     // early exits
     if (
@@ -236,7 +248,7 @@ export default class CurlyComponentManager
    */
   create(
     environment: Environment,
-    state: DefinitionState,
+    ComponentClass: ComponentFactory,
     args: VMArguments,
     dynamicScope: DynamicScope,
     callerSelfRef: Reference,
@@ -245,9 +257,6 @@ export default class CurlyComponentManager
     // Get the nearest concrete component instance from the scope. "Virtual"
     // components will be skipped.
     let parentView = dynamicScope.view;
-
-    // Get the Ember.Component subclass to instantiate for this component.
-    let factory = state.ComponentClass;
 
     // Capture the arguments, which tells Glimmer to give us our own, stable
     // copy of the Arguments object that is safe to hold on to between renders.
@@ -273,11 +282,6 @@ export default class CurlyComponentManager
     // `_target`, so bubbled actions are routed to the right place.
     props._target = valueForRef(callerSelfRef);
 
-    // static layout asserts CurriedDefinition
-    if (state.template) {
-      props.layout = state.template;
-    }
-
     // caller:
     // <FaIcon @name="bug" />
     //
@@ -287,7 +291,7 @@ export default class CurlyComponentManager
     // Now that we've built up all of the properties to set on the component instance,
     // actually create it.
     beginUntrackFrame();
-    let component = factory.create(props);
+    let component = ComponentClass.create(props);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -350,8 +354,8 @@ export default class CurlyComponentManager
     return bucket;
   }
 
-  getDebugName({ name }: DefinitionState): string {
-    return name;
+  getDebugName(definition: ComponentFactory): string {
+    return definition.fullName || definition.normalizedName || definition.class!.name;
   }
 
   getSelf({ rootRef }: ComponentStateBucket): Reference {
@@ -471,42 +475,7 @@ export default class CurlyComponentManager
   }
 }
 
-export function validatePositionalParameters(
-  named: { has(name: string): boolean },
-  positional: { length: number },
-  positionalParamsDefinition: any
-) {
-  if (DEBUG) {
-    if (!named || !positional || !positional.length) {
-      return;
-    }
-
-    let paramType = typeof positionalParamsDefinition;
-
-    if (paramType === 'string') {
-      // tslint:disable-next-line:max-line-length
-      assert(
-        `You cannot specify positional parameters and the hash argument \`${positionalParamsDefinition}\`.`,
-        !named.has(positionalParamsDefinition)
-      );
-    } else {
-      if (positional.length < positionalParamsDefinition.length) {
-        positionalParamsDefinition = positionalParamsDefinition.slice(0, positional.length);
-      }
-
-      for (let i = 0; i < positionalParamsDefinition.length; i++) {
-        let name = positionalParamsDefinition[i];
-
-        assert(
-          `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-          !named.has(name)
-        );
-      }
-    }
-  }
-}
-
-export function processComponentInitializationAssertions(component: Component, props: any) {
+export function processComponentInitializationAssertions(component: Component, props: any): void {
   assert(
     `classNameBindings must be non-empty strings: ${component}`,
     (() => {
@@ -566,14 +535,6 @@ export function rerenderInstrumentDetails(component: any): any {
   return component.instrumentDetails({ initialRender: false });
 }
 
-// This is not any of glimmer-vm's proper Argument types because we
-// don't have sufficient public constructors to conveniently
-// reassemble one after we mangle the various arguments.
-interface CurriedArgs {
-  positional: any[];
-  named: any;
-}
-
 export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
   dynamicTag: true,
@@ -589,22 +550,4 @@ export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   willDestroy: true,
 };
 
-const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
-export class CurlyComponentDefinition implements ComponentDefinition {
-  public state: DefinitionState;
-  public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER;
-
-  constructor(
-    public name: string,
-    public ComponentClass: any,
-    public template?: Template,
-    public args?: CurriedArgs
-  ) {
-    this.state = {
-      name,
-      ComponentClass,
-      template,
-      capabilities: CURLY_CAPABILITIES,
-    };
-  }
-}
+export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();

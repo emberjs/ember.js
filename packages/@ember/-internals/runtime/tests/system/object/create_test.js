@@ -4,7 +4,7 @@ import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { destroy } from '@glimmer/runtime';
+import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
   'EmberObject.create',

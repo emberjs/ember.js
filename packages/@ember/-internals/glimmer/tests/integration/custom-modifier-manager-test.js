@@ -1,9 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
-import { setModifierManager } from '@glimmer/runtime';
+import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { modifierCapabilities } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
 

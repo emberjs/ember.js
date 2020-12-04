@@ -1,30 +1,3 @@
-import { getOwner } from '@ember/-internals/owner';
-import { getDebugName } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
-import {
-  Arguments,
-  Helper as GlimmerHelper,
-  HelperCapabilities,
-  HelperManager,
-  HelperManagerWithDestroyable,
-  HelperManagerWithValue,
-} from '@glimmer/interfaces';
-import { createComputeRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
-import {
-  associateDestroyableChild,
-  buildCapabilities,
-  EMPTY_ARGS,
-  EMPTY_NAMED,
-  EMPTY_POSITIONAL,
-  getHelperManager,
-  isDestroyed,
-  isDestroying,
-  isInternalHelper,
-} from '@glimmer/runtime';
-import { Cache, createCache, getValue } from '@glimmer/validator';
-import { argsProxyFor } from '../utils/args-proxy';
-
 /**
 @module @ember/helper
 */
@@ -81,29 +54,6 @@ import { argsProxyFor } from '../utils/args-proxy';
   @return {Capabilities} The capabilities object instance
   @public
 */
-export function helperCapabilities(
-  managerAPI: string,
-  options: Partial<HelperCapabilities> = {}
-): HelperCapabilities {
-  assert('Invalid helper manager compatibility specified', managerAPI === '3.23');
-
-  assert(
-    'You must pass either the `hasValue` OR the `hasScheduledEffect` capability when defining a helper manager. Passing neither, or both, is not permitted.',
-    (options.hasValue || options.hasScheduledEffect) &&
-      !(options.hasValue && options.hasScheduledEffect)
-  );
-
-  assert(
-    'The `hasScheduledEffect` capability has not yet been implemented for helper managers. Please pass `hasValue` instead',
-    !options.hasScheduledEffect
-  );
-
-  return buildCapabilities({
-    hasValue: Boolean(options.hasValue),
-    hasDestroyable: Boolean(options.hasDestroyable),
-    hasScheduledEffect: Boolean(options.hasScheduledEffect),
-  });
-}
 
 /**
   Sets the helper manager for an object or function.
@@ -297,47 +247,6 @@ export function helperCapabilities(
   @return {object} The definition passed into setHelperManager
   @public
 */
-function hasValue(manager: HelperManager<unknown>): manager is HelperManagerWithValue<unknown> {
-  return manager.capabilities.hasValue;
-}
-
-function hasDestroyable(
-  manager: HelperManager<unknown>
-): manager is HelperManagerWithDestroyable<unknown> {
-  return manager.capabilities.hasDestroyable;
-}
-
-let ARGS_CACHES = DEBUG ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>() : undefined;
-
-function getArgs(proxy: SimpleArgsProxy): Partial<Arguments> {
-  return getValue(DEBUG ? ARGS_CACHES!.get(proxy)! : proxy.argsCache!)!;
-}
-
-class SimpleArgsProxy {
-  argsCache?: Cache<Partial<Arguments>>;
-
-  constructor(
-    context: object,
-    computeArgs: (context: object) => Partial<Arguments> = () => EMPTY_ARGS
-  ) {
-    let argsCache = createCache(() => computeArgs(context));
-
-    if (DEBUG) {
-      ARGS_CACHES!.set(this, argsCache);
-      Object.freeze(this);
-    } else {
-      this.argsCache = argsCache;
-    }
-  }
-
-  get named() {
-    return getArgs(this).named || EMPTY_NAMED;
-  }
-
-  get positional() {
-    return getArgs(this).positional || EMPTY_POSITIONAL;
-  }
-}
 
 /**
   The `invokeHelper` function can be used to create a helper instance in
@@ -394,78 +303,6 @@ class SimpleArgsProxy {
   @returns
   @public
 */
-export function invokeHelper(
-  context: object,
-  definition: object,
-  computeArgs?: (context: object) => Partial<Arguments>
-): Cache<unknown> {
-  assert(
-    `Expected a context object to be passed as the first parameter to invokeHelper, got ${context}`,
-    context !== null && typeof context === 'object'
-  );
 
-  const owner = getOwner(context);
-  const manager = getHelperManager(owner, definition)!;
-
-  // TODO: figure out why assert isn't using the TS assert thing
-  assert(
-    `Expected a helper definition to be passed as the second parameter to invokeHelper, but no helper manager was found. The definition value that was passed was \`${getDebugName!(
-      definition
-    )}\`. Did you use setHelperManager to associate a helper manager with this value?`,
-    manager
-  );
-
-  assert('Invoke helper does not support internal helpers yet', !isInternalHelper(manager));
-
-  let args = new SimpleArgsProxy(context, computeArgs);
-  let bucket = manager.createHelper(definition, args);
-
-  let cache: Cache<unknown>;
-
-  if (hasValue(manager)) {
-    cache = createCache(() => {
-      assert(
-        `You attempted to get the value of a helper after the helper was destroyed, which is not allowed`,
-        !isDestroying(cache) && !isDestroyed(cache)
-      );
-
-      return manager.getValue(bucket);
-    });
-
-    associateDestroyableChild(context, cache);
-  } else {
-    throw new Error('TODO: unreachable, to be implemented with hasScheduledEffect');
-  }
-
-  if (hasDestroyable(manager)) {
-    let destroyable = manager.getDestroyable(bucket);
-
-    associateDestroyableChild(cache, destroyable);
-  }
-
-  return cache;
-}
-
-export default function customHelper(
-  manager: HelperManager<unknown>,
-  definition: object
-): GlimmerHelper {
-  return (vmArgs, vm) => {
-    const args = argsProxyFor(vmArgs.capture(), 'helper');
-    const bucket = manager.createHelper(definition, args);
-
-    if (hasDestroyable(manager)) {
-      vm.associateDestroyable(manager.getDestroyable(bucket));
-    }
-
-    if (hasValue(manager)) {
-      return createComputeRef(
-        () => manager.getValue(bucket),
-        null,
-        DEBUG && manager.getDebugName && manager.getDebugName(definition)
-      );
-    } else {
-      return UNDEFINED_REFERENCE;
-    }
-  };
-}
+export { setHelperManager, helperCapabilities as capabilties } from '@glimmer/manager';
+export { invokeHelper } from '@glimmer/runtime';

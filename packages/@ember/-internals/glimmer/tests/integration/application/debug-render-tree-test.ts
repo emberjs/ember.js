@@ -6,20 +6,16 @@ import {
 } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
-import {
-  capabilities,
-  Component,
-  setComponentManager,
-  setComponentTemplate,
-} from '@ember/-internals/glimmer';
+import { Component, setComponentManager } from '@ember/-internals/glimmer';
 import { EngineInstanceOptions, Owner } from '@ember/-internals/owner';
 import { Route } from '@ember/-internals/routing';
-import templateOnly from '@ember/component/template-only';
 import Controller from '@ember/controller';
 import { captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { CapturedRenderNode } from '@glimmer/interfaces';
+import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
+import { templateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { compile } from 'ember-template-compiler';
@@ -957,7 +953,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         );
 
         this.addComponent('hello-world', {
-          ComponentClass: templateOnly(),
+          ComponentClass: templateOnlyComponent(),
           template: '{{@name}}',
         });
 
@@ -1032,7 +1028,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.addComponent('hello-world', {
           ComponentClass: setComponentTemplate(
             compile('{{@name}}', { moduleName: 'my-app/components/hello-world.hbs' }),
-            templateOnly()
+            templateOnlyComponent()
           ),
         });
 
@@ -1180,7 +1176,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.addComponent('hello-world', {
           ComponentClass: setComponentManager((_owner) => {
             return {
-              capabilities: capabilities('3.13', {}),
+              capabilities: componentCapabilities('3.13', {}),
 
               createComponent(_, { named: { name } }) {
                 return { name };

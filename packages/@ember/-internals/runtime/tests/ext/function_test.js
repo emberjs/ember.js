@@ -4,7 +4,7 @@ import EmberObject from '../../lib/system/object';
 import Evented from '../../lib/mixins/evented';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
-import { destroy } from '@glimmer/runtime';
+import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
   'Function.prototype.observes() helper',

@@ -9,6 +9,7 @@ import {
   NULL_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
 @module ember
@@ -94,7 +95,7 @@ import {
   @for Ember.Templates.helpers
   @since 2.1.0
  */
-export default function (args: VMArguments) {
+export default internalHelper((args: VMArguments) => {
   let sourceRef = args.positional.at(0);
   let pathRef = args.positional.at(1);
 
@@ -130,4 +131,4 @@ export default function (args: VMArguments) {
       'get'
     );
   }
-}
+});

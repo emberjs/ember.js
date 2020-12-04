@@ -1,9 +1,10 @@
-import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, InternalModifierManager, VMArguments } from '@glimmer/interfaces';
+import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
-import { registerDestructor, reifyNamed } from '@glimmer/runtime';
+import { reifyNamed } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import buildUntouchableThis from '../utils/untouchable-this';
@@ -51,7 +52,6 @@ const SUPPORTS_EVENT_OPTIONS = (() => {
 
 export class OnModifierState {
   public tag = createUpdatableTag();
-  public owner: Owner;
   public element: Element;
   public args: CapturedArguments;
   public eventName!: string;
@@ -63,8 +63,7 @@ export class OnModifierState {
   public options?: AddEventListenerOptions;
   public shouldUpdate = true;
 
-  constructor(owner: Owner, element: Element, args: CapturedArguments) {
-    this.owner = owner;
+  constructor(element: Element, args: CapturedArguments) {
     this.element = element;
     this.args = args;
   }
@@ -311,16 +310,8 @@ function addEventListener(
   @public
   @since 3.11.0
 */
-export default class OnModifierManager
-  implements InternalModifierManager<OnModifierState | null, unknown> {
+class OnModifierManager implements InternalModifierManager<OnModifierState | null, object> {
   public SUPPORTS_EVENT_OPTIONS: boolean = SUPPORTS_EVENT_OPTIONS;
-  public isInteractive: boolean;
-  private owner: Owner;
-
-  constructor(owner: Owner, isInteractive: boolean) {
-    this.isInteractive = isInteractive;
-    this.owner = owner;
-  }
 
   getDebugName(): string {
     return 'on';
@@ -332,16 +323,12 @@ export default class OnModifierManager
 
   create(
     element: SimpleElement | Element,
-    _state: unknown,
+    _state: object,
     args: VMArguments
   ): OnModifierState | null {
-    if (!this.isInteractive) {
-      return null;
-    }
-
     const capturedArgs = args.capture();
 
-    return new OnModifierState(this.owner, <Element>element, capturedArgs);
+    return new OnModifierState(<Element>element, capturedArgs);
   }
 
   getTag(state: OnModifierState | null): UpdatableTag | null {
@@ -395,3 +382,11 @@ export default class OnModifierManager
     return state;
   }
 }
+
+const ON_MODIFIER_MANAGER = new OnModifierManager();
+
+const on = {};
+
+setInternalModifierManager(() => ON_MODIFIER_MANAGER, on);
+
+export default on;

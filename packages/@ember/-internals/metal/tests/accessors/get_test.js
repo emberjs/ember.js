@@ -3,7 +3,7 @@ import { Object as EmberObject } from '@ember/-internals/runtime';
 import { get, set, getWithDefault, Mixin, observer, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { destroy } from '@glimmer/runtime';
+import { destroy } from '@glimmer/destroyable';
 import { track } from '@glimmer/validator';
 
 function aget(x, y) {

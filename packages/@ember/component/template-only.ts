@@ -1,12 +1,3 @@
-// This is only exported for types, don't use this class directly
-export class TemplateOnlyComponent {
-  constructor(public moduleName = '@ember/component/template-only') {}
-
-  toString(): string {
-    return this.moduleName;
-  }
-}
-
 /**
   @module @ember/component/template-only
   @public
@@ -36,10 +27,4 @@ export class TemplateOnlyComponent {
   @param {String} moduleName the module name that the template only component represents, this will be used for debugging purposes
   @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
-export default function templateOnlyComponent(moduleName?: string): TemplateOnlyComponent {
-  return new TemplateOnlyComponent(moduleName);
-}
-
-export function isTemplateOnlyComponent(component: unknown): component is TemplateOnlyComponent {
-  return component instanceof TemplateOnlyComponent;
-}
+export { templateOnlyComponent as default } from '@glimmer/runtime';

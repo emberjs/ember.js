@@ -1,14 +1,15 @@
 import { Owner, setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import { registerDestructor } from '@glimmer/destroyable';
 import {
   CapturedArguments,
   Destroyable,
   InternalModifierManager as ModifierManager,
   VMArguments,
 } from '@glimmer/interfaces';
+import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
-import { registerDestructor, setModifierManager } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 
 export default class InternalModifier {
@@ -86,7 +87,7 @@ class InternalModifierManager
     return null;
   }
 
-  getDebugName({ name }: InternalModifierState): string {
+  getDebugName({ name }: typeof InternalModifier): string {
     return name;
   }
 
@@ -104,4 +105,4 @@ class InternalModifierManager
   }
 }
 
-setModifierManager((owner: Owner) => new InternalModifierManager(owner), InternalModifier);
+setInternalModifierManager((owner: Owner) => new InternalModifierManager(owner), InternalModifier);

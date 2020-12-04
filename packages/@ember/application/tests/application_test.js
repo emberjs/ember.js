@@ -180,7 +180,6 @@ moduleFor(
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
       verifyRegistration(assert, application, 'renderer:-inert');
-      verifyRegistration(assert, application, P`template:components/-default`);
       verifyRegistration(assert, application, 'template:-outlet');
       verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
 
