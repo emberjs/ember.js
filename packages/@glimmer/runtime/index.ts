@@ -67,4 +67,8 @@ export {
 } from './lib/vm/rehydrate-builder';
 export { invokeHelper } from './lib/helpers/invoke';
 
+// Currently we need to re-export these values for @glimmer/component
+// https://github.com/glimmerjs/glimmer.js/issues/319
+export { destroy, registerDestructor } from '@glimmer/destroyable';
+
 export type IteratorResult<T> = RichIteratorResult<null, T>;
