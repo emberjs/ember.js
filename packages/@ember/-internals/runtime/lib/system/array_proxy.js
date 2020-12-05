@@ -17,13 +17,27 @@ import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
-import { CUSTOM_TAG_FOR } from '@glimmer/manager';
+import { setCustomTagFor } from '@glimmer/manager';
 import { combine, consumeTag, validateTag, valueForTag, tagFor } from '@glimmer/validator';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
   didChange: '_arrangedContentArrayDidChange',
 };
+
+function customTagForArrayProxy(proxy, key) {
+  if (key === '[]') {
+    proxy._revalidate();
+
+    return proxy._arrTag;
+  } else if (key === 'length') {
+    proxy._revalidate();
+
+    return proxy._lengthTag;
+  }
+
+  return tagFor(proxy, key);
+}
 
 /**
   An ArrayProxy wraps any other object that implements `Array` and/or
@@ -111,24 +125,12 @@ export default class ArrayProxy extends EmberObject {
     this._arrangedContentRevision = null;
     this._lengthTag = null;
     this._arrTag = null;
+
+    setCustomTagFor(this, customTagForArrayProxy);
   }
 
   [PROPERTY_DID_CHANGE]() {
     this._revalidate();
-  }
-
-  [CUSTOM_TAG_FOR](key) {
-    if (key === '[]') {
-      this._revalidate();
-
-      return this._arrTag;
-    } else if (key === 'length') {
-      this._revalidate();
-
-      return this._lengthTag;
-    }
-
-    return tagFor(this, key);
   }
 
   willDestroy() {
