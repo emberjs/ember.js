@@ -23,6 +23,7 @@ export * from './lib/template';
 export { default as _WeakSet } from './lib/weak-set';
 export { castToSimple, castToBrowser, checkNode } from './lib/simple-cast';
 export * from './lib/present';
+export { default as intern } from './lib/intern';
 
 export { default as debugToString } from './lib/debug-to-string';
 export { beginTestSteps, endTestSteps, logStep, verifySteps } from './lib/debug-steps';
