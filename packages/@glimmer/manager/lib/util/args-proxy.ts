@@ -6,10 +6,18 @@ import {
   CapturedPositionalArguments,
 } from '@glimmer/interfaces';
 import { Reference, valueForRef } from '@glimmer/reference';
-import { HAS_NATIVE_PROXY, enumerableSymbol } from '@glimmer/util';
+import { HAS_NATIVE_PROXY } from '@glimmer/util';
 import { Tag, track } from '@glimmer/validator';
 
-export const CUSTOM_TAG_FOR = enumerableSymbol('CUSTOM_TAG_FOR');
+const CUSTOM_TAG_FOR = new WeakMap<object, (obj: object, key: string) => Tag>();
+
+export function getCustomTagFor(obj: object): ((obj: object, key: string) => Tag) | undefined {
+  return CUSTOM_TAG_FOR.get(obj);
+}
+
+export function setCustomTagFor(obj: object, customTagFn: (obj: object, key: string) => Tag) {
+  CUSTOM_TAG_FOR.set(obj, customTagFn);
+}
 
 function convertToInt(prop: number | string | symbol): number | null {
   if (typeof prop === 'symbol') return null;
@@ -50,81 +58,89 @@ export let argsProxyFor: (
   type: 'component' | 'helper' | 'modifier'
 ) => Arguments;
 
+class NamedArgsProxy implements ProxyHandler<{}> {
+  declare set?: (target: {}, prop: string | number | symbol) => boolean;
+
+  constructor(private named: CapturedNamedArguments) {}
+
+  get(_target: {}, prop: string | number | symbol) {
+    const ref = this.named[prop as string];
+
+    if (ref !== undefined) {
+      return valueForRef(ref);
+    }
+  }
+
+  has(_target: {}, prop: string | number | symbol) {
+    return prop in this.named;
+  }
+
+  ownKeys() {
+    return Object.keys(this.named);
+  }
+
+  isExtensible() {
+    return false;
+  }
+
+  getOwnPropertyDescriptor(_target: {}, prop: string | number | symbol) {
+    if (DEBUG && !(prop in this.named)) {
+      throw new Error(
+        `args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys(). Attempted to get the descriptor for \`${String(
+          prop
+        )}\``
+      );
+    }
+
+    return {
+      enumerable: true,
+      configurable: true,
+    };
+  }
+}
+
+class PositionalArgsProxy implements ProxyHandler<[]> {
+  declare set?: (target: [], prop: string | number | symbol) => boolean;
+  declare ownKeys?: (target: []) => string[];
+
+  constructor(private positional: CapturedPositionalArguments) {}
+
+  get(target: [], prop: string | number | symbol) {
+    let { positional } = this;
+
+    if (prop === 'length') {
+      return positional.length;
+    }
+
+    const parsed = convertToInt(prop);
+
+    if (parsed !== null && parsed < positional.length) {
+      return valueForRef(positional[parsed]);
+    }
+
+    return (target as any)[prop];
+  }
+
+  isExtensible() {
+    return false;
+  }
+
+  has(_target: [], prop: string | number | symbol) {
+    const parsed = convertToInt(prop);
+
+    return parsed !== null && parsed < this.positional.length;
+  }
+}
+
 if (HAS_NATIVE_PROXY) {
   argsProxyFor = (capturedArgs, type) => {
     const { named, positional } = capturedArgs;
 
-    let getNamedTag = (key: string) => tagForNamedArg(named, key);
-    let getPositionalTag = (key: string) => tagForPositionalArg(positional, key);
+    let getNamedTag = (_obj: object, key: string) => tagForNamedArg(named, key);
+    let getPositionalTag = (_obj: object, key: string) => tagForPositionalArg(positional, key);
 
-    const namedHandler: ProxyHandler<{}> = {
-      get(_target, prop) {
-        const ref = named[prop as string];
-
-        if (ref !== undefined) {
-          return valueForRef(ref);
-        } else if (prop === CUSTOM_TAG_FOR) {
-          return getNamedTag;
-        }
-      },
-
-      has(_target, prop) {
-        return prop in named;
-      },
-
-      ownKeys(_target) {
-        return Object.keys(named);
-      },
-
-      isExtensible() {
-        return false;
-      },
-
-      getOwnPropertyDescriptor(_target, prop) {
-        if (DEBUG && !(prop in named)) {
-          throw new Error(
-            `args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys(). Attempted to get the descriptor for \`${String(
-              prop
-            )}\``
-          );
-        }
-
-        return {
-          enumerable: true,
-          configurable: true,
-        };
-      },
-    };
-
-    const positionalHandler: ProxyHandler<[]> = {
-      get(target, prop) {
-        if (prop === 'length') {
-          return positional.length;
-        }
-
-        const parsed = convertToInt(prop);
-
-        if (parsed !== null && parsed < positional.length) {
-          return valueForRef(positional[parsed]);
-        }
-
-        if (prop === CUSTOM_TAG_FOR) {
-          return getPositionalTag;
-        }
-
-        return (target as any)[prop];
-      },
-
-      isExtensible() {
-        return false;
-      },
-
-      has(_target, prop) {
-        const parsed = convertToInt(prop);
-
-        return parsed !== null && parsed < positional.length;
-      },
-    };
+    const namedHandler = new NamedArgsProxy(named);
+    const positionalHandler = new PositionalArgsProxy(positional);
 
     const namedTarget = Object.create(null);
     const positionalTarget: unknown[] = [];
@@ -149,25 +165,29 @@ if (HAS_NATIVE_PROXY) {
       positionalHandler.ownKeys = forInDebugHandler;
     }
 
+    const namedProxy = new Proxy(namedTarget, namedHandler);
+    const positionalProxy = new Proxy(positionalTarget, positionalHandler);
+
+    setCustomTagFor(namedProxy, getNamedTag);
+    setCustomTagFor(positionalProxy, getPositionalTag);
+
     return {
-      named: new Proxy(namedTarget, namedHandler),
-      positional: new Proxy(positionalTarget, positionalHandler),
+      named: namedProxy,
+      positional: positionalProxy,
     };
   };
 } else {
   argsProxyFor = (capturedArgs, _type) => {
     const { named, positional } = capturedArgs;
 
-    let getNamedTag = (key: string) => tagForNamedArg(named, key);
-    let getPositionalTag = (key: string) => tagForPositionalArg(positional, key);
+    let getNamedTag = (_obj: object, key: string) => tagForNamedArg(named, key);
+    let getPositionalTag = (_obj: object, key: string) => tagForPositionalArg(positional, key);
 
     let namedProxy = {};
+    let positionalProxy: unknown[] = [];
 
-    Object.defineProperty(namedProxy, CUSTOM_TAG_FOR, {
-      configurable: false,
-      enumerable: false,
-      value: getNamedTag,
-    });
+    setCustomTagFor(namedProxy, getNamedTag);
+    setCustomTagFor(positionalProxy, getPositionalTag);
 
     Object.keys(named).forEach((name) => {
       Object.defineProperty(namedProxy, name, {
@@ -177,14 +197,6 @@ if (HAS_NATIVE_PROXY) {
           return valueForRef(named[name]);
         },
       });
-    });
-
-    let positionalProxy: unknown[] = [];
-
-    Object.defineProperty(positionalProxy, CUSTOM_TAG_FOR, {
-      configurable: false,
-      enumerable: false,
-      value: getPositionalTag,
     });
 
     positional.forEach((ref: Reference, index: number) => {

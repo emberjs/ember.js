@@ -12,4 +12,4 @@ export { modifierCapabilities, CustomModifierManager } from './lib/public/modifi
 export { helperCapabilities, hasDestroyable, hasValue, customHelper } from './lib/public/helper';
 export { getComponentTemplate, setComponentTemplate } from './lib/public/template';
 export { capabilityFlagsFrom, hasCapability, managerHasCapability } from './lib/util/capabilities';
-export { CUSTOM_TAG_FOR } from './lib/util/args-proxy';
+export { getCustomTagFor, setCustomTagFor } from './lib/util/args-proxy';

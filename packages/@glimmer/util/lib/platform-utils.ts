@@ -1,4 +1,5 @@
 import { Maybe } from '@glimmer/interfaces';
+import intern from './intern';
 
 export type Factory<T> = new (...args: unknown[]) => T;
 
@@ -40,7 +41,7 @@ export type Lit = string | number | boolean | undefined | null | void | {};
 export const tuple = <T extends Lit[]>(...args: T) => args;
 
 export function enumerableSymbol(key: string): any {
-  return `__${key}${Math.floor(Math.random() * Date.now())}__`;
+  return intern(`__${key}${Math.floor(Math.random() * Date.now())}__`);
 }
 
 export const symbol = HAS_NATIVE_SYMBOL ? Symbol : enumerableSymbol;
