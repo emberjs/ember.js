@@ -1,13 +1,13 @@
 {
   "name": "@glimmer/manager",
-  "version": "0.68.0",
+  "version": "0.68.1",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
   "dependencies": {
     "@glimmer/env": "0.1.7",
-    "@glimmer/interfaces": "0.68.0",
-    "@glimmer/destroyable": "0.68.0",
-    "@glimmer/reference": "0.68.0",
-    "@glimmer/validator": "0.68.0",
-    "@glimmer/util": "0.68.0"
+    "@glimmer/interfaces": "0.68.1",
+    "@glimmer/destroyable": "0.68.1",
+    "@glimmer/reference": "0.68.1",
+    "@glimmer/validator": "0.68.1",
+    "@glimmer/util": "0.68.1"
   }
 }
