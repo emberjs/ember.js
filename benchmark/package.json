@@ -1,9 +1,9 @@
 {
   "name": "glimmer-benchmark",
-  "version": "0.68.0",
+  "version": "0.68.1",
   "private": true,
   "dependencies": {
-    "@glimmer/benchmark-env": "0.68.0",
+    "@glimmer/benchmark-env": "0.68.1",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0"

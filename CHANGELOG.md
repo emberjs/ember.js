@@ -1,3 +1,14 @@
+## v0.68.1 (2020-12-06)
+
+#### :bug: Bug Fix
+* `@glimmer/manager`, `@glimmer/util`
+  * [#1224](https://github.com/glimmerjs/glimmer-vm/pull/1224) [BUGFIX] Make the custom tag system non-enumerable ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/runtime`
+  * [#1223](https://github.com/glimmerjs/glimmer-vm/pull/1223) [BUGFIX] Fix @glimmer/component ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.68.0 (2020-12-04)
 
 #### :boom: Breaking Change
