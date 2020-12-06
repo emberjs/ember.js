@@ -4,6 +4,7 @@ import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberRoute from '../../lib/system/route';
 import { defineProperty } from '../../../metal';
+import ObjectProxy from '@ember/-internals/runtime/lib/system/object_proxy';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -278,6 +279,12 @@ moduleFor(
       let model = { post_id: 3 };
 
       assert.deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, 'serialized correctly');
+    }
+
+    ['@test returns model.id if model is a Proxy'](assert) {
+      let model = ObjectProxy.create({ content: { id: 3 } });
+
+      assert.deepEqual(route.serialize(model, ['id']), { id: 3 }, 'serialized Proxy correctly');
     }
 
     ['@test returns undefined if model is not set'](assert) {

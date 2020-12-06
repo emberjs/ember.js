@@ -18,7 +18,7 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
-import { lookupDescriptor } from '@ember/-internals/utils';
+import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
@@ -63,6 +63,8 @@ export function defaultSerialize(
       object[name] = get(model, name);
     } else if (/_id$/.test(name)) {
       object[name] = get(model, 'id');
+    } else if (isProxy(model)) {
+      object[name] = get(model, name);
     }
   } else {
     object = getProperties(model, params);
