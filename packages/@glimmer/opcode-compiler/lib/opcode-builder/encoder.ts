@@ -95,7 +95,9 @@ export function encodeOp(
 
       case HighLevelResolutionOpcode.ResolveLocal:
         let freeVar = op[1];
-        let name = expect(meta.upvars, 'attempted to resolve value but no upvars found')[freeVar];
+        let name = expect(meta.upvars, 'BUG: attempted to resolve value but no upvars found')[
+          freeVar
+        ];
 
         if (meta.asPartial === true) {
           encoder.push(constants, Op.ResolveMaybeLocal, name);
@@ -107,8 +109,29 @@ export function encodeOp(
 
         break;
 
+      case HighLevelResolutionOpcode.ResolveTemplateLocal:
+        let [, valueIndex, then] = op;
+        let value = expect(
+          meta.scopeValues,
+          'BUG: Attempted to gect a template local, but template does not have any'
+        )[valueIndex];
+
+        then(constants.value(value));
+
+        break;
+
       case HighLevelResolutionOpcode.ResolveFree:
-        throw new Error('Strict Mode: Unimplemented HighLevelResolutionOpcode.ResolveFree');
+        if (DEBUG) {
+          let [, upvarIndex] = op;
+          let freeName = expect(meta.upvars, 'BUG: attempted to resolve value but no upvars found')[
+            upvarIndex
+          ];
+
+          throw new Error(
+            `Attempted to resolve a value in a strict mode template, but that value was not in scope: ${freeName}`
+          );
+        }
+        break;
 
       default:
         throw new Error(`Unexpected high level opcode ${op[0]}`);
@@ -186,6 +209,9 @@ export class EncoderImpl implements Encoder {
 
           case HighLevelOperand.Owner:
             return encodeHandle(constants.value(this.meta.owner));
+
+          case HighLevelOperand.IsStrictMode:
+            return encodeHandle(constants.value(this.meta.isStrictMode));
 
           case HighLevelOperand.EvalSymbols:
             return encodeHandle(constants.array(this.meta.evalSymbols || EMPTY_STRING_ARRAY));

@@ -90,6 +90,11 @@ export interface CompileTimeResolver<O extends Owner = Owner> {
   lookupModifier(name: string, owner: O): Option<ModifierDefinitionState>;
   lookupComponent(name: string, owner: O): Option<ResolvedComponentDefinition>;
   lookupPartial(name: string, owner: O): Option<PartialDefinition>;
+
+  // TODO: These are used to lookup keywords that are implemented as helpers/modifiers.
+  // We should try to figure out a cleaner way to do this.
+  lookupBuiltInHelper(name: string, owner: O): Option<HelperDefinitionState>;
+  lookupBuiltInModifier(name: string, owner: O): Option<ModifierDefinitionState>;
 }
 
 export interface PartialDefinition {

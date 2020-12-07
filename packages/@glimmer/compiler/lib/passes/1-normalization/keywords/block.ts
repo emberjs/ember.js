@@ -435,7 +435,8 @@ export const BLOCK_KEYWORDS = keywords('Block')
   })
   .kw('component', {
     assert(
-      node: ASTv2.InvokeBlock
+      node: ASTv2.InvokeBlock,
+      state: NormalizationState
     ): Result<{
       args: ASTv2.Args;
     }> {
@@ -448,6 +449,15 @@ export const BLOCK_KEYWORDS = keywords('Block')
           generateSyntaxError(
             `{{#component}} requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
             args.loc
+          )
+        );
+      }
+
+      if (state.isStrict && definition.type === 'Literal') {
+        return Err(
+          generateSyntaxError(
+            '{{#component}} cannot resolve string values in strict mode templates',
+            node.loc
           )
         );
       }

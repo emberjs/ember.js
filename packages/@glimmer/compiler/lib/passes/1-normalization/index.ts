@@ -45,9 +45,13 @@ import { VISIT_STMTS } from './visitors/statements';
  * <notInScope.SomeComponent />
  * ```
  */
-export default function normalize(source: Source, root: ASTv2.Template): Result<mir.Template> {
+export default function normalize(
+  source: Source,
+  root: ASTv2.Template,
+  isStrict: boolean
+): Result<mir.Template> {
   // create a new context for the normalization pass
-  let state = new NormalizationState(root.table);
+  let state = new NormalizationState(root.table, isStrict);
 
   if (LOCAL_SHOULD_LOG) {
     LOCAL_LOGGER.groupCollapsed(`pass0: visiting`);

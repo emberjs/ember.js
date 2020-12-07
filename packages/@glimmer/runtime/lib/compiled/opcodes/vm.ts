@@ -10,6 +10,7 @@ import {
   TRUE_REFERENCE,
   FALSE_REFERENCE,
   createComputeRef,
+  createConstRef,
 } from '@glimmer/reference';
 import {
   CONSTANT_TAG,
@@ -50,6 +51,10 @@ APPEND_OPCODES.add(Op.PopDynamicScope, (vm) => vm.popDynamicScope());
 
 APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
   vm.stack.pushJs(vm[CONSTANTS].getValue(decodeHandle(other)));
+});
+
+APPEND_OPCODES.add(Op.ConstantReference, (vm, { op1: other }) => {
+  vm.stack.pushJs(createConstRef(vm[CONSTANTS].getValue(decodeHandle(other)), false));
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {

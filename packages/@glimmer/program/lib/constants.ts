@@ -12,7 +12,7 @@ import {
   HelperDefinitionState,
   Template,
 } from '@glimmer/interfaces';
-import { assert, constants, unwrapTemplate } from '@glimmer/util';
+import { assert, constants, expect, unwrapTemplate } from '@glimmer/util';
 import {
   capabilityFlagsFrom,
   customHelper,
@@ -107,26 +107,49 @@ export class ConstantsImpl
   modifierDefinitionCount = 0;
   componentDefinitionCount = 0;
 
-  private helperDefinitionCache = new WeakMap<HelperDefinitionState, number>();
+  private helperDefinitionCache = new WeakMap<HelperDefinitionState, number | null>();
 
   private modifierDefinitionCache = new WeakMap<ModifierDefinitionState, number>();
 
   private componentDefinitionCache = new WeakMap<
     ComponentDefinitionState | ResolvedComponentDefinition,
-    ComponentDefinition
+    ComponentDefinition | null
   >();
 
   helper(
-    owner: Owner,
+    owner: Owner | undefined,
     definitionState: HelperDefinitionState,
 
     // TODO: Add a way to expose resolved name for debugging
-    _resolvedName: string | null = null
-  ): number {
+    _resolvedName: string | null,
+    isOptional: true
+  ): number | null;
+  helper(
+    owner: Owner | undefined,
+    definitionState: HelperDefinitionState,
+
+    // TODO: Add a way to expose resolved name for debugging
+    _resolvedName?: string | null
+  ): number;
+  helper(
+    owner: Owner | undefined,
+    definitionState: HelperDefinitionState,
+
+    // TODO: Add a way to expose resolved name for debugging
+    _resolvedName: string | null = null,
+    isOptional?: true
+  ): number | null {
     let handle = this.helperDefinitionCache.get(definitionState);
 
     if (handle === undefined) {
-      let managerOrHelper = getInternalHelperManager(owner, definitionState);
+      let managerOrHelper = getInternalHelperManager(owner, definitionState, isOptional);
+
+      if (managerOrHelper === null) {
+        this.helperDefinitionCache.set(definitionState, null);
+        return null;
+      }
+
+      assert(managerOrHelper, 'BUG: expected manager or helper');
 
       let helper =
         typeof managerOrHelper === 'function'
@@ -143,7 +166,7 @@ export class ConstantsImpl
   }
 
   modifier(
-    owner: Owner,
+    owner: Owner | undefined,
     definitionState: ModifierDefinitionState,
     resolvedName: string | null = null
   ): number {
@@ -167,11 +190,32 @@ export class ConstantsImpl
     return handle;
   }
 
-  component(owner: Owner, definitionState: ComponentDefinitionState): ComponentDefinition {
+  component(
+    owner: Owner | undefined,
+    definitionState: ComponentDefinitionState
+  ): ComponentDefinition;
+  component(
+    owner: Owner | undefined,
+    definitionState: ComponentDefinitionState,
+    isOptional: true
+  ): ComponentDefinition | null;
+  component(
+    owner: Owner | undefined,
+    definitionState: ComponentDefinitionState,
+    isOptional?: true
+  ): ComponentDefinition | null {
     let definition = this.componentDefinitionCache.get(definitionState);
 
     if (definition === undefined) {
-      let manager = getInternalComponentManager(owner, definitionState);
+      let manager = getInternalComponentManager(owner, definitionState, isOptional);
+
+      if (manager === null) {
+        this.componentDefinitionCache.set(definitionState, null);
+        return null;
+      }
+
+      assert(manager, 'BUG: expected manager');
+
       let capabilities = capabilityFlagsFrom(manager.getCapabilities(definitionState));
 
       let templateFactory = getComponentTemplate(definitionState);
@@ -256,7 +300,7 @@ export class ConstantsImpl
       this.componentDefinitionCount++;
     }
 
-    return definition;
+    return expect(definition, 'BUG: resolved component definitions cannot be null');
   }
 
   getValue<T>(index: number) {

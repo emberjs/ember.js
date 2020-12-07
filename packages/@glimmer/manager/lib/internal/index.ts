@@ -44,7 +44,7 @@ export type InternalManagerFactory<O, D extends InternalManager = InternalManage
 const getPrototypeOf = Object.getPrototypeOf;
 
 function setManager<O extends Owner, Def extends object>(
-  map: WeakMap<Def, InternalManagerFactory<O>>,
+  map: WeakMap<object, InternalManagerFactory<O>>,
   factory: InternalManagerFactory<O> | InternalManagerFactory<O | undefined>,
   obj: Def
 ): Def {
@@ -116,10 +116,10 @@ function getManagerInstanceForOwner<D extends InternalManager>(
 
 ///////////
 
-export function setInternalModifierManager<O extends Owner>(
+export function setInternalModifierManager<O extends Owner, T extends object>(
   factory: InternalManagerFactory<O, InternalModifierManager>,
-  definition: object
-) {
+  definition: T
+): T {
   return setManager(MODIFIER_MANAGERS, factory, definition);
 }
 
@@ -127,11 +127,21 @@ export function getInternalModifierManager(
   owner: Owner | undefined,
   definition: object
 ): InternalModifierManager {
+  if (
+    DEBUG &&
+    typeof definition !== 'function' &&
+    (typeof definition !== 'object' || definition === null)
+  ) {
+    throw new Error(
+      `Attempted to use a value as a modifier, but it was not an object or function. Modifier definitions must be objects or functions with an associated modifier manager. The value was: ${definition}`
+    );
+  }
+
   const factory = getManager(MODIFIER_MANAGERS, definition)!;
 
   if (DEBUG && factory === undefined) {
     throw new Error(
-      `Attempted to load a modifier, but there wasn't a manager associated with the definition. The definition was: ${debugToString!(
+      `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${debugToString!(
         definition
       )}`
     );
@@ -140,50 +150,112 @@ export function getInternalModifierManager(
   return getManagerInstanceForOwner(owner, factory);
 }
 
-export function setInternalHelperManager<O extends Owner>(
+export function setInternalHelperManager<O extends Owner, T extends object>(
   factory: InternalManagerFactory<O | undefined, HelperManager<unknown> | Helper>,
-  definition: object
-) {
+  definition: T
+): T {
   return setManager(HELPER_MANAGERS, factory, definition);
 }
 
 export function getInternalHelperManager(
   owner: Owner | undefined,
   definition: object
-): HelperManager<unknown> | Helper {
+): HelperManager<unknown> | Helper;
+export function getInternalHelperManager(
+  owner: Owner | undefined,
+  definition: object,
+  isOptional: true | undefined
+): HelperManager<unknown> | Helper | null;
+export function getInternalHelperManager(
+  owner: Owner | undefined,
+  definition: object,
+  isOptional?: true | undefined
+): HelperManager<unknown> | Helper | null {
+  if (
+    DEBUG &&
+    typeof definition !== 'function' &&
+    (typeof definition !== 'object' || definition === null)
+  ) {
+    throw new Error(
+      `Attempted to use a value as a helper, but it was not an object or function. Helper definitions must be objects or functions with an associated helper manager. The value was: ${definition}`
+    );
+  }
+
   const factory = getManager(HELPER_MANAGERS, definition)!;
 
-  if (DEBUG && factory === undefined) {
-    throw new Error(
-      `Attempted to load a helper, but there wasn't a manager associated with the definition. The definition was: ${debugToString!(
-        definition
-      )}`
-    );
+  if (factory === undefined) {
+    if (isOptional === true) {
+      return null;
+    } else if (DEBUG) {
+      throw new Error(
+        `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${debugToString!(
+          definition
+        )}`
+      );
+    }
   }
 
   return getManagerInstanceForOwner(owner, factory);
 }
 
-export function setInternalComponentManager<O extends Owner>(
+export function setInternalComponentManager<O extends Owner, T extends object>(
   factory: InternalManagerFactory<O, InternalComponentManager>,
-  obj: object
-) {
+  obj: T
+): T {
   return setManager(COMPONENT_MANAGERS, factory, obj);
 }
 
 export function getInternalComponentManager(
   owner: Owner | undefined,
   definition: object
-): InternalComponentManager {
-  const factory = getManager<Owner, InternalComponentManager>(COMPONENT_MANAGERS, definition)!;
-
-  if (DEBUG && factory === undefined) {
+): InternalComponentManager;
+export function getInternalComponentManager(
+  owner: Owner | undefined,
+  definition: object,
+  isOptional: true | undefined
+): InternalComponentManager | null;
+export function getInternalComponentManager(
+  owner: Owner | undefined,
+  definition: object,
+  isOptional?: true | undefined
+): InternalComponentManager | null {
+  if (
+    DEBUG &&
+    typeof definition !== 'function' &&
+    (typeof definition !== 'object' || definition === null)
+  ) {
     throw new Error(
-      `Attempted to load a component, but there wasn't a manager associated with the definition. The definition was: ${debugToString!(
-        definition
-      )}`
+      `Attempted to use a value as a component, but it was not an object or function. Component definitions must be objects or functions with an associated component manager. The value was: ${definition}`
     );
   }
 
+  const factory = getManager<Owner, InternalComponentManager>(COMPONENT_MANAGERS, definition)!;
+
+  if (factory === undefined) {
+    if (isOptional === true) {
+      return null;
+    } else if (DEBUG) {
+      throw new Error(
+        `Attempted to load a component, but there wasn't a component manager associated with the definition. The definition was: ${debugToString!(
+          definition
+        )}`
+      );
+    }
+  }
+
   return getManagerInstanceForOwner(owner, factory);
+}
+
+///////////
+
+export function hasInternalComponentManager(definition: object): boolean {
+  return getManager(COMPONENT_MANAGERS, definition) !== undefined;
+}
+
+export function hasInternalHelperManager(definition: object): boolean {
+  return getManager(HELPER_MANAGERS, definition) !== undefined;
+}
+
+export function hasInternalModifierManager(definition: object): boolean {
+  return getManager(MODIFIER_MANAGERS, definition) !== undefined;
 }

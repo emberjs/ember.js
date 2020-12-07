@@ -15,6 +15,7 @@ import {
   Cursor,
   ElementBuilder,
   Helper,
+  DynamicScope,
 } from '@glimmer/interfaces';
 import { Reference } from '@glimmer/reference';
 import { EnvironmentDelegate } from '@glimmer/runtime';
@@ -47,6 +48,12 @@ export default interface RenderDelegate {
     context: Dict<unknown>,
     element: SimpleElement,
     snapshot: () => void
+  ): RenderResult;
+  renderComponent?(
+    component: object,
+    args: Record<string, unknown>,
+    element: SimpleElement,
+    dynamicScope?: DynamicScope
   ): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder;
   getSelf(env: Environment, context: unknown): Reference;

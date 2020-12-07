@@ -505,7 +505,8 @@ export interface SerializedTemplateWithLazyBlock {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
   moduleName: string;
-  scope?: () => unknown[];
+  scope: (() => unknown[]) | null;
+  isStrictMode: boolean;
 }
 
 /**

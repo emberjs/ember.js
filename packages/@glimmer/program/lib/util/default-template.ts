@@ -19,4 +19,6 @@ export const DEFAULT_TEMPLATE: SerializedTemplateWithLazyBlock = {
   id: '1b32f5c2-7623-43d6-a0ad-9672898920a1',
   moduleName: '__default__.hbs',
   block: JSON.stringify(DEFAULT_TEMPLATE_BLOCK),
+  scope: null,
+  isStrictMode: true,
 };

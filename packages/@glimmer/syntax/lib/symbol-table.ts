@@ -45,6 +45,10 @@ export class ProgramSymbolTable extends SymbolTable {
 
   #hasEval = false;
 
+  getUsedTemplateLocals(): string[] {
+    return this.usedTemplateLocals;
+  }
+
   setHasEval(): void {
     this.#hasEval = true;
   }
@@ -89,7 +93,7 @@ export class ProgramSymbolTable extends SymbolTable {
       return index;
     }
 
-    index = this.upvars.length;
+    index = this.usedTemplateLocals.length;
     this.usedTemplateLocals.push(name);
     return index;
   }
