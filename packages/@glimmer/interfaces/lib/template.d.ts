@@ -17,7 +17,9 @@ export interface LayoutWithContext {
   readonly block: SerializedTemplateBlock;
   readonly moduleName: string;
   readonly owner: Owner | null;
-  readonly asPartial?: boolean;
+  readonly scope: (() => unknown[]) | null;
+  readonly isStrictMode: boolean;
+  readonly asPartial: boolean;
 }
 
 export interface BlockWithContext {
@@ -94,6 +96,8 @@ export interface ContainingMetadata {
   asPartial: boolean;
   evalSymbols: Option<string[]>;
   upvars: Option<string[]>;
+  scopeValues: unknown[] | null;
+  isStrictMode: boolean;
   moduleName: string;
   owner: Owner | null;
   size: number;

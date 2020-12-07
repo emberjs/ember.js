@@ -12,6 +12,7 @@ import {
   SymbolTableOperand,
   CompilableTemplate,
   LayoutOperand,
+  IsStrictModeOperand,
 } from '@glimmer/interfaces';
 import { assert, isSmallInt } from '@glimmer/util';
 
@@ -25,6 +26,10 @@ export function evalSymbolsOperand(): EvalSymbolsOperand {
 
 export function ownerOperand(): OwnerOperand {
   return { type: HighLevelOperand.Owner, value: undefined };
+}
+
+export function isStrictMode(): IsStrictModeOperand {
+  return { type: HighLevelOperand.IsStrictMode, value: undefined };
 }
 
 export function blockOperand(value: SerializedInlineBlock | SerializedBlock): BlockOperand {

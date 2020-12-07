@@ -83,6 +83,9 @@ export default function createRegistry(): Registry {
         lookupModifier: (name) => modifiers.get(name) ?? null,
         lookupComponent: (name) => components.get(name) ?? null,
         lookupPartial: () => null,
+
+        lookupBuiltInHelper: () => null,
+        lookupBuiltInModifier: () => null,
       });
       const component = components.get(entry);
       if (!component) {

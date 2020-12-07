@@ -144,50 +144,49 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
   if (!Array.isArray(value)) {
     op(Op.Text, value === null || value === undefined ? '' : String(value));
   } else if (isGetFreeOptionalComponentOrHelper(value)) {
-    op(
-      HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper,
-      value,
-      (componentOrHandleOrName: CompileTimeComponent | number | string) => {
-        if (typeof componentOrHandleOrName === 'object') {
-          // Resolved component handle, invoke the component directly
-          InvokeComponent(op, componentOrHandleOrName, null, null, null, null);
-        } else {
-          op(MachineOp.PushFrame);
+    op(HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper, value, {
+      ifComponent(component: CompileTimeComponent) {
+        InvokeComponent(op, component, null, null, null, null);
+      },
 
-          if (typeof componentOrHandleOrName === 'number') {
-            // Resolved a helper handle, invoke the helper directly
-            Call(op, componentOrHandleOrName, null, null);
-          } else {
-            // Fallback to {{this}} lookup
-            op(HighLevelResolutionOpcode.ResolveLocal, value[1], (name: string) => {
-              op(Op.GetVariable, 0);
-              op(Op.GetProperty, name);
-            });
-          }
-          op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
-          op(MachineOp.PopFrame);
-        }
-      }
-    );
+      ifHelper(handle: number) {
+        op(MachineOp.PushFrame);
+        Call(op, handle, null, null);
+        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+        op(MachineOp.PopFrame);
+      },
+
+      ifValue(handle: number) {
+        op(MachineOp.PushFrame);
+        op(Op.ConstantReference, handle);
+        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+        op(MachineOp.PopFrame);
+      },
+
+      ifFallback(_name: string) {
+        op(MachineOp.PushFrame);
+        op(HighLevelResolutionOpcode.ResolveLocal, value[1], (name: string) => {
+          op(Op.GetVariable, 0);
+          op(Op.GetProperty, name);
+        });
+        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+        op(MachineOp.PopFrame);
+      },
+    });
   } else if (value[0] === SexpOpcodes.Call && isGetFreeComponentOrHelper(value[1])) {
     let [, expr, positional, named] = value;
 
-    op(
-      HighLevelResolutionOpcode.ResolveComponentOrHelper,
-      expr,
-      (componentOrHandle: CompileTimeComponent | number) => {
-        if (typeof componentOrHandle === 'object') {
-          // Resolved component handle, invoke the component directly
-          InvokeComponent(op, componentOrHandle, null, positional, hashToArgs(named), null);
-        } else {
-          // Resolved a helper handle, invoke the helper directly
-          op(MachineOp.PushFrame);
-          Call(op, componentOrHandle, positional, named);
-          op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
-          op(MachineOp.PopFrame);
-        }
-      }
-    );
+    op(HighLevelResolutionOpcode.ResolveComponentOrHelper, expr, {
+      ifComponent(component: CompileTimeComponent) {
+        InvokeComponent(op, component, null, positional, hashToArgs(named), null);
+      },
+      ifHelper(handle: number) {
+        op(MachineOp.PushFrame);
+        Call(op, handle, positional, named);
+        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+        op(MachineOp.PopFrame);
+      },
+    });
   } else {
     op(MachineOp.PushFrame);
     expr(op, value);
@@ -370,7 +369,7 @@ STATEMENTS.add(SexpOpcodes.WithDynamicVars, (op, [, named, block]) => {
 STATEMENTS.add(SexpOpcodes.InvokeComponent, (op, [, expr, positional, named, blocks]) => {
   if (isGetFreeComponent(expr)) {
     op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
-      InvokeComponent(op, component, null, positional, named, blocks);
+      InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
     });
   } else {
     InvokeDynamicComponent(op, expr, null, positional, named, blocks, false, false);

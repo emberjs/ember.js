@@ -208,26 +208,15 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   renderComponent(
-    name: string,
-    args: Dict<Reference<unknown>>,
+    component: object,
+    args: Record<string, unknown>,
     element: SimpleElement,
     dynamicScope?: DynamicScope
   ): RenderResult {
     let cursor = { element, nextSibling: null };
     let { program, runtime } = this.context;
     let builder = this.getElementBuilder(runtime.env, cursor);
-
-    let component = this.registry.lookupComponent(name)!;
-
-    let iterator = renderComponent(
-      runtime,
-      builder,
-      program,
-      {},
-      component.state,
-      args,
-      dynamicScope
-    );
+    let iterator = renderComponent(runtime, builder, program, {}, component, args, dynamicScope);
 
     return renderSync(runtime.env, iterator);
   }

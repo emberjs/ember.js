@@ -5,6 +5,7 @@ import { RenderTest, Count } from '../render-test';
 import { ComponentKind } from '../components/types';
 import { test } from '../test-decorator';
 import { JitRenderDelegate } from '../modes/jit/delegate';
+import { defineComponent } from '../test-helpers/define';
 
 export class EntryPointTest extends RenderTest {
   static suiteName = 'entry points';
@@ -16,16 +17,11 @@ export class EntryPointTest extends RenderTest {
   @test
   'an entry point'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent(
-      'TemplateOnly',
-      'TemplateOnly',
-      'Title',
-      `<h1>hello {{@title}}</h1>`
-    );
+    let Title = defineComponent({}, `<h1>hello {{@title}}</h1>`);
 
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
-    delegate.renderComponent('Title', { title }, element);
+    delegate.renderComponent(Title, { title }, element);
 
     QUnit.assert.equal(castToBrowser(element, 'HTML').innerHTML, '<h1>hello renderComponent</h1>');
   }
@@ -33,61 +29,46 @@ export class EntryPointTest extends RenderTest {
   @test
   'does not leak args between invocations'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent(
-      'TemplateOnly',
-      'TemplateOnly',
-      'Title',
-      `<h1>hello {{@title}}</h1>`
-    );
+    let Title = defineComponent({}, `<h1>hello {{@title}}</h1>`);
 
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
-    delegate.renderComponent('Title', { title }, element);
+    delegate.renderComponent(Title, { title }, element);
     QUnit.assert.equal(castToBrowser(element, 'HTML').innerHTML, '<h1>hello renderComponent</h1>');
 
     element = delegate.getInitialElement();
     let newTitle = createPrimitiveRef('new title');
-    delegate.renderComponent('Title', { title: newTitle }, element);
+    delegate.renderComponent(Title, { title: newTitle }, element);
     QUnit.assert.equal(castToBrowser(element, 'HTML').innerHTML, '<h1>hello new title</h1>');
   }
 
   @test
   'can render different components per call'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent(
-      'TemplateOnly',
-      'TemplateOnly',
-      'Title',
-      `<h1>hello {{@title}}</h1>`
-    );
-    delegate.registerComponent('TemplateOnly', 'TemplateOnly', 'Body', `<p>body {{@body}}</p>`);
+    let Title = defineComponent({}, `<h1>hello {{@title}}</h1>`);
+    let Body = defineComponent({}, `<p>body {{@body}}</p>`);
 
     let element = delegate.getInitialElement();
     let title = createPrimitiveRef('renderComponent');
-    delegate.renderComponent('Title', { title }, element);
+    delegate.renderComponent(Title, { title }, element);
     QUnit.assert.equal(castToBrowser(element, 'HTML').innerHTML, '<h1>hello renderComponent</h1>');
 
     element = delegate.getInitialElement();
     let body = createPrimitiveRef('text');
-    delegate.renderComponent('Body', { body }, element);
+    delegate.renderComponent(Body, { body }, element);
     QUnit.assert.equal(castToBrowser(element, 'HTML').innerHTML, '<p>body text</p>');
   }
 
   @test
   'supports passing in an initial dynamic context'() {
     let delegate = new JitRenderDelegate();
-    delegate.registerComponent(
-      'TemplateOnly',
-      'TemplateOnly',
-      'Locale',
-      `{{-get-dynamic-var "locale"}}`
-    );
+    let Locale = defineComponent({}, `{{-get-dynamic-var "locale"}}`);
 
     let element = delegate.getInitialElement();
     let dynamicScope = new DynamicScopeImpl({
       locale: createPrimitiveRef('en_US'),
     });
-    delegate.renderComponent('Locale', {}, element, dynamicScope);
+    delegate.renderComponent(Locale, {}, element, dynamicScope);
 
     QUnit.assert.equal(castToBrowser(element, 'HTML').innerHTML, 'en_US');
   }

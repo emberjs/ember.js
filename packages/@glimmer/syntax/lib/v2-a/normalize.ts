@@ -24,7 +24,10 @@ import {
   SexpSyntaxContext,
 } from './loose-resolution';
 
-export function normalize(source: Source, options: PrecompileOptions = {}): ASTv2.Template {
+export function normalize(
+  source: Source,
+  options: PrecompileOptions = {}
+): [ast: ASTv2.Template, locals: string[]] {
   let ast = preprocess(source, options);
 
   let normalizeOptions = assign(
@@ -39,11 +42,15 @@ export function normalize(source: Source, options: PrecompileOptions = {}): ASTv
   let block = new BlockContext(source, normalizeOptions, top);
   let normalizer = new StatementNormalizer(block);
 
-  return new TemplateChildren(
+  let astV2 = new TemplateChildren(
     block.loc(ast.loc),
     ast.body.map((b) => normalizer.normalize(b)),
     block
   ).assertTemplate(top);
+
+  let locals = top.getUsedTemplateLocals();
+
+  return [astV2, locals];
 }
 
 /**

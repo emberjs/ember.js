@@ -36,7 +36,7 @@ export {
   inTransaction,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
-export { RenderComponentArgs, renderComponent, renderMain, renderSync } from './lib/render';
+export { renderComponent, renderMain, renderSync } from './lib/render';
 export { SafeString } from './lib/upsert';
 export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
 export {

@@ -20,7 +20,8 @@ export default function createCurryComponentRef(
   resolver: RuntimeResolver,
   constants: ResolutionTimeConstants,
   owner: Owner,
-  args: Option<CapturedArguments>
+  args: Option<CapturedArguments>,
+  isStrict: boolean
 ) {
   let lastValue: Maybe<Dict> | string, curriedDefinition: Option<CurriedComponentDefinition>;
 
@@ -34,6 +35,12 @@ export default function createCurryComponentRef(
     if (isCurriedComponentDefinition(value)) {
       curriedDefinition = args ? curry(value, args) : args;
     } else if (typeof value === 'string' && value) {
+      if (DEBUG && isStrict) {
+        throw new Error(
+          `Attempted to resolve a dynamic component with a string definition, \`${value}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
+        );
+      }
+
       let resolvedDefinition = resolver.lookupComponent(value, owner);
 
       if (DEBUG && !resolvedDefinition) {

@@ -26,4 +26,12 @@ export default class JitCompileTimeLookup implements CompileTimeResolver {
   lookupPartial(name: string): Option<PartialDefinition> {
     return this.resolver.lookupPartial(name);
   }
+
+  lookupBuiltInHelper(_name: string): Option<HelperDefinitionState> {
+    return null;
+  }
+
+  lookupBuiltInModifier(_name: string): Option<ModifierDefinitionState> {
+    return null;
+  }
 }
