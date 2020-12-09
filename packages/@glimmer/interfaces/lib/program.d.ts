@@ -98,15 +98,35 @@ export interface ResolutionTimeConstants {
   helper(
     owner: Owner | undefined,
     definitionState: HelperDefinitionState,
-    resolvedName: string | null
+    resolvedName: string | null,
+    isOptional: true
+  ): number | null;
+  helper(
+    owner: Owner | undefined,
+    definitionState: HelperDefinitionState,
+    resolvedName?: string | null
+  ): number;
+  helper(
+    owner: Owner | undefined,
+    definitionState: HelperDefinitionState,
+    resolvedName?: string | null
   ): number;
 
   modifier(
     owner: Owner | undefined,
     definitionState: ModifierDefinitionState,
-    resolvedName: string | null
+    resolvedName?: string | null
   ): number;
 
+  component(
+    owner: Owner | undefined,
+    definitionState: ComponentDefinitionState
+  ): ComponentDefinition;
+  component(
+    owner: Owner | undefined,
+    definitionState: ComponentDefinitionState,
+    isOptional: true
+  ): ComponentDefinition | null;
   component(
     owner: Owner | undefined,
     definitionState: ComponentDefinitionState

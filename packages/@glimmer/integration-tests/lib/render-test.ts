@@ -1,7 +1,15 @@
-import { Dict, Maybe, Option, RenderResult, Helper } from '@glimmer/interfaces';
+import {
+  Dict,
+  Maybe,
+  Option,
+  RenderResult,
+  Helper,
+  ComponentDefinitionState,
+  DynamicScope,
+} from '@glimmer/interfaces';
 import { ASTPluginBuilder } from '@glimmer/syntax';
 import { dirtyTagFor } from '@glimmer/validator';
-import { clearElement, dict, expect } from '@glimmer/util';
+import { assert, clearElement, dict, expect } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import {
   ComponentBlueprint,
@@ -364,6 +372,25 @@ export class RenderTest implements IRenderTest {
     this.renderResult = this.delegate.renderTemplate(template, this.context, this.element, () =>
       this.takeSnapshot()
     );
+  }
+
+  renderComponent(
+    component: ComponentDefinitionState,
+    args: Dict<unknown> = {},
+    dynamicScope?: DynamicScope
+  ): void {
+    try {
+      QUnit.assert.ok(true, `Rendering ${String(component)} with ${JSON.stringify(args)}`);
+    } catch {
+      // couldn't stringify, possibly has a circular dependency
+    }
+
+    assert(
+      this.delegate.renderComponent,
+      'Attempted to render a component, but the delegate did not implement renderComponent'
+    );
+
+    this.renderResult = this.delegate.renderComponent(component, args, this.element, dynamicScope);
   }
 
   rerender(properties: Dict<unknown> = {}): void {

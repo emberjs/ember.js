@@ -5,6 +5,9 @@ export {
   getInternalHelperManager,
   getInternalModifierManager,
   getInternalComponentManager,
+  hasInternalHelperManager,
+  hasInternalModifierManager,
+  hasInternalComponentManager,
 } from './lib/internal/index';
 export { setHelperManager, setModifierManager, setComponentManager } from './lib/public/index';
 export { componentCapabilities, CustomComponentManager } from './lib/public/component';

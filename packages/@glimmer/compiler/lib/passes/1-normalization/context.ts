@@ -10,13 +10,14 @@ import { VISIT_STMTS } from './visitors/statements';
  */
 export class NormalizationState {
   #currentScope: SymbolTable;
+  #cursorCount = 0;
 
-  constructor(block: SymbolTable, private cursorCount = 0) {
+  constructor(block: SymbolTable, readonly isStrict: boolean) {
     this.#currentScope = block;
   }
 
   generateUniqueCursor(): string {
-    return `%cursor:${this.cursorCount++}%`;
+    return `%cursor:${this.#cursorCount++}%`;
   }
 
   get scope(): SymbolTable {

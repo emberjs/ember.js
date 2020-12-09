@@ -6,7 +6,6 @@ import {
   RuntimeArtifacts,
   CompileTimeCompilationContext,
 } from '@glimmer/interfaces';
-import { createConstRef, Reference, childRefFor } from '@glimmer/reference';
 import { NewElementBuilder, runtimeContext, renderComponent, renderSync } from '@glimmer/runtime';
 
 import createEnvDelegate, { registerResult } from './create-env-delegate';
@@ -18,7 +17,7 @@ export default async function renderBenchmark(
   context: CompileTimeCompilationContext,
   runtimeResolver: RuntimeResolver,
   component: ResolvedComponentDefinition,
-  root: Dict,
+  args: Dict,
   element: SimpleElement,
   isInteractive = true
 ): Promise<UpdateBenchmark> {
@@ -38,12 +37,6 @@ export default async function renderBenchmark(
     const env = runtime.env;
     const cursor = { element, nextSibling: null };
     const treeBuilder = NewElementBuilder.forInitialRender(env, cursor);
-    const rootRef = createConstRef(root, 'this');
-
-    const args: Dict<Reference> = {};
-    for (const key of Object.keys(root)) {
-      args[key] = childRefFor(rootRef, key);
-    }
 
     const result = renderSync(
       env,

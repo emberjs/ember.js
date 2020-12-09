@@ -32,7 +32,9 @@ export function normalizeTrustedValue(value: unknown): TrustingInsertion {
   return String(value);
 }
 
-export function shouldCoerce(value: unknown) {
+export function shouldCoerce(
+  value: unknown
+): value is string | number | boolean | null | undefined {
   return (
     isString(value) || isEmpty(value) || typeof value === 'boolean' || typeof value === 'number'
   );

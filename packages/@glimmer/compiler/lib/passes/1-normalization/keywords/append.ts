@@ -64,7 +64,16 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('partial', {
-    assert(node: ASTv2.AppendContent): Result<ASTv2.ExpressionNode | undefined> {
+    assert(
+      node: ASTv2.AppendContent,
+      state: NormalizationState
+    ): Result<ASTv2.ExpressionNode | undefined> {
+      if (state.isStrict) {
+        return Err(
+          generateSyntaxError('{{partial}} is not allowed in strict mode templates', node.loc)
+        );
+      }
+
       let {
         args: { positional, named },
       } = node;
@@ -90,7 +99,7 @@ export const APPEND_KEYWORDS = keywords('Append')
         if (trusting) {
           return Err(
             generateSyntaxError(
-              `{{{partial ...}}} is not supported, please use {{partial ...}} instea`,
+              `{{{partial ...}}} is not supported, please use {{partial ...}} instead`,
               node.loc
             )
           );
@@ -186,7 +195,8 @@ export const APPEND_KEYWORDS = keywords('Append')
   })
   .kw('component', {
     assert(
-      node: ASTv2.AppendContent
+      node: ASTv2.AppendContent,
+      state: NormalizationState
     ): Result<{
       args: ASTv2.Args;
     }> {
@@ -199,6 +209,15 @@ export const APPEND_KEYWORDS = keywords('Append')
           generateSyntaxError(
             `{{component}} requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
             args.loc
+          )
+        );
+      }
+
+      if (state.isStrict && definition.type === 'Literal') {
+        return Err(
+          generateSyntaxError(
+            '{{component}} cannot resolve string values in strict mode templates',
+            node.loc
           )
         );
       }

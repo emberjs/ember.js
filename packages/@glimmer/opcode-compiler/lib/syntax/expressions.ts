@@ -34,6 +34,13 @@ EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {
   withPath(op, path);
 });
 
+EXPRESSIONS.add(SexpOpcodes.GetTemplateSymbol, (op, [, sym, path]) => {
+  op(HighLevelResolutionOpcode.ResolveTemplateLocal, sym, (handle: number) => {
+    op(Op.ConstantReference, handle);
+    withPath(op, path);
+  });
+});
+
 EXPRESSIONS.add(SexpOpcodes.GetStrictFree, (op, [, sym, _path]) => {
   op(HighLevelResolutionOpcode.ResolveFree, sym, (_handle: unknown) => {
     // TODO: Implement in strict mode
@@ -60,13 +67,15 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (op, expr) => {
   // <Foo @arg={{baz}}>
 
   op(HighLevelResolutionOpcode.ResolveLocal, expr[1], (_name: string) => {
-    op(HighLevelResolutionOpcode.ResolveOptionalHelper, expr, (handleOrName: number | string) => {
-      if (typeof handleOrName === 'number') {
-        Call(op, handleOrName, null, null);
-      } else {
+    op(HighLevelResolutionOpcode.ResolveOptionalHelper, expr, {
+      ifHelper: (handle: number) => {
+        Call(op, handle, null, null);
+      },
+
+      ifFallback: (name: string) => {
         op(Op.GetVariable, 0);
-        op(Op.GetProperty, handleOrName);
-      }
+        op(Op.GetProperty, name);
+      },
     });
   });
 });

@@ -38,7 +38,7 @@ export function StdAppend(op: PushStatementOp, trusting: boolean): void {
     });
 
     when(ContentType.Component, () => [
-      op(Op.PushCurriedComponent),
+      op(Op.ResolveCurriedComponent),
       op(Op.PushDynamicComponentInstance),
       InvokeBareComponent(op),
     ]);
@@ -75,6 +75,8 @@ const STDLIB_META = {
   moduleName: 'stdlib',
 
   // TODO: ??
+  scopeValues: null,
+  isStrictMode: true,
   owner: null,
   size: 0,
 };

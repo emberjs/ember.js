@@ -660,16 +660,6 @@ operand-stack = [
   ["InitialComponentState"]
 ]
 
-
-[syscall.curriedload]
-
-format = "PushCurriedComponent"
-operation = "Pushes a curried component definition on to the stack"
-operand-stack = [
-  ["Reference"],
-  ["CurriedComponentDefinition"]
-]
-
 [syscall.cdload]
 
 format = ["ResolveDynamicComponent", "owner:owner"]
