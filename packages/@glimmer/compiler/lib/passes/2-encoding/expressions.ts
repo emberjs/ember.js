@@ -80,10 +80,6 @@ export class ExpressionEncoder {
     return [SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, symbol];
   }
 
-  GetSymbol({ symbol }: mir.GetSymbol): WireFormat.Expressions.GetSymbol {
-    return [SexpOpcodes.GetSymbol, symbol];
-  }
-
   PathExpression({ head, tail }: mir.PathExpression): WireFormat.Expressions.GetPath {
     let getOp = EXPR.expr(head) as WireFormat.Expressions.GetVar;
 
@@ -95,10 +91,6 @@ export class ExpressionEncoder {
   }
 
   CallExpression({ callee, args }: mir.CallExpression): WireFormat.Expressions.Helper {
-    // let head = ctx.popValue(EXPR);
-    // let params = ctx.popValue(PARAMS);
-    // let hash = ctx.popValue(HASH);
-
     return [SexpOpcodes.Call, EXPR.expr(callee), ...EXPR.Args(args)];
   }
 
