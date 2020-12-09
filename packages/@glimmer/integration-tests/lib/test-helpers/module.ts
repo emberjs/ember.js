@@ -92,11 +92,19 @@ export function suite<D extends RenderDelegate>(
       const test = klass.prototype[prop];
 
       if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
-        // eslint-disable-next-line no-loop-func
-        QUnit.test(prop, (assert) => {
-          test.call(instance!, assert, instance!.count);
-          instance!.count.assert();
-        });
+        if (isSkippedTest(test)) {
+          // eslint-disable-next-line no-loop-func
+          QUnit.skip(prop, (assert) => {
+            test.call(instance!, assert, instance!.count);
+            instance!.count.assert();
+          });
+        } else {
+          // eslint-disable-next-line no-loop-func
+          QUnit.test(prop, (assert) => {
+            test.call(instance!, assert, instance!.count);
+            instance!.count.assert();
+          });
+        }
       }
     }
   }
@@ -241,4 +249,8 @@ interface TestFunction {
 
 function isTestFunction(value: any): value is TestFunction {
   return typeof value === 'function' && value.isTest;
+}
+
+function isSkippedTest(value: any): boolean {
+  return typeof value === 'function' && value.skip;
 }

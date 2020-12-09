@@ -19,7 +19,6 @@ import {
   Dict,
   DynamicScope,
   ElementOperations,
-  Maybe,
   Op,
   Option,
   ProgramSymbolTable,
@@ -39,12 +38,12 @@ import {
 import { isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import {
   assert,
+  debugToString,
   decodeHandle,
   dict,
   EMPTY_STRING_ARRAY,
   expect,
   isErrHandle,
-  unreachable,
   unwrapTemplate,
 } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
@@ -111,7 +110,7 @@ export interface PartialComponentDefinition {
   manager: InternalComponentManager;
 }
 
-APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _owner }) => {
+APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _owner, op2: _isStrict }) => {
   let stack = vm.stack;
 
   let definition = check(stack.popJs(), CheckReference);
@@ -119,9 +118,13 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _owner }) => {
 
   let constants = vm[CONSTANTS];
   let owner = constants.getValue<Owner>(decodeHandle(_owner));
+  let isStrict = constants.getValue<boolean>(decodeHandle(_isStrict));
   let resolver = vm.runtime.resolver;
 
-  vm.loadValue($v0, createCurryComponentRef(definition, resolver, constants, owner, capturedArgs));
+  vm.loadValue(
+    $v0,
+    createCurryComponentRef(definition, resolver, constants, owner, capturedArgs, isStrict)
+  );
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
@@ -143,41 +146,71 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   vm.stack.pushJs(instance);
 });
 
-APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _owner }) => {
+APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _owner, op2: _isStrict }) => {
   let stack = vm.stack;
   let component = check(
     valueForRef(check(stack.popJs(), CheckReference)),
     CheckOr(CheckString, CheckCurriedComponentDefinition)
   );
-  let owner = vm[CONSTANTS].getValue<Owner>(_owner);
+  let constants = vm[CONSTANTS];
+  let owner = constants.getValue<Owner>(_owner);
+  let isStrict = constants.getValue<boolean>(_isStrict);
 
   vm.loadValue($t1, null); // Clear the temp register
 
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
   if (typeof component === 'string') {
-    let resolvedDefinition = resolveComponent(vm.runtime.resolver, vm[CONSTANTS], component, owner);
+    if (DEBUG && isStrict) {
+      throw new Error(
+        `Attempted to resolve a dynamic component with a string definition, \`${component}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
+      );
+    }
+
+    let resolvedDefinition = resolveComponent(vm.runtime.resolver, constants, component, owner);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
-  } else {
+  } else if (isCurriedComponentDefinition(component)) {
     definition = component;
+  } else {
+    definition = constants.component(owner, component);
   }
 
   stack.pushJs(definition);
 });
 
-APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
+APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm, { op1: _owner }) => {
   let stack = vm.stack;
   let ref = check(stack.popJs(), CheckReference);
   let value = valueForRef(ref);
+  let constants = vm[CONSTANTS];
 
-  if (DEBUG && !isCurriedComponentDefinition(value)) {
+  let owner = constants.getValue<Owner>(_owner);
+  let definition: CurriedComponentDefinition | ComponentDefinition | null;
+
+  if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
     throw new Error(
       `Expected a curried component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must use the {{component}} helper to create a component definition when invoking dynamically.`
     );
   }
 
-  let definition = value as CurriedComponentDefinition;
+  if (isCurriedComponentDefinition(value)) {
+    definition = value as CurriedComponentDefinition;
+  } else {
+    definition = constants.component(owner, value as object, true);
+
+    if (DEBUG && definition === null) {
+      throw new Error(
+        `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${
+          ref.debugLabel
+        }>\` or \`{{${
+          ref.debugLabel
+        }}}\`, and the incorrect definition is the value at the path \`${
+          ref.debugLabel
+        }\`, which was: ${debugToString!(value)}`
+      );
+    }
+  }
 
   vm.loadValue($t1, null); // Clear the temp register
   stack.pushJs(definition);
@@ -197,21 +230,6 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
   }
 
   stack.pushJs({ definition, capabilities, manager, state: null, handle: null, table: null });
-});
-
-APPEND_OPCODES.add(Op.PushCurriedComponent, (vm) => {
-  let stack = vm.stack;
-
-  let component = valueForRef(check(stack.popJs(), CheckReference)) as Maybe<Dict>;
-  let definition: CurriedComponentDefinition;
-
-  if (isCurriedComponentDefinition(component)) {
-    definition = component;
-  } else {
-    throw unreachable();
-  }
-
-  stack.pushJs(definition);
 });
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: _blockNames, op3: flags }) => {

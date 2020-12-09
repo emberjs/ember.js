@@ -35,7 +35,10 @@ export const CALL_KEYWORDS = keywords('Call')
     },
   })
   .kw('component', {
-    assert(node: ExprKeywordNode): Result<{ definition: ASTv2.ExpressionNode; args: ASTv2.Args }> {
+    assert(
+      node: ExprKeywordNode,
+      state: NormalizationState
+    ): Result<{ definition: ASTv2.ExpressionNode; args: ASTv2.Args }> {
       let { args } = node;
       let definition = args.nth(0);
 
@@ -44,6 +47,15 @@ export const CALL_KEYWORDS = keywords('Call')
           generateSyntaxError(
             `(component) requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
             args.loc
+          )
+        );
+      }
+
+      if (state.isStrict && definition.type === 'Literal') {
+        return Err(
+          generateSyntaxError(
+            '(component) cannot resolve string values in strict mode templates',
+            node.loc
           )
         );
       }

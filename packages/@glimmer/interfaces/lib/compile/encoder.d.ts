@@ -31,9 +31,10 @@ export const enum HighLevelResolutionOpcode {
 
   ResolveFree = 1009,
   ResolveLocal = 1010,
+  ResolveTemplateLocal = 1011,
 
   Start = ResolveModifier,
-  End = ResolveLocal,
+  End = ResolveTemplateLocal,
 }
 
 export interface SimpleArgsOptions {
@@ -70,7 +71,10 @@ export type ResolveComponentOp = [
 export type ResolveComponentOrHelperOp = [
   op: HighLevelResolutionOpcode.ResolveComponentOrHelper,
   op1: WireFormat.Expressions.Expression,
-  op2: (componentOrHandle: CompileTimeComponent | number) => void
+  op2: {
+    ifComponent: (component: CompileTimeComponent) => void;
+    ifHelper: (handle: number) => void;
+  }
 ];
 
 export type ResolveHelperOp = [
@@ -82,17 +86,31 @@ export type ResolveHelperOp = [
 export type ResolveOptionalHelperOp = [
   op: HighLevelResolutionOpcode.ResolveOptionalHelper,
   op1: WireFormat.Expressions.Expression,
-  op2: (handleOrName: number | string) => void
+  op2: {
+    ifHelper: (handle: number) => void;
+    ifFallback: (name: string) => void;
+  }
 ];
 
 export type ResolveOptionalComponentOrHelperOp = [
   op: HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper,
   op1: WireFormat.Expressions.Expression,
-  op2: (componentOrHandleOrName: CompileTimeComponent | number | string) => void
+  op2: {
+    ifComponent: (component: CompileTimeComponent) => void;
+    ifHelper: (handle: number) => void;
+    ifValue: (handle: number) => void;
+    ifFallback: (name: string) => void;
+  }
 ];
 
 export type ResolveFreeOp = [
   op: HighLevelResolutionOpcode.ResolveFree,
+  op1: number,
+  op2: (handle: number) => void
+];
+
+export type ResolveTemplateLocalOp = [
+  op: HighLevelResolutionOpcode.ResolveTemplateLocal,
   op1: number,
   op2: (handle: number) => void
 ];
@@ -111,6 +129,7 @@ export type HighLevelResolutionOp =
   | ResolveOptionalHelperOp
   | ResolveOptionalComponentOrHelperOp
   | ResolveFreeOp
+  | ResolveTemplateLocalOp
   | ResolveLocalOp;
 
 export type HighLevelOp = HighLevelBuilderOp | HighLevelResolutionOp;

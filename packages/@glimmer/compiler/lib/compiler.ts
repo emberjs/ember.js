@@ -65,16 +65,12 @@ const defaultOptions: PrecompileOptions = {
  * @return {string} a template javascript string
  */
 export function precompileJSON(
-  source: string,
-  options?: PrecompileOptions
-): SerializedTemplateBlock;
-export function precompileJSON(
   string: string,
   options: PrecompileOptions = defaultOptions
-): SerializedTemplateBlock {
+): [block: SerializedTemplateBlock, usedLocals: string[]] {
   let source = new Source(string, options.meta?.moduleName);
-  let ast = normalize(source, options);
-  let block = pass0(source, ast).mapOk((pass2In) => {
+  let [ast, locals] = normalize(source, options);
+  let block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);
   });
 
@@ -83,11 +79,15 @@ export function precompileJSON(
   }
 
   if (block.isOk) {
-    return block.value;
+    return [block.value, locals];
   } else {
     throw block.reason;
   }
 }
+
+// UUID used as a unique placeholder for placing a snippet of JS code into
+// the otherwise JSON stringified value below.
+const SCOPE_PLACEHOLDER = '796d24e6-2450-4fb0-8cdf-b65638b5ef70';
 
 /*
  * Compile a string into a template javascript string.
@@ -107,7 +107,7 @@ export function precompile(
   source: string,
   options: PrecompileOptions = defaultOptions
 ): TemplateJavascript {
-  let block = precompileJSON(source, options);
+  let [block, usedLocals] = precompileJSON(source, options);
 
   let moduleName = options.meta?.moduleName;
   let idFn = options.id || defaultId;
@@ -116,10 +116,24 @@ export function precompile(
     id: idFn(JSON.stringify(options.meta) + blockJSON),
     block: blockJSON,
     moduleName: moduleName ?? '(unknown template module)',
+    // lying to the type checker here because we're going to
+    // replace it just below, after stringification
+    scope: (SCOPE_PLACEHOLDER as unknown) as null,
+    isStrictMode: options.strictMode ?? false,
   };
 
   // JSON is javascript
-  return JSON.stringify(templateJSONObject);
+  let stringified = JSON.stringify(templateJSONObject);
+
+  if (options.strictMode && usedLocals.length > 0) {
+    let scopeFn = `()=>[${usedLocals.join(',')}]`;
+
+    stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, scopeFn);
+  } else {
+    stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, 'null');
+  }
+
+  return stringified;
 }
 
 export { PrecompileOptions };

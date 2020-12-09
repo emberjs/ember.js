@@ -105,6 +105,8 @@ export function meta(layout: LayoutWithContext): ContainingMetadata {
     asPartial: layout.asPartial || false,
     evalSymbols: evalSymbols(layout),
     upvars: upvars,
+    scopeValues: layout.scope?.() ?? null,
+    isStrictMode: layout.isStrictMode,
     moduleName: layout.moduleName,
     owner: layout.owner,
     size: symbols.length,

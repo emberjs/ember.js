@@ -43,6 +43,8 @@ export default function templateFactory({
   id: templateId,
   moduleName,
   block,
+  scope,
+  isStrictMode,
 }: SerializedTemplateWithLazyBlock): TemplateFactory {
   // TODO(template-refactors): This should be removed in the near future, as it
   // appears that id is unused. It is currently kept for backwards compat reasons.
@@ -69,6 +71,8 @@ export default function templateFactory({
           block: parsedBlock,
           moduleName,
           owner: null,
+          scope,
+          isStrictMode,
         });
       } else {
         templateCacheCounters.cacheHit++;
@@ -81,7 +85,7 @@ export default function templateFactory({
 
     if (result === undefined) {
       templateCacheCounters.cacheMiss++;
-      result = new TemplateImpl({ id, block: parsedBlock, moduleName, owner });
+      result = new TemplateImpl({ id, block: parsedBlock, moduleName, owner, scope, isStrictMode });
       templateCache.set(owner, result);
     } else {
       templateCacheCounters.cacheHit++;

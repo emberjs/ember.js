@@ -951,16 +951,6 @@ METADATA[Op.PushDynamicComponentInstance] = {
   check: true,
 };
 
-METADATA[Op.PushCurriedComponent] = {
-  name: 'PushCurriedComponent',
-  mnemonic: 'curriedload',
-  before: null,
-  stackChange: 0,
-  ops: [],
-  operands: 0,
-  check: true,
-};
-
 METADATA[Op.ResolveDynamicComponent] = {
   name: 'ResolveDynamicComponent',
   mnemonic: 'cdload',

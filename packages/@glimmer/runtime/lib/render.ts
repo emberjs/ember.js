@@ -1,5 +1,4 @@
 import {
-  Dict,
   DynamicScope,
   Environment,
   RenderResult,
@@ -12,7 +11,7 @@ import {
   ComponentDefinitionState,
   Owner,
 } from '@glimmer/interfaces';
-import { Reference } from '@glimmer/reference';
+import { childRefFor, createConstRef, Reference } from '@glimmer/reference';
 import { expect, unwrapHandle } from '@glimmer/util';
 import { ARGS, CONSTANTS } from './symbols';
 import VM, { InternalVM } from './vm/append';
@@ -58,14 +57,12 @@ export function renderMain(
   return new TemplateIteratorImpl(vm);
 }
 
-export type RenderComponentArgs = Dict<Reference>;
-
 function renderInvocation(
   vm: InternalVM,
   context: CompileTimeCompilationContext,
   owner: Owner,
   definition: ComponentDefinitionState,
-  args: RenderComponentArgs
+  args: Record<string, Reference>
 ): TemplateIterator {
   // Get a list of tuples of argument names and references, like
   // [['title', reference], ['name', reference]]
@@ -116,9 +113,18 @@ export function renderComponent(
   context: CompileTimeCompilationContext,
   owner: Owner,
   definition: ComponentDefinitionState,
-  args: RenderComponentArgs = {},
+  args: Record<string, unknown> = {},
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
   let vm = VM.empty(runtime, { treeBuilder, handle: context.stdlib.main, dynamicScope }, context);
-  return renderInvocation(vm, context, owner, definition, args);
+  return renderInvocation(vm, context, owner, definition, recordToReference(args));
+}
+
+function recordToReference(record: Record<string, unknown>): Record<string, Reference> {
+  const root = createConstRef(record, 'args');
+
+  return Object.keys(record).reduce((acc, key) => {
+    acc[key] = childRefFor(root, key);
+    return acc;
+  }, {} as Record<string, Reference>);
 }

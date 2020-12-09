@@ -14,10 +14,10 @@ type Manager = ComponentManager<unknown> | ModifierManager<unknown> | HelperMana
 
 export type ManagerFactory<O, D extends Manager = Manager> = (owner: O) => D;
 
-export function setComponentManager<O extends Owner>(
+export function setComponentManager<O extends Owner, T extends object>(
   factory: ManagerFactory<O, ComponentManager<unknown>>,
-  obj: object
-) {
+  obj: T
+): T {
   return setInternalComponentManager((owner: O) => {
     let manager = factory(owner);
 
@@ -34,10 +34,10 @@ export function setComponentManager<O extends Owner>(
   }, obj);
 }
 
-export function setModifierManager<O extends Owner>(
+export function setModifierManager<O extends Owner, T extends object>(
   factory: ManagerFactory<O, ModifierManager<unknown>>,
-  obj: object
-) {
+  obj: T
+): T {
   return setInternalModifierManager((owner: O) => {
     let manager = factory(owner);
 
@@ -54,10 +54,10 @@ export function setModifierManager<O extends Owner>(
   }, obj);
 }
 
-export function setHelperManager<O extends Owner>(
+export function setHelperManager<O extends Owner, T extends object>(
   factory: ManagerFactory<O | undefined, HelperManager<unknown>>,
-  obj: object
-) {
+  obj: T
+): T {
   return setInternalHelperManager((owner: O | undefined) => {
     let manager = factory(owner);
 

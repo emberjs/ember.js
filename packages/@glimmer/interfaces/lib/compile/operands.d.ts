@@ -5,10 +5,11 @@ import { CompilableTemplate } from '../template';
 export const enum HighLevelOperand {
   Label = 1,
   Owner = 2,
-  EvalSymbols = 3,
-  Block = 4,
-  StdLib = 5,
-  NonSmallInt = 6,
+  IsStrictMode = 3,
+  EvalSymbols = 4,
+  Block = 5,
+  StdLib = 6,
+  NonSmallInt = 7,
   SymbolTable = 8,
   Layout = 9,
 }
@@ -20,6 +21,11 @@ export interface LabelOperand {
 
 export interface OwnerOperand {
   type: HighLevelOperand.Owner;
+  value: undefined;
+}
+
+export interface IsStrictModeOperand {
+  type: HighLevelOperand.IsStrictMode;
   value: undefined;
 }
 
@@ -56,6 +62,7 @@ export interface LayoutOperand {
 export type HighLevelBuilderOperand =
   | LabelOperand
   | OwnerOperand
+  | IsStrictModeOperand
   | EvalSymbolsOperand
   | StdLibOperand
   | BlockOperand

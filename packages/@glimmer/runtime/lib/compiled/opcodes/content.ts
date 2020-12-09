@@ -1,4 +1,4 @@
-import { Reference, isConstRef, valueForRef } from '@glimmer/reference';
+import { isConstRef, valueForRef } from '@glimmer/reference';
 import {
   check,
   CheckString,
@@ -12,13 +12,14 @@ import { isCurriedComponentDefinition } from '../../component/curried-component'
 import { CheckReference } from './-debug-strip';
 import { isEmpty, isSafeString, isFragment, isNode, shouldCoerce } from '../../dom/normalize';
 import DynamicTextContent from '../../vm/content/text';
-import { ContentType, Op, Dict, Maybe } from '@glimmer/interfaces';
+import { ContentType, Op } from '@glimmer/interfaces';
 import { AssertFilter } from './vm';
+import { hasInternalComponentManager } from '@glimmer/manager';
 
-function toContentType(value: Maybe<Dict>) {
+function toContentType(value: unknown) {
   if (shouldCoerce(value)) {
     return ContentType.String;
-  } else if (isCurriedComponentDefinition(value)) {
+  } else if (isCurriedComponentDefinition(value) || hasInternalComponentManager(value as object)) {
     return ContentType.Component;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;
@@ -34,10 +35,10 @@ function toContentType(value: Maybe<Dict>) {
 APPEND_OPCODES.add(Op.ContentType, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
-  vm.stack.pushSmallInt(toContentType(valueForRef(reference) as Maybe<Dict>));
+  vm.stack.pushSmallInt(toContentType(valueForRef(reference)));
 
   if (!isConstRef(reference)) {
-    vm.updateWith(new AssertFilter(reference as Reference<Maybe<Dict<unknown>>>, toContentType));
+    vm.updateWith(new AssertFilter(reference, toContentType));
   }
 });
 
