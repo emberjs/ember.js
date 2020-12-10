@@ -1,5 +1,5 @@
 import { Core, Dict } from '@glimmer/interfaces';
-import { dict, unreachable } from '@glimmer/util';
+import { dict } from '@glimmer/util';
 
 export abstract class SymbolTable {
   static top(locals: string[]): ProgramSymbolTable {
@@ -15,7 +15,6 @@ export abstract class SymbolTable {
   abstract getEvalInfo(): Core.EvalInfo;
 
   abstract allocateFree(name: string): number;
-  abstract allocateTemplateLocal(name: string): number;
   abstract allocateNamed(name: string): number;
   abstract allocateBlock(name: string): number;
   abstract allocate(identifier: string): number;
@@ -61,8 +60,16 @@ export class ProgramSymbolTable extends SymbolTable {
     return this.templateLocals.indexOf(name) !== -1;
   }
 
-  get(_name: string): number {
-    throw unreachable();
+  get(name: string): number {
+    let index = this.usedTemplateLocals.indexOf(name);
+
+    if (index !== -1) {
+      return index;
+    }
+
+    index = this.usedTemplateLocals.length;
+    this.usedTemplateLocals.push(name);
+    return index;
   }
 
   getLocalsMap(): Dict<number> {
@@ -83,18 +90,6 @@ export class ProgramSymbolTable extends SymbolTable {
 
     index = this.upvars.length;
     this.upvars.push(name);
-    return index;
-  }
-
-  allocateTemplateLocal(name: string): number {
-    let index = this.usedTemplateLocals.indexOf(name);
-
-    if (index !== -1) {
-      return index;
-    }
-
-    index = this.usedTemplateLocals.length;
-    this.usedTemplateLocals.push(name);
     return index;
   }
 
@@ -165,10 +160,6 @@ export class BlockSymbolTable extends SymbolTable {
 
   allocateFree(name: string): number {
     return this.parent.allocateFree(name);
-  }
-
-  allocateTemplateLocal(name: string): number {
-    return this.parent.allocateTemplateLocal(name);
   }
 
   allocateNamed(name: string): number {
