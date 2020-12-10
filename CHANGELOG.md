@@ -1,3 +1,13 @@
+## v0.69.2 (2020-12-10)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1230](https://github.com/glimmerjs/glimmer-vm/pull/1230) [BUGFIX] Re-export isDestroying/ed ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.69.1 (2020-12-10)
 
 #### :bug: Bug Fix
