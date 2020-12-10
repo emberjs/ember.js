@@ -38,7 +38,7 @@
     "benchmark:experiment": "node benchmark/bin/experiment.js"
   },
   "dependencies": {
-    "@handlebars/parser": "^1.1.0",
+    "@handlebars/parser": "^2.0.0",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/interface": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",

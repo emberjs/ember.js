@@ -12,17 +12,57 @@ import {
 class GeneralStrictModeTest extends RenderTest {
   static suiteName = 'strict mode: general properties';
 
-  @test({ skip: true })
-  'Passing helpers as arguments to components'() {
+  @test
+  'Can call helper in append position as subexpression (without args)'() {
     const plusOne = defineSimpleHelper((value = 0) => value + 1);
-    const Foo = defineComponent({}, '{{@asHelper 123}} {{@asValue}} {{@asValueWithArg}}');
-    const Bar = defineComponent(
-      { plusOne, Foo },
-      '<Foo @asHelper={{plusOne}} @asValue={{(plusOne)}} @asValueWithArg={{plusOne 456}}/>'
-    );
+    const Bar = defineComponent({ plusOne }, '{{(plusOne)}}');
 
     this.renderComponent(Bar);
-    this.assertHTML('124 1 457');
+    this.assertHTML('1');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call helper in argument position as subexpression (without args)'() {
+    const plusOne = defineSimpleHelper((value = 0) => value + 1);
+    const Foo = defineComponent({}, '{{@value}}');
+    const Bar = defineComponent({ plusOne, Foo }, '<Foo @value={{(plusOne)}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('1');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call helper in argument position as subexpression in non-strict template (cross-compat test)'() {
+    this.registerHelper('plusOne', () => 'Hello, world!');
+    this.registerComponent('TemplateOnly', 'Foo', '{{@value}}');
+    this.registerComponent('TemplateOnly', 'Bar', '<Foo @value={{(plusOne)}}/>');
+
+    this.render('<Bar/>');
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call helper in argument position as subexpression (with args)'() {
+    const plusOne = defineSimpleHelper((value = 0) => value + 1);
+    const Foo = defineComponent({}, '{{@value}}');
+    const Bar = defineComponent({ plusOne, Foo }, '<Foo @value={{(plusOne 1)}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('2');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call helper in argument position directly (with args)'() {
+    const plusOne = defineSimpleHelper((value = 0) => value + 1);
+    const Foo = defineComponent({}, '{{@value}}');
+    const Bar = defineComponent({ plusOne, Foo }, '<Foo @value={{plusOne 1}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('2');
     this.assertStableRerender();
   }
 
@@ -681,6 +721,17 @@ class DynamicStrictModeTest extends RenderTest {
     this.assert.throws(() => {
       this.renderComponent(Bar);
     }, /Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was `<this.Foo>` or `{{this.Foo}}`, and the incorrect definition is the value at the path `this.Foo`, which was:/);
+  }
+
+  @test({ skip: true })
+  'Can pass helper as argument and invoke dynamically'() {
+    const plusOne = defineSimpleHelper((value = 0) => value + 1);
+    const Foo = defineComponent({}, '{{@value 123}}');
+    const Bar = defineComponent({ plusOne, Foo }, '<Foo @value={{plusOne}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('124 1 457');
+    this.assertStableRerender();
   }
 
   @test({ skip: true })
