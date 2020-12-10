@@ -4,6 +4,7 @@ import { encodeImmediate, isSmallInt } from '@glimmer/util';
 import { SimpleArgs } from './shared';
 import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { nonSmallIntOperand } from '../operands';
+import { expr } from './expr';
 
 export type Primitive = undefined | null | boolean | number | string;
 
@@ -59,6 +60,33 @@ export function Call(
 }
 
 /**
+ * Invoke a foreign function (a "helper") based on a dynamically loaded definition
+ *
+ * @param op The op creation function
+ * @param positional An optional list of expressions to compile
+ * @param named An optional list of named arguments (name + expression) to compile
+ */
+export function CallDynamic(
+  op: PushExpressionOp,
+  positional: WireFormat.Core.Params,
+  named: WireFormat.Core.Hash,
+  append?: () => void
+): void {
+  op(Op.Load, $v0);
+  op(MachineOp.PushFrame);
+  SimpleArgs(op, positional, named, false);
+  op(Op.DynamicHelper, $v0);
+  if (append) {
+    op(Op.Fetch, $v0);
+    append?.();
+    op(MachineOp.PopFrame);
+  } else {
+    op(MachineOp.PopFrame);
+    op(Op.Fetch, $v0);
+  }
+}
+
+/**
  * Evaluate statements in the context of new dynamic scope entries. Move entries from the
  * stack into named entries in the dynamic scope, then evaluate the statements, then pop
  * the dynamic scope
@@ -71,4 +99,19 @@ export function DynamicScope(op: PushStatementOp, names: string[], block: () => 
   op(Op.BindDynamicScope, names);
   block();
   op(Op.PopDynamicScope);
+}
+
+export function CurryHelper(
+  op: PushExpressionOp,
+  definition: WireFormat.Expression,
+  positional: WireFormat.Core.Params,
+  named: WireFormat.Core.Hash
+): void {
+  op(MachineOp.PushFrame);
+  SimpleArgs(op, positional, named, false);
+  op(Op.CaptureArgs);
+  expr(op, definition);
+  op(Op.CurryHelper);
+  op(MachineOp.PopFrame);
+  op(Op.Fetch, $v0);
 }

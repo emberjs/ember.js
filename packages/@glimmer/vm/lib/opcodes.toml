@@ -56,6 +56,15 @@ operand-stack = [
   ["Reference"]
 ]
 
+[syscall.dynamiccall]
+
+format = ["DynamicHelper"]
+operation = "Evaluate a dynamic helper."
+operand-stack = [
+  ["Reference...", "Reference", "Arguments"],
+  ["Reference"]
+]
+
 [syscall.vsargs]
 
 format = ["SetNamedVariables", "register:u32"]
@@ -185,6 +194,18 @@ operation = """
 operand-stack = [
   [],
   ["unknown"]
+]
+
+[syscall.rconstrefload]
+
+format = ["ConstantReference", "constant:unknown"]
+operation = """
+  Push a reference constant onto the stack that is not
+  a JavaScript primitive.
+"""
+operand-stack = [
+  [],
+  ["Reference"]
 ]
 
 [syscall.pconstload]
@@ -623,6 +644,16 @@ operand-stack = [
   ["Reference", "Reference"]
 ]
 notes = "The new reference represents a ContentType"
+
+[syscall.dctload]
+
+format = "DynamicContentType"
+operation = "Push the content type onto the stack."
+operand-stack = [
+  ["Reference"],
+  ["Reference", "Reference"]
+]
+notes = "The new reference represents a DynamicContentType"
 
 [syscall.curry]
 

@@ -60,6 +60,11 @@ export function SimpleArgs(
   named: Option<WireFormat.Core.Hash>,
   atNames: boolean
 ): void {
+  if (positional === null && named === null) {
+    op(Op.PushEmptyArgs);
+    return;
+  }
+
   let count = CompilePositional(op, positional);
 
   let flags = count << 4;

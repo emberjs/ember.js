@@ -3,6 +3,7 @@ import {
   Helper,
   HelperCapabilities,
   HelperCapabilitiesVersions,
+  HelperDefinitionState,
   HelperManager,
   HelperManagerWithDestroyable,
   HelperManagerWithValue,
@@ -63,10 +64,7 @@ export function hasDestroyable(
 ////////////
 
 export class CustomHelperManager<O extends Owner = Owner> implements InternalHelperManager<O> {
-  constructor(
-    private factory: ManagerFactory<O | undefined, HelperManager<unknown>>,
-    private definition: object
-  ) {}
+  constructor(private factory: ManagerFactory<O | undefined, HelperManager<unknown>>) {}
 
   private helperManagerDelegates = new WeakMap<O, HelperManager<unknown>>();
   private undefinedDelegate: HelperManager<unknown> | null = null;
@@ -108,26 +106,28 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
     }
   }
 
-  helper: Helper = (vmArgs, vm) => {
-    let owner = vm.getOwner() as O;
+  getHelper(definition: HelperDefinitionState): Helper {
+    return (vmArgs, vm) => {
+      let owner = vm.getOwner() as O;
 
-    let manager = this.getDelegateForOwner(owner);
+      let manager = this.getDelegateForOwner(owner);
 
-    const args = argsProxyFor(vmArgs.capture(), 'helper');
-    const bucket = manager.createHelper(this.definition, args);
+      const args = argsProxyFor(vmArgs.capture(), 'helper');
+      const bucket = manager.createHelper(definition, args);
 
-    if (hasDestroyable(manager)) {
-      vm.associateDestroyable(manager.getDestroyable(bucket));
-    }
+      if (hasDestroyable(manager)) {
+        vm.associateDestroyable(manager.getDestroyable(bucket));
+      }
 
-    if (hasValue(manager)) {
-      return createComputeRef(
-        () => (manager as HelperManagerWithValue<unknown>).getValue(bucket),
-        null,
-        DEBUG && manager.getDebugName && manager.getDebugName(this.definition)
-      );
-    } else {
-      return UNDEFINED_REFERENCE;
-    }
-  };
+      if (hasValue(manager)) {
+        return createComputeRef(
+          () => (manager as HelperManagerWithValue<unknown>).getValue(bucket),
+          null,
+          DEBUG && manager.getDebugName && manager.getDebugName(definition)
+        );
+      } else {
+        return UNDEFINED_REFERENCE;
+      }
+    };
+  }
 }

@@ -6,7 +6,13 @@ import {
 } from '@glimmer/interfaces';
 import { CurryComponent } from '../opcode-builder/helpers/components';
 import { expr } from '../opcode-builder/helpers/expr';
-import { Call, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
+import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
+import {
+  Call,
+  CallDynamic,
+  CurryHelper,
+  PushPrimitiveReference,
+} from '../opcode-builder/helpers/vm';
 import { Compilers, PushExpressionOp } from './compilers';
 
 export const EXPRESSIONS = new Compilers<PushExpressionOp, ExpressionSexpOpcode>();
@@ -19,14 +25,23 @@ EXPRESSIONS.add(SexpOpcodes.Concat, (op, [, parts]) => {
   op(Op.Concat, parts.length);
 });
 
-EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expr, positional, named]) => {
-  op(HighLevelResolutionOpcode.ResolveHelper, expr, (handle: number) => {
-    Call(op, handle, positional, named);
-  });
+EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expression, positional, named]) => {
+  if (isGetFreeHelper(expression)) {
+    op(HighLevelResolutionOpcode.ResolveHelper, expression, (handle: number) => {
+      Call(op, handle, positional, named);
+    });
+  } else {
+    expr(op, expression);
+    CallDynamic(op, positional, named);
+  }
 });
 
 EXPRESSIONS.add(SexpOpcodes.CurryComponent, (op, [, expr, positional, named]) => {
   CurryComponent(op, expr, positional, named);
+});
+
+EXPRESSIONS.add(SexpOpcodes.CurryHelper, (op, [, expr, positional, named]) => {
+  CurryHelper(op, expr, positional, named);
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {

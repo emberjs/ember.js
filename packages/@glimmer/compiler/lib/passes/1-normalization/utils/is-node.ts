@@ -67,16 +67,15 @@ export function isStrictHelper(expr: HasPath): boolean {
   return expr.callee.ref.resolution === ASTv2.STRICT_RESOLUTION;
 }
 
-export function assertIsValidHelper<N extends HasPath>(
-  helper: N,
-  context: string
+export function assertIsValidModifier<N extends HasPath>(
+  helper: N
 ): asserts helper is SimpleHelper<N> {
   if (isStrictHelper(helper) || isSimplePath(helper.callee)) {
     return;
   }
 
   throw generateSyntaxError(
-    `\`${printPath(helper.callee)}\` is not a valid name for a ${context}`,
+    `\`${printPath(helper.callee)}\` is not a valid name for a modifier`,
     helper.loc
   );
 }

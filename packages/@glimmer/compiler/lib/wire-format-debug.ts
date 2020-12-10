@@ -155,6 +155,14 @@ export default class WireFormatDebugger {
             this.formatHash(opcode[3]),
           ];
 
+        case Op.CurryHelper:
+          return [
+            'helper',
+            this.formatOpcode(opcode[1]),
+            this.formatParams(opcode[2]),
+            this.formatHash(opcode[3]),
+          ];
+
         case Op.Undefined:
           return ['undefined'];
 

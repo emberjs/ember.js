@@ -181,7 +181,10 @@ module('Managers', () => {
       let instance = getInternalHelperManager(definition) as CustomHelperManager<object>;
 
       assert.ok(typeof instance === 'object', 'manager is an internal manager');
-      assert.ok(typeof instance.helper === 'function', 'manager has a helper function');
+      assert.ok(
+        typeof instance.getHelper({}) === 'function',
+        'manager can generatew helper function'
+      );
       assert.equal(instance['factory'], factory, 'manager has correct delegate factory');
     });
 

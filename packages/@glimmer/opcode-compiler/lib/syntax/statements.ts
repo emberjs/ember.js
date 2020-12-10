@@ -1,5 +1,6 @@
 import {
   CompileTimeComponent,
+  ContentType,
   HighLevelBuilderOpcode,
   HighLevelResolutionOpcode,
   MachineOp,
@@ -16,11 +17,20 @@ import {
   InvokeStaticBlockWithStack,
   YieldBlock,
 } from '../opcode-builder/helpers/blocks';
-import { InvokeComponent, InvokeDynamicComponent } from '../opcode-builder/helpers/components';
-import { Replayable, ReplayableIf } from '../opcode-builder/helpers/conditional';
+import {
+  InvokeComponent,
+  InvokeDynamicComponent,
+  InvokeNonStaticComponent,
+} from '../opcode-builder/helpers/components';
+import { SwitchCases, Replayable, ReplayableIf } from '../opcode-builder/helpers/conditional';
 import { expr } from '../opcode-builder/helpers/expr';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
-import { Call, DynamicScope, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
+import {
+  Call,
+  CallDynamic,
+  DynamicScope,
+  PushPrimitiveReference,
+} from '../opcode-builder/helpers/vm';
 import { evalSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
 import { Compilers, PushStatementOp } from './compilers';
 import {
@@ -28,6 +38,7 @@ import {
   isGetFreeComponentOrHelper,
   isGetFreeOptionalComponentOrHelper,
 } from '../opcode-builder/helpers/resolution';
+import { namedBlocks } from '../utils';
 
 export const STATEMENTS = new Compilers<PushStatementOp, StatementSexpOpcode>();
 
@@ -147,14 +158,14 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
       ifHelper(handle: number) {
         op(MachineOp.PushFrame);
         Call(op, handle, null, null);
-        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+        op(MachineOp.InvokeStatic, stdlibOperand('cautious-non-dynamic-append'));
         op(MachineOp.PopFrame);
       },
 
       ifValue(handle: number) {
         op(MachineOp.PushFrame);
         op(Op.ConstantReference, handle);
-        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
+        op(MachineOp.InvokeStatic, stdlibOperand('cautious-non-dynamic-append'));
         op(MachineOp.PopFrame);
       },
 
@@ -168,20 +179,50 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
         op(MachineOp.PopFrame);
       },
     });
-  } else if (value[0] === SexpOpcodes.Call && isGetFreeComponentOrHelper(value[1])) {
-    let [, expr, positional, named] = value;
+  } else if (value[0] === SexpOpcodes.Call) {
+    let [, expression, positional, named] = value;
 
-    op(HighLevelResolutionOpcode.ResolveComponentOrHelper, expr, {
-      ifComponent(component: CompileTimeComponent) {
-        InvokeComponent(op, component, null, positional, hashToArgs(named), null);
-      },
-      ifHelper(handle: number) {
-        op(MachineOp.PushFrame);
-        Call(op, handle, positional, named);
-        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
-        op(MachineOp.PopFrame);
-      },
-    });
+    if (isGetFreeComponentOrHelper(expression)) {
+      op(HighLevelResolutionOpcode.ResolveComponentOrHelper, expression, {
+        ifComponent(component: CompileTimeComponent) {
+          InvokeComponent(op, component, null, positional, hashToArgs(named), null);
+        },
+        ifHelper(handle: number) {
+          op(MachineOp.PushFrame);
+          Call(op, handle, positional, named);
+          op(MachineOp.InvokeStatic, stdlibOperand('cautious-non-dynamic-append'));
+          op(MachineOp.PopFrame);
+        },
+      });
+    } else {
+      SwitchCases(
+        op,
+        () => {
+          expr(op, expression);
+          op(Op.DynamicContentType);
+        },
+        (when) => {
+          when(ContentType.Component, () => {
+            op(Op.ResolveCurriedComponent);
+            op(Op.PushDynamicComponentInstance);
+            InvokeNonStaticComponent(op, {
+              capabilities: true,
+              elementBlock: null,
+              positional,
+              named,
+              atNames: false,
+              blocks: namedBlocks(null),
+            });
+          });
+
+          when(ContentType.Helper, () => {
+            CallDynamic(op, positional, named, () => {
+              op(MachineOp.InvokeStatic, stdlibOperand('cautious-non-dynamic-append'));
+            });
+          });
+        }
+      );
+    }
   } else {
     op(MachineOp.PushFrame);
     expr(op, value);
@@ -202,9 +243,13 @@ STATEMENTS.add(SexpOpcodes.TrustingAppend, (op, [, value]) => {
 });
 
 STATEMENTS.add(SexpOpcodes.Block, (op, [, expr, positional, named, blocks]) => {
-  op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
-    InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
-  });
+  if (isGetFreeComponent(expr)) {
+    op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
+      InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
+    });
+  } else {
+    InvokeDynamicComponent(op, expr, null, positional, named, blocks, false, false);
+  }
 });
 
 STATEMENTS.add(SexpOpcodes.InElement, (op, [, block, guid, destination, insertBefore]) => {
