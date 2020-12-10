@@ -29,6 +29,13 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
 
   let asIndex = attrNames.indexOf('as');
 
+  if (asIndex === -1 && attrNames.length > 0 && attrNames[attrNames.length - 1].charAt(0) === '|') {
+    throw generateSyntaxError(
+      'Block parameters must be preceded by the `as` keyword, detected block parameters without `as`',
+      element.loc
+    );
+  }
+
   if (asIndex !== -1 && l > asIndex && attrNames[asIndex + 1].charAt(0) === '|') {
     // Some basic validation, since we're doing the parsing ourselves
     let paramsString = attrNames.slice(asIndex).join(' ');
