@@ -1,3 +1,21 @@
+## v0.69.0 (2020-12-10)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/vm`
+  * [#1225](https://github.com/glimmerjs/glimmer-vm/pull/1225) [FEAT] Implements Strict Mode ([@pzuraq](https://github.com/pzuraq))
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1227](https://github.com/glimmerjs/glimmer-vm/pull/1227) [FEAT] Finishes up named blocks ([@pzuraq](https://github.com/pzuraq))
+  * [#1226](https://github.com/glimmerjs/glimmer-vm/pull/1226) [FEAT] Enable sub-expressions in mustache position ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1228](https://github.com/glimmerjs/glimmer-vm/pull/1228) [BUGFIX] Fix tag classification in strict ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.68.1 (2020-12-06)
 
 #### :bug: Bug Fix
