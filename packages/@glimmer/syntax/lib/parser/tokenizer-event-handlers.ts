@@ -97,6 +97,16 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     if (tag.type === 'StartTag') {
       this.finishStartTag();
 
+      if (tag.name === ':') {
+        throw generateSyntaxError(
+          'Invalid named block named detected, you may have created a named block without a name, or you may have began your name with a number. Named blocks must have names that are at least one character long, and begin with a lower case letter',
+          this.source.spanFor({
+            start: this.currentTag.loc.toJSON(),
+            end: this.offset().toJSON(),
+          })
+        );
+      }
+
       if (voidMap[tag.name] || tag.selfClosing) {
         this.finishEndTag(true);
       }

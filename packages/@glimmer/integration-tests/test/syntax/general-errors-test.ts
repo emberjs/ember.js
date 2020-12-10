@@ -1,7 +1,7 @@
-import { RenderTest, jitSuite, test, preprocess, syntaxErrorFor } from '..';
+import { RenderTest, jitSuite, test, preprocess, syntaxErrorFor } from '../..';
 
 class SyntaxErrors extends RenderTest {
-  static suiteName = 'syntax errors';
+  static suiteName = 'general syntax errors';
 
   @test
   'context switching using ../ is not allowed'() {
@@ -63,6 +63,19 @@ class SyntaxErrors extends RenderTest {
     this.assert.throws(() => {
       preprocess('<x-bar as |foo[bar]|></x-bar>', { meta: { moduleName: 'test-module' } });
     }, syntaxErrorFor("Invalid identifier for block parameters, 'foo[bar]'", '<x-bar as |foo[bar]|></x-bar>', 'test-module', 1, 0));
+  }
+
+  @test
+  'Block params in HTML syntax - Throws an error on missing `as`'() {
+    this.assert.throws(() => {
+      preprocess('<x-bar |x|></x-bar>', { meta: { moduleName: 'test-module' } });
+    }, syntaxErrorFor('Block parameters must be preceded by the `as` keyword, detected block parameters without `as`', '<x-bar |x|></x-bar>', 'test-module', 1, 0));
+
+    this.assert.throws(() => {
+      preprocess('<x-bar><:baz |x|></:baz></x-bar>', {
+        meta: { moduleName: 'test-module' },
+      });
+    }, syntaxErrorFor('Block parameters must be preceded by the `as` keyword, detected block parameters without `as`', '<:baz |x|></:baz>', 'test-module', 1, 7));
   }
 }
 
