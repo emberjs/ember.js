@@ -7,6 +7,12 @@ export { default as moduleFor, setupTestClass } from './lib/module-for';
 export { default as strip } from './lib/strip';
 export { default as applyMixins } from './lib/apply-mixins';
 export { default as getTextOf } from './lib/get-text-of';
+export {
+  defineComponent,
+  defineSimpleHelper,
+  defineSimpleModifier,
+} from './lib/define-template-values';
+export { default as compile } from './lib/compile';
 export { equalsElement, classes, styles, regex } from './lib/matchers';
 export { runAppend, runDestroy, runTask, runTaskNext, runLoopSettled } from './lib/run';
 export { getContext, setContext, unsetContext } from './lib/test-context';

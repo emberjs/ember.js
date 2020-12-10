@@ -114,6 +114,13 @@ import {
   template,
   TextField,
   TextArea,
+  Input,
+  hash,
+  array,
+  concat,
+  get,
+  on,
+  fn,
   isSerializationFirstNode,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
@@ -596,6 +603,14 @@ Ember._modifierManagerCapabilities = modifierCapabilities;
 Ember._getComponentTemplate = getComponentTemplate;
 Ember._setComponentTemplate = setComponentTemplate;
 Ember._templateOnlyComponent = templateOnlyComponent;
+
+Ember._Input = Input;
+Ember._hash = hash;
+Ember._array = array;
+Ember._concat = concat;
+Ember._get = get;
+Ember._on = on;
+Ember._fn = fn;
 
 if (EMBER_GLIMMER_HELPER_MANAGER) {
   Ember._helperManagerCapabilities = helperCapabilities;

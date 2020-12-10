@@ -1,14 +1,8 @@
 import { Owner, setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
 import { Reference, valueForRef } from '@glimmer/reference';
 
 export default class InternalComponent {
-  // Factory interface
-  static create(): never {
-    throw assert('Use constructor instead of create');
-  }
-
   static get class(): typeof InternalComponent {
     return this;
   }

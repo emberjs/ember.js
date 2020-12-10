@@ -1,10 +1,11 @@
 /**
 @module @ember/component
 */
-import { setInternalComponentManager } from '@glimmer/manager';
+import { assert } from '@ember/debug';
+import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
 import InternalManager from '../component-managers/internal';
+import InputTemplate from '../templates/input';
 import InternalComponent from './internal';
-
 /**
   See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
 
@@ -117,6 +118,15 @@ export default class Input extends InternalComponent {
   }
 }
 
-setInternalComponentManager(InternalManager.for('input'), Input);
+// Use an opaque handle so implementation details are
+export const InputComponent = {
+  // Factory interface
+  create(): never {
+    throw assert('Use constructor instead of create');
+  },
+};
+
+setInternalComponentManager(InternalManager.for(Input, 'input'), InputComponent);
+setComponentTemplate(InputTemplate, InputComponent);
 
 Input.toString = () => '@ember/component/input';

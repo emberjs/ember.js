@@ -10,6 +10,13 @@ export default function assertLocalVariableShadowingHelperInvocation(
   let { moduleName } = env.meta;
   let { hasLocal, node } = trackLocals();
 
+  if (env.strictMode) {
+    return {
+      name: 'assert-local-variable-shadowing-helper-invocation',
+      visitor: {},
+    };
+  }
+
   return {
     name: 'assert-local-variable-shadowing-helper-invocation',
 
