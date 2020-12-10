@@ -9,9 +9,11 @@ import {
   CompileTimeCompilationContext,
   HighLevelOp,
   BuilderOp,
+  MachineOp,
 } from '@glimmer/interfaces';
-import { ContentTypeSwitchCases } from './conditional';
+import { SwitchCases } from './conditional';
 import { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
+import { CallDynamic } from './vm';
 
 export function main(op: PushStatementOp): void {
   op(Op.Main, $s0);
@@ -26,46 +28,85 @@ export function main(op: PushStatementOp): void {
  * @param trusting whether to interpolate a string as raw HTML (corresponds to
  * triple curlies)
  */
-export function StdAppend(op: PushStatementOp, trusting: boolean): void {
-  ContentTypeSwitchCases(op, (when) => {
-    when(ContentType.String, () => {
-      if (trusting) {
-        op(Op.AssertSame);
-        op(Op.AppendHTML);
+export function StdAppend(
+  op: PushStatementOp,
+  trusting: boolean,
+  nonDynamicAppend: number | null
+): void {
+  SwitchCases(
+    op,
+    () => op(Op.ContentType),
+    (when) => {
+      when(ContentType.String, () => {
+        if (trusting) {
+          op(Op.AssertSame);
+          op(Op.AppendHTML);
+        } else {
+          op(Op.AppendText);
+        }
+      });
+
+      if (typeof nonDynamicAppend === 'number') {
+        when(ContentType.Component, () => {
+          op(Op.ResolveCurriedComponent);
+          op(Op.PushDynamicComponentInstance);
+          InvokeBareComponent(op);
+        });
+
+        when(ContentType.Helper, () => {
+          CallDynamic(op, null, null, () => {
+            op(MachineOp.InvokeStatic, nonDynamicAppend);
+          });
+        });
       } else {
-        op(Op.AppendText);
+        // when non-dynamic, we can no longer call the value (potentially because we've already called it)
+        // this prevents infinite loops. We instead coerce the value, whatever it is, into the DOM.
+        when(ContentType.Component, () => {
+          op(Op.AppendText);
+        });
+
+        when(ContentType.Helper, () => {
+          op(Op.AppendText);
+        });
       }
-    });
 
-    when(ContentType.Component, () => [
-      op(Op.ResolveCurriedComponent),
-      op(Op.PushDynamicComponentInstance),
-      InvokeBareComponent(op),
-    ]);
+      when(ContentType.SafeString, () => {
+        op(Op.AssertSame);
+        op(Op.AppendSafeHTML);
+      });
 
-    when(ContentType.SafeString, () => {
-      op(Op.AssertSame);
-      op(Op.AppendSafeHTML);
-    });
+      when(ContentType.Fragment, () => {
+        op(Op.AssertSame);
+        op(Op.AppendDocumentFragment);
+      });
 
-    when(ContentType.Fragment, () => {
-      op(Op.AssertSame);
-      op(Op.AppendDocumentFragment);
-    });
-
-    when(ContentType.Node, () => {
-      op(Op.AssertSame);
-      op(Op.AppendNode);
-    });
-  });
+      when(ContentType.Node, () => {
+        op(Op.AssertSame);
+        op(Op.AppendNode);
+      });
+    }
+  );
 }
 
 export function compileStd(context: CompileTimeCompilationContext): StdLib {
   let mainHandle = build(context, (op) => main(op));
-  let trustingGuardedAppend = build(context, (op) => StdAppend(op, true));
-  let cautiousGuardedAppend = build(context, (op) => StdAppend(op, false));
+  let trustingGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, true, null));
+  let cautiousGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, false, null));
 
-  return new StdLib(mainHandle, trustingGuardedAppend, cautiousGuardedAppend);
+  let trustingGuardedDynamicAppend = build(context, (op) =>
+    StdAppend(op, true, trustingGuardedNonDynamicAppend)
+  );
+  let cautiousGuardedDynamicAppend = build(context, (op) =>
+    StdAppend(op, false, cautiousGuardedNonDynamicAppend)
+  );
+
+  return new StdLib(
+    mainHandle,
+    trustingGuardedDynamicAppend,
+    cautiousGuardedDynamicAppend,
+    trustingGuardedNonDynamicAppend,
+    cautiousGuardedNonDynamicAppend
+  );
 }
 
 const STDLIB_META = {

@@ -14,13 +14,17 @@ import { isEmpty, isSafeString, isFragment, isNode, shouldCoerce } from '../../d
 import DynamicTextContent from '../../vm/content/text';
 import { ContentType, Op } from '@glimmer/interfaces';
 import { AssertFilter } from './vm';
-import { hasInternalComponentManager } from '@glimmer/manager';
+import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
+import { DEBUG } from '@glimmer/env';
+import { isCurriedHelperDefinition } from '../../helpers/curried-helper';
 
 function toContentType(value: unknown) {
   if (shouldCoerce(value)) {
     return ContentType.String;
   } else if (isCurriedComponentDefinition(value) || hasInternalComponentManager(value as object)) {
     return ContentType.Component;
+  } else if (isCurriedHelperDefinition(value) || hasInternalHelperManager(value as object)) {
+    return ContentType.Helper;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;
   } else if (isFragment(value)) {
@@ -32,6 +36,24 @@ function toContentType(value: unknown) {
   }
 }
 
+function toDynamicContentType(value: unknown) {
+  if (typeof value !== 'function' && (typeof value !== 'object' || value === null)) {
+    return ContentType.String;
+  }
+
+  if (isCurriedComponentDefinition(value) || hasInternalComponentManager(value as object)) {
+    return ContentType.Component;
+  } else {
+    if (DEBUG && !isCurriedHelperDefinition(value) && !hasInternalHelperManager(value as object)) {
+      throw new Error(
+        `Attempted use a dynamic value as a component or helper, but that value did not have an associated component or helper manager. The value was: ${value}`
+      );
+    }
+
+    return ContentType.Helper;
+  }
+}
+
 APPEND_OPCODES.add(Op.ContentType, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
@@ -39,6 +61,16 @@ APPEND_OPCODES.add(Op.ContentType, (vm) => {
 
   if (!isConstRef(reference)) {
     vm.updateWith(new AssertFilter(reference, toContentType));
+  }
+});
+
+APPEND_OPCODES.add(Op.DynamicContentType, (vm) => {
+  let reference = check(vm.stack.peek(), CheckReference);
+
+  vm.stack.pushSmallInt(toDynamicContentType(valueForRef(reference)));
+
+  if (!isConstRef(reference)) {
+    vm.updateWith(new AssertFilter(reference, toDynamicContentType));
   }
 });
 

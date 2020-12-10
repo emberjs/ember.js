@@ -335,7 +335,7 @@ function InvokeStaticComponent(
   op(Op.Load, $s0);
 }
 
-function InvokeNonStaticComponent(
+export function InvokeNonStaticComponent(
   op: PushStatementOp,
   { capabilities, elementBlock, positional, named, atNames, blocks: namedBlocks, layout }: Component
 ): void {

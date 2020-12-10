@@ -1,8 +1,8 @@
-import { Helper, Owner } from '../../runtime';
+import { Helper, HelperDefinitionState, Owner } from '../../runtime';
 import { HelperManager } from '../helper';
 
 export interface InternalHelperManager<TOwner extends Owner> {
   getDelegateFor(owner: TOwner | undefined): HelperManager<unknown>;
 
-  helper: Helper;
+  getHelper(definition: HelperDefinitionState): Helper;
 }

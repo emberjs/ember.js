@@ -4,7 +4,11 @@ import { PushStatementOp } from '../../syntax/compilers';
 
 export type When = (match: number, callback: () => void) => void;
 
-export function ContentTypeSwitchCases(op: PushStatementOp, callback: (when: When) => void): void {
+export function SwitchCases(
+  op: PushStatementOp,
+  bootstrap: () => void,
+  callback: (when: When) => void
+): void {
   // Setup the switch DSL
   let clauses: Array<{ match: number; label: string; callback: () => void }> = [];
 
@@ -19,7 +23,7 @@ export function ContentTypeSwitchCases(op: PushStatementOp, callback: (when: Whe
 
   // Emit the opcodes for the switch
   op(Op.Enter, 1);
-  op(Op.ContentType);
+  bootstrap();
   op(HighLevelBuilderOpcode.StartLabels);
 
   // First, emit the jump opcodes. We don't need a jump for the last

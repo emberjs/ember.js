@@ -62,6 +62,8 @@ export interface STDLib {
   main: number;
   'cautious-append': number;
   'trusting-append': number;
+  'cautious-non-dynamic-append': number;
+  'trusting-non-dynamic-append': number;
 }
 
 export type SerializedStdlib = [number, number, number];

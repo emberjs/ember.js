@@ -7,7 +7,7 @@ import { Ok, Result, ResultArray } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
 import { NormalizationState } from '../context';
 import { CALL_KEYWORDS } from '../keywords';
-import { assertIsValidHelper, hasPath } from '../utils/is-node';
+import { hasPath } from '../utils/is-node';
 
 export class NormalizeExpressions {
   visit(node: ASTv2.ExpressionNode, state: NormalizationState): Result<mir.ExpressionNode> {
@@ -94,8 +94,6 @@ export class NormalizeExpressions {
     if (!hasPath(expr)) {
       throw new Error(`unimplemented subexpression at the head of a subexpression`);
     } else {
-      assertIsValidHelper(expr, 'helper');
-
       return Result.all(
         VISIT_EXPRS.visit(expr.callee, state),
         VISIT_EXPRS.Args(expr.args, state)
