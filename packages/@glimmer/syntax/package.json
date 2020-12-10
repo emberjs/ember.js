@@ -5,7 +5,7 @@
   "dependencies": {
     "@glimmer/interfaces": "0.68.1",
     "@glimmer/util": "0.68.1",
-    "@handlebars/parser": "^1.1.0",
+    "@handlebars/parser": "^2.0.0",
     "simple-html-tokenizer": "^0.5.10"
   },
   "devDependencies": {

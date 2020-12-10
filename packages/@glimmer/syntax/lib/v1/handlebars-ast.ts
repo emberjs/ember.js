@@ -64,7 +64,7 @@ export type Statement =
   | CommentStatement;
 
 export interface CommonMustache extends CommonNode {
-  path: PathExpression | Literal;
+  path: Expression;
   params: Expression[];
   hash: Hash;
   escaped: boolean;
@@ -81,7 +81,7 @@ export interface Decorator extends CommonMustache {
 
 export interface CommonBlock extends CommonNode {
   chained: boolean;
-  path: PathExpression;
+  path: PathExpression | SubExpression;
   params: Expression[];
   hash: Hash;
   program: Program;
@@ -134,7 +134,7 @@ export type Expression = SubExpression | PathExpression | Literal;
 
 export interface SubExpression extends CommonNode {
   type: 'SubExpression';
-  path: PathExpression;
+  path: PathExpression | SubExpression;
   params: Expression[];
   hash: Hash;
 }

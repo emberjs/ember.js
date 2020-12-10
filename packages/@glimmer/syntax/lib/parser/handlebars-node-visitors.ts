@@ -136,7 +136,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       let { path, params, hash } = acceptCallNodes(
         this,
         rawMustache as HBS.MustacheStatement & {
-          path: HBS.PathExpression;
+          path: HBS.PathExpression | HBS.SubExpression;
         }
       );
       mustache = b.mustache({
@@ -464,12 +464,19 @@ function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: HBS.Co
 function acceptCallNodes(
   compiler: HandlebarsNodeVisitors,
   node: {
-    path: HBS.PathExpression;
+    path: HBS.PathExpression | HBS.SubExpression;
     params: HBS.Expression[];
     hash: HBS.Hash;
   }
-): { path: ASTv1.PathExpression; params: ASTv1.Expression[]; hash: ASTv1.Hash } {
-  let path = compiler.PathExpression(node.path);
+): {
+  path: ASTv1.PathExpression | ASTv1.SubExpression;
+  params: ASTv1.Expression[];
+  hash: ASTv1.Hash;
+} {
+  let path =
+    node.path.type === 'PathExpression'
+      ? compiler.PathExpression(node.path)
+      : compiler.SubExpression(node.path);
   let params = node.params ? node.params.map((e) => compiler.acceptNode<ASTv1.Expression>(e)) : [];
 
   // if there is no hash, position it as a collapsed node immediately after the last param (or the
