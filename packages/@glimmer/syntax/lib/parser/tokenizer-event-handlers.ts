@@ -315,8 +315,8 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   ASTPlugins can make changes to the Glimmer template AST before
   compilation begins.
 */
-export interface ASTPluginBuilder {
-  (env: ASTPluginEnvironment): ASTPlugin;
+export interface ASTPluginBuilder<TEnv extends ASTPluginEnvironment = ASTPluginEnvironment> {
+  (env: TEnv): ASTPlugin;
 }
 
 export interface ASTPlugin {
