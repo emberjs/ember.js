@@ -13,7 +13,7 @@ export function assertValidHasBlockUsage(
   let positionals = call.type === 'Call' ? call.args.positional : null;
 
   if (named && !named.isEmpty()) {
-    return Err(generateSyntaxError(`${type} does not take any named arguments`, call.loc));
+    return Err(generateSyntaxError(`(${type}) does not take any named arguments`, call.loc));
   }
 
   if (!positionals || positionals.isEmpty()) {
@@ -23,9 +23,14 @@ export function assertValidHasBlockUsage(
     if (ASTv2.isLiteral(positional, 'string')) {
       return Ok(positional.toSlice());
     } else {
-      return Err(generateSyntaxError(`you can only yield to a literal value`, call.loc));
+      return Err(
+        generateSyntaxError(
+          `(${type}) can only receive a string literal as its first argument`,
+          call.loc
+        )
+      );
     }
   } else {
-    return Err(generateSyntaxError(`${type} only takes a single positional argument`, call.loc));
+    return Err(generateSyntaxError(`(${type}) only takes a single positional argument`, call.loc));
   }
 }
