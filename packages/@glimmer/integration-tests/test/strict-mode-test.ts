@@ -290,6 +290,17 @@ class StaticStrictModeTest extends RenderTest {
   }
 
   @test
+  'Can use template local in nested blocks with locals'() {
+    const place = defineSimpleHelper(() => 'world');
+    const Foo = defineComponent({}, '{{yield "Hello"}}');
+    const Bar = defineComponent({ Foo, place }, '<Foo as |hi|>{{hi}}, {{place}}!</Foo>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
   'Can use component in ambiguous helper/component position (without args)'() {
     const foo = defineComponent({}, 'Hello, world!');
     const bar = defineComponent({ foo }, '{{foo}}');
