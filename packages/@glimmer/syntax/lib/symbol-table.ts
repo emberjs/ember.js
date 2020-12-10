@@ -6,10 +6,8 @@ export abstract class SymbolTable {
     return new ProgramSymbolTable(locals);
   }
 
-  abstract isRoot: boolean;
-
   abstract has(name: string): boolean;
-  abstract get(name: string): number;
+  abstract get(name: string): [symbol: number, isRoot: boolean];
 
   abstract getLocalsMap(): Dict<number>;
   abstract getEvalInfo(): Core.EvalInfo;
@@ -31,8 +29,6 @@ export class ProgramSymbolTable extends SymbolTable {
   constructor(private templateLocals: string[]) {
     super();
   }
-
-  public isRoot = true;
 
   public symbols: string[] = [];
   public upvars: string[] = [];
@@ -60,16 +56,16 @@ export class ProgramSymbolTable extends SymbolTable {
     return this.templateLocals.indexOf(name) !== -1;
   }
 
-  get(name: string): number {
+  get(name: string): [number, boolean] {
     let index = this.usedTemplateLocals.indexOf(name);
 
     if (index !== -1) {
-      return index;
+      return [index, true];
     }
 
     index = this.usedTemplateLocals.length;
     this.usedTemplateLocals.push(name);
-    return index;
+    return [index, true];
   }
 
   getLocalsMap(): Dict<number> {
@@ -128,8 +124,6 @@ export class BlockSymbolTable extends SymbolTable {
     super();
   }
 
-  public isRoot = false;
-
   get locals(): string[] {
     return this.symbols;
   }
@@ -138,14 +132,14 @@ export class BlockSymbolTable extends SymbolTable {
     return this.symbols.indexOf(name) !== -1 || this.parent.has(name);
   }
 
-  get(name: string): number {
+  get(name: string): [number, boolean] {
     let slot = this.symbols.indexOf(name);
-    return slot === -1 ? this.parent.get(name) : this.slots[slot];
+    return slot === -1 ? this.parent.get(name) : [this.slots[slot], false];
   }
 
   getLocalsMap(): Dict<number> {
     let dict = this.parent.getLocalsMap();
-    this.symbols.forEach((symbol) => (dict[symbol] = this.get(symbol)));
+    this.symbols.forEach((symbol) => (dict[symbol] = this.get(symbol)[0]));
     return dict;
   }
 
