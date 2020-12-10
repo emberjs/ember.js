@@ -279,9 +279,9 @@ class ExpressionNormalizer {
       }
       case 'VarHead': {
         if (block.hasBinding(head.name)) {
-          let symbol = table.get(head.name);
+          let [symbol, isRoot] = table.get(head.name);
 
-          return block.builder.localVar(head.name, symbol, table.isRoot, offsets);
+          return block.builder.localVar(head.name, symbol, isRoot, offsets);
         } else {
           let symbol = block.table.allocateFree(head.name);
           return block.builder.freeVar({
