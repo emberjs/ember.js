@@ -1,4 +1,4 @@
-import { RenderTest, jitSuite, test, preprocess } from '..';
+import { RenderTest, jitSuite, test, preprocess } from '../..';
 import { KEYWORDS_TYPES } from '@glimmer/syntax';
 
 const KEYWORDS = Object.keys(KEYWORDS_TYPES);
@@ -13,7 +13,7 @@ const MODIFIER_KEYWORDS = KEYWORDS.filter((key) => KEYWORDS_TYPES[key].indexOf('
 
 for (let keyword of KEYWORDS) {
   class KeywordSyntaxErrors extends RenderTest {
-    static suiteName = `\`${keyword}\` keyword errors`;
+    static suiteName = `\`${keyword}\` keyword syntax errors`;
 
     @test
     'keyword can be used as a value in non-strict mode'() {

@@ -260,9 +260,9 @@ export class EmberishComponentTests extends RenderTest {
         super();
       }
     }
-    this.registerComponent('Curly', 'FooBar', 'Hello{{yield to="inverse"}}world!', FooBar);
+    this.registerComponent('Curly', 'FooBar', 'Hello{{yield "my" to="inverse"}}world!', FooBar);
 
-    this.render(`<FooBar><:else> my </:else></FooBar>`);
+    this.render(`<FooBar><:else as |value|> {{value}} </:else></FooBar>`);
 
     this.assertComponent('Hello my world!');
     this.assertStableRerender();

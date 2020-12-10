@@ -741,21 +741,32 @@ class ElementChildren extends Children {
   assertNamedBlock(name: SourceSlice, table: BlockSymbolTable): ASTv2.NamedBlock {
     if (this.el.base.selfClosing) {
       throw generateSyntaxError(
-        `<:${name}> is not a valid named block: named blocks cannot be self-closing`,
+        `<:${name.chars}/> is not a valid named block: named blocks cannot be self-closing`,
         this.loc
       );
     }
 
     if (isPresent(this.namedBlocks)) {
       throw generateSyntaxError(
-        `Unexpected named block inside <:${name}> named block: named blocks cannot contain nested named blocks`,
+        `Unexpected named block inside <:${name.chars}> named block: named blocks cannot contain nested named blocks`,
         this.loc
       );
     }
 
     if (!isLowerCase(name.chars)) {
       throw generateSyntaxError(
-        `<:${name}> is not a valid named block: \`${name}\` is uppercase, and named blocks must be lowercase`,
+        `<:${name.chars}> is not a valid named block, and named blocks must begin with a lowercase letter`,
+        this.loc
+      );
+    }
+
+    if (
+      this.el.base.attrs.length > 0 ||
+      this.el.base.componentArgs.length > 0 ||
+      this.el.base.modifiers.length > 0
+    ) {
+      throw generateSyntaxError(
+        `named block <:${name.chars}> cannot have attributes, arguments, or modifiers`,
         this.loc
       );
     }
@@ -782,13 +793,13 @@ class ElementChildren extends Children {
 
       if (names.length === 1) {
         throw generateSyntaxError(
-          `Syntax Error: Unexpected named block <:foo> inside <${name}> HTML element`,
+          `Unexpected named block <:foo> inside <${name.chars}> HTML element`,
           this.loc
         );
       } else {
         let printedNames = names.map((n) => `<:${n.chars}>`).join(', ');
         throw generateSyntaxError(
-          `Syntax Error: Unexpected named blocks inside <${name}> HTML element (${printedNames})`,
+          `Unexpected named blocks inside <${name.chars}> HTML element (${printedNames})`,
           this.loc
         );
       }
@@ -816,6 +827,22 @@ class ElementChildren extends Children {
           this.loc
         );
       }
+
+      let seenNames = new Set<string>();
+
+      for (let block of this.namedBlocks) {
+        let name = block.name.chars;
+
+        if (seenNames.has(name)) {
+          throw generateSyntaxError(
+            `Component had two named blocks with the same name, \`<:${name}>\`. Only one block with a given name may be passed`,
+            this.loc
+          );
+        }
+
+        seenNames.add(name);
+      }
+
       return this.namedBlocks;
     } else {
       return [
