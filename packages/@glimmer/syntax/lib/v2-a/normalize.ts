@@ -279,7 +279,7 @@ class ExpressionNormalizer {
       }
       case 'VarHead': {
         if (block.hasBinding(head.name)) {
-          let symbol = table.isRoot ? table.allocateTemplateLocal(head.name) : table.get(head.name);
+          let symbol = table.get(head.name);
 
           return block.builder.localVar(head.name, symbol, table.isRoot, offsets);
         } else {
@@ -618,12 +618,24 @@ class ElementNormalizer {
     loc: SourceSpan
   ): ASTv2.ExpressionNode | 'ElementHead' {
     let uppercase = isUpperCase(variable);
-    let inScope = this.ctx.hasBinding(variable);
+    let inScope = variable[0] === '@' || variable === 'this' || this.ctx.hasBinding(variable);
+
+    if (this.ctx.strict && !inScope) {
+      if (uppercase) {
+        throw generateSyntaxError(
+          `Attempted to invoke a component that was not in scope in a strict mode template, \`<${variable}>\`. If you wanted to create an element with that name, convert it to lowercase - \`<${variable.toLowerCase()}>\``,
+          loc
+        );
+      }
+
+      // In strict mode, values are always elements unless they are in scope
+      return 'ElementHead';
+    }
 
     // Since the parser handed us the HTML element name as a string, we need
     // to convert it into an ASTv1 path so it can be processed using the
     // expression normalizer.
-    let isComponent = variable[0] === '@' || variable === 'this' || inScope || uppercase;
+    let isComponent = inScope || uppercase;
 
     let variableLoc = loc.sliceStartChars({ skipStart: 1, chars: variable.length });
 

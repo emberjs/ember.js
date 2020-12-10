@@ -17,7 +17,7 @@ export function createTemplate(
   options: PrecompileOptions = {},
   scopeValues: Record<string, unknown> = {}
 ): TemplateFactory {
-  options.locals = Object.keys(scopeValues ?? {});
+  options.locals = options.locals ?? Object.keys(scopeValues ?? {});
   let [block, usedLocals] = precompileJSON(templateSource, options);
   let reifiedScopeValues = usedLocals.map((key) => scopeValues[key]);
 

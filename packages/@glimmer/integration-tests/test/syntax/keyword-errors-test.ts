@@ -24,7 +24,7 @@ for (let keyword of KEYWORDS) {
     'keyword can be used as a value in strict mode'() {
       preprocess(`{{some-helper ${keyword}}}`, {
         strictMode: true,
-        locals: [keyword],
+        locals: ['some-helper', keyword],
         meta: { moduleName: 'test-module' },
       });
     }
@@ -49,7 +49,7 @@ for (let keyword of KEYWORDS) {
             {{some-helper ${keyword}}}
           {{/let}}
         `,
-        { strictMode: true, meta: { moduleName: 'test-module' } }
+        { strictMode: true, locals: ['some-helper'], meta: { moduleName: 'test-module' } }
       );
     }
 
@@ -73,7 +73,11 @@ for (let keyword of KEYWORDS) {
             {{some-helper ${keyword}}}
           {{/my-component}}
         `,
-        { strictMode: true, meta: { moduleName: 'test-module' } }
+        {
+          strictMode: true,
+          locals: ['my-component', 'some-helper'],
+          meta: { moduleName: 'test-module' },
+        }
       );
     }
 
@@ -97,7 +101,11 @@ for (let keyword of KEYWORDS) {
             {{some-helper ${keyword}}}
           </SomeComponent>
         `,
-        { strictMode: true, meta: { moduleName: 'test-module' } }
+        {
+          strictMode: true,
+          locals: ['SomeComponent', 'some-helper'],
+          meta: { moduleName: 'test-module' },
+        }
       );
     }
 
@@ -125,7 +133,11 @@ for (let keyword of KEYWORDS) {
             </:main>
           </SomeComponent>
         `,
-        { strictMode: true, meta: { moduleName: 'test-module' } }
+        {
+          strictMode: true,
+          locals: ['SomeComponent', 'some-helper'],
+          meta: { moduleName: 'test-module' },
+        }
       );
     }
 
