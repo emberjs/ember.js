@@ -1,3 +1,12 @@
+## v0.69.3 (2020-12-10)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1231](https://github.com/glimmerjs/glimmer-vm/pull/1231) [BUGFIX] Ensure template locals work in nested blocks ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.69.2 (2020-12-10)
 
 #### :bug: Bug Fix
