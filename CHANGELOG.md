@@ -1,3 +1,12 @@
+## v0.69.1 (2020-12-10)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1229](https://github.com/glimmerjs/glimmer-vm/pull/1229) [BUGFIX] Makes ASTPluginEnvironment generic ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.69.0 (2020-12-10)
 
 #### :boom: Breaking Change
