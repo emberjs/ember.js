@@ -7,6 +7,7 @@ import {
   defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
+  syntaxErrorFor,
 } from '..';
 
 class GeneralStrictModeTest extends RenderTest {
@@ -369,11 +370,9 @@ class StaticStrictModeTest extends RenderTest {
 
   @test
   'Throws an error if component is not in scope'() {
-    const Bar = defineComponent({}, '<Foo/>');
-
     this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a component in a strict mode template, but that value was not in scope: Foo/);
+      defineComponent({}, '<Foo/>');
+    }, syntaxErrorFor('Attempted to invoke a component that was not in scope in a strict mode template, `<Foo>`. If you wanted to create an element with that name, convert it to lowercase - `<foo>`', '<Foo/>', 'an unknown module', 1, 0));
   }
 
   @test
