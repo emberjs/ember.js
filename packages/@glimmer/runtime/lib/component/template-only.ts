@@ -15,6 +15,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   createInstance: false,
   wrapped: false,
   willDestroy: false,
+  hasSubOwner: false,
 };
 
 export class TemplateOnlyComponentManager implements InternalComponentManager {

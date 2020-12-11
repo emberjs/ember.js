@@ -4,24 +4,18 @@ import { CompilableTemplate } from '../template';
 
 export const enum HighLevelOperand {
   Label = 1,
-  Owner = 2,
-  IsStrictMode = 3,
-  EvalSymbols = 4,
-  Block = 5,
-  StdLib = 6,
-  NonSmallInt = 7,
-  SymbolTable = 8,
-  Layout = 9,
+  IsStrictMode = 2,
+  EvalSymbols = 3,
+  Block = 4,
+  StdLib = 5,
+  NonSmallInt = 6,
+  SymbolTable = 7,
+  Layout = 8,
 }
 
 export interface LabelOperand {
   type: HighLevelOperand.Label;
   value: string;
-}
-
-export interface OwnerOperand {
-  type: HighLevelOperand.Owner;
-  value: undefined;
 }
 
 export interface IsStrictModeOperand {
@@ -61,7 +55,6 @@ export interface LayoutOperand {
 
 export type HighLevelBuilderOperand =
   | LabelOperand
-  | OwnerOperand
   | IsStrictModeOperand
   | EvalSymbolsOperand
   | StdLibOperand

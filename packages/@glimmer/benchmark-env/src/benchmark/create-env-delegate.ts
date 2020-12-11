@@ -72,7 +72,6 @@ setGlobalContext({
 
 export default function createEnvDelegate(isInteractive: boolean): EnvironmentDelegate {
   return {
-    owner: {},
     isInteractive,
     enableDebugTooling: false,
     onTransactionCommit() {

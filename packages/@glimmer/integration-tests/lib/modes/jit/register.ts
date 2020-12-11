@@ -178,5 +178,5 @@ export function componentHelper(
 
   if (definition === null) return null;
 
-  return curry(constants.resolvedComponent(definition, name), null);
+  return curry(constants.resolvedComponent(definition, name), {}, null);
 }

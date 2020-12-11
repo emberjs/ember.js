@@ -7,7 +7,6 @@ import {
   Template,
   VMArguments,
   PreparedArguments,
-  Environment,
   DynamicScope,
   ElementOperations,
   Destroyable,
@@ -15,6 +14,8 @@ import {
   InternalComponentCapabilities,
   WithCreateInstance,
   CompilableProgram,
+  Owner,
+  Environment,
 } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import {
@@ -127,6 +128,7 @@ const EMBERISH_CURLY_CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: true,
   willDestroy: true,
+  hasSubOwner: false,
 };
 
 export class EmberishCurlyComponentManager
@@ -196,9 +198,10 @@ export class EmberishCurlyComponentManager
   }
 
   create(
-    _env: Environment,
+    _owner: Owner,
     definition: EmberishCurlyComponentFactory,
     _args: VMArguments,
+    _env: Environment,
     dynamicScope: DynamicScope,
     callerSelf: Reference,
     hasDefaultBlock: boolean

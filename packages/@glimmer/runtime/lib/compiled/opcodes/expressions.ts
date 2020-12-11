@@ -72,7 +72,7 @@ APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
 });
 
 APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols }) => {
-  vm.pushRootScope(symbols);
+  vm.pushRootScope(symbols, vm.getOwner());
 });
 
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {

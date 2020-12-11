@@ -12,6 +12,7 @@ import { CompilableProgram } from '../../template';
 import { ProgramSymbolTable } from '../../tier1/symbol-table';
 import { DynamicScope } from '../../runtime/scope';
 import { RenderNode } from '../../runtime/debug-render-tree';
+import { Owner } from '../../runtime';
 
 /**
  * Describes the capabilities of a particular component. The capabilities are
@@ -100,6 +101,12 @@ export interface InternalComponentCapabilities {
    * prior to the component being removed from the DOM.
    */
   willDestroy: boolean;
+
+  /**
+   * Whether or not the component pushes an owner onto the owner stack. This is
+   * used for engines.
+   */
+  hasSubOwner: boolean;
 }
 
 /**
@@ -107,18 +114,19 @@ export interface InternalComponentCapabilities {
  * has been loaded for the first time
  */
 export const enum InternalComponentCapability {
-  DynamicLayout = 0b000000000001,
-  DynamicTag = 0b000000000010,
-  PrepareArgs = 0b000000000100,
-  CreateArgs = 0b000000001000,
-  AttributeHook = 0b000000010000,
-  ElementHook = 0b000000100000,
-  DynamicScope = 0b000001000000,
-  CreateCaller = 0b000010000000,
-  UpdateHook = 0b000100000000,
-  CreateInstance = 0b001000000000,
-  Wrapped = 0b010000000000,
-  WillDestroy = 0b100000000000,
+  DynamicLayout = 0b0000000000001,
+  DynamicTag = 0b0000000000010,
+  PrepareArgs = 0b0000000000100,
+  CreateArgs = 0b0000000001000,
+  AttributeHook = 0b0000000010000,
+  ElementHook = 0b0000000100000,
+  DynamicScope = 0b0000001000000,
+  CreateCaller = 0b0000010000000,
+  UpdateHook = 0b0000100000000,
+  CreateInstance = 0b0001000000000,
+  Wrapped = 0b0010000000000,
+  WillDestroy = 0b0100000000000,
+  HasSubOwner = 0b1000000000000,
 }
 
 ////////////
@@ -162,18 +170,24 @@ export interface WithPrepareArgs<
   prepareArgs(state: ComponentDefinitionState, args: VMArguments): Option<PreparedArguments>;
 }
 
+export interface WithSubOwner<ComponentInstanceState = unknown, ComponentDefinitionState = unknown>
+  extends InternalComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+  getOwner(state: ComponentInstanceState): Owner;
+}
+
 export interface WithCreateInstance<
   ComponentInstanceState = unknown,
-  E extends Environment = Environment,
-  ComponentDefinitionState = unknown
+  ComponentDefinitionState = unknown,
+  O extends Owner = Owner
 > extends InternalComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   // The component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
   create(
-    env: E,
+    owner: O,
     state: ComponentDefinitionState,
     args: Option<VMArguments>,
+    env: Environment,
     dynamicScope: Option<DynamicScope>,
     caller: Option<Reference>,
     hasDefaultBlock: boolean
