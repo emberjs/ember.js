@@ -21,12 +21,7 @@ import { Replayable, ReplayableIf } from '../opcode-builder/helpers/conditional'
 import { expr } from '../opcode-builder/helpers/expr';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
 import { Call, DynamicScope, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
-import {
-  evalSymbolsOperand,
-  labelOperand,
-  stdlibOperand,
-  ownerOperand,
-} from '../opcode-builder/operands';
+import { evalSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
 import { Compilers, PushStatementOp } from './compilers';
 import {
   isGetFreeComponent,
@@ -124,7 +119,7 @@ STATEMENTS.add(SexpOpcodes.Partial, (op, [, name, evalInfo]) => {
     },
 
     () => {
-      op(Op.InvokePartial, ownerOperand(), evalSymbolsOperand(), evalInfo);
+      op(Op.InvokePartial, evalSymbolsOperand(), evalInfo);
       op(Op.PopScope);
       op(MachineOp.PopFrame);
     }

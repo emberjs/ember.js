@@ -207,9 +207,6 @@ export class EncoderImpl implements Encoder {
             this.currentLabels.target(this.heap.offset, operand.value);
             return -1;
 
-          case HighLevelOperand.Owner:
-            return encodeHandle(constants.value(this.meta.owner));
-
           case HighLevelOperand.IsStrictMode:
             return encodeHandle(constants.value(this.meta.isStrictMode));
 

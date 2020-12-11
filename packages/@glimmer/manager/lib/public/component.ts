@@ -35,6 +35,7 @@ const CAPABILITIES = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
+  hasSubOwner: false,
 };
 
 export function componentCapabilities<Version extends keyof ComponentCapabilitiesVersions>(

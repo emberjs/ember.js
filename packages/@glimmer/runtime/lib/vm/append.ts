@@ -18,6 +18,7 @@ import {
   CompileTimeCompilationContext,
   VM as PublicVM,
   ResolutionTimeConstants,
+  Owner,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -98,6 +99,7 @@ export interface InternalVM {
   scope(): Scope;
   elements(): ElementBuilder;
 
+  getOwner(): Owner;
   getSelf(): Reference;
 
   updateWith(opcode: UpdatingOpcode): void;
@@ -114,7 +116,7 @@ export interface InternalVM {
   enterItem(item: OpaqueIterationItem): ListItemOpcode;
   registerItem(item: ListItemOpcode): void;
 
-  pushRootScope(size: number): PartialScope;
+  pushRootScope(size: number, owner: Owner): PartialScope;
   pushChildScope(): void;
   popScope(): void;
   pushScope(scope: Scope): void;
@@ -318,9 +320,9 @@ export default class VM implements PublicVM, InternalVM {
   static initial(
     runtime: RuntimeContext,
     context: CompileTimeCompilationContext,
-    { handle, self, dynamicScope, treeBuilder, numSymbols }: InitOptions
+    { handle, self, dynamicScope, treeBuilder, numSymbols, owner }: InitOptions
   ) {
-    let scope = PartialScopeImpl.root(self, numSymbols);
+    let scope = PartialScopeImpl.root(self, numSymbols, owner);
     let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
     let vm = initVM(context)(runtime, state, treeBuilder);
     vm.pushUpdating();
@@ -329,14 +331,14 @@ export default class VM implements PublicVM, InternalVM {
 
   static empty(
     runtime: RuntimeContext,
-    { handle, treeBuilder, dynamicScope }: MinimalInitOptions,
+    { handle, treeBuilder, dynamicScope, owner }: MinimalInitOptions,
     context: CompileTimeCompilationContext
   ) {
     let vm = initVM(context)(
       runtime,
       vmState(
         runtime.program.heap.getaddr(handle),
-        PartialScopeImpl.root(UNDEFINED_REFERENCE, 0),
+        PartialScopeImpl.root(UNDEFINED_REFERENCE, 0, owner),
         dynamicScope
       ),
       treeBuilder
@@ -364,8 +366,8 @@ export default class VM implements PublicVM, InternalVM {
   captureState(args: number, pc = this[INNER_VM].fetchRegister($pc)): VMState {
     return {
       pc,
-      dynamicScope: this.dynamicScope(),
       scope: this.scope(),
+      dynamicScope: this.dynamicScope(),
       stack: this.stack.capture(args),
     };
   }
@@ -517,8 +519,8 @@ export default class VM implements PublicVM, InternalVM {
     return child;
   }
 
-  pushRootScope(size: number): PartialScope {
-    let scope = PartialScopeImpl.sized(size);
+  pushRootScope(size: number, owner: Owner): PartialScope {
+    let scope = PartialScopeImpl.sized(size, owner);
     this[STACKS].scope.push(scope);
     return scope;
   }
@@ -536,6 +538,10 @@ export default class VM implements PublicVM, InternalVM {
   }
 
   /// SCOPE HELPERS
+
+  getOwner(): Owner {
+    return this.scope().owner;
+  }
 
   getSelf(): Reference<any> {
     return this.scope().getSelf();
@@ -628,11 +634,7 @@ export default class VM implements PublicVM, InternalVM {
   }
 }
 
-function vmState(
-  pc: number,
-  scope: Scope = PartialScopeImpl.root(UNDEFINED_REFERENCE, 0),
-  dynamicScope: DynamicScope
-) {
+function vmState(pc: number, scope: Scope, dynamicScope: DynamicScope) {
   return {
     pc,
     scope,
@@ -645,6 +647,7 @@ export interface MinimalInitOptions {
   handle: number;
   treeBuilder: ElementBuilder;
   dynamicScope: DynamicScope;
+  owner: Owner;
 }
 
 export interface InitOptions extends MinimalInitOptions {

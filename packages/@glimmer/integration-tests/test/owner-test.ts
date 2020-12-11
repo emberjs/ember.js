@@ -51,25 +51,31 @@ class OwnerTest extends RenderTest {
 
   @test
   'owner can be used per-template in runtime resolver'(assert: Assert) {
-    class FooBar extends EmberishCurlyComponent {
-      subcomponent = 'foo-baz';
+    this.delegate.registerComponent('TemplateOnly', 'TemplateOnly', 'FooQux', 'testing');
 
-      layout = createTemplate('{{component this.subcomponent}}')(() => {
-        assert.step('foo-bar owner called');
-      });
-    }
+    this.delegate.registerComponent(
+      'Curly',
+      'Curly',
+      'FooBaz',
+      null,
+      class FooBaz extends EmberishCurlyComponent {
+        layout = createTemplate('<FooQux/>')(() => {
+          assert.step('foo-baz owner called');
+        });
+      }
+    );
 
-    class FooBaz extends EmberishCurlyComponent {
-      subcomponent = 'foo-qux';
-
-      layout = createTemplate('{{component this.subcomponent}}')(() => {
-        assert.step('foo-baz owner called');
-      });
-    }
-
-    this.delegate.registerComponent('Curly', 'Curly', 'FooBar', null, FooBar);
-    this.delegate.registerComponent('Curly', 'Curly', 'foo-baz', null, FooBaz);
-    this.delegate.registerComponent('TemplateOnly', 'TemplateOnly', 'foo-qux', 'testing');
+    this.delegate.registerComponent(
+      'Curly',
+      'Curly',
+      'FooBar',
+      null,
+      class FooBar extends EmberishCurlyComponent {
+        layout = createTemplate('<FooBaz/>')(() => {
+          assert.step('foo-bar owner called');
+        });
+      }
+    );
 
     this.render('<FooBar/>');
 
