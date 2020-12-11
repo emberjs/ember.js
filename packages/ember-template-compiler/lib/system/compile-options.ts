@@ -1,14 +1,16 @@
+import { EMBER_STRICT_MODE } from '@ember/canary-features';
 import { assign } from '@ember/polyfills';
+import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
 import PLUGINS from '../plugins/index';
-import { CompileOptions, EmberPrecompileOptions, PluginFunc } from '../types';
+import { EmberPrecompileOptions, PluginFunc } from '../types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
 let USER_PLUGINS: PluginFunc[] = [];
 
 export default function compileOptions(
-  _options: Partial<CompileOptions> = {}
-): EmberPrecompileOptions {
+  _options: Partial<EmberPrecompileOptions> = {}
+): PrecompileOptions {
   let options: EmberPrecompileOptions = assign(
     { meta: {}, isProduction: false, plugins: { ast: [] } },
     _options,
@@ -18,6 +20,11 @@ export default function compileOptions(
       },
     }
   );
+
+  if (!EMBER_STRICT_MODE) {
+    options.strictMode = false;
+    options.locals = undefined;
+  }
 
   // move `moduleName` into `meta` property
   if (options.moduleName) {
@@ -36,7 +43,8 @@ export default function compileOptions(
     options.plugins.ast = providedPlugins.concat(pluginsToAdd);
   }
 
-  return options;
+  // TODO: Fix the types here so that this conversion isn't necessary
+  return (options as unknown) as PrecompileOptions;
 }
 
 interface LegacyPlugin {

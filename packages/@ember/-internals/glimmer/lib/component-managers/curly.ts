@@ -124,7 +124,10 @@ type ComponentFactory = Factory<
     positionalParams: string | string[] | undefined | null;
     name: string;
   }
->;
+> & {
+  name: string;
+  positionalParams: string | string[] | undefined | null;
+};
 
 export default class CurlyComponentManager
   implements
@@ -188,7 +191,7 @@ export default class CurlyComponentManager
       return prepared;
     }
 
-    const { positionalParams } = ComponentClass.class!;
+    const { positionalParams } = ComponentClass.class ?? ComponentClass;
 
     // early exits
     if (
@@ -355,7 +358,9 @@ export default class CurlyComponentManager
   }
 
   getDebugName(definition: ComponentFactory): string {
-    return definition.fullName || definition.normalizedName || definition.class!.name;
+    return (
+      definition.fullName || definition.normalizedName || definition.class?.name || definition.name
+    );
   }
 
   getSelf({ rootRef }: ComponentStateBucket): Reference {
@@ -551,3 +556,7 @@ export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
+
+export function isCurlyManager(manager: object): boolean {
+  return manager === CURLY_COMPONENT_MANAGER;
+}

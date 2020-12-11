@@ -2,12 +2,13 @@
 @module ember
 */
 
+import { TemplateFactory } from '@glimmer/interfaces';
 import compile from './compile';
 
 export interface BootstrapOptions {
   context?: Document | HTMLElement;
   hasTemplate(templateName: string): boolean;
-  setTemplate(templateName: string, template: string): void;
+  setTemplate(templateName: string, template: TemplateFactory): void;
 }
 
 /**

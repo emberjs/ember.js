@@ -367,6 +367,7 @@ export { default as Checkbox } from './lib/components/checkbox';
 export { default as TextField } from './lib/components/text-field';
 export { default as TextArea } from './lib/components/textarea';
 export { default as LinkComponent } from './lib/components/link-to';
+export { InputComponent as Input } from './lib/components/input';
 export { default as Component } from './lib/component';
 export { default as Helper, helper } from './lib/helper';
 export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
@@ -387,12 +388,18 @@ export {
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
 
+export { default as array } from './lib/helpers/array';
+export { default as hash } from './lib/helpers/hash';
+export { default as concat } from './lib/helpers/concat';
+export { default as get } from './lib/helpers/get';
+export { default as fn } from './lib/helpers/fn';
+export { default as on } from './lib/modifiers/on';
+
 // needed for test
 // TODO just test these through public API
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
 export { INVOKE } from './lib/helpers/action';
-export { default as on } from './lib/modifiers/on';
 export { default as OutletView } from './lib/views/outlet';
 export { OutletState } from './lib/utils/outlet';
 export { setComponentManager } from './lib/utils/managers';

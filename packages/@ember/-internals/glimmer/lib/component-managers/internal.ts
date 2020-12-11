@@ -40,11 +40,18 @@ export default class InternalManager
   implements
     InternalComponentManager<InternalComponentState, EmberInternalComponentConstructor>,
     WithCreateInstance {
-  static for(name: string): (owner: Owner) => InternalManager {
-    return (owner: Owner) => new InternalManager(owner, name);
+  static for(
+    definition: EmberInternalComponentConstructor,
+    name: string
+  ): (owner: Owner) => InternalManager {
+    return (owner: Owner) => new InternalManager(owner, definition, name);
   }
 
-  constructor(private owner: Owner, private name: string) {}
+  constructor(
+    private owner: Owner,
+    private ComponentClass: EmberInternalComponentConstructor,
+    private name: string
+  ) {}
 
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
@@ -52,7 +59,7 @@ export default class InternalManager
 
   create(
     env: Environment,
-    ComponentClass: EmberInternalComponentConstructor,
+    _definition: unknown,
     args: VMArguments,
     _dynamicScope: DynamicScope,
     caller: Reference
@@ -64,7 +71,8 @@ export default class InternalManager
       args.positional.length === 0
     );
 
-    let instance = new ComponentClass(this.owner, args.named.capture(), valueForRef(caller));
+    let { ComponentClass, owner } = this;
+    let instance = new ComponentClass(owner, args.named.capture(), valueForRef(caller));
 
     let state = { env, instance };
 

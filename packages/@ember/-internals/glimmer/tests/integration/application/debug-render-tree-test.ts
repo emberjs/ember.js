@@ -18,13 +18,17 @@ import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
-import { compile } from 'ember-template-compiler';
+import { compile, EmberPrecompileOptions } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
   firstNode: SimpleNode;
   lastNode: SimpleNode;
+}
+
+function compileTemplate(templateSource: string, options: Partial<EmberPrecompileOptions>) {
+  return compile(templateSource, options) as any;
 }
 
 type Expected<T> = T | ((actual: T) => boolean);
@@ -301,7 +305,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               super.init(...arguments);
               this.register(
                 'template:application',
-                compile(
+                compileTemplate(
                   strip`
                     {{#if @model}}
                       <InspectModel @model={{@model}} />
@@ -314,7 +318,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               );
               this.register(
                 'template:components/inspect-model',
-                compile('{{@model}}', {
+                compileTemplate('{{@model}}', {
                   moduleName: 'foo/components/inspect-model.hbs',
                 })
               );
@@ -337,7 +341,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               super.init(...arguments);
               this.register(
                 'template:application',
-                compile(
+                compileTemplate(
                   strip`
                     {{#if @model}}
                       <InspectModel @model={{@model}} />
@@ -350,7 +354,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               );
               this.register(
                 'template:components/inspect-model',
-                compile('{{@model}}', {
+                compileTemplate('{{@model}}', {
                   moduleName: 'bar/components/inspect-model.hbs',
                 })
               );
@@ -682,7 +686,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               super.init(...arguments);
               this.register(
                 'template:application',
-                compile(
+                compileTemplate(
                   strip`
                     {{outlet}}
 
@@ -697,13 +701,13 @@ if (ENV._DEBUG_RENDER_TREE) {
               );
               this.register(
                 'template:index',
-                compile('Foo', {
+                compileTemplate('Foo', {
                   moduleName: 'foo/templates/index.hbs',
                 })
               );
               this.register(
                 'template:components/hello',
-                compile('<span>Hello {{@message}}</span>', {
+                compileTemplate('<span>Hello {{@message}}</span>', {
                   moduleName: 'foo/components/hello.hbs',
                 })
               );
@@ -1027,7 +1031,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         this.addComponent('hello-world', {
           ComponentClass: setComponentTemplate(
-            compile('{{@name}}', { moduleName: 'my-app/components/hello-world.hbs' }),
+            compileTemplate('{{@name}}', { moduleName: 'my-app/components/hello-world.hbs' }),
             templateOnlyComponent()
           ),
         });

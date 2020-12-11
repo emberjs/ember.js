@@ -2,19 +2,18 @@ import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import Component from './component';
 import Checkbox from './components/checkbox';
-import Input from './components/input';
+import { InputComponent } from './components/input';
 import LinkToComponent from './components/link-to';
 import TextField from './components/text-field';
 import TextArea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
-import InputTemplate from './templates/input';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
 
-export function setupApplicationRegistry(registry: Registry) {
+export function setupApplicationRegistry(registry: Registry): void {
   registry.injection('renderer', 'env', '-environment:main');
 
   // because we are using injections we can't use instantiate false
@@ -46,7 +45,7 @@ export function setupApplicationRegistry(registry: Registry) {
   registry.injection('renderer', 'document', 'service:-document');
 }
 
-export function setupEngineRegistry(registry: Registry) {
+export function setupEngineRegistry(registry: Registry): void {
   registry.optionsForType('template', { instantiate: false });
 
   registry.register('view:-outlet', OutletView);
@@ -61,8 +60,7 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register('component:-checkbox', Checkbox);
   registry.register('component:link-to', LinkToComponent);
 
-  registry.register('component:input', Input);
-  registry.register('template:components/input', InputTemplate as any);
+  registry.register('component:input', InputComponent);
 
   registry.register('component:textarea', TextArea);
 

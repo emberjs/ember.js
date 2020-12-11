@@ -29,7 +29,7 @@ import {
   templateOnlyComponent,
 } from '@glimmer/runtime';
 import { _WeakSet } from '@glimmer/util';
-import { CURLY_COMPONENT_MANAGER } from './component-managers/curly';
+import { isCurlyManager } from './component-managers/curly';
 import {
   CLASSIC_HELPER_MANAGER_FACTORY,
   HelperFactory,
@@ -177,20 +177,15 @@ if (PARTIALS) {
   };
 }
 
-const BUILTINS_HELPERS = {
-  if: inlineIf,
+const BUILTIN_KEYWORD_HELPERS = {
   action,
-  array,
-  concat,
-  fn,
-  get,
-  hash,
+  if: inlineIf,
   log,
   mut,
-  'query-params': queryParams,
   readonly,
   unbound,
   unless: inlineUnless,
+  'query-params': queryParams,
   '-hash': hash,
   '-each-in': eachIn,
   '-normalize-class': normalizeClassHelper,
@@ -202,8 +197,21 @@ const BUILTINS_HELPERS = {
   '-in-el-null': inElementNullCheckHelper,
 };
 
-const BUILTINS_MODIFIERS = {
+const BUILTIN_HELPERS = {
+  ...BUILTIN_KEYWORD_HELPERS,
+  array,
+  concat,
+  fn,
+  get,
+  hash,
+};
+
+const BUILTIN_KEYWORD_MODIFIERS = {
   action: actionModifier,
+};
+
+const BUILTIN_MODIFIERS = {
+  ...BUILTIN_KEYWORD_MODIFIERS,
   on: onModifier,
 };
 
@@ -226,10 +234,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
   lookupHelper(name: string, owner: Owner): Option<HelperDefinitionState> {
     assert(
       `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
-      !(BUILTINS_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
+      !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
     );
 
-    const helper = BUILTINS_HELPERS[name];
+    const helper = BUILTIN_HELPERS[name];
     if (helper !== undefined) {
       return helper;
     }
@@ -271,8 +279,12 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return definition;
   }
 
+  lookupBuiltInHelper(name: string): HelperDefinitionState | null {
+    return BUILTIN_KEYWORD_HELPERS[name] ?? null;
+  }
+
   lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
-    let builtin = BUILTINS_MODIFIERS[name];
+    let builtin = BUILTIN_MODIFIERS[name];
 
     if (builtin !== undefined) {
       return builtin;
@@ -285,6 +297,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     }
 
     return modifier.class || null;
+  }
+
+  lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
+    return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
   }
 
   lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {
@@ -328,9 +344,12 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
           template,
         };
       } else {
+        let factory = owner.factoryFor(P`component:-default`)!;
+        let manager = getInternalComponentManager(owner, factory.class as object);
+
         definition = {
-          state: owner.factoryFor(P`component:-default`)!,
-          manager: CURLY_COMPONENT_MANAGER,
+          state: factory,
+          manager,
           template,
         };
       }
@@ -342,7 +361,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
       let manager = getInternalComponentManager(owner, ComponentClass);
 
       definition = {
-        state: manager === CURLY_COMPONENT_MANAGER ? factory : ComponentClass,
+        state: isCurlyManager(manager) ? factory : ComponentClass,
         manager,
         template,
       };

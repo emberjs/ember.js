@@ -28,6 +28,7 @@ export {
   unregisterPlugin,
 } from './lib/system/compile-options';
 export { default as defaultPlugins } from './lib/plugins/index';
+export { EmberPrecompileOptions } from './lib/types';
 
 // used to bootstrap templates
 import './lib/system/bootstrap';
