@@ -320,4 +320,4 @@ export class EmberishCurlyComponentManager
 
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
 
-setInternalComponentManager(() => EMBERISH_CURLY_COMPONENT_MANAGER, EmberishCurlyComponent);
+setInternalComponentManager(EMBERISH_CURLY_COMPONENT_MANAGER, EmberishCurlyComponent);

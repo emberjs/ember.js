@@ -101,12 +101,12 @@ export function resolveComponent(
   }
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    then(constants.component(owner ?? undefined, definition as object));
+    then(constants.component(definition as object));
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
 
@@ -138,12 +138,12 @@ export function resolveHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    then(constants.helper(owner ?? undefined, definition as object));
+    then(constants.helper(definition as object));
   } else if (type === SexpOpcodes.GetStrictFree) {
     then(
       lookupBuiltInHelper(expr as Expressions.GetStrictFree, resolver, meta, constants, 'helper')
@@ -160,7 +160,7 @@ export function resolveHelper(
       );
     }
 
-    then(constants.helper(owner, helper, name));
+    then(constants.helper(helper, name));
   }
 }
 
@@ -180,16 +180,16 @@ export function resolveModifier(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    then(constants.modifier(owner ?? undefined, definition as object));
+    then(constants.modifier(definition as object));
   } else if (type === SexpOpcodes.GetStrictFree) {
-    let { upvars, owner } = assertResolverInvariants(meta);
+    let { upvars } = assertResolverInvariants(meta);
     let name = upvars[expr[1]];
-    let modifier = resolver.lookupBuiltInModifier(name, owner)!;
+    let modifier = resolver.lookupBuiltInModifier(name);
 
     if (DEBUG && modifier === null) {
       throw new Error(
@@ -197,7 +197,7 @@ export function resolveModifier(
       );
     }
 
-    then(constants.modifier(owner, modifier, name));
+    then(constants.modifier(modifier!, name));
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
     let name = upvars[expr[1]];
@@ -209,7 +209,7 @@ export function resolveModifier(
       );
     }
 
-    then(constants.modifier(owner, modifier, name));
+    then(constants.modifier(modifier, name));
   }
 }
 
@@ -230,19 +230,19 @@ export function resolveComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    let component = constants.component(owner ?? undefined, definition as object, true);
+    let component = constants.component(definition as object, true);
 
     if (component !== null) {
       ifComponent(component);
       return;
     }
 
-    let helper = constants.helper(owner ?? undefined, definition as object, null, true);
+    let helper = constants.helper(definition as object, null, true);
 
     if (DEBUG && helper === null) {
       throw new Error(
@@ -280,7 +280,7 @@ export function resolveComponentOrHelper(
         );
       }
 
-      ifHelper(constants.helper(owner, helper!, name));
+      ifHelper(constants.helper(helper!, name));
     }
   }
 }
@@ -303,7 +303,7 @@ export function resolveOptionalHelper(
   if (helper === null) {
     ifFallback(name);
   } else {
-    ifHelper(constants.helper(owner, helper, name));
+    ifHelper(constants.helper(helper, name));
   }
 }
 
@@ -324,7 +324,7 @@ export function resolveOptionalComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
@@ -338,14 +338,14 @@ export function resolveOptionalComponentOrHelper(
       return;
     }
 
-    let component = constants.component(owner ?? undefined, definition, true);
+    let component = constants.component(definition, true);
 
     if (component !== null) {
       ifComponent(component);
       return;
     }
 
-    let helper = constants.helper(owner ?? undefined, definition, null, true);
+    let helper = constants.helper(definition, null, true);
 
     if (helper !== null) {
       ifHelper(helper);
@@ -371,7 +371,7 @@ export function resolveOptionalComponentOrHelper(
     let helper = resolver.lookupHelper(name, owner);
 
     if (helper !== null) {
-      ifHelper(constants.helper(owner, helper, name));
+      ifHelper(constants.helper(helper, name));
       return;
     }
 
@@ -386,10 +386,10 @@ function lookupBuiltInHelper(
   constants: ResolutionTimeConstants,
   type: string
 ): number {
-  let { upvars, owner } = assertResolverInvariants(meta);
+  let { upvars } = assertResolverInvariants(meta);
 
   let name = upvars[expr[1]];
-  let helper = resolver.lookupBuiltInHelper(name, owner);
+  let helper = resolver.lookupBuiltInHelper(name);
 
   if (DEBUG && helper === null) {
     // Keyword helper did not exist, which means that we're attempting to use a
@@ -401,5 +401,5 @@ function lookupBuiltInHelper(
     );
   }
 
-  return constants.helper(owner, helper!, name);
+  return constants.helper(helper!, name);
 }

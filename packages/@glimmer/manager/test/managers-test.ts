@@ -3,6 +3,7 @@ import {
   ComponentManager,
   HelperManager,
   InternalComponentManager,
+  InternalHelperManager,
   ModifierManager,
 } from '@glimmer/interfaces';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
@@ -23,6 +24,7 @@ import {
   helperCapabilities,
   CustomComponentManager,
   CustomModifierManager,
+  CustomHelperManager,
 } from '..';
 
 const { module, test } = QUnit;
@@ -40,56 +42,21 @@ module('Managers', () => {
         getContext() {}
       }
 
-      let definition = setComponentManager((owner) => {
-        return new CustomManager(owner);
-      }, {});
+      let factory = (owner: object) => new CustomManager(owner);
+      let definition = setComponentManager(factory, {});
 
-      let owner1 = {};
-
-      let instance1 = getInternalComponentManager(owner1, definition) as CustomComponentManager<
+      let instance = getInternalComponentManager(definition) as CustomComponentManager<
+        object,
         unknown
       >;
 
-      assert.ok(
-        instance1 instanceof CustomComponentManager,
-        'internal manager is a custom manager'
-      );
-      assert.ok(
-        instance1['delegate'] instanceof CustomManager,
-        'delegate is an instance of the custom manager'
-      );
-      assert.equal((instance1['delegate'] as CustomManager).owner, owner1, 'owner is correct');
-
-      let instance2 = getInternalComponentManager(owner1, definition);
-
-      assert.ok(
-        instance2 instanceof CustomComponentManager,
-        'manager is an instance of the custom manager'
-      );
-      assert.equal(instance1, instance2, 'same value returned for same owner');
-
-      let owner2 = {};
-
-      let instance3 = getInternalComponentManager(owner2, definition);
-
-      assert.ok(
-        instance3 instanceof CustomComponentManager,
-        'manager is an instance of the custom manager'
-      );
-      assert.notEqual(instance1, instance3, 'different manager returned for different owner');
-
-      let instance4 = getInternalComponentManager(undefined, definition);
-
-      assert.ok(
-        instance4 instanceof CustomComponentManager,
-        'manager is an instance of the custom manager'
-      );
-      assert.notEqual(instance1, instance4, 'different manager returned for undefined owner');
+      assert.ok(instance instanceof CustomComponentManager, 'internal manager is a custom manager');
+      assert.equal(instance['factory'], factory, 'delegate is an instance of the custom manager');
     });
 
     test('it works with internal managers', (assert) => {
       class TestInternalComponentManager implements InternalComponentManager {
-        constructor(public owner: object) {}
+        constructor() {}
 
         create() {}
 
@@ -124,20 +91,14 @@ module('Managers', () => {
         }
       }
 
-      let definition = setInternalComponentManager((owner) => {
-        return new TestInternalComponentManager(owner);
-      }, {});
+      let definition = setInternalComponentManager(new TestInternalComponentManager(), {});
 
-      let instance1 = getInternalComponentManager(
-        undefined,
-        definition
-      ) as TestInternalComponentManager;
+      let instance1 = getInternalComponentManager(definition) as TestInternalComponentManager;
 
       assert.ok(
         instance1 instanceof TestInternalComponentManager,
         'manager is an instance of the custom manager'
       );
-      assert.equal(instance1.owner, undefined, 'owner is undefined');
     });
 
     test('throws if multiple component managers associated with the same definition', (assert) => {
@@ -146,9 +107,7 @@ module('Managers', () => {
         return;
       }
 
-      let definition = setInternalComponentManager(() => {
-        return {} as any;
-      }, {});
+      let definition = setInternalComponentManager({} as any, {});
 
       assert.throws(() => {
         setComponentManager(() => {
@@ -167,8 +126,13 @@ module('Managers', () => {
         return {} as any;
       }, {});
 
+      let manager = getInternalComponentManager(definition) as CustomComponentManager<
+        object,
+        unknown
+      >;
+
       assert.throws(() => {
-        getInternalComponentManager(undefined, definition);
+        manager.create({}, {}, {} as any);
       }, /Custom component managers must have a `capabilities` property /);
     });
 
@@ -184,8 +148,13 @@ module('Managers', () => {
         } as any;
       }, {});
 
+      let manager = getInternalComponentManager(definition) as CustomComponentManager<
+        object,
+        unknown
+      >;
+
       assert.throws(() => {
-        getInternalComponentManager(undefined, definition);
+        manager.create({}, {}, {} as any);
       }, /Custom component managers must have a `capabilities` property /);
     });
 
@@ -206,33 +175,14 @@ module('Managers', () => {
         createHelper() {}
       }
 
-      let definition = setHelperManager((owner) => {
-        return new CustomManager(owner);
-      }, {});
+      let factory = (owner?: object) => new CustomManager(owner);
+      let definition = setHelperManager(factory, {});
 
-      let owner1 = {};
+      let instance = getInternalHelperManager(definition) as CustomHelperManager<object>;
 
-      let instance1 = getInternalHelperManager(owner1, definition)!;
-
-      assert.ok(instance1 instanceof CustomManager, 'manager is an instance of the custom manager');
-      assert.equal((instance1 as CustomManager).owner, owner1, 'owner is correct');
-
-      let instance2 = getInternalHelperManager(owner1, definition)!;
-
-      assert.ok(instance2 instanceof CustomManager, 'manager is an instance of the custom manager');
-      assert.equal(instance1, instance2, 'same value returned for same owner');
-
-      let owner2 = {};
-
-      let instance3 = getInternalHelperManager(owner2, definition)!;
-
-      assert.ok(instance3 instanceof CustomManager, 'manager is an instance of the custom manager');
-      assert.notEqual(instance1, instance3, 'different manager returned for different owner');
-
-      let instance4 = getInternalHelperManager(undefined, definition)!;
-
-      assert.ok(instance4 instanceof CustomManager, 'manager is an instance of the custom manager');
-      assert.notEqual(instance1, instance4, 'different manager returned for undefined owner');
+      assert.ok(typeof instance === 'object', 'manager is an internal manager');
+      assert.ok(typeof instance.helper === 'function', 'manager has a helper function');
+      assert.equal(instance['factory'], factory, 'manager has correct delegate factory');
     });
 
     test('it works with internal helpers', (assert) => {
@@ -240,10 +190,10 @@ module('Managers', () => {
         return UNDEFINED_REFERENCE;
       };
 
-      let definition = setInternalHelperManager(() => helper, {});
-      let instance1 = getInternalHelperManager(undefined, definition)!;
+      let definition = setInternalHelperManager(helper, {});
+      let instance1 = getInternalHelperManager(definition)!;
 
-      assert.equal(instance1, helper, 'manager is an instance of the custom manager');
+      assert.equal(instance1, helper, 'manager is the internal helper');
     });
 
     test('throws if multiple helper managers associated with the same definition', (assert) => {
@@ -273,8 +223,10 @@ module('Managers', () => {
         return {} as any;
       }, {});
 
+      let manager = getInternalHelperManager(definition) as InternalHelperManager<object>;
+
       assert.throws(() => {
-        getInternalHelperManager(undefined, definition);
+        manager.getDelegateFor({});
       }, /Custom helper managers must have a `capabilities` property /);
     });
 
@@ -290,8 +242,10 @@ module('Managers', () => {
         } as any;
       }, {});
 
+      let manager = getInternalHelperManager(definition) as InternalHelperManager<object>;
+
       assert.throws(() => {
-        getInternalHelperManager(undefined, definition);
+        manager.getDelegateFor({});
       }, /Custom helper managers must have a `capabilities` property /);
     });
 
@@ -313,53 +267,21 @@ module('Managers', () => {
         destroyModifier() {}
       }
 
-      let definition = setModifierManager((owner) => {
-        return new CustomManager(owner);
-      }, {});
+      let factory = (owner: object) => new CustomManager(owner);
+      let definition = setModifierManager(factory, {});
 
-      let owner1 = {};
-
-      let instance1 = getInternalModifierManager(owner1, definition) as CustomModifierManager<
+      let instance = getInternalModifierManager(definition) as CustomModifierManager<
+        object,
         unknown
       >;
 
-      assert.ok(instance1 instanceof CustomModifierManager, 'internal manager is a custom manager');
-      assert.ok(
-        instance1['delegate'] instanceof CustomManager,
-        'delegate is an instance of the custom manager'
-      );
-      assert.equal((instance1['delegate'] as CustomManager).owner, owner1, 'owner is correct');
-
-      let instance2 = getInternalModifierManager(owner1, definition)!;
-
-      assert.ok(
-        instance2 instanceof CustomModifierManager,
-        'manager is an instance of the custom manager'
-      );
-      assert.equal(instance1, instance2, 'same value returned for same owner');
-
-      let owner2 = {};
-
-      let instance3 = getInternalModifierManager(owner2, definition);
-
-      assert.ok(
-        instance3 instanceof CustomModifierManager,
-        'manager is an instance of the custom manager'
-      );
-      assert.notEqual(instance1, instance3, 'different manager returned for different owner');
-
-      let instance4 = getInternalModifierManager(undefined, definition);
-
-      assert.ok(
-        instance4 instanceof CustomModifierManager,
-        'manager is an instance of the custom manager'
-      );
-      assert.notEqual(instance1, instance4, 'different manager returned for undefined owner');
+      assert.ok(instance instanceof CustomModifierManager, 'internal manager is a custom manager');
+      assert.equal(instance['factory'], factory, 'internal manager has custom manager factory');
     });
 
     test('it works with internal managers', (assert) => {
       class TestInternalModifierManager {
-        constructor(public owner: object | undefined) {}
+        constructor() {}
 
         create() {}
 
@@ -380,20 +302,14 @@ module('Managers', () => {
         update() {}
       }
 
-      let definition = setInternalModifierManager((owner) => {
-        return new TestInternalModifierManager(owner);
-      }, {});
+      let definition = setInternalModifierManager(new TestInternalModifierManager(), {});
 
-      let instance1 = getInternalModifierManager(
-        undefined,
-        definition
-      ) as TestInternalModifierManager;
+      let instance1 = getInternalModifierManager(definition) as TestInternalModifierManager;
 
       assert.ok(
         instance1 instanceof TestInternalModifierManager,
         'manager is an instance of the custom manager'
       );
-      assert.equal(instance1.owner, undefined, 'owner is undefined');
     });
 
     test('throws if multiple modifier managers associated with the same definition', (assert) => {
@@ -423,8 +339,10 @@ module('Managers', () => {
         return {} as any;
       }, {});
 
+      let manager = getInternalModifierManager(definition);
+
       assert.throws(() => {
-        getInternalModifierManager(undefined, definition);
+        manager.create({}, {} as any, {}, {} as any, {} as any, {} as any);
       }, /Custom modifier managers must have a `capabilities` property /);
     });
 
@@ -440,8 +358,10 @@ module('Managers', () => {
         } as any;
       }, {});
 
+      let manager = getInternalModifierManager(definition);
+
       assert.throws(() => {
-        getInternalModifierManager(undefined, definition);
+        manager.create({}, {} as any, {}, {} as any, {} as any, {} as any);
       }, /Custom modifier managers must have a `capabilities` property /);
     });
 
@@ -454,21 +374,13 @@ module('Managers', () => {
     let manager = {} as any;
     let definition = {};
 
-    setInternalComponentManager(() => manager, definition);
-    setInternalModifierManager(() => manager, definition);
-    setInternalHelperManager(() => manager, definition);
+    setInternalComponentManager(manager, definition);
+    setInternalModifierManager(manager, definition);
+    setInternalHelperManager(manager, definition);
 
-    assert.equal(
-      manager,
-      getInternalComponentManager(undefined, definition),
-      'component manager works'
-    );
-    assert.equal(
-      manager,
-      getInternalModifierManager(undefined, definition),
-      'modifier manager works'
-    );
-    assert.equal(manager, getInternalHelperManager(undefined, definition), 'helper manager works');
+    assert.equal(manager, getInternalComponentManager(definition), 'component manager works');
+    assert.equal(manager, getInternalModifierManager(definition), 'modifier manager works');
+    assert.equal(manager, getInternalHelperManager(definition), 'helper manager works');
   });
 });
 

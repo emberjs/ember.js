@@ -72,7 +72,7 @@ export function registerGlimmerishComponent(
 export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
   let state = {};
   let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args.capture());
-  setInternalHelperManager(() => glimmerHelper, state);
+  setInternalHelperManager(glimmerHelper, state);
   registry.register('helper', name, state);
 }
 
@@ -82,7 +82,7 @@ export function registerInternalHelper(
   helper: GlimmerHelper
 ) {
   let state = {};
-  setInternalHelperManager(() => helper, state);
+  setInternalHelperManager(helper, state);
   registry.register('helper', name, state);
 }
 
@@ -92,7 +92,7 @@ export function registerInternalModifier(
   manager: InternalModifierManager<unknown, object>,
   state: object
 ) {
-  setInternalModifierManager(() => manager, state);
+  setInternalModifierManager(manager, state);
   registry.register('modifier', name, state);
 }
 
@@ -103,7 +103,7 @@ export function registerModifier(
 ) {
   let state = new TestModifierDefinitionState(ModifierClass);
   let manager = new TestModifierManager();
-  setInternalModifierManager(() => manager, state);
+  setInternalModifierManager(manager, state);
   registry.register('modifier', name, state);
 }
 
@@ -156,7 +156,7 @@ function registerSomeComponent(
     setComponentTemplate(templateFactory, ComponentClass);
   }
 
-  let manager = getInternalComponentManager(undefined, ComponentClass);
+  let manager = getInternalComponentManager(ComponentClass);
 
   let definition = {
     name,

@@ -3,7 +3,6 @@ import {
   ComponentDefinitionState,
   ConstantPool,
   InternalComponentCapability,
-  Owner,
   ComponentDefinition,
   ResolutionTimeConstants,
   ResolvedComponentDefinition,
@@ -15,7 +14,6 @@ import {
 import { assert, constants, expect, unwrapTemplate } from '@glimmer/util';
 import {
   capabilityFlagsFrom,
-  customHelper,
   getComponentTemplate,
   getInternalComponentManager,
   getInternalHelperManager,
@@ -117,7 +115,6 @@ export class ConstantsImpl
   >();
 
   helper(
-    owner: Owner | undefined,
     definitionState: HelperDefinitionState,
 
     // TODO: Add a way to expose resolved name for debugging
@@ -125,14 +122,12 @@ export class ConstantsImpl
     isOptional: true
   ): number | null;
   helper(
-    owner: Owner | undefined,
     definitionState: HelperDefinitionState,
 
     // TODO: Add a way to expose resolved name for debugging
     _resolvedName?: string | null
   ): number;
   helper(
-    owner: Owner | undefined,
     definitionState: HelperDefinitionState,
 
     // TODO: Add a way to expose resolved name for debugging
@@ -142,7 +137,7 @@ export class ConstantsImpl
     let handle = this.helperDefinitionCache.get(definitionState);
 
     if (handle === undefined) {
-      let managerOrHelper = getInternalHelperManager(owner, definitionState, isOptional);
+      let managerOrHelper = getInternalHelperManager(definitionState, isOptional);
 
       if (managerOrHelper === null) {
         this.helperDefinitionCache.set(definitionState, null);
@@ -151,10 +146,7 @@ export class ConstantsImpl
 
       assert(managerOrHelper, 'BUG: expected manager or helper');
 
-      let helper =
-        typeof managerOrHelper === 'function'
-          ? managerOrHelper
-          : customHelper(managerOrHelper, definitionState);
+      let helper = typeof managerOrHelper === 'function' ? managerOrHelper : managerOrHelper.helper;
 
       handle = this.value(helper);
 
@@ -165,15 +157,11 @@ export class ConstantsImpl
     return handle;
   }
 
-  modifier(
-    owner: Owner | undefined,
-    definitionState: ModifierDefinitionState,
-    resolvedName: string | null = null
-  ): number {
+  modifier(definitionState: ModifierDefinitionState, resolvedName: string | null = null): number {
     let handle = this.modifierDefinitionCache.get(definitionState);
 
     if (handle === undefined) {
-      let manager = getInternalModifierManager(owner, definitionState);
+      let manager = getInternalModifierManager(definitionState);
 
       let definition = {
         resolvedName,
@@ -190,24 +178,20 @@ export class ConstantsImpl
     return handle;
   }
 
+  component(definitionState: ComponentDefinitionState): ComponentDefinition;
   component(
-    owner: Owner | undefined,
-    definitionState: ComponentDefinitionState
-  ): ComponentDefinition;
-  component(
-    owner: Owner | undefined,
     definitionState: ComponentDefinitionState,
     isOptional: true
   ): ComponentDefinition | null;
   component(
-    owner: Owner | undefined,
     definitionState: ComponentDefinitionState,
-    isOptional?: true
+    isOptional?: true,
+    owner?: object
   ): ComponentDefinition | null {
     let definition = this.componentDefinitionCache.get(definitionState);
 
     if (definition === undefined) {
-      let manager = getInternalComponentManager(owner, definitionState, isOptional);
+      let manager = getInternalComponentManager(definitionState, isOptional);
 
       if (manager === null) {
         this.componentDefinitionCache.set(definitionState, null);
