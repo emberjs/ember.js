@@ -51,7 +51,7 @@ export class TemplateOnlyComponentDefinition {
 }
 
 setInternalComponentManager(
-  () => TEMPLATE_ONLY_COMPONENT_MANAGER,
+  TEMPLATE_ONLY_COMPONENT_MANAGER,
   TemplateOnlyComponentDefinition.prototype
 );
 

@@ -2,7 +2,7 @@ import { GlimmerTreeChanges } from '../../dom/changes';
 // eslint-disable-next-line node/no-extraneous-import
 import { UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { DynamicScope, VMArguments } from '../../runtime';
+import { DynamicScope, Owner, VMArguments } from '../../runtime';
 import { Destroyable } from '../../core';
 import { ModifierDefinitionState, ModifierInstanceState } from '../../runtime/modifier';
 
@@ -12,6 +12,7 @@ export interface InternalModifierManager<
 > {
   // Create is meant to only produce the state bucket
   create(
+    owner: Owner,
     element: SimpleElement,
     state: TModifierDefinitionState,
     args: VMArguments,

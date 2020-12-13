@@ -1,51 +1,32 @@
-import { Owner } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/env';
 import { debugToString, _WeakSet } from '@glimmer/util';
 import {
   InternalComponentManager,
   InternalModifierManager,
-  HelperManager,
   Helper,
+  Owner,
 } from '@glimmer/interfaces';
+import { CustomHelperManager } from '../public/helper';
 
 type InternalManager =
   | InternalComponentManager
   | InternalModifierManager
-  | HelperManager<unknown>
+  | CustomHelperManager
   | Helper;
 
-const COMPONENT_MANAGERS = new WeakMap<
-  object,
-  InternalManagerFactory<Owner, InternalComponentManager>
->();
+const COMPONENT_MANAGERS = new WeakMap<object, InternalComponentManager>();
 
-const MODIFIER_MANAGERS = new WeakMap<
-  object,
-  InternalManagerFactory<Owner, InternalModifierManager>
->();
+const MODIFIER_MANAGERS = new WeakMap<object, InternalModifierManager>();
 
-const HELPER_MANAGERS = new WeakMap<
-  object,
-  InternalManagerFactory<Owner | undefined, HelperManager<unknown> | Helper>
->();
-
-const OWNER_MANAGER_INSTANCES: WeakMap<
-  Owner,
-  WeakMap<InternalManagerFactory<Owner>, unknown>
-> = new WeakMap();
-const UNDEFINED_MANAGER_INSTANCES: WeakMap<InternalManagerFactory<Owner>, unknown> = new WeakMap();
-
-export type InternalManagerFactory<O, D extends InternalManager = InternalManager> = (
-  owner: O
-) => D;
+const HELPER_MANAGERS = new WeakMap<object, CustomHelperManager | Helper>();
 
 ///////////
 
 const getPrototypeOf = Object.getPrototypeOf;
 
-function setManager<O extends Owner, Def extends object>(
-  map: WeakMap<object, InternalManagerFactory<O>>,
-  factory: InternalManagerFactory<O> | InternalManagerFactory<O | undefined>,
+function setManager<Def extends object>(
+  map: WeakMap<object, object>,
+  manager: object,
   obj: Def
 ): Def {
   if (DEBUG && (typeof obj !== 'object' || obj === null) && typeof obj !== 'function') {
@@ -64,14 +45,14 @@ function setManager<O extends Owner, Def extends object>(
     );
   }
 
-  map.set(obj, factory);
+  map.set(obj, manager);
   return obj;
 }
 
-function getManager<O, D extends InternalManager>(
-  map: WeakMap<object, InternalManagerFactory<O, D>>,
+function getManager<M extends InternalManager>(
+  map: WeakMap<object, M>,
   obj: object
-): InternalManagerFactory<O, D> | undefined {
+): M | undefined {
   let pointer = obj;
   while (pointer !== undefined && pointer !== null) {
     const manager = map.get(pointer);
@@ -86,47 +67,16 @@ function getManager<O, D extends InternalManager>(
   return undefined;
 }
 
-function getManagerInstanceForOwner<D extends InternalManager>(
-  owner: Owner | undefined,
-  factory: InternalManagerFactory<Owner, D>
-): D {
-  let managers;
-
-  if (owner === undefined) {
-    managers = UNDEFINED_MANAGER_INSTANCES;
-  } else {
-    managers = OWNER_MANAGER_INSTANCES.get(owner);
-
-    if (managers === undefined) {
-      managers = new WeakMap();
-      OWNER_MANAGER_INSTANCES.set(owner, managers);
-    }
-  }
-
-  let instance = managers.get(factory);
-
-  if (instance === undefined) {
-    instance = factory(owner!);
-    managers.set(factory, instance!);
-  }
-
-  // We know for sure that it's the correct type at this point, but TS can't know
-  return instance as D;
-}
-
 ///////////
 
-export function setInternalModifierManager<O extends Owner, T extends object>(
-  factory: InternalManagerFactory<O, InternalModifierManager>,
+export function setInternalModifierManager<T extends object>(
+  manager: InternalModifierManager,
   definition: T
 ): T {
-  return setManager(MODIFIER_MANAGERS, factory, definition);
+  return setManager(MODIFIER_MANAGERS, manager, definition);
 }
 
-export function getInternalModifierManager(
-  owner: Owner | undefined,
-  definition: object
-): InternalModifierManager {
+export function getInternalModifierManager(definition: object): InternalModifierManager {
   if (
     DEBUG &&
     typeof definition !== 'function' &&
@@ -137,9 +87,9 @@ export function getInternalModifierManager(
     );
   }
 
-  const factory = getManager(MODIFIER_MANAGERS, definition)!;
+  const manager = getManager(MODIFIER_MANAGERS, definition)!;
 
-  if (DEBUG && factory === undefined) {
+  if (DEBUG && manager === undefined) {
     throw new Error(
       `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${debugToString!(
         definition
@@ -147,30 +97,25 @@ export function getInternalModifierManager(
     );
   }
 
-  return getManagerInstanceForOwner(owner, factory);
+  return manager;
 }
 
-export function setInternalHelperManager<O extends Owner, T extends object>(
-  factory: InternalManagerFactory<O | undefined, HelperManager<unknown> | Helper>,
+export function setInternalHelperManager<T extends object, O extends Owner>(
+  manager: CustomHelperManager<O> | Helper,
   definition: T
 ): T {
-  return setManager(HELPER_MANAGERS, factory, definition);
+  return setManager(HELPER_MANAGERS, manager, definition);
 }
 
+export function getInternalHelperManager(definition: object): CustomHelperManager | Helper;
 export function getInternalHelperManager(
-  owner: Owner | undefined,
-  definition: object
-): HelperManager<unknown> | Helper;
-export function getInternalHelperManager(
-  owner: Owner | undefined,
   definition: object,
   isOptional: true | undefined
-): HelperManager<unknown> | Helper | null;
+): CustomHelperManager | Helper | null;
 export function getInternalHelperManager(
-  owner: Owner | undefined,
   definition: object,
   isOptional?: true | undefined
-): HelperManager<unknown> | Helper | null {
+): CustomHelperManager | Helper | null {
   if (
     DEBUG &&
     typeof definition !== 'function' &&
@@ -181,9 +126,9 @@ export function getInternalHelperManager(
     );
   }
 
-  const factory = getManager(HELPER_MANAGERS, definition)!;
+  const manager = getManager(HELPER_MANAGERS, definition)!;
 
-  if (factory === undefined) {
+  if (manager === undefined) {
     if (isOptional === true) {
       return null;
     } else if (DEBUG) {
@@ -195,27 +140,22 @@ export function getInternalHelperManager(
     }
   }
 
-  return getManagerInstanceForOwner(owner, factory);
+  return manager;
 }
 
-export function setInternalComponentManager<O extends Owner, T extends object>(
-  factory: InternalManagerFactory<O, InternalComponentManager>,
+export function setInternalComponentManager<T extends object>(
+  factory: InternalComponentManager,
   obj: T
 ): T {
   return setManager(COMPONENT_MANAGERS, factory, obj);
 }
 
+export function getInternalComponentManager(definition: object): InternalComponentManager;
 export function getInternalComponentManager(
-  owner: Owner | undefined,
-  definition: object
-): InternalComponentManager;
-export function getInternalComponentManager(
-  owner: Owner | undefined,
   definition: object,
   isOptional: true | undefined
 ): InternalComponentManager | null;
 export function getInternalComponentManager(
-  owner: Owner | undefined,
   definition: object,
   isOptional?: true | undefined
 ): InternalComponentManager | null {
@@ -229,9 +169,9 @@ export function getInternalComponentManager(
     );
   }
 
-  const factory = getManager<Owner, InternalComponentManager>(COMPONENT_MANAGERS, definition)!;
+  const manager = getManager(COMPONENT_MANAGERS, definition)!;
 
-  if (factory === undefined) {
+  if (manager === undefined) {
     if (isOptional === true) {
       return null;
     } else if (DEBUG) {
@@ -243,7 +183,7 @@ export function getInternalComponentManager(
     }
   }
 
-  return getManagerInstanceForOwner(owner, factory);
+  return manager;
 }
 
 ///////////

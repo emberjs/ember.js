@@ -102,6 +102,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let dynamicScope = vm.dynamicScope();
 
   let state = manager.create(
+    vm.getOwner(),
     expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
     definition.state,
     args,
