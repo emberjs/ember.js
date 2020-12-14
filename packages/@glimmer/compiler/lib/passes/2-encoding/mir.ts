@@ -22,16 +22,18 @@ export class InElement extends node('InElement').fields<{
   block: NamedBlock;
 }>() {}
 
+export class Not extends node('Not').fields<{ value: ExpressionNode }>() {}
+
 export class If extends node('If').fields<{
   condition: ExpressionNode;
   block: NamedBlock;
   inverse: NamedBlock | null;
 }>() {}
 
-export class Unless extends node('Unless').fields<{
+export class IfInline extends node('IfInline').fields<{
   condition: ExpressionNode;
-  block: NamedBlock;
-  inverse: NamedBlock | null;
+  truthy: ExpressionNode;
+  falsy: ExpressionNode | null;
 }>() {}
 
 export class Each extends node('Each').fields<{
@@ -198,6 +200,8 @@ export type ExpressionNode =
   | ASTv2.VariableReference
   | InterpolateExpression
   | CallExpression
+  | Not
+  | IfInline
   | HasBlock
   | HasBlockParams
   | Curry;
@@ -226,7 +230,6 @@ export type Statement =
   | Partial
   | AppendComment
   | If
-  | Unless
   | Each
   | With
   | Let

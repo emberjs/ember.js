@@ -87,17 +87,18 @@ export const enum SexpOpcodes {
   // Keyword Statements
   InElement = 40,
   If = 41,
-  Unless = 42,
-  Each = 43,
-  With = 44,
-  Let = 45,
-  WithDynamicVars = 46,
-  InvokeComponent = 47,
+  Each = 42,
+  With = 43,
+  Let = 44,
+  WithDynamicVars = 45,
+  InvokeComponent = 46,
 
   // Keyword Expressions
   HasBlock = 48,
   HasBlockParams = 49,
   Curry = 50,
+  Not = 51,
+  IfInline = 52,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -238,7 +239,9 @@ export namespace Expressions {
     | HasBlockParams
     | Curry
     | Helper
-    | Undefined;
+    | Undefined
+    | IfInline
+    | Not;
 
   // TODO get rid of undefined, which is just here to allow trailing undefined in attrs
   // it would be better to handle that as an over-the-wire encoding concern
@@ -249,6 +252,15 @@ export namespace Expressions {
   export type HasBlock = [SexpOpcodes.HasBlock, Expression];
   export type HasBlockParams = [SexpOpcodes.HasBlockParams, Expression];
   export type Curry = [SexpOpcodes.Curry, Expression, CurriedType, Params, Hash];
+
+  export type IfInline = [
+    op: SexpOpcodes.IfInline,
+    condition: Expression,
+    truthyValue: Expression,
+    falsyValue: Option<Expression>
+  ];
+
+  export type Not = [op: SexpOpcodes.Not, value: Expression];
 }
 
 export type Expression = Expressions.Expression;
@@ -364,13 +376,6 @@ export namespace Statements {
     inverse: Option<SerializedInlineBlock>
   ];
 
-  export type Unless = [
-    op: SexpOpcodes.Unless,
-    condition: Expression,
-    block: SerializedInlineBlock,
-    inverse: Option<SerializedInlineBlock>
-  ];
-
   export type Each = [
     op: SexpOpcodes.Each,
     condition: Expression,
@@ -425,7 +430,6 @@ export namespace Statements {
     | Debugger
     | InElement
     | If
-    | Unless
     | Each
     | With
     | Let

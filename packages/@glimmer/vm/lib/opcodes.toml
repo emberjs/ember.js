@@ -184,6 +184,28 @@ operand-stack = [
   ["Reference"]
 ]
 
+[syscall.ifinline]
+
+format = ["IfInline", "count:u32"]
+operation = """
+Inline if expression
+"""
+operand-stack = [
+  ["Reference", "Reference", "Reference"],
+  ["Reference"]
+]
+
+[syscall.not]
+
+format = ["Not", "count:u32"]
+operation = """
+Inline not expression
+"""
+operand-stack = [
+  ["Reference"],
+  ["Reference"]
+]
+
 [syscall.rconstload]
 
 format = ["Constant", "constant:unknown"]

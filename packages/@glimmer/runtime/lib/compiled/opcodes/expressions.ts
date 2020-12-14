@@ -15,11 +15,13 @@ import {
   TRUE_REFERENCE,
   FALSE_REFERENCE,
   valueForRef,
+  createComputeRef,
 } from '@glimmer/reference';
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { createConcatRef } from '../expressions/concat';
 import { assert, debugToString, decodeHandle } from '@glimmer/util';
+import { toBool } from '@glimmer/global-context';
 import {
   check,
   CheckOption,
@@ -237,4 +239,30 @@ APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
   }
 
   vm.stack.pushJs(createConcatRef(out));
+});
+
+APPEND_OPCODES.add(Op.IfInline, (vm) => {
+  let condition = check(vm.stack.popJs(), CheckReference);
+  let truthy = check(vm.stack.popJs(), CheckReference);
+  let falsy = check(vm.stack.popJs(), CheckReference);
+
+  vm.stack.pushJs(
+    createComputeRef(() => {
+      if (toBool(valueForRef(condition)) === true) {
+        return valueForRef(truthy);
+      } else {
+        return valueForRef(falsy);
+      }
+    })
+  );
+});
+
+APPEND_OPCODES.add(Op.Not, (vm) => {
+  let ref = check(vm.stack.popJs(), CheckReference);
+
+  vm.stack.pushJs(
+    createComputeRef(() => {
+      return !toBool(valueForRef(ref));
+    })
+  );
 });

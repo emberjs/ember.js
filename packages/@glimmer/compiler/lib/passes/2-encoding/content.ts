@@ -64,8 +64,6 @@ export class ContentEncoder {
         return this.InvokeBlock(stmt);
       case 'If':
         return this.If(stmt);
-      case 'Unless':
-        return this.Unless(stmt);
       case 'Each':
         return this.Each(stmt);
       case 'With':
@@ -188,15 +186,6 @@ export class ContentEncoder {
   If({ condition, block, inverse }: mir.If): WireFormat.Statements.If {
     return [
       SexpOpcodes.If,
-      EXPR.expr(condition),
-      CONTENT.NamedBlock(block)[1],
-      inverse ? CONTENT.NamedBlock(inverse)[1] : null,
-    ];
-  }
-
-  Unless({ condition, block, inverse }: mir.Unless): WireFormat.Statements.Unless {
-    return [
-      SexpOpcodes.Unless,
       EXPR.expr(condition),
       CONTENT.NamedBlock(block)[1],
       inverse ? CONTENT.NamedBlock(inverse)[1] : null,

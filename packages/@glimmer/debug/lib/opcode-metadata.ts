@@ -280,6 +280,36 @@ METADATA[Op.Concat] = {
   check: true,
 };
 
+METADATA[Op.IfInline] = {
+  name: 'IfInline',
+  mnemonic: 'ifinline',
+  before: null,
+  stackChange: -2,
+  ops: [
+    {
+      name: 'count',
+      type: 'u32',
+    },
+  ],
+  operands: 1,
+  check: true,
+};
+
+METADATA[Op.Not] = {
+  name: 'Not',
+  mnemonic: 'not',
+  before: null,
+  stackChange: 0,
+  ops: [
+    {
+      name: 'count',
+      type: 'u32',
+    },
+  ],
+  operands: 1,
+  check: true,
+};
+
 METADATA[Op.Constant] = {
   name: 'Constant',
   mnemonic: 'rconstload',
