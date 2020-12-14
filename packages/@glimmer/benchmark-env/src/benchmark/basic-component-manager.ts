@@ -1,4 +1,4 @@
-import { WithCreateInstance, Environment, Dict, VMArguments, Template } from '@glimmer/interfaces';
+import { WithCreateInstance, Dict, VMArguments, Template, Owner } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { getComponentTemplate } from '@glimmer/manager';
@@ -18,25 +18,24 @@ const BASIC_COMPONENT_CAPABILITIES = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
+  hasSubOwner: false,
 };
 
 interface BasicState {
-  env: Environment;
   self: Reference<unknown>;
   instance: object;
 }
 
 class BasicComponentManager
-  implements
-    WithCreateInstance<BasicState, Environment, new (args: Readonly<Dict<unknown>>) => object> {
+  implements WithCreateInstance<BasicState, new (args: Readonly<Dict<unknown>>) => object, Owner> {
   create(
-    env: Environment,
+    _owner: Owner,
     Component: { new (args: ComponentArgs): object },
     args: VMArguments | null
   ) {
     const instance = new Component(argsProxy(args === null ? EMPTY_ARGS : args.capture()));
     const self = createConstRef(instance, 'this');
-    return { env, instance, self };
+    return { instance, self };
   }
 
   getDebugName() {

@@ -3,6 +3,7 @@ import { CompilableBlock } from '../template';
 import { Reference } from '@glimmer/reference';
 import { Option, Dict } from '../core';
 import { BlockSymbolTable } from '../tier1/symbol-table';
+import { Owner } from './owner';
 
 export type Block = CompilableBlock | number;
 
@@ -13,6 +14,7 @@ export type ScopeSlot = Reference | ScopeBlock | null;
 export interface Scope {
   // for debug only
   readonly slots: Array<ScopeSlot>;
+  readonly owner: Owner;
 
   getSelf(): Reference;
   getSymbol(symbol: number): Reference;

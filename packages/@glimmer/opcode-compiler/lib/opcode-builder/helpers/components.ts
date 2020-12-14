@@ -15,13 +15,7 @@ import { $s0, $s1, $sp, $v0, SavedRegister } from '@glimmer/vm';
 import { EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { namedBlocks } from '../../utils';
-import {
-  labelOperand,
-  layoutOperand,
-  symbolTableOperand,
-  ownerOperand,
-  isStrictMode,
-} from '../operands';
+import { labelOperand, layoutOperand, symbolTableOperand, isStrictMode } from '../operands';
 import { InvokeStaticBlock, PushYieldableBlock, YieldBlock } from './blocks';
 import { Replayable } from './conditional';
 import { expr } from './expr';
@@ -136,9 +130,9 @@ export function InvokeDynamicComponent(
       op(Op.JumpUnless, labelOperand('ELSE'));
 
       if (curried) {
-        op(Op.ResolveCurriedComponent, ownerOperand());
+        op(Op.ResolveCurriedComponent);
       } else {
-        op(Op.ResolveDynamicComponent, ownerOperand(), isStrictMode());
+        op(Op.ResolveDynamicComponent, isStrictMode());
       }
 
       op(Op.PushDynamicComponentInstance);
@@ -469,7 +463,7 @@ export function CurryComponent(
   SimpleArgs(op, positional, named, false);
   op(Op.CaptureArgs);
   expr(op, definition);
-  op(Op.CurryComponent, ownerOperand(), isStrictMode());
+  op(Op.CurryComponent, isStrictMode());
   op(MachineOp.PopFrame);
   op(Op.Fetch, $v0);
 }

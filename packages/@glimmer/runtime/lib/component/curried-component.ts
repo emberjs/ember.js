@@ -2,13 +2,16 @@ import {
   CapturedArguments,
   ComponentDefinition,
   ComponentInstance,
-  Option,
+  Owner,
 } from '@glimmer/interfaces';
 import { assert, symbol, _WeakSet } from '@glimmer/util';
 import { Reference } from '@glimmer/reference';
+import { $t1 } from '@glimmer/vm';
 import { VMArgumentsImpl } from '../vm/arguments';
+import { InternalVM } from '../vm';
 
 const INNER: unique symbol = symbol('INNER');
+const OWNER: unique symbol = symbol('OWNER');
 const ARGS: unique symbol = symbol('ARGS');
 
 const CURRIED_COMPONENT_DEFINITIONS = new _WeakSet();
@@ -21,20 +24,24 @@ export function isCurriedComponentDefinition(
 
 export class CurriedComponentDefinition {
   [INNER]: ComponentDefinition | CurriedComponentDefinition;
-  [ARGS]: Option<CapturedArguments>;
+  [OWNER]: Owner;
+  [ARGS]: CapturedArguments | null;
 
   /** @internal */
   constructor(
     inner: ComponentDefinition | CurriedComponentDefinition,
-    args: Option<CapturedArguments>
+    owner: Owner,
+    args: CapturedArguments | null
   ) {
     CURRIED_COMPONENT_DEFINITIONS.add(this);
     this[INNER] = inner;
+    this[OWNER] = owner;
     this[ARGS] = args;
   }
 }
 
 export function resolveCurriedComponentDefinition(
+  vm: InternalVM,
   instance: ComponentInstance,
   curriedDefinition: CurriedComponentDefinition,
   args: VMArgumentsImpl
@@ -58,6 +65,10 @@ export function resolveCurriedComponentDefinition(
     }
 
     if (!isCurriedComponentDefinition(inner)) {
+      // Save off the owner that this component was curried with. Later on,
+      // we'll fetch the value of this register and set it as the owner on the
+      // new root scope.
+      vm.loadValue($t1, currentWrapper[OWNER]);
       definition = inner;
       break;
     }
@@ -84,7 +95,8 @@ export function resolveCurriedComponentDefinition(
 
 export function curry(
   spec: ComponentDefinition | CurriedComponentDefinition,
-  args: Option<CapturedArguments> = null
+  owner: Owner,
+  args: CapturedArguments | null
 ): CurriedComponentDefinition {
-  return new CurriedComponentDefinition(spec, args);
+  return new CurriedComponentDefinition(spec, owner, args);
 }

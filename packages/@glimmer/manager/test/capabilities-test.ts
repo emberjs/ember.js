@@ -18,8 +18,9 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
       createInstance: false,
       wrapped: false,
       willDestroy: false,
+      hasSubOwner: false,
     }),
-    0b000000000000,
+    0b0000000000000,
     'empty capabilities'
   );
 
@@ -37,8 +38,9 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
       createInstance: true,
       wrapped: true,
       willDestroy: true,
+      hasSubOwner: true,
     }),
-    0b111111111111,
+    0b1111111111111,
     'all capabilities'
   );
 
@@ -56,8 +58,9 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
       createInstance: false,
       wrapped: true,
       willDestroy: false,
+      hasSubOwner: false,
     }),
-    0b010100100101,
+    0b0010100100101,
     'random sample'
   );
 });
@@ -76,6 +79,7 @@ QUnit.test('allows querying bitmap for a capability', (assert) => {
     createInstance: false,
     wrapped: true,
     willDestroy: false,
+    hasSubOwner: false,
   });
 
   assert.strictEqual(
@@ -121,5 +125,9 @@ QUnit.test('allows querying bitmap for a capability', (assert) => {
   assert.strictEqual(
     false,
     managerHasCapability({} as any, capabilities, InternalComponentCapability.WillDestroy)
+  );
+  assert.strictEqual(
+    false,
+    managerHasCapability({} as any, capabilities, InternalComponentCapability.HasSubOwner)
   );
 });

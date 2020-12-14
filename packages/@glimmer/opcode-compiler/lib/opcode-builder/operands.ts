@@ -1,6 +1,5 @@
 import {
   LabelOperand,
-  OwnerOperand,
   SerializedInlineBlock,
   EvalSymbolsOperand,
   HighLevelOperand,
@@ -22,10 +21,6 @@ export function labelOperand(value: string): LabelOperand {
 
 export function evalSymbolsOperand(): EvalSymbolsOperand {
   return { type: HighLevelOperand.EvalSymbols, value: undefined };
-}
-
-export function ownerOperand(): OwnerOperand {
-  return { type: HighLevelOperand.Owner, value: undefined };
 }
 
 export function isStrictMode(): IsStrictModeOperand {

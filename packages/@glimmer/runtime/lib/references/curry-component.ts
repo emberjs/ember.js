@@ -33,7 +33,7 @@ export default function createCurryComponentRef(
     }
 
     if (isCurriedComponentDefinition(value)) {
-      curriedDefinition = args ? curry(value, args) : args;
+      curriedDefinition = args ? curry(value, owner, args) : args;
     } else if (typeof value === 'string' && value) {
       if (DEBUG && isStrict) {
         throw new Error(
@@ -49,9 +49,13 @@ export default function createCurryComponentRef(
         );
       }
 
-      curriedDefinition = curry(constants.resolvedComponent(resolvedDefinition!, value), args);
+      curriedDefinition = curry(
+        constants.resolvedComponent(resolvedDefinition!, value),
+        owner,
+        args
+      );
     } else if (typeof value === 'object' && value !== null) {
-      curriedDefinition = curry(constants.component(owner, value), args);
+      curriedDefinition = curry(constants.component(owner, value), owner, args);
     } else {
       curriedDefinition = null;
     }

@@ -2,17 +2,18 @@ import { Reference, valueForRef } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { assert, unwrapHandle, decodeHandle } from '@glimmer/util';
 import { check } from '@glimmer/debug';
-import { Op, Dict, Owner } from '@glimmer/interfaces';
+import { Op, Dict } from '@glimmer/interfaces';
 import { CheckReference } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 
-APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _owner, op2: _symbols, op3: _evalInfo }) => {
+APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _symbols, op2: _evalInfo }) => {
   let { [CONSTANTS]: constants, stack } = vm;
 
   let name = valueForRef(check(stack.pop(), CheckReference));
   assert(typeof name === 'string', `Could not find a partial named "${String(name)}"`);
 
-  let owner = constants.getValue<Owner>(decodeHandle(_owner));
+  let outerScope = vm.scope();
+  let owner = outerScope.owner;
   let outerSymbols = constants.getArray<string>(_symbols);
   let evalInfo = constants.getArray<number>(decodeHandle(_evalInfo));
   let definition = vm.runtime.resolver.lookupPartial(name as string, owner);
@@ -23,8 +24,7 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _owner, op2: _symbols, op3: _ev
 
   {
     let partialSymbols = symbolTable.symbols;
-    let outerScope = vm.scope();
-    let partialScope = vm.pushRootScope(partialSymbols.length);
+    let partialScope = vm.pushRootScope(partialSymbols.length, owner);
     let evalScope = outerScope.getEvalScope();
     partialScope.bindEvalScope(evalScope);
     partialScope.bindSelf(outerScope.getSelf());

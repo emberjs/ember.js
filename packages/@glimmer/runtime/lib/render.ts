@@ -46,6 +46,7 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 export function renderMain(
   runtime: RuntimeContext,
   context: CompileTimeCompilationContext,
+  owner: Owner,
   self: Reference,
   treeBuilder: ElementBuilder,
   layout: CompilableProgram,
@@ -53,7 +54,14 @@ export function renderMain(
 ): TemplateIterator {
   let handle = unwrapHandle(layout.compile(context));
   let numSymbols = layout.symbolTable.symbols.length;
-  let vm = VM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle, numSymbols });
+  let vm = VM.initial(runtime, context, {
+    self,
+    dynamicScope,
+    treeBuilder,
+    handle,
+    numSymbols,
+    owner,
+  });
   return new TemplateIteratorImpl(vm);
 }
 
@@ -116,7 +124,11 @@ export function renderComponent(
   args: Record<string, unknown> = {},
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
-  let vm = VM.empty(runtime, { treeBuilder, handle: context.stdlib.main, dynamicScope }, context);
+  let vm = VM.empty(
+    runtime,
+    { treeBuilder, handle: context.stdlib.main, dynamicScope, owner },
+    context
+  );
   return renderInvocation(vm, context, owner, definition, recordToReference(args));
 }
 

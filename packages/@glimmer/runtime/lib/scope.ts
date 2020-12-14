@@ -6,6 +6,7 @@ import {
   ScopeBlock,
   Option,
   Scope,
+  Owner,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import { Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
@@ -40,34 +41,35 @@ export function isScopeReference(s: ScopeSlot): s is Reference {
 }
 
 export class PartialScopeImpl implements PartialScope {
-  static root(self: Reference<unknown>, size = 0): PartialScope {
+  static root(self: Reference<unknown>, size = 0, owner: Owner): PartialScope {
     let refs: Reference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new PartialScopeImpl(refs, null, null, null).init({ self });
+    return new PartialScopeImpl(refs, owner, null, null, null).init({ self });
   }
 
-  static sized(size = 0): Scope {
+  static sized(size = 0, owner: Owner): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new PartialScopeImpl(refs, null, null, null);
+    return new PartialScopeImpl(refs, owner, null, null, null);
   }
 
   constructor(
     // the 0th slot is `self`
     readonly slots: Array<ScopeSlot>,
-    private callerScope: Option<Scope>,
+    readonly owner: Owner,
+    private callerScope: Scope | null,
     // named arguments and blocks passed to a layout that uses eval
-    private evalScope: Option<Dict<ScopeSlot>>,
+    private evalScope: Dict<ScopeSlot> | null,
     // locals in scope when the partial was invoked
-    private partialMap: Option<Dict<Reference<unknown>>>
+    private partialMap: Dict<Reference<unknown>> | null
   ) {}
 
   init({ self }: { self: Reference<unknown> }): this {
@@ -131,6 +133,7 @@ export class PartialScopeImpl implements PartialScope {
   child(): Scope {
     return new PartialScopeImpl(
       this.slots.slice(),
+      this.owner,
       this.callerScope,
       this.evalScope,
       this.partialMap

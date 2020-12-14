@@ -15,6 +15,13 @@ export function renderTemplate(
 ): RenderResult {
   let template = preprocess(src, options);
 
-  let iterator = renderMain(runtime, program, self, builder, unwrapTemplate(template).asLayout());
+  let iterator = renderMain(
+    runtime,
+    program,
+    {},
+    self,
+    builder,
+    unwrapTemplate(template).asLayout()
+  );
   return renderSync(runtime.env, iterator);
 }

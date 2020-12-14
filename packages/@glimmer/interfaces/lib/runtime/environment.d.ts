@@ -24,7 +24,7 @@ export type ComponentInstanceWithCreate = ComponentInstance<
   WithCreateInstance
 >;
 
-export interface Environment<O extends Owner = Owner> {
+export interface Environment {
   [TransactionSymbol]: Option<Transaction>;
 
   didCreate(component: ComponentInstanceWithCreate): void;
@@ -41,5 +41,4 @@ export interface Environment<O extends Owner = Owner> {
 
   isInteractive: boolean;
   debugRenderTree?: DebugRenderTree;
-  owner: O;
 }
