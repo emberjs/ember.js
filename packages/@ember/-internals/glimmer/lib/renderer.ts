@@ -116,6 +116,7 @@ class RootState {
     public root: Component | OutletView,
     public runtime: RuntimeContext,
     context: CompileTimeCompilationContext,
+    owner: Owner,
     template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
@@ -137,6 +138,7 @@ class RootState {
       let iterator = renderMain(
         runtime,
         context,
+        owner,
         self,
         builder(runtime.env, { element: parentElement, nextSibling: null }),
         layout,
@@ -269,22 +271,34 @@ interface ViewRegistry {
   [viewId: string]: unknown;
 }
 
-export abstract class Renderer {
+export class Renderer {
   private _rootTemplate: Template;
   private _viewRegistry: ViewRegistry;
-  private _destinedForDOM: boolean;
   private _roots: RootState[];
   private _removedRoots: RootState[];
   private _builder: IBuilder;
   private _inRenderTransaction = false;
 
+  private _owner: Owner;
   private _context: CompileTimeCompilationContext;
   private _runtime: RuntimeContext;
 
   private _lastRevision = -1;
   private _destroyed = false;
+  private _isInteractive: boolean;
 
   readonly _runtimeResolver: ResolverImpl;
+
+  static create(props: {
+    document: SimpleDocument;
+    env: { isInteractive: boolean; hasDOM: boolean };
+    rootTemplate: TemplateFactory;
+    _viewRegistry: any;
+    builder: any;
+  }): Renderer {
+    let { document, env, rootTemplate, _viewRegistry, builder } = props;
+    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, builder);
+  }
 
   constructor(
     owner: Owner,
@@ -292,15 +306,15 @@ export abstract class Renderer {
     env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
-    destinedForDOM = false,
     builder = clientBuilder
   ) {
+    this._owner = owner;
     this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry;
-    this._destinedForDOM = destinedForDOM;
     this._roots = [];
     this._removedRoots = [];
     this._builder = builder;
+    this._isInteractive = env.isInteractive;
 
     // resolver is exposed for tests
     let resolver = (this._runtimeResolver = new ResolverImpl());
@@ -338,25 +352,26 @@ export abstract class Renderer {
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
     let definition = createRootOutlet(view);
-    this._appendDefinition(view, curry(definition, null), target);
+    this._appendDefinition(view, curry(definition, view.owner, null), target);
   }
 
   appendTo(view: Component, target: SimpleElement): void {
     let definition = new RootComponentDefinition(view);
-    this._appendDefinition(view, curry(definition, null), target);
+    this._appendDefinition(view, curry(definition, this._owner, null), target);
   }
 
   _appendDefinition(
     root: OutletView | Component,
     definition: CurriedComponentDefinition,
     target: SimpleElement
-  ) {
+  ): void {
     let self = createConstRef(definition, 'this');
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,
       this._runtime,
       this._context,
+      this._owner,
       this._rootTemplate,
       self,
       target,
@@ -366,11 +381,11 @@ export abstract class Renderer {
     this._renderRoot(rootState);
   }
 
-  rerender() {
+  rerender(): void {
     this._scheduleRevalidate();
   }
 
-  register(view: any) {
+  register(view: any): void {
     let id = getViewId(view);
     assert(
       'Attempted to register a view with an id already in use: ' + id,
@@ -379,21 +394,21 @@ export abstract class Renderer {
     this._viewRegistry[id] = view;
   }
 
-  unregister(view: any) {
+  unregister(view: any): void {
     delete this._viewRegistry[getViewId(view)];
   }
 
-  remove(view: Component) {
+  remove(view: Component): void {
     view._transitionTo('destroying');
 
     this.cleanupRootFor(view);
 
-    if (this._destinedForDOM) {
+    if (this._isInteractive) {
       view.trigger('didDestroyElement');
     }
   }
 
-  cleanupRootFor(view: unknown) {
+  cleanupRootFor(view: unknown): void {
     // no need to cleanup roots if we have already been destroyed
     if (this._destroyed) {
       return;
@@ -421,7 +436,15 @@ export abstract class Renderer {
     this._clearAllRoots();
   }
 
-  abstract getElement(view: unknown): Option<SimpleElement>;
+  getElement(view: unknown): Option<SimpleElement> {
+    if (this._isInteractive) {
+      return getViewElement(view);
+    } else {
+      throw new Error(
+        'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
+      );
+    }
+  }
 
   getBounds(
     view: object
@@ -441,7 +464,7 @@ export abstract class Renderer {
     return this._runtime.env.getAppendOperations().createElement(tagName);
   }
 
-  _renderRoot(root: RootState) {
+  _renderRoot(root: RootState): void {
     let { _roots: roots } = this;
 
     roots.push(root);
@@ -453,7 +476,7 @@ export abstract class Renderer {
     this._renderRootsTransaction();
   }
 
-  _renderRoots() {
+  _renderRoots(): void {
     let { _roots: roots, _runtime: runtime, _removedRoots: removedRoots } = this;
     let initialRootsLength: number;
 
@@ -501,7 +524,7 @@ export abstract class Renderer {
     }
   }
 
-  _renderRootsTransaction() {
+  _renderRootsTransaction(): void {
     if (this._inRenderTransaction) {
       // currently rendering roots, a new root was added and will
       // be processed by the existing _renderRoots invocation
@@ -524,7 +547,7 @@ export abstract class Renderer {
     }
   }
 
-  _clearAllRoots() {
+  _clearAllRoots(): void {
     let roots = this._roots;
     for (let i = 0; i < roots.length; i++) {
       let root = roots[i];
@@ -541,56 +564,20 @@ export abstract class Renderer {
     }
   }
 
-  _scheduleRevalidate() {
+  _scheduleRevalidate(): void {
     backburner.scheduleOnce('render', this, this._revalidate);
   }
 
-  _isValid() {
+  _isValid(): boolean {
     return (
       this._destroyed || this._roots.length === 0 || validateTag(CURRENT_TAG, this._lastRevision)
     );
   }
 
-  _revalidate() {
+  _revalidate(): void {
     if (this._isValid()) {
       return;
     }
     this._renderRootsTransaction();
-  }
-}
-
-export class InertRenderer extends Renderer {
-  static create(props: {
-    document: SimpleDocument;
-    env: { isInteractive: boolean; hasDOM: boolean };
-    rootTemplate: TemplateFactory;
-    _viewRegistry: any;
-    builder: any;
-  }) {
-    let { document, env, rootTemplate, _viewRegistry, builder } = props;
-    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, false, builder);
-  }
-
-  getElement(_view: unknown): Option<SimpleElement> {
-    throw new Error(
-      'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
-    );
-  }
-}
-
-export class InteractiveRenderer extends Renderer {
-  static create(props: {
-    document: SimpleDocument;
-    env: { isInteractive: boolean; hasDOM: boolean };
-    rootTemplate: TemplateFactory;
-    _viewRegistry: any;
-    builder: any;
-  }) {
-    let { document, env, rootTemplate, _viewRegistry, builder } = props;
-    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, true, builder);
-  }
-
-  getElement(view: unknown): Option<SimpleElement> {
-    return getViewElement(view);
   }
 }

@@ -20,17 +20,7 @@ import { expect } from '@glimmer/util';
   @since 3.14.0
 */
 export default function captureRenderTree(app: Owner): CapturedRenderNode[] {
-  let env = expect(
-    app.lookup<{ isInteractive: boolean }>('-environment:main'),
-    'BUG: owner is missing -environment:main'
-  );
-
-  let rendererType = env.isInteractive ? 'renderer:-dom' : 'renderer:-inert';
-
-  let renderer = expect(
-    app.lookup<Renderer>(rendererType),
-    `BUG: owner is missing ${rendererType}`
-  );
+  let renderer = expect(app.lookup<Renderer>('renderer:-dom'), `BUG: owner is missing renderer`);
 
   return renderer.debugRenderTree.capture();
 }

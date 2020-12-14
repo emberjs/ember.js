@@ -15,6 +15,7 @@ import {
   WithCreateInstance,
   WithCustomDebugRenderTree,
   WithDynamicLayout,
+  WithSubOwner,
 } from '@glimmer/interfaces';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
@@ -45,13 +46,15 @@ const CAPABILITIES = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
+  hasSubOwner: true,
 };
 
 class MountManager
   implements
-    WithCreateInstance<EngineState, Environment>,
+    WithCreateInstance<EngineState>,
     WithDynamicLayout<EngineState, RuntimeResolver>,
-    WithCustomDebugRenderTree<EngineState, EngineDefinitionState> {
+    WithCustomDebugRenderTree<EngineState, EngineDefinitionState>,
+    WithSubOwner<EngineState> {
   getDynamicLayout(state: EngineState) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     return unwrapTemplate(templateFactory(state.engine)).asLayout();
@@ -61,13 +64,17 @@ class MountManager
     return CAPABILITIES;
   }
 
-  create(env: Environment<Owner>, { name }: EngineDefinitionState, args: VMArguments) {
+  getOwner(state: EngineState) {
+    return state.engine;
+  }
+
+  create(owner: Owner, { name }: EngineDefinitionState, args: VMArguments, env: Environment) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = env.owner.buildChildEngineInstance(name);
+    let engine = owner.buildChildEngineInstance(name);
 
     engine.boot();
 

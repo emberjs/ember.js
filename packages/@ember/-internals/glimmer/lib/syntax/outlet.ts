@@ -89,7 +89,8 @@ export const outletHelper = internalHelper((args: VMArguments, vm: VM) => {
   let definition: Option<CurriedComponentDefinition> = null;
 
   return createComputeRef(() => {
-    let state = stateFor(outletRef);
+    let outletState = valueForRef(outletRef);
+    let state = stateFor(outletRef, outletState);
 
     if (!validate(state, lastState)) {
       lastState = state;
@@ -102,8 +103,10 @@ export const outletHelper = internalHelper((args: VMArguments, vm: VM) => {
           named.model = createDebugAliasRef!('@model', named.model);
         }
 
+        let owner = outletState?.render?.owner ?? vm.getOwner();
+
         let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-        definition = curry(new OutletComponentDefinition(state), args);
+        definition = curry(new OutletComponentDefinition(state), owner, args);
       } else {
         definition = null;
       }
@@ -113,8 +116,7 @@ export const outletHelper = internalHelper((args: VMArguments, vm: VM) => {
   });
 });
 
-function stateFor(ref: Reference<OutletState | undefined>): OutletDefinitionState | null {
-  let outlet = valueForRef(ref);
+function stateFor(ref: Reference, outlet: OutletState | undefined): OutletDefinitionState | null {
   if (outlet === undefined) return null;
   let render = outlet.render;
   if (render === undefined) return null;

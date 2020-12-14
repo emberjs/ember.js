@@ -1,4 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
+import { Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
@@ -64,16 +65,18 @@ const CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
+  hasSubOwner: false,
 };
 
 class OutletComponentManager
   implements
-    WithCreateInstance<OutletInstanceState, Environment>,
+    WithCreateInstance<OutletInstanceState>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
   create(
-    env: Environment,
+    _owner: Owner,
     definition: OutletDefinitionState,
     _args: VMArguments,
+    env: Environment,
     dynamicScope: DynamicScope
   ): OutletInstanceState {
     let parentStateRef = dynamicScope.get('outletState');
