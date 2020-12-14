@@ -9,6 +9,7 @@ import {
   WithCreateInstance,
   WithDynamicLayout,
   InternalComponentCapability,
+  WithSubOwner,
 } from '@glimmer/interfaces';
 import { check, CheckNumber } from '@glimmer/debug';
 
@@ -42,7 +43,8 @@ export function capabilityFlagsFrom(
     (capabilities.updateHook ? InternalComponentCapability.UpdateHook : 0) |
     (capabilities.createInstance ? InternalComponentCapability.CreateInstance : 0) |
     (capabilities.wrapped ? InternalComponentCapability.Wrapped : 0) |
-    (capabilities.willDestroy ? InternalComponentCapability.WillDestroy : 0)
+    (capabilities.willDestroy ? InternalComponentCapability.WillDestroy : 0) |
+    (capabilities.hasSubOwner ? InternalComponentCapability.HasSubOwner : 0)
   );
 }
 
@@ -59,6 +61,7 @@ export interface InternalComponentCapabilityMap {
   [InternalComponentCapability.CreateInstance]: WithCreateInstance;
   [InternalComponentCapability.Wrapped]: InternalComponentManager;
   [InternalComponentCapability.WillDestroy]: InternalComponentManager;
+  [InternalComponentCapability.HasSubOwner]: WithSubOwner;
 }
 
 export function managerHasCapability<F extends keyof InternalComponentCapabilityMap>(

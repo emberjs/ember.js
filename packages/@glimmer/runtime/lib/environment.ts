@@ -10,7 +10,6 @@ import {
   RuntimeResolver,
   Option,
   RuntimeArtifacts,
-  Owner,
   ComponentInstanceWithCreate,
   ModifierInstance,
   InternalModifierManager,
@@ -119,7 +118,6 @@ export class EnvironmentImpl implements Environment {
 
   // Delegate methods and values
   public isInteractive = this.delegate.isInteractive;
-  public owner = this.delegate.owner;
 
   debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
 
@@ -203,13 +201,6 @@ export interface EnvironmentDelegate {
    * Used to enable debug tooling
    */
   enableDebugTooling: boolean;
-
-  /**
-   * Owner passed into the environment
-   *
-   * TODO: This should likely use the templating system owner instead
-   */
-  owner: Owner;
 
   /**
    * Callback to be called when an environment transaction commits

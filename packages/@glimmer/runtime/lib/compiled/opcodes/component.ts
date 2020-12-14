@@ -28,12 +28,12 @@ import {
   WithDynamicTagName,
   WithElementHook,
   WithUpdateHook,
-  Owner,
   CapturedArguments,
   CompilableProgram,
   ComponentInstance,
   ModifierInstance,
   ComponentInstanceWithCreate,
+  Owner,
 } from '@glimmer/interfaces';
 import { isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import {
@@ -110,14 +110,14 @@ export interface PartialComponentDefinition {
   manager: InternalComponentManager;
 }
 
-APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _owner, op2: _isStrict }) => {
+APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _isStrict }) => {
   let stack = vm.stack;
 
   let definition = check(stack.popJs(), CheckReference);
   let capturedArgs = check(stack.popJs(), CheckCapturedArguments);
 
   let constants = vm[CONSTANTS];
-  let owner = constants.getValue<Owner>(decodeHandle(_owner));
+  let owner = vm.getOwner();
   let isStrict = constants.getValue<boolean>(decodeHandle(_isStrict));
   let resolver = vm.runtime.resolver;
 
@@ -146,14 +146,14 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   vm.stack.pushJs(instance);
 });
 
-APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _owner, op2: _isStrict }) => {
+APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
   let stack = vm.stack;
   let component = check(
     valueForRef(check(stack.popJs(), CheckReference)),
     CheckOr(CheckString, CheckCurriedComponentDefinition)
   );
   let constants = vm[CONSTANTS];
-  let owner = constants.getValue<Owner>(_owner);
+  let owner = vm.getOwner();
   let isStrict = constants.getValue<boolean>(_isStrict);
 
   vm.loadValue($t1, null); // Clear the temp register
@@ -179,13 +179,13 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _owner, op2: _isStric
   stack.pushJs(definition);
 });
 
-APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm, { op1: _owner }) => {
+APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   let stack = vm.stack;
   let ref = check(stack.popJs(), CheckReference);
   let value = valueForRef(ref);
   let constants = vm[CONSTANTS];
 
-  let owner = constants.getValue<Owner>(_owner);
+  let owner = vm.getOwner();
   let definition: CurriedComponentDefinition | ComponentDefinition | null;
 
   if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
@@ -212,7 +212,6 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm, { op1: _owner }) => {
     }
   }
 
-  vm.loadValue($t1, null); // Clear the temp register
   stack.pushJs(definition);
 });
 
@@ -272,7 +271,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
       "If the component definition was curried, we don't yet have a manager"
     );
 
-    definition = resolveCurriedComponentDefinition(instance, definition, args);
+    definition = resolveCurriedComponentDefinition(vm, instance, definition, args);
   }
 
   let { manager, state } = definition;
@@ -348,7 +347,15 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
     self = vm.getSelf();
   }
 
-  let state = manager.create(vm.env, definition.state, args, dynamicScope, self, !!hasDefaultBlock);
+  let state = manager.create(
+    vm.getOwner(),
+    definition.state,
+    args,
+    vm.env,
+    dynamicScope,
+    self,
+    !!hasDefaultBlock
+  );
 
   // We want to reuse the `state` POJO here, because we know that the opcodes
   // only transition at exactly one place.
@@ -716,9 +723,33 @@ APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.VirtualRootScope, (vm, { op1: _state }) => {
-  let { symbols } = check(vm.fetchValue(_state), CheckFinishedComponentInstance).table;
+  let { table, manager, capabilities, state } = check(
+    vm.fetchValue(_state),
+    CheckFinishedComponentInstance
+  );
 
-  vm.pushRootScope(symbols.length + 1);
+  let owner;
+
+  if (managerHasCapability(manager, capabilities, InternalComponentCapability.HasSubOwner)) {
+    owner = manager.getOwner(state);
+    vm.loadValue($t1, null); // Clear the temp register
+  } else {
+    // Check the temp register to see if an owner was resolved from currying
+    owner = vm.fetchValue<Owner | null>($t1);
+
+    if (owner === null) {
+      // If an owner wasn't found, default to using the current owner. This
+      // will happen for normal dynamic component invocation,
+      // e.g. <SomeClassicEmberComponent/>
+      owner = vm.getOwner();
+    } else {
+      // Else the owner was found, so clear the temp register. This will happen
+      // if we are loading a curried component, e.g. <@someCurriedComponent/>
+      vm.loadValue($t1, null);
+    }
+  }
+
+  vm.pushRootScope(table.symbols.length + 1, owner);
 });
 
 APPEND_OPCODES.add(Op.SetupForEval, (vm, { op1: _state }) => {

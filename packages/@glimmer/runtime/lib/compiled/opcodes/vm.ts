@@ -158,11 +158,12 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
   if (table === null) {
     // To balance the pop{Frame,Scope}
     vm.pushFrame();
-    vm.pushScope(scope!); // Could be null but it doesn't matter as it is immediately popped.
+    vm.pushScope(scope ?? vm.scope());
+
     return;
   }
 
-  let invokingScope = scope!;
+  let invokingScope = expect(scope, 'BUG: expected scope');
 
   // If necessary, create a child scope
   {

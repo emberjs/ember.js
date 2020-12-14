@@ -101,8 +101,6 @@ export const BaseEnv: EnvironmentDelegate = {
 
   enableDebugTooling: false,
 
-  owner: {},
-
   onTransactionCommit() {
     for (let i = 0; i < scheduledDestroyables.length; i++) {
       scheduledDestructors[i](scheduledDestroyables[i]);

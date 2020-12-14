@@ -107,6 +107,7 @@ module('Managers', () => {
             createInstance: false,
             wrapped: false,
             willDestroy: false,
+            hasSubOwner: false,
           };
         }
 
