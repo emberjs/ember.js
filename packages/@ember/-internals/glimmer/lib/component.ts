@@ -724,7 +724,7 @@ const Component = CoreView.extend(
       this[DIRTY_TAG] = createTag();
       this[BOUNDS] = null;
 
-      if (DEBUG && this.renderer._destinedForDOM && this.tagName === '') {
+      if (DEBUG && this.renderer._isInteractive && this.tagName === '') {
         let eventNames = [];
         let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
         let events = (eventDispatcher && eventDispatcher._finalEvents) || {};

@@ -25,6 +25,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
+  hasSubOwner: false,
 };
 
 export interface InternalComponentState {
@@ -40,27 +41,21 @@ export default class InternalManager
   implements
     InternalComponentManager<InternalComponentState, EmberInternalComponentConstructor>,
     WithCreateInstance {
-  static for(
-    definition: EmberInternalComponentConstructor,
-    name: string
-  ): (owner: Owner) => InternalManager {
-    return (owner: Owner) => new InternalManager(owner, definition, name);
+  static for(definition: EmberInternalComponentConstructor, name: string): () => InternalManager {
+    return () => new InternalManager(definition, name);
   }
 
-  constructor(
-    private owner: Owner,
-    private ComponentClass: EmberInternalComponentConstructor,
-    private name: string
-  ) {}
+  constructor(private ComponentClass: EmberInternalComponentConstructor, private name: string) {}
 
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
   create(
-    env: Environment,
+    owner: Owner,
     _definition: unknown,
     args: VMArguments,
+    env: Environment,
     _dynamicScope: DynamicScope,
     caller: Reference
   ): InternalComponentState {
@@ -71,7 +66,7 @@ export default class InternalManager
       args.positional.length === 0
     );
 
-    let { ComponentClass, owner } = this;
+    let { ComponentClass } = this;
     let instance = new ComponentClass(owner, args.named.capture(), valueForRef(caller));
 
     let state = { env, instance };

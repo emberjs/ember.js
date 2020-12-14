@@ -194,8 +194,7 @@ moduleFor(
           'event_dispatcher:main',
         ];
 
-        let env = appInstance.lookup('-environment:main');
-        singletons.push(env.isInteractive ? 'renderer:-dom' : 'renderer:-inert');
+        singletons.push('renderer:-dom');
 
         singletons.forEach((key) => {
           assert.strictEqual(

@@ -1,3 +1,4 @@
+import { inject } from '@ember/-internals/metal';
 import { ActionHandler, Evented, FrameworkObject } from '@ember/-internals/runtime';
 import states from './states';
 
@@ -26,13 +27,9 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     this._super(...arguments);
     this._state = 'preRender';
     this._currentState = this._states.preRender;
-
-    if (!this.renderer) {
-      throw new Error(
-        `Cannot instantiate a component without a renderer. Please ensure that you are creating ${this} with a proper container/registry.`
-      );
-    }
   },
+
+  renderer: inject('renderer', '-dom'),
 
   /**
     If the view is currently inserted into the DOM of a parent view, this

@@ -111,7 +111,7 @@ if (EMBER_STRICT_MODE) {
         this.assertStableRerender();
       }
 
-      '@skip Can use TextArea'() {
+      '@test Can use TextArea'() {
         let Foo = defineComponent({ TextArea }, '<TextArea/>');
 
         this.registerComponent('foo', { ComponentClass: Foo });
@@ -198,7 +198,7 @@ if (EMBER_STRICT_MODE) {
   moduleFor(
     'Strict Mode - LinkTo',
     class extends ApplicationTestCase {
-      '@skip Can use LinkTo'() {
+      '@test Can use LinkTo'() {
         let Foo = defineComponent({ LinkTo }, '<LinkTo @route="index">Index</LinkTo>');
 
         this.addComponent('foo', { ComponentClass: Foo });

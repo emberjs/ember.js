@@ -1,4 +1,4 @@
-import { Factory, getOwner } from '@ember/-internals/owner';
+import { Factory, getOwner, Owner, setOwner } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor, symbol } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
@@ -131,7 +131,7 @@ type ComponentFactory = Factory<
 
 export default class CurlyComponentManager
   implements
-    WithCreateInstance<ComponentStateBucket, Environment>,
+    WithCreateInstance<ComponentStateBucket>,
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket> {
   protected templateFor(component: Component): CompilableProgram | null {
@@ -250,9 +250,10 @@ export default class CurlyComponentManager
    * etc.
    */
   create(
-    environment: Environment,
+    owner: Owner,
     ComponentClass: ComponentFactory,
     args: VMArguments,
+    { isInteractive }: Environment,
     dynamicScope: DynamicScope,
     callerSelfRef: Reference,
     hasBlock: boolean
@@ -285,6 +286,8 @@ export default class CurlyComponentManager
     // `_target`, so bubbled actions are routed to the right place.
     props._target = valueForRef(callerSelfRef);
 
+    setOwner(props, owner);
+
     // caller:
     // <FaIcon @name="bug" />
     //
@@ -314,13 +317,13 @@ export default class CurlyComponentManager
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (!hasWrappedElement) {
-      if (environment.isInteractive) {
+      if (isInteractive) {
         component.trigger('willRender');
       }
 
       component._transitionTo('hasElement');
 
-      if (environment.isInteractive) {
+      if (isInteractive) {
         component.trigger('willInsertElement');
       }
     }
@@ -328,12 +331,12 @@ export default class CurlyComponentManager
     // Track additional lifecycle metadata about this component in a state bucket.
     // Essentially we're saving off all the state we'll need in the future.
     let bucket = new ComponentStateBucket(
-      environment,
       component,
       capturedArgs,
       argsTag,
       finalizer,
-      hasWrappedElement
+      hasWrappedElement,
+      isInteractive
     );
 
     if (args.named.has('class')) {
@@ -344,7 +347,7 @@ export default class CurlyComponentManager
       processComponentInitializationAssertions(component, props);
     }
 
-    if (environment.isInteractive && hasWrappedElement) {
+    if (isInteractive && hasWrappedElement) {
       component.trigger('willRender');
     }
 
@@ -368,7 +371,7 @@ export default class CurlyComponentManager
   }
 
   didCreateElement(
-    { component, classRef, environment, rootRef }: ComponentStateBucket,
+    { component, classRef, isInteractive, rootRef }: ComponentStateBucket,
     element: SimpleElement,
     operations: ElementOperations
   ): void {
@@ -411,7 +414,7 @@ export default class CurlyComponentManager
 
     component._transitionTo('hasElement');
 
-    if (environment.isInteractive) {
+    if (isInteractive) {
       beginUntrackFrame();
       component.trigger('willInsertElement');
       endUntrackFrame();
@@ -423,8 +426,8 @@ export default class CurlyComponentManager
     bucket.finalize();
   }
 
-  didCreate({ component, environment }: ComponentStateBucket): void {
-    if (environment.isInteractive) {
+  didCreate({ component, isInteractive }: ComponentStateBucket): void {
+    if (isInteractive) {
       component._transitionTo('inDOM');
       component.trigger('didInsertElement');
       component.trigger('didRender');
@@ -432,7 +435,7 @@ export default class CurlyComponentManager
   }
 
   update(bucket: ComponentStateBucket): void {
-    let { component, args, argsTag, argsRevision, environment } = bucket;
+    let { component, args, argsTag, argsRevision, isInteractive } = bucket;
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
@@ -453,7 +456,7 @@ export default class CurlyComponentManager
       component.trigger('didReceiveAttrs');
     }
 
-    if (environment.isInteractive) {
+    if (isInteractive) {
       component.trigger('willUpdate');
       component.trigger('willRender');
     }
@@ -468,8 +471,8 @@ export default class CurlyComponentManager
     bucket.finalize();
   }
 
-  didUpdate({ component, environment }: ComponentStateBucket): void {
-    if (environment.isInteractive) {
+  didUpdate({ component, isInteractive }: ComponentStateBucket): void {
+    if (isInteractive) {
       component.trigger('didUpdate');
       component.trigger('didRender');
     }
@@ -553,6 +556,7 @@ export const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: true,
   willDestroy: true,
+  hasSubOwner: false,
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();

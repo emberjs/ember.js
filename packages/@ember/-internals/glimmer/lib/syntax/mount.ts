@@ -4,7 +4,7 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Environment, Option, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
 import {
   createCapturedArgs,
@@ -57,7 +57,7 @@ import { internalHelper } from '../helpers/internal-helper';
 */
 export const mountHelper = internalHelper(
   (args: VMArguments, vm: VM): Reference<CurriedComponentDefinition | null> => {
-    let env = vm.env as Environment<Owner>;
+    let owner = vm.getOwner() as Owner;
     let nameRef = args.positional.at(0) as Reference<Option<string>>;
     let captured: Option<CapturedArguments> = null;
 
@@ -104,15 +104,11 @@ export const mountHelper = internalHelper(
 
         assert(
           `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-          env.owner.hasRegistration(`engine:${name}`)
+          owner.hasRegistration(`engine:${name}`)
         );
 
-        if (!env.owner.hasRegistration(`engine:${name}`)) {
-          return null;
-        }
-
         lastName = name;
-        lastDef = curry(new MountDefinition(name), captured);
+        lastDef = curry(new MountDefinition(name), owner, captured);
 
         return lastDef;
       } else {

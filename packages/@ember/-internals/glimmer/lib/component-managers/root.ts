@@ -6,6 +6,7 @@ import {
   Environment,
   InternalComponentCapabilities,
   Option,
+  Owner,
   VMArguments,
 } from '@glimmer/interfaces';
 import { capabilityFlagsFrom } from '@glimmer/manager';
@@ -27,9 +28,10 @@ class RootComponentManager extends CurlyComponentManager {
   }
 
   create(
-    environment: Environment,
+    _owner: Owner,
     _state: unknown,
     _args: Option<VMArguments>,
+    { isInteractive }: Environment,
     dynamicScope: DynamicScope
   ) {
     let component = this.component;
@@ -42,13 +44,13 @@ class RootComponentManager extends CurlyComponentManager {
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (!hasWrappedElement) {
-      if (environment.isInteractive) {
+      if (isInteractive) {
         component.trigger('willRender');
       }
 
       component._transitionTo('hasElement');
 
-      if (environment.isInteractive) {
+      if (isInteractive) {
         component.trigger('willInsertElement');
       }
     }
@@ -58,12 +60,12 @@ class RootComponentManager extends CurlyComponentManager {
     }
 
     let bucket = new ComponentStateBucket(
-      environment,
       component,
       null,
       CONSTANT_TAG,
       finalizer,
-      hasWrappedElement
+      hasWrappedElement,
+      isInteractive
     );
 
     consumeTag(component[DIRTY_TAG]);
@@ -87,6 +89,7 @@ export const ROOT_CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: true,
   willDestroy: false,
+  hasSubOwner: false,
 };
 
 export class RootComponentDefinition implements ComponentDefinition {

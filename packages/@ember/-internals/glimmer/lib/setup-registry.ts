@@ -8,7 +8,7 @@ import TextField from './components/text-field';
 import TextArea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import loc from './helpers/loc';
-import { InertRenderer, InteractiveRenderer } from './renderer';
+import { Renderer } from './renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
@@ -39,9 +39,7 @@ export function setupApplicationRegistry(registry: Registry): void {
   registry.register(P`template:-root`, RootTemplate as any);
   registry.injection('renderer', 'rootTemplate', P`template:-root`);
 
-  registry.register('renderer:-dom', InteractiveRenderer);
-  registry.register('renderer:-inert', InertRenderer);
-
+  registry.register('renderer:-dom', Renderer);
   registry.injection('renderer', 'document', 'service:-document');
 }
 

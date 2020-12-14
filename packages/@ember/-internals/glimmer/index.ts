@@ -371,13 +371,7 @@ export { InputComponent as Input } from './lib/components/input';
 export { default as Component } from './lib/component';
 export { default as Helper, helper } from './lib/helper';
 export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
-export {
-  Renderer,
-  InertRenderer,
-  InteractiveRenderer,
-  _resetRenderers,
-  renderSettled,
-} from './lib/renderer';
+export { Renderer, _resetRenderers, renderSettled } from './lib/renderer';
 export {
   getTemplate,
   setTemplate,

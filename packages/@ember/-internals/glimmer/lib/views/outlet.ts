@@ -6,7 +6,6 @@ import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { OutletDefinitionState } from '../component-managers/outlet';
-import { Renderer } from '../renderer';
 import { OutletState } from '../utils/outlet';
 
 export interface BootEnvironment {
@@ -19,7 +18,7 @@ const TOP_LEVEL_NAME = '-top-level';
 const TOP_LEVEL_OUTLET = 'main';
 
 export default class OutletView {
-  static extend(injections: any) {
+  static extend(injections: any): typeof OutletView {
     return class extends OutletView {
       static create(options: any) {
         if (options) {
@@ -31,15 +30,15 @@ export default class OutletView {
     };
   }
 
-  static reopenClass(injections: any) {
+  static reopenClass(injections: any): void {
     assign(this, injections);
   }
 
-  static create(options: any) {
-    let { _environment, renderer, template: templateFactory } = options;
+  static create(options: any): OutletView {
+    let { _environment, template: templateFactory } = options;
     let owner = getOwner(options);
     let template = templateFactory(owner);
-    return new OutletView(_environment, renderer, owner, template);
+    return new OutletView(_environment, owner, template);
   }
 
   private ref: Reference;
@@ -47,7 +46,6 @@ export default class OutletView {
 
   constructor(
     private _environment: BootEnvironment,
-    public renderer: Renderer,
     public owner: Owner,
     public template: Template
   ) {
@@ -86,7 +84,7 @@ export default class OutletView {
     };
   }
 
-  appendTo(selector: string | SimpleElement) {
+  appendTo(selector: string | SimpleElement): void {
     let target;
 
     if (this._environment.hasDOM) {
@@ -95,18 +93,20 @@ export default class OutletView {
       target = selector;
     }
 
-    schedule('render', this.renderer, 'appendOutletView', this, target);
+    let renderer = this.owner.lookup('renderer:-dom');
+
+    schedule('render', renderer, 'appendOutletView', this, target);
   }
 
-  rerender() {
+  rerender(): void {
     /**/
   }
 
-  setOutletState(state: OutletState) {
+  setOutletState(state: OutletState): void {
     updateRef(this.ref, state);
   }
 
-  destroy() {
+  destroy(): void {
     /**/
   }
 }
