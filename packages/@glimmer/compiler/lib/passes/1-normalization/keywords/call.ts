@@ -8,6 +8,7 @@ import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
 import { assertValidCurryUsage } from './utils/curry';
 import { assertValidHasBlockUsage } from './utils/has-block';
+import { assertValidIfUnlessInlineUsage } from './utils/if-unless';
 
 export const CALL_KEYWORDS = keywords('Call')
   .kw('has-block', {
@@ -33,6 +34,68 @@ export const CALL_KEYWORDS = keywords('Call')
     ): Result<mir.HasBlockParams> {
       return Ok(
         new mir.HasBlockParams({ loc: node.loc, target, symbol: scope.allocateBlock(target.chars) })
+      );
+    },
+  })
+  .kw('if', {
+    assert: assertValidIfUnlessInlineUsage('(if)', false),
+
+    translate(
+      { node, state }: { node: ASTv2.CallExpression; state: NormalizationState },
+      {
+        condition,
+        truthy,
+        falsy,
+      }: {
+        condition: ASTv2.ExpressionNode;
+        truthy: ASTv2.ExpressionNode;
+        falsy: ASTv2.ExpressionNode | null;
+      }
+    ): Result<mir.IfInline> {
+      let conditionResult = VISIT_EXPRS.visit(condition, state);
+      let truthyResult = VISIT_EXPRS.visit(truthy, state);
+      let falsyResult = falsy ? VISIT_EXPRS.visit(falsy, state) : Ok(null);
+
+      return Result.all(conditionResult, truthyResult, falsyResult).mapOk(
+        ([condition, truthy, falsy]) =>
+          new mir.IfInline({
+            loc: node.loc,
+            condition,
+            truthy,
+            falsy,
+          })
+      );
+    },
+  })
+  .kw('unless', {
+    assert: assertValidIfUnlessInlineUsage('(unless)', true),
+
+    translate(
+      { node, state }: { node: ASTv2.CallExpression; state: NormalizationState },
+      {
+        condition,
+        falsy,
+        truthy,
+      }: {
+        condition: ASTv2.ExpressionNode;
+        truthy: ASTv2.ExpressionNode;
+        falsy: ASTv2.ExpressionNode | null;
+      }
+    ): Result<mir.IfInline> {
+      let conditionResult = VISIT_EXPRS.visit(condition, state);
+      let truthyResult = VISIT_EXPRS.visit(truthy, state);
+      let falsyResult = falsy ? VISIT_EXPRS.visit(falsy, state) : Ok(null);
+
+      return Result.all(conditionResult, truthyResult, falsyResult).mapOk(
+        ([condition, truthy, falsy]) =>
+          new mir.IfInline({
+            loc: node.loc,
+
+            // We reverse the condition by inserting a Not
+            condition: new mir.Not({ value: condition, loc: node.loc }),
+            truthy,
+            falsy,
+          })
       );
     },
   })

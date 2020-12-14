@@ -31,6 +31,10 @@ export class ExpressionEncoder {
         return this.HasBlockParams(expr);
       case 'Curry':
         return this.Curry(expr);
+      case 'Not':
+        return this.Not(expr);
+      case 'IfInline':
+        return this.IfInline(expr);
       case 'InterpolateExpression':
         return this.InterpolateExpression(expr);
     }
@@ -131,6 +135,19 @@ export class ExpressionEncoder {
     } else {
       return null;
     }
+  }
+
+  Not({ value }: mir.Not): WireFormat.Expressions.Not {
+    return [SexpOpcodes.Not, EXPR.expr(value)];
+  }
+
+  IfInline({ condition, truthy, falsy }: mir.IfInline): WireFormat.Expressions.IfInline {
+    return [
+      SexpOpcodes.IfInline,
+      EXPR.expr(condition),
+      EXPR.expr(truthy),
+      falsy ? EXPR.expr(falsy) : null,
+    ];
   }
 }
 
