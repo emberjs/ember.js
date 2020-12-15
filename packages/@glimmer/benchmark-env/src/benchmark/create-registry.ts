@@ -59,7 +59,7 @@ export default function createRegistry(): Registry {
 
   return {
     registerComponent: (name: string, component: object) => {
-      let manager = getInternalComponentManager(undefined, component);
+      let manager = getInternalComponentManager(component);
 
       components.set(name, {
         state: component,
@@ -69,11 +69,11 @@ export default function createRegistry(): Registry {
     },
     registerHelper: (name, helper) => {
       let definition = {};
-      setInternalHelperManager(() => helper, definition);
+      setInternalHelperManager(helper, definition);
       helpers.set(name, definition);
     },
     registerModifier: (name, modifier, manager) => {
-      setInternalModifierManager(() => manager, modifier);
+      setInternalModifierManager(manager, modifier);
       modifiers.set(name, modifier);
     },
     render: (entry, args, element, isIteractive) => {

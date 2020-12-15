@@ -8,6 +8,7 @@ import {
   DynamicScope,
   VMArguments,
   CapturedArguments,
+  Owner,
 } from '@glimmer/interfaces';
 import { UpdatableTag, createUpdatableTag } from '@glimmer/validator';
 import { registerDestructor } from '@glimmer/destroyable';
@@ -31,6 +32,7 @@ export class TestModifierDefinitionState {
 export class TestModifierManager
   implements InternalModifierManager<TestModifier, TestModifierDefinitionState> {
   create(
+    _owner: Owner,
     element: SimpleElement,
     state: TestModifierDefinitionState,
     args: VMArguments,

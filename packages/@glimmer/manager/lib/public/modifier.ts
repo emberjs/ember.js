@@ -20,8 +20,9 @@ import {
   UpdatableTag,
 } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { buildCapabilities } from '../util/capabilities';
+import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
+import { ManagerFactory } from '.';
 
 export function modifierCapabilities<Version extends keyof ModifierCapabilitiesVersions>(
   managerAPI: Version,
@@ -45,6 +46,7 @@ export interface CustomModifierState<ModifierInstance> {
   tag: UpdatableTag;
   element: SimpleElement;
   modifier: ModifierInstance;
+  delegate: ModifierManager<ModifierInstance>;
   args: Arguments;
   debugName?: string;
 }
@@ -77,12 +79,37 @@ interface Factory {
   * `updateModifier()` - invoked when the arguments passed to a modifier change
   * `destroyModifier()` - invoked when the modifier is about to be destroyed
 */
-export class CustomModifierManager<ModifierInstance>
+export class CustomModifierManager<O extends Owner, ModifierInstance>
   implements InternalModifierManager<CustomModifierState<ModifierInstance>> {
-  constructor(private owner: Owner, private delegate: ModifierManager<ModifierInstance>) {}
+  private componentManagerDelegates = new WeakMap<O, ModifierManager<ModifierInstance>>();
 
-  create(element: SimpleElement, definition: object, vmArgs: VMArguments) {
-    let { delegate } = this;
+  constructor(private factory: ManagerFactory<O, ModifierManager<ModifierInstance>>) {}
+
+  private getDelegateFor(owner: O) {
+    let { componentManagerDelegates } = this;
+    let delegate = componentManagerDelegates.get(owner);
+
+    if (delegate === undefined) {
+      let { factory } = this;
+      delegate = factory(owner);
+
+      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+        // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
+        throw new Error(
+          `Custom modifier managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.13' | '3.22')\` (imported via \`import { capabilities } from '@ember/modifier';\`). Received: \`${JSON.stringify(
+            delegate.capabilities
+          )}\` for: \`${delegate}\``
+        );
+      }
+
+      componentManagerDelegates.set(owner, delegate);
+    }
+
+    return delegate;
+  }
+
+  create(owner: O, element: SimpleElement, definition: object, vmArgs: VMArguments) {
+    let delegate = this.getDelegateFor(owner);
     let capturedArgs = vmArgs.capture();
 
     let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
@@ -94,7 +121,6 @@ export class CustomModifierManager<ModifierInstance>
     let factoryOrDefinition = definition;
 
     if (passFactoryToCreate) {
-      let { owner } = this;
       // Make a fake factory. While not perfect, this should generally prevent
       // breakage in users of older modifier capabilities.
       factoryOrDefinition = {
@@ -124,6 +150,7 @@ export class CustomModifierManager<ModifierInstance>
       state = {
         tag,
         element,
+        delegate,
         args,
         modifier: instance!,
       };
@@ -132,6 +159,7 @@ export class CustomModifierManager<ModifierInstance>
         tag,
         element,
         modifier: instance!,
+        delegate,
         get args() {
           return reifyArgs(capturedArgs);
         },
@@ -155,8 +183,7 @@ export class CustomModifierManager<ModifierInstance>
     return tag;
   }
 
-  install({ element, args, modifier }: CustomModifierState<ModifierInstance>) {
-    let { delegate } = this;
+  install({ element, args, modifier, delegate }: CustomModifierState<ModifierInstance>) {
     let { capabilities } = delegate;
 
     if (capabilities.disableAutoTracking === true) {
@@ -166,8 +193,7 @@ export class CustomModifierManager<ModifierInstance>
     }
   }
 
-  update({ args, modifier }: CustomModifierState<ModifierInstance>) {
-    let { delegate } = this;
+  update({ args, modifier, delegate }: CustomModifierState<ModifierInstance>) {
     let { capabilities } = delegate;
 
     if (capabilities.disableAutoTracking === true) {

@@ -134,7 +134,7 @@ export const CheckCompilableProgram: Checker<CompilableProgram> = CheckInterface
 });
 
 export const CheckScopeBlock: Checker<ScopeBlock> = CheckInterface({
-  0: CheckOr(CheckHandle, CheckCompilableBlock),
+  0: CheckCompilableBlock,
   1: CheckScope,
   2: CheckBlockSymbolTable,
 });
