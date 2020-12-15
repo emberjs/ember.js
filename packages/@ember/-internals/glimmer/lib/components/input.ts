@@ -126,7 +126,7 @@ export const InputComponent = {
   },
 };
 
-setInternalComponentManager(InternalManager.for(Input, 'input'), InputComponent);
+setInternalComponentManager(new InternalManager(Input, 'input'), InputComponent);
 setComponentTemplate(InputTemplate, InputComponent);
 
 Input.toString = () => '@ember/component/input';

@@ -1,7 +1,13 @@
 import { DEBUG } from '@glimmer/env';
 
-import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
-import { Helper } from '@ember/-internals/glimmer';
+import {
+  RenderingTestCase,
+  moduleFor,
+  runDestroy,
+  runTask,
+  defineSimpleHelper,
+} from 'internal-test-helpers';
+import { Helper, Component } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
@@ -768,6 +774,31 @@ moduleFor(
       expectDeprecation(() => {
         this.render('{{hello-world}}');
       }, expectedMessage);
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
+      let val = defineSimpleHelper((value) => value);
+
+      this.registerComponent('foo', {
+        template: '{{@value}}',
+      });
+
+      this.registerComponent('bar', {
+        template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
+        ComponentClass: Component.extend({ val }),
+      });
+
+      this.render('<Bar/>');
+      this.assertText('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
+      expectAssertion(() => {
+        this.registerComponent('bar', {
+          template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
+        });
+      }, /Cannot use the \(helper\) keyword yet, as it has not been implemented/);
     }
   }
 );

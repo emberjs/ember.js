@@ -2,7 +2,7 @@ import { EMBER_STRICT_MODE } from '@ember/canary-features';
 import { assign } from '@ember/polyfills';
 import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
-import PLUGINS from '../plugins/index';
+import { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from '../plugins/index';
 import { EmberPrecompileOptions, PluginFunc } from '../types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
@@ -32,10 +32,12 @@ export default function compileOptions(
     meta.moduleName = options.moduleName;
   }
 
+  let builtInPlugins = options.strictMode ? STRICT_MODE_TRANSFORMS : RESOLUTION_MODE_TRANSFORMS;
+
   if (!_options.plugins) {
-    options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
+    options.plugins = { ast: [...USER_PLUGINS, ...builtInPlugins] };
   } else {
-    let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
+    let potententialPugins = [...USER_PLUGINS, ...builtInPlugins];
     let providedPlugins = options.plugins.ast.map((plugin) => wrapLegacyPluginIfNeeded(plugin));
     let pluginsToAdd = potententialPugins.filter((plugin) => {
       return options.plugins.ast.indexOf(plugin) === -1;

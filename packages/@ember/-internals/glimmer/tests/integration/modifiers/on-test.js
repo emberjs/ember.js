@@ -19,7 +19,7 @@ moduleFor(
     getOnManagerInstance() {
       // leveraging private APIs, this can be deleted if these APIs change
       // but it has been useful to verify some internal details
-      return getInternalModifierManager(this.owner, on);
+      return getInternalModifierManager(on);
     }
 
     assertCounts(expected) {
@@ -390,7 +390,7 @@ moduleFor(
     getOnManagerInstance() {
       // leveraging private APIs, this can be deleted if these APIs change
       // but it has been useful to verify some internal details
-      return getInternalModifierManager(this.owner, on);
+      return getInternalModifierManager(on);
     }
 
     assertCounts(expected) {

@@ -27,7 +27,7 @@ export {
   registerPlugin,
   unregisterPlugin,
 } from './lib/system/compile-options';
-export { default as defaultPlugins } from './lib/plugins/index';
+export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins/index';
 export { EmberPrecompileOptions } from './lib/types';
 
 // used to bootstrap templates

@@ -41,10 +41,6 @@ export default class InternalManager
   implements
     InternalComponentManager<InternalComponentState, EmberInternalComponentConstructor>,
     WithCreateInstance {
-  static for(definition: EmberInternalComponentConstructor, name: string): () => InternalManager {
-    return () => new InternalManager(definition, name);
-  }
-
   constructor(private ComponentClass: EmberInternalComponentConstructor, private name: string) {}
 
   getCapabilities(): InternalComponentCapabilities {

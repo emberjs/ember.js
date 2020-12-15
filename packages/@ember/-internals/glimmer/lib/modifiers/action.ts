@@ -1,3 +1,4 @@
+import { Owner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
@@ -204,6 +205,7 @@ export class ActionState {
 
 class ActionModifierManager implements InternalModifierManager<ActionState, object> {
   create(
+    _owner: Owner,
     element: SimpleElement,
     _state: object,
     args: VMArguments,
@@ -312,4 +314,4 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
 
 const ACTION_MODIFIER_MANAGER = new ActionModifierManager();
 
-export default setInternalModifierManager(() => ACTION_MODIFIER_MANAGER, {});
+export default setInternalModifierManager(ACTION_MODIFIER_MANAGER, {});

@@ -63,23 +63,19 @@ class InternalModifierState implements Destroyable {
 
 class InternalModifierManager
   implements ModifierManager<InternalModifierState, typeof InternalModifier> {
-  constructor(private readonly owner: Owner) {}
-
   create(
+    owner: Owner,
     element: SimpleElement,
     factory: typeof InternalModifier,
     args: VMArguments
   ): InternalModifierState {
     assert('element must be an HTMLElement', element instanceof HTMLElement);
 
-    let instance = new factory(this.owner, element, args.capture());
+    let instance = new factory(owner, element, args.capture());
 
     registerDestructor(instance, (modifier) => modifier.remove());
 
-    return new InternalModifierState(
-      factory.name,
-      new factory(this.owner, element, args.capture())
-    );
+    return new InternalModifierState(factory.name, instance);
   }
 
   // not needed for now, but feel free to implement this
@@ -105,4 +101,4 @@ class InternalModifierManager
   }
 }
 
-setInternalModifierManager((owner: Owner) => new InternalModifierManager(owner), InternalModifier);
+setInternalModifierManager(new InternalModifierManager(), InternalModifier);

@@ -31,13 +31,12 @@ import {
 import { _WeakSet } from '@glimmer/util';
 import { isCurlyManager } from './component-managers/curly';
 import {
-  CLASSIC_HELPER_MANAGER_FACTORY,
+  CLASSIC_HELPER_MANAGER,
   HelperFactory,
   HelperInstance,
   isClassicHelper,
   SimpleHelper,
 } from './helper';
-import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as trackArray } from './helpers/-track-array';
@@ -193,7 +192,6 @@ const BUILTIN_KEYWORD_HELPERS = {
   '-get-dynamic-var': internalHelper(getDynamicVar),
   '-mount': mountHelper,
   '-outlet': outletHelper,
-  '-assert-implicit-component-helper-argument': componentAssertionHelper,
   '-in-el-null': inElementNullCheckHelper,
 };
 
@@ -267,10 +265,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
         // we'll trigger an assertion
         if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
           CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
-          setInternalHelperManager(CLASSIC_HELPER_MANAGER_FACTORY, factory);
+          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
         }
       } else {
-        setInternalHelperManager(CLASSIC_HELPER_MANAGER_FACTORY, factory);
+        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
       }
 
       return factory;
@@ -345,7 +343,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
         };
       } else {
         let factory = owner.factoryFor(P`component:-default`)!;
-        let manager = getInternalComponentManager(owner, factory.class as object);
+        let manager = getInternalComponentManager(factory.class as object);
 
         definition = {
           state: factory,
@@ -358,7 +356,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
 
       let factory = pair.component;
       let ComponentClass = factory.class!;
-      let manager = getInternalComponentManager(owner, ComponentClass);
+      let manager = getInternalComponentManager(ComponentClass);
 
       definition = {
         state: isCurlyManager(manager) ? factory : ComponentClass,

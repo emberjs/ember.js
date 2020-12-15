@@ -19,6 +19,7 @@ import {
   on,
   fn,
 } from '@ember/-internals/glimmer';
+import GlimmerishComponent from '../../utils/glimmerish-component';
 
 if (EMBER_STRICT_MODE) {
   moduleFor(
@@ -87,6 +88,69 @@ if (EMBER_STRICT_MODE) {
 
         this.render('<Foo/>');
         this.assertHTML('foobar');
+        this.assertStableRerender();
+      }
+
+      '@test Can use a dynamic component definition'() {
+        let Foo = defineComponent({}, 'Hello, world!');
+        let Bar = defineComponent(
+          {},
+          '<this.Foo/>',
+          class extends GlimmerishComponent {
+            Foo = Foo;
+          }
+        );
+
+        this.registerComponent('bar', { ComponentClass: Bar });
+
+        this.render('<Bar/>');
+        this.assertHTML('Hello, world!');
+        this.assertStableRerender();
+      }
+
+      '@test Can use a dynamic component definition (curly)'() {
+        let Foo = defineComponent({}, 'Hello, world!');
+        let Bar = defineComponent(
+          {},
+          '{{this.Foo}}',
+          class extends GlimmerishComponent {
+            Foo = Foo;
+          }
+        );
+
+        this.registerComponent('bar', { ComponentClass: Bar });
+
+        this.render('<Bar/>');
+        this.assertHTML('Hello, world!');
+        this.assertStableRerender();
+      }
+
+      '@test Can use a dynamic helper definition'() {
+        let foo = defineSimpleHelper(() => 'Hello, world!');
+        let Bar = defineComponent(
+          {},
+          '{{this.foo}}',
+          class extends GlimmerishComponent {
+            foo = foo;
+          }
+        );
+
+        this.registerComponent('bar', { ComponentClass: Bar });
+
+        this.render('<Bar/>');
+        this.assertHTML('Hello, world!');
+        this.assertStableRerender();
+      }
+
+      '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
+        let foo = defineSimpleHelper((value) => value);
+        let Foo = defineComponent({}, '{{@value}}');
+        let Bar = defineComponent({ Foo, foo }, '<Foo @value={{foo "Hello, world!"}}/>');
+
+        this.registerComponent('bar', { ComponentClass: Bar });
+
+        this.render('<Bar/>');
+        this.assertHTML('Hello, world!');
         this.assertStableRerender();
       }
     }
