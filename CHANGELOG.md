@@ -1,3 +1,19 @@
+## v0.71.0 (2020-12-15)
+
+#### :boom: Breaking Change
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/vm`
+  * [#1235](https://github.com/glimmerjs/glimmer-vm/pull/1235) [FEATURE] Adds dynamic curly components and helpers ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/benchmark-env`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`
+  * [#1234](https://github.com/glimmerjs/glimmer-vm/pull/1234) [REFACTOR] Removes owner from managers ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/util`
+  * [#1212](https://github.com/glimmerjs/glimmer-vm/pull/1212) [Bugfix] debug-to-string-tests ([@lifeart](https://github.com/lifeart))
+
+#### Committers: 2
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.70.0 (2020-12-14)
 
 #### :boom: Breaking Change
