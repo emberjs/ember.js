@@ -6,9 +6,8 @@ import {
   setInternalModifierManager,
 } from '../internal/index';
 import { CustomComponentManager } from './component';
-import { DEBUG } from '@glimmer/env';
-import { FROM_CAPABILITIES } from '../util/capabilities';
 import { CustomModifierManager } from './modifier';
+import { CustomHelperManager } from './helper';
 
 type Manager = ComponentManager<unknown> | ModifierManager<unknown> | HelperManager<unknown>;
 
@@ -18,58 +17,19 @@ export function setComponentManager<O extends Owner, T extends object>(
   factory: ManagerFactory<O, ComponentManager<unknown>>,
   obj: T
 ): T {
-  return setInternalComponentManager((owner: O) => {
-    let manager = factory(owner);
-
-    if (DEBUG && !FROM_CAPABILITIES!.has(manager.capabilities)) {
-      // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
-      throw new Error(
-        `Custom component managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.4' | '3.13')\` (imported via \`import { capabilities } from '@ember/component';\`). Received: \`${JSON.stringify(
-          manager.capabilities
-        )}\` for: \`${manager}\``
-      );
-    }
-
-    return new CustomComponentManager(manager);
-  }, obj);
+  return setInternalComponentManager(new CustomComponentManager(factory), obj);
 }
 
 export function setModifierManager<O extends Owner, T extends object>(
   factory: ManagerFactory<O, ModifierManager<unknown>>,
   obj: T
 ): T {
-  return setInternalModifierManager((owner: O) => {
-    let manager = factory(owner);
-
-    if (DEBUG && !FROM_CAPABILITIES!.has(manager.capabilities)) {
-      // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
-      throw new Error(
-        `Custom modifier managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.13' | '3.22')\` (imported via \`import { capabilities } from '@ember/modifier';\`). Received: \`${JSON.stringify(
-          manager.capabilities
-        )}\` for: \`${manager}\``
-      );
-    }
-
-    return new CustomModifierManager(owner, manager);
-  }, obj);
+  return setInternalModifierManager(new CustomModifierManager(factory), obj);
 }
 
 export function setHelperManager<O extends Owner, T extends object>(
   factory: ManagerFactory<O | undefined, HelperManager<unknown>>,
   obj: T
 ): T {
-  return setInternalHelperManager((owner: O | undefined) => {
-    let manager = factory(owner);
-
-    if (DEBUG && !FROM_CAPABILITIES!.has(manager.capabilities)) {
-      // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
-      throw new Error(
-        `Custom helper managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.23')\` (imported via \`import { capabilities } from '@ember/helper';\`). Received: \`${JSON.stringify(
-          manager.capabilities
-        )}\` for: \`${manager}\``
-      );
-    }
-
-    return manager;
-  }, obj);
+  return setInternalHelperManager(new CustomHelperManager(factory, obj), obj);
 }

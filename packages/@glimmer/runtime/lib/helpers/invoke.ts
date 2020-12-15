@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { Cache, createCache, getValue } from '@glimmer/validator';
-import { Arguments, HelperManager } from '@glimmer/interfaces';
+import { Arguments, InternalHelperManager } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/util';
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
 
@@ -54,7 +54,7 @@ export function invokeHelper(
   }
 
   const owner = getOwner(context);
-  const internalManager = getInternalHelperManager(owner, definition)!;
+  const internalManager = getInternalHelperManager(definition)!;
 
   // TODO: figure out why assert isn't using the TS assert thing
   if (DEBUG && !internalManager) {
@@ -71,7 +71,7 @@ export function invokeHelper(
     );
   }
 
-  const manager = internalManager as HelperManager<unknown>;
+  const manager = (internalManager as InternalHelperManager<object>).getDelegateFor(owner);
   let args = new SimpleArgsProxy(context, computeArgs);
   let bucket = manager.createHelper(definition, args);
 

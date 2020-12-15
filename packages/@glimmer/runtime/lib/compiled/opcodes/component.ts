@@ -173,7 +173,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
   } else if (isCurriedComponentDefinition(component)) {
     definition = component;
   } else {
-    definition = constants.component(owner, component);
+    definition = constants.component(component);
   }
 
   stack.pushJs(definition);
@@ -185,7 +185,6 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   let value = valueForRef(ref);
   let constants = vm[CONSTANTS];
 
-  let owner = vm.getOwner();
   let definition: CurriedComponentDefinition | ComponentDefinition | null;
 
   if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
@@ -197,7 +196,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   if (isCurriedComponentDefinition(value)) {
     definition = value as CurriedComponentDefinition;
   } else {
-    definition = constants.component(owner, value as object, true);
+    definition = constants.component(value as object, true);
 
     if (DEBUG && definition === null) {
       throw new Error(

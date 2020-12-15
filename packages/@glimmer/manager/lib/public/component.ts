@@ -10,17 +10,18 @@ import {
   ComponentManagerWithDestructors,
   ComponentManagerWithUpdateHook,
   Destroyable,
-  Environment,
   InternalComponentCapabilities,
   InternalComponentManager,
   Option,
+  Owner,
   VMArguments,
 } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/destroyable';
 import { deprecateMutationsInTrackingTransaction } from '@glimmer/validator';
-import { buildCapabilities } from '../util/capabilities';
+import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
+import { ManagerFactory } from './index';
 
 const CAPABILITIES = {
   dynamicLayout: false,
@@ -108,16 +109,41 @@ export function hasDestructors<ComponentInstance>(
   * `update()` - invoked when the arguments passed to a component change
   * `getContext()` - returns the object that should be
 */
-export class CustomComponentManager<ComponentInstance>
+export class CustomComponentManager<O extends Owner, ComponentInstance>
   implements InternalComponentManager<CustomComponentState<ComponentInstance>> {
-  constructor(private delegate: ComponentManager<ComponentInstance>) {}
+  private componentManagerDelegates = new WeakMap<O, ComponentManager<ComponentInstance>>();
+
+  constructor(private factory: ManagerFactory<O, ComponentManager<ComponentInstance>>) {}
+
+  private getDelegateFor(owner: O) {
+    let { componentManagerDelegates } = this;
+    let delegate = componentManagerDelegates.get(owner);
+
+    if (delegate === undefined) {
+      let { factory } = this;
+      delegate = factory(owner);
+
+      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+        // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
+        throw new Error(
+          `Custom component managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.4' | '3.13')\` (imported via \`import { capabilities } from '@ember/component';\`). Received: \`${JSON.stringify(
+            delegate.capabilities
+          )}\` for: \`${delegate}\``
+        );
+      }
+
+      componentManagerDelegates.set(owner, delegate);
+    }
+
+    return delegate;
+  }
 
   create(
-    env: Environment,
+    owner: O,
     definition: ComponentDefinitionState,
     vmArgs: VMArguments
   ): CustomComponentState<ComponentInstance> {
-    let { delegate } = this;
+    let delegate = this.getDelegateFor(owner);
     let args = argsProxyFor(vmArgs.capture(), 'component');
 
     let component: ComponentInstance;
@@ -130,7 +156,7 @@ export class CustomComponentManager<ComponentInstance>
       component = delegate.createComponent(definition, args);
     }
 
-    return new CustomComponentState(component!, args, env);
+    return new CustomComponentState(component!, delegate, args);
   }
 
   getDebugName(definition: ComponentDefinitionState): string {
@@ -138,7 +164,7 @@ export class CustomComponentManager<ComponentInstance>
   }
 
   update(bucket: CustomComponentState<ComponentInstance>): void {
-    let { delegate } = this;
+    let { delegate } = bucket;
     if (hasUpdateHook(delegate)) {
       let { component, args } = bucket;
 
@@ -146,17 +172,13 @@ export class CustomComponentManager<ComponentInstance>
     }
   }
 
-  didCreate({ component }: CustomComponentState<ComponentInstance>): void {
-    let { delegate } = this;
-
+  didCreate({ component, delegate }: CustomComponentState<ComponentInstance>): void {
     if (hasAsyncLifeCycleCallbacks(delegate)) {
       delegate.didCreateComponent(component);
     }
   }
 
-  didUpdate({ component }: CustomComponentState<ComponentInstance>): void {
-    let { delegate } = this;
-
+  didUpdate({ component, delegate }: CustomComponentState<ComponentInstance>): void {
     if (hasAsyncUpdateHook(delegate)) {
       delegate.didUpdateComponent(component);
     }
@@ -166,12 +188,12 @@ export class CustomComponentManager<ComponentInstance>
 
   didUpdateLayout(): void {}
 
-  getSelf({ component }: CustomComponentState<ComponentInstance>): Reference {
-    return createConstRef(this.delegate.getContext(component), 'this');
+  getSelf({ component, delegate }: CustomComponentState<ComponentInstance>): Reference {
+    return createConstRef(delegate.getContext(component), 'this');
   }
 
   getDestroyable(bucket: CustomComponentState<ComponentInstance>): Option<Destroyable> {
-    const { delegate } = this;
+    const { delegate } = bucket;
 
     if (hasDestructors(delegate)) {
       const { component } = bucket;
@@ -194,7 +216,7 @@ export class CustomComponentManager<ComponentInstance>
 export class CustomComponentState<ComponentInstance> {
   constructor(
     public component: ComponentInstance,
-    public args: Arguments,
-    public env: Environment
+    public delegate: ComponentManager<ComponentInstance>,
+    public args: Arguments
   ) {}
 }

@@ -20,7 +20,7 @@ export default function createBenchmark(): Benchmark {
     },
     basicComponent: (name, template, component) => {
       setComponentTemplate(templateFactory(template), component);
-      setInternalComponentManager(() => basicComponentManager, component);
+      setInternalComponentManager(basicComponentManager, component);
 
       registry.registerComponent(name, component);
     },

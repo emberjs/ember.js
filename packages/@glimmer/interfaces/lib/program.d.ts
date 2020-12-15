@@ -1,10 +1,10 @@
-import { STDLib, ContainingMetadata, HandleResult, Template } from './template';
-import { StdLibOperand, Encoder } from './compile';
+import { STDLib, ContainingMetadata, Template } from './template';
+import { Encoder } from './compile';
 import { Op } from './vm-opcodes';
 import { CompileTimeResolver, ResolvedComponentDefinition } from './serialize';
 import { ComponentDefinitionState, ComponentDefinition } from './components';
-import { Helper, HelperDefinitionState, Owner } from './runtime';
-import { ModifierDefinition, ModifierDefinitionState } from './runtime/modifier';
+import { HelperDefinitionState, Owner } from './runtime';
+import { ModifierDefinitionState } from './runtime/modifier';
 
 export interface RuntimeOp {
   offset: number;
@@ -96,40 +96,23 @@ export interface ResolutionTimeConstants {
   defaultTemplate: Template;
 
   helper(
-    owner: Owner | undefined,
     definitionState: HelperDefinitionState,
     resolvedName: string | null,
     isOptional: true
   ): number | null;
-  helper(
-    owner: Owner | undefined,
-    definitionState: HelperDefinitionState,
-    resolvedName?: string | null
-  ): number;
-  helper(
-    owner: Owner | undefined,
-    definitionState: HelperDefinitionState,
-    resolvedName?: string | null
-  ): number;
+  helper(definitionState: HelperDefinitionState, resolvedName?: string | null): number;
 
-  modifier(
-    owner: Owner | undefined,
-    definitionState: ModifierDefinitionState,
-    resolvedName?: string | null
-  ): number;
+  modifier(definitionState: ModifierDefinitionState, resolvedName?: string | null): number;
 
+  component(definitionState: ComponentDefinitionState): ComponentDefinition;
   component(
-    owner: Owner | undefined,
-    definitionState: ComponentDefinitionState
-  ): ComponentDefinition;
-  component(
-    owner: Owner | undefined,
     definitionState: ComponentDefinitionState,
     isOptional: true
   ): ComponentDefinition | null;
   component(
-    owner: Owner | undefined,
-    definitionState: ComponentDefinitionState
+    definitionState: ComponentDefinitionState,
+    isOptional: false,
+    owner: Owner
   ): ComponentDefinition;
 
   resolvedComponent(
