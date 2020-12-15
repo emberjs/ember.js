@@ -31,5 +31,5 @@ export function setHelperManager<O extends Owner, T extends object>(
   factory: ManagerFactory<O | undefined, HelperManager<unknown>>,
   obj: T
 ): T {
-  return setInternalHelperManager(new CustomHelperManager(factory, obj), obj);
+  return setInternalHelperManager(new CustomHelperManager(factory), obj);
 }

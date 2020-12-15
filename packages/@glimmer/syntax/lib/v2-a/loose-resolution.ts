@@ -33,7 +33,7 @@ export function BlockSyntaxContext(node: ASTv1.BlockStatement): ASTv2.FreeVarRes
   if (isSimpleCallee(node)) {
     return ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Component);
   } else {
-    return null;
+    return ASTv2.LooseModeResolution.fallback();
   }
 }
 
@@ -76,7 +76,7 @@ export function AppendSyntaxContext(node: ASTv1.MustacheStatement): ASTv2.FreeVa
       ? ASTv2.LooseModeResolution.trustingAppend({ invoke: isInvoke })
       : ASTv2.LooseModeResolution.append({ invoke: isInvoke });
   } else {
-    return isInvoke ? ASTv2.STRICT_RESOLUTION : ASTv2.LooseModeResolution.fallback();
+    return ASTv2.LooseModeResolution.fallback();
   }
 }
 

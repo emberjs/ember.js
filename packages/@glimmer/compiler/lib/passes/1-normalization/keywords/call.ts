@@ -88,4 +88,56 @@ export const CALL_KEYWORDS = keywords('Call')
           })
       );
     },
+  })
+  .kw('helper', {
+    assert(node: ExprKeywordNode): Result<{ definition: ASTv2.ExpressionNode; args: ASTv2.Args }> {
+      let { args } = node;
+      let definition = args.nth(0);
+
+      if (definition === null) {
+        return Err(
+          generateSyntaxError(
+            `(helper) requires a helper definition or identifier as its first positional parameter, did not receive any parameters.`,
+            args.loc
+          )
+        );
+      }
+
+      if (definition.type === 'Literal') {
+        return Err(
+          generateSyntaxError(
+            '(helper) cannot resolve string values, you must pass a helper definition directly',
+            node.loc
+          )
+        );
+      }
+
+      args = new ASTv2.Args({
+        positional: new ASTv2.PositionalArguments({
+          exprs: args.positional.exprs.slice(1),
+          loc: args.positional.loc,
+        }),
+        named: args.named,
+        loc: args.loc,
+      });
+
+      return Ok({ definition, args });
+    },
+
+    translate(
+      { node, state }: { node: ExprKeywordNode; state: NormalizationState },
+      { definition, args }: { definition: ASTv2.ExpressionNode; args: ASTv2.Args }
+    ): Result<mir.CurryHelper> {
+      let definitionResult = VISIT_EXPRS.visit(definition, state);
+      let argsResult = VISIT_EXPRS.Args(args, state);
+
+      return Result.all(definitionResult, argsResult).mapOk(
+        ([definition, args]) =>
+          new mir.CurryHelper({
+            loc: node.loc,
+            definition,
+            args,
+          })
+      );
+    },
   });

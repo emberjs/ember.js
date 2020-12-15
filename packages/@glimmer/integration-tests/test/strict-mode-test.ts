@@ -582,7 +582,7 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
+  @test
   'Can use a dynamic component in append position (with args)'() {
     const Foo = defineComponent({}, 'Hello, {{@value}}');
     const Bar = defineComponent(
@@ -598,7 +598,7 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
+  @test
   'Can use a dynamic component in block position'() {
     const Foo = defineComponent({}, 'Hello, {{yield}}');
     const Bar = defineComponent(
@@ -614,7 +614,7 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
+  @test
   'Can use a dynamic helper'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent(
@@ -627,6 +627,97 @@ class DynamicStrictModeTest extends RenderTest {
 
     this.renderComponent(Bar);
     this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic helper (with args)'() {
+    const foo = defineSimpleHelper((value: string) => value);
+    const Bar = defineComponent(
+      {},
+      '{{this.foo "Hello, world!"}}',
+      class extends GlimmerishComponent {
+        foo = foo;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic helper as a subexpression'() {
+    const foo = defineSimpleHelper(() => 'Hello, world!');
+    const Bar = defineComponent(
+      {},
+      '{{(this.foo)}}',
+      class extends GlimmerishComponent {
+        foo = foo;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic helper as a subexpression (with args)'() {
+    const foo = defineSimpleHelper((value: string) => value);
+    const Bar = defineComponent(
+      {},
+      '{{(this.foo "Hello, world!")}}',
+      class extends GlimmerishComponent {
+        foo = foo;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic helper as an argument'() {
+    const foo = defineSimpleHelper((value: string) => value);
+    const bar = defineSimpleHelper((value: string) => value);
+    const Bar = defineComponent(
+      { bar },
+      '{{bar (this.foo "Hello, world!")}}',
+      class extends GlimmerishComponent {
+        foo = foo;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic helper as an argument (with args)'() {
+    const foo = defineSimpleHelper(() => 'Hello, world!');
+    const bar = defineSimpleHelper((value: string) => value);
+    const Bar = defineComponent(
+      { bar },
+      '{{bar (this.foo)}}',
+      class extends GlimmerishComponent {
+        foo = foo;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Calling a dynamic helper without a value returns undefined'() {
+    const Bar = defineComponent({}, '{{this.foo 123}}', class extends GlimmerishComponent {});
+
+    this.renderComponent(Bar);
+    this.assertHTML('');
     this.assertStableRerender();
   }
 
@@ -646,6 +737,19 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
+  @test({ skip: true })
+  'Calling a dynamic modifier without a value is a no-op'() {
+    const Bar = defineComponent(
+      {},
+      '<div {{this.foo 123}}></div>',
+      class extends GlimmerishComponent {}
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('');
+    this.assertStableRerender();
+  }
+
   @test
   'Can use a nested in scope value as dynamic component'() {
     const Foo = defineComponent({}, 'Hello, world!');
@@ -657,8 +761,16 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
-  'Can use a nested in scope value as dynamic helper'() {}
+  @test
+  'Can use a nested in scope value as dynamic helper'() {
+    const foo = defineSimpleHelper(() => 'Hello, world!');
+    const x = { foo };
+    const Bar = defineComponent({ x }, '{{x.foo}}');
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
 
   @test({ skip: true })
   'Can use a nested in scope value as dynamic modifier'() {}
@@ -733,18 +845,61 @@ class DynamicStrictModeTest extends RenderTest {
     }, /Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was `<this.Foo>` or `{{this.Foo}}`, and the incorrect definition is the value at the path `this.Foo`, which was:/);
   }
 
-  @test({ skip: true })
+  @test
   'Can pass helper as argument and invoke dynamically'() {
+    const plusOne = defineSimpleHelper(() => 'Hello, world!');
+    const Foo = defineComponent({}, '{{@value}}');
+    const Bar = defineComponent({ plusOne, Foo }, '<Foo @value={{plusOne}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass helper as argument and invoke dynamically (with args)'() {
     const plusOne = defineSimpleHelper((value = 0) => value + 1);
     const Foo = defineComponent({}, '{{@value 123}}');
     const Bar = defineComponent({ plusOne, Foo }, '<Foo @value={{plusOne}}/>');
 
     this.renderComponent(Bar);
-    this.assertHTML('124 1 457');
+    this.assertHTML('124');
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
+  @test
+  'Can pass curried helper as argument and invoke dynamically'() {
+    const plusOne = defineSimpleHelper((value = 0) => value + 1);
+    const Foo = defineComponent({}, '{{@value}}');
+    const Bar = defineComponent({ plusOne, Foo }, '<Foo @value={{helper plusOne 123}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('124');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass curried helper as argument and invoke dynamically (with args)'() {
+    const add = defineSimpleHelper((a: number, b: number) => a + b);
+    const Foo = defineComponent({}, '{{@value 2}}');
+    const Bar = defineComponent({ add, Foo }, '<Foo @value={{helper add 1}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('3');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Passing a curried helper without a value is a no-op'() {
+    const Foo = defineComponent({}, '{{@value 2}}');
+    const Bar = defineComponent({ Foo }, '<Foo @value={{helper @foo 1}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('');
+    this.assertStableRerender();
+  }
+
+  @test
   'Throws an error if a non-helper is used as a helper'() {
     const foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent(
@@ -757,15 +912,15 @@ class DynamicStrictModeTest extends RenderTest {
 
     this.assert.throws(() => {
       this.renderComponent(Bar);
-    }, /aoeu/);
+    }, /Attempted to resolve a helper in a strict mode template, but that value was not in scope: foo/);
   }
 
-  @test({ skip: true })
+  @test
   'Throws an error if a non-modifier is used as a modifier'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent(
       {},
-      '<div {{this.foo}}></div>',
+      '<div {{foo}}></div>',
       class extends GlimmerishComponent {
         foo = foo;
       }
@@ -773,7 +928,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     this.assert.throws(() => {
       this.renderComponent(Bar);
-    }, /aoeu/);
+    }, /Error: Attempted to resolve a modifier in a strict mode template, but it was not in scope: foo/);
   }
 }
 

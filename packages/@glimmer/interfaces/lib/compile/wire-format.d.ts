@@ -97,6 +97,7 @@ export const enum SexpOpcodes {
   HasBlock = 48,
   HasBlockParams = 49,
   CurryComponent = 50,
+  CurryHelper = 51,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -236,6 +237,7 @@ export namespace Expressions {
     | HasBlock
     | HasBlockParams
     | CurryComponent
+    | CurryHelper
     | Helper
     | Undefined;
 
@@ -248,6 +250,7 @@ export namespace Expressions {
   export type HasBlock = [SexpOpcodes.HasBlock, Expression];
   export type HasBlockParams = [SexpOpcodes.HasBlockParams, Expression];
   export type CurryComponent = [SexpOpcodes.CurryComponent, Expression, Params, Hash];
+  export type CurryHelper = [SexpOpcodes.CurryHelper, Expression, Params, Hash];
 }
 
 export type Expression = Expressions.Expression;
