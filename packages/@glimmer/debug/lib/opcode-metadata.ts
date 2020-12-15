@@ -120,6 +120,16 @@ METADATA[Op.Helper] = {
   check: true,
 };
 
+METADATA[Op.DynamicHelper] = {
+  name: 'DynamicHelper',
+  mnemonic: 'dynamiccall',
+  before: null,
+  stackChange: null,
+  ops: [],
+  operands: 0,
+  check: true,
+};
+
 METADATA[Op.SetNamedVariables] = {
   name: 'SetNamedVariables',
   mnemonic: 'vsargs',
@@ -273,6 +283,21 @@ METADATA[Op.Concat] = {
 METADATA[Op.Constant] = {
   name: 'Constant',
   mnemonic: 'rconstload',
+  before: null,
+  stackChange: 1,
+  ops: [
+    {
+      name: 'constant',
+      type: 'unknown',
+    },
+  ],
+  operands: 1,
+  check: true,
+};
+
+METADATA[Op.ConstantReference] = {
+  name: 'ConstantReference',
+  mnemonic: 'rconstrefload',
   before: null,
   stackChange: 1,
   ops: [
@@ -904,6 +929,16 @@ METADATA[Op.Main] = {
 METADATA[Op.ContentType] = {
   name: 'ContentType',
   mnemonic: 'ctload',
+  before: null,
+  stackChange: 1,
+  ops: [],
+  operands: 0,
+  check: true,
+};
+
+METADATA[Op.DynamicContentType] = {
+  name: 'DynamicContentType',
+  mnemonic: 'dctload',
   before: null,
   stackChange: 1,
   ops: [],

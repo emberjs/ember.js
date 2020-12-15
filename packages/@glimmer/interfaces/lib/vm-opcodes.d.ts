@@ -102,4 +102,7 @@ export const enum Op {
   Debugger = 103,
   Size = 104,
   StaticComponentAttr = 105,
+  DynamicContentType = 106,
+  DynamicHelper = 107,
+  CurryHelper = 108,
 }

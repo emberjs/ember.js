@@ -189,7 +189,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
 
   if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
     throw new Error(
-      `Expected a curried component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must use the {{component}} helper to create a component definition when invoking dynamically.`
+      `Expected a component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must either use the component definition directly, or use the {{component}} helper to create a curried component definition when invoking dynamically.`
     );
   }
 

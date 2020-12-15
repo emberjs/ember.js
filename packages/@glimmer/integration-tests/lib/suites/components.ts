@@ -398,7 +398,7 @@ export class GlimmerishComponents extends RenderTest {
 
     this.assert.throws(() => {
       this.render('<TestHarness @Foo="Foo" />');
-    }, /Expected a curried component definition, but received Foo. You may have accidentally done <this.args.Foo>, where \"this.args.Foo\"/);
+    }, /Expected a component definition, but received Foo. You may have accidentally done <this.args.Foo>, where \"this.args.Foo\" was a string instead of a curried component definition. You must either use the component definition directly, or use the {{component}} helper to create a curried component definition when invoking dynamically/);
   }
 
   @test({

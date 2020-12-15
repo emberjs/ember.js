@@ -174,6 +174,10 @@ export class CurryComponent extends node('CurryComponent').fields<{
   definition: ExpressionNode;
   args: Args;
 }>() {}
+export class CurryHelper extends node('CurryHelper').fields<{
+  definition: ExpressionNode;
+  args: Args;
+}>() {}
 export class Positional extends node('Positional').fields<{
   list: OptionalList<ExpressionNode>;
 }>() {}
@@ -199,7 +203,8 @@ export type ExpressionNode =
   | CallExpression
   | HasBlock
   | HasBlockParams
-  | CurryComponent;
+  | CurryComponent
+  | CurryHelper;
 
 export type ElementParameter = StaticAttr | DynamicAttr | Modifier | SplatAttr;
 

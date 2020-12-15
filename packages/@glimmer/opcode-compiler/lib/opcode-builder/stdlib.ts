@@ -2,7 +2,9 @@ export class StdLib {
   constructor(
     public main: number,
     private trustingGuardedAppend: number,
-    private cautiousGuardedAppend: number
+    private cautiousGuardedAppend: number,
+    private trustingNonDynamicAppend: number,
+    private cautiousNonDynamicAppend: number
   ) {}
 
   get 'trusting-append'() {
@@ -11,6 +13,14 @@ export class StdLib {
 
   get 'cautious-append'() {
     return this.cautiousGuardedAppend;
+  }
+
+  get 'trusting-non-dynamic-append'() {
+    return this.trustingNonDynamicAppend;
+  }
+
+  get 'cautious-non-dynamic-append'() {
+    return this.cautiousNonDynamicAppend;
   }
 
   getAppend(trusting: boolean) {

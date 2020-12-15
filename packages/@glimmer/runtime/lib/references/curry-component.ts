@@ -54,7 +54,7 @@ export default function createCurryComponentRef(
         owner,
         args
       );
-    } else if (typeof value === 'object' && value !== null) {
+    } else if (typeof value === 'function' || (typeof value === 'object' && value !== null)) {
       curriedDefinition = curry(constants.component(value), owner, args);
     } else {
       curriedDefinition = null;

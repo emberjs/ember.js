@@ -32,7 +32,12 @@ export function blockOperand(value: SerializedInlineBlock | SerializedBlock): Bl
 }
 
 export function stdlibOperand(
-  value: 'main' | 'trusting-append' | 'cautious-append'
+  value:
+    | 'main'
+    | 'trusting-append'
+    | 'cautious-append'
+    | 'trusting-non-dynamic-append'
+    | 'cautious-non-dynamic-append'
 ): StdLibOperand {
   return { type: HighLevelOperand.StdLib, value };
 }

@@ -146,7 +146,10 @@ export class ConstantsImpl
 
       assert(managerOrHelper, 'BUG: expected manager or helper');
 
-      let helper = typeof managerOrHelper === 'function' ? managerOrHelper : managerOrHelper.helper;
+      let helper =
+        typeof managerOrHelper === 'function'
+          ? managerOrHelper
+          : managerOrHelper.getHelper(definitionState);
 
       handle = this.value(helper);
 

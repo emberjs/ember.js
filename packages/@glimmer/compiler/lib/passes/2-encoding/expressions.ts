@@ -31,6 +31,8 @@ export class ExpressionEncoder {
         return this.HasBlockParams(expr);
       case 'CurryComponent':
         return this.CurryComponent(expr);
+      case 'CurryHelper':
+        return this.CurryHelper(expr);
       case 'InterpolateExpression':
         return this.InterpolateExpression(expr);
     }
@@ -61,6 +63,15 @@ export class ExpressionEncoder {
   CurryComponent({ definition, args }: mir.CurryComponent): WireFormat.Expressions.CurryComponent {
     return [
       SexpOpcodes.CurryComponent,
+      EXPR.expr(definition),
+      EXPR.Positional(args.positional),
+      EXPR.NamedArguments(args.named),
+    ];
+  }
+
+  CurryHelper({ definition, args }: mir.CurryHelper): WireFormat.Expressions.CurryHelper {
+    return [
+      SexpOpcodes.CurryHelper,
       EXPR.expr(definition),
       EXPR.Positional(args.positional),
       EXPR.NamedArguments(args.named),

@@ -35,7 +35,12 @@ export interface BlockOperand {
 
 export interface StdLibOperand {
   type: HighLevelOperand.StdLib;
-  value: 'main' | 'trusting-append' | 'cautious-append';
+  value:
+    | 'main'
+    | 'trusting-append'
+    | 'cautious-append'
+    | 'trusting-non-dynamic-append'
+    | 'cautious-non-dynamic-append';
 }
 
 export interface NonSmallIntOperand {

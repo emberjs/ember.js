@@ -1,15 +1,24 @@
-import { Op, ScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
+import {
+  Helper,
+  HelperDefinitionState,
+  Op,
+  ResolutionTimeConstants,
+  RuntimeConstants,
+  ScopeBlock,
+  VM as PublicVM,
+} from '@glimmer/interfaces';
 import {
   Reference,
   childRefFor,
   UNDEFINED_REFERENCE,
   TRUE_REFERENCE,
   FALSE_REFERENCE,
+  valueForRef,
 } from '@glimmer/reference';
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { createConcatRef } from '../expressions/concat';
-import { assert } from '@glimmer/util';
+import { assert, debugToString } from '@glimmer/util';
 import {
   check,
   CheckOption,
@@ -26,10 +35,73 @@ import {
   CheckHelper,
   CheckUndefinedReference,
   CheckScopeBlock,
+  CheckCapturedArguments,
 } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
+import { DEBUG } from '@glimmer/env';
+import {
+  isCurriedHelperDefinition,
+  resolveCurriedHelperDefinition,
+} from '../../helpers/curried-helper';
+import createCurryHelperRef from '../../references/curry-helper';
 
 export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
+
+APPEND_OPCODES.add(Op.CurryHelper, (vm) => {
+  let stack = vm.stack;
+
+  let definition = check(stack.popJs(), CheckReference);
+  let capturedArgs = check(stack.popJs(), CheckCapturedArguments);
+  let owner = vm.getOwner();
+
+  vm.loadValue($v0, createCurryHelperRef(definition, owner, capturedArgs));
+});
+
+APPEND_OPCODES.add(Op.DynamicHelper, (vm, { op1: _definitionRegister }) => {
+  let stack = vm.stack;
+  let args = check(stack.popJs(), CheckArguments);
+  let ref = vm.fetchValue<Reference>(_definitionRegister);
+  let definition = valueForRef(ref);
+
+  if (isCurriedHelperDefinition(definition)) {
+    let [resolvedDef, owner] = resolveCurriedHelperDefinition(definition, args);
+
+    let helper = resolveHelper(vm[CONSTANTS], resolvedDef, ref);
+
+    vm.pushRootScope(0, owner);
+    vm.loadValue($v0, helper(args, vm));
+    vm.popScope();
+  } else if (
+    typeof definition === 'function' ||
+    (typeof definition === 'object' && definition !== null)
+  ) {
+    let helper = resolveHelper(vm[CONSTANTS], definition, ref);
+
+    vm.loadValue($v0, helper(args, vm));
+  } else {
+    vm.loadValue($v0, UNDEFINED_REFERENCE);
+  }
+});
+
+function resolveHelper(
+  constants: RuntimeConstants & ResolutionTimeConstants,
+  definition: HelperDefinitionState,
+  ref: Reference
+): Helper {
+  let handle = constants.helper(definition, null, true)!;
+
+  if (DEBUG && handle === null) {
+    throw new Error(
+      `Expected a dynamic helper definition, but received an object or function that did not have a helper manager associated with it. The dynamic invocation was \`{{${
+        ref.debugLabel
+      }}}\` or \`(${ref.debugLabel})\`, and the incorrect definition is the value at the path \`${
+        ref.debugLabel
+      }\`, which was: ${debugToString!(definition)}`
+    );
+  }
+
+  return constants.getValue(handle);
+}
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
