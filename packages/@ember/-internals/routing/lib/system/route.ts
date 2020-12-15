@@ -231,7 +231,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/member/interest.js
     import Route from '@ember/routing/route';
 
-    export default class MemberInterestRoute Route {
+    export default class MemberInterestRoute extends Route {
       queryParams = {
         interestQp: { refreshModel: true }
       }
