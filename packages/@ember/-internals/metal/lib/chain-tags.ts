@@ -150,6 +150,15 @@ function getChainTags(
           );
 
           chainTags.push(tagForProperty(item, segment, true));
+
+          currentMeta = peekMeta(item);
+          descriptor = currentMeta !== null ? currentMeta.peekDescriptors(segment) : undefined;
+
+          // If the key is an alias, we need to bootstrap it
+          if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
+            // tslint:disable-next-line: no-unused-expression
+            item[segment];
+          }
         }
       }
 
