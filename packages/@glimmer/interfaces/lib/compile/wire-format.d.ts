@@ -1,5 +1,6 @@
 import { PresentArray } from '../array';
 import { Dict, Option } from '../core';
+import { CurriedType } from '../curry';
 
 export type TupleSyntax = Statement | TupleExpression;
 
@@ -96,8 +97,7 @@ export const enum SexpOpcodes {
   // Keyword Expressions
   HasBlock = 48,
   HasBlockParams = 49,
-  CurryComponent = 50,
-  CurryHelper = 51,
+  Curry = 50,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -236,8 +236,7 @@ export namespace Expressions {
     | Concat
     | HasBlock
     | HasBlockParams
-    | CurryComponent
-    | CurryHelper
+    | Curry
     | Helper
     | Undefined;
 
@@ -249,8 +248,7 @@ export namespace Expressions {
   export type Helper = [SexpOpcodes.Call, Expression, Option<Params>, Hash];
   export type HasBlock = [SexpOpcodes.HasBlock, Expression];
   export type HasBlockParams = [SexpOpcodes.HasBlockParams, Expression];
-  export type CurryComponent = [SexpOpcodes.CurryComponent, Expression, Params, Hash];
-  export type CurryHelper = [SexpOpcodes.CurryHelper, Expression, Params, Hash];
+  export type Curry = [SexpOpcodes.Curry, Expression, CurriedType, Params, Hash];
 }
 
 export type Expression = Expressions.Expression;

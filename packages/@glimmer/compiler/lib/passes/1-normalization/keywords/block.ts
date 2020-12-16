@@ -6,6 +6,7 @@ import { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { VISIT_STMTS } from '../visitors/statements';
 import { keywords } from './impl';
+import { assertValidCurryUsage } from './utils/curry';
 
 export const BLOCK_KEYWORDS = keywords('Block')
   .kw('in-element', {
@@ -434,45 +435,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('component', {
-    assert(
-      node: ASTv2.InvokeBlock,
-      state: NormalizationState
-    ): Result<{
-      args: ASTv2.Args;
-    }> {
-      let { args } = node;
-
-      let definition = args.nth(0);
-
-      if (definition === null) {
-        return Err(
-          generateSyntaxError(
-            `{{#component}} requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
-            args.loc
-          )
-        );
-      }
-
-      if (state.isStrict && definition.type === 'Literal') {
-        return Err(
-          generateSyntaxError(
-            '{{#component}} cannot resolve string values in strict mode templates',
-            node.loc
-          )
-        );
-      }
-
-      args = new ASTv2.Args({
-        positional: new ASTv2.PositionalArguments({
-          exprs: args.positional.exprs.slice(1),
-          loc: args.positional.loc,
-        }),
-        named: args.named,
-        loc: args.loc,
-      });
-
-      return Ok({ definition, args });
-    },
+    assert: assertValidCurryUsage('{{#component}}', 'component', true),
 
     translate(
       { node, state }: { node: ASTv2.InvokeBlock; state: NormalizationState },

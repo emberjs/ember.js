@@ -6,6 +6,7 @@ import {
   PartialDefinition,
   TemplateFactory,
   ResolutionTimeConstants,
+  CurriedType,
 } from '@glimmer/interfaces';
 import { EmberishCurlyComponent } from '../../components/emberish-curly';
 import { GlimmerishComponent } from '../../components/emberish-glimmer';
@@ -17,7 +18,7 @@ import {
 } from '../../modifiers';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import { ComponentKind, ComponentTypes } from '../../components';
-import { CurriedComponentDefinition, curry, templateOnlyComponent } from '@glimmer/runtime';
+import { CurriedValue, curry, templateOnlyComponent } from '@glimmer/runtime';
 import { createTemplate, preprocess } from '../../compile';
 import {
   getInternalComponentManager,
@@ -173,10 +174,16 @@ export function componentHelper(
   registry: TestJitRegistry,
   name: string,
   constants: ResolutionTimeConstants
-): Option<CurriedComponentDefinition> {
+): CurriedValue | null {
   let definition = registry.lookupComponent(name);
 
   if (definition === null) return null;
 
-  return curry(constants.resolvedComponent(definition, name), {}, null);
+  return curry(
+    CurriedType.Component,
+    constants.resolvedComponent(definition, name),
+    {},
+    null,
+    true
+  );
 }

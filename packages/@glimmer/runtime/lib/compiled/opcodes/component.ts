@@ -34,38 +34,31 @@ import {
   ModifierInstance,
   ComponentInstanceWithCreate,
   Owner,
+  CurriedType,
 } from '@glimmer/interfaces';
 import { isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import {
   assert,
   debugToString,
-  decodeHandle,
   dict,
   EMPTY_STRING_ARRAY,
   expect,
   isErrHandle,
   unwrapTemplate,
 } from '@glimmer/util';
-import { $t0, $t1, $v0 } from '@glimmer/vm';
+import { $t0, $t1 } from '@glimmer/vm';
 import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
-import {
-  CurriedComponentDefinition,
-  isCurriedComponentDefinition,
-  resolveCurriedComponentDefinition,
-} from '../../component/curried-component';
 import { resolveComponent } from '../../component/resolve';
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
-import createCurryComponentRef from '../../references/curry-component';
 import { ARGS, CONSTANTS } from '../../symbols';
 import { UpdatingVM } from '../../vm';
 import { InternalVM } from '../../vm/append';
 import { BlockArgumentsImpl, EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
 import {
   CheckArguments,
-  CheckCapturedArguments,
   CheckComponentDefinition,
   CheckComponentInstance,
   CheckFinishedComponentInstance,
@@ -74,6 +67,12 @@ import {
   CheckCurriedComponentDefinition,
 } from './-debug-strip';
 import { UpdateDynamicAttributeOpcode } from './dom';
+import {
+  CurriedValue,
+  isCurriedType,
+  isCurriedValue,
+  resolveCurriedValue,
+} from '../../curried-value';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -110,23 +109,6 @@ export interface PartialComponentDefinition {
   manager: InternalComponentManager;
 }
 
-APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _isStrict }) => {
-  let stack = vm.stack;
-
-  let definition = check(stack.popJs(), CheckReference);
-  let capturedArgs = check(stack.popJs(), CheckCapturedArguments);
-
-  let constants = vm[CONSTANTS];
-  let owner = vm.getOwner();
-  let isStrict = constants.getValue<boolean>(decodeHandle(_isStrict));
-  let resolver = vm.runtime.resolver;
-
-  vm.loadValue(
-    $v0,
-    createCurryComponentRef(definition, resolver, constants, owner, capturedArgs, isStrict)
-  );
-});
-
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   let definition = vm[CONSTANTS].getValue<ComponentDefinition>(handle);
   assert(!!definition, `Missing component for ${handle}`);
@@ -158,7 +140,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
 
   vm.loadValue($t1, null); // Clear the temp register
 
-  let definition: ComponentDefinition | CurriedComponentDefinition;
+  let definition: ComponentDefinition | CurriedValue;
 
   if (typeof component === 'string') {
     if (DEBUG && isStrict) {
@@ -170,7 +152,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
     let resolvedDefinition = resolveComponent(vm.runtime.resolver, constants, component, owner);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
-  } else if (isCurriedComponentDefinition(component)) {
+  } else if (isCurriedValue(component)) {
     definition = component;
   } else {
     definition = constants.component(component);
@@ -185,7 +167,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   let value = valueForRef(ref);
   let constants = vm[CONSTANTS];
 
-  let definition: CurriedComponentDefinition | ComponentDefinition | null;
+  let definition: CurriedValue | ComponentDefinition | null;
 
   if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
     throw new Error(
@@ -193,8 +175,8 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
     );
   }
 
-  if (isCurriedComponentDefinition(value)) {
-    definition = value as CurriedComponentDefinition;
+  if (isCurriedValue(value)) {
+    definition = value;
   } else {
     definition = constants.component(value as object, true);
 
@@ -220,7 +202,7 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
 
   let capabilities, manager;
 
-  if (isCurriedComponentDefinition(definition)) {
+  if (isCurriedValue(definition)) {
     manager = capabilities = null;
   } else {
     manager = definition.manager;
@@ -264,13 +246,45 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
   let { definition } = instance;
 
-  if (isCurriedComponentDefinition(definition)) {
+  if (isCurriedType(definition, CurriedType.Component)) {
     assert(
       !definition.manager,
       "If the component definition was curried, we don't yet have a manager"
     );
 
-    definition = resolveCurriedComponentDefinition(vm, instance, definition, args);
+    let constants = vm[CONSTANTS];
+
+    let [value, owner, isResolved] = resolveCurriedValue(definition, args);
+
+    if (isResolved === true) {
+      definition = value as ComponentDefinition;
+    } else if (typeof value === 'string') {
+      let resolvedValue = vm.runtime.resolver.lookupComponent(value, owner);
+
+      definition = constants.resolvedComponent(
+        expect(resolvedValue, 'BUG: expected resolved component'),
+        value
+      );
+    } else {
+      definition = constants.component(value);
+    }
+
+    let { manager } = definition;
+
+    assert(instance.manager === null, 'component instance manager should not be populated yet');
+    assert(
+      instance.capabilities === null,
+      'component instance manager should not be populated yet'
+    );
+
+    instance.definition = definition;
+    instance.manager = manager;
+    instance.capabilities = definition.capabilities;
+
+    // Save off the owner that this component was curried with. Later on,
+    // we'll fetch the value of this register and set it as the owner on the
+    // new root scope.
+    vm.loadValue($t1, owner);
   }
 
   let { manager, state } = definition;

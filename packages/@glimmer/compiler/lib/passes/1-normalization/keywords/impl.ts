@@ -99,8 +99,6 @@ export interface KeywordMatches {
 
 export type KeywordMatch = KeywordMatches[keyof KeywordMatches];
 
-export type ExprKeywordNode = ASTv2.CallExpression;
-
 /**
  * A "generic" keyword is something like `has-block`, which makes sense in the context
  * of sub-expression or append
@@ -108,8 +106,8 @@ export type ExprKeywordNode = ASTv2.CallExpression;
 export type GenericKeywordNode = ASTv2.AppendContent | ASTv2.CallExpression;
 
 export type KeywordNode =
-  | ExprKeywordNode
   | GenericKeywordNode
+  | ASTv2.CallExpression
   | ASTv2.InvokeBlock
   | ASTv2.ElementModifier;
 

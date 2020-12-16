@@ -4,15 +4,9 @@ import {
   Op,
   SexpOpcodes,
 } from '@glimmer/interfaces';
-import { CurryComponent } from '../opcode-builder/helpers/components';
 import { expr } from '../opcode-builder/helpers/expr';
 import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
-import {
-  Call,
-  CallDynamic,
-  CurryHelper,
-  PushPrimitiveReference,
-} from '../opcode-builder/helpers/vm';
+import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { Compilers, PushExpressionOp } from './compilers';
 
 export const EXPRESSIONS = new Compilers<PushExpressionOp, ExpressionSexpOpcode>();
@@ -36,12 +30,8 @@ EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expression, positional, named]) => {
   }
 });
 
-EXPRESSIONS.add(SexpOpcodes.CurryComponent, (op, [, expr, positional, named]) => {
-  CurryComponent(op, expr, positional, named);
-});
-
-EXPRESSIONS.add(SexpOpcodes.CurryHelper, (op, [, expr, positional, named]) => {
-  CurryHelper(op, expr, positional, named);
+EXPRESSIONS.add(SexpOpcodes.Curry, (op, [, expr, type, positional, named]) => {
+  Curry(op, type, expr, positional, named);
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {

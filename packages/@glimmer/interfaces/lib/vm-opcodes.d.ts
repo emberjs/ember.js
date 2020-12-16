@@ -73,7 +73,7 @@ export const enum Op {
   Iterate = 74,
   Main = 75,
   ContentType = 76,
-  CurryComponent = 77,
+  Curry = 77,
   PushComponentDefinition = 78,
   PushDynamicComponentInstance = 79,
   ResolveDynamicComponent = 80,
@@ -104,5 +104,4 @@ export const enum Op {
   StaticComponentAttr = 105,
   DynamicContentType = 106,
   DynamicHelper = 107,
-  CurryHelper = 108,
 }
