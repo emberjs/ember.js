@@ -1,7 +1,7 @@
 import { ASTv2, generateSyntaxError, SourceSlice } from '@glimmer/syntax';
 
-import { Err, Ok, Result } from '../../../shared/result';
-import { GenericKeywordNode } from './impl';
+import { Err, Ok, Result } from '../../../../shared/result';
+import { GenericKeywordNode } from '../impl';
 
 export function assertValidHasBlockUsage(
   type: string,

@@ -10,11 +10,7 @@ export {
   resetDebuggerCallback,
   setDebuggerCallback,
 } from './lib/compiled/opcodes/debugger';
-export {
-  CurriedComponentDefinition,
-  curry,
-  isCurriedComponentDefinition,
-} from './lib/component/curried-component';
+export { curry, CurriedValue } from './lib/curried-value';
 export {
   TemplateOnlyComponentManager,
   TEMPLATE_ONLY_COMPONENT_MANAGER,

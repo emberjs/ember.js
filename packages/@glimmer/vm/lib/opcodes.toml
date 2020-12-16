@@ -657,14 +657,14 @@ notes = "The new reference represents a DynamicContentType"
 
 [syscall.curry]
 
-format = ["CurryComponent", "owner:owner"]
-operation = "Curry a component definition for a later invocation."
+format = ["Curry", "type:u32", "is-strict:bool"]
+operation = "Curry a value of type for a later invocation."
 operand-stack = [
   ["Reference", "Reference...", "Arguments"],
   ["CurriedComponent"]
 ]
 notes = """
-TODO: CurriedComponent is { Reference, Locator, CapturedArguments }
+TODO: CurriedValue is { Reference, Type, CapturedArguments }
 """
 
 [syscall.cmload]
