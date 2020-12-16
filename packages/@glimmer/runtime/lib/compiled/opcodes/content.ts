@@ -8,22 +8,27 @@ import {
 } from '@glimmer/debug';
 
 import { APPEND_OPCODES } from '../../opcodes';
-import { isCurriedComponentDefinition } from '../../component/curried-component';
 import { CheckReference } from './-debug-strip';
 import { isEmpty, isSafeString, isFragment, isNode, shouldCoerce } from '../../dom/normalize';
 import DynamicTextContent from '../../vm/content/text';
-import { ContentType, Op } from '@glimmer/interfaces';
+import { ContentType, CurriedType, Op } from '@glimmer/interfaces';
 import { AssertFilter } from './vm';
 import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
 import { DEBUG } from '@glimmer/env';
-import { isCurriedHelperDefinition } from '../../helpers/curried-helper';
+import { isCurriedType } from '../../curried-value';
 
 function toContentType(value: unknown) {
   if (shouldCoerce(value)) {
     return ContentType.String;
-  } else if (isCurriedComponentDefinition(value) || hasInternalComponentManager(value as object)) {
+  } else if (
+    isCurriedType(value, CurriedType.Component) ||
+    hasInternalComponentManager(value as object)
+  ) {
     return ContentType.Component;
-  } else if (isCurriedHelperDefinition(value) || hasInternalHelperManager(value as object)) {
+  } else if (
+    isCurriedType(value, CurriedType.Helper) ||
+    hasInternalHelperManager(value as object)
+  ) {
     return ContentType.Helper;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;
@@ -41,10 +46,14 @@ function toDynamicContentType(value: unknown) {
     return ContentType.String;
   }
 
-  if (isCurriedComponentDefinition(value) || hasInternalComponentManager(value as object)) {
+  if (isCurriedType(value, CurriedType.Component) || hasInternalComponentManager(value as object)) {
     return ContentType.Component;
   } else {
-    if (DEBUG && !isCurriedHelperDefinition(value) && !hasInternalHelperManager(value as object)) {
+    if (
+      DEBUG &&
+      !isCurriedType(value, CurriedType.Helper) &&
+      !hasInternalHelperManager(value as object)
+    ) {
       throw new Error(
         `Attempted use a dynamic value as a component or helper, but that value did not have an associated component or helper manager. The value was: ${value}`
       );

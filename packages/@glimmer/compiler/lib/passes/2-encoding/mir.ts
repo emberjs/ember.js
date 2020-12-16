@@ -1,4 +1,4 @@
-import { PresentArray } from '@glimmer/interfaces';
+import { CurriedType, PresentArray } from '@glimmer/interfaces';
 import {
   ASTv2,
   BlockSymbolTable,
@@ -170,12 +170,9 @@ export class HasBlockParams extends node('HasBlockParams').fields<{
   target: SourceSlice;
   symbol: number;
 }>() {}
-export class CurryComponent extends node('CurryComponent').fields<{
+export class Curry extends node('Curry').fields<{
   definition: ExpressionNode;
-  args: Args;
-}>() {}
-export class CurryHelper extends node('CurryHelper').fields<{
-  definition: ExpressionNode;
+  curriedType: CurriedType;
   args: Args;
 }>() {}
 export class Positional extends node('Positional').fields<{
@@ -203,8 +200,7 @@ export type ExpressionNode =
   | CallExpression
   | HasBlock
   | HasBlockParams
-  | CurryComponent
-  | CurryHelper;
+  | Curry;
 
 export type ElementParameter = StaticAttr | DynamicAttr | Modifier | SplatAttr;
 

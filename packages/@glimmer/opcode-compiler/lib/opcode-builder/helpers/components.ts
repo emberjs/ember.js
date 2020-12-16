@@ -11,7 +11,7 @@ import {
   InternalComponentCapability,
 } from '@glimmer/interfaces';
 import { hasCapability } from '@glimmer/manager';
-import { $s0, $s1, $sp, $v0, SavedRegister } from '@glimmer/vm';
+import { $s0, $s1, $sp, SavedRegister } from '@glimmer/vm';
 import { EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { namedBlocks } from '../../utils';
@@ -19,7 +19,7 @@ import { labelOperand, layoutOperand, symbolTableOperand, isStrictMode } from '.
 import { InvokeStaticBlock, PushYieldableBlock, YieldBlock } from './blocks';
 import { Replayable } from './conditional';
 import { expr } from './expr';
-import { CompileArgs, CompilePositional, SimpleArgs } from './shared';
+import { CompileArgs, CompilePositional } from './shared';
 
 export const ATTRS_BLOCK = '&attrs';
 
@@ -35,14 +35,6 @@ export interface DynamicComponent extends AnyComponent {
   definition: WireFormat.Expression;
   atNames: boolean;
   curried: boolean;
-}
-
-// (component)
-export interface CurryComponent {
-  definition: WireFormat.Expression;
-  positional: WireFormat.Core.Params;
-  named: WireFormat.Core.Hash;
-  atNames: boolean;
 }
 
 // <Component>
@@ -451,21 +443,6 @@ export function InvokeBareComponent(op: PushStatementOp): void {
     op(Op.PopulateLayout, $s0);
   });
   op(Op.Load, $s0);
-}
-
-export function CurryComponent(
-  op: PushExpressionOp,
-  definition: WireFormat.Expression,
-  positional: WireFormat.Core.Params,
-  named: WireFormat.Core.Hash
-): void {
-  op(MachineOp.PushFrame);
-  SimpleArgs(op, positional, named, false);
-  op(Op.CaptureArgs);
-  expr(op, definition);
-  op(Op.CurryComponent, isStrictMode());
-  op(MachineOp.PopFrame);
-  op(Op.Fetch, $v0);
 }
 
 export function WithSavedRegister(

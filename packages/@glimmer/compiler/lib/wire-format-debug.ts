@@ -1,11 +1,12 @@
 import {
+  CurriedType,
   Option,
   SerializedInlineBlock,
   SerializedTemplateBlock,
   SexpOpcodes as Op,
   WireFormat,
 } from '@glimmer/interfaces';
-import { dict } from '@glimmer/util';
+import { dict, exhausted } from '@glimmer/util';
 
 import { inflateAttrName, inflateTagName } from './utils';
 
@@ -147,20 +148,13 @@ export default class WireFormatDebugger {
         case Op.HasBlockParams:
           return ['has-block-params', this.formatOpcode(opcode[1])];
 
-        case Op.CurryComponent:
+        case Op.Curry:
           return [
-            'component',
+            'curry',
             this.formatOpcode(opcode[1]),
-            this.formatParams(opcode[2]),
-            this.formatHash(opcode[3]),
-          ];
-
-        case Op.CurryHelper:
-          return [
-            'helper',
-            this.formatOpcode(opcode[1]),
-            this.formatParams(opcode[2]),
-            this.formatHash(opcode[3]),
+            this.formatCurryType(opcode[2]),
+            this.formatParams(opcode[3]),
+            this.formatHash(opcode[4]),
           ];
 
         case Op.Undefined:
@@ -267,6 +261,19 @@ export default class WireFormatDebugger {
       }
     } else {
       return opcode;
+    }
+  }
+
+  private formatCurryType(value: CurriedType) {
+    switch (value) {
+      case CurriedType.Component:
+        return 'component';
+      case CurriedType.Helper:
+        return 'helper';
+      case CurriedType.Modifier:
+        return 'modifier';
+      default:
+        throw exhausted(value);
     }
   }
 

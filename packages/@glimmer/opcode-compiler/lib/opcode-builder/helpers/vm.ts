@@ -1,9 +1,16 @@
 import { $v0 } from '@glimmer/vm';
-import { Option, Op, MachineOp, WireFormat, NonSmallIntOperand } from '@glimmer/interfaces';
+import {
+  Option,
+  Op,
+  MachineOp,
+  WireFormat,
+  NonSmallIntOperand,
+  CurriedType,
+} from '@glimmer/interfaces';
 import { encodeImmediate, isSmallInt } from '@glimmer/util';
 import { SimpleArgs } from './shared';
 import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
-import { nonSmallIntOperand } from '../operands';
+import { isStrictMode, nonSmallIntOperand } from '../operands';
 import { expr } from './expr';
 
 export type Primitive = undefined | null | boolean | number | string;
@@ -101,8 +108,9 @@ export function DynamicScope(op: PushStatementOp, names: string[], block: () => 
   op(Op.PopDynamicScope);
 }
 
-export function CurryHelper(
+export function Curry(
   op: PushExpressionOp,
+  type: CurriedType,
   definition: WireFormat.Expression,
   positional: WireFormat.Core.Params,
   named: WireFormat.Core.Hash
@@ -111,7 +119,7 @@ export function CurryHelper(
   SimpleArgs(op, positional, named, false);
   op(Op.CaptureArgs);
   expr(op, definition);
-  op(Op.CurryHelper);
+  op(Op.Curry, type, isStrictMode());
   op(MachineOp.PopFrame);
   op(Op.Fetch, $v0);
 }

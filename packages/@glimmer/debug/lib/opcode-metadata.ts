@@ -946,18 +946,22 @@ METADATA[Op.DynamicContentType] = {
   check: true,
 };
 
-METADATA[Op.CurryComponent] = {
-  name: 'CurryComponent',
+METADATA[Op.Curry] = {
+  name: 'Curry',
   mnemonic: 'curry',
   before: null,
   stackChange: null,
   ops: [
     {
-      name: 'owner',
-      type: 'owner',
+      name: 'type',
+      type: 'u32',
+    },
+    {
+      name: 'is-strict',
+      type: 'bool',
     },
   ],
-  operands: 1,
+  operands: 2,
   check: true,
 };
 
