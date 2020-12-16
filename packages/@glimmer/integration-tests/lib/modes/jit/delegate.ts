@@ -18,7 +18,7 @@ import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference } from '@glimmer/reference';
 import {
   clientBuilder,
-  CurriedComponentDefinition,
+  CurriedValue,
   EnvironmentDelegate,
   getDynamicVar,
   renderComponent,
@@ -127,7 +127,7 @@ export class JitRenderDelegate implements RenderDelegate {
     return this.doc.createDocumentFragment();
   }
 
-  createCurriedComponent(name: string): Option<CurriedComponentDefinition> {
+  createCurriedComponent(name: string): CurriedValue | null {
     return componentHelper(this.registry, name, this.context.program.constants);
   }
 

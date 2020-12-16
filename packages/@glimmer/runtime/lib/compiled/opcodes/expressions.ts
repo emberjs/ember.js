@@ -1,4 +1,5 @@
 import {
+  CurriedType,
   Helper,
   HelperDefinitionState,
   Op,
@@ -18,7 +19,7 @@ import {
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { createConcatRef } from '../expressions/concat';
-import { assert, debugToString } from '@glimmer/util';
+import { assert, debugToString, decodeHandle } from '@glimmer/util';
 import {
   check,
   CheckOption,
@@ -39,22 +40,31 @@ import {
 } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 import { DEBUG } from '@glimmer/env';
-import {
-  isCurriedHelperDefinition,
-  resolveCurriedHelperDefinition,
-} from '../../helpers/curried-helper';
-import createCurryHelperRef from '../../references/curry-helper';
+import createCurryRef from '../../references/curry-value';
+import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 
 export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 
-APPEND_OPCODES.add(Op.CurryHelper, (vm) => {
+APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
 
   let definition = check(stack.popJs(), CheckReference);
   let capturedArgs = check(stack.popJs(), CheckCapturedArguments);
-  let owner = vm.getOwner();
 
-  vm.loadValue($v0, createCurryHelperRef(definition, owner, capturedArgs));
+  let owner = vm.getOwner();
+  let resolver = vm.runtime.resolver;
+
+  let isStrict = false;
+
+  if (DEBUG) {
+    // strict check only happens in DEBUG builds, no reason to load it otherwise
+    isStrict = vm[CONSTANTS].getValue<boolean>(decodeHandle(_isStrict));
+  }
+
+  vm.loadValue(
+    $v0,
+    createCurryRef(type as CurriedType, definition, owner, capturedArgs, resolver, isStrict)
+  );
 });
 
 APPEND_OPCODES.add(Op.DynamicHelper, (vm, { op1: _definitionRegister }) => {
@@ -63,8 +73,8 @@ APPEND_OPCODES.add(Op.DynamicHelper, (vm, { op1: _definitionRegister }) => {
   let ref = vm.fetchValue<Reference>(_definitionRegister);
   let definition = valueForRef(ref);
 
-  if (isCurriedHelperDefinition(definition)) {
-    let [resolvedDef, owner] = resolveCurriedHelperDefinition(definition, args);
+  if (isCurriedType(definition, CurriedType.Helper)) {
+    let [resolvedDef, owner] = resolveCurriedValue(definition, args);
 
     let helper = resolveHelper(vm[CONSTANTS], resolvedDef, ref);
 

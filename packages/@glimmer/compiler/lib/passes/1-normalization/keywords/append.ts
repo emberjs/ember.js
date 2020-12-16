@@ -5,8 +5,9 @@ import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
 import { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
-import { assertValidHasBlockUsage } from './has-block';
 import { keywords } from './impl';
+import { assertValidCurryUsage } from './utils/curry';
+import { assertValidHasBlockUsage } from './utils/has-block';
 
 export const APPEND_KEYWORDS = keywords('Append')
   .kw('yield', {
@@ -194,45 +195,7 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('component', {
-    assert(
-      node: ASTv2.AppendContent,
-      state: NormalizationState
-    ): Result<{
-      args: ASTv2.Args;
-    }> {
-      let { args } = node;
-
-      let definition = args.nth(0);
-
-      if (definition === null) {
-        return Err(
-          generateSyntaxError(
-            `{{component}} requires a component definition or identifier as its first positional parameter, did not receive any parameters.`,
-            args.loc
-          )
-        );
-      }
-
-      if (state.isStrict && definition.type === 'Literal') {
-        return Err(
-          generateSyntaxError(
-            '{{component}} cannot resolve string values in strict mode templates',
-            node.loc
-          )
-        );
-      }
-
-      args = new ASTv2.Args({
-        positional: new ASTv2.PositionalArguments({
-          exprs: args.positional.exprs.slice(1),
-          loc: args.positional.loc,
-        }),
-        named: args.named,
-        loc: args.loc,
-      });
-
-      return Ok({ definition, args });
-    },
+    assert: assertValidCurryUsage('{{component}}', 'component', true),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
@@ -253,44 +216,7 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('helper', {
-    assert(
-      node: ASTv2.AppendContent
-    ): Result<{
-      args: ASTv2.Args;
-    }> {
-      let { args } = node;
-
-      let definition = args.nth(0);
-
-      if (definition === null) {
-        return Err(
-          generateSyntaxError(
-            `{{helper}} requires a helper definition as its first positional parameter, did not receive any parameters.`,
-            args.loc
-          )
-        );
-      }
-
-      if (definition.type === 'Literal') {
-        return Err(
-          generateSyntaxError(
-            '{{helper}} cannot resolve string values, you must pass a helper definition directly',
-            node.loc
-          )
-        );
-      }
-
-      args = new ASTv2.Args({
-        positional: new ASTv2.PositionalArguments({
-          exprs: args.positional.exprs.slice(1),
-          loc: args.positional.loc,
-        }),
-        named: args.named,
-        loc: args.loc,
-      });
-
-      return Ok({ definition, args });
-    },
+    assert: assertValidCurryUsage('{{helper}}', 'helper', false),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
