@@ -107,7 +107,7 @@ export class ConstantsImpl
 
   private helperDefinitionCache = new WeakMap<HelperDefinitionState, number | null>();
 
-  private modifierDefinitionCache = new WeakMap<ModifierDefinitionState, number>();
+  private modifierDefinitionCache = new WeakMap<ModifierDefinitionState, number | null>();
 
   private componentDefinitionCache = new WeakMap<
     ComponentDefinitionState | ResolvedComponentDefinition,
@@ -160,11 +160,26 @@ export class ConstantsImpl
     return handle;
   }
 
-  modifier(definitionState: ModifierDefinitionState, resolvedName: string | null = null): number {
+  modifier(
+    definitionState: ModifierDefinitionState,
+    resolvedName: string | null,
+    isOptional: true
+  ): number | null;
+  modifier(definitionState: ModifierDefinitionState, resolvedName?: string | null): number;
+  modifier(
+    definitionState: ModifierDefinitionState,
+    resolvedName: string | null = null,
+    isOptional?: true
+  ): number | null {
     let handle = this.modifierDefinitionCache.get(definitionState);
 
     if (handle === undefined) {
-      let manager = getInternalModifierManager(definitionState);
+      let manager = getInternalModifierManager(definitionState, isOptional);
+
+      if (manager === null) {
+        this.modifierDefinitionCache.set(definitionState, null);
+        return null;
+      }
 
       let definition = {
         resolvedName,

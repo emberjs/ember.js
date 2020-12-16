@@ -234,7 +234,7 @@ class ObjectChecker implements Checker<unknown> {
   type!: object;
 
   validate(obj: unknown): obj is object {
-    return typeof obj === 'object' && obj !== null;
+    return typeof obj === 'function' || (typeof obj === 'object' && obj !== null);
   }
 
   expected(): string {
