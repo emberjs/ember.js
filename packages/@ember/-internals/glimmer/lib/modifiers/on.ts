@@ -1,3 +1,4 @@
+import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -322,6 +323,7 @@ class OnModifierManager implements InternalModifierManager<OnModifierState | nul
   }
 
   create(
+    _owner: Owner,
     element: SimpleElement | Element,
     _state: object,
     args: VMArguments
@@ -387,6 +389,6 @@ const ON_MODIFIER_MANAGER = new OnModifierManager();
 
 const on = {};
 
-setInternalModifierManager(() => ON_MODIFIER_MANAGER, on);
+setInternalModifierManager(ON_MODIFIER_MANAGER, on);
 
 export default on;

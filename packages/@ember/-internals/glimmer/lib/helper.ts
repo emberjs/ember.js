@@ -8,7 +8,7 @@ import { getDebugName, symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
-import { helperCapabilities, setHelperManager } from '@glimmer/manager';
+import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
 import {
   consumeTag,
   createTag,
@@ -195,11 +195,11 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 }
 
-export const CLASSIC_HELPER_MANAGER_FACTORY = (owner: Owner | undefined): ClassicHelperManager => {
+setHelperManager((owner: Owner | undefined): ClassicHelperManager => {
   return new ClassicHelperManager(owner);
-};
+}, Helper);
 
-setHelperManager(CLASSIC_HELPER_MANAGER_FACTORY, Helper);
+export const CLASSIC_HELPER_MANAGER = getInternalHelperManager(Helper);
 
 ///////////
 

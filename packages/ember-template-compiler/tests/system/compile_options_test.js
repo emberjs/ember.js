@@ -1,7 +1,8 @@
 import {
   compile,
   compileOptions,
-  defaultPlugins,
+  RESOLUTION_MODE_TRANSFORMS,
+  STRICT_MODE_TRANSFORMS,
   registerPlugin,
   unregisterPlugin,
 } from '../../index';
@@ -14,13 +15,24 @@ moduleFor(
       assert.notEqual(compileOptions(), compileOptions());
     }
 
-    ['@test has default AST plugins'](assert) {
-      assert.expect(defaultPlugins.length);
+    ['@test has default AST plugins in resolution mode'](assert) {
+      assert.expect(RESOLUTION_MODE_TRANSFORMS.length);
 
       let plugins = compileOptions().plugins.ast;
 
-      for (let i = 0; i < defaultPlugins.length; i++) {
-        let plugin = defaultPlugins[i];
+      for (let i = 0; i < RESOLUTION_MODE_TRANSFORMS.length; i++) {
+        let plugin = RESOLUTION_MODE_TRANSFORMS[i];
+        assert.ok(plugins.indexOf(plugin) > -1, `includes ${plugin}`);
+      }
+    }
+
+    ['@test has default AST plugins in strict mode'](assert) {
+      assert.expect(STRICT_MODE_TRANSFORMS.length);
+
+      let plugins = compileOptions({ strictMode: true }).plugins.ast;
+
+      for (let i = 0; i < STRICT_MODE_TRANSFORMS.length; i++) {
+        let plugin = STRICT_MODE_TRANSFORMS[i];
         assert.ok(plugins.indexOf(plugin) > -1, `includes ${plugin}`);
       }
     }

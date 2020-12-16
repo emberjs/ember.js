@@ -1128,6 +1128,6 @@ Component.reopenClass({
   positionalParams: [],
 });
 
-setInternalComponentManager(() => CURLY_COMPONENT_MANAGER, Component);
+setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
 
 export default Component;

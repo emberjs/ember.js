@@ -1319,20 +1319,6 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test GH#17121 implicit component invocations should not perform string lookup']() {
-      this.registerComponent('foo-bar', { template: 'foo-bar component' });
-
-      expectAssertion(
-        () =>
-          this.render(strip`
-          {{#let 'foo-bar' as |foo|}}
-            {{foo 1 2 3}}
-          {{/let}}
-        `),
-        "expected `foo` to be a contextual component but found a string. Did you mean `(component foo)`? ('-top-level' @ L1:C29) "
-      );
-    }
-
     ['@test RFC#311 invoking named args (without arguments)']() {
       this.registerComponent('x-outer', { template: '{{@inner}}' });
       this.registerComponent('x-inner', { template: 'inner' });
