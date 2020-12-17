@@ -107,4 +107,5 @@ export const enum Op {
   DynamicModifier = 108,
   IfInline = 109,
   Not = 110,
+  GetDynamicVar = 111,
 }

@@ -118,3 +118,8 @@ EXPRESSIONS.add(SexpOpcodes.Not, (op, [, value]) => {
   expr(op, value);
   op(Op.Not);
 });
+
+EXPRESSIONS.add(SexpOpcodes.GetDynamicVar, (op, [, expression]) => {
+  expr(op, expression);
+  op(Op.GetDynamicVar);
+});

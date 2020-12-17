@@ -20,7 +20,6 @@ import {
   clientBuilder,
   CurriedValue,
   EnvironmentDelegate,
-  getDynamicVar,
   renderComponent,
   renderSync,
   runtimeContext,
@@ -85,7 +84,6 @@ export class JitRenderDelegate implements RenderDelegate {
   constructor(options?: RenderDelegateOptions) {
     this.doc = castToSimple(options?.doc ?? document);
     this.env = assign({}, options?.env ?? BaseEnv);
-    registerInternalHelper(this.registry, '-get-dynamic-var', getDynamicVar);
   }
 
   get context(): JitTestDelegateContext {

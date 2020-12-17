@@ -7,6 +7,7 @@ import { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
 import { assertValidCurryUsage } from './utils/curry';
+import { assertValidGetDynamicVar } from './utils/dynamic-vars';
 import { assertValidHasBlockUsage } from './utils/has-block';
 import { assertValidIfUnlessInlineUsage } from './utils/if-unless';
 
@@ -34,6 +35,18 @@ export const CALL_KEYWORDS = keywords('Call')
     ): Result<mir.HasBlockParams> {
       return Ok(
         new mir.HasBlockParams({ loc: node.loc, target, symbol: scope.allocateBlock(target.chars) })
+      );
+    },
+  })
+  .kw('-get-dynamic-var', {
+    assert: assertValidGetDynamicVar,
+
+    translate(
+      { node, state }: { node: ASTv2.CallExpression; state: NormalizationState },
+      name: ASTv2.ExpressionNode
+    ): Result<mir.GetDynamicVar> {
+      return VISIT_EXPRS.visit(name, state).mapOk(
+        (name) => new mir.GetDynamicVar({ name, loc: node.loc })
       );
     },
   })
