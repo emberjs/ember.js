@@ -1,9 +1,12 @@
 import { ASTv2, generateSyntaxError } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../../shared/result';
-import { GenericKeywordNode } from '../impl';
+import * as mir from '../../../2-encoding/mir';
+import { NormalizationState } from '../../context';
+import { VISIT_EXPRS } from '../../visitors/expressions';
+import { GenericKeywordNode, KeywordDelegate } from '../impl';
 
-export function assertValidGetDynamicVar(node: GenericKeywordNode): Result<ASTv2.ExpressionNode> {
+function assertGetDynamicVarKeyword(node: GenericKeywordNode): Result<ASTv2.ExpressionNode> {
   let call = node.type === 'AppendContent' ? node.value : node;
 
   let named = call.type === 'Call' ? call.args.named : null;
@@ -29,3 +32,21 @@ export function assertValidGetDynamicVar(node: GenericKeywordNode): Result<ASTv2
 
   return Ok(varName);
 }
+
+function translateGetDynamicVarKeyword(
+  { node, state }: { node: GenericKeywordNode; state: NormalizationState },
+  name: ASTv2.ExpressionNode
+): Result<mir.GetDynamicVar> {
+  return VISIT_EXPRS.visit(name, state).mapOk(
+    (name) => new mir.GetDynamicVar({ name, loc: node.loc })
+  );
+}
+
+export const getDynamicVarKeyword: KeywordDelegate<
+  GenericKeywordNode,
+  ASTv2.ExpressionNode,
+  mir.GetDynamicVar
+> = {
+  assert: assertGetDynamicVarKeyword,
+  translate: translateGetDynamicVarKeyword,
+};
