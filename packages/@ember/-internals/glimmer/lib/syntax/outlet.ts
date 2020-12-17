@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { Option, VM, VMArguments } from '@glimmer/interfaces';
+import { CurriedType, VM, VMArguments } from '@glimmer/interfaces';
 import {
   childRefFromParts,
   createComputeRef,
@@ -8,12 +8,7 @@ import {
   Reference,
   valueForRef,
 } from '@glimmer/reference';
-import {
-  createCapturedArgs,
-  CurriedComponentDefinition,
-  curry,
-  EMPTY_POSITIONAL,
-} from '@glimmer/runtime';
+import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { internalHelper } from '../helpers/internal-helper';
@@ -85,8 +80,8 @@ export const outletHelper = internalHelper((args: VMArguments, vm: VM) => {
     return outlets !== undefined ? outlets[valueForRef(nameRef)] : undefined;
   });
 
-  let lastState: Option<OutletDefinitionState> = null;
-  let definition: Option<CurriedComponentDefinition> = null;
+  let lastState: OutletDefinitionState | null = null;
+  let definition: CurriedValue | null = null;
 
   return createComputeRef(() => {
     let outletState = valueForRef(outletRef);
@@ -106,7 +101,13 @@ export const outletHelper = internalHelper((args: VMArguments, vm: VM) => {
         let owner = outletState?.render?.owner ?? vm.getOwner();
 
         let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-        definition = curry(new OutletComponentDefinition(state), owner, args);
+        definition = curry(
+          CurriedType.Component,
+          new OutletComponentDefinition(state),
+          owner,
+          args,
+          true
+        );
       } else {
         definition = null;
       }

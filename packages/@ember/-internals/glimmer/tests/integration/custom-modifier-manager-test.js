@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, defineSimpleModifier } from 'internal-test-helpers';
 
+import { Component } from '@ember/-internals/glimmer';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { set, tracked } from '@ember/-internals/metal';
@@ -578,6 +579,31 @@ moduleFor(
 
       runTask(() => set(this.context, 'qux', 'quuuuxxxxxx'));
       assert.equal(updateCount, 1);
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can be curried'() {
+      let val = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
+
+      this.registerComponent('foo', {
+        template: '<div {{@value}}></div>',
+      });
+
+      this.registerComponent('bar', {
+        template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
+        ComponentClass: Component.extend({ val }),
+      });
+
+      this.render('<Bar/>');
+      this.assertText('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot be curried when flag is not enabled'() {
+      expectAssertion(() => {
+        this.registerComponent('bar', {
+          template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
+        });
+      }, /Cannot use the \(modifier\) keyword yet, as it has not been implemented/);
     }
   }
 );

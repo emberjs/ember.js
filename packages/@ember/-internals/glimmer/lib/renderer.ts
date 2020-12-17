@@ -8,6 +8,7 @@ import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
   CompileTimeCompilationContext,
+  CurriedType,
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
@@ -24,7 +25,7 @@ import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import {
   clientBuilder,
-  CurriedComponentDefinition,
+  CurriedValue,
   curry,
   DOMChanges,
   DOMTreeConstruction,
@@ -352,17 +353,25 @@ export class Renderer {
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
     let definition = createRootOutlet(view);
-    this._appendDefinition(view, curry(definition, view.owner, null), target);
+    this._appendDefinition(
+      view,
+      curry(CurriedType.Component, definition, view.owner, null, true),
+      target
+    );
   }
 
   appendTo(view: Component, target: SimpleElement): void {
     let definition = new RootComponentDefinition(view);
-    this._appendDefinition(view, curry(definition, this._owner, null), target);
+    this._appendDefinition(
+      view,
+      curry(CurriedType.Component, definition, this._owner, null, true),
+      target
+    );
   }
 
   _appendDefinition(
     root: OutletView | Component,
-    definition: CurriedComponentDefinition,
+    definition: CurriedValue,
     target: SimpleElement
   ): void {
     let self = createConstRef(definition, 'this');
