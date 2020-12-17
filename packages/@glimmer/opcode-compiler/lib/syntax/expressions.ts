@@ -105,3 +105,16 @@ EXPRESSIONS.add(SexpOpcodes.HasBlockParams, (op, [, block]) => {
   op(Op.CompileBlock);
   op(Op.HasBlockParams);
 });
+
+EXPRESSIONS.add(SexpOpcodes.IfInline, (op, [, condition, truthy, falsy]) => {
+  // Push in reverse order
+  expr(op, falsy);
+  expr(op, truthy);
+  expr(op, condition);
+  op(Op.IfInline);
+});
+
+EXPRESSIONS.add(SexpOpcodes.Not, (op, [, value]) => {
+  expr(op, value);
+  op(Op.Not);
+});

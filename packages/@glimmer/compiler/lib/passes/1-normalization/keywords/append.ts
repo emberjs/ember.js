@@ -8,6 +8,7 @@ import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
 import { assertValidCurryUsage } from './utils/curry';
 import { assertValidHasBlockUsage } from './utils/has-block';
+import { assertValidIfUnlessInlineUsage } from './utils/if-unless';
 
 export const APPEND_KEYWORDS = keywords('Append')
   .kw('yield', {
@@ -192,6 +193,72 @@ export const APPEND_KEYWORDS = keywords('Append')
         symbol: scope.allocateBlock(target.chars),
       });
       return Ok(new mir.AppendTextNode({ loc: node.loc, text }));
+    },
+  })
+  .kw('if', {
+    assert: assertValidIfUnlessInlineUsage('{{if}}', false),
+
+    translate(
+      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
+      {
+        condition,
+        truthy,
+        falsy,
+      }: {
+        condition: ASTv2.ExpressionNode;
+        truthy: ASTv2.ExpressionNode;
+        falsy: ASTv2.ExpressionNode | null;
+      }
+    ): Result<mir.AppendTextNode> {
+      let conditionResult = VISIT_EXPRS.visit(condition, state);
+      let truthyResult = VISIT_EXPRS.visit(truthy, state);
+      let falsyResult = falsy ? VISIT_EXPRS.visit(falsy, state) : Ok(null);
+
+      return Result.all(conditionResult, truthyResult, falsyResult).mapOk(
+        ([condition, truthy, falsy]) => {
+          let text = new mir.IfInline({
+            loc: node.loc,
+            condition,
+            truthy,
+            falsy,
+          });
+
+          return new mir.AppendTextNode({ loc: node.loc, text });
+        }
+      );
+    },
+  })
+  .kw('unless', {
+    assert: assertValidIfUnlessInlineUsage('{{unless}}', true),
+
+    translate(
+      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
+      {
+        condition,
+        truthy,
+        falsy,
+      }: {
+        condition: ASTv2.ExpressionNode;
+        truthy: ASTv2.ExpressionNode;
+        falsy: ASTv2.ExpressionNode | null;
+      }
+    ): Result<mir.AppendTextNode> {
+      let conditionResult = VISIT_EXPRS.visit(condition, state);
+      let truthyResult = VISIT_EXPRS.visit(truthy, state);
+      let falsyResult = falsy ? VISIT_EXPRS.visit(falsy, state) : Ok(null);
+
+      return Result.all(conditionResult, truthyResult, falsyResult).mapOk(
+        ([condition, truthy, falsy]) => {
+          let text = new mir.IfInline({
+            loc: node.loc,
+            condition: new mir.Not({ value: condition, loc: node.loc }),
+            truthy,
+            falsy,
+          });
+
+          return new mir.AppendTextNode({ loc: node.loc, text });
+        }
+      );
     },
   })
   .kw('component', {

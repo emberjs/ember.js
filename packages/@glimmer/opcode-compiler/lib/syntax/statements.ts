@@ -303,34 +303,11 @@ STATEMENTS.add(SexpOpcodes.If, (op, [, condition, block, inverse]) =>
       InvokeStaticBlock(op, block);
     },
 
-    () => {
-      if (inverse) {
-        InvokeStaticBlock(op, inverse);
-      }
-    }
-  )
-);
-
-STATEMENTS.add(SexpOpcodes.Unless, (op, [, condition, block, inverse]) =>
-  ReplayableIf(
-    op,
-
-    () => {
-      expr(op, condition);
-      op(Op.ToBoolean);
-
-      return 1;
-    },
-
-    () => {
-      if (inverse) {
-        InvokeStaticBlock(op, inverse);
-      }
-    },
-
-    () => {
-      InvokeStaticBlock(op, block);
-    }
+    inverse
+      ? () => {
+          InvokeStaticBlock(op, inverse);
+        }
+      : undefined
   )
 );
 

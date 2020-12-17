@@ -737,6 +737,130 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
+  'if keyword in append position'() {
+    this.render('{{if this.condition "truthy"}}', {
+      condition: true,
+    });
+
+    this.assertHTML('truthy', 'Initial render');
+
+    this.rerender({ condition: false });
+    this.assertHTML('', 'If the condition is false nothing renders');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+  }
+
+  @test
+  'if keyword in append position with falsy'() {
+    this.render('{{if this.condition "truthy" "falsy"}}', {
+      condition: true,
+    });
+
+    this.assertHTML('truthy', 'Initial render');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+  }
+
+  @test
+  'unless keyword in append position'() {
+    this.render('{{unless this.condition "falsy"}}', {
+      condition: false,
+    });
+
+    this.assertHTML('falsy', 'Initial render');
+
+    this.rerender({ condition: true });
+    this.assertHTML('', 'If the condition is true nothing renders');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+  }
+
+  @test
+  'unless keyword in append position with truthy'() {
+    this.render('{{unless this.condition "falsy" "truthy"}}', {
+      condition: false,
+    });
+
+    this.assertHTML('falsy', 'Initial render');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+  }
+
+  @test
+  'if keyword in call position'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{@value}}');
+    this.render('<Foo @value={{if this.condition "truthy"}}/>', {
+      condition: true,
+    });
+
+    this.assertHTML('truthy', 'Initial render');
+
+    this.rerender({ condition: false });
+    this.assertHTML('', 'If the condition is false nothing renders');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+  }
+
+  @test
+  'if keyword in call position with falsy'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{@value}}');
+    this.render('<Foo @value={{if this.condition "truthy" "falsy"}}/>', {
+      condition: true,
+    });
+
+    this.assertHTML('truthy', 'Initial render');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+  }
+
+  @test
+  'unless keyword in call position'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{@value}}');
+    this.render('<Foo @value={{unless this.condition "falsy"}}/>', {
+      condition: false,
+    });
+
+    this.assertHTML('falsy', 'Initial render');
+
+    this.rerender({ condition: true });
+    this.assertHTML('', 'If the condition is true nothing renders');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+  }
+
+  @test
+  'unless keyword in call position with truthy'() {
+    this.registerComponent('TemplateOnly', 'Foo', '{{@value}}');
+    this.render('<Foo @value={{unless this.condition "falsy" "truthy"}}/>', {
+      condition: false,
+    });
+
+    this.assertHTML('falsy', 'Initial render');
+
+    this.rerender({ condition: true });
+    this.assertHTML('truthy', 'If the condition is true, the truthy value renders');
+
+    this.rerender({ condition: false });
+    this.assertHTML('falsy', 'If the condition is false, the falsy value renders');
+  }
+
+  @test
   'a conditional that is false on the first run'() {
     this.render('<div>{{#if this.condition}}<p>{{this.value}}</p>{{/if}}</div>', {
       condition: false,
