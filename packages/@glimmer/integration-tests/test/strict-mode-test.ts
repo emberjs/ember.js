@@ -721,7 +721,7 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
+  @test
   'Can use a dynamic modifier'() {
     const foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
     const Bar = defineComponent(
@@ -737,7 +737,133 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
+  @test
+  'Can pass modifier as argument and invoke dynamically'() {
+    const foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
+    const Foo = defineComponent({}, '<div {{@value}}></div>');
+    const Bar = defineComponent({ foo, Foo }, '<Foo @value={{foo}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass modifier as argument and invoke dynamically (with args)'() {
+    const foo = defineSimpleModifier(
+      (element: Element, [value]: string[]) => (element.innerHTML = value)
+    );
+    const Foo = defineComponent({}, '<div {{@value "Hello, world!"}}></div>');
+    const Bar = defineComponent({ foo, Foo }, '<Foo @value={{foo}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass modifier as argument and invoke dynamically (with named args)'() {
+    const foo = defineSimpleModifier(
+      (element: Element, _: unknown, { greeting }: { greeting: string }) =>
+        (element.innerHTML = greeting)
+    );
+    const Foo = defineComponent({}, '<div {{@value greeting="Hello, world!"}}></div>');
+    const Bar = defineComponent({ foo, Foo }, '<Foo @value={{foo}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass curried modifier as argument and invoke dynamically'() {
+    const foo = defineSimpleModifier(
+      (element: Element, [value]: string[]) => (element.innerHTML = value)
+    );
+    const Foo = defineComponent({}, '<div {{@value}}></div>');
+    const Bar = defineComponent({ foo, Foo }, '<Foo @value={{modifier foo "Hello, world!"}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass curried modifier as argument and invoke dynamically (with args)'() {
+    const foo = defineSimpleModifier(
+      (element: Element, [first, second]: string[]) => (element.innerHTML = `${first} ${second}`)
+    );
+    const Foo = defineComponent({}, '<div {{@value "world!"}}></div>');
+    const Bar = defineComponent({ foo, Foo }, '<Foo @value={{modifier foo "Hello,"}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass curried modifier as argument and invoke dynamically (with args, multi-layer)'() {
+    const foo = defineSimpleModifier(
+      (element: Element, values: string[]) => (element.innerHTML = values.join(' '))
+    );
+    const Foo = defineComponent({}, '<div {{@value "three"}}></div>');
+    const Bar = defineComponent({ Foo }, '<Foo @value={{modifier @value "two"}}/>');
+    const Baz = defineComponent({ foo, Bar }, '<Bar @value={{modifier foo "one"}}/>');
+
+    this.renderComponent(Baz);
+    this.assertHTML('<div>one two three</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass curried modifier as argument and invoke dynamically (with named args)'() {
+    const foo = defineSimpleModifier(
+      (element: Element, _: unknown, { greeting }: { greeting: string }) =>
+        (element.innerHTML = greeting)
+    );
+    const Foo = defineComponent({}, '<div {{@value greeting="Hello, Nebula!"}}></div>');
+    const Bar = defineComponent(
+      { foo, Foo },
+      '<Foo @value={{modifier foo greeting="Hello, world!"}}/>'
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, Nebula!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can pass curried modifier as argument and invoke dynamically (with named args, multi-layer)'() {
+    const foo = defineSimpleModifier(
+      (element: Element, _: unknown, { greeting, name }: { greeting: string; name: string }) =>
+        (element.innerHTML = `${greeting} ${name}`)
+    );
+
+    const Foo = defineComponent({}, '<div {{@value name="Nebula!"}}></div>');
+    const Bar = defineComponent(
+      { Foo },
+      '<Foo @value={{modifier @value greeting="Hello," name="world!"}}/>'
+    );
+    const Baz = defineComponent({ foo, Bar }, '<Bar @value={{modifier foo greeting="Hola,"}}/>');
+
+    this.renderComponent(Baz);
+    this.assertHTML('<div>Hello, Nebula!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a nested argument as a modifier'() {
+    const foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
+    const x = { foo };
+    const Foo = defineComponent({}, '<div {{@x.foo}}></div>');
+    const Bar = defineComponent({ Foo, x }, '<Foo @x={{x}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
   'Calling a dynamic modifier without a value is a no-op'() {
     const Bar = defineComponent(
       {},
@@ -746,8 +872,24 @@ class DynamicStrictModeTest extends RenderTest {
     );
 
     this.renderComponent(Bar);
-    this.assertHTML('');
+    this.assertHTML('<div></div>');
     this.assertStableRerender();
+  }
+
+  @test
+  'Throws an error if a non-modifier is used as a modifier'() {
+    const foo = defineSimpleHelper(() => 'Hello, world!');
+    const Bar = defineComponent(
+      {},
+      '<div {{this.foo}}></div>',
+      class extends GlimmerishComponent {
+        foo = foo;
+      }
+    );
+
+    this.assert.throws(() => {
+      this.renderComponent(Bar);
+    }, /Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was `{{this.foo}}`, and the incorrect definition is the value at the path `this.foo`, which was:/);
   }
 
   @test
@@ -772,8 +914,16 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ skip: true })
-  'Can use a nested in scope value as dynamic modifier'() {}
+  @test
+  'Can use a nested in scope value as dynamic modifier'() {
+    const foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
+    const x = { foo };
+    const Bar = defineComponent({ x }, '<div {{x.foo}}></div>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
 
   @test
   'Can use a nested in scope value as dynamic value in argument position'() {
@@ -904,7 +1054,7 @@ class DynamicStrictModeTest extends RenderTest {
     const foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent(
       {},
-      '{{#if (foo)}}{{/if}}',
+      '{{#if (this.foo)}}{{/if}}',
       class extends GlimmerishComponent {
         foo = foo;
       }
@@ -912,23 +1062,7 @@ class DynamicStrictModeTest extends RenderTest {
 
     this.assert.throws(() => {
       this.renderComponent(Bar);
-    }, /Attempted to resolve a helper in a strict mode template, but that value was not in scope: foo/);
-  }
-
-  @test
-  'Throws an error if a non-modifier is used as a modifier'() {
-    const foo = defineSimpleHelper(() => 'Hello, world!');
-    const Bar = defineComponent(
-      {},
-      '<div {{foo}}></div>',
-      class extends GlimmerishComponent {
-        foo = foo;
-      }
-    );
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Error: Attempted to resolve a modifier in a strict mode template, but it was not in scope: foo/);
+    }, /Expected a dynamic helper definition, but received an object or function that did not have a helper manager associated with it. The dynamic invocation was `{{this.foo}}` or `\(this.foo\)`, and the incorrect definition is the value at the path `this.foo`, which was:/);
   }
 }
 

@@ -76,7 +76,15 @@ export function setInternalModifierManager<T extends object>(
   return setManager(MODIFIER_MANAGERS, manager, definition);
 }
 
-export function getInternalModifierManager(definition: object): InternalModifierManager {
+export function getInternalModifierManager(definition: object): InternalModifierManager;
+export function getInternalModifierManager(
+  definition: object,
+  isOptional: true | undefined
+): InternalModifierManager | null;
+export function getInternalModifierManager(
+  definition: object,
+  isOptional?: true | undefined
+): InternalModifierManager | null {
   if (
     DEBUG &&
     typeof definition !== 'function' &&
@@ -89,12 +97,16 @@ export function getInternalModifierManager(definition: object): InternalModifier
 
   const manager = getManager(MODIFIER_MANAGERS, definition)!;
 
-  if (DEBUG && manager === undefined) {
-    throw new Error(
-      `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${debugToString!(
-        definition
-      )}`
-    );
+  if (manager === undefined) {
+    if (isOptional === true) {
+      return null;
+    } else if (DEBUG) {
+      throw new Error(
+        `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${debugToString!(
+          definition
+        )}`
+      );
+    }
   }
 
   return manager;

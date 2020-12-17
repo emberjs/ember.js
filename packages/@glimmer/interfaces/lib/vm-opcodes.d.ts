@@ -104,4 +104,5 @@ export const enum Op {
   StaticComponentAttr = 105,
   DynamicContentType = 106,
   DynamicHelper = 107,
+  DynamicModifier = 108,
 }

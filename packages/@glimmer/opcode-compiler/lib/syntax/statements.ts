@@ -36,6 +36,7 @@ import { Compilers, PushStatementOp } from './compilers';
 import {
   isGetFreeComponent,
   isGetFreeComponentOrHelper,
+  isGetFreeModifier,
   isGetFreeOptionalComponentOrHelper,
 } from '../opcode-builder/helpers/resolution';
 import { namedBlocks } from '../utils';
@@ -61,13 +62,22 @@ STATEMENTS.add(SexpOpcodes.Comment, (op, sexp) => op(Op.Comment, sexp[1]));
 STATEMENTS.add(SexpOpcodes.CloseElement, (op) => op(Op.CloseElement));
 STATEMENTS.add(SexpOpcodes.FlushElement, (op) => op(Op.FlushElement));
 
-STATEMENTS.add(SexpOpcodes.Modifier, (op, [, expr, positional, named]) => {
-  op(HighLevelResolutionOpcode.ResolveModifier, expr, (handle: number) => {
+STATEMENTS.add(SexpOpcodes.Modifier, (op, [, expression, positional, named]) => {
+  if (isGetFreeModifier(expression)) {
+    op(HighLevelResolutionOpcode.ResolveModifier, expression, (handle: number) => {
+      op(MachineOp.PushFrame);
+      SimpleArgs(op, positional, named, false);
+      op(Op.Modifier, handle);
+      op(MachineOp.PopFrame);
+    });
+  } else {
+    expr(op, expression);
     op(MachineOp.PushFrame);
     SimpleArgs(op, positional, named, false);
-    op(Op.Modifier, handle);
+    op(Op.Dup, $fp, 1);
+    op(Op.DynamicModifier);
     op(MachineOp.PopFrame);
-  });
+  }
 });
 
 STATEMENTS.add(SexpOpcodes.StaticAttr, (op, [, name, value, namespace]) => {
