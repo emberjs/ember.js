@@ -1,9 +1,12 @@
 import { ASTv2, generateSyntaxError } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../../shared/result';
-import { GenericKeywordNode } from '../impl';
+import * as mir from '../../../2-encoding/mir';
+import { NormalizationState } from '../../context';
+import { VISIT_EXPRS } from '../../visitors/expressions';
+import { GenericKeywordNode, KeywordDelegate } from '../impl';
 
-export function assertValidLog(node: GenericKeywordNode): Result<ASTv2.PositionalArguments> {
+function assertLogKeyword(node: GenericKeywordNode): Result<ASTv2.PositionalArguments> {
   let {
     args: { named, positional },
   } = node;
@@ -14,3 +17,21 @@ export function assertValidLog(node: GenericKeywordNode): Result<ASTv2.Positiona
 
   return Ok(positional);
 }
+
+function translateLogKeyword(
+  { node, state }: { node: ASTv2.CallExpression; state: NormalizationState },
+  positional: ASTv2.PositionalArguments
+): Result<mir.Log> {
+  return VISIT_EXPRS.Positional(positional, state).mapOk(
+    (positional) => new mir.Log({ positional, loc: node.loc })
+  );
+}
+
+export const logKeyword: KeywordDelegate<
+  ASTv2.CallExpression | ASTv2.AppendContent,
+  ASTv2.PositionalArguments,
+  mir.Log
+> = {
+  assert: assertLogKeyword,
+  translate: translateLogKeyword,
+};

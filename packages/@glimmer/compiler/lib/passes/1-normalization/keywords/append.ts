@@ -1,3 +1,4 @@
+import { CurriedType } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError, SourceSlice, SourceSpan } from '@glimmer/syntax';
 import { expect } from '@glimmer/util';
 
@@ -6,13 +7,20 @@ import * as mir from '../../2-encoding/mir';
 import { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
-import { assertValidCurryUsage } from './utils/curry';
-import { assertValidGetDynamicVar } from './utils/dynamic-vars';
-import { assertValidHasBlockUsage } from './utils/has-block';
-import { assertValidIfUnlessInlineUsage } from './utils/if-unless';
-import { assertValidLog } from './utils/log';
+import { toAppend } from './utils/call-to-append';
+import { assertCurryKeyword } from './utils/curry';
+import { getDynamicVarKeyword } from './utils/dynamic-vars';
+import { hasBlockKeyword } from './utils/has-block';
+import { ifUnlessInlineKeyword } from './utils/if-unless';
+import { logKeyword } from './utils/log';
 
 export const APPEND_KEYWORDS = keywords('Append')
+  .kw('has-block', toAppend(hasBlockKeyword('has-block')))
+  .kw('has-block-params', toAppend(hasBlockKeyword('has-block-params')))
+  .kw('-get-dynamic-var', toAppend(getDynamicVarKeyword))
+  .kw('log', toAppend(logKeyword))
+  .kw('if', toAppend(ifUnlessInlineKeyword('if')))
+  .kw('unless', toAppend(ifUnlessInlineKeyword('unless')))
   .kw('yield', {
     assert(
       node: ASTv2.AppendContent
@@ -165,134 +173,8 @@ export const APPEND_KEYWORDS = keywords('Append')
       return Ok(new mir.Debugger({ loc: node.loc, scope }));
     },
   })
-  .kw('has-block', {
-    assert(node: ASTv2.AppendContent): Result<SourceSlice> {
-      return assertValidHasBlockUsage('has-block', node);
-    },
-    translate(
-      { node, state: { scope } }: { node: ASTv2.AppendContent; state: NormalizationState },
-      target: SourceSlice
-    ): Result<mir.AppendTextNode> {
-      let text = new mir.HasBlock({
-        loc: node.loc,
-        target,
-        symbol: scope.allocateBlock(target.chars),
-      });
-      return Ok(new mir.AppendTextNode({ loc: node.loc, text }));
-    },
-  })
-  .kw('has-block-params', {
-    assert(node: ASTv2.AppendContent): Result<SourceSlice> {
-      return assertValidHasBlockUsage('has-block-params', node);
-    },
-    translate(
-      { node, state: { scope } }: { node: ASTv2.AppendContent; state: NormalizationState },
-      target: SourceSlice
-    ): Result<mir.AppendTextNode> {
-      let text = new mir.HasBlockParams({
-        loc: node.loc,
-        target,
-        symbol: scope.allocateBlock(target.chars),
-      });
-      return Ok(new mir.AppendTextNode({ loc: node.loc, text }));
-    },
-  })
-  .kw('-get-dynamic-var', {
-    assert: assertValidGetDynamicVar,
-
-    translate(
-      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
-      name: ASTv2.ExpressionNode
-    ): Result<mir.AppendTextNode> {
-      return VISIT_EXPRS.visit(name, state).mapOk((name) => {
-        let text = new mir.GetDynamicVar({ name, loc: node.loc });
-
-        return new mir.AppendTextNode({ text, loc: node.loc });
-      });
-    },
-  })
-  .kw('log', {
-    assert: assertValidLog,
-
-    translate(
-      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
-      positional: ASTv2.PositionalArguments
-    ): Result<mir.AppendTextNode> {
-      return VISIT_EXPRS.Positional(positional, state).mapOk((positional) => {
-        let text = new mir.Log({ positional, loc: node.loc });
-
-        return new mir.AppendTextNode({ text, loc: node.loc });
-      });
-    },
-  })
-  .kw('if', {
-    assert: assertValidIfUnlessInlineUsage('{{if}}', false),
-
-    translate(
-      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
-      {
-        condition,
-        truthy,
-        falsy,
-      }: {
-        condition: ASTv2.ExpressionNode;
-        truthy: ASTv2.ExpressionNode;
-        falsy: ASTv2.ExpressionNode | null;
-      }
-    ): Result<mir.AppendTextNode> {
-      let conditionResult = VISIT_EXPRS.visit(condition, state);
-      let truthyResult = VISIT_EXPRS.visit(truthy, state);
-      let falsyResult = falsy ? VISIT_EXPRS.visit(falsy, state) : Ok(null);
-
-      return Result.all(conditionResult, truthyResult, falsyResult).mapOk(
-        ([condition, truthy, falsy]) => {
-          let text = new mir.IfInline({
-            loc: node.loc,
-            condition,
-            truthy,
-            falsy,
-          });
-
-          return new mir.AppendTextNode({ loc: node.loc, text });
-        }
-      );
-    },
-  })
-  .kw('unless', {
-    assert: assertValidIfUnlessInlineUsage('{{unless}}', true),
-
-    translate(
-      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
-      {
-        condition,
-        truthy,
-        falsy,
-      }: {
-        condition: ASTv2.ExpressionNode;
-        truthy: ASTv2.ExpressionNode;
-        falsy: ASTv2.ExpressionNode | null;
-      }
-    ): Result<mir.AppendTextNode> {
-      let conditionResult = VISIT_EXPRS.visit(condition, state);
-      let truthyResult = VISIT_EXPRS.visit(truthy, state);
-      let falsyResult = falsy ? VISIT_EXPRS.visit(falsy, state) : Ok(null);
-
-      return Result.all(conditionResult, truthyResult, falsyResult).mapOk(
-        ([condition, truthy, falsy]) => {
-          let text = new mir.IfInline({
-            loc: node.loc,
-            condition: new mir.Not({ value: condition, loc: node.loc }),
-            truthy,
-            falsy,
-          });
-
-          return new mir.AppendTextNode({ loc: node.loc, text });
-        }
-      );
-    },
-  })
   .kw('component', {
-    assert: assertValidCurryUsage('{{component}}', 'component', true),
+    assert: assertCurryKeyword(CurriedType.Component),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
@@ -313,7 +195,7 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('helper', {
-    assert: assertValidCurryUsage('{{helper}}', 'helper', false),
+    assert: assertCurryKeyword(CurriedType.Helper),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },

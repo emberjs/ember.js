@@ -93,7 +93,7 @@ class GeneralStrictModeTest extends RenderTest {
   '{{component}} throws an error if a string is used in strict (append position)'() {
     this.assert.throws(() => {
       defineComponent({}, '{{component "bar"}}');
-    }, /{{component}} cannot resolve string values in strict mode templates/);
+    }, /\(component\) cannot resolve string values in strict mode templates/);
   }
 
   @test
@@ -134,7 +134,7 @@ class GeneralStrictModeTest extends RenderTest {
   '{{component}} throws an error if a string is used in strict (block position)'() {
     this.assert.throws(() => {
       defineComponent({}, '{{#component "bar"}}{{/component}}');
-    }, /{{#component}} cannot resolve string values in strict mode templates/);
+    }, /\(component\) cannot resolve string values in strict mode templates/);
   }
 
   @test

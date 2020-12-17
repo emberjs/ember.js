@@ -10,7 +10,7 @@ import { exhausted } from '@glimmer/util';
 import { Err, Result } from '../../../shared/result';
 import { NormalizationState } from '../context';
 
-interface KeywordDelegate<Match extends KeywordMatch, V, Out> {
+export interface KeywordDelegate<Match extends KeywordMatch, V, Out> {
   assert(options: Match, state: NormalizationState): Result<V>;
   translate(options: { node: Match; state: NormalizationState }, param: V): Result<Out>;
 }
