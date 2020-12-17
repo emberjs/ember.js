@@ -43,12 +43,35 @@ setGlobalContext({
     return (obj as Record<string, unknown>)[prop];
   },
 
-  setProp(obj: unknown, prop: string, value) {
+  setProp(obj: unknown, prop: string, value: unknown) {
     (obj as Record<string, unknown>)[prop] = value;
   },
 
   getPath(obj: unknown, path: string) {
-    return (obj as Record<string, unknown>)[path];
+    let parts = path.split('.');
+
+    let current: unknown = obj;
+
+    for (let part of parts) {
+      if (typeof current === 'function' || (typeof current === 'object' && current !== null)) {
+        current = (current as Record<string, unknown>)[part];
+      }
+    }
+
+    return current;
+  },
+
+  setPath(obj: unknown, path: string, value: unknown) {
+    let parts = path.split('.');
+
+    let current: unknown = obj;
+    let pathToSet = parts.pop()!;
+
+    for (let part of parts) {
+      current = (current as Record<string, unknown>)[part];
+    }
+
+    (current as Record<string, unknown>)[pathToSet] = value;
   },
 
   toBool(value) {
