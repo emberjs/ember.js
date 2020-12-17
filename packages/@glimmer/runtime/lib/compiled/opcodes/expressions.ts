@@ -44,6 +44,7 @@ import { CONSTANTS } from '../../symbols';
 import { DEBUG } from '@glimmer/env';
 import createCurryRef from '../../references/curry-value';
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
+import { reifyPositional } from '../../vm/arguments';
 
 export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 
@@ -276,6 +277,18 @@ APPEND_OPCODES.add(Op.GetDynamicVar, (vm) => {
     createComputeRef(() => {
       let name = String(valueForRef(nameRef));
       return valueForRef(scope.get(name));
+    })
+  );
+});
+
+APPEND_OPCODES.add(Op.Log, (vm) => {
+  let { positional } = check(vm.stack.popJs(), CheckArguments).capture();
+
+  vm.loadValue(
+    $v0,
+    createComputeRef(() => {
+      // eslint-disable-next-line no-console
+      console.log(...reifyPositional(positional));
     })
   );
 });
