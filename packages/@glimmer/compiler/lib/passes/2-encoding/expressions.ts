@@ -37,6 +37,8 @@ export class ExpressionEncoder {
         return this.IfInline(expr);
       case 'InterpolateExpression':
         return this.InterpolateExpression(expr);
+      case 'GetDynamicVar':
+        return this.GetDynamicVar(expr);
     }
   }
 
@@ -148,6 +150,10 @@ export class ExpressionEncoder {
       EXPR.expr(truthy),
       falsy ? EXPR.expr(falsy) : null,
     ];
+  }
+
+  GetDynamicVar({ name }: mir.GetDynamicVar): WireFormat.Expressions.GetDynamicVar {
+    return [SexpOpcodes.GetDynamicVar, EXPR.expr(name)];
   }
 }
 

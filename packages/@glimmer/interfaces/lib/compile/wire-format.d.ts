@@ -99,6 +99,7 @@ export const enum SexpOpcodes {
   Curry = 50,
   Not = 51,
   IfInline = 52,
+  GetDynamicVar = 53,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -234,6 +235,7 @@ export namespace Expressions {
 
   export type TupleExpression =
     | Get
+    | GetDynamicVar
     | Concat
     | HasBlock
     | HasBlockParams
@@ -261,6 +263,8 @@ export namespace Expressions {
   ];
 
   export type Not = [op: SexpOpcodes.Not, value: Expression];
+
+  export type GetDynamicVar = [op: SexpOpcodes.GetDynamicVar, value: Expression];
 }
 
 export type Expression = Expressions.Expression;

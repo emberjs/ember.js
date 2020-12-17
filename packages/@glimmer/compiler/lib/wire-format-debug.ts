@@ -248,6 +248,9 @@ export default class WireFormatDebugger {
         case Op.WithDynamicVars:
           return ['-with-dynamic-vars', this.formatHash(opcode[1]), this.formatBlock(opcode[2])];
 
+        case Op.GetDynamicVar:
+          return ['-get-dynamic-vars', this.formatOpcode(opcode[1])];
+
         case Op.InvokeComponent:
           return [
             'component',
