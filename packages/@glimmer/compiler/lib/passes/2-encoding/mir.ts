@@ -59,6 +59,10 @@ export class WithDynamicVars extends node('WithDynamicVars').fields<{
   block: NamedBlock;
 }>() {}
 
+export class GetDynamicVar extends node('GetDynamicVar').fields<{
+  name: ExpressionNode;
+}>() {}
+
 export class InvokeComponent extends node('InvokeComponent').fields<{
   definition: ExpressionNode;
   args: Args;
@@ -204,7 +208,8 @@ export type ExpressionNode =
   | IfInline
   | HasBlock
   | HasBlockParams
-  | Curry;
+  | Curry
+  | GetDynamicVar;
 
 export type ElementParameter = StaticAttr | DynamicAttr | Modifier | SplatAttr;
 
