@@ -1,3 +1,17 @@
+## v0.72.0 (2020-12-17)
+
+#### :boom: Breaking Change
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#1237](https://github.com/glimmerjs/glimmer-vm/pull/1237) [REFACTOR] Unifies currying for all values ([@pzuraq](https://github.com/pzuraq))
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#1238](https://github.com/glimmerjs/glimmer-vm/pull/1238) [FEATURE] Adds dynamic modifiers ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.71.2 (2020-12-17)
 
 #### :rocket: Enhancement
