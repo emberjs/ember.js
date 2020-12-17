@@ -62,6 +62,14 @@ export {
 } from './lib/vm/rehydrate-builder';
 export { invokeHelper } from './lib/helpers/invoke';
 
+export { default as fn } from './lib/helpers/fn';
+export { default as hash } from './lib/helpers/hash';
+export { default as array } from './lib/helpers/array';
+export { default as get } from './lib/helpers/get';
+export { default as concat } from './lib/helpers/concat';
+
+export { default as on } from './lib/modifiers/on';
+
 // Currently we need to re-export these values for @glimmer/component
 // https://github.com/glimmerjs/glimmer.js/issues/319
 export { destroy, registerDestructor, isDestroying, isDestroyed } from '@glimmer/destroyable';
