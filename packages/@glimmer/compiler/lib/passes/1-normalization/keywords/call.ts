@@ -45,6 +45,11 @@ export const CALL_KEYWORDS = keywords('Call')
     assert: assertValidCurryUsage('(helper)', 'helper', false),
 
     translate: translateCallCurryUsage(CurriedType.Helper),
+  })
+  .kw('modifier', {
+    assert: assertValidCurryUsage('(modifier)', 'modifier', false),
+
+    translate: translateCallCurryUsage(CurriedType.Modifier),
   });
 
 function translateCallCurryUsage(curriedType: CurriedType) {

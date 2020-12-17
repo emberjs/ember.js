@@ -500,7 +500,7 @@ class ElementNormalizer {
 
     if (resolution.resolution === 'error') {
       throw generateSyntaxError(
-        `You attempted to invoke a path (\`{{#${resolution.path}}}\`) but ${resolution.head} was not in scope`,
+        `You attempted to invoke a path (\`{{#${resolution.path}}}\`) as a modifier, but ${resolution.head} was not in scope. Try adding \`this\` to the beginning of the path`,
         m.loc
       );
     }

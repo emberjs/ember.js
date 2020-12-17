@@ -8,7 +8,16 @@ import {
   CheckNode,
   CheckMaybe,
 } from '@glimmer/debug';
-import { Op, Option, ModifierDefinition, ModifierInstance } from '@glimmer/interfaces';
+import {
+  Op,
+  Option,
+  ModifierDefinition,
+  ModifierInstance,
+  VMArguments,
+  Owner,
+  CurriedType,
+  ModifierDefinitionState,
+} from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
@@ -16,7 +25,10 @@ import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
-import { expect } from '@glimmer/util';
+import { debugToString, expect } from '@glimmer/util';
+import { InternalVM } from '../../vm/append';
+import { CurriedValue, isCurriedType, resolveCurriedValue } from '../../curried-value';
+import { DEBUG } from '@glimmer/env';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm[CONSTANTS].getValue(text));
@@ -93,16 +105,71 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
     return;
   }
 
+  let owner = vm.getOwner();
+  let args = check(vm.stack.popJs(), CheckArguments);
   let definition = vm[CONSTANTS].getValue<ModifierDefinition>(handle);
+
+  invokeModifier(vm, owner, args, definition);
+});
+
+APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
+  if (vm.env.isInteractive === false) {
+    return;
+  }
+
+  let { stack, [CONSTANTS]: constants } = vm;
+  let ref = check(stack.popJs(), CheckReference);
+  let args = check(stack.popJs(), CheckArguments);
+  let value = valueForRef(ref);
+  let owner: Owner;
+
+  if (typeof value !== 'function' && (typeof value !== 'object' || value === null)) {
+    return;
+  }
+
+  let hostDefinition: CurriedValue | ModifierDefinitionState;
+
+  if (isCurriedType(value, CurriedType.Modifier)) {
+    let [curriedValue, curriedOwner] = resolveCurriedValue(value, args);
+    hostDefinition = curriedValue;
+    owner = curriedOwner;
+  } else {
+    hostDefinition = value;
+    owner = vm.getOwner();
+  }
+
+  let handle = constants.modifier(hostDefinition, null, true);
+
+  if (DEBUG && handle === null) {
+    throw new Error(
+      `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
+        ref.debugLabel
+      }}}\`, and the incorrect definition is the value at the path \`${
+        ref.debugLabel
+      }\`, which was: ${debugToString!(hostDefinition)}`
+    );
+  }
+
+  let definition = constants.getValue<ModifierDefinition>(
+    expect(handle, 'BUG: modifier handle expected')
+  );
+
+  invokeModifier(vm, owner, args, definition);
+});
+
+function invokeModifier(
+  vm: InternalVM,
+  owner: Owner,
+  args: VMArguments,
+  definition: ModifierDefinition
+) {
   let { manager } = definition;
 
-  let stack = vm.stack;
-  let args = check(stack.popJs(), CheckArguments);
   let { constructing, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
 
   let state = manager.create(
-    vm.getOwner(),
+    owner,
     expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
     definition.state,
     args,
@@ -129,7 +196,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
     consumeTag(tag);
     vm.updateWith(new UpdateModifierOpcode(tag, instance));
   }
-});
+}
 
 export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = 'update-modifier';

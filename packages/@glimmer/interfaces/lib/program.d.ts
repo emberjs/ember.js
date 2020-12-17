@@ -102,6 +102,11 @@ export interface ResolutionTimeConstants {
   ): number | null;
   helper(definitionState: HelperDefinitionState, resolvedName?: string | null): number;
 
+  modifier(
+    definitionState: ModifierDefinitionState,
+    resolvedName: string | null,
+    isOptional: true
+  ): number | null;
   modifier(definitionState: ModifierDefinitionState, resolvedName?: string | null): number;
 
   component(definitionState: ComponentDefinitionState): ComponentDefinition;
