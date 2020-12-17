@@ -105,4 +105,6 @@ export const enum Op {
   DynamicContentType = 106,
   DynamicHelper = 107,
   DynamicModifier = 108,
+  IfInline = 109,
+  Not = 110,
 }
