@@ -4,14 +4,9 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, CurriedType, Option, VM, VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
-import {
-  createCapturedArgs,
-  CurriedComponentDefinition,
-  curry,
-  EMPTY_POSITIONAL,
-} from '@glimmer/runtime';
+import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { MountDefinition } from '../component-managers/mount';
 import { internalHelper } from '../helpers/internal-helper';
 
@@ -56,7 +51,7 @@ import { internalHelper } from '../helpers/internal-helper';
   @public
 */
 export const mountHelper = internalHelper(
-  (args: VMArguments, vm: VM): Reference<CurriedComponentDefinition | null> => {
+  (args: VMArguments, vm: VM): Reference<CurriedValue | null> => {
     let owner = vm.getOwner() as Owner;
     let nameRef = args.positional.at(0) as Reference<Option<string>>;
     let captured: Option<CapturedArguments> = null;
@@ -92,7 +87,7 @@ export const mountHelper = internalHelper(
       captured = createCapturedArgs(named, EMPTY_POSITIONAL);
     }
 
-    let lastName: Option<string>, lastDef: Option<CurriedComponentDefinition>;
+    let lastName: string | null, lastDef: CurriedValue | null;
 
     return createComputeRef(() => {
       let name = valueForRef(nameRef);
@@ -108,7 +103,7 @@ export const mountHelper = internalHelper(
         );
 
         lastName = name;
-        lastDef = curry(new MountDefinition(name), owner, captured);
+        lastDef = curry(CurriedType.Component, new MountDefinition(name), owner, captured, true);
 
         return lastDef;
       } else {

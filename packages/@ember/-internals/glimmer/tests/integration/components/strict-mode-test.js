@@ -145,12 +145,24 @@ if (EMBER_STRICT_MODE) {
       '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
         let foo = defineSimpleHelper((value) => value);
         let Foo = defineComponent({}, '{{@value}}');
-        let Bar = defineComponent({ Foo, foo }, '<Foo @value={{foo "Hello, world!"}}/>');
+        let Bar = defineComponent({ Foo, foo }, '<Foo @value={{helper foo "Hello, world!"}}/>');
 
         this.registerComponent('bar', { ComponentClass: Bar });
 
         this.render('<Bar/>');
         this.assertHTML('Hello, world!');
+        this.assertStableRerender();
+      }
+
+      '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic modifier'() {
+        let foo = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
+        let Foo = defineComponent({}, '<div {{@value}}></div>');
+        let Bar = defineComponent({ Foo, foo }, '<Foo @value={{modifier foo "Hello, world!"}}/>');
+
+        this.registerComponent('bar', { ComponentClass: Bar });
+
+        this.render('<Bar/>');
+        this.assertHTML('<div>Hello, world!</div>');
         this.assertStableRerender();
       }
     }
