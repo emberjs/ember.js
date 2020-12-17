@@ -7,6 +7,7 @@ import { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
 import { assertValidCurryUsage } from './utils/curry';
+import { assertValidGetDynamicVar } from './utils/dynamic-vars';
 import { assertValidHasBlockUsage } from './utils/has-block';
 import { assertValidIfUnlessInlineUsage } from './utils/if-unless';
 
@@ -193,6 +194,20 @@ export const APPEND_KEYWORDS = keywords('Append')
         symbol: scope.allocateBlock(target.chars),
       });
       return Ok(new mir.AppendTextNode({ loc: node.loc, text }));
+    },
+  })
+  .kw('-get-dynamic-var', {
+    assert: assertValidGetDynamicVar,
+
+    translate(
+      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
+      name: ASTv2.ExpressionNode
+    ): Result<mir.AppendTextNode> {
+      return VISIT_EXPRS.visit(name, state).mapOk((name) => {
+        let text = new mir.GetDynamicVar({ name, loc: node.loc });
+
+        return new mir.AppendTextNode({ text, loc: node.loc });
+      });
     },
   })
   .kw('if', {

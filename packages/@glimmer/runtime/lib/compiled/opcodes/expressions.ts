@@ -266,3 +266,16 @@ APPEND_OPCODES.add(Op.Not, (vm) => {
     })
   );
 });
+
+APPEND_OPCODES.add(Op.GetDynamicVar, (vm) => {
+  let scope = vm.dynamicScope();
+  let stack = vm.stack;
+  let nameRef = check(stack.popJs(), CheckReference);
+
+  stack.pushJs(
+    createComputeRef(() => {
+      let name = String(valueForRef(nameRef));
+      return valueForRef(scope.get(name));
+    })
+  );
+});
