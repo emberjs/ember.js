@@ -65,7 +65,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         });
         assert.ok(true, 'deprecate did not throw');
       } catch (e) {
@@ -86,7 +86,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         });
         assert.ok(true, 'deprecate did not throw');
       } catch (e) {
@@ -100,7 +100,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         });
       }, /Should throw/);
     }
@@ -122,7 +122,7 @@ moduleFor(
           id: 'my-deprecation',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         });
         assert.ok(true, 'Did not throw when level is set by id');
       } catch (e) {
@@ -134,7 +134,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         });
       }, /Should throw with no matching id/);
 
@@ -143,7 +143,7 @@ moduleFor(
           id: 'other-id',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         });
       }, /Should throw with non-matching id/);
     }
@@ -156,7 +156,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         })
       );
       assert.throws(() =>
@@ -164,7 +164,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         })
       );
       assert.throws(() =>
@@ -172,7 +172,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { available: '1.0.0' },
+          since: { enabled: '1.0.0' },
         })
       );
     }
@@ -185,7 +185,7 @@ moduleFor(
         function () {
           assert.ok(false, 'this function should not be invoked');
         },
-        { id: 'test', until: 'forever', for: 'me', since: { available: '1.0.0' } }
+        { id: 'test', until: 'forever', for: 'me', since: { enabled: '1.0.0' } }
       );
 
       assert.ok(true, 'deprecations were not thrown');
@@ -198,19 +198,19 @@ moduleFor(
         id: 'test',
         until: 'forever',
         for: 'me',
-        since: { available: '1.0.0' },
+        since: { enabled: '1.0.0' },
       });
       deprecate('Deprecation is thrown', '1', {
         id: 'test',
         until: 'forever',
         for: 'me',
-        since: { available: '1.0.0' },
+        since: { enabled: '1.0.0' },
       });
       deprecate('Deprecation is thrown', 1, {
         id: 'test',
         until: 'forever',
         for: 'me',
-        since: { available: '1.0.0' },
+        since: { enabled: '1.0.0' },
       });
 
       assert.ok(true, 'deprecations were not thrown');
@@ -312,7 +312,7 @@ moduleFor(
 
       assert.throws(
         () =>
-          deprecate('foo', false, { until: 'forever', for: 'me', since: { available: '1.0.0' } }),
+          deprecate('foo', false, { until: 'forever', for: 'me', since: { enabled: '1.0.0' } }),
         new RegExp(missingOptionsIdDeprecation),
         'proper assertion is triggered when options.id is missing'
       );
