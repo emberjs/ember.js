@@ -311,8 +311,7 @@ moduleFor(
       assert.expect(1);
 
       assert.throws(
-        () =>
-          deprecate('foo', false, { until: 'forever', for: 'me', since: { enabled: '1.0.0' } }),
+        () => deprecate('foo', false, { until: 'forever', for: 'me', since: { enabled: '1.0.0' } }),
         new RegExp(missingOptionsIdDeprecation),
         'proper assertion is triggered when options.id is missing'
       );
