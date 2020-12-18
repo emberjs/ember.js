@@ -1,3 +1,29 @@
+## v0.73.0 (2020-12-18)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/global-context`, `@glimmer/integration-tests`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1245](https://github.com/glimmerjs/glimmer-vm/pull/1245) [FEATURE] Upstream built-in helpers and modifiers from Ember ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1243](https://github.com/glimmerjs/glimmer-vm/pull/1243) [FEATURE] Upstreams {{log}} keyword  ([@pzuraq](https://github.com/pzuraq))
+  * [#1242](https://github.com/glimmerjs/glimmer-vm/pull/1242) [REFACTOR] Make `-get-dynamic-var` a keyword ([@pzuraq](https://github.com/pzuraq))
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#1240](https://github.com/glimmerjs/glimmer-vm/pull/1240) [FEATURE] Adds inline if and unless keywords ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1241](https://github.com/glimmerjs/glimmer-vm/pull/1241) Fix missing component error message ([@ef4](https://github.com/ef4))
+
+#### :house: Internal
+* `@glimmer/compiler`, `@glimmer/integration-tests`
+  * [#1244](https://github.com/glimmerjs/glimmer-vm/pull/1244) [REFACTOR] Deduplicate keyword logic ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+
+
 ## v0.72.0 (2020-12-17)
 
 #### :boom: Breaking Change
