@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { _getProp, get, set } from '@ember/-internals/metal';
+import { _getProp, _setProp, get, set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
@@ -26,8 +26,9 @@ setGlobalContext({
   toIterator,
 
   getProp: _getProp,
-  setProp: set,
+  setProp: _setProp,
   getPath: get,
+  setPath: set,
 
   scheduleDestroy(destroyable, destructor) {
     schedule('actions', null, destructor, destroyable);

@@ -1,8 +1,7 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { getInternalModifierManager } from '@glimmer/manager';
-import { on } from '@ember/-internals/glimmer';
+import { on } from '@glimmer/runtime';
 
 import { Component } from '../../utils/helpers';
 
@@ -177,19 +176,6 @@ moduleFor(
       }
     }
 
-    '@test setting passive named argument prevents calling preventDefault'() {
-      let matcher = /You marked this listener as 'passive', meaning that you must not call 'event.preventDefault\(\)'/;
-      this.render('<button {{on "click" this.callback passive=true}}>Click Me</button>', {
-        callback(event) {
-          expectAssertion(() => {
-            event.preventDefault();
-          }, matcher);
-        },
-      });
-
-      runTask(() => this.$('button').click());
-    }
-
     '@test by default bubbling is used (capture: false)'(assert) {
       this.render(
         `
@@ -257,97 +243,6 @@ moduleFor(
 
       runTask(() => this.$('.inner').click());
       assert.verifySteps(['inner clicked'], 'once works');
-    }
-
-    '@test unrelated updates to `this` context does not result in removing + re-adding'(assert) {
-      let called = false;
-
-      this.render('<button {{on "click" this.callback}}>Click Me</button>', {
-        callback() {
-          called = true;
-        },
-        otherThing: 0,
-      });
-
-      this.assertCounts({ adds: 1, removes: 0 });
-
-      runTask(() => this.$('button').click());
-      assert.equal(called, 1, 'callback is being invoked');
-
-      runTask(() => this.context.set('otherThing', 1));
-      this.assertCounts({ adds: 1, removes: 0 });
-    }
-
-    '@test asserts when eventName is missing'() {
-      expectAssertion(() => {
-        this.render(`<button {{on undefined this.callback}}>Click Me</button>`, {
-          callback() {},
-        });
-      }, /You must pass a valid DOM event name as the first argument to the `on` modifier/);
-    }
-
-    '@test asserts when eventName is a bound undefined value'() {
-      expectAssertion(() => {
-        this.render(`<button {{on this.someUndefinedThing this.callback}}>Click Me</button>`, {
-          callback() {},
-        });
-      }, /You must pass a valid DOM event name as the first argument to the `on` modifier/);
-    }
-
-    '@test asserts when eventName is a function'() {
-      expectAssertion(() => {
-        this.render(`<button {{on this.callback}}>Click Me</button>`, {
-          callback() {},
-        });
-      }, /You must pass a valid DOM event name as the first argument to the `on` modifier/);
-    }
-
-    '@test asserts when callback is missing'() {
-      expectAssertion(() => {
-        this.render(`<button {{on 'click'}}>Click Me</button>`);
-      }, /You must pass a function as the second argument to the `on` modifier/);
-    }
-
-    '@test asserts when callback is undefined'() {
-      expectAssertion(() => {
-        this.render(`<button {{on 'click' this.foo}}>Click Me</button>`);
-      }, /You must pass a function as the second argument to the `on` modifier, you passed undefined. While rendering:\n\nthis.foo/);
-    }
-
-    '@test asserts when callback is null'() {
-      expectAssertion(() => {
-        this.render(`<button {{on 'click' this.foo}}>Click Me</button>`, { foo: null });
-      }, /You must pass a function as the second argument to the `on` modifier, you passed null. While rendering:\n\nthis.foo/);
-    }
-
-    '@test asserts if the provided callback accesses `this` without being bound prior to passing to on'(
-      assert
-    ) {
-      this.render(`<button {{on 'click' this.myFunc}}>Click Me</button>`, {
-        myFunc() {
-          if (HAS_NATIVE_PROXY) {
-            expectAssertion(() => {
-              this.arg1;
-            }, /You accessed `this.arg1` from a function passed to the `on` modifier, but the function itself was not bound to a valid `this` context. Consider updating to usage of `@action`./);
-          } else {
-            // IE11
-            assert.strictEqual(this, null, 'this is null on browsers without native proxy support');
-          }
-        },
-
-        arg1: 'foo',
-      });
-
-      runTask(() => this.$('button').click());
-    }
-
-    '@test asserts if more than 2 positional parameters are provided'() {
-      expectAssertion(() => {
-        this.render(`<button {{on 'click' this.callback this.someArg}}>Click Me</button>`, {
-          callback() {},
-          someArg: 'foo',
-        });
-      }, /You can only pass two positional arguments \(event name and callback\) to the `on` modifier, but you provided 3. Consider using the `fn` helper to provide additional arguments to the `on` callback./);
     }
 
     '@test it removes the modifier when the element is removed'(assert) {

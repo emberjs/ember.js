@@ -1,6 +1,5 @@
 import AssertAgainstDynamicHelpersModifiers from './assert-against-dynamic-helpers-modifiers';
 import AssertAgainstNamedBlocks from './assert-against-named-blocks';
-import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
 import AssertSplattributeExpressions from './assert-splattribute-expression';
@@ -32,7 +31,6 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     TransformLinkTo,
     AssertInputHelperWithoutBlock,
     TransformInElement,
-    AssertIfHelperWithoutArguments,
     AssertSplattributeExpressions,
     TransformEachTrackArray,
     TransformWrapMountAndOutlet,

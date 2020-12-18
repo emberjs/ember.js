@@ -15,10 +15,10 @@ moduleFor(
   'Helpers test: custom helpers',
   class extends RenderingTestCase {
     ['@test it cannot override built-in syntax']() {
-      this.registerHelper('if', () => 'Nope');
+      this.registerHelper('array', () => 'Nope');
       expectAssertion(() => {
-        this.render(`{{if foo 'LOL'}}`, { foo: true });
-      }, /You attempted to overwrite the built-in helper "if" which is not allowed. Please rename the helper./);
+        this.render(`{{array foo 'LOL'}}`, { foo: true });
+      }, /You attempted to overwrite the built-in helper "array" which is not allowed. Please rename the helper./);
     }
 
     ['@test it can resolve custom simple helpers with or without dashes']() {

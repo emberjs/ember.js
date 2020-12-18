@@ -115,12 +115,6 @@ import {
   TextField,
   TextArea,
   Input,
-  hash,
-  array,
-  concat,
-  get,
-  on,
-  fn,
   isSerializationFirstNode,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
@@ -139,7 +133,17 @@ import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
-import { templateOnlyComponent, invokeHelper } from '@glimmer/runtime';
+
+import {
+  templateOnlyComponent,
+  invokeHelper,
+  hash,
+  array,
+  concat,
+  get,
+  on,
+  fn,
+} from '@glimmer/runtime';
 
 import {
   componentCapabilities,
