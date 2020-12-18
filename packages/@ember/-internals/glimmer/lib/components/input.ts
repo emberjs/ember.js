@@ -57,7 +57,7 @@ import InternalComponent from './internal';
   <Input @value={{this.searchWord}} @enter={{this.query}} />
   ```
 
-  Starting with Ember Octane, we recommend using the {{on}} modifier to call actions 
+  Starting with Ember Octane, we recommend using the {{on}} modifier to call actions
   on specific events, such as the input event.
 
   ```
@@ -69,7 +69,7 @@ import InternalComponent from './internal';
   />
   ```
 
-  The event name (e.g. "focusout", "input", "keydown") always follows the casing 
+  The event name (e.g. "focusout", "input", "keydown") always follows the casing
   that the HTML standard uses.
 
   ### `<input>` HTML Attributes to Avoid
