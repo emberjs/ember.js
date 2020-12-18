@@ -49,7 +49,7 @@ export default function createCurryRef(
 
         if (!resolvedDefinition) {
           throw new Error(
-            `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
+            `Attempted to resolve \`${value}\`, which was expected to be a component, but nothing was found.`
           );
         }
       }
