@@ -57,7 +57,7 @@ import InternalComponent from './internal';
   <Input @value={{this.searchWord}} @enter={{this.query}} />
   ```
 
-  Starting with Ember Octane, we recommend using the {{on}} modifier to call actions
+  Starting with Ember Octane, we recommend using the `{{on}}` modifier to call actions
   on specific events, such as the input event.
 
   ```handlebars
