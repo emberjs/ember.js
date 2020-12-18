@@ -17,9 +17,15 @@ import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import { createConstRef, Reference } from '@glimmer/reference';
 import {
+  array,
   clientBuilder,
+  concat,
   CurriedValue,
   EnvironmentDelegate,
+  fn,
+  get,
+  hash,
+  on,
   renderComponent,
   renderSync,
   runtimeContext,
@@ -84,6 +90,12 @@ export class JitRenderDelegate implements RenderDelegate {
   constructor(options?: RenderDelegateOptions) {
     this.doc = castToSimple(options?.doc ?? document);
     this.env = assign({}, options?.env ?? BaseEnv);
+    this.registry.register('modifier', 'on', on);
+    this.registry.register('helper', 'fn', fn);
+    this.registry.register('helper', 'hash', hash);
+    this.registry.register('helper', 'array', array);
+    this.registry.register('helper', 'get', get);
+    this.registry.register('helper', 'concat', concat);
   }
 
   get context(): JitTestDelegateContext {

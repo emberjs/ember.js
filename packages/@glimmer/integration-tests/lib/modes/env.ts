@@ -48,12 +48,31 @@ setGlobalContext({
     return ((obj as Dict)[key] = value);
   },
 
-  getPath(obj: unknown, key: string): unknown {
-    if (typeof obj === 'object' && obj !== null) {
-      consumeTag(tagFor(obj as object, key));
+  getPath(obj: unknown, path: string) {
+    let parts = path.split('.');
+
+    let current: unknown = obj;
+
+    for (let part of parts) {
+      if (typeof current === 'function' || (typeof current === 'object' && current !== null)) {
+        current = (current as Record<string, unknown>)[part];
+      }
     }
 
-    return (obj as Dict)[key];
+    return current;
+  },
+
+  setPath(obj: unknown, path: string, value: unknown) {
+    let parts = path.split('.');
+
+    let current: unknown = obj;
+    let pathToSet = parts.pop()!;
+
+    for (let part of parts) {
+      current = (current as Record<string, unknown>)[part];
+    }
+
+    (current as Record<string, unknown>)[pathToSet] = value;
   },
 
   warnIfStyleNotTrusted() {},

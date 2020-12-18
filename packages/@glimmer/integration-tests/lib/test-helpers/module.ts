@@ -101,8 +101,9 @@ export function suite<D extends RenderDelegate>(
         } else {
           // eslint-disable-next-line no-loop-func
           QUnit.test(prop, (assert) => {
-            test.call(instance!, assert, instance!.count);
+            let result = test.call(instance!, assert, instance!.count);
             instance!.count.assert();
+            return result;
           });
         }
       }
@@ -133,7 +134,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
         QUnit.test(prop, (assert) => {
           let instance = new klass(new Delegate());
           instance.testType = type;
-          test.call(instance, assert, instance.count);
+          return test.call(instance, assert, instance.count);
         });
       }
     };
