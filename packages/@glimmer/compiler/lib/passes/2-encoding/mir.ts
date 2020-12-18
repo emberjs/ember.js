@@ -63,6 +63,10 @@ export class GetDynamicVar extends node('GetDynamicVar').fields<{
   name: ExpressionNode;
 }>() {}
 
+export class Log extends node('Log').fields<{
+  positional: Positional;
+}>() {}
+
 export class InvokeComponent extends node('InvokeComponent').fields<{
   definition: ExpressionNode;
   args: Args;
@@ -209,7 +213,8 @@ export type ExpressionNode =
   | HasBlock
   | HasBlockParams
   | Curry
-  | GetDynamicVar;
+  | GetDynamicVar
+  | Log;
 
 export type ElementParameter = StaticAttr | DynamicAttr | Modifier | SplatAttr;
 

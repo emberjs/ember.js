@@ -100,6 +100,7 @@ export const enum SexpOpcodes {
   Not = 51,
   IfInline = 52,
   GetDynamicVar = 53,
+  Log = 54,
 
   GetStart = GetSymbol,
   GetEnd = GetFreeAsComponentHead,
@@ -243,7 +244,8 @@ export namespace Expressions {
     | Helper
     | Undefined
     | IfInline
-    | Not;
+    | Not
+    | Log;
 
   // TODO get rid of undefined, which is just here to allow trailing undefined in attrs
   // it would be better to handle that as an over-the-wire encoding concern
@@ -265,6 +267,8 @@ export namespace Expressions {
   export type Not = [op: SexpOpcodes.Not, value: Expression];
 
   export type GetDynamicVar = [op: SexpOpcodes.GetDynamicVar, value: Expression];
+
+  export type Log = [op: SexpOpcodes.Log, positional: Params];
 }
 
 export type Expression = Expressions.Expression;

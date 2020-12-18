@@ -108,4 +108,5 @@ export const enum Op {
   IfInline = 109,
   Not = 110,
   GetDynamicVar = 111,
+  Log = 112,
 }
