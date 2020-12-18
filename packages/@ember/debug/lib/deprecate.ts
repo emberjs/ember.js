@@ -213,7 +213,7 @@ if (DEBUG) {
         until: '4.0.0',
         for: 'ember-source',
         since: {
-          available: '3.24.0',
+          enabled: '3.24.0',
         },
       });
     }
@@ -226,7 +226,7 @@ if (DEBUG) {
         until: '4.0.0',
         for: 'ember-source',
         since: {
-          available: '3.24.0',
+          enabled: '3.24.0',
         },
       });
     }

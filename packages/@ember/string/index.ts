@@ -122,7 +122,7 @@ export function loc(str: string, formats: any[]): string {
       for: 'ember-source',
       url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-loc',
       since: {
-        available: '3.24',
+        enabled: '3.24',
       },
     }
   );
@@ -305,7 +305,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
         id: 'ember-string.prototype-extensions',
         for: 'ember-source',
         since: {
-          available: '3.24',
+          enabled: '3.24',
         },
         until: '4.0.0',
         url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-prototype_extensions',
