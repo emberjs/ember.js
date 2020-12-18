@@ -25,6 +25,7 @@ export { castToSimple, castToBrowser, checkNode } from './lib/simple-cast';
 export * from './lib/present';
 export { default as intern } from './lib/intern';
 
+export { default as buildUntouchableThis } from './lib/untouchable-this';
 export { default as debugToString } from './lib/debug-to-string';
 export { beginTestSteps, endTestSteps, logStep, verifySteps } from './lib/debug-steps';
 

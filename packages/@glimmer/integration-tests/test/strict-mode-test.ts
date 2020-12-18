@@ -1,3 +1,6 @@
+import { castToBrowser } from '@glimmer/util';
+import { on, fn, hash, array, get, concat } from '@glimmer/runtime';
+
 import {
   RenderTest,
   test,
@@ -1066,6 +1069,74 @@ class DynamicStrictModeTest extends RenderTest {
   }
 }
 
+class BuiltInsStrictModeTest extends RenderTest {
+  static suiteName = 'strict mode: built in modifiers and helpers';
+
+  @test
+  'Can use hash'() {
+    let Foo = defineComponent(
+      { hash },
+      '{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use array'() {
+    let Foo = defineComponent(
+      { array },
+      '{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use concat'() {
+    let Foo = defineComponent({ concat }, '{{(concat "Hello" ", " "world!")}}');
+
+    this.renderComponent(Foo);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use get'() {
+    let Foo = defineComponent(
+      { hash, get },
+      '{{#let (hash value="Hello, world!") as |hash|}}{{(get hash "value")}}{{/let}}'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use on and fn'(assert: Assert) {
+    assert.expect(3);
+
+    let handleClick = (value: number) => {
+      assert.equal(value, 123, 'handler called with correct value');
+    };
+
+    let Foo = defineComponent(
+      { on, fn, handleClick },
+      '<button {{on "click" (fn handleClick 123)}}>Click</button>'
+    );
+
+    this.renderComponent(Foo);
+
+    castToBrowser(this.element, 'div').querySelector('button')!.click();
+  }
+}
+
 jitSuite(GeneralStrictModeTest);
 jitSuite(StaticStrictModeTest);
 jitSuite(DynamicStrictModeTest);
+jitSuite(BuiltInsStrictModeTest);

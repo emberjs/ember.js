@@ -101,6 +101,15 @@ export let setProp: (obj: object, prop: string, value: unknown) => void;
 export let getPath: (obj: object, path: string) => unknown;
 
 /**
+ * Hook for specifying how Glimmer should update paths in cases where it needs
+ * to. For instance, when updating a template reference (e.g. 2-way-binding)
+ *
+ * @param obj The object provided to get a value from
+ * @param path The path to get the value from
+ */
+export let setPath: (obj: object, path: string, value: unknown) => unknown;
+
+/**
  * Hook to warn if a style binding string or value was not marked as trusted
  * (e.g. HTMLSafe)
  */
@@ -117,6 +126,7 @@ export interface GlobalContext {
   getProp: (obj: object, path: string) => unknown;
   setProp: (obj: object, prop: string, value: unknown) => void;
   getPath: (obj: object, path: string) => unknown;
+  setPath: (obj: object, prop: string, value: unknown) => void;
   warnIfStyleNotTrusted: (value: unknown) => void;
 }
 
@@ -139,6 +149,7 @@ export default function setGlobalContext(context: GlobalContext) {
   getProp = context.getProp;
   setProp = context.setProp;
   getPath = context.getPath;
+  setPath = context.setPath;
   warnIfStyleNotTrusted = context.warnIfStyleNotTrusted;
 }
 
@@ -167,6 +178,7 @@ if (DEBUG) {
           getProp,
           setProp,
           getPath,
+          setPath,
           warnIfStyleNotTrusted,
         }
       : null;
@@ -185,6 +197,7 @@ if (DEBUG) {
     getProp = context?.getProp || getProp;
     setProp = context?.setProp || setProp;
     getPath = context?.getPath || getPath;
+    setPath = context?.setPath || setPath;
     warnIfStyleNotTrusted = context?.warnIfStyleNotTrusted || warnIfStyleNotTrusted;
 
     return originalGlobalContext;
