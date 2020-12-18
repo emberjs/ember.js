@@ -10,6 +10,7 @@ import { assertValidCurryUsage } from './utils/curry';
 import { assertValidGetDynamicVar } from './utils/dynamic-vars';
 import { assertValidHasBlockUsage } from './utils/has-block';
 import { assertValidIfUnlessInlineUsage } from './utils/if-unless';
+import { assertValidLog } from './utils/log';
 
 export const APPEND_KEYWORDS = keywords('Append')
   .kw('yield', {
@@ -205,6 +206,20 @@ export const APPEND_KEYWORDS = keywords('Append')
     ): Result<mir.AppendTextNode> {
       return VISIT_EXPRS.visit(name, state).mapOk((name) => {
         let text = new mir.GetDynamicVar({ name, loc: node.loc });
+
+        return new mir.AppendTextNode({ text, loc: node.loc });
+      });
+    },
+  })
+  .kw('log', {
+    assert: assertValidLog,
+
+    translate(
+      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
+      positional: ASTv2.PositionalArguments
+    ): Result<mir.AppendTextNode> {
+      return VISIT_EXPRS.Positional(positional, state).mapOk((positional) => {
+        let text = new mir.Log({ positional, loc: node.loc });
 
         return new mir.AppendTextNode({ text, loc: node.loc });
       });

@@ -10,6 +10,7 @@ import { assertValidCurryUsage } from './utils/curry';
 import { assertValidGetDynamicVar } from './utils/dynamic-vars';
 import { assertValidHasBlockUsage } from './utils/has-block';
 import { assertValidIfUnlessInlineUsage } from './utils/if-unless';
+import { assertValidLog } from './utils/log';
 
 export const CALL_KEYWORDS = keywords('Call')
   .kw('has-block', {
@@ -47,6 +48,18 @@ export const CALL_KEYWORDS = keywords('Call')
     ): Result<mir.GetDynamicVar> {
       return VISIT_EXPRS.visit(name, state).mapOk(
         (name) => new mir.GetDynamicVar({ name, loc: node.loc })
+      );
+    },
+  })
+  .kw('log', {
+    assert: assertValidLog,
+
+    translate(
+      { node, state }: { node: ASTv2.CallExpression; state: NormalizationState },
+      positional: ASTv2.PositionalArguments
+    ): Result<mir.Log> {
+      return VISIT_EXPRS.Positional(positional, state).mapOk(
+        (positional) => new mir.Log({ positional, loc: node.loc })
       );
     },
   })

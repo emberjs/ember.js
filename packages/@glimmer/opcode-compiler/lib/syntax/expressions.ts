@@ -1,11 +1,14 @@
 import {
   ExpressionSexpOpcode,
   HighLevelResolutionOpcode,
+  MachineOp,
   Op,
   SexpOpcodes,
 } from '@glimmer/interfaces';
+import { $v0 } from '@glimmer/vm';
 import { expr } from '../opcode-builder/helpers/expr';
 import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
+import { SimpleArgs } from '../opcode-builder/helpers/shared';
 import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { Compilers, PushExpressionOp } from './compilers';
 
@@ -122,4 +125,12 @@ EXPRESSIONS.add(SexpOpcodes.Not, (op, [, value]) => {
 EXPRESSIONS.add(SexpOpcodes.GetDynamicVar, (op, [, expression]) => {
   expr(op, expression);
   op(Op.GetDynamicVar);
+});
+
+EXPRESSIONS.add(SexpOpcodes.Log, (op, [, positional]) => {
+  op(MachineOp.PushFrame);
+  SimpleArgs(op, positional, null, false);
+  op(Op.Log);
+  op(MachineOp.PopFrame);
+  op(Op.Fetch, $v0);
 });
