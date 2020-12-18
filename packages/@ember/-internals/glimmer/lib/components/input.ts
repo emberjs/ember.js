@@ -60,12 +60,14 @@ import InternalComponent from './internal';
   Starting with Ember Octane, we recommend using the {{on}} modifier to call actions 
   on specific events, such as the input event.
 
+  ```
   <label for="input-name">Name:</label>
   <Input
     @id="input-name"
     @value={{this.name}}
     {{on "input" this.validateName}}
   />
+  ```
 
   The event name (e.g. "focusout", "input", "keydown") always follows the casing 
   that the HTML standard uses.
