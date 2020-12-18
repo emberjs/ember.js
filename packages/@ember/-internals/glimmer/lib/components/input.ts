@@ -67,7 +67,8 @@ import InternalComponent from './internal';
     {{on "input" this.validateName}}
   />
 
-  The event name (e.g. "focusout", "input", "keydown") always follows the casing that the HTML standard uses.
+  The event name (e.g. "focusout", "input", "keydown") always follows the casing 
+  that the HTML standard uses.
 
   ### `<input>` HTML Attributes to Avoid
 
