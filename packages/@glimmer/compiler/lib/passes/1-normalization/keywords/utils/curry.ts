@@ -1,13 +1,19 @@
+import { CurriedType } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../../shared/result';
+import * as mir from '../../../2-encoding/mir';
 import { NormalizationState } from '../../context';
+import { VISIT_EXPRS } from '../../visitors/expressions';
+import { KeywordDelegate } from '../impl';
 
-export function assertValidCurryUsage(
-  type: string,
-  unformattedType: string,
-  stringsAllowed: boolean
-) {
+const CurriedTypeToReadableType = {
+  [CurriedType.Component]: 'component',
+  [CurriedType.Helper]: 'helper',
+  [CurriedType.Modifier]: 'modifier',
+};
+
+export function assertCurryKeyword(curriedType: CurriedType) {
   return (
     node: ASTv2.AppendContent | ASTv2.InvokeBlock | ASTv2.CallExpression,
     state: NormalizationState
@@ -15,6 +21,9 @@ export function assertValidCurryUsage(
     definition: ASTv2.ExpressionNode;
     args: ASTv2.Args;
   }> => {
+    let readableType = CurriedTypeToReadableType[curriedType];
+    let stringsAllowed = curriedType === CurriedType.Component;
+
     let { args } = node;
 
     let definition = args.nth(0);
@@ -22,7 +31,7 @@ export function assertValidCurryUsage(
     if (definition === null) {
       return Err(
         generateSyntaxError(
-          `${type} requires a ${unformattedType} definition or identifier as its first positional parameter, did not receive any parameters.`,
+          `(${readableType}) requires a ${readableType} definition or identifier as its first positional parameter, did not receive any parameters.`,
           args.loc
         )
       );
@@ -32,14 +41,14 @@ export function assertValidCurryUsage(
       if (stringsAllowed && state.isStrict) {
         return Err(
           generateSyntaxError(
-            `${type} cannot resolve string values in strict mode templates`,
+            `(${readableType}) cannot resolve string values in strict mode templates`,
             node.loc
           )
         );
       } else if (!stringsAllowed) {
         return Err(
           generateSyntaxError(
-            `${type} cannot resolve string values, you must pass a ${unformattedType} definition directly`,
+            `(${readableType}) cannot resolve string values, you must pass a ${readableType} definition directly`,
             node.loc
           )
         );
@@ -56,5 +65,41 @@ export function assertValidCurryUsage(
     });
 
     return Ok({ definition, args });
+  };
+}
+
+function translateCurryKeyword(curriedType: CurriedType) {
+  return (
+    {
+      node,
+      state,
+    }: { node: ASTv2.CallExpression | ASTv2.AppendContent; state: NormalizationState },
+    { definition, args }: { definition: ASTv2.ExpressionNode; args: ASTv2.Args }
+  ): Result<mir.Curry> => {
+    let definitionResult = VISIT_EXPRS.visit(definition, state);
+    let argsResult = VISIT_EXPRS.Args(args, state);
+
+    return Result.all(definitionResult, argsResult).mapOk(
+      ([definition, args]) =>
+        new mir.Curry({
+          loc: node.loc,
+          curriedType,
+          definition,
+          args,
+        })
+    );
+  };
+}
+
+export function curryKeyword(
+  curriedType: CurriedType
+): KeywordDelegate<
+  ASTv2.CallExpression | ASTv2.AppendContent,
+  { definition: ASTv2.ExpressionNode; args: ASTv2.Args },
+  mir.Curry
+> {
+  return {
+    assert: assertCurryKeyword(curriedType),
+    translate: translateCurryKeyword(curriedType),
   };
 }

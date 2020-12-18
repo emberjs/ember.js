@@ -1,3 +1,4 @@
+import { CurriedType } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../shared/result';
@@ -6,7 +7,7 @@ import { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { VISIT_STMTS } from '../visitors/statements';
 import { keywords } from './impl';
-import { assertValidCurryUsage } from './utils/curry';
+import { assertCurryKeyword } from './utils/curry';
 
 export const BLOCK_KEYWORDS = keywords('Block')
   .kw('in-element', {
@@ -435,7 +436,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('component', {
-    assert: assertValidCurryUsage('{{#component}}', 'component', true),
+    assert: assertCurryKeyword(CurriedType.Component),
 
     translate(
       { node, state }: { node: ASTv2.InvokeBlock; state: NormalizationState },
