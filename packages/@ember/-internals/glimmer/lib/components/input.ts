@@ -60,7 +60,7 @@ import InternalComponent from './internal';
   Starting with Ember Octane, we recommend using the {{on}} modifier to call actions
   on specific events, such as the input event.
 
-  ```
+  ```handlebars
   <label for="input-name">Name:</label>
   <Input
     @id="input-name"
