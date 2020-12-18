@@ -69,7 +69,7 @@ import InternalComponent from './internal';
   />
   ```
 
-  The event name (e.g. "focusout", "input", "keydown") always follows the casing
+  The event name (e.g. `focusout`, `input`, `keydown`) always follows the casing
   that the HTML standard uses.
 
   ### `<input>` HTML Attributes to Avoid
