@@ -30,95 +30,30 @@ import {
 */
 
 /**
-  A component is an isolated piece of UI, represented by a template and an
-  optional class. When a component has a class, its template's `this` value
-  is an instance of the component class.
+  A component is a reusable UI element that consists of a `.hbs` template and an
+  optional JavaScript class that defines its behavior. For example, someone
+  might make a `button` in the template and handle the click behavior in the
+  JavaScript file that shares the same name as the template.
 
-  ## Template-only Components
+  Components are broken down into two categories:
 
-  The simplest way to create a component is to create a template file in
-  `app/templates/components`. For example, if you name a template
-  `app/templates/components/person-profile.hbs`:
+  - Components _without_ JavaScript, that are based only on a template. These
+    are called Template-only or TO components.
+  - Components _with_ JavaScript, which consist of a template and a backing
+    class.
 
-  ```app/templates/components/person-profile.hbs
-  <h1>{{@person.name}}</h1>
-  <img src={{@person.avatar}}>
-  <p class='signature'>{{@person.signature}}</p>
-  ```
+  Ember ships with two types of JavaScript classes for components:
 
-  You will be able to use `<PersonProfile />` to invoke this component elsewhere
-  in your application:
+  1. Glimmer components, imported from `@glimmer/component`, which are the
+     default component's for Ember Octane (3.15) and more recent editions.
+  2. Classic components, imported from `@ember/component`, which were the
+     default for older editions of Ember (pre 3.15).
 
-  ```app/templates/application.hbs
-  <PersonProfile @person={{this.currentUser}} />
-  ```
+  Below is the documentation for Classic components. If you are looking for the
+  API documentation for Template-only or Glimmer components, it is
+  [available here](/ember/release/modules/@glimmer%2Fcomponent).
 
-  Note that component names are capitalized here in order to distinguish them
-  from regular HTML elements, but they are dasherized in the file system.
-
-  While the angle bracket invocation form is generally preferred, it is also
-  possible to invoke the same component with the `{{person-profile}}` syntax:
-
-  ```app/templates/application.hbs
-  {{person-profile person=this.currentUser}}
-  ```
-
-  Note that with this syntax, you use dashes in the component name and
-  arguments are passed without the `@` sign.
-
-  In both cases, Ember will render the content of the component template we
-  created above. The end result will be something like this:
-
-  ```html
-  <h1>Tomster</h1>
-  <img src="https://emberjs.com/tomster.jpg">
-  <p class='signature'>Out of office this week</p>
-  ```
-
-  ## File System Nesting
-
-  Components can be nested inside sub-folders for logical groupping. For
-  example, if we placed our template in
-  `app/templates/components/person/short-profile.hbs`, we can invoke it as
-  `<Person::ShortProfile />`:
-
-  ```app/templates/application.hbs
-  <Person::ShortProfile @person={{this.currentUser}} />
-  ```
-
-  Or equivalently, `{{person/short-profile}}`:
-
-  ```app/templates/application.hbs
-  {{person/short-profile person=this.currentUser}}
-  ```
-
-  ## Yielding Contents
-
-  You can use `yield` inside a template to include the **contents** of any block
-  attached to the component. The block will be executed in its original context:
-
-  ```handlebars
-  <PersonProfile @person={{this.currentUser}}>
-    <p>Admin mode</p>
-    {{! Executed in the current context. }}
-  </PersonProfile>
-  ```
-
-  or
-
-  ```handlebars
-  {{#person-profile person=this.currentUser}}
-    <p>Admin mode</p>
-    {{! Executed in the current context. }}
-  {{/person-profile}}
-  ```
-
-  ```app/templates/components/person-profile.hbs
-  <h1>{{@person.name}}</h1>
-  {{yield}}
-  ```
-
-  ## Customizing Components With JavaScript
+  ## Defining a Classic Component
 
   If you want to customize the component in order to handle events, transform
   arguments or maintain internal state, you implement a subclass of `Component`.
@@ -130,7 +65,7 @@ import {
 
   export default Component.extend({
     displayName: computed('person.title', 'person.firstName', 'person.lastName', function() {
-      let { title, firstName, lastName } = this;
+      let { title, firstName, lastName } = this.person;
 
       if (title) {
         return `${title} ${lastName}`;
@@ -148,7 +83,7 @@ import {
   {{yield}}
   ```
 
-  ## Customizing a Component's HTML Element in JavaScript
+  ## Customizing a Classic Component's HTML Element in JavaScript
 
   ### HTML Tag
 
