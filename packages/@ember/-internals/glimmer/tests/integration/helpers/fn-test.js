@@ -120,58 +120,6 @@ moduleFor(
       assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
     }
 
-    '@test asserts if no argument given'() {
-      expectAssertion(() => {
-        this.render(`{{fn}}`, {
-          myFunc: null,
-          arg1: 'foo',
-          arg2: 'bar',
-        });
-      }, /You must pass a function as the `fn` helpers first argument./);
-    }
-
-    '@test asserts if the first argument is undefined'() {
-      expectAssertion(() => {
-        this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
-          myFunc: undefined,
-          arg1: 'foo',
-          arg2: 'bar',
-        });
-      }, /You must pass a function as the `fn` helpers first argument, you passed undefined. While rendering:\n\nthis.myFunc/);
-    }
-
-    '@test asserts if the first argument is null'() {
-      expectAssertion(() => {
-        this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
-          myFunc: null,
-          arg1: 'foo',
-          arg2: 'bar',
-        });
-      }, /You must pass a function as the `fn` helpers first argument, you passed null. While rendering:\n\nthis.myFunc/);
-    }
-
-    '@test asserts if the provided function accesses `this` without being bound prior to passing to fn'(
-      assert
-    ) {
-      if (!HAS_NATIVE_PROXY) {
-        assert.expect(0);
-        return;
-      }
-
-      this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, {
-        myFunc(arg1) {
-          return `arg1: ${arg1}, arg2: ${this.arg2}`;
-        },
-
-        arg1: 'foo',
-        arg2: 'bar',
-      });
-
-      expectAssertion(() => {
-        this.stashedFn();
-      }, /You accessed `this.arg2` from a function passed to the `fn` helper, but the function itself was not bound to a valid `this` context. Consider updating to usage of `@action`./);
-    }
-
     '@test there is no `this` context within the callback'(assert) {
       if (DEBUG && HAS_NATIVE_PROXY) {
         assert.expect(0);

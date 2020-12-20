@@ -24,7 +24,12 @@ import {
 } from '@glimmer/manager';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import {
-  getDynamicVar,
+  array,
+  concat,
+  fn,
+  get,
+  hash,
+  on,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
   templateOnlyComponent,
 } from '@glimmer/runtime';
@@ -41,21 +46,12 @@ import { default as inElementNullCheckHelper } from './helpers/-in-element-null-
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
-import { default as array } from './helpers/array';
-import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
-import { default as fn } from './helpers/fn';
-import { default as get } from './helpers/get';
-import { default as hash } from './helpers/hash';
-import { inlineIf, inlineUnless } from './helpers/if-unless';
-import { internalHelper } from './helpers/internal-helper';
-import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import actionModifier from './modifiers/action';
-import onModifier from './modifiers/on';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 
@@ -178,18 +174,14 @@ if (PARTIALS) {
 
 const BUILTIN_KEYWORD_HELPERS = {
   action,
-  if: inlineIf,
-  log,
   mut,
   readonly,
   unbound,
-  unless: inlineUnless,
   'query-params': queryParams,
   '-hash': hash,
   '-each-in': eachIn,
   '-normalize-class': normalizeClassHelper,
   '-track-array': trackArray,
-  '-get-dynamic-var': internalHelper(getDynamicVar),
   '-mount': mountHelper,
   '-outlet': outletHelper,
   '-in-el-null': inElementNullCheckHelper,
@@ -210,7 +202,7 @@ const BUILTIN_KEYWORD_MODIFIERS = {
 
 const BUILTIN_MODIFIERS = {
   ...BUILTIN_KEYWORD_MODIFIERS,
-  on: onModifier,
+  on,
 };
 
 const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();

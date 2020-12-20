@@ -1,8 +1,3 @@
-import { Dict, VMArguments } from '@glimmer/interfaces';
-import { createComputeRef, Reference } from '@glimmer/reference';
-import { reifyNamed } from '@glimmer/runtime';
-import { internalHelper } from './internal-helper';
-
 /**
 @module ember
 */
@@ -45,10 +40,3 @@ import { internalHelper } from './internal-helper';
    @since 2.3.0
    @public
  */
-export default internalHelper(
-  (args: VMArguments): Reference<Dict<unknown>> => {
-    let positional = args.named.capture();
-
-    return createComputeRef(() => reifyNamed(positional), null, 'hash');
-  }
-);

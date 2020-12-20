@@ -68,10 +68,10 @@ export function set<T = unknown>(obj: object, keyName: string, value: T, toleran
     return value;
   }
 
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
-  }
+  return isPath(keyName) ? _setPath(obj, keyName, value, tolerant) : _setProp(obj, keyName, value);
+}
 
+export function _setProp(obj: object, keyName: string, value: any) {
   let descriptor = lookupDescriptor(obj, keyName);
 
   if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
@@ -109,7 +109,7 @@ export function set<T = unknown>(obj: object, keyName: string, value: T, toleran
   return value;
 }
 
-function setPath(root: object, path: string, value: any, tolerant?: boolean): any {
+function _setPath(root: object, path: string, value: any, tolerant?: boolean): any {
   let parts = path.split('.');
   let keyName = parts.pop()!;
 

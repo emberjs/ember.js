@@ -1,19 +1,3 @@
-import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
-import { VMArguments } from '@glimmer/interfaces';
-import {
-  createComputeRef,
-  isInvokableRef,
-  Reference,
-  updateRef,
-  valueForRef,
-} from '@glimmer/reference';
-import { reifyPositional } from '@glimmer/runtime';
-import buildUntouchableThis from '../utils/untouchable-this';
-import { internalHelper } from './internal-helper';
-
-const context = buildUntouchableThis('`fn` helper');
-
 /**
 @module ember
 */
@@ -85,37 +69,3 @@ const context = buildUntouchableThis('`fn` helper');
   @public
   @since 3.11.0
 */
-export default internalHelper((args: VMArguments) => {
-  let positional = args.positional.capture();
-  let callbackRef = positional[0];
-
-  if (DEBUG) assertCallbackIsFn(callbackRef);
-
-  return createComputeRef(
-    () => {
-      return (...invocationArgs: unknown[]) => {
-        let [fn, ...args] = reifyPositional(positional);
-
-        if (DEBUG) assertCallbackIsFn(callbackRef);
-
-        if (isInvokableRef(callbackRef)) {
-          let value = args.length > 0 ? args[0] : invocationArgs[0];
-          return updateRef(callbackRef, value);
-        } else {
-          return (fn as Function).call(context, ...args, ...invocationArgs);
-        }
-      };
-    },
-    null,
-    'fn'
-  );
-});
-
-function assertCallbackIsFn(callbackRef: Reference) {
-  assert(
-    `You must pass a function as the \`fn\` helpers first argument, you passed ${
-      callbackRef ? valueForRef(callbackRef) : callbackRef
-    }. While rendering:\n\n${callbackRef?.debugLabel}`,
-    callbackRef && (isInvokableRef(callbackRef) || typeof valueForRef(callbackRef) === 'function')
-  );
-}

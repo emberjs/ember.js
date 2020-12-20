@@ -1,16 +1,3 @@
-import { get, set } from '@ember/-internals/metal';
-import { isObject } from '@ember/-internals/utils';
-import { VMArguments } from '@glimmer/interfaces';
-import {
-  childRefFor,
-  childRefFromParts,
-  createComputeRef,
-  isConstRef,
-  NULL_REFERENCE,
-  valueForRef,
-} from '@glimmer/reference';
-import { internalHelper } from './internal-helper';
-
 /**
 @module ember
 */
@@ -95,40 +82,3 @@ import { internalHelper } from './internal-helper';
   @for Ember.Templates.helpers
   @since 2.1.0
  */
-export default internalHelper((args: VMArguments) => {
-  let sourceRef = args.positional.at(0);
-  let pathRef = args.positional.at(1);
-
-  if (isConstRef(pathRef)) {
-    // Since the path is constant, we can create a normal chain of property
-    // references. The source reference will update like normal, and all of the
-    // child references will update accordingly.
-    let path = valueForRef(pathRef);
-
-    if (path === undefined || path === null || path === '') {
-      return NULL_REFERENCE;
-    } else if (typeof path === 'string' && path.indexOf('.') > -1) {
-      return childRefFromParts(sourceRef, path.split('.'));
-    } else {
-      return childRefFor(sourceRef, String(path));
-    }
-  } else {
-    return createComputeRef(
-      () => {
-        let source = valueForRef(sourceRef);
-
-        if (isObject(source)) {
-          return get(source, String(valueForRef(pathRef)));
-        }
-      },
-      (value) => {
-        let source = valueForRef(sourceRef);
-
-        if (isObject(source)) {
-          return set(source, String(valueForRef(pathRef)), value);
-        }
-      },
-      'get'
-    );
-  }
-});

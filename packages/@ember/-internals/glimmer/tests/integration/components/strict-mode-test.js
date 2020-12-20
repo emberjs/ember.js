@@ -8,17 +8,8 @@ import {
 } from 'internal-test-helpers';
 import { EMBER_STRICT_MODE } from '@ember/canary-features';
 
-import {
-  Input,
-  LinkComponent as LinkTo,
-  TextArea,
-  hash,
-  array,
-  concat,
-  get,
-  on,
-  fn,
-} from '@ember/-internals/glimmer';
+import { Input, LinkComponent as LinkTo, TextArea } from '@ember/-internals/glimmer';
+import { hash, array, concat, get, on, fn } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
 if (EMBER_STRICT_MODE) {

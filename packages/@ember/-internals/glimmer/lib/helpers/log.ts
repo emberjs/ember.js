@@ -1,8 +1,3 @@
-import { VMArguments } from '@glimmer/interfaces';
-import { createComputeRef } from '@glimmer/reference';
-import { reifyPositional } from '@glimmer/runtime';
-import { internalHelper } from './internal-helper';
-
 /**
 @module ember
 */
@@ -20,12 +15,3 @@ import { internalHelper } from './internal-helper';
   @param {Array} params
   @public
 */
-export default internalHelper((args: VMArguments) => {
-  let positional = args.positional.capture();
-
-  return createComputeRef(() => {
-    /* eslint-disable no-console */
-    console.log(...reifyPositional(positional));
-    /* eslint-enable no-console */
-  });
-});

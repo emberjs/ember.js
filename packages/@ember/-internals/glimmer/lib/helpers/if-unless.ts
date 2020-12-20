@@ -2,12 +2,6 @@
 @module ember
 */
 
-import { assert } from '@ember/debug';
-import { toBool } from '@glimmer/global-context';
-import { VMArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { internalHelper } from './internal-helper';
-
 /**
   The `if` helper allows you to conditionally render one of two branches,
   depending on the "truthiness" of a property.
@@ -99,28 +93,6 @@ import { internalHelper } from './internal-helper';
   @for Ember.Templates.helpers
   @public
 */
-export const inlineIf = internalHelper((args: VMArguments) => {
-  let positional = args.positional.capture();
-
-  return createComputeRef(
-    () => {
-      assert(
-        'The inline form of the `if` helper expects two or three arguments, e.g. `{{if trialExpired "Expired" expiryDate}}`.',
-        positional.length === 3 || positional.length === 2
-      );
-
-      let [condition, truthyValue, falsyValue] = positional;
-
-      if (toBool(valueForRef(condition)) === true) {
-        return valueForRef(truthyValue);
-      } else {
-        return falsyValue !== undefined ? valueForRef(falsyValue) : undefined;
-      }
-    },
-    null,
-    'if'
-  );
-});
 
 /**
   The `unless` helper is the inverse of the `if` helper. It displays if a value
@@ -207,25 +179,3 @@ export const inlineIf = internalHelper((args: VMArguments) => {
   @for Ember.Templates.helpers
   @public
 */
-export const inlineUnless = internalHelper((args: VMArguments) => {
-  let positional = args.positional.capture();
-
-  return createComputeRef(
-    () => {
-      assert(
-        'The inline form of the `unless` helper expects two or three arguments, e.g. `{{unless isFirstLogin "Welcome back!"}}`.',
-        positional.length === 3 || positional.length === 2
-      );
-
-      let [condition, falsyValue, truthyValue] = positional;
-
-      if (toBool(valueForRef(condition)) === true) {
-        return truthyValue !== undefined ? valueForRef(truthyValue) : undefined;
-      } else {
-        return valueForRef(falsyValue);
-      }
-    },
-    null,
-    'unless'
-  );
-});
