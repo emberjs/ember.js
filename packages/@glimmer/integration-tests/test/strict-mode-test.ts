@@ -115,6 +115,13 @@ class GeneralStrictModeTest extends RenderTest {
   }
 
   @test
+  '{{component.foo}} throws an error (append position)'() {
+    this.assert.throws(() => {
+      defineComponent({}, '{{component.foo}}', class extends GlimmerishComponent {});
+    }, /The `component` keyword was used incorrectly. It was used as `component.foo`, but it cannot be used with additional path segments./);
+  }
+
+  @test
   '{{component}} throws an error if a string is used indirectly in strict after first render (append position)'() {
     const Bar = defineComponent({}, 'Hello, world!');
 

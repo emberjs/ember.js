@@ -52,6 +52,14 @@ class KeywordImpl<
     let path = getPathExpression(node);
 
     if (path !== null && path.ref.type === 'Free') {
+      if (path.tail.length > 0) {
+        if (path.ref.resolution.serialize() === 'Loose') {
+          // cannot be a keyword reference, keywords do not allow paths (must be
+          // relying on implicit this fallback)
+          return false;
+        }
+      }
+
       return path.ref.name === this.keyword;
     } else {
       return false;
@@ -60,6 +68,19 @@ class KeywordImpl<
 
   translate(node: KeywordMatches[K], state: NormalizationState): Result<Out> | null {
     if (this.match(node)) {
+      let path = getPathExpression(node);
+
+      if (path !== null && path.tail.length > 0) {
+        return Err(
+          generateSyntaxError(
+            `The \`${
+              this.keyword
+            }\` keyword was used incorrectly. It was used as \`${path.loc.asString()}\`, but it cannot be used with additional path segments. \n\nError caused by`,
+            node.loc
+          )
+        );
+      }
+
       let param = this.delegate.assert(node, state);
       return param.andThen((param) => this.delegate.translate({ node, state }, param));
     } else {
