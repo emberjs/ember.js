@@ -127,6 +127,15 @@ if (!jQueryDisabled) {
 }
 
 let allExports = [
+  // @glimmer/runtime
+  ['_templateOnlyComponent', '@glimmer/runtime', 'templateOnlyComponent'],
+  ['_on', '@glimmer/runtime', 'on'],
+  ['_fn', '@glimmer/runtime', 'fn'],
+  ['_array', '@glimmer/runtime', 'array'],
+  ['_hash', '@glimmer/runtime', 'hash'],
+  ['_get', '@glimmer/runtime', 'get'],
+  ['_concat', '@glimmer/runtime', 'concat'],
+
   // @ember/-internals/environment
   ['ENV', '@ember/-internals/environment', { get: 'getENV' }],
   ['lookup', '@ember/-internals/environment', { get: 'getLookup', set: 'setLookup' }],
@@ -266,7 +275,6 @@ let allExports = [
   ['_componentManagerCapabilities', '@glimmer/manager', 'componentCapabilities'],
   ['_setComponentTemplate', '@glimmer/manager', 'setComponentTemplate'],
   ['_getComponentTemplate', '@glimmer/manager', 'getComponentTemplate'],
-  ['_templateOnlyComponent', '@glimmer/runtime', 'templateOnlyComponent'],
   EMBER_GLIMMER_HELPER_MANAGER
     ? ['_setHelperManager', '@glimmer/manager', 'setHelperManager']
     : null,
@@ -275,6 +283,7 @@ let allExports = [
     : null,
   EMBER_GLIMMER_INVOKE_HELPER ? ['_invokeHelper', '@glimmer/runtime', 'invokeHelper'] : null,
   ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
+  ['_Input', '@ember/-internals/glimmer', 'Input'],
 
   // @ember/-internals/runtime
   ['A', '@ember/-internals/runtime'],
