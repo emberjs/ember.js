@@ -1,9 +1,8 @@
-# Release
+# Release Process
 
 Releases are mostly automated using
 [release-it](https://github.com/release-it/release-it/) and
 [lerna-changelog](https://github.com/lerna/lerna-changelog/).
-
 
 ## Preparation
 
@@ -25,39 +24,33 @@ When reviewing merged PR's the labels to be used are:
 * internal - Used for internal changes that still require a mention in the
   changelog/release notes.
 
-
 ## Release
 
 Once the prep work is completed, the actual release is straight forward:
 
-* First ensure that you have `release-it` installed globally, generally done by
-  using one of the following commands:
+* First, ensure that you have installed your projects dependencies:
 
-```
-# using https://volta.sh
-volta install release-it
-
-# using Yarn
-yarn global add release-it
-
-# using npm
-npm install --global release-it
-```
-
-* Second, ensure that you have installed your projects dependencies:
-
-```
+```sh
 yarn install
 ```
 
-* And last (but not least 😁) do your release. It requires a
-  [GitHub personal access token](https://github.com/settings/tokens) as
-  `$GITHUB_AUTH` environment variable. Only "repo" access is needed; no "admin"
-  or other scopes are required.
+* Second, ensure that you have obtained a
+  [GitHub personal access token][generate-token] with the `repo` scope (no
+  other permissions are needed). Make sure the token is available as the
+  `GITHUB_AUTH` environment variable.
 
-```
-export GITHUB_AUTH="f941e0..."
-release-it
+  For instance:
+
+  ```bash
+  export GITHUB_AUTH=abc123def456
+  ```
+
+[generate-token]: https://github.com/settings/tokens/new?scopes=repo&description=GITHUB_AUTH+env+variable
+
+* And last (but not least 😁) do your release.
+
+```sh
+npx release-it
 ```
 
 [release-it](https://github.com/release-it/release-it/) manages the actual
