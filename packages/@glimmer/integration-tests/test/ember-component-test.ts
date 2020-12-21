@@ -1600,6 +1600,41 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     assertFired(instance, 'didUpdate', 1);
     assertFired(instance, 'didRender', 2);
   }
+
+  @test
+  'Can use named argument @component (e.g. `{{@component.name}}`) emberjs/ember.js#19313'() {
+    this.registerComponent('Glimmer', 'Outer', '{{@component.name}}');
+
+    this.render('<Outer @component={{hash name="Foo"}} />');
+    this.assertHTML('Foo');
+
+    this.rerender();
+
+    this.assertHTML('Foo');
+    this.assertStableNodes();
+  }
+
+  @test
+  'Can use implicit this fallback for `component.name` emberjs/ember.js#19313'() {
+    this.registerComponent(
+      'Glimmer',
+      'Outer',
+      '{{component.name}}',
+      class extends GlimmerishComponent {
+        get component() {
+          return { name: 'Foo' };
+        }
+      }
+    );
+
+    this.render('<Outer />');
+    this.assertHTML('Foo');
+
+    this.rerender();
+
+    this.assertHTML('Foo');
+    this.assertStableNodes();
+  }
 }
 
 class CurlyTeardownTest extends CurlyTest {
