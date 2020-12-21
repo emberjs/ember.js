@@ -1,3 +1,16 @@
+## v0.73.1 (2020-12-21)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/integration-tests`
+  * [#1249](https://github.com/glimmerjs/glimmer-vm/pull/1249) Ensure `{{component.name}}` works with implicit this fallback in loose mode. ([@rwjblue](https://github.com/rwjblue))
+
+#### :house: Internal
+* [#1248](https://github.com/glimmerjs/glimmer-vm/pull/1248) Update automated release tooling ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.73.0 (2020-12-18)
 
 #### :boom: Breaking Change
