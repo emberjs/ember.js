@@ -15,16 +15,19 @@
     "packages/*/*"
   ],
   "scripts": {
+    "benchmark:build": "node benchmark/bin/build.js",
+    "benchmark:control": "node benchmark/bin/control.js",
+    "benchmark:experiment": "node benchmark/bin/experiment.js",
     "browserstack:connect": "ember browserstack:connect",
     "browserstack:disconnect": "ember browserstack:disconnect",
     "browserstack:results": "ember browserstack:results",
     "build": "ember build --env production --suppress-sizes",
     "build:flags": "RETAIN_FLAGS=true ember build --env production --suppress-sizes",
     "build:typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
+    "link:local": "node bin/yarn-link-local",
     "lint": "npm-run-all lint:*",
     "lint:files": "eslint . --cache",
     "lint:types": "tsc -p tsconfig.json --noEmit",
-    "link:local": "node bin/yarn-link-local",
     "start": "ember serve --port=7357",
     "test": "ember test",
     "test:browserstack": "ember test --test-port=7774 --host 127.0.0.1 --config-file=testem-browserstack.js",
@@ -32,10 +35,10 @@
     "test:smoke": "SMOKE_TESTS=true ember test",
     "test:types": "node bin/run-types-tests.js",
     "yarn:link": "node bin/yarn-link-all",
-    "yarn:unlink": "node bin/yarn-link-all --unlink",
-    "benchmark:build": "node benchmark/bin/build.js",
-    "benchmark:control": "node benchmark/bin/control.js",
-    "benchmark:experiment": "node benchmark/bin/experiment.js"
+    "yarn:unlink": "node bin/yarn-link-all --unlink"
+  },
+  "resolutions": {
+    "typescript": "4.0.2"
   },
   "dependencies": {
     "@handlebars/parser": "^2.0.0",
@@ -92,9 +95,9 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.1",
     "qunit": "^2.9.3",
-    "release-it": "^13.5.8",
-    "release-it-lerna-changelog": "^2.3.0",
-    "release-it-yarn-workspaces": "^1.4.0",
+    "release-it": "^14.2.1",
+    "release-it-lerna-changelog": "^3.1.0",
+    "release-it-yarn-workspaces": "^2.0.0",
     "rimraf": "^2.7.1",
     "rollup": "^2.24.0",
     "rollup-plugin-sourcemaps": "^0.6.2",
@@ -102,9 +105,6 @@
     "semver": "^6.3.0",
     "testem-failure-only-reporter": "^0.0.1",
     "toml": "^3.0.0",
-    "typescript": "4.0.2"
-  },
-  "resolutions": {
     "typescript": "4.0.2"
   },
   "publishConfig": {
@@ -119,6 +119,11 @@
       "documentation": ":memo: Documentation",
       "internal": ":house: Internal"
     }
+  },
+  "ember-addon": {
+    "paths": [
+      "lib/local-linker"
+    ]
   },
   "release-it": {
     "hooks": {
@@ -160,10 +165,5 @@
   "volta": {
     "node": "12.18.3",
     "yarn": "1.22.5"
-  },
-  "ember-addon": {
-    "paths": [
-      "lib/local-linker"
-    ]
   }
 }
