@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.24.0-beta.3 (December 21, 2020)
+
+- [#19280](https://github.com/emberjs/ember.js/pull/19280) [BUGFIX] Ensure aliases cause recompute of a computed property when used with `@each` in the dependent keys of that property
+
 ### v3.24.0-beta.2 (November 24, 2020)
 
 - [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
