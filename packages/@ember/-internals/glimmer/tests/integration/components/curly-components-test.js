@@ -3733,6 +3733,34 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
 
+    ['@test can use `{{component.foo}}` in a template GH#19313']() {
+      this.registerComponent('foo-bar', {
+        template: '{{component.foo}}',
+      });
+
+      this.render('{{foo-bar component=(hash foo="bar")}}');
+
+      this.assertComponentElement(this.firstChild, { content: 'bar' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'bar' });
+    }
+
+    ['@test can use `{{@component.foo}}` in a template GH#19313']() {
+      this.registerComponent('foo-bar', {
+        template: '{{@component.foo}}',
+      });
+
+      this.render('{{foo-bar component=(hash foo="bar")}}');
+
+      this.assertComponentElement(this.firstChild, { content: 'bar' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'bar' });
+    }
+
     '@test lifecycle hooks are not tracked'() {
       this.registerComponent('foo-bar', {
         ComponentClass: class extends Component {
