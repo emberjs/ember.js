@@ -19,7 +19,8 @@ ControllerMixin.reopen({
     may cause unexpected behavior if a query parameter is used with `toggleProperty`,
     because the initial value set for `param=false` will be the string `"false"`, which is truthy.
     
-    To avoid this, you may specify that the query parameter should be parsed as a boolean
+    To avoid this, you may specify a boolean default value for the parameter, or
+    specify that the query parameter should be parsed as a boolean
     by using the following verbose form with a `type` property:
     ```javascript
       queryParams: [{
