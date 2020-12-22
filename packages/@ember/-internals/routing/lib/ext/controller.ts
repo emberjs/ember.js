@@ -18,7 +18,7 @@ ControllerMixin.reopen({
     By default, query parameters are parsed as strings. This
     may cause unexpected behavior if a query parameter is used with `toggleProperty`,
     because the initial value set for `param=false` will be the string `"false"`, which is truthy.
-    
+
     To avoid this, you may specify that the query parameter should be parsed as a boolean
     by using the following verbose form with a `type` property:
     ```javascript
@@ -30,7 +30,7 @@ ControllerMixin.reopen({
     ```
     Available values for the `type` parameter are `'boolean'`, `'number'`, `'array'`, and `'string'`.
     If query param type is not specified, it will default to `'string'`.
-    
+
     @for Ember.ControllerMixin
     @property queryParams
     @public
