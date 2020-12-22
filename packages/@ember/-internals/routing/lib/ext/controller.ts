@@ -15,7 +15,7 @@ ControllerMixin.reopen({
     the values of these query parameters to the variables
     `this.category` and `this.page`.
 
-    By default, query parameters are parsed and treated as strings. This
+    By default, query parameters are parsed as strings. This
     may cause unexpected behavior if a query parameter is used with `toggleProperty`,
     because the initial value set for `param=false` will be the string `"false"`, which is truthy.
     
