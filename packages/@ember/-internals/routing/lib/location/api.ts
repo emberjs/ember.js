@@ -58,13 +58,16 @@ export type UpdateCallback = (url: string) => void;
   import HistoryLocation from '@ember/routing/history-location';
 
   export default class MyHistory {
-    implementation: 'my-custom-history',
+    implementation = 'my-custom-history';
+
     constructor() {
       this._history = HistoryLocation.create(...arguments);
     }
+    
     create() {
       return new this(...arguments);
     }
+    
     pushState(path) {
        this._history.pushState(path);
     }
