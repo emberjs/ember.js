@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.25.0-beta.1 (December 28, 2020)
+
+- [#19302](https://github.com/emberjs/ember.js/pull/19302) / [#19306](https://github.com/emberjs/ember.js/pull/19306) / [#19319](https://github.com/emberjs/ember.js/pull/19319) [FEATURE] Implement the [Handlebars Strict Mode RFC](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md).
+- [#19318](https://github.com/emberjs/ember.js/pull/19318) [FEATURE] Implement the [Named Blocks RFC](https://github.com/emberjs/rfcs/blob/master/text/0460-yieldable-named-blocks.md).
+- [#18148](https://github.com/emberjs/ember.js/pull/18148) [BUGFIX] Fix empty `htmlSafe` string to be treated as falsy
+- [#19320](https://github.com/emberjs/ember.js/pull/19320) / [#19317](https://github.com/emberjs/ember.js/pull/19317) / [#19297](https://github.com/emberjs/ember.js/pull/19297) / [#19293](https://github.com/emberjs/ember.js/pull/19293) / [#19278](https://github.com/emberjs/ember.js/pull/19278) / [#19275](https://github.com/emberjs/ember.js/pull/19275) Update rendering engine to `@glimmer/*` 0.73.1 for various features and bugfixes including ensuring `{{component.name}}` works with implicit this fallback
+
 ### v3.24.0 (December 28, 2020)
 
 - [#19224](https://github.com/emberjs/ember.js/pull/19224) [FEATURE] Add `{{page-title}}` helper to route template blueprints to implement [RFC #0654](https://github.com/emberjs/rfcs/blob/master/text/0645-add-ember-page-title-addon.md). 
