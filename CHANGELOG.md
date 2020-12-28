@@ -1,14 +1,6 @@
 # Ember Changelog
 
-### v3.24.0-beta.3 (December 21, 2020)
-
-- [#19280](https://github.com/emberjs/ember.js/pull/19280) [BUGFIX] Ensure aliases cause recompute of a computed property when used with `@each` in the dependent keys of that property
-
-### v3.24.0-beta.2 (November 24, 2020)
-
-- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
-
-### v3.24.0-beta.1 (November 16, 2020)
+### v3.24.0 (December 28, 2020)
 
 - [#19224](https://github.com/emberjs/ember.js/pull/19224) [FEATURE] Add `{{page-title}}` helper to route template blueprints to implement [RFC #0654](https://github.com/emberjs/rfcs/blob/master/text/0645-add-ember-page-title-addon.md). 
 - [#19133](https://github.com/emberjs/ember.js/pull/19133) [FEATURE / DEPRECATION] Add new options to `deprecate()` for `for` and `since` and deprecate using `deprecate()` without those options per the [Deprecation Staging RFC](https://github.com/emberjs/rfcs/blob/master/text/0649-deprecation-staging.md).
@@ -18,6 +10,7 @@
 - [#19080](https://github.com/emberjs/ember.js/pull/19080) [BUGFIX] Lazily setup the router in non-application tests
 - [#19253](https://github.com/emberjs/ember.js/pull/19253) [BUGFIX] Correct return of getComponentTemplate from null to undefined to align with original RFC (#481)
 - [#19223](https://github.com/emberjs/ember.js/pull/19223) [BUGFIX] `<LinkTo>` should link within the engine when used inside one
+- [#19280](https://github.com/emberjs/ember.js/pull/19280) [BUGFIX] Ensure aliases cause recompute of a computed property when used with `@each` in the dependent keys of that property
 - [#19196](https://github.com/emberjs/ember.js/pull/19196) [CLEANUP] Remove EMBER_GLIMMER_IN_ELEMENT feature flag
 - [#19204](https://github.com/emberjs/ember.js/pull/19204) [CLEANUP] Remove EMBER_CACHE_API feature flag
 - [#19206](https://github.com/emberjs/ember.js/pull/19206) [CLEANUP] Remove EMBER_ROUTING_MODEL_ARG feature flag
