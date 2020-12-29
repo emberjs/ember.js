@@ -3,10 +3,10 @@
 */
 
 import { getOwner, Owner } from '@ember/-internals/owner';
+import { symbol } from '@ember/-internals/utils';
 import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
-import { symbol } from '@ember/-internals/utils';
 import EmberRouter, { QueryParam } from '../system/router';
 import RouterState from '../system/router_state';
 
