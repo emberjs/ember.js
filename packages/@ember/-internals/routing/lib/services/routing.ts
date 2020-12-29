@@ -2,11 +2,15 @@
 @module ember
 */
 
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
+import { symbol } from '@ember/-internals/utils';
 import EmberRouter, { QueryParam } from '../system/router';
 import RouterState from '../system/router_state';
+
+const ROUTER = symbol('ROUTER') as string;
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for
@@ -19,7 +23,17 @@ import RouterState from '../system/router_state';
   @class RoutingService
 */
 export default class RoutingService extends Service {
-  router!: EmberRouter;
+  get router(): EmberRouter {
+    let router = this[ROUTER];
+    if (router !== undefined) {
+      return router;
+    }
+    const owner = getOwner(this) as Owner;
+    router = owner.lookup('router:main') as EmberRouter;
+    router.setupRouter();
+    return (this[ROUTER] = router);
+  }
+
   hasRoute(routeName: string) {
     return this.router.hasRoute(routeName);
   }

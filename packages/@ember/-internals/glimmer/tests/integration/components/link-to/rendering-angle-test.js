@@ -1,4 +1,9 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  RenderingTestCase,
+  runTask,
+} from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
@@ -101,7 +106,7 @@ moduleFor(
     ['@test should be able to be inserted in DOM when the router is not present - block']() {
       this.render(`<LinkTo @route='index'>Go to Index</LinkTo>`);
 
-      this.assertText('Go to Index');
+      this.assertComponentElement(this.element.firstChild, { tagName: 'a', attrs: { href: '#/' }, content: 'Go to Index' });
     }
   }
 );
