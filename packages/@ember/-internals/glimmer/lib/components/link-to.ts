@@ -231,8 +231,7 @@ import layout from '../templates/link-to';
   </li>
   ```
 
-  In general, this is not recommended. Instead, you can use the `transition-to` helper together
-  with a click event handler on the HTML tag of your choosing.
+  In general, this is not recommended.
 
   ### Supplying query parameters
 
