@@ -1,4 +1,5 @@
 import { EMBER_STRICT_MODE } from '@ember/canary-features';
+import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
@@ -8,6 +9,10 @@ import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
 let USER_PLUGINS: PluginFunc[] = [];
 
+function malformedComponentLookup(string: string) {
+  return string.indexOf('::') === -1 && string.indexOf(':') > -1;
+}
+
 export default function compileOptions(
   _options: Partial<EmberPrecompileOptions> = {}
 ): PrecompileOptions {
@@ -16,6 +21,11 @@ export default function compileOptions(
     _options,
     {
       customizeComponentName(tagname: string): string {
+        assert(
+          `Malformed component lookup in "${_options.moduleName}". Got <${tagname} /> but you must use "::" to indicate a lookup`,
+          !malformedComponentLookup(tagname)
+        );
+
         return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
       },
     }
