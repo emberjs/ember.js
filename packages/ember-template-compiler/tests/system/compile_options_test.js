@@ -15,6 +15,16 @@ moduleFor(
       assert.notEqual(compileOptions(), compileOptions());
     }
 
+    ['@test customizeComponentName asserts name is well formed'](assert) {
+      let options = compileOptions({ moduleName: 'test.js' });
+
+      expectAssertion(() => {
+        options.customizeComponentName('Foo:Bar');
+      }, /Malformed component lookup in "test.js". Got <Foo:Bar \/> but you must use "::" to indicate a lookup/);
+
+      assert.ok(options.customizeComponentName('Foo::Bar'));
+    }
+
     ['@test has default AST plugins in resolution mode'](assert) {
       assert.expect(RESOLUTION_MODE_TRANSFORMS.length);
 
