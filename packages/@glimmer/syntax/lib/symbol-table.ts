@@ -1,9 +1,14 @@
-import { Core, Dict } from '@glimmer/interfaces';
+import { Core, Dict, SexpOpcodes } from '@glimmer/interfaces';
 import { dict } from '@glimmer/util';
 
+import { ASTv2 } from '..';
+
 export abstract class SymbolTable {
-  static top(locals: string[]): ProgramSymbolTable {
-    return new ProgramSymbolTable(locals);
+  static top(
+    locals: string[],
+    customizeComponentName: (input: string) => string
+  ): ProgramSymbolTable {
+    return new ProgramSymbolTable(locals, customizeComponentName);
   }
 
   abstract has(name: string): boolean;
@@ -12,7 +17,7 @@ export abstract class SymbolTable {
   abstract getLocalsMap(): Dict<number>;
   abstract getEvalInfo(): Core.EvalInfo;
 
-  abstract allocateFree(name: string): number;
+  abstract allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number;
   abstract allocateNamed(name: string): number;
   abstract allocateBlock(name: string): number;
   abstract allocate(identifier: string): number;
@@ -26,7 +31,10 @@ export abstract class SymbolTable {
 }
 
 export class ProgramSymbolTable extends SymbolTable {
-  constructor(private templateLocals: string[]) {
+  constructor(
+    private templateLocals: string[],
+    private customizeComponentName: (input: string) => string
+  ) {
     super();
   }
 
@@ -77,7 +85,11 @@ export class ProgramSymbolTable extends SymbolTable {
     return Object.keys(locals).map((symbol) => locals[symbol]);
   }
 
-  allocateFree(name: string): number {
+  allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
+    if (resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead) {
+      name = this.customizeComponentName(name);
+    }
+
     let index = this.upvars.indexOf(name);
 
     if (index !== -1) {
@@ -152,8 +164,8 @@ export class BlockSymbolTable extends SymbolTable {
     this.parent.setHasEval();
   }
 
-  allocateFree(name: string): number {
-    return this.parent.allocateFree(name);
+  allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
+    return this.parent.allocateFree(name, resolution);
   }
 
   allocateNamed(name: string): number {

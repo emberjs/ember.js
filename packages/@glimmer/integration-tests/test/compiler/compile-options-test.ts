@@ -47,4 +47,49 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     let componentName = block[3][componentNameExpr[1]];
     assert.equal(componentName, 'ooFX', 'customized component name was used');
   });
+
+  test('customizeComponentName does not cause components to conflict with existing symbols', function (assert) {
+    let wire = JSON.parse(
+      precompile('{{#let @model as |rental|}}<Rental @renter={{rental}} />{{/let}}', {
+        customizeComponentName(input: string) {
+          return input.toLowerCase();
+        },
+      })
+    );
+
+    let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
+
+    let [[, , letBlock]] = block[0] as [WireFormat.Statements.Let];
+    let [[, componentNameExpr]] = letBlock[0] as [WireFormat.Statements.Component];
+
+    glimmerAssert(
+      Array.isArray(componentNameExpr) &&
+        componentNameExpr[0] === SexpOpcodes.GetFreeAsComponentHead,
+      `component name is a free variable lookup`
+    );
+
+    let componentName = block[3][componentNameExpr[1]];
+    assert.equal(componentName, 'rental', 'customized component name was used');
+  });
+
+  test('lowercased names are not resolved or customized in resolution mode', (assert) => {
+    let wire = JSON.parse(
+      precompile('<rental />', {
+        customizeComponentName(input: string) {
+          return input.split('').reverse().join('');
+        },
+      })
+    );
+
+    let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
+    let [openElementExpr] = block[0] as [WireFormat.Statements.OpenElement];
+
+    glimmerAssert(
+      Array.isArray(openElementExpr) && openElementExpr[0] === SexpOpcodes.OpenElement,
+      `expr is open element`
+    );
+
+    let elementName = openElementExpr[1];
+    assert.equal(elementName, 'rental', 'element name is correct');
+  });
 });
