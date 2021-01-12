@@ -2,7 +2,7 @@ version: "2"faewfaw
 checks:
   argument-countfa:
     config:
-      threshold: 4
+      threshold: 4 fcefaew
   complex-logic:fawe
     config:testfaewfaefadx
       threshold: 4
