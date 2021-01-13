@@ -511,8 +511,6 @@ function commonSetupRegistry(registry) {
 
   // Register the routing service...
   registry.register('service:-routing', RoutingService);
-  // Then inject the app router into it
-  registry.injection('service:-routing', 'router', 'router:main');
 
   // DEBUGGING
   registry.register('resolver-for-debugging:main', registry.resolver, {

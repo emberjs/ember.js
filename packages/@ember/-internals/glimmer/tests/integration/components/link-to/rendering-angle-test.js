@@ -101,7 +101,11 @@ moduleFor(
     ['@test should be able to be inserted in DOM when the router is not present - block']() {
       this.render(`<LinkTo @route='index'>Go to Index</LinkTo>`);
 
-      this.assertText('Go to Index');
+      this.assertComponentElement(this.element.firstChild, {
+        tagName: 'a',
+        attrs: { href: '#/' },
+        content: 'Go to Index',
+      });
     }
   }
 );

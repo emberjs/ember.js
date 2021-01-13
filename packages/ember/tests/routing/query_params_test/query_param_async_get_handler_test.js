@@ -21,28 +21,31 @@ moduleFor(
         },
 
         setupRouter() {
-          this._super(...arguments);
-          let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
-          let getRoute = this._routerMicrolib.getRoute;
+          let isNewSetup = this._super(...arguments);
+          if (isNewSetup) {
+            let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
+            let getRoute = this._routerMicrolib.getRoute;
 
-          this._routerMicrolib.getRoute = function (routeName) {
-            fetchedHandlers.push(routeName);
+            this._routerMicrolib.getRoute = function (routeName) {
+              fetchedHandlers.push(routeName);
 
-            // Cache the returns so we don't have more than one Promise for a
-            // given handler.
-            return (
-              handlerPromises[routeName] ||
-              (handlerPromises[routeName] = new RSVP.Promise((resolve) => {
-                setTimeout(() => {
-                  let handler = getRoute(routeName);
+              // Cache the returns so we don't have more than one Promise for a
+              // given handler.
+              return (
+                handlerPromises[routeName] ||
+                (handlerPromises[routeName] = new RSVP.Promise((resolve) => {
+                  setTimeout(() => {
+                    let handler = getRoute(routeName);
 
-                  seenHandlers[routeName] = handler;
+                    seenHandlers[routeName] = handler;
 
-                  resolve(handler);
-                }, 10);
-              }))
-            );
-          };
+                    resolve(handler);
+                  }, 10);
+                }))
+              );
+            };
+          }
+          return isNewSetup;
         },
 
         _getQPMeta(routeInfo) {

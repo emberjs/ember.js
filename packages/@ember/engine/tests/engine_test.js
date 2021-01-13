@@ -81,7 +81,6 @@ moduleFor(
       verifyRegistration(assert, engine, 'component:textarea');
 
       verifyRegistration(assert, engine, 'service:-routing');
-      verifyInjection(assert, engine, 'service:-routing', 'router', 'router:main');
 
       // DEBUGGING
       verifyRegistration(assert, engine, 'resolver-for-debugging:main');
