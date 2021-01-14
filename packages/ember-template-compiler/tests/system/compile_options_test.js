@@ -20,7 +20,7 @@ moduleFor(
 
       expectAssertion(() => {
         options.customizeComponentName('Foo:Bar');
-      }, /Malformed component lookup in "test.js". Got <Foo:Bar \/> but you must use "::" to indicate a lookup/);
+      }, /You tried to invoke a component named <Foo:Bar \/> in "test.js", but that is not a valid name for a component. Did you mean to use the "::" syntax for nested components\?/);
 
       assert.ok(options.customizeComponentName('Foo::Bar'));
     }
