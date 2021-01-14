@@ -109,6 +109,10 @@ if (GLOBALS_RESOLVER) {
           until: '4.0.0',
           id: 'globals-resolver',
           url: 'https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+          for: 'ember-source',
+          since: {
+            enabled: '3.16.0',
+          },
         }
       );
 

@@ -324,6 +324,10 @@ function sendAction(eventName, view, event) {
       id: 'ember-component.send-action',
       until: '4.0.0',
       url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+      for: 'ember-source',
+      since: {
+        enabled: '3.4.0',
+      },
     });
 
     view.triggerAction({
