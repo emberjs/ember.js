@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.24.1 (January 14, 2021)
+
+- [#19337](https://github.com/emberjs/ember.js/pull/19337) [BUGFIX] Ensure query param only `<LinkTo />` are properly scoped in engines
+
 ### v3.24.0 (December 28, 2020)
 
 - [#19224](https://github.com/emberjs/ember.js/pull/19224) [FEATURE] Add `{{page-title}}` helper to route template blueprints to implement [RFC #0654](https://github.com/emberjs/rfcs/blob/master/text/0645-add-ember-page-title-addon.md). 
