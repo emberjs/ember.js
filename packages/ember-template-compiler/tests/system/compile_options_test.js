@@ -15,6 +15,16 @@ moduleFor(
       assert.notEqual(compileOptions(), compileOptions());
     }
 
+    ['@test customizeComponentName asserts name is well formed'](assert) {
+      let options = compileOptions({ moduleName: 'test.js' });
+
+      expectAssertion(() => {
+        options.customizeComponentName('Foo:Bar');
+      }, /You tried to invoke a component named <Foo:Bar \/> in "test.js", but that is not a valid name for a component. Did you mean to use the "::" syntax for nested components\?/);
+
+      assert.ok(options.customizeComponentName('Foo::Bar'));
+    }
+
     ['@test has default AST plugins in resolution mode'](assert) {
       assert.expect(RESOLUTION_MODE_TRANSFORMS.length);
 

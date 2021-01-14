@@ -1,4 +1,5 @@
 import { EMBER_STRICT_MODE } from '@ember/canary-features';
+import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
@@ -8,6 +9,10 @@ import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
 let USER_PLUGINS: PluginFunc[] = [];
 
+function malformedComponentLookup(string: string) {
+  return string.indexOf('::') === -1 && string.indexOf(':') > -1;
+}
+
 export default function compileOptions(
   _options: Partial<EmberPrecompileOptions> = {}
 ): PrecompileOptions {
@@ -16,6 +21,11 @@ export default function compileOptions(
     _options,
     {
       customizeComponentName(tagname: string): string {
+        assert(
+          `You tried to invoke a component named <${tagname} /> in "${_options.moduleName}", but that is not a valid name for a component. Did you mean to use the "::" syntax for nested components?`,
+          !malformedComponentLookup(tagname)
+        );
+
         return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
       },
     }
