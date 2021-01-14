@@ -196,6 +196,10 @@ if (EMBER_EXTEND_PROTOTYPES) {
         {
           id: 'ember-env.old-extend-prototypes',
           until: '4.0.0',
+          for: 'ember-source',
+          since: {
+            enabled: '3.3.0',
+          },
         }
       );
 
@@ -219,6 +223,10 @@ Object.defineProperty(Ember, 'Resolver', {
         id: 'ember.globals-resolver',
         until: '4.0.0',
         url: 'https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+        for: 'ember-source',
+        since: {
+          enabled: '3.16.0',
+        },
       }
     );
 
@@ -579,6 +587,10 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
           {
             id: 'ember.legacy-built-in-components',
             until: '4.0.0',
+            for: 'ember-source',
+            since: {
+              // TODO: update this when enabling the feature
+            },
           }
         );
 
@@ -679,6 +691,10 @@ if (JQUERY_INTEGRATION && !views.jQueryDisabled) {
           id: 'ember-views.curly-components.jquery-element',
           until: '4.0.0',
           url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
+          for: 'ember-source',
+          since: {
+            enabled: '3.9.0',
+          },
         }
       );
 
