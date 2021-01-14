@@ -890,6 +890,25 @@ moduleFor(
       });
     }
 
+    '@test query params only transitions work properly'(assert) {
+      assert.expect(1);
+
+      let tmpl = '<LinkTo @query={{hash type="news"}}>News</LinkTo>';
+
+      this.setupAppAndRoutableEngine();
+      this.additionalEngineRegistrations(function () {
+        this.register('template:category', compile(tmpl));
+      });
+
+      return this.visit('/blog/category/1').then(() => {
+        let suffix = '/blog/category/1?type=news';
+        let href = this.element.querySelector('a').href;
+
+        // check if link ends with the suffix
+        assert.ok(this.stringsEndWith(href, suffix));
+      });
+    }
+
     async ['@test query params in customized controllerName have stickiness by default between model'](
       assert
     ) {
