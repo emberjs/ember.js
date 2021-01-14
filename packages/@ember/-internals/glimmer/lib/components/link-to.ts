@@ -517,7 +517,8 @@ const LinkComponent = EmberComponent.extend({
 
   _route: computed('route', '_currentRouterState', function computeLinkToComponentRoute(this: any) {
     let { route } = this;
-    return this._namespaceRoute(route === UNDEFINED ? this._currentRoute : route);
+
+    return route === UNDEFINED ? this._currentRoute : this._namespaceRoute(route);
   }),
 
   _models: computed('model', 'models', function computeLinkToComponentModels(this: any) {
