@@ -22,7 +22,7 @@ export default function compileOptions(
     {
       customizeComponentName(tagname: string): string {
         assert(
-          `Malformed component lookup in "${_options.moduleName}". Got <${tagname} /> but you must use "::" to indicate a lookup`,
+          `You tried to invoke a component named <${tagname} /> in "${_options.moduleName}", but that is not a valid name for a component. Did you mean to use the "::" syntax for nested components?`,
           !malformedComponentLookup(tagname)
         );
 
