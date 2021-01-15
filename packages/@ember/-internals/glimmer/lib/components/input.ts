@@ -57,6 +57,21 @@ import InternalComponent from './internal';
   <Input @value={{this.searchWord}} @enter={{this.query}} />
   ```
 
+  Starting with Ember Octane, we recommend using the `{{on}}` modifier to call actions
+  on specific events, such as the input event.
+
+  ```handlebars
+  <label for="input-name">Name:</label>
+  <Input
+    @id="input-name"
+    @value={{this.name}}
+    {{on "input" this.validateName}}
+  />
+  ```
+
+  The event name (e.g. `focusout`, `input`, `keydown`) always follows the casing
+  that the HTML standard uses.
+
   ### `<input>` HTML Attributes to Avoid
 
   In most cases, if you want to pass an attribute to the underlying HTML `<input>` element, you
