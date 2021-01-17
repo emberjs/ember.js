@@ -651,8 +651,36 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     return htmlSafe(this);
   };
 }
-Ember.String.htmlSafe = htmlSafe;
-Ember.String.isHTMLSafe = isHTMLSafe;
+const deprecateImportFromString = function (
+  name,
+  message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
+) {
+  deprecate(message, false, {
+    id: 'ember-string.htmlsafe-ishtmlsafe',
+    for: 'ember-source',
+    since: {
+      enabled: '3.25',
+    },
+    until: '4.0.0',
+    url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
+  });
+};
+Object.defineProperty(Ember.String, 'htmlSafe', {
+  enumerable: true,
+  configurable: true,
+  get() {
+    deprecateImportFromString('htmlSafe');
+    return htmlSafe;
+  },
+});
+Object.defineProperty(Ember.String, 'isHTMLSafe', {
+  enumerable: true,
+  configurable: true,
+  get() {
+    deprecateImportFromString('isHTMLSafe');
+    return isHTMLSafe;
+  },
+});
 
 /**
   Global hash of shared templates. This will automatically be populated
