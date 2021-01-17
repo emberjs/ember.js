@@ -68,8 +68,28 @@ moduleFor(
       });
     }
 
-    ['@test Ember.String.isHTMLSafe exports correctly'](assert) {
-      confirmExport(Ember, assert, 'String.isHTMLSafe', '@ember/-internals/glimmer', 'isHTMLSafe');
+    ['@test Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
+      let glimmer = require('@ember/-internals/glimmer');
+      expectDeprecation(() => {
+        assert.equal(
+          Ember.String.htmlSafe,
+          glimmer.htmlSafe,
+          'Ember.String.htmlSafe is exported correctly'
+        );
+      }, /Importing htmlSafe from '@ember\/string' is deprecated/);
+      assert.notEqual(glimmer.htmlSafe, undefined, 'Ember.String.htmlSafe is not `undefined`');
+    }
+
+    ['@test Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
+      let glimmer = require('@ember/-internals/glimmer');
+      expectDeprecation(() => {
+        assert.equal(
+          Ember.String.isHTMLSafe,
+          glimmer.isHTMLSafe,
+          'Ember.String.isHTMLSafe is exported correctly'
+        );
+      }, /Importing isHTMLSafe from '@ember\/string' is deprecated/);
+      assert.notEqual(glimmer.isHTMLSafe, undefined, 'Ember.String.isHTMLSafe is not `undefined`');
     }
 
     ['@test Ember.EXTEND_PROTOTYPES is present (but deprecated)'](assert) {
@@ -270,7 +290,6 @@ let allExports = [
   ['Handlebars.template', '@ember/-internals/glimmer', 'template'],
   ['HTMLBars.template', '@ember/-internals/glimmer', 'template'],
   ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
-  ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
   ['_setComponentManager', '@ember/-internals/glimmer', 'setComponentManager'],
   ['_componentManagerCapabilities', '@glimmer/manager', 'componentCapabilities'],
   ['_setComponentTemplate', '@glimmer/manager', 'setComponentTemplate'],
