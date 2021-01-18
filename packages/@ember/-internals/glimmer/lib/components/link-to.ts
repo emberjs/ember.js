@@ -811,11 +811,8 @@ const LinkComponent = EmberComponent.extend({
           return routing.generateURL(route, models, query);
         } catch (e) {
           // tslint:disable-next-line:max-line-length
-          assert(
-            `You attempted to generate a link for the "${this.route}" route, but did not ` +
-              `pass the models required for generating its dynamic segments. ` +
-              e.message
-          );
+          e.message = `While generating link to route "${this.route}": ${e.message}`;
+          throw e;
         }
       } else {
         return routing.generateURL(route, models, query);
