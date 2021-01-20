@@ -125,15 +125,15 @@ moduleFor(
       this.assertText('apple: apple |orange: orange |banana: banana |');
     }
 
-    ['@test partial using `{{get` on data from {{#with}}']() {
+    ['@test partial using `{{get` on data from {{#let}}']() {
       this.registerPartial('show-id', '{{get item "id"}}');
 
       expectDeprecation(() => {
         this.render(
           strip`
-          {{#with this.model as |item|}}
+          {{#let this.model as |item|}}
             {{item.name}}: {{partial 'show-id'}}
-          {{/with}}`,
+          {{/let}}`,
           {
             model: { id: 1, name: 'foo' },
           }
@@ -258,40 +258,40 @@ moduleFor(
       this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
     }
 
-    ['@test nested partials within nested `{{#with}}` blocks']() {
+    ['@test nested partials within nested `{{#let}}` blocks']() {
       this.registerPartial(
         '_person2-partial',
         strip`
-      {{#with 'Ben' as |person2|}}
+      {{#let 'Ben' as |person2|}}
         Hi {{person1}} (aged {{age}}) and {{person2}}. {{partial 'person3-partial'}}
-      {{/with}}
+      {{/let}}
     `
       );
 
       this.registerPartial(
         '_person3-partial',
         strip`
-      {{#with 'Alex' as |person3|}}
+      {{#let 'Alex' as |person3|}}
         Hi {{person1}} (aged {{age}}), {{person2}} and {{person3}}. {{partial 'person4-partial'}}
-      {{/with}}
+      {{/let}}
     `
       );
 
       this.registerPartial(
         '_person4-partial',
         strip`
-      {{#with 'Sarah' as |person4|}}
+      {{#let 'Sarah' as |person4|}}
         Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}.
-      {{/with}}
+      {{/let}}
     `
       );
 
       expectDeprecation(() => {
         this.render(
           strip`
-        {{#with 'Sophie' as |person1|}}
+        {{#let 'Sophie' as |person1|}}
           Hi {{person1}} (aged {{age}}). {{partial 'person2-partial'}}
-        {{/with}}`,
+        {{/let}}`,
           { age: 0 }
         );
       }, /The use of `{{partial}}` is deprecated, please refactor the "person(2|3|4)-partial" partial to a component/);
@@ -352,20 +352,22 @@ moduleFor(
       this.assertText('number: EVEN0number: ODD1number: EVEN2number: ODD3');
     }
 
-    ['@test dynamic partials in {{#with}}']() {
+    ['@test [DEPRECATED] dynamic partials in {{#with}}']() {
       this.registerPartial('_thing', '{{t}}');
 
-      this.render(
-        strip`
-      {{#with item.thing as |t|}}
-        {{partial t}}
-      {{else}}
-        Nothing!
-      {{/with}}`,
-        {
-          item: { thing: false },
-        }
-      );
+      expectDeprecation(() => {
+        this.render(
+          strip`
+        {{#with item.thing as |t|}}
+          {{partial t}}
+        {{else}}
+          Nothing!
+        {{/with}}`,
+          {
+            item: { thing: false },
+          }
+        );
+      }, /`{{#with}}` is deprecated\./);
 
       this.assertStableRerender();
 
@@ -380,6 +382,34 @@ moduleFor(
       runTask(() => set(this.context, 'item', { thing: false }));
 
       this.assertText('Nothing!');
+    }
+
+    ['@test dynamic partials in {{#let}}']() {
+      this.registerPartial('_thing', '{{t}}');
+
+      this.render(
+        strip`
+      {{#let item.thing as |t|}}
+        {{partial t}}
+      {{/let}}`,
+        {
+          item: { thing: null },
+        }
+      );
+
+      this.assertStableRerender();
+
+      this.assertText('');
+
+      expectDeprecation(() => {
+        runTask(() => set(this.context, 'item.thing', 'thing'));
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "thing" partial to a component');
+
+      this.assertText('thing');
+
+      runTask(() => set(this.context, 'item', { thing: null }));
+
+      this.assertText('');
     }
 
     ['@test partials which contain contextual components']() {

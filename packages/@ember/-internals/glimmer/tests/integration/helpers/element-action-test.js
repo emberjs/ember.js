@@ -777,7 +777,7 @@ moduleFor(
       this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
     }
 
-    ['@test it should work properly in a {{#with foo as |bar|}} block']() {
+    ['@test it should work properly in a {{#let foo as |bar|}} block']() {
       let editHandlerWasCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -792,7 +792,7 @@ moduleFor(
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '{{#with something as |somethingElse|}}<a href="#" {{action "edit"}}>click me</a>{{/with}}',
+          '{{#let something as |somethingElse|}}<a href="#" {{action "edit"}}>click me</a>{{/let}}',
       });
 
       this.render('{{example-component}}');

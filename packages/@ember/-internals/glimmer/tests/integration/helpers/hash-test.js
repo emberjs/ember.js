@@ -8,7 +8,7 @@ moduleFor(
   'Helpers test: {{hash}}',
   class extends RenderingTestCase {
     ['@test returns a hash with the right key-value']() {
-      this.render(`{{#with (hash name="Sergio") as |person|}}{{person.name}}{{/with}}`);
+      this.render(`{{#let (hash name="Sergio") as |person|}}{{person.name}}{{/let}}`);
 
       this.assertText('Sergio');
 
@@ -19,7 +19,7 @@ moduleFor(
 
     ['@test can have more than one key-value']() {
       this.render(
-        `{{#with (hash name="Sergio" lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/with}}`
+        `{{#let (hash name="Sergio" lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/let}}`
       );
 
       this.assertText('Sergio Arbeo');
@@ -31,7 +31,7 @@ moduleFor(
 
     ['@test binds values when variables are used']() {
       this.render(
-        `{{#with (hash name=this.model.firstName lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/with}}`,
+        `{{#let (hash name=this.model.firstName lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/let}}`,
         {
           model: {
             firstName: 'Marisa',
@@ -56,7 +56,7 @@ moduleFor(
 
     ['@test binds multiple values when variables are used']() {
       this.render(
-        `{{#with (hash name=this.model.firstName lastName=this.model.lastName) as |person|}}{{person.name}} {{person.lastName}}{{/with}}`,
+        `{{#let (hash name=this.model.firstName lastName=this.model.lastName) as |person|}}{{person.name}} {{person.lastName}}{{/let}}`,
         {
           model: {
             firstName: 'Marisa',
@@ -91,7 +91,7 @@ moduleFor(
 
     ['@test hash helpers can be nested']() {
       this.render(
-        `{{#with (hash person=(hash name=this.model.firstName)) as |ctx|}}{{ctx.person.name}}{{/with}}`,
+        `{{#let (hash person=(hash name=this.model.firstName)) as |ctx|}}{{ctx.person.name}}{{/let}}`,
         {
           model: { firstName: 'Balint' },
         }

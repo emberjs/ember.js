@@ -8,6 +8,10 @@ import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 moduleFor(
   'Syntax test: {{#with}}',
   class extends IfUnlessWithSyntaxTest {
+    beforeEach() {
+      expectDeprecation(/^`{{#with}}` is deprecated\./);
+    }
+
     templateFor({ cond, truthy, falsy }) {
       return `{{#with ${cond}}}${truthy}{{else}}${falsy}{{/with}}`;
     }
@@ -17,6 +21,10 @@ moduleFor(
 moduleFor(
   'Syntax test: {{#with as}}',
   class extends IfUnlessWithSyntaxTest {
+    beforeEach() {
+      expectDeprecation(/^`{{#with}}` is deprecated\./);
+    }
+
     templateFor({ cond, truthy, falsy }) {
       return `{{#with ${cond} as |test|}}${truthy}{{else}}${falsy}{{/with}}`;
     }
@@ -247,6 +255,10 @@ moduleFor(
 moduleFor(
   'Syntax test: Multiple {{#with as}} helpers',
   class extends RenderingTestCase {
+    beforeEach() {
+      expectDeprecation(/^`{{#with}}` is deprecated\./);
+    }
+
     ['@test re-using the same variable with different {{#with}} blocks does not override each other']() {
       this.render(
         `Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`,
