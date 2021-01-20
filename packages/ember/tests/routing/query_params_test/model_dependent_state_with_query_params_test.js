@@ -104,7 +104,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     this.addTemplate(
       'application',
-      `{{#each articles as |a|}} {{link-to 'Article' '${articleLookup}' a.id id=a.id}} {{/each}}`
+      `{{#each articles as |a|}} {{#link-to route='${articleLookup}' model=a.id id=a.id}}Article{{/link-to}} {{/each}}`
     );
 
     await this.boot();
@@ -246,7 +246,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     this.addTemplate(
       'about',
-      `{{link-to 'A' '${commentsLookup}' 'a-1' id='one'}} {{link-to 'B' '${commentsLookup}' 'a-2' id='two'}}`
+      `{{#link-to route='${commentsLookup}' model='a-1' id='one'}}A{{/link-to}} {{#link-to route='${commentsLookup}' model='a-2' id='two'}}B{{/link-to}}`
     );
 
     await this.visitApplication();
@@ -334,7 +334,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each this.articles as |a|}} 1{{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}"
+        "{{#each this.articles as |a|}} 1{{#link-to route='article' model=a id=a.id}}Article{{/link-to}} {{/each}} {{outlet}}"
       );
     }
 
@@ -440,7 +440,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each this.articles as |a|}} {{link-to 'Article' 'site.article' a id=a.id}} {{/each}} {{outlet}}"
+        "{{#each this.articles as |a|}} {{#link-to route='site.article' model=a id=a.id}}Article{{/link-to}} {{/each}} {{outlet}}"
       );
     }
 
@@ -591,7 +591,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each this.allSitesAllArticles as |a|}} {{#link-to 'site.article' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}"
+        "{{#each this.allSitesAllArticles as |a|}} {{#link-to route='site.article' models=(array a.site_id a.article_id) id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}"
       );
     }
 

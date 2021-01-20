@@ -972,7 +972,7 @@ moduleFor(
       this.addTemplate('parent', '{{outlet}}');
       this.addTemplate(
         'parent.child',
-        "{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}"
+        "{{#link-to route='parent' query=(hash foo='change') id='parent-link'}}Parent{{/link-to}}"
       );
 
       this.router.map(function () {
@@ -1116,7 +1116,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{link-to 'A' 'abc.def' (query-params foo='123') id='one'}}{{link-to 'B' 'abc.def.zoo' (query-params foo='123' bar='456') id='two'}}{{outlet}}"
+        "{{#link-to route='abc.def' query=(hash foo='123') id='one'}}A{{/link-to}}{{#link-to route='abc.def.zoo' query=(hash foo='123' bar='456') id='two'}}B{{/link-to}}{{outlet}}"
       );
 
       this.setSingleQPController('abc.def', 'foo', 'lol');
@@ -1447,7 +1447,7 @@ moduleFor(
 
       this.addTemplate(
         'home',
-        "{{link-to 'Home' 'home' (query-params foo=this.nullValue) id='null-link'}}{{link-to 'Home' 'home' (query-params foo=this.undefinedValue) id='undefined-link'}}"
+        "{{#link-to route='home' query=(hash foo=this.nullValue) id='null-link'}}Home{{/link-to}}{{#link-to route='home' query=(hash foo=this.undefinedValue) id='undefined-link'}}Home{{/link-to}}"
       );
 
       this.router.map(function () {
@@ -1504,7 +1504,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{link-to 'Foo' 'foo' id='foo-link'}}{{link-to 'Bar' 'bar' id='bar-no-qp-link'}}{{link-to 'Bar' 'bar' (query-params raytiley='isthebest') id='bar-link'}}{{outlet}}"
+        "{{#link-to route='foo' id='foo-link'}}Foo{{/link-to}}{{#link-to route='bar' id='bar-no-qp-link'}}Bar{{/link-to}}{{#link-to route='bar' query=(hash raytiley='isthebest') id='bar-link'}}Bar{{/link-to}}{{outlet}}"
       );
 
       this.router.map(function () {
@@ -1553,7 +1553,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{link-to 'Example' 'example' (query-params foo=undefined) id='the-link'}}"
+        "{{#link-to route='example' query=(hash foo=undefined) id='the-link'}}Example{{/link-to}}"
       );
 
       this.setSingleQPController('example', 'foo', undefined, {

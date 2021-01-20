@@ -889,7 +889,9 @@ moduleFor(
 
     ["@test query params don't have stickiness by default between model"](assert) {
       assert.expect(1);
-      let tmpl = '{{#link-to "category" 1337}}Category 1337{{/link-to}}';
+
+      let tmpl = '<LinkTo @route="category" @model={{1337}}>Category 1337</LinkTo>';
+
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
         this.register('template:category', compile(tmpl));
@@ -928,7 +930,7 @@ moduleFor(
     ) {
       assert.expect(2);
       let tmpl =
-        '{{#link-to "author" 1337 class="author-1337"}}Author 1337{{/link-to}}{{#link-to "author" 1 class="author-1"}}Author 1{{/link-to}}';
+        '<LinkTo @route="author" @model={{1337}} class="author-1337">Author 1337</LinkTo><LinkTo @route="author" @model=1 class="author-1">Author 1</LinkTo>';
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
         this.register('template:author', compile(tmpl));

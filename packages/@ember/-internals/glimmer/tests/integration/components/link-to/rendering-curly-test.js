@@ -16,7 +16,7 @@ moduleFor(
     }
 
     ['@test should be able to be inserted in DOM when the router is not present']() {
-      this.addTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
+      this.addTemplate('application', `{{#link-to route='index'}}Go to Index{{/link-to}}`);
 
       return this.visit('/').then(() => {
         this.assertText('Go to Index');
@@ -26,7 +26,7 @@ moduleFor(
     ['@test re-renders when title changes']() {
       let controller;
 
-      this.addTemplate('application', `{{link-to this.title 'index'}}`);
+      this.addTemplate('application', `{{#link-to route='index'}}{{this.title}}{{/link-to}}`);
 
       this.add(
         'controller:application',
@@ -49,7 +49,7 @@ moduleFor(
     ['@test re-computes active class when params change'](assert) {
       let controller;
 
-      this.addTemplate('application', '{{link-to "foo" this.routeName}}');
+      this.addTemplate('application', '{{#link-to route=this.routeName}}foo{{/link-to}}');
 
       this.add(
         'controller:application',
@@ -73,8 +73,10 @@ moduleFor(
       });
     }
 
-    ['@test escaped inline form (double curlies) escapes link title']() {
-      this.addTemplate('application', `{{link-to this.title 'index'}}`);
+    ['@test [DEPRECATED] escaped inline form (double curlies) escapes link title']() {
+      expectDeprecation(() => {
+        this.addTemplate('application', `{{link-to this.title 'index'}}`);
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
       this.add(
         'controller:application',
         Controller.extend({
@@ -87,8 +89,12 @@ moduleFor(
       });
     }
 
-    ['@test unescaped inline form (triple curlies) does not escape link title'](assert) {
-      this.addTemplate('application', `{{{link-to this.title 'index'}}}`);
+    ['@test [DEPRECATED] unescaped inline form (triple curlies) does not escape link title'](
+      assert
+    ) {
+      expectDeprecation(() => {
+        this.addTemplate('application', `{{{link-to this.title 'index'}}}`);
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
       this.add(
         'controller:application',
         Controller.extend({
@@ -108,7 +114,7 @@ moduleFor(
       });
       this.addTemplate(
         'application',
-        `{{#custom-link-to 'index'}}{{this.title}}{{/custom-link-to}}`
+        `{{#custom-link-to route='index'}}{{this.title}}{{/custom-link-to}}`
       );
       this.add(
         'controller:application',
@@ -122,7 +128,7 @@ moduleFor(
       });
     }
 
-    ['@test [GH#13432] able to safely extend the built-in component and invoke it inline']() {
+    async ['@test [DEPRECATED] [GH#13432] able to safely extend the built-in component and invoke it inline']() {
       this.addComponent('custom-link-to', {
         ComponentClass: LinkComponent.extend(),
       });
@@ -134,9 +140,12 @@ moduleFor(
         })
       );
 
-      return this.visit('/').then(() => {
-        this.assertText('Hello');
-      });
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Invoking the `<LinkTo>` component with positional arguments is deprecated/
+      );
+
+      this.assertText('Hello');
     }
   }
 );
@@ -145,13 +154,15 @@ moduleFor(
   '{{link-to}} component (rendering tests, without router)',
   class extends RenderingTestCase {
     ['@test should be able to be inserted in DOM when the router is not present - block']() {
-      this.render(`{{#link-to 'index'}}Go to Index{{/link-to}}`);
+      this.render(`{{#link-to route='index'}}Go to Index{{/link-to}}`);
 
       this.assertText('Go to Index');
     }
 
-    ['@test should be able to be inserted in DOM when the router is not present - inline']() {
-      this.render(`{{link-to 'Go to Index' 'index'}}`);
+    ['@test [DEPRECATED] should be able to be inserted in DOM when the router is not present - inline']() {
+      expectDeprecation(() => {
+        this.render(`{{link-to 'Go to Index' 'index'}}`);
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
 
       this.assertText('Go to Index');
     }

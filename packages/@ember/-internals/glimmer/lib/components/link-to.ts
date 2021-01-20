@@ -6,7 +6,7 @@ import { alias, computed } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import RouterState from '@ember/-internals/routing/lib/system/router_state';
 import { isSimpleClick } from '@ember/-internals/views';
-import { assert, warn } from '@ember/debug';
+import { assert, deprecate, runInDebug, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { inject as injectService } from '@ember/service';
@@ -890,11 +890,13 @@ const LinkComponent = EmberComponent.extend({
       return;
     }
 
+    let hasBlock = this[HAS_BLOCK];
+
     params = params.slice();
 
     // Process the positional arguments, in order.
     // 1. Inline link title comes first, if present.
-    if (!this[HAS_BLOCK]) {
+    if (!hasBlock) {
       this.set('linkTitle', params.shift());
     }
 
@@ -917,6 +919,71 @@ const LinkComponent = EmberComponent.extend({
     // 4. Any remaining indices (if any) are `models`.
     this.set('model', UNDEFINED);
     this.set('models', params);
+
+    runInDebug(() => {
+      params = this.params.slice();
+
+      let equivalentNamedArgs = [];
+      let hasQueryParams = false;
+
+      // Process the positional arguments, in order.
+      // 1. Inline link title comes first, if present.
+      if (!hasBlock) {
+        params.shift();
+      }
+
+      // 2. The last argument is possibly the `query` object.
+      let query = params[params.length - 1];
+
+      if (query && query.isQueryParams) {
+        params.pop();
+        hasQueryParams = true;
+      }
+
+      // 3. If there is a `route`, it is now at index 0.
+      if (params.length > 0) {
+        params.shift();
+        equivalentNamedArgs.push('`@route`');
+      }
+
+      // 4. Any remaining params (if any) are `models`.
+      if (params.length === 1) {
+        equivalentNamedArgs.push('`@model`');
+      } else if (params.length > 1) {
+        equivalentNamedArgs.push('`@models`');
+      }
+
+      if (hasQueryParams) {
+        equivalentNamedArgs.push('`@query`');
+      }
+
+      if (equivalentNamedArgs.length > 0) {
+        let message = 'Invoking the `<LinkTo>` component with positional arguments is deprecated.';
+
+        message += `Please use the equivalent named arguments (${equivalentNamedArgs.join(', ')})`;
+
+        if (hasQueryParams) {
+          message += ' along with the `hash` helper';
+        }
+
+        if (!hasBlock) {
+          message += " and pass a block for the link's content.";
+        }
+
+        message += '.';
+
+        deprecate(message, false, {
+          id: 'ember-glimmer.link-to.positional-arguments',
+          until: '4.0.0',
+          for: 'ember-source',
+          url:
+            'https://deprecations.emberjs.com/v3.x#toc_ember-glimmer-link-to-positional-arguments',
+          since: {
+            enabled: '3.26.0-beta.1',
+          },
+        });
+      }
+    });
   },
 });
 

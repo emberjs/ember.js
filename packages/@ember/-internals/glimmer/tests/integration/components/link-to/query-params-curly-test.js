@@ -29,7 +29,7 @@ moduleFor(
     ['@test populates href with fully supplied query param values']() {
       this.addTemplate(
         'index',
-        `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`
+        `{{#link-to route='index' query=(hash foo='456' bar='NAW')}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -44,7 +44,7 @@ moduleFor(
     ['@test populates href with fully supplied query param values, but without @route param']() {
       this.addTemplate(
         'index',
-        `{{#link-to (query-params foo='2' bar='NAW')}}QueryParams{{/link-to}}`
+        `{{#link-to query=(hash foo='2' bar='NAW')}}QueryParams{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -57,7 +57,10 @@ moduleFor(
     }
 
     ['@test populates href with partially supplied query param values, but omits if value is default value']() {
-      this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
+      this.addTemplate(
+        'index',
+        `{{#link-to route='index' query=(hash foo='123')}}Index{{/link-to}}`
+      );
 
       return this.visit('/').then(() => {
         this.assertComponentElement(this.firstChild, {
@@ -68,23 +71,27 @@ moduleFor(
       });
     }
 
-    ['@test `(query-params)` can be used outside of `{{link-to}}'](assert) {
+    async ['@test [DEPRECATED] `query-params` can be used outside of `{{link-to}}'](assert) {
       if (!DEBUG) {
         assert.expect(0);
         return;
       }
 
-      this.addTemplate(
-        'index',
-        `{{#let (query-params foo='456' alon='BUKAI') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
-      );
+      expectDeprecation(() => {
+        this.addTemplate(
+          'index',
+          `{{#let (query-params foo='456' alon='BUKAI') as |qp|}}{{#link-to 'index' qp}}Index{{/link-to}}{{/let}}`
+        );
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
 
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.firstChild, {
-          tagName: 'a',
-          attrs: { href: '/?alon=BUKAI&foo=456', class: classMatcher('ember-view') },
-          content: 'Index',
-        });
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /The `query-params` helper is deprecated/
+      );
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/?alon=BUKAI&foo=456', class: classMatcher('ember-view') },
+        content: 'Index',
       });
     }
   }
@@ -142,7 +149,7 @@ moduleFor(
     }
 
     [`@test doesn't update controller QP properties on current route when invoked`](assert) {
-      this.addTemplate('index', `{{#link-to 'index' id='the-link'}}Index{{/link-to}}`);
+      this.addTemplate('index', `{{#link-to route='index' id='the-link'}}Index{{/link-to}}`);
 
       return this.visit('/').then(() => {
         this.click('#the-link');
@@ -161,7 +168,7 @@ moduleFor(
     ) {
       this.addTemplate(
         'index',
-        `{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}`
+        `{{#link-to route='index' query=(hash) id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -179,7 +186,7 @@ moduleFor(
     [`@test doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
       assert
     ) {
-      this.addTemplate('index', `{{#link-to (query-params) id='the-link'}}Index{{/link-to}}`);
+      this.addTemplate('index', `{{#link-to query=(hash) id='the-link'}}Index{{/link-to}}`);
 
       return this.visit('/').then(() => {
         this.click('#the-link');
@@ -197,7 +204,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to 'index' (query-params foo='456') id="the-link"}}
+        {{#link-to route='index' query=(hash foo='456') id="the-link"}}
           Index
         {{/link-to}}
         `
@@ -221,7 +228,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params foo='456') id="the-link"}}
+        {{#link-to query=(hash foo='456') id="the-link"}}
           Index
         {{/link-to}}
         `
@@ -249,7 +256,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to 'about' (query-params baz='lol') id='the-link'}}
+        {{#link-to route='about' query=(hash baz='lol') id='the-link'}}
           About
         {{/link-to}}
         `
@@ -274,7 +281,7 @@ moduleFor(
     ['@test supplied QP properties can be bound'](assert) {
       this.addTemplate(
         'index',
-        `{{#link-to (query-params foo=this.boundThing) id='the-link'}}Index{{/link-to}}`
+        `{{#link-to query=(hash foo=this.boundThing) id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -293,7 +300,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params abool=this.boundThing) id='the-link'}}
+        {{#link-to query=(hash abool=this.boundThing) id='the-link'}}
           Index
         {{/link-to}}
         `
@@ -322,7 +329,7 @@ moduleFor(
     async ['@test href updates when unsupplied controller QP props change'](assert) {
       this.addTemplate(
         'index',
-        `{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}`
+        `{{#link-to query=(hash foo='lol') id='the-link'}}Index{{/link-to}}`
       );
 
       await this.visit('/');
@@ -350,15 +357,15 @@ moduleFor(
       this.addTemplate(
         'cars',
         `
-        {{#link-to 'cars.create' id='create-link'}}Create new car{{/link-to}}
-        {{#link-to (query-params page='2') id='page2-link'}}Page 2{{/link-to}}
+        {{#link-to route='cars.create' id='create-link'}}Create new car{{/link-to}}
+        {{#link-to query=(hash page='2') id='page2-link'}}Page 2{{/link-to}}
         {{outlet}}
         `
       );
 
       this.addTemplate(
         'cars.create',
-        `{{#link-to 'cars' id='close-link'}}Close create form{{/link-to}}`
+        `{{#link-to route='cars' id='close-link'}}Close create form{{/link-to}}`
       );
 
       this.router.map(function () {
@@ -399,22 +406,22 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}}
-        {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
-        {{#link-to 'index' id='change-nothing'}}Index{{/link-to}}
+        {{#link-to query=(hash foo='cat') id='cat-link'}}Index{{/link-to}}
+        {{#link-to query=(hash foo='dog') id='dog-link'}}Index{{/link-to}}
+        {{#link-to route='index' id='change-nothing'}}Index{{/link-to}}
         `
       );
 
       this.addTemplate(
         'search',
         `
-        {{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}}
-        {{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}}
-        {{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}}
-        {{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}}
-        {{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}}
+        {{#link-to query=(hash search='same') id='same-search'}}Index{{/link-to}}
+        {{#link-to query=(hash search='change') id='change-search'}}Index{{/link-to}}
+        {{#link-to query=(hash search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}}
+        {{#link-to query=(hash archive=true) id='only-add-archive'}}Index{{/link-to}}
+        {{#link-to query=(hash search='same' archive=true) id='both-same'}}Index{{/link-to}}
+        {{#link-to query=(hash search='different' archive=true) id='change-one'}}Index{{/link-to}}
+        {{#link-to query=(hash search='different' archive=false) id='remove-one'}}Index{{/link-to}}
         {{outlet}}
         `
       );
@@ -422,13 +429,13 @@ moduleFor(
       this.addTemplate(
         'search.results',
         `
-        {{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}}
-        {{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}}
-        {{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}}
-        {{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}}
-        {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
+        {{#link-to query=(hash sort='title') id='same-sort-child-only'}}Index{{/link-to}}
+        {{#link-to query=(hash search='same') id='same-search-parent-only'}}Index{{/link-to}}
+        {{#link-to query=(hash search='change') id='change-search-parent-only'}}Index{{/link-to}}
+        {{#link-to query=(hash search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}}
+        {{#link-to query=(hash search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}}
+        {{#link-to query=(hash search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}}
+        {{#link-to query=(hash foo='dog') id='dog-link'}}Index{{/link-to}}
         `
       );
 
@@ -505,7 +512,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params page=this.pageNumber) id='page-link'}}
+        {{#link-to query=(hash page=this.pageNumber) id='page-link'}}
           Index
         {{/link-to}}
         `
@@ -534,9 +541,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params pages=this.pagesArray) id='array-link'}}Index{{/link-to}}
-        {{#link-to (query-params pages=this.biggerArray) id='bigger-link'}}Index{{/link-to}}
-        {{#link-to (query-params pages=this.emptyArray) id='empty-link'}}Index{{/link-to}}
+        {{#link-to query=(hash pages=this.pagesArray) id='array-link'}}Index{{/link-to}}
+        {{#link-to query=(hash pages=this.biggerArray) id='bigger-link'}}Index{{/link-to}}
+        {{#link-to query=(hash pages=this.emptyArray) id='empty-link'}}Index{{/link-to}}
         `
       );
 
@@ -587,9 +594,9 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-        {{#link-to 'parent' id='parent-link'}}Parent{{/link-to}}
-        {{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}}
-        {{#link-to 'parent' (query-params foo=this.cat) id='parent-link-qp'}}Parent{{/link-to}}
+        {{#link-to route='parent' id='parent-link'}}Parent{{/link-to}}
+        {{#link-to route='parent.child' id='parent-child-link'}}Child{{/link-to}}
+        {{#link-to route='parent' query=(hash foo=this.cat) id='parent-link-qp'}}Parent{{/link-to}}
         {{outlet}}
         `
       );
@@ -627,7 +634,7 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-        {{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}
+        {{#link-to route='parent' query=(hash page=1) current-when='parent' id='app-link'}}
           Parent
         {{/link-to}}
         {{outlet}}
@@ -637,7 +644,7 @@ moduleFor(
       this.addTemplate(
         'parent',
         `
-        {{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}
+        {{#link-to route='parent' query=(hash page=1) current-when='parent' id='parent-link'}}
           Parent
         {{/link-to}}
         {{outlet}}
@@ -698,9 +705,9 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-        {{link-to 'Foos' 'foos' id='foos-link'}}
-        {{link-to 'Baz Foos' 'foos' (query-params baz=true) id='baz-foos-link'}}
-        {{link-to 'Quux Bars' 'bars' (query-params quux=true) id='bars-link'}}
+        {{#link-to route='foos' id='foos-link'}}Foos{{/link-to}}
+        {{#link-to route='foos' query=(hash baz=true) id='baz-foos-link'}}Baz Foos{{/link-to}}
+        {{#link-to route='bars' query=(hash quux=true) id='bars-link'}}Quux Bars{{/link-to}}
         `
       );
 
@@ -771,7 +778,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params page=this.pageNumber) id='page-link'}}
+        {{#link-to query=(hash page=this.pageNumber) id='page-link'}}
           Index
         {{/link-to}}
         `
@@ -809,7 +816,7 @@ moduleFor(
         });
     }
 
-    ['@test [GH#17869] it does not cause shadowing assertion with `hash` local variable']() {
+    ['@test [DEPRECATED] [GH#17869] it does not cause shadowing assertion with `hash` local variable']() {
       this.router.map(function () {
         this.route('post', { path: '/post/:id' });
       });
@@ -822,14 +829,16 @@ moduleFor(
         })
       );
 
-      this.addTemplate(
-        'index',
-        `
-        {{#let (hash id="1" title="Hello World!" body="Lorem ipsum dolor sit amet...") as |hash|}}
-          {{#link-to "post" hash (query-params showComments=false)}}View Post{{/link-to}}
-        {{/let}}
-        `
-      );
+      expectDeprecation(() => {
+        this.addTemplate(
+          'index',
+          `
+          {{#let (hash id="1" title="Hello World!" body="Lorem ipsum dolor sit amet...") as |hash|}}
+            {{#link-to "post" hash (query-params showComments=false)}}View Post{{/link-to}}
+          {{/let}}
+          `
+        );
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
 
       return this.visit('/').then(() => {
         this.assertComponentElement(this.element.firstElementChild, {
@@ -851,8 +860,7 @@ moduleFor(
         });
       });
 
-      this.addTemplate('foo.bar', `{{link-to 'Baz' 'foo.bar.baz' id='baz-link'}}`);
-
+      this.addTemplate('foo.bar', `{{#link-to route='foo.bar.baz' id='baz-link'}}Baz{{/link-to}}`);
       this.addTemplate('foo.bar.loading', 'Loading');
 
       this.add(

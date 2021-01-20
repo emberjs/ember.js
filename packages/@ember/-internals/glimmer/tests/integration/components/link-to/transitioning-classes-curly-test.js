@@ -62,10 +62,10 @@ moduleFor(
         'application',
         `
         {{outlet}}
-        {{link-to 'Index' 'index' id='index-link'}}
-        {{link-to 'About' 'about' id='about-link'}}
-        {{link-to 'Other' 'other' id='other-link'}}
-        {{link-to 'News' 'news' activeClass=false id='news-link'}}
+        {{#link-to route='index' id='index-link'}}Index{{/link-to}}
+        {{#link-to route='about' id='about-link'}}About{{/link-to}}
+        {{#link-to route='other' id='other-link'}}Other{{/link-to}}
+        {{#link-to route='news' activeClass=false id='news-link'}}News{{/link-to}}
         `
       );
     }
@@ -188,14 +188,14 @@ moduleFor(
         'application',
         `
         {{outlet}}
-        {{#link-to 'index' tagName='li'}}
-          {{link-to 'Index' 'index' id='index-link'}}
+        {{#link-to route='index' tagName='li'}}
+          {{#link-to route='index' id='index-link'}}Index{{/link-to}}
         {{/link-to}}
-        {{#link-to 'parent-route.about' tagName='li'}}
-          {{link-to 'About' 'parent-route.about' id='about-link'}}
+        {{#link-to route='parent-route.about' tagName='li'}}
+          {{#link-to route='parent-route.about' tagName='li' id='about-link'}}About{{/link-to}}
         {{/link-to}}
-        {{#link-to 'parent-route.other' tagName='li'}}
-          {{link-to 'Other' 'parent-route.other' id='other-link'}}
+        {{#link-to route='parent-route.other' tagName='li'}}
+          {{#link-to route='parent-route.other' id='other-link'}}Other{{/link-to}}
         {{/link-to}}
         `
       );
