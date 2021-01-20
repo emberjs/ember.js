@@ -9,11 +9,11 @@ moduleFor(
   class extends RenderingTestCase {
     ['@test returns an array']() {
       this.render(strip`
-      {{#with (array "Sergio") as |people|}}
+      {{#let (array "Sergio") as |people|}}
         {{#each people as |personName|}}
           {{personName}}
         {{/each}}
-      {{/with}}`);
+      {{/let}}`);
 
       this.assertText('Sergio');
 
@@ -22,11 +22,11 @@ moduleFor(
 
     ['@test can have more than one value']() {
       this.render(strip`
-      {{#with (array "Sergio" "Robert") as |people|}}
+      {{#let (array "Sergio" "Robert") as |people|}}
         {{#each people as |personName|}}
           {{personName}},
         {{/each}}
-      {{/with}}`);
+      {{/let}}`);
 
       this.assertText('Sergio,Robert,');
 
@@ -35,11 +35,11 @@ moduleFor(
 
     ['@test binds values when variables are used']() {
       this.render(
-        strip`{{#with (array personOne) as |people|}}
+        strip`{{#let (array personOne) as |people|}}
               {{#each people as |personName|}}
                 {{personName}}
               {{/each}}
-            {{/with}}`,
+            {{/let}}`,
         {
           personOne: 'Tom',
         }
@@ -58,11 +58,11 @@ moduleFor(
 
     ['@test binds multiple values when variables are used']() {
       this.render(
-        strip`{{#with (array personOne personTwo) as |people|}}
+        strip`{{#let (array personOne personTwo) as |people|}}
               {{#each people as |personName|}}
                 {{personName}},
               {{/each}}
-            {{/with}}`,
+            {{/let}}`,
         {
           personOne: 'Tom',
           personTwo: 'Yehuda',
@@ -91,14 +91,14 @@ moduleFor(
 
     ['@test array helpers can be nested']() {
       this.render(
-        strip`{{#with (array (array personOne personTwo)) as |listOfPeople|}}
+        strip`{{#let (array (array personOne personTwo)) as |listOfPeople|}}
               {{#each listOfPeople as |people|}}
                 List:
                 {{#each people as |personName|}}
                   {{personName}},
                 {{/each}}
               {{/each}}
-            {{/with}}`,
+            {{/let}}`,
         {
           personOne: 'Tom',
           personTwo: 'Yehuda',

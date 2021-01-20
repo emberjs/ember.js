@@ -203,7 +203,7 @@ moduleFor(
         template: '<p>{{boundText}}</p><p>{{yield}}</p>',
       });
 
-      this.render('{{#with boundText as |item|}}{{#kiwi-comp}}{{item}}{{/kiwi-comp}}{{/with}}', {
+      this.render('{{#let boundText as |item|}}{{#kiwi-comp}}{{item}}{{/kiwi-comp}}{{/let}}', {
         boundText: 'Outer',
       });
       this.assertText('InnerOuter');
@@ -222,7 +222,7 @@ moduleFor(
 
       this.registerComponent('kiwi-comp', {
         ComponentClass: KiwiCompComponent,
-        template: '{{#with boundText as |item|}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}',
+        template: '{{#let boundText as |item|}}<p>{{item}}</p><p>{{yield}}</p>{{/let}}',
       });
 
       this.render('{{#kiwi-comp}}{{item}}{{/kiwi-comp}}', { item: 'Outer' });
@@ -243,7 +243,7 @@ moduleFor(
       });
 
       this.render(
-        '{{#with boundText as |item|}}{{#kiwi-comp content=item}}{{item}}{{/kiwi-comp}}{{/with}}',
+        '{{#let boundText as |item|}}{{#kiwi-comp content=item}}{{item}}{{/kiwi-comp}}{{/let}}',
         { boundText: 'Outer' }
       );
       this.assertText('OuterOuter');

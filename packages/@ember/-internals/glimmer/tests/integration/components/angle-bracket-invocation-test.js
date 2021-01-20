@@ -569,9 +569,9 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render(strip`
-        {{#with (component 'foo-bar') as |Other|}}
+        {{#let (component 'foo-bar') as |Other|}}
           <Other />
-        {{/with}}
+        {{/let}}
       `);
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });

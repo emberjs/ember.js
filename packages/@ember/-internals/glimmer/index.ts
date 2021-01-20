@@ -112,6 +112,7 @@
   @for Ember.Templates.helpers
   @param {Object} options
   @return {String} HTML string
+  @deprecated Use '{{#let}}' instead
   @public
  */
 

@@ -272,9 +272,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash comp=(component "-looked-up" greeting=this.model.greeting)) as |my|}}
+      {{#let (hash comp=(component "-looked-up" greeting=this.model.greeting)) as |my|}}
         {{#my.comp}}{{/my.comp}}
-      {{/with}}`,
+      {{/let}}`,
         {
           model: {
             greeting: 'Hodi',
@@ -340,11 +340,11 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
-        {{#with (component first greeting="Hej" name="Sigmundur") as |second|}}
+      {{#let (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
+        {{#let (component first greeting="Hej" name="Sigmundur") as |second|}}
           {{component second greeting=this.model.greeting}}
-        {{/with}}
-      {{/with}}`,
+        {{/let}}
+      {{/let}}`,
         {
           model: {
             greeting: 'Hodi',
@@ -616,9 +616,9 @@ moduleFor(
       });
 
       this.render(strip`
-      {{#with (hash lookedup=(component "-looked-up")) as |object|}}
+      {{#let (hash lookedup=(component "-looked-up")) as |object|}}
         {{object.lookedup}}
-      {{/with}}`);
+      {{/let}}`);
 
       this.assertText(expectedText);
 
@@ -635,9 +635,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash lookedup=(component "-looked-up")) as |object|}}
+      {{#let (hash lookedup=(component "-looked-up")) as |object|}}
         {{object.lookedup expectedText=this.model.expectedText}}
-      {{/with}}`,
+      {{/let}}`,
         {
           model: {
             expectedText,
@@ -668,9 +668,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash lookedup=(component "-looked-up" expectedText=this.model.expectedText)) as |object|}}
+      {{#let (hash lookedup=(component "-looked-up" expectedText=this.model.expectedText)) as |object|}}
         {{object.lookedup}}
-      {{/with}}`,
+      {{/let}}`,
         {
           model: {
             expectedText,
@@ -705,9 +705,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash lookedup=(component "-looked-up")) as |object|}}
+      {{#let (hash lookedup=(component "-looked-up")) as |object|}}
         {{object.lookedup this.model.expectedText "Hola"}}
-      {{/with}}`,
+      {{/let}}`,
         {
           model: {
             expectedText,
@@ -748,9 +748,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash my-component=(component 'my-component' first)) as |c|}}
+      {{#let (hash my-component=(component 'my-component' first)) as |c|}}
         {{c.my-component}}
-      {{/with}}`,
+      {{/let}}`,
         { first: 'first' }
       );
 
@@ -946,9 +946,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash ctxCmp=(component "my-comp" isOpen=isOpen)) as |thing|}}
+      {{#let (hash ctxCmp=(component "my-comp" isOpen=isOpen)) as |thing|}}
         {{#thing.ctxCmp}}This is a contextual component{{/thing.ctxCmp}}
-      {{/with}}
+      {{/let}}
     `,
         {
           isOpen: true,
@@ -1010,9 +1010,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash ctxCmp=(component compName isOpen=isOpen)) as |thing|}}
+      {{#let (hash ctxCmp=(component compName isOpen=isOpen)) as |thing|}}
         {{#thing.ctxCmp}}This is a contextual component{{/thing.ctxCmp}}
-      {{/with}}
+      {{/let}}
     `,
         {
           compName: 'my-comp',
@@ -1088,9 +1088,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash ctxCmp=(component compName isOpen=isOpen)) as |thing|}}
+      {{#let (hash ctxCmp=(component compName isOpen=isOpen)) as |thing|}}
         {{#thing.ctxCmp}}This is a contextual component{{/thing.ctxCmp}}
-      {{/with}}
+      {{/let}}
     `,
         {
           compName: 'my-comp',
@@ -1198,7 +1198,7 @@ moduleFor(
       });
 
       this.render(
-        '{{#with (hash link=(component "my-link")) as |c|}}{{c.link params=allParams}}{{/with}}',
+        '{{#let (hash link=(component "my-link")) as |c|}}{{c.link params=allParams}}{{/let}}',
         {
           allParams: emberA(['a', 'b']),
         }
