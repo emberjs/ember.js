@@ -325,6 +325,8 @@
     @service myAnimations;
 
     willDestroy() {
+      super.willDestroy(...arguments);
+
       this.myAnimations.unregister(this);
     }
   }
