@@ -22,27 +22,35 @@ moduleFor(
       let controller = Controller.create({ target: router });
       setOwner(controller, engineInstance);
 
-      assert.strictEqual(
-        controller.transitionToRoute('application'),
-        'foo.bar.application',
-        'properly prefixes application route'
-      );
-      assert.strictEqual(
-        controller.transitionToRoute('posts'),
-        'foo.bar.posts',
-        'properly prefixes child routes'
-      );
-      assert.throws(
-        () => controller.transitionToRoute('/posts'),
-        'throws when trying to use a url'
-      );
+      expectDeprecation(() => {
+        assert.strictEqual(
+          controller.transitionToRoute('application'),
+          'foo.bar.application',
+          'properly prefixes application route'
+        );
+      }, /Calling transitionToRoute on a controller is deprecated/);
+      expectDeprecation(() => {
+        assert.strictEqual(
+          controller.transitionToRoute('posts'),
+          'foo.bar.posts',
+          'properly prefixes child routes'
+        );
+      }, /Calling transitionToRoute on a controller is deprecated/);
+      expectDeprecation(() => {
+        assert.throws(
+          () => controller.transitionToRoute('/posts'),
+          'throws when trying to use a url'
+        );
+      }, /Calling transitionToRoute on a controller is deprecated/);
 
       let queryParams = {};
-      assert.strictEqual(
-        controller.transitionToRoute(queryParams),
-        queryParams,
-        'passes query param only transitions through'
-      );
+      expectDeprecation(() => {
+        assert.strictEqual(
+          controller.transitionToRoute(queryParams),
+          queryParams,
+          'passes query param only transitions through'
+        );
+      }, /Calling transitionToRoute on a controller is deprecated/);
     }
 
     ["@test replaceRoute considers an engine's mountPoint"](assert) {
@@ -62,24 +70,32 @@ moduleFor(
       let controller = Controller.create({ target: router });
       setOwner(controller, engineInstance);
 
-      assert.strictEqual(
-        controller.replaceRoute('application'),
-        'foo.bar.application',
-        'properly prefixes application route'
-      );
-      assert.strictEqual(
-        controller.replaceRoute('posts'),
-        'foo.bar.posts',
-        'properly prefixes child routes'
-      );
-      assert.throws(() => controller.replaceRoute('/posts'), 'throws when trying to use a url');
+      expectDeprecation(() => {
+        assert.strictEqual(
+          controller.replaceRoute('application'),
+          'foo.bar.application',
+          'properly prefixes application route'
+        );
+      }, /Calling replaceRoute on a controller is deprecated/);
+      expectDeprecation(() => {
+        assert.strictEqual(
+          controller.replaceRoute('posts'),
+          'foo.bar.posts',
+          'properly prefixes child routes'
+        );
+      }, /Calling replaceRoute on a controller is deprecated/);
+      expectDeprecation(() => {
+        assert.throws(() => controller.replaceRoute('/posts'), 'throws when trying to use a url');
+      }, /Calling replaceRoute on a controller is deprecated/);
 
       let queryParams = {};
-      assert.strictEqual(
-        controller.replaceRoute(queryParams),
-        queryParams,
-        'passes query param only transitions through'
-      );
+      expectDeprecation(() => {
+        assert.strictEqual(
+          controller.replaceRoute(queryParams),
+          queryParams,
+          'passes query param only transitions through'
+        );
+      }, /Calling replaceRoute on a controller is deprecated/);
     }
   }
 );

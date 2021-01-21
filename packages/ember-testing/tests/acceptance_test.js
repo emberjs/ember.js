@@ -94,7 +94,9 @@ if (!jQueryDisabled) {
             'route:redirect',
             Route.extend({
               beforeModel() {
-                this.transitionTo('comments');
+                expectDeprecation(() => {
+                  this.transitionTo('comments');
+                }, /Calling transitionTo on a route is deprecated/);
               },
             })
           );
@@ -425,7 +427,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test visiting a URL that causes another transition should yield the correct URL`](assert) {
-        assert.expect(1);
+        assert.expect(2);
 
         window.visit('/redirect');
 
@@ -437,7 +439,7 @@ if (!jQueryDisabled) {
       [`@test visiting a URL and then visiting a second URL with a transition should yield the correct URL`](
         assert
       ) {
-        assert.expect(2);
+        assert.expect(3);
 
         window.visit('/posts');
 

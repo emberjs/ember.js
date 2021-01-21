@@ -1,6 +1,6 @@
 import { get } from '@ember/-internals/metal';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
-import { prefixRouteNameArg } from '../utils';
+import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
 
 /**
 @module ember
@@ -152,9 +152,12 @@ ControllerMixin.reopen({
     @method transitionToRoute
     @return {Transition} the transition object associated with this
       attempted transition
+    @deprecated Use transitionTo from the Router service instead.
     @public
   */
   transitionToRoute(...args: any[]) {
+    deprecateTransitionMethods('controller', 'transitionToRoute');
+
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.transitionToRoute || target.transitionTo;
@@ -221,6 +224,7 @@ ControllerMixin.reopen({
     @public
   */
   replaceRoute(...args: string[]) {
+    deprecateTransitionMethods('controller', 'replaceRoute');
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;
