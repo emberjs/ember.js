@@ -1,3 +1,13 @@
+## v0.73.2 (2021-01-21)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1253](https://github.com/glimmerjs/glimmer-vm/pull/1253) [BUGFIX] Convert component names after symbol allocation ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.73.1 (2020-12-21)
 
 #### :bug: Bug Fix
