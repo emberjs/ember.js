@@ -3854,6 +3854,21 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: '1' });
     }
+
+    '@test `{{#let blah as |foo|}}` does not affect `<Foo />` resolution'() {
+      this.registerComponent('foo', {
+        ComponentClass: null,
+        template: 'foo component',
+      });
+
+      this.render('{{#let "foo block param" as |foo|}}<Foo />{{/let}}');
+
+      this.assertText('foo component');
+
+      runTask(() => this.rerender());
+
+      this.assertText('foo component');
+    }
   }
 );
 
