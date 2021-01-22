@@ -65,9 +65,7 @@ export default class InternalManager
     let { ComponentClass } = this;
     let instance = new ComponentClass(owner, args.named.capture(), valueForRef(caller));
 
-    let state = { env, instance };
-
-    return state;
+    return { env, instance };
   }
 
   didCreate(): void {}

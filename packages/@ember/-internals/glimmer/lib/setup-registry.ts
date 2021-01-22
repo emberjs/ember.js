@@ -2,7 +2,7 @@ import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import Component from './component';
 import Checkbox from './components/checkbox';
-import { InputComponent } from './components/input';
+import InputComponent from './components/input';
 import LinkToComponent from './components/link-to';
 import TextField from './components/text-field';
 import TextArea from './components/textarea';

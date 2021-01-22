@@ -3,16 +3,9 @@ import { guidFor } from '@ember/-internals/utils';
 import { Reference, valueForRef } from '@glimmer/reference';
 
 export default class InternalComponent {
-  static get class(): typeof InternalComponent {
-    return this;
-  }
-
-  static get fullName(): string {
-    return this.name;
-  }
-
-  static get normalizedName(): string {
-    return this.name;
+  // Override this
+  static toString(): string {
+    return 'internal component';
   }
 
   constructor(

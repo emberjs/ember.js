@@ -127,21 +127,27 @@ import InternalComponent from './internal';
   @param {Hash} options
   @public
 */
-export default class Input extends InternalComponent {
+class Input extends InternalComponent {
   get isCheckbox(): boolean {
     return this.arg('type') === 'checkbox';
   }
 }
 
 // Use an opaque handle so implementation details are
-export const InputComponent = {
+const InputComponent = {
   // Factory interface
   create(): never {
     throw assert('Use constructor instead of create');
+  },
+
+  toString(): string {
+    return '@ember/component/input';
   },
 };
 
 setInternalComponentManager(new InternalManager(Input, 'input'), InputComponent);
 setComponentTemplate(InputTemplate, InputComponent);
 
-Input.toString = () => '@ember/component/input';
+Input.toString = InputComponent.toString;
+
+export default InputComponent;
