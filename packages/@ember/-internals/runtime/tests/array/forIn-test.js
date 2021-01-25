@@ -18,7 +18,11 @@ class ForInTests extends AbstractTestCase {
       objects[i]['CUSTOM_PROPERTY'] = true;
     }
 
-    this.assert.deepEqual(keys, [0, 1], 'there is no _super key in enumerable list');
+    this.assert.equal(
+      keys.toString(),
+      [0, 1].toString(),
+      'there is no _super key in enumerable list'
+    );
   }
 }
 
