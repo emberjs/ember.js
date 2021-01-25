@@ -1,7 +1,6 @@
 import require, { has } from 'require';
 
-import { getENV, getLookup, setLookup, ENV, context } from '@ember/-internals/environment';
-import { IS_NODE, module } from 'node-module';
+import { getENV, getLookup, setLookup, ENV } from '@ember/-internals/environment';
 import * as utils from '@ember/-internals/utils';
 import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
@@ -168,7 +167,7 @@ import {
 
 // ****@ember/-internals/environment****
 
-const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
+const Ember = {};
 
 import { isIE } from '@ember/-internals/browser-environment';
 
@@ -652,15 +651,6 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
   Ember._invokeHelper = invokeHelper;
 }
 Ember._captureRenderTree = captureRenderTree;
-Ember.Handlebars = {
-  template,
-  Utils: {
-    escapeExpression,
-  },
-};
-Ember.HTMLBars = {
-  template,
-};
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function () {
@@ -782,30 +772,99 @@ runLoadHooks('Ember.Application', Application);
 Ember.DataAdapter = extensionSupport.DataAdapter;
 Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
 
-if (has('ember-template-compiler')) {
-  require('ember-template-compiler');
+let EmberHandlebars = {
+  template,
+  Utils: {
+    escapeExpression,
+  },
+};
+
+let EmberHTMLBars = {
+  template,
+};
+
+function defineEmberTemplateCompilerLazyLoad(key) {
+  Object.defineProperty(Ember, key, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      if (require.has('ember-template-compiler')) {
+        let templateCompiler = require('ember-template-compiler');
+
+        EmberHTMLBars.precompile = EmberHandlebars.precompile = templateCompiler.precompile;
+        EmberHTMLBars.compile = EmberHandlebars.compile = templateCompiler.compile;
+        EmberHTMLBars.registerPlugin = templateCompiler.registerPlugin;
+
+        Object.defineProperty(Ember, 'HTMLBars', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: EmberHTMLBars,
+        });
+        Object.defineProperty(Ember, 'Handlebars', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: EmberHandlebars,
+        });
+      }
+
+      return key === 'Handlebars' ? EmberHandlebars : EmberHTMLBars;
+    },
+  });
 }
+
+defineEmberTemplateCompilerLazyLoad('HTMLBars');
+defineEmberTemplateCompilerLazyLoad('Handlebars');
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
-if (has('ember-testing')) {
-  let testing = require('ember-testing');
+function defineEmberTestingLazyLoad(key) {
+  Object.defineProperty(Ember, key, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      if (has('ember-testing')) {
+        let testing = require('ember-testing');
 
-  Ember.Test = testing.Test;
-  Ember.Test.Adapter = testing.Adapter;
-  Ember.Test.QUnitAdapter = testing.QUnitAdapter;
-  Ember.setupForTesting = testing.setupForTesting;
+        let { Test, Adapter, QUnitAdapter, setupForTesting } = testing;
+        Test.Adapter = Adapter;
+        Test.QUnitAdapter = QUnitAdapter;
+
+        Object.defineProperty(Ember, 'Test', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: Test,
+        });
+        Object.defineProperty(Ember, 'setupForTesting', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: setupForTesting,
+        });
+
+        return key === 'Test' ? Test : setupForTesting;
+      }
+
+      return undefined;
+    },
+  });
 }
+
+defineEmberTestingLazyLoad('Test');
+defineEmberTestingLazyLoad('setupForTesting');
 
 runLoadHooks('Ember');
 
-export default Ember;
+Ember.__loader = {
+  require,
+  // eslint-disable-next-line no-undef
+  define,
+  registry: require._eak_seen,
+};
 
-if (IS_NODE) {
-  module.exports = Ember;
-} else {
-  context.exports.Ember = context.exports.Em = Ember;
-}
+export default Ember;
 
 /**
  @module jquery

@@ -1,4 +1,4 @@
-/* globals global, window, self, mainContext */
+/* globals global, window, self */
 declare const mainContext: object | undefined;
 
 // from lodash to catch fake globals

@@ -10,6 +10,7 @@
       }
     </style>
     <script src="./polyfill.js"></script>
+    <script src="./loader.js"></script>
     <script src="./qunit/qunit.js"></script>
     <script src="/testem.js"></script>
 
@@ -90,7 +91,7 @@
     </script>
 
     <script type="text/javascript">
-      var setTesting = Ember.__loader.require('@ember/debug')['setTesting'];
+      var setTesting = require('@ember/debug')['setTesting'];
       setTesting(true);
     </script>
 
@@ -114,7 +115,7 @@
           }
         }
 
-        var setupQUnit = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
+        var setupQUnit = require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
         setupQUnit();
 
         // Tests should time out after 15 seconds
@@ -180,11 +181,11 @@
       skipPackages = (skipPackages && skipPackages.split(',')) || [];
       var skipPackageRegexp   = new RegExp('^('+skipPackages.join('|')+')/');
 
-      for (var moduleName in Ember.__loader.registry) {
+      for (var moduleName in require._eak_seen) {
         if (!moduleName.match(packageRegexp))   { continue; }
         if (moduleName.match(skipPackageRegexp)) { continue; }
 
-        if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
+        if (moduleName.match(/[_-]test$/)) { require(moduleName); }
       }
     </script>
 
