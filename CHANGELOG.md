@@ -1,6 +1,10 @@
 # Ember Changelog
 
-### v3.25.0-beta.2 (January 19, 2020)
+### v3.25.0-beta.3 (January 25, 2021)
+
+- [#19351](https://github.com/emberjs/ember.js/pull/19351) [BUGFIX] Ensure locals do not clobber components of the same name
+
+### v3.25.0-beta.2 (January 19, 2021)
 
 - [#19339](https://github.com/emberjs/ember.js/pull/19339) [DEPRECATION] Deprecate importing `htmlSafe` and `isHTMLSafe` from `@ember/string` per the [Deprecate Ember String RFC](https://github.com/emberjs/rfcs/blob/master/text/0236-deprecation-ember-string.md).
 - [#19336](https://github.com/emberjs/ember.js/pull/19336) [BUGFIX] Ensure Component Lookup Is Well Formed
