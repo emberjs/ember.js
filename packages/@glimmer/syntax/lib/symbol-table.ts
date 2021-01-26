@@ -2,6 +2,7 @@ import { Core, Dict, SexpOpcodes } from '@glimmer/interfaces';
 import { dict } from '@glimmer/util';
 
 import { ASTv2 } from '..';
+import { isUpperCase } from './utils';
 
 export abstract class SymbolTable {
   static top(
@@ -86,7 +87,9 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
-    if (resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead) {
+    // If the name in question is an uppercase (i.e. angle-bracket) component invocation, run
+    // the optional `customizeComponentName` function provided to the precompiler.
+    if (resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead && isUpperCase(name)) {
       name = this.customizeComponentName(name);
     }
 
