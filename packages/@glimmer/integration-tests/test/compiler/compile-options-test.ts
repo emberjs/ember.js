@@ -95,6 +95,29 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     assert.equal(componentName, 'my-component', 'original component name was used');
   });
 
+  test('customizeComponentName is not invoked on angle-bracket-like name invoked with curlies', function (assert) {
+    let wire = JSON.parse(
+      precompile('{{#MyComponent}}hello{{/MyComponent}}', {
+        customizeComponentName(input: string) {
+          return input.toUpperCase();
+        },
+      })
+    );
+
+    let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
+
+    let [[, componentNameExpr]] = block[0] as [WireFormat.Statements.Block];
+
+    glimmerAssert(
+      Array.isArray(componentNameExpr) &&
+        componentNameExpr[0] === SexpOpcodes.GetFreeAsComponentHead,
+      `component name is a free variable lookup`
+    );
+
+    let componentName = block[3][componentNameExpr[1]];
+    assert.equal(componentName, 'MyComponent', 'original component name was used');
+  });
+
   test('lowercased names are not resolved or customized in resolution mode', (assert) => {
     let wire = JSON.parse(
       precompile('<rental />', {
