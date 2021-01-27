@@ -66,7 +66,13 @@
           EmberENV.ENABLE_OPTIONAL_FEATURES = true;
         }
 
-        EmberENV['RAISE_ON_DEPRECATION'] = true;
+        var isIE = Boolean(window.MSInputMethodContext) && Boolean(document.documentMode);
+
+        // ignore deprecations for IE11 specifically (due to browser support
+        // policy deprecation, which happens before we can `expectDeprecation`)
+        if (!isIE) {
+          EmberENV['RAISE_ON_DEPRECATION'] = true;
+        }
 
         if (QUnit.urlParams.debugrendertree) {
           EmberENV['_DEBUG_RENDER_TREE'] = true;

@@ -170,6 +170,22 @@ import {
 
 const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
 
+import { isIE } from '@ember/-internals/browser-environment';
+
+deprecate(
+  'Internet Explorer 11 will no longer be supported in the next major version of Ember. For details on the new browser support policy, see the official documentation: http://emberjs.com/browser-support',
+  !isIE,
+  {
+    id: '3-0-browser-support-policy',
+    url: 'https://emberjs.com/deprecations/v3.x#toc_3-0-browser-support-policy',
+    until: '4.0.0',
+    for: 'ember-source',
+    since: {
+      enabled: '3.26.0',
+    },
+  }
+);
+
 Ember.isNamespace = true;
 Ember.toString = function () {
   return 'Ember';
