@@ -54,6 +54,7 @@ jobs:
 
       - run: yarn ember build
       - run: yarn test:node
+      - run: yarn test:babel-plugins
 
   test-browserstack:
     name: Browserstack

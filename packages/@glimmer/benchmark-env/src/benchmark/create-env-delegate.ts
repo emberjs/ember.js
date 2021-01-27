@@ -91,6 +91,19 @@ setGlobalContext({
   scheduleDestroyed(fn: () => void) {
     scheduledFinalizers.push(fn);
   },
+
+  assert(test: unknown, msg: string) {
+    if (!test) {
+      throw new Error(msg);
+    }
+  },
+
+  deprecate(msg: string, test: unknown) {
+    if (!test) {
+      // eslint-disable-next-line no-console
+      console.warn(msg);
+    }
+  },
 });
 
 export default function createEnvDelegate(isInteractive: boolean): EnvironmentDelegate {

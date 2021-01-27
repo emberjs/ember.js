@@ -289,6 +289,21 @@
         "no-console": "off"
       }
     },
+    {
+      "files": [
+        "packages/build-utils/@glimmer/vm-babel-plugins/test/**/*.js"
+      ],
+      "env": {
+        "es6": true,
+        "node": true,
+        "mocha": true
+      },
+      "rules": {
+        "node/no-unsupported-features/es-syntax": "off",
+        "node/no-unpublished-import": "off",
+        "no-console": "off"
+      }
+    },
     // source packages
     {
       "files": ["packages/**/*.js"],

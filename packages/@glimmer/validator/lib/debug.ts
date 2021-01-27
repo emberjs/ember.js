@@ -1,5 +1,6 @@
 import { Tag } from './validators';
 import { DEBUG } from '@glimmer/env';
+import { deprecate, assert } from '@glimmer/global-context';
 
 export let beginTrackingTransaction:
   | undefined
@@ -13,11 +14,7 @@ export let deprecateMutationsInTrackingTransaction: undefined | ((fn: () => void
 export let resetTrackingTransaction: undefined | (() => string);
 export let setTrackingTransactionEnv:
   | undefined
-  | ((env: {
-      assert?(message: string): void;
-      deprecate?(message: string): void;
-      debugMessage?(obj?: unknown, keyName?: string): string;
-    }) => void);
+  | ((env: { debugMessage?(obj?: unknown, keyName?: string): string }) => void);
 
 export let assertTagNotConsumed:
   | undefined
@@ -41,15 +38,6 @@ if (DEBUG) {
   /////////
 
   let TRANSACTION_ENV = {
-    assert(message: string): void {
-      throw new Error(message);
-    },
-
-    deprecate(message: string): void {
-      // eslint-disable-next-line no-console
-      console.warn(message);
-    },
-
     debugMessage(obj?: unknown, keyName?: string) {
       let objName;
 
@@ -233,13 +221,15 @@ if (DEBUG) {
     let currentTransaction = TRANSACTION_STACK[TRANSACTION_STACK.length - 1];
 
     if (currentTransaction.deprecate) {
-      TRANSACTION_ENV.deprecate(makeTrackingErrorMessage(transaction, obj, keyName));
+      deprecate(makeTrackingErrorMessage(transaction, obj, keyName), false, {
+        id: 'autotracking.mutation-after-consumption',
+      });
     } else {
       // This hack makes the assertion message nicer, we can cut off the first
       // few lines of the stack trace and let users know where the actual error
       // occurred.
       try {
-        TRANSACTION_ENV.assert(makeTrackingErrorMessage(transaction, obj, keyName));
+        assert(false, makeTrackingErrorMessage(transaction, obj, keyName));
       } catch (e) {
         if (e.stack) {
           let updateStackBegin = e.stack.indexOf('Stack trace for the update:');
