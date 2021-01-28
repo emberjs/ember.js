@@ -205,7 +205,7 @@ module(
         layout: 'Hello',
       });
 
-      assert.equal(invocation, '{{component componentName}}');
+      assert.equal(invocation, '{{component this.componentName}}');
     });
 
     test('Can build dynamic invocation with template', (assert) => {
@@ -215,7 +215,7 @@ module(
         template: 'World',
       });
 
-      assert.equal(invocation, '{{#component componentName}}World{{/component}}');
+      assert.equal(invocation, '{{#component this.componentName}}World{{/component}}');
     });
 
     test('Can build dynamic invocation with args', (assert) => {
@@ -228,7 +228,7 @@ module(
 
       assert.equal(
         invocation,
-        '{{#component componentName foo=bar baz=1 bar=null}}World{{/component}}'
+        '{{#component this.componentName foo=bar baz=1 bar=null}}World{{/component}}'
       );
     });
 
@@ -243,7 +243,7 @@ module(
 
       assert.equal(
         invocation,
-        `{{#component componentName foo=bar baz=1 bar=null data-foo="bar" id="wat"}}World{{/component}}`
+        `{{#component this.componentName foo=bar baz=1 bar=null data-foo="bar" id="wat"}}World{{/component}}`
       );
     });
 
@@ -259,7 +259,7 @@ module(
 
       assert.equal(
         invocation,
-        `{{#component componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{/component}}`
+        `{{#component this.componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{/component}}`
       );
     });
 
@@ -276,7 +276,7 @@ module(
 
       assert.equal(
         invocation,
-        `{{#component componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}ELSE{{/component}}`
+        `{{#component this.componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}ELSE{{/component}}`
       );
     });
 

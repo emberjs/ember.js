@@ -4,7 +4,7 @@ class GetTest extends RenderTest {
   static suiteName = 'Helpers test: {{get}}';
   @test
   'should be able to get an object value with a static key'() {
-    this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
+    this.render(`[{{get this.colors 'apple'}}] [{{if true (get this.colors 'apple')}}]`, {
       colors: { apple: 'red' },
     });
 
@@ -20,7 +20,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an object value with nested static key'() {
-    this.render(`[{{get colors "apple.gala"}}] [{{if true (get colors "apple.gala")}}]`, {
+    this.render(`[{{get this.colors "apple.gala"}}] [{{if true (get this.colors "apple.gala")}}]`, {
       colors: {
         apple: {
           gala: 'red and yellow',
@@ -52,7 +52,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an object value with a number'() {
-    this.render(`[{{get items 1}}][{{get items 2}}][{{get items 3}}]`, {
+    this.render(`[{{get this.items 1}}][{{get this.items 2}}][{{get this.items 3}}]`, {
       items: {
         1: 'First',
         2: 'Second',
@@ -72,7 +72,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an array value with a number'() {
-    this.render(`[{{get numbers 0}}][{{get numbers 1}}][{{get numbers 2}}]`, {
+    this.render(`[{{get this.numbers 0}}][{{get this.numbers 1}}][{{get this.numbers 2}}]`, {
       numbers: [1, 2, 3],
     });
 
@@ -88,7 +88,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an object value with a path evaluating to a number'() {
-    this.render(`{{#each indexes as |index|}}[{{get items index}}]{{/each}}`, {
+    this.render(`{{#each this.indexes as |index|}}[{{get this.items index}}]{{/each}}`, {
       indexes: [1, 2, 3],
       items: {
         1: 'First',
@@ -109,7 +109,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an array value with a path evaluating to a number'() {
-    this.render(`{{#each numbers as |num index|}}[{{get numbers index}}]{{/each}}`, {
+    this.render(`{{#each this.numbers as |num index|}}[{{get this.numbers index}}]{{/each}}`, {
       numbers: [1, 2, 3],
     });
 
@@ -122,7 +122,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an object value with a bound/dynamic key'() {
-    this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
+    this.render(`[{{get this.colors this.key}}] [{{if true (get this.colors this.key)}}]`, {
       colors: { apple: 'red', banana: 'yellow' },
       key: 'apple',
     });
@@ -142,7 +142,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an object value with nested dynamic key'() {
-    this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
+    this.render(`[{{get this.colors this.key}}] [{{if true (get this.colors this.key)}}]`, {
       colors: {
         apple: {
           gala: 'red and yellow',
@@ -169,7 +169,7 @@ class GetTest extends RenderTest {
   @test
   'should be able to get an object value with subexpression returning nested key'() {
     this.render(
-      `[{{get colors (concat 'apple' '.' 'gala')}}] [{{if true (get colors (concat 'apple' '.' 'gala'))}}]`,
+      `[{{get this.colors (concat 'apple' '.' 'gala')}}] [{{if true (get this.colors (concat 'apple' '.' 'gala'))}}]`,
       {
         colors: {
           apple: {
@@ -206,7 +206,7 @@ class GetTest extends RenderTest {
   @test
   'should be able to get an object value with a get helper as the key'() {
     this.render(
-      `[{{get colors (get possibleKeys key)}}] [{{if true (get colors (get possibleKeys key))}}]`,
+      `[{{get this.colors (get this.possibleKeys this.key)}}] [{{if true (get this.colors (get this.possibleKeys this.key))}}]`,
       {
         colors: { apple: 'red', banana: 'yellow' },
         key: 'key1',
@@ -233,7 +233,7 @@ class GetTest extends RenderTest {
   @test
   'should be able to get an object value with a get helper value as a bound/dynamic key'() {
     this.render(
-      `[{{get (get possibleValues objectKey) key}}] [{{if true (get (get possibleValues objectKey) key)}}]`,
+      `[{{get (get this.possibleValues this.objectKey) this.key}}] [{{if true (get (get this.possibleValues this.objectKey) this.key)}}]`,
       {
         possibleValues: {
           colors1: { apple: 'red', banana: 'yellow' },
@@ -266,7 +266,7 @@ class GetTest extends RenderTest {
   @test
   'should be able to get an object value with a get helper as the value and a get helper as the key'() {
     this.render(
-      `[{{get (get possibleValues objectKey) (get possibleKeys key)}}] [{{if true (get (get possibleValues objectKey) (get possibleKeys key))}}]`,
+      `[{{get (get this.possibleValues this.objectKey) (get this.possibleKeys this.key)}}] [{{if true (get (get this.possibleValues this.objectKey) (get this.possibleKeys this.key))}}]`,
       {
         possibleValues: {
           colors1: { apple: 'red', banana: 'yellow' },
@@ -335,7 +335,7 @@ class GetTest extends RenderTest {
 
   @test
   'should handle object values as nulls'() {
-    this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
+    this.render(`[{{get this.colors 'apple'}}] [{{if true (get this.colors 'apple')}}]`, {
       colors: null,
     });
 
@@ -354,7 +354,7 @@ class GetTest extends RenderTest {
 
   @test
   'should handle object keys as nulls'() {
-    this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
+    this.render(`[{{get this.colors this.key}}] [{{if true (get this.colors this.key)}}]`, {
       colors: {
         apple: 'red',
         banana: 'yellow',
@@ -374,7 +374,7 @@ class GetTest extends RenderTest {
 
   @test
   'should handle object values and keys as nulls'() {
-    this.render(`[{{get colors 'apple'}}] [{{if true (get colors key)}}]`, {
+    this.render(`[{{get this.colors 'apple'}}] [{{if true (get this.colors this.key)}}]`, {
       colors: null,
       key: null,
     });
@@ -395,7 +395,7 @@ class GetTest extends RenderTest {
       PersonComponent
     );
 
-    this.render('<PersonWrapper @first={{first}} @last={{last}} @age={{age}}/>', {
+    this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} @age={{this.age}}/>', {
       first: 'miguel',
       last: 'andrade',
     });

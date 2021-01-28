@@ -203,7 +203,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
 
   @test
   'adjacent text nodes'() {
-    let template = '<div>a {{b}}{{c}}{{d}}</div>';
+    let template = '<div>a {{this.b}}{{this.c}}{{this.d}}</div>';
     let context = { b: '', c: '', d: '' };
 
     this.renderServerSide(template, context);
@@ -218,7 +218,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
 
   @test
   '<p> invoking a block which emits a <div>'() {
-    let template = '<p>hello {{#if show}}<div>world!</div>{{/if}}</p>';
+    let template = '<p>hello {{#if this.show}}<div>world!</div>{{/if}}</p>';
     let context = { show: true };
 
     this.renderServerSide(template, context);

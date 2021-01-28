@@ -191,7 +191,7 @@ class CurlyCreateTest extends CurlyTest {
       tagName = 'div';
     }
 
-    this.registerComponent('Curly', 'foo-bar', `{{HAS_BLOCK}}`, FooBar);
+    this.registerComponent('Curly', 'foo-bar', `{{this.HAS_BLOCK}}`, FooBar);
 
     this.render(`{{foo-bar}}`);
 
@@ -204,7 +204,7 @@ class CurlyCreateTest extends CurlyTest {
       tagName = 'div';
     }
 
-    this.registerComponent('Curly', 'foo-bar', `{{HAS_BLOCK}}`, FooBar);
+    this.registerComponent('Curly', 'foo-bar', `{{this.HAS_BLOCK}}`, FooBar);
 
     this.render(`{{#foo-bar}}{{/foo-bar}}`);
 
@@ -222,7 +222,7 @@ class CurlyDynamicComponentTest extends CurlyTest {
     this.render(
       stripTight`
         <div>
-          {{component something arg1="hello"}}
+          {{component this.something arg1="hello"}}
         </div>
       `,
       {
@@ -245,7 +245,7 @@ class CurlyDynamicComponentTest extends CurlyTest {
     this.render(
       stripTight`
         <div>
-          {{component something}}
+          {{component this.something}}
         </div>`,
       {
         something: 'FooBar',
@@ -344,7 +344,7 @@ class CurlyArgsTest extends CurlyTest {
 
     this.registerComponent('Curly', 'foo-bar', `{{@blah}}`, FooBar);
 
-    this.render(`{{foo-bar first blah="derp"}}`);
+    this.render(`{{foo-bar this.first blah="derp"}}`);
 
     this.assertEmberishElement('div', {}, `derp`);
   }
@@ -358,18 +358,18 @@ class CurlyScopeTest extends CurlyTest {
     this.registerComponent(
       'TemplateOnly',
       'FooBar',
-      `<div>[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}</div>`
+      `<div>[Layout: {{this.zomg}}][Layout: {{this.lol}}][Layout: {{@foo}}]{{yield}}</div>`
     );
 
     this.render(
       stripTight`
         <div>
-          [Outside: {{zomg}}]
-          {{#with zomg as |lol|}}
-            [Inside: {{zomg}}]
+          [Outside: {{this.zomg}}]
+          {{#with this.zomg as |lol|}}
+            [Inside: {{this.zomg}}]
             [Inside: {{lol}}]
-            <FooBar @foo={{zomg}}>
-              [Block: {{zomg}}]
+            <FooBar @foo={{this.zomg}}>
+              [Block: {{this.zomg}}]
               [Block: {{lol}}]
             </FooBar>
           {{/with}}
@@ -404,19 +404,19 @@ class CurlyScopeTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'foo-bar',
-      `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{foo}}]{{yield}}`,
+      `[Layout: {{this.zomg}}][Layout: {{this.lol}}][Layout: {{this.foo}}]{{yield}}`,
       FooBar
     );
 
     this.render(
       stripTight`
         <div>
-          [Outside: {{zomg}}]
-          {{#with zomg as |lol|}}
-            [Inside: {{zomg}}]
+          [Outside: {{this.zomg}}]
+          {{#with this.zomg as |lol|}}
+            [Inside: {{this.zomg}}]
             [Inside: {{lol}}]
-            {{#foo-bar foo=zomg}}
-              [Block: {{zomg}}]
+            {{#foo-bar foo=this.zomg}}
+              [Block: {{this.zomg}}]
               [Block: {{lol}}]
             {{/foo-bar}}
           {{/with}}
@@ -458,11 +458,11 @@ class CurlyScopeTest extends CurlyTest {
       'Curly',
       'foo-bar',
       stripTight`
-        [Name: {{name}} | Target: {{targetObject.name}}]
+        [Name: {{this.name}} | Target: {{this.targetObject.name}}]
         {{#qux-derp}}
-          [Name: {{name}} | Target: {{targetObject.name}}]
+          [Name: {{this.name}} | Target: {{this.targetObject.name}}]
         {{/qux-derp}}
-        [Name: {{name}} | Target: {{targetObject.name}}]
+        [Name: {{this.name}} | Target: {{this.targetObject.name}}]
       `,
       FooBar
     );
@@ -470,7 +470,7 @@ class CurlyScopeTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'qux-derp',
-      `[Name: {{name}} | Target: {{targetObject.name}}]{{yield}}`,
+      `[Name: {{this.name}} | Target: {{this.targetObject.name}}]{{yield}}`,
       QuxDerp
     );
 
@@ -492,25 +492,25 @@ class CurlyScopeTest extends CurlyTest {
 
   @test
   '`false` class name do not render'() {
-    this.render('<div class={{isFalse}}>FALSE</div>', { isFalse: false });
+    this.render('<div class={{this.isFalse}}>FALSE</div>', { isFalse: false });
     this.assertHTML('<div>FALSE</div>');
   }
 
   @test
   '`null` class name do not render'() {
-    this.render('<div class={{isNull}}>NULL</div>', { isNull: null });
+    this.render('<div class={{this.isNull}}>NULL</div>', { isNull: null });
     this.assertHTML('<div>NULL</div>');
   }
 
   @test
   '`undefined` class name do not render'() {
-    this.render('<div class={{isUndefined}}>UNDEFINED</div>', { isUndefined: undefined });
+    this.render('<div class={{this.isUndefined}}>UNDEFINED</div>', { isUndefined: undefined });
     this.assertHTML('<div>UNDEFINED</div>');
   }
 
   @test
   '`0` class names do render'() {
-    this.render('<div class={{isZero}}>ZERO</div>', { isZero: 0 });
+    this.render('<div class={{this.isZero}}>ZERO</div>', { isZero: 0 });
     this.assertHTML('<div class="0">ZERO</div>');
   }
 
@@ -531,7 +531,7 @@ class CurlyScopeTest extends CurlyTest {
     this.render(
       stripTight`
         <div>
-          {{#each items key="id" as |item|}}
+          {{#each this.items key="id" as |item|}}
             <SubItem @name={{item.id}} />
           {{/each}}
         </div>`,
@@ -550,8 +550,9 @@ class CurlyScopeTest extends CurlyTest {
     this.render(
       stripTight`
         <div>
-          {{#each items key="id" as |item|}}
+          {{#each this.items key="id" as |item|}}
             <SubItem @name={{this.id}} />
+            {{! Intentional property fallback to test self lookup }}
             <SubItem @name={{id}} />
             <SubItem @name={{item.id}} />
           {{/each}}
@@ -611,7 +612,7 @@ class CurlyScopeTest extends CurlyTest {
 
     this.render(
       stripTight`
-        <article>{{#each items key="id" as |item|}}
+        <article>{{#each this.items key="id" as |item|}}
           <MyItem @item={{item}} />
         {{/each}}</article>
       `,
@@ -636,7 +637,7 @@ class CurlyScopeTest extends CurlyTest {
       'item-list',
       stripTight`
         <ul>
-          {{#each items key="id" as |item|}}
+          {{#each this.items key="id" as |item|}}
             <li>{{item.id}}: {{yield item}}</li>
           {{/each}}
         </ul>
@@ -700,7 +701,7 @@ class CurlyScopeTest extends CurlyTest {
       stripTight`
         <div>
           <FooBar />
-          <FooBar @baz={{zomg}} />
+          <FooBar @baz={{this.zomg}} />
         </div>`,
       { zomg: 'zomg' }
     );
@@ -725,7 +726,7 @@ class CurlyDynamicScopeSmokeTest extends CurlyTest {
       static fromDynamicScope = ['theme'];
     }
 
-    this.registerComponent('Curly', 'sample-component', '{{theme}}', SampleComponent);
+    this.registerComponent('Curly', 'sample-component', '{{this.theme}}', SampleComponent);
 
     this.render('{{#-with-dynamic-vars theme="light"}}{{sample-component}}{{/-with-dynamic-vars}}');
 
@@ -742,7 +743,12 @@ class CurlyPositionalArgsTest extends CurlyTest {
       static positionalParams = ['person', 'age'];
     }
 
-    this.registerComponent('Curly', 'sample-component', '{{person}}{{age}}', SampleComponent);
+    this.registerComponent(
+      'Curly',
+      'sample-component',
+      '{{this.person}}{{this.age}}',
+      SampleComponent
+    );
 
     this.render('{{sample-component "Quint" 4}}');
 
@@ -755,9 +761,14 @@ class CurlyPositionalArgsTest extends CurlyTest {
       static positionalParams = ['person', 'age'];
     }
 
-    this.registerComponent('Curly', 'sample-component', '{{person}}{{age}}', SampleComponent);
+    this.registerComponent(
+      'Curly',
+      'sample-component',
+      '{{this.person}}{{this.age}}',
+      SampleComponent
+    );
 
-    this.render('{{sample-component myName myAge}}', {
+    this.render('{{sample-component this.myName this.myAge}}', {
       myName: 'Quint',
       myAge: 4,
     });
@@ -778,10 +789,10 @@ class CurlyPositionalArgsTest extends CurlyTest {
       static positionalParams = ['name'];
     }
 
-    this.registerComponent('Curly', 'sample-component', '{{name}}', SampleComponent);
+    this.registerComponent('Curly', 'sample-component', '{{this.name}}', SampleComponent);
 
     assert.throws(() => {
-      this.render('{{sample-component notMyName name=myName}}', {
+      this.render('{{sample-component this.notMyName name=this.myName}}', {
         myName: 'Quint',
         notMyName: 'Sergio',
       });
@@ -797,7 +808,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'sample-component',
-      '{{#each names key="@index" as |name|}}{{name}}{{/each}}',
+      '{{#each this.names key="@index" as |name|}}{{name}}{{/each}}',
       SampleComponent
     );
 
@@ -824,12 +835,12 @@ class CurlyPositionalArgsTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'sample-component',
-      '{{#each attrs.names key="@index" as |name|}}{{name}}{{/each}}',
+      '{{#each this.attrs.names key="@index" as |name|}}{{name}}{{/each}}',
       SampleComponent
     );
 
     assert.throws(() => {
-      this.render('{{sample-component "Foo" 4 "Bar" names=numbers id="args-3"}}', {
+      this.render('{{sample-component "Foo" 4 "Bar" names=this.numbers id="args-3"}}', {
         numbers: [1, 2, 3],
       });
     }, `You cannot specify positional parameters and the hash argument \`names\`.`);
@@ -844,11 +855,11 @@ class CurlyPositionalArgsTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'sample-component',
-      '{{#each names key="@index" as |name|}}{{name}}{{/each}}',
+      '{{#each this.names key="@index" as |name|}}{{name}}{{/each}}',
       SampleComponent
     );
 
-    this.render('{{sample-component names=things}}', {
+    this.render('{{sample-component names=this.things}}', {
       things: ['Foo', 4, 'Bar'],
     });
 
@@ -861,7 +872,12 @@ class CurlyPositionalArgsTest extends CurlyTest {
       static positionalParams = ['first', 'second'];
     }
 
-    this.registerComponent('Curly', 'sample-component', '{{first}} - {{second}}', SampleComponent);
+    this.registerComponent(
+      'Curly',
+      'sample-component',
+      '{{this.first}} - {{this.second}}',
+      SampleComponent
+    );
 
     this.render(
       stripTight`
@@ -892,11 +908,11 @@ class CurlyPositionalArgsTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'sample-component',
-      '{{#each attrs.n key="@index" as |name|}}{{name}}{{/each}}',
+      '{{#each this.attrs.n key="@index" as |name|}}{{name}}{{/each}}',
       SampleComponent
     );
 
-    this.render('{{sample-component user1 user2}}', {
+    this.render('{{sample-component this.user1 this.user2}}', {
       user1: 'Foo',
       user2: 4,
     });
@@ -926,11 +942,11 @@ class CurlyPositionalArgsTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'sample-component',
-      `{{attrs.name}}{{attrs.age}}`,
+      `{{this.attrs.name}}{{this.attrs.age}}`,
       SampleComponent
     );
 
-    this.render(`{{component "sample-component" myName myAge}}`, {
+    this.render(`{{component "sample-component" this.myName this.myAge}}`, {
       myName: 'Quint',
       myAge: 4,
     });
@@ -959,7 +975,7 @@ class CurlyClosureComponentsTest extends CurlyTest {
   @test
   'component helper can handle aliased block components with args'() {
     this.registerHelper('hash', (_positional, named) => named);
-    this.registerComponent('Curly', 'foo-bar', 'Hello {{arg1}} {{yield}}');
+    this.registerComponent('Curly', 'foo-bar', 'Hello {{this.arg1}} {{yield}}');
 
     this.render(
       stripTight`
@@ -991,7 +1007,7 @@ class CurlyClosureComponentsTest extends CurlyTest {
   @test
   'component helper can handle aliased inline components with args'() {
     this.registerHelper('hash', (_positional, named) => named);
-    this.registerComponent('Curly', 'foo-bar', 'Hello {{arg1}}');
+    this.registerComponent('Curly', 'foo-bar', 'Hello {{this.arg1}}');
 
     this.render(
       stripTight`
@@ -1024,7 +1040,7 @@ class CurlyClosureComponentsTest extends CurlyTest {
   'component helper can handle higher order inline components with args'() {
     this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Curly', 'foo-bar', '{{yield (hash comp=(component "baz-bar"))}}');
-    this.registerComponent('Curly', 'baz-bar', 'Hello {{arg1}}');
+    this.registerComponent('Curly', 'baz-bar', 'Hello {{this.arg1}}');
 
     this.render(
       stripTight`
@@ -1062,7 +1078,7 @@ class CurlyClosureComponentsTest extends CurlyTest {
   'component helper can handle higher order block components with args'() {
     this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Curly', 'foo-bar', '{{yield (hash comp=(component "baz-bar"))}}');
-    this.registerComponent('Curly', 'baz-bar', 'Hello {{arg1}} {{yield}}');
+    this.registerComponent('Curly', 'baz-bar', 'Hello {{this.arg1}} {{yield}}');
 
     this.render(
       stripTight`
@@ -1081,7 +1097,7 @@ class CurlyClosureComponentsTest extends CurlyTest {
   'component helper can handle higher order block components without args'() {
     this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Curly', 'foo-bar', '{{yield (hash comp=(component "baz-bar"))}}');
-    this.registerComponent('Curly', 'baz-bar', 'Hello {{arg1}} {{yield}}');
+    this.registerComponent('Curly', 'baz-bar', 'Hello {{this.arg1}} {{yield}}');
 
     this.render(
       stripTight`
@@ -1141,21 +1157,21 @@ class CurlyClosureComponentsTest extends CurlyTest {
       'Curly',
       'foo-bar',
       stripTight`
-        1. [{{one}}]
-        2. [{{two}}]
-        3. [{{three}}]
-        4. [{{four}}]
-        5. [{{five}}]
-        6. [{{six}}]
+        1. [{{this.one}}]
+        2. [{{this.two}}]
+        3. [{{this.three}}]
+        4. [{{this.four}}]
+        5. [{{this.five}}]
+        6. [{{this.six}}]
 
         {{yield}}
 
-        a. [{{a}}]
-        b. [{{b}}]
-        c. [{{c}}]
-        d. [{{d}}]
-        e. [{{e}}]
-        f. [{{f}}]
+        a. [{{this.a}}]
+        b. [{{this.b}}]
+        c. [{{this.c}}]
+        d. [{{this.d}}]
+        e. [{{this.e}}]
+        f. [{{this.f}}]
       `,
       FooBarComponent
     );
@@ -1201,19 +1217,19 @@ class CurlyClosureComponentsTest extends CurlyTest {
       'Curly',
       'foo-bar',
       stripTight`
-        1. [{{one}}]
-        2. [{{two}}]
-        3. [{{three}}]
-        4. [{{four}}]
-        5. [{{five}}]
-        6. [{{six}}]
+        1. [{{this.one}}]
+        2. [{{this.two}}]
+        3. [{{this.three}}]
+        4. [{{this.four}}]
+        5. [{{this.five}}]
+        6. [{{this.six}}]
       `,
       FooBarComponent
     );
 
     this.render(
       stripTight`
-        {{component (component (component 'foo-bar' foo.first foo.second) 'inner 1') 'invocation 1' 'invocation 2'}}
+        {{component (component (component 'foo-bar' this.foo.first this.foo.second) 'inner 1') 'invocation 1' 'invocation 2'}}
       `,
       {
         foo: {
@@ -1331,7 +1347,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
       '<not-an-ember-component such="{{@stability}}" ...attributes>In layout</not-an-ember-component>'
     );
 
-    this.render('<NonBlock @stability={{stability}} />', { stability: 'stability' });
+    this.render('<NonBlock @stability={{this.stability}} />', { stability: 'stability' });
     this.assertHTML('<not-an-ember-component such="stability">In layout</not-an-ember-component>');
 
     this.rerender({
@@ -1376,7 +1392,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
       inspectHooks((NonBlock as unknown) as EmberishCurlyComponentFactory)
     );
 
-    this.render('{{non-block someProp=someProp}}', { someProp: 'wycats' });
+    this.render('{{non-block someProp=this.someProp}}', { someProp: 'wycats' });
 
     assert.ok(instance, 'instance is created');
 
@@ -1425,11 +1441,11 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     this.registerComponent(
       'Curly',
       'non-block',
-      'In layout - someProp: {{someProp}}',
+      'In layout - someProp: {{this.someProp}}',
       inspectHooks(NonBlock as any)
     );
 
-    this.render('{{non-block someProp=someProp}}', { someProp: 'wycats' });
+    this.render('{{non-block someProp=this.someProp}}', { someProp: 'wycats' });
 
     assert.ok(instance, 'instance is created');
 
@@ -1484,7 +1500,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
       inspectHooks(InputComponent as any)
     );
 
-    this.render('{{input-component value=someProp}}', { someProp: null });
+    this.render('{{input-component value=this.someProp}}', { someProp: null });
 
     assert.ok(instance, 'instance is created');
 
@@ -1522,7 +1538,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
 
     this.registerComponent('Curly', 'foo-bar', 'FOO BAR', FooBarComponent);
 
-    this.render('{{foo-bar class=classes}}', { classes: 'foo bar' });
+    this.render('{{foo-bar class=this.classes}}', { classes: 'foo bar' });
 
     assert.ok(instance, 'instance is created');
 
@@ -1659,7 +1675,7 @@ class CurlyTeardownTest extends CurlyTest {
 
     this.registerComponent('Curly', 'destroy-me', 'destroy me!', DestroyMeComponent);
 
-    this.render(`{{#if cond}}{{destroy-me}}{{/if}}`, { cond: true });
+    this.render(`{{#if this.cond}}{{destroy-me}}{{/if}}`, { cond: true });
 
     assert.strictEqual(willDestroy, 0, 'destroy should not be called');
     assert.strictEqual(destroyed, 0, 'destroy should not be called');
@@ -1688,7 +1704,7 @@ class CurlyTeardownTest extends CurlyTest {
       DestroyMeComponent
     );
 
-    this.render(`{{#if cond}}<DestroyMe />{{/if}}`, { cond: true });
+    this.render(`{{#if this.cond}}<DestroyMe />{{/if}}`, { cond: true });
 
     assert.strictEqual(destroyed, 0, 'destroy should not be called');
 
@@ -1714,7 +1730,7 @@ class CurlyTeardownTest extends CurlyTest {
 
     this.registerComponent('Curly', 'another-component', 'another thing!', AnotherComponent);
 
-    this.render(`{{component componentName}}`, { componentName: 'destroy-me' });
+    this.render(`{{component this.componentName}}`, { componentName: 'destroy-me' });
 
     assert.strictEqual(destroyed, 0, 'destroy should not be called');
 
@@ -1736,7 +1752,7 @@ class CurlyTeardownTest extends CurlyTest {
 
     this.registerComponent('Curly', 'DestroyMe', '<div>destroy me!</div>', DestroyMeComponent);
 
-    this.render(`{{#each list as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
+    this.render(`{{#each this.list as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
       list: [1, 2, 3, 4, 5],
     });
 
@@ -1774,7 +1790,7 @@ class CurlyTeardownTest extends CurlyTest {
     let val4 = { val: 4 };
     let val5 = { val: 5 };
 
-    this.render(`{{#each list key='@identity' as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
+    this.render(`{{#each this.list key='@identity' as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
       list: [val1, val2, val3, val4, val5],
     });
 
@@ -1823,7 +1839,7 @@ class CurlyTeardownTest extends CurlyTest {
     );
     this.registerComponent('Curly', 'destroy-me-inner', 'inner', DestroyMe2Component);
 
-    this.render(`{{#if cond}}{{destroy-me from="root" cond=child.cond}}{{/if}}`, {
+    this.render(`{{#if this.cond}}{{destroy-me from="root" cond=this.child.cond}}{{/if}}`, {
       cond: true,
       child: { cond: true },
     });
@@ -1866,7 +1882,7 @@ class CurlyTeardownTest extends CurlyTest {
     this.registerComponent('Curly', 'destroy-me2', 'Destroy me! {{yield}}', DestroyMe2Component);
 
     this.render(
-      `{{#each list key='@identity' as |item|}}<DestroyMe1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</DestroyMe1>{{/each}}`,
+      `{{#each this.list key='@identity' as |item|}}<DestroyMe1 @item={{item}}>{{#destroy-me2 from="root" item=item}}{{/destroy-me2}}</DestroyMe1>{{/each}}`,
       { list: [1, 2, 3, 4, 5] }
     );
 
@@ -2010,7 +2026,7 @@ class CurlyAppendableTest extends CurlyTest {
 
     let definition = this.delegate.createCurriedComponent('foo-bar');
 
-    this.render('{{foo}}', { foo: definition });
+    this.render('{{this.foo}}', { foo: definition });
     this.assertEmberishElement('div', {}, 'foo bar');
     this.assertStableRerender();
 
@@ -2027,7 +2043,7 @@ class CurlyAppendableTest extends CurlyTest {
 
     let definition = this.delegate.createCurriedComponent('foo-bar');
 
-    this.render('{{foo.bar}}', { foo: { bar: definition } });
+    this.render('{{this.foo.bar}}', { foo: { bar: definition } });
     this.assertEmberishElement('div', {}, 'foo bar');
     this.assertStableRerender();
 
@@ -2069,7 +2085,7 @@ class CurlyAppendableTest extends CurlyTest {
 
     let definition = this.delegate.createCurriedComponent('foo-bar');
 
-    this.render('{{foo.bar}}', { foo: { bar: 'lol' } });
+    this.render('{{this.foo.bar}}', { foo: { bar: 'lol' } });
     this.assertHTML('lol');
     this.assertStableRerender();
 
