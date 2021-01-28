@@ -45,7 +45,7 @@ class ModifierTests extends RenderTest {
       }
     );
 
-    this.render('{{#if ok}}<div data-ok=true {{foo bar}}></div>{{/if}}', {
+    this.render('{{#if this.ok}}<div data-ok=true {{foo this.bar}}></div>{{/if}}', {
       bar: 'bar',
       ok: true,
     });
@@ -74,7 +74,7 @@ class ModifierTests extends RenderTest {
       }
     );
 
-    this.render('{{#if ok}}<div {{foo "foo" bar="baz"}}></div>{{/if}}{{ok}}', {
+    this.render('{{#if this.ok}}<div {{foo "foo" bar="baz"}}></div>{{/if}}{{this.ok}}', {
       ok: true,
       data: 'ok',
     });
@@ -342,7 +342,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier('bar', Bar);
     this.registerModifier('foo', Foo);
 
-    this.render('{{#if nuke}}<div {{foo}} {{bar}}></div>{{/if}}', { nuke: true });
+    this.render('{{#if this.nuke}}<div {{foo}} {{bar}}></div>{{/if}}', { nuke: true });
     assert.deepEqual(destructionOrder, []);
     this.rerender({ nuke: false });
     assert.deepEqual(destructionOrder, ['foo', 'bar']);
@@ -388,7 +388,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier('bar', Bar);
     this.registerModifier('foo', Foo);
 
-    this.render('{{#if nuke}}<div {{foo}}><div {{bar}}></div></div>{{/if}}', { nuke: true });
+    this.render('{{#if this.nuke}}<div {{foo}}><div {{bar}}></div></div>{{/if}}', { nuke: true });
     assert.deepEqual(destructionOrder, []);
     this.rerender({ nuke: false });
     assert.deepEqual(destructionOrder, ['bar', 'foo']);
@@ -448,9 +448,12 @@ class ModifierTests extends RenderTest {
     this.registerModifier('foo', Foo);
     this.registerModifier('baz', Baz);
 
-    this.render('{{#if nuke}}<div {{foo}}><div {{bar}}></div><div {{baz}}></div></div>{{/if}}', {
-      nuke: true,
-    });
+    this.render(
+      '{{#if this.nuke}}<div {{foo}}><div {{bar}}></div><div {{baz}}></div></div>{{/if}}',
+      {
+        nuke: true,
+      }
+    );
     assert.deepEqual(destructionOrder, []);
     this.rerender({ nuke: false });
     assert.deepEqual(destructionOrder, ['bar', 'baz', 'foo']);
@@ -469,7 +472,7 @@ class ModifierTests extends RenderTest {
       }
     }
     this.registerModifier('foo', Foo);
-    this.render('<div {{foo bar}}></div>', { bar: 'bar' });
+    this.render('<div {{foo this.bar}}></div>', { bar: 'bar' });
     this.rerender({ bar: 'foo' });
   }
 
@@ -486,7 +489,7 @@ class ModifierTests extends RenderTest {
       }
     }
     this.registerModifier('foo', Foo);
-    this.render('<div {{foo bar=bar}}></div>', { bar: 'bar' });
+    this.render('<div {{foo bar=this.bar}}></div>', { bar: 'bar' });
     this.rerender({ bar: 'foo' });
   }
 
@@ -505,7 +508,7 @@ class ModifierTests extends RenderTest {
       }
     }
     this.registerModifier('foo', Foo);
-    this.render('<div {{foo baz bar=bar}}></div>', { bar: 'bar', baz: 'baz' });
+    this.render('<div {{foo this.baz bar=this.bar}}></div>', { bar: 'bar', baz: 'baz' });
     this.rerender({ bar: 'foo', baz: 'foo' });
   }
 }

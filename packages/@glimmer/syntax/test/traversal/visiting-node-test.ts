@@ -36,7 +36,9 @@ function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.Ba
 QUnit.module('[glimmer-syntax] Traversal - visiting');
 
 test('Elements and attributes', function () {
-  let ast = parse(`<div id="id" class="large {{classes}}" value={{value}}><b></b><b></b></div>`);
+  let ast = parse(
+    `<div id="id" class="large {{this.classes}}" value={{this.value}}><b></b><b></b></div>`
+  );
   let el = ast.body[0] as AST.ElementNode;
   let concat = el.attributes[1].value as AST.ConcatStatement;
   let concatMustache = concat.parts[1] as AST.MustacheStatement;

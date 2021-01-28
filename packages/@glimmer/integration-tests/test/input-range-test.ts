@@ -63,9 +63,9 @@ class TemplateRangeTests extends RangeTests {
 
 jitSuite(
   class extends TemplateRangeTests {
-    static suiteName = `[emberjs/ember.js#15675] Template <input type="range" value={{value}} min={{min}} max={{max}} />`;
+    static suiteName = `[emberjs/ember.js#15675] Template <input type="range" value={{this.value}} min={{this.min}} max={{this.max}} />`;
 
-    attrs = 'type="range" value={{value}} min={{min}} max={{max}}';
+    attrs = 'type="range" value={{this.value}} min={{this.min}} max={{this.max}}';
   }
 );
 
@@ -88,7 +88,7 @@ jitSuite(
 
     renderRange(value: number): void {
       this.registerComponent('Curly', 'range-input', '', this.component());
-      this.render(`{{range-input max=max min=min value=value}}`, {
+      this.render(`{{range-input max=this.max min=this.min value=this.value}}`, {
         max: this.max,
         min: this.min,
         value,

@@ -30,7 +30,7 @@ export class InElementSuite extends RenderTest {
     }));
 
     let externalElement = this.delegate.createElement('div');
-    this.render('{{#maybe-in-element externalElement}}[{{foo}}]{{/maybe-in-element}}', {
+    this.render('{{#maybe-in-element this.externalElement}}[{{this.foo}}]{{/maybe-in-element}}', {
       externalElement,
       foo: 'Yippie!',
     });
@@ -50,7 +50,7 @@ export class InElementSuite extends RenderTest {
   @test
   'Renders curlies into external element'() {
     let externalElement = this.delegate.createElement('div');
-    this.render('{{#in-element externalElement}}[{{foo}}]{{/in-element}}', {
+    this.render('{{#in-element this.externalElement}}[{{this.foo}}]{{/in-element}}', {
       externalElement,
       foo: 'Yippie!',
     });
@@ -73,7 +73,7 @@ export class InElementSuite extends RenderTest {
     let initialContent = '<p>Hello there!</p>';
     replaceHTML(externalElement, initialContent);
 
-    this.render('{{#in-element externalElement}}[{{foo}}]{{/in-element}}', {
+    this.render('{{#in-element this.externalElement}}[{{this.foo}}]{{/in-element}}', {
       externalElement,
       foo: 'Yippie!',
     });
@@ -97,9 +97,9 @@ export class InElementSuite extends RenderTest {
 
     this.render(
       stripTight`
-        |{{foo}}|
-        {{#in-element first}}[1{{foo}}]{{/in-element}}
-        {{#in-element second}}[2{{foo}}]{{/in-element}}
+        |{{this.foo}}|
+        {{#in-element this.first}}[1{{this.foo}}]{{/in-element}}
+        {{#in-element this.second}}[2{{this.foo}}]{{/in-element}}
       `,
       { first, second: null, foo: 'Yippie!' }
     );
@@ -141,7 +141,7 @@ export class InElementSuite extends RenderTest {
     replaceHTML(externalElement, initialContent);
 
     this.render(
-      stripTight`{{#in-element externalElement insertBefore=null}}[{{foo}}]{{/in-element}}`,
+      stripTight`{{#in-element this.externalElement insertBefore=null}}[{{this.foo}}]{{/in-element}}`,
       {
         externalElement,
         foo: 'Yippie!',
@@ -174,7 +174,7 @@ export class InElementSuite extends RenderTest {
     replaceHTML(externalElement, '<b>Hello</b><em>there!</em>');
 
     this.render(
-      stripTight`{{#in-element externalElement insertBefore=insertBefore}}[{{foo}}]{{/in-element}}`,
+      stripTight`{{#in-element this.externalElement insertBefore=this.insertBefore}}[{{this.foo}}]{{/in-element}}`,
       { externalElement, insertBefore: externalElement.lastChild, foo: 'Yippie!' }
     );
 
@@ -208,7 +208,7 @@ export class InElementSuite extends RenderTest {
     let first = this.delegate.createElement('div');
     let second = this.delegate.createElement('div');
 
-    this.render(stripTight`{{#in-element externalElement}}[{{foo}}]{{/in-element}}`, {
+    this.render(stripTight`{{#in-element this.externalElement}}[{{this.foo}}]{{/in-element}}`, {
       externalElement: first,
       foo: 'Yippie!',
     });
@@ -262,11 +262,11 @@ export class InElementSuite extends RenderTest {
 
     this.render(
       stripTight`
-        {{#if showFirst}}
-          {{#in-element first}}[{{foo}}]{{/in-element}}
+        {{#if this.showFirst}}
+          {{#in-element this.first}}[{{this.foo}}]{{/in-element}}
         {{/if}}
-        {{#if showSecond}}
-          {{#in-element second}}[{{foo}}]{{/in-element}}
+        {{#if this.showSecond}}
+          {{#in-element this.second}}[{{this.foo}}]{{/in-element}}
         {{/if}}
       `,
       {
@@ -349,11 +349,11 @@ export class InElementSuite extends RenderTest {
 
     this.render(
       stripTight`
-        {{#in-element firstElement}}
-          [{{foo}}]
+        {{#in-element this.firstElement}}
+          [{{this.foo}}]
         {{/in-element}}
-        {{#in-element secondElement}}
-          [{{bar}}]
+        {{#in-element this.secondElement}}
+          [{{this.bar}}]
         {{/in-element}}
         `,
       {
@@ -464,10 +464,10 @@ export class InElementSuite extends RenderTest {
 
     this.render(
       stripTight`
-        {{#in-element firstElement}}
-          [{{foo}}]
-          {{#in-element secondElement}}
-            [{{bar}}]
+        {{#in-element this.firstElement}}
+          [{{this.foo}}]
+          {{#in-element this.secondElement}}
+            [{{this.bar}}]
           {{/in-element}}
         {{/in-element}}
         `,
@@ -525,8 +525,8 @@ export class InElementSuite extends RenderTest {
 
     this.render(
       stripTight`
-        {{#if showExternal}}
-          {{#in-element externalElement}}[<DestroyMe />]{{/in-element}}
+        {{#if this.showExternal}}
+          {{#in-element this.externalElement}}[<DestroyMe />]{{/in-element}}
         {{/if}}
       `,
       {

@@ -49,7 +49,7 @@ class PartialTest extends RenderTest {
   @test
   'static partial with local reference'() {
     this.registerPartial('test', `You {{quality.value}}`);
-    this.render(`{{#each qualities key='id' as |quality|}}{{partial 'test'}}. {{/each}}`, {
+    this.render(`{{#each this.qualities key='id' as |quality|}}{{partial 'test'}}. {{/each}}`, {
       qualities: [
         { id: 1, value: 'smaht' },
         { id: 2, value: 'loyal' },
@@ -72,7 +72,7 @@ class PartialTest extends RenderTest {
   @test
   'static partial with local reference (unknown)'() {
     this.registerPartial('test', `You {{quality}}`);
-    this.render(`{{#each qualities key='@index' as |quality|}}{{partial 'test'}}. {{/each}}`, {
+    this.render(`{{#each this.qualities key='@index' as |quality|}}{{partial 'test'}}. {{/each}}`, {
       qualities: ['smaht', 'loyal'],
     });
 
@@ -89,7 +89,7 @@ class PartialTest extends RenderTest {
     this.registerComponent('Glimmer', 'FooBar', `<p>{{@foo}}-{{partial 'test'}}</p>`);
 
     this.registerPartial('test', `{{@foo}}-{{@bar}}`);
-    this.render(`<FooBar @foo={{foo}} @bar={{bar}} />`, { foo: 'foo', bar: 'bar' });
+    this.render(`<FooBar @foo={{this.foo}} @bar={{this.bar}} />`, { foo: 'foo', bar: 'bar' });
     this.assertHTML(`<p>foo-foo-bar</p>`);
 
     this.assertStableRerender();
@@ -340,7 +340,7 @@ class PartialTest extends RenderTest {
   @test
   'dynamic partial with static content'() {
     this.registerPartial('test', `<div>Testing</div>`);
-    this.render(`Before {{partial name}} After`, { name: 'test' });
+    this.render(`Before {{partial this.name}} After`, { name: 'test' });
 
     this.assertHTML(`Before <div>Testing</div> After`);
     this.rerender({ name: 'test' });
@@ -350,10 +350,10 @@ class PartialTest extends RenderTest {
 
   @test
   'nested dynamic partial with dynamic content'() {
-    this.registerPartial('test', `<div>Testing {{wat}} {{partial nest}}</div>`);
-    this.registerPartial('nested', `<div>Nested {{lol}}</div>`);
+    this.registerPartial('test', `<div>Testing {{this.wat}} {{partial this.nest}}</div>`);
+    this.registerPartial('nested', `<div>Nested {{this.lol}}</div>`);
 
-    this.render(`Before {{partial name}} After`, {
+    this.render(`Before {{partial this.name}} After`, {
       name: 'test',
       nest: 'nested',
       wat: 'wat are',
@@ -382,7 +382,7 @@ class PartialTest extends RenderTest {
     );
 
     this.render(
-      `Hi {{person1}}. {{#with 'Sophie' as |person1|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}. {{partial 'person2-partial'}}{{/with}}`,
+      `Hi {{this.person1}}. {{#with 'Sophie' as |person1|}}Hi {{person1}} (aged {{this.age}}), {{this.person2}}, {{this.person3}} and {{this.person4}}. {{partial 'person2-partial'}}{{/with}}`,
       {
         person1: 'Context1',
         person2: 'Context2',
@@ -436,7 +436,7 @@ class PartialTest extends RenderTest {
 
   @test
   'dynamic partial with falsy value does not render'() {
-    this.render(`Before {{partial name}} After`, { name: false });
+    this.render(`Before {{partial this.name}} After`, { name: false });
 
     this.assertHTML(`Before <!----> After`);
     this.rerender({ name: false });
@@ -454,7 +454,7 @@ class PartialTest extends RenderTest {
   @test
   'dynamic partial that does not exist does not render'() {
     assert.throws(() => {
-      this.render(`Before {{partial name}} After`, { name: 'illuminati' });
+      this.render(`Before {{partial this.name}} After`, { name: 'illuminati' });
     }, /Could not find a partial named "illuminati"/);
   }
 
@@ -462,7 +462,7 @@ class PartialTest extends RenderTest {
   'dynamic partial with can change from falsy to real template'() {
     this.registerPartial('test', `<div>Testing</div>`);
 
-    this.render(`Before {{partial name}} After`, { name: false });
+    this.render(`Before {{partial this.name}} After`, { name: false });
 
     this.assertHTML(`Before <!----> After`);
     this.rerender({ name: false });
@@ -490,7 +490,7 @@ class PartialTest extends RenderTest {
   @test
   'dynamic partial with self reference'() {
     this.registerPartial('test', `I know {{item}}. I have the best {{item}}s.`);
-    this.render(`{{partial name}}`, { name: 'test', item: 'partial' });
+    this.render(`{{partial this.name}}`, { name: 'test', item: 'partial' });
 
     this.assertHTML(`I know partial. I have the best partials.`);
     this.rerender({ name: 'test', item: 'partial' });
@@ -505,7 +505,7 @@ class PartialTest extends RenderTest {
       'birdman',
       `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`
     );
-    this.render(`{{partial name}}`, { name: 'weezy', item: 'name' });
+    this.render(`{{partial this.name}}`, { name: 'weezy', item: 'name' });
 
     this.assertHTML(`Ain't my birthday but I got my name on the cake.`);
     this.rerender({ name: 'birdman', item: 'name' });
@@ -522,7 +522,7 @@ class PartialTest extends RenderTest {
       'birdman',
       `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`
     );
-    this.render(`{{partial name}}`, { name: 'weezy', item: 'partial' });
+    this.render(`{{partial this.name}}`, { name: 'weezy', item: 'partial' });
 
     this.assertHTML(`Ain't my birthday but I got my partial on the cake.`);
     this.rerender({ name: 'birdman', item: 'name' });
@@ -539,7 +539,7 @@ class PartialTest extends RenderTest {
       'birdman',
       `Respeck my {{noun}}. When my {{noun}} come up put some respeck on it.`
     );
-    this.render(`{{partial name}}`, { name: 'weezy', item: 'partial' });
+    this.render(`{{partial this.name}}`, { name: 'weezy', item: 'partial' });
 
     this.assertHTML(`Ain't my birthday but I got my partial on the cake.`);
     this.rerender({ name: 'birdman', noun: 'name' });
@@ -552,7 +552,7 @@ class PartialTest extends RenderTest {
   @test
   'dynamic partial with local reference'() {
     this.registerPartial('test', `You {{quality.value}}`);
-    this.render(`{{#each qualities key='id' as |quality|}}{{partial name}}. {{/each}}`, {
+    this.render(`{{#each this.qualities key='id' as |quality|}}{{partial this.name}}. {{/each}}`, {
       name: 'test',
       qualities: [
         { id: 1, value: 'smaht' },
@@ -577,7 +577,7 @@ class PartialTest extends RenderTest {
   @test
   'dynamic partial with local reference (unknown)'() {
     this.registerPartial('test', `You {{quality}}`);
-    this.render(`{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`, {
+    this.render(`{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`, {
       name: 'test',
       qualities: ['smaht', 'loyal'],
     });
@@ -593,7 +593,7 @@ class PartialTest extends RenderTest {
   @test
   'partial with if statement on a simple local reference works as expected'() {
     this.registerPartial('test', `{{#if quality}}You {{quality}}{{else}}No quality{{/if}}`);
-    this.render(`{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`, {
+    this.render(`{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`, {
       name: 'test',
       qualities: ['smaht', 'loyal', undefined],
     });
@@ -612,7 +612,7 @@ class PartialTest extends RenderTest {
       'test',
       `{{#if quality.name}}You {{quality.name}}{{else}}No quality{{/if}}`
     );
-    this.render(`{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`, {
+    this.render(`{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`, {
       name: 'test',
       qualities: [{ name: 'smaht' }, { name: 'loyal' }, { name: undefined }],
     });

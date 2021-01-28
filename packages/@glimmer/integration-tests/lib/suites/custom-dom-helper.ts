@@ -48,7 +48,7 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
 
   @test
   'The compiler can handle unescaped HTML'() {
-    this.render('<div>{{{title}}}</div>', { title: '<strong>hello</strong>' });
+    this.render('<div>{{{this.title}}}</div>', { title: '<strong>hello</strong>' });
     let b = blockStack();
     this.assertHTML(strip`
       <div>
