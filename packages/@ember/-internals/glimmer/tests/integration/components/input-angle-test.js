@@ -153,9 +153,18 @@ class InputRenderingTest extends RenderingTestCase {
     this.assert.equal($standard.type, $custom.type);
 
     Object.keys(events).forEach((event) => {
-      this.triggerEvent(event, null, '#standard');
-      this.triggerEvent(event, null, '#custom');
+      // triggerEvent does not seem to work with focusin and focusout events
+      if (event !== 'focusin' && event !== 'focusout') {
+        this.triggerEvent(event, null, '#standard');
+        this.triggerEvent(event, null, '#custom');
+      }
     });
+
+    // test focusin and focusout by actually moving focus
+    $standard[0].focus();
+    $standard[0].blur();
+    $custom[0].focus();
+    $custom[0].blur();
 
     this.assert.ok(
       triggered.standard.length > 10,
@@ -958,12 +967,33 @@ moduleFor(
       this.assertAttr('tabindex', '10');
     }
 
-    ['@test `value` property assertion']() {
+    ['@feature(!EMBER_MODERNIZED_BUILT_IN_COMPONENTS) `value` property assertion']() {
       expectAssertion(() => {
         this.render(`<Input @type="checkbox" @value={{value}} />`, {
           value: 'value',
         });
       }, /checkbox.+@value.+not supported.+use.+@checked.+instead/);
+    }
+
+    ['@feature(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) `value` property warning']() {
+      let message =
+        '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
+        'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
+        'Did you mean `<Input @type="checkbox" @checked={{...}} />`?';
+
+      expectWarning(() => {
+        this.render(`<Input @type="checkbox" @value={{value}} />`, {
+          value: true,
+        });
+      }, message);
+
+      this.assert.strictEqual(this.context.value, true);
+      this.assertCheckboxIsNotChecked();
+
+      expectWarning(() => this.$input()[0].click(), message);
+
+      this.assert.strictEqual(this.context.value, true);
+      this.assertCheckboxIsChecked();
     }
 
     ['@test with a bound type']() {

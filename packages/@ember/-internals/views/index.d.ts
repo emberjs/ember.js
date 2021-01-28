@@ -1,6 +1,8 @@
 import { Option } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
 
+export { jQuery, jQueryDisabled } from './lib/system/jquery';
+
 export const ActionSupport: any;
 export const ChildViewsSupport: any;
 export const ClassNamesSupport: any;
