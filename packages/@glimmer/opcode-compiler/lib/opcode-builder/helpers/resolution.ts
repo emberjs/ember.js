@@ -301,7 +301,7 @@ export function resolveOptionalHelper(
   let helper = resolver.lookupHelper(name, owner);
 
   if (helper === null) {
-    ifFallback(name);
+    ifFallback(name, meta.moduleName);
   } else {
     ifHelper(constants.helper(helper, name));
   }
