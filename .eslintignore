@@ -9,3 +9,5 @@
 # misc
 /coverage/
 !.*
+
+**/fixtures
