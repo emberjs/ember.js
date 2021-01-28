@@ -76,6 +76,19 @@ setGlobalContext({
   },
 
   warnIfStyleNotTrusted() {},
+
+  assert(test: unknown, msg: string) {
+    if (!test) {
+      throw new Error(msg);
+    }
+  },
+
+  deprecate(msg: string, test: unknown) {
+    if (!test) {
+      // eslint-disable-next-line no-console
+      console.warn(msg);
+    }
+  },
 });
 
 export class NativeIteratorDelegate<T = unknown> implements IteratorDelegate {

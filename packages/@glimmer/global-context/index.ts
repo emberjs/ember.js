@@ -115,6 +115,24 @@ export let setPath: (obj: object, path: string, value: unknown) => unknown;
  */
 export let warnIfStyleNotTrusted: (value: unknown) => void;
 
+/**
+ * Hook to customize assertion messages in the VM. Usages can be stripped out
+ * by using the @glimmer/vm-babel-plugins package.
+ */
+export let assert: (test: unknown, msg: string, options?: { id: string }) => asserts test;
+
+/**
+ * Hook to customize deprecation messages in the VM. Usages can be stripped out
+ * by using the @glimmer/vm-babel-plugins package.
+ */
+export let deprecate: (
+  msg: string,
+  test: unknown,
+  options: {
+    id: string;
+  }
+) => void;
+
 //////////
 
 export interface GlobalContext {
@@ -128,6 +146,14 @@ export interface GlobalContext {
   getPath: (obj: object, path: string) => unknown;
   setPath: (obj: object, prop: string, value: unknown) => void;
   warnIfStyleNotTrusted: (value: unknown) => void;
+  assert: (test: unknown, msg: string, options?: { id: string }) => asserts test;
+  deprecate: (
+    msg: string,
+    test: unknown,
+    options: {
+      id: string;
+    }
+  ) => void;
 }
 
 let globalContextWasSet = false;
@@ -151,6 +177,8 @@ export default function setGlobalContext(context: GlobalContext) {
   getPath = context.getPath;
   setPath = context.setPath;
   warnIfStyleNotTrusted = context.warnIfStyleNotTrusted;
+  assert = context.assert;
+  deprecate = context.deprecate;
 }
 
 export let assertGlobalContextWasSet: (() => void) | undefined;
@@ -180,6 +208,8 @@ if (DEBUG) {
           getPath,
           setPath,
           warnIfStyleNotTrusted,
+          assert,
+          deprecate,
         }
       : null;
 
@@ -199,6 +229,8 @@ if (DEBUG) {
     getPath = context?.getPath || getPath;
     setPath = context?.setPath || setPath;
     warnIfStyleNotTrusted = context?.warnIfStyleNotTrusted || warnIfStyleNotTrusted;
+    assert = context?.assert || assert;
+    deprecate = context?.deprecate || deprecate;
 
     return originalGlobalContext;
   };
