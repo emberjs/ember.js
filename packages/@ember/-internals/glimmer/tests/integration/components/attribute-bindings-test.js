@@ -17,7 +17,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=foo bar=bar}}', { foo: 'foo', bar: 'bar' });
+      this.render('{{foo-bar foo=this.foo bar=this.bar}}', { foo: 'foo', bar: 'bar' });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -119,7 +119,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=foo}}', { foo: { bar: 'foo-bar' } });
+      this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -178,7 +178,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar type=submit}}', {
+      this.render('{{foo-bar type=this.submit}}', {
         submit: 'submit',
       });
 
@@ -232,7 +232,7 @@ moduleFor(
       });
 
       expectAssertion(() => {
-        this.render('{{foo-bar foo=foo}}', { foo: { bar: 'foo-bar' } });
+        this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
       }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
     }
 
@@ -246,7 +246,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar tiTLe=name}}', {
+      this.render('{{foo-bar tiTLe=this.name}}', {
         name: 'qux',
       });
 
@@ -285,7 +285,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=foo}}', {
+      this.render('{{foo-bar foo=this.foo}}', {
         foo: 'qux',
       });
 
@@ -325,7 +325,7 @@ moduleFor(
         template: '',
       });
 
-      this.render('{{foo-bar viewBox=foo}}', {
+      this.render('{{foo-bar viewBox=this.foo}}', {
         foo: '0 0 100 100',
       });
 
@@ -360,7 +360,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar fizz=fizz bar=bar}}', {
+      this.render('{{foo-bar fizz=this.fizz bar=this.bar}}', {
         fizz: null,
         bar: undefined,
       });
@@ -412,7 +412,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar size=size}}', {
+      this.render('{{foo-bar size=this.size}}', {
         size: 21,
       });
 
@@ -504,7 +504,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-      this.render('{{foo-bar type=type isDisabled=disabled}}', {
+      this.render('{{foo-bar type=this.type isDisabled=this.disabled}}', {
         type: 'password',
         disabled: false,
       });
@@ -549,7 +549,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-      this.render('{{foo-bar type=type xlinkHref=xlinkHref}}', {
+      this.render('{{foo-bar type=this.type xlinkHref=this.xlinkHref}}', {
         xlinkHref: '/foo.png',
       });
 
@@ -590,7 +590,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-      this.render('{{foo-bar foo=foo}}', {
+      this.render('{{foo-bar foo=this.foo}}', {
         foo: function () {
           return this;
         }.call('bar'),
@@ -646,7 +646,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-      this.render('{{foo-bar specialSauce=sauce}}', {
+      this.render('{{foo-bar specialSauce=this.sauce}}', {
         sauce: 'special-sauce',
       });
 
@@ -689,7 +689,7 @@ moduleFor(
 
       this.registerComponent('fizz-bar', { ComponentClass: FizzBarComponent });
 
-      this.render('{{fizz-bar newHref=href}}', {
+      this.render('{{fizz-bar newHref=this.href}}', {
         href: 'dog.html',
       });
 
@@ -739,10 +739,10 @@ moduleFor(
 
       this.render(
         strip`
-      {{foo-bar hasFoo=true foo=foo hasBar=false bar=bar}}
-      {{foo-bar hasFoo=false foo=foo hasBar=true bar=bar}}
-      {{foo-bar hasFoo=true foo=foo hasBar=true bar=bar}}
-      {{foo-bar hasFoo=false foo=foo hasBar=false bar=bar}}
+      {{foo-bar hasFoo=true foo=this.foo hasBar=false bar=this.bar}}
+      {{foo-bar hasFoo=false foo=this.foo hasBar=true bar=this.bar}}
+      {{foo-bar hasFoo=true foo=this.foo hasBar=true bar=this.bar}}
+      {{foo-bar hasFoo=false foo=this.foo hasBar=false bar=this.bar}}
     `,
         { foo: 'foo', bar: 'bar' }
       );
@@ -893,7 +893,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar href=xss}}', {
+      this.render('{{foo-bar href=this.xss}}', {
         xss: "javascript:alert('foo')",
       });
 
@@ -911,7 +911,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar role=role}}', { role: 'button' });
+      this.render('{{foo-bar role=this.role}}', { role: 'button' });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',

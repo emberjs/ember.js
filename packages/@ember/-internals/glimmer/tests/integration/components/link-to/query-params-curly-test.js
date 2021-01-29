@@ -274,7 +274,7 @@ moduleFor(
     ['@test supplied QP properties can be bound'](assert) {
       this.addTemplate(
         'index',
-        `{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}`
+        `{{#link-to (query-params foo=this.boundThing) id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -293,7 +293,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params abool=boundThing) id='the-link'}}
+        {{#link-to (query-params abool=this.boundThing) id='the-link'}}
           Index
         {{/link-to}}
         `
@@ -505,7 +505,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params page=pageNumber) id='page-link'}}
+        {{#link-to (query-params page=this.pageNumber) id='page-link'}}
           Index
         {{/link-to}}
         `
@@ -534,9 +534,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}}
-        {{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}}
-        {{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}}
+        {{#link-to (query-params pages=this.pagesArray) id='array-link'}}Index{{/link-to}}
+        {{#link-to (query-params pages=this.biggerArray) id='bigger-link'}}Index{{/link-to}}
+        {{#link-to (query-params pages=this.emptyArray) id='empty-link'}}Index{{/link-to}}
         `
       );
 
@@ -589,7 +589,7 @@ moduleFor(
         `
         {{#link-to 'parent' id='parent-link'}}Parent{{/link-to}}
         {{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}}
-        {{#link-to 'parent' (query-params foo=cat) id='parent-link-qp'}}Parent{{/link-to}}
+        {{#link-to 'parent' (query-params foo=this.cat) id='parent-link-qp'}}Parent{{/link-to}}
         {{outlet}}
         `
       );
@@ -771,7 +771,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params page=pageNumber) id='page-link'}}
+        {{#link-to (query-params page=this.pageNumber) id='page-link'}}
           Index
         {{/link-to}}
         `

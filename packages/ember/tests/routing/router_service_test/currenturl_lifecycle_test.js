@@ -130,7 +130,7 @@ moduleFor(
 
       this.addComponent('current-url', {
         ComponentClass: CurrenURLComponent,
-        template: '{{currentURL}}-{{currentRouteName}}-{{currentRoute.name}}',
+        template: '{{this.currentURL}}-{{this.currentRouteName}}-{{this.currentRoute.name}}',
       });
     }
 

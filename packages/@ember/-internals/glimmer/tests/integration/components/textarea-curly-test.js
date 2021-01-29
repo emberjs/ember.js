@@ -34,7 +34,7 @@ class BoundTextAreaAttributes {
   generate({ attribute, first, second }) {
     return {
       [`@test ${attribute}`]() {
-        this.render(`{{textarea ${attribute}=value}}`, {
+        this.render(`{{textarea ${attribute}=this.value}}`, {
           value: first,
         });
         this.assertTextArea({ attrs: { [attribute]: first } });
@@ -76,21 +76,21 @@ moduleFor(
     }
 
     ['@test Should respect disabled'](assert) {
-      this.render('{{textarea disabled=disabled}}', {
+      this.render('{{textarea disabled=this.disabled}}', {
         disabled: true,
       });
       assert.ok(this.$('textarea').is(':disabled'));
     }
 
     ['@test Should respect disabled when false'](assert) {
-      this.render('{{textarea disabled=disabled}}', {
+      this.render('{{textarea disabled=this.disabled}}', {
         disabled: false,
       });
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
     ['@test Should become disabled when the context changes'](assert) {
-      this.render('{{textarea disabled=disabled}}');
+      this.render('{{textarea disabled=this.disabled}}');
       assert.ok(this.$('textarea').is(':not(:disabled)'));
 
       this.assertStableRerender();
@@ -118,7 +118,7 @@ moduleFor(
     }
 
     ['@test GH#14001 Should correctly handle an empty string bound value']() {
-      this.render('{{textarea value=message}}', { message: '' });
+      this.render('{{textarea value=this.message}}', { message: '' });
 
       this.assert.strictEqual(this.firstChild.value, '');
 

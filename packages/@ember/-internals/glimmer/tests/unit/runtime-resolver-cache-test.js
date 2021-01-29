@@ -23,7 +23,7 @@ moduleFor(
 
       this.render(
         `
-          {{~#if cond~}}
+          {{~#if this.cond~}}
             {{foo-bar}}
           {{~else~}}
             {{baz-qux}}
@@ -81,7 +81,7 @@ moduleFor(
       this.getCacheCounters();
 
       // show component-one for the first time
-      this.render(`{{component componentName}}`, {
+      this.render(`{{component this.componentName}}`, {
         componentName: 'component-one',
       });
 
@@ -145,7 +145,7 @@ moduleFor(
       // show component-one for the first time
       this.render(
         `
-    {{~#if cond~}}
+    {{~#if this.cond~}}
       {{component-one}}
     {{~else~}}
       {{component-two}}

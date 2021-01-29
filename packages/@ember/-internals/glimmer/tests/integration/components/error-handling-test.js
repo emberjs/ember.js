@@ -28,7 +28,7 @@ moduleFor(
       });
 
       assert.throws(() => {
-        this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
+        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
       }, /silly mistake in init/);
 
       assert.equal(
@@ -70,7 +70,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+      this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
         switch: true,
       });
 
@@ -123,7 +123,7 @@ moduleFor(
       });
 
       assert.throws(() => {
-        this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
+        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
       }, /silly mistake/);
 
       assert.equal(
@@ -155,7 +155,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+      this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
         switch: true,
       });
 

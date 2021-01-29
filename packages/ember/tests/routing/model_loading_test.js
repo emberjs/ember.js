@@ -115,7 +115,7 @@ moduleFor(
     ['@test The Homepage with a `setupController` hook'](assert) {
       this.addTemplate(
         'home',
-        `<ul>{{#each hours as |entry|}}
+        `<ul>{{#each this.hours as |entry|}}
         <li>{{entry}}</li>
       {{/each}}
       </ul>
@@ -171,7 +171,7 @@ moduleFor(
     }
 
     ['@test the route controller can be specified via controllerName'](assert) {
-      this.addTemplate('home', '<p>{{myValue}}</p>');
+      this.addTemplate('home', '<p>{{this.myValue}}</p>');
       this.add(
         'route:home',
         Route.extend({
@@ -225,7 +225,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('alternative_home', '<p>alternative home: {{myValue}}</p>');
+      this.addTemplate('alternative_home', '<p>alternative home: {{this.myValue}}</p>');
 
       return this.visit('/').then(() => {
         let homeRoute = this.applicationInstance.lookup('route:home');
@@ -253,7 +253,7 @@ moduleFor(
         this.route('home', { path: '/' });
       });
 
-      this.addTemplate('home', '<p>home: {{myValue}}</p>');
+      this.addTemplate('home', '<p>home: {{this.myValue}}</p>');
 
       this.add(
         'route:home',
@@ -313,7 +313,10 @@ moduleFor(
         })
       );
 
-      this.addTemplate('home', '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>');
+      this.addTemplate(
+        'home',
+        '<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
+      );
 
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
@@ -384,7 +387,10 @@ moduleFor(
         })
       );
 
-      this.addTemplate('home', '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>');
+      this.addTemplate(
+        'home',
+        '<ul>{{#each this.hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>'
+      );
 
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();

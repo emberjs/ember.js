@@ -30,7 +30,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       ['@test it can render named arguments']() {
         this.registerTemplateOnlyComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
-        this.render('{{foo-bar foo=foo bar=bar}}', {
+        this.render('{{foo-bar foo=this.foo bar=this.bar}}', {
           foo: 'foo',
           bar: 'bar',
         });
@@ -53,7 +53,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       }
 
       ['@test it does not reflected arguments as properties']() {
-        this.registerTemplateOnlyComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
+        this.registerTemplateOnlyComponent('foo-bar', '|{{this.foo}}|{{this.bar}}|');
 
         this.render('{{foo-bar foo=foo bar=bar}}', {
           foo: 'foo',
@@ -132,7 +132,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
             wrapper: EmberObject.create({ content: null }),
           }),
           template:
-            '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=wrapper}}</div>{{x-inner value=value wrapper=wrapper}}',
+            '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=wrapper}}</div>{{x-inner value=this.value wrapper=this.wrapper}}',
         });
 
         this.registerComponent('x-inner', {

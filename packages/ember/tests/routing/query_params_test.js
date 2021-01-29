@@ -744,7 +744,7 @@ moduleFor(
     ) {
       this.addTemplate(
         'application',
-        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{foo}}</span>{{outlet}}'
+        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
       );
 
       this.setSingleQPController('application', 'foo', 1, {
@@ -1447,7 +1447,7 @@ moduleFor(
 
       this.addTemplate(
         'home',
-        "{{link-to 'Home' 'home' (query-params foo=nullValue) id='null-link'}}{{link-to 'Home' 'home' (query-params foo=undefinedValue) id='undefined-link'}}"
+        "{{link-to 'Home' 'home' (query-params foo=this.nullValue) id='null-link'}}{{link-to 'Home' 'home' (query-params foo=this.undefinedValue) id='undefined-link'}}"
       );
 
       this.router.map(function () {

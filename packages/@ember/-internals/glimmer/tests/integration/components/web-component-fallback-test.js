@@ -16,7 +16,7 @@ moduleFor(
     }
 
     ['@test custom elements can have bound attributes']() {
-      let template = `<foo-bar some-attr="{{name}}">hello</foo-bar>`;
+      let template = `<foo-bar some-attr="{{this.name}}">hello</foo-bar>`;
 
       this.render(template, { name: 'Robert' });
 

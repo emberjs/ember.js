@@ -86,7 +86,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('{{#if truthy}}<h1 {{foo-bar truthy}}>hello world</h1>{{/if}}', {
+    this.render('{{#if this.truthy}}<h1 {{foo-bar this.truthy}}>hello world</h1>{{/if}}', {
       truthy: true,
     });
     this.assertHTML(`<h1>hello world</h1>`);
@@ -130,7 +130,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('<h1 {{foo-bar truthy}}>hello world</h1>', {
+    this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>', {
       truthy: true,
     });
     this.assertHTML(`<h1>hello world</h1>`);
@@ -169,7 +169,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('<h1 {{foo-bar truthy}}>hello world</h1>', {
+    this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>', {
       truthy: true,
     });
     this.assertHTML(`<h1>hello world</h1>`);
@@ -216,7 +216,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('<h1 {{foo-bar truthy}}>hello world</h1>');
+    this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>');
     this.assertHTML(`<h1>hello world</h1>`);
 
     assert.equal(insertCount, 1);
@@ -663,7 +663,7 @@ moduleFor(
 
       this.registerModifier('foo-bar', ModifierClass);
 
-      this.render('<h1 {{foo-bar baz}}>hello world</h1>');
+      this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
       runTask(() => this.context.set('baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');
@@ -717,7 +717,7 @@ moduleFor(
 
       this.registerModifier('foo-bar', ModifierClass);
 
-      this.render('<h1 {{foo-bar baz}}>hello world</h1>');
+      this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
       runTask(() => this.context.set('baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');

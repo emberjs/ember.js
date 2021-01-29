@@ -35,7 +35,7 @@ moduleFor(
 
     ['@test binds values when variables are used']() {
       this.render(
-        strip`{{#let (array personOne) as |people|}}
+        strip`{{#let (array this.personOne) as |people|}}
               {{#each people as |personName|}}
                 {{personName}}
               {{/each}}
@@ -58,7 +58,7 @@ moduleFor(
 
     ['@test binds multiple values when variables are used']() {
       this.render(
-        strip`{{#let (array personOne personTwo) as |people|}}
+        strip`{{#let (array this.personOne this.personTwo) as |people|}}
               {{#each people as |personName|}}
                 {{personName}},
               {{/each}}
@@ -91,7 +91,7 @@ moduleFor(
 
     ['@test array helpers can be nested']() {
       this.render(
-        strip`{{#let (array (array personOne personTwo)) as |listOfPeople|}}
+        strip`{{#let (array (array this.personOne this.personTwo)) as |listOfPeople|}}
               {{#each listOfPeople as |people|}}
                 List:
                 {{#each people as |personName|}}
@@ -176,7 +176,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash people=(array this.model.personOne personTwo))}}`,
+        template: `{{yield (hash people=(array this.model.personOne this.personTwo))}}`,
       });
 
       this.render(
@@ -216,12 +216,12 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
         template: strip`
-        {{#each people as |personName|}}
+        {{#each this.people as |personName|}}
           {{personName}},
         {{/each}}`,
       });
 
-      this.render(strip`{{foo-bar people=(array "Tom" personTwo)}}`, { personTwo: 'Chad' });
+      this.render(strip`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
 
       this.assertText('Tom,Chad,');
 
@@ -248,12 +248,12 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
         template: strip`
-        {{#each people as |personName|}}
+        {{#each this.people as |personName|}}
           {{personName}},
         {{/each}}`,
       });
 
-      this.render(strip`{{foo-bar people=(array "Tom" personTwo)}}`, { personTwo: 'Chad' });
+      this.render(strip`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
 
       let firstArray = fooBarInstance.people;
 
@@ -273,7 +273,7 @@ moduleFor(
         return 'captured';
       });
 
-      this.render(`{{capture (array 'Tom' personTwo)}}`, { personTwo: 'Godfrey' });
+      this.render(`{{capture (array 'Tom' this.personTwo)}}`, { personTwo: 'Godfrey' });
 
       this.assert.deepEqual(captured, ['Tom', 'Godfrey']);
 

@@ -121,7 +121,8 @@ class AbstractAppendTest extends RenderingTestCase {
         layoutName: 'components/x-parent',
       }),
 
-      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}',
+      template:
+        '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
@@ -129,7 +130,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{bar}}]{{yield}}',
+      template: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -293,7 +294,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}',
+      template: '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
@@ -301,7 +302,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{bar}}]{{yield}}',
+      template: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -399,7 +400,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-first {{foo}}!',
+      template: 'x-first {{this.foo}}!',
     });
 
     this.registerComponent('x-second', {
@@ -411,7 +412,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-second {{bar}}!',
+      template: 'x-second {{this.bar}}!',
     });
 
     let First, Second;
@@ -630,7 +631,7 @@ class AbstractAppendTest extends RenderingTestCase {
     let destroyedRoots = 0;
     this.registerComponent('other-root', {
       ComponentClass: Component.extend({
-        layout: compile(`fake-thing: {{counter}}`),
+        layout: compile(`fake-thing: {{this.counter}}`),
         init() {
           this._super(...arguments);
           this.counter = instantiatedRoots++;
@@ -644,7 +645,7 @@ class AbstractAppendTest extends RenderingTestCase {
 
     this.render(
       strip`
-      {{#if showFooBar}}
+      {{#if this.showFooBar}}
         {{foo-bar}}
       {{else}}
         {{baz-qux}}

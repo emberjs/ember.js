@@ -13,7 +13,7 @@ moduleFor(
     ['@test it renders the block if `undefined` is passed as an argument']() {
       this.render(
         strip`
-        {{#let foo.bar.baz as |thing|}}
+        {{#let this.foo.bar.baz as |thing|}}
           value: "{{thing}}"
         {{/let}}`,
         { foo: {} }
@@ -35,7 +35,7 @@ moduleFor(
     }
 
     ['@test it renders the block if arguments are falsey']() {
-      this.render(`{{#let cond1 cond2 as |cond|}}value: "{{cond1}}"{{/let}}`, {
+      this.render(`{{#let this.cond1 this.cond2 as |cond|}}value: "{{this.cond1}}"{{/let}}`, {
         cond1: false,
       });
 
@@ -55,7 +55,7 @@ moduleFor(
     }
 
     ['@test it yields multiple arguments in order']() {
-      this.render(`{{#let foo bar baz.name as |a b c|}}{{a}} {{b}} {{c}}{{/let}}`, {
+      this.render(`{{#let this.foo this.bar this.baz.name as |a b c|}}{{a}} {{b}} {{c}}{{/let}}`, {
         foo: 'Señor Engineer',
         bar: '',
         baz: { name: 'Dale' },
@@ -69,7 +69,7 @@ moduleFor(
     }
 
     ['@test can access alias and original scope']() {
-      this.render(`{{#let person as |tom|}}{{title}}: {{tom.name}}{{/let}}`, {
+      this.render(`{{#let this.person as |tom|}}{{this.title}}: {{tom.name}}{{/let}}`, {
         title: 'Señor Engineer',
         person: { name: 'Tom Dale' },
       });
@@ -96,7 +96,7 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#let}} block.']() {
-      this.render(`{{name}}-{{#let other as |name|}}{{name}}{{/let}}-{{name}}`, {
+      this.render(`{{name}}-{{#let this.other as |name|}}{{name}}{{/let}}-{{name}}`, {
         name: 'Stef',
         other: 'Yehuda',
       });
@@ -124,7 +124,7 @@ moduleFor(
     }
 
     ['@test can access alias of a proxy']() {
-      this.render(`{{#let proxy as |person|}}{{person.name}}{{/let}}`, {
+      this.render(`{{#let this.proxy as |person|}}{{person.name}}{{/let}}`, {
         proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
       });
 
@@ -159,7 +159,7 @@ moduleFor(
 
     ['@test can access alias of an array']() {
       this.render(
-        `{{#let arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/let}}`,
+        `{{#let this.arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/let}}`,
         {
           arrayThing: emberA(['Hello', ' ', 'world']),
         }
@@ -187,7 +187,7 @@ moduleFor(
     }
 
     ['@test `attrs` can be used as a block param [GH#14678]']() {
-      this.render('{{#let hash as |attrs|}}[{{hash.foo}}-{{attrs.foo}}]{{/let}}', {
+      this.render('{{#let this.hash as |attrs|}}[{{this.hash.foo}}-{{attrs.foo}}]{{/let}}', {
         hash: { foo: 'foo' },
       });
 
@@ -213,7 +213,7 @@ moduleFor(
   class extends RenderingTestCase {
     ['@test re-using the same variable with different {{#let}} blocks does not override each other']() {
       this.render(
-        `Admin: {{#let admin as |person|}}{{person.name}}{{/let}} User: {{#let user as |person|}}{{person.name}}{{/let}}`,
+        `Admin: {{#let this.admin as |person|}}{{person.name}}{{/let}} User: {{#let this.user as |person|}}{{person.name}}{{/let}}`,
         {
           admin: { name: 'Tom Dale' },
           user: { name: 'Yehuda Katz' },
@@ -243,7 +243,7 @@ moduleFor(
 
     ['@test the scoped variable is not available outside the {{#let}} block']() {
       this.render(
-        `{{ring}}-{{#let first as |ring|}}{{ring}}-{{#let fifth as |ring|}}{{ring}}-{{#let ninth as |ring|}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}`,
+        `{{ring}}-{{#let this.first as |ring|}}{{ring}}-{{#let this.fifth as |ring|}}{{ring}}-{{#let this.ninth as |ring|}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}`,
         {
           ring: 'Greed',
           first: 'Limbo',
@@ -283,7 +283,7 @@ moduleFor(
     }
 
     ['@test it should support {{#let name as |foo|}}, then {{#let foo as |bar|}}']() {
-      this.render(`{{#let name as |foo|}}{{#let foo as |bar|}}{{bar}}{{/let}}{{/let}}`, {
+      this.render(`{{#let this.name as |foo|}}{{#let foo as |bar|}}{{bar}}{{/let}}{{/let}}`, {
         name: 'caterpillar',
       });
 
@@ -326,17 +326,17 @@ moduleFor(
       this.render(
         strip`
         {{name}}
-        {{#let committer1.name as |name|}}
+        {{#let this.committer1.name as |name|}}
           [{{name}}
-          {{#let committer2.name as |name|}}
+          {{#let this.committer2.name as |name|}}
             [{{name}}]
           {{/let}}
           {{name}}]
         {{/let}}
         {{name}}
-        {{#let committer2.name as |name|}}
+        {{#let this.committer2.name as |name|}}
           [{{name}}
-          {{#let committer1.name as |name|}}
+          {{#let this.committer1.name as |name|}}
             [{{name}}]
           {{/let}}
           {{name}}]

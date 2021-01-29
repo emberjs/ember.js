@@ -472,7 +472,9 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     let context = {};
 
     for (let i = 1; i <= values.length; i++) {
-      templates.push(this.templateFor({ cond: `cond${i}`, truthy: `t${i}`, falsy: `f${i}` }));
+      templates.push(
+        this.templateFor({ cond: `this.cond${i}`, truthy: `this.t${i}`, falsy: `this.f${i}` })
+      );
       context[`t${i}`] = `T${i}`;
       context[`f${i}`] = `F${i}`;
       context[`cond${i}`] = values[i - 1];
@@ -484,8 +486,8 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
   ['@test it has access to the outer scope from both templates']() {
     let template = this.wrapperFor([
-      this.templateFor({ cond: 'cond1', truthy: 'truthy', falsy: 'falsy' }),
-      this.templateFor({ cond: 'cond2', truthy: 'truthy', falsy: 'falsy' }),
+      this.templateFor({ cond: 'this.cond1', truthy: 'this.truthy', falsy: 'this.falsy' }),
+      this.templateFor({ cond: 'this.cond2', truthy: 'this.truthy', falsy: 'this.falsy' }),
     ]);
 
     this.render(template, {
@@ -528,12 +530,12 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
   ['@test it does not update when the unbound helper is used']() {
     let template = this.wrapperFor([
       this.templateFor({
-        cond: '(unbound cond1)',
+        cond: '(unbound this.cond1)',
         truthy: '"T1"',
         falsy: '"F1"',
       }),
       this.templateFor({
-        cond: '(unbound cond2)',
+        cond: '(unbound this.cond2)',
         truthy: '"T2"',
         falsy: '"F2"',
       }),
@@ -597,7 +599,7 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     });
 
     let template = this.wrappedTemplateFor({
-      cond: 'cond',
+      cond: 'this.cond',
 
       // pass values so the helpers don't eagerly compute
       truthy: '(x-truthy this.foo)',
@@ -640,9 +642,9 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     for (let i = 1; i <= values.length; i++) {
       templates.push(
         this.templateFor({
-          cond: `cond${i}`,
-          truthy: `{{t}}${i}`,
-          falsy: `{{f}}${i}`,
+          cond: `this.cond${i}`,
+          truthy: `{{this.t}}${i}`,
+          falsy: `{{this.f}}${i}`,
         })
       );
       context[`cond${i}`] = values[i - 1];
@@ -654,11 +656,11 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
   ['@test it does not update when the unbound helper is used']() {
     let template = `${this.templateFor({
-      cond: '(unbound cond1)',
+      cond: '(unbound this.cond1)',
       truthy: 'T1',
       falsy: 'F1',
     })}${this.templateFor({
-      cond: '(unbound cond2)',
+      cond: '(unbound this.cond2)',
       truthy: 'T2',
       falsy: 'F2',
     })}`;
@@ -693,14 +695,14 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it has access to the outer scope from both templates']() {
     let template = this.wrapperFor([
       this.templateFor({
-        cond: 'cond1',
-        truthy: '{{truthy}}',
-        falsy: '{{falsy}}',
+        cond: 'this.cond1',
+        truthy: '{{this.truthy}}',
+        falsy: '{{this.falsy}}',
       }),
       this.templateFor({
-        cond: 'cond2',
-        truthy: '{{truthy}}',
-        falsy: '{{falsy}}',
+        cond: 'this.cond2',
+        truthy: '{{this.truthy}}',
+        falsy: '{{this.falsy}}',
       }),
     ]);
 
@@ -744,12 +746,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it updates correctly when enclosing another conditional']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let inner = this.templateFor({
-      cond: 'inner',
+      cond: 'this.inner',
       truthy: 'T-inner',
       falsy: 'F-inner',
     });
     let template = this.wrappedTemplateFor({
-      cond: 'outer',
+      cond: 'this.outer',
       truthy: inner,
       falsy: 'F-outer',
     });
@@ -776,8 +778,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it updates correctly when enclosing #each']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({
-      cond: 'outer',
-      truthy: '{{#each inner as |text|}}{{text}}{{/each}}',
+      cond: 'this.outer',
+      truthy: '{{#each this.inner as |text|}}{{text}}{{/each}}',
       falsy: 'F-outer',
     });
 
@@ -824,8 +826,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it updates correctly when enclosing triple-curlies']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({
-      cond: 'outer',
-      truthy: '{{{inner}}}',
+      cond: 'this.outer',
+      truthy: '{{{this.inner}}}',
       falsy: 'F-outer',
     });
 
@@ -867,12 +869,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     });
 
     let innerTemplate = this.templateFor({
-      cond: 'cond2',
+      cond: 'this.cond2',
       truthy: '{{foo-bar}}',
       falsy: '',
     });
     let wrappedTemplate = this.wrappedTemplateFor({
-      cond: 'cond1',
+      cond: 'this.cond1',
       truthy: innerTemplate,
       falsy: '',
     });
@@ -938,7 +940,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     });
 
     let template = this.wrappedTemplateFor({
-      cond: 'cond',
+      cond: 'this.cond',
       truthy: '{{x-truthy}}',
       falsy: '{{x-falsy}}',
     });

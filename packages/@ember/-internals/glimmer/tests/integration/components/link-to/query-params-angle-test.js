@@ -308,7 +308,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        <LinkTo id="the-link" @query={{hash foo=boundThing}}>
+        <LinkTo id="the-link" @query={{hash foo=this.boundThing}}>
           Index
         </LinkTo>
         `
@@ -330,7 +330,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        <LinkTo id="the-link" @query={{hash abool=boundThing}}>
+        <LinkTo id="the-link" @query={{hash abool=this.boundThing}}>
           Index
         </LinkTo>
         `
@@ -547,7 +547,7 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        <LinkTo id='page-link' @query={{hash page=pageNumber}}>
+        <LinkTo id='page-link' @query={{hash page=this.pageNumber}}>
           Index
         </LinkTo>
         `
@@ -576,9 +576,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        <LinkTo id='array-link' @query={{hash pages=pagesArray}}>Index</LinkTo>
-        <LinkTo id='bigger-link' @query={{hash pages=biggerArray}}>Index</LinkTo>
-        <LinkTo id='empty-link' @query={{hash pages=emptyArray}}>Index</LinkTo>
+        <LinkTo id='array-link' @query={{hash pages=this.pagesArray}}>Index</LinkTo>
+        <LinkTo id='bigger-link' @query={{hash pages=this.biggerArray}}>Index</LinkTo>
+        <LinkTo id='empty-link' @query={{hash pages=this.emptyArray}}>Index</LinkTo>
         `
       );
 
@@ -631,7 +631,7 @@ moduleFor(
         `
         <LinkTo id='parent-link' @route='parent'>Parent</LinkTo>
         <LinkTo id='parent-child-link' @route='parent.child'>Child</LinkTo>
-        <LinkTo id='parent-link-qp' @route='parent' @query={{hash foo=cat}}>Parent</LinkTo>
+        <LinkTo id='parent-link-qp' @route='parent' @query={{hash foo=this.cat}}>Parent</LinkTo>
         {{outlet}}
         `
       );

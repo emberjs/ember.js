@@ -34,7 +34,7 @@ class BoundTextAreaAttributes {
   generate({ attribute, first, second }) {
     return {
       [`@test ${attribute} (HTML attribute)`]() {
-        this.render(`<Textarea ${attribute}={{value}} />`, {
+        this.render(`<Textarea ${attribute}={{this.value}} />`, {
           value: first,
         });
         this.assertTextArea({ attrs: { [attribute]: first } });
@@ -49,7 +49,7 @@ class BoundTextAreaAttributes {
       },
 
       [`@test @${attribute} (named argument)`]() {
-        this.render(`<Textarea @${attribute}={{value}} />`, {
+        this.render(`<Textarea @${attribute}={{this.value}} />`, {
           value: first,
         });
         this.assertTextArea({ attrs: { [attribute]: first } });
@@ -97,35 +97,35 @@ moduleFor(
     }
 
     ['@test Should respect disabled (HTML attribute)'](assert) {
-      this.render('<Textarea disabled={{disabled}} />', {
+      this.render('<Textarea disabled={{this.disabled}} />', {
         disabled: true,
       });
       assert.ok(this.$('textarea').is(':disabled'));
     }
 
     ['@test Should respect @disabled (named argument)'](assert) {
-      this.render('<Textarea @disabled={{disabled}} />', {
+      this.render('<Textarea @disabled={{this.disabled}} />', {
         disabled: true,
       });
       assert.ok(this.$('textarea').is(':disabled'));
     }
 
     ['@test Should respect disabled (HTML attribute) when false'](assert) {
-      this.render('<Textarea disabled={{disabled}} />', {
+      this.render('<Textarea disabled={{this.disabled}} />', {
         disabled: false,
       });
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
     ['@test Should respect @disabled (named argument) when false'](assert) {
-      this.render('<Textarea @disabled={{disabled}} />', {
+      this.render('<Textarea @disabled={{this.disabled}} />', {
         disabled: false,
       });
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
     ['@test Should become disabled (HTML attribute) when the context changes'](assert) {
-      this.render('<Textarea disabled={{disabled}} />');
+      this.render('<Textarea disabled={{this.disabled}} />');
       assert.ok(this.$('textarea').is(':not(:disabled)'));
 
       this.assertStableRerender();
@@ -138,7 +138,7 @@ moduleFor(
     }
 
     ['@test Should become @disabled (named argument) when the context changes'](assert) {
-      this.render('<Textarea @disabled={{disabled}} />');
+      this.render('<Textarea @disabled={{this.disabled}} />');
       assert.ok(this.$('textarea').is(':not(:disabled)'));
 
       this.assertStableRerender();
@@ -166,7 +166,7 @@ moduleFor(
     }
 
     ['@test GH#14001 Should correctly handle an empty string bound value']() {
-      this.render('<Textarea @value={{message}} />', { message: '' });
+      this.render('<Textarea @value={{this.message}} />', { message: '' });
 
       this.assert.strictEqual(this.firstChild.value, '');
 

@@ -325,7 +325,7 @@ class EachTest extends AbstractEachTest {
   ['@test it repeats the given block for each item in the array']() {
     this.makeList([{ text: 'hello' }]);
 
-    this.render(`{{#each list as |item|}}{{item.text}}{{else}}Empty{{/each}}`);
+    this.render(`{{#each this.list as |item|}}{{item.text}}{{else}}Empty{{/each}}`);
 
     this.assertText('hello');
 
@@ -390,7 +390,7 @@ class EachTest extends AbstractEachTest {
   ['@test it receives the index as the second parameter']() {
     this.makeList([{ text: 'hello' }, { text: 'world' }]);
 
-    this.render(`{{#each list as |item index|}}[{{index}}. {{item.text}}]{{/each}}`);
+    this.render(`{{#each this.list as |item index|}}[{{index}}. {{item.text}}]{{/each}}`);
 
     this.assertText('[0. hello][1. world]');
 
@@ -408,7 +408,7 @@ class EachTest extends AbstractEachTest {
   ['@test it accepts a string key']() {
     this.makeList([{ text: 'hello' }, { text: 'world' }]);
 
-    this.render(`{{#each list key='text' as |item|}}{{item.text}}{{/each}}`);
+    this.render(`{{#each this.list key='text' as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('helloworld');
 
@@ -426,7 +426,7 @@ class EachTest extends AbstractEachTest {
   ['@test it accepts a numeric key']() {
     this.makeList([{ id: 1 }, { id: 2 }]);
 
-    this.render(`{{#each list key='id' as |item|}}{{item.id}}{{/each}}`);
+    this.render(`{{#each this.list key='id' as |item|}}{{item.id}}{{/each}}`);
 
     this.assertText('12');
 
@@ -444,7 +444,7 @@ class EachTest extends AbstractEachTest {
   ['@test it can specify @index as the key']() {
     this.makeList([{ id: 1 }, { id: 2 }]);
 
-    this.render(`{{#each list key='@index' as |item|}}{{item.id}}{{/each}}`);
+    this.render(`{{#each this.list key='@index' as |item|}}{{item.id}}{{/each}}`);
 
     this.assertText('12');
 
@@ -462,7 +462,7 @@ class EachTest extends AbstractEachTest {
   ['@test it can specify @identity as the key for arrays of primitives']() {
     this.makeList([1, 2]);
 
-    this.render(`{{#each list key='@identity' as |item|}}{{item}}{{/each}}`);
+    this.render(`{{#each this.list key='@identity' as |item|}}{{item}}{{/each}}`);
 
     this.assertText('12');
 
@@ -480,7 +480,9 @@ class EachTest extends AbstractEachTest {
   ['@test it can specify @identity as the key for mixed arrays of objects and primitives']() {
     this.makeList([1, { id: 2 }, 3]);
 
-    this.render(`{{#each list key='@identity' as |item|}}{{if item.id item.id item}}{{/each}}`);
+    this.render(
+      `{{#each this.list key='@identity' as |item|}}{{if item.id item.id item}}{{/each}}`
+    );
 
     this.assertText('123');
 
@@ -498,7 +500,7 @@ class EachTest extends AbstractEachTest {
   ['@test it can render duplicate primitive items']() {
     this.makeList(['a', 'a', 'a']);
 
-    this.render(`{{#each list as |item|}}{{item}}{{/each}}`);
+    this.render(`{{#each this.list as |item|}}{{item}}{{/each}}`);
 
     this.assertText('aaa');
 
@@ -538,11 +540,11 @@ class EachTest extends AbstractEachTest {
 
     this.registerComponent('foo-bar', {
       ComponentClass: FooBarComponent,
-      template: '{{#if isEven}}{{item.value}}{{/if}}',
+      template: '{{#if this.isEven}}{{this.item.value}}{{/if}}',
     });
 
     this.render(strip`
-      {{#each list as |item|}}
+      {{#each this.list as |item|}}
         <li>Prev</li>
         {{foo-bar item=item}}
         <li>Next</li>
@@ -567,7 +569,7 @@ class EachTest extends AbstractEachTest {
 
     this.makeList([duplicateItem, duplicateItem, { text: 'bar' }, { text: 'baz' }]);
 
-    this.render(`{{#each list as |item|}}{{item.text}}{{/each}}`);
+    this.render(`{{#each this.list as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('foofoobarbaz');
 
@@ -589,7 +591,7 @@ class EachTest extends AbstractEachTest {
   [`@test it maintains DOM stability when condition changes between objects with the same keys`]() {
     this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
 
-    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
+    this.render(`{{#each this.list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('Hello world');
 
@@ -616,7 +618,7 @@ class EachTest extends AbstractEachTest {
   [`@test it maintains DOM stability for stable keys when list is updated`]() {
     this.makeList([{ text: 'Hello' }, { text: ' ' }, { text: 'world' }]);
 
-    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
+    this.render(`{{#each this.list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('Hello world');
 
@@ -645,7 +647,7 @@ class EachTest extends AbstractEachTest {
   [`@test it renders all items with duplicate key values`]() {
     this.makeList([{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }]);
 
-    this.render(`{{#each list key="text" as |item|}}{{item.text}}{{/each}}`);
+    this.render(`{{#each this.list key="text" as |item|}}{{item.text}}{{/each}}`);
 
     this.assertText('HelloHelloHello');
 
@@ -663,9 +665,12 @@ class EachTest extends AbstractEachTest {
   ['@test context is not changed to the inner scope inside an {{#each as}} block']() {
     this.makeList([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
 
-    this.render(`{{name}}-{{#each list as |person|}}{{name}}{{/each}}-{{name}}`, {
-      name: 'Joel',
-    });
+    this.render(
+      `{{this.name}}-{{#each this.list as |person|}}{{this.name}}{{/each}}-{{this.name}}`,
+      {
+        name: 'Joel',
+      }
+    );
 
     this.assertText('Joel-JoelJoelJoel-Joel');
 
@@ -688,9 +693,12 @@ class EachTest extends AbstractEachTest {
   ['@test can access the item and the original scope']() {
     this.makeList([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
 
-    this.render(`{{#each list key="name" as |person|}}[{{title}}: {{person.name}}]{{/each}}`, {
-      title: 'Señor Engineer',
-    });
+    this.render(
+      `{{#each this.list key="name" as |person|}}[{{this.title}}: {{person.name}}]{{/each}}`,
+      {
+        title: 'Señor Engineer',
+      }
+    );
 
     this.assertText(
       '[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]'
@@ -725,7 +733,7 @@ class EachTest extends AbstractEachTest {
   ['@test the scoped variable is not available outside the {{#each}} block.']() {
     this.makeList(['Yehuda']);
 
-    this.render(`{{name}}-{{#each list as |name|}}{{name}}{{/each}}-{{name}}`, {
+    this.render(`{{name}}-{{#each this.list as |name|}}{{name}}{{/each}}-{{name}}`, {
       name: 'Stef',
     });
 
@@ -752,9 +760,12 @@ class EachTest extends AbstractEachTest {
   ['@test inverse template is displayed with context']() {
     this.makeList([]);
 
-    this.render(`{{#each list as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/each}}`, {
-      otherThing: 'bar',
-    });
+    this.render(
+      `{{#each this.list as |thing|}}Has Thing{{else}}No Thing {{this.otherThing}}{{/each}}`,
+      {
+        otherThing: 'bar',
+      }
+    );
 
     this.assertText('No Thing bar');
 
@@ -790,7 +801,7 @@ class EachTest extends AbstractEachTest {
 
     this.makeList([]);
 
-    this.render(`{{#x-wrapper}}{{#each list as |obj|}}[{{obj.text}}]{{/each}}{{/x-wrapper}}`);
+    this.render(`{{#x-wrapper}}{{#each this.list as |obj|}}[{{obj.text}}]{{/each}}{{/x-wrapper}}`);
 
     this.assertText('');
 
@@ -830,7 +841,7 @@ class EachTest extends AbstractEachTest {
   ['@test empty trusted content clears properly [GH#16314]']() {
     this.makeList(['hello']);
 
-    this.render(`before {{#each list as |value|}}{{{value}}}{{/each}} after`);
+    this.render(`before {{#each this.list as |value|}}{{{value}}}{{/each}} after`);
 
     this.assertText('before hello after');
 
@@ -860,7 +871,7 @@ class EachTest extends AbstractEachTest {
     let users = this.createList([{ name: 'Yehuda Katz' }]);
 
     this.render(
-      `Admin: {{#each admins key="name" as |person|}}[{{person.name}}]{{/each}} User: {{#each users key="name" as |person|}}[{{person.name}}]{{/each}}`,
+      `Admin: {{#each this.admins key="name" as |person|}}[{{person.name}}]{{/each}} User: {{#each this.users key="name" as |person|}}[{{person.name}}]{{/each}}`,
       {
         admins: admins.list,
         users: users.list,
@@ -897,9 +908,9 @@ class EachTest extends AbstractEachTest {
 
     this.render(
       strip`
-      {{#each content as |value|}}
+      {{#each this.content as |value|}}
         {{value}}-
-        {{#each options as |option|}}
+        {{#each this.options as |option|}}
           {{option.value}}:{{option.label}}
         {{/each}}
       {{/each}}
@@ -942,7 +953,7 @@ class EachTest extends AbstractEachTest {
     let ninth = this.createList(['Treachery']);
 
     this.render(
-      `{{ring}}-{{#each first as |ring|}}{{ring}}-{{#each fifth as |ring|}}{{ring}}-{{#each ninth as |ring|}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}`,
+      `{{ring}}-{{#each this.first as |ring|}}{{ring}}-{{#each this.fifth as |ring|}}{{ring}}-{{#each this.ninth as |ring|}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}`,
       {
         ring: 'Greed',
         first: first.list,
@@ -981,12 +992,12 @@ class EachTest extends AbstractEachTest {
     this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
   }
 
-  ['@test it should support {{#each name as |foo|}}, then {{#each foo as |bar|}}']() {
+  ['@test it should support {{#each this.name as |foo|}}, then {{#each foo as |bar|}}']() {
     let inner = this.createList(['caterpillar']);
     let outer = this.createList([inner.list]);
 
     this.render(
-      `{{#each name key="@index" as |foo|}}{{#each foo as |bar|}}{{bar}}{{/each}}{{/each}}`,
+      `{{#each this.name key="@index" as |foo|}}{{#each foo as |bar|}}{{bar}}{{/each}}{{/each}}`,
       {
         name: outer.list,
       }
@@ -1136,7 +1147,7 @@ moduleFor(
     ['@test keying off of `undefined` does not render']() {
       this.render(
         strip`
-      {{#each foo.bar.baz as |thing|}}
+      {{#each this.foo.bar.baz as |thing|}}
         {{thing}}
       {{/each}}`,
         { foo: {} }
@@ -1169,7 +1180,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each list as |value key|}}
+      {{#each this.list as |value key|}}
         [{{key}}:{{value}}]
       {{/each}}`,
         { list: emberA(sparseArray) }

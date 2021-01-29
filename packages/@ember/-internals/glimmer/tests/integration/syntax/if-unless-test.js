@@ -42,7 +42,7 @@ moduleFor(
       let destroyedChildrenCount = 0;
 
       this.registerComponent('foo-bar', {
-        template: '{{number}}',
+        template: '{{this.number}}',
         ComponentClass: Component.extend({
           willDestroy() {
             this._super();
@@ -53,8 +53,8 @@ moduleFor(
 
       this.render(
         strip`
-      {{#if cond}}
-        {{#each numbers as |number|}}
+      {{#if this.cond}}
+        {{#each this.numbers as |number|}}
           {{foo-bar number=number}}
         {{/each}}
       {{else}}
@@ -82,7 +82,7 @@ moduleFor(
     ['@test looking up `undefined` property defaults to false']() {
       this.render(
         strip`
-      {{#if foo.bar.baz}}
+      {{#if this.foo.bar.baz}}
         Here!
       {{else}}
         Nothing Here!

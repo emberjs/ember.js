@@ -10,43 +10,43 @@ moduleFor(
 
       this.render(
         strip`
-      {{#let var as |foo|}}
+      {{#let this.var as |foo|}}
         {{foo}}
       {{/let}}
 
       ---
 
-      {{#let var as |outlet|}}
+      {{#let this.var as |outlet|}}
         {{outlet}}
       {{/let}}
 
       ---
 
-      {{#let var as |mount|}}
+      {{#let this.var as |mount|}}
         {{mount}}
       {{/let}}
 
       ---
 
-      {{#let var as |component|}}
+      {{#let this.var as |component|}}
         {{component}}
       {{/let}}
 
       ---
 
-      {{#let var as |input|}}
+      {{#let this.var as |input|}}
         {{input}}
       {{/let}}
 
       ---
 
-      {{#let var as |-with-dynamic-vars|}}
+      {{#let this.var as |-with-dynamic-vars|}}
         {{-with-dynamic-vars}}
       {{/let}}
 
       ---
 
-      {{#let var as |-in-element|}}
+      {{#let this.var as |-in-element|}}
         {{-in-element}}
       {{/let}}`,
         { var: 'var' }

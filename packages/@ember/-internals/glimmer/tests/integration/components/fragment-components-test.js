@@ -25,7 +25,7 @@ moduleFor(
         },
       });
 
-      let template = `{{#if foo}}<div>Hey</div>{{/if}}{{yield bar}}`;
+      let template = `{{#if this.foo}}<div>Hey</div>{{/if}}{{yield this.bar}}`;
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -153,7 +153,7 @@ moduleFor(
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via JS']() {
-      let template = `{{id}}`;
+      let template = `{{this.id}}`;
       let FooBarComponent = Component.extend({
         tagName: '',
         id: 'baz',
@@ -168,7 +168,7 @@ moduleFor(
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template']() {
-      let template = `{{id}}`;
+      let template = `{{this.id}}`;
       let FooBarComponent = Component.extend({
         tagName: '',
       });
@@ -182,7 +182,7 @@ moduleFor(
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is bound property specified via template']() {
-      let template = `{{id}}`;
+      let template = `{{this.id}}`;
       let FooBarComponent = Component.extend({
         tagName: '',
       });
@@ -192,7 +192,7 @@ moduleFor(
         template,
       });
 
-      this.render(`{{#foo-bar id=fooBarId}}{{/foo-bar}}`, { fooBarId: 'baz' });
+      this.render(`{{#foo-bar id=this.fooBarId}}{{/foo-bar}}`, { fooBarId: 'baz' });
 
       this.assertText('baz');
 
@@ -208,12 +208,12 @@ moduleFor(
     }
 
     ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template and passed to child component']() {
-      let fooBarTemplate = `{{#baz-child id=id}}{{/baz-child}}`;
+      let fooBarTemplate = `{{#baz-child id=this.id}}{{/baz-child}}`;
       let FooBarComponent = Component.extend({
         tagName: '',
       });
       let BazChildComponent = Component.extend();
-      let bazChildTemplate = `{{id}}`;
+      let bazChildTemplate = `{{this.id}}`;
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,

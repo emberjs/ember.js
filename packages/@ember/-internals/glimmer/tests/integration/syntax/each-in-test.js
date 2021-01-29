@@ -143,7 +143,7 @@ class EachInTest extends AbstractEachInTest {
     this.makeHash({ Smartphones: 8203, 'JavaScript Frameworks': Infinity });
 
     this.render(
-      `<ul>{{#each-in hash as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`
     );
 
     this.assertText('Smartphones: 8203JavaScript Frameworks: Infinity');
@@ -169,7 +169,7 @@ class EachInTest extends AbstractEachInTest {
     });
 
     this.render(
-      `<ul>{{#each-in hash as |category data|}}<li>{{category}}: {{data.reports.unitsSold}}</li>{{else}}Empty!{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash as |category data|}}<li>{{category}}: {{data.reports.unitsSold}}</li>{{else}}Empty!{{/each-in}}</ul>`
     );
 
     this.assertText('Smartphones: 8203JavaScript Frameworks: Infinity');
@@ -200,7 +200,7 @@ class EachInTest extends AbstractEachInTest {
     });
 
     this.render(
-      `<ul>{{#each-in hash key='@identity' as |category count|}}<li>{{category}}: {{count}}</li>{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash key='@identity' as |category count|}}<li>{{category}}: {{count}}</li>{{/each-in}}</ul>`
     );
 
     this.assertText('Smartphones: 8203Tablets: 8203JavaScript Frameworks: InfinityBugs: Infinity');
@@ -237,7 +237,7 @@ class EachInTest extends AbstractEachInTest {
       },
     };
     this.render(
-      `<ul>{{#each-in (get hashes hashes.type) as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
+      `<ul>{{#each-in (get this.hashes this.hashes.type) as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
       context
     );
 
@@ -267,7 +267,7 @@ class EachInTest extends AbstractEachInTest {
   ['@test keying off of `undefined` does not render']() {
     this.makeHash({});
 
-    this.render(`{{#each-in hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`);
+    this.render(`{{#each-in this.hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`);
 
     this.assertText('Empty!');
 
@@ -286,7 +286,7 @@ class EachInTest extends AbstractEachInTest {
     this.makeHash({ '': 'empty-string', a: 'a' });
 
     this.render(
-      `<ul>{{#each-in hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
     );
 
     this.assertText(': empty-stringa: a');
@@ -302,7 +302,7 @@ class EachInTest extends AbstractEachInTest {
     this.makeHash({ 'period.key': 'a', 'other.period.key': 'b' });
 
     this.render(
-      `<ul>{{#each-in hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
     );
 
     this.assertText('period.key: aother.period.key: b');
@@ -349,7 +349,7 @@ moduleFor(
       categories['Alarm Clocks'] = 999;
 
       this.render(
-        `<ul>{{#each-in categories as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
+        `<ul>{{#each-in this.categories as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
         { categories }
       );
 
@@ -373,7 +373,7 @@ moduleFor(
       this.render(
         strip`
       <ul>
-        {{#each-in categories as |category count|}}
+        {{#each-in this.categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
@@ -443,7 +443,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each-in arr as |key value|}}
+      {{#each-in this.arr as |key value|}}
         [{{key}}:{{value}}]
       {{/each-in}}`,
         { arr }
@@ -460,7 +460,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each-in arr as |key value|}}
+      {{#each-in this.arr as |key value|}}
         [{{key}}:{{value}}]
       {{/each-in}}`,
         { arr }
@@ -550,7 +550,7 @@ moduleFor(
       this.render(
         strip`
       <ul>
-        {{#each-in categories as |category count|}}
+        {{#each-in this.categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
@@ -644,7 +644,7 @@ moduleFor(
       this.render(
         strip`
       <ul>
-        {{#each-in map key="@identity" as |key value|}}
+        {{#each-in this.map key="@identity" as |key value|}}
           <li>{{key.name}}: {{value}}</li>
         {{/each-in}}
       </ul>`,

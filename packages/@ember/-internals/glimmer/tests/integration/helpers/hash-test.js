@@ -156,7 +156,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash firstName=this.model.firstName lastName=lastName)}}`,
+        template: `{{yield (hash firstName=this.model.firstName lastName=this.lastName)}}`,
       });
 
       this.render(

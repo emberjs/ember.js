@@ -66,22 +66,22 @@ moduleFor(
       });
 
       this.registerComponent('x-bar', {
-        template: '[x-bar: {{bar}}] {{yield}}',
+        template: '[x-bar: {{this.bar}}] {{yield}}',
         ComponentClass: BaseClass.extend(),
       });
 
       this.registerComponent('x-baz', {
-        template: '[x-baz: {{baz}}]',
+        template: '[x-baz: {{this.baz}}]',
         ComponentClass: BaseClass.extend(),
       });
 
       this.registerComponent('x-bat', {
-        template: '[x-bat: {{bat}}]',
+        template: '[x-bat: {{this.bat}}]',
         ComponentClass: BaseClass.extend(),
       });
 
       this.render(
-        `[-top-level: {{foo}}] {{#x-bar bar=bar}}{{x-baz baz=baz}}{{/x-bar}} {{x-bat bat=bat}}`,
+        `[-top-level: {{this.foo}}] {{#x-bar bar=this.bar}}{{x-baz baz=this.baz}}{{/x-bar}} {{x-bat bat=this.bat}}`,
         {
           foo: 'foo',
           bar: 'bar',

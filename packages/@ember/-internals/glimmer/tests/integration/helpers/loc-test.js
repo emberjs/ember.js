@@ -44,7 +44,7 @@ moduleFor(
 
     ['@test it updates when bound params change']() {
       expectDeprecation(() => {
-        this.render(`{{loc simple}} - {{loc personal 'Mr. Pitkin'}}`, {
+        this.render(`{{loc this.simple}} - {{loc this.personal 'Mr. Pitkin'}}`, {
           simple: 'Hello Friend',
           personal: 'Hello',
         });
@@ -76,7 +76,7 @@ moduleFor(
 
     ['@test it updates when nested bound params change']() {
       expectDeprecation(() => {
-        this.render(`{{loc greetings.simple}} - {{loc greetings.personal 'Mr. Pitkin'}}`, {
+        this.render(`{{loc this.greetings.simple}} - {{loc this.greetings.personal 'Mr. Pitkin'}}`, {
           greetings: {
             simple: 'Hello Friend',
             personal: 'Hello',
@@ -115,7 +115,7 @@ moduleFor(
 
     ['@test it can be overriden']() {
       this.registerHelper('loc', () => 'Yup');
-      this.render(`{{loc greeting}}`, {
+      this.render(`{{loc this.greeting}}`, {
         greeting: 'Hello Friend',
       });
       this.assertText('Yup', 'the localized string is correct');

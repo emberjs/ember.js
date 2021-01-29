@@ -17,7 +17,7 @@ moduleFor(
     ['@test it cannot override built-in syntax']() {
       this.registerHelper('array', () => 'Nope');
       expectAssertion(() => {
-        this.render(`{{array foo 'LOL'}}`, { foo: true });
+        this.render(`{{array this.foo 'LOL'}}`, { foo: true });
       }, /You attempted to overwrite the built-in helper "array" which is not allowed. Please rename the helper./);
     }
 
@@ -246,7 +246,7 @@ moduleFor(
         return values;
       });
 
-      this.render('{{#each (hello-world model) as |item|}}({{item}}){{/each}}', {
+      this.render('{{#each (hello-world this.model) as |item|}}({{item}}){{/each}}', {
         model: ['bob'],
       });
 
@@ -609,7 +609,7 @@ moduleFor(
       });
 
       this.registerComponent('some-component', {
-        template: '{{first}} {{second}} {{third}} {{fourth}} {{fifth}}',
+        template: '{{@first}} {{@second}} {{@third}} {{@fourth}} {{@fifth}}',
       });
 
       this.render(
@@ -828,15 +828,15 @@ if (DEBUG) {
     }
 
     ['@test cannot mutate params - no positional specified / named specified']() {
-      this.render('{{test-helper foo=bar}}', { bar: 'derp' });
+      this.render('{{test-helper foo=this.bar}}', { bar: 'derp' });
     }
 
     ['@test cannot mutate params - positional specified / no named specified']() {
-      this.render('{{test-helper bar}}', { bar: 'derp' });
+      this.render('{{test-helper this.bar}}', { bar: 'derp' });
     }
 
     ['@test cannot mutate params - positional specified / named specified']() {
-      this.render('{{test-helper bar foo=qux}}', { bar: 'derp', qux: 'baz' });
+      this.render('{{test-helper this.bar foo=this.qux}}', { bar: 'derp', qux: 'baz' });
     }
 
     ['@test cannot mutate params - no positional specified / no named specified']() {

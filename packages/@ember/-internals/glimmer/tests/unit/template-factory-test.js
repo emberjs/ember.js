@@ -15,7 +15,7 @@ moduleFor(
 
       let { owner } = this;
 
-      let templateStr = 'Hello {{name}}';
+      let templateStr = 'Hello {{this.name}}';
       let options = { moduleName: 'my-app/templates/some-module.hbs' };
 
       let spec = precompile(templateStr, options);
