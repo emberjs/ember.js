@@ -89,7 +89,11 @@ export class ProgramSymbolTable extends SymbolTable {
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
     // If the name in question is an uppercase (i.e. angle-bracket) component invocation, run
     // the optional `customizeComponentName` function provided to the precompiler.
-    if (resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead && isUpperCase(name)) {
+    if (
+      resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead &&
+      resolution.isAngleBracket &&
+      isUpperCase(name)
+    ) {
       name = this.customizeComponentName(name);
     }
 
