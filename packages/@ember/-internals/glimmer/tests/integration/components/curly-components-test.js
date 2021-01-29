@@ -3819,7 +3819,10 @@ moduleFor(
         template: '{{this.baz}}',
       });
 
-      this.render('{{#if this.cond}}{{foo-bar baz=this.value}}{{/if}}', { cond: true, value: 'hello' });
+      this.render('{{#if this.cond}}{{foo-bar baz=this.value}}{{/if}}', {
+        cond: true,
+        value: 'hello',
+      });
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 

@@ -255,7 +255,10 @@ moduleFor(
                 contextType: 'Engine',
               })
             );
-            this.register('template:application', compile('Engine {{foo-bar wat=this.contextType}}'));
+            this.register(
+              'template:application',
+              compile('Engine {{foo-bar wat=this.contextType}}')
+            );
           },
         })
       );

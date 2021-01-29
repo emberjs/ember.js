@@ -77,7 +77,8 @@ moduleFor(
     }
 
     ['@test template without data-template-name or id should default to application'](assert) {
-      fixture.innerHTML = '<script type="text/x-handlebars">{{this.firstName}} takes {{this.drug}}</script>';
+      fixture.innerHTML =
+        '<script type="text/x-handlebars">{{this.firstName}} takes {{this.drug}}</script>';
 
       checkTemplate('application', assert);
     }

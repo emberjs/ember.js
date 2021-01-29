@@ -28,7 +28,9 @@ moduleFor(
       });
 
       assert.throws(() => {
-        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
+        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+          switch: true,
+        });
       }, /silly mistake in init/);
 
       assert.equal(
@@ -123,7 +125,9 @@ moduleFor(
       });
 
       assert.throws(() => {
-        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
+        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+          switch: true,
+        });
       }, /silly mistake/);
 
       assert.equal(

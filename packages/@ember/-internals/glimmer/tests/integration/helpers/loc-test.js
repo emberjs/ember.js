@@ -76,12 +76,15 @@ moduleFor(
 
     ['@test it updates when nested bound params change']() {
       expectDeprecation(() => {
-        this.render(`{{loc this.greetings.simple}} - {{loc this.greetings.personal 'Mr. Pitkin'}}`, {
-          greetings: {
-            simple: 'Hello Friend',
-            personal: 'Hello',
-          },
-        });
+        this.render(
+          `{{loc this.greetings.simple}} - {{loc this.greetings.personal 'Mr. Pitkin'}}`,
+          {
+            greetings: {
+              simple: 'Hello Friend',
+              personal: 'Hello',
+            },
+          }
+        );
       }, /loc is deprecated/);
       this.assertText('Hallo Freund - Hallo, Mr. Pitkin', 'the bound value is correct');
 

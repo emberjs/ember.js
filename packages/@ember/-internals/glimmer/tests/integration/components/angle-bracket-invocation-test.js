@@ -728,7 +728,10 @@ moduleFor(
         template: '<div ...attributes>hello</div>',
       });
 
-      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -781,7 +784,10 @@ moduleFor(
         template: '<div data-derp={{this.localProp}} ...attributes>hello</div>',
       });
 
-      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1055,7 +1061,10 @@ moduleFor(
         template: '<div ...attributes>hello</div><p ...attributes>world</p>',
       });
 
-      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',

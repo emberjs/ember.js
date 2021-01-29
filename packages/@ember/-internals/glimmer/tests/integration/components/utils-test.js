@@ -22,7 +22,8 @@ moduleFor(
           tagName: '',
         }),
 
-        template: '<div id="{{this.id}}">[{{this.id}}] {{#if this.isShowing}}{{yield}}{{/if}}</div>',
+        template:
+          '<div id="{{this.id}}">[{{this.id}}] {{#if this.isShowing}}{{yield}}{{/if}}</div>',
       });
 
       this.addComponent('x-toggle', {

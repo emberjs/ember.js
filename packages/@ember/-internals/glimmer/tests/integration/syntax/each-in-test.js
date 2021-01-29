@@ -267,7 +267,9 @@ class EachInTest extends AbstractEachInTest {
   ['@test keying off of `undefined` does not render']() {
     this.makeHash({});
 
-    this.render(`{{#each-in this.hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`);
+    this.render(
+      `{{#each-in this.hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`
+    );
 
     this.assertText('Empty!');
 

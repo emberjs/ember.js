@@ -294,7 +294,8 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
+      template:
+        '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {

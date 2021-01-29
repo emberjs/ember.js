@@ -17,8 +17,6 @@ import toBool from './utils/to-bool';
 
 // Setup global context
 
-window._deprecationMap = {};
-
 setGlobalContext({
   scheduleRevalidate() {
     backburner.ensureInstance();
