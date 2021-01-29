@@ -9,7 +9,7 @@ export class WithDynamicVarsSuite extends RenderTest {
       {
         layout: '{{#-with-dynamic-vars myKeyword=@value}}{{yield}}{{/-with-dynamic-vars}}',
         template: '{{-get-dynamic-var "myKeyword"}}',
-        args: { value: 'value' },
+        args: { value: 'this.value' },
       },
       { value: 'hello' }
     );
@@ -32,8 +32,8 @@ export class WithDynamicVarsSuite extends RenderTest {
       {
         layout:
           '{{#-with-dynamic-vars myKeyword=@value1 secondKeyword=@value2}}{{yield}}{{/-with-dynamic-vars}}',
-        template: '{{keyword}}-{{-get-dynamic-var keyword}}',
-        args: { value1: 'value1', value2: 'value2' },
+        template: '{{this.keyword}}-{{-get-dynamic-var this.keyword}}',
+        args: { value1: 'this.value1', value2: 'this.value2' },
       },
       { value1: 'hello', value2: 'goodbye', keyword: 'myKeyword' }
     );
@@ -61,7 +61,7 @@ export class WithDynamicVarsSuite extends RenderTest {
         layout:
           '{{#-with-dynamic-vars myKeyword=@outer}}<div>{{-get-dynamic-var "myKeyword"}}</div>{{#-with-dynamic-vars myKeyword=@inner}}{{yield}}{{/-with-dynamic-vars}}<div>{{-get-dynamic-var "myKeyword"}}</div>{{/-with-dynamic-vars}}',
         template: '<div>{{-get-dynamic-var "myKeyword"}}</div>',
-        args: { outer: 'outer', inner: 'inner' },
+        args: { outer: 'this.outer', inner: 'this.inner' },
       },
       { outer: 'original', inner: 'shadowed' }
     );

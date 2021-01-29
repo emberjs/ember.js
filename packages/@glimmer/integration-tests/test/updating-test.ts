@@ -101,23 +101,23 @@ class UpdatingTest extends RenderTest {
     this.render(
       stripTight`
         <div>
-          [{{[]}}]
-          [{{[1]}}]
-          [{{[undefined]}}]
-          [{{[null]}}]
-          [{{[true]}}]
-          [{{[false]}}]
-          [{{[this]}}]
-          [{{[foo.bar]}}]
+          [{{this.[]}}]
+          [{{this.[1]}}]
+          [{{this.[undefined]}}]
+          [{{this.[null]}}]
+          [{{this.[true]}}]
+          [{{this.[false]}}]
+          [{{this.[this]}}]
+          [{{this.[foo.bar]}}]
 
-          [{{nested.[]}}]
-          [{{nested.[1]}}]
-          [{{nested.[undefined]}}]
-          [{{nested.[null]}}]
-          [{{nested.[true]}}]
-          [{{nested.[false]}}]
-          [{{nested.[this]}}]
-          [{{nested.[foo.bar]}}]
+          [{{this.nested.[]}}]
+          [{{this.nested.[1]}}]
+          [{{this.nested.[undefined]}}]
+          [{{this.nested.[null]}}]
+          [{{this.nested.[true]}}]
+          [{{this.nested.[false]}}]
+          [{{this.nested.[this]}}]
+          [{{this.nested.[foo.bar]}}]
         </div>
       `,
       state
@@ -893,7 +893,7 @@ class UpdatingTest extends RenderTest {
 
     const person = { name: new Name('Godfrey', 'Chan') };
 
-    this.render('<div>{{#with person.name.first as |f|}}{{f}}{{/with}}</div>', {
+    this.render('<div>{{#with this.person.name.first as |f|}}{{f}}{{/with}}</div>', {
       person,
     });
 
@@ -920,6 +920,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'block arguments should have higher precedence than helpers'() {
+    // Note: This test intentionally tests property fallback
     this.registerHelper('foo', () => 'foo-helper');
     this.registerHelper('bar', () => 'bar-helper');
     this.registerHelper('echo', (args) => args[0]);
@@ -931,17 +932,17 @@ class UpdatingTest extends RenderTest {
         value: "{{this.value}}";
         echo foo: "{{echo foo}}";
         echo bar: "{{echo bar}}";
-        echo value: "{{echo value}}";
+        echo value: "{{echo this.value}}";
 
         -----
 
-        {{#with value as |foo|}}
+        {{#with this.value as |foo|}}
           foo: "{{foo}}";
           bar: "{{bar}}";
           value: "{{this.value}}";
           echo foo: "{{echo foo}}";
           echo bar: "{{echo bar}}";
-          echo value: "{{echo value}}";
+          echo value: "{{echo this.value}}";
 
           -----
 
@@ -951,19 +952,19 @@ class UpdatingTest extends RenderTest {
             value: "{{this.value}}";
             echo foo: "{{echo foo}}";
             echo bar: "{{echo bar}}";
-            echo value: "{{echo value}}";
+            echo value: "{{echo this.value}}";
           {{/with}}
         {{/with}}
 
         -----
 
-        {{#with value as |bar|}}
+        {{#with this.value as |bar|}}
           foo: "{{foo}}";
           bar: "{{bar}}";
           value: "{{this.value}}";
           echo foo: "{{echo foo}}";
           echo bar: "{{echo bar}}";
-          echo value: "{{echo value}}";
+          echo value: "{{echo this.value}}";
         {{/with}}
       </div>
     `;
@@ -1100,7 +1101,7 @@ class UpdatingTest extends RenderTest {
   @test
   'block arguments (ensure balanced push/pop)'() {
     let person = { name: { first: 'Godfrey', last: 'Chan' } };
-    this.render('<div>{{#with person.name.first as |f|}}{{f}}{{/with}}{{f}}</div>', {
+    this.render('<div>{{#with this.person.name.first as |f|}}{{f}}{{/with}}{{f}}</div>', {
       person,
       f: 'Outer',
     });
@@ -1120,9 +1121,9 @@ class UpdatingTest extends RenderTest {
     this.render(
       stripTight`
         <div>
-          [{{#with person as |name|}}{{this.name}}{{/with}}]
-          [{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}]
-          [{{#with person as |name|}}{{#with (noop this.name) as |test|}}{{test}}{{/with}}{{/with}}]
+          [{{#with this.person as |name|}}{{this.name}}{{/with}}]
+          [{{#with this.person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}]
+          [{{#with this.person as |name|}}{{#with (noop this.name) as |test|}}{{test}}{{/with}}{{/with}}]
         </div>
       `,
       { person: 'Yehuda', name: 'Godfrey' }
@@ -1140,7 +1141,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'The with helper should consider an empty array truthy'() {
-    this.render('<div>{{#with condition as |c|}}{{c.length}}{{/with}}</div>', {
+    this.render('<div>{{#with this.condition as |c|}}{{c.length}}{{/with}}</div>', {
       condition: [],
     });
 
@@ -1202,7 +1203,7 @@ class UpdatingTest extends RenderTest {
       return;
     });
 
-    this.render('<div>{{capitalize value}}</div>', { value: 'hello' });
+    this.render('<div>{{capitalize this.value}}</div>', { value: 'hello' });
     this.assertHTML('<div>HELLO</div>');
 
     this.rerender({
@@ -1374,7 +1375,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'non-standard namespaced attribute nodes follow the normal dirtying rules'() {
-    this.render("<div epub:type='{{type}}'>hello</div>", { type: 'dedication' });
+    this.render("<div epub:type='{{this.type}}'>hello</div>", { type: 'dedication' });
     this.assertHTML("<div epub:type='dedication'>hello</div>", 'Initial render');
 
     this.rerender({ type: 'backmatter' });
@@ -1384,7 +1385,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'non-standard namespaced attribute nodes w/ concat follow the normal dirtying rules'() {
-    this.render("<div epub:type='dedication {{type}}'>hello</div>", { type: 'backmatter' });
+    this.render("<div epub:type='dedication {{this.type}}'>hello</div>", { type: 'backmatter' });
 
     this.assertHTML("<div epub:type='dedication backmatter'>hello</div>", 'Initial render');
     this.assertStableRerender();
@@ -1419,11 +1420,11 @@ class UpdatingTest extends RenderTest {
     let template = stripTight`
       <select multiple>
         <option>0</option>
-        <option selected={{one}}>1</option>
-        <option selected={{two}}>2</option>
-        <option selected={{three}}>3</option>
-        <option selected={{four}}>4</option>
-        <option selected={{five}}>5</option>
+        <option selected={{this.one}}>1</option>
+        <option selected={{this.two}}>2</option>
+        <option selected={{this.three}}>3</option>
+        <option selected={{this.four}}>4</option>
+        <option selected={{this.five}}>5</option>
       </select>
     `;
 
@@ -1516,7 +1517,7 @@ class UpdatingTest extends RenderTest {
     let tom = { key: '1', name: 'Tom Dale', class: 'tomdale' };
     let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
 
-    this.render("{{#each list key='key' as |item|}}{{item.name}}{{/each}}", {
+    this.render("{{#each this.list key='key' as |item|}}{{item.name}}{{/each}}", {
       list: [tom, yehuda],
     });
     this.assertInvariants('initial render');
@@ -1539,7 +1540,7 @@ class UpdatingTest extends RenderTest {
     let tom = { name: 'Tom Dale' };
     let yehuda = { name: 'Yehuda Katz' };
 
-    this.render('{{#if item}}{{item.name}}{{/if}}', { item: tom });
+    this.render('{{#if this.item}}{{this.item.name}}{{/if}}', { item: tom });
     this.assertInvariants('initial render');
 
     this.rerender();
@@ -1573,7 +1574,7 @@ class UpdatingTest extends RenderTest {
     let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
 
     this.render(
-      "<ul>{{#each list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>",
+      "<ul>{{#each this.list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>",
       { list: [tom, yehuda] }
     );
 
@@ -1622,9 +1623,12 @@ class UpdatingTest extends RenderTest {
 
   @test
   'The each helper with empty string items'() {
-    this.render(`<ul>{{#each list key='@identity' as |item|}}<li>{{item}}</li>{{/each}}</ul>`, {
-      list: [''],
-    });
+    this.render(
+      `<ul>{{#each this.list key='@identity' as |item|}}<li>{{item}}</li>{{/each}}</ul>`,
+      {
+        list: [''],
+      }
+    );
 
     let items = getElementsByTagName(this.element, 'li');
     let lastNode = items[items.length - 1];
@@ -1647,7 +1651,7 @@ class UpdatingTest extends RenderTest {
   @test
   'The each helper with else'() {
     this.render(
-      `<ul>{{#each list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`,
+      `<ul>{{#each this.list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`,
       {
         list: [],
       }
@@ -1687,7 +1691,7 @@ class UpdatingTest extends RenderTest {
     let yehuda = { name: 'Yehuda Katz', class: 'wycats' };
 
     this.render(
-      "<ul>{{#each list key='@index' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>",
+      "<ul>{{#each this.list key='@index' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>",
       { list: [tom, yehuda] }
     );
 
@@ -1846,7 +1850,7 @@ class UpdatingTest extends RenderTest {
     let yehuda = { key: '2', name: 'Yehuda Katz', class: 'wycats' };
 
     this.render(
-      "<ul>{{#each list key='key' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>",
+      "<ul>{{#each this.list key='key' as |item index|}}<li class='{{item.class}}'>{{item.name}}<p class='index-{{index}}'>{{index}}</p></li>{{/each}}</ul>",
       { list: [tom, yehuda] }
     );
 

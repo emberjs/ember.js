@@ -30,7 +30,7 @@ class UpdatingModifiers extends RenderTest {
 
     this.registerModifier('foo', makeSyncDataAttrModifier(hooks));
 
-    this.render('<div><div {{foo bar baz=fizz}}></div></div>', {
+    this.render('<div><div {{foo this.bar baz=this.fizz}}></div></div>', {
       bar: 'Super Metroid',
     });
 
@@ -75,7 +75,7 @@ class UpdatingModifiers extends RenderTest {
 
     this.registerModifier('foo', makeSyncDataAttrModifier(hooks));
 
-    this.render('{{#if bar}}<div {{foo bar}}></div>{{else}}<div></div>{{/if}}', {
+    this.render('{{#if this.bar}}<div {{foo this.bar}}></div>{{else}}<div></div>{{/if}}', {
       bar: true,
     });
 

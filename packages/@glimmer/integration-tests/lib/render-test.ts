@@ -307,9 +307,9 @@ export class RenderTest implements IRenderTest {
 
     let invocation: string | string[] = [];
     if (template) {
-      invocation.push('{{#component componentName');
+      invocation.push('{{#component this.componentName');
     } else {
-      invocation.push('{{component componentName');
+      invocation.push('{{component this.componentName');
     }
 
     let componentArgs = this.buildArgs(args);

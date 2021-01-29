@@ -131,7 +131,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Custom Elements with dynamic attributes'() {
     this.render(
-      "<fake-thing><other-fake-thing data-src='extra-{{someDynamicBits}}-here' /></fake-thing>",
+      "<fake-thing><other-fake-thing data-src='extra-{{this.someDynamicBits}}-here' /></fake-thing>",
       { someDynamicBits: 'things' }
     );
     this.assertHTML("<fake-thing><other-fake-thing data-src='extra-things-here' /></fake-thing>");
@@ -140,14 +140,14 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Custom Elements with dynamic content'() {
-    this.render('<x-foo><x-bar>{{derp}}</x-bar></x-foo>', { derp: 'stuff' });
+    this.render('<x-foo><x-bar>{{this.derp}}</x-bar></x-foo>', { derp: 'stuff' });
     this.assertHTML('<x-foo><x-bar>stuff</x-bar></x-foo>');
     this.assertStableRerender();
   }
 
   @test
   'Dynamic content within single custom element'() {
-    this.render('<x-foo>{{#if derp}}Content Here{{/if}}</x-foo>', { derp: 'stuff' });
+    this.render('<x-foo>{{#if this.derp}}Content Here{{/if}}</x-foo>', { derp: 'stuff' });
     this.assertHTML('<x-foo>Content Here</x-foo>');
     this.assertStableRerender();
 
@@ -217,7 +217,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Quoted attribute null values do not disable'() {
-    this.render('<input disabled="{{isDisabled}}">', { isDisabled: null });
+    this.render('<input disabled="{{this.isDisabled}}">', { isDisabled: null });
     this.assertHTML('<input>');
     this.assertStableRerender();
 
@@ -240,7 +240,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Unquoted attribute null values do not disable'() {
-    this.render('<input disabled={{isDisabled}}>', { isDisabled: null });
+    this.render('<input disabled={{this.isDisabled}}>', { isDisabled: null });
     this.assertHTML('<input>');
     this.assertStableRerender();
 
@@ -262,7 +262,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Quoted attribute string values'() {
-    this.render("<img src='{{src}}'>", { src: 'image.png' });
+    this.render("<img src='{{this.src}}'>", { src: 'image.png' });
     this.assertHTML("<img src='image.png'>");
     this.assertStableRerender();
 
@@ -281,7 +281,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Unquoted attribute string values'() {
-    this.render('<img src={{src}}>', { src: 'image.png' });
+    this.render('<img src={{this.src}}>', { src: 'image.png' });
     this.assertHTML("<img src='image.png'>");
     this.assertStableRerender();
 
@@ -300,7 +300,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Unquoted img src attribute is not rendered when set to `null`'() {
-    this.render("<img src='{{src}}'>", { src: null });
+    this.render("<img src='{{this.src}}'>", { src: null });
     this.assertHTML('<img>');
     this.assertStableRerender();
 
@@ -319,7 +319,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Unquoted img src attribute is not rendered when set to `undefined`'() {
-    this.render("<img src='{{src}}'>", { src: undefined });
+    this.render("<img src='{{this.src}}'>", { src: undefined });
     this.assertHTML('<img>');
     this.assertStableRerender();
 
@@ -338,7 +338,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Unquoted a href attribute is not rendered when set to `null`'() {
-    this.render('<a href={{href}}></a>', { href: null });
+    this.render('<a href={{this.href}}></a>', { href: null });
     this.assertHTML('<a></a>');
     this.assertStableRerender();
 
@@ -357,7 +357,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Unquoted a href attribute is not rendered when set to `undefined`'() {
-    this.render('<a href={{href}}></a>', { href: undefined });
+    this.render('<a href={{this.href}}></a>', { href: undefined });
     this.assertHTML('<a></a>');
     this.assertStableRerender();
 
@@ -376,7 +376,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Attribute expression can be followed by another attribute'() {
-    this.render("<div foo='{{funstuff}}' name='Alice'></div>", { funstuff: 'oh my' });
+    this.render("<div foo='{{this.funstuff}}' name='Alice'></div>", { funstuff: 'oh my' });
     this.assertHTML("<div name='Alice' foo='oh my'></div>");
     this.assertStableRerender();
 
@@ -399,7 +399,7 @@ export class InitialRenderSuite extends RenderTest {
       strip`
       <select>
         <option>1</option>
-        <option selected={{selected}}>2</option>
+        <option selected={{this.selected}}>2</option>
         <option>3</option>
       </select>
     `,
@@ -469,11 +469,11 @@ export class InitialRenderSuite extends RenderTest {
       strip`
       <select multiple>
         <option>0</option>
-        <option selected={{somethingTrue}}>1</option>
-        <option selected={{somethingTruthy}}>2</option>
-        <option selected={{somethingUndefined}}>3</option>
-        <option selected={{somethingNull}}>4</option>
-        <option selected={{somethingFalse}}>5</option>
+        <option selected={{this.somethingTrue}}>1</option>
+        <option selected={{this.somethingTruthy}}>2</option>
+        <option selected={{this.somethingUndefined}}>3</option>
+        <option selected={{this.somethingNull}}>4</option>
+        <option selected={{this.somethingFalse}}>5</option>
       </select>`,
       {
         somethingTrue: true,
@@ -531,39 +531,39 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Curlies in HTML comments'() {
-    this.render('<div><!-- {{foo}} --></div>', { foo: 'foo' });
-    this.assertHTML('<div><!-- {{foo}} --></div>');
+    this.render('<div><!-- {{this.foo}} --></div>', { foo: 'foo' });
+    this.assertHTML('<div><!-- {{this.foo}} --></div>');
     this.assertStableRerender();
 
     this.rerender({ foo: 'bar' });
-    this.assertHTML('<div><!-- {{foo}} --></div>');
+    this.assertHTML('<div><!-- {{this.foo}} --></div>');
     this.assertStableNodes();
 
     this.rerender({ foo: '' });
-    this.assertHTML('<div><!-- {{foo}} --></div>');
+    this.assertHTML('<div><!-- {{this.foo}} --></div>');
     this.assertStableNodes();
 
     this.rerender({ foo: 'foo' });
-    this.assertHTML('<div><!-- {{foo}} --></div>');
+    this.assertHTML('<div><!-- {{this.foo}} --></div>');
     this.assertStableNodes();
   }
 
   @test
   'Complex Curlies in HTML comments'() {
-    this.render('<div><!-- {{foo bar baz}} --></div>', { foo: 'foo' });
-    this.assertHTML('<div><!-- {{foo bar baz}} --></div>');
+    this.render('<div><!-- {{this.foo bar baz}} --></div>', { foo: 'foo' });
+    this.assertHTML('<div><!-- {{this.foo bar baz}} --></div>');
     this.assertStableRerender();
 
     this.rerender({ foo: 'bar' });
-    this.assertHTML('<div><!-- {{foo bar baz}} --></div>');
+    this.assertHTML('<div><!-- {{this.foo bar baz}} --></div>');
     this.assertStableNodes();
 
     this.rerender({ foo: '' });
-    this.assertHTML('<div><!-- {{foo bar baz}} --></div>');
+    this.assertHTML('<div><!-- {{this.foo bar baz}} --></div>');
     this.assertStableNodes();
 
     this.rerender({ foo: 'foo' });
-    this.assertHTML('<div><!-- {{foo bar baz}} --></div>');
+    this.assertHTML('<div><!-- {{this.foo bar baz}} --></div>');
     this.assertStableNodes();
   }
 
@@ -576,8 +576,8 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Top level comments'() {
-    this.render('<!-- {{foo}} -->');
-    this.assertHTML('<!-- {{foo}} -->');
+    this.render('<!-- {{this.foo}} -->');
+    this.assertHTML('<!-- {{this.foo}} -->');
     this.assertStableRerender();
   }
 
@@ -598,7 +598,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'svg href attribute with quotation marks'() {
     this.render(
-      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="{{iconLink}}"></use></svg>`,
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="{{this.iconLink}}"></use></svg>`,
       { iconLink: 'home' }
     );
     this.assertHTML(
@@ -616,7 +616,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'svg href attribute without quotation marks'() {
     this.render(
-      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href={{iconLink}}></use></svg>`,
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href={{this.iconLink}}></use></svg>`,
       { iconLink: 'home' }
     );
     this.assertHTML(
@@ -760,7 +760,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Text curlies'() {
-    this.render('<div>{{title}}<span>{{title}}</span></div>', { title: 'hello' });
+    this.render('<div>{{this.title}}<span>{{this.title}}</span></div>', { title: 'hello' });
     this.assertHTML('<div>hello<span>hello</span></div>');
     this.assertStableRerender();
 
@@ -779,28 +779,33 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Repaired text nodes are ensured in the right place Part 1'() {
-    this.render('{{a}} {{b}}', { a: 'A', b: 'B', c: 'C', d: 'D' });
+    this.render('{{this.a}} {{this.b}}', { a: 'A', b: 'B', c: 'C', d: 'D' });
     this.assertHTML('A B');
     this.assertStableRerender();
   }
 
   @test
   'Repaired text nodes are ensured in the right place Part 2'() {
-    this.render('<div>{{a}}{{b}}{{c}}wat{{d}}</div>', { a: 'A', b: 'B', c: 'C', d: 'D' });
+    this.render('<div>{{this.a}}{{this.b}}{{this.c}}wat{{this.d}}</div>', {
+      a: 'A',
+      b: 'B',
+      c: 'C',
+      d: 'D',
+    });
     this.assertHTML('<div>ABCwatD</div>');
     this.assertStableRerender();
   }
 
   @test
   'Repaired text nodes are ensured in the right place Part 3'() {
-    this.render('{{a}}{{b}}<img><img><img><img>', { a: 'A', b: 'B', c: 'C', d: 'D' });
+    this.render('{{this.a}}{{this.b}}<img><img><img><img>', { a: 'A', b: 'B', c: 'C', d: 'D' });
     this.assertHTML('AB<img><img><img><img>');
     this.assertStableRerender();
   }
 
   @test
   'Path expressions'() {
-    this.render('<div>{{model.foo.bar}}<span>{{model.foo.bar}}</span></div>', {
+    this.render('<div>{{this.model.foo.bar}}<span>{{this.model.foo.bar}}</span></div>', {
       model: { foo: { bar: 'hello' } },
     });
     this.assertHTML('<div>hello<span>hello</span></div>');
@@ -821,7 +826,9 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Text curlies perform escaping'() {
-    this.render('<div>{{title}}<span>{{title}}</span></div>', { title: '<strong>hello</strong>' });
+    this.render('<div>{{this.title}}<span>{{this.title}}</span></div>', {
+      title: '<strong>hello</strong>',
+    });
     this.assertHTML(
       '<div>&lt;strong&gt;hello&lt;/strong&gt;<span>&lt;strong>hello&lt;/strong&gt;</span></div>'
     );
@@ -844,7 +851,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Rerender respects whitespace'() {
-    this.render('Hello {{ foo }} ', { foo: 'bar' });
+    this.render('Hello {{ this.foo }} ', { foo: 'bar' });
     this.assertHTML('Hello bar ');
     this.assertStableRerender();
 
@@ -868,7 +875,7 @@ export class InitialRenderSuite extends RenderTest {
         return '<span>hello</span> <em>world</em>';
       },
     };
-    this.render('<div>{{title}}</div>', { title });
+    this.render('<div>{{this.title}}</div>', { title });
     this.assertHTML('<div><span>hello</span> <em>world</em></div>');
     this.assertStableRerender();
   }
@@ -876,7 +883,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Triple curlies'() {
     let title = '<span>hello</span> <em>world</em>';
-    this.render('<div>{{{title}}}</div>', { title });
+    this.render('<div>{{{this.title}}}</div>', { title });
     this.assertHTML('<div><span>hello</span> <em>world</em></div>');
     this.assertStableRerender();
   }
@@ -893,7 +900,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Top level triple curlies'() {
     let title = '<span>hello</span> <em>world</em>';
-    this.render('{{{title}}}', { title });
+    this.render('{{{this.title}}}', { title });
     this.assertHTML('<span>hello</span> <em>world</em>');
     this.assertStableRerender();
   }
@@ -901,14 +908,14 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Top level unescaped tr'() {
     let title = '<tr><td>Yo</td></tr>';
-    this.render('<table>{{{title}}}</table>', { title });
+    this.render('<table>{{{this.title}}}</table>', { title });
     this.assertHTML('<table><tbody><tr><td>Yo</td></tr></tbody></table>');
     this.assertStableRerender();
   }
 
   @test
   'The compiler can handle top-level unescaped td inside tr contextualElement'() {
-    this.render('{{{html}}}', { html: '<td>Yo</td>' });
+    this.render('{{{this.html}}}', { html: '<td>Yo</td>' });
     this.assertHTML('<tr><td>Yo</td></tr>');
     this.assertStableRerender();
   }
@@ -916,7 +923,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Extreme nesting'() {
     this.render(
-      '{{foo}}<span>{{bar}}<a>{{baz}}<em>{{boo}}{{brew}}</em>{{bat}}</a></span><span><span>{{flute}}</span></span>{{argh}}',
+      '{{this.foo}}<span>{{this.bar}}<a>{{this.baz}}<em>{{this.boo}}{{this.brew}}</em>{{this.bat}}</a></span><span><span>{{this.flute}}</span></span>{{this.argh}}',
       {
         foo: 'FOO',
         bar: 'BAR',
@@ -936,7 +943,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Simple blocks'() {
-    this.render('<div>{{#if admin}}<p>{{user}}</p>{{/if}}!</div>', {
+    this.render('<div>{{#if this.admin}}<p>{{this.user}}</p>{{/if}}!</div>', {
       admin: true,
       user: 'chancancode',
     });
@@ -958,11 +965,14 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Nested blocks'() {
-    this.render('<div>{{#if admin}}{{#if access}}<p>{{user}}</p>{{/if}}{{/if}}!</div>', {
-      admin: true,
-      access: true,
-      user: 'chancancode',
-    });
+    this.render(
+      '<div>{{#if this.admin}}{{#if this.access}}<p>{{this.user}}</p>{{/if}}{{/if}}!</div>',
+      {
+        admin: true,
+        access: true,
+        user: 'chancancode',
+      }
+    );
     this.assertHTML('<div><p>chancancode</p>!</div>');
     this.assertStableRerender();
 
@@ -988,7 +998,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   Loops() {
     this.render(
-      '<div>{{#each people key="handle" as |p|}}<span>{{p.handle}}</span> - {{p.name}}{{/each}}</div>',
+      '<div>{{#each this.people key="handle" as |p|}}<span>{{p.handle}}</span> - {{p.name}}{{/each}}</div>',
       {
         people: [
           { handle: 'tomdale', name: 'Tom Dale' },
@@ -1018,7 +1028,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Simple helpers'() {
     this.registerHelper('testing', ([id]) => id);
-    this.render('<div>{{testing title}}</div>', { title: 'hello' });
+    this.render('<div>{{testing this.title}}</div>', { title: 'hello' });
     this.assertHTML('<div>hello</div>');
     this.assertStableRerender();
   }
@@ -1223,11 +1233,14 @@ export class InitialRenderSuite extends RenderTest {
       return '' + params[0] + params[1];
     });
 
-    this.render('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', {
-      foo: 'FOO',
-      bar: 'BAR',
-      baz: 'BAZ',
-    });
+    this.render(
+      '<div>{{testing (testing "hello" this.foo) (testing (testing this.bar "lol") this.baz)}}</div>',
+      {
+        foo: 'FOO',
+        bar: 'BAR',
+        baz: 'BAZ',
+      }
+    );
     this.assertHTML('<div>helloFOOBARlolBAZ</div>');
     this.assertStableRerender();
   }
@@ -1249,7 +1262,7 @@ export class InitialRenderSuite extends RenderTest {
       return params[0];
     });
 
-    this.render('<a href="{{testing url}}">linky</a>', { url: 'linky.html' });
+    this.render('<a href="{{testing this.url}}">linky</a>', { url: 'linky.html' });
     this.assertHTML('<a href="linky.html">linky</a>');
     this.assertStableRerender();
   }
@@ -1260,7 +1273,7 @@ export class InitialRenderSuite extends RenderTest {
       return hash['path'];
     });
 
-    this.render('<a href="{{testing path=url}}">linky</a>', { url: 'linky.html' });
+    this.render('<a href="{{testing path=this.url}}">linky</a>', { url: 'linky.html' });
     this.assertHTML('<a href="linky.html">linky</a>');
     this.assertStableRerender();
   }
@@ -1271,7 +1284,7 @@ export class InitialRenderSuite extends RenderTest {
       return params[0];
     });
 
-    this.render('<a href="http://{{foo}}/{{testing bar}}/{{testing "baz"}}">linky</a>', {
+    this.render('<a href="http://{{this.foo}}/{{testing this.bar}}/{{testing "baz"}}">linky</a>', {
       foo: 'foo.com',
       bar: 'bar',
     });
