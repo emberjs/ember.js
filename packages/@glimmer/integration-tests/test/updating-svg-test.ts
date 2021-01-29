@@ -338,7 +338,9 @@ class UpdatingSvgTest extends RenderTest {
 
   @test
   'HTML namespace is created in child templates'() {
-    this.render('{{#if this.isTrue}}<svg></svg>{{else}}<div><svg></svg></div>{{/if}}', { isTrue: true });
+    this.render('{{#if this.isTrue}}<svg></svg>{{else}}<div><svg></svg></div>{{/if}}', {
+      isTrue: true,
+    });
 
     let assertNamespaces = (isTrue: boolean) => {
       if (isTrue) {
