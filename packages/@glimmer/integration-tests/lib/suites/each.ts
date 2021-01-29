@@ -122,9 +122,12 @@ export class EachSuite extends RenderTest {
   @test
   'receives the index as the second parameter'() {
     let list = [1, 2, 3, 4];
-    this.render('{{#each this.list key="@index" as |item i|}}{{item}}-{{i}}:{{else}}Empty{{/each}}', {
-      list,
-    });
+    this.render(
+      '{{#each this.list key="@index" as |item i|}}{{item}}-{{i}}:{{else}}Empty{{/each}}',
+      {
+        list,
+      }
+    );
     this.assertHTML('1-0:2-1:3-2:4-3:');
     this.assertStableRerender();
 
@@ -725,7 +728,9 @@ export class EachSuite extends RenderTest {
       [4, 5, 6, 7, 8],
       [5, 6, 7, 8, 9],
     ];
-    this.render(`{{#each this.arr as |sub|}}{{#each sub as |item|}}{{item}}{{/each}}{{/each}}`, { arr });
+    this.render(`{{#each this.arr as |sub|}}{{#each sub as |item|}}{{item}}{{/each}}{{/each}}`, {
+      arr,
+    });
 
     for (let i = 0; i < 100; i++) {
       for (let sub of arr) {

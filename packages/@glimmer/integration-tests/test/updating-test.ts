@@ -1623,9 +1623,12 @@ class UpdatingTest extends RenderTest {
 
   @test
   'The each helper with empty string items'() {
-    this.render(`<ul>{{#each this.list key='@identity' as |item|}}<li>{{item}}</li>{{/each}}</ul>`, {
-      list: [''],
-    });
+    this.render(
+      `<ul>{{#each this.list key='@identity' as |item|}}<li>{{item}}</li>{{/each}}</ul>`,
+      {
+        list: [''],
+      }
+    );
 
     let items = getElementsByTagName(this.element, 'li');
     let lastNode = items[items.length - 1];

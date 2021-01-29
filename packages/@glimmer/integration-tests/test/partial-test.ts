@@ -577,10 +577,13 @@ class PartialTest extends RenderTest {
   @test
   'dynamic partial with local reference (unknown)'() {
     this.registerPartial('test', `You {{quality}}`);
-    this.render(`{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`, {
-      name: 'test',
-      qualities: ['smaht', 'loyal'],
-    });
+    this.render(
+      `{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`,
+      {
+        name: 'test',
+        qualities: ['smaht', 'loyal'],
+      }
+    );
 
     this.assertStableRerender();
 
@@ -593,10 +596,13 @@ class PartialTest extends RenderTest {
   @test
   'partial with if statement on a simple local reference works as expected'() {
     this.registerPartial('test', `{{#if quality}}You {{quality}}{{else}}No quality{{/if}}`);
-    this.render(`{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`, {
-      name: 'test',
-      qualities: ['smaht', 'loyal', undefined],
-    });
+    this.render(
+      `{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`,
+      {
+        name: 'test',
+        qualities: ['smaht', 'loyal', undefined],
+      }
+    );
 
     this.assertStableRerender();
 
@@ -612,10 +618,13 @@ class PartialTest extends RenderTest {
       'test',
       `{{#if quality.name}}You {{quality.name}}{{else}}No quality{{/if}}`
     );
-    this.render(`{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`, {
-      name: 'test',
-      qualities: [{ name: 'smaht' }, { name: 'loyal' }, { name: undefined }],
-    });
+    this.render(
+      `{{#each this.qualities key='@index' as |quality|}}{{partial this.name}}. {{/each}}`,
+      {
+        name: 'test',
+        qualities: [{ name: 'smaht' }, { name: 'loyal' }, { name: undefined }],
+      }
+    );
 
     this.assertStableRerender();
 

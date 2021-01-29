@@ -1790,9 +1790,12 @@ class CurlyTeardownTest extends CurlyTest {
     let val4 = { val: 4 };
     let val5 = { val: 5 };
 
-    this.render(`{{#each this.list key='@identity' as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
-      list: [val1, val2, val3, val4, val5],
-    });
+    this.render(
+      `{{#each this.list key='@identity' as |item|}}<DestroyMe @item={{item}} />{{/each}}`,
+      {
+        list: [val1, val2, val3, val4, val5],
+      }
+    );
 
     assert.strictEqual(destroyed.length, 0, 'destroy should not be called');
 

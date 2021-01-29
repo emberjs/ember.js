@@ -307,7 +307,8 @@ class Rehydration extends AbstractRehydrationTests {
 
   @test
   'extra nodes at the end'() {
-    let template = '{{#if this.admin}}<div>hi admin</div>{{else}}<div>HAXOR{{this.stopHaxing}}</div>{{/if}}';
+    let template =
+      '{{#if this.admin}}<div>hi admin</div>{{else}}<div>HAXOR{{this.stopHaxing}}</div>{{/if}}';
     this.renderServerSide(template, { admin: false, stopHaxing: 'stahp' });
     this.assertServerOutput(OPEN, '<div>HAXOR', OPEN, 'stahp', CLOSE, '</div>', CLOSE);
 
@@ -723,7 +724,8 @@ class Rehydration extends AbstractRehydrationTests {
 
   @test
   'title tag'() {
-    let template = '<title>{{this.pageTitle}} some {{{this.other}}}{{this.thing}} <b>hey!</b></title>';
+    let template =
+      '<title>{{this.pageTitle}} some {{{this.other}}}{{this.thing}} <b>hey!</b></title>';
     this.renderServerSide(template, { pageTitle: 'kiwi', other: 'other', thing: 'thing' });
     let b = blockStack();
     this.assertHTML(strip`
