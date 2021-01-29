@@ -567,8 +567,8 @@ moduleFor(
         })
       );
 
-      this.addTemplate('a', '{{value}}');
-      this.addTemplate('b', '{{value}}');
+      this.addTemplate('a', '{{this.value}}');
+      this.addTemplate('b', '{{this.value}}');
 
       return this.visit('/a')
         .then(() => {
@@ -610,7 +610,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('color', 'model color: {{@model.color}}, controller color: {{color}}');
+      this.addTemplate('color', 'model color: {{@model.color}}, controller color: {{this.color}}');
 
       return this.visit('/colors/red')
         .then(() => {
@@ -661,7 +661,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('common', '{{prefix}} {{@model}}');
+      this.addTemplate('common', '{{this.prefix}} {{@model}}');
 
       return this.visit('/a')
         .then(() => {

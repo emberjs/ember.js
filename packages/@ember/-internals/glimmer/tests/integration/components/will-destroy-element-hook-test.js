@@ -26,7 +26,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{#if switch}}{{foo-bar}}{{/if}}', { switch: true });
+      this.render('{{#if this.switch}}{{foo-bar}}{{/if}}', { switch: true });
 
       assert.equal(didInsertElementCount, 1, 'didInsertElement was called once');
 

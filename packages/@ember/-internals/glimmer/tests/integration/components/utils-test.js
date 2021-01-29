@@ -22,7 +22,8 @@ moduleFor(
           tagName: '',
         }),
 
-        template: '<div id="{{id}}">[{{id}}] {{#if isShowing}}{{yield}}{{/if}}</div>',
+        template:
+          '<div id="{{this.id}}">[{{this.id}}] {{#if this.isShowing}}{{yield}}{{/if}}</div>',
       });
 
       this.addComponent('x-toggle', {
@@ -35,7 +36,7 @@ moduleFor(
           },
         }),
 
-        template: '[{{id}}] {{#if isExpanded}}{{yield}}{{/if}}',
+        template: '[{{this.id}}] {{#if this.isExpanded}}{{yield}}{{/if}}',
       });
 
       let ToggleController = Controller.extend({
@@ -65,7 +66,7 @@ moduleFor(
 
       <button id="toggle-application" {{action "toggle"}}>Toggle</button>
 
-      {{#if isExpanded}}
+      {{#if this.isExpanded}}
         {{x-toggle id="root-3"}}
       {{/if}}
 
@@ -95,7 +96,7 @@ moduleFor(
 
       <button id="toggle-index" {{action "toggle"}}>Toggle</button>
 
-      {{#if isExpanded}}
+      {{#if this.isExpanded}}
         {{x-toggle id="root-6"}}
       {{/if}}
     `

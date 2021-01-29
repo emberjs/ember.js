@@ -11,9 +11,9 @@ moduleFor(
   'Components test: dynamic components',
   class extends RenderingTestCase {
     ['@test it can render a basic component with a static component name argument']() {
-      this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
 
-      this.render('{{component "foo-bar" name=name}}', { name: 'Sarah' });
+      this.render('{{component "foo-bar" name=this.name}}', { name: 'Sarah' });
 
       this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
 
@@ -32,13 +32,13 @@ moduleFor(
 
     ['@test it can render a basic component with a dynamic component name argument']() {
       this.registerComponent('foo-bar', {
-        template: 'hello {{name}} from foo-bar',
+        template: 'hello {{this.name}} from foo-bar',
       });
       this.registerComponent('foo-bar-baz', {
-        template: 'hello {{name}} from foo-bar-baz',
+        template: 'hello {{this.name}} from foo-bar-baz',
       });
 
-      this.render('{{component componentName name=name}}', {
+      this.render('{{component this.componentName name=this.name}}', {
         componentName: 'foo-bar',
         name: 'Alex',
       });
@@ -175,7 +175,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{message}}',
+        template: '{{this.message}}',
       });
 
       this.render('{{component "foo-bar"}}');
@@ -198,7 +198,7 @@ moduleFor(
     ['@test it preserves the outer context when yielding']() {
       this.registerComponent('foo-bar', { template: '{{yield}}' });
 
-      this.render('{{#component "foo-bar"}}{{message}}{{/component}}', {
+      this.render('{{#component "foo-bar"}}{{this.message}}{{/component}}', {
         message: 'hello',
       });
 
@@ -221,7 +221,7 @@ moduleFor(
       let destroyed = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
 
       this.registerComponent('foo-bar', {
-        template: '{{id}} {{yield}}',
+        template: '{{this.id}} {{yield}}',
         ComponentClass: Component.extend({
           willDestroy() {
             this._super();
@@ -232,15 +232,15 @@ moduleFor(
 
       this.render(
         strip`
-      {{#if cond1}}
+      {{#if this.cond1}}
         {{#component "foo-bar" id=1}}
-          {{#if cond2}}
+          {{#if this.cond2}}
             {{#component "foo-bar" id=2}}{{/component}}
-            {{#if cond3}}
+            {{#if this.cond3}}
               {{#component "foo-bar" id=3}}
-                {{#if cond4}}
+                {{#if this.cond4}}
                   {{#component "foo-bar" id=4}}
-                    {{#if cond5}}
+                    {{#if this.cond5}}
                       {{#component "foo-bar" id=5}}{{/component}}
                       {{#component "foo-bar" id=6}}{{/component}}
                       {{#component "foo-bar" id=7}}{{/component}}
@@ -358,7 +358,7 @@ moduleFor(
         }),
       });
 
-      this.render('{{component componentName name=name}}', {
+      this.render('{{component this.componentName name=this.name}}', {
         componentName: 'foo-bar',
       });
 
@@ -379,7 +379,7 @@ moduleFor(
 
     ['@test component helper with bound properties are updating correctly in init of component']() {
       this.registerComponent('foo-bar', {
-        template: 'foo-bar {{location}} {{locationCopy}} {{yield}}',
+        template: 'foo-bar {{this.location}} {{this.locationCopy}} {{yield}}',
         ComponentClass: Component.extend({
           init: function () {
             this._super(...arguments);
@@ -389,7 +389,7 @@ moduleFor(
       });
 
       this.registerComponent('foo-bar-baz', {
-        template: 'foo-bar-baz {{location}} {{locationCopy}} {{yield}}',
+        template: 'foo-bar-baz {{this.location}} {{this.locationCopy}} {{yield}}',
         ComponentClass: Component.extend({
           init: function () {
             this._super(...arguments);
@@ -399,7 +399,7 @@ moduleFor(
       });
 
       this.registerComponent('outer-component', {
-        template: '{{#component componentName location=location}}arepas!{{/component}}',
+        template: '{{#component this.componentName location=this.location}}arepas!{{/component}}',
         ComponentClass: Component.extend({
           componentName: computed('location', function () {
             if (this.get('location') === 'Caracas') {
@@ -411,7 +411,7 @@ moduleFor(
         }),
       });
 
-      this.render('{{outer-component location=location}}', {
+      this.render('{{outer-component location=this.location}}', {
         location: 'Caracas',
       });
 
@@ -453,7 +453,7 @@ moduleFor(
       let actionTriggered = 0;
       this.registerComponent('outer-component', {
         template:
-          '{{#component componentName somethingClicked=(action "mappedAction")}}arepas!{{/component}}',
+          '{{#component this.componentName somethingClicked=(action "mappedAction")}}arepas!{{/component}}',
         ComponentClass: Component.extend({
           classNames: 'outer-component',
           componentName: 'inner-component',
@@ -488,7 +488,7 @@ moduleFor(
       });
 
       this.render(
-        '{{#component componentName1 location=location}}{{#component componentName2 location=location}}arepas!{{/component}}{{/component}}',
+        '{{#component this.componentName1 location=this.location}}{{#component this.componentName2 location=this.location}}arepas!{{/component}}{{/component}}',
         {
           componentName1: 'foo-bar',
           componentName2: 'baz-qux',
@@ -525,7 +525,7 @@ moduleFor(
       }
 
       assert.throws(() => {
-        this.render('{{component componentName}}', {
+        this.render('{{component this.componentName}}', {
           componentName: 'does-not-exist',
         });
       }, /Attempted to resolve `does-not-exist`, which was expected to be a component, but nothing was found./);
@@ -543,9 +543,9 @@ moduleFor(
     }
 
     ['@test component with dynamic component name resolving to a component, then non-existent component']() {
-      this.registerComponent('foo-bar', { template: 'hello {{name}}' });
+      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
 
-      this.render('{{component componentName name=name}}', {
+      this.render('{{component this.componentName name=this.name}}', {
         componentName: 'foo-bar',
         name: 'Alex',
       });
@@ -567,7 +567,7 @@ moduleFor(
 
     ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044']() {
       this.registerComponent('foo-bar', {
-        template: '[{{internalName}} - {{name}}]',
+        template: '[{{this.internalName}} - {{this.name}}]',
         ComponentClass: Component.extend({
           willRender() {
             // store internally available name to ensure that the name available in `this.attrs.name`
@@ -577,7 +577,7 @@ moduleFor(
         }),
       });
 
-      this.render('{{#each items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}', {
+      this.render('{{#each this.items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}', {
         items: [{ name: 'Robert' }, { name: 'Jacquie' }],
       });
 
@@ -598,20 +598,20 @@ moduleFor(
 
     ['@test positional parameters does not clash when rendering different components']() {
       this.registerComponent('foo-bar', {
-        template: 'hello {{name}} ({{age}}) from foo-bar',
+        template: 'hello {{this.name}} ({{this.age}}) from foo-bar',
         ComponentClass: Component.extend().reopenClass({
           positionalParams: ['name', 'age'],
         }),
       });
 
       this.registerComponent('foo-bar-baz', {
-        template: 'hello {{name}} ({{age}}) from foo-bar-baz',
+        template: 'hello {{this.name}} ({{this.age}}) from foo-bar-baz',
         ComponentClass: Component.extend().reopenClass({
           positionalParams: ['name', 'age'],
         }),
       });
 
-      this.render('{{component componentName name age}}', {
+      this.render('{{component this.componentName this.name this.age}}', {
         componentName: 'foo-bar',
         name: 'Alex',
         age: 29,
@@ -658,14 +658,14 @@ moduleFor(
 
     ['@test positional parameters does not pollute the attributes when changing components']() {
       this.registerComponent('normal-message', {
-        template: 'Normal: {{something}}!',
+        template: 'Normal: {{this.something}}!',
         ComponentClass: Component.extend().reopenClass({
           positionalParams: ['something'],
         }),
       });
 
       this.registerComponent('alternative-message', {
-        template: 'Alternative: {{something}} {{somethingElse}}!',
+        template: 'Alternative: {{this.something}} {{this.somethingElse}}!',
         ComponentClass: Component.extend({
           something: 'Another',
         }).reopenClass({
@@ -673,7 +673,7 @@ moduleFor(
         }),
       });
 
-      this.render('{{component componentName message}}', {
+      this.render('{{component this.componentName this.message}}', {
         componentName: 'normal-message',
         message: 'Hello',
       });
@@ -716,7 +716,7 @@ moduleFor(
           positionalParams: 'names',
         }),
         template: strip`
-        {{#each names as |name|}}
+        {{#each this.names as |name|}}
           {{name}}
         {{/each}}`,
       });
@@ -736,12 +736,12 @@ moduleFor(
           positionalParams: 'n',
         }),
         template: strip`
-        {{#each n as |name|}}
+        {{#each this.n as |name|}}
           {{name}}
         {{/each}}`,
       });
 
-      this.render(`{{component "sample-component" user1 user2}}`, {
+      this.render(`{{component "sample-component" this.user1 this.user2}}`, {
         user1: 'Foo',
         user2: 4,
       });
@@ -781,7 +781,7 @@ moduleFor(
             });
           },
         }),
-        template: `Hi {{person.name}}! {{component "error-component" person=person}}`,
+        template: `Hi {{this.person.name}}! {{component "error-component" person=this.person}}`,
       });
 
       this.registerComponent('error-component', {
@@ -791,7 +791,7 @@ moduleFor(
             this.set('person.name', 'Ben');
           },
         }),
-        template: '{{person.name}}',
+        template: '{{this.person.name}}',
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
@@ -799,7 +799,7 @@ moduleFor(
       });
 
       expectAssertion(() => {
-        this.render('{{component componentName}}', {
+        this.render('{{component this.componentName}}', {
           componentName: 'outer-component',
         });
       }, expectedBacktrackingMessage);

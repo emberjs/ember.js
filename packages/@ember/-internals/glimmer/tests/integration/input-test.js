@@ -6,7 +6,7 @@ moduleFor(
   'Input element tests',
   class extends RenderingTestCase {
     runAttributeTest(attributeName, values) {
-      let template = `<input ${attributeName}={{value}}>`;
+      let template = `<input ${attributeName}={{this.value}}>`;
       this.render(template, { value: values[0] });
       this.assertAttributeHasValue(
         attributeName,
@@ -34,7 +34,7 @@ moduleFor(
 
     runPropertyTest(propertyName, values) {
       let attributeName = propertyName;
-      let template = `<input ${attributeName}={{value}}>`;
+      let template = `<input ${attributeName}={{this.value}}>`;
       this.render(template, { value: values[0] });
       this.assertPropertyHasValue(
         propertyName,
@@ -62,7 +62,7 @@ moduleFor(
 
     runFalsyValueProperty(values) {
       let value = 'value';
-      let template = `<input value={{value}}>`;
+      let template = `<input value={{this.value}}>`;
       this.render(template, { value: values[0] });
       this.assertPropertyHasValue(value, '', `${value} is set on initial render`);
 
@@ -140,7 +140,7 @@ moduleFor(
     }
 
     ['@test cursor position is not lost when updating content']() {
-      let template = `<input value={{value}}>`;
+      let template = `<input value={{this.value}}>`;
       this.render(template, { value: 'hola' });
 
       this.setDOMValue('hello');
@@ -156,7 +156,7 @@ moduleFor(
     }
 
     ['@test input can be updated multiple times']() {
-      let template = `<input value={{value}}>`;
+      let template = `<input value={{this.value}}>`;
       this.render(template, { value: 'hola' });
 
       this.assertValue('hola', 'Value is initialised');
@@ -173,7 +173,7 @@ moduleFor(
     }
 
     ['@test DOM is SSOT if value is set']() {
-      let template = `<input value={{value}}>`;
+      let template = `<input value={{this.value}}>`;
       this.render(template, { value: 'hola' });
 
       this.assertValue('hola', 'Value is initialised');

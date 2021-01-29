@@ -108,7 +108,7 @@ moduleFor(
                 queryParams: ['official'],
               })
             );
-            this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
+            this.register('template:application', compile('Engine{{this.lang}}{{outlet}}'));
             this.register(
               'route:application',
               Route.extend({
@@ -255,7 +255,10 @@ moduleFor(
                 contextType: 'Engine',
               })
             );
-            this.register('template:application', compile('Engine {{foo-bar wat=contextType}}'));
+            this.register(
+              'template:application',
+              compile('Engine {{foo-bar wat=this.contextType}}')
+            );
           },
         })
       );
@@ -281,7 +284,7 @@ moduleFor(
       this.assert.expect(1);
 
       let sharedTemplate = compile(strip`
-      <h1>{{contextType}}</h1>
+      <h1>{{this.contextType}}</h1>
       {{ambiguous-curlies}}
 
       {{outlet}}

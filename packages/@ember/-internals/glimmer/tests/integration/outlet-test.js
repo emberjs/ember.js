@@ -172,7 +172,7 @@ moduleFor(
     }
 
     ['@test does not default outlet name when positional argument is present']() {
-      this.registerTemplate('application', '<h1>HI</h1>{{outlet someUndefinedThing}}');
+      this.registerTemplate('application', '<h1>HI</h1>{{outlet this.someUndefinedThing}}');
       let outletState = {
         render: {
           owner: this.owner,
@@ -213,7 +213,7 @@ moduleFor(
 
     ['@test should support bound outlet name']() {
       let controller = { outletName: 'foo' };
-      this.registerTemplate('application', '<h1>HI</h1>{{outlet outletName}}');
+      this.registerTemplate('application', '<h1>HI</h1>{{outlet this.outletName}}');
       let outletState = {
         render: {
           owner: this.owner,

@@ -51,7 +51,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onclick={{action clicked}}>my button</button>`,
+        template: `<button id="is-done" onclick={{action this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);
@@ -70,7 +70,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onClick={{action clicked}}>my button</button>`,
+        template: `<button id="is-done" onClick={{action this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);

@@ -62,7 +62,7 @@ moduleFor(
       assert
     ) {
       fixture.innerHTML =
-        '<script type="text/x-handlebars" data-template-name="funkyTemplate">{{firstName}} takes {{drug}}</script>';
+        '<script type="text/x-handlebars" data-template-name="funkyTemplate">{{this.firstName}} takes {{this.drug}}</script>';
 
       checkTemplate('funkyTemplate', assert);
     }
@@ -71,13 +71,14 @@ moduleFor(
       assert
     ) {
       fixture.innerHTML =
-        '<script type="text/x-handlebars" id="funkyTemplate" >{{firstName}} takes {{drug}}</script>';
+        '<script type="text/x-handlebars" id="funkyTemplate" >{{this.firstName}} takes {{this.drug}}</script>';
 
       checkTemplate('funkyTemplate', assert);
     }
 
     ['@test template without data-template-name or id should default to application'](assert) {
-      fixture.innerHTML = '<script type="text/x-handlebars">{{firstName}} takes {{drug}}</script>';
+      fixture.innerHTML =
+        '<script type="text/x-handlebars">{{this.firstName}} takes {{this.drug}}</script>';
 
       checkTemplate('application', assert);
     }
@@ -87,7 +88,7 @@ moduleFor(
       typeof Handlebars === 'object' ? '@test' : '@skip'
     } template with type text/x-raw-handlebars should be parsed`](assert) {
       fixture.innerHTML =
-        '<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>';
+        '<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{this.name}}</script>';
 
       run(() => bootstrap({ context: fixture, hasTemplate, setTemplate }));
 

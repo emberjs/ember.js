@@ -334,7 +334,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each articles as |a|}} 1{{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}"
+        "{{#each this.articles as |a|}} 1{{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}"
       );
     }
 
@@ -440,7 +440,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each articles as |a|}} {{link-to 'Article' 'site.article' a id=a.id}} {{/each}} {{outlet}}"
+        "{{#each this.articles as |a|}} {{link-to 'Article' 'site.article' a id=a.id}} {{/each}} {{outlet}}"
       );
     }
 
@@ -591,7 +591,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each allSitesAllArticles as |a|}} {{#link-to 'site.article' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}"
+        "{{#each this.allSitesAllArticles as |a|}} {{#link-to 'site.article' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}"
       );
     }
 

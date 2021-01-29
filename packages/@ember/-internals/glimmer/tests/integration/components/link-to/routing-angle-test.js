@@ -109,7 +109,7 @@ moduleFor(
         'index',
         `
         <LinkTo id="about-link-static" @route="about" @disabledWhen="shouldDisable">About</LinkTo>
-        <LinkTo id="about-link-dynamic" @route="about" @disabledWhen={{dynamicDisabledWhen}}>About</LinkTo>
+        <LinkTo id="about-link-dynamic" @route="about" @disabledWhen={{this.dynamicDisabledWhen}}>About</LinkTo>
         `
       );
 
@@ -175,7 +175,7 @@ moduleFor(
     [`@test the <LinkTo /> component supports a custom disabledClass set via bound param`](assert) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass={{disabledClass}}>About</LinkTo>`
+        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass={{this.disabledClass}}>About</LinkTo>`
       );
 
       this.add(
@@ -229,7 +229,7 @@ moduleFor(
     ) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{disabledWhen}}>About</LinkTo>`
+        `<LinkTo id="about-link" @route="about" @disabledWhen={{this.disabledWhen}}>About</LinkTo>`
       );
 
       this.add(
@@ -294,7 +294,7 @@ moduleFor(
         `
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about'>About</LinkTo>
-        <LinkTo id='self-link' @route='index' @activeClass={{activeClass}}>Self</LinkTo>
+        <LinkTo id='self-link' @route='index' @activeClass={{this.activeClass}}>Self</LinkTo>
         `
       );
 
@@ -645,7 +645,7 @@ moduleFor(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about' @replace={{boundTruthyThing}}>About</LinkTo>
+        <LinkTo id='about-link' @route='about' @replace={{this.boundTruthyThing}}>About</LinkTo>
         `
       );
 
@@ -675,7 +675,7 @@ moduleFor(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about' replace={{boundFalseyThing}}>About</LinkTo>
+        <LinkTo id='about-link' @route='about' replace={{this.boundFalseyThing}}>About</LinkTo>
         `
       );
 
@@ -887,7 +887,7 @@ moduleFor(
       this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
       this.addTemplate(
         'index.about',
-        `<LinkTo id='other-link' @route='items' @current-when={{currentWhen}}>ITEM</LinkTo>`
+        `<LinkTo id='other-link' @route='items' @current-when={{this.currentWhen}}>ITEM</LinkTo>`
       );
 
       return this.visit('/about').then(() => {
@@ -961,7 +961,7 @@ moduleFor(
       this.addTemplate(
         'index.about',
         `
-        <LinkTo id='index-link' @route='index' @current-when={{isCurrent}}>ITEM</LinkTo>
+        <LinkTo id='index-link' @route='index' @current-when={{this.isCurrent}}>ITEM</LinkTo>
         <LinkTo id='about-link' @route='item' @current-when={{true}}>ITEM</LinkTo>
         `
       );
@@ -1081,7 +1081,7 @@ moduleFor(
         'about',
         `
         <div {{action 'hide'}}>
-          <LinkTo id='about-contact' @route='about.contact' @bubbles={{boundFalseyThing}}>
+          <LinkTo id='about-contact' @route='about.contact' @bubbles={{this.boundFalseyThing}}>
             About
           </LinkTo>
         </div>
@@ -1249,7 +1249,7 @@ moduleFor(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='self-link' @route='index' target={{boundLinkTarget}}>Self</LinkTo>
+        <LinkTo id='self-link' @route='index' target={{this.boundLinkTarget}}>Self</LinkTo>
         `
       );
 
@@ -1295,7 +1295,7 @@ moduleFor(
       });
     }
 
-    [`@test the <LinkTo /> component does not call preventDefault if '@preventDefault={{boundFalseyThing}}' is passed as an option`](
+    [`@test the <LinkTo /> component does not call preventDefault if '@preventDefault={{this.boundFalseyThing}}' is passed as an option`](
       assert
     ) {
       this.router.map(function () {
@@ -1304,7 +1304,7 @@ moduleFor(
 
       this.addTemplate(
         'index',
-        `<LinkTo id='about-link' @route='about' @preventDefault={{boundFalseyThing}}>About</LinkTo>`
+        `<LinkTo id='about-link' @route='about' @preventDefault={{this.boundFalseyThing}}>About</LinkTo>`
       );
 
       this.add(
@@ -1400,12 +1400,12 @@ moduleFor(
       this.addTemplate(
         'filter',
         `
-        <p>{{filter}}</p>
+        <p>{{this.filter}}</p>
         <LinkTo id="link" @route="filter" @model="unpopular">Unpopular</LinkTo>
-        <LinkTo id="path-link" @route="filter" @model={{filter}}>Unpopular</LinkTo>
-        <LinkTo id="post-path-link" @route="post" @model={{post_id}}>Post</LinkTo>
+        <LinkTo id="path-link" @route="filter" @model={{this.filter}}>Unpopular</LinkTo>
+        <LinkTo id="post-path-link" @route="post" @model={{this.post_id}}>Post</LinkTo>
         <LinkTo id="post-number-link" @route="post" @model={{123}}>Post</LinkTo>
-        <LinkTo id="repo-object-link" @route="repo" @model={{repo}}>Repo</LinkTo>
+        <LinkTo id="repo-object-link" @route="repo" @model={{this.repo}}>Repo</LinkTo>
         `
       );
 
@@ -1466,7 +1466,7 @@ moduleFor(
         'index',
         `
         <LinkTo id='string-link' @route='index'>string</LinkTo>
-        <LinkTo id='path-link' @route={{foo}}>path</LinkTo>
+        <LinkTo id='path-link' @route={{this.foo}}>path</LinkTo>
         `
       );
 
@@ -1500,7 +1500,10 @@ moduleFor(
       let post = { id: '1' };
       let secondPost = { id: '2' };
 
-      this.addTemplate('index', `<LinkTo id="post" @route="post" @model={{post}}>post</LinkTo>`);
+      this.addTemplate(
+        'index',
+        `<LinkTo id="post" @route="post" @model={{this.post}}>post</LinkTo>`
+      );
 
       this.add('controller:index', Controller.extend());
 
@@ -1582,14 +1585,14 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#each routeNames as |routeName|}}
+        {{#each this.routeNames as |routeName|}}
           <LinkTo @route={{routeName}}>{{routeName}}</LinkTo>
         {{/each}}
-        {{#each routeNames as |r|}}
+        {{#each this.routeNames as |r|}}
           <LinkTo @route={{r}}>{{r}}</LinkTo>
         {{/each}}
-        <LinkTo @route={{route1}}>a</LinkTo>
-        <LinkTo @route={{route2}}>b</LinkTo>
+        <LinkTo @route={{this.route1}}>a</LinkTo>
+        <LinkTo @route={{this.route2}}>b</LinkTo>
         `
       );
 
@@ -1651,9 +1654,9 @@ moduleFor(
         'application',
         `
         <LinkTo id='home-link' @route='index'>Home</LinkTo>
-        <LinkTo id='default-post-link' @route='post' @model={{defaultPost}}>Default Post</LinkTo>
-        {{#if currentPost}}
-          <LinkTo id='current-post-link' @route='post' @model={{currentPost}}>Current Post</LinkTo>
+        <LinkTo id='default-post-link' @route='post' @model={{this.defaultPost}}>Default Post</LinkTo>
+        {{#if this.currentPost}}
+          <LinkTo id='current-post-link' @route='post' @model={{this.currentPost}}>Current Post</LinkTo>
         {{/if}}
         `
       );
@@ -1855,7 +1858,7 @@ moduleFor(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id="dynamic-link" @params={{dynamicLinkParams}}>Dynamic</LinkTo>
+        <LinkTo id="dynamic-link" @params={{this.dynamicLinkParams}}>Dynamic</LinkTo>
         `
       );
 
@@ -1924,10 +1927,10 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        <LinkTo id='context-link' @route={{destinationRoute}} @model={{routeContext}} @loadingClass='i-am-loading'>
+        <LinkTo id='context-link' @route={{this.destinationRoute}} @model={{this.routeContext}} @loadingClass='i-am-loading'>
           string
         </LinkTo>
-        <LinkTo id='static-link' @route={{secondRoute}} @loadingClass={{loadingClass}}>
+        <LinkTo id='static-link' @route={{this.secondRoute}} @loadingClass={{this.loadingClass}}>
           string
         </LinkTo>
         `

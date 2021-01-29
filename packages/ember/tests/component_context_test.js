@@ -12,7 +12,7 @@ moduleFor(
         'application',
         `
       <div id='wrapper'>
-        {{#my-component}}{{text}}{{/my-component}}
+        {{#my-component}}{{this.text}}{{/my-component}}
       </div>
     `
       );
@@ -27,7 +27,7 @@ moduleFor(
         ComponentClass: Component.extend({
           text: 'inner',
         }),
-        template: `{{text}}-{{yield}}`,
+        template: `{{this.text}}-{{yield}}`,
       });
 
       return this.visit('/').then(() => {
@@ -43,7 +43,7 @@ moduleFor(
         'application',
         `
       <div id='wrapper'>
-        {{#my-component}}{{text}}{{/my-component}}
+        {{#my-component}}{{this.text}}{{/my-component}}
       </div>
     `
       );
@@ -85,7 +85,7 @@ moduleFor(
         ComponentClass: Component.extend({
           text: 'inner',
         }),
-        template: '{{text}}',
+        template: '{{this.text}}',
       });
 
       return this.visit('/').then(() => {
@@ -128,7 +128,7 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-      <div id='wrapper'>{{my-component data=foo}}</div>`
+      <div id='wrapper'>{{my-component data=this.foo}}</div>`
       );
 
       this.add(
@@ -158,7 +158,7 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-      <div id='wrapper'>{{my-component attrs=foo}}</div>
+      <div id='wrapper'>{{my-component attrs=this.foo}}</div>
     `
       );
 

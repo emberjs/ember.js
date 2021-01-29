@@ -148,7 +148,7 @@ moduleFor(
     ) {
       let count = 0;
 
-      this.render('<button {{on "click" this.callback once=once}}>Click Me</button>', {
+      this.render('<button {{on "click" this.callback once=this.once}}>Click Me</button>', {
         callback() {
           count++;
         },

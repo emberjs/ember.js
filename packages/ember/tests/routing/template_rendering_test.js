@@ -311,7 +311,7 @@ moduleFor(
       this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
       this.addTemplate('foo', "<div class='middle'>{{outlet}}</div>");
       this.addTemplate('bar', "<div class='bottom'>{{outlet}}</div>");
-      this.addTemplate('bar.baz', '<p>{{name}}Bottom!</p>');
+      this.addTemplate('bar.baz', '<p>{{this.name}}Bottom!</p>');
 
       this.router.map(function () {
         this.route('foo', { path: '/top' }, function () {
@@ -637,7 +637,7 @@ moduleFor(
 
       this.add('controller:shared', Controller.extend());
 
-      this.addTemplate('shared', '<p>{{message}}{{x-input}}</p>');
+      this.addTemplate('shared', '<p>{{this.message}}{{x-input}}</p>');
 
       let rootElement = document.getElementById('qunit-fixture');
       return this.visit('/first')
@@ -1005,7 +1005,7 @@ moduleFor(
     }
 
     ['@test {{outlet}} works when created after initial render'](assert) {
-      this.addTemplate('sample', 'Hi{{#if showTheThing}}{{outlet}}{{/if}}Bye');
+      this.addTemplate('sample', 'Hi{{#if this.showTheThing}}{{outlet}}{{/if}}Bye');
       this.addTemplate('sample.inner', 'Yay');
       this.addTemplate('sample.inner2', 'Boo');
       this.router.map(function () {
@@ -1354,7 +1354,7 @@ moduleFor(
     ) {
       this.addTemplate(
         'index',
-        '{{#if showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'
+        '{{#if this.showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'
       );
 
       let myComponentCounter = 0;

@@ -551,7 +551,10 @@ moduleFor(
         })
       );
 
-      this.addTemplate('root.index', '<a {{action "showStuff" model1 model2}}>{{model1.name}}</a>');
+      this.addTemplate(
+        'root.index',
+        '<a {{action "showStuff" this.model1 this.model2}}>{{this.model1.name}}</a>'
+      );
 
       await this.visit('/');
 

@@ -329,7 +329,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       </div>`,
     });
 
-    this.render(invoke('the-top', { twitter: expr('twitter') }), {
+    this.render(invoke('the-top', { twitter: expr(attr('twitter')) }), {
       twitter: '@tomdale',
     });
 
@@ -562,9 +562,9 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     this.render(
       invoke('the-parent', {
-        twitter: expr('twitter'),
-        name: expr('name'),
-        website: expr('website'),
+        twitter: expr(attr('twitter')),
+        name: expr(attr('name')),
+        website: expr(attr('website')),
       }),
       {
         twitter: '@tomdale',
@@ -883,7 +883,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       </div>`,
     });
 
-    this.render(invoke('the-top', { twitter: expr('twitter') }), {
+    this.render(invoke('the-top', { twitter: expr(attr('twitter')) }), {
       twitter: '@tomdale',
     });
 
@@ -1049,7 +1049,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     this.registerComponent('an-item', {
       template: strip`
-      {{#nested-item}}Item: {{count}}{{/nested-item}}
+      {{#nested-item}}Item: {{this.count}}{{/nested-item}}
     `,
     });
 
@@ -1061,7 +1061,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     this.render(
       strip`
-      {{#each items as |item|}}
+      {{#each this.items as |item|}}
         ${invoke('an-item', { count: expr('item') })}
       {{else}}
         ${invoke('no-items')}
@@ -1286,7 +1286,7 @@ class CurlyComponentsTest extends LifeCycleHooksTest {
   }
 
   attrFor(name) {
-    return `${name}`;
+    return `this.${name}`;
   }
 
   /* private */
@@ -1358,7 +1358,7 @@ moduleFor(
         },
       });
 
-      let template = `{{width}}`;
+      let template = `{{this.width}}`;
       this.registerComponent('foo-bar', { ComponentClass, template });
 
       this.render('{{foo-bar}}');
@@ -1380,11 +1380,11 @@ moduleFor(
         },
       });
 
-      let template = `{{foo}}`;
+      let template = `{{this.foo}}`;
 
       this.registerComponent('foo-bar', { ComponentClass, template });
 
-      this.render('{{foo-bar parent=this foo=foo}}');
+      this.render('{{foo-bar parent=this foo=this.foo}}');
 
       this.assertText('wat');
 
@@ -1438,8 +1438,8 @@ moduleFor(
       let PartentTemplate = strip`
       {{yield}}
       <ul>
-        {{#nested-component nestedId=(concat itemId '-A')}}A{{/nested-component}}
-        {{#nested-component nestedId=(concat itemId '-B')}}B{{/nested-component}}
+        {{#nested-component nestedId=(concat this.itemId '-A')}}A{{/nested-component}}
+        {{#nested-component nestedId=(concat this.itemId '-B')}}B{{/nested-component}}
       </ul>
     `;
 
@@ -1471,7 +1471,7 @@ moduleFor(
 
       this.render(
         strip`
-        {{#each items as |item|}}
+        {{#each this.items as |item|}}
           {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
         {{/each}}
         {{#if this.model.shouldShow}}

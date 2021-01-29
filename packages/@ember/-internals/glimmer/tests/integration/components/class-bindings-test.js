@@ -17,7 +17,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=foo isEnabled=isEnabled isHappy=isHappy}}', {
+      this.render('{{foo-bar foo=this.foo isEnabled=this.isEnabled isHappy=this.isHappy}}', {
         foo: 'foo',
         isEnabled: true,
         isHappy: false,
@@ -207,7 +207,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=foo is=is}}', {
+      this.render('{{foo-bar foo=this.foo is=this.is}}', {
         foo: { bar: 'foo-bar' },
         is: { enabled: true, happy: false },
       });
@@ -281,7 +281,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar fooBar=fooBar nested=nested}}', {
+      this.render('{{foo-bar fooBar=this.fooBar nested=this.nested}}', {
         fooBar: true,
         nested: { fooBarBaz: false },
       });
@@ -389,7 +389,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar isEnabled=enabled}}', {
+      this.render('{{foo-bar isEnabled=this.enabled}}', {
         enabled: false,
       });
 
@@ -520,10 +520,10 @@ moduleFor(
 
       this.render(
         strip`
-      {{foo-bar foo=foo bindIsEnabled=true isEnabled=isEnabled bindIsHappy=false isHappy=isHappy}}
-      {{foo-bar foo=foo bindIsEnabled=false isEnabled=isEnabled bindIsHappy=true isHappy=isHappy}}
-      {{foo-bar foo=foo bindIsEnabled=true isEnabled=isEnabled bindIsHappy=true isHappy=isHappy}}
-      {{foo-bar foo=foo bindIsEnabled=false isEnabled=isEnabled bindIsHappy=false isHappy=isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=true isEnabled=this.isEnabled bindIsHappy=false isHappy=this.isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=false isEnabled=this.isEnabled bindIsHappy=true isHappy=this.isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=true isEnabled=this.isEnabled bindIsHappy=true isHappy=this.isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=false isEnabled=this.isEnabled bindIsHappy=false isHappy=this.isHappy}}
     `,
         { foo: 'foo', isEnabled: true, isHappy: false }
       );

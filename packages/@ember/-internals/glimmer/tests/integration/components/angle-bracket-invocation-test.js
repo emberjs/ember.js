@@ -84,7 +84,7 @@ moduleFor(
 
     '@test it can render a basic component with template and javascript'() {
       this.registerComponent('foo-bar', {
-        template: 'FIZZ BAR {{local}}',
+        template: 'FIZZ BAR {{this.local}}',
         ComponentClass: Component.extend({ local: 'hey' }),
       });
 
@@ -120,9 +120,9 @@ moduleFor(
     }
 
     '@test it can have a custom id and it is not bound'() {
-      this.registerComponent('foo-bar', { template: '{{id}} {{elementId}}' });
+      this.registerComponent('foo-bar', { template: '{{this.id}} {{this.elementId}}' });
 
-      this.render('<FooBar @id={{customId}} />', {
+      this.render('<FooBar @id={{this.customId}} />', {
         customId: 'bizz',
       });
 
@@ -154,7 +154,7 @@ moduleFor(
     '@test it can have a custom id attribute and it is bound'() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('<FooBar id={{customId}} />', {
+      this.render('<FooBar id={{this.customId}} />', {
         customId: 'bizz',
       });
 
@@ -256,7 +256,7 @@ moduleFor(
     '@test class property on components can be dynamic'() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('<FooBar @class={{if fooBar "foo-bar"}} />', {
+      this.render('<FooBar @class={{if this.fooBar "foo-bar"}} />', {
         fooBar: true,
       });
 
@@ -441,7 +441,7 @@ moduleFor(
 
     '@test it reflects named arguments as properties'() {
       this.registerComponent('foo-bar', {
-        template: '{{foo}}',
+        template: '{{this.foo}}',
       });
 
       this.render('<FooBar @foo={{this.model.bar}} />', {
@@ -496,11 +496,11 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{yield greeting greetee.firstName}}',
+        template: '{{yield this.greeting this.greetee.firstName}}',
       });
 
       this.render(
-        '<FooBar @greetee={{person}} as |greeting name|>{{name}} {{person.lastName}}, {{greeting}}</FooBar>',
+        '<FooBar @greetee={{this.person}} as |greeting name|>{{name}} {{this.person.lastName}}, {{greeting}}</FooBar>',
         {
           person: {
             firstName: 'Joel',
@@ -554,7 +554,7 @@ moduleFor(
         ComponentClass: Component.extend().reopenClass({
           positionalParams: ['first', 'second'],
         }),
-        template: '{{first}}{{second}}',
+        template: '{{this.first}}{{this.second}}',
       });
 
       // this is somewhat silly as the browser "corrects" for these as
@@ -646,7 +646,10 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -725,7 +728,10 @@ moduleFor(
         template: '<div ...attributes>hello</div>',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -775,10 +781,13 @@ moduleFor(
             this.localProp = 'qux';
           },
         }),
-        template: '<div data-derp={{localProp}} ...attributes>hello</div>',
+        template: '<div data-derp={{this.localProp}} ...attributes>hello</div>',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -830,10 +839,10 @@ moduleFor(
             this.localProp = 'qux';
           },
         }),
-        template: '<div class={{localProp}} ...attributes>hello</div>',
+        template: '<div class={{this.localProp}} ...attributes>hello</div>',
       });
 
-      this.render('<FooBar class={{bar}} />', { bar: 'bar' });
+      this.render('<FooBar class={{this.bar}} />', { bar: 'bar' });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -883,10 +892,10 @@ moduleFor(
             this.localProp = 'qux';
           },
         }),
-        template: '<div ...attributes class={{localProp}}>hello</div>',
+        template: '<div ...attributes class={{this.localProp}}>hello</div>',
       });
 
-      this.render('<FooBar class={{bar}} />', { bar: 'bar' });
+      this.render('<FooBar class={{this.bar}} />', { bar: 'bar' });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1052,7 +1061,10 @@ moduleFor(
         template: '<div ...attributes>hello</div><p ...attributes>world</p>',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',

@@ -320,7 +320,7 @@ moduleFor(
     [`@test Application Controller backs the appplication template`]() {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '<h1>{{greeting}}</h1>');
+        this.addTemplate('application', '<h1>{{this.greeting}}</h1>');
         this.add(
           'controller:application',
           Controller.extend({

@@ -114,7 +114,7 @@ class CustomPluginsTests extends RenderingTestCase {
   }
 
   ['@test wrapped plugins are only invoked once per template'](assert) {
-    this.render('<div>{{#if falsey}}nope{{/if}}</div>');
+    this.render('<div>{{#if this.falsey}}nope{{/if}}</div>');
     assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
   }
 }

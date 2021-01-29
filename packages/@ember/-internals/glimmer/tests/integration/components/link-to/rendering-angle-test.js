@@ -27,7 +27,7 @@ moduleFor(
     ['@test re-renders when title changes']() {
       let controller;
 
-      this.addTemplate('application', `<LinkTo @route='index'>{{title}}</LinkTo>`);
+      this.addTemplate('application', `<LinkTo @route='index'>{{this.title}}</LinkTo>`);
 
       this.add(
         'controller:application',
@@ -50,7 +50,7 @@ moduleFor(
     ['@test re-computes active class when params change'](assert) {
       let controller;
 
-      this.addTemplate('application', '<LinkTo @route={{routeName}}>foo</LinkTo>');
+      this.addTemplate('application', '<LinkTo @route={{this.routeName}}>foo</LinkTo>');
 
       this.add(
         'controller:application',
@@ -79,7 +79,7 @@ moduleFor(
         ComponentClass: LinkComponent.extend(),
       });
 
-      this.addTemplate('application', `<CustomLinkTo @route='index'>{{title}}</CustomLinkTo>`);
+      this.addTemplate('application', `<CustomLinkTo @route='index'>{{this.title}}</CustomLinkTo>`);
 
       this.add(
         'controller:application',

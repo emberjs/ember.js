@@ -22,7 +22,10 @@ moduleFor(
     }
 
     ['@test Bound helpers registered on the container can be late-invoked'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>`);
+      this.addTemplate(
+        'application',
+        `<div id='wrapper'>{{x-reverse}} {{x-reverse this.foo}}</div>`
+      );
 
       this.add(
         'controller:application',

@@ -26,7 +26,7 @@ moduleFor(
     ['@test re-renders when title changes']() {
       let controller;
 
-      this.addTemplate('application', `{{link-to title 'index'}}`);
+      this.addTemplate('application', `{{link-to this.title 'index'}}`);
 
       this.add(
         'controller:application',
@@ -49,7 +49,7 @@ moduleFor(
     ['@test re-computes active class when params change'](assert) {
       let controller;
 
-      this.addTemplate('application', '{{link-to "foo" routeName}}');
+      this.addTemplate('application', '{{link-to "foo" this.routeName}}');
 
       this.add(
         'controller:application',
@@ -74,7 +74,7 @@ moduleFor(
     }
 
     ['@test escaped inline form (double curlies) escapes link title']() {
-      this.addTemplate('application', `{{link-to title 'index'}}`);
+      this.addTemplate('application', `{{link-to this.title 'index'}}`);
       this.add(
         'controller:application',
         Controller.extend({
@@ -88,7 +88,7 @@ moduleFor(
     }
 
     ['@test unescaped inline form (triple curlies) does not escape link title'](assert) {
-      this.addTemplate('application', `{{{link-to title 'index'}}}`);
+      this.addTemplate('application', `{{{link-to this.title 'index'}}}`);
       this.add(
         'controller:application',
         Controller.extend({
@@ -106,7 +106,10 @@ moduleFor(
       this.addComponent('custom-link-to', {
         ComponentClass: LinkComponent.extend(),
       });
-      this.addTemplate('application', `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`);
+      this.addTemplate(
+        'application',
+        `{{#custom-link-to 'index'}}{{this.title}}{{/custom-link-to}}`
+      );
       this.add(
         'controller:application',
         Controller.extend({
@@ -123,7 +126,7 @@ moduleFor(
       this.addComponent('custom-link-to', {
         ComponentClass: LinkComponent.extend(),
       });
-      this.addTemplate('application', `{{custom-link-to title 'index'}}`);
+      this.addTemplate('application', `{{custom-link-to this.title 'index'}}`);
       this.add(
         'controller:application',
         Controller.extend({
