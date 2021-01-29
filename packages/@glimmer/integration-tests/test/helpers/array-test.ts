@@ -34,7 +34,7 @@ class ArrayTest extends RenderTest {
   @test
   'binds values when variables are used'() {
     this.render(
-      strip`{{#with (array personOne) as |people|}}
+      strip`{{#with (array this.personOne) as |people|}}
             {{#each people as |personName|}}
               {{personName}}
             {{/each}}
@@ -58,7 +58,7 @@ class ArrayTest extends RenderTest {
   @test
   'binds multiple values when variables are used'() {
     this.render(
-      strip`{{#with (array personOne personTwo) as |people|}}
+      strip`{{#with (array this.personOne this.personTwo) as |people|}}
             {{#each people as |personName|}}
               {{personName}},
             {{/each}}
@@ -89,7 +89,7 @@ class ArrayTest extends RenderTest {
   'array helpers can be nested'() {
     this.render(
       strip`
-        {{#let (array (array personOne personTwo)) as |listOfPeople|}}
+        {{#let (array (array this.personOne this.personTwo)) as |listOfPeople|}}
           {{#each listOfPeople as |people|}}
             List:
             {{#each people as |personName|}}
@@ -226,7 +226,7 @@ class ArrayTest extends RenderTest {
       `
     );
 
-    this.render(strip`<FooBar @people={{array "Tom" personTwo}}/>`, { personTwo: 'Chad' });
+    this.render(strip`<FooBar @people={{array "Tom" this.personTwo}}/>`, { personTwo: 'Chad' });
 
     this.assertHTML('Tom,Chad,');
 
@@ -265,7 +265,7 @@ class ArrayTest extends RenderTest {
       FooBar
     );
 
-    this.render(strip`<FooBar @people={{array "Tom" personTwo}}/>`, { personTwo: 'Chad' });
+    this.render(strip`<FooBar @people={{array "Tom" this.personTwo}}/>`, { personTwo: 'Chad' });
 
     let firstArray = fooBarInstance!.args.people;
 
@@ -286,7 +286,7 @@ class ArrayTest extends RenderTest {
       return 'captured';
     });
 
-    this.render(`{{capture (array 'Tom' personTwo)}}`, { personTwo: 'Godfrey' });
+    this.render(`{{capture (array 'Tom' this.personTwo)}}`, { personTwo: 'Godfrey' });
 
     this.assert.deepEqual(captured, ['Tom', 'Godfrey']);
 

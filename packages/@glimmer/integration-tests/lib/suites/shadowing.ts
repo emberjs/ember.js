@@ -33,7 +33,7 @@ export class ShadowingSuite extends RenderTest {
     this.render(
       {
         layout: 'In layout - someProp: {{@someProp}}',
-        args: { someProp: 'someProp' },
+        args: { someProp: 'this.someProp' },
       },
       { someProp: 'something here' }
     );
@@ -60,7 +60,7 @@ export class ShadowingSuite extends RenderTest {
       {
         layoutAttributes: { 'data-name': 'Godfrey', 'data-foo': 'foo' },
         layout: 'Hello!',
-        attributes: { 'data-name': '"{{name}}"', 'data-foo': '"{{foo}}-bar"' },
+        attributes: { 'data-name': '"{{this.name}}"', 'data-foo': '"{{this.foo}}-bar"' },
       },
       { name: 'Godhuda', foo: 'foo' }
     );
@@ -87,7 +87,7 @@ export class ShadowingSuite extends RenderTest {
       {
         layoutAttributes: { 'data-name': '{{@name}}', 'data-foo': '"{{@foo}}-bar"' },
         layout: 'Hello!',
-        args: { name: 'name', foo: 'foo' },
+        args: { name: 'this.name', foo: 'this.foo' },
         attributes: { 'data-name': '"Godhuda"', 'data-foo': '"foo-bar"' },
       },
       { name: 'Godfrey', foo: 'foo' }

@@ -25,7 +25,10 @@ export class DebuggerSuite extends RenderTest {
       this.assert.equal(get('foo'), expectedContext.foo);
     });
 
-    this.render('{{#if a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}', expectedContext);
+    this.render(
+      '{{#if this.a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}',
+      expectedContext
+    );
     this.assert.equal(callbackExecuted, 1);
     this.assertHTML('true');
     this.assertStableRerender();
@@ -71,7 +74,7 @@ export class DebuggerSuite extends RenderTest {
     });
 
     this.render(
-      '{{#with foo as |bar|}}{{#if a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{/with}}',
+      '{{#with this.foo as |bar|}}{{#if this.a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{/with}}',
       expectedContext
     );
     this.assert.equal(callbackExecuted, 1);

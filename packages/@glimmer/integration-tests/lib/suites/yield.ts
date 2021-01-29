@@ -10,10 +10,10 @@ export class YieldSuite extends RenderTest {
       {
         layout:
           '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
-        args: { predicate: 'activated', someValue: '42' },
+        args: { predicate: 'this.activated', someValue: '42' },
         blockParams: ['result'],
-        template: 'Hello{{result}}{{outer}}',
-        else: 'Goodbye{{outer}}',
+        template: 'Hello{{result}}{{this.outer}}',
+        else: 'Goodbye{{this.outer}}',
       },
       { activated: true, outer: 'outer' }
     );
@@ -30,10 +30,10 @@ export class YieldSuite extends RenderTest {
       {
         layout:
           '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
-        args: { predicate: 'activated', someValue: '42' },
+        args: { predicate: 'this.activated', someValue: '42' },
         blockParams: ['result'],
-        template: 'Hello{{result}}{{outer}}',
-        else: 'Goodbye{{outer}}',
+        template: 'Hello{{result}}{{this.outer}}',
+        else: 'Goodbye{{this.outer}}',
       },
       { activated: false, outer: 'outer' }
     );
@@ -49,10 +49,10 @@ export class YieldSuite extends RenderTest {
     this.render(
       {
         layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="else"}}{{/if}}',
-        args: { predicate: 'activated', someValue: '42' },
+        args: { predicate: 'this.activated', someValue: '42' },
         blockParams: ['result'],
-        template: 'Hello{{result}}{{outer}}',
-        else: 'Goodbye{{outer}}',
+        template: 'Hello{{result}}{{this.outer}}',
+        else: 'Goodbye{{this.outer}}',
       },
       { activated: false, outer: 'outer' }
     );
@@ -88,7 +88,7 @@ export class YieldSuite extends RenderTest {
   })
   'use a non-existent block param'() {
     this.render({
-      layout: '{{yield someValue}}',
+      layout: '{{yield this.someValue}}',
       args: { someValue: '42' },
       blockParams: ['val1', 'val2'],
       template: '{{val1}} - {{val2}}',
@@ -199,7 +199,7 @@ export class YieldSuite extends RenderTest {
       {
         layout: 'In layout -- {{#if @predicate}}{{yield}}{{/if}}',
         template: 'In template',
-        args: { predicate: 'predicate' },
+        args: { predicate: 'this.predicate' },
       },
       { predicate: true }
     );

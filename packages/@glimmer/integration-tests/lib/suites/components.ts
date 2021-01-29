@@ -19,7 +19,7 @@ export class TemplateOnlyComponents extends RenderTest {
         name: 'MyComponent',
         layout: '{{yield}} - {{@color}}',
         template: 'hello!',
-        args: { color: 'color' },
+        args: { color: 'this.color' },
       },
       { color: 'red' }
     );
@@ -45,8 +45,8 @@ export class TemplateOnlyComponents extends RenderTest {
         name: 'MyComponent',
         layout: '<div><span ...attributes>{{yield}} - {{@color}}</span></div>',
         template: 'hello!',
-        args: { color: 'color' },
-        attributes: { color: '{{color}}' },
+        args: { color: 'this.color' },
+        attributes: { color: '{{this.color}}' },
       },
       { color: 'red' }
     );
@@ -223,7 +223,7 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'Foo',
-      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}]</div>',
+      '<div ...attributes>[{{this.localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}]</div>',
       Foo
     );
 
@@ -232,7 +232,7 @@ export class GlimmerishComponents extends RenderTest {
         layout: stripTight`<@foo @staticNamedArg="static" data-test1={{@outerArg}} data-test2="static" @dynamicNamedArg={{@outerArg}} />`,
         args: {
           foo: 'component "Foo"',
-          outerArg: 'outer',
+          outerArg: 'this.outer',
         },
       },
       { outer: 'outer' }
@@ -345,11 +345,11 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'Foo',
-      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}] - {{yield}}</div>',
+      '<div ...attributes>[{{this.localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}] - {{yield}}</div>',
       Foo
     );
     this.render(
-      `{{#with (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{outer}} data-test2="static" @dynamicNamedArg={{outer}}>template</Other>{{/with}}`,
+      `{{#with (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{this.outer}} data-test2="static" @dynamicNamedArg={{this.outer}}>template</Other>{{/with}}`,
       { outer: 'outer' }
     );
 
@@ -519,10 +519,12 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'Foo',
-      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}] - {{yield}}</div>',
+      '<div ...attributes>[{{this.localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}] - {{yield}}</div>',
       Foo
     );
-    this.render('<TestHarness @outer={{outer}} @Foo={{component "Foo"}} />', { outer: 'outer' });
+    this.render('<TestHarness @outer={{this.outer}} @Foo={{component "Foo"}} />', {
+      outer: 'outer',
+    });
 
     this.assertHTML(
       `<div data-test1="outer" data-test2="static">[local static outer] - template</div>`
@@ -625,7 +627,7 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'Main',
-      '<div><HelloWorld @name={{salutation}} /></div>',
+      '<div><HelloWorld @name={{this.salutation}} /></div>',
       MainComponent
     );
     this.registerComponent('Glimmer', 'HelloWorld', '<h1>Hello {{@name}}!</h1>');
@@ -666,7 +668,7 @@ export class GlimmerishComponents extends RenderTest {
     );
     this.registerComponent('Glimmer', 'HelloWorld', '{{yield (component "A" a=@a)}}');
     this.registerComponent('Glimmer', 'A', 'A {{@a}}');
-    this.render('<Main @a={{a}} />', { a: 'a' });
+    this.render('<Main @a={{this.a}} />', { a: 'a' });
     this.assertHTML('<div>A a</div>');
     this.assertStableRerender();
     this.rerender({ a: 'A' });
@@ -682,7 +684,7 @@ export class GlimmerishComponents extends RenderTest {
       'A {{#component "B" arg1=@one arg2=@two arg3=@three}}{{/component}}'
     );
     this.registerComponent('Glimmer', 'B', 'B {{@arg1}} {{@arg2}} {{@arg3}}');
-    this.render('<A @one={{first}} @two={{second}} @three={{third}} />', {
+    this.render('<A @one={{this.first}} @two={{this.second}} @three={{this.third}} />', {
       first: 1,
       second: 2,
       third: 3,
@@ -698,7 +700,7 @@ export class GlimmerishComponents extends RenderTest {
   'Static inline component helper'() {
     this.registerComponent('Glimmer', 'A', 'A {{component "B" arg1=@one arg2=@two arg3=@three}}');
     this.registerComponent('Glimmer', 'B', 'B {{@arg1}} {{@arg2}} {{@arg3}}');
-    this.render('<A @one={{first}} @two={{second}} @three={{third}} />', {
+    this.render('<A @one={{this.first}} @two={{this.second}} @three={{this.third}} />', {
       first: 1,
       second: 2,
       third: 3,
@@ -719,7 +721,7 @@ export class GlimmerishComponents extends RenderTest {
 
     this.render(
       strip`
-    {{#each components key="id" as |c|}}
+    {{#each this.components key="id" as |c|}}
       {{#in-element c.mount}}
         {{component c.name childName=c.child data=c.data}}
       {{/in-element}}
@@ -755,7 +757,7 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'RecursiveInvoker',
-      '{{id}}{{#if showChildren}}<RecursiveInvoker />{{/if}}',
+      '{{this.id}}{{#if this.showChildren}}<RecursiveInvoker />{{/if}}',
       RecursiveInvoker
     );
 
@@ -777,7 +779,7 @@ export class GlimmerishComponents extends RenderTest {
       }
     );
 
-    this.render('{{#if showing}}<Foo/>{{/if}}', {
+    this.render('{{#if this.showing}}<Foo/>{{/if}}', {
       showing: false,
     });
 
@@ -805,9 +807,12 @@ export class GlimmerishComponents extends RenderTest {
       }
     );
 
-    this.render('{{#if showing}}<div class="first"></div><div class="second"></div><Foo/>{{/if}}', {
-      showing: false,
-    });
+    this.render(
+      '{{#if this.showing}}<div class="first"></div><div class="second"></div><Foo/>{{/if}}',
+      {
+        showing: false,
+      }
+    );
 
     this.assert.throws(() => {
       this.rerender({ showing: true });
@@ -838,7 +843,7 @@ export class GlimmerishComponents extends RenderTest {
 
     this.registerComponent('TemplateOnly', 'Bar', '<div class="second"></div><Foo/>');
 
-    this.render('{{#if showing}}<div class="first"></div><Bar/>{{/if}}', {
+    this.render('{{#if this.showing}}<div class="first"></div><Bar/>{{/if}}', {
       showing: false,
     });
 
@@ -885,7 +890,7 @@ export class GlimmerishComponents extends RenderTest {
 
       this.registerComponent('TemplateOnly', 'Bar', '<div class="second"></div><Foo/>');
 
-      this.render('{{#if showing}}<div class="first"></div><Bar/>{{/if}}', {
+      this.render('{{#if this.showing}}<div class="first"></div><Bar/>{{/if}}', {
         showing: false,
       });
 

@@ -39,7 +39,7 @@ class LogTest extends RenderTest {
 
   @test
   ['correctly logs a property']() {
-    this.render(`{{log value}}`, {
+    this.render(`{{log this.value}}`, {
       value: 'one',
     });
 
@@ -48,7 +48,7 @@ class LogTest extends RenderTest {
 
   @test
   ['correctly logs multiple arguments']() {
-    this.render(`{{log "my variable:" value}}`, {
+    this.render(`{{log "my variable:" this.value}}`, {
       value: 'one',
     });
 

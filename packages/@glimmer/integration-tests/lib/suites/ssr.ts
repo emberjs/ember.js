@@ -44,19 +44,19 @@ export class ServerSideSuite extends AbstractNodeTest {
 
   @test
   'Quoted attribute expression is removed when null'() {
-    this.render('<input disabled="{{isDisabled}}">', { isDisabled: null });
+    this.render('<input disabled="{{this.isDisabled}}">', { isDisabled: null });
     this.assertHTML('<input>');
   }
 
   @test
   'Unquoted attribute expression with null value is not coerced'() {
-    this.render('<input disabled={{isDisabled}}>', { isDisabled: null });
+    this.render('<input disabled={{this.isDisabled}}>', { isDisabled: null });
     this.assertHTML('<input>');
   }
 
   @test
   'Attribute expression can be followed by another attribute'() {
-    this.render('<div foo="{{funstuff}}" name="Alice"></div>', { funstuff: 'oh my' });
+    this.render('<div foo="{{this.funstuff}}" name="Alice"></div>', { funstuff: 'oh my' });
     this.assertHTML('<div foo="oh my" name="Alice"></div>');
   }
 
@@ -111,19 +111,19 @@ export class ServerSideSuite extends AbstractNodeTest {
 
   @test
   'The compiler can handle simple handlebars'() {
-    this.render('<div>{{title}}</div>', { title: 'hello' });
+    this.render('<div>{{this.title}}</div>', { title: 'hello' });
     this.assertHTML('<div>hello</div>');
   }
 
   @test
   'The compiler can handle escaping HTML'() {
-    this.render('<div>{{title}}</div>', { title: '<strong>hello</strong>' });
+    this.render('<div>{{this.title}}</div>', { title: '<strong>hello</strong>' });
     this.assertHTML('<div>&lt;strong&gt;hello&lt;/strong&gt;</div>');
   }
 
   @test
   'The compiler can handle unescaped HTML'() {
-    this.render('<div>{{{title}}}</div>', { title: '<strong>hello</strong>' });
+    this.render('<div>{{{this.title}}}</div>', { title: '<strong>hello</strong>' });
     this.assertHTML('<div><strong>hello</strong></div>');
   }
 
@@ -146,7 +146,7 @@ export class ServerSideSuite extends AbstractNodeTest {
       return params[0];
     });
 
-    this.render('<a href="{{testing url}}">linky</a>', { url: 'linky.html' });
+    this.render('<a href="{{testing this.url}}">linky</a>', { url: 'linky.html' });
     this.assertHTML('<a href="linky.html">linky</a>');
   }
 
@@ -215,7 +215,7 @@ export class ServerSideComponentSuite extends AbstractNodeTest {
       {
         layout: '<h1>Hello {{@place}}!</h1>',
         template: 'World',
-        args: { place: 'place' },
+        args: { place: 'this.place' },
       },
       { place: 'World' }
     );
@@ -228,7 +228,7 @@ export class ServerSideComponentSuite extends AbstractNodeTest {
       {
         layout: '<h1>Hello {{yield @place}}!</h1>',
         template: '{{place}}',
-        args: { place: 'place' },
+        args: { place: 'this.place' },
         blockParams: ['place'],
       },
       { place: 'World' }

@@ -32,7 +32,9 @@ class StyleWarningsTest extends RenderTest {
   @test
   'Standard element with dynamic style and element modifier gives you 1 warning'() {
     this.registerModifier('foo', class {});
-    this.render('<button style={{dynAttr}} {{foo}}>click me</button>', { dynAttr: 'display:flex' });
+    this.render('<button style={{this.dynAttr}} {{foo}}>click me</button>', {
+      dynAttr: 'display:flex',
+    });
 
     assert.strictEqual(warnings, 1);
   }
@@ -47,7 +49,9 @@ class StyleWarningsTest extends RenderTest {
 
   @test
   'triple curlies are trusted'() {
-    this.render(`<div foo={{foo}} style={{{styles}}}>Thing</div>`, { styles: 'background: red' });
+    this.render(`<div foo={{this.foo}} style={{{this.styles}}}>Thing</div>`, {
+      styles: 'background: red',
+    });
 
     assert.strictEqual(warnings, 0);
     this.assertHTML('<div style="background: red">Thing</div>', 'initial render');

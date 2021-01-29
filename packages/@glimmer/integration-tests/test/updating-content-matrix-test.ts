@@ -175,7 +175,7 @@ function generateContentTestCase(
 
 generateContentTestCase(ContentTest, {
   name: 'double curlies',
-  template: '{{value}}',
+  template: '{{this.value}}',
   values: [
     {
       input: 'hello',

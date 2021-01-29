@@ -33,7 +33,7 @@ export class EmberishComponentTests extends RenderTest {
       }
     );
 
-    this.render('{{#if ok}}<div data-ok=true {{foo bar}}></div>{{/if}}', {
+    this.render('{{#if this.ok}}<div data-ok=true {{foo this.bar}}></div>{{/if}}', {
       bar: 'bar',
       ok: true,
     });
@@ -69,7 +69,7 @@ export class EmberishComponentTests extends RenderTest {
       {
         layout: 'In layout -- {{#if @predicate}}{{yield}}{{/if}}',
         template: 'In template',
-        args: { predicate: 'predicate' },
+        args: { predicate: 'this.predicate' },
       },
       { predicate: true }
     );
