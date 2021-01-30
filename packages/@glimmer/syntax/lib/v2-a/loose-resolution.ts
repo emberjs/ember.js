@@ -39,7 +39,7 @@ export function BlockSyntaxContext(node: ASTv1.BlockStatement): ASTv2.FreeVarRes
 
 export function ComponentSyntaxContext(node: ASTv1.PathExpression): ASTv2.FreeVarResolution | null {
   if (isSimplePath(node)) {
-    return ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Component);
+    return ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Component, true);
   } else {
     return null;
   }

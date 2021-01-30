@@ -114,3 +114,11 @@ export function printLiteral(literal: ASTv1.Literal): string {
     return JSON.stringify(literal.value);
   }
 }
+
+export function isUpperCase(tag: string): boolean {
+  return tag[0] === tag[0].toUpperCase() && tag[0] !== tag[0].toLowerCase();
+}
+
+export function isLowerCase(tag: string): boolean {
+  return tag[0] === tag[0].toLowerCase() && tag[0] !== tag[0].toUpperCase();
+}
