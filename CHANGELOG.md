@@ -1,3 +1,21 @@
+## v0.74.0 (2021-01-30)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/global-context`, `@glimmer/integration-tests`, `@glimmer/validator`, `build-utils`
+  * [#1257](https://github.com/glimmerjs/glimmer-vm/pull/1257) Add `assert` and `deprecate` to global context API ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1255](https://github.com/glimmerjs/glimmer-vm/pull/1255) Don't call `customizeComponentName` on curly components ([@dfreeman](https://github.com/dfreeman))
+
+#### :house: Internal
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1258](https://github.com/glimmerjs/glimmer-vm/pull/1258) Remove usages of `this.property` fallback from tests ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Dan Freeman ([@dfreeman](https://github.com/dfreeman))
+
 ## v0.73.2 (2021-01-21)
 
 #### :bug: Bug Fix
