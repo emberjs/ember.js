@@ -10,6 +10,7 @@ import { SourceSpan } from '../source/span';
 import { SpanList } from '../source/span-list';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from '../symbol-table';
 import { generateSyntaxError } from '../syntax-error';
+import { isLowerCase, isUpperCase } from '../utils';
 import * as ASTv1 from '../v1/api';
 import b from '../v1/parser-builders';
 import * as ASTv2 from './api';
@@ -864,14 +865,6 @@ class ElementChildren extends Children {
       ];
     }
   }
-}
-
-function isUpperCase(tag: string): boolean {
-  return tag[0] === tag[0].toUpperCase() && tag[0] !== tag[0].toLowerCase();
-}
-
-function isLowerCase(tag: string): boolean {
-  return tag[0] === tag[0].toLowerCase() && tag[0] !== tag[0].toUpperCase();
 }
 
 function printPath(node: ASTv1.PathExpression | ASTv1.CallNode): string {

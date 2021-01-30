@@ -22,6 +22,8 @@ export class StrictResolution {
   serialize(): SerializedResolution {
     return 'Strict';
   }
+
+  readonly isAngleBracket = false;
 }
 
 export const STRICT_RESOLUTION = new StrictResolution();
@@ -46,11 +48,14 @@ export class LooseModeResolution {
    *
    * @see {NamespacedAmbiguity}
    */
-  static namespaced(namespace: FreeVarNamespace): LooseModeResolution {
-    return new LooseModeResolution({
-      namespaces: [namespace],
-      fallback: false,
-    });
+  static namespaced(namespace: FreeVarNamespace, isAngleBracket = false): LooseModeResolution {
+    return new LooseModeResolution(
+      {
+        namespaces: [namespace],
+        fallback: false,
+      },
+      isAngleBracket
+    );
   }
 
   /**
@@ -136,7 +141,7 @@ export class LooseModeResolution {
     return new LooseModeResolution({ namespaces: [FreeVarNamespace.Helper], fallback: true });
   }
 
-  constructor(readonly ambiguity: Ambiguity) {}
+  constructor(readonly ambiguity: Ambiguity, readonly isAngleBracket = false) {}
 
   resolution(): GetContextualFreeOp {
     if (this.ambiguity.namespaces.length === 0) {
