@@ -109,6 +109,7 @@ export default function deprecateWith(env: EmberASTPluginEnvironment): ASTPlugin
           id: 'ember-glimmer.with-syntax',
           until: '4.0.0',
           for: 'ember-source',
+          url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-glimmer-with-syntax',
           since: {
             enabled: '3.26.0-beta.1',
           },
