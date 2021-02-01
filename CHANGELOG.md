@@ -1,3 +1,13 @@
+## v0.74.2 (2021-02-01)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/interfaces`
+  * [#1260](https://github.com/glimmerjs/glimmer-vm/pull/1260) Omit scope property from precompiled templates in loose mode ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.74.1 (2021-02-01)
 
 #### :rocket: Enhancement
