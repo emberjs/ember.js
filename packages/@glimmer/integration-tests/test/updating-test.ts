@@ -215,6 +215,10 @@ class UpdatingTest extends RenderTest {
         [foo.bar]
       </div>
     `);
+
+    assert.validateDeprecations(
+      /The `` property was used in a template for the `.*` component without using `this`/
+    );
   }
 
   @test
@@ -1096,6 +1100,13 @@ class UpdatingTest extends RenderTest {
       </div>`,
       'After reset'
     );
+
+    assert.validateDeprecations(
+      /The `foo` property path was used in a template for the `.*` component without using `this`/,
+      /The `bar` property path was used in a template for the `.*` component without using `this`/,
+      /The `bar` property path was used in a template for the `.*` component without using `this`/,
+      /The `foo` property path was used in a template for the `.*` component without using `this`/
+    );
   }
 
   @test
@@ -1112,6 +1123,10 @@ class UpdatingTest extends RenderTest {
     this.rerender({ person });
 
     this.assertHTML('<div>GodfreakOuter</div>', 'After updating');
+
+    assert.validateDeprecations(
+      /The `f` property was used in a template for the `.*` component without using `this`/
+    );
   }
 
   @test
