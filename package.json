@@ -152,8 +152,7 @@
             "package.json",
             "benchmark/package.json",
             "lib/local-linker/package.json",
-            "packages/*/*/package.json",
-            "packages/build-utils/*/*/package.json"
+            "packages/*/*/package.json"
           ]
         }
       }
