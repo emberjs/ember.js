@@ -8,6 +8,66 @@ let scheduledDestroyables: Destroyable[] = [];
 let scheduledDestructors: Destructor<any>[] = [];
 let scheduledFinishDestruction: (() => void)[] = [];
 
+let actualDeprecations: string[] = [];
+
+// Override the types on Assert to add our own helper
+declare global {
+  interface Assert {
+    validateDeprecations(...expected: (string | RegExp)[]): void;
+  }
+}
+
+QUnit.assert.validateDeprecations = function (...expectedDeprecations: (string | RegExp)[]) {
+  if (actualDeprecations.length !== expectedDeprecations.length) {
+    this.pushResult({
+      result: false,
+      actual: actualDeprecations.length,
+      expected: expectedDeprecations.length,
+      message: 'Expected number of deprecations matches actual number of deprecations',
+    });
+  }
+
+  for (let i = 0; i < actualDeprecations.length; i++) {
+    let actual = actualDeprecations[i];
+    let expected = expectedDeprecations[i];
+
+    let result = expected instanceof RegExp ? Boolean(actual.match(expected)) : actual === expected;
+
+    this.pushResult({
+      result,
+      actual,
+      expected,
+      message: `Deprecation ${i + 1} matches: "${actual}"`,
+    });
+  }
+
+  actualDeprecations = [];
+};
+
+QUnit.testStart(() => {
+  let test = QUnit.config.current;
+  let finish = test.finish;
+
+  test.finish = function () {
+    if (actualDeprecations.length > 0) {
+      test.expected++;
+
+      test.pushResult({
+        result: false,
+        actual: false,
+        expected: true,
+        message: `Test contained deprecations, but \`assert.validateDeprecations\` was not called. Deprecations were: \n\n - ${actualDeprecations.join(
+          '\n\n - '
+        )}`,
+      });
+
+      actualDeprecations = [];
+    }
+
+    return finish.apply(this, arguments);
+  };
+});
+
 setGlobalContext({
   scheduleRevalidate() {},
 
@@ -85,8 +145,7 @@ setGlobalContext({
 
   deprecate(msg: string, test: unknown) {
     if (!test) {
-      // eslint-disable-next-line no-console
-      console.warn(msg);
+      actualDeprecations.push(msg);
     }
   },
 });

@@ -104,7 +104,7 @@ export function encodeOp(
         } else {
           let then = op[2];
 
-          then(name);
+          then(name, meta.moduleName);
         }
 
         break;
