@@ -1,3 +1,13 @@
+## v0.74.1 (2021-02-01)
+
+#### :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/validator`
+  * [#1259](https://github.com/glimmerjs/glimmer-vm/pull/1259) Adds deprecation for property fallback lookup ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.74.0 (2021-01-30)
 
 #### :boom: Breaking Change
