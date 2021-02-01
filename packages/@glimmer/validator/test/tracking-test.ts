@@ -508,19 +508,6 @@ module('@glimmer/validator: tracking', () => {
 
         let foo = new Foo();
 
-        // eslint-disable-next-line no-console
-        let originalConsoleWarn = console.warn;
-        // eslint-disable-next-line no-console
-        console.warn = (message: string) => {
-          let expected = 'You attempted to update `foo` on `(an instance of';
-          assert.pushResult({
-            result: message.indexOf(expected) > -1,
-            actual: message,
-            expected,
-            message: `incorrect warning message`,
-          });
-        };
-
         runInTrackingTransaction!(() => {
           track(() => {
             deprecateMutationsInTrackingTransaction!(() => {
@@ -530,8 +517,9 @@ module('@glimmer/validator: tracking', () => {
           });
         });
 
-        // eslint-disable-next-line no-console
-        console.warn = originalConsoleWarn;
+        assert.validateDeprecations(
+          /You attempted to update `foo` on `.*`, but it had already been used previously in the same computation/
+        );
       });
     }
   });
@@ -601,13 +589,6 @@ module('@glimmer/validator: tracking', () => {
       test('it can switch to warnings/deprecations', (assert) => {
         let tag = createTag();
 
-        // eslint-disable-next-line no-console
-        let originalConsoleWarn = console.warn;
-        // eslint-disable-next-line no-console
-        console.warn = () => {
-          assert.ok(true);
-        };
-
         runInTrackingTransaction!(() => {
           track(() => {
             deprecateMutationsInTrackingTransaction!(() => {
@@ -617,8 +598,9 @@ module('@glimmer/validator: tracking', () => {
           });
         });
 
-        // eslint-disable-next-line no-console
-        console.warn = originalConsoleWarn;
+        assert.validateDeprecations(
+          /You attempted to update `.*`, but it had already been used previously in the same computation./
+        );
       });
 
       test('it switches back to errors with nested track calls', (assert) => {

@@ -88,7 +88,7 @@ export type ResolveOptionalHelperOp = [
   op1: WireFormat.Expressions.Expression,
   op2: {
     ifHelper: (handle: number) => void;
-    ifFallback: (name: string) => void;
+    ifFallback: (name: string, moduleName: string) => void;
   }
 ];
 
@@ -118,7 +118,7 @@ export type ResolveTemplateLocalOp = [
 export type ResolveLocalOp = [
   op: HighLevelResolutionOpcode.ResolveLocal,
   op1: number,
-  op2: (name: string) => void
+  op2: (name: string, moduleName: string) => void
 ];
 
 export type HighLevelResolutionOp =

@@ -1,3 +1,4 @@
+import { deprecate } from '@glimmer/global-context';
 import {
   CompileTimeComponent,
   ContentType,
@@ -181,7 +182,15 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
 
       ifFallback(_name: string) {
         op(MachineOp.PushFrame);
-        op(HighLevelResolutionOpcode.ResolveLocal, value[1], (name: string) => {
+        op(HighLevelResolutionOpcode.ResolveLocal, value[1], (name: string, moduleName: string) => {
+          deprecate(
+            `The \`${name}\` property was used in a template for the \`${moduleName}\` component without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
+            false,
+            {
+              id: 'this-property-fallback',
+            }
+          );
+
           op(Op.GetVariable, 0);
           op(Op.GetProperty, name);
         });
