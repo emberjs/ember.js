@@ -122,6 +122,10 @@ export function precompile(
     isStrictMode: options.strictMode ?? false,
   };
 
+  if (!options.strictMode) {
+    delete templateJSONObject.scope;
+  }
+
   // JSON is javascript
   let stringified = JSON.stringify(templateJSONObject);
 
