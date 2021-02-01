@@ -138,19 +138,22 @@
       },
       "release-it-yarn-workspaces": {
         "workspaces": [
-          "dist/@glimmer/*"
+          "dist/@glimmer/*",
+          "packages/build-utils/@glimmer/*"
         ],
         "additionalManifests": {
           "dependencyUpdates": [
             "benchmark/package.json",
             "lib/local-linker/package.json",
-            "packages/*/*/package.json"
+            "packages/*/*/package.json",
+            "packages/build-utils/*/*/package.json"
           ],
           "versionUpdates": [
             "package.json",
             "benchmark/package.json",
             "lib/local-linker/package.json",
-            "packages/*/*/package.json"
+            "packages/*/*/package.json",
+            "packages/build-utils/*/*/package.json"
           ]
         }
       }
