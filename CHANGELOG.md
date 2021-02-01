@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.25.0-beta.4 (February 01, 2021)
+
+- [#19363](https://github.com/emberjs/ember.js/pull/19363) [BUGFIX] Update VM, fix component name preprocessing
+
 ### v3.25.0-beta.3 (January 25, 2021)
 
 - [#19351](https://github.com/emberjs/ember.js/pull/19351) [BUGFIX] Ensure locals do not clobber components of the same name
