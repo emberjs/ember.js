@@ -70,7 +70,10 @@ setGlobalContext({
 
       if (!override) throw new Error(`deprecation override for ${id} not found`);
 
-      deprecate(override.message ?? msg, Boolean(test), override);
+      // allow deprecations to be disabled in the VM_DEPRECATION_OVERRIDES array below
+      if (!override.disabled) {
+        deprecate(override.message ?? msg, Boolean(test), override);
+      }
     }
   },
 });
@@ -91,13 +94,26 @@ if (DEBUG) {
 
 // VM Assertion/Deprecation overrides
 
-const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & { message?: string })[] = [
+const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
+  disabled?: boolean;
+  message?: string;
+})[] = [
   {
     id: 'autotracking.mutation-after-consumption',
     until: '4.0.0',
     for: 'ember-source',
     since: {
       enabled: '3.21.0',
+    },
+  },
+  {
+    id: 'this-property-fallback',
+    disabled: true,
+    url: 'https://deprecations.emberjs.com/v3.x#toc_this-property-fallback',
+    until: '4.0.0',
+    for: 'ember-source',
+    since: {
+      enabled: '3.26.0',
     },
   },
 ];
