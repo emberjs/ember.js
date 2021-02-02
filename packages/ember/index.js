@@ -102,6 +102,8 @@ import {
 import {
   Checkbox,
   Component,
+  componentCapabilities,
+  modifierCapabilities,
   setComponentManager,
   escapeExpression,
   getTemplates,
@@ -146,8 +148,6 @@ import {
 } from '@glimmer/runtime';
 
 import {
-  componentCapabilities,
-  modifierCapabilities,
   helperCapabilities,
   setModifierManager,
   setComponentTemplate,
