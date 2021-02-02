@@ -129,7 +129,7 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render(
-        '{{foo-bar classNameBindings="model.someInitiallyTrueProperty model.someInitiallyFalseProperty model.someInitiallyUndefinedProperty :static model.isBig:big model.isOpen:open:closed model.isUp::down model.bar:isTruthy:isFalsy"}}',
+        '{{foo-bar classNameBindings="this.model.someInitiallyTrueProperty this.model.someInitiallyFalseProperty this.model.someInitiallyUndefinedProperty :static this.model.isBig:big this.model.isOpen:open:closed this.model.isUp::down this.model.bar:isTruthy:isFalsy"}}',
         {
           model: {
             someInitiallyTrueProperty: true,
@@ -344,7 +344,7 @@ moduleFor(
 
     ['@test const bindings can be set as attrs']() {
       this.registerComponent('foo-bar', { template: 'hello' });
-      this.render('{{foo-bar classNameBindings="foo:enabled:disabled"}}', {
+      this.render('{{foo-bar classNameBindings="this.foo:enabled:disabled"}}', {
         foo: true,
       });
 
@@ -697,7 +697,7 @@ moduleFor(
     ['@test it should merge classBinding with class']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar classBinding="birdman:respeck" class="myName"}}', {
+      this.render('{{foo-bar classBinding="this.birdman:respeck" class="myName"}}', {
         birdman: true,
       });
 
@@ -719,7 +719,7 @@ moduleFor(
     ['@test it should apply classBinding with only truthy condition']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar classBinding="myName:respeck"}}', {
+      this.render('{{foo-bar classBinding="this.myName:respeck"}}', {
         myName: true,
       });
 
@@ -741,7 +741,7 @@ moduleFor(
     ['@test it should apply classBinding with only falsy condition']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar classBinding="myName::shade"}}', {
+      this.render('{{foo-bar classBinding="this.myName::shade"}}', {
         myName: false,
       });
 
@@ -763,7 +763,7 @@ moduleFor(
     ['@test it should apply nothing when classBinding is falsy but only supplies truthy class']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar classBinding="myName:respeck"}}', {
+      this.render('{{foo-bar classBinding="this.myName:respeck"}}', {
         myName: false,
       });
 
@@ -785,7 +785,7 @@ moduleFor(
     ['@test it should apply nothing when classBinding is truthy but only supplies falsy class']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar classBinding="myName::shade"}}', { myName: true });
+      this.render('{{foo-bar classBinding="this.myName::shade"}}', { myName: true });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -805,7 +805,7 @@ moduleFor(
     ['@test it should apply classBinding with falsy condition']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', {
+      this.render('{{foo-bar classBinding="this.swag:fresh:scrub"}}', {
         swag: false,
       });
 
@@ -827,7 +827,7 @@ moduleFor(
     ['@test it should apply classBinding with truthy condition']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', {
+      this.render('{{foo-bar classBinding="this.swag:fresh:scrub"}}', {
         swag: true,
       });
 

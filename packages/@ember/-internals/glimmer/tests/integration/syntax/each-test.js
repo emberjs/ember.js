@@ -731,6 +731,10 @@ class EachTest extends AbstractEachTest {
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block.']() {
+    expectDeprecation(
+      /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+    );
+
     this.makeList(['Yehuda']);
 
     this.render(`{{name}}-{{#each this.list as |name|}}{{name}}{{/each}}-{{name}}`, {
@@ -948,6 +952,10 @@ class EachTest extends AbstractEachTest {
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block']() {
+    expectDeprecation(
+      /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+    );
+
     let first = this.createList(['Limbo']);
     let fifth = this.createList(['Wrath']);
     let ninth = this.createList(['Treachery']);

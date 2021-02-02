@@ -96,6 +96,10 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#let}} block.']() {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.render(`{{name}}-{{#let this.other as |name|}}{{name}}{{/let}}-{{name}}`, {
         name: 'Stef',
         other: 'Yehuda',
@@ -242,6 +246,10 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#let}} block']() {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.render(
         `{{ring}}-{{#let this.first as |ring|}}{{ring}}-{{#let this.fifth as |ring|}}{{ring}}-{{#let this.ninth as |ring|}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}`,
         {
@@ -323,6 +331,10 @@ moduleFor(
     }
 
     ['@test nested {{#let}} blocks should have access to root context']() {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.render(
         strip`
         {{name}}
