@@ -1928,6 +1928,10 @@ moduleFor(
     }
 
     ['@test hasBlock is true when block supplied']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('with-block', {
         template: strip`
         {{#if hasBlock}}
@@ -1950,6 +1954,10 @@ moduleFor(
     }
 
     ['@test hasBlock is false when no block supplied']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('with-block', {
         template: strip`
         {{#if hasBlock}}
@@ -1969,6 +1977,10 @@ moduleFor(
     }
 
     ['@test hasBlockParams is true when block param supplied']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('with-block', {
         template: strip`
         {{#if hasBlockParams}}
@@ -1991,6 +2003,10 @@ moduleFor(
     }
 
     ['@test hasBlockParams is false when no block param supplied']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('with-block', {
         template: strip`
         {{#if hasBlockParams}}
@@ -2118,6 +2134,10 @@ moduleFor(
     }
 
     ['@test expression hasBlock inverse']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-inverse.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('check-inverse', {
         template: strip`
         {{#if (hasBlock "inverse")}}
@@ -2138,6 +2158,10 @@ moduleFor(
     }
 
     ['@test expression hasBlock default']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('check-block', {
         template: strip`
         {{#if (hasBlock)}}
@@ -2158,6 +2182,10 @@ moduleFor(
     }
 
     ['@test expression hasBlockParams inverse']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-inverse.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('check-inverse', {
         template: strip`
         {{#if (hasBlockParams "inverse")}}
@@ -2178,6 +2206,10 @@ moduleFor(
     }
 
     ['@test expression hasBlockParams default']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('check-block', {
         template: strip`
         {{#if (hasBlockParams)}}
@@ -2198,6 +2230,10 @@ moduleFor(
     }
 
     ['@test non-expression hasBlock']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('check-block', {
         template: strip`
         {{#if hasBlock}}
@@ -2218,6 +2254,10 @@ moduleFor(
     }
 
     ['@test expression hasBlockParams']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-params.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('check-params', {
         template: strip`
         {{#if (hasBlockParams)}}
@@ -2238,6 +2278,10 @@ moduleFor(
     }
 
     ['@test non-expression hasBlockParams']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-params.hbs' @ L1:C6) `
+      );
+
       this.registerComponent('check-params', {
         template: strip`
         {{#if hasBlockParams}}
@@ -2258,6 +2302,10 @@ moduleFor(
     }
 
     ['@test hasBlock expression in an attribute'](assert) {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
+      );
+
       this.registerComponent('check-attr', {
         template: '<button name={{hasBlock}}></button>',
       });
@@ -2273,6 +2321,10 @@ moduleFor(
     }
 
     ['@test hasBlock inverse expression in an attribute'](assert) {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
+      );
+
       this.registerComponent(
         'check-attr',
         {
@@ -2292,6 +2344,10 @@ moduleFor(
     }
 
     ['@test hasBlockParams expression in an attribute'](assert) {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
+      );
+
       this.registerComponent('check-attr', {
         template: '<button name={{hasBlockParams}}></button>',
       });
@@ -2307,6 +2363,10 @@ moduleFor(
     }
 
     ['@test hasBlockParams inverse expression in an attribute'](assert) {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
+      );
+
       this.registerComponent(
         'check-attr',
         {
@@ -2326,6 +2386,10 @@ moduleFor(
     }
 
     ['@test hasBlock as a param to a helper']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('check-helper', {
         template: '{{if hasBlock "true" "false"}}',
       });
@@ -2341,6 +2405,10 @@ moduleFor(
     }
 
     ['@test hasBlock as an expression param to a helper']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('check-helper', {
         template: '{{if (hasBlock) "true" "false"}}',
       });
@@ -2356,6 +2424,10 @@ moduleFor(
     }
 
     ['@test hasBlock inverse as a param to a helper']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('check-helper', {
         template: '{{if (hasBlock "inverse") "true" "false"}}',
       });
@@ -2371,6 +2443,10 @@ moduleFor(
     }
 
     ['@test hasBlockParams as a param to a helper']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('check-helper', {
         template: '{{if hasBlockParams "true" "false"}}',
       });
@@ -2386,6 +2462,10 @@ moduleFor(
     }
 
     ['@test hasBlockParams as an expression param to a helper']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('check-helper', {
         template: '{{if (hasBlockParams) "true" "false"}}',
       });
@@ -2401,6 +2481,10 @@ moduleFor(
     }
 
     ['@test hasBlockParams inverse as a param to a helper']() {
+      expectDeprecation(
+        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('check-helper', {
         template: '{{if (hasBlockParams "inverse") "true" "false"}}',
       });

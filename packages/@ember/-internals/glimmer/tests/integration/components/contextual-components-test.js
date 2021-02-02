@@ -1359,6 +1359,9 @@ moduleFor(
     }
 
     ['@test GH#18732 hasBlock works within a yielded curried component invoked within mustaches']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
+      );
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
         template: '<div>{{hasBlock}}</div>',
@@ -1381,6 +1384,10 @@ moduleFor(
     }
 
     ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (falsy)']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
         template: '<div>{{hasBlock}}</div>',
@@ -1403,6 +1410,10 @@ moduleFor(
     }
 
     ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (truthy)']() {
+      expectDeprecation(
+        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
+      );
+
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
         template: '<div>{{hasBlock}}</div>',
