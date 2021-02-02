@@ -234,6 +234,7 @@ export default EmberObject.extend({
     @private
     @property flushWatchers
     @since 3.26.0
+
    */
 
   /**

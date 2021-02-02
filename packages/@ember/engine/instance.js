@@ -182,7 +182,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     let singletons = [
       'router:main',
-      '-bucket-cache:main',
+      P`-bucket-cache:main`,
       '-view-registry:main',
       `renderer:-dom`,
       'service:-document',

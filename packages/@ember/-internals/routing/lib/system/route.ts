@@ -1,3 +1,4 @@
+import { privatize as P } from '@ember/-internals/container';
 import {
   addObserver,
   computed,
@@ -106,13 +107,12 @@ class Route extends EmberObject implements IRoute {
   _names: unknown;
   _router: EmberRouter | undefined;
 
-  constructor() {
+  constructor(owner: Owner) {
     super(...arguments);
 
-    let owner = getOwner(this);
     if (owner) {
       this._router = owner.lookup('router:main');
-      this._bucketCache = owner.lookup('-bucket-cache:main');
+      this._bucketCache = owner.lookup(P`-bucket-cache:main`);
       this._topLevelViewTemplate = owner.lookup('template:-outlet');
       this._environment = owner.lookup('-environment:main');
     }

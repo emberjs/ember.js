@@ -15,17 +15,13 @@ const DataAdapter = EmberDataAdapter.extend({
   },
   init() {
     this._super(...arguments);
-    Object.defineProperty(this, 'containerDebugAdapter', {
-      get() {
-        return {
-          canCatalogEntriesByType() {
-            return true;
-          },
-          catalogEntriesByType() {
-            return emberA(['post']);
-          },
-        }
-      }
+    this.set('containerDebugAdapter', {
+      canCatalogEntriesByType() {
+        return true;
+      },
+      catalogEntriesByType() {
+        return emberA(['post']);
+      },
     });
   },
 });

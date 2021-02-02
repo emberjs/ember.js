@@ -17,7 +17,7 @@ ControllerMixin.reopen({
       this.namespace = owner.lookup('application:main');
       this.target = owner.lookup('router:main');
     }
-  }
+  },
 
   /**
     Defines which query parameters the controller accepts.

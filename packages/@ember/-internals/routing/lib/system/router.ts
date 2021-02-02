@@ -1,3 +1,4 @@
+import { privatize as P } from '@ember/-internals/container';
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
 import { BucketCache } from '@ember/-internals/routing';
@@ -147,14 +148,13 @@ class EmberRouter extends EmberObject {
 
   _slowTransitionTimer: unknown;
 
-  constructor() {
+  constructor(owner: Owner) {
     super(...arguments);
 
     this._resetQueuedQueryParameterChanges();
-    let owner = getOwner(this);
     if (owner) {
       this.namespace = owner.lookup('application:main');
-      this._bucketCache = owner.lookup('-bucket-cache:main');
+      this._bucketCache = owner.lookup(P`-bucket-cache:main`);
     }
   }
 

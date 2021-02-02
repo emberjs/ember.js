@@ -1172,7 +1172,7 @@ function commonSetupRegistry(registry) {
   registry.register('location:history', HistoryLocation);
   registry.register('location:none', NoneLocation);
 
-  registry.register(`-bucket-cache:main`, {
+  registry.register(P`-bucket-cache:main`, {
     create() {
       return new BucketCache();
     },

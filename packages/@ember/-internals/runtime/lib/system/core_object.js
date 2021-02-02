@@ -90,8 +90,9 @@ function initialize(obj, properties) {
     let keyNames = Object.keys(properties);
 
     for (let i = 0; i < keyNames.length; i++) {
-      var keyName = keyNames[i];
-      var value = properties[keyName];
+      // Hot path so 'var' to avoid closure, which may cause perf issues
+      let keyName = keyNames[i];
+      let value = properties[keyName];
 
       assert(
         'EmberObject.create no longer supports defining computed ' +
@@ -161,9 +162,8 @@ function initialize(obj, properties) {
             // TODO add setter
             Object.defineProperty(obj, keyName, {
               configurable: true,
-              enumerable: false,
               get() {
-                // only want to deprecate on first access
+                // only want to deprecate on first access so we make this self destructing
                 Object.defineProperty(obj, keyName, { value });
 
                 implicitInjectionDeprecation(keyName, `Implicit injection for property '${keyName}' is now deprecated. Please add an explicit injection for '${keyName}' to ${inspect(obj)}`);
