@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.25.0-beta.5 (February 02, 2021)
+
+- [#19370](https://github.com/emberjs/ember.js/pull/19370) [BUGFIX] Update glimmer-vm to prevent errors for older inline precompilation
+
 ### v3.25.0-beta.4 (February 01, 2021)
 
 - [#19363](https://github.com/emberjs/ember.js/pull/19363) [BUGFIX] Update VM, fix component name preprocessing
