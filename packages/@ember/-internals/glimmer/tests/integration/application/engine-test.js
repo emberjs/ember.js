@@ -272,6 +272,9 @@ moduleFor(
       expectDeprecation(
         `The use of \`{{partial}}\` is deprecated, please refactor the "troll" partial to a component`
       );
+      expectDeprecation(
+        'Using {{attrs}} to reference named arguments has been deprecated. {{attrs.wat}} should be updated to {{@wat}}. (L1:C2) '
+      );
 
       this.setupEngineWithAttrs([]);
 

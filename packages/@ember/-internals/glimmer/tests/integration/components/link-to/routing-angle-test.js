@@ -320,43 +320,6 @@ moduleFor(
       });
     }
 
-    // See https://github.com/emberjs/ember.js/issues/17771
-    [`@skip The <LinkTo /> component supports 'classNameBindings' with custom values [GH #11699]`](
-      assert
-    ) {
-      this.addTemplate(
-        'index',
-        `
-        <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about' @classNameBindings='foo:foo-is-true:foo-is-false'>About</LinkTo>
-        `
-      );
-
-      this.add(
-        'controller:index',
-        Controller.extend({
-          foo: false,
-        })
-      );
-
-      return this.visit('/').then(() => {
-        assert.equal(
-          this.$('#about-link.foo-is-false').length,
-          1,
-          'The about-link was rendered with the falsy class'
-        );
-
-        let controller = this.applicationInstance.lookup('controller:index');
-        runTask(() => controller.set('foo', true));
-
-        assert.equal(
-          this.$('#about-link.foo-is-true').length,
-          1,
-          'The about-link was rendered with the truthy class after toggling the property'
-        );
-      });
-    }
-
     async ['@test Using <LinkTo> inside a non-routable engine errors'](assert) {
       this.add(
         'engine:not-routable',

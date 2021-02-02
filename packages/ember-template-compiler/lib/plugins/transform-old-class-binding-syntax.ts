@@ -1,25 +1,32 @@
+import { deprecate } from '@ember/debug';
 import { AST, ASTPlugin } from '@glimmer/syntax';
+import calculateLocationDisplay from '../system/calculate-location-display';
 import { Builders, EmberASTPluginEnvironment } from '../types';
 
 export default function transformOldClassBindingSyntax(env: EmberASTPluginEnvironment): ASTPlugin {
   let b = env.syntax.builders;
+  let { moduleName } = env.meta;
 
   return {
     name: 'transform-old-class-binding-syntax',
 
     visitor: {
       MustacheStatement(node: AST.MustacheStatement) {
-        process(b, node);
+        process(b, node, moduleName);
       },
 
       BlockStatement(node: AST.BlockStatement) {
-        process(b, node);
+        process(b, node, moduleName);
       },
     },
   };
 }
 
-function process(b: Builders, node: AST.BlockStatement | AST.MustacheStatement) {
+function process(
+  b: Builders,
+  node: AST.BlockStatement | AST.MustacheStatement,
+  moduleName: string
+) {
   let allOfTheMicrosyntaxes: AST.HashPair[] = [];
   let allOfTheMicrosyntaxIndexes: number[] = [];
   let classPair: AST.HashPair | undefined;
@@ -28,6 +35,24 @@ function process(b: Builders, node: AST.BlockStatement | AST.MustacheStatement) 
     let { key } = pair;
 
     if (key === 'classBinding' || key === 'classNameBindings') {
+      deprecate(
+        `Passing the \`${key}\` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ${calculateLocationDisplay(
+          moduleName,
+          node.loc
+        )}`,
+        false,
+        {
+          id: 'class-binding-and-class-name-bindings-in-templates',
+          url:
+            'https://deprecations.emberjs.com/v3.x/#toc_class-binding-and-class-name-bindings-in-templates',
+          until: '4.0.0',
+          for: 'ember-source',
+          since: {
+            enabled: '3.26.0',
+          },
+        }
+      );
+
       allOfTheMicrosyntaxIndexes.push(index);
       allOfTheMicrosyntaxes.push(pair);
     } else if (key === 'class') {
