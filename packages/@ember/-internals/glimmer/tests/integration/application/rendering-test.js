@@ -106,6 +106,10 @@ moduleFor(
     }
 
     ['@test it can access the model provided by the route via implicit this fallback']() {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.add(
         'route:application',
         Route.extend({
@@ -138,6 +142,10 @@ moduleFor(
     }
 
     async ['@test interior mutations on the model with set'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -195,6 +203,10 @@ moduleFor(
     }
 
     async ['@test interior mutations on the model with tracked properties'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       class Model {
         @tracked color;
 
@@ -259,6 +271,10 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with set'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -316,6 +332,10 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with tracked properties'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });

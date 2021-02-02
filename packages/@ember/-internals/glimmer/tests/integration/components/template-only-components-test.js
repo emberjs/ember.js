@@ -174,7 +174,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       ['@test it can render named arguments']() {
         this.registerTemplateOnlyComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
-        this.render('{{foo-bar foo=foo bar=bar}}', {
+        this.render('{{foo-bar foo=this.foo bar=this.bar}}', {
           foo: 'foo',
           bar: 'bar',
         });
@@ -197,9 +197,13 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       }
 
       ['@test it renders named arguments as reflected properties']() {
+        expectDeprecation(
+          /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+        );
+
         this.registerTemplateOnlyComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
 
-        this.render('{{foo-bar foo=foo bar=bar}}', {
+        this.render('{{foo-bar foo=this.foo bar=this.bar}}', {
           foo: 'foo',
           bar: 'bar',
         });
@@ -224,7 +228,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       ['@test it has curly component features']() {
         this.registerTemplateOnlyComponent('foo-bar', 'hello');
 
-        this.render('{{foo-bar tagName="p" class=class}}', {
+        this.render('{{foo-bar tagName="p" class=this.class}}', {
           class: 'foo bar',
         });
 

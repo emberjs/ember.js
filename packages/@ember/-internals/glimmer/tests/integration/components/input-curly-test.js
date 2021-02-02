@@ -776,7 +776,7 @@ moduleFor(
         'Did you mean `<Input @type="checkbox" @checked={{...}} />`?';
 
       expectWarning(() => {
-        this.render(`{{input type="checkbox" value=value}}`, {
+        this.render(`{{input type="checkbox" value=this.value}}`, {
           value: true,
         });
       }, message);

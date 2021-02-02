@@ -329,7 +329,7 @@ moduleFor(
         'index',
         `
         <h3 class="home">Home</h3>
-        {{#link-to 'about' id='about-link' classNameBindings='foo:foo-is-true:foo-is-false'}}About{{/link-to}}
+        {{#link-to 'about' id='about-link' classNameBindings='this.foo:foo-is-true:foo-is-false'}}About{{/link-to}}
         `
       );
 

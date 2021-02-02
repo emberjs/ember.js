@@ -1501,7 +1501,7 @@ applyMixins(
       title: 'hash value',
       setup() {
         this.registerComponent('my-comp', {
-          template: '{{component component}}',
+          template: '{{component this.component}}',
         });
 
         this.render('{{my-comp component=(component "change-button" val=this.model.val2)}}');
