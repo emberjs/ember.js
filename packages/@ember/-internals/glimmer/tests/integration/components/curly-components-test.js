@@ -1303,6 +1303,10 @@ moduleFor(
     }
 
     ['@test non-block with properties on attrs']() {
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/non-block.hbs' @ L1:C24) "
+      );
+
       this.registerComponent('non-block', {
         template: 'In layout - someProp: {{attrs.someProp}}',
       });
@@ -1512,6 +1516,22 @@ moduleFor(
     }
 
     ['@test this.attrs.foo === attrs.foo === @foo === foo']() {
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.value}} should be updated to {{@value}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C8) "
+      );
+
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.value}} should be updated to {{@value}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C31) "
+      );
+
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.items}} should be updated to {{@items}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C82) "
+      );
+
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.items}} should be updated to {{@items}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C135) "
+      );
+
       this.registerComponent('foo-bar', {
         template: strip`
         Args: {{this.attrs.value}} | {{attrs.value}} | {{@value}} | {{this.value}}
@@ -1606,6 +1626,10 @@ moduleFor(
     }
 
     ['@test block with properties on attrs']() {
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) "
+      );
+
       this.registerComponent('with-block', {
         template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
       });
@@ -3605,6 +3629,13 @@ moduleFor(
     }
 
     ['@test using attrs for positional params']() {
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.myVar}} should be updated to {{@myVar}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C10) "
+      );
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.myVar2}} should be updated to {{@myVar2}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C65) "
+      );
+
       let MyComponent = Component.extend();
 
       this.registerComponent('foo-bar', {

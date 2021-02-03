@@ -478,13 +478,13 @@ moduleFor(
 
     ['@test nested component helpers']() {
       this.registerComponent('foo-bar', {
-        template: 'yippie! {{attrs.location}} {{yield}}',
+        template: 'yippie! {{@location}} {{yield}}',
       });
       this.registerComponent('baz-qux', {
-        template: 'yummy {{attrs.location}} {{yield}}',
+        template: 'yummy {{@location}} {{yield}}',
       });
       this.registerComponent('corge-grault', {
-        template: 'delicious {{attrs.location}} {{yield}}',
+        template: 'delicious {{@location}} {{yield}}',
       });
 
       this.render(

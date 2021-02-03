@@ -251,6 +251,10 @@ moduleFor(
     }
 
     ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
+      expectDeprecation(
+        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.external-action}} should be updated to {{@external-action}}. ('my-app/templates/components/inner-component.hbs' @ L1:C43) "
+      );
+
       this.registerComponent('inner-component', {
         template:
           '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>',

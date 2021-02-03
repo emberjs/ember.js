@@ -325,6 +325,10 @@ moduleFor(
     [`@test The {{link-to}} component supports 'classNameBindings' with custom values [GH #11699]`](
       assert
     ) {
+      expectDeprecation(
+        "Passing the `classNameBindings` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('my-app/templates/index.hbs' @ L3:C8) "
+      );
+
       this.addTemplate(
         'index',
         `

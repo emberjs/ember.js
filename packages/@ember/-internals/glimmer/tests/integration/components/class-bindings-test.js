@@ -126,6 +126,10 @@ moduleFor(
     }
 
     ['@test it can have class name bindings in the template']() {
+      expectDeprecation(
+        "Passing the `classNameBindings` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render(
@@ -343,6 +347,10 @@ moduleFor(
     }
 
     ['@test const bindings can be set as attrs']() {
+      expectDeprecation(
+        "Passing the `classNameBindings` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
       this.render('{{foo-bar classNameBindings="this.foo:enabled:disabled"}}', {
         foo: true,
@@ -675,6 +683,10 @@ moduleFor(
   'ClassBinding integration',
   class extends RenderingTestCase {
     ['@test it should apply classBinding without condition always']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding=":foo"}}');
@@ -695,6 +707,10 @@ moduleFor(
     }
 
     ['@test it should merge classBinding with class']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="this.birdman:respeck" class="myName"}}', {
@@ -717,6 +733,10 @@ moduleFor(
     }
 
     ['@test it should apply classBinding with only truthy condition']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="this.myName:respeck"}}', {
@@ -739,6 +759,10 @@ moduleFor(
     }
 
     ['@test it should apply classBinding with only falsy condition']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="this.myName::shade"}}', {
@@ -761,6 +785,10 @@ moduleFor(
     }
 
     ['@test it should apply nothing when classBinding is falsy but only supplies truthy class']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="this.myName:respeck"}}', {
@@ -783,6 +811,10 @@ moduleFor(
     }
 
     ['@test it should apply nothing when classBinding is truthy but only supplies falsy class']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="this.myName::shade"}}', { myName: true });
@@ -803,6 +835,10 @@ moduleFor(
     }
 
     ['@test it should apply classBinding with falsy condition']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="this.swag:fresh:scrub"}}', {
@@ -825,6 +861,10 @@ moduleFor(
     }
 
     ['@test it should apply classBinding with truthy condition']() {
+      expectDeprecation(
+        "Passing the `classBinding` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('-top-level' @ L1:C0) "
+      );
+
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render('{{foo-bar classBinding="this.swag:fresh:scrub"}}', {
