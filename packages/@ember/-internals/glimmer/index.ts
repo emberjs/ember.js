@@ -390,5 +390,9 @@ export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/
 export { INVOKE } from './lib/helpers/action';
 export { default as OutletView } from './lib/views/outlet';
 export { OutletState } from './lib/utils/outlet';
-export { setComponentManager } from './lib/utils/managers';
+export {
+  componentCapabilities,
+  modifierCapabilities,
+  setComponentManager,
+} from './lib/utils/managers';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';

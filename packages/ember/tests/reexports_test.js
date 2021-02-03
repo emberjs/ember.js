@@ -291,7 +291,9 @@ let allExports = [
   ['HTMLBars.template', '@ember/-internals/glimmer', 'template'],
   ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
   ['_setComponentManager', '@ember/-internals/glimmer', 'setComponentManager'],
-  ['_componentManagerCapabilities', '@glimmer/manager', 'componentCapabilities'],
+  ['_componentManagerCapabilities', '@ember/-internals/glimmer', 'componentCapabilities'],
+  ['_setModifierManager', '@glimmer/manager', 'setModifierManager'],
+  ['_modifierManagerCapabilities', '@ember/-internals/glimmer', 'modifierCapabilities'],
   ['_setComponentTemplate', '@glimmer/manager', 'setComponentTemplate'],
   ['_getComponentTemplate', '@glimmer/manager', 'getComponentTemplate'],
   EMBER_GLIMMER_HELPER_MANAGER
