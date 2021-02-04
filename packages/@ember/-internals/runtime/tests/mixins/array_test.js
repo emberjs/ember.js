@@ -196,6 +196,8 @@ moduleFor(
   'notify array observers',
   class extends AbstractTestCase {
     beforeEach(assert) {
+      expectDeprecation(/Array observers have been deprecated/);
+
       obj = DummyArray.create();
 
       observer = EmberObject.extend({
