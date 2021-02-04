@@ -42,7 +42,7 @@ moduleFor(
       this.addTemplate('application', `{{link-to 'Home' 'home' }} <div> {{outlet}} </div>`);
       this.addTemplate(
         'home',
-        `{{link-to 'Dashboard' 'dashboard' }}{{input type="checkbox" id='filters-checkbox' checked=(mut this.filters.shared) }}`
+        `{{link-to 'Dashboard' 'dashboard' }}<Input @type="checkbox" id='filters-checkbox' checked={{mut this.filters.shared}} />`
       );
       this.addTemplate('dashboard', `{{link-to 'Home' 'home' }}`);
     }

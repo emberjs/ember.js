@@ -469,7 +469,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
             `Passing the \`@${argument}\` argument to <Input> is deprecated. ` +
               `Instead, please pass the attribute directly, i.e. \`<Input ${attribute}={{...}} />\` ` +
               `instead of \`<Input @${argument}={{...}} />\` or \`{{input ${argument}=...}}\`.`,
-            true /* TODO !(argument in this.args) */,
+            !(argument in this.args),
             {
               id: 'ember.built-in-components.legacy-attribute-arguments',
               for: 'ember-source',
