@@ -50,8 +50,10 @@ moduleFor(
       let obj = owner.lookup('foo:main');
       let result;
       expectDeprecation(
-        () => result = obj.foo,
-        `Implicit injection for property 'foo' is now deprecated. Please add an explicit injection for 'foo' to ${inspect(obj)}`
+        () => (result = obj.foo),
+        `A value was injected implicitly on the 'foo' property of an instance of ${inspect(
+          obj
+        )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
       );
 
       assert.equal(result.bar, 'foo');
@@ -64,7 +66,7 @@ moduleFor(
       class FooService extends Service {
         bar = 'foo';
       }
-      const FooObject = EmberObject.extend();
+      let FooObject = EmberObject.extend();
       owner.register('service:foo', FooService);
       owner.register('foo:main', FooObject);
       owner.inject('foo:main', 'foo', 'service:foo');
@@ -72,15 +74,19 @@ moduleFor(
       let obj = owner.lookup('foo:main');
       let result;
       expectDeprecation(
-        () => result = obj.foo,
-        `Implicit injection for property 'foo' is now deprecated. Please add an explicit injection for 'foo' to ${inspect(obj)}`
+        () => (result = obj.foo),
+        `A value was injected implicitly on the 'foo' property of an instance of ${inspect(
+          obj
+        )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
       );
 
       assert.equal(result.bar, 'foo');
       assert.equal(obj.foo.bar, 'foo');
     }
 
-    ['@test implicit injections does not raise a deprecation if explicit injection present'](assert) {
+    ['@test implicit injections does not raise a deprecation if explicit injection present'](
+      assert
+    ) {
       expectNoDeprecation();
 
       let owner = buildOwner();
@@ -99,7 +105,9 @@ moduleFor(
       assert.equal(obj.foo.bar, 'foo');
     }
 
-    ['@test raises deprecation if explicit injection is not the same as the implicit injection'](assert) {
+    ['@test raises deprecation if explicit injection is not the same as the implicit injection'](
+      assert
+    ) {
       let owner = buildOwner();
 
       class FooService extends Service {
@@ -118,13 +126,15 @@ moduleFor(
 
       let result;
       expectDeprecation(
-        () => result = owner.lookup('foo:main'),
-        `You have explicitly defined 'foo' for FooObject that does not match the implicit injection for 'foo'.  Please ensure you are explicitly defining 'foo' on FooObject.`
+        () => (result = owner.lookup('foo:main')),
+        /You have explicitly defined a service injection for the 'foo' property on <.*>. However, a different service or value was injected via implicit injections which overrode your explicit injection. Implicit injections have been deprecated, and will be removed in the near future. In order to prevent breakage, you should inject the same value explicitly that is currently being injected implicitly./
       );
       assert.equal(result.foo.bar, 'bar');
     }
 
-    ['@test does not raise deprecation if descriptor is a value and equal to the implicit deprecation'](assert) {
+    ['@test does not raise deprecation if descriptor is a value and equal to the implicit deprecation'](
+      assert
+    ) {
       expectNoDeprecation();
 
       let owner = buildOwner();
@@ -147,7 +157,9 @@ moduleFor(
       assert.equal(result.foo.bar, 'foo');
     }
 
-    ['@test does raise deprecation if descriptor is a value and not equal to the implicit deprecation'](assert) {
+    ['@test does raise deprecation if descriptor is a value and not equal to the implicit deprecation'](
+      assert
+    ) {
       let owner = buildOwner();
 
       class FooService extends Service {
@@ -164,15 +176,15 @@ moduleFor(
       owner.register('foo:main', FooObject);
       owner.inject('foo:main', 'foo', 'service:bar');
 
-      let result;
-      expectDeprecation(
-        () => result = owner.lookup('foo:main'),
-        `You have defined 'foo' for FooObject as a value which does not match the implicit injection for 'foo'.  Please migrate to '@service foo'.`
-      );
-      assert.equal(result.foo.bar, 'foo');
+      expectDeprecation(() => {
+        let result = owner.lookup('foo:main');
+        assert.equal(result.foo.bar, 'bar');
+      }, /A value was injected implicitly on the 'foo' property of an instance of <.*>, overwriting the original value which was <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/);
     }
 
-    ['@test does not raise deprecation if descriptor is a getter and equal to the implicit deprecation'](assert) {
+    ['@test does not raise deprecation if descriptor is a getter and equal to the implicit deprecation'](
+      assert
+    ) {
       expectNoDeprecation();
 
       let owner = buildOwner();
@@ -187,6 +199,8 @@ moduleFor(
         get foo() {
           return getOwner(this).lookup('service:foo');
         }
+
+        set foo(_) {}
       }
       owner.register('service:foo', FooService);
       owner.register('service:bar', BarService);
@@ -197,7 +211,9 @@ moduleFor(
       assert.equal(result.foo.bar, 'foo');
     }
 
-    ['@test does raise deprecation if descriptor is a getter and not equal to the implicit deprecation'](assert) {
+    ['@test does not raise deprecation if descriptor is a getter and not equal to the implicit deprecation'](
+      assert
+    ) {
       let owner = buildOwner();
 
       class FooService extends Service {
@@ -210,17 +226,15 @@ moduleFor(
         get foo() {
           return getOwner(this).lookup('service:foo');
         }
+
+        set foo(_) {}
       }
       owner.register('service:foo', FooService);
       owner.register('service:bar', BarService);
       owner.register('foo:main', FooObject);
       owner.inject('foo:main', 'foo', 'service:bar');
 
-      let result;
-      expectDeprecation(
-        () => result = owner.lookup('foo:main'),
-        `You have defined 'foo' for FooObject as a getter which does not match the implicit injection for 'foo'.  Please migrate to '@service foo'.`
-      );
+      let result = owner.lookup('foo:main');
       assert.equal(result.foo.bar, 'foo');
     }
 

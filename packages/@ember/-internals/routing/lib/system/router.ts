@@ -1,8 +1,8 @@
 import { privatize as P } from '@ember/-internals/container';
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
-import { BucketCache } from '@ember/-internals/routing';
 import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
+import { BucketCache } from '@ember/-internals/routing';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
@@ -1053,7 +1053,7 @@ class EmberRouter extends EmberObject {
     state: TransitionState<Route>,
     queryParams: {},
     _fromRouterService: boolean
-  ) {
+  ): void {
     let routeInfos = state.routeInfos;
     let appCache = this._bucketCache;
     let qpMeta;
@@ -1100,6 +1100,9 @@ class EmberRouter extends EmberObject {
           }
         } else {
           let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, state.params);
+
+          assert('expected appCache to be defined', appCache);
+
           queryParams[qp.scopedPropertyName] = appCache.lookup(cacheKey, qp.prop, qp.defaultValue);
         }
       }
@@ -1404,7 +1407,7 @@ export function triggerEvent(
   ignoreFailure: boolean,
   name: string,
   args: any[]
-) {
+): void {
   if (!routeInfos) {
     if (ignoreFailure) {
       return;
@@ -1427,7 +1430,9 @@ export function triggerEvent(
       } else {
         // Should only hit here if a non-bubbling error action is triggered on a route.
         if (name === 'error') {
-          handler!._router._markErrorAsHandled(args[0] as Error);
+          assert('expected handler and handler router to exist', handler && handler._router);
+
+          handler._router._markErrorAsHandled(args[0] as Error);
         }
         return;
       }

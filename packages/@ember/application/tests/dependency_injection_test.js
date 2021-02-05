@@ -73,6 +73,10 @@ moduleFor(
     }
 
     ['@test injections'](assert) {
+      expectDeprecation(
+        /A value was injected implicitly on the 'fruit' property of an instance of <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/
+      );
+
       application.inject('model', 'fruit', 'fruit:favorite');
       application.inject('model:user', 'communication', 'communication:main');
 

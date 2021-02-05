@@ -133,8 +133,11 @@ moduleFor(
       this.registerComponent('component-two', { ComponentClass: Two });
 
       // inject layout onto component, share layout with component-one
-      this.registerComponent('root-component', { ComponentClass: Component });
-      this.owner.inject('component:root-component', 'layout', 'template:components/component-one');
+      let Root = Component.extend({
+        layout: this.owner.lookup('template:components/component-one'),
+      });
+
+      this.registerComponent('root-component', { ComponentClass: Root });
 
       // template instance shared between to template managers
       let rootFactory = this.owner.factoryFor('component:root-component');

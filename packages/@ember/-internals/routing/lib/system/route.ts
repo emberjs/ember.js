@@ -102,17 +102,22 @@ class Route extends EmberObject implements IRoute {
   controller!: Controller;
   currentModel: unknown;
 
-  _bucketCache: BucketCache | undefined;
+  _bucketCache!: BucketCache;
   _internalName!: string;
   _names: unknown;
-  _router: EmberRouter | undefined;
+  _router!: EmberRouter;
 
   constructor(owner: Owner) {
     super(...arguments);
 
     if (owner) {
-      this._router = owner.lookup('router:main');
-      this._bucketCache = owner.lookup(P`-bucket-cache:main`);
+      let router = owner.lookup<EmberRouter>('router:main');
+      let bucketCache = owner.lookup<BucketCache>(P`-bucket-cache:main`);
+
+      assert('Expected route injections to be defined', router && bucketCache);
+
+      this._router = router;
+      this._bucketCache = bucketCache;
       this._topLevelViewTemplate = owner.lookup('template:-outlet');
       this._environment = owner.lookup('-environment:main');
     }
