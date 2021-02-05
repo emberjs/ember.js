@@ -9,6 +9,8 @@ import {
   guidFor,
   getName,
   setName,
+  lookupDescriptor,
+  inspect,
   makeArray,
   HAS_NATIVE_PROXY,
   HAS_NATIVE_SYMBOL,
@@ -28,7 +30,7 @@ import {
   DEBUG_INJECTION_FUNCTIONS,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
@@ -64,6 +66,21 @@ function initialize(obj, properties) {
       !(properties instanceof Mixin)
     );
 
+    let injectedProperties;
+    if (DEBUG) {
+      // these are all the implicit injectinos
+      injectedProperties = [];
+
+      let factory = getFactoryFor(obj);
+      if (factory) {
+        for (let injection in factory.injections) {
+          if (factory.injections[injection] === properties[injection]) {
+            injectedProperties.push(injection);
+          }
+        }
+      }
+    }
+
     let concatenatedProperties = obj.concatenatedProperties;
     let mergedProperties = obj.mergedProperties;
     let hasConcatenatedProps =
@@ -73,8 +90,8 @@ function initialize(obj, properties) {
     let keyNames = Object.keys(properties);
 
     for (let i = 0; i < keyNames.length; i++) {
-      let keyName = keyNames[i];
-      let value = properties[keyName];
+      var keyName = keyNames[i];
+      var value = properties[keyName];
 
       assert(
         'EmberObject.create no longer supports defining computed ' +
@@ -112,12 +129,48 @@ function initialize(obj, properties) {
       }
 
       if (isDescriptor) {
+        if (DEBUG) {
+          // need to check if implicit injection owner.inject('component:my-component', 'foo', 'service:bar') does not match explicit injection @service foo
+          // implicit injection takes precedence so need to tell user to rename property on obj
+          let isInjectedProperty = DEBUG_INJECTION_FUNCTIONS.has(possibleDesc._getter);
+          if (isInjectedProperty && value !== possibleDesc.get(obj, keyName)) {
+            implicitInjectionDeprecation(keyName, `You have explicitly defined '${keyName}' for ${inspect(obj)} that does not match the implicit injection for '${keyName}'.  Please ensure you are explicitly defining '${keyName}' on ${inspect(obj)}.`);
+          }
+        }
+
         possibleDesc.set(obj, keyName, value);
       } else if (typeof obj.setUnknownProperty === 'function' && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
         if (DEBUG) {
-          defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+          // If deprecation, either 1) an accessor descriptor or 2) class field declaration 3) only an implicit injection
+          let desc = lookupDescriptor(obj, keyName);
+          if (!injectedProperties.includes(keyName)) {
+            defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+          } else if (desc && desc.get) {
+            if (value !== desc.get.call(obj)) {
+              implicitInjectionDeprecation(keyName, `You have defined '${keyName}' for ${inspect(obj)} as a getter which does not match the implicit injection for '${keyName}'.  Please migrate to '@service ${keyName}'.`);
+            }
+          } else if (desc && desc.value) {
+            if (desc.value !== value) {
+              // implicit injection does not match value descriptor set on object
+              implicitInjectionDeprecation(keyName, `You have defined '${keyName}' for ${inspect(obj)} as a value which does not match the implicit injection for '${keyName}'.  Please migrate to '@service ${keyName}'.`);
+            }
+          } else {
+            // wrapper getter for original adding one time deprecation
+            // TODO add setter
+            Object.defineProperty(obj, keyName, {
+              configurable: true,
+              enumerable: false,
+              get() {
+                // only want to deprecate on first access
+                Object.defineProperty(obj, keyName, { value });
+
+                implicitInjectionDeprecation(keyName, `Implicit injection for property '${keyName}' is now deprecated. Please add an explicit injection for '${keyName}' to ${inspect(obj)}`);
+                return value;
+              }
+            });
+          }
         } else {
           obj[keyName] = value;
         }
@@ -1118,6 +1171,23 @@ if (!HAS_NATIVE_SYMBOL) {
       instanceFactory.set(this, value);
     },
   });
+}
+
+// TODO: customize messages and add more debugging info like obj and mismatch information
+function implicitInjectionDeprecation(keyName, msg = null) {
+  deprecate(
+    msg,
+    false,
+    {
+      id: 'ember-object.implicit-injection',
+      until: '4.0.0',
+      url: 'https://',
+      for: 'ember-source',
+      since: {
+        enabled: '3.24.0',
+      },
+    }
+  );
 }
 
 export default CoreObject;

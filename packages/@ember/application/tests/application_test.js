@@ -129,25 +129,14 @@ moduleFor(
 
       verifyRegistration(assert, application, 'controller:basic');
       verifyRegistration(assert, application, '-view-registry:main');
-      verifyInjection(assert, application, 'route', '_topLevelViewTemplate', 'template:-outlet');
       verifyRegistration(assert, application, 'route:basic');
       verifyRegistration(assert, application, 'event_dispatcher:main');
-      verifyInjection(assert, application, 'router:main', 'namespace', 'application:main');
       verifyInjection(assert, application, 'view:-outlet', 'namespace', 'application:main');
 
       verifyRegistration(assert, application, 'location:auto');
       verifyRegistration(assert, application, 'location:hash');
       verifyRegistration(assert, application, 'location:history');
       verifyRegistration(assert, application, 'location:none');
-
-      verifyInjection(assert, application, 'controller', 'target', 'router:main');
-      verifyInjection(assert, application, 'controller', 'namespace', 'application:main');
-
-      verifyRegistration(assert, application, P`-bucket-cache:main`);
-      verifyInjection(assert, application, 'router', '_bucketCache', P`-bucket-cache:main`);
-      verifyInjection(assert, application, 'route', '_bucketCache', P`-bucket-cache:main`);
-
-      verifyInjection(assert, application, 'route', '_router', 'router:main');
 
       verifyRegistration(assert, application, 'component:-text-field');
       verifyRegistration(assert, application, 'component:-checkbox');
@@ -165,13 +154,6 @@ moduleFor(
         'container-debug-adapter:main',
         'resolver',
         'resolver-for-debugging:main'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'data-adapter:main',
-        'containerDebugAdapter',
-        'container-debug-adapter:main'
       );
       verifyRegistration(assert, application, 'container-debug-adapter:main');
       verifyRegistration(assert, application, 'component-lookup:main');

@@ -1,5 +1,6 @@
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
+import { BucketCache } from '@ember/-internals/routing';
 import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
@@ -138,6 +139,7 @@ class EmberRouter extends EmberObject {
   _qpUpdates = new Set();
   _queuedQPChanges: { [key: string]: unknown } = {};
 
+  _bucketCache: BucketCache | undefined;
   _toplevelView: OutletView | null = null;
   _handledErrors = new Set();
   _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
@@ -149,6 +151,11 @@ class EmberRouter extends EmberObject {
     super(...arguments);
 
     this._resetQueuedQueryParameterChanges();
+    let owner = getOwner(this);
+    if (owner) {
+      this.namespace = owner.lookup('application:main');
+      this._bucketCache = owner.lookup('-bucket-cache:main');
+    }
   }
 
   _initRouterJs() {

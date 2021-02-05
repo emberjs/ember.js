@@ -497,17 +497,7 @@ function commonSetupRegistry(registry) {
 
   registry.injection('renderer', '_viewRegistry', '-view-registry:main');
 
-  registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
-
   registry.injection('view:-outlet', 'namespace', 'application:main');
-
-  registry.injection('controller', 'target', 'router:main');
-  registry.injection('controller', 'namespace', 'application:main');
-
-  registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
-  registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
-
-  registry.injection('route', '_router', 'router:main');
 
   // Register the routing service...
   registry.register('service:-routing', RoutingService);
@@ -517,7 +507,6 @@ function commonSetupRegistry(registry) {
     instantiate: false,
   });
   registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-  registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);

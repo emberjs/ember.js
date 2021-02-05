@@ -1,17 +1,227 @@
 import { getFactoryFor, Registry } from '@ember/-internals/container';
+import { inspect } from '@ember/-internals/utils';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals/metal';
+import Service, { inject as service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
   'EmberObject.create',
   class extends AbstractTestCase {
     ['@test simple properties are set'](assert) {
+      expectNoDeprecation();
+
       let o = EmberObject.create({ ohai: 'there' });
       assert.equal(o.get('ohai'), 'there');
+    }
+
+    ['@test explicit injection does not raise deprecation'](assert) {
+      expectNoDeprecation();
+
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class FooObject extends EmberObject {
+        @service foo;
+      }
+      owner.register('service:foo', FooService);
+      owner.register('foo:main', FooObject);
+
+      let obj = owner.lookup('foo:main');
+      assert.equal(obj.foo.bar, 'foo');
+    }
+
+    ['@test implicit injections raises deprecation'](assert) {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class FooObject extends EmberObject {}
+      owner.register('service:foo', FooService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:foo');
+
+      let obj = owner.lookup('foo:main');
+      let result;
+      expectDeprecation(
+        () => result = obj.foo,
+        `Implicit injection for property 'foo' is now deprecated. Please add an explicit injection for 'foo' to ${inspect(obj)}`
+      );
+
+      assert.equal(result.bar, 'foo');
+      assert.equal(obj.foo.bar, 'foo');
+    }
+
+    ['@test implicit injections raises deprecation for old style EmberObject'](assert) {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      const FooObject = EmberObject.extend();
+      owner.register('service:foo', FooService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:foo');
+
+      let obj = owner.lookup('foo:main');
+      let result;
+      expectDeprecation(
+        () => result = obj.foo,
+        `Implicit injection for property 'foo' is now deprecated. Please add an explicit injection for 'foo' to ${inspect(obj)}`
+      );
+
+      assert.equal(result.bar, 'foo');
+      assert.equal(obj.foo.bar, 'foo');
+    }
+
+    ['@test implicit injections does not raise a deprecation if explicit injection present'](assert) {
+      expectNoDeprecation();
+
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class FooObject extends EmberObject {
+        @service foo;
+      }
+      owner.register('service:foo', FooService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:foo');
+
+      let obj = owner.lookup('foo:main');
+      assert.equal(obj.foo.bar, 'foo');
+    }
+
+    ['@test raises deprecation if explicit injection is not the same as the implicit injection'](assert) {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        @service foo;
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:bar');
+
+      let result;
+      expectDeprecation(
+        () => result = owner.lookup('foo:main'),
+        `You have explicitly defined 'foo' for FooObject that does not match the implicit injection for 'foo'.  Please ensure you are explicitly defining 'foo' on FooObject.`
+      );
+      assert.equal(result.foo.bar, 'bar');
+    }
+
+    ['@test does not raise deprecation if descriptor is a value and equal to the implicit deprecation'](assert) {
+      expectNoDeprecation();
+
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        foo = getOwner(this).lookup('service:foo');
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:foo');
+
+      let result = owner.lookup('foo:main');
+      assert.equal(result.foo.bar, 'foo');
+    }
+
+    ['@test does raise deprecation if descriptor is a value and not equal to the implicit deprecation'](assert) {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        foo = getOwner(this).lookup('service:foo');
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:bar');
+
+      let result;
+      expectDeprecation(
+        () => result = owner.lookup('foo:main'),
+        `You have defined 'foo' for FooObject as a value which does not match the implicit injection for 'foo'.  Please migrate to '@service foo'.`
+      );
+      assert.equal(result.foo.bar, 'foo');
+    }
+
+    ['@test does not raise deprecation if descriptor is a getter and equal to the implicit deprecation'](assert) {
+      expectNoDeprecation();
+
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        get foo() {
+          return getOwner(this).lookup('service:foo');
+        }
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:foo');
+
+      let result = owner.lookup('foo:main');
+      assert.equal(result.foo.bar, 'foo');
+    }
+
+    ['@test does raise deprecation if descriptor is a getter and not equal to the implicit deprecation'](assert) {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        get foo() {
+          return getOwner(this).lookup('service:foo');
+        }
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:bar');
+
+      let result;
+      expectDeprecation(
+        () => result = owner.lookup('foo:main'),
+        `You have defined 'foo' for FooObject as a getter which does not match the implicit injection for 'foo'.  Please migrate to '@service foo'.`
+      );
+      assert.equal(result.foo.bar, 'foo');
     }
 
     ['@test calls computed property setters'](assert) {
@@ -138,7 +348,7 @@ moduleFor(
       }
     }
 
-    ['@test calls setUnknownProperty if defined'](assert) {
+    ['@test calls setUnknownProperty if undefined'](assert) {
       let setUnknownPropertyCalled = false;
 
       let MyClass = EmberObject.extend({

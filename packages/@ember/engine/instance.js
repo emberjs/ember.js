@@ -182,7 +182,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     let singletons = [
       'router:main',
-      P`-bucket-cache:main`,
+      '-bucket-cache:main',
       '-view-registry:main',
       `renderer:-dom`,
       'service:-document',
@@ -213,7 +213,6 @@ EngineInstance.reopenClass({
     }
 
     registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
   },
 });
 

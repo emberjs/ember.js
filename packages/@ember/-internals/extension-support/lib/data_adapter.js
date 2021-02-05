@@ -166,6 +166,9 @@ class TypeWatcher {
 export default EmberObject.extend({
   init() {
     this._super(...arguments);
+
+    this.containerDebugAdapter = getOwner(this).lookup('container-debug-adapter:main');
+
     this.releaseMethods = emberA();
     this.recordsWatchers = new Map();
     this.typeWatchers = new Map();
@@ -181,7 +184,6 @@ export default EmberObject.extend({
     @since 1.5.0
     @public
   **/
-  containerDebugAdapter: undefined,
 
   /**
     The number of attributes to send

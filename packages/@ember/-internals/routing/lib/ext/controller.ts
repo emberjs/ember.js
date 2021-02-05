@@ -1,4 +1,5 @@
 import { get } from '@ember/-internals/metal';
+import { getOwner } from '@ember/-internals/owner';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
 
@@ -8,6 +9,15 @@ import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
 
 ControllerMixin.reopen({
   concatenatedProperties: ['queryParams'],
+
+  init() {
+    this._super(...arguments);
+    let owner = getOwner(this);
+    if (owner) {
+      this.namespace = owner.lookup('application:main');
+      this.target = owner.lookup('router:main');
+    }
+  }
 
   /**
     Defines which query parameters the controller accepts.

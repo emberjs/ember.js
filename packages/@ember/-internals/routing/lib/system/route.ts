@@ -11,6 +11,7 @@ import {
   setProperties,
 } from '@ember/-internals/metal';
 import { getOwner, Owner } from '@ember/-internals/owner';
+import { BucketCache } from '@ember/-internals/routing';
 import {
   A as emberA,
   ActionHandler,
@@ -100,8 +101,22 @@ class Route extends EmberObject implements IRoute {
   controller!: Controller;
   currentModel: unknown;
 
+  _bucketCache: BucketCache | undefined;
   _internalName!: string;
   _names: unknown;
+  _router: EmberRouter | undefined;
+
+  constructor() {
+    super(...arguments);
+
+    let owner = getOwner(this);
+    if (owner) {
+      this._router = owner.lookup('router:main');
+      this._bucketCache = owner.lookup('-bucket-cache:main');
+      this._topLevelViewTemplate = owner.lookup('template:-outlet');
+      this._environment = owner.lookup('-environment:main');
+    }
+  }
 
   serialize!: (
     model: {},
@@ -111,8 +126,6 @@ class Route extends EmberObject implements IRoute {
         [key: string]: unknown;
       }
     | undefined;
-
-  _router!: EmberRouter;
 
   /**
     The name of the route, dot-delimited.

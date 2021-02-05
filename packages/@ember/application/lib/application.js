@@ -1167,14 +1167,12 @@ function commonSetupRegistry(registry) {
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
 
-  registry.injection('router:main', 'namespace', 'application:main');
-
   registry.register('location:auto', AutoLocation);
   registry.register('location:hash', HashLocation);
   registry.register('location:history', HistoryLocation);
   registry.register('location:none', NoneLocation);
 
-  registry.register(P`-bucket-cache:main`, {
+  registry.register(`-bucket-cache:main`, {
     create() {
       return new BucketCache();
     },

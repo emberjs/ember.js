@@ -49,6 +49,9 @@ function inspectValue(value: any | null | undefined, depth: number, seen?: WeakS
       if (value.toString === objectToString || value.toString === undefined) {
         break;
       }
+      if (value.constructor && value.constructor.name !== 'Class') {
+        return value.constructor.name;
+      }
       // custom toString
       return value.toString();
     case 'function':
