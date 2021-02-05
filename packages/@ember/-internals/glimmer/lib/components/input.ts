@@ -3,20 +3,23 @@
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { tracked } from '@ember/-internals/metal';
+import { Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { jQuery, jQueryDisabled } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
-import {
-  JQUERY_INTEGRATION,
-  MOUSE_ENTER_LEAVE_MOVE_EVENTS,
-  SEND_ACTION,
-} from '@ember/deprecated-features';
+import { JQUERY_INTEGRATION, SEND_ACTION } from '@ember/deprecated-features';
 import { action } from '@ember/object';
-import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
+import { Maybe, Option } from '@glimmer/interfaces';
+import {
+  setComponentTemplate,
+  setInternalComponentManager,
+  setInternalModifierManager,
+} from '@glimmer/manager';
 import { isConstRef, isUpdatableRef, Reference, updateRef, valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 import InternalManager from '../component-managers/internal';
+import InternalModifier, { InternalModifierManager } from '../modifiers/internal';
 import InputTemplate from '../templates/input';
 import InternalComponent from './internal';
 
@@ -52,9 +55,29 @@ if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   isValidInputType = (type: string) => type !== '';
 }
 
+type EventListener = (event: Event) => void;
+type VirtualEventListener = (value: string, event: Event) => void;
+
 function NOOP() {}
 
 const UNINITIALIZED: unknown = Object.freeze({});
+
+function elementForEvent(event: Event): HTMLInputElement {
+  assert(
+    '[BUG] Event target must be the <input> element',
+    event.target instanceof HTMLInputElement
+  );
+
+  return event.target;
+}
+
+function valueForEvent(event: Event): string {
+  return elementForEvent(event).value;
+}
+
+function devirtualize(callback: VirtualEventListener): EventListener {
+  return (event: Event) => callback(valueForEvent(event), event);
+}
 
 /**
  * This interface paves over the differences between these three cases:
@@ -386,11 +409,11 @@ class Input extends InternalComponent {
   }
 
   @action checkedDidChange(event: Event): void {
-    this.checked = this.elementFor(event).checked;
+    this.checked = elementForEvent(event).checked;
   }
 
   @action valueDidChange(event: Event): void {
-    this.value = this.valueFor(event);
+    this.value = valueForEvent(event);
   }
 
   @action change(event: Event): void {
@@ -408,34 +431,19 @@ class Input extends InternalComponent {
   }
 
   @action keyUp(event: KeyboardEvent): void {
-    let value = this.valueFor(event);
-
     switch (event.key) {
       case 'Enter':
-        this.callbackFor('enter')(value, event);
-        this.callbackFor('insert-newline')(value, event);
+        this.callbackFor('enter')(event);
+        this.callbackFor('insert-newline')(event);
         break;
 
       case 'Escape':
-        this.callbackFor('escape-press')(value, event);
+        this.callbackFor('escape-press')(event);
         break;
     }
   }
 
-  private elementFor(event: Event): HTMLInputElement {
-    assert(
-      '[BUG] Event target must be the <input> element',
-      event.target instanceof HTMLInputElement
-    );
-
-    return event.target;
-  }
-
-  private valueFor(event: Event): string {
-    return this.elementFor(event).value;
-  }
-
-  private callbackFor(type: string): (value: string, event: Event) => void {
+  private callbackFor(type: string, shouldDevirtualize = true): EventListener {
     let callback = this.arg(type);
 
     if (callback) {
@@ -443,7 +451,12 @@ class Input extends InternalComponent {
         `The \`@${type}\` argument to the <Input> component must be a function`,
         typeof callback === 'function'
       );
-      return callback as (value: string, event: Event) => void;
+
+      if (shouldDevirtualize) {
+        return devirtualize(callback as VirtualEventListener);
+      } else {
+        return callback as EventListener;
+      }
     } else {
       return NOOP;
     }
@@ -570,161 +583,145 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     });
   }
 
-  // Event callbacks
-  {
-    let defineGetterForDeprecatedEventCallback = (
-      eventName: string,
-      methodName: string = eventName,
-      virtualEvent?: string
-    ): void => {
+  type EventsMap = Record<string, string>;
+
+  const EVENTS = new WeakMap<object, EventsMap>();
+
+  const getEventsMap = (owner: Owner): EventsMap => {
+    let events = EVENTS.get(owner);
+
+    if (events === undefined) {
+      let eventDispatcher = owner.lookup<Maybe<{ _finalEvents?: EventsMap }>>(
+        'event_dispatcher:main'
+      );
+
       assert(
-        `[BUG] There is already a getter for _${methodName} on Input`,
-        !Object.getOwnPropertyDescriptor(Input.prototype, `_${methodName}`)
+        'missing event dispatcher',
+        eventDispatcher !== null && typeof eventDispatcher === 'object'
       );
 
-      let descriptor = Object.getOwnPropertyDescriptor(Input.prototype, methodName);
-
-      Object.defineProperty(Input.prototype, `_${methodName}`, {
-        get(this: Input): unknown {
-          return (event: Event): void => {
-            let value = this['valueFor'].call(this, event);
-
-            if (methodName in this.args) {
-              deprecate(
-                `Passing the \`@${methodName}\` argument to <Input> is deprecated. ` +
-                  `This would have overwritten the internal \`${methodName}\` method on ` +
-                  `the <Input> component and prevented it from functioning properly. ` +
-                  `Instead, please use the {{on}} modifier, i.e. \`<Input {{on "${eventName}" ...}} />\` ` +
-                  `instead of \`<Input @${methodName}={{...}} />\` or \`{{input ${methodName}=...}}\`.`,
-                true /* TODO !descriptor */,
-                {
-                  id: 'ember.built-in-components.legacy-attribute-arguments',
-                  for: 'ember-source',
-                  since: {},
-                  until: '4.0.0',
-                }
-              );
-
-              deprecate(
-                `Passing the \`@${methodName}\` argument to <Input> is deprecated. ` +
-                  `Instead, please use the {{on}} modifier, i.e. \`<Input {{on "${eventName}" ...}} />\` ` +
-                  `instead of \`<Input @${methodName}={{...}} />\` or \`{{input ${methodName}=...}}\`.`,
-                true /* TODO descriptor */,
-                {
-                  id: 'ember.built-in-components.legacy-attribute-arguments',
-                  for: 'ember-source',
-                  since: {},
-                  until: '4.0.0',
-                }
-              );
-
-              let callback = this['callbackFor'].call(this, methodName);
-              callback(value, event);
-            } else if (virtualEvent && virtualEvent in this.args) {
-              deprecate(
-                `Passing the \`@${virtualEvent}\` argument to <Input> is deprecated. ` +
-                  `Instead, please use the {{on}} modifier, i.e. \`<Input {{on "${eventName}" ...}} />\` ` +
-                  `instead of \`<Input @${virtualEvent}={{...}} />\` or \`{{input ${virtualEvent}=...}}\`.`,
-                true /* TODO false */,
-                {
-                  id: 'ember.built-in-components.legacy-attribute-arguments',
-                  for: 'ember-source',
-                  since: {},
-                  until: '4.0.0',
-                }
-              );
-
-              this['callbackFor'].call(this, virtualEvent)(value, event);
-            }
-          };
-        },
-      });
-
-      if (descriptor) {
-        const superGetter = descriptor.get;
-
-        assert(
-          `[BUG] Expecting ${methodName} on Input to be a getter`,
-          typeof superGetter === 'function'
-        );
-
-        Object.defineProperty(Input.prototype, methodName, {
-          get(this: Input): unknown {
-            if (methodName in this.args) {
-              return this[`_${methodName}`];
-            } else if (virtualEvent && virtualEvent in this.args) {
-              let superCallback = superGetter.call(this);
-              let virtualCallback = this[`_${methodName}`];
-
-              return (event: Event) => {
-                superCallback(event);
-                virtualCallback(event);
-              };
-            } else {
-              return superGetter.call(this);
-            }
-          },
-        });
-      }
-    };
-
-    let deprecatedEventCallbacks: Array<
-      string | Parameters<typeof defineGetterForDeprecatedEventCallback>
-    > = [
-      // EventDispatcher
-      ['touchstart', 'touchStart'],
-      ['touchmove', 'touchMove'],
-      ['touchend', 'touchEnd'],
-      ['touchcancel', 'touchCancel'],
-      ['keydown', 'keyDown', 'key-down'],
-      ['keyup', 'keyUp', 'key-up'],
-      ['keypress', 'keyPress', 'key-press'],
-      ['mousedown', 'mouseDown'],
-      ['mouseup', 'mouseUp'],
-      ['contextmenu', 'contextMenu'],
-      'click',
-      ['dblclick', 'doubleClick'],
-      ['focusin', 'focusIn', 'focus-in'],
-      ['focusout', 'focusOut', 'focus-out'],
-      'submit',
-      'input',
-      'change',
-      ['dragstart', 'dragStart'],
-      'drag',
-      ['dragenter', 'dragEnter'],
-      ['dragleave', 'dragLeave'],
-      ['dragover', 'dragOver'],
-      'drop',
-      ['dragend', 'dragEnd'],
-    ];
-
-    if (MOUSE_ENTER_LEAVE_MOVE_EVENTS) {
-      deprecatedEventCallbacks.push(
-        ['mouseenter', 'mouseEnter'],
-        ['mouseleave', 'mouseLeave'],
-        ['mousemove', 'mouseMove']
+      assert(
+        'missing _finalEvents on event dispatcher',
+        '_finalEvents' in eventDispatcher &&
+          eventDispatcher?._finalEvents !== null &&
+          typeof eventDispatcher?._finalEvents === 'object'
       );
-    } else {
-      Object.assign(Input.prototype, {
-        _mouseEnter: NOOP,
-        _mouseLeave: NOOP,
-        _mouseMove: NOOP,
-      });
+
+      EVENTS.set(owner, (events = eventDispatcher._finalEvents));
     }
 
-    deprecatedEventCallbacks.forEach((args) => {
-      if (Array.isArray(args)) {
-        defineGetterForDeprecatedEventCallback(...args);
-      } else {
-        defineGetterForDeprecatedEventCallback(args);
+    return events;
+  };
+
+  class DeprecatedInputEventHandlersModifier extends InternalModifier {
+    static toString(): string {
+      return '@ember/component/input/deprecated-events-handler';
+    }
+
+    private listeners = new Map<string, EventListener>();
+
+    install(): void {
+      let { element, eventsMap, input, listenerFor, listeners } = this;
+
+      let entries: [eventName: string, methodName: string, isVirtualEvent?: boolean][] = [
+        ...Object.entries(eventsMap),
+        ['focusin', 'focus-in', true],
+        ['focusout', 'focus-out', true],
+        ['keypress', 'key-press', true],
+        ['keyup', 'key-up', true],
+        ['keydown', 'key-down', true],
+      ];
+
+      for (let [eventName, methodName, isVirtualEvent] of entries) {
+        let listener = listenerFor.call(input, eventName, methodName, isVirtualEvent);
+
+        if (listener) {
+          listeners.set(eventName, listener);
+          element.addEventListener(eventName, listener);
+        }
       }
-    });
+
+      Object.freeze(listeners);
+    }
+
+    remove(): void {
+      let { element, listeners } = this;
+
+      for (let [event, listener] of Object.entries(listeners)) {
+        element.removeEventListener(event, listener);
+      }
+
+      this.listeners = new Map();
+    }
+
+    private get eventsMap(): EventsMap {
+      return getEventsMap(this.owner);
+    }
+
+    private get input(): Input {
+      let input = this.positional(0);
+      assert('must pass the <Input /> component as first argument', input instanceof Input);
+      return input;
+    }
+
+    private listenerFor(
+      this: Input,
+      eventName: string,
+      methodName: string,
+      isVirtualEvent = false
+    ): Option<EventListener> {
+      assert('must be called with the <Input /> component as this', this instanceof Input);
+
+      if (methodName in this.args) {
+        deprecate(
+          `Passing the \`@${methodName}\` argument to <Input> is deprecated. ` +
+            `This would have overwritten the internal \`${methodName}\` method on ` +
+            `the <Input> component and prevented it from functioning properly. ` +
+            `Instead, please use the {{on}} modifier, i.e. \`<Input {{on "${eventName}" ...}} />\` ` +
+            `instead of \`<Input @${methodName}={{...}} />\` or \`{{input ${methodName}=...}}\`.`,
+          true, // !(methodName in this),
+          {
+            id: 'ember.built-in-components.legacy-attribute-arguments',
+            for: 'ember-source',
+            since: {},
+            until: '4.0.0',
+          }
+        );
+
+        deprecate(
+          `Passing the \`@${methodName}\` argument to <Input> is deprecated. ` +
+            `Instead, please use the {{on}} modifier, i.e. \`<Input {{on "${eventName}" ...}} />\` ` +
+            `instead of \`<Input @${methodName}={{...}} />\` or \`{{input ${methodName}=...}}\`.`,
+          true, // methodName in this,
+          {
+            id: 'ember.built-in-components.legacy-attribute-arguments',
+            for: 'ember-source',
+            since: {},
+            until: '4.0.0',
+          }
+        );
+
+        return this['callbackFor'].call(this, methodName, isVirtualEvent);
+      } else {
+        return null;
+      }
+    }
   }
+
+  setInternalModifierManager(
+    new InternalModifierManager(
+      DeprecatedInputEventHandlersModifier,
+      'deprecated-input-event-handlers'
+    ),
+    DeprecatedInputEventHandlersModifier
+  );
+
+  Input.prototype['DeprecatedInputEventHandlersModifier'] = DeprecatedInputEventHandlersModifier;
 
   // String actions
   if (SEND_ACTION) {
     interface View {
-      send(action: string, value: string, event: Event): void;
+      send(action: string, ...args: unknown[]): void;
     }
 
     let isView = (target: {}): target is View => {
@@ -734,36 +731,63 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     let superCallbackFor = Input.prototype['callbackFor'];
 
     Object.assign(Input.prototype, {
-      callbackFor(this: Input, type: string): (value: string, event: Event) => void {
+      callbackFor(this: Input, type: string, shouldDevirtualize = true): EventListener {
         const actionName = this.arg(type);
 
         if (typeof actionName === 'string') {
-          deprecate(
-            `Passing actions to components as strings (like \`<Input @${type}="${actionName}" />\`) is deprecated. ` +
-              `Please use closure actions instead (\`<Input @${type}={{action "${actionName}"}} />\`).`,
-            false,
-            {
-              id: 'ember-component.send-action',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-              url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
-            }
-          );
+          // TODO: eagerly issue a deprecation for this as well (need to fix tests)
+          //
+          // deprecate(
+          //   `Passing actions to components as strings (like \`<Input @${type}="${actionName}" />\`) is deprecated. ` +
+          //     `Please use closure actions instead (\`<Input @${type}={{action "${actionName}"}} />\`).`,
+          //   false,
+          //   {
+          //     id: 'ember-component.send-action',
+          //     for: 'ember-source',
+          //     since: {},
+          //     until: '4.0.0',
+          //     url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+          //   }
+          // );
 
           const { caller } = this;
 
           assert('[BUG] Missing caller', caller && typeof caller === 'object');
 
+          let callback: Function;
+
           if (isView(caller)) {
-            return (value: string, event: Event) => caller.send(actionName, value, event);
+            callback = (...args: unknown[]) => caller.send(actionName, ...args);
           } else {
             assert(
               `The action '${actionName}' did not exist on ${caller}`,
               typeof caller[actionName] === 'function'
             );
 
-            return caller[actionName];
+            callback = caller[actionName];
+          }
+
+          let deprecated = (...args: unknown[]) => {
+            deprecate(
+              `Passing actions to components as strings (like \`<Input @${type}="${actionName}" />\`) is deprecated. ` +
+                `Please use closure actions instead (\`<Input @${type}={{action "${actionName}"}} />\`).`,
+              false,
+              {
+                id: 'ember-component.send-action',
+                for: 'ember-source',
+                since: {},
+                until: '4.0.0',
+                url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+              }
+            );
+
+            return callback(...args);
+          };
+
+          if (shouldDevirtualize) {
+            return devirtualize(deprecated as VirtualEventListener);
+          } else {
+            return deprecated as EventListener;
           }
         } else {
           return superCallbackFor.call(this, type);
@@ -777,13 +801,11 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     let superCallbackFor = Input.prototype['callbackFor'];
 
     Object.assign(Input.prototype, {
-      callbackFor(this: Input, type: string): (value: string, event: Event) => void {
-        let callback = superCallbackFor.call(this, type);
+      callbackFor(this: Input, type: string, shouldDevirtualize = true): EventListener {
+        let callback = superCallbackFor.call(this, type, shouldDevirtualize);
 
         if (jQuery && !jQueryDisabled) {
-          return (value: string, event: Event) => {
-            callback(value, new jQuery.Event(event));
-          };
+          return (event: Event) => callback(new jQuery.Event(event));
         } else {
           return callback;
         }
