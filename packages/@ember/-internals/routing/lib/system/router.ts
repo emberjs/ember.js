@@ -1101,7 +1101,10 @@ class EmberRouter extends EmberObject {
         } else {
           let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, state.params);
 
-          assert('expected appCache to be defined', appCache);
+          assert(
+            'ROUTER BUG: expected appCache to be defined. This is an internal bug, please open an issue on Github if you see this message!',
+            appCache
+          );
 
           queryParams[qp.scopedPropertyName] = appCache.lookup(cacheKey, qp.prop, qp.defaultValue);
         }
@@ -1430,9 +1433,7 @@ export function triggerEvent(
       } else {
         // Should only hit here if a non-bubbling error action is triggered on a route.
         if (name === 'error') {
-          assert('expected handler and handler router to exist', handler && handler._router);
-
-          handler._router._markErrorAsHandled(args[0] as Error);
+          handler!._router._markErrorAsHandled(args[0] as Error);
         }
         return;
       }

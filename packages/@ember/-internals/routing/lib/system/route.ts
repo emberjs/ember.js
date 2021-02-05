@@ -114,7 +114,10 @@ class Route extends EmberObject implements IRoute {
       let router = owner.lookup<EmberRouter>('router:main');
       let bucketCache = owner.lookup<BucketCache>(P`-bucket-cache:main`);
 
-      assert('Expected route injections to be defined', router && bucketCache);
+      assert(
+        'ROUTER BUG: Expected route injections to be defined on the route. This is an internal bug, please open an issue on Github if you see this message!',
+        router && bucketCache
+      );
 
       this._router = router;
       this._bucketCache = bucketCache;

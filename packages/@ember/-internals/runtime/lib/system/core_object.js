@@ -90,7 +90,6 @@ function initialize(obj, properties) {
     let keyNames = Object.keys(properties);
 
     for (let i = 0; i < keyNames.length; i++) {
-      // Hot path so 'var' to avoid closure, which may cause perf issues
       let keyName = keyNames[i];
       let value = properties[keyName];
 
