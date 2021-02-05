@@ -241,6 +241,8 @@ class ReplaceTests extends AbstractTestCase {
   }
 
   async '@test Adding object should notify array observer'() {
+    expectDeprecation(/Array observers have been deprecated/);
+
     let fixtures = newFixture(4);
     let obj = this.newObject(fixtures);
     let observer = this.newObserver(obj).observeArray(obj);

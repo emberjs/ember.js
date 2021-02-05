@@ -7,7 +7,9 @@ moduleFor(
   'ArrayProxy - array observers',
   class extends AbstractTestCase {
     ['@test mutating content'](assert) {
-      assert.expect(4);
+      expectDeprecation(/Array observers have been deprecated/);
+
+      assert.expect(5);
 
       let content = A(['x', 'y', 'z']);
       let proxy = ArrayProxy.create({ content });
@@ -28,7 +30,9 @@ moduleFor(
     }
 
     ['@test assigning content'](assert) {
-      assert.expect(4);
+      expectDeprecation(/Array observers have been deprecated/);
+
+      assert.expect(5);
 
       let content = A(['x', 'y', 'z']);
       let proxy = ArrayProxy.create({ content });

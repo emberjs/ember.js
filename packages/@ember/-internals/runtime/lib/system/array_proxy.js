@@ -272,7 +272,7 @@ export default class ArrayProxy extends EmberObject {
         isArray(arrangedContent) || arrangedContent.isDestroyed
       );
 
-      addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING);
+      addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING, true);
 
       this._arrangedContent = arrangedContent;
     }
@@ -280,7 +280,7 @@ export default class ArrayProxy extends EmberObject {
 
   _removeArrangedContentArrayObserver() {
     if (this._arrangedContent) {
-      removeArrayObserver(this._arrangedContent, this, ARRAY_OBSERVER_MAPPING);
+      removeArrayObserver(this._arrangedContent, this, ARRAY_OBSERVER_MAPPING, true);
     }
   }
 
