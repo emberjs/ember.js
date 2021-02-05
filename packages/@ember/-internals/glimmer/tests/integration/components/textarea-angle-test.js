@@ -1,5 +1,6 @@
 import { RenderingTestCase, moduleFor, classes, applyMixins, runTask } from 'internal-test-helpers';
 
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { action } from '@ember/object';
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
@@ -48,18 +49,32 @@ class BoundTextAreaAttributes {
         this.assertTextArea({ attrs: { [attribute]: first } });
       },
 
-      [`@test @${attribute} (named argument)`]() {
-        this.render(`<Textarea @${attribute}={{this.value}} />`, {
-          value: first,
-        });
+      [`@test [DEPRECATED] @${attribute} (named argument)`]() {
+        let deprecation = new RegExp(
+          `Passing the \`@${attribute}\` argument to <Textarea> is deprecated\\.`
+        );
+
+        expectDeprecation(
+          () => this.render(`<Textarea @${attribute}={{this.value}} />`, { value: first }),
+          deprecation,
+          EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+        );
         this.assertTextArea({ attrs: { [attribute]: first } });
 
         this.assertStableRerender();
 
-        runTask(() => set(this.context, 'value', second));
+        expectDeprecation(
+          () => runTask(() => set(this.context, 'value', second)),
+          deprecation,
+          EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+        );
         this.assertTextArea({ attrs: { [attribute]: second } });
 
-        runTask(() => set(this.context, 'value', first));
+        expectDeprecation(
+          () => runTask(() => set(this.context, 'value', first)),
+          deprecation,
+          EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+        );
         this.assertTextArea({ attrs: { [attribute]: first } });
       },
     };
@@ -103,10 +118,12 @@ moduleFor(
       assert.ok(this.$('textarea').is(':disabled'));
     }
 
-    ['@test Should respect @disabled (named argument)'](assert) {
-      this.render('<Textarea @disabled={{this.disabled}} />', {
-        disabled: true,
-      });
+    ['@test [DEPRECATED] Should respect @disabled (named argument)'](assert) {
+      expectDeprecation(
+        () => this.render('<Textarea @disabled={{this.disabled}} />', { disabled: true }),
+        /Passing the `@disabled` argument to <Textarea> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
       assert.ok(this.$('textarea').is(':disabled'));
     }
 
@@ -117,10 +134,12 @@ moduleFor(
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
-    ['@test Should respect @disabled (named argument) when false'](assert) {
-      this.render('<Textarea @disabled={{this.disabled}} />', {
-        disabled: false,
-      });
+    ['@test [DEPRECATED] Should respect @disabled (named argument) when false'](assert) {
+      expectDeprecation(
+        () => this.render('<Textarea @disabled={{this.disabled}} />', { disabled: false }),
+        /Passing the `@disabled` argument to <Textarea> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
@@ -137,16 +156,30 @@ moduleFor(
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
-    ['@test Should become @disabled (named argument) when the context changes'](assert) {
-      this.render('<Textarea @disabled={{this.disabled}} />');
+    ['@test [DEPRECATED] Should become @disabled (named argument) when the context changes'](
+      assert
+    ) {
+      expectDeprecation(
+        () => this.render('<Textarea @disabled={{this.disabled}} />'),
+        /Passing the `@disabled` argument to <Textarea> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
       assert.ok(this.$('textarea').is(':not(:disabled)'));
 
       this.assertStableRerender();
 
-      runTask(() => set(this.context, 'disabled', true));
+      expectDeprecation(
+        () => runTask(() => set(this.context, 'disabled', true)),
+        /Passing the `@disabled` argument to <Textarea> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
       assert.ok(this.$('textarea').is(':disabled'));
 
-      runTask(() => set(this.context, 'disabled', false));
+      expectDeprecation(
+        () => runTask(() => set(this.context, 'disabled', false)),
+        /Passing the `@disabled` argument to <Textarea> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 

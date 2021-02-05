@@ -21,6 +21,7 @@ import { untrack } from '@glimmer/validator';
 import InternalManager from '../component-managers/internal';
 import InternalModifier, { InternalModifierManager } from '../modifiers/internal';
 import InputTemplate from '../templates/input';
+import TextareaTemplate from '../templates/textarea';
 import InternalComponent from './internal';
 
 let isValidInputType: (type: string) => boolean;
@@ -62,10 +63,10 @@ function NOOP() {}
 
 const UNINITIALIZED: unknown = Object.freeze({});
 
-function elementForEvent(event: Event): HTMLInputElement {
+function elementForEvent(event: Event): HTMLInputElement | HTMLTextAreaElement {
   assert(
-    '[BUG] Event target must be the <input> element',
-    event.target instanceof HTMLInputElement
+    '[BUG] Event target must be the <input> or <textarea> element',
+    event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement
   );
 
   return event.target;
@@ -307,7 +308,7 @@ class ForkedValue implements Value {
   @param {Hash} options
   @public
 */
-class Input extends InternalComponent {
+abstract class AbstractInput extends InternalComponent {
   modernized = Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS);
 
   /**
@@ -331,34 +332,18 @@ class Input extends InternalComponent {
   get class(): string {
     if (this.isCheckbox) {
       return 'ember-checkbox ember-view';
+    } else if (this.isTextarea) {
+      return 'ember-text-area ember-view';
     } else {
       return 'ember-text-field ember-view';
     }
   }
 
-  /**
-   * The HTML type attribute.
-   */
-  get type(): string {
-    let type = this.arg('type');
+  abstract type: string;
+  abstract isCheckbox: boolean;
+  abstract isTextarea: boolean;
 
-    if (type === null || type === undefined) {
-      return 'text';
-    }
-
-    assert(
-      'The `@type` argument to the <Input> component must be a string',
-      typeof type === 'string'
-    );
-
-    return isValidInputType(type) ? type : 'text';
-  }
-
-  get isCheckbox(): boolean {
-    return this.arg('type') === 'checkbox';
-  }
-
-  _checked = valueFrom(this.args.checked);
+  private _checked = valueFrom(this.args.checked);
 
   get checked(): unknown {
     if (this.isCheckbox) {
@@ -398,7 +383,7 @@ class Input extends InternalComponent {
     this._checked.set(checked);
   }
 
-  _value = valueFrom(this.args.value);
+  private _value = valueFrom(this.args.value);
 
   get value(): unknown {
     return this._value.get();
@@ -409,7 +394,9 @@ class Input extends InternalComponent {
   }
 
   @action checkedDidChange(event: Event): void {
-    this.checked = elementForEvent(event).checked;
+    let element = elementForEvent(event);
+    assert('[BUG] element must be an <input>', element instanceof HTMLInputElement);
+    this.checked = element.checked;
   }
 
   @action valueDidChange(event: Event): void {
@@ -448,7 +435,7 @@ class Input extends InternalComponent {
 
     if (callback) {
       assert(
-        `The \`@${type}\` argument to the <Input> component must be a function`,
+        `The \`@${type}\` argument to the <${this.constructor}> component must be a function`,
         typeof callback === 'function'
       );
 
@@ -463,25 +450,80 @@ class Input extends InternalComponent {
   }
 }
 
+class Input extends AbstractInput {
+  static toString(): string {
+    return 'Input';
+  }
+
+  /**
+   * The HTML type attribute.
+   */
+  get type(): string {
+    let type = this.arg('type');
+
+    if (type === null || type === undefined) {
+      return 'text';
+    }
+
+    assert(
+      'The `@type` argument to the <Input> component must be a string',
+      typeof type === 'string'
+    );
+
+    return isValidInputType(type) ? type : 'text';
+  }
+
+  get isCheckbox(): boolean {
+    return this.arg('type') === 'checkbox';
+  }
+
+  get isTextarea(): false {
+    return false;
+  }
+}
+
+class Textarea extends AbstractInput {
+  static toString(): string {
+    return 'Textarea';
+  }
+
+  get type(): never {
+    throw assert(`[BUG] type getter should never be called on <Textarea />`);
+  }
+
+  get isCheckbox(): false {
+    return false;
+  }
+
+  get isTextarea(): true {
+    return true;
+  }
+}
+
 // Deprecated features
 if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   // Attribute bindings
   {
     let defineGetterForDeprecatedAttributeBinding = (
+      component: typeof AbstractInput,
       attribute: string,
       argument = attribute
     ): void => {
+      let name = component.toString();
+      let curlyName = name.toLowerCase();
+      let { prototype } = component;
+
       assert(
-        `[BUG] There is already a getter for _${argument} on Input`,
-        !Object.getOwnPropertyDescriptor(Input.prototype, `_${argument}`)
+        `[BUG] There is already a getter for _${argument} on ${name}`,
+        !(`_${argument}` in prototype)
       );
 
-      Object.defineProperty(Input.prototype, `_${argument}`, {
-        get(this: Input): unknown {
+      Object.defineProperty(prototype, `_${argument}`, {
+        get(this: AbstractInput): unknown {
           deprecate(
-            `Passing the \`@${argument}\` argument to <Input> is deprecated. ` +
-              `Instead, please pass the attribute directly, i.e. \`<Input ${attribute}={{...}} />\` ` +
-              `instead of \`<Input @${argument}={{...}} />\` or \`{{input ${argument}=...}}\`.`,
+            `Passing the \`@${argument}\` argument to <${name}> is deprecated. ` +
+              `Instead, please pass the attribute directly, i.e. \`<${name} ${attribute}={{...}} />\` ` +
+              `instead of \`<${name} @${argument}={{...}} />\` or \`{{${curlyName} ${argument}=...}}\`.`,
             !(argument in this.args),
             {
               id: 'ember.built-in-components.legacy-attribute-arguments',
@@ -495,15 +537,24 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         },
       });
 
-      let descriptor = Object.getOwnPropertyDescriptor(Input.prototype, argument);
+      let target = prototype;
+      let descriptor: PropertyDescriptor | undefined;
+
+      while (target && !(descriptor = Object.getOwnPropertyDescriptor(target, argument))) {
+        target = Object.getPrototypeOf(target);
+      }
 
       if (descriptor) {
         const superGetter = descriptor.get;
-        assert(`Expecting ${argument} to be a getter on Input`, typeof superGetter === 'function');
 
-        Object.defineProperty(Input.prototype, argument, {
+        assert(
+          `Expecting ${argument} to be a getter on <${name}>`,
+          typeof superGetter === 'function'
+        );
+
+        Object.defineProperty(prototype, argument, {
           ...descriptor,
-          get(this: Input): unknown {
+          get(this: AbstractInput): unknown {
             // The `class` attribute is concatenated/merged instead of clobbered
             if (attribute === 'class' && argument in this.args) {
               let arg = this[`_${argument}`];
@@ -523,9 +574,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       }
     };
 
-    let deprecatedAttributeBindings: Array<
-      string | Parameters<typeof defineGetterForDeprecatedAttributeBinding>
-    > = [
+    let deprecatedInputAttributeBindings: Array<string | [string, string]> = [
       // Component
       'id',
       'class',
@@ -574,11 +623,53 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       'indeterminate',
     ];
 
-    deprecatedAttributeBindings.forEach((args) => {
+    deprecatedInputAttributeBindings.forEach((args) => {
       if (Array.isArray(args)) {
-        defineGetterForDeprecatedAttributeBinding(...args);
+        defineGetterForDeprecatedAttributeBinding(Input, ...args);
       } else {
-        defineGetterForDeprecatedAttributeBinding(args);
+        defineGetterForDeprecatedAttributeBinding(Input, args);
+      }
+    });
+
+    let deprecatedTextareaAttributeBindings: Array<string | [string, string]> = [
+      // Component
+      'id',
+      'class',
+      ['class', 'classNames'],
+
+      // TextSupport
+      'autocapitalize',
+      'autocorrect',
+      'autofocus',
+      'disabled',
+      'form',
+      'maxlength',
+      'minlength',
+      'placeholder',
+      'readonly',
+      'required',
+      'selectionDirection',
+      'spellcheck',
+      'tabindex',
+      'title',
+
+      // TextField
+      'rows',
+      'cols',
+      'name',
+      'selectionEnd',
+      'selectionStart',
+      'autocomplete',
+      'wrap',
+      'lang',
+      'dir',
+    ];
+
+    deprecatedTextareaAttributeBindings.forEach((args) => {
+      if (Array.isArray(args)) {
+        defineGetterForDeprecatedAttributeBinding(Textarea, ...args);
+      } else {
+        defineGetterForDeprecatedAttributeBinding(Textarea, args);
       }
     });
   }
@@ -613,15 +704,15 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     return events;
   };
 
-  class DeprecatedInputEventHandlersModifier extends InternalModifier {
+  class DeprecatedEventHandlersModifier extends InternalModifier {
     static toString(): string {
-      return '@ember/component/input/deprecated-events-handler';
+      return 'DeprecatedEventHandlersModifier';
     }
 
     private listeners = new Map<string, EventListener>();
 
     install(): void {
-      let { element, eventsMap, input, listenerFor, listeners } = this;
+      let { element, eventsMap, component, listenerFor, listeners } = this;
 
       let entries: [eventName: string, methodName: string, isVirtualEvent?: boolean][] = [
         ...Object.entries(eventsMap),
@@ -633,7 +724,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       ];
 
       for (let [eventName, methodName, isVirtualEvent] of entries) {
-        let listener = listenerFor.call(input, eventName, methodName, isVirtualEvent);
+        let listener = listenerFor.call(component, eventName, methodName, isVirtualEvent);
 
         if (listener) {
           listeners.set(eventName, listener);
@@ -658,27 +749,38 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       return getEventsMap(this.owner);
     }
 
-    private get input(): Input {
-      let input = this.positional(0);
-      assert('must pass the <Input /> component as first argument', input instanceof Input);
-      return input;
+    private get component(): AbstractInput {
+      let component = this.positional(0);
+
+      assert(
+        'must pass the <Input /> or <Textarea /> component as first argument',
+        component instanceof AbstractInput
+      );
+
+      return component;
     }
 
     private listenerFor(
-      this: Input,
+      this: AbstractInput,
       eventName: string,
       methodName: string,
       isVirtualEvent = false
     ): Option<EventListener> {
-      assert('must be called with the <Input /> component as this', this instanceof Input);
+      assert(
+        'must be called with the <Input /> or <Textarea /> component as this',
+        this instanceof AbstractInput
+      );
+
+      let name = this.constructor.toString();
+      let curlyName = name.toLowerCase();
 
       if (methodName in this.args) {
         deprecate(
-          `Passing the \`@${methodName}\` argument to <Input> is deprecated. ` +
+          `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
             `This would have overwritten the internal \`${methodName}\` method on ` +
-            `the <Input> component and prevented it from functioning properly. ` +
-            `Instead, please use the {{on}} modifier, i.e. \`<Input {{on "${eventName}" ...}} />\` ` +
-            `instead of \`<Input @${methodName}={{...}} />\` or \`{{input ${methodName}=...}}\`.`,
+            `the <${name}> component and prevented it from functioning properly. ` +
+            `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
+            `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
           true, // !(methodName in this),
           {
             id: 'ember.built-in-components.legacy-attribute-arguments',
@@ -689,9 +791,9 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         );
 
         deprecate(
-          `Passing the \`@${methodName}\` argument to <Input> is deprecated. ` +
-            `Instead, please use the {{on}} modifier, i.e. \`<Input {{on "${eventName}" ...}} />\` ` +
-            `instead of \`<Input @${methodName}={{...}} />\` or \`{{input ${methodName}=...}}\`.`,
+          `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
+            `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
+            `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
           true, // methodName in this,
           {
             id: 'ember.built-in-components.legacy-attribute-arguments',
@@ -709,14 +811,11 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   }
 
   setInternalModifierManager(
-    new InternalModifierManager(
-      DeprecatedInputEventHandlersModifier,
-      'deprecated-input-event-handlers'
-    ),
-    DeprecatedInputEventHandlersModifier
+    new InternalModifierManager(DeprecatedEventHandlersModifier, 'deprecated-event-handlers'),
+    DeprecatedEventHandlersModifier
   );
 
-  Input.prototype['DeprecatedInputEventHandlersModifier'] = DeprecatedInputEventHandlersModifier;
+  AbstractInput.prototype['DeprecatedEventHandlersModifier'] = DeprecatedEventHandlersModifier;
 
   // String actions
   if (SEND_ACTION) {
@@ -728,18 +827,18 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       return typeof (target as Partial<View>).send === 'function';
     };
 
-    let superCallbackFor = Input.prototype['callbackFor'];
+    let superCallbackFor = AbstractInput.prototype['callbackFor'];
 
-    Object.assign(Input.prototype, {
-      callbackFor(this: Input, type: string, shouldDevirtualize = true): EventListener {
+    Object.assign(AbstractInput.prototype, {
+      callbackFor(this: AbstractInput, type: string, shouldDevirtualize = true): EventListener {
         const actionName = this.arg(type);
 
         if (typeof actionName === 'string') {
           // TODO: eagerly issue a deprecation for this as well (need to fix tests)
           //
           // deprecate(
-          //   `Passing actions to components as strings (like \`<Input @${type}="${actionName}" />\`) is deprecated. ` +
-          //     `Please use closure actions instead (\`<Input @${type}={{action "${actionName}"}} />\`).`,
+          //   `Passing actions to components as strings (like \`<${this.constructor} @${type}="${actionName}" />\`) is deprecated. ` +
+          //     `Please use closure actions instead (\`<${this.constructor} @${type}={{action "${actionName}"}} />\`).`,
           //   false,
           //   {
           //     id: 'ember-component.send-action',
@@ -769,8 +868,8 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
 
           let deprecated = (...args: unknown[]) => {
             deprecate(
-              `Passing actions to components as strings (like \`<Input @${type}="${actionName}" />\`) is deprecated. ` +
-                `Please use closure actions instead (\`<Input @${type}={{action "${actionName}"}} />\`).`,
+              `Passing actions to components as strings (like \`<${this.constructor} @${type}="${actionName}" />\`) is deprecated. ` +
+                `Please use closure actions instead (\`<${this.constructor} @${type}={{action "${actionName}"}} />\`).`,
               false,
               {
                 id: 'ember-component.send-action',
@@ -798,10 +897,10 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
 
   // jQuery Events
   if (JQUERY_INTEGRATION) {
-    let superCallbackFor = Input.prototype['callbackFor'];
+    let superCallbackFor = AbstractInput.prototype['callbackFor'];
 
-    Object.assign(Input.prototype, {
-      callbackFor(this: Input, type: string, shouldDevirtualize = true): EventListener {
+    Object.assign(AbstractInput.prototype, {
+      callbackFor(this: AbstractInput, type: string, shouldDevirtualize = true): EventListener {
         let callback = superCallbackFor.call(this, type, shouldDevirtualize);
 
         if (jQuery && !jQueryDisabled) {
@@ -821,14 +920,22 @@ const InputComponent = {
     throw assert('Use constructor instead of create');
   },
 
-  toString(): string {
-    return '@ember/component/input';
-  },
+  toString: Input.toString,
 };
 
 setInternalComponentManager(new InternalManager(Input, 'input'), InputComponent);
 setComponentTemplate(InputTemplate, InputComponent);
 
-Input.toString = InputComponent.toString;
-
 export default InputComponent;
+
+export const TextareaComponent = {
+  // Factory interface
+  create(): never {
+    throw assert('Use constructor instead of create');
+  },
+
+  toString: Textarea.toString,
+};
+
+setInternalComponentManager(new InternalManager(Textarea, 'textarea'), TextareaComponent);
+setComponentTemplate(TextareaTemplate, TextareaComponent);
