@@ -1,7 +1,7 @@
 import { getFactoryFor, Registry } from '@ember/-internals/container';
 import { inspect } from '@ember/-internals/utils';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals/metal';
+import { computed, Mixin, observer, addObserver, alias, tracked } from '@ember/-internals/metal';
 import Service, { inject as service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
@@ -180,6 +180,118 @@ moduleFor(
         let result = owner.lookup('foo:main');
         assert.equal(result.foo.bar, 'bar');
       }, /A value was injected implicitly on the 'foo' property of an instance of <.*>, overwriting the original value which was <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/);
+    }
+
+    ['@test does not raise deprecation if descriptor is a tracked property and equal to the implicit deprecation'](
+      assert
+    ) {
+      expectNoDeprecation();
+
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        @tracked foo = getOwner(this).lookup('service:foo');
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:foo');
+
+      let result = owner.lookup('foo:main');
+      assert.equal(result.foo.bar, 'foo');
+    }
+
+    ['@test does raise deprecation if descriptor is a tracked property and not equal to the implicit deprecation'](
+      assert
+    ) {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        @tracked foo = getOwner(this).lookup('service:foo');
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:bar');
+
+      expectDeprecation(() => {
+        let result = owner.lookup('foo:main');
+        assert.equal(result.foo.bar, 'bar');
+      }, /A value was injected implicitly on the 'foo' tracked property of an instance of <.*>, overwriting the original value which was <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/);
+    }
+
+    ['@test does not raise deprecation if descriptor is a computed property with a setter'](
+      assert
+    ) {
+      expectNoDeprecation();
+
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        @computed
+        get foo() {
+          return getOwner(this).lookup('service:foo');
+        }
+
+        set foo(val) {}
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:foo');
+
+      let result = owner.lookup('foo:main');
+      assert.equal(result.foo.bar, 'foo');
+    }
+
+    ['@test does raise deprecation if descriptor is a computed property without a setter'](assert) {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class BarService extends Service {
+        bar = 'bar';
+      }
+      class FooObject extends EmberObject {
+        @computed
+        get foo() {
+          return getOwner(this).lookup('service:foo');
+        }
+      }
+      owner.register('service:foo', FooService);
+      owner.register('service:bar', BarService);
+      owner.register('foo:main', FooObject);
+      owner.inject('foo:main', 'foo', 'service:bar');
+
+      expectDeprecation(
+        /The <.*>#foo computed property was just overridden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually./
+      );
+
+      expectDeprecation(
+        /A value was injected implicitly on the 'foo' computed property of an instance of <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/
+      );
+
+      let result = owner.lookup('foo:main');
+      assert.equal(result.foo.bar, 'bar');
     }
 
     ['@test does not raise deprecation if descriptor is a getter and equal to the implicit deprecation'](

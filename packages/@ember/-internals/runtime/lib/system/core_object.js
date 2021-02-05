@@ -28,6 +28,7 @@ import {
   classToString,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
+  TrackedDescriptor,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
 import { assert, deprecate } from '@ember/debug';
@@ -129,7 +130,7 @@ function initialize(obj, properties) {
       }
 
       if (isDescriptor) {
-        if (DEBUG) {
+        if (DEBUG && injectedProperties.indexOf(keyName) !== -1) {
           // need to check if implicit injection owner.inject('component:my-component', 'foo', 'service:bar') does not match explicit injection @service foo
           // implicit injection takes precedence so need to tell user to rename property on obj
           let isInjectedProperty = DEBUG_INJECTION_FUNCTIONS.has(possibleDesc._getter);
@@ -139,6 +140,26 @@ function initialize(obj, properties) {
               `You have explicitly defined a service injection for the '${keyName}' property on ${inspect(
                 obj
               )}. However, a different service or value was injected via implicit injections which overrode your explicit injection. Implicit injections have been deprecated, and will be removed in the near future. In order to prevent breakage, you should inject the same value explicitly that is currently being injected implicitly.`
+            );
+          } else if (possibleDesc instanceof TrackedDescriptor) {
+            let descValue = possibleDesc.get(obj, keyName);
+
+            if (value !== descValue) {
+              implicitInjectionDeprecation(
+                keyName,
+                `A value was injected implicitly on the '${keyName}' tracked property of an instance of ${inspect(
+                  obj
+                )}, overwriting the original value which was ${inspect(
+                  descValue
+                )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
+              );
+            }
+          } else if (possibleDesc._setter === undefined) {
+            implicitInjectionDeprecation(
+              keyName,
+              `A value was injected implicitly on the '${keyName}' computed property of an instance of ${inspect(
+                obj
+              )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
             );
           }
         }
