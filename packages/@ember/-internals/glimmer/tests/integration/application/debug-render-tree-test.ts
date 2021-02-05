@@ -1267,7 +1267,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         let target = this.controllerFor('application');
 
-        let inputToString = /<@ember\/component\/input:ember[0-9]+>/;
+        let inputToString = /<Input:ember[0-9]+>/;
 
         this.assertRenderTree([
           {
@@ -1381,58 +1381,46 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         await this.visit('/');
 
-        this.assertRenderTree([
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'first' } },
-            instance: (instance: object) => instance['value'] === 'first',
-            bounds: this.nodeBounds(this.element.firstChild),
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            children: [],
-          },
-        ]);
+        let textareaNode = (value: string, node: Node): ExpectedRenderNode => {
+          if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+            return {
+              type: 'component',
+              name: 'textarea',
+              args: { positional: [], named: { value } },
+              instance: (instance: object) => instance['value'] === value,
+              bounds: this.nodeBounds(node),
+              template: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
+              children: [],
+            };
+          } else {
+            return {
+              type: 'component',
+              name: 'textarea',
+              args: { positional: [], named: { value } },
+              instance: (instance: object) => instance['value'] === value,
+              bounds: this.nodeBounds(node),
+              template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
+              children: [],
+            };
+          }
+        };
+
+        this.assertRenderTree([textareaNode('first', this.element.firstChild)]);
 
         runTask(() => {
           this.controllerFor('application').set('showSecond', true);
         });
 
         this.assertRenderTree([
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'first' } },
-            instance: (instance: object) => instance['value'] === 'first',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            bounds: this.nodeBounds(this.element.firstChild),
-            children: [],
-          },
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'second' } },
-            instance: (instance: object) => instance['value'] === 'second',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            bounds: this.nodeBounds(this.element.lastChild),
-            children: [],
-          },
+          textareaNode('first', this.element.firstChild),
+          textareaNode('second', this.element.lastChild),
         ]);
 
         runTask(() => {
           this.controllerFor('application').set('showSecond', false);
         });
 
-        this.assertRenderTree([
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'first' } },
-            instance: (instance: object) => instance['value'] === 'first',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            bounds: this.nodeBounds(this.element.firstChild),
-            children: [],
-          },
-        ]);
+        this.assertRenderTree([textareaNode('first', this.element.firstChild)]);
       }
 
       async '@test <LinkTo> components'() {

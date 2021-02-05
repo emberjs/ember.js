@@ -1,8 +1,9 @@
 import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import Component from './component';
 import Checkbox from './components/checkbox';
-import InputComponent from './components/input';
+import InputComponent, { TextareaComponent } from './components/input';
 import LinkToComponent from './components/link-to';
 import TextField from './components/text-field';
 import TextArea from './components/textarea';
@@ -56,11 +57,15 @@ export function setupEngineRegistry(registry: Registry): void {
 
   registry.register('component:-text-field', TextField);
   registry.register('component:-checkbox', Checkbox);
+  registry.register('component:input', InputComponent);
   registry.register('component:link-to', LinkToComponent);
 
-  registry.register('component:input', InputComponent);
-
-  registry.register('component:textarea', TextArea);
+  if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+    registry.register('component:-textarea', TextArea);
+    registry.register('component:textarea', TextareaComponent);
+  } else {
+    registry.register('component:textarea', TextArea);
+  }
 
   if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
     registry.register(P`component:-default`, Component);
