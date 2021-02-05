@@ -610,11 +610,11 @@ moduleFor(
     }
 
     ['@test sends an action to the parent level when `bubbles=true` is provided'](assert) {
-      assert.expect(1);
+      let bubbled = 0;
 
       let ParentComponent = Component.extend({
         change() {
-          assert.ok(true, 'bubbled upwards');
+          bubbled++;
         },
       });
 
@@ -622,9 +622,16 @@ moduleFor(
         ComponentClass: ParentComponent,
         template: `<Input @bubbles={{true}} />`,
       });
-      this.render(`<Parent />`);
+
+      expectDeprecation(
+        () => this.render(`<Parent />`),
+        'Passing the `@bubbles` argument to <Input> is deprecated.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       this.triggerEvent('change');
+
+      assert.strictEqual(bubbled, 1, 'bubbled upwards');
     }
 
     ['@test triggers `focus-in` when focused'](assert) {

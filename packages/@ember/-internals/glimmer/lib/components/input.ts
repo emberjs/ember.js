@@ -7,7 +7,7 @@ import { Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { jQuery, jQueryDisabled } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { assert, deprecate, warn } from '@ember/debug';
+import { assert, deprecate, runInDebug, warn } from '@ember/debug';
 import { JQUERY_INTEGRATION, SEND_ACTION } from '@ember/deprecated-features';
 import { action } from '@ember/object';
 import { Maybe, Option } from '@glimmer/interfaces';
@@ -311,6 +311,20 @@ class ForkedValue implements Value {
 abstract class AbstractInput extends InternalComponent {
   modernized = Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS);
 
+  constructor(owner: Owner, args: Record<string, Reference | undefined>, caller: unknown) {
+    super(owner, args, caller);
+
+    runInDebug(() => {
+      untrack(() => {
+        for (let name in args) {
+          if (!this.isSupportedArgument(name)) {
+            this.onUnsupportedArgument(name);
+          }
+        }
+      });
+    });
+  }
+
   /**
    * The default HTML id attribute. We don't really _need_ one, this is just
    * added for compatibility as it's hard to tell if people rely on it being
@@ -430,7 +444,15 @@ abstract class AbstractInput extends InternalComponent {
     }
   }
 
-  private callbackFor(type: string, shouldDevirtualize = true): EventListener {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected isSupportedArgument(_name: string): boolean {
+    return false;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onUnsupportedArgument(_name: string): void {}
+
+  protected callbackFor(type: string, shouldDevirtualize = true): EventListener {
     let callback = this.arg(type);
 
     if (callback) {
@@ -480,6 +502,19 @@ class Input extends AbstractInput {
   get isTextarea(): false {
     return false;
   }
+
+  protected isSupportedArgument(name: string): boolean {
+    let supportedArguments = [
+      'type',
+      'value',
+      'checked',
+      'insert-newline',
+      'enter',
+      'escape-press',
+    ];
+
+    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
+  }
 }
 
 class Textarea extends AbstractInput {
@@ -498,10 +533,34 @@ class Textarea extends AbstractInput {
   get isTextarea(): true {
     return true;
   }
+
+  protected isSupportedArgument(name: string): boolean {
+    let supportedArguments = ['type', 'value', 'insert-newline', 'enter', 'escape-press'];
+    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
+  }
 }
 
 // Deprecated features
 if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  // Unsupported arguments
+  {
+    AbstractInput.prototype['onUnsupportedArgument'] = function (
+      this: AbstractInput,
+      argument: string
+    ): void {
+      let name = this.constructor.toString();
+
+      deprecate(`Passing the \`@${argument}\` argument to <${name}> is deprecated.`, false, {
+        id: 'ember.built-in-components.legacy-arguments',
+        for: 'ember-source',
+        since: {},
+        until: '4.0.0',
+      });
+
+      this.modernized = false;
+    };
+  }
+
   // Attribute bindings
   {
     let defineGetterForDeprecatedAttributeBinding = (
@@ -517,6 +576,15 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         `[BUG] There is already a getter for _${argument} on ${name}`,
         !(`_${argument}` in prototype)
       );
+
+      let superIsSupportedArgument = prototype['isSupportedArgument'];
+
+      prototype['isSupportedArgument'] = function isSupportedArgument(
+        this: AbstractInput,
+        name: string
+      ): boolean {
+        return (this.modernized && name === argument) || superIsSupportedArgument.call(this, name);
+      };
 
       Object.defineProperty(prototype, `_${argument}`, {
         get(this: AbstractInput): unknown {
@@ -674,148 +742,171 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     });
   }
 
-  type EventsMap = Record<string, string>;
+  // Deprecated event arguments
+  {
+    type EventsMap = Record<string, string>;
 
-  const EVENTS = new WeakMap<object, EventsMap>();
+    const EVENTS = new WeakMap<object, EventsMap>();
 
-  const getEventsMap = (owner: Owner): EventsMap => {
-    let events = EVENTS.get(owner);
+    const getEventsMap = (owner: Owner): EventsMap => {
+      let events = EVENTS.get(owner);
 
-    if (events === undefined) {
-      let eventDispatcher = owner.lookup<Maybe<{ _finalEvents?: EventsMap }>>(
-        'event_dispatcher:main'
-      );
+      if (events === undefined) {
+        let eventDispatcher = owner.lookup<Maybe<{ _finalEvents?: EventsMap }>>(
+          'event_dispatcher:main'
+        );
 
-      assert(
-        'missing event dispatcher',
-        eventDispatcher !== null && typeof eventDispatcher === 'object'
-      );
+        assert(
+          'missing event dispatcher',
+          eventDispatcher !== null && typeof eventDispatcher === 'object'
+        );
 
-      assert(
-        'missing _finalEvents on event dispatcher',
-        '_finalEvents' in eventDispatcher &&
-          eventDispatcher?._finalEvents !== null &&
-          typeof eventDispatcher?._finalEvents === 'object'
-      );
+        assert(
+          'missing _finalEvents on event dispatcher',
+          '_finalEvents' in eventDispatcher &&
+            eventDispatcher?._finalEvents !== null &&
+            typeof eventDispatcher?._finalEvents === 'object'
+        );
 
-      EVENTS.set(owner, (events = eventDispatcher._finalEvents));
-    }
+        EVENTS.set(owner, (events = eventDispatcher._finalEvents));
+      }
 
-    return events;
-  };
+      return events;
+    };
 
-  class DeprecatedEventHandlersModifier extends InternalModifier {
-    static toString(): string {
-      return 'DeprecatedEventHandlersModifier';
-    }
+    let superIsSupportedArgument = AbstractInput.prototype['isSupportedArgument'];
 
-    private listeners = new Map<string, EventListener>();
-
-    install(): void {
-      let { element, eventsMap, component, listenerFor, listeners } = this;
-
-      let entries: [eventName: string, methodName: string, isVirtualEvent?: boolean][] = [
-        ...Object.entries(eventsMap),
-        ['focusin', 'focus-in', true],
-        ['focusout', 'focus-out', true],
-        ['keypress', 'key-press', true],
-        ['keyup', 'key-up', true],
-        ['keydown', 'key-down', true],
+    AbstractInput.prototype['isSupportedArgument'] = function isSupportedArgument(
+      this: AbstractInput,
+      name: string
+    ): boolean {
+      let events = [
+        ...Object.values(getEventsMap(this.owner)),
+        'focus-in',
+        'focus-out',
+        'key-press',
+        'key-up',
+        'key-down',
       ];
 
-      for (let [eventName, methodName, isVirtualEvent] of entries) {
-        let listener = listenerFor.call(component, eventName, methodName, isVirtualEvent);
+      return (
+        (this.modernized && events.indexOf(name) !== -1) ||
+        superIsSupportedArgument.call(this, name)
+      );
+    };
+    class DeprecatedEventHandlersModifier extends InternalModifier {
+      static toString(): string {
+        return 'DeprecatedEventHandlersModifier';
+      }
 
-        if (listener) {
-          listeners.set(eventName, listener);
-          element.addEventListener(eventName, listener);
+      private listeners = new Map<string, EventListener>();
+
+      install(): void {
+        let { element, eventsMap, component, listenerFor, listeners } = this;
+
+        let entries: [eventName: string, methodName: string, isVirtualEvent?: boolean][] = [
+          ...Object.entries(eventsMap),
+          ['focusin', 'focus-in', true],
+          ['focusout', 'focus-out', true],
+          ['keypress', 'key-press', true],
+          ['keyup', 'key-up', true],
+          ['keydown', 'key-down', true],
+        ];
+
+        for (let [eventName, methodName, isVirtualEvent] of entries) {
+          let listener = listenerFor.call(component, eventName, methodName, isVirtualEvent);
+
+          if (listener) {
+            listeners.set(eventName, listener);
+            element.addEventListener(eventName, listener);
+          }
+        }
+
+        Object.freeze(listeners);
+      }
+
+      remove(): void {
+        let { element, listeners } = this;
+
+        for (let [event, listener] of Object.entries(listeners)) {
+          element.removeEventListener(event, listener);
+        }
+
+        this.listeners = new Map();
+      }
+
+      private get eventsMap(): EventsMap {
+        return getEventsMap(this.owner);
+      }
+
+      private get component(): AbstractInput {
+        let component = this.positional(0);
+
+        assert(
+          'must pass the <Input /> or <Textarea /> component as first argument',
+          component instanceof AbstractInput
+        );
+
+        return component;
+      }
+
+      private listenerFor(
+        this: AbstractInput,
+        eventName: string,
+        methodName: string,
+        isVirtualEvent = false
+      ): Option<EventListener> {
+        assert(
+          'must be called with the <Input /> or <Textarea /> component as this',
+          this instanceof AbstractInput
+        );
+
+        let name = this.constructor.toString();
+        let curlyName = name.toLowerCase();
+
+        if (methodName in this.args) {
+          deprecate(
+            `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
+              `This would have overwritten the internal \`${methodName}\` method on ` +
+              `the <${name}> component and prevented it from functioning properly. ` +
+              `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
+              `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
+            true, // !(methodName in this),
+            {
+              id: 'ember.built-in-components.legacy-attribute-arguments',
+              for: 'ember-source',
+              since: {},
+              until: '4.0.0',
+            }
+          );
+
+          deprecate(
+            `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
+              `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
+              `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
+            true, // methodName in this,
+            {
+              id: 'ember.built-in-components.legacy-attribute-arguments',
+              for: 'ember-source',
+              since: {},
+              until: '4.0.0',
+            }
+          );
+
+          return this['callbackFor'].call(this, methodName, isVirtualEvent);
+        } else {
+          return null;
         }
       }
-
-      Object.freeze(listeners);
     }
 
-    remove(): void {
-      let { element, listeners } = this;
+    setInternalModifierManager(
+      new InternalModifierManager(DeprecatedEventHandlersModifier, 'deprecated-event-handlers'),
+      DeprecatedEventHandlersModifier
+    );
 
-      for (let [event, listener] of Object.entries(listeners)) {
-        element.removeEventListener(event, listener);
-      }
-
-      this.listeners = new Map();
-    }
-
-    private get eventsMap(): EventsMap {
-      return getEventsMap(this.owner);
-    }
-
-    private get component(): AbstractInput {
-      let component = this.positional(0);
-
-      assert(
-        'must pass the <Input /> or <Textarea /> component as first argument',
-        component instanceof AbstractInput
-      );
-
-      return component;
-    }
-
-    private listenerFor(
-      this: AbstractInput,
-      eventName: string,
-      methodName: string,
-      isVirtualEvent = false
-    ): Option<EventListener> {
-      assert(
-        'must be called with the <Input /> or <Textarea /> component as this',
-        this instanceof AbstractInput
-      );
-
-      let name = this.constructor.toString();
-      let curlyName = name.toLowerCase();
-
-      if (methodName in this.args) {
-        deprecate(
-          `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
-            `This would have overwritten the internal \`${methodName}\` method on ` +
-            `the <${name}> component and prevented it from functioning properly. ` +
-            `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
-            `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
-          true, // !(methodName in this),
-          {
-            id: 'ember.built-in-components.legacy-attribute-arguments',
-            for: 'ember-source',
-            since: {},
-            until: '4.0.0',
-          }
-        );
-
-        deprecate(
-          `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
-            `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
-            `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
-          true, // methodName in this,
-          {
-            id: 'ember.built-in-components.legacy-attribute-arguments',
-            for: 'ember-source',
-            since: {},
-            until: '4.0.0',
-          }
-        );
-
-        return this['callbackFor'].call(this, methodName, isVirtualEvent);
-      } else {
-        return null;
-      }
-    }
+    AbstractInput.prototype['DeprecatedEventHandlersModifier'] = DeprecatedEventHandlersModifier;
   }
-
-  setInternalModifierManager(
-    new InternalModifierManager(DeprecatedEventHandlersModifier, 'deprecated-event-handlers'),
-    DeprecatedEventHandlersModifier
-  );
-
-  AbstractInput.prototype['DeprecatedEventHandlersModifier'] = DeprecatedEventHandlersModifier;
 
   // String actions
   if (SEND_ACTION) {
