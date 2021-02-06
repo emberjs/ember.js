@@ -39,7 +39,7 @@ class BoundTextAreaAttributes {
     this.cases = cases;
   }
 
-  generate({ attribute, first, second }) {
+  generate({ attribute, argument = attribute, first, second }) {
     return {
       [`@test ${attribute} (HTML attribute)`]() {
         this.render(`<Textarea ${attribute}={{this.value}} />`, {
@@ -56,14 +56,14 @@ class BoundTextAreaAttributes {
         this.assertTextArea({ attrs: { [attribute]: first } });
       },
 
-      [`@test [DEPRECATED] @${attribute} (named argument)`]() {
+      [`@test [DEPRECATED] @${argument} (named argument)`]() {
         let deprecation = new RegExp(
-          `Passing the \`@${attribute}\` argument to <Textarea> is deprecated\\.`
+          `Passing the \`@${argument}\` argument to <Textarea> is deprecated\\.`
         );
 
         maybeExpectDeprecation(
           EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
-          () => this.render(`<Textarea @${attribute}={{this.value}} />`, { value: first }),
+          () => this.render(`<Textarea @${argument}={{this.value}} />`, { value: first }),
           deprecation
         );
         this.assertTextArea({ attrs: { [attribute]: first } });
@@ -91,6 +91,7 @@ class BoundTextAreaAttributes {
 applyMixins(
   TextAreaRenderingTest,
   new BoundTextAreaAttributes([
+    { attribute: 'role', argument: 'ariaRole', first: 'textbox', second: 'search' },
     { attribute: 'placeholder', first: 'Stuff here', second: 'Other stuff' },
     { attribute: 'name', first: 'Stuff here', second: 'Other stuff' },
     { attribute: 'title', first: 'Stuff here', second: 'Other stuff' },
