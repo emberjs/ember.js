@@ -468,12 +468,15 @@ moduleFor(
       this.assertText('[] []');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
-      this.render(`{{input type='text' value=(mut (get this.source 'banana')) id='get-input'}}`, {
-        source: {
-          banana: 'banana',
-        },
-      });
+    ['@test get helper value should be updatable using <Input> and (mut) - static key'](assert) {
+      this.render(
+        `<Input @type='text' @value={{mut (get this.source 'banana')}} id='get-input'/>`,
+        {
+          source: {
+            banana: 'banana',
+          },
+        }
+      );
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
@@ -495,14 +498,17 @@ moduleFor(
       assert.strictEqual(this.$('#get-input').val(), 'banana');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - dynamic key'](assert) {
-      this.render(`{{input type='text' value=(mut (get this.source this.key)) id='get-input'}}`, {
-        source: {
-          apple: 'apple',
-          banana: 'banana',
-        },
-        key: 'banana',
-      });
+    ['@test get helper value should be updatable using <Input> and (mut) - dynamic key'](assert) {
+      this.render(
+        `<Input @type='text' @value={{mut (get this.source this.key)}} id='get-input'/>`,
+        {
+          source: {
+            apple: 'apple',
+            banana: 'banana',
+          },
+          key: 'banana',
+        }
+      );
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
@@ -536,19 +542,22 @@ moduleFor(
       assert.strictEqual(this.$('#get-input').val(), 'banana');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - dynamic nested key'](
+    ['@test get helper value should be updatable using <Input> and (mut) - dynamic nested key'](
       assert
     ) {
-      this.render(`{{input type='text' value=(mut (get this.source this.key)) id='get-input'}}`, {
-        source: {
-          apple: {
-            gala: 'gala',
-            mcintosh: 'mcintosh',
+      this.render(
+        `<Input @type='text' @value={{mut (get this.source this.key)}} id='get-input'/>`,
+        {
+          source: {
+            apple: {
+              gala: 'gala',
+              mcintosh: 'mcintosh',
+            },
+            banana: 'banana',
           },
-          banana: 'banana',
-        },
-        key: 'apple.mcintosh',
-      });
+          key: 'apple.mcintosh',
+        }
+      );
 
       assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
 

@@ -6,7 +6,7 @@ type ExpectDeprecationAsyncFunc = (
   func: () => void | undefined | Message | Promise<any>,
   expectedMessage: Message
 ) => Promise<any>;
-type ExpectDeprecationFunc = (
+export type ExpectDeprecationFunc = (
   func: () => void | undefined | Message,
   expectedMessage: Message
 ) => void;

@@ -1,5 +1,7 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
+import { maybeExpectDeprecation } from 'internal-test-helpers';
 import { action } from '@ember/object';
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
@@ -180,29 +182,35 @@ moduleFor(
       this.assertAttr('type', 'text');
     }
 
-    ['@test dynamic attributes']() {
-      this.render(
-        `
-      {{input type="text"
-        disabled=this.disabled
-        value=this.value
-        placeholder=this.placeholder
-        name=this.name
-        maxlength=this.maxlength
-        minlength=this.minlength
-        size=this.size
-        tabindex=this.tabindex
-      }}`,
-        {
-          disabled: false,
-          value: 'Original value',
-          placeholder: 'Original placeholder',
-          name: 'original-name',
-          maxlength: 10,
-          minlength: 5,
-          size: 20,
-          tabindex: 30,
-        }
+    ['@test [DEPRECATED] dynamic attributes']() {
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(
+            `
+            {{input type="text"
+              disabled=this.disabled
+              value=this.value
+              placeholder=this.placeholder
+              name=this.name
+              maxlength=this.maxlength
+              minlength=this.minlength
+              size=this.size
+              tabindex=this.tabindex
+            }}`,
+            {
+              disabled: false,
+              value: 'Original value',
+              placeholder: 'Original placeholder',
+              name: 'original-name',
+              maxlength: 10,
+              minlength: 5,
+              size: 20,
+              tabindex: 30,
+            }
+          );
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./
       );
 
       this.assertNotDisabled();
@@ -225,16 +233,22 @@ moduleFor(
       // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
       // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
-      runTask(() => {
-        set(this.context, 'value', 'Updated value');
-        set(this.context, 'disabled', true);
-        set(this.context, 'placeholder', 'Updated placeholder');
-        set(this.context, 'name', 'updated-name');
-        set(this.context, 'maxlength', 11);
-        set(this.context, 'minlength', 6);
-        // set(this.context, 'size', 21); //NOTE: failing in IE (TEST_SUITE=sauce)
-        // set(this.context, 'tabindex', 31); //NOTE: failing in IE (TEST_SUITE=sauce)
-      });
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          runTask(() => {
+            set(this.context, 'value', 'Updated value');
+            set(this.context, 'disabled', true);
+            set(this.context, 'placeholder', 'Updated placeholder');
+            set(this.context, 'name', 'updated-name');
+            set(this.context, 'maxlength', 11);
+            set(this.context, 'minlength', 6);
+            // set(this.context, 'size', 21); //NOTE: failing in IE (TEST_SUITE=sauce)
+            // set(this.context, 'tabindex', 31); //NOTE: failing in IE (TEST_SUITE=sauce)
+          });
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./
+      );
 
       this.assertDisabled();
       this.assertValue('Updated value');
@@ -245,16 +259,22 @@ moduleFor(
       // this.assertAttr('size', '21'); //NOTE: failing in IE (TEST_SUITE=sauce)
       // this.assertAttr('tabindex', '31'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
-      runTask(() => {
-        set(this.context, 'value', 'Original value');
-        set(this.context, 'disabled', false);
-        set(this.context, 'placeholder', 'Original placeholder');
-        set(this.context, 'name', 'original-name');
-        set(this.context, 'maxlength', 10);
-        set(this.context, 'minlength', 5);
-        // set(this.context, 'size', 20); //NOTE: failing in IE (TEST_SUITE=sauce)
-        // set(this.context, 'tabindex', 30); //NOTE: failing in IE (TEST_SUITE=sauce)
-      });
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          runTask(() => {
+            set(this.context, 'value', 'Original value');
+            set(this.context, 'disabled', false);
+            set(this.context, 'placeholder', 'Original placeholder');
+            set(this.context, 'name', 'original-name');
+            set(this.context, 'maxlength', 10);
+            set(this.context, 'minlength', 5);
+            // set(this.context, 'size', 20); //NOTE: failing in IE (TEST_SUITE=sauce)
+            // set(this.context, 'tabindex', 30); //NOTE: failing in IE (TEST_SUITE=sauce)
+          });
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./
+      );
 
       this.assertNotDisabled();
       this.assertValue('Original value');
@@ -266,18 +286,24 @@ moduleFor(
       // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
     }
 
-    ['@test static attributes']() {
-      this.render(`
-      {{input type="text"
-        disabled=true
-        value="Original value"
-        placeholder="Original placeholder"
-        name="original-name"
-        maxlength=10
-        minlength=5
-        size=20
-        tabindex=30
-      }}`);
+    ['@test [DEPRECATED] static attributes']() {
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(`
+            {{input type="text"
+              disabled=true
+              value="Original value"
+              placeholder="Original placeholder"
+              name="original-name"
+              maxlength=10
+              minlength=5
+              size=20
+              tabindex=30
+            }}`);
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./
+      );
 
       this.assertDisabled();
       this.assertValue('Original value');
@@ -709,21 +735,27 @@ moduleFor(
 moduleFor(
   `Components test: {{input type='checkbox'}}`,
   class extends InputRenderingTest {
-    ['@test dynamic attributes']() {
-      this.render(
-        `{{input
-      type='checkbox'
-      disabled=this.disabled
-      name=this.name
-      checked=this.checked
-      tabindex=this.tabindex
-    }}`,
-        {
-          disabled: false,
-          name: 'original-name',
-          checked: false,
-          tabindex: 10,
-        }
+    ['@test [DEPRECATED] dynamic attributes']() {
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(
+            `{{input
+              type='checkbox'
+              disabled=this.disabled
+              name=this.name
+              checked=this.checked
+              tabindex=this.tabindex
+            }}`,
+            {
+              disabled: false,
+              name: 'original-name',
+              checked: false,
+              tabindex: 10,
+            }
+          );
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./
       );
 
       this.assertSingleCheckbox();
@@ -738,22 +770,34 @@ moduleFor(
       this.assertAttr('name', 'original-name');
       this.assertAttr('tabindex', '10');
 
-      runTask(() => {
-        set(this.context, 'disabled', true);
-        set(this.context, 'name', 'updated-name');
-        set(this.context, 'tabindex', 11);
-      });
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          runTask(() => {
+            set(this.context, 'disabled', true);
+            set(this.context, 'name', 'updated-name');
+            set(this.context, 'tabindex', 11);
+          });
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./
+      );
 
       this.assertSingleCheckbox();
       this.assertDisabled();
       this.assertAttr('name', 'updated-name');
       this.assertAttr('tabindex', '11');
 
-      runTask(() => {
-        set(this.context, 'disabled', false);
-        set(this.context, 'name', 'original-name');
-        set(this.context, 'tabindex', 10);
-      });
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          runTask(() => {
+            set(this.context, 'disabled', false);
+            set(this.context, 'name', 'original-name');
+            set(this.context, 'tabindex', 10);
+          });
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./
+      );
 
       this.assertSingleCheckbox();
       this.assertNotDisabled();
@@ -823,9 +867,19 @@ moduleFor(
       this.assertCheckboxIsNotChecked();
     }
 
-    ['@test with static values']() {
-      this.render(
-        `{{input type="checkbox" disabled=false tabindex=10 name="original-name" checked=false}}`
+    ['@test [DEPRECATED] with static values']() {
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(
+            `{{input type="checkbox"
+              disabled=false
+              tabindex=10
+              name="original-name"
+              checked=false}}`
+          );
+        },
+        /Passing the `@(disabled|tabindex|name)` argument to <Input> is deprecated\./
       );
 
       this.assertSingleCheckbox();
@@ -852,29 +906,33 @@ moduleFor(
 moduleFor(
   `Components test: {{input type='text'}}`,
   class extends InputRenderingTest {
-    ['@test null values']() {
+    ['@test [DEPRECATED] null values']() {
       let attributes = ['disabled', 'placeholder', 'name', 'maxlength', 'size', 'tabindex'];
 
-      this.render(
-        `
-      {{input type="text"
-        disabled=this.disabled
-        value=this.value
-        placeholder=this.placeholder
-        name=this.name
-        maxlength=this.maxlength
-        size=this.size
-        tabindex=this.tabindex
-      }}`,
-        {
-          disabled: null,
-          value: null,
-          placeholder: null,
-          name: null,
-          maxlength: null,
-          size: null,
-          tabindex: null,
-        }
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(
+            `{{input type="text"
+              disabled=this.disabled
+              value=this.value
+              placeholder=this.placeholder
+              name=this.name
+              maxlength=this.maxlength
+              size=this.size
+              tabindex=this.tabindex}}`,
+            {
+              disabled: null,
+              value: null,
+              placeholder: null,
+              name: null,
+              maxlength: null,
+              size: null,
+              tabindex: null,
+            }
+          );
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./
       );
 
       this.assertValue('');
@@ -885,15 +943,21 @@ moduleFor(
       this.assertValue('');
       this.assertAllAttrs(attributes, undefined);
 
-      runTask(() => {
-        set(this.context, 'disabled', true);
-        set(this.context, 'value', 'Updated value');
-        set(this.context, 'placeholder', 'Updated placeholder');
-        set(this.context, 'name', 'updated-name');
-        set(this.context, 'maxlength', 11);
-        set(this.context, 'size', 21);
-        set(this.context, 'tabindex', 31);
-      });
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          runTask(() => {
+            set(this.context, 'disabled', true);
+            set(this.context, 'value', 'Updated value');
+            set(this.context, 'placeholder', 'Updated placeholder');
+            set(this.context, 'name', 'updated-name');
+            set(this.context, 'maxlength', 11);
+            set(this.context, 'size', 21);
+            set(this.context, 'tabindex', 31);
+          });
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./
+      );
 
       this.assertDisabled();
       this.assertValue('Updated value');
@@ -903,15 +967,21 @@ moduleFor(
       this.assertAttr('size', '21');
       this.assertAttr('tabindex', '31');
 
-      runTask(() => {
-        set(this.context, 'disabled', null);
-        set(this.context, 'value', null);
-        set(this.context, 'placeholder', null);
-        set(this.context, 'name', null);
-        set(this.context, 'maxlength', null);
-        // set(this.context, 'size', null); //NOTE: this fails with `Error: Failed to set the 'size' property on 'HTMLInputElement': The value provided is 0, which is an invalid size.` (TEST_SUITE=sauce)
-        set(this.context, 'tabindex', null);
-      });
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          runTask(() => {
+            set(this.context, 'disabled', null);
+            set(this.context, 'value', null);
+            set(this.context, 'placeholder', null);
+            set(this.context, 'name', null);
+            set(this.context, 'maxlength', null);
+            // set(this.context, 'size', null); //NOTE: this fails with `Error: Failed to set the 'size' property on 'HTMLInputElement': The value provided is 0, which is an invalid size.` (TEST_SUITE=sauce)
+            set(this.context, 'tabindex', null);
+          });
+        },
+        /Passing the `@(disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./
+      );
 
       this.assertAttr('disabled', undefined);
       this.assertValue('');
@@ -935,10 +1005,14 @@ moduleFor(
   'value="%x" type="range" min="-5" max="50"',
 ].forEach((attrs) => {
   moduleFor(
-    `[GH#15675] Components test: {{input ${attrs}}}`,
+    `[GH#15675] Components test [DEPRECATED]: {{input ${attrs}}}`,
     class extends InputRenderingTest {
       renderInput(value = 25) {
-        this.render(`{{input ${attrs.replace('%x', value)}}}`);
+        maybeExpectDeprecation(
+          EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+          () => this.render(`{{input ${attrs.replace('%x', value)}}}`),
+          /Passing the `@(min|max)` argument to <Input> is deprecated\./
+        );
       }
 
       ['@test value over default max but below set max is kept']() {
