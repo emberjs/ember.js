@@ -213,7 +213,6 @@ EngineInstance.reopenClass({
     }
 
     registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
   },
 });
 

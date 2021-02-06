@@ -1,6 +1,8 @@
+import { privatize as P } from '@ember/-internals/container';
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
 import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
+import { BucketCache } from '@ember/-internals/routing';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
@@ -138,6 +140,7 @@ class EmberRouter extends EmberObject {
   _qpUpdates = new Set();
   _queuedQPChanges: { [key: string]: unknown } = {};
 
+  _bucketCache: BucketCache | undefined;
   _toplevelView: OutletView | null = null;
   _handledErrors = new Set();
   _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
@@ -145,10 +148,14 @@ class EmberRouter extends EmberObject {
 
   _slowTransitionTimer: unknown;
 
-  constructor() {
+  constructor(owner: Owner) {
     super(...arguments);
 
     this._resetQueuedQueryParameterChanges();
+    if (owner) {
+      this.namespace = owner.lookup('application:main');
+      this._bucketCache = owner.lookup(P`-bucket-cache:main`);
+    }
   }
 
   _initRouterJs() {
@@ -1046,7 +1053,7 @@ class EmberRouter extends EmberObject {
     state: TransitionState<Route>,
     queryParams: {},
     _fromRouterService: boolean
-  ) {
+  ): void {
     let routeInfos = state.routeInfos;
     let appCache = this._bucketCache;
     let qpMeta;
@@ -1093,6 +1100,12 @@ class EmberRouter extends EmberObject {
           }
         } else {
           let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, state.params);
+
+          assert(
+            'ROUTER BUG: expected appCache to be defined. This is an internal bug, please open an issue on Github if you see this message!',
+            appCache
+          );
+
           queryParams[qp.scopedPropertyName] = appCache.lookup(cacheKey, qp.prop, qp.defaultValue);
         }
       }
@@ -1397,7 +1410,7 @@ export function triggerEvent(
   ignoreFailure: boolean,
   name: string,
   args: any[]
-) {
+): void {
   if (!routeInfos) {
     if (ignoreFailure) {
       return;

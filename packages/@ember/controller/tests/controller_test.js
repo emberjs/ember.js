@@ -2,6 +2,7 @@ import Controller, { inject as injectController } from '@ember/controller';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Mixin, get } from '@ember/-internals/metal';
+import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
 import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';
 import { action } from '@ember/object';
@@ -86,6 +87,8 @@ moduleFor(
 
     ['@test A handled action can be bubbled to the target for continued processing'](assert) {
       assert.expect(2);
+      let owner = buildOwner();
+
       let TestController = Controller.extend({
         actions: {
           poke() {
@@ -94,6 +97,8 @@ moduleFor(
           },
         },
       });
+
+      owner.register('controller:index', TestController);
 
       let controller = TestController.create({
         target: Controller.extend({
@@ -104,6 +109,9 @@ moduleFor(
           },
         }).create(),
       });
+
+      setOwner(controller, owner);
+
       controller.send('poke');
     }
 

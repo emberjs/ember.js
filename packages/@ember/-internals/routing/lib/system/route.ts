@@ -1,3 +1,4 @@
+import { privatize as P } from '@ember/-internals/container';
 import {
   addObserver,
   computed,
@@ -11,6 +12,7 @@ import {
   setProperties,
 } from '@ember/-internals/metal';
 import { getOwner, Owner } from '@ember/-internals/owner';
+import { BucketCache } from '@ember/-internals/routing';
 import {
   A as emberA,
   ActionHandler,
@@ -100,8 +102,29 @@ class Route extends EmberObject implements IRoute {
   controller!: Controller;
   currentModel: unknown;
 
+  _bucketCache!: BucketCache;
   _internalName!: string;
   _names: unknown;
+  _router!: EmberRouter;
+
+  constructor(owner: Owner) {
+    super(...arguments);
+
+    if (owner) {
+      let router = owner.lookup<EmberRouter>('router:main');
+      let bucketCache = owner.lookup<BucketCache>(P`-bucket-cache:main`);
+
+      assert(
+        'ROUTER BUG: Expected route injections to be defined on the route. This is an internal bug, please open an issue on Github if you see this message!',
+        router && bucketCache
+      );
+
+      this._router = router;
+      this._bucketCache = bucketCache;
+      this._topLevelViewTemplate = owner.lookup('template:-outlet');
+      this._environment = owner.lookup('-environment:main');
+    }
+  }
 
   serialize!: (
     model: {},
@@ -111,8 +134,6 @@ class Route extends EmberObject implements IRoute {
         [key: string]: unknown;
       }
     | undefined;
-
-  _router!: EmberRouter;
 
   /**
     The name of the route, dot-delimited.

@@ -3,7 +3,7 @@ export { getEngineParent, setEngineParent } from './lib/engine-parent';
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { Namespace, RegistryProxyMixin } from '@ember/-internals/runtime';
-import { Registry, privatize as P } from '@ember/-internals/container';
+import { Registry } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
@@ -497,17 +497,7 @@ function commonSetupRegistry(registry) {
 
   registry.injection('renderer', '_viewRegistry', '-view-registry:main');
 
-  registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
-
   registry.injection('view:-outlet', 'namespace', 'application:main');
-
-  registry.injection('controller', 'target', 'router:main');
-  registry.injection('controller', 'namespace', 'application:main');
-
-  registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
-  registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
-
-  registry.injection('route', '_router', 'router:main');
 
   // Register the routing service...
   registry.register('service:-routing', RoutingService);
@@ -517,7 +507,6 @@ function commonSetupRegistry(registry) {
     instantiate: false,
   });
   registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-  registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
   // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);

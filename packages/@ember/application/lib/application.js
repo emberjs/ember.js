@@ -1167,8 +1167,6 @@ function commonSetupRegistry(registry) {
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
 
-  registry.injection('router:main', 'namespace', 'application:main');
-
   registry.register('location:auto', AutoLocation);
   registry.register('location:hash', HashLocation);
   registry.register('location:history', HistoryLocation);

@@ -2,7 +2,6 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { privatize as P } from '@ember/-internals/container';
 import {
   moduleFor,
   AbstractTestCase as TestCase,
@@ -63,16 +62,7 @@ moduleFor(
       );
       verifyRegistration(assert, engine, 'controller:basic');
       verifyInjection(assert, engine, 'renderer', '_viewRegistry', '-view-registry:main');
-      verifyInjection(assert, engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
       verifyInjection(assert, engine, 'view:-outlet', 'namespace', 'application:main');
-
-      verifyInjection(assert, engine, 'controller', 'target', 'router:main');
-      verifyInjection(assert, engine, 'controller', 'namespace', 'application:main');
-
-      verifyInjection(assert, engine, 'router', '_bucketCache', P`-bucket-cache:main`);
-      verifyInjection(assert, engine, 'route', '_bucketCache', P`-bucket-cache:main`);
-
-      verifyInjection(assert, engine, 'route', '_router', 'router:main');
 
       verifyRegistration(assert, engine, 'component:-text-field');
       verifyRegistration(assert, engine, 'component:-checkbox');
@@ -90,13 +80,6 @@ moduleFor(
         'container-debug-adapter:main',
         'resolver',
         'resolver-for-debugging:main'
-      );
-      verifyInjection(
-        assert,
-        engine,
-        'data-adapter:main',
-        'containerDebugAdapter',
-        'container-debug-adapter:main'
       );
       verifyRegistration(assert, engine, 'container-debug-adapter:main');
       verifyRegistration(assert, engine, 'component-lookup:main');
