@@ -7,7 +7,7 @@ moduleFor(
     testParamlessLinks(assert, routeName) {
       assert.expect(1);
 
-      this.addTemplate(routeName, "{{link-to 'index' 'index' id='index-link'}}");
+      this.addTemplate(routeName, `<LinkTo @route="index" id="index-link">index</LinkTo>`);
 
       this.add(
         `controller:${routeName}`,

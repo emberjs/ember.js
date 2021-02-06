@@ -72,8 +72,8 @@ moduleFor(
         this.addTemplate(
           'application',
           `
-        {{link-to 'Post' 'post' 1337 (query-params foo='bar') class='post-link is-1337'}}
-        {{link-to 'Post' 'post' 7331 (query-params foo='boo') class='post-link is-7331'}}
+        {{#link-to route='post' model=1337 query=(hash foo='bar') class='post-link is-1337'}}Post{{/link-to}}
+        {{#link-to route='post' model=7331 query=(hash foo='boo') class='post-link is-7331'}}Post{{/link-to}}
         {{outlet}}
       `
         );
@@ -296,7 +296,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{link-to 'Example' 'example' (query-params foo=undefined) id='the-link'}}"
+        "{{#link-to route='example' query=(hash foo=undefined) id='the-link'}}Example{{/link-to}}"
       );
 
       this.setSingleQPController('example', 'foo', undefined, {

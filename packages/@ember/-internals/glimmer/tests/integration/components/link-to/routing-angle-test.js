@@ -1801,7 +1801,7 @@ moduleFor(
         });
     }
 
-    [`@test The <LinkTo /> component can use dynamic params`](assert) {
+    async [`@test [DEPRECATED] The <LinkTo /> component can use dynamic params`](assert) {
       this.router.map(function () {
         this.route('foo', { path: 'foo/:some/:thing' });
         this.route('bar', { path: 'bar/:some/:thing/:else' });
@@ -1825,18 +1825,24 @@ moduleFor(
         `
       );
 
-      return this.visit('/').then(() => {
-        let link = this.$('#dynamic-link');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Invoking the `<LinkTo>` component with positional arguments is deprecated/
+      );
 
-        assert.equal(link.attr('href'), '/foo/one/two');
+      let link = this.$('#dynamic-link');
 
-        let controller = this.applicationInstance.lookup('controller:index');
+      assert.equal(link.attr('href'), '/foo/one/two');
+
+      let controller = this.applicationInstance.lookup('controller:index');
+
+      expectDeprecation(() => {
         runTask(() => {
           controller.set('dynamicLinkParams', ['bar', 'one', 'two', 'three']);
         });
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
 
-        assert.equal(link.attr('href'), '/bar/one/two/three');
-      });
+      assert.equal(link.attr('href'), '/bar/one/two/three');
     }
 
     [`@test GJ: <LinkTo /> to a parent root model hook which performs a 'transitionTo' has correct active class #13256`](
