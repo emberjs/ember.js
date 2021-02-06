@@ -647,6 +647,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       'id',
       'class',
       ['class', 'classNames'],
+      ['role', 'ariaRole'],
 
       // TextSupport
       'autocapitalize',
@@ -704,6 +705,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       'id',
       'class',
       ['class', 'classNames'],
+      ['role', 'ariaRole'],
 
       // TextSupport
       'autocapitalize',
