@@ -12,7 +12,7 @@ module('<%= friendlyTestName %>', function(hooks) {
 
     await render(hbs`{{<%= dasherizedModuleName %> inputValue}}`);
 
-    assert.equal(this.element.textContent.trim(), '1234');
+    assert.dom(this.element).hasText('1234');
   });
 });<% } else if (testType === 'unit') { %>import { <%= camelizedModuleName %> } from '<%= dasherizedModulePrefix %>/helpers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';

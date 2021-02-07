@@ -12,6 +12,6 @@ module('Integration | Helper | foo/bar-baz', function(hooks) {
 
     await render(hbs`{{foo/bar-baz inputValue}}`);
 
-    assert.equal(this.element.textContent.trim(), '1234');
+    assert.dom(this.element).hasText('1234');
   });
 });
