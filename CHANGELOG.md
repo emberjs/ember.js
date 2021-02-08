@@ -1,5 +1,23 @@
 # Ember Changelog
 
+### v3.26.0-beta.1 (February 08, 2021)
+
+- [#19255](https://github.com/emberjs/ember.js/pull/19255) [DEPRECATION] Deprecate transition methods of controller and route per [RFC #674](https://github.com/emberjs/rfcs/blob/master/text/0674-deprecate-transition-methods-of-controller-and-route.md).
+- [#19345](https://github.com/emberjs/ember.js/pull/19345) [DEPRECATION] Deprecate `<LinkTo>` positional arguments per [RFC #698](https://github.com/emberjs/rfcs/blob/master/text/0698-deprecate-link-to-positional-arguments.md).
+- [#19346](https://github.com/emberjs/ember.js/pull/19346) [DEPRECATION] Deprecate `{{#with}}` per [RFC #445](https://github.com/emberjs/rfcs/blob/master/text/0445-deprecate-with.md)
+- [#19358](https://github.com/emberjs/ember.js/pull/19358) [DEPRECATION] Deprecate implicit injections per [RFC #680](https://github.com/emberjs/rfcs/blob/master/text/0680-implicit-injection-deprecation.md)
+- [#19359](https://github.com/emberjs/ember.js/pull/19359) [DEPRECATION] Deprecates old browser support policy per [RFC #685 New Browser Support Policy](https://github.com/emberjs/rfcs/blob/master/text/0685-new-browser-support-policy.md).
+- [#19371](https://github.com/emberjs/ember.js/pull/19371) [DEPRECATION] Deprecate implicit `this` property lookup fallback per [RFC #308]https://github.com/emberjs/rfcs/blob/master/text/0308-deprecate-property-lookup-fallback.md
+- [#19372](https://github.com/emberjs/ember.js/pull/19372) [DEPRECATION] Adds deprecations for Classic edition and optional features per [RFC #704](https://github.com/emberjs/rfcs/blob/master/text/0704-deprecate-octane-optional-features.md) and [RFC #705](https://github.com/emberjs/rfcs/blob/master/text/0705-deprecate-jquery-optional-feature.md).
+- [#19373](https://github.com/emberjs/ember.js/pull/19373) [DEPRECATION] Deprecate old manager capabilities per [RFC #686](https://github.com/emberjs/rfcs/blob/master/text/0686-deprecate-old-manager-capabilities-versions.md)
+- [#19374](https://github.com/emberjs/ember.js/pull/19374) [DEPRECATION] Deprecate `hasBlock` and `hasBlockParams` per [RFC #689](https://github.com/emberjs/rfcs/blob/master/text/0689-deprecate-has-block.md).
+- [#19375](https://github.com/emberjs/ember.js/pull/19375) [DEPRECATION] Deprecate old class binding syntax and {{attrs}} per [RFC #691](https://github.com/emberjs/rfcs/blob/master/text/0691-deprecate-class-binding-and-class-name-bindings.md) and [RFC #690](https://github.com/emberjs/rfcs/blob/master/text/0690-deprecate-attrs-in-templates.md).
+- [#19381](https://github.com/emberjs/ember.js/pull/19381) [DEPRECATION] Deprecate Array Observers per [RFC #692](https://github.com/emberjs/rfcs/blob/master/text/0692-deprecate-array-observers.md).
+- [#19379](https://github.com/emberjs/ember.js/pull/19379) [CLEANUP] Refactor DataAdapter to not use observers or array observers
+- [#19378](https://github.com/emberjs/ember.js/pull/19378) [BUGFIX] Fix typo in template-only-glimmer-components feature detection
+- [#19298](https://github.com/emberjs/ember.js/pull/19298) [BUGFIX] Route serialize did not extract param off proxy
+- [#19326](https://github.com/emberjs/ember.js/pull/19326) [BUGFIX] Lazily setup the router in non-application tests for <LinkTo> component
+
 ### v3.25.0 (February 08, 2021)
 
 - [#19302](https://github.com/emberjs/ember.js/pull/19302) / [#19306](https://github.com/emberjs/ember.js/pull/19306) / [#19319](https://github.com/emberjs/ember.js/pull/19319) [FEATURE] Implement the [Handlebars Strict Mode RFC](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md).
