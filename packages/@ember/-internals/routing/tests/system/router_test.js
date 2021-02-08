@@ -64,7 +64,7 @@ moduleFor(
     ['@test should create a router.js instance after setupRouter'](assert) {
       let router = createRouter(undefined, { disableSetup: false });
 
-      assert.ok(router._didSetupRouter);
+      assert.ok(router.didSetupRouter);
       assert.ok(router._routerMicrolib);
     }
 

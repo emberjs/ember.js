@@ -1,6 +1,7 @@
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import { set } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { inject as injectService } from '@ember/service';
 
 moduleFor(
   'Router Service - main',
@@ -149,6 +150,19 @@ moduleFor(
         assert.ok(location);
         assert.ok(location instanceof NoneLocation);
       });
+    }
+
+    ['@test RouterService can be injected into router and accessed on init'](assert) {
+      assert.expect(1);
+
+      this.router.reopen({
+        routerService: injectService('router'),
+        init() {
+          assert.equal(this.routerService._router, this);
+        },
+      });
+
+      return this.visit('/');
     }
   }
 );

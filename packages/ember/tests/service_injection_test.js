@@ -50,6 +50,34 @@ moduleFor(
       assert.ok(controller.get('myService') instanceof MyService);
       assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
     }
+
+    ['@test Service does not cause too much recurison through circular reference to singleton'](
+      assert
+    ) {
+      this.add(
+        'controller:application',
+        Controller.extend({
+          myService: injectService('my-service'),
+          foo: 'bar',
+          init() {
+            this._super(...arguments);
+            assert.equal(this.myService.value, this.foo);
+          },
+        })
+      );
+      let MyService = Service.extend({
+        get _controller() {
+          return getOwner(this).lookup('controller:application');
+        },
+        get value() {
+          return this._controller.foo;
+        },
+      });
+
+      this.add('service:my-service', MyService);
+
+      this.visit('/');
+    }
   }
 );
 

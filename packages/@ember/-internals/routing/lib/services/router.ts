@@ -73,7 +73,9 @@ export default class RouterService extends Service {
     }
     const owner = getOwner(this) as Owner;
     router = owner.lookup('router:main') as EmberRouter;
-    router.setupRouter();
+    if (!router.didSetupRouter) {
+      router.setupRouter();
+    }
     return (this[ROUTER] = router);
   }
 

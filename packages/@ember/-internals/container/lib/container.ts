@@ -76,6 +76,7 @@ export default class Container {
   readonly registry: Registry & DebugRegistry;
   cache: { [key: string]: CacheMember };
   factoryManagerCache!: { [key: string]: FactoryManager<any, any> };
+  singletonInstanceNames: Set<string>;
   readonly validationCache!: { [key: string]: boolean };
   isDestroyed: boolean;
   isDestroying: boolean;
@@ -85,6 +86,7 @@ export default class Container {
     this.owner = options.owner || null;
     this.cache = dictionary(options.cache || null);
     this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
+    this.singletonInstanceNames = new Set();
     this.isDestroyed = false;
     this.isDestroying = false;
 
@@ -379,6 +381,8 @@ function instantiateFactory(
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
+    container.singletonInstanceNames.add(fullName);
+
     let instance = (container.cache[normalizedName] = factoryManager.create() as CacheMember);
 
     // if this lookup happened _during_ destruction (emits a deprecation, but
@@ -487,12 +491,14 @@ function destroyDestroyables(container: Container): void {
 function resetCache(container: Container) {
   container.cache = dictionary(null);
   container.factoryManagerCache = dictionary(null);
+  container.singletonInstanceNames = new Set();
 }
 
 function resetMember(container: Container, fullName: string) {
   let member = container.cache[fullName];
 
   delete container.factoryManagerCache[fullName];
+  container.singletonInstanceNames.delete(fullName);
 
   if (member) {
     delete container.cache[fullName];

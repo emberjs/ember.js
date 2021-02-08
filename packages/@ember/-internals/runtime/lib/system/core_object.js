@@ -842,11 +842,21 @@ class CoreObject {
   static create(props, extra) {
     let instance;
 
+    let factory;
+
     if (props !== undefined) {
+      factory = getFactoryFor(props);
       instance = new this(getOwner(props));
-      setFactoryFor(instance, getFactoryFor(props));
+      setFactoryFor(instance, factory);
     } else {
       instance = new this();
+    }
+
+    if (factory) {
+      let singletonInstanceNames = factory.container.singletonInstanceNames;
+      if (singletonInstanceNames && singletonInstanceNames.has(factory.fullName)) {
+        factory.container.cache[factory.fullName] = instance;
+      }
     }
 
     if (extra === undefined) {
