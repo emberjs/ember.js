@@ -1,31 +1,18 @@
 # Ember Changelog
 
-### v3.25.0-beta.5 (February 02, 2021)
-
-- [#19370](https://github.com/emberjs/ember.js/pull/19370) [BUGFIX] Update glimmer-vm to prevent errors for older inline precompilation
-
-### v3.25.0-beta.4 (February 01, 2021)
-
-- [#19363](https://github.com/emberjs/ember.js/pull/19363) [BUGFIX] Update VM, fix component name preprocessing
-
-### v3.25.0-beta.3 (January 25, 2021)
-
-- [#19351](https://github.com/emberjs/ember.js/pull/19351) [BUGFIX] Ensure locals do not clobber components of the same name
-
-### v3.25.0-beta.2 (January 19, 2021)
-
-- [#19339](https://github.com/emberjs/ember.js/pull/19339) [DEPRECATION] Deprecate importing `htmlSafe` and `isHTMLSafe` from `@ember/string` per the [Deprecate Ember String RFC](https://github.com/emberjs/rfcs/blob/master/text/0236-deprecation-ember-string.md).
-- [#19336](https://github.com/emberjs/ember.js/pull/19336) [BUGFIX] Ensure Component Lookup Is Well Formed
-- [#19337](https://github.com/emberjs/ember.js/pull/19337) [BUGFIX] Ensure query param only <LinkTo /> are properly scoped in engines.
-- [#19338](https://github.com/emberjs/ember.js/pull/19338) [BUGFIX] Add missing `deprecate` options (`for` + `since`)
-- [#19342](https://github.com/emberjs/ember.js/pull/19342) [BUGFIX] Fix misleading LinkTo error message
-
-### v3.25.0-beta.1 (December 28, 2020)
+### v3.25.0 (February 08, 2021)
 
 - [#19302](https://github.com/emberjs/ember.js/pull/19302) / [#19306](https://github.com/emberjs/ember.js/pull/19306) / [#19319](https://github.com/emberjs/ember.js/pull/19319) [FEATURE] Implement the [Handlebars Strict Mode RFC](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md).
 - [#19318](https://github.com/emberjs/ember.js/pull/19318) [FEATURE] Implement the [Named Blocks RFC](https://github.com/emberjs/rfcs/blob/master/text/0460-yieldable-named-blocks.md).
+- [#19339](https://github.com/emberjs/ember.js/pull/19339) [DEPRECATION] Deprecate importing `htmlSafe` and `isHTMLSafe` from `@ember/string` per the [Deprecate Ember String RFC](https://github.com/emberjs/rfcs/blob/master/text/0236-deprecation-ember-string.md).
+- [#19320](https://github.com/emberjs/ember.js/pull/19320) / [#19317](https://github.com/emberjs/ember.js/pull/19317) / [#19297](https://github.com/emberjs/ember.js/pull/19297) / [#19293](https://github.com/emberjs/ember.js/pull/19293) / [#19278](https://github.com/emberjs/ember.js/pull/19278) / [#19275](https://github.com/emberjs/ember.js/pull/19275) / [#19363](https://github.com/emberjs/ember.js/pull/19363) Update rendering engine to `@glimmer/*` 0.74.2 for various features and bugfixes including ensuring `{{component.name}}` works with implicit this fallback
 - [#18148](https://github.com/emberjs/ember.js/pull/18148) [BUGFIX] Fix empty `htmlSafe` string to be treated as falsy
-- [#19320](https://github.com/emberjs/ember.js/pull/19320) / [#19317](https://github.com/emberjs/ember.js/pull/19317) / [#19297](https://github.com/emberjs/ember.js/pull/19297) / [#19293](https://github.com/emberjs/ember.js/pull/19293) / [#19278](https://github.com/emberjs/ember.js/pull/19278) / [#19275](https://github.com/emberjs/ember.js/pull/19275) Update rendering engine to `@glimmer/*` 0.73.1 for various features and bugfixes including ensuring `{{component.name}}` works with implicit this fallback
+- [#19365](https://github.com/emberjs/ember.js/pull/19365) [BUGFIX] Remove non-existing re-export from helper-addon blueprint
+- [#19370](https://github.com/emberjs/ember.js/pull/19370) [BUGFIX] Update glimmer-vm to prevent errors for older inline precompilation
+- [#19351](https://github.com/emberjs/ember.js/pull/19351) [BUGFIX] Ensure locals do not clobber components of the same name
+- [#19336](https://github.com/emberjs/ember.js/pull/19336) [BUGFIX] Ensure Component Lookup Is Well Formed
+- [#19338](https://github.com/emberjs/ember.js/pull/19338) [BUGFIX] Add missing `deprecate` options (`for` + `since`)
+- [#19342](https://github.com/emberjs/ember.js/pull/19342) [BUGFIX] Fix misleading LinkTo error message
 
 ### v3.24.1 (January 14, 2021)
 
