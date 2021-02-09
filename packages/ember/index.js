@@ -491,7 +491,6 @@ Ember.NativeArray = NativeArray;
 Ember.Copyable = Copyable;
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
-Ember.TargetActionSupport = TargetActionSupport;
 Ember.Evented = Evented;
 Ember.PromiseProxyMixin = PromiseProxyMixin;
 Ember.Observable = Observable;
@@ -587,28 +586,37 @@ Helper.helper = helper;
 Ember.Helper = Helper;
 if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   [
-    ['Checkbox', '@ember/component/checkbox', Checkbox],
-    ['TextField', '@ember/component/text-field', TextField],
-    ['TextArea', '@ember/component/text-area', TextArea],
-    ['LinkComponent', '@ember/routing/link-component', LinkComponent],
-    ['TextSupport', '@ember/-internals/views', views.TextSupport],
-  ].forEach(([name, path, value]) => {
+    ['Checkbox', '@ember/component/checkbox', Checkbox, true],
+    ['TextField', '@ember/component/text-field', TextField, true],
+    ['TextArea', '@ember/component/text-area', TextArea, true],
+    ['LinkComponent', '@ember/routing/link-component', LinkComponent, true],
+    ['TextSupport', null, views.TextSupport, false],
+    ['TargetActionSupport', null, TargetActionSupport, false],
+  ].forEach(([name, path, value, availableInLegacyAddon]) => {
     Object.defineProperty(Ember, name, {
       get() {
-        deprecate(
-          `Using Ember.${name} or importing from '${path}' has been deprecated, install the ` +
-            `\`ember-legacy-built-in-components\` addon and use \`import { ${name} } from ` +
-            `'ember-legacy-built-in-components';\` instead`,
-          false,
-          {
-            id: 'ember.legacy-built-in-components',
-            until: '4.0.0',
-            for: 'ember-source',
-            since: {
-              // TODO: update this when enabling the feature
-            },
-          }
-        );
+        let message = `Using Ember.${name}`;
+
+        if (path !== null) {
+          message += ` or importing from '${path}'`;
+        }
+
+        message += ` is deprecated.`;
+
+        if (availableInLegacyAddon) {
+          message +=
+            ` Install the \`ember-legacy-built-in-components\` addon and use ` +
+            `\`import { ${name} } from 'ember-legacy-built-in-components';\` instead.`;
+        }
+
+        deprecate(message, false, {
+          id: 'ember.built-in-components.legacy-import',
+          until: '4.0.0',
+          for: 'ember-source',
+          since: {
+            // TODO: update this when enabling the feature
+          },
+        });
 
         return value;
       },
@@ -626,6 +634,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   Ember.TextArea = TextArea;
   Ember.LinkComponent = LinkComponent;
   Ember.TextSupport = views.TextSupport;
+  Ember.TargetActionSupport = TargetActionSupport;
 }
 Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = componentCapabilities;

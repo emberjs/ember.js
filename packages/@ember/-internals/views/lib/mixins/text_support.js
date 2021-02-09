@@ -3,7 +3,6 @@
 */
 
 import { get, set, Mixin } from '@ember/-internals/metal';
-import { TargetActionSupport } from '@ember/-internals/runtime';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { MUTABLE_CELL } from '@ember/-internals/views';
@@ -113,7 +112,7 @@ const KEY_EVENTS = {
   @extends Mixin
   @private
 */
-export default Mixin.create(TargetActionSupport, {
+export default Mixin.create({
   value: '',
 
   attributeBindings: [
