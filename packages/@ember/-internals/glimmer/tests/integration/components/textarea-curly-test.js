@@ -98,6 +98,15 @@ moduleFor(
       this.assertStableRerender();
     }
 
+    ['@test [DEPRECATED] Supports elementId'](assert) {
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => this.render('{{textarea elementId="test-textarea"}}'),
+        /Passing the `@elementId` argument to <Textarea> is deprecated\./
+      );
+      assert.equal(this.$('textarea').attr('id'), 'test-textarea');
+    }
+
     ['@test [DEPRECATED] Should respect disabled'](assert) {
       maybeExpectDeprecation(
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS,

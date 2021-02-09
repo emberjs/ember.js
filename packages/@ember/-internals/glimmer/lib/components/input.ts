@@ -596,6 +596,17 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
 
   // Attribute bindings
   {
+    let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
+      if (target) {
+        return (
+          Object.getOwnPropertyDescriptor(target, property) ||
+          descriptorFor(Object.getPrototypeOf(target), property)
+        );
+      } else {
+        return null;
+      }
+    };
+
     let defineGetterForDeprecatedAttributeBinding = (
       component: typeof AbstractInput,
       attribute: string,
@@ -604,11 +615,6 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       let name = component.toString();
       let curlyName = name.toLowerCase();
       let { prototype } = component;
-
-      assert(
-        `[BUG] There is already a getter for _${argument} on ${name}`,
-        !(`_${argument}` in prototype)
-      );
 
       let superIsSupportedArgument = prototype['isSupportedArgument'];
 
@@ -619,65 +625,53 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         return (this.modernized && name === argument) || superIsSupportedArgument.call(this, name);
       };
 
-      Object.defineProperty(prototype, `_${argument}`, {
-        get(this: AbstractInput): unknown {
-          deprecate(
-            `Passing the \`@${argument}\` argument to <${name}> is deprecated. ` +
-              `Instead, please pass the attribute directly, i.e. \`<${name} ${attribute}={{...}} />\` ` +
-              `instead of \`<${name} @${argument}={{...}} />\` or \`{{${curlyName} ${argument}=...}}\`.`,
-            !(argument in this.args),
-            {
-              id: 'ember.built-in-components.legacy-attribute-arguments',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-            }
-          );
+      let superDescriptor = descriptorFor(prototype, attribute);
+      let superGetter: (this: AbstractInput) => unknown = () => undefined;
 
-          return this.arg(argument);
-        },
-      });
-
-      let target = prototype;
-      let descriptor: PropertyDescriptor | undefined;
-
-      while (target && !(descriptor = Object.getOwnPropertyDescriptor(target, argument))) {
-        target = Object.getPrototypeOf(target);
-      }
-
-      if (descriptor) {
-        const superGetter = descriptor.get;
-
+      if (superDescriptor) {
         assert(
-          `Expecting ${argument} to be a getter on <${name}>`,
-          typeof superGetter === 'function'
+          `Expecting ${attribute} to be a getter on <${name}>`,
+          typeof superDescriptor.get === 'function'
         );
 
-        Object.defineProperty(prototype, argument, {
-          ...descriptor,
-          get(this: AbstractInput): unknown {
-            // The `class` attribute is concatenated/merged instead of clobbered
-            if (attribute === 'class' && argument in this.args) {
-              let arg = this[`_${argument}`];
-
-              if (arg) {
-                return `${superGetter.call(this)} ${this[`_${argument}`]}`;
-              } else {
-                return superGetter.call(this);
-              }
-            } else if (argument in this.args) {
-              return this[`_${argument}`];
-            } else {
-              return superGetter.call(this);
-            }
-          },
-        });
+        superGetter = superDescriptor.get;
       }
+
+      Object.defineProperty(prototype, attribute, {
+        configurable: true,
+        enumerable: true,
+        get(this: AbstractInput): unknown {
+          if (argument in this.args) {
+            deprecate(
+              `Passing the \`@${argument}\` argument to <${name}> is deprecated. ` +
+                `Instead, please pass the attribute directly, i.e. \`<${name} ${attribute}={{...}} />\` ` +
+                `instead of \`<${name} @${argument}={{...}} />\` or \`{{${curlyName} ${argument}=...}}\`.`,
+              false,
+              {
+                id: 'ember.built-in-components.legacy-attribute-arguments',
+                for: 'ember-source',
+                since: {},
+                until: '4.0.0',
+              }
+            );
+
+            // The `class` attribute is concatenated/merged instead of clobbered
+            if (attribute === 'class' && superDescriptor) {
+              return `${superGetter.call(this)} ${this.arg(argument)}`;
+            } else {
+              return this.arg(argument);
+            }
+          } else {
+            return superGetter.call(this);
+          }
+        },
+      });
     };
 
     let deprecatedInputAttributeBindings: Array<string | [string, string]> = [
       // Component
       'id',
+      ['id', 'elementId'],
       'class',
       ['class', 'classNames'],
       ['role', 'ariaRole'],
@@ -736,6 +730,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     let deprecatedTextareaAttributeBindings: Array<string | [string, string]> = [
       // Component
       'id',
+      ['id', 'elementId'],
       'class',
       ['class', 'classNames'],
       ['role', 'ariaRole'],
