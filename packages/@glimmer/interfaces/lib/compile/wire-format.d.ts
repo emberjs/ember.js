@@ -515,7 +515,6 @@ export type SerializedTemplateBlockJSON = string;
  * A JSON object containing the SerializedTemplateBlock as JSON and TemplateMeta.
  */
 export interface SerializedTemplateWithLazyBlock {
-  id?: Option<string>;
   block: SerializedTemplateBlockJSON;
   moduleName: string;
   scope: (() => unknown[]) | undefined | null;
