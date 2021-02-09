@@ -1,12 +1,10 @@
 import { AbstractNodeTest, NodeJitRenderDelegate } from '../modes/node/env';
 import { test } from '../test-decorator';
 import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
-import { RenderTest } from '../render-test';
 import { Environment, Cursor, ElementBuilder } from '@glimmer/interfaces';
 import { blockStack } from '../dom/blocks';
 import { strip } from '../test-helpers/strings';
 import { toInnerHTML } from '../dom/simple-utils';
-import { precompile } from '@glimmer/compiler';
 
 export class DOMHelperTests extends AbstractNodeTest {
   static suiteName = 'Server-side rendering in Node.js (normal)';
@@ -18,20 +16,6 @@ export class DOMHelperTests extends AbstractNodeTest {
     let helper = new NodeDOMTreeConstruction(null as any);
 
     this.assert.ok(!!helper, 'helper was instantiated without errors');
-  }
-}
-
-export class CompilationTests extends RenderTest {
-  static suiteName = 'Id generation';
-
-  @test
-  'generates id in node'() {
-    let template = precompile('hello');
-    let obj = JSON.parse(template);
-    this.assert.equal(obj.id, 'G0ggkEjw', 'short sha of template source');
-    template = precompile('hello', { meta: { moduleName: 'template/hello' } });
-    obj = JSON.parse(template);
-    this.assert.equal(obj.id, '4vC0bnaR', 'short sha of template source and meta');
   }
 }
 
