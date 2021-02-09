@@ -4,8 +4,9 @@
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { tracked } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
+import { TargetActionSupport } from '@ember/-internals/runtime';
 import { guidFor } from '@ember/-internals/utils';
-import { jQuery, jQueryDisabled } from '@ember/-internals/views';
+import { jQuery, jQueryDisabled, TextSupport } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate, runInDebug, warn } from '@ember/debug';
 import { JQUERY_INTEGRATION, SEND_ACTION } from '@ember/deprecated-features';
@@ -18,11 +19,15 @@ import {
 } from '@glimmer/manager';
 import { isConstRef, isUpdatableRef, Reference, updateRef, valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
+import Component from '../component';
 import InternalManager from '../component-managers/internal';
 import InternalModifier, { InternalModifierManager } from '../modifiers/internal';
 import InputTemplate from '../templates/input';
 import TextareaTemplate from '../templates/textarea';
+import Checkbox from './checkbox';
 import InternalComponent from './internal';
+import TextField from './text-field';
+import TextArea from './textarea';
 
 let isValidInputType: (type: string) => boolean;
 
@@ -309,22 +314,6 @@ class ForkedValue implements Value {
   @public
 */
 abstract class AbstractInput extends InternalComponent {
-  modernized = Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS);
-
-  constructor(owner: Owner, args: Record<string, Reference | undefined>, caller: unknown) {
-    super(owner, args, caller);
-
-    runInDebug(() => {
-      untrack(() => {
-        for (let name in args) {
-          if (!this.isSupportedArgument(name)) {
-            this.onUnsupportedArgument(name);
-          }
-        }
-      });
-    });
-  }
-
   /**
    * The default HTML id attribute. We don't really _need_ one, this is just
    * added for compatibility as it's hard to tell if people rely on it being
@@ -353,6 +342,7 @@ abstract class AbstractInput extends InternalComponent {
     }
   }
 
+  abstract modernized: boolean;
   abstract type: string;
   abstract isCheckbox: boolean;
   abstract isTextarea: boolean;
@@ -477,6 +467,28 @@ class Input extends AbstractInput {
     return 'Input';
   }
 
+  constructor(owner: Owner, args: Record<string, Reference | undefined>, caller: unknown) {
+    super(owner, args, caller);
+
+    runInDebug(() => {
+      untrack(() => {
+        for (let name in args) {
+          if (!this.isSupportedArgument(name)) {
+            this.onUnsupportedArgument(name);
+          }
+        }
+      });
+    });
+  }
+
+  modernized =
+    Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
+    Component._wasReopened === false &&
+    TextField._wasReopened === false &&
+    Checkbox._wasReopened === false &&
+    TextSupport._wasReopened === false &&
+    TargetActionSupport._wasReopened === false;
+
   /**
    * The HTML type attribute.
    */
@@ -521,6 +533,27 @@ class Textarea extends AbstractInput {
   static toString(): string {
     return 'Textarea';
   }
+
+  constructor(owner: Owner, args: Record<string, Reference | undefined>, caller: unknown) {
+    super(owner, args, caller);
+
+    runInDebug(() => {
+      untrack(() => {
+        for (let name in args) {
+          if (!this.isSupportedArgument(name)) {
+            this.onUnsupportedArgument(name);
+          }
+        }
+      });
+    });
+  }
+
+  modernized =
+    Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
+    Component._wasReopened === false &&
+    TextArea._wasReopened === false &&
+    TextSupport._wasReopened === false &&
+    TargetActionSupport._wasReopened === false;
 
   get type(): never {
     throw assert(`[BUG] type getter should never be called on <Textarea />`);
