@@ -4,6 +4,8 @@ import {
   moduleFor,
   strip,
 } from 'internal-test-helpers';
+import { ExpectDeprecationFunc } from '../../../../../../internal-test-helpers/lib/ember-dev/deprecation';
+declare let expectDeprecation: ExpectDeprecationFunc;
 
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
@@ -225,7 +227,10 @@ if (ENV._DEBUG_RENDER_TREE) {
               if (showHeader) {
                 this.render('header', { outlet: 'header' });
               } else {
-                this.disconnectOutlet('header');
+                expectDeprecation(
+                  () => this.disconnectOutlet('header'),
+                  'The usage of `disconnectOutlet` is deprecated.'
+                );
               }
             }
           }
