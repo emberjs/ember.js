@@ -13,21 +13,17 @@ import { assign } from '@glimmer/util';
 import { compilable } from './compilable-template';
 import { WrappedBuilder } from './wrapped-component';
 
-let clientId = 0;
-
 export let templateCacheCounters = {
   cacheHit: 0,
   cacheMiss: 0,
 };
 
 // These interfaces are for backwards compatibility, some addons use these intimate APIs
-export interface TemplateFactoryWithIdAndMeta extends TemplateFactory {
-  __id?: string;
+export interface TemplateFactoryWithMeta extends TemplateFactory {
   __meta?: { moduleName: string };
 }
 
-export interface TemplateWithIdAndReferrer extends TemplateOk {
-  id: string;
+export interface TemplateWithReferrer extends TemplateOk {
   referrer: {
     moduleName: string;
     owner: Owner | null;
@@ -40,16 +36,11 @@ export interface TemplateWithIdAndReferrer extends TemplateOk {
  * of the template.
  */
 export default function templateFactory({
-  id: templateId,
   moduleName,
   block,
   scope,
   isStrictMode,
 }: SerializedTemplateWithLazyBlock): TemplateFactory {
-  // TODO(template-refactors): This should be removed in the near future, as it
-  // appears that id is unused. It is currently kept for backwards compat reasons.
-  let id = templateId || `client-${clientId++}`;
-
   // TODO: This caches JSON serialized output once in case a template is
   // compiled by multiple owners, but we haven't verified if this is actually
   // helpful. We should benchmark this in the future.
@@ -58,7 +49,7 @@ export default function templateFactory({
   let ownerlessTemplate: Template | null = null;
   let templateCache = new WeakMap<object, Template>();
 
-  let factory: TemplateFactoryWithIdAndMeta = (owner?: Owner) => {
+  let factory: TemplateFactoryWithMeta = (owner?: Owner) => {
     if (parsedBlock === undefined) {
       parsedBlock = JSON.parse(block);
     }
@@ -67,7 +58,6 @@ export default function templateFactory({
       if (ownerlessTemplate === null) {
         templateCacheCounters.cacheMiss++;
         ownerlessTemplate = new TemplateImpl({
-          id,
           block: parsedBlock,
           moduleName,
           owner: null,
@@ -85,7 +75,7 @@ export default function templateFactory({
 
     if (result === undefined) {
       templateCacheCounters.cacheMiss++;
-      result = new TemplateImpl({ id, block: parsedBlock, moduleName, owner, scope, isStrictMode });
+      result = new TemplateImpl({ block: parsedBlock, moduleName, owner, scope, isStrictMode });
       templateCache.set(owner, result);
     } else {
       templateCacheCounters.cacheHit++;
@@ -94,13 +84,12 @@ export default function templateFactory({
     return result;
   };
 
-  factory.__id = id;
   factory.__meta = { moduleName };
 
   return factory;
 }
 
-class TemplateImpl implements TemplateWithIdAndReferrer {
+class TemplateImpl implements TemplateWithReferrer {
   readonly result = 'ok';
 
   private layout: Option<CompilableProgram> = null;
@@ -111,10 +100,6 @@ class TemplateImpl implements TemplateWithIdAndReferrer {
 
   get moduleName() {
     return this.parsedLayout.moduleName;
-  }
-
-  get id() {
-    return this.parsedLayout.id;
   }
 
   // TODO(template-refactors): This should be removed in the near future, it is
