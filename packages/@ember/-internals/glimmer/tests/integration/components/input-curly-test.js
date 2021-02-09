@@ -187,6 +187,7 @@ moduleFor(
           this.render(
             `
             {{input type="text"
+              elementId="test-input"
               ariaRole=this.role
               disabled=this.disabled
               value=this.value
@@ -210,12 +211,13 @@ moduleFor(
             }
           );
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertNotDisabled();
       this.assertValue('Original value');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'textbox');
       this.assertAttr('placeholder', 'Original placeholder');
       this.assertAttr('name', 'original-name');
@@ -228,6 +230,7 @@ moduleFor(
 
       this.assertNotDisabled();
       this.assertValue('Original value');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'textbox');
       this.assertAttr('placeholder', 'Original placeholder');
       this.assertAttr('name', 'original-name');
@@ -250,12 +253,13 @@ moduleFor(
             // set(this.context, 'tabindex', 31); //NOTE: failing in IE (TEST_SUITE=sauce)
           });
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertDisabled();
       this.assertValue('Updated value');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'search');
       this.assertAttr('placeholder', 'Updated placeholder');
       this.assertAttr('name', 'updated-name');
@@ -278,12 +282,13 @@ moduleFor(
             // set(this.context, 'tabindex', 30); //NOTE: failing in IE (TEST_SUITE=sauce)
           });
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertNotDisabled();
       this.assertValue('Original value');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'textbox');
       this.assertAttr('placeholder', 'Original placeholder');
       this.assertAttr('name', 'original-name');
@@ -298,6 +303,7 @@ moduleFor(
         () => {
           this.render(`
             {{input type="text"
+              elementId="test-input"
               ariaRole="search"
               disabled=true
               value="Original value"
@@ -309,12 +315,13 @@ moduleFor(
               tabindex=30
             }}`);
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertDisabled();
       this.assertValue('Original value');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'search');
       this.assertAttr('placeholder', 'Original placeholder');
       this.assertAttr('name', 'original-name');
@@ -327,6 +334,7 @@ moduleFor(
 
       this.assertDisabled();
       this.assertValue('Original value');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'search');
       this.assertAttr('placeholder', 'Original placeholder');
       this.assertAttr('name', 'original-name');
@@ -758,6 +766,7 @@ moduleFor(
           this.render(
             `{{input
               type='checkbox'
+              elementId="test-input"
               ariaRole=this.role
               disabled=this.disabled
               name=this.name
@@ -773,12 +782,13 @@ moduleFor(
             }
           );
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertSingleCheckbox();
       this.assertNotDisabled();
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'radio');
       this.assertAttr('name', 'original-name');
       this.assertAttr('tabindex', '10');
@@ -787,6 +797,7 @@ moduleFor(
 
       this.assertSingleCheckbox();
       this.assertNotDisabled();
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'radio');
       this.assertAttr('name', 'original-name');
       this.assertAttr('tabindex', '10');
@@ -800,12 +811,13 @@ moduleFor(
             set(this.context, 'tabindex', 11);
           });
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertSingleCheckbox();
       this.assertDisabled();
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'checkbox');
       this.assertAttr('name', 'updated-name');
       this.assertAttr('tabindex', '11');
@@ -819,12 +831,13 @@ moduleFor(
             set(this.context, 'tabindex', 10);
           });
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|minlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertSingleCheckbox();
       this.assertNotDisabled();
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'radio');
       this.assertAttr('name', 'original-name');
       this.assertAttr('tabindex', '10');
@@ -897,6 +910,7 @@ moduleFor(
         () => {
           this.render(
             `{{input type="checkbox"
+              elementId="test-input"
               ariaRole="radio"
               disabled=false
               tabindex=10
@@ -904,13 +918,14 @@ moduleFor(
               checked=false}}`
           );
         },
-        /Passing the `@(ariaRole|disabled|tabindex|name)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|tabindex|name)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertSingleCheckbox();
       this.assertCheckboxIsNotChecked();
       this.assertNotDisabled();
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'radio');
       this.assertAttr('tabindex', '10');
       this.assertAttr('name', 'original-name');
@@ -920,6 +935,7 @@ moduleFor(
       this.assertSingleCheckbox();
       this.assertCheckboxIsNotChecked();
       this.assertNotDisabled();
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'radio');
       this.assertAttr('tabindex', '10');
       this.assertAttr('name', 'original-name');
@@ -941,6 +957,7 @@ moduleFor(
         () => {
           this.render(
             `{{input type="text"
+              elementId="test-input"
               ariaRole=this.role
               disabled=this.disabled
               value=this.value
@@ -961,16 +978,18 @@ moduleFor(
             }
           );
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertValue('');
+      this.assertAttr('id', 'test-input');
       this.assertAllAttrs(attributes, undefined);
 
       runTask(() => this.rerender());
 
       this.assertValue('');
+      this.assertAttr('id', 'test-input');
       this.assertAllAttrs(attributes, undefined);
 
       expectDeprecation(
@@ -986,12 +1005,13 @@ moduleFor(
             set(this.context, 'tabindex', 31);
           });
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertDisabled();
       this.assertValue('Updated value');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', 'search');
       this.assertAttr('placeholder', 'Updated placeholder');
       this.assertAttr('name', 'updated-name');
@@ -1012,12 +1032,13 @@ moduleFor(
             set(this.context, 'tabindex', null);
           });
         },
-        /Passing the `@(ariaRole|disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./,
+        /Passing the `@(elementId|ariaRole|disabled|placeholder|name|maxlength|size|tabindex)` argument to <Input> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
       this.assertAttr('disabled', undefined);
       this.assertValue('');
+      this.assertAttr('id', 'test-input');
       this.assertAttr('role', undefined);
       // this.assertAttr('placeholder', undefined); //NOTE: this fails with a value of "null" (TEST_SUITE=sauce)
       // this.assertAttr('name', undefined); //NOTE: this fails with a value of "null" (TEST_SUITE=sauce)
