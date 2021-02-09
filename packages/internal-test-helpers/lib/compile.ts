@@ -6,8 +6,6 @@ import { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/inter
 import { templateFactory } from '@glimmer/opcode-compiler';
 import { compileOptions, EmberPrecompileOptions } from 'ember-template-compiler';
 
-let templateId = 0;
-
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
 
@@ -28,7 +26,6 @@ export default function compile(
   let reifiedScopeValues = usedLocals.map((key) => scopeValues[key]);
 
   let templateBlock: SerializedTemplateWithLazyBlock = {
-    id: String(templateId++),
     block: JSON.stringify(block),
     moduleName: options.moduleName ?? options.meta?.moduleName ?? '(unknown template module)',
     scope: reifiedScopeValues.length > 0 ? () => reifiedScopeValues : null,
