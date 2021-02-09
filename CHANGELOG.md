@@ -1,3 +1,12 @@
+## v0.75.0 (2021-02-09)
+
+#### :boom: Breaking Change
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/syntax`
+  * [#1262](https://github.com/glimmerjs/glimmer-vm/pull/1262) Removes id from templates ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.74.2 (2021-02-01)
 
 #### :bug: Bug Fix
