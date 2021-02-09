@@ -27,10 +27,7 @@ moduleFor(
       let Compiled = compile(templateStr, options);
 
       assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
-      assert.ok(Precompiled.__id, 'precompiled has id');
-
       assert.equal(typeof Compiled, 'function', 'compiled is a factory');
-      assert.ok(Compiled.__id, 'compiled has id');
 
       this.expectCacheChanges({}, 'no changes');
 
