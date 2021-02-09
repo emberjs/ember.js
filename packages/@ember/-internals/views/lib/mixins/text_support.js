@@ -3,9 +3,15 @@
 */
 
 import { get, set, Mixin } from '@ember/-internals/metal';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { MUTABLE_CELL } from '@ember/-internals/views';
+import { DEBUG } from '@glimmer/env';
+
+if (DEBUG && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  Mixin._disableDebugSeal = true;
+}
 
 const KEY_EVENTS = {
   Enter: 'insertNewline',
@@ -112,7 +118,7 @@ const KEY_EVENTS = {
   @extends Mixin
   @private
 */
-export default Mixin.create({
+const TextSupport = Mixin.create({
   value: '',
 
   attributeBindings: [
@@ -341,3 +347,39 @@ function sendAction(eventName, view, event) {
     event.stopPropagation();
   }
 }
+
+if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  Object.defineProperty(TextSupport, '_wasReopened', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: false,
+  });
+
+  Object.defineProperty(TextSupport, 'reopen', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function reopen(...args) {
+      if (this === TextSupport) {
+        deprecate('Reopening Ember.TextSupport is deprecated.', false, {
+          id: 'ember.built-in-components.reopen',
+          for: 'ember-source',
+          since: {},
+          until: '4.0.0',
+        });
+
+        TextSupport._wasReopened = true;
+      }
+
+      return Mixin.prototype.reopen.call(this, ...args);
+    },
+  });
+
+  if (DEBUG) {
+    Object.seal(TextSupport);
+    Mixin._disableDebugSeal = false;
+  }
+}
+
+export default TextSupport;

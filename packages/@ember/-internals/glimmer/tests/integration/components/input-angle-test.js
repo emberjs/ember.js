@@ -6,11 +6,12 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-
 import { action } from '@ember/object';
 import { assign } from '@ember/polyfills';
+import { Checkbox, TextArea, TextField } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
-import { jQueryDisabled, jQuery } from '@ember/-internals/views';
+import { TargetActionSupport } from '@ember/-internals/runtime';
+import { getElementView, jQueryDisabled, jQuery, TextSupport } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
 
@@ -1419,3 +1420,137 @@ function InputAttributesTest(attrs) {
     }
   );
 });
+
+if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  [
+    ['Ember.Component', Component, true, true],
+    ['Ember.Checkbox', Checkbox, true, false],
+    ['Ember.TextArea', TextArea, false, true],
+    ['Ember.TextField', TextField, true, false],
+    ['Ember.TextSupport', TextSupport, true, true],
+    ['Ember.TargetActionSupport', TargetActionSupport, true, true],
+  ].forEach(([label, ClassOrMixin, shouldDeoptInput, shouldDeoptTextArea]) => {
+    let message =
+      ClassOrMixin === Component
+        ? /Reopening the Ember\.Component super class itself is deprecated\./
+        : new RegExp(`Reopening ${label.replace(/\./g, '\\.')} is deprecated\\.`);
+
+    class DeoptTest extends RenderingTestCase {
+      constructor() {
+        super(...arguments);
+        this.assertDidNotReopen();
+      }
+
+      teardown() {
+        super.teardown();
+        ClassOrMixin._wasReopened = false;
+      }
+
+      assertDidReopen() {
+        this.assert.strictEqual(ClassOrMixin._wasReopened, true, `${label} was marked as reopened`);
+      }
+
+      assertDidNotReopen() {
+        this.assert.strictEqual(
+          ClassOrMixin._wasReopened,
+          false,
+          `${label} was not marked as reopened`
+        );
+      }
+
+      assertDeopt(
+        _shouldDeoptInput = shouldDeoptInput,
+        _shouldDeoptTextArea = shouldDeoptTextArea
+      ) {
+        this.render(`
+          <Input id="test-textbox" @value="hello" />
+          <Input id="test-checkbox" @type="checkbox" @checked={{true}} />
+          <Textarea id="test-textarea" @value="hello world" />
+        `);
+
+        let textbox = this.$('#test-textbox')[0];
+        let checkbox = this.$('#test-checkbox')[0];
+        let textarea = this.$('#test-textarea')[0];
+
+        this.assert.ok(textbox, 'a textbox was rendered');
+        this.assert.ok(checkbox, 'a checkbox was rendered');
+        this.assert.ok(textarea, 'a textarea was rendered');
+
+        this.assert.strictEqual(
+          this.isDeopted(textbox),
+          _shouldDeoptInput,
+          `<Input @type="text" /> ${_shouldDeoptInput ? 'was' : 'was not'} deopted`
+        );
+
+        this.assert.strictEqual(
+          this.isDeopted(checkbox),
+          _shouldDeoptInput,
+          `<Input @type="checkbox" /> ${_shouldDeoptInput ? 'was' : 'was not'} deopted`
+        );
+
+        this.assert.strictEqual(
+          this.isDeopted(textarea),
+          _shouldDeoptTextArea,
+          `<Textarea /> ${_shouldDeoptTextArea ? 'was' : 'was not'} deopted`
+        );
+      }
+
+      isDeopted(element) {
+        return getElementView(element) !== null;
+      }
+
+      [`@test ${label}.reopen()`]() {
+        expectDeprecation(
+          () =>
+            ClassOrMixin.reopen({
+              /* noop */
+            }),
+          message
+        );
+
+        this.assertDidReopen();
+        this.assertDeopt();
+      }
+    }
+
+    if (typeof ClassOrMixin.extend === 'function') {
+      DeoptTest.prototype[`@test ${label}.extend().reopen()`] = function () {
+        ClassOrMixin.extend().reopen({
+          /* noop */
+        });
+
+        this.assertDidNotReopen();
+        this.assertDeopt(false, false);
+      };
+    }
+
+    if (typeof ClassOrMixin.reopenClass === 'function') {
+      DeoptTest.prototype[`@test ${label}.reopenClass()`] = function () {
+        expectDeprecation(
+          () =>
+            ClassOrMixin.reopenClass({
+              /* noop */
+            }),
+          message
+        );
+
+        this.assertDidReopen();
+        this.assertDeopt();
+      };
+
+      DeoptTest.prototype[`@test ${label}.extend().reopenClass()`] = function () {
+        ClassOrMixin.extend().reopenClass({
+          /* noop */
+        });
+
+        this.assertDidNotReopen();
+        this.assertDeopt(false, false);
+      };
+    }
+
+    moduleFor(
+      `Components test: [DEPRECATED] <Input /> and <Textarea /> deopt (${label})`,
+      DeoptTest
+    );
+  });
+}

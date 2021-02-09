@@ -11,6 +11,7 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { ALIAS_METHOD } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
@@ -560,6 +561,8 @@ const MIXINS = new _WeakSet();
   @public
 */
 export default class Mixin {
+  declare static _disableDebugSeal?: boolean;
+
   mixins: Mixin[] | undefined;
   properties: { [key: string]: any } | undefined;
   ownerConstructor: any;
@@ -581,7 +584,10 @@ export default class Mixin {
         weak maps in `guidFor`, so we need to prime the guid cache weak map.
       */
       guidFor(this);
-      Object.seal(this);
+
+      if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS && Mixin._disableDebugSeal !== true) {
+        Object.seal(this);
+      }
     }
   }
 
@@ -691,6 +697,15 @@ export default class Mixin {
   toString() {
     return '(unknown mixin)';
   }
+}
+
+if (DEBUG && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  Object.defineProperty(Mixin, '_disableDebugSeal', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: false,
+  });
 }
 
 function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined {
