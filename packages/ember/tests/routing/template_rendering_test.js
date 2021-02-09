@@ -752,6 +752,8 @@ moduleFor(
     }
 
     ['@test Route supports clearing outlet explicitly'](assert) {
+      expectDeprecation('The usage of `disconnectOutlet` is deprecated.');
+
       this.addTemplate('application', "{{outlet}}{{outlet 'modal'}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('users', 'users');
@@ -876,6 +878,7 @@ moduleFor(
     }
 
     ['@test Route supports clearing outlet using string parameter'](assert) {
+      expectDeprecation('The usage of `disconnectOutlet` is deprecated.');
       this.addTemplate('application', "{{outlet}}{{outlet 'modal'}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('users', 'users');
@@ -942,7 +945,9 @@ moduleFor(
     }
 
     ['@test Route silently fails when cleaning an outlet from an inactive view'](assert) {
-      assert.expect(1); // handleURL
+      assert.expect(2); // handleURL
+
+      expectDeprecation('The usage of `disconnectOutlet` is deprecated.');
 
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('posts', "{{outlet 'modal'}}");
@@ -1062,6 +1067,8 @@ moduleFor(
     }
 
     ['@test Can disconnect a named outlet at the top level'](assert) {
+      expectDeprecation('The usage of `disconnectOutlet` is deprecated.');
+
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
       this.addTemplate('index', 'The index');
@@ -1232,6 +1239,8 @@ moduleFor(
     }
 
     ['@test Tolerates stacked renders'](assert) {
+      expectDeprecation('The usage of `disconnectOutlet` is deprecated.');
+
       this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
       this.addTemplate('index', 'hi');
       this.addTemplate('layer', 'layer');
@@ -1305,6 +1314,8 @@ moduleFor(
     }
 
     ["@test Allows any route to disconnectOutlet another route's templates"](assert) {
+      expectDeprecation('The usage of `disconnectOutlet` is deprecated.');
+
       this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
       this.addTemplate('index', 'hi');
       this.addTemplate('layer', 'layer');
@@ -1427,6 +1438,8 @@ moduleFor(
     }
 
     ['@test Exception if outlet name is undefined in render and disconnectOutlet']() {
+      expectDeprecation('The usage of `disconnectOutlet` is deprecated.');
+
       this.add(
         'route:application',
         Route.extend({

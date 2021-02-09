@@ -1705,6 +1705,15 @@ class Route extends EmberObject implements IRoute {
     @public
   */
   disconnectOutlet(options: string | { outlet: string; parentView?: string }) {
+    deprecate('The usage of `disconnectOutlet` is deprecated.', false, {
+      id: 'router-render-methods.disconnect-outlet',
+      until: '4.0.0',
+      url: 'TODO',
+      for: 'ember-source',
+      since: {
+        enabled: '3.26.0',
+      },
+    });
     let outletName;
     let parentView;
     if (options) {

@@ -4,6 +4,7 @@ import {
   moduleFor,
   strip,
 } from 'internal-test-helpers';
+// import { ExpectDeprecationFunc } from '../../../../../../internal-test-helpers/lib/ember-dev/deprecation';
 
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
@@ -180,6 +181,10 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       async '@test named outlets'() {
+        // TODO - fix this type error
+        // @ts-ignore-next-line
+        expectDeprecation(() => {}, 'The usage of `disconnectOutlet` is deprecated.');
+
         this.addTemplate(
           'application',
           strip`
