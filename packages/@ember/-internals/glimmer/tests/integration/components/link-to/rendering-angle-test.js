@@ -126,9 +126,7 @@ moduleFor(
           });
         });
       });
-      debugger;
       return this.visit('/parents/1').then(() => {
-        debugger;
         this.assertText('Link To Child');
       });
     }
@@ -143,7 +141,7 @@ moduleFor(
 
       this.assertComponentElement(this.element.firstChild, {
         tagName: 'a',
-        attrs: { href: '#/' },
+        attrs: { href: null },
         content: 'Go to Index',
       });
     }
@@ -173,7 +171,6 @@ moduleFor(
 
     ['@test should be able to be inserted in DOM when router is setup but not started']() {
       this.render(`<LinkTo @route="dynamicWithChild.child">Link</LinkTo>`);
-      debugger;
       this.assertComponentElement(this.element.firstChild, {
         tagName: 'a',
         content: 'Link',

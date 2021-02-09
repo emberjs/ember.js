@@ -54,8 +54,10 @@ export default class RoutingService extends Service {
 
   generateURL(routeName: string, models: {}[], queryParams: {}) {
     let router = this.router;
-    // return early when the router microlib is not present, which is the case for {{link-to}} in integration tests
-    if (!router._routerMicrolib) {
+    // return early when the router microlib is not present, which is the case for <LinkTo/> in integration tests
+    // also return early when transition has not started, when rendering in tests without visit(),
+    // we cannot infer the route context which <LinkTo/> needs be aware of
+    if (!router._routerMicrolib || !router._initialTransitionStarted) {
       return;
     }
 
