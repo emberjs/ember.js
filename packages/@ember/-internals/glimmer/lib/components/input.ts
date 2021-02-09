@@ -901,7 +901,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               `the <${name}> component and prevented it from functioning properly. ` +
               `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
               `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
-            true, // !(methodName in this),
+            !(methodName in this),
             {
               id: 'ember.built-in-components.legacy-attribute-arguments',
               for: 'ember-source',
@@ -914,7 +914,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
             `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
               `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
               `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
-            true, // methodName in this,
+            methodName in this,
             {
               id: 'ember.built-in-components.legacy-attribute-arguments',
               for: 'ember-source',

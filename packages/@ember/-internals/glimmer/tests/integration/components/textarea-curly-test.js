@@ -205,11 +205,17 @@ moduleFor(
     }
 
     ['@test triggers a method with `{{textarea key-up=this.didTrigger}}`'](assert) {
-      this.render(`{{textarea key-up=this.didTrigger}}`, {
-        didTrigger: action(function () {
-          assert.ok(true, 'action was triggered');
-        }),
-      });
+      expectDeprecation(
+        () => {
+          this.render(`{{textarea key-up=this.didTrigger}}`, {
+            didTrigger: action(function () {
+              assert.ok(true, 'action was triggered');
+            }),
+          });
+        },
+        /Passing the `@key-up` argument to <Textarea> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       this.triggerEvent('keyup', { key: 'A' });
     }
