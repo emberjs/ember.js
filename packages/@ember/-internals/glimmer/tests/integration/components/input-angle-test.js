@@ -609,11 +609,11 @@ moduleFor(
             },
           },
         });
-      }, 'Passing actions to components as strings (like `<Input @key-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-press={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
+      }, /Passing actions to components as strings \(like `({{input key-press="foo"}}|<Input @key-press="foo" \/>)`\) is deprecated\./);
 
       expectDeprecation(() => {
         this.triggerEvent('keypress', { key: 'A' });
-      }, 'Passing actions to components as strings (like `<Input @key-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-press={{action "foo"}} />`).');
+      }, /Passing actions to components as strings \(like `({{input key-press="foo"}}|<Input @key-press="foo" \/>)`\) is deprecated\./);
     }
 
     ['@test sends an action with `<Input @key-press={{action "foo"}} />` is pressed'](assert) {
@@ -765,7 +765,7 @@ moduleFor(
             },
           },
         });
-      }, 'Passing actions to components as strings (like `<Input @key-down="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-down={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
+      }, /Passing actions to components as strings \(like `({{input key-down="foo"}}|<Input @key-down="foo" \/>)`\) is deprecated\./);
 
       expectDeprecation(() => {
         this.triggerEvent('keydown', { key: 'A' });
@@ -811,7 +811,7 @@ moduleFor(
             },
           },
         });
-      }, 'Passing actions to components as strings (like `<Input @key-up="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-up={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
+      }, /Passing actions to components as strings \(like `({{input key-up="foo"}}|<Input @key-up="foo" \/>)`\) is deprecated\./);
 
       expectDeprecation(() => {
         this.triggerEvent('keyup', { key: 'A' });
