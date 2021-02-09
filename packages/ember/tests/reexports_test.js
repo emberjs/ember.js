@@ -33,7 +33,8 @@ moduleFor(
         ['TextField', '@ember/component/text-field', '@ember/-internals/glimmer'],
         ['TextArea', '@ember/component/text-area', '@ember/-internals/glimmer'],
         ['LinkComponent', '@ember/routing/link-component', '@ember/-internals/glimmer'],
-        ['TextSupport', '@ember/-internals/views', '@ember/-internals/views'],
+        ['TextSupport', null, '@ember/-internals/views'],
+        ['TargetActionSupport', null, '@ember/-internals/runtime'],
       ].forEach(([name, publicPath, privatePath]) => {
         // loosely based on confirmExport
         try {
@@ -51,13 +52,17 @@ moduleFor(
             `Ember._Legacy${name} has the correct value and does not trigger a deprecation`
           );
 
-          expectDeprecation(() => {
-            assert.strictEqual(
-              Ember[name],
-              value,
-              `Ember.${name} has the correct value triggers a deprecation`
-            );
-          }, `Using Ember.${name} or importing from '${publicPath}' has been deprecated, install the \`ember-legacy-built-in-components\` addon and use \`import { ${name} } from 'ember-legacy-built-in-components';\` instead`);
+          expectDeprecation(
+            () =>
+              assert.strictEqual(
+                Ember[name],
+                value,
+                `Ember.${name} has the correct value triggers a deprecation`
+              ),
+            publicPath === null
+              ? `Using Ember.${name} is deprecated.`
+              : `Using Ember.${name} or importing from '${publicPath}' is deprecated. Install the \`ember-legacy-built-in-components\` addon and use \`import { ${name} } from 'ember-legacy-built-in-components';\` instead.`
+          );
         } catch (error) {
           assert.pushResult({
             result: false,
@@ -336,7 +341,9 @@ let allExports = [
   ['Copyable', '@ember/-internals/runtime'],
   ['MutableEnumerable', '@ember/-internals/runtime'],
   ['MutableArray', '@ember/-internals/runtime'],
-  ['TargetActionSupport', '@ember/-internals/runtime'],
+  EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+    ? null
+    : ['TargetActionSupport', '@ember/-internals/runtime'],
   ['Evented', '@ember/-internals/runtime'],
   ['PromiseProxyMixin', '@ember/-internals/runtime'],
   ['Observable', '@ember/-internals/runtime'],
