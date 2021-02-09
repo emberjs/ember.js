@@ -125,7 +125,13 @@ class InputRenderingTest extends RenderingTestCase {
       .join(' ');
     let template = `{{test-component ${typeAttr}${actionAttrs}}}{{input ${typeAttr}${actionAttrs}}}`;
 
-    this.render(template, { actions });
+    maybeExpectDeprecation(
+      EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+      () => {
+        this.render(template, { actions });
+      },
+      /Passing the `@(touchStart|touchMove|touchEnd|touchCancel|keyDown|keyUp|keyPress|mouseDown|mouseUp|contextMenu|click|doubleClick|focusIn|focusOut|submit|input|change|dragStart|drag|dragEnter|dragLeave|dragOver|drop|dragEnd|mouseEnter|mouseLeave|mouseMove|focus-in|focus-out|key-press|key-up|key-down)` argument to <Input> is deprecated\./
+    );
 
     Object.keys(events).forEach((evt) => this.triggerEvent(evt, null, 'input:first-of-type'));
     let normallyTriggeredEvents = [].concat(triggeredEvents);
@@ -447,7 +453,7 @@ moduleFor(
             },
           },
         });
-      }, /Passing actions to components as strings \(like `({{input key-press="foo"}}|<Input @key-press="foo" \/>)`\) is deprecated\./);
+      }, /(Passing actions to components as strings \(like `({{input key-press="foo"}}|<Input @key-press="foo" \/>)`\) is deprecated\.|Passing the `@key-press` argument to <Input> is deprecated\.)/);
 
       expectDeprecation(() => {
         this.triggerEvent('keypress', { key: 'A' });
@@ -455,24 +461,33 @@ moduleFor(
     }
 
     ['@test sends an action with `{{input key-press=(action "foo")}}` is pressed'](assert) {
-      assert.expect(2);
+      let triggered = 0;
 
-      this.render(`{{input value=this.value key-press=(action 'foo')}}`, {
-        value: 'initial',
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(`{{input value=this.value key-press=(action 'foo')}}`, {
+            value: 'initial',
 
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            if (jQueryDisabled) {
-              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-            } else {
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-            }
-          },
+            actions: {
+              foo(value, event) {
+                triggered++;
+                assert.ok(true, 'action was triggered');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
+              },
+            },
+          });
         },
-      });
+        /Passing the `@key-press` argument to <Input> is deprecated\./
+      );
 
       this.triggerEvent('keypress', { key: 'A' });
+
+      assert.equal(triggered, 1, 'The action was triggered exactly once');
     }
 
     ['@test sends an action to the parent level when `bubbles=true` is provided'](assert) {
@@ -503,13 +518,19 @@ moduleFor(
     ['@test triggers `focus-in` when focused'](assert) {
       let wasFocused = false;
 
-      this.render(`{{input focus-in=(action 'foo')}}`, {
-        actions: {
-          foo() {
-            wasFocused = true;
-          },
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(`{{input focus-in=(action 'foo')}}`, {
+            actions: {
+              foo() {
+                wasFocused = true;
+              },
+            },
+          });
         },
-      });
+        /Passing the `@focus-in` argument to <Input> is deprecated\./
+      );
 
       runTask(() => {
         this.$input().focus();
@@ -603,7 +624,7 @@ moduleFor(
             },
           },
         });
-      }, /Passing actions to components as strings \(like `({{input key-down="foo"}}|<Input @key-down="foo" \/>)`\) is deprecated\./);
+      }, /(Passing actions to components as strings \(like `({{input key-down="foo"}}|<Input @key-down="foo" \/>)`\) is deprecated\.|Passing the `@key-down` argument to <Input> is deprecated\.)/);
 
       expectDeprecation(() => {
         this.triggerEvent('keydown', { key: 'A' });
@@ -613,22 +634,31 @@ moduleFor(
     ['@test sends an action with `{{input key-down=(action "foo")}}` when a key is pressed'](
       assert
     ) {
-      assert.expect(2);
+      let triggered = 0;
 
-      this.render(`{{input key-down=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            if (jQueryDisabled) {
-              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-            } else {
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-            }
-          },
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(`{{input key-down=(action 'foo')}}`, {
+            actions: {
+              foo(value, event) {
+                triggered++;
+                assert.ok(true, 'action was triggered');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
+              },
+            },
+          });
         },
-      });
+        /Passing the `@key-down` argument to <Input> is deprecated\./
+      );
 
       this.triggerEvent('keydown', { key: 'A' });
+
+      assert.equal(triggered, 1, 'The action was triggered exactly once');
     }
 
     ['@test [DEPRECATED] sends an action with `{{input key-up="foo"}}` when a key is pressed'](
@@ -649,7 +679,7 @@ moduleFor(
             },
           },
         });
-      }, /Passing actions to components as strings \(like `({{input key-up="foo"}}|<Input @key-up="foo" \/>)`\) is deprecated\./);
+      }, /(Passing actions to components as strings \(like `({{input key-up="foo"}}|<Input @key-up="foo" \/>)`\) is deprecated\.|Passing the `@key-up` argument to <Input> is deprecated\.)/);
 
       expectDeprecation(() => {
         this.triggerEvent('keyup', { key: 'A' });
@@ -657,20 +687,25 @@ moduleFor(
     }
 
     ['@test sends an action with `{{input key-up=(action "foo")}}` when a key is pressed'](assert) {
-      assert.expect(2);
-
-      this.render(`{{input key-up=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            if (jQueryDisabled) {
-              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-            } else {
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-            }
-          },
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(`{{input key-up=(action 'foo')}}`, {
+            actions: {
+              foo(value, event) {
+                assert.ok(true, 'action was triggered');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
+              },
+            },
+          });
         },
-      });
+        /Passing the `@key-up` argument to <Input> is deprecated\./
+      );
+
       this.triggerEvent('keyup', { key: 'A' });
     }
 
@@ -681,16 +716,22 @@ moduleFor(
       this.assert.equal(this.$input()[1].type, 'file');
     }
 
-    ['@test sends an action with `{{input EVENT=(action "foo")}}` for native DOM events']() {
+    ['@test [DEPRECATED] sends an action with `{{input EVENT=(action "foo")}}` for native DOM events']() {
       this.assertTriggersNativeDOMEvents();
     }
 
     ['@test triggers a method with `{{input key-up=this.didTrigger}}`'](assert) {
-      this.render(`{{input key-up=this.didTrigger}}`, {
-        didTrigger: action(function () {
-          assert.ok(true, 'action was triggered');
-        }),
-      });
+      maybeExpectDeprecation(
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+        () => {
+          this.render(`{{input key-up=this.didTrigger}}`, {
+            didTrigger: action(function () {
+              assert.ok(true, 'action was triggered');
+            }),
+          });
+        },
+        /Passing the `@key-up` argument to <Input> is deprecated\./
+      );
 
       this.triggerEvent('keyup', { key: 'A' });
     }
@@ -942,7 +983,7 @@ moduleFor(
       this.assertAttr('name', 'original-name');
     }
 
-    ['@test sends an action with `{{input EVENT=(action "foo")}}` for native DOM events']() {
+    ['@test [DEPRECATED] sends an action with `{{input EVENT=(action "foo")}}` for native DOM events']() {
       this.assertTriggersNativeDOMEvents('checkbox');
     }
   }
