@@ -1,4 +1,3 @@
-import { Option } from '@glimmer/interfaces';
 import { assertPresent, assign } from '@glimmer/util';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
@@ -334,12 +333,7 @@ interface HandlebarsParseOptions {
   ignoreStandalone?: boolean;
 }
 
-export interface TemplateIdFn {
-  (src: string): Option<string>;
-}
-
 export interface PrecompileOptions extends PreprocessOptions {
-  id?: TemplateIdFn;
   customizeComponentName?(input: string): string;
 }
 
