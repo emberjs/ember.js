@@ -1,12 +1,32 @@
-/*globals process */
-let define, require, Ember;
-
-// Used in @ember/-internals/environment/lib/global.js
-mainContext = this; // eslint-disable-line no-undef
+/* eslint-disable no-var */
+/* globals global globalThis self */
+var define, require;
 
 (function () {
-  let registry;
-  let seen;
+  var globalObj =
+    typeof globalThis !== 'undefined'
+      ? globalThis
+      : typeof self !== 'undefined'
+      ? self
+      : typeof window !== 'undefined'
+      ? window
+      : typeof global !== 'undefined'
+      ? global
+      : null;
+
+  if (globalObj === null) {
+    throw new Error('unable to locate global object');
+  }
+
+  if (typeof globalObj.define === 'function' && typeof globalObj.require === 'function') {
+    define = globalObj.define;
+    require = globalObj.require;
+
+    return;
+  }
+
+  var registry = Object.create(null);
+  var seen = Object.create(null);
 
   function missingModule(name, referrerName) {
     if (referrerName) {
@@ -17,15 +37,15 @@ mainContext = this; // eslint-disable-line no-undef
   }
 
   function internalRequire(_name, referrerName) {
-    let name = _name;
-    let mod = registry[name];
+    var name = _name;
+    var mod = registry[name];
 
     if (!mod) {
       name = name + '/index';
       mod = registry[name];
     }
 
-    let exports = seen[name];
+    var exports = seen[name];
 
     if (exports !== undefined) {
       return exports;
@@ -37,17 +57,17 @@ mainContext = this; // eslint-disable-line no-undef
       missingModule(_name, referrerName);
     }
 
-    let deps = mod.deps;
-    let callback = mod.callback;
-    let reified = new Array(deps.length);
+    var deps = mod.deps;
+    var callback = mod.callback;
+    var reified = new Array(deps.length);
 
-    for (let i = 0; i < deps.length; i++) {
+    for (var i = 0; i < deps.length; i++) {
       if (deps[i] === 'exports') {
         reified[i] = exports;
       } else if (deps[i] === 'require') {
         reified[i] = require;
       } else {
-        reified[i] = internalRequire(deps[i], name);
+        reified[i] = require(deps[i], name);
       }
     }
 
@@ -56,57 +76,21 @@ mainContext = this; // eslint-disable-line no-undef
     return exports;
   }
 
-  let isNode =
-    typeof window === 'undefined' &&
-    typeof process !== 'undefined' &&
-    {}.toString.call(process) === '[object process]';
+  require = function (name) {
+    return internalRequire(name, null);
+  };
 
-  if (!isNode) {
-    Ember = this.Ember = this.Ember || {};
-  }
+  // eslint-disable-next-line no-unused-vars
+  define = function (name, deps, callback) {
+    registry[name] = { deps: deps, callback: callback };
+  };
 
-  if (typeof Ember === 'undefined') {
-    Ember = {};
-  }
+  // setup `require` module
+  require['default'] = require;
 
-  if (typeof Ember.__loader === 'undefined') {
-    registry = Object.create(null);
-    seen = Object.create(null);
+  require.has = function registryHas(moduleName) {
+    return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
+  };
 
-    define = function (name, deps, callback) {
-      let value = {};
-
-      if (!callback) {
-        value.deps = [];
-        value.callback = deps;
-      } else {
-        value.deps = deps;
-        value.callback = callback;
-      }
-
-      registry[name] = value;
-    };
-
-    require = function (name) {
-      return internalRequire(name, null);
-    };
-
-    // setup `require` module
-    require['default'] = require;
-
-    require.has = function registryHas(moduleName) {
-      return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
-    };
-
-    require._eak_seen = registry;
-
-    Ember.__loader = {
-      define: define,
-      require: require,
-      registry: registry,
-    };
-  } else {
-    define = Ember.__loader.define;
-    require = Ember.__loader.require;
-  }
+  require._eak_seen = registry;
 })();

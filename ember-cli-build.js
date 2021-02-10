@@ -15,7 +15,7 @@ Error.stackTraceLimit = Infinity;
 const {
   routerES,
   jquery,
-  internalLoader,
+  loader,
   qunit,
   handlebarsES,
   rsvpES,
@@ -246,7 +246,14 @@ function templateCompilerBundle(emberPackages, transpileTree) {
 }
 
 function testHarness() {
-  return new MergeTrees([emptyTestem(), testPolyfills(), testIndexHTML(), qunit(), jquery()]);
+  return new MergeTrees([
+    emptyTestem(),
+    testPolyfills(),
+    testIndexHTML(),
+    loader(),
+    qunit(),
+    jquery(),
+  ]);
 }
 
 function emptyTestem() {
@@ -262,5 +269,5 @@ function templateCompilerDependencies() {
 }
 
 function emberHeaderFiles() {
-  return new MergeTrees([emberLicense(), internalLoader()]);
+  return new MergeTrees([emberLicense(), loader()]);
 }
