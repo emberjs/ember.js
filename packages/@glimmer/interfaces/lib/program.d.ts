@@ -109,16 +109,16 @@ export interface ResolutionTimeConstants {
   ): number | null;
   modifier(definitionState: ModifierDefinitionState, resolvedName?: string | null): number;
 
-  component(definitionState: ComponentDefinitionState): ComponentDefinition;
   component(
     definitionState: ComponentDefinitionState,
-    isOptional: true
-  ): ComponentDefinition | null;
-  component(
-    definitionState: ComponentDefinitionState,
-    isOptional: false,
-    owner: Owner
+    owner: object,
+    isOptional?: false
   ): ComponentDefinition;
+  component(
+    definitionState: ComponentDefinitionState,
+    owner: object,
+    isOptional?: boolean
+  ): ComponentDefinition | null;
 
   resolvedComponent(
     definitionState: ResolvedComponentDefinition,
