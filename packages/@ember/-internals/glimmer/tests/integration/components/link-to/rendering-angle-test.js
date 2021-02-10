@@ -141,8 +141,39 @@ moduleFor(
 
       this.assertComponentElement(this.element.firstChild, {
         tagName: 'a',
-        attrs: { href: '#/' },
+        attrs: { href: null },
         content: 'Go to Index',
+      });
+    }
+  }
+);
+
+moduleFor(
+  '<LinkTo /> component (rendering tests, with router not started)',
+  class extends RouterNonApplicationTestCase {
+    constructor() {
+      super(...arguments);
+      this.resolver.add('router:main', Router.extend(this.routerOptions));
+      this.router.map(function () {
+        this.route('dynamicWithChild', { path: '/dynamic-with-child/:dynamic_id' }, function () {
+          this.route('child');
+        });
+      });
+    }
+    get routerOptions() {
+      return {
+        location: 'none',
+      };
+    }
+    get router() {
+      return this.owner.resolveRegistration('router:main');
+    }
+
+    ['@test should be able to be inserted in DOM when router is setup but not started']() {
+      this.render(`<LinkTo @route="dynamicWithChild.child">Link</LinkTo>`);
+      this.assertComponentElement(this.element.firstChild, {
+        tagName: 'a',
+        content: 'Link',
       });
     }
   }
