@@ -101,12 +101,17 @@ export function resolveComponent(
   }
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues } = meta;
+    let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    then(constants.component(definition as object));
+    then(
+      constants.component(
+        definition as object,
+        expect(owner, 'BUG: expected owner when resolving component definition')
+      )
+    );
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
 
@@ -230,12 +235,16 @@ export function resolveComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues } = meta;
+    let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    let component = constants.component(definition as object, true);
+    let component = constants.component(
+      definition as object,
+      expect(owner, 'BUG: expected owner when resolving component definition'),
+      true
+    );
 
     if (component !== null) {
       ifComponent(component);
@@ -324,7 +333,7 @@ export function resolveOptionalComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetTemplateSymbol) {
-    let { scopeValues } = meta;
+    let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
@@ -338,7 +347,11 @@ export function resolveOptionalComponentOrHelper(
       return;
     }
 
-    let component = constants.component(definition, true);
+    let component = constants.component(
+      definition,
+      expect(owner, 'BUG: expected owner when resolving component definition'),
+      true
+    );
 
     if (component !== null) {
       ifComponent(component);

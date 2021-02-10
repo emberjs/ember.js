@@ -155,7 +155,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
   } else if (isCurriedValue(component)) {
     definition = component;
   } else {
-    definition = constants.component(component);
+    definition = constants.component(component, owner);
   }
 
   stack.pushJs(definition);
@@ -178,7 +178,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   if (isCurriedValue(value)) {
     definition = value;
   } else {
-    definition = constants.component(value as object, true);
+    definition = constants.component(value as object, vm.getOwner(), true);
 
     if (DEBUG && definition === null) {
       throw new Error(
@@ -266,7 +266,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
         value
       );
     } else {
-      definition = constants.component(value);
+      definition = constants.component(value, owner);
     }
 
     let { manager } = definition;
