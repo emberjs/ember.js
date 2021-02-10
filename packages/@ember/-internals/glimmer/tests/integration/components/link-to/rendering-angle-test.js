@@ -141,7 +141,7 @@ moduleFor(
 
       this.assertComponentElement(this.element.firstChild, {
         tagName: 'a',
-        attrs: { href: null },
+        attrs: { href: '#/' },
         content: 'Go to Index',
       });
     }
@@ -169,10 +169,24 @@ moduleFor(
       return this.owner.resolveRegistration('router:main');
     }
 
-    ['@test should be able to be inserted in DOM when router is setup but not started']() {
+    ['@test should be able to be inserted in DOM when initial transition not started']() {
       this.render(`<LinkTo @route="dynamicWithChild.child">Link</LinkTo>`);
       this.assertComponentElement(this.element.firstChild, {
         tagName: 'a',
+        attrs: {
+          href: null,
+        },
+        content: 'Link',
+      });
+    }
+
+    ['@test should be able to be inserted in DOM with valid href when complete models are passed even if initial transition is not started']() {
+      this.render(`<LinkTo @route="dynamicWithChild.child" @model="1">Link</LinkTo>`);
+      this.assertComponentElement(this.element.firstChild, {
+        tagName: 'a',
+        attrs: {
+          href: '/dynamic-with-child/1/child',
+        },
         content: 'Link',
       });
     }
