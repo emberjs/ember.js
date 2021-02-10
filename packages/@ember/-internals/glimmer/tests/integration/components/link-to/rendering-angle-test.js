@@ -1,5 +1,11 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
-
+import {
+  moduleFor,
+  ApplicationTestCase,
+  RenderingTestCase,
+  RouterNonApplicationTestCase,
+  runTask,
+} from 'internal-test-helpers';
+import { Router, Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
 import { LinkComponent } from '@ember/-internals/glimmer';
@@ -92,6 +98,38 @@ moduleFor(
         this.assertText('Hello');
       });
     }
+
+    ['@test able to pupolate innermost dynamic segment when immediate parent route is active']() {
+      this.addTemplate('application', '{{outlet}}');
+      this.addTemplate('parents', '{{outlet}}');
+      this.addTemplate(
+        'parents.parent',
+        '<LinkTo @route="parents.parent.child" @model=1>Link To Child</LinkTo>'
+      );
+      this.addTemplate(
+        'parents.parent.child',
+        '<LinkTo @route="parents.parent">Link To Parent</LinkTo>'
+      );
+      this.add(
+        'route:parents.parent',
+        class extends Route {
+          async model({ id }) {
+            return { value: id };
+          }
+        }
+      );
+      this.router.map(function () {
+        this.route('parents', function () {
+          this.route('parent', { path: '/:parent_id' }, function () {
+            this.route('children');
+            this.route('child', { path: '/child/:child_id' });
+          });
+        });
+      });
+      return this.visit('/parents/1').then(() => {
+        this.assertText('Link To Child');
+      });
+    }
   }
 );
 
@@ -103,8 +141,39 @@ moduleFor(
 
       this.assertComponentElement(this.element.firstChild, {
         tagName: 'a',
-        attrs: { href: '#/' },
+        attrs: { href: null },
         content: 'Go to Index',
+      });
+    }
+  }
+);
+
+moduleFor(
+  '<LinkTo /> component (rendering tests, with router not started)',
+  class extends RouterNonApplicationTestCase {
+    constructor() {
+      super(...arguments);
+      this.resolver.add('router:main', Router.extend(this.routerOptions));
+      this.router.map(function () {
+        this.route('dynamicWithChild', { path: '/dynamic-with-child/:dynamic_id' }, function () {
+          this.route('child');
+        });
+      });
+    }
+    get routerOptions() {
+      return {
+        location: 'none',
+      };
+    }
+    get router() {
+      return this.owner.resolveRegistration('router:main');
+    }
+
+    ['@test should be able to be inserted in DOM when router is setup but not started']() {
+      this.render(`<LinkTo @route="dynamicWithChild.child">Link</LinkTo>`);
+      this.assertComponentElement(this.element.firstChild, {
+        tagName: 'a',
+        content: 'Link',
       });
     }
   }
