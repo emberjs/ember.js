@@ -130,6 +130,7 @@ class EmberRouter extends EmberObject {
   rootURL!: string;
   _routerMicrolib!: Router<Route>;
   _didSetupRouter = false;
+  _initialTransitionStarted = false;
 
   currentURL: string | null = null;
   currentRouteName: string | null = null;
@@ -507,6 +508,7 @@ class EmberRouter extends EmberObject {
   }
 
   _doURLTransition(routerJsMethod: string, url: string) {
+    this._initialTransitionStarted = true;
     let transition = this._routerMicrolib[routerJsMethod](url || '/');
     didBeginTransition(transition, this);
     return transition;
@@ -621,6 +623,7 @@ class EmberRouter extends EmberObject {
    */
   reset() {
     this._didSetupRouter = false;
+    this._initialTransitionStarted = false;
     if (this._routerMicrolib) {
       this._routerMicrolib.reset();
     }
@@ -841,6 +844,8 @@ class EmberRouter extends EmberObject {
       `The route ${targetRouteName} was not found`,
       Boolean(targetRouteName) && this._routerMicrolib.hasRoute(targetRouteName)
     );
+
+    this._initialTransitionStarted = true;
 
     let queryParams = {};
 
