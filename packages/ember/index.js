@@ -861,7 +861,7 @@ Ember.__loader = {
   require,
   // eslint-disable-next-line no-undef
   define,
-  registry: require._eak_seen,
+  registry: require.entries,
 };
 
 export default Ember;
