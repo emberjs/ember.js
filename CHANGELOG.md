@@ -25,6 +25,10 @@
 - [#19298](https://github.com/emberjs/ember.js/pull/19298) [BUGFIX] Route serialize did not extract param off proxy
 - [#19326](https://github.com/emberjs/ember.js/pull/19326) [BUGFIX] Lazily setup the router in non-application tests for <LinkTo> component
 
+### v3.25.1 (February 10, 2021)
+
+- [#19326](https://github.com/emberjs/ember.js/pull/19326) / [#19387](https://github.com/emberjs/ember.js/pull/19387) [BUGFIX] Fix usage of `<LinkTo />` prior to routing (e.g. component rendering tests)
+
 ### v3.25.0 (February 08, 2021)
 
 - [#19302](https://github.com/emberjs/ember.js/pull/19302) / [#19306](https://github.com/emberjs/ember.js/pull/19306) / [#19319](https://github.com/emberjs/ember.js/pull/19319) [FEATURE] Implement the [Handlebars Strict Mode RFC](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md).
