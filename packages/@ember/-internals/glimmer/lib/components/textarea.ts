@@ -1,12 +1,12 @@
 /**
 @module @ember/component
 */
-import { CoreObject } from '@ember/-internals/runtime';
-import { TextSupport } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { deprecate } from '@ember/debug';
-import Component from '../component';
-import layout from '../templates/empty';
+import { action } from '@ember/object';
+import TextareaTemplate from '../templates/textarea';
+import LegacyTextArea from './-textarea';
+import AbstractInput, { handleDeprecatedFeatures } from './abstract-input';
+import { opaquify } from './internal';
 
 /**
   The `Textarea` component inserts a new instance of `<textarea>` tag into the template.
@@ -130,23 +130,62 @@ import layout from '../templates/empty';
   @see {Ember.Templates.components.textarea}
   @public
 */
+class Textarea extends AbstractInput {
+  static toString(): string {
+    return 'Textarea';
+  }
 
-/**
-  The internal representation used for `Textarea` invocations.
+  get class(): string {
+    return 'ember-text-area ember-view';
+  }
 
-  @class TextArea
-  @extends Component
-  @see {Ember.Templates.components.Textarea}
-  @uses Ember.TextSupport
-  @public
-*/
-const TextArea = Component.extend(TextSupport, {
-  classNames: ['ember-text-area'],
+  // See abstract-input.ts for why these are needed
 
-  layout,
+  @action change(event: Event): void {
+    super.change(event);
+  }
 
-  tagName: 'textarea',
-  attributeBindings: [
+  @action input(event: Event): void {
+    super.input(event);
+  }
+
+  protected shouldModernize(): boolean {
+    return super.shouldModernize() && LegacyTextArea._wasReopened === false;
+  }
+
+  protected isSupportedArgument(name: string): boolean {
+    let supportedArguments = ['type', 'value', 'enter', 'insert-newline', 'escape-press'];
+    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
+  }
+}
+
+// Deprecated features
+if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  handleDeprecatedFeatures(Textarea, [
+    // Component
+    'id',
+    ['id', 'elementId'],
+    'class',
+    ['class', 'classNames'],
+    ['role', 'ariaRole'],
+
+    // TextSupport
+    'autocapitalize',
+    'autocorrect',
+    'autofocus',
+    'disabled',
+    'form',
+    'maxlength',
+    'minlength',
+    'placeholder',
+    'readonly',
+    'required',
+    'selectionDirection',
+    'spellcheck',
+    'tabindex',
+    'title',
+
+    // TextField
     'rows',
     'cols',
     'name',
@@ -156,71 +195,7 @@ const TextArea = Component.extend(TextSupport, {
     'wrap',
     'lang',
     'dir',
-    'value',
-  ],
-  rows: null,
-  cols: null,
-});
-
-TextArea.toString = () => '@ember/component/text-area';
-
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  Object.defineProperty(TextArea, '_wasReopened', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: false,
-  });
-
-  Object.defineProperty(TextArea, 'reopen', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopen(this: typeof TextArea, ...args: unknown[]): unknown {
-      if (this === TextArea) {
-        deprecate(
-          'Reopening Ember.TextArea is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {},
-            until: '4.0.0',
-          }
-        );
-
-        TextArea._wasReopened = true;
-      }
-
-      return CoreObject.reopen.call(this, ...args);
-    },
-  });
-
-  Object.defineProperty(TextArea, 'reopenClass', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopenClass(this: typeof TextArea, ...args: unknown[]): unknown {
-      if (this === TextArea) {
-        deprecate(
-          'Reopening Ember.TextArea is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {},
-            until: '4.0.0',
-          }
-        );
-
-        TextArea._wasReopened = true;
-      }
-
-      return CoreObject.reopenClass.call(this, ...args);
-    },
-  });
+  ]);
 }
 
-export default TextArea;
+export default opaquify(Textarea, TextareaTemplate);

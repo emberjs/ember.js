@@ -2,32 +2,16 @@
 @module @ember/component
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
-import { tracked } from '@ember/-internals/metal';
-import { Owner } from '@ember/-internals/owner';
-import { TargetActionSupport } from '@ember/-internals/runtime';
-import { guidFor } from '@ember/-internals/utils';
-import { jQuery, jQueryDisabled, TextSupport } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { assert, deprecate, runInDebug, warn } from '@ember/debug';
-import { JQUERY_INTEGRATION, SEND_ACTION } from '@ember/deprecated-features';
+import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
-import { Maybe, Option } from '@glimmer/interfaces';
-import {
-  setComponentTemplate,
-  setInternalComponentManager,
-  setInternalModifierManager,
-} from '@glimmer/manager';
-import { isConstRef, isUpdatableRef, Reference, updateRef, valueForRef } from '@glimmer/reference';
+import { valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
-import Component from '../component';
-import InternalManager from '../component-managers/internal';
-import InternalModifier, { InternalModifierManager } from '../modifiers/internal';
 import InputTemplate from '../templates/input';
-import TextareaTemplate from '../templates/textarea';
+import AbstractInput, { handleDeprecatedFeatures, valueFrom } from './abstract-input';
 import Checkbox from './checkbox';
-import InternalComponent from './internal';
+import { opaquify } from './internal';
 import TextField from './text-field';
-import TextArea from './textarea';
 
 let isValidInputType: (type: string) => boolean;
 
@@ -59,137 +43,6 @@ if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   };
 } else {
   isValidInputType = (type: string) => type !== '';
-}
-
-type EventListener = (event: Event) => void;
-type VirtualEventListener = (value: string, event: Event) => void;
-
-function NOOP() {}
-
-const UNINITIALIZED: unknown = Object.freeze({});
-
-function elementForEvent(event: Event): HTMLInputElement | HTMLTextAreaElement {
-  assert(
-    '[BUG] Event target must be the <input> or <textarea> element',
-    event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement
-  );
-
-  return event.target;
-}
-
-function valueForEvent(event: Event): string {
-  return elementForEvent(event).value;
-}
-
-function devirtualize(callback: VirtualEventListener): EventListener {
-  return (event: Event) => callback(valueForEvent(event), event);
-}
-
-/**
- * This interface paves over the differences between these three cases:
- *
- * 1. `<Input />` or `<Input @value="some string" />`
- * 2. `<Input @value={{this.value}} />`
- * 3. `<Input @value={{to-upper-case this.value}} />`
- *
- * For the first set of cases (any const reference in general), the semantics
- * are that `@value` is treated as an initial value only, just like the `value`
- * attribute. Perhaps using the `value` attribute would have been more Correct™
- * here, but that would make a pretty confusing API, and the user's intent is
- * pretty clear, so we support it.
- *
- * The second case is the most common. `{{this.value}}` is an updatable
- * reference here so the value is fully owned and bound to the "upstream" value
- * and we don't store a copy of it in the component.
- *
- * The last case is the most tricky. There are a lot of different ways for this
- * to happen, but the end result is that we have a non-const and non-updatable
- * reference in our hands. The semantics here is a mix of the first two cases.
- * We take the computed value as the initial value, but hold a copy of it and
- * allow it to diverge from upstream. However, when the upstream recomputes to
- * a value different than what we originally had, we would reconcile with the
- * new upstream value and throw away the local copy.
- *
- * It's not clear that we intended to support the last case, or that it is used
- * intentionally in the real world, but it's a fallout of the two-way binding
- * system and `Ember.Component` semantics from before.
- *
- * This interface paves over the differences so the component doesn't have to
- * worry about it.
- *
- * All of the above applies to `@checked` as well.
- */
-function valueFrom(reference?: Reference<unknown>): Value {
-  if (reference === undefined) {
-    return new LocalValue(undefined);
-  } else if (isConstRef(reference)) {
-    return new LocalValue(valueForRef(reference));
-  } else if (isUpdatableRef(reference)) {
-    return new UpstreamValue(reference);
-  } else {
-    return new ForkedValue(reference);
-  }
-}
-
-interface Value {
-  get(): unknown;
-  set(value: unknown): void;
-}
-
-class LocalValue implements Value {
-  @tracked private value: unknown;
-
-  constructor(value: unknown) {
-    this.value = value;
-  }
-
-  get(): unknown {
-    return this.value;
-  }
-
-  set(value: unknown): void {
-    this.value = value;
-  }
-}
-
-class UpstreamValue implements Value {
-  constructor(private reference: Reference<unknown>) {}
-
-  get(): unknown {
-    return valueForRef(this.reference);
-  }
-
-  set(value: unknown): void {
-    updateRef(this.reference, value);
-  }
-}
-
-class ForkedValue implements Value {
-  private local?: Value;
-  private upstream: Value;
-
-  private lastUpstreamValue = UNINITIALIZED;
-
-  constructor(reference: Reference<unknown>) {
-    this.upstream = new UpstreamValue(reference);
-  }
-
-  get(): unknown {
-    let upstreamValue = this.upstream.get();
-
-    if (upstreamValue !== this.lastUpstreamValue) {
-      this.lastUpstreamValue = upstreamValue;
-      this.local = new LocalValue(upstreamValue);
-    }
-
-    assert('[BUG] this.local must have been initialized at this point', this.local);
-    return this.local.get();
-  }
-
-  set(value: unknown): void {
-    assert('[BUG] this.local must have been initialized at this point', this.local);
-    this.local.set(value);
-  }
 }
 
 /**
@@ -313,39 +166,43 @@ class ForkedValue implements Value {
   @param {Hash} options
   @public
 */
-abstract class AbstractInput extends InternalComponent {
-  /**
-   * The default HTML id attribute. We don't really _need_ one, this is just
-   * added for compatibility as it's hard to tell if people rely on it being
-   * present, and it doens't really hurt.
-   *
-   * However, don't rely on this internally, like passing it to `getElementId`.
-   * This can be (and often is) overriden by passing an `id` attribute on the
-   * invocation, which shadows this default id via `...attributes`.
-   */
-  get id(): string {
-    return guidFor(this);
+class Input extends AbstractInput {
+  static toString(): string {
+    return 'Input';
   }
 
   /**
-   * The default HTML class attribute. Similar to the above, we don't _need_
-   * them, they are just added for compatibility as it's similarly hard to tell
-   * if people rely on it in their CSS etc, and it doens't really hurt.
+   * The HTML class attribute.
    */
   get class(): string {
     if (this.isCheckbox) {
       return 'ember-checkbox ember-view';
-    } else if (this.isTextarea) {
-      return 'ember-text-area ember-view';
     } else {
       return 'ember-text-field ember-view';
     }
   }
 
-  abstract modernized: boolean;
-  abstract type: string;
-  abstract isCheckbox: boolean;
-  abstract isTextarea: boolean;
+  /**
+   * The HTML type attribute.
+   */
+  get type(): string {
+    let type = this.arg('type');
+
+    if (type === null || type === undefined) {
+      return 'text';
+    }
+
+    assert(
+      'The `@type` argument to the <Input> component must be a string',
+      typeof type === 'string'
+    );
+
+    return isValidInputType(type) ? type : 'text';
+  }
+
+  get isCheckbox(): boolean {
+    return this.arg('type') === 'checkbox';
+  }
 
   private _checked = valueFrom(this.args.checked);
 
@@ -387,132 +244,30 @@ abstract class AbstractInput extends InternalComponent {
     this._checked.set(checked);
   }
 
-  private _value = valueFrom(this.args.value);
-
-  get value(): unknown {
-    return this._value.get();
-  }
-
-  set value(value: unknown) {
-    this._value.set(value);
-  }
-
-  @action checkedDidChange(event: Event): void {
-    let element = elementForEvent(event);
-    assert('[BUG] element must be an <input>', element instanceof HTMLInputElement);
-    this.checked = element.checked;
-  }
-
-  @action valueDidChange(event: Event): void {
-    this.value = valueForEvent(event);
-  }
-
   @action change(event: Event): void {
     if (this.isCheckbox) {
       this.checkedDidChange(event);
     } else {
-      this.valueDidChange(event);
+      super.change(event);
     }
   }
 
   @action input(event: Event): void {
     if (!this.isCheckbox) {
-      this.valueDidChange(event);
+      super.input(event);
     }
   }
 
-  @action keyUp(event: KeyboardEvent): void {
-    switch (event.key) {
-      case 'Enter':
-        this.callbackFor('enter')(event);
-        this.callbackFor('insert-newline')(event);
-        break;
-
-      case 'Escape':
-        this.callbackFor('escape-press')(event);
-        break;
-    }
+  @action checkedDidChange(event: Event): void {
+    let element = event.target;
+    assert('[BUG] element must be an <input>', element instanceof HTMLInputElement);
+    this.checked = element.checked;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected isSupportedArgument(_name: string): boolean {
-    return false;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected onUnsupportedArgument(_name: string): void {}
-
-  protected callbackFor(type: string, shouldDevirtualize = true): EventListener {
-    let callback = this.arg(type);
-
-    if (callback) {
-      assert(
-        `The \`@${type}\` argument to the <${this.constructor}> component must be a function`,
-        typeof callback === 'function'
-      );
-
-      if (shouldDevirtualize) {
-        return devirtualize(callback as VirtualEventListener);
-      } else {
-        return callback as EventListener;
-      }
-    } else {
-      return NOOP;
-    }
-  }
-}
-
-class Input extends AbstractInput {
-  static toString(): string {
-    return 'Input';
-  }
-
-  constructor(owner: Owner, args: Record<string, Reference | undefined>, caller: unknown) {
-    super(owner, args, caller);
-
-    runInDebug(() => {
-      untrack(() => {
-        for (let name in args) {
-          if (!this.isSupportedArgument(name)) {
-            this.onUnsupportedArgument(name);
-          }
-        }
-      });
-    });
-  }
-
-  modernized =
-    Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
-    Component._wasReopened === false &&
-    TextField._wasReopened === false &&
-    Checkbox._wasReopened === false &&
-    TextSupport._wasReopened === false &&
-    TargetActionSupport._wasReopened === false;
-
-  /**
-   * The HTML type attribute.
-   */
-  get type(): string {
-    let type = this.arg('type');
-
-    if (type === null || type === undefined) {
-      return 'text';
-    }
-
-    assert(
-      'The `@type` argument to the <Input> component must be a string',
-      typeof type === 'string'
+  protected shouldModernize(): boolean {
+    return (
+      super.shouldModernize() && TextField._wasReopened === false && Checkbox._wasReopened === false
     );
-
-    return isValidInputType(type) ? type : 'text';
-  }
-
-  get isCheckbox(): boolean {
-    return this.arg('type') === 'checkbox';
-  }
-
-  get isTextarea(): false {
-    return false;
   }
 
   protected isSupportedArgument(name: string): boolean {
@@ -520,8 +275,8 @@ class Input extends AbstractInput {
       'type',
       'value',
       'checked',
-      'insert-newline',
       'enter',
+      'insert-newline',
       'escape-press',
     ];
 
@@ -529,532 +284,57 @@ class Input extends AbstractInput {
   }
 }
 
-class Textarea extends AbstractInput {
-  static toString(): string {
-    return 'Textarea';
-  }
-
-  constructor(owner: Owner, args: Record<string, Reference | undefined>, caller: unknown) {
-    super(owner, args, caller);
-
-    runInDebug(() => {
-      untrack(() => {
-        for (let name in args) {
-          if (!this.isSupportedArgument(name)) {
-            this.onUnsupportedArgument(name);
-          }
-        }
-      });
-    });
-  }
-
-  modernized =
-    Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
-    Component._wasReopened === false &&
-    TextArea._wasReopened === false &&
-    TextSupport._wasReopened === false &&
-    TargetActionSupport._wasReopened === false;
-
-  get type(): never {
-    throw assert(`[BUG] type getter should never be called on <Textarea />`);
-  }
-
-  get isCheckbox(): false {
-    return false;
-  }
-
-  get isTextarea(): true {
-    return true;
-  }
-
-  protected isSupportedArgument(name: string): boolean {
-    let supportedArguments = ['type', 'value', 'insert-newline', 'enter', 'escape-press'];
-    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
-  }
-}
-
-// Deprecated features
 if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  // Unsupported arguments
-  {
-    AbstractInput.prototype['onUnsupportedArgument'] = function (
-      this: AbstractInput,
-      argument: string
-    ): void {
-      let name = this.constructor.toString();
-
-      deprecate(`Passing the \`@${argument}\` argument to <${name}> is deprecated.`, false, {
-        id: 'ember.built-in-components.legacy-arguments',
-        for: 'ember-source',
-        since: {},
-        until: '4.0.0',
-      });
-
-      this.modernized = false;
-    };
-  }
-
-  // Attribute bindings
-  {
-    let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
-      if (target) {
-        return (
-          Object.getOwnPropertyDescriptor(target, property) ||
-          descriptorFor(Object.getPrototypeOf(target), property)
-        );
-      } else {
-        return null;
-      }
-    };
-
-    let defineGetterForDeprecatedAttributeBinding = (
-      component: typeof AbstractInput,
-      attribute: string,
-      argument = attribute
-    ): void => {
-      let name = component.toString();
-      let curlyName = name.toLowerCase();
-      let { prototype } = component;
-
-      let superIsSupportedArgument = prototype['isSupportedArgument'];
-
-      prototype['isSupportedArgument'] = function isSupportedArgument(
-        this: AbstractInput,
-        name: string
-      ): boolean {
-        return (this.modernized && name === argument) || superIsSupportedArgument.call(this, name);
-      };
-
-      let superDescriptor = descriptorFor(prototype, attribute);
-      let superGetter: (this: AbstractInput) => unknown = () => undefined;
-
-      if (superDescriptor) {
-        assert(
-          `Expecting ${attribute} to be a getter on <${name}>`,
-          typeof superDescriptor.get === 'function'
-        );
-
-        superGetter = superDescriptor.get;
-      }
-
-      Object.defineProperty(prototype, attribute, {
-        configurable: true,
-        enumerable: true,
-        get(this: AbstractInput): unknown {
-          if (argument in this.args) {
-            deprecate(
-              `Passing the \`@${argument}\` argument to <${name}> is deprecated. ` +
-                `Instead, please pass the attribute directly, i.e. \`<${name} ${attribute}={{...}} />\` ` +
-                `instead of \`<${name} @${argument}={{...}} />\` or \`{{${curlyName} ${argument}=...}}\`.`,
-              false,
-              {
-                id: 'ember.built-in-components.legacy-attribute-arguments',
-                for: 'ember-source',
-                since: {},
-                until: '4.0.0',
-              }
-            );
-
-            // The `class` attribute is concatenated/merged instead of clobbered
-            if (attribute === 'class' && superDescriptor) {
-              return `${superGetter.call(this)} ${this.arg(argument)}`;
-            } else {
-              return this.arg(argument);
-            }
-          } else {
-            return superGetter.call(this);
-          }
-        },
-      });
-    };
-
-    let deprecatedInputAttributeBindings: Array<string | [string, string]> = [
-      // Component
-      'id',
-      ['id', 'elementId'],
-      'class',
-      ['class', 'classNames'],
-      ['role', 'ariaRole'],
-
-      // TextSupport
-      'autocapitalize',
-      'autocorrect',
-      'autofocus',
-      'disabled',
-      'form',
-      'maxlength',
-      'minlength',
-      'placeholder',
-      'readonly',
-      'required',
-      'selectionDirection',
-      'spellcheck',
-      'tabindex',
-      'title',
-
-      // TextField
-      'accept',
-      'autocomplete',
-      'autosave',
-      'dir',
-      'formaction',
-      'formenctype',
-      'formmethod',
-      'formnovalidate',
-      'formtarget',
-      'height',
-      'inputmode',
-      'lang',
-      'list',
-      'max',
-      'min',
-      'multiple',
-      'name',
-      'pattern',
-      'size',
-      'step',
-      'width',
-
-      // Checkbox
-      'indeterminate',
-    ];
-
-    deprecatedInputAttributeBindings.forEach((args) => {
-      if (Array.isArray(args)) {
-        defineGetterForDeprecatedAttributeBinding(Input, ...args);
-      } else {
-        defineGetterForDeprecatedAttributeBinding(Input, args);
-      }
-    });
-
-    let deprecatedTextareaAttributeBindings: Array<string | [string, string]> = [
-      // Component
-      'id',
-      ['id', 'elementId'],
-      'class',
-      ['class', 'classNames'],
-      ['role', 'ariaRole'],
-
-      // TextSupport
-      'autocapitalize',
-      'autocorrect',
-      'autofocus',
-      'disabled',
-      'form',
-      'maxlength',
-      'minlength',
-      'placeholder',
-      'readonly',
-      'required',
-      'selectionDirection',
-      'spellcheck',
-      'tabindex',
-      'title',
-
-      // TextField
-      'rows',
-      'cols',
-      'name',
-      'selectionEnd',
-      'selectionStart',
-      'autocomplete',
-      'wrap',
-      'lang',
-      'dir',
-    ];
-
-    deprecatedTextareaAttributeBindings.forEach((args) => {
-      if (Array.isArray(args)) {
-        defineGetterForDeprecatedAttributeBinding(Textarea, ...args);
-      } else {
-        defineGetterForDeprecatedAttributeBinding(Textarea, args);
-      }
-    });
-  }
-
-  // Deprecated event arguments
-  {
-    type EventsMap = Record<string, string>;
-
-    const EVENTS = new WeakMap<object, EventsMap>();
-
-    const getEventsMap = (owner: Owner): EventsMap => {
-      let events = EVENTS.get(owner);
-
-      if (events === undefined) {
-        let eventDispatcher = owner.lookup<Maybe<{ _finalEvents?: EventsMap }>>(
-          'event_dispatcher:main'
-        );
-
-        assert(
-          'missing event dispatcher',
-          eventDispatcher !== null && typeof eventDispatcher === 'object'
-        );
-
-        assert(
-          'missing _finalEvents on event dispatcher',
-          '_finalEvents' in eventDispatcher &&
-            eventDispatcher?._finalEvents !== null &&
-            typeof eventDispatcher?._finalEvents === 'object'
-        );
-
-        EVENTS.set(owner, (events = eventDispatcher._finalEvents));
-      }
-
-      return events;
-    };
-
-    let superIsSupportedArgument = AbstractInput.prototype['isSupportedArgument'];
-
-    AbstractInput.prototype['isSupportedArgument'] = function isSupportedArgument(
-      this: AbstractInput,
-      name: string
-    ): boolean {
-      let events = [
-        ...Object.values(getEventsMap(this.owner)),
-        'focus-in',
-        'focus-out',
-        'key-press',
-        'key-up',
-        'key-down',
-      ];
-
-      return (
-        (this.modernized && events.indexOf(name) !== -1) ||
-        superIsSupportedArgument.call(this, name)
-      );
-    };
-    class DeprecatedEventHandlersModifier extends InternalModifier {
-      static toString(): string {
-        return 'DeprecatedEventHandlersModifier';
-      }
-
-      private listeners = new Map<string, EventListener>();
-
-      install(): void {
-        let { element, eventsMap, component, listenerFor, listeners } = this;
-
-        let entries: [eventName: string, methodName: string, isVirtualEvent?: boolean][] = [
-          ...Object.entries(eventsMap),
-          ['focusin', 'focus-in', true],
-          ['focusout', 'focus-out', true],
-          ['keypress', 'key-press', true],
-          ['keyup', 'key-up', true],
-          ['keydown', 'key-down', true],
-        ];
-
-        for (let [eventName, methodName, isVirtualEvent] of entries) {
-          let listener = listenerFor.call(component, eventName, methodName, isVirtualEvent);
-
-          if (listener) {
-            listeners.set(eventName, listener);
-            element.addEventListener(eventName, listener);
-          }
-        }
-
-        Object.freeze(listeners);
-      }
-
-      remove(): void {
-        let { element, listeners } = this;
-
-        for (let [event, listener] of Object.entries(listeners)) {
-          element.removeEventListener(event, listener);
-        }
-
-        this.listeners = new Map();
-      }
-
-      private get eventsMap(): EventsMap {
-        return getEventsMap(this.owner);
-      }
-
-      private get component(): AbstractInput {
-        let component = this.positional(0);
-
-        assert(
-          'must pass the <Input /> or <Textarea /> component as first argument',
-          component instanceof AbstractInput
-        );
-
-        return component;
-      }
-
-      private listenerFor(
-        this: AbstractInput,
-        eventName: string,
-        methodName: string,
-        isVirtualEvent = false
-      ): Option<EventListener> {
-        assert(
-          'must be called with the <Input /> or <Textarea /> component as this',
-          this instanceof AbstractInput
-        );
-
-        let name = this.constructor.toString();
-        let curlyName = name.toLowerCase();
-
-        if (methodName in this.args) {
-          deprecate(
-            `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
-              `This would have overwritten the internal \`${methodName}\` method on ` +
-              `the <${name}> component and prevented it from functioning properly. ` +
-              `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
-              `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
-            !(methodName in this),
-            {
-              id: 'ember.built-in-components.legacy-attribute-arguments',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-            }
-          );
-
-          deprecate(
-            `Passing the \`@${methodName}\` argument to <${name}> is deprecated. ` +
-              `Instead, please use the {{on}} modifier, i.e. \`<${name} {{on "${eventName}" ...}} />\` ` +
-              `instead of \`<${name} @${methodName}={{...}} />\` or \`{{${curlyName} ${methodName}=...}}\`.`,
-            methodName in this,
-            {
-              id: 'ember.built-in-components.legacy-attribute-arguments',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-            }
-          );
-
-          return this['callbackFor'].call(this, methodName, isVirtualEvent);
-        } else {
-          return null;
-        }
-      }
-    }
-
-    setInternalModifierManager(
-      new InternalModifierManager(DeprecatedEventHandlersModifier, 'deprecated-event-handlers'),
-      DeprecatedEventHandlersModifier
-    );
-
-    AbstractInput.prototype['DeprecatedEventHandlersModifier'] = DeprecatedEventHandlersModifier;
-  }
-
-  // String actions
-  if (SEND_ACTION) {
-    interface View {
-      send(action: string, ...args: unknown[]): void;
-    }
-
-    let isView = (target: {}): target is View => {
-      return typeof (target as Partial<View>).send === 'function';
-    };
-
-    let superCallbackFor = AbstractInput.prototype['callbackFor'];
-
-    Object.assign(AbstractInput.prototype, {
-      callbackFor(this: AbstractInput, type: string, shouldDevirtualize = true): EventListener {
-        const actionName = this.arg(type);
-
-        if (typeof actionName === 'string') {
-          deprecate(
-            `Passing actions to components as strings (like \`<${this.constructor} @${type}="${actionName}" />\`) is deprecated. ` +
-              `Please use closure actions instead (\`<${this.constructor} @${type}={{action "${actionName}"}} />\`).`,
-            false,
-            {
-              id: 'ember-component.send-action',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-              url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
-            }
-          );
-
-          const { caller } = this;
-
-          assert('[BUG] Missing caller', caller && typeof caller === 'object');
-
-          let callback: Function;
-
-          if (isView(caller)) {
-            callback = (...args: unknown[]) => caller.send(actionName, ...args);
-          } else {
-            assert(
-              `The action '${actionName}' did not exist on ${caller}`,
-              typeof caller[actionName] === 'function'
-            );
-
-            callback = caller[actionName];
-          }
-
-          let deprecated = (...args: unknown[]) => {
-            deprecate(
-              `Passing actions to components as strings (like \`<${this.constructor} @${type}="${actionName}" />\`) is deprecated. ` +
-                `Please use closure actions instead (\`<${this.constructor} @${type}={{action "${actionName}"}} />\`).`,
-              false,
-              {
-                id: 'ember-component.send-action',
-                for: 'ember-source',
-                since: {},
-                until: '4.0.0',
-                url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
-              }
-            );
-
-            return callback(...args);
-          };
-
-          if (shouldDevirtualize) {
-            return devirtualize(deprecated as VirtualEventListener);
-          } else {
-            return deprecated as EventListener;
-          }
-        } else {
-          return superCallbackFor.call(this, type);
-        }
-      },
-    });
-  }
-
-  // jQuery Events
-  if (JQUERY_INTEGRATION) {
-    let superCallbackFor = AbstractInput.prototype['callbackFor'];
-
-    Object.assign(AbstractInput.prototype, {
-      callbackFor(this: AbstractInput, type: string, shouldDevirtualize = true): EventListener {
-        let callback = superCallbackFor.call(this, type, shouldDevirtualize);
-
-        if (jQuery && !jQueryDisabled) {
-          return (event: Event) => callback(new jQuery.Event(event));
-        } else {
-          return callback;
-        }
-      },
-    });
-  }
+  handleDeprecatedFeatures(Input, [
+    // Component
+    'id',
+    ['id', 'elementId'],
+    'class',
+    ['class', 'classNames'],
+    ['role', 'ariaRole'],
+
+    // TextSupport
+    'autocapitalize',
+    'autocorrect',
+    'autofocus',
+    'disabled',
+    'form',
+    'maxlength',
+    'minlength',
+    'placeholder',
+    'readonly',
+    'required',
+    'selectionDirection',
+    'spellcheck',
+    'tabindex',
+    'title',
+
+    // TextField
+    'accept',
+    'autocomplete',
+    'autosave',
+    'dir',
+    'formaction',
+    'formenctype',
+    'formmethod',
+    'formnovalidate',
+    'formtarget',
+    'height',
+    'inputmode',
+    'lang',
+    'list',
+    'max',
+    'min',
+    'multiple',
+    'name',
+    'pattern',
+    'size',
+    'step',
+    'width',
+
+    // Checkbox
+    'indeterminate',
+  ]);
 }
 
-// Use an opaque handle so implementation details are
-const InputComponent = {
-  // Factory interface
-  create(): never {
-    throw assert('Use constructor instead of create');
-  },
-
-  toString: Input.toString,
-};
-
-setInternalComponentManager(new InternalManager(Input, 'input'), InputComponent);
-setComponentTemplate(InputTemplate, InputComponent);
-
-export default InputComponent;
-
-export const TextareaComponent = {
-  // Factory interface
-  create(): never {
-    throw assert('Use constructor instead of create');
-  },
-
-  toString: Textarea.toString,
-};
-
-setInternalComponentManager(new InternalManager(Textarea, 'textarea'), TextareaComponent);
-setComponentTemplate(TextareaTemplate, TextareaComponent);
+export default opaquify(Input, InputTemplate);

@@ -55,7 +55,7 @@
     {{on "paste" this.valueDidChange}}
     {{on "cut" this.valueDidChange}}
 
-    {{this.DeprecatedEventHandlersModifier this}}
+    {{this.handleDeprecatedEvents this}}
   />
 {{~else~}}
   {{~#let (component '-checkbox') (component '-text-field') as |Checkbox TextField|~}}
