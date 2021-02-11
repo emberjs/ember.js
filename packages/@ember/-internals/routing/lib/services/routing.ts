@@ -52,23 +52,30 @@ export default class RoutingService extends Service {
     this.router._prepareQueryParams(routeName, models, queryParams);
   }
 
-  generateURL(routeName: string, models: {}[], queryParams: {}) {
-    let router = this.router;
-    // Return early when transition has not started, when rendering in tests without visit(),
-    // we cannot infer the route context which <LinkTo/> needs be aware of
-    if (!router._initialTransitionStarted) {
-      return;
-    }
-
+  _generateURL(routeName: string, models: {}[], queryParams: {}) {
     let visibleQueryParams = {};
     if (queryParams) {
       assign(visibleQueryParams, queryParams);
       this.normalizeQueryParams(routeName, models, visibleQueryParams as QueryParam);
     }
 
-    return router.generate(routeName, ...models, {
+    return this.router.generate(routeName, ...models, {
       queryParams: visibleQueryParams,
     });
+  }
+
+  generateURL(routeName: string, models: {}[], queryParams: {}) {
+    if (this.router._initialTransitionStarted) {
+      return this._generateURL(routeName, models, queryParams);
+    } else {
+      // Swallow error when transition has not started.
+      // When rendering in tests without visit(), we cannot infer the route context which <LinkTo/> needs be aware of
+      try {
+        return this._generateURL(routeName, models, queryParams);
+      } catch (_e) {
+        return;
+      }
+    }
   }
 
   isActiveForRoute(
