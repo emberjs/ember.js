@@ -2731,6 +2731,39 @@ moduleFor(
       }, expectedBacktrackingMessage);
     }
 
+    ["@test when a shared dependency is changed during children's rendering (tracked)"]() {
+      class Wrapper {
+        @tracked content = null;
+      }
+
+      this.registerComponent('x-outer', {
+        ComponentClass: Component.extend({
+          value: 1,
+          wrapper: new Wrapper(),
+        }),
+        template:
+          '<div id="outer-value">{{this.wrapper.content}}</div> {{x-inner value=this.value wrapper=this.wrapper}}',
+      });
+
+      this.registerComponent('x-inner', {
+        ComponentClass: Component.extend({
+          didReceiveAttrs() {
+            this.get('wrapper').content = this.get('value');
+          },
+          value: null,
+        }),
+        template: '<div id="inner-value">{{this.wrapper.content}}</div>',
+      });
+
+      let expectedBacktrackingMessage = backtrackingMessageFor('content', 'Wrapper', {
+        renderTree: ['x-outer', 'this.wrapper.content'],
+      });
+
+      expectAssertion(() => {
+        this.render('{{x-outer}}');
+      }, expectedBacktrackingMessage);
+    }
+
     ['@test non-block with each rendering child components']() {
       this.registerComponent('non-block', {
         template: strip`
