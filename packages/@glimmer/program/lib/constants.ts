@@ -196,15 +196,11 @@ export class ConstantsImpl
     return handle;
   }
 
-  component(definitionState: ComponentDefinitionState): ComponentDefinition;
+  component(definitionState: ComponentDefinitionState, owner: object): ComponentDefinition;
   component(
     definitionState: ComponentDefinitionState,
-    isOptional: true
-  ): ComponentDefinition | null;
-  component(
-    definitionState: ComponentDefinitionState,
-    isOptional?: true,
-    owner?: object
+    owner: object,
+    isOptional?: true
   ): ComponentDefinition | null {
     let definition = this.componentDefinitionCache.get(definitionState);
 
