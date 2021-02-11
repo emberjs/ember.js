@@ -68,7 +68,7 @@ moduleFor(
       });
     }
 
-    ['@test Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
+    ['@skip Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
         assert.equal(
@@ -80,7 +80,7 @@ moduleFor(
       assert.notEqual(glimmer.htmlSafe, undefined, 'Ember.String.htmlSafe is not `undefined`');
     }
 
-    ['@test Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
+    ['@skip Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
         assert.equal(
