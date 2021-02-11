@@ -55,6 +55,9 @@ let templates = [
 
   // unescaped
   '{{{unescaped}}}',
+
+  // Comment in Angle Bracket component
+  '<Foo {{!-- This is a comment --}} attribute></Foo>',
 ];
 
 QUnit.module('[glimmer-syntax] Code generation', function () {
