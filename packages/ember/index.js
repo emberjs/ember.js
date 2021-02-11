@@ -583,7 +583,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
           `Using Ember.${name} or importing from '${path}' has been deprecated, install the ` +
             `\`ember-legacy-built-in-components\` addon and use \`import { ${name} } from ` +
             `'ember-legacy-built-in-components';\` instead`,
-          true,
+          false,
           {
             id: 'ember.legacy-built-in-components',
             until: '4.0.0',
