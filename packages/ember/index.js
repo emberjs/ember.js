@@ -790,7 +790,7 @@ function defineEmberTemplateCompilerLazyLoad(key) {
     configurable: true,
     enumerable: true,
     get() {
-      if (require.has('ember-template-compiler')) {
+      if (has('ember-template-compiler')) {
         let templateCompiler = require('ember-template-compiler');
 
         EmberHTMLBars.precompile = EmberHandlebars.precompile = templateCompiler.precompile;
@@ -863,7 +863,8 @@ Ember.__loader = {
   require,
   // eslint-disable-next-line no-undef
   define,
-  registry: require.entries,
+  // eslint-disable-next-line no-undef
+  registry: typeof requirejs !== 'undefined' ? requirejs.entries : require.entries,
 };
 
 export default Ember;

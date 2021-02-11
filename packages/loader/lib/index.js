@@ -92,5 +92,5 @@ var define, require;
     return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
   };
 
-  require._eak_seen = registry;
+  require._eak_seen = require.entries = registry;
 })();
