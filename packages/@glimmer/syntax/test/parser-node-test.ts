@@ -534,6 +534,16 @@ test('a Handlebars comment in proper element space', function () {
   );
 });
 
+test('a Handlebars comment after a valueless attribute', function () {
+  let t = '<input foo {{! comment }}>';
+  astEqual(
+    t,
+    b.program([
+      element('input', ['attrs', ['foo', '']], ['comments', b.mustacheComment(' comment ')]),
+    ])
+  );
+});
+
 test('a Handlebars comment in invalid element space', function (assert) {
   assert.throws(() => {
     parse('\nbefore <div \n  a{{! some comment }} data-foo="bar"></div> after', {
