@@ -583,7 +583,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
           `Using Ember.${name} or importing from '${path}' has been deprecated, install the ` +
             `\`ember-legacy-built-in-components\` addon and use \`import { ${name} } from ` +
             `'ember-legacy-built-in-components';\` instead`,
-          false,
+          true,
           {
             id: 'ember.legacy-built-in-components',
             until: '4.0.0',
@@ -655,7 +655,9 @@ const deprecateImportFromString = function (
   name,
   message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
 ) {
-  deprecate(message, false, {
+  // Disabling this deprecation due to unintended errors in 3.25
+  // See https://github.com/emberjs/ember.js/issues/19393 fo more information.
+  deprecate(message, true, {
     id: 'ember-string.htmlsafe-ishtmlsafe',
     for: 'ember-source',
     since: {
