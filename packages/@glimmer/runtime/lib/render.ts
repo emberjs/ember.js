@@ -80,7 +80,7 @@ function renderInvocation(
   // Prefix argument names with `@` symbol
   const argNames = argList.map(([name]) => `@${name}`);
 
-  let reified = vm[CONSTANTS].component(definition, false, owner);
+  let reified = vm[CONSTANTS].component(definition, owner);
 
   vm.pushFrame();
 
