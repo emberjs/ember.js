@@ -3,6 +3,7 @@ import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
 import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
+import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
@@ -23,6 +24,7 @@ import Route, {
   ROUTER_EVENT_DEPRECATIONS,
 } from './route';
 import RouterState from './router_state';
+
 /**
 @module @ember/routing
 */
@@ -76,6 +78,19 @@ function defaultWillTransition(
       );
     }
   }
+}
+
+let freezeRouteInfo: Function;
+if (DEBUG) {
+  freezeRouteInfo = (transition: Transition) => {
+    if (transition.from !== null && !Object.isFrozen(transition.from)) {
+      Object.freeze(transition.from);
+    }
+
+    if (transition.to !== null && !Object.isFrozen(transition.to)) {
+      Object.freeze(transition.to);
+    }
+  };
 }
 
 interface RenderOutletState {
@@ -146,6 +161,7 @@ class EmberRouter extends EmberObject {
   _handledErrors = new Set();
   _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
   _engineInfoByRoute = Object.create(null);
+  _routerService: RouterService | undefined;
 
   _slowTransitionTimer: unknown;
 
@@ -156,6 +172,7 @@ class EmberRouter extends EmberObject {
     if (owner) {
       this.namespace = owner.lookup('application:main');
       this._bucketCache = owner.lookup(P`-bucket-cache:main`);
+      this._routerService = owner.lookup('service:router');
     }
   }
 
@@ -292,12 +309,24 @@ class EmberRouter extends EmberObject {
         if (transition.isIntermediate) {
           router.set('currentRoute', transition.to);
         }
+        if (DEBUG) {
+          freezeRouteInfo(transition);
+        }
+        if (router._routerService) {
+          router._routerService.trigger('routeWillChange', transition);
+        }
       }
 
       routeDidChange(transition: Transition) {
         router.set('currentRoute', transition.to);
         once(() => {
           router.trigger('routeDidChange', transition);
+          if (DEBUG) {
+            freezeRouteInfo(transition);
+          }
+          if (router._routerService) {
+            router._routerService.trigger('routeDidChange', transition);
+          }
         });
       }
 
