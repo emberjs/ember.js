@@ -40,10 +40,16 @@ function customTagForArrayProxy(proxy, key) {
 }
 
 /**
-  An ArrayProxy wraps any other object that implements `Array` and/or
-  `MutableArray,` forwarding all requests. This makes it very useful for
-  a number of binding use cases or other cases where being able to swap
-  out the underlying array is useful.
+  An ArrayProxy wraps any other object that is a native or Ember `Array`
+  (checked with [`Ember.isArray`](/ember/release/functions/@ember%2Farray/isArray)),
+  forwarding all requests. This makes it very useful for a number of
+  binding use cases or other cases where being able to swap out the
+  underlying array is useful.
+  
+  NOTE: Attempting to mutate the underlying content of an object that
+  is not a `MutableArray` (e.g. a native Javascript Array) may not
+  behave as expected. [`Ember.A`](/ember/release/functions/@ember%2Farray/A)
+  may be used in this case.
 
   A simple example of usage:
 
