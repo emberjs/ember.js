@@ -406,6 +406,39 @@ class GetTest extends RenderTest {
     this.rerender({ age: 30 });
     this.assertHTML('miguelandrade30');
   }
+
+  @test
+  'should be able to get string length with a static key'() {
+    this.render(`[{{get this.name 'length'}}] [{{if true (get this.name 'length')}}]`, {
+      name: 'Tomster',
+    });
+
+    this.assertHTML('[7] [7]');
+    this.assertStableRerender();
+
+    this.rerender({ name: 'Zoey' });
+    this.assertHTML('[4] [4]');
+
+    this.rerender({ name: 'Tomster' });
+    this.assertHTML('[7] [7]');
+  }
+
+  @test
+  'should be able to get string length with a bound/dynamic key'() {
+    this.render(`[{{get this.name this.key}}] [{{if true (get this.name this.key)}}]`, {
+      name: 'Tomster',
+      key: 'length',
+    });
+
+    this.assertHTML('[7] [7]');
+    this.assertStableRerender();
+
+    this.rerender({ key: 'foo' });
+    this.assertHTML('[] []');
+
+    this.rerender({ name: 'Zoey', key: 'length' });
+    this.assertHTML('[4] [4]');
+  }
 }
 
 jitSuite(GetTest);
