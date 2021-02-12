@@ -1,6 +1,7 @@
 import { getPath, setPath } from '@glimmer/global-context';
 import { VMArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { isDict } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
 
 /**
@@ -88,21 +89,17 @@ export default internalHelper((args: VMArguments) => {
     () => {
       let source = valueForRef(sourceRef);
 
-      if (isObject(source)) {
+      if (isDict(source)) {
         return getPath(source, String(valueForRef(pathRef)));
       }
     },
     (value) => {
       let source = valueForRef(sourceRef);
 
-      if (isObject(source)) {
+      if (isDict(source)) {
         return setPath(source, String(valueForRef(pathRef)), value);
       }
     },
     'get'
   );
 });
-
-function isObject(obj: unknown): obj is object {
-  return typeof obj === 'function' || (typeof obj === 'object' && obj !== null);
-}
