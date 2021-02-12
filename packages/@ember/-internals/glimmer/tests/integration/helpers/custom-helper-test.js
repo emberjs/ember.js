@@ -743,6 +743,19 @@ moduleFor(
         this.render('{{hello-world}}');
       }, expectedMessage);
     }
+
+    ['@test helpers are not computed eagerly when used with if expressions'](assert) {
+      this.registerHelper('is-ok', () => 'hello');
+      this.registerHelper('throws-error', () => assert.ok(false, 'helper was computed eagerly'));
+
+      this.render('{{if true (is-ok) (throws-error)}}');
+
+      this.assertText('hello');
+
+      runTask(() => this.rerender());
+
+      this.assertText('hello');
+    }
   }
 );
 
