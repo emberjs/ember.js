@@ -1,5 +1,5 @@
 import * as ASTv1 from '../v1/api';
-import { escapeAttrValue, escapeText } from './util';
+import { escapeAttrValue, escapeText, sortByLoc } from './util';
 
 export const voidMap: {
   [tagName: string]: boolean;
@@ -219,23 +219,21 @@ export default class Printer {
 
   OpenElementNode(el: ASTv1.ElementNode): void {
     this.buffer += `<${el.tag}`;
-    if (el.attributes.length) {
-      el.attributes.forEach((attr) => {
-        this.buffer += ' ';
-        this.AttrNode(attr);
-      });
-    }
-    if (el.modifiers.length) {
-      el.modifiers.forEach((mod) => {
-        this.buffer += ' ';
-        this.ElementModifierStatement(mod);
-      });
-    }
-    if (el.comments.length) {
-      el.comments.forEach((comment) => {
-        this.buffer += ' ';
-        this.MustacheCommentStatement(comment);
-      });
+    const parts = [...el.attributes, ...el.modifiers, ...el.comments].sort(sortByLoc);
+
+    for (const part of parts) {
+      this.buffer += ' ';
+      switch (part.type) {
+        case 'AttrNode':
+          this.AttrNode(part);
+          break;
+        case 'ElementModifierStatement':
+          this.ElementModifierStatement(part);
+          break;
+        case 'MustacheCommentStatement':
+          this.MustacheCommentStatement(part);
+          break;
+      }
     }
     if (el.blockParams.length) {
       this.BlockParams(el.blockParams);

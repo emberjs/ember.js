@@ -14,6 +14,7 @@ export {
   PrecompileOptions,
 } from './lib/parser/tokenizer-event-handlers';
 export { default as print } from './lib/generation/print';
+export { sortByLoc } from './lib/generation/util';
 export { default as Walker } from './lib/traversal/walker';
 export { default as traverse } from './lib/traversal/traverse';
 export { NodeVisitor } from './lib/traversal/visitor';
