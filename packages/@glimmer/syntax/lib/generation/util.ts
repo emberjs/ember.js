@@ -1,3 +1,5 @@
+import * as ASTv1 from '../v1/api';
+
 const enum Char {
   NBSP = 0xa0,
   QUOT = 0x22,
@@ -52,4 +54,31 @@ export function escapeText(text: string): string {
     return text.replace(TEXT_REGEX_REPLACE, textReplacer);
   }
   return text;
+}
+
+export function sortByLoc(a: ASTv1.Node, b: ASTv1.Node): -1 | 0 | 1 {
+  // If either is invisible, don't try to order them
+  if (a.loc.isInvisible || b.loc.isInvisible) {
+    return 0;
+  }
+
+  if (a.loc.startPosition.line < b.loc.startPosition.line) {
+    return -1;
+  }
+
+  if (
+    a.loc.startPosition.line === b.loc.startPosition.line &&
+    a.loc.startPosition.column < b.loc.startPosition.column
+  ) {
+    return -1;
+  }
+
+  if (
+    a.loc.startPosition.line === b.loc.startPosition.line &&
+    a.loc.startPosition.column === b.loc.startPosition.column
+  ) {
+    return 0;
+  }
+
+  return 1;
 }
