@@ -1,6 +1,7 @@
 import { normalizeProperty } from '@glimmer/runtime';
-import { assertElement, hasAttribute, jitSuite, RenderTest, test } from '..';
+import { assertElement, hasAttribute, jitSuite, RenderTest, test, tracked } from '..';
 import { Namespace, SimpleElement } from '@simple-dom/interface';
+import { castToBrowser, expect } from '@glimmer/util';
 
 export class AttributesTests extends RenderTest {
   static suiteName = 'Attributes';
@@ -236,6 +237,40 @@ export class AttributesTests extends RenderTest {
 
     this.rerender({ obj });
     this.assert.equal(this.readDOMAttr('value'), '');
+    this.assertStableNodes();
+  }
+
+  @test
+  'handles successive updates to the same value'() {
+    class Model {
+      @tracked value = '';
+    }
+
+    let model = new Model();
+
+    this.render('<input value={{this.model.value}} />', { model });
+    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assertStableRerender();
+
+    let inputElement = castToBrowser(
+      expect(this.element.firstChild, 'expected input to exist'),
+      'input'
+    );
+
+    inputElement.value = 'bar';
+    this.assert.equal(this.readDOMAttr('value'), 'bar');
+
+    model.value = 'foo';
+    this.rerender();
+    this.assert.equal(this.readDOMAttr('value'), 'foo');
+    this.assertStableNodes();
+
+    inputElement.value = 'bar';
+    this.assert.equal(this.readDOMAttr('value'), 'bar');
+
+    model.value = 'foo';
+    this.rerender();
+    this.assert.equal(this.readDOMAttr('value'), 'foo');
     this.assertStableNodes();
   }
 

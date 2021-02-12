@@ -1,4 +1,4 @@
-import { Reference, valueForRef, isConstRef } from '@glimmer/reference';
+import { Reference, valueForRef, isConstRef, createComputeRef } from '@glimmer/reference';
 import { Revision, Tag, valueForTag, validateTag, consumeTag } from '@glimmer/validator';
 import {
   check,
@@ -17,6 +17,7 @@ import {
   Owner,
   CurriedType,
   ModifierDefinitionState,
+  Environment,
 } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
@@ -237,27 +238,34 @@ APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: _trusting, op3: _name
   let attribute = vm.elements().setDynamicAttribute(name, value, trusting, namespace);
 
   if (!isConstRef(reference)) {
-    vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
+    vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute, vm.env));
   }
 });
 
 export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
   public type = 'patch-element';
 
-  public lastValue: unknown;
+  private updateRef: Reference;
 
-  constructor(private reference: Reference<unknown>, private attribute: DynamicAttribute) {
+  constructor(reference: Reference<unknown>, attribute: DynamicAttribute, env: Environment) {
     super();
-    this.lastValue = valueForRef(reference);
+
+    let initialized = false;
+
+    this.updateRef = createComputeRef(() => {
+      let value = valueForRef(reference);
+
+      if (initialized === true) {
+        attribute.update(value, env);
+      } else {
+        initialized = true;
+      }
+    });
+
+    valueForRef(this.updateRef);
   }
 
-  evaluate(vm: UpdatingVM) {
-    let { attribute, reference, lastValue } = this;
-    let currentValue = valueForRef(reference);
-
-    if (currentValue !== lastValue) {
-      attribute.update(currentValue, vm.env);
-      this.lastValue = currentValue;
-    }
+  evaluate() {
+    valueForRef(this.updateRef);
   }
 }
