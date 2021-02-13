@@ -1,4 +1,5 @@
 import require from 'require';
+import { deprecate } from '@ember/debug';
 import { context } from '@ember/-internals/environment';
 
 (function () {
@@ -9,6 +10,18 @@ import { context } from '@ember/-internals/environment';
       enumerable: true,
       configurable: true,
       get() {
+        deprecate(
+          "Using window.Ember and window.Em have been deprecated. Use `import Ember  from 'ember';` instead ",
+          false,
+          {
+            id: 'ember-source.window-global',
+            until: '4.0.0',
+            url: 'tbd',
+            for: 'ember-source',
+            since: { enabled: '3.26.0-beta.1' },
+          }
+        );
+
         if (!Ember) {
           Ember = require('ember').default;
         }
