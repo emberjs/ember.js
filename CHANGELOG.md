@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.26.0-beta.2 (February 15, 2021)
+
+- [#19387](https://github.com/emberjs/ember.js/pull/19387) [BUGFIX] LinkTo with incomplete model failing in rendering tests
+- [#19395](https://github.com/emberjs/ember.js/pull/19395) [BUGFIX] Only return empty href when LinkTo href generation throws error
+- [#19396](https://github.com/emberjs/ember.js/pull/19396) [BUGFIX] Revert deprecation of htmlSafe and isHTMLSafe
+- [#19397](https://github.com/emberjs/ember.js/pull/19397) [BUGFIX] Force building Ember bundles when `targets.node` is defined
+
 ### v3.26.0-beta.1 (February 08, 2021)
 
 - [#19255](https://github.com/emberjs/ember.js/pull/19255) [DEPRECATION] Deprecate transition methods of controller and route per [RFC #674](https://github.com/emberjs/rfcs/blob/master/text/0674-deprecate-transition-methods-of-controller-and-route.md).
