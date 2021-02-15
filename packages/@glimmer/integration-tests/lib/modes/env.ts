@@ -114,7 +114,7 @@ setGlobalContext({
     let current: unknown = obj;
 
     for (let part of parts) {
-      if (typeof current === 'function' || (typeof current === 'object' && current !== null)) {
+      if (current !== null && current !== undefined) {
         current = (current as Record<string, unknown>)[part];
       }
     }
