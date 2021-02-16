@@ -12,7 +12,7 @@ import {
 import { registerDestructor } from '@glimmer/destroyable';
 import { setOwner } from '@glimmer/owner';
 import { valueForRef } from '@glimmer/reference';
-import { dict } from '@glimmer/util';
+import { assign, castToBrowser, dict } from '@glimmer/util';
 import {
   createUpdatableTag,
   deprecateMutationsInTrackingTransaction,
@@ -125,7 +125,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       // breakage in users of older modifier capabilities.
       factoryOrDefinition = {
         create(args: Record<string, unknown>) {
-          let params = Object.assign({}, args);
+          let params = assign({}, args);
           setOwner(params, owner);
 
           return (definition as Factory).create(args);
@@ -187,9 +187,9 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
     let { capabilities } = delegate;
 
     if (capabilities.disableAutoTracking === true) {
-      untrack(() => delegate.installModifier(modifier, element, args));
+      untrack(() => delegate.installModifier(modifier, castToBrowser(element, 'ELEMENT'), args));
     } else {
-      delegate.installModifier(modifier, element, args);
+      delegate.installModifier(modifier, castToBrowser(element, 'ELEMENT'), args);
     }
   }
 
