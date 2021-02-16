@@ -756,6 +756,17 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
+  'if keyword in SubExpression without falsey value returns undefined [GH emberjs/ember.js#19409]'() {
+    this.registerHelper('to-string', (args) => `${args[0]}`);
+
+    this.render('{{to-string (if this.condition "truthy")}}', {
+      condition: false,
+    });
+
+    this.assertHTML('undefined', 'Initial render');
+  }
+
+  @test
   'if keyword in append position with falsy'() {
     this.render('{{if this.condition "truthy" "falsy"}}', {
       condition: true,

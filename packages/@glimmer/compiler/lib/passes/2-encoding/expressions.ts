@@ -146,12 +146,13 @@ export class ExpressionEncoder {
   }
 
   IfInline({ condition, truthy, falsy }: mir.IfInline): WireFormat.Expressions.IfInline {
-    return [
-      SexpOpcodes.IfInline,
-      EXPR.expr(condition),
-      EXPR.expr(truthy),
-      falsy ? EXPR.expr(falsy) : null,
-    ];
+    let expr = [SexpOpcodes.IfInline, EXPR.expr(condition), EXPR.expr(truthy)];
+
+    if (falsy) {
+      expr.push(EXPR.expr(falsy));
+    }
+
+    return expr as WireFormat.Expressions.IfInline;
   }
 
   GetDynamicVar({ name }: mir.GetDynamicVar): WireFormat.Expressions.GetDynamicVar {
