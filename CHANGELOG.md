@@ -1,3 +1,28 @@
+## v0.76.0 (2021-02-16)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`
+  * [#1263](https://github.com/glimmerjs/glimmer-vm/pull/1263) [BUGFIX] Ensure owner is available during resolution for all components ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`
+  * [#1270](https://github.com/glimmerjs/glimmer-vm/pull/1270) Ensure inline `if` returns `undefined` when no falsey value is provided ([@rwjblue](https://github.com/rwjblue))
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1268](https://github.com/glimmerjs/glimmer-vm/pull/1268) [BUGFIX] Fix reactivity of dynamic attributes ([@pzuraq](https://github.com/pzuraq))
+  * [#1269](https://github.com/glimmerjs/glimmer-vm/pull/1269) [BUGFIX] Fix {{get}} when used on non-objects ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/syntax`
+  * [#1266](https://github.com/glimmerjs/glimmer-vm/pull/1266) Maintain relative order of attributes and comments within an `ElementNode` ([@charlespierce](https://github.com/charlespierce))
+
+#### :house: Internal
+* `@glimmer/integration-tests`
+  * [#1265](https://github.com/glimmerjs/glimmer-vm/pull/1265) Add tests for helper managers ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 3
+- Charles Pierce ([@charlespierce](https://github.com/charlespierce))
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.75.0 (2021-02-09)
 
 #### :boom: Breaking Change
