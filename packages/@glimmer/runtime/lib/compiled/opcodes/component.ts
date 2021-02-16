@@ -544,7 +544,7 @@ function setDeferredAttr(
       .elements()
       .setDynamicAttribute(name, valueForRef(value), trusting, namespace);
     if (!isConstRef(value)) {
-      vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute));
+      vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute, vm.env));
     }
   }
 }
