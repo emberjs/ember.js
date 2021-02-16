@@ -261,7 +261,7 @@ export namespace Expressions {
     op: SexpOpcodes.IfInline,
     condition: Expression,
     truthyValue: Expression,
-    falsyValue: Option<Expression>
+    falsyValue?: Option<Expression>
   ];
 
   export type Not = [op: SexpOpcodes.Not, value: Expression];
