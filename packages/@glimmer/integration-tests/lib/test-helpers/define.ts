@@ -10,7 +10,6 @@ import {
 import { createTemplate } from '../compile';
 
 import { Arguments, HelperManager, ModifierManager } from '@glimmer/interfaces';
-import { SimpleElement } from '@simple-dom/interface';
 
 interface SimpleHelperState {
   fn: (...args: unknown[]) => unknown;
@@ -43,7 +42,7 @@ type SimpleModifierFn = (...args: unknown[]) => (() => void) | undefined;
 interface SimpleModifierState {
   fn: SimpleModifierFn;
   args: Arguments;
-  element: SimpleElement | undefined;
+  element: Element | undefined;
   destructor: (() => void) | undefined;
 }
 
@@ -54,7 +53,7 @@ class FunctionalModifierManager implements ModifierManager<SimpleModifierState> 
     return { fn, args, element: undefined, destructor: undefined };
   }
 
-  installModifier(state: SimpleModifierState, element: SimpleElement) {
+  installModifier(state: SimpleModifierState, element: Element) {
     state.element = element;
     this.setupModifier(state);
   }
