@@ -10,6 +10,8 @@ export function preprocess(templateSource: string, options?: PrecompileOptions):
   return createTemplate(templateSource, options)({});
 }
 
+let templateId = 0;
+
 export function createTemplate(
   templateSource: string,
   options: PrecompileOptions = {},
@@ -20,6 +22,7 @@ export function createTemplate(
   let reifiedScopeValues = usedLocals.map((key) => scopeValues[key]);
 
   let templateBlock: SerializedTemplateWithLazyBlock = {
+    id: String(templateId++),
     block: JSON.stringify(block),
     moduleName: options.meta?.moduleName ?? '(unknown template module)',
     scope: reifiedScopeValues.length > 0 ? () => reifiedScopeValues : null,

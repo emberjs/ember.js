@@ -11,6 +11,7 @@ export {
   ASTPluginBuilder,
   ASTPluginEnvironment,
   Syntax,
+  TemplateIdFn,
   PrecompileOptions,
 } from './lib/parser/tokenizer-event-handlers';
 export { default as print } from './lib/generation/print';

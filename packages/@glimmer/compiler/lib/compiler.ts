@@ -4,11 +4,51 @@ import {
   TemplateJavascript,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { normalize, PrecompileOptions, Source } from '@glimmer/syntax';
+import { normalize, PrecompileOptions, Source, TemplateIdFn } from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
 import pass0 from './passes/1-normalization/index';
 import { visit as pass2 } from './passes/2-encoding/index';
+
+declare function require(id: 'crypto'): Crypto;
+declare function require(id: string): unknown;
+
+interface Crypto {
+  createHash(
+    alg: 'sha1'
+  ): {
+    update(src: string, encoding: 'utf8'): void;
+    digest(encoding: 'base64'): string;
+  };
+}
+
+export const defaultId: TemplateIdFn = (() => {
+  if (typeof require === 'function') {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+      const crypto = require('crypto');
+
+      let idFn: TemplateIdFn = (src) => {
+        let hash = crypto.createHash('sha1');
+        hash.update(src, 'utf8');
+        // trim to 6 bytes of data (2^48 - 1)
+        return hash.digest('base64').substring(0, 8);
+      };
+
+      idFn('test');
+
+      return idFn;
+    } catch (e) {}
+  }
+
+  return function idFn() {
+    return null;
+  };
+})();
+
+const defaultOptions: PrecompileOptions = {
+  id: defaultId,
+};
 
 /*
  * Compile a string into a template javascript string.
@@ -26,7 +66,7 @@ import { visit as pass2 } from './passes/2-encoding/index';
  */
 export function precompileJSON(
   string: string,
-  options: PrecompileOptions = {}
+  options: PrecompileOptions = defaultOptions
 ): [block: SerializedTemplateBlock, usedLocals: string[]] {
   let source = new Source(string, options.meta?.moduleName);
   let [ast, locals] = normalize(source, options);
@@ -63,12 +103,17 @@ const SCOPE_PLACEHOLDER = '796d24e6-2450-4fb0-8cdf-b65638b5ef70';
  * @param {string} string a Glimmer template string
  * @return {string} a template javascript string
  */
-export function precompile(source: string, options: PrecompileOptions = {}): TemplateJavascript {
+export function precompile(
+  source: string,
+  options: PrecompileOptions = defaultOptions
+): TemplateJavascript {
   let [block, usedLocals] = precompileJSON(source, options);
 
   let moduleName = options.meta?.moduleName;
+  let idFn = options.id || defaultId;
   let blockJSON = JSON.stringify(block);
   let templateJSONObject: SerializedTemplateWithLazyBlock = {
+    id: idFn(JSON.stringify(options.meta) + blockJSON),
     block: blockJSON,
     moduleName: moduleName ?? '(unknown template module)',
     // lying to the type checker here because we're going to
