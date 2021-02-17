@@ -4,7 +4,7 @@
 import { QueryParams } from '@ember/-internals/routing';
 import { assert, deprecate } from '@ember/debug';
 import { assign } from '@ember/polyfills';
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef } from '@glimmer/reference';
 import { reifyNamed } from '@glimmer/runtime';
 import { internalHelper } from './internal-helper';
@@ -30,9 +30,7 @@ import { internalHelper } from './internal-helper';
   @return {Object} A `QueryParams` object for `{{link-to}}`
   @public
 */
-export default internalHelper((args: VMArguments) => {
-  let { positional, named } = args.capture();
-
+export default internalHelper(({ positional, named }: CapturedArguments) => {
   return createComputeRef(() => {
     assert(
       "The `query-params` helper only accepts named arguments, e.g. (query-params queryParamPropertyName='foo') as opposed to (query-params 'foo')",
