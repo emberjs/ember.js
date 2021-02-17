@@ -15,7 +15,7 @@ export function isDict<T>(u: T): u is Dict & T {
 }
 
 export function isObject<T>(u: T): u is object & T {
-  return typeof u === 'object' && u !== null;
+  return typeof u === 'function' || (typeof u === 'object' && u !== null);
 }
 
 export type SetMember = HasGuid | string;

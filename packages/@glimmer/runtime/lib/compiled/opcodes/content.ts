@@ -6,6 +6,7 @@ import {
   CheckNode,
   CheckDocumentFragment,
 } from '@glimmer/debug';
+import { isObject } from '@glimmer/util';
 
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckReference } from './-debug-strip';
@@ -42,7 +43,7 @@ function toContentType(value: unknown) {
 }
 
 function toDynamicContentType(value: unknown) {
-  if (typeof value !== 'function' && (typeof value !== 'object' || value === null)) {
+  if (!isObject(value)) {
     return ContentType.String;
   }
 

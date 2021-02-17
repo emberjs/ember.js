@@ -86,7 +86,7 @@ class WeakMapWithPrimitives<T> {
   }
 
   set(key: unknown, value: T) {
-    if (isObject(key) || typeof key === 'function') {
+    if (isObject(key)) {
       this.weakMap.set(key as object, value);
     } else {
       this.primitiveMap.set(key, value);
@@ -94,7 +94,7 @@ class WeakMapWithPrimitives<T> {
   }
 
   get(key: unknown): T | undefined {
-    if (isObject(key) || typeof key === 'function') {
+    if (isObject(key)) {
       return this.weakMap.get(key as object);
     } else {
       return this.primitiveMap.get(key);

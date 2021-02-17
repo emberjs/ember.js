@@ -1,11 +1,6 @@
 import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import {
-  CapturedArguments,
-  InternalModifierManager,
-  Owner,
-  VMArguments,
-} from '@glimmer/interfaces';
+import { CapturedArguments, InternalModifierManager, Owner } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
 import { reifyNamed } from '@glimmer/runtime';
@@ -329,11 +324,9 @@ class OnModifierManager implements InternalModifierManager<OnModifierState | nul
     _owner: Owner,
     element: SimpleElement | Element,
     _state: object,
-    args: VMArguments
+    args: CapturedArguments
   ): OnModifierState | null {
-    const capturedArgs = args.capture();
-
-    return new OnModifierState(element as Element, capturedArgs);
+    return new OnModifierState(element as Element, args);
   }
 
   getTag(state: OnModifierState | null): UpdatableTag | null {

@@ -1,3 +1,4 @@
+import { associateDestroyableChild } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
   Helper,
@@ -10,7 +11,7 @@ import {
   InternalHelperManager,
   Owner,
 } from '@glimmer/interfaces';
-import { createComputeRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
@@ -107,24 +108,33 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
   }
 
   getHelper(definition: HelperDefinitionState): Helper {
-    return (vmArgs, vm) => {
-      let owner = vm.getOwner() as O;
+    return (capturedArgs, owner) => {
+      let manager = this.getDelegateFor(owner as O | undefined);
 
-      let manager = this.getDelegateForOwner(owner);
-
-      const args = argsProxyFor(vmArgs.capture(), 'helper');
+      const args = argsProxyFor(capturedArgs, 'helper');
       const bucket = manager.createHelper(definition, args);
 
-      if (hasDestroyable(manager)) {
-        vm.associateDestroyable(manager.getDestroyable(bucket));
-      }
-
       if (hasValue(manager)) {
-        return createComputeRef(
+        let cache = createComputeRef(
           () => (manager as HelperManagerWithValue<unknown>).getValue(bucket),
           null,
           DEBUG && manager.getDebugName && manager.getDebugName(definition)
         );
+
+        if (hasDestroyable(manager)) {
+          associateDestroyableChild(cache, manager.getDestroyable(bucket));
+        }
+
+        return cache;
+      } else if (hasDestroyable(manager)) {
+        let ref = createConstRef(
+          undefined,
+          DEBUG && (manager.getDebugName?.(definition) ?? 'unknown helper')
+        );
+
+        associateDestroyableChild(ref, manager.getDestroyable(bucket));
+
+        return ref;
       } else {
         return UNDEFINED_REFERENCE;
       }

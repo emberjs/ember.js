@@ -191,6 +191,12 @@ export function destroyChildren(destroyable: Destroyable) {
   iterate(children, destroy);
 }
 
+export function _hasDestroyableChildren(destroyable: Destroyable) {
+  let meta = DESTROYABLE_META.get(destroyable);
+
+  return meta === undefined ? false : meta.children !== null;
+}
+
 export function isDestroying(destroyable: Destroyable) {
   let meta = DESTROYABLE_META.get(destroyable);
 

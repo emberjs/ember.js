@@ -49,9 +49,9 @@ class KeywordImpl<
       return false;
     }
 
-    let path = getPathExpression(node);
+    let path = getCalleeExpression(node);
 
-    if (path !== null && path.ref.type === 'Free') {
+    if (path !== null && path.type === 'Path' && path.ref.type === 'Free') {
       if (path.tail.length > 0) {
         if (path.ref.resolution.serialize() === 'Loose') {
           // cannot be a keyword reference, keywords do not allow paths (must be
@@ -68,9 +68,9 @@ class KeywordImpl<
 
   translate(node: KeywordMatches[K], state: NormalizationState): Result<Out> | null {
     if (this.match(node)) {
-      let path = getPathExpression(node);
+      let path = getCalleeExpression(node);
 
-      if (path !== null && path.tail.length > 0) {
+      if (path !== null && path.type === 'Path' && path.tail.length > 0) {
         return Err(
           generateSyntaxError(
             `The \`${
@@ -147,18 +147,20 @@ type OutFor<K extends Keyword | BlockKeyword> = K extends BlockKeyword<infer Out
   ? Out
   : never;
 
-function getPathExpression(node: KeywordNode | ASTv2.ExpressionNode): ASTv2.PathExpression | null {
+function getCalleeExpression(
+  node: KeywordNode | ASTv2.ExpressionNode
+): ASTv2.ExpressionNode | null {
   switch (node.type) {
     // This covers the inside of attributes and expressions, as well as the callee
     // of call nodes
     case 'Path':
       return node;
     case 'AppendContent':
-      return getPathExpression(node.value);
+      return getCalleeExpression(node.value);
     case 'Call':
     case 'InvokeBlock':
     case 'ElementModifier':
-      return getPathExpression(node.callee);
+      return node.callee;
     default:
       return null;
   }
@@ -193,9 +195,9 @@ export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = ne
       }
     }
 
-    let path = getPathExpression(node);
+    let path = getCalleeExpression(node);
 
-    if (path && path.ref.type === 'Free' && isKeyword(path.ref.name)) {
+    if (path && path.type === 'Path' && path.ref.type === 'Free' && isKeyword(path.ref.name)) {
       let { name } = path.ref;
 
       let usedType = this.#type;

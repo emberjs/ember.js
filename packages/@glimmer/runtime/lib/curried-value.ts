@@ -1,7 +1,6 @@
 import { CapturedArguments, CurriedType, Owner } from '@glimmer/interfaces';
 import { symbol, _WeakSet } from '@glimmer/util';
 import { Reference } from '@glimmer/reference';
-import { VMArgumentsImpl } from './vm/arguments';
 
 const TYPE: unique symbol = symbol('TYPE');
 const INNER: unique symbol = symbol('INNER');
@@ -46,34 +45,44 @@ export class CurriedValue<T extends CurriedType = CurriedType> {
   }
 }
 
+interface ResolvedCurriedValue<T> {
+  definition: T;
+  owner: Owner;
+  resolved: boolean;
+  positional: Reference[] | undefined;
+  named: Record<string, Reference>[] | undefined;
+}
+
 export function resolveCurriedValue(
-  curriedValue: CurriedValue<CurriedType.Component>,
-  args: VMArgumentsImpl
-): [string | object, Owner, boolean];
+  curriedValue: CurriedValue<CurriedType.Component>
+): ResolvedCurriedValue<object | string>;
 export function resolveCurriedValue(
-  curriedValue: CurriedValue<CurriedType.Helper> | CurriedValue<CurriedType.Modifier>,
-  args: VMArgumentsImpl
-): [object, Owner, boolean];
+  curriedValue: CurriedValue<CurriedType.Helper> | CurriedValue<CurriedType.Modifier>
+): ResolvedCurriedValue<object>;
 export function resolveCurriedValue(
-  curriedValue: CurriedValue<CurriedType>,
-  args: VMArgumentsImpl
-): [string | object, Owner, boolean] {
+  curriedValue: CurriedValue<CurriedType>
+): ResolvedCurriedValue<object | string> {
   let currentWrapper = curriedValue;
-  let prependArgs: Reference[] | undefined;
+  let positional: Reference[] | undefined;
+  let named: Record<string, Reference>[] | undefined;
   let definition, owner, resolved;
 
   while (true) {
     let { [ARGS]: curriedArgs, [INNER]: inner } = currentWrapper;
 
     if (curriedArgs !== null) {
-      if (curriedArgs.positional.length > 0) {
-        prependArgs =
-          prependArgs === undefined
-            ? curriedArgs.positional
-            : curriedArgs.positional.concat(prependArgs);
+      let { named: curriedNamed, positional: curriedPositional } = curriedArgs;
+
+      if (curriedPositional.length > 0) {
+        positional =
+          positional === undefined ? curriedPositional : curriedPositional.concat(positional);
       }
 
-      args.named.merge(curriedArgs.named);
+      if (named === undefined) {
+        named = [];
+      }
+
+      named.unshift(curriedNamed);
     }
 
     if (!isCurriedValue(inner)) {
@@ -89,12 +98,7 @@ export function resolveCurriedValue(
     currentWrapper = inner;
   }
 
-  if (prependArgs !== undefined) {
-    args.realloc(prependArgs.length);
-    args.positional.prepend(prependArgs);
-  }
-
-  return [definition, owner, resolved];
+  return { definition, owner, resolved, positional, named };
 }
 
 export function curry<T extends CurriedType>(

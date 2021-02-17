@@ -1,5 +1,12 @@
 import { Reference, valueForRef, isConstRef, createComputeRef } from '@glimmer/reference';
-import { Revision, Tag, valueForTag, validateTag, consumeTag } from '@glimmer/validator';
+import {
+  Revision,
+  Tag,
+  valueForTag,
+  validateTag,
+  consumeTag,
+  CURRENT_TAG,
+} from '@glimmer/validator';
 import {
   check,
   CheckString,
@@ -13,8 +20,8 @@ import {
   Option,
   ModifierDefinition,
   ModifierInstance,
-  VMArguments,
   Owner,
+  CapturedPositionalArguments,
   CurriedType,
   ModifierDefinitionState,
   Environment,
@@ -26,10 +33,10 @@ import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
-import { debugToString, expect } from '@glimmer/util';
-import { InternalVM } from '../../vm/append';
+import { assign, debugToString, expect, isObject } from '@glimmer/util';
 import { CurriedValue, isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { DEBUG } from '@glimmer/env';
+import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm[CONSTANTS].getValue(text));
@@ -110,72 +117,15 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let args = check(vm.stack.popJs(), CheckArguments);
   let definition = vm[CONSTANTS].getValue<ModifierDefinition>(handle);
 
-  invokeModifier(vm, owner, args, definition);
-});
-
-APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
-  if (vm.env.isInteractive === false) {
-    return;
-  }
-
-  let { stack, [CONSTANTS]: constants } = vm;
-  let ref = check(stack.popJs(), CheckReference);
-  let args = check(stack.popJs(), CheckArguments);
-  let value = valueForRef(ref);
-  let owner: Owner;
-
-  if (typeof value !== 'function' && (typeof value !== 'object' || value === null)) {
-    return;
-  }
-
-  let hostDefinition: CurriedValue | ModifierDefinitionState;
-
-  if (isCurriedType(value, CurriedType.Modifier)) {
-    let [curriedValue, curriedOwner] = resolveCurriedValue(value, args);
-    hostDefinition = curriedValue;
-    owner = curriedOwner;
-  } else {
-    hostDefinition = value;
-    owner = vm.getOwner();
-  }
-
-  let handle = constants.modifier(hostDefinition, null, true);
-
-  if (DEBUG && handle === null) {
-    throw new Error(
-      `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
-        ref.debugLabel
-      }}}\`, and the incorrect definition is the value at the path \`${
-        ref.debugLabel
-      }\`, which was: ${debugToString!(hostDefinition)}`
-    );
-  }
-
-  let definition = constants.getValue<ModifierDefinition>(
-    expect(handle, 'BUG: modifier handle expected')
-  );
-
-  invokeModifier(vm, owner, args, definition);
-});
-
-function invokeModifier(
-  vm: InternalVM,
-  owner: Owner,
-  args: VMArguments,
-  definition: ModifierDefinition
-) {
   let { manager } = definition;
 
-  let { constructing, updateOperations } = vm.elements();
-  let dynamicScope = vm.dynamicScope();
+  let { constructing } = vm.elements();
 
   let state = manager.create(
     owner,
     expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
     definition.state,
-    args,
-    dynamicScope,
-    updateOperations
+    args.capture()
   );
 
   let instance: ModifierInstance = {
@@ -195,15 +145,114 @@ function invokeModifier(
 
   if (tag !== null) {
     consumeTag(tag);
-    vm.updateWith(new UpdateModifierOpcode(tag, instance));
+    return vm.updateWith(new UpdateModifierOpcode(tag, instance));
   }
-}
+});
+
+APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
+  if (vm.env.isInteractive === false) {
+    return;
+  }
+
+  let { stack, [CONSTANTS]: constants } = vm;
+  let ref = check(stack.popJs(), CheckReference);
+  let args = check(stack.popJs(), CheckArguments).capture();
+  let { constructing } = vm.elements();
+  let initialOwner = vm.getOwner();
+
+  let instanceRef = createComputeRef(() => {
+    let value = valueForRef(ref);
+    let owner: Owner;
+
+    if (!isObject(value)) {
+      return;
+    }
+
+    let hostDefinition: CurriedValue | ModifierDefinitionState;
+
+    if (isCurriedType(value, CurriedType.Modifier)) {
+      let {
+        definition: resolvedDefinition,
+        owner: curriedOwner,
+        positional,
+        named,
+      } = resolveCurriedValue(value);
+
+      hostDefinition = resolvedDefinition;
+      owner = curriedOwner;
+
+      if (positional !== undefined) {
+        args.positional = positional.concat(args.positional) as CapturedPositionalArguments;
+      }
+
+      if (named !== undefined) {
+        args.named = assign({}, ...named, args.named);
+      }
+    } else {
+      hostDefinition = value;
+      owner = initialOwner;
+    }
+
+    let handle = constants.modifier(hostDefinition, null, true);
+
+    if (DEBUG && handle === null) {
+      throw new Error(
+        `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
+          ref.debugLabel
+        }}}\`, and the incorrect definition is the value at the path \`${
+          ref.debugLabel
+        }\`, which was: ${debugToString!(hostDefinition)}`
+      );
+    }
+
+    let definition = constants.getValue<ModifierDefinition>(
+      expect(handle, 'BUG: modifier handle expected')
+    );
+
+    let { manager } = definition;
+
+    let state = manager.create(
+      owner,
+      expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
+      definition.state,
+      args
+    );
+
+    return {
+      manager,
+      state,
+      definition,
+    };
+  });
+
+  let instance = valueForRef(instanceRef);
+  let tag = null;
+
+  if (instance !== undefined) {
+    let operations = expect(
+      check(vm.fetchValue($t0), CheckOperations),
+      'BUG: ElementModifier could not find operations to append to'
+    );
+
+    operations.addModifier(instance);
+
+    tag = instance.manager.getTag(instance.state);
+
+    if (tag !== null) {
+      consumeTag(tag);
+    }
+  }
+
+  if (!isConstRef(ref) || tag) {
+    return vm.updateWith(new UpdateDynamicModifierOpcode(tag, instance, instanceRef));
+  }
+});
 
 export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = 'update-modifier';
   private lastUpdated: Revision;
 
-  constructor(public tag: Tag, private modifier: ModifierInstance) {
+  constructor(private tag: Tag, private modifier: ModifierInstance) {
     super();
     this.lastUpdated = valueForTag(tag);
   }
@@ -216,6 +265,63 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
     if (!validateTag(tag, lastUpdated)) {
       vm.env.scheduleUpdateModifier(modifier);
       this.lastUpdated = valueForTag(tag);
+    }
+  }
+}
+
+export class UpdateDynamicModifierOpcode extends UpdatingOpcode {
+  public type = 'update-dynamic-modifier';
+  private lastUpdated: Revision;
+
+  constructor(
+    private tag: Tag | null,
+    private instance: ModifierInstance | undefined,
+    private instanceRef: Reference<ModifierInstance | undefined>
+  ) {
+    super();
+    this.lastUpdated = valueForTag(tag ?? CURRENT_TAG);
+  }
+
+  evaluate(vm: UpdatingVM) {
+    let { tag, lastUpdated, instance, instanceRef } = this;
+
+    let newInstance = valueForRef(instanceRef);
+
+    if (newInstance !== instance) {
+      if (instance !== undefined) {
+        let destroyable = instance.manager.getDestroyable(instance.state);
+
+        if (destroyable !== null) {
+          destroy(destroyable);
+        }
+      }
+
+      if (newInstance !== undefined) {
+        let { manager, state } = newInstance;
+        let destroyable = manager.getDestroyable(state);
+
+        if (destroyable !== null) {
+          associateDestroyableChild(this, destroyable);
+        }
+
+        tag = manager.getTag(state);
+
+        if (tag !== null) {
+          this.lastUpdated = valueForTag(tag);
+        }
+
+        this.tag = tag;
+        vm.env.scheduleInstallModifier(newInstance!);
+      }
+
+      this.instance = newInstance;
+    } else if (tag !== null && !validateTag(tag, lastUpdated)) {
+      vm.env.scheduleUpdateModifier(instance!);
+      this.lastUpdated = valueForTag(tag);
+    }
+
+    if (tag !== null) {
+      consumeTag(tag);
     }
   }
 }
