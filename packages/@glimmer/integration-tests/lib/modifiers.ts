@@ -3,10 +3,7 @@ import {
   Dict,
   Option,
   InternalModifierManager,
-  GlimmerTreeChanges,
   Destroyable,
-  DynamicScope,
-  VMArguments,
   CapturedArguments,
   Owner,
 } from '@glimmer/interfaces';
@@ -35,12 +32,10 @@ export class TestModifierManager
     _owner: Owner,
     element: SimpleElement,
     state: TestModifierDefinitionState,
-    args: VMArguments,
-    _dynamicScope: DynamicScope,
-    dom: GlimmerTreeChanges
+    args: CapturedArguments
   ) {
     let instance = state.Klass ? new state.Klass() : undefined;
-    return new TestModifier(element, instance, args.capture(), dom);
+    return new TestModifier(element, instance, args);
   }
 
   getTag({ tag }: TestModifier): UpdatableTag {
@@ -87,7 +82,6 @@ export class TestModifier {
   constructor(
     public element: SimpleElement,
     public instance: TestModifierInstance | undefined,
-    public args: CapturedArguments,
-    public dom: GlimmerTreeChanges
+    public args: CapturedArguments
   ) {}
 }

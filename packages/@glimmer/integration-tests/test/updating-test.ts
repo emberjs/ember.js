@@ -1,7 +1,7 @@
 import { Option } from '@glimmer/interfaces';
 import { createConstRef, createPrimitiveRef, createComputeRef } from '@glimmer/reference';
 import { RenderTest, test, jitSuite, JitRenderDelegate, GlimmerishComponent, tracked } from '..';
-import { registerDestructor } from '@glimmer/destroyable';
+import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { SafeString } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -448,9 +448,12 @@ class UpdatingTest extends RenderTest {
       destroyable.count++;
     });
 
-    this.registerInternalHelper('destroy-me', (_args, vm) => {
-      vm.associateDestroyable(destroyable);
-      return createPrimitiveRef('destroy me!');
+    this.registerInternalHelper('destroy-me', (_args) => {
+      let ref = createPrimitiveRef('destroy me!');
+
+      associateDestroyableChild(ref, destroyable);
+
+      return ref;
     });
 
     this.render('<div>{{destroy-me}}</div>', {});
@@ -485,19 +488,20 @@ class UpdatingTest extends RenderTest {
     let tag = createTag();
     let currentValue: T | U = truthyValue;
 
-    this.registerInternalHelper('stateful-foo', (_args, vm) => {
+    this.registerInternalHelper('stateful-foo', (_args) => {
       didCreate++;
 
-      vm.associateDestroyable({
-        destroy() {
-          didDestroy++;
-        },
-      });
-
-      return createComputeRef(() => {
+      let ref = createComputeRef(() => {
         consumeTag(tag);
         return currentValue;
       });
+
+      let destroyable = {};
+
+      registerDestructor(destroyable, () => didDestroy++);
+      associateDestroyableChild(ref, destroyable);
+
+      return ref;
     });
 
     assert.strictEqual(didCreate, 0, 'didCreate: before render');

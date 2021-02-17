@@ -1,7 +1,7 @@
 import { getPath, setPath } from '@glimmer/global-context';
-import { VMArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { isDict } from '@glimmer/util';
+import { CapturedArguments } from '@glimmer/interfaces';
+import { createComputeRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 /**
@@ -81,9 +81,9 @@ import { internalHelper } from './internal-helper';
   @public
   @method get
  */
-export default internalHelper((args: VMArguments) => {
-  let sourceRef = args.positional.at(0);
-  let pathRef = args.positional.at(1);
+export default internalHelper(({ positional }: CapturedArguments) => {
+  let sourceRef = positional[0] ?? UNDEFINED_REFERENCE;
+  let pathRef = positional[1] ?? UNDEFINED_REFERENCE;
 
   return createComputeRef(
     () => {

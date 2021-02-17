@@ -6,10 +6,18 @@ import {
   modifierCapabilities,
   setModifierManager,
 } from '@glimmer/manager';
+import { registerDestructor } from '@glimmer/destroyable';
+import { setOwner } from '@glimmer/owner';
 
 import { createTemplate } from '../compile';
 
-import { Arguments, HelperManager, ModifierManager } from '@glimmer/interfaces';
+import {
+  Arguments,
+  HelperCapabilities,
+  HelperManager,
+  ModifierManager,
+  Owner,
+} from '@glimmer/interfaces';
 
 interface SimpleHelperState {
   fn: (...args: unknown[]) => unknown;
@@ -106,3 +114,45 @@ export function defineSimpleHelper<T extends Function>(helperFn: T): T {
 export function defineSimpleModifier<T extends Function>(modifierFn: T): T {
   return setModifierManager(FUNCTIONAL_MODIFIER_MANAGER_FACTORY, modifierFn);
 }
+
+export class TestHelperManager {
+  capabilities: HelperCapabilities = helperCapabilities('3.23', {
+    hasValue: true,
+    hasDestroyable: true,
+  });
+
+  constructor(public owner: Owner | undefined) {}
+
+  createHelper(
+    Helper: { new (owner: Owner | undefined, args: Arguments): TestHelper },
+    args: Arguments
+  ) {
+    return new Helper(this.owner, args);
+  }
+
+  getValue(instance: TestHelper) {
+    return instance.value();
+  }
+
+  getDestroyable(instance: TestHelper) {
+    return instance;
+  }
+
+  getDebugName() {
+    return 'TEST_HELPER';
+  }
+}
+
+export abstract class TestHelper {
+  constructor(owner: Owner, public args: Arguments) {
+    setOwner(this, owner);
+
+    registerDestructor(this, () => this.willDestroy());
+  }
+
+  abstract value(): unknown;
+
+  willDestroy() {}
+}
+
+setHelperManager((owner) => new TestHelperManager(owner), TestHelper);

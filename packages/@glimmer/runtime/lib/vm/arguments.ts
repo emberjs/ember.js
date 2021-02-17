@@ -314,7 +314,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     return map as CapturedNamedArguments;
   }
 
-  merge(other: CapturedNamedArguments) {
+  merge(other: Record<string, Reference>) {
     let keys = Object.keys(other);
 
     if (keys.length > 0) {

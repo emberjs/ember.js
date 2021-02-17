@@ -1,4 +1,4 @@
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import { internalHelper } from './internal-helper';
@@ -34,11 +34,9 @@ const normalizeTextValue = (value: unknown): string => {
   @public
   @method concat
 */
-export default internalHelper((args: VMArguments) => {
-  let captured = args.positional.capture();
-
+export default internalHelper(({ positional }: CapturedArguments) => {
   return createComputeRef(
-    () => reifyPositional(captured).map(normalizeTextValue).join(''),
+    () => reifyPositional(positional).map(normalizeTextValue).join(''),
     null,
     'concat'
   );

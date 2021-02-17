@@ -1,50 +1,15 @@
 import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
-import { registerDestructor } from '@glimmer/destroyable';
-import { RenderTest, test, jitSuite, tracked, defineComponent, trackedObj } from '../..';
+import {
+  RenderTest,
+  test,
+  jitSuite,
+  tracked,
+  defineComponent,
+  trackedObj,
+  TestHelper,
+  TestHelperManager,
+} from '../..';
 import { Arguments, Owner } from '@glimmer/interfaces';
-import { setOwner } from '@glimmer/owner';
-
-class TestHelperManager {
-  capabilities = helperCapabilities('3.23', {
-    hasValue: true,
-    hasDestroyable: true,
-  });
-
-  constructor(public owner: Owner | undefined) {}
-
-  createHelper(
-    Helper: { new (owner: Owner | undefined, args: Arguments): TestHelper },
-    args: Arguments
-  ) {
-    return new Helper(this.owner, args);
-  }
-
-  getValue(instance: TestHelper) {
-    return instance.value();
-  }
-
-  getDestroyable(instance: TestHelper) {
-    return instance;
-  }
-
-  getDebugName() {
-    return 'TEST_HELPER';
-  }
-}
-
-abstract class TestHelper {
-  constructor(owner: Owner, public args: Arguments) {
-    setOwner(this, owner);
-
-    registerDestructor(this, () => this.willDestroy());
-  }
-
-  abstract value(): unknown;
-
-  willDestroy() {}
-}
-
-setHelperManager((owner) => new TestHelperManager(owner), TestHelper);
 
 class HelperManagerTest extends RenderTest {
   static suiteName = 'Helper Managers';
