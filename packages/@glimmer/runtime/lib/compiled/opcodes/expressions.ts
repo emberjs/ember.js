@@ -1,8 +1,10 @@
 import {
+  CapturedPositionalArguments,
   CurriedType,
   Helper,
   HelperDefinitionState,
   Op,
+  Owner,
   ResolutionTimeConstants,
   RuntimeConstants,
   ScopeBlock,
@@ -20,7 +22,8 @@ import {
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { createConcatRef } from '../expressions/concat';
-import { assert, debugToString, decodeHandle } from '@glimmer/util';
+import { associateDestroyableChild, destroy, _hasDestroyableChildren } from '@glimmer/destroyable';
+import { assert, assign, debugToString, decodeHandle, isObject } from '@glimmer/util';
 import { toBool } from '@glimmer/global-context';
 import {
   check,
@@ -72,28 +75,54 @@ APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
 
 APPEND_OPCODES.add(Op.DynamicHelper, (vm, { op1: _definitionRegister }) => {
   let stack = vm.stack;
-  let args = check(stack.popJs(), CheckArguments);
+  let args = check(stack.popJs(), CheckArguments).capture();
   let ref = vm.fetchValue<Reference>(_definitionRegister);
-  let definition = valueForRef(ref);
 
-  if (isCurriedType(definition, CurriedType.Helper)) {
-    let [resolvedDef, owner] = resolveCurriedValue(definition, args);
+  let helperRef: Reference;
+  let initialOwner: Owner = vm.getOwner();
 
-    let helper = resolveHelper(vm[CONSTANTS], resolvedDef, ref);
+  let helperInstanceRef = createComputeRef(() => {
+    if (helperRef !== undefined) {
+      destroy(helperRef);
+    }
 
-    vm.pushRootScope(0, owner);
-    vm.loadValue($v0, helper(args, vm));
-    vm.popScope();
-  } else if (
-    typeof definition === 'function' ||
-    (typeof definition === 'object' && definition !== null)
-  ) {
-    let helper = resolveHelper(vm[CONSTANTS], definition, ref);
+    let definition = valueForRef(ref);
 
-    vm.loadValue($v0, helper(args, vm));
-  } else {
-    vm.loadValue($v0, UNDEFINED_REFERENCE);
-  }
+    if (isCurriedType(definition, CurriedType.Helper)) {
+      let { definition: resolvedDef, owner, positional, named } = resolveCurriedValue(definition);
+
+      let helper = resolveHelper(vm[CONSTANTS], resolvedDef, ref);
+
+      if (named !== undefined) {
+        args.named = assign({}, ...named, args.named);
+      }
+
+      if (positional !== undefined) {
+        args.positional = positional.concat(args.positional) as CapturedPositionalArguments;
+      }
+
+      helperRef = helper(args, owner);
+
+      associateDestroyableChild(helperInstanceRef, helperRef);
+    } else if (isObject(definition)) {
+      let helper = resolveHelper(vm[CONSTANTS], definition, ref);
+      helperRef = helper(args, initialOwner);
+
+      if (_hasDestroyableChildren(helperRef)) {
+        associateDestroyableChild(helperInstanceRef, helperRef);
+      }
+    } else {
+      helperRef = UNDEFINED_REFERENCE;
+    }
+  });
+
+  let helperValueRef = createComputeRef(() => {
+    valueForRef(helperInstanceRef);
+    return valueForRef(helperRef);
+  });
+
+  vm.associateDestroyable(helperInstanceRef);
+  vm.loadValue($v0, helperValueRef);
 });
 
 function resolveHelper(
@@ -120,7 +149,11 @@ APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
   let helper = check(vm[CONSTANTS].getValue(handle), CheckHelper);
   let args = check(stack.popJs(), CheckArguments);
-  let value = helper(args, vm);
+  let value = helper(args.capture(), vm.getOwner(), vm.dynamicScope());
+
+  if (_hasDestroyableChildren(value)) {
+    vm.associateDestroyable(value);
+  }
 
   vm.loadValue($v0, value);
 });

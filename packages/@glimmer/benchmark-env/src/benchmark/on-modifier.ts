@@ -1,4 +1,4 @@
-import { InternalModifierManager, Owner, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, InternalModifierManager, Owner } from '@glimmer/interfaces';
 import { Reference, valueForRef } from '@glimmer/reference';
 import { castToBrowser } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
@@ -13,11 +13,11 @@ interface OnModifierState {
 }
 
 class OnModifierManager implements InternalModifierManager<OnModifierState, object> {
-  create(_owner: Owner, element: SimpleElement, _: {}, args: VMArguments) {
+  create(_owner: Owner, element: SimpleElement, _: {}, args: CapturedArguments) {
     return {
       element,
-      nameRef: args.positional.at(0) as Reference<string>,
-      listenerRef: args.positional.at(1) as Reference<EventListener>,
+      nameRef: args.positional[0] as Reference<string>,
+      listenerRef: args.positional[1] as Reference<EventListener>,
       name: null,
       listener: null,
     };

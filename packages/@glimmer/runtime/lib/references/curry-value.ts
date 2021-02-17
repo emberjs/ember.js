@@ -9,7 +9,7 @@ import {
   RuntimeResolver,
 } from '@glimmer/interfaces';
 import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
-import { expect } from '@glimmer/util';
+import { expect, isObject } from '@glimmer/util';
 import { curry, isCurriedType } from '../curried-value';
 
 export default function createCurryRef(
@@ -55,7 +55,7 @@ export default function createCurryRef(
       }
 
       curriedDefinition = curry(type, value, owner, args);
-    } else if (typeof value === 'function' || (typeof value === 'object' && value !== null)) {
+    } else if (isObject(value)) {
       curriedDefinition = curry(type, value, owner, args);
     } else {
       curriedDefinition = null;

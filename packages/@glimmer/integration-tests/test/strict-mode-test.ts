@@ -11,6 +11,7 @@ import {
   defineSimpleHelper,
   defineSimpleModifier,
   syntaxErrorFor,
+  TestHelper,
 } from '..';
 
 class GeneralStrictModeTest extends RenderTest {
@@ -732,6 +733,95 @@ class DynamicStrictModeTest extends RenderTest {
   }
 
   @test
+  'Can use a dynamic helper with a changing definition'(assert: Assert) {
+    class Helper1 extends TestHelper {
+      value() {
+        return 'Hello, world!';
+      }
+
+      willDestroy() {
+        assert.step('willDestroy 1 called');
+      }
+    }
+
+    class Helper2 extends TestHelper {
+      value() {
+        return 'Hello, earth!';
+      }
+
+      willDestroy() {
+        assert.step('willDestroy 2 called');
+      }
+    }
+
+    const Foo = defineComponent({}, '{{@helper}}');
+    let args = trackedObj({ helper: Helper1 });
+
+    this.renderComponent(Foo, args);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+
+    args.helper = Helper2;
+
+    this.rerender();
+    this.assertHTML('Hello, earth!');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 1 called']);
+
+    args.helper = undefined;
+
+    this.rerender();
+    this.assertHTML('');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 2 called']);
+  }
+
+  @test
+  'Can use a dynamic helper with a changing definition (curried)'(assert: Assert) {
+    class Helper1 extends TestHelper {
+      value() {
+        return `Hello, ${this.args.positional[0]}!`;
+      }
+
+      willDestroy() {
+        assert.step('willDestroy 1 called');
+      }
+    }
+
+    class Helper2 extends TestHelper {
+      value() {
+        return `Goodbye, ${this.args.positional[0]}!`;
+      }
+
+      willDestroy() {
+        assert.step('willDestroy 2 called');
+      }
+    }
+
+    const Foo = defineComponent({}, '{{@helper}}');
+    const Bar = defineComponent({ Foo }, '<Foo @helper={{helper @helper "world"}}/>');
+    let args = trackedObj({ helper: Helper1 });
+
+    this.renderComponent(Bar, args);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+
+    args.helper = Helper2;
+
+    this.rerender();
+    this.assertHTML('Goodbye, world!');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 1 called']);
+
+    args.helper = undefined;
+
+    this.rerender();
+    this.assertHTML('');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 2 called']);
+  }
+
+  @test
   'Can use a dynamic modifier'() {
     const foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
     const Bar = defineComponent(
@@ -883,6 +973,123 @@ class DynamicStrictModeTest extends RenderTest {
 
     this.renderComponent(Bar);
     this.assertHTML('<div></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic modifier with a changing definition'(assert: Assert) {
+    const modifier1 = defineSimpleModifier((element: Element) => {
+      element.innerHTML = 'Hello, world!';
+
+      return () => {
+        assert.step('willDestroy 1 called');
+      };
+    });
+
+    const modifier2 = defineSimpleModifier((element: Element) => {
+      element.innerHTML = 'Hello, earth!';
+
+      return () => {
+        assert.step('willDestroy 2 called');
+      };
+    });
+
+    const Foo = defineComponent({}, '<div {{@modifier}}></div>');
+    let args = trackedObj({ modifier: modifier1 });
+
+    this.renderComponent(Foo, args);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+
+    args.modifier = modifier2;
+
+    this.rerender();
+    this.assertHTML('<div>Hello, earth!</div>');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 1 called']);
+
+    args.modifier = undefined;
+
+    this.rerender();
+    this.assertHTML('<div>Hello, earth!</div>');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 2 called']);
+  }
+
+  @test
+  'Can use a dynamic modifier with a changing definition (curried)'(assert: Assert) {
+    const modifier1 = defineSimpleModifier((element: Element, [name]: string[]) => {
+      element.innerHTML = `Hello, ${name}!`;
+
+      return () => {
+        assert.step('willDestroy 1 called');
+      };
+    });
+
+    const modifier2 = defineSimpleModifier((element: Element, [name]: string[]) => {
+      element.innerHTML = `Goodbye, ${name}!`;
+
+      return () => {
+        assert.step('willDestroy 2 called');
+      };
+    });
+
+    const Foo = defineComponent({}, '<div {{@modifier}}></div>');
+    const Bar = defineComponent({ Foo }, '<Foo @modifier={{modifier @modifier "world"}}/>');
+    let args = trackedObj({ modifier: modifier1 });
+
+    this.renderComponent(Bar, args);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+
+    args.modifier = modifier2;
+
+    this.rerender();
+    this.assertHTML('<div>Goodbye, world!</div>');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 1 called']);
+
+    args.modifier = undefined;
+
+    this.rerender();
+    this.assertHTML('<div>Goodbye, world!</div>');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 2 called']);
+  }
+
+  @test
+  'Calling a dynamic modifier using if helper'(assert: Assert) {
+    // Make sure the destructor gets called
+    assert.expect(14);
+
+    const world = defineSimpleModifier((element: Element) => {
+      element.innerHTML = `Hello, world!`;
+
+      return () => assert.ok(true, 'destructor called');
+    });
+    const nebula = defineSimpleModifier(
+      (element: Element, [name]: string[]) => (element.innerHTML = `Hello, ${name}!`)
+    );
+
+    const Bar = defineComponent(
+      { world, nebula },
+      '<div {{(if @inSpace nebula world) @name}}></div>'
+    );
+
+    let args = trackedObj({ inSpace: false, name: 'Nebula' });
+
+    this.renderComponent(Bar, args);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+
+    args.inSpace = true;
+    this.rerender();
+    this.assertHTML('<div>Hello, Nebula!</div>');
+    this.assertStableRerender();
+
+    args.name = 'Luna';
+    this.rerender();
+    this.assertHTML('<div>Hello, Luna!</div>');
     this.assertStableRerender();
   }
 
