@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import { createReadOnlyRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
@@ -120,6 +120,6 @@ import { internalHelper } from './internal-helper';
   @for Ember.Templates.helpers
   @private
 */
-export default internalHelper((args: VMArguments) => {
-  return createReadOnlyRef(args.positional.at(0));
+export default internalHelper(({ positional }: CapturedArguments) => {
+  return createReadOnlyRef(positional[0]);
 });
