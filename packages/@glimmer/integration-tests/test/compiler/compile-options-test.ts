@@ -3,14 +3,14 @@ import { preprocess } from '../..';
 import { module } from '../support';
 import { unwrapTemplate, assert as glimmerAssert } from '@glimmer/util';
 import { SexpOpcodes, WireFormat } from '@glimmer/interfaces';
-import { TemplateWithReferrer } from '@glimmer/opcode-compiler';
+import { TemplateWithIdAndReferrer } from '@glimmer/opcode-compiler';
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
   test('moduleName option is passed into meta', (assert) => {
     let moduleName = "It ain't hard to tell";
     let template = unwrapTemplate(
       preprocess('Hi, {{name}}!', { meta: { moduleName } })
-    ) as TemplateWithReferrer;
+    ) as TemplateWithIdAndReferrer;
     assert.equal(template.referrer.moduleName, moduleName, 'Template has the moduleName');
   });
 });
