@@ -23,10 +23,12 @@ interface Crypto {
 }
 
 export const defaultId: TemplateIdFn = (() => {
-  if (typeof require === 'function') {
+  let req: typeof require | undefined =
+    typeof module === 'object' && typeof module.require === 'function' ? module.require : require;
+
+  if (req) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-      const crypto = require('crypto');
+      const crypto = req('crypto');
 
       let idFn: TemplateIdFn = (src) => {
         let hash = crypto.createHash('sha1');
