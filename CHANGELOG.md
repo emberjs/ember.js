@@ -1,3 +1,12 @@
+## v0.77.1 (2021-02-17)
+
+#### :bug: Bug Fix
+* `@glimmer/manager`
+  * [#1275](https://github.com/glimmerjs/glimmer-vm/pull/1275) Fix generics on setInternalHelperManager ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.77.0 (2021-02-17)
 
 #### :boom: Breaking Change
