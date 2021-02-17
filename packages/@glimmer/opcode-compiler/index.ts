@@ -21,8 +21,8 @@ export { PartialDefinitionImpl } from './lib/partial-template';
 export {
   default as templateFactory,
   templateCacheCounters,
-  TemplateFactoryWithMeta,
-  TemplateWithReferrer,
+  TemplateFactoryWithIdAndMeta,
+  TemplateWithIdAndReferrer,
 } from './lib/template';
 
 export { WrappedBuilder } from './lib/wrapped-component';
