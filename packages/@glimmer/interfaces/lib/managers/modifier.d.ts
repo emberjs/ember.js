@@ -23,7 +23,7 @@ export interface ModifierCapabilities extends Capabilities {
 export interface ModifierManager<ModifierStateBucket> {
   capabilities: ModifierCapabilities;
   createModifier(factory: unknown, args: Arguments): ModifierStateBucket;
-  installModifier(instance: ModifierStateBucket, element: SimpleElement, args: Arguments): void;
+  installModifier(instance: ModifierStateBucket, element: Element, args: Arguments): void;
   updateModifier(instance: ModifierStateBucket, args: Arguments): void;
   destroyModifier(instance: ModifierStateBucket, args: Arguments): void;
 }
