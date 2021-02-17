@@ -2,18 +2,38 @@ import { getDebugName, isObject } from '@ember/-internals/utils';
 import { debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Environment } from '@glimmer/interfaces';
-import { HelperRootReference, RootReference, VersionedPathReference } from '@glimmer/reference';
+import { InternalHelperFunction, RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
-import { consumeTag, deprecateMutationsInAutotrackingTransaction } from '@glimmer/validator';
+import {
+  combine,
+  consumeTag,
+  createUpdatableTag,
+  deprecateMutationsInAutotrackingTransaction,
+  Revision,
+  Tag,
+  track,
+  UpdatableTag,
+  updateTag,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator';
 import { HelperInstance, isClassHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
 
-export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T> {
+export class EmberHelperRootReference<T = unknown> extends RootReference<T> {
+  private computeRevision: Revision | null = null;
+  private computeValue?: T;
+  private computeTag: Tag | null = null;
+  private valueTag?: UpdatableTag;
+  private fn: InternalHelperFunction<T>;
+
   constructor(
     helper: SimpleHelper<T> | HelperInstance<T>,
-    args: CapturedArguments,
+    private args: CapturedArguments,
     env: Environment
   ) {
-    let fnWrapper = (args: CapturedArguments) => {
+    super(env);
+
+    this.fn = (args: CapturedArguments) => {
       let { positional, named } = args;
 
       let positionalValue = positional.value();
@@ -40,12 +60,32 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
     };
 
     if (DEBUG) {
-      let debugName = isClassHelper(helper) ? getDebugName!(helper) : getDebugName!(helper.compute);
+      let name = isClassHelper(helper) ? getDebugName!(helper) : getDebugName!(helper.compute);
 
-      super(fnWrapper, args, env, debugName);
-    } else {
-      super(fnWrapper, args, env);
+      env.setTemplatePathDebugContext(this, `(result of a \`${name}\` helper)`, null);
+      this.didSetupDebugContext = true;
     }
+
+    let valueTag = (this.valueTag = createUpdatableTag());
+    this.tag = combine([args.tag, valueTag]);
+  }
+
+  compute() {
+    this.computeTag = track(() => {
+      this.computeValue = this.fn(this.args);
+    }, DEBUG && this.env.getTemplatePathDebugContext(this));
+  }
+
+  value(): T {
+    let { tag, computeRevision } = this;
+
+    if (computeRevision === null || !validateTag(tag, computeRevision)) {
+      this.compute();
+      updateTag(this.valueTag!, this.computeTag!);
+      this.computeRevision = valueForTag(tag);
+    }
+
+    return this.computeValue!;
   }
 }
 
