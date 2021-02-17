@@ -1,18 +1,11 @@
 const { keys: objKeys } = Object;
 
-export function assign<T, U>(obj: T, assignments: U): T & U;
-export function assign<T, U, V>(obj: T, a: U, b: V): T & U & V;
-export function assign<T, U, V, W>(obj: T, a: U, b: V, c: W): T & U & V & W;
-export function assign<T, U, V, W, X>(obj: T, a: U, b: V, c: W, d: X): T & U & V & W & X;
-export function assign<T, U, V, W, X, Y>(
-  obj: T,
-  a: U,
-  b: V,
-  c: W,
-  d: X,
-  e: Y
-): T & U & V & W & X & Y;
-export function assign<T, U, V, W, X, Y, Z>(
+function assignFn<T, U>(obj: T, assignments: U): T & U;
+function assignFn<T, U, V>(obj: T, a: U, b: V): T & U & V;
+function assignFn<T, U, V, W>(obj: T, a: U, b: V, c: W): T & U & V & W;
+function assignFn<T, U, V, W, X>(obj: T, a: U, b: V, c: W, d: X): T & U & V & W & X;
+function assignFn<T, U, V, W, X, Y>(obj: T, a: U, b: V, c: W, d: X, e: Y): T & U & V & W & X & Y;
+function assignFn<T, U, V, W, X, Y, Z>(
   obj: T,
   a: U,
   b: V,
@@ -21,8 +14,8 @@ export function assign<T, U, V, W, X, Y, Z>(
   e: Y,
   f: Z
 ): T & U & V & W & X & Y & Z;
-export function assign(target: any, ...args: any[]): any;
-export function assign(obj: any) {
+function assignFn(target: any, ...args: any[]): any;
+function assignFn(obj: any) {
   for (let i = 1; i < arguments.length; i++) {
     let assignment = arguments[i];
     if (assignment === null || typeof assignment !== 'object') continue;
@@ -34,6 +27,8 @@ export function assign(obj: any) {
   }
   return obj;
 }
+
+export let assign = Object.assign ?? assignFn;
 
 export function fillNulls<T>(count: number): T[] {
   let arr = new Array(count);

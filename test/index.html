@@ -35,6 +35,10 @@
       }
     }
 
+    // Bootstrap internal `assign` so it doesn't get clobbered by the debug
+    // assertion below
+    require('@glimmer/util');
+
     Object.assign = function () {
       throw new Error(
         'Unexpected use of Object.assign. Object.assign cannot be used because it is unavailable in IE11. This error was likely caused by using syntax like the spread operator ({ ...obj }) which transpiles to Object.assign. Please use alternate syntax that is compatible with IE11.'
