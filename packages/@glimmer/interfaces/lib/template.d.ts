@@ -13,6 +13,7 @@ export interface CompilableProgram extends CompilableTemplate<ProgramSymbolTable
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
 export interface LayoutWithContext {
+  readonly id: string;
   readonly block: SerializedTemplateBlock;
   readonly moduleName: string;
   readonly owner: Owner | null;
