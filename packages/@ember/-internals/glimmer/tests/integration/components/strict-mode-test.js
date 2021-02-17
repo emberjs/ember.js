@@ -162,7 +162,7 @@ if (EMBER_STRICT_MODE) {
   moduleFor(
     'Strict Mode - built ins',
     class extends RenderingTestCase {
-      '@skip Can use Input'() {
+      '@test Can use Input'() {
         let Foo = defineComponent({ Input }, '<Input/>');
 
         this.registerComponent('foo', { ComponentClass: Foo });
