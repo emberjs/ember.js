@@ -113,7 +113,7 @@ export function getInternalModifierManager(
 }
 
 export function setInternalHelperManager<T extends object, O extends Owner>(
-  manager: CustomHelperManager<O> | Helper,
+  manager: CustomHelperManager<O> | Helper<O>,
   definition: T
 ): T {
   return setManager(HELPER_MANAGERS, manager, definition);
