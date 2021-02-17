@@ -6,7 +6,6 @@ import {
   CapturedArguments,
   Destroyable,
   InternalModifierManager as ModifierManager,
-  VMArguments,
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
@@ -67,11 +66,11 @@ class InternalModifierManager
     owner: Owner,
     element: SimpleElement,
     factory: typeof InternalModifier,
-    args: VMArguments
+    args: CapturedArguments
   ): InternalModifierState {
     assert('element must be an HTMLElement', element instanceof HTMLElement);
 
-    let instance = new factory(owner, element, args.capture());
+    let instance = new factory(owner, element, args);
 
     registerDestructor(instance, (modifier) => modifier.remove());
 

@@ -13,7 +13,6 @@ import {
   HelperManager,
   ModifierManager,
 } from '@glimmer/interfaces';
-import { SimpleElement } from '@simple-dom/interface';
 import compile from './compile';
 
 interface SimpleHelperState {
@@ -47,7 +46,7 @@ type SimpleModifierFn = (...args: unknown[]) => (() => void) | undefined;
 interface SimpleModifierState {
   fn: SimpleModifierFn;
   args: Arguments;
-  element: SimpleElement | undefined;
+  element: Element | undefined;
   destructor: (() => void) | undefined;
 }
 
@@ -58,7 +57,7 @@ class FunctionalModifierManager implements ModifierManager<SimpleModifierState> 
     return { fn, args, element: undefined, destructor: undefined };
   }
 
-  installModifier(state: SimpleModifierState, element: SimpleElement) {
+  installModifier(state: SimpleModifierState, element: Element) {
     state.element = element;
     this.setupModifier(state);
   }

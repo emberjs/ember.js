@@ -4,7 +4,7 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, CurriedType, Option, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, CurriedType, Option } from '@glimmer/interfaces';
 import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
 import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { MountDefinition } from '../component-managers/mount';
@@ -51,10 +51,10 @@ import { internalHelper } from '../helpers/internal-helper';
   @public
 */
 export const mountHelper = internalHelper(
-  (args: VMArguments, vm: VM): Reference<CurriedValue | null> => {
-    let owner = vm.getOwner() as Owner;
-    let nameRef = args.positional.at(0) as Reference<Option<string>>;
-    let captured: Option<CapturedArguments> = null;
+  (args: CapturedArguments, owner?: Owner): Reference<CurriedValue | null> => {
+    assert('{{mount}} must be used within a component that has an owner', owner);
+    let nameRef = args.positional[0] as Reference<Option<string>>;
+    let captured: CapturedArguments | null;
 
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
@@ -62,7 +62,7 @@ export const mountHelper = internalHelper(
     );
 
     if (DEBUG && args.named) {
-      let keys = args.named.names;
+      let keys = Object.keys(args.named);
       let extra = keys.filter((k) => k !== 'model');
 
       assert(
@@ -73,19 +73,7 @@ export const mountHelper = internalHelper(
       );
     }
 
-    // TODO: the functionality to create a proper CapturedArgument should be
-    // exported by glimmer, or that it should provide an overload for `curry`
-    // that takes `PreparedArguments`
-    if (args.named.has('model')) {
-      assert(
-        '[BUG] this should already be checked by the template transform',
-        args.named.length === 1
-      );
-
-      let named = args.named.capture();
-
-      captured = createCapturedArgs(named, EMPTY_POSITIONAL);
-    }
+    captured = createCapturedArgs(args.named, EMPTY_POSITIONAL);
 
     let lastName: string | null, lastDef: CurriedValue | null;
 
@@ -99,7 +87,7 @@ export const mountHelper = internalHelper(
 
         assert(
           `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-          owner.hasRegistration(`engine:${name}`)
+          (owner as Owner).hasRegistration(`engine:${name}`)
         );
 
         lastName = name;

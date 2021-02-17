@@ -1,11 +1,9 @@
 import { dasherize } from '@ember/string';
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
-export default internalHelper((args: VMArguments) => {
-  let positional = args.positional.capture();
-
+export default internalHelper(({ positional }: CapturedArguments) => {
   return createComputeRef(() => {
     let classNameParts = (valueForRef(positional[0]) as string).split('.');
     let className = classNameParts[classNameParts.length - 1];

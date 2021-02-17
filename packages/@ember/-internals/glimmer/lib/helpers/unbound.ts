@@ -3,7 +3,7 @@
 */
 
 import { assert } from '@ember/debug';
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import { createUnboundRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
@@ -35,11 +35,11 @@ import { internalHelper } from './internal-helper';
   @public
 */
 
-export default internalHelper((args: VMArguments) => {
+export default internalHelper(({ positional, named }: CapturedArguments) => {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
-    args.positional.length === 1 && args.named.length === 0
+    positional.length === 1 && Object.keys(named).length === 0
   );
 
-  return createUnboundRef(valueForRef(args.positional.at(0)), '(resurt of an `unbound` helper)');
+  return createUnboundRef(valueForRef(positional[0]), '(resurt of an `unbound` helper)');
 });

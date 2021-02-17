@@ -7,7 +7,7 @@ import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import {
   createUnboundRef,
   isInvokableRef,
@@ -285,21 +285,18 @@ export const INVOKE: unique symbol = symbol('INVOKE') as any;
   @public
 */
 export default internalHelper(
-  (args: VMArguments): Reference<Function> => {
+  (args: CapturedArguments): Reference<Function> => {
     let { named, positional } = args;
-
-    let capturedArgs = positional.capture();
-
     // The first two argument slots are reserved.
     // pos[0] is the context (or `this`)
     // pos[1] is the action name or function
     // Anything else is an action argument.
-    let [context, action, ...restArgs] = capturedArgs;
+    let [context, action, ...restArgs] = positional;
 
     let debugKey: string = action.debugLabel!;
 
-    let target = named.has('target') ? named.get('target') : context;
-    let processArgs = makeArgsProcessor(named.has('value') && named.get('value'), restArgs);
+    let target = 'target' in named ? named.target : context;
+    let processArgs = makeArgsProcessor('value' in named && named.value, restArgs);
 
     let fn: Function;
 
