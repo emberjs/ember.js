@@ -1,4 +1,4 @@
-import { Dict, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, Dict } from '@glimmer/interfaces';
 import { createComputeRef, Reference } from '@glimmer/reference';
 import { reifyNamed } from '@glimmer/runtime';
 import { internalHelper } from './internal-helper';
@@ -40,9 +40,7 @@ import { internalHelper } from './internal-helper';
    @public
  */
 export default internalHelper(
-  (args: VMArguments): Reference<Dict<unknown>> => {
-    let positional = args.named.capture();
-
-    return createComputeRef(() => reifyNamed(positional), null, 'hash');
+  ({ named }: CapturedArguments): Reference<Dict<unknown>> => {
+    return createComputeRef(() => reifyNamed(named), null, 'hash');
   }
 );

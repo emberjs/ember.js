@@ -7,7 +7,6 @@ import {
   ModifierCapabilitiesVersions,
   ModifierManager,
   Owner,
-  VMArguments,
 } from '@glimmer/interfaces';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setOwner } from '@glimmer/owner';
@@ -108,9 +107,8 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
     return delegate;
   }
 
-  create(owner: O, element: SimpleElement, definition: object, vmArgs: VMArguments) {
+  create(owner: O, element: SimpleElement, definition: object, capturedArgs: CapturedArguments) {
     let delegate = this.getDelegateFor(owner);
-    let capturedArgs = vmArgs.capture();
 
     let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
 

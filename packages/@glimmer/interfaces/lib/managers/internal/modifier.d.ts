@@ -2,9 +2,10 @@ import { GlimmerTreeChanges } from '../../dom/changes';
 // eslint-disable-next-line node/no-extraneous-import
 import { UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { DynamicScope, Owner, VMArguments } from '../../runtime';
+import { Owner } from '../../runtime';
 import { Destroyable } from '../../core';
 import { ModifierDefinitionState, ModifierInstanceState } from '../../runtime/modifier';
+import { CapturedArguments } from '../../runtime/arguments';
 
 export interface InternalModifierManager<
   TModifierInstanceState = ModifierInstanceState,
@@ -15,9 +16,7 @@ export interface InternalModifierManager<
     owner: Owner,
     element: SimpleElement,
     state: TModifierDefinitionState,
-    args: VMArguments,
-    dynamicScope: DynamicScope,
-    dom: GlimmerTreeChanges
+    args: CapturedArguments
   ): TModifierInstanceState;
 
   // Convert the opaque modifier into a `RevisionTag` that determins when

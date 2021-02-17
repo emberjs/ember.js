@@ -39,6 +39,7 @@ import {
 import { isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import {
   assert,
+  assign,
   debugToString,
   dict,
   EMPTY_STRING_ARRAY,
@@ -254,19 +255,34 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 
     let constants = vm[CONSTANTS];
 
-    let [value, owner, isResolved] = resolveCurriedValue(definition, args);
+    let {
+      definition: resolvedDefinition,
+      owner,
+      resolved,
+      positional,
+      named,
+    } = resolveCurriedValue(definition);
 
-    if (isResolved === true) {
-      definition = value as ComponentDefinition;
-    } else if (typeof value === 'string') {
-      let resolvedValue = vm.runtime.resolver.lookupComponent(value, owner);
+    if (resolved === true) {
+      definition = resolvedDefinition as ComponentDefinition;
+    } else if (typeof resolvedDefinition === 'string') {
+      let resolvedValue = vm.runtime.resolver.lookupComponent(resolvedDefinition, owner);
 
       definition = constants.resolvedComponent(
         expect(resolvedValue, 'BUG: expected resolved component'),
-        value
+        resolvedDefinition
       );
     } else {
-      definition = constants.component(value, owner);
+      definition = constants.component(resolvedDefinition, owner);
+    }
+
+    if (named !== undefined) {
+      args.named.merge(assign({}, ...named));
+    }
+
+    if (positional !== undefined) {
+      args.realloc(positional.length);
+      args.positional.prepend(positional);
     }
 
     let { manager } = definition;

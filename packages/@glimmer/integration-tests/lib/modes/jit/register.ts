@@ -72,7 +72,7 @@ export function registerGlimmerishComponent(
 
 export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
   let state = {};
-  let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args.capture());
+  let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args);
   setInternalHelperManager(glimmerHelper, state);
   registry.register('helper', name, state);
 }

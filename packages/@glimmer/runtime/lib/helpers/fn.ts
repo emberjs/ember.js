@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import {
   createComputeRef,
   isInvokableRef,
@@ -77,8 +77,7 @@ const context = buildUntouchableThis('`fn` helper');
   @method fn
   @public
 */
-export default internalHelper((args: VMArguments) => {
-  let positional = args.positional.capture();
+export default internalHelper(({ positional }: CapturedArguments) => {
   let callbackRef = positional[0];
 
   if (DEBUG) assertCallbackIsFn(callbackRef);
