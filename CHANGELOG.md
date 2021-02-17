@@ -1,3 +1,26 @@
+## v0.77.0 (2021-02-17)
+
+#### :boom: Breaking Change
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/destroyable`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1267](https://github.com/glimmerjs/glimmer-vm/pull/1267) [BUGFIX] Fixes dynamic helpers and modifiers with updating definitions ([@pzuraq](https://github.com/pzuraq))
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/syntax`
+  * [#1274](https://github.com/glimmerjs/glimmer-vm/pull/1274) Revert "Removes id from templates" ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`
+  * [#1261](https://github.com/glimmerjs/glimmer-vm/pull/1261) Make defaultId function more robust ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/util`
+  * [#1273](https://github.com/glimmerjs/glimmer-vm/pull/1273) [BUGFIX] Use built-in Object.assign if possible ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`
+  * [#1271](https://github.com/glimmerjs/glimmer-vm/pull/1271) Upstream modifier tests ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.76.0 (2021-02-16)
 
 #### :boom: Breaking Change
