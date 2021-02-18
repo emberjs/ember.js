@@ -947,7 +947,7 @@ class EmberRouter extends EmberObject {
    */
   _queryParamsFor(routeInfos: PrivateRouteInfo[]) {
     let routeInfoLength = routeInfos.length;
-    let leafRouteName = routeInfos[routeInfoLength - 1].name;
+    let leafRouteName = routeInfos[routeInfoLength - 1]?.name;
     let cached = this._qpCache[leafRouteName];
     if (cached !== undefined) {
       return cached;
