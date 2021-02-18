@@ -7,12 +7,10 @@ import { join } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
+  CapturedArguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
-  DynamicScope,
-  GlimmerTreeChanges,
   InternalModifierManager,
-  VMArguments,
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
@@ -73,7 +71,6 @@ export class ActionState {
   public namedArgs: CapturedNamedArguments;
   public positional: CapturedPositionalArguments;
   public implicitTarget: any;
-  public dom: GlimmerTreeChanges;
   public eventName: any;
   public tag = createUpdatableTag();
 
@@ -82,15 +79,13 @@ export class ActionState {
     actionId: number,
     actionArgs: any[],
     namedArgs: CapturedNamedArguments,
-    positionalArgs: CapturedPositionalArguments,
-    dom: GlimmerTreeChanges
+    positionalArgs: CapturedPositionalArguments
   ) {
     this.element = element;
     this.actionId = actionId;
     this.actionArgs = actionArgs;
     this.namedArgs = namedArgs;
     this.positional = positionalArgs;
-    this.dom = dom;
     this.eventName = this.getEventName();
 
     registerDestructor(this, () => ActionHelper.unregisterAction(this));
@@ -208,12 +203,8 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     _owner: Owner,
     element: SimpleElement,
     _state: object,
-    args: VMArguments,
-    _dynamicScope: DynamicScope,
-    dom: GlimmerTreeChanges
+    { named, positional }: CapturedArguments
   ): ActionState {
-    let { named, positional } = args.capture();
-
     let actionArgs: any[] = [];
     // The first two arguments are (1) `this` and (2) the action name.
     // Everything else is a param.
@@ -222,7 +213,7 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     }
 
     let actionId = uuid();
-    let actionState = new ActionState(element, actionId, actionArgs, named, positional, dom);
+    let actionState = new ActionState(element, actionId, actionArgs, named, positional);
 
     deprecate(
       `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
@@ -248,7 +239,7 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
   }
 
   install(actionState: ActionState): void {
-    let { dom, element, actionId, positional } = actionState;
+    let { element, actionId, positional } = actionState;
 
     let actionName;
     let actionNameRef: any;
@@ -288,8 +279,8 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
 
     ActionHelper.registerAction(actionState);
 
-    dom.setAttribute(element, 'data-ember-action', '');
-    dom.setAttribute(element, `data-ember-action-${actionId}`, String(actionId));
+    element.setAttribute('data-ember-action', '');
+    element.setAttribute(`data-ember-action-${actionId}`, String(actionId));
   }
 
   update(actionState: ActionState): void {

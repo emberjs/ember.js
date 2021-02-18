@@ -1,5 +1,7 @@
+import { Owner } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CurriedType, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, CurriedType, DynamicScope } from '@glimmer/interfaces';
 import {
   childRefFromParts,
   createComputeRef,
@@ -12,7 +14,6 @@ import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glim
 import { dict } from '@glimmer/util';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { internalHelper } from '../helpers/internal-helper';
-import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
 import { OutletState } from '../utils/outlet';
 
@@ -63,59 +64,63 @@ import { OutletState } from '../utils/outlet';
   @for Ember.Templates.helpers
   @public
 */
-export const outletHelper = internalHelper((args: VMArguments, vm: VM) => {
-  let scope = vm.dynamicScope() as DynamicScope;
-  let nameRef: Reference<string>;
+export const outletHelper = internalHelper(
+  (args: CapturedArguments, owner?: Owner, scope?: DynamicScope) => {
+    assert('Expected owner to be present, {{outlet}} requires an owner', owner);
+    assert(
+      'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
+      scope
+    );
+    let nameRef: Reference<string>;
 
-  if (args.positional.length === 0) {
-    nameRef = createPrimitiveRef('main');
-  } else {
-    nameRef = args.positional.at(0);
-  }
-
-  let outletRef = createComputeRef(() => {
-    let state = valueForRef(scope.get('outletState'));
-    let outlets = state !== undefined ? state.outlets : undefined;
-
-    return outlets !== undefined ? outlets[valueForRef(nameRef)] : undefined;
-  });
-
-  let lastState: OutletDefinitionState | null = null;
-  let definition: CurriedValue | null = null;
-
-  return createComputeRef(() => {
-    let outletState = valueForRef(outletRef);
-    let state = stateFor(outletRef, outletState);
-
-    if (!validate(state, lastState)) {
-      lastState = state;
-
-      if (state !== null) {
-        let named = dict<Reference>();
-        named.model = childRefFromParts(outletRef, ['render', 'model']);
-
-        if (DEBUG) {
-          named.model = createDebugAliasRef!('@model', named.model);
-        }
-
-        let owner = outletState?.render?.owner ?? vm.getOwner();
-
-        let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-        definition = curry(
-          CurriedType.Component,
-          new OutletComponentDefinition(state),
-          owner,
-          args,
-          true
-        );
-      } else {
-        definition = null;
-      }
+    if (args.positional.length === 0) {
+      nameRef = createPrimitiveRef('main');
+    } else {
+      nameRef = args.positional[0];
     }
 
-    return definition;
-  });
-});
+    let outletRef = createComputeRef(() => {
+      let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
+      let outlets = state !== undefined ? state.outlets : undefined;
+
+      return outlets !== undefined ? outlets[valueForRef(nameRef)] : undefined;
+    });
+
+    let lastState: OutletDefinitionState | null = null;
+    let definition: CurriedValue | null = null;
+
+    return createComputeRef(() => {
+      let outletState = valueForRef(outletRef);
+      let state = stateFor(outletRef, outletState);
+
+      if (!validate(state, lastState)) {
+        lastState = state;
+
+        if (state !== null) {
+          let named = dict<Reference>();
+          named.model = childRefFromParts(outletRef, ['render', 'model']);
+
+          if (DEBUG) {
+            named.model = createDebugAliasRef!('@model', named.model);
+          }
+
+          let args = createCapturedArgs(named, EMPTY_POSITIONAL);
+          definition = curry(
+            CurriedType.Component,
+            new OutletComponentDefinition(state),
+            outletState?.render?.owner ?? owner,
+            args,
+            true
+          );
+        } else {
+          definition = null;
+        }
+      }
+
+      return definition;
+    });
+  }
+);
 
 function stateFor(ref: Reference, outlet: OutletState | undefined): OutletDefinitionState | null {
   if (outlet === undefined) return null;

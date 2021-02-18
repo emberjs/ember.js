@@ -2,7 +2,7 @@
 @module ember
 */
 import { assert } from '@ember/debug';
-import { VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments } from '@glimmer/interfaces';
 import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
@@ -80,8 +80,8 @@ import { internalHelper } from './internal-helper';
   @public
 */
 
-export default internalHelper((args: VMArguments) => {
-  let ref = args.positional.at(0);
+export default internalHelper(({ positional }: CapturedArguments) => {
+  let ref = positional[0];
 
   // TODO: Improve this error message. This covers at least two distinct
   // cases:

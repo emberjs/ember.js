@@ -1,14 +1,14 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Helper, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, Helper } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 let helper: Helper;
 
 if (DEBUG) {
-  helper = (args: VMArguments) => {
-    let inner = args.positional.at(0);
+  helper = (args: CapturedArguments) => {
+    let inner = args.positional[0];
 
     return createComputeRef(() => {
       let value = valueForRef(inner);
@@ -22,7 +22,7 @@ if (DEBUG) {
     });
   };
 } else {
-  helper = (args: VMArguments) => args.positional.at(0);
+  helper = (args: CapturedArguments) => args.positional[0];
 }
 
 export default internalHelper(helper);
