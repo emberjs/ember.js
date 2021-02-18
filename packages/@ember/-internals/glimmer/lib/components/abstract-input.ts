@@ -116,6 +116,15 @@ export default abstract class AbstractInput
   implements DeprecatingInternalComponent {
   modernized = this.shouldModernize();
 
+  validateArguments(): void {
+    assert(
+      `The ${this.constructor} component does not take any positional arguments`,
+      this.args.positional.length === 0
+    );
+
+    super.validateArguments();
+  }
+
   protected shouldModernize(): boolean {
     return (
       Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
@@ -125,7 +134,7 @@ export default abstract class AbstractInput
     );
   }
 
-  private _value = valueFrom(this.args.value);
+  private _value = valueFrom(this.args.named.value);
 
   get value(): unknown {
     return this._value.get();
@@ -216,7 +225,7 @@ export function handleDeprecatedFeatures(
       configurable: true,
       enumerable: false,
       value: function listenerFor(this: AbstractInput, name: string): EventListener {
-        const actionName = this.arg(name);
+        const actionName = this.named(name);
 
         if (typeof actionName === 'string') {
           deprecate(

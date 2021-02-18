@@ -215,7 +215,7 @@ class DeprecationAssert extends DebugAssert {
         true
       );
     } else {
-      this.expectNoDeprecationAsync(func);
+      await this.expectNoDeprecationAsync(func);
     }
   }
 

@@ -5,7 +5,7 @@ import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import {
-  CapturedNamedArguments,
+  CapturedArguments,
   Destroyable,
   DynamicScope,
   Environment,
@@ -38,7 +38,7 @@ export default class InternalComponent {
 
   constructor(
     protected owner: Owner,
-    protected readonly args: Record<string, Reference | undefined>,
+    protected readonly args: CapturedArguments,
     protected readonly caller: unknown
   ) {
     setOwner(this, owner);
@@ -66,13 +66,26 @@ export default class InternalComponent {
     return 'ember-view';
   }
 
-  protected arg(name: string): unknown {
-    let ref = this.args[name];
+  protected validateArguments(): void {
+    for (let name of Object.keys(this.args.named)) {
+      if (!this.isSupportedArgument(name)) {
+        this.onUnsupportedArgument(name);
+      }
+    }
+  }
+
+  protected named(name: string): unknown {
+    let ref = this.args.named[name];
+    return ref ? valueForRef(ref) : undefined;
+  }
+
+  protected positional(index: number): unknown {
+    let ref = this.args.positional[index];
     return ref ? valueForRef(ref) : undefined;
   }
 
   protected listenerFor(name: string): EventListener {
-    let listener = this.arg(name);
+    let listener = this.named(name);
 
     if (listener) {
       assert(
@@ -95,12 +108,12 @@ export default class InternalComponent {
   protected onUnsupportedArgument(_name: string): void {}
 
   toString(): string {
-    return `<${this.constructor.toString()}:${guidFor(this)}>`;
+    return `<${this.constructor}:${guidFor(this)}>`;
   }
 }
 
 export interface InternalComponentConstructor<T extends InternalComponent = InternalComponent> {
-  new (owner: Owner, args: CapturedNamedArguments, caller: unknown): T;
+  new (owner: Owner, args: CapturedArguments, caller: unknown): T;
   prototype: T;
   toString(): string;
 }
@@ -188,22 +201,9 @@ class InternalManager
 
     let ComponentClass = deopaquify(definition);
 
-    assert(
-      `The ${definition.toString()} component does not take any positional arguments`,
-      args.positional.length === 0
-    );
+    let instance = new ComponentClass(owner, args.capture(), valueForRef(caller));
 
-    let instance = new ComponentClass(owner, args.named.capture(), valueForRef(caller));
-
-    untrack(
-      function (this: InternalComponent): void {
-        for (let name of args.named.names) {
-          if (!this.isSupportedArgument(name)) {
-            this.onUnsupportedArgument(name);
-          }
-        }
-      }.bind(instance)
-    );
+    untrack(instance['validateArguments'].bind(instance));
 
     return instance;
   }
@@ -274,7 +274,7 @@ export function handleDeprecatedAttributeArguments(
 ): void {
   if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     let angle = target.toString();
-    let curly = angle.toLowerCase();
+    let curly = angle.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
     let { prototype } = target;
 
     let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
@@ -329,7 +329,7 @@ export function handleDeprecatedAttributeArguments(
         configurable: true,
         enumerable: true,
         get(this: DeprecatingInternalComponent): unknown {
-          if (argument in this.args) {
+          if (argument in this.args.named) {
             deprecate(
               `Passing the \`@${argument}\` argument to <${angle}> is deprecated. ` +
                 `Instead, please pass the attribute directly, i.e. \`<${angle} ${attribute}={{...}} />\` ` +
@@ -345,9 +345,9 @@ export function handleDeprecatedAttributeArguments(
 
             // The `class` attribute is concatenated/merged instead of clobbered
             if (attribute === 'class' && superDescriptor) {
-              return `${superGetter.call(this)} ${this.arg(argument)}`;
+              return `${superGetter.call(this)} ${this.named(argument)}`;
             } else {
-              return this.arg(argument);
+              return this.named(argument);
             }
           } else {
             return superGetter.call(this);
@@ -360,7 +360,7 @@ export function handleDeprecatedAttributeArguments(
 
 export let handleDeprecatedEventArguments: (
   target: DeprecatingInternalComponentConstructor,
-  extraEvents: Array<[event: string, argument: string]>
+  extraEvents?: Array<[event: string, argument: string]>
 ) => void = NOOP;
 
 if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
@@ -368,33 +368,42 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
 
   const EVENTS = new WeakMap<object, EventsMap>();
 
+  const EMPTY_EVENTS = Object.freeze({}) as EventsMap;
+
   const getEventsMap = (owner: Owner): EventsMap => {
     let events = EVENTS.get(owner);
 
     if (events === undefined) {
+      events = EMPTY_EVENTS;
+
       let eventDispatcher = owner.lookup<Maybe<{ _finalEvents?: EventsMap }>>(
         'event_dispatcher:main'
       );
 
-      assert(
-        '[BUG] missing event dispatcher',
-        eventDispatcher !== null && typeof eventDispatcher === 'object'
-      );
+      if (eventDispatcher !== null && eventDispatcher !== undefined) {
+        assert('[BUG] invalid event dispatcher', typeof eventDispatcher === 'object');
 
-      assert(
-        '[BUG] missing _finalEvents on event dispatcher',
-        '_finalEvents' in eventDispatcher &&
-          eventDispatcher?._finalEvents !== null &&
-          typeof eventDispatcher?._finalEvents === 'object'
-      );
+        if (
+          '_finalEvents' in eventDispatcher &&
+          eventDispatcher._finalEvents !== null &&
+          eventDispatcher._finalEvents !== undefined
+        ) {
+          assert(
+            '[BUG] invalid _finalEvents on event dispatcher',
+            typeof eventDispatcher._finalEvents === 'object'
+          );
 
-      EVENTS.set(owner, (events = eventDispatcher._finalEvents));
+          events = eventDispatcher._finalEvents;
+        }
+      }
+
+      EVENTS.set(owner, events);
     }
 
     return events;
   };
 
-  handleDeprecatedEventArguments = (target, extraEvents) => {
+  handleDeprecatedEventArguments = (target, extraEvents = []) => {
     let angle = target.toString();
     let curly = angle.toLowerCase();
     let { prototype } = target;
@@ -479,7 +488,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       ): Option<EventListener> {
         assert(`[BUG] must be called with <${angle}> component as this`, this instanceof target);
 
-        if (argument in this.args) {
+        if (argument in this.args.named) {
           deprecate(
             `Passing the \`@${argument}\` argument to <${angle}> is deprecated. ` +
               `This would have overwritten the internal \`${argument}\` method on ` +

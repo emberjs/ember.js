@@ -367,7 +367,7 @@ export { default as RootTemplate } from './lib/templates/root';
 export { default as Checkbox } from './lib/components/checkbox';
 export { default as TextField } from './lib/components/text-field';
 export { default as TextArea } from './lib/components/-textarea';
-export { default as LinkComponent } from './lib/components/link-to';
+export { default as LinkComponent } from './lib/components/-link-to';
 export { default as Input } from './lib/components/input';
 export { default as Textarea } from './lib/components/textarea';
 export { default as Component } from './lib/component';

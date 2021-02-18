@@ -186,7 +186,7 @@ class Input extends AbstractInput {
    * The HTML type attribute.
    */
   get type(): string {
-    let type = this.arg('type');
+    let type = this.named('type');
 
     if (type === null || type === undefined) {
       return 'text';
@@ -201,10 +201,10 @@ class Input extends AbstractInput {
   }
 
   get isCheckbox(): boolean {
-    return this.arg('type') === 'checkbox';
+    return this.named('type') === 'checkbox';
   }
 
-  private _checked = valueFrom(this.args.checked);
+  private _checked = valueFrom(this.args.named.checked);
 
   get checked(): unknown {
     if (this.isCheckbox) {
@@ -214,9 +214,9 @@ class Input extends AbstractInput {
           'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
         untrack(
           () =>
-            this.args.checked !== undefined ||
-            this.args.value === undefined ||
-            typeof valueForRef(this.args.value) === 'string'
+            this.args.named.checked !== undefined ||
+            this.args.named.value === undefined ||
+            typeof valueForRef(this.args.named.value) === 'string'
         ),
         { id: 'ember.built-in-components.input-checkbox-value' }
       );
@@ -234,9 +234,9 @@ class Input extends AbstractInput {
         'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
       untrack(
         () =>
-          this.args.checked !== undefined ||
-          this.args.value === undefined ||
-          typeof valueForRef(this.args.value) === 'string'
+          this.args.named.checked !== undefined ||
+          this.args.named.value === undefined ||
+          typeof valueForRef(this.args.named.value) === 'string'
       ),
       { id: 'ember.built-in-components.input-checkbox-value' }
     );

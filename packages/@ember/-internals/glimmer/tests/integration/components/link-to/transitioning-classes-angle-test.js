@@ -1,5 +1,6 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 function assertHasClass(assert, selector, label) {
@@ -86,7 +87,7 @@ moduleFor(
       let $about = this.$('#about-link');
       let $other = this.$('#other-link');
 
-      $about.click();
+      runTask(() => $about.click());
 
       assertHasClass(assert, $index, 'active');
       assertHasNoClass(assert, $about, 'active');
@@ -120,7 +121,7 @@ moduleFor(
       let $news = this.$('#news-link');
       let $other = this.$('#other-link');
 
-      $news.click();
+      runTask(() => $news.click());
 
       assertHasClass(assert, $index, 'active');
       assertHasNoClass(assert, $news, 'active');
@@ -152,7 +153,7 @@ moduleFor(
 );
 
 moduleFor(
-  `<LinkTo /> component: .transitioning-in .transitioning-out CSS classes - nested link-to's`,
+  `<LinkTo /> component: [DEPRECATED] .transitioning-in .transitioning-out CSS classes - nested link-to's`,
   class extends ApplicationTestCase {
     constructor(...args) {
       super(...args);
@@ -202,8 +203,12 @@ moduleFor(
       );
     }
 
-    beforeEach() {
-      return this.visit('/');
+    async beforeEach() {
+      return expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@tagName` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
     }
 
     resolveAbout() {
@@ -231,7 +236,7 @@ moduleFor(
       // outlet is not stable and the second $about.click() is triggered.
       let $about = this.$('#about-link');
 
-      $about.click();
+      runTask(() => $about.click());
 
       let $index = this.$('#index-link');
       $about = this.$('#about-link');
@@ -267,7 +272,7 @@ moduleFor(
       assertHasNoClass(assert, $about, 'ember-transitioning-out');
       assertHasNoClass(assert, $other, 'ember-transitioning-out');
 
-      $other.click();
+      runTask(() => $other.click());
 
       $index = this.$('#index-link');
       $about = this.$('#about-link');
@@ -303,7 +308,7 @@ moduleFor(
       assertHasNoClass(assert, $about, 'ember-transitioning-out');
       assertHasNoClass(assert, $other, 'ember-transitioning-out');
 
-      $about.click();
+      runTask(() => $about.click());
 
       $index = this.$('#index-link');
       $about = this.$('#about-link');

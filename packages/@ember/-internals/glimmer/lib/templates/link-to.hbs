@@ -1,5 +1,24 @@
-{{~#if (has-block)~}}
-  {{yield}}
+{{~#if this.modernized~}}
+  <a
+    {{!-- for compatibility --}}
+    id={{this.id}}
+    class={{this.class}}
+
+    {{!-- deprecated attribute bindings --}}
+    role={{this.role}}
+    title={{this.title}}
+    rel={{this.rel}}
+    tabindex={{this.tabindex}}
+    target={{this.target}}
+
+    ...attributes
+
+    href={{this.href}}
+
+    {{on 'click' this.click}}
+  >{{yield}}</a>
 {{~else~}}
-  {{this.linkTitle}}
+  {{~#let (component '-link-to') as |LegacyLinkTo|~}}
+    <LegacyLinkTo @__ARGS__={{this.args}} ...attributes>{{yield}}</LegacyLinkTo>
+  {{~/let~}}
 {{~/if~}}

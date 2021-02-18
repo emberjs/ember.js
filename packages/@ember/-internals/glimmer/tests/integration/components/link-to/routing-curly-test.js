@@ -8,7 +8,10 @@ import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
-import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import {
+  EMBER_IMPROVED_INSTRUMENTATION,
+  EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
+} from '@ember/canary-features';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
@@ -89,13 +92,17 @@ moduleFor(
       );
     }
 
-    async [`@test it doesn't add an href when the tagName isn't 'a'`](assert) {
+    async [`@test [DEPRECATED] it doesn't add an href when the tagName isn't 'a'`](assert) {
       this.addTemplate(
         'index',
         `<div id='about-link'>{{#link-to route='about' tagName='div'}}About{{/link-to}}</div>`
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@tagName` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.strictEqual(
         this.$('#about-link > div').attr('href'),
@@ -104,7 +111,7 @@ moduleFor(
       );
     }
 
-    async [`@test it applies a 'disabled' class when disabledWhen`](assert) {
+    async [`@test [DEPRECATED] it applies a 'disabled' class when disabledWhen`](assert) {
       this.addTemplate(
         'index',
         `
@@ -127,7 +134,11 @@ moduleFor(
         }
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.equal(
         this.$('#about-link-static > a.disabled').length,
@@ -140,7 +151,11 @@ moduleFor(
         'The dynamic link is disabled when its disabledWhen is true'
       );
 
-      runTask(() => controller.set('dynamicDisabledWhen', false));
+      expectDeprecation(
+        () => runTask(() => controller.set('dynamicDisabledWhen', false)),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.equal(
         this.$('#about-link-static > a.disabled').length,
@@ -340,15 +355,23 @@ moduleFor(
       );
     }
 
-    async [`@test it does not respond to clicks when disabledWhen`](assert) {
+    async [`@test [DEPRECATED] it does not respond to clicks when disabledWhen`](assert) {
       this.addTemplate(
         'index',
         `<div id="about-link">{{#link-to route="about" disabledWhen=true}}About{{/link-to}}</div>`
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
-      await this.click('#about-link > a');
+      await expectDeprecationAsync(
+        () => this.click('#about-link > a'),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
     }
@@ -544,7 +567,11 @@ moduleFor(
         }
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@class` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.equal(
         this.$('#about-link > a.foo-is-false').length,
@@ -552,7 +579,11 @@ moduleFor(
         'The about-link was rendered with the falsy class'
       );
 
-      runTask(() => controller.set('foo', true));
+      await expectDeprecation(
+        () => runTask(() => controller.set('foo', true)),
+        /Passing the `@class` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.equal(
         this.$('#about-link > a.foo-is-true').length,
@@ -1310,18 +1341,32 @@ moduleFor(
       assert.equal(hidden, 1, 'The link bubbles');
     }
 
-    async [`@test it supports bubbles=false`](assert) {
-      this.addTemplate(
-        'about',
-        `
-        <div id='about-contact' {{action this.hide}}>
-          {{#link-to route='about.contact' bubbles=false}}
-            About
-          {{/link-to}}
-        </div>
-        {{outlet}}
-        `
-      );
+    async [`@test [DEPRECATED] it supports bubbles=false`](assert) {
+      if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+        this.addTemplate(
+          'about',
+          `
+          <div id='about-contact' {{on 'click' this.hide}}>
+            {{#link-to route='about.contact' bubbles=false}}
+              About
+            {{/link-to}}
+          </div>
+          {{outlet}}
+          `
+        );
+      } else {
+        this.addTemplate(
+          'about',
+          `
+          <div id='about-contact' {{action this.hide}}>
+            {{#link-to route='about.contact' bubbles=false}}
+              About
+            {{/link-to}}
+          </div>
+          {{outlet}}
+          `
+        );
+      }
 
       this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
@@ -1342,27 +1387,49 @@ moduleFor(
         }
       );
 
-      await this.visit('/about');
+      await expectDeprecationAsync(
+        () => this.visit('/about'),
+        /Passing the `@bubbles` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
-      await this.click('#about-contact > a');
+      await expectDeprecationAsync(
+        () => this.click('#about-contact > a'),
+        /Passing the `@bubbles` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
 
       assert.strictEqual(hidden, 0, "The link didn't bubble");
     }
 
-    async [`@test it supports bubbles=boundFalseyThing`](assert) {
-      this.addTemplate(
-        'about',
-        `
-        <div id='about-contact' {{action this.hide}}>
-          {{#link-to route='about.contact' bubbles=this.boundFalseyThing}}
-            About
-          {{/link-to}}
-        </div>
-        {{outlet}}
-        `
-      );
+    async [`@test [DEPRECATED] it supports bubbles=boundFalseyThing`](assert) {
+      if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+        this.addTemplate(
+          'about',
+          `
+          <div id='about-contact' {{on 'click' this.hide}}>
+            {{#link-to route='about.contact' bubbles=this.boundFalseyThing}}
+              About
+            {{/link-to}}
+          </div>
+          {{outlet}}
+          `
+        );
+      } else {
+        this.addTemplate(
+          'about',
+          `
+          <div id='about-contact' {{action this.hide}}>
+            {{#link-to route='about.contact' bubbles=this.boundFalseyThing}}
+              About
+            {{/link-to}}
+          </div>
+          {{outlet}}
+          `
+        );
+      }
 
       this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
@@ -1385,9 +1452,17 @@ moduleFor(
         });
       });
 
-      await this.visit('/about');
+      await expectDeprecationAsync(
+        () => this.visit('/about'),
+        /Passing the `@bubbles` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
-      await this.click('#about-contact > a');
+      await expectDeprecationAsync(
+        () => this.click('#about-contact > a'),
+        /Passing the `@bubbles` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
       assert.strictEqual(hidden, 0, "The link didn't bubble");
@@ -1474,7 +1549,7 @@ moduleFor(
       assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
     }
 
-    async [`@test it binds some anchor html tag common attributes`](assert) {
+    async [`@test [DEPRECATED] it binds some anchor html tag common attributes`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1487,7 +1562,11 @@ moduleFor(
         `
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@(id|title|rel|tabindex)` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       let link = this.$('#self-link > a');
 
@@ -1496,7 +1575,7 @@ moduleFor(
       assert.equal(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
     }
 
-    async [`@test it supports 'target' attribute`](assert) {
+    async [`@test [DEPRECATED] it supports 'target' attribute`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1505,13 +1584,17 @@ moduleFor(
         `
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@target` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       let link = this.$('#self-link > a');
       assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
     }
 
-    async [`@test it supports 'target' attribute specified as a bound param`](assert) {
+    async [`@test [DEPRECATED] it supports 'target' attribute specified as a bound param`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1534,12 +1617,20 @@ moduleFor(
         }
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@target` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       let link = this.$('#self-link > a');
       assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
 
-      runTask(() => controller.set('boundLinkTarget', '_self'));
+      expectDeprecation(
+        () => runTask(() => controller.set('boundLinkTarget', '_self')),
+        /Passing the `@target` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assert.equal(link.attr('target'), '_self', 'The self-link contains `target` attribute');
     }
@@ -1559,7 +1650,7 @@ moduleFor(
       assertNav({ prevented: true }, () => this.$('#about-link > a').click(), assert);
     }
 
-    async [`@test it does not call preventDefault if 'preventDefault=false' is passed as an option`](
+    async [`@test [DEPRECATED] it does not call preventDefault if 'preventDefault=false' is passed as an option`](
       assert
     ) {
       this.router.map(function () {
@@ -1571,12 +1662,25 @@ moduleFor(
         `<div id='about-link'>{{#link-to route='about' preventDefault=false}}About{{/link-to}}</div>`
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
-      assertNav({ prevented: false }, () => this.$('#about-link > a').trigger('click'), assert);
+      assertNav(
+        { prevented: false },
+        () =>
+          expectDeprecation(
+            () => this.$('#about-link > a').trigger('click'),
+            /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
+            EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+          ),
+        assert
+      );
     }
 
-    async [`@test it does not call preventDefault if 'preventDefault=this.boundThing' is passed as an option`](
+    async [`@test [DEPRECATED] it does not call preventDefault if 'preventDefault=this.boundThing' is passed as an option`](
       assert
     ) {
       this.router.map(function () {
@@ -1602,18 +1706,46 @@ moduleFor(
         }
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
-      assertNav({ prevented: false }, () => this.$('#about-link > a').trigger('click'), assert);
+      assertNav(
+        { prevented: false },
+        () =>
+          expectDeprecation(
+            () => this.$('#about-link > a').trigger('click'),
+            /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
+            EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+          ),
+        assert
+      );
 
       runTask(() => controller.set('boundThing', true));
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
-      assertNav({ prevented: true }, () => this.$('#about-link > a').trigger('click'), assert);
+      assertNav(
+        { prevented: true },
+        () =>
+          expectDeprecation(
+            () => this.$('#about-link > a').trigger('click'),
+            /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
+            EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+          ),
+        assert
+      );
     }
 
-    async [`@test it does not call preventDefault if 'target' attribute is provided`](assert) {
+    async [`@test [DEPRECATED] it does not call preventDefault if 'target' attribute is provided`](
+      assert
+    ) {
       this.addTemplate(
         'index',
         `
@@ -1622,12 +1754,16 @@ moduleFor(
         `
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@target` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assertNav({ prevented: false }, () => this.$('#self-link > a').click(), assert);
     }
 
-    async [`@test it should preventDefault when 'target = _self'`](assert) {
+    async [`@test [DEPRECATED] it should preventDefault when 'target = _self'`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1636,12 +1772,18 @@ moduleFor(
         `
       );
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@target` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       assertNav({ prevented: true }, () => this.$('#self-link > a').click(), assert);
     }
 
-    async [`@test it should not transition if target is not equal to _self or empty`](assert) {
+    async [`@test [DEPRECATED] it should not transition if target is not equal to _self or empty`](
+      assert
+    ) {
       this.addTemplate(
         'index',
         `
@@ -1657,7 +1799,11 @@ moduleFor(
         this.route('about');
       });
 
-      await this.visit('/');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@target` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
 
       await this.click('#about-link > a');
 

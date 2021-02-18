@@ -2,6 +2,7 @@ import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import Component from './component';
+import LegacyLinkTo from './components/-link-to';
 import LegacyTextArea from './components/-textarea';
 import Checkbox from './components/checkbox';
 import Input from './components/input';
@@ -59,12 +60,14 @@ export function setupEngineRegistry(registry: Registry): void {
   registry.register('component:-text-field', TextField);
   registry.register('component:-checkbox', Checkbox);
   registry.register('component:input', Input);
-  registry.register('component:link-to', LinkTo);
 
   if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+    registry.register('component:link-to', LinkTo);
+    registry.register('component:-link-to', LegacyLinkTo);
     registry.register('component:-textarea', LegacyTextArea);
     registry.register('component:textarea', Textarea);
   } else {
+    registry.register('component:link-to', LegacyLinkTo);
     registry.register('component:textarea', LegacyTextArea);
   }
 
