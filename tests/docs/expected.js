@@ -422,6 +422,7 @@ module.exports = {
     'pauseTest',
     'popObject',
     'positionalParams',
+    'preventDefault',
     'promise',
     'property',
     'pushObject',

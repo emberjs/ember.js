@@ -199,19 +199,6 @@ import layout from '../templates/link-to';
   When transitioning into the linked route, the `model` hook will
   be triggered with parameters including this passed identifier.
 
-  ### Allowing Default Action
-
-  By default the `<LinkTo>` component prevents the default browser action by calling
-  `preventDefault()` to avoid reloading the browser page.
-
-  If you need to trigger a full browser reload pass `@preventDefault={{false}}`:
-
-  ```handlebars
-  <LinkTo @route='photoGallery' @model={{this.aPhotoId}} @preventDefault={{false}}>
-    {{this.aPhotoId.title}}
-  </LinkTo>
-  ```
-
   ### Supplying a `tagName`
 
   By default `<LinkTo>` renders an `<a>` element. This can be overridden for a single use of
@@ -380,7 +367,7 @@ const LinkComponent = EmberComponent.extend({
     @property loadingClass
     @type String
     @default loading
-    @private
+    @public
   **/
   loadingClass: 'loading',
 
@@ -391,7 +378,7 @@ const LinkComponent = EmberComponent.extend({
     @property disabledClass
     @type String
     @default disabled
-    @private
+    @public
   **/
   disabledClass: 'disabled',
 
@@ -405,6 +392,26 @@ const LinkComponent = EmberComponent.extend({
     @public
   **/
   replace: false,
+
+  /**
+    Determines whether the `LinkComponent` will prevent the default
+    browser action by calling preventDefault() to avoid reloading
+    the browser page.
+
+    If you need to trigger a full browser reload pass `@preventDefault={{false}}`:
+
+    ```handlebars
+    <LinkTo @route='photoGallery' @model={{this.aPhotoId}} @preventDefault={{false}}>
+      {{this.aPhotoId.title}}
+    </LinkTo>
+    ```
+
+    @property preventDefault
+    @type Boolean
+    @default true
+    @private
+  **/
+  preventDefault: true,
 
   /**
     By default this component will forward `href`, `title`, `rel`, `tabindex`, and `target`
@@ -555,7 +562,7 @@ const LinkComponent = EmberComponent.extend({
 
     When `true`, interactions with the element will not trigger route changes.
     @property disabled
-    @private
+    @public
   */
   disabled: computed({
     get(_key: string): boolean {
