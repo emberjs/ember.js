@@ -1,11 +1,10 @@
 import {
   ApplicationTestCase,
+  expectDeprecation,
   ModuleBasedTestResolver,
   moduleFor,
   strip,
 } from 'internal-test-helpers';
-import { ExpectDeprecationFunc } from '../../../../../../internal-test-helpers/lib/ember-dev/deprecation';
-declare let expectDeprecation: ExpectDeprecationFunc;
 
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';

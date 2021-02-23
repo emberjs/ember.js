@@ -8,6 +8,12 @@ export { default as strip } from './lib/strip';
 export { default as applyMixins } from './lib/apply-mixins';
 export { default as getTextOf } from './lib/get-text-of';
 export {
+  expectDeprecation,
+  expectNoDeprecation,
+  expectDeprecationAsync,
+  ignoreDeprecation,
+} from './lib/ember-dev/deprecation';
+export {
   defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
