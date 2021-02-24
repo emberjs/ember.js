@@ -48,7 +48,7 @@ export default class MethodCallTracker {
     }
   }
 
-  expectCall(message: Message, options?: OptionList): void {
+  expectCall(message?: Message, options?: OptionList): void {
     this.stubMethod();
     this._expectedMessages.push(message || /.*/);
     this._expectedOptionLists.push(options);
