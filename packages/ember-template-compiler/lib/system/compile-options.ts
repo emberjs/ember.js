@@ -13,9 +13,9 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
-export default function compileOptions(
-  _options: Partial<EmberPrecompileOptions> = {}
-): PrecompileOptions {
+export function buildCompileOptions(
+  _options: Partial<EmberPrecompileOptions>
+): EmberPrecompileOptions {
   let options: EmberPrecompileOptions = assign(
     { meta: {}, isProduction: false, plugins: { ast: [] } },
     _options,
@@ -42,7 +42,20 @@ export default function compileOptions(
     meta.moduleName = options.moduleName;
   }
 
-  let builtInPlugins = options.strictMode ? STRICT_MODE_TRANSFORMS : RESOLUTION_MODE_TRANSFORMS;
+  return options;
+}
+
+export function transformsFor(options: EmberPrecompileOptions): readonly PluginFunc[] {
+  return EMBER_STRICT_MODE && options.strictMode
+    ? STRICT_MODE_TRANSFORMS
+    : RESOLUTION_MODE_TRANSFORMS;
+}
+
+export default function compileOptions(
+  _options: Partial<EmberPrecompileOptions> = {}
+): PrecompileOptions {
+  let options = buildCompileOptions(_options);
+  let builtInPlugins = transformsFor(options);
 
   if (!_options.plugins) {
     options.plugins = { ast: [...USER_PLUGINS, ...builtInPlugins] };
