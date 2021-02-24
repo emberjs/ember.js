@@ -25,17 +25,49 @@ export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv): void
   });
 }
 
+export let expectDeprecation: DeprecationAssert['expectDeprecation'] = () => {
+  throw new Error(
+    'DeprecationAssert: To use `expectDeprecation` in a test you must call `setupDeprecationHelpers` first'
+  );
+};
+
+export let ignoreDeprecation: DeprecationAssert['ignoreDeprecation'] = () => {
+  throw new Error(
+    'DeprecationAssert: To use `ignoreDeprecation` in a test you must call `setupDeprecationHelpers` first'
+  );
+};
+
+export let expectDeprecationAsync: DeprecationAssert['expectDeprecationAsync'] = () => {
+  throw new Error(
+    'DeprecationAssert: To use `expectDeprecationAsync` in a test you must call `setupDeprecationHelpers` first'
+  );
+};
+
+export let expectNoDeprecation: DeprecationAssert['expectNoDeprecation'] = () => {
+  throw new Error(
+    'DeprecationAssert: To use `expectNoDeprecation` in a test you must call `setupDeprecationHelpers` first'
+  );
+};
+
+export let expectNoDeprecationAsync: DeprecationAssert['expectNoDeprecationAsync'] = () => {
+  throw new Error(
+    'DeprecationAssert: To use `expectNoDeprecationAsync` in a test you must call `setupDeprecationHelpers` first'
+  );
+};
+
 class DeprecationAssert extends DebugAssert {
   constructor(env: DebugEnv) {
     super('deprecate', env);
   }
 
   inject(): void {
-    window.expectNoDeprecation = this.expectNoDeprecation.bind(this);
-    window.expectNoDeprecationAsync = this.expectNoDeprecationAsync.bind(this);
-    window.expectDeprecation = this.expectDeprecation.bind(this);
-    window.expectDeprecationAsync = this.expectDeprecationAsync.bind(this);
-    window.ignoreDeprecation = this.ignoreDeprecation.bind(this);
+    window.expectNoDeprecation = expectNoDeprecation = this.expectNoDeprecation.bind(this);
+    window.expectNoDeprecationAsync = expectNoDeprecationAsync = this.expectNoDeprecationAsync.bind(
+      this
+    );
+    window.expectDeprecation = expectDeprecation = this.expectDeprecation.bind(this);
+    window.expectDeprecationAsync = expectDeprecationAsync = this.expectDeprecationAsync.bind(this);
+    window.ignoreDeprecation = ignoreDeprecation = this.ignoreDeprecation.bind(this);
     super.inject();
   }
 

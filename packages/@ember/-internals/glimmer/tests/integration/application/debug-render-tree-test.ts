@@ -1,5 +1,6 @@
 import {
   ApplicationTestCase,
+  expectDeprecation,
   ModuleBasedTestResolver,
   moduleFor,
   strip,
@@ -225,7 +226,10 @@ if (ENV._DEBUG_RENDER_TREE) {
               if (showHeader) {
                 this.render('header', { outlet: 'header' });
               } else {
-                this.disconnectOutlet('header');
+                expectDeprecation(
+                  () => this.disconnectOutlet('header'),
+                  'The usage of `disconnectOutlet` is deprecated.'
+                );
               }
             }
           }
