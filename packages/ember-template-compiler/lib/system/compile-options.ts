@@ -6,9 +6,7 @@ import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
 let USER_PLUGINS: PluginFunc[] = [];
 
-export default function compileOptions(
-  _options: Partial<CompileOptions> = {}
-): EmberPrecompileOptions {
+export function buildCompileOptions(_options: Partial<CompileOptions>): EmberPrecompileOptions {
   let options: EmberPrecompileOptions = assign(
     { meta: {}, isProduction: false, plugins: { ast: [] } },
     _options,
@@ -25,10 +23,23 @@ export default function compileOptions(
     meta.moduleName = options.moduleName;
   }
 
+  return options;
+}
+
+export function transformsFor(/* options: EmberPrecompileOptions */): readonly PluginFunc[] {
+  return PLUGINS;
+}
+
+export default function compileOptions(
+  _options: Partial<CompileOptions> = {}
+): EmberPrecompileOptions {
+  let options = buildCompileOptions(_options);
+  let builtInPlugins = transformsFor();
+
   if (!_options.plugins) {
-    options.plugins = { ast: [...USER_PLUGINS, ...PLUGINS] };
+    options.plugins = { ast: [...USER_PLUGINS, ...builtInPlugins] };
   } else {
-    let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
+    let potententialPugins = [...USER_PLUGINS, ...builtInPlugins];
     let providedPlugins = options.plugins.ast.map((plugin) => wrapLegacyPluginIfNeeded(plugin));
     let pluginsToAdd = potententialPugins.filter((plugin) => {
       return options.plugins.ast.indexOf(plugin) === -1;
