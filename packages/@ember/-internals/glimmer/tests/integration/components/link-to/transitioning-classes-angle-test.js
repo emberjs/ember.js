@@ -17,8 +17,8 @@ function assertHasNoClass(assert, selector, label) {
 moduleFor(
   '<LinkTo /> component: .transitioning-in .transitioning-out CSS classes',
   class extends ApplicationTestCase {
-    constructor() {
-      super();
+    constructor(...args) {
+      super(...args);
 
       this.aboutDefer = RSVP.defer();
       this.otherDefer = RSVP.defer();
@@ -33,29 +33,29 @@ moduleFor(
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.aboutDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:other',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.otherDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:news',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.newsDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -154,8 +154,9 @@ moduleFor(
 moduleFor(
   `<LinkTo /> component: .transitioning-in .transitioning-out CSS classes - nested link-to's`,
   class extends ApplicationTestCase {
-    constructor() {
-      super();
+    constructor(...args) {
+      super(...args);
+
       this.aboutDefer = RSVP.defer();
       this.otherDefer = RSVP.defer();
       let _this = this;
@@ -168,20 +169,20 @@ moduleFor(
       });
       this.add(
         'route:parent-route.about',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.aboutDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:parent-route.other',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.otherDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
