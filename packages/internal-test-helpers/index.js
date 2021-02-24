@@ -7,7 +7,6 @@ export { default as moduleFor, setupTestClass } from './lib/module-for';
 export { default as strip } from './lib/strip';
 export { default as applyMixins } from './lib/apply-mixins';
 export { default as getTextOf } from './lib/get-text-of';
-export { default as maybeExpectDeprecation } from './lib/maybe-expect-deprecation';
 export {
   defineComponent,
   defineSimpleHelper,
