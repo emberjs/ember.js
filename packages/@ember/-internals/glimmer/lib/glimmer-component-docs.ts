@@ -158,7 +158,7 @@
   to `{{yield}}`. Whenever you invoke a component without passing explicitly
   named blocks, the passed block is considered the `default` block.
 
-  ### Passing parameters to named bxlocks
+  ### Passing parameters to named blocks
 
   You can also pass parameters to named blocks:
 
