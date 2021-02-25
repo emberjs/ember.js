@@ -966,13 +966,13 @@ moduleFor(
       await this.setAndFlush(appController, 'alex', 'sriracha');
     }
 
-    ['@test can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent'](
+    async ['@test can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent'](
       assert
     ) {
       this.addTemplate('parent', '{{outlet}}');
       this.addTemplate(
         'parent.child',
-        "{{#link-to route='parent' query=(hash foo='change') id='parent-link'}}Parent{{/link-to}}"
+        "<LinkTo @route='parent' @query={{hash foo='change'}} id='parent-link'>Parent</LinkTo>"
       );
 
       this.router.map(function () {
@@ -984,26 +984,26 @@ moduleFor(
       let parentModelCount = 0;
       this.add(
         'route:parent',
-        Route.extend({
+        class extends Route {
           model() {
             parentModelCount++;
-          },
-          queryParams: {
+          }
+          queryParams = {
             foo: {
               refreshModel: true,
             },
-          },
-        })
+          };
+        }
       );
 
       this.setSingleQPController('parent', 'foo', 'abc');
 
-      return this.visit('/parent/child?foo=lol').then(() => {
-        assert.equal(parentModelCount, 1);
+      await this.visit('/parent/child?foo=lol');
 
-        run(document.getElementById('parent-link'), 'click');
-        assert.equal(parentModelCount, 2);
-      });
+      assert.equal(parentModelCount, 1);
+
+      run(document.getElementById('parent-link'), 'click');
+      assert.equal(parentModelCount, 2);
     }
 
     async ["@test Use Ember.get to retrieve query params 'replace' configuration"](assert) {
@@ -1105,9 +1105,7 @@ moduleFor(
       });
     }
 
-    ['@test Subresource naming style is supported'](assert) {
-      assert.expect(5);
-
+    async ['@test Subresource naming style is supported'](assert) {
       this.router.map(function () {
         this.route('abc.def', { path: '/abcdef' }, function () {
           this.route('zoo');
@@ -1116,22 +1114,26 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#link-to route='abc.def' query=(hash foo='123') id='one'}}A{{/link-to}}{{#link-to route='abc.def.zoo' query=(hash foo='123' bar='456') id='two'}}B{{/link-to}}{{outlet}}"
+        `
+        <LinkTo @route='abc.def' @query={{hash foo='123'}} id='one'>A</LinkTo>
+        <LinkTo @route='abc.def.zoo' @query={{hash foo='123' bar='456'}} id='two'>B</LinkTo>
+        {{outlet}}
+        `
       );
 
       this.setSingleQPController('abc.def', 'foo', 'lol');
       this.setSingleQPController('abc.def.zoo', 'bar', 'haha');
 
-      return this.visitAndAssert('/').then(() => {
-        assert.equal(this.$('#one').attr('href'), '/abcdef?foo=123');
-        assert.equal(this.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+      await this.visitAndAssert('/');
 
-        run(this.$('#one'), 'click');
-        this.assertCurrentPath('/abcdef?foo=123');
+      assert.equal(this.$('#one').attr('href'), '/abcdef?foo=123');
+      assert.equal(this.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-        run(this.$('#two'), 'click');
-        this.assertCurrentPath('/abcdef/zoo?bar=456&foo=123');
-      });
+      run(this.$('#one'), 'click');
+      this.assertCurrentPath('/abcdef?foo=123');
+
+      run(this.$('#two'), 'click');
+      this.assertCurrentPath('/abcdef/zoo?bar=456&foo=123');
     }
 
     async ['@test transitionTo supports query params']() {
@@ -1499,12 +1501,15 @@ moduleFor(
       return this.visitAndAssert('/');
     }
 
-    async ['@test opting into replace does not affect transitions between routes'](assert) {
-      assert.expect(5);
-
+    async ['@test opting into replace does not affect transitions between routes']() {
       this.addTemplate(
         'application',
-        "{{#link-to route='foo' id='foo-link'}}Foo{{/link-to}}{{#link-to route='bar' id='bar-no-qp-link'}}Bar{{/link-to}}{{#link-to route='bar' query=(hash raytiley='isthebest') id='bar-link'}}Bar{{/link-to}}{{outlet}}"
+        `
+        <LinkTo @route='foo' id='foo-link'>Foo</LinkTo>
+        <LinkTo @route='bar' id='bar-no-qp-link'>Bar</LinkTo>
+        <LinkTo @route='bar' @query={{hash raytiley='isthebest'}} id='bar-link'>Bar</LinkTo>
+        {{outlet}}
+        `
       );
 
       this.router.map(function () {
@@ -1516,13 +1521,13 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             raytiley: {
               replace: true,
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visit('/');
@@ -1544,44 +1549,47 @@ moduleFor(
       run(document.getElementById('bar-link'), 'click');
     }
 
-    ["@test undefined isn't serialized or deserialized into a string"](assert) {
-      assert.expect(4);
-
+    async ["@test undefined isn't serialized or deserialized into a string"](assert) {
       this.router.map(function () {
         this.route('example');
       });
 
       this.addTemplate(
         'application',
-        "{{#link-to route='example' query=(hash foo=undefined) id='the-link'}}Example{{/link-to}}"
+        "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
       );
 
       this.setSingleQPController('example', 'foo', undefined, {
         foo: undefined,
       });
 
+      let entered = 0;
+
       this.add(
         'route:example',
-        Route.extend({
+        class extends Route {
           model(params) {
+            entered++;
             assert.deepEqual(params, { foo: undefined });
-          },
-        })
+          }
+        }
       );
 
-      return this.visitAndAssert('/').then(() => {
-        assert.equal(
-          this.$('#the-link').attr('href'),
-          '/example',
-          'renders without undefined qp serialized'
-        );
+      await this.visitAndAssert('/');
 
-        return this.transitionTo('example', {
-          queryParams: { foo: undefined },
-        }).then(() => {
-          this.assertCurrentPath('/example');
-        });
+      assert.equal(
+        this.$('#the-link').attr('href'),
+        '/example',
+        'renders without undefined qp serialized'
+      );
+
+      await this.transitionTo('example', {
+        queryParams: { foo: undefined },
       });
+
+      assert.equal(entered, 1, 'Should have entered example route');
+
+      this.assertCurrentPath('/example');
     }
 
     ['@test when refreshModel is true and loading hook is undefined, model hook will rerun when QPs change even if previous did not finish']() {

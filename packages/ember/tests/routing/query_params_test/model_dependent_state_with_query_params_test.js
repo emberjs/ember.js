@@ -104,7 +104,11 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     this.addTemplate(
       'application',
-      `{{#each articles as |a|}} {{#link-to route='${articleLookup}' model=a.id id=a.id}}Article{{/link-to}} {{/each}}`
+      `
+      {{#each articles as |a|}}
+        <LinkTo @route='${articleLookup}' @model={{a.id}} id={{a.id}}>Article</LinkTo>
+      {{/each}}
+      `
     );
 
     await this.boot();
@@ -246,7 +250,10 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     this.addTemplate(
       'about',
-      `{{#link-to route='${commentsLookup}' model='a-1' id='one'}}A{{/link-to}} {{#link-to route='${commentsLookup}' model='a-2' id='two'}}B{{/link-to}}`
+      `
+      <LinkTo @route='${commentsLookup}' @model='a-1' id='one'>A</LinkTo>
+      <LinkTo @route='${commentsLookup}' @model='a-2' id='two'>B</LinkTo>
+      `
     );
 
     await this.visitApplication();
@@ -334,7 +341,12 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each this.articles as |a|}} 1{{#link-to route='article' model=a id=a.id}}Article{{/link-to}} {{/each}} {{outlet}}"
+        `
+        {{#each this.articles as |a|}}
+          <LinkTo @route='article' @model={{a}} id={{a.id}}>Article</LinkTo>
+        {{/each}}
+        {{outlet}}
+        `
       );
     }
 
@@ -440,7 +452,12 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each this.articles as |a|}} {{#link-to route='site.article' model=a id=a.id}}Article{{/link-to}} {{/each}} {{outlet}}"
+        `
+        {{#each this.articles as |a|}}
+          <LinkTo @route='site.article' @model={{a}} id={{a.id}}>Article</LinkTo>
+        {{/each}}
+        {{outlet}}
+        `
       );
     }
 
@@ -591,7 +608,14 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each this.allSitesAllArticles as |a|}} {{#link-to route='site.article' models=(array a.site_id a.article_id) id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}"
+        `
+        {{#each this.allSitesAllArticles as |a|}}
+          <LinkTo @route='site.article' @models={{array a.site_id a.article_id}} id={{a.id}}>
+            Article [{{a.site_id}}] [{{a.article_id}}]
+          </LinkTo>
+        {{/each}}
+        {{outlet}}
+        `
       );
     }
 
