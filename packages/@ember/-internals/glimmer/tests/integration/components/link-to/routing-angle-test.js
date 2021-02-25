@@ -100,11 +100,11 @@ moduleFor(
       assert.strictEqual(this.$('#about-link').attr('href'), null, 'there is no href attribute');
     }
 
-    async [`@test it applies a 'disabled' class when disabled`](assert) {
+    async [`@test it applies a 'disabled' class when disabledWhen`](assert) {
       this.addTemplate(
         'index',
         `
-        <LinkTo id="about-link-static" @route="about" @disabledWhen="shouldDisable">About</LinkTo>
+        <LinkTo id="about-link-static" @route="about" @disabledWhen="truthy">About</LinkTo>
         <LinkTo id="about-link-dynamic" @route="about" @disabledWhen={{this.dynamicDisabledWhen}}>About</LinkTo>
         `
       );
@@ -119,8 +119,7 @@ moduleFor(
             controller = this;
           }
 
-          shouldDisable = true;
-          dynamicDisabledWhen = 'shouldDisable';
+          dynamicDisabledWhen = true;
         }
       );
 
@@ -140,47 +139,164 @@ moduleFor(
       runTask(() => controller.set('dynamicDisabledWhen', false));
 
       assert.equal(
+        this.$('#about-link-static.disabled').length,
+        1,
+        'The static link is disabled when its disabledWhen is true'
+      );
+      assert.strictEqual(
         this.$('#about-link-dynamic.disabled').length,
         0,
         'The dynamic link is re-enabled when its disabledWhen becomes false'
       );
     }
 
-    async [`@test it doesn't apply a 'disabled' class if disabledWhen is not provided`](assert) {
+    async [`@test it applies a 'disabled' class when disabled`](assert) {
+      this.addTemplate(
+        'index',
+        `
+        <LinkTo id="about-link-static" @route="about" @disabled="truthy">About</LinkTo>
+        <LinkTo id="about-link-dynamic" @route="about" @disabled={{this.dynamicDisabled}}>About</LinkTo>
+        `
+      );
+
+      let controller;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          dynamicDisabled = true;
+        }
+      );
+
+      await this.visit('/');
+
+      assert.equal(
+        this.$('#about-link-static.disabled').length,
+        1,
+        'The static link is disabled when its disabled is true'
+      );
+      assert.equal(
+        this.$('#about-link-dynamic.disabled').length,
+        1,
+        'The dynamic link is disabled when its disabled is true'
+      );
+
+      runTask(() => controller.set('dynamicDisabled', false));
+
+      assert.equal(
+        this.$('#about-link-static.disabled').length,
+        1,
+        'The static link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The dynamic link is re-enabled when its disabled becomes false'
+      );
+    }
+
+    async [`@test it doesn't apply a 'disabled' class when not disabled`](assert) {
       this.addTemplate('index', `<LinkTo id="about-link" @route="about">About</LinkTo>`);
 
       await this.visit('/');
 
       assert.ok(
         !this.$('#about-link').hasClass('disabled'),
-        'The link is not disabled if disabledWhen not provided'
+        'The link is not disabled if disabled was not provided'
       );
     }
 
     async [`@test it supports a custom disabledClass`](assert) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass="do-not-want">About</LinkTo>`
+        `
+        <LinkTo id="about-link-static" @route="about" @disabledClass="do-not-want" @disabled={{true}}>About</LinkTo>
+        <LinkTo id="about-link-dynamic" @route="about" @disabledClass="do-not-want" @disabled={{this.dynamicDisabled}}>About</LinkTo>
+        `
+      );
+
+      let controller;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          dynamicDisabled = true;
+        }
       );
 
       await this.visit('/');
 
       assert.equal(
-        this.$('#about-link.do-not-want').length,
+        this.$('#about-link-static.do-not-want').length,
         1,
-        'The link can apply a custom disabled class'
+        'The static link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.do-not-want').length,
+        1,
+        'The dynamic link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-static.disabled').length,
+        0,
+        'The default disabled class is not added on the static link'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The default disabled class is not added on the dynamic link'
+      );
+
+      runTask(() => controller.set('dynamicDisabled', false));
+
+      assert.equal(
+        this.$('#about-link-static.do-not-want').length,
+        1,
+        'The static link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The dynamic link is re-enabled when its disabled becomes false'
+      );
+      assert.strictEqual(
+        this.$('#about-link-static.disabled').length,
+        0,
+        'The default disabled class is not added on the static link'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The default disabled class is not added on the dynamic link'
       );
     }
 
     async [`@test it supports a custom disabledClass set via bound param`](assert) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass={{this.disabledClass}}>About</LinkTo>`
+        `<LinkTo id="about-link" @route="about" @disabledClass={{this.disabledClass}} @disabled={{true}}>About</LinkTo>`
       );
+
+      let controller;
 
       this.add(
         'controller:index',
         class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
           disabledClass = 'do-not-want';
         }
       );
@@ -191,6 +307,25 @@ moduleFor(
         this.$('#about-link.do-not-want').length,
         1,
         'The link can apply a custom disabled class via bound param'
+      );
+      assert.strictEqual(
+        this.$('#about-link.disabled').length,
+        0,
+        'The default disabled class is not added'
+      );
+
+      runTask(() => controller.set('disabledClass', 'can-not-use'));
+
+      assert.equal(
+        this.$('#about-link.can-not-use').length,
+        1,
+        'The link can apply a custom disabled class via bound param'
+      );
+      assert.strictEqual(this.$('#about-link.do-not-want').length, 0, 'The old class is removed');
+      assert.strictEqual(
+        this.$('#about-link.disabled').length,
+        0,
+        'The default disabled class is not added'
       );
     }
 
@@ -220,10 +355,10 @@ moduleFor(
       assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
     }
 
-    async [`@test it responds to clicks according to its disabledWhen bound param`](assert) {
+    async [`@test it responds to clicks according to its disabled bound param`](assert) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{this.disabledWhen}}>About</LinkTo>`
+        `<LinkTo id="about-link" @route="about" @disabled={{this.dynamicDisabled}}>About</LinkTo>`
       );
 
       let controller;
@@ -236,7 +371,7 @@ moduleFor(
             controller = this;
           }
 
-          disabledWhen = true;
+          dynamicDisabled = true;
         }
       );
 
@@ -246,7 +381,7 @@ moduleFor(
 
       assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
 
-      runTask(() => controller.set('disabledWhen', false));
+      runTask(() => controller.set('dynamicDisabled', false));
 
       await this.click('#about-link');
 
@@ -280,6 +415,16 @@ moduleFor(
         1,
         'The other link was rendered without active class'
       );
+      assert.strictEqual(
+        this.$('#self-link.active').length,
+        0,
+        'The self-link was rendered without the default active class'
+      );
+      assert.strictEqual(
+        this.$('#about-link.active').length,
+        0,
+        'The other link was rendered without the default active class'
+      );
     }
 
     async [`@test it supports a custom activeClass from a bound param`](assert) {
@@ -292,9 +437,16 @@ moduleFor(
         `
       );
 
+      let controller;
+
       this.add(
         'controller:index',
         class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
           activeClass = 'zomg-active';
         }
       );
@@ -311,6 +463,44 @@ moduleFor(
         this.$('#about-link:not(.zomg-active)').length,
         1,
         'The other link was rendered without active class'
+      );
+      assert.strictEqual(
+        this.$('#self-link.active').length,
+        0,
+        'The self-link was rendered without the default active class'
+      );
+      assert.strictEqual(
+        this.$('#about-link.active').length,
+        0,
+        'The other link was rendered without the default active class'
+      );
+
+      runTask(() => controller.set('activeClass', 'wow-active'));
+
+      assert.equal(
+        this.$('#self-link.wow-active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#about-link:not(.wow-active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
+      assert.strictEqual(
+        this.$('#self-link.zomg-active').length,
+        0,
+        'The self-link was rendered without the previous active class'
+      );
+      assert.strictEqual(
+        this.$('#self-link.active').length,
+        0,
+        'The self-link was rendered without the default active class'
+      );
+      assert.strictEqual(
+        this.$('#about-link.active').length,
+        0,
+        'The other link was rendered without the default active class'
       );
     }
 
@@ -586,8 +776,13 @@ moduleFor(
 
       await this.click('#about-link');
 
-      assert.equal(this.updateCount, this.updateCountAfterVisit, 'setURL should not be called');
-      assert.equal(
+      assert.strictEqual(
+        this.updateCount,
+        this.updateCountAfterVisit,
+        'setURL should not be called'
+      );
+
+      assert.strictEqual(
         this.replaceCount,
         this.replaceCountAfterVisit + 1,
         'replaceURL should be called once'
@@ -614,8 +809,13 @@ moduleFor(
 
       await this.click('#about-link');
 
-      assert.equal(this.updateCount, this.updateCountAfterVisit, 'setURL should not be called');
-      assert.equal(
+      assert.strictEqual(
+        this.updateCount,
+        this.updateCountAfterVisit,
+        'setURL should not be called'
+      );
+
+      assert.strictEqual(
         this.replaceCount,
         this.replaceCountAfterVisit + 1,
         'replaceURL should be called once'
@@ -642,8 +842,13 @@ moduleFor(
 
       await this.click('#about-link');
 
-      assert.equal(this.updateCount, this.updateCountAfterVisit + 1, 'setURL should be called');
-      assert.equal(
+      assert.strictEqual(
+        this.updateCount,
+        this.updateCountAfterVisit + 1,
+        'setURL should be called'
+      );
+
+      assert.strictEqual(
         this.replaceCount,
         this.replaceCountAfterVisit,
         'replaceURL should not be called'
@@ -1192,9 +1397,16 @@ moduleFor(
         `
       );
 
+      let controller = this;
+
       this.add(
         'controller:index',
         class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
           boundLinkTarget = '_blank';
         }
       );
@@ -1203,6 +1415,10 @@ moduleFor(
 
       let link = this.$('#self-link');
       assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+
+      runTask(() => controller.set('boundLinkTarget', '_self'));
+
+      assert.equal(link.attr('target'), '_self', 'The self-link contains `target` attribute');
     }
 
     async [`@test it calls preventDefault`](assert) {
@@ -1234,7 +1450,7 @@ moduleFor(
       assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'), assert);
     }
 
-    async [`@test it does not call preventDefault if '@preventDefault={{this.boundFalseyThing}}' is passed as an option`](
+    async [`@test it does not call preventDefault if '@preventDefault={{this.boundThing}}' is passed as an option`](
       assert
     ) {
       this.router.map(function () {
@@ -1243,19 +1459,32 @@ moduleFor(
 
       this.addTemplate(
         'index',
-        `<LinkTo id='about-link' @route='about' @preventDefault={{this.boundFalseyThing}}>About</LinkTo>`
+        `<LinkTo id='about-link' @route='about' @preventDefault={{this.boundThing}}>About</LinkTo>`
       );
+
+      let controller;
 
       this.add(
         'controller:index',
         class extends Controller {
-          boundFalseyThing = false;
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          boundThing = false;
         }
       );
 
       await this.visit('/');
 
       assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'), assert);
+
+      runTask(() => controller.set('boundThing', true));
+
+      await this.visit('/');
+
+      assertNav({ prevented: true }, () => this.$('#about-link').trigger('click'), assert);
     }
 
     async [`@test it does not call preventDefault if 'target' attribute is provided`](assert) {
