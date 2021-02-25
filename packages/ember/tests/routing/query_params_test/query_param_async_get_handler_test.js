@@ -296,7 +296,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#link-to route='example' query=(hash foo=undefined) id='the-link'}}Example{{/link-to}}"
+        "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
       );
 
       this.setSingleQPController('example', 'foo', undefined, {
