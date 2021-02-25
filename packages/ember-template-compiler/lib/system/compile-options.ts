@@ -1,5 +1,5 @@
 import { EMBER_STRICT_MODE } from '@ember/canary-features';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
@@ -68,6 +68,19 @@ type LegacyPluginClass = new (env: ASTPluginEnvironment) => LegacyPlugin;
 function wrapLegacyPluginIfNeeded(_plugin: PluginFunc | LegacyPluginClass): PluginFunc {
   let plugin = _plugin;
   if (_plugin.prototype && _plugin.prototype.transform) {
+    deprecate(
+      'Using class based template compilation plugins is deprecated, please update to the functional style',
+      false,
+      {
+        id: 'template-compiler.registerPlugin',
+        until: '4.0.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.27.0',
+        },
+      }
+    );
+
     const pluginFunc: PluginFunc = (env: ASTPluginEnvironment): ASTPlugin => {
       let pluginInstantiated = false;
 
@@ -97,6 +110,19 @@ function wrapLegacyPluginIfNeeded(_plugin: PluginFunc | LegacyPluginClass): Plug
 }
 
 export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginClass): void {
+  deprecate(
+    'registerPlugin is deprecated, please pass plugins directly via `compile` and/or `precompile`.',
+    false,
+    {
+      id: 'template-compiler.registerPlugin',
+      until: '4.0.0',
+      for: 'ember-source',
+      since: {
+        enabled: '3.27.0',
+      },
+    }
+  );
+
   if (type !== 'ast') {
     throw new Error(
       `Attempting to register ${_plugin} as "${type}" which is not a valid Glimmer plugin type.`
@@ -116,6 +142,19 @@ export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginC
 }
 
 export function unregisterPlugin(type: string, PluginClass: PluginFunc | LegacyPluginClass): void {
+  deprecate(
+    'unregisterPlugin is deprecated, please pass plugins directly via `compile` and/or `precompile`.',
+    false,
+    {
+      id: 'template-compiler.registerPlugin',
+      until: '4.0.0',
+      for: 'ember-source',
+      since: {
+        enabled: '3.27.0',
+      },
+    }
+  );
+
   if (type !== 'ast') {
     throw new Error(
       `Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`
