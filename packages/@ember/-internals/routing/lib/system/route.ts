@@ -1507,6 +1507,17 @@ class Route extends EmberObject implements IRoute {
     @public
   */
   renderTemplate(_controller: any, _model: {}) {
+    if (this.renderTemplate !== Route.prototype.renderTemplate) {
+      deprecate('Usage of `renderTemplate` is deprecated.', false, {
+        id: 'route-render-template',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x/#toc_route-render-template',
+        for: 'ember-source',
+        since: {
+          enabled: '3.27.0',
+        },
+      });
+    }
     // eslint-disable-line no-unused-vars
     this.render();
   }
