@@ -1444,12 +1444,13 @@ moduleFor(
       this.assertCurrentPath('/home', 'Setting property to undefined');
     }
 
-    ['@test {{link-to}} with null or undefined QPs does not get serialized into url'](assert) {
-      assert.expect(3);
-
+    async ['@test <LinkTo> with null or undefined QPs does not get serialized into url'](assert) {
       this.addTemplate(
         'home',
-        "{{#link-to route='home' query=(hash foo=this.nullValue) id='null-link'}}Home{{/link-to}}{{#link-to route='home' query=(hash foo=this.undefinedValue) id='undefined-link'}}Home{{/link-to}}"
+        `
+        <LinkTo @route='home' @query={{hash foo=this.nullValue}} id='null-link'>Home</LinkTo>
+        <LinkTo @route='home' @query={{hash foo=this.undefinedValue}} id='undefined-link'>Home</LinkTo>
+        `
       );
 
       this.router.map(function () {
@@ -1461,10 +1462,10 @@ moduleFor(
         undefinedValue: undefined,
       });
 
-      return this.visitAndAssert('/home').then(() => {
-        assert.equal(this.$('#null-link').attr('href'), '/home');
-        assert.equal(this.$('#undefined-link').attr('href'), '/home');
-      });
+      await this.visitAndAssert('/home');
+
+      assert.equal(this.$('#null-link').attr('href'), '/home');
+      assert.equal(this.$('#undefined-link').attr('href'), '/home');
     }
 
     ["@test A child of a resource route still defaults to parent route's model even if the child route has a query param"](

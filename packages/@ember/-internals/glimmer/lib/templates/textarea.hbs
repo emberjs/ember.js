@@ -1,5 +1,5 @@
 {{~#if this.modernized ~}}
-  <input
+  <textarea
     {{!-- for compatibility --}}
     id={{this.id}}
     class={{this.class}}
@@ -20,33 +20,18 @@
     spellcheck={{this.spellcheck}}
     tabindex={{this.tabindex}}
     title={{this.title}}
-    accept={{this.accept}}
-    autocomplete={{this.autocomplete}}
-    autosave={{this.autosave}}
-    dir={{this.dir}}
-    formaction={{this.formaction}}
-    formenctype={{this.formenctype}}
-    formmethod={{this.formmethod}}
-    formnovalidate={{this.formnovalidate}}
-    formtarget={{this.formtarget}}
-    height={{this.height}}
-    inputmode={{this.inputmode}}
-    lang={{this.lang}}
-    list={{this.list}}
-    max={{this.max}}
-    min={{this.min}}
-    multiple={{this.multiple}}
+    rows={{this.rows}}
+    cols={{this.cols}}
     name={{this.name}}
-    pattern={{this.pattern}}
-    size={{this.size}}
-    step={{this.step}}
-    width={{this.width}}
-    indeterminate={{this.indeterminate}}
+    selectionEnd={{this.selectionEnd}}
+    selectionStart={{this.selectionStart}}
+    autocomplete={{this.autocomplete}}
+    wrap={{this.wrap}}
+    lang={{this.lang}}
+    dir={{this.dir}}
 
     ...attributes
 
-    type={{this.type}}
-    checked={{this.checked}}
     value={{this.value}}
 
     {{on "change" this.change}}
@@ -58,11 +43,7 @@
     {{this.handleDeprecatedEvents this}}
   />
 {{~else~}}
-  {{~#let (component '-checkbox') (component '-text-field') as |Checkbox TextField|~}}
-    {{~#if this.isCheckbox~}}
-      <Checkbox @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
-    {{~else~}}
-      <TextField @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
-    {{~/if~}}
+  {{~#let (component '-textarea')  as |Textarea|~}}
+    <Textarea @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
   {{~/let~}}
 {{/if}}

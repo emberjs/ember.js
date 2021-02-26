@@ -1,11 +1,14 @@
 import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import Component from './component';
+import LegacyLinkTo from './components/-link-to';
+import LegacyTextArea from './components/-textarea';
 import Checkbox from './components/checkbox';
-import InputComponent from './components/input';
-import LinkToComponent from './components/link-to';
+import Input from './components/input';
+import LinkTo from './components/link-to';
 import TextField from './components/text-field';
-import TextArea from './components/textarea';
+import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import loc from './helpers/loc';
 import { Renderer } from './renderer';
@@ -56,11 +59,17 @@ export function setupEngineRegistry(registry: Registry): void {
 
   registry.register('component:-text-field', TextField);
   registry.register('component:-checkbox', Checkbox);
-  registry.register('component:link-to', LinkToComponent);
+  registry.register('component:input', Input);
 
-  registry.register('component:input', InputComponent);
-
-  registry.register('component:textarea', TextArea);
+  if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+    registry.register('component:link-to', LinkTo);
+    registry.register('component:-link-to', LegacyLinkTo);
+    registry.register('component:-textarea', LegacyTextArea);
+    registry.register('component:textarea', Textarea);
+  } else {
+    registry.register('component:link-to', LegacyLinkTo);
+    registry.register('component:textarea', LegacyTextArea);
+  }
 
   if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
     registry.register(P`component:-default`, Component);

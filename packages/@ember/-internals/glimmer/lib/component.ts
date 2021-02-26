@@ -1,6 +1,6 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { TargetActionSupport } from '@ember/-internals/runtime';
+import { CoreObject, TargetActionSupport } from '@ember/-internals/runtime';
 import {
   ActionSupport,
   ChildViewsSupport,
@@ -10,6 +10,7 @@ import {
   ViewMixin,
   ViewStateSupport,
 } from '@ember/-internals/views';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { setInternalComponentManager } from '@glimmer/manager';
@@ -1064,5 +1065,66 @@ Component.reopenClass({
 });
 
 setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
+
+if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  Object.defineProperty(Component, '_wasReopened', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: false,
+  });
+
+  Object.defineProperty(Component, 'reopen', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function reopen(this: typeof Component, ...args: unknown[]): unknown {
+      if (this === Component) {
+        deprecate(
+          'Reopening the Ember.Component super class itself is deprecated. ' +
+            'Consider alternatives such as installing event listeners on ' +
+            'the document or add the customizations to specific subclasses.',
+          false,
+          {
+            id: 'ember.component.reopen',
+            for: 'ember-source',
+            since: {},
+            until: '4.0.0',
+          }
+        );
+
+        Component._wasReopened = true;
+      }
+
+      return CoreObject.reopen.call(this, ...args);
+    },
+  });
+
+  Object.defineProperty(Component, 'reopenClass', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: function reopenClass(this: typeof Component, ...args: unknown[]): unknown {
+      if (this === Component) {
+        deprecate(
+          'Reopening the Ember.Component super class itself is deprecated. ' +
+            'Consider alternatives such as installing event listeners on ' +
+            'the document or add the customizations to specific subclasses.',
+          false,
+          {
+            id: 'ember.component.reopen',
+            for: 'ember-source',
+            since: {},
+            until: '4.0.0',
+          }
+        );
+
+        Component._wasReopened = true;
+      }
+
+      return CoreObject.reopenClass.call(this, ...args);
+    },
+  });
+}
 
 export default Component;

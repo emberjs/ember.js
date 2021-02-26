@@ -8,6 +8,7 @@ import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
+  CapturedArguments,
   CompilableProgram,
   Destroyable,
   ElementOperations,
@@ -178,14 +179,19 @@ export default class CurlyComponentManager
 
   prepareArgs(ComponentClass: ComponentFactory, args: VMArguments): Option<PreparedArguments> {
     if (args.named.has('__ARGS__')) {
+      assert(
+        '[BUG] cannot pass both __ARGS__ and positional arguments',
+        args.positional.length === 0
+      );
+
       let { __ARGS__, ...rest } = args.named.capture();
 
+      // does this need to be untracked?
+      let __args__ = valueForRef(__ARGS__) as CapturedArguments;
+
       let prepared = {
-        positional: EMPTY_POSITIONAL_ARGS,
-        named: {
-          ...rest,
-          ...(valueForRef(__ARGS__) as { [key: string]: Reference }),
-        },
+        positional: __args__.positional,
+        named: { ...rest, ...__args__.named },
       };
 
       return prepared;

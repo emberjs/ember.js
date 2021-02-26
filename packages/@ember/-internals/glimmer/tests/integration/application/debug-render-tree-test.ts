@@ -1271,7 +1271,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         let target = this.controllerFor('application');
 
-        let inputToString = /<@ember\/component\/input:ember[0-9]+>/;
+        let inputToString = /<Input:ember[0-9]+>/;
 
         this.assertRenderTree([
           {
@@ -1385,81 +1385,78 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         await this.visit('/');
 
-        this.assertRenderTree([
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'first' } },
-            instance: (instance: object) => instance['value'] === 'first',
-            bounds: this.nodeBounds(this.element.firstChild),
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            children: [],
-          },
-        ]);
+        let textareaNode = (value: string, node: Node): ExpectedRenderNode => {
+          if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+            return {
+              type: 'component',
+              name: 'textarea',
+              args: { positional: [], named: { value } },
+              instance: (instance: object) => instance['value'] === value,
+              bounds: this.nodeBounds(node),
+              template: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
+              children: [],
+            };
+          } else {
+            return {
+              type: 'component',
+              name: 'textarea',
+              args: { positional: [], named: { value } },
+              instance: (instance: object) => instance['value'] === value,
+              bounds: this.nodeBounds(node),
+              template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
+              children: [],
+            };
+          }
+        };
+
+        this.assertRenderTree([textareaNode('first', this.element.firstChild)]);
 
         runTask(() => {
           this.controllerFor('application').set('showSecond', true);
         });
 
         this.assertRenderTree([
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'first' } },
-            instance: (instance: object) => instance['value'] === 'first',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            bounds: this.nodeBounds(this.element.firstChild),
-            children: [],
-          },
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'second' } },
-            instance: (instance: object) => instance['value'] === 'second',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            bounds: this.nodeBounds(this.element.lastChild),
-            children: [],
-          },
+          textareaNode('first', this.element.firstChild),
+          textareaNode('second', this.element.lastChild),
         ]);
 
         runTask(() => {
           this.controllerFor('application').set('showSecond', false);
         });
 
-        this.assertRenderTree([
-          {
-            type: 'component',
-            name: 'textarea',
-            args: { positional: [], named: { value: 'first' } },
-            instance: (instance: object) => instance['value'] === 'first',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-            bounds: this.nodeBounds(this.element.firstChild),
-            children: [],
-          },
-        ]);
+        this.assertRenderTree([textareaNode('first', this.element.firstChild)]);
       }
 
       async '@test <LinkTo> components'() {
+        this.router.map(function (this: any) {
+          this.route('foo');
+          this.route('bar');
+        });
+
         this.addTemplate(
           'application',
           strip`
-            <LinkTo @id="first" @route="index">Hello World</LinkTo>
+            <LinkTo @route="foo">Foo</LinkTo>
 
             {{#if this.showSecond}}
-              <LinkTo @id="second" @route="index">Hello World</LinkTo>
+              <LinkTo @route="bar">Bar</LinkTo>
             {{/if}}
           `
         );
 
         await this.visit('/');
 
+        let template = `packages/@ember/-internals/glimmer/lib/templates/${
+          EMBER_MODERNIZED_BUILT_IN_COMPONENTS ? 'link-to' : '-link-to'
+        }.hbs`;
+
         this.assertRenderTree([
           {
             type: 'component',
             name: 'link-to',
-            args: { positional: [], named: { id: 'first', route: 'index' } },
-            instance: (instance: object) => instance['id'] === 'first',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/link-to.hbs',
+            args: { positional: [], named: { route: 'foo' } },
+            instance: (instance: object) => instance['route'] === 'foo',
+            template,
             bounds: this.nodeBounds(this.element.firstChild),
             children: [],
           },
@@ -1473,18 +1470,18 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'link-to',
-            args: { positional: [], named: { id: 'first', route: 'index' } },
-            instance: (instance: object) => instance['id'] === 'first',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/link-to.hbs',
+            args: { positional: [], named: { route: 'foo' } },
+            instance: (instance: object) => instance['route'] === 'foo',
+            template,
             bounds: this.nodeBounds(this.element.firstChild),
             children: [],
           },
           {
             type: 'component',
             name: 'link-to',
-            args: { positional: [], named: { id: 'second', route: 'index' } },
-            instance: (instance: object) => instance['id'] === 'second',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/link-to.hbs',
+            args: { positional: [], named: { route: 'bar' } },
+            instance: (instance: object) => instance['route'] === 'bar',
+            template,
             bounds: this.nodeBounds(this.element.lastChild),
             children: [],
           },
@@ -1498,9 +1495,9 @@ if (ENV._DEBUG_RENDER_TREE) {
           {
             type: 'component',
             name: 'link-to',
-            args: { positional: [], named: { id: 'first', route: 'index' } },
-            instance: (instance: object) => instance['id'] === 'first',
-            template: 'packages/@ember/-internals/glimmer/lib/templates/link-to.hbs',
+            args: { positional: [], named: { route: 'foo' } },
+            instance: (instance: object) => instance['route'] === 'foo',
+            template,
             bounds: this.nodeBounds(this.element.firstChild),
             children: [],
           },
