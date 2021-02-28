@@ -149,7 +149,7 @@
   ```handlebars
   <PersonProfile @person={{this.currentUser}}>
     <:title>{{this.currentUser.name}}</:title>
-    <:default>{{this.currentUser.siganture}}</:default>
+    <:default>{{this.currentUser.signature}}</:default>
   </PersonProfile>
   ```
 
@@ -172,7 +172,7 @@
   ```handlebars
   <PersonProfile @person={{this.currentUser}}>
     <:title as |name|>{{name}}</:title>
-    <:default as |signature|>{{siganture}}</:default>
+    <:default as |signature|>{{signature}}</:default>
   </PersonProfile>
   ```
 
@@ -204,7 +204,7 @@
   {{! passing both blocks }}
   <PersonProfile @person={{this.currentUser}}>
     <:title as |name|>{{name}}</:title>
-    <:default as |signature|>{{siganture}}</:default>
+    <:default as |signature|>{{signature}}</:default>
   </PersonProfile>
 
   {{! passing just the title block }}
