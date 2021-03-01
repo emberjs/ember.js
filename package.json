@@ -137,7 +137,7 @@
     "mocha": "^7.1.2",
     "prettier": "^2.1.2",
     "puppeteer": "^3.0.4",
-    "qunit": "^2.10.0",
+    "qunit": "^2.14.0",
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.2.4",
     "route-recognizer": "^0.3.4",
