@@ -305,7 +305,7 @@ moduleFor(
     }
 
     ['@test Generated names can be customized when providing routes with dot notation'](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       this.addTemplate('index', '<div>Index</div>');
       this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
@@ -325,6 +325,7 @@ moduleFor(
         'route:foo',
         Route.extend({
           renderTemplate() {
+            expectDeprecation('Usage of `renderTemplate` is deprecated.');
             assert.ok(true, 'FooBarRoute was called');
             return this._super(...arguments);
           },
