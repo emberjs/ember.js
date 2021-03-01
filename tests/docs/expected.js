@@ -49,6 +49,7 @@ module.exports = {
     '_qpChanged',
     '_qpDelegate',
     '_queryParamsFor',
+    '_render',
     '_renderMode',
     '_resolveCache',
     '_serializeQueryParam',
