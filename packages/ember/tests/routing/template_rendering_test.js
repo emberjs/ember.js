@@ -71,6 +71,7 @@ moduleFor(
     }
 
     [`@test The Homepage with explicit template name in renderTemplate`](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.add(
         'route:home',
         Route.extend({
@@ -87,6 +88,7 @@ moduleFor(
     }
 
     async [`@test an alternate template will pull in an alternate controller`](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.add(
         'route:home',
         Route.extend({
@@ -113,6 +115,7 @@ moduleFor(
     async [`@test An alternate template will pull in an alternate controller instead of controllerName`](
       assert
     ) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.add(
         'route:home',
         Route.extend({
@@ -147,6 +150,7 @@ moduleFor(
     }
 
     async [`@test The template will pull in an alternate controller via key/value`](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('homepage', { path: '/' });
       });
@@ -181,6 +185,7 @@ moduleFor(
     async [`@test The Homepage with explicit template name in renderTemplate and controller`](
       assert
     ) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.add(
         'controller:home',
         Controller.extend({
@@ -205,6 +210,7 @@ moduleFor(
     }
 
     async [`@test Model passed via renderTemplate model is set as controller's model`](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate(
         'bio',
         '<p>Model: {{@model.name}}</p><p>Controller: {{this.model.name}}</p>'
@@ -284,6 +290,7 @@ moduleFor(
     }
 
     ['@test templateName is still used when calling render with no name and options'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('alert', `<div class='alert-box'>Invader!</div>`);
       this.addTemplate('home', `<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}`);
 
@@ -305,7 +312,8 @@ moduleFor(
     }
 
     ['@test Generated names can be customized when providing routes with dot notation'](assert) {
-      assert.expect(4);
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
+      assert.expect(5);
 
       this.addTemplate('index', '<div>Index</div>');
       this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
@@ -393,6 +401,7 @@ moduleFor(
     }
 
     ['@test Child routes render into specified template'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('index', '<div>Index</div>');
       this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
       this.addTemplate('top', "<div class='middle'>{{outlet}}</div>");
@@ -433,6 +442,7 @@ moduleFor(
     }
 
     ['@test Rendering into specified template with slash notation'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('person.profile', 'profile {{outlet}}');
       this.addTemplate('person.details', 'details!');
 
@@ -461,6 +471,7 @@ moduleFor(
     }
 
     ['@test Only use route rendered into main outlet for default into property on child'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('application', "{{outlet 'menu'}}{{outlet}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('posts.index', '<p class="posts-index">postsIndex</p>');
@@ -600,6 +611,7 @@ moduleFor(
     ['@test The template is not re-rendered when two routes present the exact same template & controller'](
       assert
     ) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('first');
         this.route('second');
@@ -678,6 +690,7 @@ moduleFor(
     }
 
     ['@test Route should tear down multiple outlets'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('application', "{{outlet 'menu'}}{{outlet}}{{outlet 'footer'}}");
       this.addTemplate('posts', '{{outlet}}');
       this.addTemplate('users', 'users');
@@ -999,7 +1012,8 @@ moduleFor(
     }
 
     ['@test Specifying non-existent controller name in route#render throws'](assert) {
-      assert.expect(1);
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
+      assert.expect(2);
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -1049,6 +1063,7 @@ moduleFor(
     }
 
     ['@test Can render into a named outlet at the top level'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
       this.addTemplate('index', 'The index');
@@ -1079,6 +1094,7 @@ moduleFor(
     }
 
     ['@test Can disconnect a named outlet at the top level'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
       this.addTemplate('index', 'The index');
@@ -1125,6 +1141,7 @@ moduleFor(
     }
 
     ['@test Can render into a named outlet at the top level, with empty main outlet'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
       this.addTemplate('modal', 'Hello world');
 
@@ -1185,6 +1202,7 @@ moduleFor(
     }
 
     ["@test Can render routes with no 'main' outlet and their children"](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('application', '<div id="application">{{outlet "app"}}</div>');
       this.addTemplate(
         'app',
@@ -1297,6 +1315,7 @@ moduleFor(
     }
 
     ['@test Renders child into parent with non-default template name'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.addTemplate('application', '<div class="a">{{outlet}}</div>');
       this.addTemplate('exports.root', '<div class="b">{{outlet}}</div>');
       this.addTemplate('exports.index', '<div class="c"></div>');

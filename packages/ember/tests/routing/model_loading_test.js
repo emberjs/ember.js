@@ -204,6 +204,7 @@ moduleFor(
     }
 
     [`@test The route controller specified via controllerName is used in render`](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('home', { path: '/' });
       });
@@ -484,6 +485,7 @@ moduleFor(
     }
 
     ['@test Nested callbacks are not exited when moving to siblings'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       let rootSetup = 0;
       let rootRender = 0;
       let rootModel = 0;
