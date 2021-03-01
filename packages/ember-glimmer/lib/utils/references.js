@@ -218,7 +218,9 @@ export class NestedPropertyReference extends PropertyReference {
 
   [UPDATE](value) {
     let parent = this._parentReference.value();
-    set(parent, this._propertyKey, value);
+    if (parent) {
+      set(parent, this._propertyKey, value);
+    }
   }
 }
 
