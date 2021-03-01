@@ -440,6 +440,7 @@ moduleFor(
     }
 
     ['@test it can render into named outlets']() {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('colors');
       });
@@ -599,6 +600,7 @@ moduleFor(
     }
 
     ['@test it should update correctly when the controller changes']() {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('color', { path: '/colors/:color' });
       });
@@ -643,6 +645,7 @@ moduleFor(
     }
 
     ['@test it should produce a stable DOM when two routes render the same template']() {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('a');
         this.route('b');

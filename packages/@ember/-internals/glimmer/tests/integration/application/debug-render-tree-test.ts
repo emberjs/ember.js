@@ -181,6 +181,7 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       async '@test named outlets'() {
+        expectDeprecation('Usage of `renderTemplate` is deprecated.');
         this.addTemplate(
           'application',
           strip`
