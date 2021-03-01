@@ -9,7 +9,7 @@ import {
 } from 'ember-utils';
 import isEnabled from './features';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import { runInDebug, assert } from './debug';
+import { runInDebug } from './debug';
 import {
   removeChainWatcher
 } from './chains';
@@ -236,8 +236,6 @@ export class Meta {
   // Implements a member that provides a lazily created map of maps,
   // with inheritance at both levels.
   writeDeps(subkey, itemkey, value) {
-    assert(`Cannot call writeDeps after the object is destroyed.`, !this.isMetaDestroyed());
-
     let outerMap = this._getOrCreateOwnMap('_deps');
     let innerMap = outerMap[subkey];
     if (!innerMap) {
@@ -363,8 +361,6 @@ function inheritedMap(name, Meta) {
   let capitalized = capitalize(name);
 
   Meta.prototype[`write${capitalized}`] = function(subkey, value) {
-    assert(`Cannot call write${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
-
     let map = this._getOrCreateOwnMap(key);
     map[subkey] = value;
   };
@@ -392,8 +388,6 @@ function inheritedMap(name, Meta) {
   };
 
   Meta.prototype[`clear${capitalized}`] = function() {
-    assert(`Cannot call clear${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
-
     this[key] = undefined;
   };
 
@@ -414,8 +408,6 @@ function ownCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
   Meta.prototype[`writable${capitalized}`] = function(create) {
-    assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
-
     let ret = this[key];
     if (!ret) {
       ret = this[key] = create(this.source);
@@ -434,8 +426,6 @@ function inheritedCustomObject(name, Meta) {
   let key = memberProperty(name);
   let capitalized = capitalize(name);
   Meta.prototype[`writable${capitalized}`] = function(create) {
-    assert(`Cannot call writable${capitalized} after the object is destroyed.`, !this.isMetaDestroyed());
-
     let ret = this[key];
     if (!ret) {
       if (this.parent) {
