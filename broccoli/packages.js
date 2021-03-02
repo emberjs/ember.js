@@ -5,7 +5,6 @@ const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
 const MergeTrees = require('broccoli-merge-trees');
-const Babel = require('broccoli-babel-transpiler');
 const typescript = require('broccoli-typescript-compiler').default;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
@@ -18,7 +17,6 @@ const StringReplace = require('broccoli-string-replace');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const canaryFeatures = require('./canary-features');
-const injectNodeGlobals = require('./transforms/inject-node-globals');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
@@ -255,14 +253,7 @@ function glimmerTrees(entries) {
       queue.push(...dependencies);
     }
   }
-  return new Babel(new MergeTrees(trees), {
-    sourceMaps: true,
-    plugins: [
-      // ensures `@glimmer/compiler` requiring `crypto` works properly
-      // in both browser and node-land
-      injectNodeGlobals,
-    ],
-  });
+  return new MergeTrees(trees);
 }
 
 module.exports.glimmerCompilerES = () => {
