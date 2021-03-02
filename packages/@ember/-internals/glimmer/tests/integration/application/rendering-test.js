@@ -470,7 +470,7 @@ moduleFor(
                 into: 'application',
                 outlet: 'nav',
               });
-            }, 'Usage of `render` is deprecated.');
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -617,7 +617,7 @@ moduleFor(
           renderTemplate(controller, model) {
             expectDeprecation(
               () => this.render({ controller: model.color, model }),
-              'Usage of `render` is deprecated.'
+              /Usage of `render` is deprecated/
             );
           },
         })
@@ -666,7 +666,7 @@ moduleFor(
           renderTemplate(controller, model) {
             expectDeprecation(
               () => this.render('common', { controller: 'common', model }),
-              'Usage of `render` is deprecated.'
+              /Usage of `render` is deprecated/
             );
           },
         })
@@ -682,7 +682,7 @@ moduleFor(
           renderTemplate(controller, model) {
             expectDeprecation(
               () => this.render('common', { controller: 'common', model }),
-              'Usage of `render` is deprecated.'
+              /Usage of `render` is deprecated/
             );
           },
         })

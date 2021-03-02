@@ -216,7 +216,7 @@ moduleFor(
           renderTemplate() {
             expectDeprecation(
               () => this.render('alternative_home'),
-              'Usage of `render` is deprecated.'
+              /Usage of `render` is deprecated/
             );
           },
         })

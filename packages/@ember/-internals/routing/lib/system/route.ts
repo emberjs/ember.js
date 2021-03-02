@@ -20,7 +20,7 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
-import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
+import { isProxy, lookupDescriptor, symbol } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
@@ -49,6 +49,7 @@ import generateController from './generate_controller';
 import EmberRouter, { QueryParam } from './router';
 
 export const ROUTE_CONNECTIONS = new WeakMap();
+const RENDER = symbol('render') as string;
 
 export function defaultSerialize(
   model: {},
@@ -1486,10 +1487,10 @@ class Route extends EmberObject implements IRoute {
   }
 
   /**
-    `_render` is used to render a template into a region of another template
+    `this[RENDER]` is used to render a template into a region of another template
     (indicated by an `{{outlet}}`).
 
-    @method _render
+    @method this[RENDER]
     @param {String} name the name of the template to render
     @param {Object} [options] the options
     @param {String} [options.into] the template to render into,
@@ -1502,7 +1503,7 @@ class Route extends EmberObject implements IRoute {
                     Defaults to the return value of the Route's model hook
     @private
    */
-  _render(name?: string, options?: PartialRenderOptions) {
+  [RENDER](name?: string, options?: PartialRenderOptions) {
     let renderOptions = buildRenderOptions(this, name, options);
     ROUTE_CONNECTIONS.get(this).push(renderOptions);
     once(this._router, '_setOutlets');
@@ -1544,7 +1545,7 @@ class Route extends EmberObject implements IRoute {
   */
   renderTemplate(_controller: any, _model: {}) {
     // eslint-disable-line no-unused-vars
-    this._render();
+    this[RENDER]();
   }
 
   /**
@@ -1675,7 +1676,7 @@ class Route extends EmberObject implements IRoute {
     @public
   */
   render(name?: string, options?: PartialRenderOptions) {
-    deprecate('Usage of `render` is deprecated.', false, {
+    deprecate(`Usage of \`render\` is deprecated. Route: \`${this.routeName}\``, false, {
       id: 'route-render-template',
       until: '4.0.0',
       url: 'https://deprecations.emberjs.com/v3.x/#toc_route-render-template',
@@ -1684,7 +1685,7 @@ class Route extends EmberObject implements IRoute {
         enabled: '3.27.0',
       },
     });
-    this._render(name, options);
+    this[RENDER](name, options);
   }
 
   /**
