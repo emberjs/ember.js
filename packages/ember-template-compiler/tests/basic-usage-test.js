@@ -40,9 +40,8 @@ moduleFor(
   'ember-template-compiler: Embroider-like compilation',
   class extends RenderingTestCase {
     afterEach() {
-      expectDeprecation(() => {
-        unregisterPlugin('ast', removeDataTest);
-      }, /unregisterPlugin is deprecated, please pass plugins directly via `compile` and\/or `precompile`/);
+      unregisterPlugin('ast', removeDataTest);
+
       return super.afterEach();
     }
 
@@ -65,9 +64,7 @@ moduleFor(
     }
 
     '@test registerPlugin based transforms can be avoided'(assert) {
-      expectDeprecation(() => {
-        registerPlugin('ast', removeDataTest);
-      }, /registerPlugin is deprecated, please pass plugins directly via `compile` and\/or `precompile`/);
+      registerPlugin('ast', removeDataTest);
 
       let template = '<div data-test="foo" data-blah="derp" class="hahaha">&nbsp;</div>';
 
