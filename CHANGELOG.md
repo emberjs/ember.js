@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### v3.26.0-beta.3 (March 02, 2021)
+
+- [#19412](https://github.com/emberjs/ember.js/pull/19412) [BUGFIX] Updates Glimmer VM to 0.76.0, fix:
+  - `if` helper returns `null` instead of `undefined`
+  - Using `get` helper with key `length` on a string in templates
+  - Value of input not updating if it had previously updated with the same string
+- [#19416](https://github.com/emberjs/ember.js/pull/19416) [BUGFIX] Update Glimmer VM to 0.77, fix dynamic helpers/modifiers
+
 ### v3.26.0-beta.2 (February 15, 2021)
 
 - [#19387](https://github.com/emberjs/ember.js/pull/19387) [BUGFIX] LinkTo with incomplete model failing in rendering tests
