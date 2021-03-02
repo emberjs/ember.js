@@ -214,7 +214,10 @@ moduleFor(
         Route.extend({
           controllerName: 'myController',
           renderTemplate() {
-            this.render('alternative_home');
+            expectDeprecation(
+              () => this.render('alternative_home'),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );

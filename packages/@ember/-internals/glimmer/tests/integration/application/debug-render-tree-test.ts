@@ -222,10 +222,13 @@ if (ENV._DEBUG_RENDER_TREE) {
             }
 
             renderTemplate(_: Controller, { showHeader }: Model): void {
-              this.render();
+              expectDeprecation(() => this.render(), /Usage of `render` is deprecated/);
 
               if (showHeader) {
-                this.render('header', { outlet: 'header' });
+                expectDeprecation(
+                  () => this.render('header', { outlet: 'header' }),
+                  /Usage of `render` is deprecated/
+                );
               } else {
                 expectDeprecation(
                   () => this.disconnectOutlet('header'),

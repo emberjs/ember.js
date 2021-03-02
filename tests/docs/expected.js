@@ -556,6 +556,7 @@ module.exports = {
     'testing',
     'textarea',
     'then',
+    'this[RENDER]',
     'throttle',
     'title',
     'to',

@@ -464,11 +464,13 @@ moduleFor(
         'route:application',
         Route.extend({
           renderTemplate() {
-            this.render();
-            this.render('nav', {
-              into: 'application',
-              outlet: 'nav',
-            });
+            expectDeprecation(() => {
+              this.render();
+              this.render('nav', {
+                into: 'application',
+                outlet: 'nav',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -613,7 +615,10 @@ moduleFor(
           },
 
           renderTemplate(controller, model) {
-            this.render({ controller: model.color, model });
+            expectDeprecation(
+              () => this.render({ controller: model.color, model }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -659,7 +664,10 @@ moduleFor(
           },
 
           renderTemplate(controller, model) {
-            this.render('common', { controller: 'common', model });
+            expectDeprecation(
+              () => this.render('common', { controller: 'common', model }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -672,7 +680,10 @@ moduleFor(
           },
 
           renderTemplate(controller, model) {
-            this.render('common', { controller: 'common', model });
+            expectDeprecation(
+              () => this.render('common', { controller: 'common', model }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );

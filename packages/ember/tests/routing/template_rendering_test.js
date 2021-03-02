@@ -76,7 +76,7 @@ moduleFor(
         'route:home',
         Route.extend({
           renderTemplate() {
-            this.render('homepage');
+            expectDeprecation(() => this.render('homepage'), /Usage of `render` is deprecated/);
           },
         })
       );
@@ -93,7 +93,7 @@ moduleFor(
         'route:home',
         Route.extend({
           renderTemplate() {
-            this.render('homepage');
+            expectDeprecation(() => this.render('homepage'), /Usage of `render` is deprecated/);
           },
         })
       );
@@ -121,7 +121,7 @@ moduleFor(
         Route.extend({
           controllerName: 'foo',
           renderTemplate() {
-            this.render('homepage');
+            expectDeprecation(() => this.render('homepage'), /Usage of `render` is deprecated/);
           },
         })
       );
@@ -159,7 +159,10 @@ moduleFor(
         'route:homepage',
         Route.extend({
           renderTemplate() {
-            this.render({ controller: 'home' });
+            expectDeprecation(
+              () => this.render({ controller: 'home' }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -199,7 +202,7 @@ moduleFor(
         'route:home',
         Route.extend({
           renderTemplate() {
-            this.render('homepage');
+            expectDeprecation(() => this.render('homepage'), /Usage of `render` is deprecated/);
           },
         })
       );
@@ -219,9 +222,11 @@ moduleFor(
         'route:home',
         Route.extend({
           renderTemplate() {
-            this.render('bio', {
-              model: { name: 'emberjs' },
-            });
+            expectDeprecation(() => {
+              this.render('bio', {
+                model: { name: 'emberjs' },
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -266,10 +271,12 @@ moduleFor(
           templateName: 'the_real_home_template',
           actions: {
             showAlert() {
-              this.render('alert', {
-                into: 'home',
-                outlet: 'alert',
-              });
+              expectDeprecation(() => {
+                this.render('alert', {
+                  into: 'home',
+                  outlet: 'alert',
+                });
+              }, /Usage of `render` is deprecated/);
             },
           },
         })
@@ -299,7 +306,7 @@ moduleFor(
         Route.extend({
           templateName: 'alert',
           renderTemplate() {
-            this.render({});
+            expectDeprecation(() => this.render({}), /Usage of `render` is deprecated/);
           },
         })
       );
@@ -420,7 +427,10 @@ moduleFor(
         'route:middle.bottom',
         Route.extend({
           renderTemplate() {
-            this.render('middle/bottom', { into: 'top' });
+            expectDeprecation(
+              () => this.render('middle/bottom', { into: 'top' }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -454,8 +464,10 @@ moduleFor(
         'route:home',
         Route.extend({
           renderTemplate() {
-            this.render('person/profile');
-            this.render('person/details', { into: 'person/profile' });
+            expectDeprecation(() => {
+              this.render('person/profile');
+              this.render('person/details', { into: 'person/profile' });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -485,11 +497,13 @@ moduleFor(
         'route:posts',
         Route.extend({
           renderTemplate() {
-            this.render();
-            this.render('posts/menu', {
-              into: 'application',
-              outlet: 'menu',
-            });
+            expectDeprecation(() => {
+              this.render();
+              this.render('posts/menu', {
+                into: 'application',
+                outlet: 'menu',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -637,7 +651,10 @@ moduleFor(
         },
 
         renderTemplate() {
-          this.render('shared', { controller: 'shared' });
+          expectDeprecation(
+            () => this.render('shared', { controller: 'shared' }),
+            /Usage of `render` is deprecated/
+          );
         },
       });
 
@@ -707,17 +724,19 @@ moduleFor(
         'route:posts',
         Route.extend({
           renderTemplate() {
-            this.render('posts/menu', {
-              into: 'application',
-              outlet: 'menu',
-            });
+            expectDeprecation(() => {
+              this.render('posts/menu', {
+                into: 'application',
+                outlet: 'menu',
+              });
 
-            this.render();
+              this.render();
 
-            this.render('posts/footer', {
-              into: 'application',
-              outlet: 'footer',
-            });
+              this.render('posts/footer', {
+                into: 'application',
+                outlet: 'footer',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -782,10 +801,12 @@ moduleFor(
         Route.extend({
           actions: {
             showModal() {
-              this.render('posts/modal', {
-                into: 'application',
-                outlet: 'modal',
-              });
+              expectDeprecation(() => {
+                this.render('posts/modal', {
+                  into: 'application',
+                  outlet: 'modal',
+                });
+              }, /Usage of `render` is deprecated/);
             },
             hideModal() {
               expectDeprecation(
@@ -806,9 +827,11 @@ moduleFor(
         Route.extend({
           actions: {
             showExtra() {
-              this.render('posts/extra', {
-                into: 'posts/index',
-              });
+              expectDeprecation(() => {
+                this.render('posts/extra', {
+                  into: 'posts/index',
+                });
+              }, /Usage of `render` is deprecated/);
             },
             hideExtra() {
               expectDeprecation(
@@ -912,10 +935,12 @@ moduleFor(
         Route.extend({
           actions: {
             showModal() {
-              this.render('posts/modal', {
-                into: 'application',
-                outlet: 'modal',
-              });
+              expectDeprecation(() => {
+                this.render('posts/modal', {
+                  into: 'application',
+                  outlet: 'modal',
+                });
+              }, /Usage of `render` is deprecated/);
             },
             hideModal() {
               expectDeprecation(
@@ -965,7 +990,7 @@ moduleFor(
     }
 
     ['@test Route silently fails when cleaning an outlet from an inactive view'](assert) {
-      assert.expect(3); // handleURL
+      assert.expect(4); // handleURL
 
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('posts', "{{outlet 'modal'}}");
@@ -990,7 +1015,10 @@ moduleFor(
               );
             },
             showModal() {
-              this.render('modal', { into: 'posts', outlet: 'modal' });
+              expectDeprecation(
+                () => this.render('modal', { into: 'posts', outlet: 'modal' }),
+                /Usage of `render` is deprecated/
+              );
             },
             hideModal() {
               expectDeprecation(
@@ -1012,7 +1040,9 @@ moduleFor(
     }
 
     ['@test Specifying non-existent controller name in route#render throws'](assert) {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
+      expectDeprecation(
+        /(Usage of `renderTemplate` is deprecated|Usage of `render` is deprecated)/
+      );
       assert.expect(2);
 
       this.router.map(function () {
@@ -1074,11 +1104,13 @@ moduleFor(
         'route:application',
         Route.extend({
           renderTemplate() {
-            this.render();
-            this.render('modal', {
-              into: 'application',
-              outlet: 'other',
-            });
+            expectDeprecation(() => {
+              this.render();
+              this.render('modal', {
+                into: 'application',
+                outlet: 'other',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -1105,11 +1137,13 @@ moduleFor(
         'route:application',
         Route.extend({
           renderTemplate() {
-            this.render();
-            this.render('modal', {
-              into: 'application',
-              outlet: 'other',
-            });
+            expectDeprecation(() => {
+              this.render();
+              this.render('modal', {
+                into: 'application',
+                outlet: 'other',
+              });
+            }, /Usage of `render` is deprecated/);
           },
           actions: {
             banish() {
@@ -1153,11 +1187,13 @@ moduleFor(
         'route:application',
         Route.extend({
           renderTemplate() {
-            this.render();
-            this.render('modal', {
-              into: 'application',
-              outlet: 'other',
-            });
+            expectDeprecation(() => {
+              this.render();
+              this.render('modal', {
+                into: 'application',
+                outlet: 'other',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -1180,10 +1216,12 @@ moduleFor(
         Route.extend({
           actions: {
             launch() {
-              this.render('modal', {
-                into: 'application',
-                outlet: 'other',
-              });
+              expectDeprecation(() => {
+                this.render('modal', {
+                  into: 'application',
+                  outlet: 'other',
+                });
+              }, /Usage of `render` is deprecated/);
             },
           },
         })
@@ -1221,14 +1259,16 @@ moduleFor(
         'route:app',
         Route.extend({
           renderTemplate() {
-            this.render('app', {
-              outlet: 'app',
-              into: 'application',
-            });
-            this.render('common', {
-              outlet: 'common',
-              into: 'app',
-            });
+            expectDeprecation(() => {
+              this.render('app', {
+                outlet: 'app',
+                into: 'application',
+              });
+              this.render('common', {
+                outlet: 'common',
+                into: 'app',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -1237,10 +1277,12 @@ moduleFor(
         'route:sub',
         Route.extend({
           renderTemplate() {
-            this.render('sub', {
-              outlet: 'sub',
-              into: 'app',
-            });
+            expectDeprecation(() => {
+              this.render('sub', {
+                outlet: 'sub',
+                into: 'app',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -1282,10 +1324,12 @@ moduleFor(
         Route.extend({
           actions: {
             openLayer() {
-              this.render('layer', {
-                into: 'application',
-                outlet: 'modal',
-              });
+              expectDeprecation(() => {
+                this.render('layer', {
+                  into: 'application',
+                  outlet: 'modal',
+                });
+              }, /Usage of `render` is deprecated/);
             },
             close() {
               expectDeprecation(
@@ -1328,7 +1372,7 @@ moduleFor(
         'route:root',
         Route.extend({
           renderTemplate() {
-            this.render('exports/root');
+            expectDeprecation(() => this.render('exports/root'), /Usage of `render` is deprecated/);
           },
         })
       );
@@ -1337,7 +1381,10 @@ moduleFor(
         'route:root.index',
         Route.extend({
           renderTemplate() {
-            this.render('exports/index');
+            expectDeprecation(
+              () => this.render('exports/index'),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -1360,10 +1407,12 @@ moduleFor(
         Route.extend({
           actions: {
             openLayer() {
-              this.render('layer', {
-                into: 'application',
-                outlet: 'modal',
-              });
+              expectDeprecation(() => {
+                this.render('layer', {
+                  into: 'application',
+                  outlet: 'modal',
+                });
+              }, /Usage of `render` is deprecated/);
             },
           },
         })
@@ -1480,10 +1529,12 @@ moduleFor(
         Route.extend({
           actions: {
             showModal() {
-              this.render({
-                outlet: undefined,
-                parentView: 'application',
-              });
+              expectDeprecation(() => {
+                this.render({
+                  outlet: undefined,
+                  parentView: 'application',
+                });
+              }, /Usage of `render` is deprecated/);
             },
             hideModal() {
               expectDeprecation(
