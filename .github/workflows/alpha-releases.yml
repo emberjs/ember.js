@@ -2,7 +2,7 @@ name: Alpha Releases
 
 on:
   schedule:
-    - cron:  '0 20 * * 1' # weekly (Monday)
+    - cron:  '0 20 * * 3' # weekly (Wednesday)
 
 jobs:
   test:
@@ -45,6 +45,10 @@ jobs:
           key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
+      - name: setup git
+        run: |
+          git config --local user.email 'tomster@emberjs.com'
+          git config --local user.name 'Ember.js Alpha Releaser'
       - name: tag the next alpha
         run: npm version prerelease --preid alpha
       - name: build for publish
