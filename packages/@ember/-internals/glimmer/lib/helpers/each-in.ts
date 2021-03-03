@@ -149,7 +149,7 @@ import { internalHelper } from './internal-helper';
   ```
 
   Outputting their name and age:
-  
+
   ```html
   <ul>
     <li>name: Shelly Sails</li>
