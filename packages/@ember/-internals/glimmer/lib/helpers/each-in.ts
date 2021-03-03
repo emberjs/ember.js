@@ -148,7 +148,14 @@ import { internalHelper } from './internal-helper';
   </ul>
   ```
 
-  Outputting their name and age.
+  Outputting their name and age:
+  
+  ```html
+  <ul>
+    <li>name: Shelly Sails</li>
+    <li>age: 42</li>
+  </ul>
+  ```
 
   @method each-in
   @for Ember.Templates.helpers
