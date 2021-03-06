@@ -363,6 +363,64 @@ moduleFor(
       });
     }
 
+    async ['@test RouterService#transitionTo should not refresh parent models if the parent query params stay the same'](
+      assert
+    ) {
+      let parentModelHookCallCount = 0;
+      this.add(
+        'route:parent',
+        Route.extend({
+          queryParams: {
+            parentParam: {
+              refreshModel: true,
+            },
+          },
+          model() {
+            parentModelHookCallCount++;
+            return 'model';
+          },
+        })
+      );
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          queryParams: {
+            childParam: {
+              refreshModel: true,
+            },
+          },
+        })
+      );
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          parentParam: 'parentParamDefaultValue',
+        })
+      );
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          childParam: 'childParamDefaultValue',
+        })
+      );
+
+      await this.visit('/?parentParam=parentParamDefaultValue');
+      assert.equal(parentModelHookCallCount, 1);
+
+      try {
+        await this.routerService.transitionTo('parent.child', {
+          queryParams: {
+            childParam: 'nonDefaultValue',
+          },
+        });
+      } catch (e) {
+        assert.equal(e.message, 'TransitionAborted');
+      }
+
+      assert.equal(this.routerService.currentURL, '/child?childParam=nonDefaultValue');
+      assert.equal(parentModelHookCallCount, 1);
+    }
+
     ['@test RouterService#transitionTo with aliased query params uses the original provided key also when scoped'](
       assert
     ) {
