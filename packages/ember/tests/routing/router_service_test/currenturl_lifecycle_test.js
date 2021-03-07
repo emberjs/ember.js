@@ -17,7 +17,7 @@ let InstrumentedRoute = Route.extend({
     let service = get(this, 'routerService');
     service.on('routeWillChange', (transition) => {
       results.push([
-        service.get('currentRouteName'),
+        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
         `${this.routeName} routeWillChange: ${transition.from && transition.from.name} - ${
           transition.to.name
         }`,
@@ -26,7 +26,7 @@ let InstrumentedRoute = Route.extend({
     });
     service.on('routeDidChange', (transition) => {
       results.push([
-        service.get('currentRouteName'),
+        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
         `${this.routeName} routeDidChange: ${transition.from && transition.from.name} - ${
           transition.to.name
         }`,
@@ -38,7 +38,7 @@ let InstrumentedRoute = Route.extend({
   activate() {
     let service = get(this, 'routerService');
     results.push([
-      service.get('currentRouteName'),
+      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
       `${this.routeName} activate`,
       service.get('currentURL'),
     ]);
@@ -47,7 +47,7 @@ let InstrumentedRoute = Route.extend({
   redirect() {
     let service = get(this, 'routerService');
     results.push([
-      service.get('currentRouteName'),
+      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
       `${this.routeName} redirect`,
       service.get('currentURL'),
     ]);
@@ -56,7 +56,7 @@ let InstrumentedRoute = Route.extend({
   beforeModel() {
     let service = get(this, 'routerService');
     results.push([
-      service.get('currentRouteName'),
+      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
       `${this.routeName} beforeModel`,
       service.get('currentURL'),
     ]);
@@ -65,7 +65,7 @@ let InstrumentedRoute = Route.extend({
   model() {
     let service = get(this, 'routerService');
     results.push([
-      service.get('currentRouteName'),
+      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
       `${this.routeName} model`,
       service.get('currentURL'),
     ]);
@@ -77,7 +77,7 @@ let InstrumentedRoute = Route.extend({
   afterModel() {
     let service = get(this, 'routerService');
     results.push([
-      service.get('currentRouteName'),
+      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
       `${this.routeName} afterModel`,
       service.get('currentURL'),
     ]);
@@ -87,7 +87,7 @@ let InstrumentedRoute = Route.extend({
     willTransition(transition) {
       let service = get(this, 'routerService');
       results.push([
-        service.get('currentRouteName'),
+        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
         `${this.routeName} willTransition: ${transition.from && transition.from.name} - ${
           transition.to.name
         }`,
@@ -98,7 +98,7 @@ let InstrumentedRoute = Route.extend({
     didTransition() {
       let service = get(this, 'routerService');
       results.push([
-        service.get('currentRouteName'),
+        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
         `${this.routeName} didTransition`,
         service.get('currentURL'),
       ]);
@@ -108,7 +108,7 @@ let InstrumentedRoute = Route.extend({
 });
 
 moduleFor(
-  'Router Service - currentURL | currentRouteName',
+  'Router Service - currentURL | currentRouteName | currentRoute.name',
   class extends RouterTestCase {
     constructor() {
       super(...arguments);
@@ -189,18 +189,26 @@ moduleFor(
       return this.visit('/')
         .then(() => {
           assert.deepEqual(results, [
-            [null, 'parent.index routeWillChange: null - parent.index', null],
-            [null, 'parent.index beforeModel', null],
-            [null, 'parent.index model', null],
-            [null, 'parent.loading activate', null],
-            [null, 'parent.loading routeWillChange: null - parent.loading', null],
-            [null, 'parent.index routeWillChange: null - parent.loading', null],
-            ['parent.loading', 'parent.index afterModel', '/'],
-            ['parent.loading', 'parent.index redirect', '/'],
-            ['parent.loading', 'parent.index activate', '/'],
-            ['parent.loading', 'parent.index didTransition', '/'],
-            ['parent.index', 'parent.loading routeDidChange: null - parent.index', '/'],
-            ['parent.index', 'parent.index routeDidChange: null - parent.index', '/'],
+            ['null - undefined', 'parent.index routeWillChange: null - parent.index', null],
+            ['null - undefined', 'parent.index beforeModel', null],
+            ['null - undefined', 'parent.index model', null],
+            ['null - undefined', 'parent.loading activate', null],
+            ['null - undefined', 'parent.loading routeWillChange: null - parent.loading', null],
+            ['null - undefined', 'parent.index routeWillChange: null - parent.loading', null],
+            ['parent.loading - parent.loading', 'parent.index afterModel', '/'],
+            ['parent.loading - parent.loading', 'parent.index redirect', '/'],
+            ['parent.loading - parent.loading', 'parent.index activate', '/'],
+            ['parent.loading - parent.loading', 'parent.index didTransition', '/'],
+            [
+              'parent.index - parent.index',
+              'parent.loading routeDidChange: null - parent.index',
+              '/',
+            ],
+            [
+              'parent.index - parent.index',
+              'parent.index routeDidChange: null - parent.index',
+              '/',
+            ],
           ]);
 
           results = [];
@@ -209,27 +217,63 @@ moduleFor(
         })
         .then(() => {
           assert.deepEqual(results, [
-            ['parent.index', 'parent.index willTransition: parent.index - parent.child', '/'],
-            ['parent.index', 'parent.child routeWillChange: parent.index - parent.child', '/'],
-            ['parent.index', 'parent.loading routeWillChange: parent.index - parent.child', '/'],
-            ['parent.index', 'parent.index routeWillChange: parent.index - parent.child', '/'],
-            ['parent.index', 'parent.child beforeModel', '/'],
-            ['parent.index', 'parent.child model', '/'],
-            ['parent.index', 'parent.loading activate', '/'],
-            ['parent.index', 'parent.child routeWillChange: parent.index - parent.loading', '/'],
-            ['parent.index', 'parent.loading routeWillChange: parent.index - parent.loading', '/'],
-            ['parent.index', 'parent.index routeWillChange: parent.index - parent.loading', '/'],
-            ['parent.loading', 'parent.child afterModel', '/child'],
-            ['parent.loading', 'parent.child redirect', '/child'],
-            ['parent.loading', 'parent.child activate', '/child'],
-            ['parent.loading', 'parent.child didTransition', '/child'],
-            ['parent.child', 'parent.child routeDidChange: parent.index - parent.child', '/child'],
             [
-              'parent.child',
+              'parent.index - parent.index',
+              'parent.index willTransition: parent.index - parent.child',
+              '/',
+            ],
+            [
+              'parent.index - parent.index',
+              'parent.child routeWillChange: parent.index - parent.child',
+              '/',
+            ],
+            [
+              'parent.index - parent.index',
+              'parent.loading routeWillChange: parent.index - parent.child',
+              '/',
+            ],
+            [
+              'parent.index - parent.index',
+              'parent.index routeWillChange: parent.index - parent.child',
+              '/',
+            ],
+            ['parent.index - parent.index', 'parent.child beforeModel', '/'],
+            ['parent.index - parent.index', 'parent.child model', '/'],
+            ['parent.index - parent.index', 'parent.loading activate', '/'],
+            [
+              'parent.index - parent.index',
+              'parent.child routeWillChange: parent.index - parent.loading',
+              '/',
+            ],
+            [
+              'parent.index - parent.index',
+              'parent.loading routeWillChange: parent.index - parent.loading',
+              '/',
+            ],
+            [
+              'parent.index - parent.index',
+              'parent.index routeWillChange: parent.index - parent.loading',
+              '/',
+            ],
+            ['parent.loading - parent.loading', 'parent.child afterModel', '/child'],
+            ['parent.loading - parent.loading', 'parent.child redirect', '/child'],
+            ['parent.loading - parent.loading', 'parent.child activate', '/child'],
+            ['parent.loading - parent.loading', 'parent.child didTransition', '/child'],
+            [
+              'parent.child - parent.child',
+              'parent.child routeDidChange: parent.index - parent.child',
+              '/child',
+            ],
+            [
+              'parent.child - parent.child',
               'parent.loading routeDidChange: parent.index - parent.child',
               '/child',
             ],
-            ['parent.child', 'parent.index routeDidChange: parent.index - parent.child', '/child'],
+            [
+              'parent.child - parent.child',
+              'parent.index routeDidChange: parent.index - parent.child',
+              '/child',
+            ],
           ]);
         });
     }
