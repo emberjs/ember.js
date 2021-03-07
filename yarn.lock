@@ -8905,10 +8905,10 @@ route-recognizer@^0.3.4:
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.4.tgz#39ab1ffbce1c59e6d2bdca416f0932611e4f3ca3"
   integrity sha512-2+MhsfPhvauN1O8KaXpXAOfR/fwe8dnUXVM+xw7yt40lJRfPVQxV6yryZm0cgRvAj5fMF/mdRZbL2ptwbs5i2g==
 
-router_js@^7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/router_js/-/router_js-7.2.0.tgz#a7168155fe494f85f1e5058802a3a633c29ea243"
-  integrity sha512-kZBOqD/kRMDymmVbiVrX6OK3cGBoG1c9tO8egxkoxX2TgC78sBwFhvFqkAJLvK8oTEXYNcjk8+FbNIn9hg9VMA==
+router_js@^7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-7.3.0.tgz#6c061b6b097cfec537fa0d6c5a5c6e317730799f"
+  integrity sha512-A+iVTfG03XNks7oC/KGXq+EKp9kAac9BOYuomq2KouXUM4U57Io20/tuQq1kx+OwHB4gEY0XaRQjuHwljkbRHg==
   dependencies:
     "@glimmer/env" "^0.1.7"
 
