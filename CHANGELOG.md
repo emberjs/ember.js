@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.26.0-beta.4 (March 08, 2021)
+
+- [#19436](https://github.com/emberjs/ember.js/pull/19436) [BUGFIX] Support observer keys with colons
+- [#19448](https://github.com/emberjs/ember.js/pull/19448) [BUGFIX] Ensure query params are preserved through an intermediate loading state transition
+- [#19450](https://github.com/emberjs/ember.js/pull/19450) [BUGFIX] Ensure `routerService.currentRoute.name` and `routerService.currentRouteName` match during loading states
+
 ### v3.26.0-beta.3 (March 02, 2021)
 
 - [#19412](https://github.com/emberjs/ember.js/pull/19412) [BUGFIX] Updates Glimmer VM to 0.76.0, fix:
