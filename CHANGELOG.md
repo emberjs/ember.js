@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.25.3 (March 7, 2021)
+
+- [#19448](https://github.com/emberjs/ember.js/pull/19448) Ensure query params are preserved through an intermediate loading state transition
+- [#19450](https://github.com/emberjs/ember.js/pull/19450) Ensure `routerService.currentRoute.name` and `routerService.currentRouteName` match during loading states
+
 ### v3.25.2 (March 7, 2021)
 
 - [#19389](https://github.com/emberjs/ember.js/pull/19389) Removes template ids
