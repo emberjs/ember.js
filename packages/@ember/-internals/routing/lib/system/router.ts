@@ -843,7 +843,7 @@ class EmberRouter extends EmberObject {
     _targetRouteName: string | undefined,
     models: {}[],
     _queryParams: {},
-    _fromRouterService: boolean = false
+    _fromRouterService = false
   ) {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(
@@ -918,7 +918,7 @@ class EmberRouter extends EmberObject {
     targetRouteName: string,
     models: {}[],
     queryParams: QueryParam,
-    _fromRouterService: boolean = false,
+    _fromRouterService = false,
     _stripDefaultQueryParamValues: boolean = _fromRouterService
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
