@@ -152,7 +152,7 @@ async function getCommitMessage(commitInfo) {
 }
 
 function excludeDependabot(commitInfo) {
-  let author = commitInfo.author.login;
+  let author = commitInfo.author && commitInfo.author.login;
   return author !== 'dependabot-preview[bot]' && author !== 'dependabot[bot]';
 }
 
