@@ -917,13 +917,14 @@ class EmberRouter extends EmberObject {
     targetRouteName: string,
     models: {}[],
     queryParams: QueryParam,
-    _fromRouterService: boolean = false
+    _fromRouterService: boolean = false,
+    _stripDefaultQueryParamValues: boolean = _fromRouterService
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
     this._hydrateUnsuppliedQueryParams(state, queryParams, _fromRouterService);
     this._serializeQueryParams(state.routeInfos, queryParams);
 
-    if (!_fromRouterService) {
+    if (!_stripDefaultQueryParamValues) {
       this._pruneDefaultQueryParamValues(state.routeInfos, queryParams);
     }
   }
