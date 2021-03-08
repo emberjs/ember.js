@@ -364,20 +364,22 @@ moduleFor(
       });
     }
 
-    async ['@test RouterService#transitionTo should not refresh parent models if the parent query params stay the same'](assert) {
+    async ['@test RouterService#transitionTo should not refresh parent models if the parent query params stay the same'](
+      assert
+    ) {
       let parentModelHookCallCount = 0;
       this.add(
         'route:parent',
         Route.extend({
           queryParams: {
             parentParam: {
-              refreshModel: true
-            }
+              refreshModel: true,
+            },
           },
           model() {
             parentModelHookCallCount++;
             return 'model';
-          }
+          },
         })
       );
       this.add(
@@ -385,21 +387,21 @@ moduleFor(
         Route.extend({
           queryParams: {
             childParam: {
-              refreshModel: true
-            }
-          }
+              refreshModel: true,
+            },
+          },
         })
       );
       this.add(
         'controller:parent',
         Controller.extend({
-          parentParam: 'parentParamDefaultValue'
+          parentParam: 'parentParamDefaultValue',
         })
       );
       this.add(
         'controller:parent.child',
         Controller.extend({
-          childParam: 'childParamDefaultValue'
+          childParam: 'childParamDefaultValue',
         })
       );
 
@@ -409,8 +411,8 @@ moduleFor(
       try {
         await this.routerService.transitionTo('parent.child', {
           queryParams: {
-            childParam: 'nonDefaultValue'
-          }
+            childParam: 'nonDefaultValue',
+          },
         });
       } catch (e) {
         assert.equal(e.message, 'TransitionAborted');
