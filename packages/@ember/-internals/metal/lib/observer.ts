@@ -96,7 +96,7 @@ export function activateObserver(target: object, eventName: string, sync = false
   if (activeObservers.has(eventName)) {
     activeObservers.get(eventName)!.count++;
   } else {
-    let [path] = eventName.split(':');
+    let path = eventName.substring(0, eventName.lastIndexOf(':'));
     let tag = getChainTagsForKey(target, path, tagMetaFor(target), peekMeta(target));
 
     activeObservers.set(eventName, {

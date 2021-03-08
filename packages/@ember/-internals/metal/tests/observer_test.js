@@ -87,6 +87,21 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked observer');
     }
 
+    async ['@test observer supports keys with colons'](assert) {
+      obj = {};
+      let count = 0;
+
+      addObserver(obj, 'foo:bar:baz', function () {
+        assert.equal(get(obj, 'foo:bar:baz'), 'bar', 'should invoke AFTER value changed');
+        count++;
+      });
+
+      set(obj, 'foo:bar:baz', 'bar');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+    }
+
     async ['@test observer should fire when dependent property is modified'](assert) {
       obj = { bar: 'bar' };
       defineProperty(
