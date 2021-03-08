@@ -862,7 +862,8 @@ class EmberRouter extends EmberObject {
       targetRouteName,
       models,
       queryParams as QueryParam,
-      _fromRouterService
+      _fromRouterService,
+      false /* _stripDefaultQueryParamValues */
     );
 
     let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
