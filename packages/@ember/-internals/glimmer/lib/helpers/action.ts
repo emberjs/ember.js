@@ -2,7 +2,6 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
-import { symbol } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
@@ -15,7 +14,7 @@ import {
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
-import { _WeakSet } from '@glimmer/util';
+import { _WeakSet, symbol } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
 
 export const ACTIONS = new _WeakSet();

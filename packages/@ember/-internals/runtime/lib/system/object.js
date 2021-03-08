@@ -3,12 +3,13 @@
 */
 
 import { getFactoryFor } from '@ember/-internals/container';
-import { symbol, setName } from '@ember/-internals/utils';
+import { setName } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { symbol } from '@glimmer/util';
 
 /**
   `EmberObject` is the main base class for all Ember objects. It is a subclass

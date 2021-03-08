@@ -1,9 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
-
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
-
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
+import { HAS_NATIVE_SYMBOL } from '@glimmer/util';
 import { Component, compile } from '../../utils/helpers';
 
 moduleFor(

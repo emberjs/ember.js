@@ -12,8 +12,6 @@ import {
   lookupDescriptor,
   inspect,
   makeArray,
-  HAS_NATIVE_PROXY,
-  HAS_NATIVE_SYMBOL,
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
@@ -33,7 +31,7 @@ import {
 import ActionHandler from '../mixins/action_handler';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { _WeakSet as WeakSet } from '@glimmer/util';
+import { _WeakSet as WeakSet, HAS_NATIVE_PROXY, HAS_NATIVE_SYMBOL } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 

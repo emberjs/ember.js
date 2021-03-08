@@ -1,11 +1,11 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
-import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
+import { symbol } from '@glimmer/util';
 import { consumeTag, tagFor } from '@glimmer/validator';
 import { Transition } from 'router_js';
 import EmberRouter, { QueryParam } from '../system/router';

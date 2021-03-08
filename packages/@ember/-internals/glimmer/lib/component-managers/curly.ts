@@ -1,5 +1,5 @@
 import { Factory, getOwner, Owner, setOwner } from '@ember/-internals/owner';
-import { enumerableSymbol, guidFor, symbol } from '@ember/-internals/utils';
+import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
@@ -30,7 +30,7 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
+import { EMPTY_ARRAY, symbol, unwrapTemplate } from '@glimmer/util';
 import {
   beginTrackFrame,
   beginUntrackFrame,

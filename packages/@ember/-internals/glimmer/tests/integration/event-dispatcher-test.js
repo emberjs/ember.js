@@ -8,8 +8,8 @@ import {
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
+import { HAS_NATIVE_PROXY } from '@glimmer/util';
 
 let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
 

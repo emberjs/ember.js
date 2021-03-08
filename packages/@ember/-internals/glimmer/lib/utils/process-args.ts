@@ -1,7 +1,7 @@
-import { symbol } from '@ember/-internals/utils';
 import { MUTABLE_CELL } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import { symbol } from '@glimmer/util';
 import { ARGS } from '../component-managers/curly';
 import { ACTIONS } from '../helpers/action';
 

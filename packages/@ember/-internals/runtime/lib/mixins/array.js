@@ -3,7 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
-import { setEmberArray, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
+import { setEmberArray } from '@ember/-internals/utils';
 import {
   get,
   set,
@@ -22,6 +22,7 @@ import {
   nativeDescDecorator as descriptor,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
+import { HAS_NATIVE_PROXY } from '@glimmer/util';
 import Enumerable from './enumerable';
 import compare from '../compare';
 import { ENV } from '@ember/-internals/environment';

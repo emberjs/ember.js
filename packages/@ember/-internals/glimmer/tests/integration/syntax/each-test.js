@@ -2,7 +2,7 @@ import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'inter
 
 import { get, set, notifyPropertyChange, computed, on } from '@ember/-internals/metal';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
+import { HAS_NATIVE_SYMBOL } from '@glimmer/util';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 import {

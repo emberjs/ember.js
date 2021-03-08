@@ -1,8 +1,9 @@
 import { objectAt } from '@ember/-internals/metal';
 import { _contentFor } from '@ember/-internals/runtime';
-import { EmberArray, HAS_NATIVE_SYMBOL, isEmberArray, isObject } from '@ember/-internals/utils';
+import { EmberArray, isEmberArray, isObject } from '@ember/-internals/utils';
 import { Option } from '@glimmer/interfaces';
 import { IteratorDelegate } from '@glimmer/reference';
+import { HAS_NATIVE_SYMBOL } from '@glimmer/util';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
 

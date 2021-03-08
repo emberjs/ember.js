@@ -6,8 +6,8 @@ import { set, computed } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
+import { HAS_NATIVE_SYMBOL } from '@glimmer/util';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 
 const EMPTY = Object.freeze({});

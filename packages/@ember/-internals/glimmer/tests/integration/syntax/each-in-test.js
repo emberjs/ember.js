@@ -2,7 +2,7 @@ import { moduleFor, RenderingTestCase, strip, applyMixins, runTask } from 'inter
 
 import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
+import { HAS_NATIVE_SYMBOL } from '@glimmer/util';
 
 import {
   TogglingSyntaxConditionalsTest,

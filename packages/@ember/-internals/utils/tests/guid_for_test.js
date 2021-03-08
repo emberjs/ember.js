@@ -1,4 +1,5 @@
-import { guidFor, HAS_NATIVE_SYMBOL } from '..';
+import { guidFor } from '..';
+import { HAS_NATIVE_SYMBOL } from '@glimmer/util';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 function sameGuid(assert, a, b, message) {
