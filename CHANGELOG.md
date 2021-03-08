@@ -25,6 +25,23 @@
 - [#19298](https://github.com/emberjs/ember.js/pull/19298) [BUGFIX] Route serialize did not extract param off proxy
 - [#19326](https://github.com/emberjs/ember.js/pull/19326) [BUGFIX] Lazily setup the router in non-application tests for <LinkTo> component
 
+
+### v3.25.3 (March 7, 2021)
+
+- [#19448](https://github.com/emberjs/ember.js/pull/19448) Ensure query params are preserved through an intermediate loading state transition
+- [#19450](https://github.com/emberjs/ember.js/pull/19450) Ensure `routerService.currentRoute.name` and `routerService.currentRouteName` match during loading states
+
+
+### v3.25.2 (March 7, 2021)
+
+- [#19389](https://github.com/emberjs/ember.js/pull/19389) Removes template ids
+- [#19395](https://github.com/emberjs/ember.js/pull/19395) [BUGFIX] Ensure `<LinkTo>` can return a valid `href` most of the time
+- [#19396](https://github.com/emberjs/ember.js/pull/19396) [BUGFIX] Revert deprecation of htmlSafe and isHTMLSafe
+- [#19397](https://github.com/emberjs/ember.js/pull/19397) [BUGFIX] Force building Ember bundles when `targets.node` is defined
+- [#19399](https://github.com/emberjs/ember.js/pull/19399) [DOC] Update ArrayProxy Documentation
+- [#19412](https://github.com/emberjs/ember.js/pull/19412) / [#19416](https://github.com/emberjs/ember.js/pull/19416) [BUGFIX] Update Glimmer VM to 0.77 (fix dynamic helpers/modifiers)
+
+
 ### v3.25.1 (February 10, 2021)
 
 - [#19326](https://github.com/emberjs/ember.js/pull/19326) / [#19387](https://github.com/emberjs/ember.js/pull/19387) [BUGFIX] Fix usage of `<LinkTo />` prior to routing (e.g. component rendering tests)
@@ -42,6 +59,15 @@
 - [#19336](https://github.com/emberjs/ember.js/pull/19336) [BUGFIX] Ensure Component Lookup Is Well Formed
 - [#19338](https://github.com/emberjs/ember.js/pull/19338) [BUGFIX] Add missing `deprecate` options (`for` + `since`)
 - [#19342](https://github.com/emberjs/ember.js/pull/19342) [BUGFIX] Fix misleading LinkTo error message
+
+
+### v3.24.3 (March 7, 2021)
+
+- [#19448](https://github.com/emberjs/ember.js/pull/19448) Ensure query params are preserved through an intermediate loading state transition
+- [#19450](https://github.com/emberjs/ember.js/pull/19450) Ensure `routerService.currentRoute.name` and `routerService.currentRouteName` match during loading states
+- [#19395](https://github.com/emberjs/ember.js/pull/19395) [BUGFIX] Ensure `<LinkTo>` can return a valid `href` most of the time
+- [#19397](https://github.com/emberjs/ember.js/pull/19397) [BUGFIX] Force building Ember bundles when `targets.node` is defined
+
 
 ### v3.24.2 (February 10, 2021)
 
