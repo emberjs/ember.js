@@ -2,7 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
 import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
-import { BucketCache } from '@ember/-internals/routing';
+import { BucketCache, RouterService } from '@ember/-internals/routing';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
@@ -23,6 +23,7 @@ import Route, {
   ROUTER_EVENT_DEPRECATIONS,
 } from './route';
 import RouterState from './router_state';
+
 /**
 @module @ember/routing
 */
@@ -37,6 +38,19 @@ import Router, {
   TransitionState,
 } from 'router_js';
 import { EngineRouteInfo } from './engines';
+
+let freezeRouteInfo: Function;
+if (DEBUG) {
+  freezeRouteInfo = (transition: Transition) => {
+    if (transition.from !== null && !Object.isFrozen(transition.from)) {
+      Object.freeze(transition.from);
+    }
+
+    if (transition.to !== null && !Object.isFrozen(transition.to)) {
+      Object.freeze(transition.to);
+    }
+  };
+}
 
 function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
   updatePaths(this);
@@ -149,6 +163,8 @@ class EmberRouter extends EmberObject {
 
   _slowTransitionTimer: unknown;
 
+  routerService: RouterService | undefined;
+
   constructor(owner: Owner) {
     super(...arguments);
 
@@ -156,6 +172,7 @@ class EmberRouter extends EmberObject {
     if (owner) {
       this.namespace = owner.lookup('application:main');
       this._bucketCache = owner.lookup(P`-bucket-cache:main`);
+      this.routerService = owner.lookup('service:router');
     }
   }
 
@@ -286,6 +303,10 @@ class EmberRouter extends EmberObject {
 
       routeWillChange(transition: Transition) {
         router.trigger('routeWillChange', transition);
+        if (DEBUG) {
+          freezeRouteInfo(transition);
+        }
+        router.routerService?.trigger('routeWillChange', transition);
         // in case of intermediate transition we update the current route
         // to make router.currentRoute.name consistent with router.currentRouteName
         // see https://github.com/emberjs/ember.js/issues/19449
@@ -298,6 +319,10 @@ class EmberRouter extends EmberObject {
         router.set('currentRoute', transition.to);
         once(() => {
           router.trigger('routeDidChange', transition);
+          if (DEBUG) {
+            freezeRouteInfo(transition);
+          }
+          router.routerService?.trigger('routeDidChange', transition);
         });
       }
 
