@@ -1397,9 +1397,15 @@ function findRouteStateName(route: Route, state: string) {
   return routeHasBeenDefined(owner, router, stateName, stateNameFull) ? stateNameFull : '';
 }
 
+function isPromise(p: any): boolean {
+  return p !== null && typeof p === 'object' && typeof p.then === 'function';
+}
+
 /**
-  Determines whether or not a route has been defined by checking that the route
-  is in the Router's map and the owner has a registration for that route.
+  Determines whether or not a route has been defined by checking
+  - that the route is in the Router's map and
+  - the owner has a registration for that route and
+  - it has been fully resolved (think of aync assets loading)
 
   @private
   @param {Owner} owner
@@ -1410,9 +1416,15 @@ function findRouteStateName(route: Route, state: string) {
 */
 function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullName: string) {
   let routerHasRoute = router.hasRoute(fullName);
-  let ownerHasRoute =
-    owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);
-  return routerHasRoute && ownerHasRoute;
+
+  if (routerHasRoute && !isPromise(router.getRoute(fullName))) {
+    let ownerHasRoute =
+      owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);
+
+    return ownerHasRoute;
+  }
+
+  return false;
 }
 
 export function triggerEvent(

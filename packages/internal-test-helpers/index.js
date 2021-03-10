@@ -7,6 +7,7 @@ export { default as moduleFor, setupTestClass } from './lib/module-for';
 export { default as strip } from './lib/strip';
 export { default as applyMixins } from './lib/apply-mixins';
 export { default as getTextOf } from './lib/get-text-of';
+export { default as lazyLoadingRouterOptions } from './lib/lazy-router-options';
 export {
   expectDeprecation,
   expectNoDeprecation,

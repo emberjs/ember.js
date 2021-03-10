@@ -2,11 +2,15 @@
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { moduleFor, ApplicationTestCase, getTextOf, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  getTextOf,
+  runLoopSettled,
+  lazyLoadingRouterOptions,
+} from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { computed, set } from '@ember/-internals/metal';
-import { isDestroying } from '@glimmer/destroyable';
-import RSVP from 'rsvp';
 
 let originalConsoleError;
 
@@ -958,49 +962,7 @@ moduleFor(
   'Route - model loading (simulated within lazy engine)',
   class extends LoadingTests {
     get routerOptions() {
-      return {
-        location: 'none',
-        setupRouter() {
-          this._super(...arguments);
-          let getRoute = this._routerMicrolib.getRoute;
-          this._enginePromises = Object.create(null);
-          this._resolvedEngines = Object.create(null);
-
-          let routes = new Map();
-          let routePromises = new Map();
-          this._routerMicrolib.getRoute = (name) => {
-            if (routes.has(name)) {
-              return routes.get(name);
-            }
-
-            if (routePromises.has(name)) {
-              return routePromises.get(name);
-            }
-
-            // if (name.indexOf('loading')) {
-            //   let route = getRoute(name);
-            //   routes.set(name, route);
-            //   return route;
-            // }
-
-            let promise = new RSVP.Promise((resolve) => {
-              setTimeout(() => {
-                if (isDestroying(this)) {
-                  return;
-                }
-
-                let route = getRoute(name);
-
-                routes.set(name, route);
-                resolve(route);
-              }, 10);
-            });
-            routePromises.set(name, promise);
-
-            return promise;
-          };
-        },
-      };
+      return lazyLoadingRouterOptions;
     }
   }
 );
