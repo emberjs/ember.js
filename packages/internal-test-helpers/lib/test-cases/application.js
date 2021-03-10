@@ -15,7 +15,10 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     this.resolver = this.application.__registry__.resolver;
 
     if (this.resolver) {
-      this.resolver.add('router:main', Router.extend(this.routerOptions));
+      let { routerOptions } = this;
+      let RouterSubclass =
+        typeof routerOptions === 'function' ? routerOptions : Router.extend(routerOptions);
+      this.resolver.add('router:main', RouterSubclass);
     }
   }
 

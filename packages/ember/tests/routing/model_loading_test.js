@@ -2,11 +2,15 @@
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  getTextOf,
+  runLoopSettled,
+  lazyLoadingRouterOptions,
+} from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { computed, set } from '@ember/-internals/metal';
-import { isDestroying } from '@glimmer/destroyable';
-import RSVP from 'rsvp';
 
 let originalConsoleError;
 
@@ -502,8 +506,6 @@ class LoadingTests extends ApplicationTestCase {
       })
     );
 
-    this.add('route:loading', Route.extend({}));
-    this.add('route:home', Route.extend({}));
     this.add(
       'route:special',
       Route.extend({
@@ -518,7 +520,6 @@ class LoadingTests extends ApplicationTestCase {
 
     this.addTemplate('root.index', '<h3>Home</h3>');
     this.addTemplate('special', '<p>{{@model.id}}</p>');
-    this.addTemplate('loading', '<p>LOADING!</p>');
 
     return this.visit('/').then(() => {
       rootElement = document.getElementById('qunit-fixture');
@@ -755,7 +756,7 @@ class LoadingTests extends ApplicationTestCase {
       });
   }
 
-  ['@test Parent route context change'](assert) {
+  async ['@test Parent route context change'](assert) {
     let editCount = 0;
     let editedPostIds = emberA();
 
@@ -777,8 +778,8 @@ class LoadingTests extends ApplicationTestCase {
       'route:posts',
       Route.extend({
         actions: {
-          showPost(context) {
-            expectDeprecation(() => {
+          async showPost(context) {
+            await expectDeprecationAsync(() => {
               this.transitionTo('post', context);
             }, /Calling transitionTo on a route is deprecated/);
           },
@@ -798,8 +799,8 @@ class LoadingTests extends ApplicationTestCase {
         },
 
         actions: {
-          editPost() {
-            expectDeprecation(() => {
+          async editPost() {
+            await expectDeprecationAsync(() => {
               this.transitionTo('post.edit');
             }, /Calling transitionTo on a route is deprecated/);
           },
@@ -815,6 +816,7 @@ class LoadingTests extends ApplicationTestCase {
           editedPostIds.push(postId);
           return null;
         },
+
         setup() {
           this._super(...arguments);
           editCount++;
@@ -822,15 +824,18 @@ class LoadingTests extends ApplicationTestCase {
       })
     );
 
-    return this.visit('/posts/1').then(() => {
-      assert.ok(true, '/posts/1 has been handled');
-      let router = this.applicationInstance.lookup('router:main');
-      run(() => router.send('editPost'));
-      run(() => router.send('showPost', { id: '2' }));
-      run(() => router.send('editPost'));
-      assert.equal(editCount, 2, 'set up the edit route twice without failure');
-      assert.deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
-    });
+    await this.visit('/posts/1');
+    assert.ok(true, '/posts/1 has been handled');
+    let router = this.applicationInstance.lookup('router:main');
+    run(() => router.send('editPost'));
+    await runLoopSettled();
+    await runLoopSettled();
+    run(() => router.send('showPost', { id: '2' }));
+    await runLoopSettled();
+    run(() => router.send('editPost'));
+    await runLoopSettled();
+    assert.equal(editCount, 2, 'set up the edit route twice without failure');
+    assert.deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
   }
 
   ['@test ApplicationRoute with model does not proxy the currentPath'](assert) {
@@ -941,6 +946,14 @@ class LoadingTests extends ApplicationTestCase {
         assert.equal(childcount, 2);
       });
   }
+
+  ['@test What about loading states'](assert) {
+    assert.expect(1);
+    this.add('route:loading', Route.extend({}));
+    return this.visit('/').then(() => {
+      assert.ok(true);
+    });
+  }
 }
 
 moduleFor('Route - model loading', LoadingTests);
@@ -949,43 +962,7 @@ moduleFor(
   'Route - model loading (simulated within lazy engine)',
   class extends LoadingTests {
     get routerOptions() {
-      return {
-        location: 'none',
-        setupRouter() {
-          this._super(...arguments);
-          let getRoute = this._routerMicrolib.getRoute;
-          this._enginePromises = Object.create(null);
-          this._resolvedEngines = Object.create(null);
-
-          let routes = new Map();
-          let routePromises = new Map();
-          this._routerMicrolib.getRoute = (name) => {
-            if (routes.has(name)) {
-              return routes.get(name);
-            }
-
-            if (routePromises.has(name)) {
-              return routePromises.get(name);
-            }
-
-            let promise = new RSVP.Promise((resolve) => {
-              setTimeout(() => {
-                if (isDestroying(this)) {
-                  return;
-                }
-
-                let route = getRoute(name);
-
-                routes.set(name, route);
-                resolve(route);
-              }, 10);
-            });
-            routePromises.set(name, promise);
-
-            return promise;
-          };
-        },
-      };
+      return lazyLoadingRouterOptions;
     }
   }
 );
