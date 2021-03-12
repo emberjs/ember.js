@@ -53,7 +53,7 @@ function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
   once(this, this.trigger, 'didTransition');
 
   if (DEBUG) {
-    if (get(this, 'namespace').LOG_TRANSITIONS) {
+    if (this.namespace.LOG_TRANSITIONS) {
       // eslint-disable-next-line no-console
       console.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
     }
@@ -69,7 +69,7 @@ function defaultWillTransition(
   once(this, this.trigger, 'willTransition', transition);
 
   if (DEBUG) {
-    if (get(this, 'namespace').LOG_TRANSITIONS) {
+    if (this.namespace.LOG_TRANSITIONS) {
       // eslint-disable-next-line no-console
       console.log(
         `Preparing to transition from '${EmberRouter._routePath(
@@ -156,12 +156,12 @@ class EmberRouter extends EmberObject {
   _qpUpdates = new Set();
   _queuedQPChanges: { [key: string]: unknown } = {};
 
-  _bucketCache: BucketCache | undefined;
+  _bucketCache: BucketCache;
   _toplevelView: OutletView | null = null;
   _handledErrors = new Set();
   _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
   _engineInfoByRoute = Object.create(null);
-  _routerService: RouterService | undefined;
+  _routerService: RouterService;
 
   _slowTransitionTimer: unknown;
 
@@ -169,11 +169,15 @@ class EmberRouter extends EmberObject {
     super(...arguments);
 
     this._resetQueuedQueryParameterChanges();
-    if (owner) {
-      this.namespace = owner.lookup('application:main');
-      this._bucketCache = owner.lookup(P`-bucket-cache:main`);
-      this._routerService = owner.lookup('service:router');
-    }
+    this.namespace = owner.lookup('application:main');
+
+    let bucketCache: BucketCache | undefined = owner.lookup(P`-bucket-cache:main`);
+    assert('BUG: BucketCache should always be present', bucketCache !== undefined);
+    this._bucketCache = bucketCache;
+
+    let routerService: RouterService | undefined = owner.lookup('service:router');
+    assert('BUG: RouterService should always be present', routerService !== undefined);
+    this._routerService = routerService;
   }
 
   _initRouterJs() {
@@ -211,7 +215,7 @@ class EmberRouter extends EmberObject {
           route = routeOwner.lookup(fullRouteName);
 
           if (DEBUG) {
-            if (get(router, 'namespace.LOG_ACTIVE_GENERATION')) {
+            if (router.namespace.LOG_ACTIVE_GENERATION) {
               info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
             }
           }
@@ -303,12 +307,12 @@ class EmberRouter extends EmberObject {
 
       routeWillChange(transition: Transition) {
         router.trigger('routeWillChange', transition);
-        if (router._routerService) {
-          if (DEBUG) {
-            freezeRouteInfo(transition);
-          }
-          router._routerService.trigger('routeWillChange', transition);
+
+        if (DEBUG) {
+          freezeRouteInfo(transition);
         }
+        router._routerService.trigger('routeWillChange', transition);
+
         // in case of intermediate transition we update the current route
         // to make router.currentRoute.name consistent with router.currentRouteName
         // see https://github.com/emberjs/ember.js/issues/19449
@@ -321,12 +325,11 @@ class EmberRouter extends EmberObject {
         router.set('currentRoute', transition.to);
         once(() => {
           router.trigger('routeDidChange', transition);
-          if (router._routerService) {
-            if (DEBUG) {
-              freezeRouteInfo(transition);
-            }
-            router._routerService.trigger('routeDidChange', transition);
+
+          if (DEBUG) {
+            freezeRouteInfo(transition);
           }
+          router._routerService.trigger('routeDidChange', transition);
         });
       }
 
@@ -384,7 +387,7 @@ class EmberRouter extends EmberObject {
     );
 
     if (DEBUG) {
-      if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
+      if (this.namespace.LOG_TRANSITIONS_INTERNAL) {
         routerMicrolib.log = console.log.bind(console); // eslint-disable-line no-console
       }
     }
@@ -422,10 +425,6 @@ class EmberRouter extends EmberObject {
 
   _hasModuleBasedResolver() {
     let owner = getOwner(this);
-    if (!owner) {
-      return false;
-    }
-
     let resolver = get(owner, 'application.__registry__.resolver.moduleBasedResolver');
     return Boolean(resolver);
   }
@@ -588,7 +587,7 @@ class EmberRouter extends EmberObject {
 
     if (DEBUG) {
       let infos = this._routerMicrolib.currentRouteInfos;
-      if (get(this, 'namespace').LOG_TRANSITIONS) {
+      if (this.namespace.LOG_TRANSITIONS) {
         // eslint-disable-next-line no-console
         console.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
       }
@@ -722,7 +721,7 @@ class EmberRouter extends EmberObject {
     let rootURL = this.rootURL;
     let owner = getOwner(this);
 
-    if ('string' === typeof location && owner) {
+    if ('string' === typeof location) {
       let resolvedLocation = owner.lookup<IEmberLocation>(`location:${location}`);
 
       if (resolvedLocation !== undefined) {
