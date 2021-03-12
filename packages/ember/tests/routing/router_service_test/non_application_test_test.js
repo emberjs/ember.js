@@ -47,12 +47,27 @@ moduleFor(
       assert.expect(5);
       assert.equal(this.routerService.get('currentRouteName'), null);
       assert.equal(this.routerService.get('currentURL'), null);
+      assert.equal(this.routerService.get('location'), 'none');
+      assert.equal(this.routerService.get('rootURL'), '/');
+      assert.equal(this.routerService.get('currentRoute'), null);
+    }
+
+    ['@test RouterService properties of router can be accessed with default when router is present'](
+      assert
+    ) {
+      assert.expect(5);
+      let router = this.owner.lookup('router:main');
+      router.setupRouter();
+      assert.equal(this.routerService.get('currentRouteName'), null);
+      assert.equal(this.routerService.get('currentURL'), null);
       assert.ok(this.routerService.get('location') instanceof NoneLocation);
       assert.equal(this.routerService.get('rootURL'), '/');
       assert.equal(this.routerService.get('currentRoute'), null);
     }
 
     ['@test RouterService#urlFor returns url'](assert) {
+      let router = this.owner.lookup('router:main');
+      router.setupRouter();
       assert.equal(this.routerService.urlFor('parent.child'), '/child');
     }
 
@@ -60,6 +75,8 @@ moduleFor(
       assert.expect(2);
 
       let componentInstance;
+      let router = this.owner.lookup('router:main');
+      router.setupRouter();
 
       this.addTemplate('parent.index', '{{foo-bar}}');
 
@@ -90,6 +107,8 @@ moduleFor(
     }
 
     ['@test RouterService#recognize recognize returns routeInfo'](assert) {
+      let router = this.owner.lookup('router:main');
+      router.setupRouter();
       let routeInfo = this.routerService.recognize('/dynamic-with-child/123/1?a=b');
       assert.ok(routeInfo);
       let { name, localName, parent, child, params, queryParams, paramNames } = routeInfo;
