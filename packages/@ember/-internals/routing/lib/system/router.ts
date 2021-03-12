@@ -303,17 +303,17 @@ class EmberRouter extends EmberObject {
 
       routeWillChange(transition: Transition) {
         router.trigger('routeWillChange', transition);
+        if (router._routerService) {
+          if (DEBUG) {
+            freezeRouteInfo(transition);
+          }
+          router._routerService.trigger('routeWillChange', transition);
+        }
         // in case of intermediate transition we update the current route
         // to make router.currentRoute.name consistent with router.currentRouteName
         // see https://github.com/emberjs/ember.js/issues/19449
         if (transition.isIntermediate) {
           router.set('currentRoute', transition.to);
-        }
-        if (DEBUG) {
-          freezeRouteInfo(transition);
-        }
-        if (router._routerService) {
-          router._routerService.trigger('routeWillChange', transition);
         }
       }
 
@@ -321,10 +321,10 @@ class EmberRouter extends EmberObject {
         router.set('currentRoute', transition.to);
         once(() => {
           router.trigger('routeDidChange', transition);
-          if (DEBUG) {
-            freezeRouteInfo(transition);
-          }
           if (router._routerService) {
+            if (DEBUG) {
+              freezeRouteInfo(transition);
+            }
             router._routerService.trigger('routeDidChange', transition);
           }
         });
