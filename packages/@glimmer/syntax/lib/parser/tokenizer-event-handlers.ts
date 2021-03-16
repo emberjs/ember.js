@@ -381,6 +381,17 @@ const syntax: Syntax = {
   Walker,
 };
 
+class CodemodEntityParser extends EntityParser {
+  // match upstream types, but never match an entity
+  constructor() {
+    super({});
+  }
+
+  parse(): string | undefined {
+    return undefined;
+  }
+}
+
 export function preprocess(
   input: string | Source | HBS.Program,
   options: PreprocessOptions = {}
@@ -412,7 +423,7 @@ export function preprocess(
 
   let entityParser = undefined;
   if (mode === 'codemod') {
-    entityParser = new EntityParser({});
+    entityParser = new CodemodEntityParser();
   }
 
   let offsets = SourceSpan.forCharPositions(source, 0, source.source.length);
