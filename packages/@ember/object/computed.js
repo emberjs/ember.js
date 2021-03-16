@@ -1,3 +1,5 @@
+export { ComputedProperty as default, expandProperties, alias } from '@ember/-internals/metal';
+
 export {
   empty,
   notEmpty,
@@ -11,6 +13,7 @@ export {
   lt,
   lte,
   oneWay,
+  oneWay as reads,
   readOnly,
   deprecatingAlias,
   and,
