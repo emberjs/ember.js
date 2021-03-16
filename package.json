@@ -43,7 +43,7 @@
     "typescript": "4.0.2"
   },
   "dependencies": {
-    "@handlebars/parser": "^2.0.0",
+    "@handlebars/parser": "~2.0.0",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/interface": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",
