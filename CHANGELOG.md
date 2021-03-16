@@ -1,3 +1,17 @@
+## v0.77.2 (2021-03-16)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1284](https://github.com/glimmerjs/glimmer-vm/pull/1284) Ensure Entities are never transformed in codemod mode. ([@rwjblue](https://github.com/rwjblue))
+
+#### :house: Internal
+* `@glimmer/syntax`
+  * [#1285](https://github.com/glimmerjs/glimmer-vm/pull/1285) Pin @handlebars/parser to 2.0.x. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 1
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.77.1 (2021-02-17)
 
 #### :bug: Bug Fix
