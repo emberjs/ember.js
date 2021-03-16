@@ -234,6 +234,52 @@ abstract class ModifierManagerTest extends RenderTest {
       /You attempted to update `foo` on `.*`, but it had already been used previously in the same computation/
     );
   }
+
+  @test
+  'does not eagerly access arguments during destruction'(assert: Assert) {
+    class Foo extends CustomModifier {}
+
+    let foo = this.defineModifier(Foo);
+
+    let Main = defineComponent(
+      { foo },
+      '{{#if @state.show}}<h1 {{foo @state.bar baz=@state.baz}}>hello world</h1>{{/if}}'
+    );
+
+    let barCount = 0;
+    let bazCount = 0;
+
+    class State {
+      @tracked show = true;
+
+      get bar() {
+        if (this.show === false) {
+          barCount++;
+        }
+
+        return;
+      }
+
+      get baz() {
+        if (this.show === false) {
+          bazCount++;
+        }
+
+        return;
+      }
+    }
+
+    let state = new State();
+
+    this.renderComponent(Main, { state });
+
+    state.show = false;
+
+    this.rerender();
+
+    assert.equal(barCount, 0, 'bar was not accessed during detruction');
+    assert.equal(bazCount, 0, 'baz was not accessed during detruction');
+  }
 }
 
 class ModifierManagerTest313 extends ModifierManagerTest {

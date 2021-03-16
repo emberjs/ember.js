@@ -112,7 +112,8 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
 
     let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
 
-    let args = useArgsProxy ? argsProxyFor(capturedArgs, 'modifier') : reifyArgs(capturedArgs);
+    let argsProxy = argsProxyFor(capturedArgs, 'modifier');
+    let args = useArgsProxy ? argsProxy : reifyArgs(capturedArgs);
 
     let instance: ModifierInstance;
 
@@ -168,7 +169,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       state.debugName = typeof definition === 'function' ? definition.name : definition.toString();
     }
 
-    registerDestructor(state, () => delegate.destroyModifier(instance, state.args));
+    registerDestructor(state, () => delegate.destroyModifier(instance, argsProxy));
 
     return state;
   }
