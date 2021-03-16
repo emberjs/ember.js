@@ -336,7 +336,6 @@ Object.defineProperty(Ember.run, 'currentRunLoop', {
 
 // ****@ember/-internals/metal****
 
-// Using _globalsComputed here so that mutating the function is only available
 // in globals builds
 const computed = metal._globalsComputed;
 Ember.computed = computed;

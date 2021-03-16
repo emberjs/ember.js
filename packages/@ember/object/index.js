@@ -2,6 +2,22 @@ import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
 
+export { Object as default } from '@ember/-internals/runtime';
+
+export {
+  notifyPropertyChange,
+  defineProperty,
+  get,
+  set,
+  getProperties,
+  setProperties,
+  getWithDefault,
+  observer,
+  computed,
+  trySet,
+  aliasMethod,
+} from '@ember/-internals/metal';
+
 /**
   Decorator that turns the target function into an Action which can be accessed
   directly by reference.

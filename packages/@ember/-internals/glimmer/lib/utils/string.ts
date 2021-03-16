@@ -75,7 +75,7 @@ export function escapeExpression(string: any): string {
   @return {SafeString} A string that will not be HTML escaped by Handlebars.
   @public
 */
-export function htmlSafe(str: string) {
+export function htmlSafe(str: string): SafeString {
   if (str === null || str === undefined) {
     str = '';
   } else if (typeof str !== 'string') {
