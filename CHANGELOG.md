@@ -1,3 +1,13 @@
+## v0.77.3 (2021-03-16)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/manager`
+  * [#1276](https://github.com/glimmerjs/glimmer-vm/pull/1276) [BUGFIX] Do not eagerly consume modifier args during destruction ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
+
 ## v0.77.2 (2021-03-16)
 
 #### :bug: Bug Fix
