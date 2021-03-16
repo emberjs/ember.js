@@ -114,6 +114,8 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', function () 
 
     // "stand alone"
     ' {{#foo}}\n  {{bar}}\n {{/foo}}',
+
+    `<span class="stampFont" style="font-family: 'stampfont'">&#xf000;</span>`,
   ].forEach(buildTest);
 });
 
