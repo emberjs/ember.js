@@ -4,7 +4,7 @@ import {
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe,
 } from '@ember/instrumentation';
-import { getCurrentRunLoop } from '@ember/runloop';
+import { _getCurrentRunLoop } from '@ember/runloop';
 import { set, computed } from '@ember/-internals/metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
@@ -1019,7 +1019,7 @@ moduleFor(
       let OuterComponent = Component.extend({
         actions: {
           submit() {
-            capturedRunLoop = getCurrentRunLoop();
+            capturedRunLoop = _getCurrentRunLoop();
           },
         },
       });

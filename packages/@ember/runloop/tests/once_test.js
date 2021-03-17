@@ -1,4 +1,4 @@
-import { run, getCurrentRunLoop, once } from '..';
+import { run, _getCurrentRunLoop, once } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -55,7 +55,7 @@ moduleFor(
 
     ['@test should be inside of a runloop when running'](assert) {
       run(() => {
-        once(() => assert.ok(Boolean(getCurrentRunLoop()), 'should have a runloop'));
+        once(() => assert.ok(Boolean(_getCurrentRunLoop()), 'should have a runloop'));
       });
     }
   }

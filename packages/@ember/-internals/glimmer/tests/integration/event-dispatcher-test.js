@@ -1,7 +1,7 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
-import { getCurrentRunLoop, run } from '@ember/runloop';
+import { _getCurrentRunLoop, run } from '@ember/runloop';
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
@@ -164,7 +164,7 @@ moduleFor(
       this.registerComponent('x-foo', {
         ComponentClass: Component.extend({
           change() {
-            assert.ok(getCurrentRunLoop(), 'a run loop should have started');
+            assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
           },
         }),
         template: `<input id="is-done" type="checkbox">`,

@@ -5,7 +5,7 @@ import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner from 'backburner';
 
 let currentRunLoop = null;
-export function getCurrentRunLoop() {
+export function _getCurrentRunLoop() {
   return currentRunLoop;
 }
 
@@ -40,7 +40,7 @@ export const _rsvpErrorQueue = `${Math.random()}${Date.now()}`.replace('.', '');
   @default ['actions', 'destroy']
   @private
 */
-export const queues = [
+export const _queues = [
   'actions',
 
   // used in router transitions to prevent unnecessary loading state entry
@@ -56,7 +56,7 @@ export const queues = [
   _rsvpErrorQueue,
 ];
 
-export const backburner = new Backburner(queues, {
+export const _backburner = new Backburner(_queues, {
   defaultQueue: 'actions',
   onBegin,
   onEnd,
@@ -101,7 +101,7 @@ export const backburner = new Backburner(queues, {
   @public
 */
 export function run() {
-  return backburner.run(...arguments);
+  return _backburner.run(...arguments);
 }
 
 /**
@@ -149,7 +149,7 @@ export function run() {
   @public
 */
 export function join() {
-  return backburner.join(...arguments);
+  return _backburner.join(...arguments);
 }
 
 /**
@@ -259,7 +259,7 @@ export const bind = (...curried) => {
   @public
 */
 export function begin() {
-  backburner.begin();
+  _backburner.begin();
 }
 
 /**
@@ -282,7 +282,7 @@ export function begin() {
   @public
 */
 export function end() {
-  backburner.end();
+  _backburner.end();
 }
 
 /**
@@ -327,17 +327,17 @@ export function end() {
   @public
 */
 export function schedule(/* queue, target, method */) {
-  return backburner.schedule(...arguments);
+  return _backburner.schedule(...arguments);
 }
 
 // Used by global test teardown
-export function hasScheduledTimers() {
-  return backburner.hasTimers();
+export function _hasScheduledTimers() {
+  return _backburner.hasTimers();
 }
 
 // Used by global test teardown
-export function cancelTimers() {
-  backburner.cancelTimers();
+export function _cancelTimers() {
+  _backburner.cancelTimers();
 }
 
 /**
@@ -371,7 +371,7 @@ export function cancelTimers() {
   @public
 */
 export function later(/*target, method*/) {
-  return backburner.later(...arguments);
+  return _backburner.later(...arguments);
 }
 
 /**
@@ -391,7 +391,7 @@ export function later(/*target, method*/) {
 */
 export function once(...args) {
   args.unshift('actions');
-  return backburner.scheduleOnce(...args);
+  return _backburner.scheduleOnce(...args);
 }
 
 /**
@@ -467,7 +467,7 @@ export function once(...args) {
   @public
 */
 export function scheduleOnce(/* queue, target, method*/) {
-  return backburner.scheduleOnce(...arguments);
+  return _backburner.scheduleOnce(...arguments);
 }
 
 /**
@@ -542,7 +542,7 @@ export function scheduleOnce(/* queue, target, method*/) {
 */
 export function next(...args) {
   args.push(1);
-  return backburner.later(...args);
+  return _backburner.later(...args);
 }
 
 /**
@@ -613,7 +613,7 @@ export function next(...args) {
   @public
 */
 export function cancel(timer) {
-  return backburner.cancel(timer);
+  return _backburner.cancel(timer);
 }
 
 /**
@@ -691,7 +691,7 @@ export function cancel(timer) {
   @public
 */
 export function debounce() {
-  return backburner.debounce(...arguments);
+  return _backburner.debounce(...arguments);
 }
 
 /**
@@ -738,7 +738,7 @@ export function debounce() {
   @public
 */
 export function throttle() {
-  return backburner.throttle(...arguments);
+  return _backburner.throttle(...arguments);
 }
 
 export let _deprecatedGlobalGetCurrentRunLoop;
@@ -780,16 +780,16 @@ if (DEBUG) {
       }
     );
 
-    return getCurrentRunLoop();
+    return _getCurrentRunLoop();
   };
 
-  defineDeprecatedRunloopFunc('backburner', backburner);
+  defineDeprecatedRunloopFunc('backburner', _backburner);
   defineDeprecatedRunloopFunc('begin', begin);
   defineDeprecatedRunloopFunc('bind', bind);
   defineDeprecatedRunloopFunc('cancel', cancel);
   defineDeprecatedRunloopFunc('debounce', debounce);
   defineDeprecatedRunloopFunc('end', end);
-  defineDeprecatedRunloopFunc('hasScheduledTimers', hasScheduledTimers);
+  defineDeprecatedRunloopFunc('hasScheduledTimers', _hasScheduledTimers);
   defineDeprecatedRunloopFunc('join', join);
   defineDeprecatedRunloopFunc('later', later);
   defineDeprecatedRunloopFunc('next', next);
@@ -797,19 +797,19 @@ if (DEBUG) {
   defineDeprecatedRunloopFunc('schedule', schedule);
   defineDeprecatedRunloopFunc('scheduleOnce', scheduleOnce);
   defineDeprecatedRunloopFunc('throttle', throttle);
-  defineDeprecatedRunloopFunc('cancelTimers', cancelTimers);
+  defineDeprecatedRunloopFunc('cancelTimers', _cancelTimers);
   Object.defineProperty(run, 'currentRunLoop', {
     get: _deprecatedGlobalGetCurrentRunLoop,
     enumerable: false,
   });
 } else {
-  run.backburner = backburner;
+  run.backburner = _backburner;
   run.begin = begin;
   run.bind = bind;
   run.cancel = cancel;
   run.debounce = debounce;
   run.end = end;
-  run.hasScheduledTimers = hasScheduledTimers;
+  run.hasScheduledTimers = _hasScheduledTimers;
   run.join = join;
   run.later = later;
   run.next = next;
@@ -817,9 +817,9 @@ if (DEBUG) {
   run.schedule = schedule;
   run.scheduleOnce = scheduleOnce;
   run.throttle = throttle;
-  run.cancelTimers = cancelTimers;
+  run.cancelTimers = _cancelTimers;
   Object.defineProperty(run, 'currentRunLoop', {
-    get: getCurrentRunLoop,
+    get: _getCurrentRunLoop,
     enumerable: false,
   });
 }

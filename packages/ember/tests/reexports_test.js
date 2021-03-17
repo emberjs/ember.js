@@ -401,13 +401,13 @@ let allExports = [
 
   // @ember/runloop
   ['run', '@ember/runloop', 'run'],
-  ['run.backburner', '@ember/runloop', 'backburner', true],
+  ['run.backburner', '@ember/runloop', '_backburner', true],
   ['run.begin', '@ember/runloop', 'begin', true],
   ['run.bind', '@ember/runloop', 'bind', true],
   ['run.cancel', '@ember/runloop', 'cancel', true],
   ['run.debounce', '@ember/runloop', 'debounce', true],
   ['run.end', '@ember/runloop', 'end', true],
-  ['run.hasScheduledTimers', '@ember/runloop', 'hasScheduledTimers', true],
+  ['run.hasScheduledTimers', '@ember/runloop', '_hasScheduledTimers', true],
   ['run.join', '@ember/runloop', 'join', true],
   ['run.later', '@ember/runloop', 'later', true],
   ['run.next', '@ember/runloop', 'next', true],
@@ -418,10 +418,10 @@ let allExports = [
   [
     'run.currentRunLoop',
     '@ember/runloop',
-    { get: DEBUG ? '_deprecatedGlobalGetCurrentRunLoop' : 'getCurrentRunLoop' },
+    { get: DEBUG ? '_deprecatedGlobalGetCurrentRunLoop' : '_getCurrentRunLoop' },
     true,
   ],
-  ['run.cancelTimers', '@ember/runloop', 'cancelTimers', true],
+  ['run.cancelTimers', '@ember/runloop', '_cancelTimers', true],
 
   // @ember/service
   ['Service', '@ember/service', 'default'],

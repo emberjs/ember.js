@@ -1,7 +1,7 @@
 import {
-  getCurrentRunLoop,
+  _getCurrentRunLoop,
   // @ts-ignore
-  hasScheduledTimers,
+  _hasScheduledTimers,
   // @ts-ignore
   next,
   run,
@@ -35,7 +35,7 @@ export function runLoopSettled(event?: any): Promise<void> {
     // Every 5ms, poll for the async thing to have finished
     let watcher = setInterval(() => {
       // If there are scheduled timers or we are inside of a run loop, keep polling
-      if (hasScheduledTimers() || getCurrentRunLoop()) {
+      if (_hasScheduledTimers() || _getCurrentRunLoop()) {
         return;
       }
 
