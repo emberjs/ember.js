@@ -13,14 +13,22 @@ moduleFor(
   class extends AbstractTestCase {
     [`@test Ember exports correctly`](assert) {
       allExports.forEach((reexport) => {
-        let [path, moduleId, exportName] = reexport;
+        let [path, moduleId, exportName, isDeprecated] = reexport;
 
         // default path === exportName if none present
         if (!exportName) {
           exportName = path;
         }
 
-        confirmExport(Ember, assert, path, moduleId, exportName, `Ember.${path} exports correctly`);
+        confirmExport(
+          Ember,
+          assert,
+          path,
+          moduleId,
+          exportName,
+          isDeprecated,
+          `Ember.${path} exports correctly`
+        );
       });
     }
 
@@ -279,7 +287,7 @@ let allExports = [
   ['Object', '@ember/object', 'default'],
   ['_action', '@ember/object', 'action'],
   ['aliasMethod', '@ember/object', 'aliasMethod'],
-  [null, '@ember/object', 'computed'],
+  ['computed', '@ember/object', 'computed'],
   ['defineProperty', '@ember/object', 'defineProperty'],
   ['get', '@ember/object', 'get'],
   ['getProperties', '@ember/object', 'getProperties'],
@@ -295,39 +303,39 @@ let allExports = [
 
   // @ember/object/computed
   ['ComputedProperty', '@ember/object/computed', 'default'],
-  ['computed.alias', '@ember/object/computed', 'alias'],
-  ['computed.and', '@ember/object/computed', 'and'],
-  ['computed.bool', '@ember/object/computed', 'bool'],
-  ['computed.collect', '@ember/object/computed', 'collect'],
-  ['computed.deprecatingAlias', '@ember/object/computed', 'deprecatingAlias'],
-  ['computed.empty', '@ember/object/computed', 'empty'],
-  ['computed.equal', '@ember/object/computed', 'equal'],
-  ['expandProperties', '@ember/object/computed', 'expandProperties'],
-  ['computed.filter', '@ember/object/computed', 'filter'],
-  ['computed.filterBy', '@ember/object/computed', 'filterBy'],
-  ['computed.gt', '@ember/object/computed', 'gt'],
-  ['computed.gte', '@ember/object/computed', 'gte'],
-  ['computed.intersect', '@ember/object/computed', 'intersect'],
-  ['computed.lt', '@ember/object/computed', 'lt'],
-  ['computed.lte', '@ember/object/computed', 'lte'],
-  ['computed.map', '@ember/object/computed', 'map'],
-  ['computed.mapBy', '@ember/object/computed', 'mapBy'],
-  ['computed.match', '@ember/object/computed', 'match'],
-  ['computed.max', '@ember/object/computed', 'max'],
-  ['computed.min', '@ember/object/computed', 'min'],
-  ['computed.none', '@ember/object/computed', 'none'],
-  ['computed.not', '@ember/object/computed', 'not'],
-  ['computed.notEmpty', '@ember/object/computed', 'notEmpty'],
-  ['computed.oneWay', '@ember/object/computed', 'oneWay'],
-  ['computed.or', '@ember/object/computed', 'or'],
-  ['computed.readOnly', '@ember/object/computed', 'readOnly'],
-  ['computed.reads', '@ember/object/computed', 'reads'],
-  ['computed.setDiff', '@ember/object/computed', 'setDiff'],
-  ['computed.sort', '@ember/object/computed', 'sort'],
-  ['computed.sum', '@ember/object/computed', 'sum'],
-  ['computed.union', '@ember/object/computed', 'union'],
-  ['computed.uniq', '@ember/object/computed', 'uniq'],
-  ['computed.uniqBy', '@ember/object/computed', 'uniqBy'],
+  ['computed.alias', '@ember/object/computed', 'alias', true],
+  ['computed.and', '@ember/object/computed', 'and', true],
+  ['computed.bool', '@ember/object/computed', 'bool', true],
+  ['computed.collect', '@ember/object/computed', 'collect', true],
+  ['computed.deprecatingAlias', '@ember/object/computed', 'deprecatingAlias', true],
+  ['computed.empty', '@ember/object/computed', 'empty', true],
+  ['computed.equal', '@ember/object/computed', 'equal', true],
+  ['expandProperties', '@ember/object/computed', 'expandProperties', true],
+  ['computed.filter', '@ember/object/computed', 'filter', true],
+  ['computed.filterBy', '@ember/object/computed', 'filterBy', true],
+  ['computed.gt', '@ember/object/computed', 'gt', true],
+  ['computed.gte', '@ember/object/computed', 'gte', true],
+  ['computed.intersect', '@ember/object/computed', 'intersect', true],
+  ['computed.lt', '@ember/object/computed', 'lt', true],
+  ['computed.lte', '@ember/object/computed', 'lte', true],
+  ['computed.map', '@ember/object/computed', 'map', true],
+  ['computed.mapBy', '@ember/object/computed', 'mapBy', true],
+  ['computed.match', '@ember/object/computed', 'match', true],
+  ['computed.max', '@ember/object/computed', 'max', true],
+  ['computed.min', '@ember/object/computed', 'min', true],
+  ['computed.none', '@ember/object/computed', 'none', true],
+  ['computed.not', '@ember/object/computed', 'not', true],
+  ['computed.notEmpty', '@ember/object/computed', 'notEmpty', true],
+  ['computed.oneWay', '@ember/object/computed', 'oneWay', true],
+  ['computed.or', '@ember/object/computed', 'or', true],
+  ['computed.readOnly', '@ember/object/computed', 'readOnly', true],
+  ['computed.reads', '@ember/object/computed', 'reads', true],
+  ['computed.setDiff', '@ember/object/computed', 'setDiff', true],
+  ['computed.sort', '@ember/object/computed', 'sort', true],
+  ['computed.sum', '@ember/object/computed', 'sum', true],
+  ['computed.union', '@ember/object/computed', 'union', true],
+  ['computed.uniq', '@ember/object/computed', 'uniq', true],
+  ['computed.uniqBy', '@ember/object/computed', 'uniqBy', true],
 
   // @ember/object/core
   ['CoreObject', '@ember/object/core', 'default'],
@@ -392,24 +400,23 @@ let allExports = [
   ['Router', '@ember/routing/router', 'default'],
 
   // @ember/runloop
-  [null, '@ember/runloop', 'run'],
-  ['run', '@ember/runloop', '_globalsRun'],
-  ['run.backburner', '@ember/runloop', 'backburner'],
-  ['run.begin', '@ember/runloop', 'begin'],
-  ['run.bind', '@ember/runloop', 'bind'],
-  ['run.cancel', '@ember/runloop', 'cancel'],
-  ['run.debounce', '@ember/runloop', 'debounce'],
-  ['run.end', '@ember/runloop', 'end'],
-  ['run.hasScheduledTimers', '@ember/runloop', 'hasScheduledTimers'],
-  ['run.join', '@ember/runloop', 'join'],
-  ['run.later', '@ember/runloop', 'later'],
-  ['run.next', '@ember/runloop', 'next'],
-  ['run.once', '@ember/runloop', 'once'],
-  ['run.schedule', '@ember/runloop', 'schedule'],
-  ['run.scheduleOnce', '@ember/runloop', 'scheduleOnce'],
-  ['run.throttle', '@ember/runloop', 'throttle'],
-  ['run.currentRunLoop', '@ember/runloop', { get: 'getCurrentRunLoop' }],
-  ['run.cancelTimers', '@ember/runloop', 'cancelTimers'],
+  ['run', '@ember/runloop', 'run'],
+  ['run.backburner', '@ember/runloop', 'backburner', true],
+  ['run.begin', '@ember/runloop', 'begin', true],
+  ['run.bind', '@ember/runloop', 'bind', true],
+  ['run.cancel', '@ember/runloop', 'cancel', true],
+  ['run.debounce', '@ember/runloop', 'debounce', true],
+  ['run.end', '@ember/runloop', 'end', true],
+  ['run.hasScheduledTimers', '@ember/runloop', 'hasScheduledTimers', true],
+  ['run.join', '@ember/runloop', 'join', true],
+  ['run.later', '@ember/runloop', 'later', true],
+  ['run.next', '@ember/runloop', 'next', true],
+  ['run.once', '@ember/runloop', 'once', true],
+  ['run.schedule', '@ember/runloop', 'schedule', true],
+  ['run.scheduleOnce', '@ember/runloop', 'scheduleOnce', true],
+  ['run.throttle', '@ember/runloop', 'throttle', true],
+  ['run.currentRunLoop', '@ember/runloop', 'getCurrentRunLoop', true],
+  ['run.cancelTimers', '@ember/runloop', 'cancelTimers', true],
 
   // @ember/service
   ['Service', '@ember/service', 'default'],
@@ -487,7 +494,6 @@ let allExports = [
   ['Container', '@ember/-internals/container', 'Container'],
 
   // @ember/-internals/metal
-  ['computed', '@ember/-internals/metal', '_globalsComputed'],
   ['_descriptor', '@ember/-internals/metal', 'nativeDescDecorator'],
   ['_setClassicDecorator', '@ember/-internals/metal', 'setClassicDecorator'],
   ['_getPath', '@ember/-internals/metal'],

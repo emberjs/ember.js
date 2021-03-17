@@ -1,4 +1,5 @@
-import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
+import { assert, deprecate } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner from 'backburner';
@@ -102,9 +103,6 @@ export const backburner = new Backburner(queues, {
 export function run() {
   return backburner.run(...arguments);
 }
-
-// used for the Ember.run global only
-export const _globalsRun = run.bind(null);
 
 /**
   If no run-loop is present, it creates a new one. If a run loop is
@@ -741,4 +739,64 @@ export function debounce() {
 */
 export function throttle() {
   return backburner.throttle(...arguments);
+}
+
+// eslint-disable-next-line no-undef
+if (DEBUG) {
+  let defineDeprecatedRunloopFunc = (key, func, alt) => {
+    Object.defineProperty(run, key, {
+      get() {
+        deprecate(
+          `Using \`run.${key}\` has been deprecated. Instead, import the value directly from @ember/runloop:\n\n  import { ${
+            alt || key
+          } } from '@ember/runloop';`,
+          false,
+          {
+            id: 'deprecated-run-loop-and-computed-dot-access',
+            until: '4.0.0',
+            for: 'ember-source',
+            since: {
+              enabled: '3.27.0',
+            },
+          }
+        );
+
+        return func;
+      },
+    });
+  };
+
+  defineDeprecatedRunloopFunc('backburner', backburner);
+  defineDeprecatedRunloopFunc('begin', begin);
+  defineDeprecatedRunloopFunc('bind', bind);
+  defineDeprecatedRunloopFunc('cancel', cancel);
+  defineDeprecatedRunloopFunc('debounce', debounce);
+  defineDeprecatedRunloopFunc('end', end);
+  defineDeprecatedRunloopFunc('hasScheduledTimers', hasScheduledTimers);
+  defineDeprecatedRunloopFunc('join', join);
+  defineDeprecatedRunloopFunc('later', later);
+  defineDeprecatedRunloopFunc('next', next);
+  defineDeprecatedRunloopFunc('once', once);
+  defineDeprecatedRunloopFunc('schedule', schedule);
+  defineDeprecatedRunloopFunc('scheduleOnce', scheduleOnce);
+  defineDeprecatedRunloopFunc('throttle', throttle);
+  defineDeprecatedRunloopFunc('cancelTimers', cancelTimers);
+  defineDeprecatedRunloopFunc('currentRunLoop', getCurrentRunLoop, 'getCurrentRunLoop');
+} else {
+  run.backburner = backburner;
+  run.begin = begin;
+  run.bind = bind;
+  run.cancel = cancel;
+  run.debounce = debounce;
+  run.end = end;
+  run.hasScheduledTimers = hasScheduledTimers;
+  run.join = join;
+  run.later = later;
+  run.next = next;
+  run.once = once;
+  run.schedule = schedule;
+  run.scheduleOnce = scheduleOnce;
+  run.throttle = throttle;
+  run.cancelTimers = cancelTimers;
+  run.currentRunLoop = getCurrentRunLoop;
 }
