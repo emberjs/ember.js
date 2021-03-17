@@ -1,4 +1,5 @@
-import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
+import { assert, deprecate } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
 
@@ -17,6 +18,132 @@ export {
   trySet,
   aliasMethod,
 } from '@ember/-internals/metal';
+
+import { computed } from '@ember/-internals/metal';
+
+import {
+  alias,
+  and,
+  bool,
+  collect,
+  deprecatingAlias,
+  empty,
+  equal,
+  filterBy,
+  filter,
+  gte,
+  gt,
+  intersect,
+  lte,
+  lt,
+  mapBy,
+  map,
+  match,
+  max,
+  min,
+  none,
+  notEmpty,
+  not,
+  oneWay,
+  or,
+  readOnly,
+  setDiff,
+  sort,
+  sum,
+  union,
+  uniqBy,
+  uniq,
+} from '@ember/object/computed';
+
+// eslint-disable-next-line no-undef
+if (DEBUG) {
+  let defineDeprecatedComputedFunc = (key, func) => {
+    Object.defineProperty(computed, key, {
+      get() {
+        deprecate(
+          `Using \`computed.${key}\` has been deprecated. Instead, import the value directly from @ember/object/computed:\n\n  import { ${key} } from '@ember/runloop';`,
+          false,
+          {
+            id: 'deprecated-run-loop-and-computed-dot-access',
+            until: '4.0.0',
+            for: 'ember-source',
+            since: {
+              enabled: '3.27.0',
+            },
+          }
+        );
+
+        return func;
+      },
+    });
+  };
+
+  defineDeprecatedComputedFunc('alias', alias);
+  defineDeprecatedComputedFunc('and', and);
+  defineDeprecatedComputedFunc('bool', bool);
+  defineDeprecatedComputedFunc('collect', collect);
+  defineDeprecatedComputedFunc('deprecatingAlias', deprecatingAlias);
+  defineDeprecatedComputedFunc('empty', empty);
+  defineDeprecatedComputedFunc('equal', equal);
+  defineDeprecatedComputedFunc('filterBy', filterBy);
+  defineDeprecatedComputedFunc('filter', filter);
+  defineDeprecatedComputedFunc('gte', gte);
+  defineDeprecatedComputedFunc('gt', gt);
+  defineDeprecatedComputedFunc('intersect', intersect);
+  defineDeprecatedComputedFunc('lte', lte);
+  defineDeprecatedComputedFunc('lt', lt);
+  defineDeprecatedComputedFunc('mapBy', mapBy);
+  defineDeprecatedComputedFunc('map', map);
+  defineDeprecatedComputedFunc('match', match);
+  defineDeprecatedComputedFunc('max', max);
+  defineDeprecatedComputedFunc('min', min);
+  defineDeprecatedComputedFunc('none', none);
+  defineDeprecatedComputedFunc('notEmpty', notEmpty);
+  defineDeprecatedComputedFunc('not', not);
+  defineDeprecatedComputedFunc('oneWay', oneWay);
+  defineDeprecatedComputedFunc('reads', oneWay);
+  defineDeprecatedComputedFunc('or', or);
+  defineDeprecatedComputedFunc('readOnly', readOnly);
+  defineDeprecatedComputedFunc('setDiff', setDiff);
+  defineDeprecatedComputedFunc('sort', sort);
+  defineDeprecatedComputedFunc('sum', sum);
+  defineDeprecatedComputedFunc('union', union);
+  defineDeprecatedComputedFunc('uniqBy', uniqBy);
+  defineDeprecatedComputedFunc('uniq', uniq);
+} else {
+  computed.alias = alias;
+  computed.and = and;
+  computed.bool = bool;
+  computed.collect = collect;
+  computed.deprecatingAlias = deprecatingAlias;
+  computed.empty = empty;
+  computed.equal = equal;
+  computed.filterBy = filterBy;
+  computed.filter = filter;
+  computed.gte = gte;
+  computed.gt = gt;
+  computed.intersect = intersect;
+  computed.lte = lte;
+  computed.lt = lt;
+  computed.mapBy = mapBy;
+  computed.map = map;
+  computed.match = match;
+  computed.max = max;
+  computed.min = min;
+  computed.none = none;
+  computed.notEmpty = notEmpty;
+  computed.not = not;
+  computed.oneWay = oneWay;
+  computed.reads = oneWay;
+  computed.or = or;
+  computed.readOnly = readOnly;
+  computed.setDiff = setDiff;
+  computed.sort = sort;
+  computed.sum = sum;
+  computed.union = union;
+  computed.uniqBy = uniqBy;
+  computed.uniq = uniq;
+}
 
 /**
   Decorator that turns the target function into an Action which can be accessed

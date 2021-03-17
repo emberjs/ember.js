@@ -33,41 +33,8 @@ import {
 } from '@ember/string';
 import Service, { inject as injectService } from '@ember/service';
 
-import { action } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { dependentKeyCompat } from '@ember/object/compat';
-
-import {
-  and,
-  bool,
-  collect,
-  deprecatingAlias,
-  empty,
-  equal,
-  filterBy,
-  filter,
-  gte,
-  gt,
-  intersect,
-  lte,
-  lt,
-  mapBy,
-  map,
-  match,
-  max,
-  min,
-  none,
-  notEmpty,
-  not,
-  oneWay,
-  or,
-  readOnly,
-  setDiff,
-  sort,
-  sum,
-  union,
-  uniqBy,
-  uniq,
-} from '@ember/object/computed';
 
 import {
   Object as EmberObject,
@@ -124,7 +91,7 @@ import * as views from '@ember/-internals/views';
 import * as routing from '@ember/-internals/routing';
 import * as extensionSupport from '@ember/-internals/extension-support';
 import EmberError from '@ember/error';
-import * as runloop from '@ember/runloop';
+import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
@@ -311,37 +278,14 @@ Ember.Instrumentation = {
 
 // ****@ember/runloop****
 
-// Using _globalsRun here so that mutating the function (adding
-// `next`, `later`, etc to it) is only available in globals builds
-Ember.run = runloop._globalsRun;
-Ember.run.backburner = runloop.backburner;
-Ember.run.begin = runloop.begin;
-Ember.run.bind = runloop.bind;
-Ember.run.cancel = runloop.cancel;
-Ember.run.debounce = runloop.debounce;
-Ember.run.end = runloop.end;
-Ember.run.hasScheduledTimers = runloop.hasScheduledTimers;
-Ember.run.join = runloop.join;
-Ember.run.later = runloop.later;
-Ember.run.next = runloop.next;
-Ember.run.once = runloop.once;
-Ember.run.schedule = runloop.schedule;
-Ember.run.scheduleOnce = runloop.scheduleOnce;
-Ember.run.throttle = runloop.throttle;
-Ember.run.cancelTimers = runloop.cancelTimers;
-Object.defineProperty(Ember.run, 'currentRunLoop', {
-  get: runloop.getCurrentRunLoop,
-  enumerable: false,
-});
+Ember.run = run;
 
 // ****@ember/-internals/metal****
 
 // in globals builds
-const computed = metal._globalsComputed;
 Ember.computed = computed;
 Ember._descriptor = metal.nativeDescDecorator;
 Ember._tracked = metal.tracked;
-computed.alias = metal.alias;
 Ember.cacheFor = metal.getCachedValueFor;
 Ember.ComputedProperty = metal.ComputedProperty;
 Ember._setClassicDecorator = metal.setClassicDecorator;
@@ -506,40 +450,6 @@ Ember.Namespace = Namespace;
 
 Ember._action = action;
 Ember._dependentKeyCompat = dependentKeyCompat;
-
-computed.empty = empty;
-computed.notEmpty = notEmpty;
-computed.none = none;
-computed.not = not;
-computed.bool = bool;
-computed.match = match;
-computed.equal = equal;
-computed.gt = gt;
-computed.gte = gte;
-computed.lt = lt;
-computed.lte = lte;
-computed.oneWay = oneWay;
-computed.reads = oneWay;
-computed.readOnly = readOnly;
-computed.deprecatingAlias = deprecatingAlias;
-computed.and = and;
-computed.or = or;
-
-computed.sum = sum;
-computed.min = min;
-computed.max = max;
-computed.map = map;
-computed.sort = sort;
-computed.setDiff = setDiff;
-computed.mapBy = mapBy;
-computed.filter = filter;
-computed.filterBy = filterBy;
-computed.uniq = uniq;
-
-computed.uniqBy = uniqBy;
-computed.union = union;
-computed.intersect = intersect;
-computed.collect = collect;
 
 /**
   Defines the hash of localized strings for the current language. Used by
