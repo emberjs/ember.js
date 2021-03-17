@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.26.0-beta.5 (March 16, 2021)
+
+- [#19405](https://github.com/emberjs/ember.js/pull/19405) [BUGFIX] Avoid instantiation errors when `app/router.js` injects the router service.
+
 ### v3.26.0-beta.4 (March 08, 2021)
 
 - [#19436](https://github.com/emberjs/ember.js/pull/19436) [BUGFIX] Support observer keys with colons
