@@ -2,7 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { backburner, getCurrentRunLoop } from '@ember/runloop';
+import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -229,9 +229,9 @@ export function renderSettled() {
     renderSettledDeferred = RSVP.defer();
     // if there is no current runloop, the promise created above will not have
     // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!getCurrentRunLoop()) {
+    if (!_getCurrentRunLoop()) {
       // ensure a runloop has been kicked off
-      backburner.schedule('actions', null, K);
+      _backburner.schedule('actions', null, K);
     }
   }
 
@@ -243,7 +243,7 @@ function resolveRenderPromise() {
     let resolve = renderSettledDeferred.resolve;
     renderSettledDeferred = null;
 
-    backburner.join(null, resolve);
+    _backburner.join(null, resolve);
   }
 }
 
@@ -258,15 +258,15 @@ function loopEnd() {
         throw new Error('infinite rendering invalidation detected');
       }
       loops++;
-      return backburner.join(null, K);
+      return _backburner.join(null, K);
     }
   }
   loops = 0;
   resolveRenderPromise();
 }
 
-backburner.on('begin', loopBegin);
-backburner.on('end', loopEnd);
+_backburner.on('begin', loopBegin);
+_backburner.on('end', loopEnd);
 
 interface ViewRegistry {
   [viewId: string]: unknown;
@@ -574,7 +574,7 @@ export class Renderer {
   }
 
   _scheduleRevalidate(): void {
-    backburner.scheduleOnce('render', this, this._revalidate);
+    _backburner.scheduleOnce('render', this, this._revalidate);
   }
 
   _isValid(): boolean {

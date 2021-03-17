@@ -5,7 +5,7 @@ import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { assert, deprecate, warn } from '@ember/debug';
 import { DeprecationOptions } from '@ember/debug/lib/deprecate';
-import { backburner, schedule } from '@ember/runloop';
+import { _backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import { EnvironmentDelegate } from '@glimmer/runtime';
@@ -20,7 +20,7 @@ import toBool from './utils/to-bool';
 
 setGlobalContext({
   scheduleRevalidate() {
-    backburner.ensureInstance();
+    _backburner.ensureInstance();
   },
 
   toBool,

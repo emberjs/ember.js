@@ -1,5 +1,5 @@
 import { getOwner } from '@ember/-internals/owner';
-import { backburner } from '@ember/runloop';
+import { _backburner } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { dasherize } from '@ember/string';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
@@ -364,10 +364,10 @@ export default EmberObject.extend({
           this.recordsWatchers.forEach((watcher) => watcher.revalidate());
         };
 
-        backburner.on('end', this.flushWatchers);
+        _backburner.on('end', this.flushWatchers);
       }
     } else if (this.typeWatchers.size === 0 && this.recordsWatchers.size === 0) {
-      backburner.off('end', this.flushWatchers);
+      _backburner.off('end', this.flushWatchers);
       this.flushWatchers = null;
     }
   },
@@ -386,7 +386,7 @@ export default EmberObject.extend({
     this.releaseMethods.forEach((fn) => fn());
 
     if (this.flushWatchers) {
-      backburner.off('end', this.flushWatchers);
+      _backburner.off('end', this.flushWatchers);
     }
   },
 

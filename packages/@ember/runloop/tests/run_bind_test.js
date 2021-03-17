@@ -1,4 +1,4 @@
-import { bind, getCurrentRunLoop } from '..';
+import { bind, _getCurrentRunLoop } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -10,7 +10,7 @@ moduleFor(
       let obj = {
         value: 0,
         increment(increment) {
-          assert.ok(getCurrentRunLoop(), 'expected a run-loop');
+          assert.ok(_getCurrentRunLoop(), 'expected a run-loop');
           return (this.value += increment);
         },
       };
@@ -24,7 +24,7 @@ moduleFor(
       assert.expect(4);
 
       function asyncCallback(increment, increment2, increment3) {
-        assert.ok(getCurrentRunLoop(), 'expected a run-loop');
+        assert.ok(_getCurrentRunLoop(), 'expected a run-loop');
         assert.equal(increment, 1);
         assert.equal(increment2, 2);
         assert.equal(increment3, 3);
