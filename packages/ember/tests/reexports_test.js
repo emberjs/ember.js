@@ -415,7 +415,12 @@ let allExports = [
   ['run.schedule', '@ember/runloop', 'schedule', true],
   ['run.scheduleOnce', '@ember/runloop', 'scheduleOnce', true],
   ['run.throttle', '@ember/runloop', 'throttle', true],
-  ['run.currentRunLoop', '@ember/runloop', 'getCurrentRunLoop', true],
+  [
+    'run.currentRunLoop',
+    '@ember/runloop',
+    { get: DEBUG ? '_deprecatedGlobalGetCurrentRunLoop' : 'getCurrentRunLoop' },
+    true,
+  ],
   ['run.cancelTimers', '@ember/runloop', 'cancelTimers', true],
 
   // @ember/service

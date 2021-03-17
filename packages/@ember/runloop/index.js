@@ -741,15 +741,15 @@ export function throttle() {
   return backburner.throttle(...arguments);
 }
 
+export let _deprecatedGlobalGetCurrentRunLoop;
+
 // eslint-disable-next-line no-undef
 if (DEBUG) {
-  let defineDeprecatedRunloopFunc = (key, func, alt) => {
+  let defineDeprecatedRunloopFunc = (key, func) => {
     Object.defineProperty(run, key, {
       get() {
         deprecate(
-          `Using \`run.${key}\` has been deprecated. Instead, import the value directly from @ember/runloop:\n\n  import { ${
-            alt || key
-          } } from '@ember/runloop';`,
+          `Using \`run.${key}\` has been deprecated. Instead, import the value directly from @ember/runloop:\n\n  import { ${key} } from '@ember/runloop';`,
           false,
           {
             id: 'deprecated-run-loop-and-computed-dot-access',
@@ -764,6 +764,23 @@ if (DEBUG) {
         return func;
       },
     });
+  };
+
+  _deprecatedGlobalGetCurrentRunLoop = () => {
+    deprecate(
+      `Using \`run.currentRunLoop\` has been deprecated. Instead, import the getCurrentRunLoop() directly from @ember/runloop:\n\n  import { getCurrentRunLoop } from '@ember/runloop';`,
+      false,
+      {
+        id: 'deprecated-run-loop-and-computed-dot-access',
+        until: '4.0.0',
+        for: 'ember-source',
+        since: {
+          enabled: '3.27.0',
+        },
+      }
+    );
+
+    return getCurrentRunLoop();
   };
 
   defineDeprecatedRunloopFunc('backburner', backburner);
@@ -781,7 +798,10 @@ if (DEBUG) {
   defineDeprecatedRunloopFunc('scheduleOnce', scheduleOnce);
   defineDeprecatedRunloopFunc('throttle', throttle);
   defineDeprecatedRunloopFunc('cancelTimers', cancelTimers);
-  defineDeprecatedRunloopFunc('currentRunLoop', getCurrentRunLoop, 'getCurrentRunLoop');
+  Object.defineProperty(run, 'currentRunLoop', {
+    get: _deprecatedGlobalGetCurrentRunLoop,
+    enumerable: false,
+  });
 } else {
   run.backburner = backburner;
   run.begin = begin;
@@ -798,5 +818,8 @@ if (DEBUG) {
   run.scheduleOnce = scheduleOnce;
   run.throttle = throttle;
   run.cancelTimers = cancelTimers;
-  run.currentRunLoop = getCurrentRunLoop;
+  Object.defineProperty(run, 'currentRunLoop', {
+    get: getCurrentRunLoop,
+    enumerable: false,
+  });
 }
