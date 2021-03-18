@@ -32,7 +32,7 @@ import {
 } from './decorator';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
-import { classToString, setUnprocessedMixins } from './namespace_search';
+import { setUnprocessedMixins } from './namespace_search';
 import { addObserver, removeObserver, revalidateObservers } from './observer';
 import { defineDecorator, defineValue } from './properties';
 
@@ -735,8 +735,6 @@ function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined 
 }
 
 type MixinLike = Mixin | { [key: string]: any };
-
-Mixin.prototype.toString = classToString;
 
 if (DEBUG) {
   Object.seal(Mixin.prototype);

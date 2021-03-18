@@ -2,6 +2,8 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
 import { Object as EmberObject } from '@ember/-internals/runtime';
+import { processAllNamespaces } from '@ember/-internals/metal';
+import { getName } from '@ember/-internals/utils';
 import {
   moduleFor,
   AbstractTestCase as TestCase,
@@ -37,11 +39,8 @@ moduleFor(
 
     ['@test acts like a namespace'](assert) {
       engine.Foo = EmberObject.extend();
-      assert.equal(
-        engine.Foo.toString(),
-        'TestEngine.Foo',
-        'Classes pick up their parent namespace'
-      );
+      processAllNamespaces();
+      assert.equal(getName(engine.Foo), 'TestEngine.Foo', 'Classes pick up their parent namespace');
     }
 
     ['@test builds a registry'](assert) {

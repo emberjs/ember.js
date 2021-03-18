@@ -1,11 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { getName, setName } from '@ember/-internals/utils';
 
-// TODO, this only depends on context, otherwise it could be in utils
-// move into its own package
-// it is needed by Mixin for classToString
-// maybe move it into environment
-
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 let searchDisabled = false;
@@ -94,16 +89,6 @@ export function processAllNamespaces(): void {
   }
 }
 
-export function classToString(this: object): string {
-  let name = getName(this);
-  if (name !== void 0) {
-    return name;
-  }
-  name = calculateToString(this);
-  setName(this, name);
-  return name;
-}
-
 export function isSearchDisabled(): boolean {
   return searchDisabled;
 }
@@ -139,7 +124,7 @@ function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace
     paths[idx] = key;
 
     // If we have found an unprocessed class
-    if (obj && obj.toString === classToString && getName(obj) === void 0) {
+    if (obj && getName(obj) === void 0) {
       // Replace the class' `toString` with the dot-separated path
       setName(obj, paths.join('.'));
       // Support nested namespaces
@@ -174,30 +159,4 @@ function tryIsNamespace(lookup: { [k: string]: any }, prop: string): Namespace |
   } catch (e) {
     // continue
   }
-}
-
-function calculateToString(target: object): string {
-  let str;
-
-  if (!searchDisabled) {
-    processAllNamespaces();
-
-    str = getName(target);
-    if (str !== void 0) {
-      return str;
-    }
-    let superclass = target;
-    do {
-      superclass = Object.getPrototypeOf(superclass);
-      if (superclass === Function.prototype || superclass === Object.prototype) {
-        break;
-      }
-      str = getName(target);
-      if (str !== void 0) {
-        str = `(subclass of ${str})`;
-        break;
-      }
-    } while (str === void 0);
-  }
-  return str || '(unknown)';
 }

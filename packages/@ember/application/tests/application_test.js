@@ -1,7 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
 import { ENV, context } from '@ember/-internals/environment';
-import { libraries } from '@ember/-internals/metal';
+import { libraries, processAllNamespaces } from '@ember/-internals/metal';
+import { getName } from '@ember/-internals/utils';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
@@ -194,7 +195,8 @@ moduleFor(
     [`@test acts like a namespace`](assert) {
       this.application = runTask(() => this.createApplication());
       let Foo = (this.application.Foo = EmberObject.extend());
-      assert.equal(Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
+      processAllNamespaces();
+      assert.equal(getName(Foo), 'TestApp.Foo', 'Classes pick up their parent namespace');
     }
 
     [`@test can specify custom router`](assert) {

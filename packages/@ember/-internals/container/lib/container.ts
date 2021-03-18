@@ -1,5 +1,5 @@
 import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
-import { dictionary, HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
+import { dictionary, HAS_NATIVE_PROXY, HAS_NATIVE_SYMBOL, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
@@ -521,7 +521,7 @@ export function getFactoryFor(obj: any): FactoryManager<any, any> {
   return obj[INIT_FACTORY];
 }
 
-export function setFactoryFor(obj: any, factory: FactoryManager<any, any>) {
+export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void {
   obj[INIT_FACTORY] = factory;
 }
 
@@ -548,6 +548,10 @@ class FactoryManager<T, C> {
     this.madeToString = undefined;
     this.injections = undefined;
     setFactoryFor(this, this);
+
+    if (factory && (HAS_NATIVE_SYMBOL || INIT_FACTORY in factory)) {
+      setFactoryFor(factory, this);
+    }
   }
 
   toString(): string {
