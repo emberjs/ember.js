@@ -12,7 +12,7 @@ export default class DefaultResolverApplicationTestCase extends AbstractApplicat
     let application;
     expectDeprecation(() => {
       application = this.application = Application.create(this.applicationOptions);
-    }, /Using the globals resolver is deprecated/);
+    }, /(Using the globals resolver is deprecated|Usage of the Ember Global is deprecated)/);
 
     // If the test expects a certain number of assertions, increment that number
     let { assert } = QUnit.config.current;
