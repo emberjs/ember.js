@@ -8,7 +8,7 @@ moduleFor(
       let mixin = Mixin.create();
       assert.equal(
         mixin.toString(),
-        '(unknown)',
+        '(unknown mixin)',
         'this = null should be handled on Mixin.toString() call'
       );
     }

@@ -15,6 +15,7 @@ export interface FactoryClass {
 
 export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
   class?: C;
+  name?: string;
   fullName?: string;
   normalizedName?: string;
   create(props?: { [prop: string]: any }): T;

@@ -7,8 +7,6 @@ import { getOwner, LEGACY_OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import {
   guidFor,
-  getName,
-  setName,
   lookupDescriptor,
   inspect,
   makeArray,
@@ -25,7 +23,6 @@ import {
   applyMixin,
   defineProperty,
   descriptorForProperty,
-  classToString,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
   TrackedDescriptor,
@@ -691,11 +688,7 @@ class CoreObject {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${getName(this) || getFactoryFor(this) || this.constructor.toString()}:${guidFor(
-      this
-    )}${extension}>`;
-
-    return ret;
+    return `<${getFactoryFor(this) || '(unknown)'}:${guidFor(this)}${extension}>`;
   }
 
   /**
@@ -1092,10 +1085,11 @@ class CoreObject {
     }
     return p;
   }
-}
 
-CoreObject.toString = classToString;
-setName(CoreObject, 'Ember.CoreObject');
+  static toString() {
+    return `<${getFactoryFor(this) || '(unknown)'}:constructor>`;
+  }
+}
 
 CoreObject.isClass = true;
 CoreObject.isMethod = false;
@@ -1222,6 +1216,18 @@ if (!HAS_NATIVE_SYMBOL) {
     set(value) {
       instanceFactory.set(this, value);
     },
+  });
+
+  Object.defineProperty(CoreObject, INIT_FACTORY, {
+    get() {
+      return instanceFactory.get(this);
+    },
+
+    set(value) {
+      instanceFactory.set(this, value);
+    },
+
+    enumerable: false,
   });
 }
 

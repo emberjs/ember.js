@@ -60,7 +60,6 @@ export {
   NAMESPACES,
   NAMESPACES_BY_ID,
   addNamespace,
-  classToString,
   findNamespace,
   findNamespaces,
   processNamespace,
