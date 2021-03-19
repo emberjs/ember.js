@@ -1,6 +1,7 @@
 /**
 @module @ember/object
 */
+import { INIT_FACTORY } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
@@ -574,6 +575,9 @@ export default class Mixin {
     this.mixins = buildMixinsArray(mixins);
     this.ownerConstructor = undefined;
     this._without = undefined;
+
+    // This exists for objects that `Object.seal` or `Object.freeze` in DEBUG only
+    Object.defineProperty(this, INIT_FACTORY, { value: null });
 
     if (DEBUG) {
       /*
