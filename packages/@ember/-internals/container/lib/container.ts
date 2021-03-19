@@ -517,12 +517,23 @@ declare interface DebugFactory<T, C> extends Factory<T, C> {
 
 export const INIT_FACTORY = symbol('INIT_FACTORY');
 
+// This exists for objects that `Object.seal` or `Object.freeze` in DEBUG only
+const factoryStore = new WeakMap();
+
 export function getFactoryFor(obj: any): FactoryManager<any, any> {
-  return obj[INIT_FACTORY];
+  if (DEBUG) {
+    return factoryStore.get(obj);
+  } else {
+    return obj[INIT_FACTORY];
+  }
 }
 
 export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void {
-  obj[INIT_FACTORY] = factory;
+  if (DEBUG) {
+    factoryStore.set(obj, factory);
+  } else {
+    obj[INIT_FACTORY] = factory;
+  }
 }
 
 class FactoryManager<T, C> {
