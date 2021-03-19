@@ -1,11 +1,13 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
+import { EMBER_ROUTING_ROUTER_SERVICE_REFRESH } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
+import Route from '../system/route';
 import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
@@ -472,6 +474,40 @@ export default class RouterService extends Service {
     @param {Transition} transition
     @public
   */
+}
+
+if (EMBER_ROUTING_ROUTER_SERVICE_REFRESH) {
+  RouterService.reopen({
+    /**
+     * Refreshes all currently active routes, doing a full transition.
+     * If a route name is provided and refers to a currently active route,
+     * it will refresh only that route and its descendents.
+     * Returns a promise that will be resolved once the refresh is complete.
+     * All resetController, beforeModel, model, afterModel, redirect, and setupController
+     * hooks will be called again. You will get new data from the model hook.
+     *
+     * @method refresh
+     * @param {String} [routeName] the route to refresh (along with all child routes)
+     * @return Transition
+     * @category EMBER_ROUTING_ROUTER_SERVICE_REFRESH
+     * @public
+     */
+    refresh(pivotRouteName?: string) {
+      if (!pivotRouteName) {
+        return this._router._routerMicrolib.refresh();
+      }
+
+      assert(`The route "${pivotRouteName}" was not found`, this._router.hasRoute(pivotRouteName));
+      assert(
+        `The route "${pivotRouteName}" is currently not active`,
+        this.isActive(pivotRouteName)
+      );
+
+      let pivotRoute = getOwner(this).lookup(`route:${pivotRouteName}`) as Route;
+
+      return this._router._routerMicrolib.refresh(pivotRoute);
+    },
+  });
 }
 
 RouterService.reopen(Evented, {
