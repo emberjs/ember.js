@@ -576,7 +576,7 @@ export default class Mixin {
     this.ownerConstructor = undefined;
     this._without = undefined;
 
-    // This exists for objects that `Object.seal` or `Object.freeze` in DEBUG only
+    // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
     Object.defineProperty(this, INIT_FACTORY, { value: null });
 
     if (DEBUG) {
