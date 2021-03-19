@@ -5,7 +5,7 @@ import {
 } from '@ember/debug';
 
 export function deprecate(message: string, condition: boolean, options: DeprecationOptions): void {
-  deprecate(
+  _deprecate(
     "`import { deprecate } from '@ember/application/deprecations';` has been deprecated, please update to `import { deprecate } from '@ember/debug';`",
     false,
     {
@@ -22,7 +22,7 @@ export function deprecate(message: string, condition: boolean, options: Deprecat
 }
 
 export function deprecateFunc(message: string, options: DeprecationOptions, func: Function): void {
-  deprecate(
+  _deprecate(
     "`import { deprecateFunc } from '@ember/application/deprecations';` has been deprecated, please update to `import { deprecateFunc } from '@ember/debug';`",
     false,
     {
