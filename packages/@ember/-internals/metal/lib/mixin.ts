@@ -577,7 +577,7 @@ export default class Mixin {
     this._without = undefined;
 
     // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
-    Object.defineProperty(this, INIT_FACTORY, { value: null });
+    Object.defineProperty(this, INIT_FACTORY, { value: null, writable: true });
 
     if (DEBUG) {
       /*
