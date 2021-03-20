@@ -576,8 +576,10 @@ export default class Mixin {
     this.ownerConstructor = undefined;
     this._without = undefined;
 
-    // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
-    this[INIT_FACTORY] = null;
+    if (DEBUG) {
+      // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
+      this[INIT_FACTORY] = null;
+    }
 
     if (DEBUG) {
       /*
