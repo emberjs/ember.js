@@ -1,6 +1,7 @@
 /**
 @module @ember/object
 */
+import { INIT_FACTORY } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
@@ -576,6 +577,8 @@ export default class Mixin {
     this._without = undefined;
 
     if (DEBUG) {
+      // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
+      this[INIT_FACTORY] = null;
       /*
         In debug builds, we seal mixins to help avoid performance pitfalls.
 
