@@ -33,14 +33,27 @@ export default function transformAttrsIntoArgs(env: EmberASTPluginEnvironment): 
 
   let stack: string[][] = [[]];
 
+  function updateBlockParamsStack(blockParams: string[]) {
+    let parent = stack[stack.length - 1];
+    stack.push(parent.concat(blockParams));
+  }
+
   return {
     name: 'transform-attrs-into-args',
 
     visitor: {
       Program: {
         enter(node: AST.Program) {
-          let parent = stack[stack.length - 1];
-          stack.push(parent.concat(node.blockParams));
+          updateBlockParamsStack(node.blockParams);
+        },
+        exit() {
+          stack.pop();
+        },
+      },
+
+      ElementNode: {
+        enter(node: AST.ElementNode) {
+          updateBlockParamsStack(node.blockParams);
         },
         exit() {
           stack.pop();
