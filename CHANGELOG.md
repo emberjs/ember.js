@@ -1,5 +1,19 @@
 # Ember Changelog
 
+### v3.27.0 (March 22, 2021)
+
+- [#19382](https://github.com/emberjs/ember.js/pull/19382) / [#19430](https://github.com/emberjs/ember.js/pull/19430) [FEATURE] Remaining implementation work per [RFC #671](https://github.com/emberjs/rfcs/blob/master/text/0671-modernize-built-in-components-1.md).
+- [#19457](https://github.com/emberjs/ember.js/pull/19457) / [#19463](https://github.com/emberjs/ember.js/pull/19463) / [#19464](https://github.com/emberjs/ember.js/pull/19464) / [#19467](https://github.com/emberjs/ember.js/pull/19467) [DEPRECATION] Add deprecation for the Ember Global per [RFC #706](https://github.com/emberjs/rfcs/blob/master/text/0706-deprecate-ember-global.md).
+- [#19407](https://github.com/emberjs/ember.js/pull/19407) [DEPRECATION] Add deprecation for `Route#disconnectOutlet` per [RFC #491](https://github.com/emberjs/rfcs/blob/master/text/0491-deprecate-disconnect-outlet.md).
+- [#19433](https://github.com/emberjs/ember.js/pull/19433) [DEPRECATION] Add deprecation for `Route#renderTemplate` per [RFC #418](https://github.com/emberjs/rfcs/blob/master/text/0418-deprecate-route-render-methods.md).
+- [#19442](https://github.com/emberjs/ember.js/pull/19442) [DEPRECATION] Add deprecation for `Route#render` method per [RFC #418](https://github.com/emberjs/rfcs/blob/master/text/0418-deprecate-route-render-methods.md).
+- [#19429](https://github.com/emberjs/ember.js/pull/19429) [DEPRECATION] `registerPlugin` / `unregisterPlugin` and legacy class based AST plugins (private APIs)
+- [#19466](https://github.com/emberjs/ember.js/pull/19466) [BUGFIX] Rename private runloop functions
+- [#19384](https://github.com/emberjs/ember.js/pull/19384) Use qunit-dom in helper and component test blueprints
+- [#19390](https://github.com/emberjs/ember.js/pull/19390) Refactor the internal Ember loader to use the standard Ember CLI loader
+- [#19441](https://github.com/emberjs/ember.js/pull/19441) Add automated publishing of weekly alpha releases to NPM
+- [#19462](https://github.com/emberjs/ember.js/pull/19462) Use `positional` and `named` as the argument names in `ember g helper` blueprint
+
 ### v3.26.0 (March 22, 2021)
 
 - [#19255](https://github.com/emberjs/ember.js/pull/19255) [DEPRECATION] Deprecate transition methods of controller and route per [RFC #674](https://github.com/emberjs/rfcs/blob/master/text/0674-deprecate-transition-methods-of-controller-and-route.md).
