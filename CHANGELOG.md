@@ -1,31 +1,6 @@
 # Ember Changelog
 
-### v3.26.0-beta.5 (March 16, 2021)
-
-- [#19405](https://github.com/emberjs/ember.js/pull/19405) [BUGFIX] Avoid instantiation errors when `app/router.js` injects the router service.
-
-### v3.26.0-beta.4 (March 08, 2021)
-
-- [#19436](https://github.com/emberjs/ember.js/pull/19436) [BUGFIX] Support observer keys with colons
-- [#19448](https://github.com/emberjs/ember.js/pull/19448) [BUGFIX] Ensure query params are preserved through an intermediate loading state transition
-- [#19450](https://github.com/emberjs/ember.js/pull/19450) [BUGFIX] Ensure `routerService.currentRoute.name` and `routerService.currentRouteName` match during loading states
-
-### v3.26.0-beta.3 (March 02, 2021)
-
-- [#19412](https://github.com/emberjs/ember.js/pull/19412) [BUGFIX] Updates Glimmer VM to 0.76.0, fix:
-  - `if` helper returns `null` instead of `undefined`
-  - Using `get` helper with key `length` on a string in templates
-  - Value of input not updating if it had previously updated with the same string
-- [#19416](https://github.com/emberjs/ember.js/pull/19416) [BUGFIX] Update Glimmer VM to 0.77, fix dynamic helpers/modifiers
-
-### v3.26.0-beta.2 (February 15, 2021)
-
-- [#19387](https://github.com/emberjs/ember.js/pull/19387) [BUGFIX] LinkTo with incomplete model failing in rendering tests
-- [#19395](https://github.com/emberjs/ember.js/pull/19395) [BUGFIX] Only return empty href when LinkTo href generation throws error
-- [#19396](https://github.com/emberjs/ember.js/pull/19396) [BUGFIX] Revert deprecation of htmlSafe and isHTMLSafe
-- [#19397](https://github.com/emberjs/ember.js/pull/19397) [BUGFIX] Force building Ember bundles when `targets.node` is defined
-
-### v3.26.0-beta.1 (February 08, 2021)
+### v3.26.0 (March 22, 2021)
 
 - [#19255](https://github.com/emberjs/ember.js/pull/19255) [DEPRECATION] Deprecate transition methods of controller and route per [RFC #674](https://github.com/emberjs/rfcs/blob/master/text/0674-deprecate-transition-methods-of-controller-and-route.md).
 - [#19345](https://github.com/emberjs/ember.js/pull/19345) [DEPRECATION] Deprecate `<LinkTo>` positional arguments per [RFC #698](https://github.com/emberjs/rfcs/blob/master/text/0698-deprecate-link-to-positional-arguments.md).
@@ -41,8 +16,9 @@
 - [#19379](https://github.com/emberjs/ember.js/pull/19379) [CLEANUP] Refactor DataAdapter to not use observers or array observers
 - [#19378](https://github.com/emberjs/ember.js/pull/19378) [BUGFIX] Fix typo in template-only-glimmer-components feature detection
 - [#19298](https://github.com/emberjs/ember.js/pull/19298) [BUGFIX] Route serialize did not extract param off proxy
-- [#19326](https://github.com/emberjs/ember.js/pull/19326) [BUGFIX] Lazily setup the router in non-application tests for <LinkTo> component
-
+- [#19469](https://github.com/emberjs/ember.js/pull/19469) [BUGFIX] Prevent eager argument consumption on modifier destruction
+- [#19405](https://github.com/emberjs/ember.js/pull/19405) [BUGFIX] Avoid instantiation errors when `app/router.js` injects the router service.
+- [#19436](https://github.com/emberjs/ember.js/pull/19436) [BUGFIX] Support observer keys with colons
 
 ### v3.25.3 (March 7, 2021)
 
