@@ -3,10 +3,19 @@ import { preprocess } from './parser/tokenizer-event-handlers';
 import traverse from './traversal/traverse';
 import * as ASTv1 from './v1/api';
 
+interface GetTemplateLocalsOptions {
+  includeKeywords?: boolean;
+  includeHtmlElements?: boolean;
+}
+
 /**
  * Gets the correct Token from the Node based on it's type
  */
-function tokensFromType(node: ASTv1.Node, scopedTokens: string[]): string | void {
+function tokensFromType(
+  node: ASTv1.Node,
+  scopedTokens: string[],
+  options: GetTemplateLocalsOptions
+): string | void {
   if (node.type === 'PathExpression') {
     if (node.head.type === 'AtHead' || node.head.type === 'ThisHead') {
       return;
@@ -26,6 +35,10 @@ function tokensFromType(node: ASTv1.Node, scopedTokens: string[]): string | void
       return;
     }
 
+    if (!options.includeHtmlElements && tag.indexOf('.') === -1 && tag.toLowerCase() === tag) {
+      return;
+    }
+
     if (tag.substr(0, 5) === 'this.') {
       return;
     }
@@ -41,8 +54,13 @@ function tokensFromType(node: ASTv1.Node, scopedTokens: string[]): string | void
 /**
  * Adds tokens to the tokensSet based on their node.type
  */
-function addTokens(tokensSet: Set<string>, node: ASTv1.Node, scopedTokens: string[]) {
-  const maybeTokens = tokensFromType(node, scopedTokens);
+function addTokens(
+  tokensSet: Set<string>,
+  node: ASTv1.Node,
+  scopedTokens: string[],
+  options: GetTemplateLocalsOptions
+) {
+  const maybeTokens = tokensFromType(node, scopedTokens, options);
 
   (Array.isArray(maybeTokens) ? maybeTokens : [maybeTokens]).forEach((maybeToken) => {
     if (maybeToken !== undefined && maybeToken[0] !== '@') {
@@ -56,7 +74,13 @@ function addTokens(tokensSet: Set<string>, node: ASTv1.Node, scopedTokens: strin
  * referenced that could possible come from the praent scope. Can exclude known keywords
  * optionally.
  */
-export function getTemplateLocals(html: string, options?: { includeKeywords: boolean }): string[] {
+export function getTemplateLocals(
+  html: string,
+  options: GetTemplateLocalsOptions = {
+    includeHtmlElements: false,
+    includeKeywords: false,
+  }
+): string[] {
   const ast = preprocess(html);
   const tokensSet = new Set<string>();
   const scopedTokens: string[] = [];
@@ -81,7 +105,7 @@ export function getTemplateLocals(html: string, options?: { includeKeywords: boo
         node.blockParams.forEach((param) => {
           scopedTokens.push(param);
         });
-        addTokens(tokensSet, node, scopedTokens);
+        addTokens(tokensSet, node, scopedTokens, options);
       },
 
       exit({ blockParams }) {
@@ -92,7 +116,7 @@ export function getTemplateLocals(html: string, options?: { includeKeywords: boo
     },
 
     PathExpression(node) {
-      addTokens(tokensSet, node, scopedTokens);
+      addTokens(tokensSet, node, scopedTokens, options);
     },
   });
 
