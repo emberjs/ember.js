@@ -1,3 +1,12 @@
+## v0.77.5 (2021-03-23)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1289](https://github.com/glimmerjs/glimmer-vm/pull/1289) Exclude HTML elements from template locals by default ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.77.4 (2021-03-22)
 
 #### :rocket: Enhancement
