@@ -1,10 +1,10 @@
 {
   "name": "@glimmer/owner",
-  "version": "0.77.3",
+  "version": "0.77.4",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/owner",
   "description": "Implementation for the owner in Glimmer apps",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "0.77.3"
+    "@glimmer/util": "0.77.4"
   }
 }

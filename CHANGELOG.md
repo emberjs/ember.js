@@ -1,3 +1,12 @@
+## v0.77.4 (2021-03-22)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#1287](https://github.com/glimmerjs/glimmer-vm/pull/1287) Adds a utility for parsing template locals ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.77.3 (2021-03-16)
 
 #### :bug: Bug Fix
