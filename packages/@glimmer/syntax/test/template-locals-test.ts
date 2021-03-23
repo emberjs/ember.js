@@ -31,6 +31,8 @@ QUnit.test('it works', function (assert) {
     {{#this.dynamicBlockComponent}}
     {{/this.dynamicBlockComponent}}
 
+    <button></button>
+
     <this.dynamicAngleComponent>
     </this.dynamicAngleComponent>
   `);
@@ -44,6 +46,22 @@ QUnit.test('it works', function (assert) {
     'some',
     'someOther',
   ]);
+});
+
+QUnit.test('it does not include locals', function (assert) {
+  let locals = getTemplateLocals(
+    `
+      <SomeComponent as |button|>
+        <button></button>
+        {{button}}
+      </SomeComponent>
+    `,
+    {
+      includeHtmlElements: true,
+    }
+  );
+
+  assert.deepEqual(locals, ['SomeComponent']);
 });
 
 QUnit.test('it can include keywords', function (assert) {
@@ -95,4 +113,17 @@ QUnit.test('it can include keywords', function (assert) {
     'some',
     'someOther',
   ]);
+});
+
+QUnit.test('it can include html elements', function (assert) {
+  let locals = getTemplateLocals(
+    `
+      <button></button>
+    `,
+    {
+      includeHtmlElements: true,
+    }
+  );
+
+  assert.deepEqual(locals, ['button']);
 });
