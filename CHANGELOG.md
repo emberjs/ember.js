@@ -34,6 +34,10 @@
 - [#19405](https://github.com/emberjs/ember.js/pull/19405) [BUGFIX] Avoid instantiation errors when `app/router.js` injects the router service.
 - [#19436](https://github.com/emberjs/ember.js/pull/19436) [BUGFIX] Support observer keys with colons
 
+### v3.25.4 (March 24, 2021)
+
+- [#19473](https://github.com/emberjs/ember.js/pull/19473) Update Glimmer VM to latest.
+
 ### v3.25.3 (March 7, 2021)
 
 - [#19448](https://github.com/emberjs/ember.js/pull/19448) Ensure query params are preserved through an intermediate loading state transition
