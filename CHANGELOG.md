@@ -14,6 +14,10 @@
 - [#19441](https://github.com/emberjs/ember.js/pull/19441) Add automated publishing of weekly alpha releases to NPM
 - [#19462](https://github.com/emberjs/ember.js/pull/19462) Use `positional` and `named` as the argument names in `ember g helper` blueprint
 
+### v3.26.1 (March 24, 2021)
+
+- [#19473](https://github.com/emberjs/ember.js/pull/19473) Update Glimmer VM to latest.
+
 ### v3.26.0 (March 22, 2021)
 
 - [#19255](https://github.com/emberjs/ember.js/pull/19255) [DEPRECATION] Deprecate transition methods of controller and route per [RFC #674](https://github.com/emberjs/rfcs/blob/master/text/0674-deprecate-transition-methods-of-controller-and-route.md).
