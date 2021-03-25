@@ -1,3 +1,12 @@
+## v0.77.6 (2021-03-25)
+
+#### :rocket: Enhancement
+* `build-utils`
+  * [#1290](https://github.com/glimmerjs/glimmer-vm/pull/1290) Fixes VM Babel plugin generation in browsers ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.77.5 (2021-03-23)
 
 #### :bug: Bug Fix
