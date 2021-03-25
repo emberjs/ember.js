@@ -645,7 +645,7 @@ const LinkComponent = EmberComponent.extend({
         'See https://ember-engines.com/docs/links for more info.',
       !this._isEngine || this._engineMountPoint !== undefined
     );
-  }
+  },
 
   _isActive(routerState: RouterState): boolean {
     if (this.loading) {
