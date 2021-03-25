@@ -859,6 +859,22 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     if ('string' === typeof location) {
       let resolvedLocation = owner.lookup<IEmberLocation>(`location:${location}`);
 
+      if (location === 'auto') {
+        deprecate(
+          "Router location 'auto' is deprecated. Most users will want to set `locationType` to 'history' in config/environment.js for no change in behavior. See deprecation docs for details.",
+          false,
+          {
+            id: 'deprecate-auto-location',
+            until: '5.0.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-auto-location',
+            for: 'ember-source',
+            since: {
+              enabled: '4.1.0',
+            },
+          }
+        );
+      }
+
       if (resolvedLocation !== undefined) {
         location = set(this, 'location', resolvedLocation);
       } else {

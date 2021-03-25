@@ -98,7 +98,7 @@ moduleFor(
     }
 
     ['@test replacePath should be called with the right path'](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       let location = owner.lookup('location:auto');
 
@@ -117,11 +117,13 @@ moduleFor(
       location.global = { onhashchange() {} };
       location.history = null;
 
-      createRouter({
-        settings: {
-          location: 'auto',
-          rootURL: '/rootdir/',
-        },
+      expectDeprecation(() => {
+        createRouter({
+          settings: {
+            location: 'auto',
+            rootURL: '/rootdir/',
+          },
+        });
       });
     }
 
@@ -177,7 +179,7 @@ moduleFor(
     }
 
     ["@test AutoLocation should replace the url when it's not in the preferred format"](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       let location = owner.lookup('location:auto');
 
@@ -191,16 +193,19 @@ moduleFor(
           assert.equal(url, 'http://test.com/rootdir/#/welcome');
         },
       };
+
       location.history = null;
       location.global = {
         onhashchange() {},
       };
 
-      createRouter({
-        settings: {
-          location: 'auto',
-          rootURL: '/rootdir/',
-        },
+      expectDeprecation(() => {
+        createRouter({
+          settings: {
+            location: 'auto',
+            rootURL: '/rootdir/',
+          },
+        });
       });
     }
 
