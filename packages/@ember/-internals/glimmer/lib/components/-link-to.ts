@@ -637,6 +637,7 @@ const LinkComponent = EmberComponent.extend({
    * link-to-external component extends the link-to component.
    *
    * @method assertLinkToOrigin
+   * @public
    */
   assertLinkToOrigin() {
     assert(
