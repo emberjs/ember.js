@@ -1,6 +1,11 @@
 # Ember Changelog
 
-### v3.27.0 (March 22, 2021)
+### v3.27.0-beta.2 (March 25, 2021)
+
+- [#19473](https://github.com/emberjs/ember.js/pull/19473) Update GlimmerVM to latest (fix compatibility for template import proposals)
+- [#19474](https://github.com/emberjs/ember.js/pull/19474) [FEATURE] Enable `(helper` and `(modifier` helpers
+
+### v3.27.0-beta.1 (March 22, 2021)
 
 - [#19382](https://github.com/emberjs/ember.js/pull/19382) / [#19430](https://github.com/emberjs/ember.js/pull/19430) [FEATURE] Remaining implementation work per [RFC #671](https://github.com/emberjs/rfcs/blob/master/text/0671-modernize-built-in-components-1.md).
 - [#19457](https://github.com/emberjs/ember.js/pull/19457) / [#19463](https://github.com/emberjs/ember.js/pull/19463) / [#19464](https://github.com/emberjs/ember.js/pull/19464) / [#19467](https://github.com/emberjs/ember.js/pull/19467) [DEPRECATION] Add deprecation for the Ember Global per [RFC #706](https://github.com/emberjs/rfcs/blob/master/text/0706-deprecate-ember-global.md).
