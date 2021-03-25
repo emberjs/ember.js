@@ -1,7 +1,16 @@
-module.exports = function generateVmPlugins({ isDebug } = { isDebug: true }) {
+function defaultTo(value, defaultVal) {
+  return value === undefined ? defaultVal : value;
+}
+
+module.exports = function generateVmPlugins(options = {}) {
+  let isDebug = defaultTo(options.isDebug, true);
+  let __loadPlugins = defaultTo(options.__loadPlugins, false);
+
   return [
     [
-      require.resolve('babel-plugin-debug-macros'),
+      __loadPlugins
+        ? require('babel-plugin-debug-macros')
+        : require.resolve('babel-plugin-debug-macros'),
       {
         debugTools: {
           source: '@glimmer/global-context',
