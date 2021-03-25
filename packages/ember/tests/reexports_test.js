@@ -271,12 +271,12 @@ let allExports = [
   // @ember/modifier
   ['_modifierManagerCapabilities', '@ember/modifier', 'capabilities'],
   ['_setModifierManager', '@ember/modifier', 'setModifierManager'],
+  ['_on', '@ember/modifier', 'on'],
 
   // @ember/helper
   ['_helperManagerCapabilities', '@ember/helper', 'capabilities'],
   ['_setHelperManager', '@ember/helper', 'setHelperManager'],
   ['_invokeHelper', '@ember/helper', 'invokeHelper'],
-  ['_on', '@ember/helper', 'on'],
   ['_fn', '@ember/helper', 'fn'],
   ['_array', '@ember/helper', 'array'],
   ['_hash', '@ember/helper', 'hash'],
