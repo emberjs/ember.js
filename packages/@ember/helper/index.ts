@@ -305,4 +305,4 @@
 */
 
 export { setHelperManager, helperCapabilities as capabilities } from '@glimmer/manager';
-export { invokeHelper, hash, array, concat, get, on, fn } from '@glimmer/runtime';
+export { invokeHelper, hash, array, concat, get, fn } from '@glimmer/runtime';
