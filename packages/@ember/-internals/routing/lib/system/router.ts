@@ -896,6 +896,22 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       // detecting history support. This gives it a chance to set its
       // `cancelRouterSetup` property which aborts routing.
       if (typeof location.detect === 'function') {
+        if (this.location !== 'auto') {
+          deprecate(
+            'The `detect` method on the Location object is deprecated. If you need detection you can run your detection code in app.js, before setting the location type.',
+            false,
+            {
+              id: 'deprecate-auto-location',
+              until: '5.0.0',
+              url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-auto-location',
+              for: 'ember-source',
+              since: {
+                enabled: '4.1.0',
+              },
+            }
+          );
+        }
+
         location.detect();
       }
 
