@@ -45,7 +45,7 @@ import {
   Ember ships with two types of JavaScript classes for components:
 
   1. Glimmer components, imported from `@glimmer/component`, which are the
-     default component's for Ember Octane (3.15) and more recent editions.
+     default components for Ember Octane (3.15) and more recent editions.
   2. Classic components, imported from `@ember/component`, which were the
      default for older editions of Ember (pre 3.15).
 
