@@ -48,7 +48,6 @@ import {
   @for @ember/destroyable
   @param {Object|Function} parent the destroyable to entangle the child destroyables lifetime with
   @param {Object|Function} child the destroyable to be entangled with the parents lifetime
-  @param {Function} destructor the destructor to run when the destroyable object is destroyed
   @returns {Object|Function} the child argument
   @static
   @public
