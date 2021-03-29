@@ -501,11 +501,14 @@ class Route extends EmberObject implements IRoute {
       @action
       loading(transition, route) {
         let controller = this.controllerFor('foo');
-        controller.set('currentlyLoading', true);
 
-        transition.finally(function() {
-          controller.set('currentlyLoading', false);
-        });
+        if (controller) {
+          controller.currentlyLoading = true;
+
+          transition.finally(function() {
+            controller.currentlyLoading = false;
+          });
+        }
       }
     }
     ```
