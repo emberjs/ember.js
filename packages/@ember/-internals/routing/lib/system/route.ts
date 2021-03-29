@@ -500,7 +500,7 @@ class Route extends EmberObject implements IRoute {
     export default class ApplicationRoute extends Route {
       @action
       loading(transition, route) {
-        const controller = this.controllerFor('foo');
+        let controller = this.controllerFor('foo');
 
         // The controller may not be instantiated when initially loading
         if (controller) {
