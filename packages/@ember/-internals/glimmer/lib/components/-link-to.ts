@@ -499,12 +499,7 @@ const LinkComponent = EmberComponent.extend({
   init() {
     this._super(...arguments);
 
-    assert(
-      'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
-        'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
-        'See https://ember-engines.com/docs/links for more info.',
-      !this._isEngine || this._engineMountPoint !== undefined
-    );
+    this.assertLinkToOrigin();
 
     // Map desired event name to invoke function
     let { eventName } = this;
@@ -635,6 +630,23 @@ const LinkComponent = EmberComponent.extend({
       return this._isActive(target);
     }
   ),
+
+  /**
+   * Method to assert that LinkTo is not used inside of a routeless engine. This method is
+   * overridden in ember-engines link-to-external component to just be a noop, since the
+   * link-to-external component extends the link-to component.
+   *
+   * @method assertLinkToOrigin
+   * @private
+   */
+  assertLinkToOrigin() {
+    assert(
+      'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
+        'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
+        'See https://ember-engines.com/docs/links for more info.',
+      !this._isEngine || this._engineMountPoint !== undefined
+    );
+  },
 
   _isActive(routerState: RouterState): boolean {
     if (this.loading) {

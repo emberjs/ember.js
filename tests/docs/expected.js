@@ -92,6 +92,7 @@ module.exports = {
     'arrayContentWillChange',
     'assert',
     'assertDestroyablesDestroyed',
+    'assertLinkToOrigin',
     'assign',
     'associateDestroyableChild',
     'asyncEnd',
