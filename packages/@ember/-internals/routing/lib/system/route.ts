@@ -500,7 +500,7 @@ class Route extends EmberObject implements IRoute {
     export default class ApplicationRoute extends Route {
       @action
       loading(transition, route) {
-        let controller = this.controllerFor('foo');
+        const controller = this.controllerFor('foo');
 
         if (controller) {
           controller.currentlyLoading = true;
