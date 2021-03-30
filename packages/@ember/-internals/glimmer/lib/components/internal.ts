@@ -253,9 +253,7 @@ export interface DeprecatingInternalComponent extends InternalComponent {
   modernized: boolean;
 }
 
-export type DeprecatingInternalComponentConstructor = InternalComponentConstructor<
-  DeprecatingInternalComponent
->;
+export type DeprecatingInternalComponentConstructor = InternalComponentConstructor<DeprecatingInternalComponent>;
 
 export function handleDeprecatedArguments(target: DeprecatingInternalComponentConstructor): void {
   if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
