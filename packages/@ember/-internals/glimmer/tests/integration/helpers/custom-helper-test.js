@@ -780,6 +780,27 @@ moduleFor(
       }, expectedMessage);
     }
 
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a helper'() {
+      this.registerHelper('hello-world', ([text]) => text ?? 'Hello, world!');
+
+      this.render('[{{helper "hello-world"}}][{{helper (helper "hello-world") "wow"}}]');
+      this.assertText('[Hello, world!][wow]');
+      this.assertStableRerender();
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a helper'(assert) {
+      this.registerHelper('hello-world', () => 'Hello, world!');
+
+      if (DEBUG) {
+        expectAssertion(
+          () => this.render('{{helper this.name}}', { name: 'hello-world' }),
+          /Passing a dynamic string to the `\(helper\)` keyword is disallowed\./
+        );
+      } else {
+        assert.expect(0);
+      }
+    }
+
     '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
       let val = defineSimpleHelper((value) => value);
 

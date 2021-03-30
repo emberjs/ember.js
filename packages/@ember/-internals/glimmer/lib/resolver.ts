@@ -42,8 +42,10 @@ import {
   isClassicHelper,
   SimpleHelper,
 } from './helper';
+import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
+import { default as resolve } from './helpers/-resolve';
 import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
 import { default as eachIn } from './helpers/each-in';
@@ -181,11 +183,26 @@ const BUILTIN_KEYWORD_HELPERS = {
   '-hash': hash,
   '-each-in': eachIn,
   '-normalize-class': normalizeClassHelper,
+  '-resolve': resolve,
   '-track-array': trackArray,
   '-mount': mountHelper,
   '-outlet': outletHelper,
   '-in-el-null': inElementNullCheckHelper,
 };
+
+if (DEBUG) {
+  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+} else {
+  // Bug: this may be a quirk of our test setup?
+  // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
+  // to add it at all, but the current test build doesn't produce a "prod compiler", so
+  // we ended up running the debug-build for the template compliler in prod tests. Once
+  // that is fixed, this can be removed. For now, this allows the test to work and does
+  // not really harm anything, since it's just a no-op pass-through helper and the bytes
+  // has to be included anyway. In the future, perhaps we can avoid the latter by using
+  // `import(...)`?
+  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+}
 
 const BUILTIN_HELPERS = {
   ...BUILTIN_KEYWORD_HELPERS,
