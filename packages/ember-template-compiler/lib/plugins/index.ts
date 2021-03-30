@@ -14,6 +14,7 @@ import TransformInElement from './transform-in-element';
 import TransformLinkTo from './transform-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
+import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
 
 import { EMBER_DYNAMIC_HELPERS_AND_MODIFIERS, EMBER_NAMED_BLOCKS } from '@ember/canary-features';
@@ -38,7 +39,9 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     DeprecateWith,
     SEND_ACTION ? DeprecateSendAction : null,
     !EMBER_NAMED_BLOCKS ? AssertAgainstNamedBlocks : null,
-    !EMBER_DYNAMIC_HELPERS_AND_MODIFIERS ? AssertAgainstDynamicHelpersModifiers : null,
+    EMBER_DYNAMIC_HELPERS_AND_MODIFIERS
+      ? TransformResolutions
+      : AssertAgainstDynamicHelpersModifiers,
   ].filter(notNull)
 );
 
