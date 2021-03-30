@@ -581,6 +581,45 @@ moduleFor(
       assert.equal(updateCount, 1);
     }
 
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a modifier'() {
+      this.registerModifier(
+        'replace',
+        defineSimpleModifier((element, [text]) => (element.innerHTML = text ?? 'Hello, world!'))
+      );
+
+      // BUG: this should work according to the RFC
+      // this.render(
+      //   '[<div {{modifier "replace"}}>Nope</div>][<div {{modifier (modifier "replace") "wow"}}>Nope</div>]'
+      // );
+      this.render(
+        '[<div {{(modifier "replace")}}>Nope</div>][<div {{(modifier "replace") "wow"}}>Nope</div>]'
+      );
+      this.assertText('[Hello, world!][wow]');
+      this.assertStableRerender();
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a modifier'(assert) {
+      this.registerModifier(
+        'replace',
+        defineSimpleModifier((element) => (element.innerHTML = 'Hello, world!'))
+      );
+
+      if (DEBUG) {
+        expectAssertion(
+          () =>
+            this.render(
+              // BUG: this should work according to the RFC
+              // '<div {{modifier this.name}}>Nope</div>',
+              '<div {{(modifier this.name)}}>Nope</div>',
+              { name: 'replace' }
+            ),
+          /Passing a dynamic string to the `\(modifier\)` keyword is disallowed\./
+        );
+      } else {
+        assert.expect(0);
+      }
+    }
+
     '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can be curried'() {
       let val = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
 

@@ -8,18 +8,22 @@ export function isSubExpression(node: AST.Node): node is AST.SubExpression {
   return node.type === 'SubExpression';
 }
 
+export function isStringLiteral(node: AST.Expression): node is AST.StringLiteral {
+  return node.type === 'StringLiteral';
+}
+
 export function trackLocals() {
   let locals = new Map();
 
   let node = {
-    enter(node: AST.Program | AST.ElementNode) {
+    enter(node: AST.Program | AST.Block | AST.ElementNode) {
       for (let param of node.blockParams) {
         let value = locals.get(param) || 0;
         locals.set(param, value + 1);
       }
     },
 
-    exit(node: AST.Program | AST.ElementNode) {
+    exit(node: AST.Program | AST.Block | AST.ElementNode) {
       for (let param of node.blockParams) {
         let value = locals.get(param) - 1;
 
