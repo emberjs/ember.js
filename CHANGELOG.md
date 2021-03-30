@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.27.0-beta.3 (March 30, 2021)
+
+- [#19477](https://github.com/emberjs/ember.js/pull/19477) [BUGFIX] Move `LinkTo` assertion into a method so `LinkToExternal` can override it
+- [#19481](https://github.com/emberjs/ember.js/pull/19481) [BUGFIX] Export `on` from correct path
+- [#19487](https://github.com/emberjs/ember.js/pull/19487) [BUGFIX] Allow passing a string literal to {{helper}} and {{modifier}}
+
 ### v3.27.0-beta.2 (March 25, 2021)
 
 - [#19473](https://github.com/emberjs/ember.js/pull/19473) Update GlimmerVM to latest (fix compatibility for template import proposals)

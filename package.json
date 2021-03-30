@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "3.27.0-beta.2",
+  "version": "3.27.0-beta.3",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -76,14 +76,14 @@
   "devDependencies": {
     "@babel/preset-env": "^7.9.5",
     "@glimmer/compiler": "0.77.5",
+    "@glimmer/destroyable": "0.77.5",
     "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "0.77.5",
     "@glimmer/interfaces": "0.77.5",
     "@glimmer/manager": "0.77.5",
-    "@glimmer/destroyable": "0.77.5",
-    "@glimmer/owner": "0.77.5",
     "@glimmer/node": "0.77.5",
     "@glimmer/opcode-compiler": "0.77.5",
+    "@glimmer/owner": "0.77.5",
     "@glimmer/program": "0.77.5",
     "@glimmer/reference": "0.77.5",
     "@glimmer/runtime": "0.77.5",
