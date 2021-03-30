@@ -411,6 +411,7 @@ module.exports = {
     'originalMethods',
     'outlet',
     'ownerInjection',
+    'page-title',
     'paramNames',
     'params',
     'paramsFor',
