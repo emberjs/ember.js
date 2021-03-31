@@ -11,7 +11,7 @@
   {{page-title "My Page Title" }}
   ```
 
-  @method log
+  @method page-title
   @for Ember.Templates.helpers
   @param {String} param
   @public
