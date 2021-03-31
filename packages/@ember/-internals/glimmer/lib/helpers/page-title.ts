@@ -3,7 +3,7 @@
 */
 
 /**
-  `page-title` allows you to set the title of any page in your application and 
+  `page-title` allows you to set the title of any page in your application and
   append additional titles for each route. For complete documentation, see
   https://github.com/ember-cli/ember-page-title.
 
