@@ -5,6 +5,8 @@ import {
   defineSimpleModifier,
   syntaxErrorFor,
   GlimmerishComponent,
+  defineSimpleHelper,
+  defineComponent,
 } from '../..';
 
 class DynamicModifiersResolutionModeTest extends RenderTest {
@@ -130,6 +132,45 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     this.assert.throws(() => {
       this.registerComponent('TemplateOnly', 'Bar', '<div {{x.foo}}></div>');
     }, syntaxErrorFor('You attempted to invoke a path (`{{#x.foo}}`) as a modifier, but x was not in scope. Try adding `this` to the beginning of the path', '{{x.foo}}', 'an unknown module', 1, 5));
+  }
+
+  @test
+  'Can use a dynamic modifier with a nested helper'() {
+    const foo = defineSimpleHelper(() => 'Hello, world!');
+    const bar = defineSimpleModifier(
+      (element: Element, value: string) => (element.innerHTML = value)
+    );
+    const Bar = defineComponent(
+      { foo },
+      '<div {{this.bar (foo)}}></div>',
+      class extends GlimmerishComponent {
+        bar = bar;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic modifier with a nested dynamic helper'() {
+    const foo = defineSimpleHelper(() => 'Hello, world!');
+    const bar = defineSimpleModifier(
+      (element: Element, value: string) => (element.innerHTML = value)
+    );
+    const Bar = defineComponent(
+      {},
+      '<div {{this.bar (this.foo)}}></div>',
+      class extends GlimmerishComponent {
+        foo = foo;
+        bar = bar;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div>Hello, world!</div>');
+    this.assertStableRerender();
   }
 }
 
