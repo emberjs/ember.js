@@ -73,10 +73,10 @@ APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
   );
 });
 
-APPEND_OPCODES.add(Op.DynamicHelper, (vm, { op1: _definitionRegister }) => {
+APPEND_OPCODES.add(Op.DynamicHelper, (vm) => {
   let stack = vm.stack;
+  let ref = check(stack.popJs(), CheckReference);
   let args = check(stack.popJs(), CheckArguments).capture();
-  let ref = vm.fetchValue<Reference>(_definitionRegister);
 
   let helperRef: Reference;
   let initialOwner: Owner = vm.getOwner();
