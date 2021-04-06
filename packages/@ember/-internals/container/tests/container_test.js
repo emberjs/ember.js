@@ -5,6 +5,193 @@ import { DEBUG } from '@glimmer/env';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
 
+moduleFor('Container.lookup', class extends AbstractTestCase {
+
+  ['@test lookup returns a fresh instance if singleton: false is passed as an option'](
+    assert
+  ) {
+    let registry = new Registry();
+    let container = registry.container();
+    let PostController = factory();
+
+    registry.register('controller:post', PostController);
+
+    let postController1 = container.lookup('controller:post');
+    let postController2 = container.lookup('controller:post', {
+      singleton: false,
+    });
+    let postController3 = container.lookup('controller:post', {
+      singleton: false,
+    });
+    let postController4 = container.lookup('controller:post');
+
+    assert.equal(
+      postController1.toString(),
+      postController4.toString(),
+      'Singleton factories looked up normally return the same value'
+    );
+    assert.notEqual(
+      postController1.toString(),
+      postController2.toString(),
+      'Singleton factories are not equal to factories looked up with singleton: false'
+    );
+    assert.notEqual(
+      postController2.toString(),
+      postController3.toString(),
+      'Two factories looked up with singleton: false are not equal'
+    );
+    assert.notEqual(
+      postController3.toString(),
+      postController4.toString(),
+      'A singleton factory looked up after a factory called with singleton: false is not equal'
+    );
+
+    assert.ok(
+      postController1 instanceof PostController,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      postController2 instanceof PostController,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      postController3 instanceof PostController,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      postController4 instanceof PostController,
+      'All instances are instances of the registered factory'
+    );
+  }
+
+  ['@test lookup returns a fresh instance if singleton: false is passed as an option to lookup'](
+    assert
+  ) {
+    class TestFactory {
+      constructor(opts) {
+        Object.assign(this, opts);
+      }
+      static create(opts) {
+        return new this(opts);
+      }
+    }
+
+    let registry = new Registry();
+    let container = registry.container();
+    registry.register('thing:test/obj', TestFactory);
+
+    let instance1 = container.lookup('thing:test/obj');
+    let instance2 = container.lookup('thing:test/obj', {
+      singleton: false,
+    });
+    let instance3 = container.lookup('thing:test/obj', {
+      singleton: false,
+    });
+    let instance4 = container.lookup('thing:test/obj');
+
+    assert.ok(instance1 === instance4, 'factories looked up up without singleton: false are the same instance');
+    assert.ok(instance1 !== instance2, 'factories looked up with singleton: false are a different instance');
+    assert.ok(instance2 !== instance3, 'factories looked up with singleton: false are a different instance');
+    assert.ok(instance3 !== instance4, 'factories looked up after a call to singleton: false is a different instance');
+    assert.ok(
+      instance1 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance2 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance3 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance4 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+  }
+
+  ['@test lookup returns a fresh instance if singleton: false is passed as an option to register'](
+    assert
+  ) {
+    class TestFactory {
+      constructor(opts) {
+        Object.assign(this, opts);
+      }
+      static create(opts) {
+        return new this(opts);
+      }
+    }
+
+    let registry = new Registry();
+    let container = registry.container();
+    registry.register('thing:test/obj', TestFactory, { singleton: false });
+
+    let instance1 = container.lookup('thing:test/obj');
+    let instance2 = container.lookup('thing:test/obj');
+    let instance3 = container.lookup('thing:test/obj');
+
+    assert.ok(instance1 !== instance2, 'each lookup is a different instance');
+    assert.ok(instance2 !== instance3, 'each lookup is a different instance');
+    assert.ok(instance1 !== instance3, 'each lookup is a different instance');
+    assert.ok(
+      instance1 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance2 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance3 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+  }
+
+  ['@test lookup returns a singleton instance if singleton: true is passed as an option even if registered as singleton: false'](
+    assert
+  ) {
+    class TestFactory {
+      constructor(opts) {
+        Object.assign(this, opts);
+      }
+      static create(opts) {
+        return new this(opts);
+      }
+    }
+
+    let registry = new Registry();
+    let container = registry.container();
+    registry.register('thing:test/obj', TestFactory, { singleton: false });
+
+    let instance1 = container.lookup('thing:test/obj');
+    let instance2 = container.lookup('thing:test/obj', { singleton: true });
+    let instance3 = container.lookup('thing:test/obj', { singleton: true });
+    let instance4 = container.lookup('thing:test/obj');
+
+    assert.ok(instance1 !== instance2, 'each lookup is a different instance');
+    assert.ok(instance2 === instance3, 'each singleton: true lookup is the same instance');
+    assert.ok(instance3 !== instance4, 'each lookup is a different instance');
+    assert.ok(instance1 !== instance4, 'each lookup is a different instance');
+    assert.ok(
+      instance1 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance2 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance3 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+    assert.ok(
+      instance4 instanceof TestFactory,
+      'All instances are instances of the registered factory'
+    );
+  }
+});
+
 moduleFor(
   'Container',
   class extends AbstractTestCase {
@@ -42,63 +229,6 @@ moduleFor(
       assert.ok(
         postController.apple instanceof AppleController,
         'instance receives an apple of instance AppleController'
-      );
-    }
-
-    ['@test A registered factory returns a fresh instance if singleton: false is passed as an option'](
-      assert
-    ) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-
-      registry.register('controller:post', PostController);
-
-      let postController1 = container.lookup('controller:post');
-      let postController2 = container.lookup('controller:post', {
-        singleton: false,
-      });
-      let postController3 = container.lookup('controller:post', {
-        singleton: false,
-      });
-      let postController4 = container.lookup('controller:post');
-
-      assert.equal(
-        postController1.toString(),
-        postController4.toString(),
-        'Singleton factories looked up normally return the same value'
-      );
-      assert.notEqual(
-        postController1.toString(),
-        postController2.toString(),
-        'Singleton factories are not equal to factories looked up with singleton: false'
-      );
-      assert.notEqual(
-        postController2.toString(),
-        postController3.toString(),
-        'Two factories looked up with singleton: false are not equal'
-      );
-      assert.notEqual(
-        postController3.toString(),
-        postController4.toString(),
-        'A singleton factory looked up after a factory called with singleton: false is not equal'
-      );
-
-      assert.ok(
-        postController1 instanceof PostController,
-        'All instances are instances of the registered factory'
-      );
-      assert.ok(
-        postController2 instanceof PostController,
-        'All instances are instances of the registered factory'
-      );
-      assert.ok(
-        postController3 instanceof PostController,
-        'All instances are instances of the registered factory'
-      );
-      assert.ok(
-        postController4 instanceof PostController,
-        'All instances are instances of the registered factory'
       );
     }
 
