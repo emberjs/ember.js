@@ -272,7 +272,7 @@ function isInstantiatable(container: Container, fullName: string) {
 function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
   let normalizedName = fullName;
 
-  if (options.singleton !== false) {
+  if (options.singleton === true || (options.singleton === undefined && isSingleton(container, fullName))) {
     let cached = container.cache[normalizedName];
     if (cached !== undefined) {
       return cached;
@@ -335,7 +335,7 @@ function isSingletonInstance(
   return (
     singleton !== false &&
     instantiate !== false &&
-    isSingleton(container, fullName) &&
+    (singleton === true || isSingleton(container, fullName)) &&
     isInstantiatable(container, fullName)
   );
 }
@@ -359,7 +359,7 @@ function isFactoryInstance(
 ) {
   return (
     instantiate !== false &&
-    (singleton !== false || isSingleton(container, fullName)) &&
+    (singleton === false || !isSingleton(container, fullName)) &&
     isInstantiatable(container, fullName)
   );
 }
@@ -379,6 +379,7 @@ function instantiateFactory(
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
+
     let instance = (container.cache[normalizedName] = factoryManager.create() as CacheMember);
 
     // if this lookup happened _during_ destruction (emits a deprecation, but
