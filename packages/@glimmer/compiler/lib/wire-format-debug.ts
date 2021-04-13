@@ -190,6 +190,9 @@ export default class WireFormatDebugger {
         case Op.GetFreeAsHelperHeadOrThisFallback:
           return ['GetFreeAsHelperHeadOrThisFallback', this.upvars[opcode[1]], opcode[2]];
 
+        case Op.GetFreeAsDeprecatedHelperHeadOrThisFallback:
+          return ['GetFreeAsDeprecatedHelperHeadOrThisFallback', this.upvars[opcode[1]]];
+
         case Op.GetFreeAsHelperHead:
           return ['GetFreeAsHelperHead', this.upvars[opcode[1]], opcode[2]];
 

@@ -59,10 +59,16 @@ export interface SerializedCallExpression extends SerializedCallNode {
   type: 'Call';
 }
 
+export interface SerializedDeprecatedCallExpression extends SerializedBaseNode {
+  type: 'DeprecatedCall';
+  callee: SerializedFreeVarReference;
+}
+
 export type SerializedExpressionNode =
   | SerializedLiteralExpression
   | SerializedPathExpression
   | SerializedCallExpression
+  | SerializedDeprecatedCallExpression
   | SerializedInterpolateExpression;
 
 export interface SerializedArgs extends SerializedBaseNode {

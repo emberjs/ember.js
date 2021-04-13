@@ -6,7 +6,7 @@ import {
   SexpOpcodes,
 } from '@glimmer/interfaces';
 import { $v0 } from '@glimmer/vm';
-import { deprecate } from '@glimmer/global-context';
+import { assert, deprecate } from '@glimmer/global-context';
 import { expr } from '../opcode-builder/helpers/expr';
 import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';
@@ -63,7 +63,7 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, (op, [, freeVar, path]) => {
       let propertyPath = path ? [name, ...path].join('.') : name;
 
       deprecate(
-        `The \`${propertyPath}\` property path was used in a template for the \`${moduleName}\` component without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${propertyPath}}}`,
+        `The \`${propertyPath}\` property path was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${propertyPath}}}`,
         false,
         {
           id: 'this-property-fallback',
@@ -86,7 +86,7 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, () => 
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (op, expr) => {
-  // <Foo @arg={{baz}}>
+  // <div id={{baz}}>
 
   op(HighLevelResolutionOpcode.ResolveLocal, expr[1], (_name: string) => {
     op(HighLevelResolutionOpcode.ResolveOptionalHelper, expr, {
@@ -96,7 +96,54 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (op, expr) => {
 
       ifFallback: (name: string, moduleName: string) => {
         deprecate(
-          `The \`${name}\` property was used in the template for the \`${moduleName}\` component without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
+          `The \`${name}\` property was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
+          false,
+          {
+            id: 'this-property-fallback',
+          }
+        );
+
+        op(Op.GetVariable, 0);
+        op(Op.GetProperty, name);
+      },
+    });
+  });
+});
+
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback, (op, expr) => {
+  // <Foo @bar={{baz}}>
+
+  op(HighLevelResolutionOpcode.ResolveLocal, expr[1], (_name: string) => {
+    op(HighLevelResolutionOpcode.ResolveOptionalHelper, expr, {
+      ifHelper: (handle: number, name: string, moduleName: string) => {
+        assert(expr[2] && expr[2].length === 1, '[BUG] Missing argument name');
+
+        let arg = expr[2][0];
+
+        deprecate(
+          `The \`${name}\` helper was used in the \`${moduleName}\` template as \`${arg}={{${name}}}\`. ` +
+            `This is ambigious between wanting the \`${arg}\` argument to be the \`${name}\` helper itself, ` +
+            `or the result of invoking the \`${name}\` helper (current behavior). ` +
+            `This implicit invocation behavior has been deprecated.\n\n` +
+            `Instead, please explicitly invoke the helper with parenthesis, i.e. \`${arg}={{(${name})}}\`.\n\n` +
+            `Note: the parenthesis are only required in this exact scenario where an ambiguity is present – where ` +
+            `\`${name}\` referes to a global helper (as opposed to a local variable), AND ` +
+            `the \`${name}\` helper invocation does not take any arguments, AND ` +
+            `this occurs in a named argument position of a component invocation.\n\n` +
+            `We expect this combination to be quite rare, as most helpers require at least one argument. ` +
+            `There is no need to refactor helper invocations in cases where this deprecation was not triggered.`,
+          false,
+          {
+            id: 'argument-less-helper-paren-less-invocation',
+          }
+        );
+
+        Call(op, handle, null, null);
+      },
+
+      ifFallback: (name: string, moduleName: string) => {
+        deprecate(
+          `The \`${name}\` property was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
           false,
           {
             id: 'this-property-fallback',

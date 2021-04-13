@@ -32,7 +32,7 @@ class DynamicHelpersResolutionModeTest extends RenderTest {
     this.assertStableRerender();
 
     assert.validateDeprecations(
-      /The `x\.foo` property path was used in a template for the `.*` component without using `this`/
+      /The `x\.foo` property path was used in the `.*` template without using `this`/
     );
   }
 }

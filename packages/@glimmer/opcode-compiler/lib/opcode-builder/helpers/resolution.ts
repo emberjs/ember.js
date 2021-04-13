@@ -50,6 +50,14 @@ export const isGetFreeOptionalHelper = makeResolutionTypeVerifier(
   SexpOpcodes.GetFreeAsHelperHeadOrThisFallback
 );
 
+export function isGetFreeDeprecatedHelper(
+  opcode: Expressions.Expression
+): opcode is Expressions.GetPathFreeAsDeprecatedHelperHeadOrThisFallback {
+  return (
+    Array.isArray(opcode) && opcode[0] === SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback
+  );
+}
+
 export const isGetFreeOptionalComponentOrHelper = makeResolutionTypeVerifier(
   SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback
 );
@@ -303,7 +311,10 @@ export function resolveOptionalHelper(
   meta: ContainingMetadata,
   [, expr, { ifHelper, ifFallback }]: ResolveOptionalHelperOp
 ): void {
-  assert(isGetFreeOptionalHelper(expr), 'Attempted to resolve a helper with incorrect opcode');
+  assert(
+    isGetFreeOptionalHelper(expr) || isGetFreeDeprecatedHelper(expr),
+    'Attempted to resolve a helper with incorrect opcode'
+  );
   let { upvars, owner } = assertResolverInvariants(meta);
 
   let name = upvars[expr[1]];
@@ -312,7 +323,7 @@ export function resolveOptionalHelper(
   if (helper === null) {
     ifFallback(name, meta.moduleName);
   } else {
-    ifHelper(constants.helper(helper, name));
+    ifHelper(constants.helper(helper, name), name, meta.moduleName);
   }
 }
 

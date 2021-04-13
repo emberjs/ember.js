@@ -15,6 +15,8 @@ export class ExpressionEncoder {
         return this.Literal(expr);
       case 'CallExpression':
         return this.CallExpression(expr);
+      case 'DeprecatedCallExpression':
+        return this.DeprecatedCallExpression(expr);
       case 'PathExpression':
         return this.PathExpression(expr);
       case 'Arg':
@@ -101,6 +103,13 @@ export class ExpressionEncoder {
 
   CallExpression({ callee, args }: mir.CallExpression): WireFormat.Expressions.Helper {
     return [SexpOpcodes.Call, EXPR.expr(callee), ...EXPR.Args(args)];
+  }
+
+  DeprecatedCallExpression({
+    arg,
+    callee,
+  }: mir.DeprecatedCallExpression): WireFormat.Expressions.GetPathFreeAsDeprecatedHelperHeadOrThisFallback {
+    return [SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback, callee.symbol, [arg.chars]];
   }
 
   Tail({ members }: mir.Tail): PresentArray<string> {
