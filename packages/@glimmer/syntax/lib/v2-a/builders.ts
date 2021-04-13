@@ -174,7 +174,7 @@ export class Builder {
     context: ASTv2.FreeVarResolution;
     symbol: number;
     loc: SourceSpan;
-  }): ASTv2.VariableReference {
+  }): ASTv2.FreeVarReference {
     assert(
       name !== 'this',
       `You called builders.freeVar() with 'this'. Call builders.this instead`
@@ -217,6 +217,18 @@ export class Builder {
       loc,
       callee: parts.callee,
       args: parts.args,
+    });
+  }
+
+  deprecatedCall(
+    arg: SourceSlice,
+    callee: ASTv2.FreeVarReference,
+    loc: SourceSpan
+  ): ASTv2.DeprecatedCallExpression {
+    return new ASTv2.DeprecatedCallExpression({
+      loc,
+      arg,
+      callee,
     });
   }
 

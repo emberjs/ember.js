@@ -591,13 +591,68 @@ class ElementNormalizer {
     );
   }
 
+  private maybeDeprecatedCall(
+    arg: SourceSlice,
+    part: ASTv1.MustacheStatement | ASTv1.TextNode | ASTv1.ConcatStatement
+  ): { expr: ASTv2.DeprecatedCallExpression; trusting: boolean } | null {
+    if (this.ctx.strict) {
+      return null;
+    }
+
+    if (part.type !== 'MustacheStatement') {
+      return null;
+    }
+
+    let { path } = part;
+
+    if (path.type !== 'PathExpression') {
+      return null;
+    }
+
+    if (path.head.type !== 'VarHead') {
+      return null;
+    }
+
+    let { name } = path.head;
+
+    if (name === 'has-block' || name === 'has-block-params') {
+      return null;
+    }
+
+    if (this.ctx.hasBinding(name)) {
+      return null;
+    }
+
+    if (path.tail.length !== 0) {
+      return null;
+    }
+
+    if (part.params.length !== 0 || part.hash.pairs.length !== 0) {
+      return null;
+    }
+
+    let context = ASTv2.LooseModeResolution.attr();
+
+    let callee = this.ctx.builder.freeVar({
+      name,
+      context,
+      symbol: this.ctx.table.allocateFree(name, context),
+      loc: path.loc,
+    });
+
+    return {
+      expr: this.ctx.builder.deprecatedCall(arg, callee, part.loc),
+      trusting: false,
+    };
+  }
+
   private arg(arg: ASTv1.AttrNode): ASTv2.ComponentArg {
     assert(arg.name[0] === '@', 'An arg name must start with `@`');
 
     let offsets = this.ctx.loc(arg.loc);
     let nameSlice = offsets.sliceStartChars({ chars: arg.name.length }).toSlice(arg.name);
 
-    let value = this.attrValue(arg.value);
+    let value = this.maybeDeprecatedCall(nameSlice, arg.value) || this.attrValue(arg.value);
     return this.ctx.builder.arg(
       { name: nameSlice, value: value.expr, trusting: value.trusting },
       offsets
