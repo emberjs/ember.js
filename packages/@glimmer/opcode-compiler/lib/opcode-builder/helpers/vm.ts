@@ -1,4 +1,4 @@
-import { $v0 } from '@glimmer/vm';
+import { $fp, $v0 } from '@glimmer/vm';
 import {
   Option,
   Op,
@@ -79,13 +79,13 @@ export function CallDynamic(
   named: WireFormat.Core.Hash,
   append?: () => void
 ): void {
-  op(Op.Load, $v0);
   op(MachineOp.PushFrame);
   SimpleArgs(op, positional, named, false);
-  op(Op.DynamicHelper, $v0);
+  op(Op.Dup, $fp, 1);
+  op(Op.DynamicHelper);
   if (append) {
     op(Op.Fetch, $v0);
-    append?.();
+    append();
     op(MachineOp.PopFrame);
   } else {
     op(MachineOp.PopFrame);
