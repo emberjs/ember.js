@@ -1,4 +1,11 @@
-import { RenderTest, test, jitSuite, GlimmerishComponent, defineSimpleHelper } from '../..';
+import {
+  RenderTest,
+  test,
+  jitSuite,
+  GlimmerishComponent,
+  defineSimpleHelper,
+  defineComponent,
+} from '../..';
 
 class DynamicHelpersResolutionModeTest extends RenderTest {
   static suiteName = 'dynamic helpers in resolution mode';
@@ -34,6 +41,41 @@ class DynamicHelpersResolutionModeTest extends RenderTest {
     assert.validateDeprecations(
       /The `x\.foo` property path was used in the `.*` template without using `this`/
     );
+  }
+
+  @test
+  'Can use a dynamic helper with nested helpers'() {
+    const foo = defineSimpleHelper(() => 'world!');
+    const bar = defineSimpleHelper((value: string) => 'Hello, ' + value);
+    const Bar = defineComponent(
+      { foo },
+      '{{this.bar (foo)}}',
+      class extends GlimmerishComponent {
+        bar = bar;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a dynamic helper with nested dynamic helpers'() {
+    const foo = defineSimpleHelper(() => 'world!');
+    const bar = defineSimpleHelper((value: string) => 'Hello, ' + value);
+    const Bar = defineComponent(
+      {},
+      '{{this.bar (this.foo)}}',
+      class extends GlimmerishComponent {
+        foo = foo;
+        bar = bar;
+      }
+    );
+
+    this.renderComponent(Bar);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
   }
 }
 
