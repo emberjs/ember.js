@@ -79,6 +79,8 @@ export const enum SexpOpcodes {
   GetFreeAsComponentOrHelperHead = 35,
   // a helper or `this` fallback `attr={{x}}`
   GetFreeAsHelperHeadOrThisFallback = 36,
+  // a helper or `this` fallback (deprecated) `@arg={{x}}`
+  GetFreeAsDeprecatedHelperHeadOrThisFallback = 99,
   // a call head `(x)`
   GetFreeAsHelperHead = 37,
   GetFreeAsModifierHead = 38,
@@ -176,6 +178,10 @@ export namespace Expressions {
     SexpOpcodes.GetFreeAsHelperHeadOrThisFallback,
     number
   ];
+  export type GetFreeAsDeprecatedHelperHeadOrThisFallback = [
+    SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback,
+    number
+  ];
   export type GetFreeAsHelperHead = [SexpOpcodes.GetFreeAsHelperHead, number];
   export type GetFreeAsModifierHead = [SexpOpcodes.GetFreeAsModifierHead, number];
   export type GetFreeAsComponentHead = [SexpOpcodes.GetFreeAsComponentHead, number];
@@ -185,6 +191,7 @@ export namespace Expressions {
     | GetFreeAsComponentOrHelperHeadOrThisFallback
     | GetFreeAsComponentOrHelperHead
     | GetFreeAsHelperHeadOrThisFallback
+    | GetFreeAsDeprecatedHelperHeadOrThisFallback
     | GetFreeAsHelperHead
     | GetFreeAsModifierHead
     | GetFreeAsComponentHead;
@@ -210,6 +217,11 @@ export namespace Expressions {
     number,
     Path
   ];
+  export type GetPathFreeAsDeprecatedHelperHeadOrThisFallback = [
+    SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback,
+    number,
+    Path
+  ];
   export type GetPathFreeAsHelperHead = [SexpOpcodes.GetFreeAsHelperHead, number, Path];
   export type GetPathFreeAsModifierHead = [SexpOpcodes.GetFreeAsModifierHead, number, Path];
   export type GetPathFreeAsComponentHead = [SexpOpcodes.GetFreeAsComponentHead, number, Path];
@@ -219,6 +231,7 @@ export namespace Expressions {
     | GetPathFreeAsComponentOrHelperHeadOrThisFallback
     | GetPathFreeAsComponentOrHelperHead
     | GetPathFreeAsHelperHeadOrThisFallback
+    | GetPathFreeAsDeprecatedHelperHeadOrThisFallback
     | GetPathFreeAsHelperHead
     | GetPathFreeAsModifierHead
     | GetPathFreeAsComponentHead;

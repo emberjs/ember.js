@@ -184,7 +184,7 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
         op(MachineOp.PushFrame);
         op(HighLevelResolutionOpcode.ResolveLocal, value[1], (name: string, moduleName: string) => {
           deprecate(
-            `The \`${name}\` property was used in a template for the \`${moduleName}\` component without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
+            `The \`${name}\` property was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
             false,
             {
               id: 'this-property-fallback',

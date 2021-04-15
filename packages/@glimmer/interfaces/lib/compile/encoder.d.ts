@@ -87,7 +87,7 @@ export type ResolveOptionalHelperOp = [
   op: HighLevelResolutionOpcode.ResolveOptionalHelper,
   op1: WireFormat.Expressions.Expression,
   op2: {
-    ifHelper: (handle: number) => void;
+    ifHelper: (handle: number, name: string, moduleName: string) => void;
     ifFallback: (name: string, moduleName: string) => void;
   }
 ];
