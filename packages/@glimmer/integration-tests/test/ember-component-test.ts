@@ -571,7 +571,7 @@ class CurlyScopeTest extends CurlyTest {
     );
 
     assert.validateDeprecations(
-      /The `id` property was used in the template for the `.*` component without using `this`/
+      /The `id` property was used in the `.*` template without using `this`/
     );
   }
 
@@ -1656,7 +1656,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     this.assertStableNodes();
 
     assert.validateDeprecations(
-      /The `component\.name` property path was used in a template for the `.*` component without using `this`/
+      /The `component\.name` property path was used in the `.*` template without using `this`/
     );
   }
 }

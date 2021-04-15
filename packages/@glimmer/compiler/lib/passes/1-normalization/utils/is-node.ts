@@ -91,6 +91,8 @@ function printPath(path: ASTv2.ExpressionNode): string {
     }
     case 'Call':
       return `(${printPath(path.callee)} ...)`;
+    case 'DeprecatedCall':
+      return `${path.callee.name}`;
     case 'Interpolate':
       throw unreachable('a concat statement cannot appear as the head of an expression');
   }

@@ -146,6 +146,11 @@ export class CallExpression extends node('CallExpression').fields<{
   callee: ExpressionNode;
   args: Args;
 }>() {}
+export class DeprecatedCallExpression extends node('DeprecatedCallExpression').fields<{
+  arg: SourceSlice;
+  callee: ASTv2.FreeVarReference;
+}>() {}
+
 export class Modifier extends node('Modifier').fields<{ callee: ExpressionNode; args: Args }>() {}
 export class InvokeBlock extends node('InvokeBlock').fields<{
   head: ExpressionNode;
@@ -208,6 +213,7 @@ export type ExpressionNode =
   | ASTv2.VariableReference
   | InterpolateExpression
   | CallExpression
+  | DeprecatedCallExpression
   | Not
   | IfInline
   | HasBlock

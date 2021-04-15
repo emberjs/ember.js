@@ -647,7 +647,7 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'Main',
-      '<div><Child @value={{count}} /></div>',
+      '<div><Child @value={{(count)}} /></div>',
       MainComponent
     );
     this.registerComponent('Glimmer', 'Child', '{{@value}} {{this.args.value}}');
