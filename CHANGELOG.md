@@ -1,3 +1,19 @@
+## v0.78.0 (2021-04-15)
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/syntax`
+  * [#1295](https://github.com/glimmerjs/glimmer-vm/pull/1295) Deprecate `@foo={{helper}}` ([@chancancode](https://github.com/chancancode))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/runtime`
+  * [#1293](https://github.com/glimmerjs/glimmer-vm/pull/1293) Fix nested calls to helpers in dynamic helpers ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+- Milind Alvares ([@milindalvares](https://github.com/milindalvares))
+
+
 ## v0.77.6 (2021-03-25)
 
 #### :rocket: Enhancement
