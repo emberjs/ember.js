@@ -269,6 +269,23 @@ export class EmberishComponentTests extends RenderTest {
   }
 
   @test({ kind: 'curly' })
+  'inverse named block'() {
+    class FooBar extends EmberishCurlyComponent {
+      [index: string]: unknown;
+
+      constructor() {
+        super();
+      }
+    }
+    this.registerComponent('Curly', 'FooBar', 'Hello{{yield "my" to="inverse"}}world!', FooBar);
+
+    this.render(`<FooBar><:inverse as |value|> {{value}} </:inverse></FooBar>`);
+
+    this.assertComponent('Hello my world!');
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'curly' })
   'invoking wrapped layout via angle brackets - invocation attributes merges classes'() {
     class FooBar extends EmberishCurlyComponent {
       [index: string]: unknown;

@@ -180,7 +180,11 @@ export class ContentEncoder {
   }
 
   NamedBlock({ name, body, scope }: mir.NamedBlock): WireFormat.Core.NamedBlock {
-    return [name.chars, [CONTENT.list(body), scope.slots]];
+    let nameChars = name.chars;
+    if (nameChars === 'inverse') {
+      nameChars = 'else';
+    }
+    return [nameChars, [CONTENT.list(body), scope.slots]];
   }
 
   If({ condition, block, inverse }: mir.If): WireFormat.Statements.If {
