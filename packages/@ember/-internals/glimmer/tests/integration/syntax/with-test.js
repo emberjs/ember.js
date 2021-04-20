@@ -106,7 +106,7 @@ moduleFor(
 
     ['@test the scoped variable is not available outside the {{#with}} block.']() {
       expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
       );
 
       this.render(`{{name}}-{{#with this.other as |name|}}{{name}}{{/with}}-{{name}}`, {
@@ -295,7 +295,7 @@ moduleFor(
 
     ['@test the scoped variable is not available outside the {{#with}} block']() {
       expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
       );
 
       this.render(
@@ -380,7 +380,7 @@ moduleFor(
 
     ['@test nested {{#with}} blocks should have access to root context']() {
       expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
       );
 
       this.render(
