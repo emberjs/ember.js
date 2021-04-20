@@ -36,7 +36,7 @@ moduleFor(
 
     ['@test it does not resolve helpers with a `.` (period)']() {
       expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
       );
 
       this.registerHelper('hello.world', () => 'hello world');
@@ -826,6 +826,20 @@ moduleFor(
       }, /Cannot use the \(helper\) keyword yet, as it has not been implemented/);
     }
 
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic helper with nested helpers'() {
+      let foo = defineSimpleHelper(() => 'world!');
+      let bar = defineSimpleHelper((value) => 'Hello, ' + value);
+
+      this.registerComponent('baz', {
+        template: '{{this.bar (this.foo)}}',
+        ComponentClass: Component.extend({ foo, bar }),
+      });
+
+      this.render('<Baz/>');
+      this.assertText('Hello, world!');
+      this.assertStableRerender();
+    }
+
     ['@test helpers are not computed eagerly when used with if expressions'](assert) {
       this.registerHelper('is-ok', () => 'hello');
       this.registerHelper('throws-error', () => assert.ok(false, 'helper was computed eagerly'));
@@ -906,6 +920,97 @@ if (DEBUG) {
         let compute = this.buildCompute();
 
         this.registerHelper('test-helper', compute);
+      }
+    }
+  );
+
+  moduleFor(
+    'Helpers test: argument-less helper invocation in named arguments position',
+    class extends RenderingTestCase {
+      constructor() {
+        super(...arguments);
+
+        this.registerComponent('bar', {
+          template: '[{{is-string @content}}][{{@content}}]',
+        });
+
+        this.registerHelper('is-string', ([value]) => typeof value === 'string');
+      }
+
+      ['@test invoking an argument-less helper without parens in named argument position is deprecated']() {
+        this.registerHelper('foo', () => 'Hello, world!');
+
+        expectDeprecation(
+          () => this.render('<Bar @content={{foo}} />', { foo: 'Not it!' }),
+          new RegExp(
+            /The `foo` helper was used in the `-top-level` template as /.source +
+              /`@content={{foo}}`\. This is ambigious between wanting the `@content` /.source +
+              /argument to be the `foo` helper itself, or the result of invoking the /.source +
+              /`foo` helper \(current behavior\)\. This implicit invocation behavior /.source +
+              /has been deprecated\./.source
+          )
+        );
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      ['@test invoking an argument-less helper with parens in named argument position is not deprecated']() {
+        this.registerHelper('foo', () => 'Hello, world!');
+
+        expectNoDeprecation(() => this.render('<Bar @content={{(foo)}} />', { foo: 'Not it!' }));
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      ['@test invoking an argument-less helper with quotes in named argument position is not deprecated']() {
+        this.registerHelper('foo', () => 'Hello, world!');
+
+        expectNoDeprecation(() => this.render('<Bar @content="{{foo}}" />', { foo: 'Not it!' }));
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      ['@test passing a local helper in named argument position is not deprecated']() {
+        let foo = defineSimpleHelper(() => 'Hello, world!');
+
+        expectNoDeprecation(() =>
+          this.render(`{{#let this.foo as |foo|}}<Bar @content={{foo}} />{{/let}}`, { foo })
+        );
+
+        this.assertText('[false][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      // TODO: this one really should work, and there is a passing test in glimmer-vm,
+      // but somehow it doesn't work here. This is almost certainly a VM bug as something
+      // is trying to call `block.compile()` but `block` is the reference for `this.foo`.
+      // So the execution stack is probably off-by-one or something.
+
+      ['@test invoking a local helper with parens in named argument position is not deprecated']() {
+        let foo = defineSimpleHelper(() => 'Hello, world!');
+
+        expectNoDeprecation(() =>
+          this.render(`{{#let this.foo as |foo|}}<Bar @content={{(foo)}} />{{/let}}`, { foo })
+        );
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      // TODO: this one doesn't work yet, and there is a failing test in glimmer-vm
+
+      ['@skip invoking a helper with quotes in named argument position is not deprecated']() {
+        let foo = defineSimpleHelper(() => 'Hello, world!');
+
+        expectNoDeprecation(() =>
+          this.render(`{{#let this.foo as |foo|}}<Bar @content="{{foo}}" />{{/let}}`, { foo })
+        );
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
       }
     }
   );

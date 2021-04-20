@@ -1,5 +1,11 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, runTask, defineSimpleModifier } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  defineSimpleHelper,
+  defineSimpleModifier,
+} from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
@@ -643,6 +649,20 @@ moduleFor(
           template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
         });
       }, /Cannot use the \(modifier\) keyword yet, as it has not been implemented/);
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic modifier with a nested dynamic helper'() {
+      let foo = defineSimpleHelper(() => 'Hello, world!');
+      let bar = defineSimpleModifier((element, [value]) => (element.innerHTML = value));
+
+      this.registerComponent('baz', {
+        template: '<div {{this.bar (this.foo)}}></div>',
+        ComponentClass: Component.extend({ tagName: '', foo, bar }),
+      });
+
+      this.render('<Baz/>');
+      this.assertHTML('<div>Hello, world!</div>');
+      this.assertStableRerender();
     }
   }
 );

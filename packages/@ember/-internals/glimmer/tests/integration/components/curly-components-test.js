@@ -3883,7 +3883,7 @@ moduleFor(
 
     ['@test can use `{{component.foo}}` in a template GH#19313']() {
       expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in a template for the `[^`]+` component without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
       );
 
       this.registerComponent('foo-bar', {

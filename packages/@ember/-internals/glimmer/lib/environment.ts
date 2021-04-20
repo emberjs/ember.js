@@ -116,6 +116,14 @@ const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
       enabled: '3.26.0',
     },
   },
+  {
+    id: 'argument-less-helper-paren-less-invocation',
+    until: '4.0.0',
+    for: 'ember-source',
+    since: {
+      enabled: '3.27.0',
+    },
+  },
 ];
 
 const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
