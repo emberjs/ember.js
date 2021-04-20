@@ -906,6 +906,16 @@ class ElementChildren extends Children {
           );
         }
 
+        if (
+          (name === 'inverse' && seenNames.has('else')) ||
+          (name === 'else' && seenNames.has('inverse'))
+        ) {
+          throw generateSyntaxError(
+            `Component has both <:else> and <:inverse> block. <:inverse> is an alias for <:else>`,
+            this.loc
+          );
+        }
+
         seenNames.add(name);
       }
 

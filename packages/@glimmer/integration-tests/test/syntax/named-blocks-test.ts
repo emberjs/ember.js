@@ -36,6 +36,24 @@ class NamedBlocksSyntaxErrors extends RenderTest {
   }
 
   @test
+  'Throws an error if both inverse and else named blocks are passed, inverse first'() {
+    this.assert.throws(() => {
+      preprocess('<Foo><:inverse></:inverse><:else></:else></Foo>', {
+        meta: { moduleName: 'test-module' },
+      });
+    }, syntaxErrorFor('Component has both <:else> and <:inverse> block. <:inverse> is an alias for <:else>', '<Foo><:inverse></:inverse><:else></:else></Foo>', 'test-module', 1, 0));
+  }
+
+  @test
+  'Throws an error if both inverse and else named blocks are passed, else first'() {
+    this.assert.throws(() => {
+      preprocess('<Foo><:else></:else><:inverse></:inverse></Foo>', {
+        meta: { moduleName: 'test-module' },
+      });
+    }, syntaxErrorFor('Component has both <:else> and <:inverse> block. <:inverse> is an alias for <:else>', '<Foo><:else></:else><:inverse></:inverse></Foo>', 'test-module', 1, 0));
+  }
+
+  @test
   'Throws an error if there is content outside of the blocks'() {
     this.assert.throws(() => {
       preprocess('<Foo>Hello!<:foo></:foo></Foo>', { meta: { moduleName: 'test-module' } });
