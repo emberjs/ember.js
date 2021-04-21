@@ -1,3 +1,13 @@
+## v0.78.1 (2021-04-21)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1296](https://github.com/glimmerjs/glimmer-vm/pull/1296) Correctly handle <:inverse> named block ([@wagenet](https://github.com/wagenet))
+
+#### Committers: 1
+- Peter Wagenet ([@wagenet](https://github.com/wagenet))
+
+
 ## v0.78.0 (2021-04-15)
 
 #### :rocket: Enhancement
