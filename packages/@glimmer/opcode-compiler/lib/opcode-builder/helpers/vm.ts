@@ -87,8 +87,10 @@ export function CallDynamic(
     op(Op.Fetch, $v0);
     append();
     op(MachineOp.PopFrame);
+    op(Op.Pop, 1);
   } else {
     op(MachineOp.PopFrame);
+    op(Op.Pop, 1);
     op(Op.Fetch, $v0);
   }
 }
