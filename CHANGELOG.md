@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.27.0-beta.4 (April 21, 2021)
+
+- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX beta] [DEPRECATION] Deprecate `@foo={{helper}}`
+- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX beta] `<:else>` and `<:inverse>` should be aliases (see )
+- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX beta] Fix nested calls to helpers in dynamic helpers (see https://github.com/glimmerjs/glimmer-vm/pull/1293)
+
 ### v3.27.0-beta.3 (March 30, 2021)
 
 - [#19477](https://github.com/emberjs/ember.js/pull/19477) [BUGFIX] Move `LinkTo` assertion into a method so `LinkToExternal` can override it
