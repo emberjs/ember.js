@@ -2085,7 +2085,7 @@ moduleFor(
 
       this.addTemplate(
         'index',
-        `<LinkTo id='the-link' @route='index' @query={{hash}}>Index</LinkTo>`
+        `<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`
       );
 
       await this.visit('/');

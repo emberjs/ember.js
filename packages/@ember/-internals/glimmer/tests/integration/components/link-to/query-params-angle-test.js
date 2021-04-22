@@ -144,7 +144,7 @@ moduleFor(
     ) {
       this.addTemplate(
         'index',
-        `<LinkTo id='the-link' @route='index' @query={{hash}}>Index</LinkTo>`
+        `<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`
       );
 
       await this.visit('/');
@@ -163,7 +163,7 @@ moduleFor(
     async [`@test it doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
       assert
     ) {
-      this.addTemplate('index', `<LinkTo id='the-link' @query={{hash}}>Index</LinkTo>`);
+      this.addTemplate('index', `<LinkTo id='the-link' @query={{(hash)}}>Index</LinkTo>`);
 
       await this.visit('/');
 

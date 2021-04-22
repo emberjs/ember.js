@@ -53,6 +53,28 @@ moduleFor(
       this.assertText('[In layout:] [In block:] Seattle');
     }
 
+    ['@feature(EMBER_NAMED_BLOCKS) <:else> and <:inverse> named blocks']() {
+      this.registerComponent('yielder', {
+        template:
+          '[:else][{{has-block "else"}}][{{yield to="else"}}]' +
+          '[:inverse][{{has-block "inverse"}}][{{yield to="inverse"}}]',
+      });
+
+      this.render(
+        '[<Yielder />]' +
+          '[<Yielder><:else>Hello</:else></Yielder>]' +
+          '[<Yielder><:inverse>Goodbye</:inverse></Yielder>]'
+      );
+
+      this.assertText(
+        '[[:else][false][][:inverse][false][]]' +
+          '[[:else][true][Hello][:inverse][true][Hello]]' +
+          '[[:else][true][Goodbye][:inverse][true][Goodbye]]'
+      );
+
+      this.assertStableRerender();
+    }
+
     ['@test templates should yield to block inside a nested component']() {
       this.registerComponent('outer-comp', {
         template: '<div>[In layout:] {{yield}}</div>',
