@@ -1,3 +1,13 @@
+## v0.78.2 (2021-04-22)
+
+#### :bug: Bug Fix
+* `@glimmer/opcode-compiler`
+  * [#1297](https://github.com/glimmerjs/glimmer-vm/pull/1297) Fix evaluation stack off-by-one error introduced in #1293 ([@chancancode](https://github.com/chancancode))
+
+#### Committers: 1
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+
+
 ## v0.78.1 (2021-04-21)
 
 #### :bug: Bug Fix
