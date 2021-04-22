@@ -156,6 +156,70 @@ class HashTest extends RenderTest {
 
     this.assertHTML('Chad Hietala');
   }
+
+  @test
+  'individual hash values are accessed lazily'(assert: Assert) {
+    class FooBar extends GlimmerishComponent {
+      firstName = 'Godfrey';
+
+      get lastName() {
+        assert.ok(false, 'lastName was accessed');
+
+        return;
+      }
+    }
+
+    this.registerComponent(
+      'Glimmer',
+      'FooBar',
+      `{{yield (hash firstName=@firstName lastName=this.lastName)}}`,
+      FooBar
+    );
+
+    this.render(`<FooBar @firstName="Godfrey" as |values|>{{values.firstName}}</FooBar>`);
+
+    this.assertHTML('Godfrey');
+    this.assertStableRerender();
+  }
+
+  @test
+  'defined hash keys cannot be updated'(assert: Assert) {
+    class FooBar extends GlimmerishComponent {
+      constructor(owner: object, args: { hash: Record<string, unknown> }) {
+        super(owner, args);
+        args.hash.firstName = 'Chad';
+      }
+    }
+
+    this.registerComponent('Glimmer', 'FooBar', `{{yield @hash}}`, FooBar);
+
+    assert.throws(() => {
+      this.render(`
+        <FooBar @hash={{hash firstName="Godfrey"}} as |values|>
+          {{values.firstName}} {{values.lastName}}
+        </FooBar>
+      `);
+    }, /You attempted to set the "firstName" value on an object generated using the \(hash\) helper|Assignment to read-only properties is not allowed in strict mode/);
+  }
+
+  @test
+  'undefined hash keys can be updated'() {
+    class FooBar extends GlimmerishComponent {
+      constructor(owner: object, args: { hash: Record<string, unknown> }) {
+        super(owner, args);
+        args.hash.lastName = 'Chan';
+      }
+    }
+
+    this.registerComponent('Glimmer', 'FooBar', `{{yield @hash}}`, FooBar);
+
+    this.render(
+      `<FooBar @hash={{hash firstName="Godfrey"}} as |values|>{{values.firstName}} {{values.lastName}}</FooBar>`
+    );
+
+    this.assertHTML('Godfrey Chan');
+    this.assertStableRerender();
+  }
 }
 
 jitSuite(HashTest);
