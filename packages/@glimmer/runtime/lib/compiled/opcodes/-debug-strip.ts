@@ -48,11 +48,7 @@ class ReferenceChecker {
   type!: Reference;
 
   validate(value: unknown): value is Reference {
-    if (typeof value === 'object' && value !== null) {
-      return REFERENCE in value;
-    }
-
-    return true;
+    return typeof value === 'object' && value !== null && REFERENCE in value;
   }
 
   expected(): string {

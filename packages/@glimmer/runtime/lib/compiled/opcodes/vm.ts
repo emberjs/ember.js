@@ -23,7 +23,7 @@ import {
   endTrackFrame,
   consumeTag,
 } from '@glimmer/validator';
-import { assert, decodeHandle, expect, isNonPrimitiveHandle } from '@glimmer/util';
+import { assert, decodeHandle, decodeImmediate, expect, isHandle } from '@glimmer/util';
 import {
   CheckNumber,
   check,
@@ -50,23 +50,23 @@ APPEND_OPCODES.add(Op.PushDynamicScope, (vm) => vm.pushDynamicScope());
 APPEND_OPCODES.add(Op.PopDynamicScope, (vm) => vm.popDynamicScope());
 
 APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
-  vm.stack.pushJs(vm[CONSTANTS].getValue(decodeHandle(other)));
+  vm.stack.push(vm[CONSTANTS].getValue(decodeHandle(other)));
 });
 
 APPEND_OPCODES.add(Op.ConstantReference, (vm, { op1: other }) => {
-  vm.stack.pushJs(createConstRef(vm[CONSTANTS].getValue(decodeHandle(other)), false));
+  vm.stack.push(createConstRef(vm[CONSTANTS].getValue(decodeHandle(other)), false));
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   let stack = vm.stack;
 
-  if (isNonPrimitiveHandle(primitive)) {
+  if (isHandle(primitive)) {
     // it is a handle which does not already exist on the stack
     let value = vm[CONSTANTS].getValue(decodeHandle(primitive));
-    stack.pushJs(value as object);
+    stack.push(value as object);
   } else {
     // is already an encoded immediate or primitive handle
-    stack.pushRaw(primitive);
+    stack.push(decodeImmediate(primitive));
   }
 });
 
@@ -87,7 +87,7 @@ APPEND_OPCODES.add(Op.PrimitiveReference, (vm) => {
     ref = createPrimitiveRef(value);
   }
 
-  stack.pushJs(ref);
+  stack.push(ref);
 });
 
 APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
@@ -122,12 +122,12 @@ APPEND_OPCODES.add(Op.Exit, (vm) => {
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
-  stack.pushJs(vm[CONSTANTS].getValue(_table));
+  stack.push(vm[CONSTANTS].getValue(_table));
 });
 
 APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
   let stack = vm.stack;
-  stack.pushJs(vm.scope());
+  stack.push(vm.scope());
 });
 
 APPEND_OPCODES.add(Op.CompileBlock, (vm: InternalVM) => {
@@ -135,9 +135,9 @@ APPEND_OPCODES.add(Op.CompileBlock, (vm: InternalVM) => {
   let block = stack.pop<Option<CompilableTemplate> | 0>();
 
   if (block) {
-    stack.pushSmallInt(vm.compile(block));
+    stack.push(vm.compile(block));
   } else {
-    stack.pushNull();
+    stack.push(null);
   }
 });
 
@@ -145,8 +145,8 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckOption(CheckHandle));
-  let scope = check(stack.popJs(), CheckOption(CheckScope));
-  let table = check(stack.popJs(), CheckOption(CheckBlockSymbolTable));
+  let scope = check(stack.pop(), CheckOption(CheckScope));
+  let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(
     table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)),
@@ -185,7 +185,7 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
   let value = Boolean(valueForRef(reference));
 
   if (isConstRef(reference)) {
@@ -202,7 +202,7 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
 });
 
 APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
   let value = Boolean(valueForRef(reference));
 
   if (isConstRef(reference)) {
@@ -219,7 +219,7 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
 });
 
 APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
-  let other = check(vm.stack.peekSmallInt(), CheckNumber);
+  let other = check(vm.stack.peek(), CheckNumber);
 
   if (other === comparison) {
     vm.goto(target);
@@ -227,7 +227,7 @@ APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
 });
 
 APPEND_OPCODES.add(Op.AssertSame, (vm) => {
-  let reference = check(vm.stack.peekJs(), CheckReference);
+  let reference = check(vm.stack.peek(), CheckReference);
 
   if (isConstRef(reference) === false) {
     vm.updateWith(new Assert(reference));
@@ -236,9 +236,9 @@ APPEND_OPCODES.add(Op.AssertSame, (vm) => {
 
 APPEND_OPCODES.add(Op.ToBoolean, (vm) => {
   let { stack } = vm;
-  let valueRef = check(stack.popJs(), CheckReference);
+  let valueRef = check(stack.pop(), CheckReference);
 
-  stack.pushJs(createComputeRef(() => toBool(valueForRef(valueRef))));
+  stack.push(createComputeRef(() => toBool(valueForRef(valueRef))));
 });
 
 export class Assert extends UpdatingOpcode {
