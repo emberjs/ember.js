@@ -7,7 +7,6 @@ import {
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
