@@ -54,8 +54,8 @@ export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
 
-  let definition = check(stack.popJs(), CheckReference);
-  let capturedArgs = check(stack.popJs(), CheckCapturedArguments);
+  let definition = check(stack.pop(), CheckReference);
+  let capturedArgs = check(stack.pop(), CheckCapturedArguments);
 
   let owner = vm.getOwner();
   let resolver = vm.runtime.resolver;
@@ -75,8 +75,8 @@ APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
 
 APPEND_OPCODES.add(Op.DynamicHelper, (vm) => {
   let stack = vm.stack;
-  let ref = check(stack.popJs(), CheckReference);
-  let args = check(stack.popJs(), CheckArguments).capture();
+  let ref = check(stack.pop(), CheckReference);
+  let args = check(stack.pop(), CheckArguments).capture();
 
   let helperRef: Reference;
   let initialOwner: Owner = vm.getOwner();
@@ -148,7 +148,7 @@ function resolveHelper(
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
   let helper = check(vm[CONSTANTS].getValue(handle), CheckHelper);
-  let args = check(stack.popJs(), CheckArguments);
+  let args = check(stack.pop(), CheckArguments);
   let value = helper(args.capture(), vm.getOwner(), vm.dynamicScope());
 
   if (_hasDestroyableChildren(value)) {
@@ -161,7 +161,7 @@ APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
 APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {
   let expr = vm.referenceForSymbol(symbol);
 
-  vm.stack.pushJs(expr);
+  vm.stack.push(expr);
 });
 
 APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
@@ -170,9 +170,9 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 });
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
-  let handle = check(vm.stack.popJs(), CheckCompilableBlock);
-  let scope = check(vm.stack.popJs(), CheckScope);
-  let table = check(vm.stack.popJs(), CheckBlockSymbolTable);
+  let handle = check(vm.stack.pop(), CheckCompilableBlock);
+  let scope = check(vm.stack.pop(), CheckScope);
+  let table = check(vm.stack.pop(), CheckBlockSymbolTable);
 
   vm.scope().bindBlock(symbol, [handle, scope, table]);
 });
@@ -186,7 +186,7 @@ APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
     ref = childRefFor(vm.getSelf(), name);
   }
 
-  vm.stack.pushJs(ref);
+  vm.stack.push(ref);
 });
 
 APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols }) => {
@@ -195,40 +195,31 @@ APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols }) => {
 
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
   let key = vm[CONSTANTS].getValue<string>(_key);
-  let expr = check(vm.stack.popJs(), CheckReference);
-  vm.stack.pushJs(childRefFor(expr, key));
+  let expr = check(vm.stack.pop(), CheckReference);
+  vm.stack.push(childRefFor(expr, key));
 });
 
 APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
   let { stack } = vm;
   let block = vm.scope().getBlock(_block);
 
-  if (block === null) {
-    stack.pushNull();
-  } else {
-    stack.pushJs(block);
-  }
+  stack.push(block);
 });
 
 APPEND_OPCODES.add(Op.SpreadBlock, (vm) => {
   let { stack } = vm;
-  let block = check(stack.popJs(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
+  let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
   if (block && !isUndefinedReference(block)) {
     let [handleOrCompilable, scope, table] = block;
 
-    stack.pushJs(table);
-    stack.pushJs(scope);
-
-    if (typeof handleOrCompilable === 'number') {
-      stack.pushSmallInt(handleOrCompilable);
-    } else {
-      stack.pushJs(handleOrCompilable);
-    }
+    stack.push(table);
+    stack.push(scope);
+    stack.push(handleOrCompilable);
   } else {
-    stack.pushNull();
-    stack.pushNull();
-    stack.pushNull();
+    stack.push(null);
+    stack.push(null);
+    stack.push(null);
   }
 });
 
@@ -245,23 +236,23 @@ APPEND_OPCODES.add(Op.HasBlock, (vm) => {
   let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
   if (block && !isUndefinedReference(block)) {
-    stack.pushJs(TRUE_REFERENCE);
+    stack.push(TRUE_REFERENCE);
   } else {
-    stack.pushJs(FALSE_REFERENCE);
+    stack.push(FALSE_REFERENCE);
   }
 });
 
 APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
   // FIXME(mmun): should only need to push the symbol table
   let block = vm.stack.pop();
-  let scope = vm.stack.popJs();
+  let scope = vm.stack.pop();
 
   check(block, CheckMaybe(CheckOr(CheckHandle, CheckCompilableBlock)));
   check(scope, CheckMaybe(CheckScope));
-  let table = check(vm.stack.popJs(), CheckMaybe(CheckBlockSymbolTable));
+  let table = check(vm.stack.pop(), CheckMaybe(CheckBlockSymbolTable));
 
   let hasBlockParams = table && table.parameters.length;
-  vm.stack.pushJs(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
+  vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 
 APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
@@ -272,15 +263,15 @@ APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
     out[offset] = check(vm.stack.pop(), CheckReference);
   }
 
-  vm.stack.pushJs(createConcatRef(out));
+  vm.stack.push(createConcatRef(out));
 });
 
 APPEND_OPCODES.add(Op.IfInline, (vm) => {
-  let condition = check(vm.stack.popJs(), CheckReference);
-  let truthy = check(vm.stack.popJs(), CheckReference);
-  let falsy = check(vm.stack.popJs(), CheckReference);
+  let condition = check(vm.stack.pop(), CheckReference);
+  let truthy = check(vm.stack.pop(), CheckReference);
+  let falsy = check(vm.stack.pop(), CheckReference);
 
-  vm.stack.pushJs(
+  vm.stack.push(
     createComputeRef(() => {
       if (toBool(valueForRef(condition)) === true) {
         return valueForRef(truthy);
@@ -292,9 +283,9 @@ APPEND_OPCODES.add(Op.IfInline, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.Not, (vm) => {
-  let ref = check(vm.stack.popJs(), CheckReference);
+  let ref = check(vm.stack.pop(), CheckReference);
 
-  vm.stack.pushJs(
+  vm.stack.push(
     createComputeRef(() => {
       return !toBool(valueForRef(ref));
     })
@@ -304,9 +295,9 @@ APPEND_OPCODES.add(Op.Not, (vm) => {
 APPEND_OPCODES.add(Op.GetDynamicVar, (vm) => {
   let scope = vm.dynamicScope();
   let stack = vm.stack;
-  let nameRef = check(stack.popJs(), CheckReference);
+  let nameRef = check(stack.pop(), CheckReference);
 
-  stack.pushJs(
+  stack.push(
     createComputeRef(() => {
       let name = String(valueForRef(nameRef));
       return valueForRef(scope.get(name));
@@ -315,7 +306,7 @@ APPEND_OPCODES.add(Op.GetDynamicVar, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.Log, (vm) => {
-  let { positional } = check(vm.stack.popJs(), CheckArguments).capture();
+  let { positional } = check(vm.stack.pop(), CheckArguments).capture();
 
   vm.loadValue(
     $v0,

@@ -7,8 +7,8 @@ import { AssertFilter } from './vm';
 
 APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) => {
   let stack = vm.stack;
-  let listRef = check(stack.popJs(), CheckReference);
-  let keyRef = check(stack.popJs(), CheckReference);
+  let listRef = check(stack.pop(), CheckReference);
+  let keyRef = check(stack.pop(), CheckReference);
 
   let keyValue = valueForRef(keyRef);
   let key = keyValue === null ? '@identity' : String(keyValue);
@@ -23,7 +23,7 @@ APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) =
     vm.goto(elseTarget + 1);
   } else {
     vm.enterList(iteratorRef, relativeStart);
-    vm.stack.pushJs(iterator);
+    vm.stack.push(iterator);
   }
 });
 
@@ -33,7 +33,7 @@ APPEND_OPCODES.add(Op.ExitList, (vm) => {
 
 APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
   let stack = vm.stack;
-  let iterator = check(stack.peekJs(), CheckIterator);
+  let iterator = check(stack.peek(), CheckIterator);
   let item = iterator.next();
 
   if (item !== null) {

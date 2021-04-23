@@ -51,14 +51,14 @@ APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, (vm) => {
-  let tagName = check(valueForRef(check(vm.stack.popJs(), CheckReference)), CheckString);
+  let tagName = check(valueForRef(check(vm.stack.pop(), CheckReference)), CheckString);
   vm.elements().openElement(tagName);
 });
 
 APPEND_OPCODES.add(Op.PushRemoteElement, (vm) => {
-  let elementRef = check(vm.stack.popJs(), CheckReference);
-  let insertBeforeRef = check(vm.stack.popJs(), CheckReference);
-  let guidRef = check(vm.stack.popJs(), CheckReference);
+  let elementRef = check(vm.stack.pop(), CheckReference);
+  let insertBeforeRef = check(vm.stack.pop(), CheckReference);
+  let guidRef = check(vm.stack.pop(), CheckReference);
 
   let element = check(valueForRef(elementRef), CheckElement);
   let insertBefore = check(valueForRef(insertBeforeRef), CheckMaybe(CheckOption(CheckNode)));
@@ -114,7 +114,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   }
 
   let owner = vm.getOwner();
-  let args = check(vm.stack.popJs(), CheckArguments);
+  let args = check(vm.stack.pop(), CheckArguments);
   let definition = vm[CONSTANTS].getValue<ModifierDefinition>(handle);
 
   let { manager } = definition;
@@ -155,8 +155,8 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
   }
 
   let { stack, [CONSTANTS]: constants } = vm;
-  let ref = check(stack.popJs(), CheckReference);
-  let args = check(stack.popJs(), CheckArguments).capture();
+  let ref = check(stack.pop(), CheckReference);
+  let args = check(stack.pop(), CheckArguments).capture();
   let { constructing } = vm.elements();
   let initialOwner = vm.getOwner();
 
@@ -337,7 +337,7 @@ APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespac
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
   let name = vm[CONSTANTS].getValue<string>(_name);
   let trusting = vm[CONSTANTS].getValue<boolean>(_trusting);
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
   let value = valueForRef(reference);
   let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
 

@@ -67,7 +67,7 @@ function toDynamicContentType(value: unknown) {
 APPEND_OPCODES.add(Op.ContentType, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
-  vm.stack.pushSmallInt(toContentType(valueForRef(reference)));
+  vm.stack.push(toContentType(valueForRef(reference)));
 
   if (!isConstRef(reference)) {
     vm.updateWith(new AssertFilter(reference, toContentType));
@@ -77,7 +77,7 @@ APPEND_OPCODES.add(Op.ContentType, (vm) => {
 APPEND_OPCODES.add(Op.DynamicContentType, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
-  vm.stack.pushSmallInt(toDynamicContentType(valueForRef(reference)));
+  vm.stack.push(toDynamicContentType(valueForRef(reference)));
 
   if (!isConstRef(reference)) {
     vm.updateWith(new AssertFilter(reference, toDynamicContentType));
@@ -85,7 +85,7 @@ APPEND_OPCODES.add(Op.DynamicContentType, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.AppendHTML, (vm) => {
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = valueForRef(reference);
   let value = isEmpty(rawValue) ? '' : String(rawValue);
@@ -94,7 +94,7 @@ APPEND_OPCODES.add(Op.AppendHTML, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.AppendSafeHTML, (vm) => {
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = check(valueForRef(reference), CheckSafeString).toHTML();
   let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
@@ -103,7 +103,7 @@ APPEND_OPCODES.add(Op.AppendSafeHTML, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.AppendText, (vm) => {
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = valueForRef(reference);
   let value = isEmpty(rawValue) ? '' : String(rawValue);
@@ -116,7 +116,7 @@ APPEND_OPCODES.add(Op.AppendText, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.AppendDocumentFragment, (vm) => {
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
 
   let value = check(valueForRef(reference), CheckDocumentFragment);
 
@@ -124,7 +124,7 @@ APPEND_OPCODES.add(Op.AppendDocumentFragment, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.AppendNode, (vm) => {
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
 
   let value = check(valueForRef(reference), CheckNode);
 

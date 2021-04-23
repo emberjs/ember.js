@@ -86,14 +86,14 @@ function renderInvocation(
 
   // Push blocks on to the stack, three stack values per block
   for (let i = 0; i < 3 * blockNames.length; i++) {
-    vm.stack.pushNull();
+    vm.stack.push(null);
   }
 
-  vm.stack.pushNull();
+  vm.stack.push(null);
 
   // For each argument, push its backing reference on to the stack
   argList.forEach(([, reference]) => {
-    vm.stack.pushJs(reference);
+    vm.stack.push(reference);
   });
 
   // Configure VM based on blocks and args just pushed on to the stack.
@@ -108,9 +108,9 @@ function renderInvocation(
 
   // Needed for the Op.Main opcode: arguments, component invocation object, and
   // component definition.
-  vm.stack.pushJs(vm[ARGS]);
-  vm.stack.pushJs(invocation);
-  vm.stack.pushJs(reified);
+  vm.stack.push(vm[ARGS]);
+  vm.stack.push(invocation);
+  vm.stack.push(reified);
 
   return new TemplateIteratorImpl(vm);
 }
