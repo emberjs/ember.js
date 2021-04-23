@@ -44,7 +44,6 @@ import {
   dict,
   EMPTY_STRING_ARRAY,
   expect,
-  isErrHandle,
   unwrapTemplate,
 } from '@glimmer/util';
 import { $t0, $t1 } from '@glimmer/vm';
@@ -126,13 +125,13 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
     lookup: null,
   };
 
-  vm.stack.pushJs(instance);
+  vm.stack.push(instance);
 });
 
 APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
   let stack = vm.stack;
   let component = check(
-    valueForRef(check(stack.popJs(), CheckReference)),
+    valueForRef(check(stack.pop(), CheckReference)),
     CheckOr(CheckString, CheckCurriedComponentDefinition)
   );
   let constants = vm[CONSTANTS];
@@ -159,12 +158,12 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
     definition = constants.component(component, owner);
   }
 
-  stack.pushJs(definition);
+  stack.push(definition);
 });
 
 APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   let stack = vm.stack;
-  let ref = check(stack.popJs(), CheckReference);
+  let ref = check(stack.pop(), CheckReference);
   let value = valueForRef(ref);
   let constants = vm[CONSTANTS];
 
@@ -194,7 +193,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
     }
   }
 
-  stack.pushJs(definition);
+  stack.push(definition);
 });
 
 APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
@@ -210,7 +209,7 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
     capabilities = definition.capabilities;
   }
 
-  stack.pushJs({ definition, capabilities, manager, state: null, handle: null, table: null });
+  stack.push({ definition, capabilities, manager, state: null, handle: null, table: null });
 });
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: _blockNames, op3: flags }) => {
@@ -223,27 +222,27 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: _blockNames, op3: flags
     flags & 0b0111 ? vm[CONSTANTS].getArray<string>(_blockNames) : EMPTY_STRING_ARRAY;
 
   vm[ARGS].setup(stack, names, blockNames, positionalCount, !!atNames);
-  stack.pushJs(vm[ARGS]);
+  stack.push(vm[ARGS]);
 });
 
 APPEND_OPCODES.add(Op.PushEmptyArgs, (vm) => {
   let { stack } = vm;
 
-  stack.pushJs(vm[ARGS].empty(stack));
+  stack.push(vm[ARGS].empty(stack));
 });
 
 APPEND_OPCODES.add(Op.CaptureArgs, (vm) => {
   let stack = vm.stack;
 
-  let args = check(stack.popJs(), CheckInstanceof(VMArgumentsImpl));
+  let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
   let capturedArgs = args.capture();
-  stack.pushJs(capturedArgs);
+  stack.push(capturedArgs);
 });
 
 APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let stack = vm.stack;
   let instance = vm.fetchValue<ComponentInstance>(_state);
-  let args = check(stack.popJs(), CheckInstanceof(VMArgumentsImpl));
+  let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
   let { definition } = instance;
 
@@ -307,7 +306,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let capabilities = instance.capabilities;
 
   if (!managerHasCapability(manager, capabilities, InternalComponentCapability.PrepareArgs)) {
-    stack.pushJs(args);
+    stack.push(args);
     return;
   }
 
@@ -319,13 +318,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
     args.clear();
 
     for (let i = 0; i < blocks.length; i++) {
-      let block = blocks[i];
-
-      if (typeof block === 'number') {
-        stack.pushSmallInt(block);
-      } else {
-        stack.pushJs(block);
-      }
+      stack.push(blocks[i]);
     }
 
     let { positional, named } = preparedArgs;
@@ -333,19 +326,19 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
     let positionalCount = positional.length;
 
     for (let i = 0; i < positionalCount; i++) {
-      stack.pushJs(positional[i]);
+      stack.push(positional[i]);
     }
 
     let names = Object.keys(named);
 
     for (let i = 0; i < names.length; i++) {
-      stack.pushJs(named[names[i]]);
+      stack.push(named[names[i]]);
     }
 
     args.setup(stack, names, blockNames, positionalCount, false);
   }
 
-  stack.pushJs(args);
+  stack.push(args);
 });
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
@@ -368,7 +361,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let args: Option<VMArguments> = null;
 
   if (managerHasCapability(manager, capabilities, InternalComponentCapability.CreateArgs)) {
-    args = check(vm.stack.peekJs(), CheckArguments);
+    args = check(vm.stack.peek(), CheckArguments);
   }
 
   let self: Option<Reference> = null;
@@ -434,7 +427,7 @@ APPEND_OPCODES.add(Op.PutComponentOperations, (vm) => {
 APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
   let name = vm[CONSTANTS].getValue<string>(_name);
   let trusting = vm[CONSTANTS].getValue<boolean>(_trusting);
-  let reference = check(vm.stack.popJs(), CheckReference);
+  let reference = check(vm.stack.pop(), CheckReference);
   let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
 
   check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
@@ -664,7 +657,7 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
     }
   }
 
-  vm.stack.pushJs(selfRef);
+  vm.stack.push(selfRef);
 });
 
 APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
@@ -677,7 +670,7 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   >).getTagName(state);
 
   // User provided value from JS, so we don't bother to encode
-  vm.stack.pushJs(tagName);
+  vm.stack.push(tagName);
 });
 
 // Dynamic Invocation Only
@@ -710,18 +703,13 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
 
   let handle = compilable.compile(vm.context);
 
-  stack.pushJs(compilable.symbolTable);
-
-  if (DEBUG && isErrHandle(handle)) {
-    stack.pushJs(handle);
-  } else {
-    stack.pushSmallInt(handle as number);
-  }
+  stack.push(compilable.symbolTable);
+  stack.push(handle);
 });
 
 APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
-  let definition = check(vm.stack.popJs(), CheckComponentDefinition);
-  let invocation = check(vm.stack.popJs(), CheckInvocation);
+  let definition = check(vm.stack.pop(), CheckComponentDefinition);
+  let invocation = check(vm.stack.pop(), CheckInvocation);
 
   let { manager, capabilities } = definition;
 
@@ -742,8 +730,8 @@ APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {
   let { stack } = vm;
 
   // In DEBUG handles could be ErrHandle objects
-  let handle = check(DEBUG ? stack.pop() : stack.popSmallInt(), CheckHandle);
-  let table = check(stack.popJs(), CheckProgramSymbolTable);
+  let handle = check(stack.pop(), CheckHandle);
+  let table = check(stack.pop(), CheckProgramSymbolTable);
 
   let state = check(vm.fetchValue(_state), CheckComponentInstance);
 
@@ -794,7 +782,7 @@ APPEND_OPCODES.add(Op.SetNamedVariables, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
   let scope = vm.scope();
 
-  let args = check(vm.stack.peekJs(), CheckArguments);
+  let args = check(vm.stack.peek(), CheckArguments);
   let callerNames = args.named.atNames;
 
   for (let i = callerNames.length - 1; i >= 0; i--) {
@@ -823,7 +811,7 @@ function bindBlock(
 
 APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
-  let { blocks } = check(vm.stack.peekJs(), CheckArguments);
+  let { blocks } = check(vm.stack.peek(), CheckArguments);
 
   for (let i = 0; i < blocks.names.length; i++) {
     bindBlock(blocks.symbolNames[i], blocks.names[i], state, blocks, vm);
