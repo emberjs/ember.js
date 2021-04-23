@@ -177,7 +177,7 @@ export default class VM implements PublicVM, InternalVM {
   fetch(register: SyscallRegister): void {
     let value = this.fetchValue(register);
 
-    this.stack.pushJs(value);
+    this.stack.push(value);
   }
 
   // Load a value from the stack into a register
@@ -414,8 +414,8 @@ export default class VM implements PublicVM, InternalVM {
     let valueRef = createIteratorItemRef(value);
     let memoRef = createIteratorItemRef(memo);
 
-    stack.pushJs(valueRef);
-    stack.pushJs(memoRef);
+    stack.push(valueRef);
+    stack.push(memoRef);
 
     let state = this.capture(2);
     let block = this.elements().pushUpdatableBlock();
@@ -629,7 +629,7 @@ export default class VM implements PublicVM, InternalVM {
 
     for (let i = names.length - 1; i >= 0; i--) {
       let name = names[i];
-      scope.set(name, this.stack.popJs<Reference<unknown>>());
+      scope.set(name, this.stack.pop<Reference<unknown>>());
     }
   }
 }

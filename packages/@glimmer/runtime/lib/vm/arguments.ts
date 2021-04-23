@@ -327,7 +327,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
         if (idx === -1) {
           length = newNames.push(name);
-          stack.pushJs(other[name]);
+          stack.push(other[name]);
         }
       }
 
