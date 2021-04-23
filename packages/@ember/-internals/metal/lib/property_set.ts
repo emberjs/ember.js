@@ -74,7 +74,7 @@ export function set<T = unknown>(obj: object, keyName: string, value: T, toleran
 export function _setProp(obj: object, keyName: string, value: any) {
   let descriptor = lookupDescriptor(obj, keyName);
 
-  if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
+  if (descriptor !== null || COMPUTED_SETTERS.has(descriptor.set!)) {
     obj[keyName] = value;
     return value;
   }
