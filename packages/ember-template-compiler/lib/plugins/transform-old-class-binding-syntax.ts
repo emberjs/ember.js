@@ -5,7 +5,7 @@ import { Builders, EmberASTPluginEnvironment } from '../types';
 
 export default function transformOldClassBindingSyntax(env: EmberASTPluginEnvironment): ASTPlugin {
   let b = env.syntax.builders;
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
 
   return {
     name: 'transform-old-class-binding-syntax',
@@ -25,7 +25,7 @@ export default function transformOldClassBindingSyntax(env: EmberASTPluginEnviro
 function process(
   b: Builders,
   node: AST.BlockStatement | AST.MustacheStatement,
-  moduleName: string
+  moduleName: string | undefined
 ) {
   let allOfTheMicrosyntaxes: AST.HashPair[] = [];
   let allOfTheMicrosyntaxIndexes: number[] = [];

@@ -32,7 +32,7 @@ const TRANSFORMATIONS: { [key: string]: string } = {
 
 export default function transformHasBlockSyntax(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
 
   function emitDeprecationMessage(node: AST.Node, name: string) {
     let sourceInformation = calculateLocationDisplay(moduleName, node.loc);

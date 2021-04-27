@@ -1,10 +1,14 @@
-import { ASTPlugin, ASTPluginEnvironment, builders, PrecompileOptions } from '@glimmer/syntax';
-import { StaticTemplateMeta } from '@ember/-internals/views';
+import {
+  ASTPluginBuilder,
+  ASTPluginEnvironment,
+  builders,
+  PrecompileOptions,
+} from '@glimmer/syntax';
+import { LegacyPluginClass } from './system/compile-options';
 
 export type Builders = typeof builders;
 
-export interface PluginFunc {
-  (env: EmberASTPluginEnvironment): ASTPlugin;
+export interface PluginFunc extends ASTPluginBuilder<EmberASTPluginEnvironment> {
   __raw?: LegacyPluginClass;
 }
 
@@ -13,14 +17,9 @@ interface Plugins {
 }
 
 export interface EmberPrecompileOptions extends PrecompileOptions {
-  strictMode?: boolean;
-  locals?: string[];
-  customizeComponentName(tag: string): string;
-  isProduction: boolean;
-  contents?: string;
+  isProduction?: boolean;
   moduleName?: string;
-  plugins: Plugins;
-  meta: StaticTemplateMeta;
+  plugins?: Plugins;
 }
 
 export type EmberASTPluginEnvironment = ASTPluginEnvironment & EmberPrecompileOptions;

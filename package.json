@@ -96,7 +96,7 @@
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.686.0",
     "babel-template": "^6.26.0",
-    "backburner.js": "^2.6.0",
+    "backburner.js": "^2.7.0",
     "broccoli-babel-transpiler": "^7.8.0",
     "broccoli-file-creator": "^2.1.1",
     "broccoli-persistent-filter": "^2.3.1",

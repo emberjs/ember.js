@@ -58,7 +58,7 @@ import { isPath } from './utils';
   @class DeprecateWith
 */
 export default function deprecateWith(env: EmberASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
   let { builders: b } = env.syntax;
 
   return {
