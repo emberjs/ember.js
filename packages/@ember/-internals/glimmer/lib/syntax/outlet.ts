@@ -98,7 +98,26 @@ export const outletHelper = internalHelper(
 
         if (state !== null) {
           let named = dict<Reference>();
-          named.model = childRefFromParts(outletRef, ['render', 'model']);
+
+          // Create a ref for the model
+          let modelRef = childRefFromParts(outletRef, ['render', 'model']);
+
+          // Store the value of the model
+          let model = valueForRef(modelRef);
+
+          // Create a compute ref which we pass in as the `{{@model}}` reference
+          // for the outlet. This ref will update and return the value of the
+          // model _until_ the outlet itself changes. Once the outlet changes,
+          // dynamic scope also changes, and so the original model ref would not
+          // provide the correct updated value. So we stop updating and return
+          // the _last_ model value for that outlet.
+          named.model = createComputeRef(() => {
+            if (lastState === state) {
+              model = valueForRef(modelRef);
+            }
+
+            return model;
+          });
 
           if (DEBUG) {
             named.model = createDebugAliasRef!('@model', named.model);
