@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, CapturedNamedArguments, Dict } from '@glimmer/interfaces';
 import { setCustomTagFor } from '@glimmer/manager';
 import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
@@ -44,14 +43,6 @@ class HashProxy implements ProxyHandler<Record<string, unknown>> {
   }
 
   getOwnPropertyDescriptor(target: {}, prop: string | number) {
-    if (DEBUG && !(prop in this.named)) {
-      throw new Error(
-        `args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys(). Attempted to get the descriptor for \`${String(
-          prop
-        )}\``
-      );
-    }
-
     if (prop in this.named) {
       return {
         enumerable: true,
