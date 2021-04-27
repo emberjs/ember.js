@@ -1,3 +1,16 @@
+## v0.79.0 (2021-04-27)
+
+#### :boom: Breaking Change
+* `@glimmer/low-level`, `@glimmer/runtime`
+  * [#1299](https://github.com/glimmerjs/glimmer-vm/pull/1299) Simplify Stack (remove `@glimmer/low-level` package) ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1298](https://github.com/glimmerjs/glimmer-vm/pull/1298) [BUGFIX] Ensure `hash` properties are reified lazily ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.78.2 (2021-04-22)
 
 #### :bug: Bug Fix
