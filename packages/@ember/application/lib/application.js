@@ -5,14 +5,10 @@
 import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
-import { assert, isTesting } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { join, once, run, schedule } from '@ember/runloop';
-import {
-  libraries,
-  processAllNamespaces,
-  setNamespaceSearchDisabled,
-} from '@ember/-internals/metal';
+import { libraries } from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
 import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';
@@ -828,11 +824,6 @@ const Application = Engine.extend({
 
     try {
       // TODO: Is this still needed for _globalsMode = false?
-      if (!isTesting()) {
-        // Eagerly name all classes that are already loaded
-        processAllNamespaces();
-        setNamespaceSearchDisabled(true);
-      }
 
       // See documentation on `_autoboot()` for details
       if (this.autoboot) {
@@ -886,8 +877,6 @@ const Application = Engine.extend({
   // This method must be moved to the application instance object
   willDestroy() {
     this._super(...arguments);
-
-    setNamespaceSearchDisabled(false);
 
     if (_loaded.application === this) {
       _loaded.application = undefined;
