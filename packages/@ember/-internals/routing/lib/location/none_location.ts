@@ -113,10 +113,8 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
 
     return rootURL + url;
   }
-}
 
-NoneLocation.reopen({
-  path: '',
+  path = '';
 
   /**
     Will be pre-pended to path.
@@ -125,5 +123,5 @@ NoneLocation.reopen({
     @property rootURL
     @default '/'
   */
-  rootURL: '/',
-});
+  rootURL = '/';
+}
