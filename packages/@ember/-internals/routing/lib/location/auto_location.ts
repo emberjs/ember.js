@@ -3,7 +3,7 @@ import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
-import { EmberLocation, UpdateCallback } from './api';
+import { EmberLocation } from './api';
 import {
   getFullPath,
   getHash,
@@ -62,13 +62,11 @@ import {
   @protected
 */
 export default class AutoLocation extends EmberObject implements EmberLocation {
-  cancelRouterSetup?: boolean | undefined;
-  getURL!: () => string;
-  setURL!: (url: string) => void;
-  onUpdateURL!: (callback: UpdateCallback) => void;
-  formatURL!: (url: string) => string;
-
   implementation = 'auto';
+
+  // From EmberObject
+  destroy!: () => void;
+
   /**
    Called by the router to instruct the location to do any feature detection
    necessary. In the case of AutoLocation, we detect whether to use history
@@ -112,9 +110,6 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
       concreteImplementation.destroy();
     }
   }
-}
-
-AutoLocation.reopen({
   /**
     @private
 
@@ -124,13 +119,13 @@ AutoLocation.reopen({
     @property rootURL
     @default '/'
   */
-  rootURL: '/',
-  initState: delegateToConcreteImplementation('initState'),
-  getURL: delegateToConcreteImplementation('getURL'),
-  setURL: delegateToConcreteImplementation('setURL'),
-  replaceURL: delegateToConcreteImplementation('replaceURL'),
-  onUpdateURL: delegateToConcreteImplementation('onUpdateURL'),
-  formatURL: delegateToConcreteImplementation('formatURL'),
+  rootURL = '/';
+  initState = delegateToConcreteImplementation('initState');
+  getURL = delegateToConcreteImplementation('getURL');
+  setURL = delegateToConcreteImplementation('setURL');
+  replaceURL = delegateToConcreteImplementation('replaceURL');
+  onUpdateURL = delegateToConcreteImplementation('onUpdateURL');
+  formatURL = delegateToConcreteImplementation('formatURL');
 
   /**
     @private
@@ -141,7 +136,7 @@ AutoLocation.reopen({
     @property location
     @default environment.location
   */
-  location: location,
+  location: any = location;
 
   /**
     @private
@@ -153,7 +148,7 @@ AutoLocation.reopen({
     @property history
     @default environment.history
   */
-  history: history,
+  history: any = history;
 
   /**
    @private
@@ -164,7 +159,7 @@ AutoLocation.reopen({
    @property global
    @default window
   */
-  global: window,
+  global: any = window;
 
   /**
     @private
@@ -176,7 +171,7 @@ AutoLocation.reopen({
     @property userAgent
     @default environment.history
   */
-  userAgent: userAgent,
+  userAgent: any = userAgent;
 
   /**
     @private
@@ -188,15 +183,18 @@ AutoLocation.reopen({
     @property cancelRouterSetup
     @default false
   */
-  cancelRouterSetup: false,
-});
+  cancelRouterSetup = false;
+
+  documentMode?: number;
+  concreteImplementation?: EmberLocation;
+}
 
 function delegateToConcreteImplementation(methodName: string) {
   return function (this: AutoLocation, ...args: unknown[]) {
     let { concreteImplementation } = this;
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",
-      Boolean(concreteImplementation)
+      concreteImplementation
     );
     return concreteImplementation[methodName]?.(...args);
   };

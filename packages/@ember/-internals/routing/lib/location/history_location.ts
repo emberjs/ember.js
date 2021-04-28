@@ -97,6 +97,9 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     this._popstateHandler = undefined;
   }
 
+  // From EmberObject
+  destroy!: () => void;
+
   /**
     Used to set state on first call to setURL
 

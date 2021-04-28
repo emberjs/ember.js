@@ -25,6 +25,9 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   updateCallback!: UpdateCallback;
   implementation = 'none';
 
+  // From EmberObject
+  destroy!: () => void;
+
   detect(): void {
     let { rootURL } = this;
 

@@ -45,6 +45,9 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     this._hashchangeHandler = undefined;
   }
 
+  // From EmberObject
+  destroy!: () => void;
+
   /**
     @private
 
