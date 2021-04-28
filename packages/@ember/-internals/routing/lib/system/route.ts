@@ -96,19 +96,20 @@ export function hasDefaultSerialize(route: Route): boolean {
   @public
 */
 
-class Route extends EmberObject implements IRoute {
+class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute, Evented {
   static isRouteFactory = true;
 
-  routeName!: string;
-  fullRouteName!: string;
   context: {} = {};
-  controller!: Controller;
   currentModel: unknown;
 
   _bucketCache!: BucketCache;
   _internalName!: string;
-  _names: unknown;
+
+  private _names: unknown;
+
   _router!: EmberRouter;
+  _topLevelViewTemplate!: any;
+  _environment!: any;
 
   constructor(owner: Owner) {
     super(...arguments);
@@ -129,6 +130,13 @@ class Route extends EmberObject implements IRoute {
     }
   }
 
+  // Implement Evented
+  on!: (name: string, method: ((...args: any[]) => void) | string) => this;
+  one!: (name: string, method: string | ((...args: any[]) => void)) => this;
+  trigger!: (name: string, ...args: any[]) => any;
+  off!: (name: string, method: string | ((...args: any[]) => void)) => this;
+  has!: (name: string) => boolean;
+
   serialize!: (
     model: {},
     params: string[]
@@ -137,6 +145,139 @@ class Route extends EmberObject implements IRoute {
         [key: string]: unknown;
       }
     | undefined;
+
+  /**
+    Configuration hash for this route's queryParams. The possible
+    configuration options and their defaults are as follows
+    (assuming a query param whose controller property is `page`):
+
+    ```javascript
+    queryParams: {
+      page: {
+        // By default, controller query param properties don't
+        // cause a full transition when they are changed, but
+        // rather only cause the URL to update. Setting
+        // `refreshModel` to true will cause an "in-place"
+        // transition to occur, whereby the model hooks for
+        // this route (and any child routes) will re-fire, allowing
+        // you to reload models (e.g., from the server) using the
+        // updated query param values.
+        refreshModel: false,
+
+        // By default, changes to controller query param properties
+        // cause the URL to update via `pushState`, which means an
+        // item will be added to the browser's history, allowing
+        // you to use the back button to restore the app to the
+        // previous state before the query param property was changed.
+        // Setting `replace` to true will use `replaceState` (or its
+        // hash location equivalent), which causes no browser history
+        // item to be added. This options name and default value are
+        // the same as the `link-to` helper's `replace` option.
+        replace: false,
+
+        // By default, the query param URL key is the same name as
+        // the controller property name. Use `as` to specify a
+        // different URL key.
+        as: 'page'
+      }
+    }
+    ```
+
+    @property queryParams
+    @for Route
+    @type Object
+    @since 1.6.0
+    @public
+  */
+  // Set in reopen so it can be overriden with extend
+  queryParams!: any;
+
+  /**
+    The name of the template to use by default when rendering this routes
+    template.
+
+    ```app/routes/posts/list.js
+    import Route from '@ember/routing/route';
+
+    export default class extends Route {
+      templateName = 'posts/list'
+    });
+    ```
+
+    ```app/routes/posts/index.js
+    import PostsList from '../posts/list';
+
+    export default class extends PostsList {};
+    ```
+
+    ```app/routes/posts/archived.js
+    import PostsList from '../posts/list';
+
+    export default class extends PostsList {};
+    ```
+
+    @property templateName
+    @type String
+    @default null
+    @since 1.4.0
+    @public
+  */
+  // Set in reopen so it can be overriden with extend
+  templateName!: string | null;
+
+  /**
+    The name of the controller to associate with this route.
+
+    By default, Ember will lookup a route's controller that matches the name
+    of the route (i.e. `posts.new`). However,
+    if you would like to define a specific controller to use, you can do so
+    using this property.
+
+    This is useful in many ways, as the controller specified will be:
+
+    * passed to the `setupController` method.
+    * used as the controller for the template being rendered by the route.
+    * returned from a call to `controllerFor` for the route.
+
+    @property controllerName
+    @type String
+    @default null
+    @since 1.4.0
+    @public
+  */
+  // Set in reopen so it can be overriden with extend
+  controllerName!: string | null;
+
+  /**
+    The controller associated with this route.
+
+    Example
+
+    ```app/routes/form.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class FormRoute extends Route {
+      @action
+      willTransition(transition) {
+        if (this.controller.get('userHasEnteredData') &&
+            !confirm('Are you sure you want to abandon progress?')) {
+          transition.abort();
+        } else {
+          // Bubble the `willTransition` action so that
+          // parent routes can decide whether or not to abort.
+          return true;
+        }
+      }
+    }
+    ```
+
+    @property controller
+    @type Controller
+    @since 1.6.0
+    @public
+  */
+  controller!: Controller;
 
   /**
     The name of the route, dot-delimited.
@@ -150,6 +291,7 @@ class Route extends EmberObject implements IRoute {
     @since 1.0.0
     @public
   */
+  routeName!: string;
 
   /**
     The name of the route, dot-delimited, including the engine prefix
@@ -164,6 +306,7 @@ class Route extends EmberObject implements IRoute {
     @since 2.10.0
     @public
   */
+  fullRouteName!: string;
 
   /**
     Sets the name for this route, including a fully resolved name for routes
@@ -1879,11 +2022,7 @@ class Route extends EmberObject implements IRoute {
    */
   buildRouteInfoMetadata() {}
 
-  /**
-   * @method _paramsFor
-   * @private
-   */
-  _paramsFor(routeName: string, params: {}) {
+  private _paramsFor(routeName: string, params: {}) {
     let transition = this._router._routerMicrolib.activeTransition;
     if (transition !== undefined) {
       return this.paramsFor(routeName);
@@ -1891,7 +2030,6 @@ class Route extends EmberObject implements IRoute {
 
     return params;
   }
-
 
   /**
     Store property provides a hook for data persistence libraries to inject themselves.
@@ -1930,10 +2068,7 @@ class Route extends EmberObject implements IRoute {
 
         modelClass = modelClass.class;
 
-        assert(
-          `${classify(name)} has no method \`find\`.`,
-          typeof modelClass.find === 'function'
-        );
+        assert(`${classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
 
         return modelClass.find(value);
       },
@@ -2070,6 +2205,60 @@ class Route extends EmberObject implements IRoute {
       },
     };
   }
+
+  // Set in reopen
+  actions!: Record<string, Function>;
+
+  /**
+    Sends an action to the router, which will delegate it to the currently
+    active route hierarchy per the bubbling rules explained under `actions`.
+
+    Example
+
+    ```app/router.js
+    // ...
+
+    Router.map(function() {
+      this.route('index');
+    });
+
+    export default Router;
+    ```
+
+    ```app/routes/application.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class ApplicationRoute extends Route {
+      @action
+      track(arg) {
+        console.log(arg, 'was clicked');
+      }
+    }
+    ```
+
+    ```app/routes/index.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class IndexRoute extends Route {
+      @action
+      trackIfDebug(arg) {
+        if (debug) {
+          this.send('track', arg);
+        }
+      }
+    }
+    ```
+
+    @method send
+    @param {String} name the name of the action to trigger
+    @param {...*} args
+    @since 1.0.0
+    @public
+  */
+  // Set with reopen to override parent behavior
+  send!: (name: string, ...args: any[]) => unknown;
 }
 
 function parentRoute(route: Route) {
@@ -2133,7 +2322,7 @@ function buildRenderOptions(
     name = route.routeName;
     templateName = route.templateName || name;
   } else {
-    name = _name.replace(/\//g, '.');
+    name = _name!.replace(/\//g, '.');
     templateName = name;
   }
 
@@ -2387,156 +2576,13 @@ function getEngineRouteName(engine: Owner, routeName: string) {
   */
 Route.prototype.serialize = defaultSerialize;
 
-Route.reopen(ActionHandler, Evented, {
+// Set these here so they can be overridden with extend
+Route.reopen({
   mergedProperties: ['queryParams'],
-
-  /**
-    Configuration hash for this route's queryParams. The possible
-    configuration options and their defaults are as follows
-    (assuming a query param whose controller property is `page`):
-
-    ```javascript
-    queryParams: {
-      page: {
-        // By default, controller query param properties don't
-        // cause a full transition when they are changed, but
-        // rather only cause the URL to update. Setting
-        // `refreshModel` to true will cause an "in-place"
-        // transition to occur, whereby the model hooks for
-        // this route (and any child routes) will re-fire, allowing
-        // you to reload models (e.g., from the server) using the
-        // updated query param values.
-        refreshModel: false,
-
-        // By default, changes to controller query param properties
-        // cause the URL to update via `pushState`, which means an
-        // item will be added to the browser's history, allowing
-        // you to use the back button to restore the app to the
-        // previous state before the query param property was changed.
-        // Setting `replace` to true will use `replaceState` (or its
-        // hash location equivalent), which causes no browser history
-        // item to be added. This options name and default value are
-        // the same as the `link-to` helper's `replace` option.
-        replace: false,
-
-        // By default, the query param URL key is the same name as
-        // the controller property name. Use `as` to specify a
-        // different URL key.
-        as: 'page'
-      }
-    }
-    ```
-
-    @property queryParams
-    @for Route
-    @type Object
-    @since 1.6.0
-    @public
-  */
   queryParams: {},
-
-  /**
-    The name of the template to use by default when rendering this routes
-    template.
-
-    ```app/routes/posts/list.js
-    import Route from '@ember/routing/route';
-
-    export default class extends Route {
-      templateName = 'posts/list'
-    });
-    ```
-
-    ```app/routes/posts/index.js
-    import PostsList from '../posts/list';
-
-    export default class extends PostsList {};
-    ```
-
-    ```app/routes/posts/archived.js
-    import PostsList from '../posts/list';
-
-    export default class extends PostsList {};
-    ```
-
-    @property templateName
-    @type String
-    @default null
-    @since 1.4.0
-    @public
-  */
   templateName: null,
-
-  /**
-    The name of the controller to associate with this route.
-
-    By default, Ember will lookup a route's controller that matches the name
-    of the route (i.e. `posts.new`). However,
-    if you would like to define a specific controller to use, you can do so
-    using this property.
-
-    This is useful in many ways, as the controller specified will be:
-
-    * passed to the `setupController` method.
-    * used as the controller for the template being rendered by the route.
-    * returned from a call to `controllerFor` for the route.
-
-    @property controllerName
-    @type String
-    @default null
-    @since 1.4.0
-    @public
-  */
   controllerName: null,
 
-  /**
-    Sends an action to the router, which will delegate it to the currently
-    active route hierarchy per the bubbling rules explained under `actions`.
-
-    Example
-
-    ```app/router.js
-    // ...
-
-    Router.map(function() {
-      this.route('index');
-    });
-
-    export default Router;
-    ```
-
-    ```app/routes/application.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class ApplicationRoute extends Route {
-      @action
-      track(arg) {
-        console.log(arg, 'was clicked');
-      }
-    }
-    ```
-
-    ```app/routes/index.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class IndexRoute extends Route {
-      @action
-      trackIfDebug(arg) {
-        if (debug) {
-          this.send('track', arg);
-        }
-      }
-    }
-    ```
-
-    @method send
-    @param {String} name the name of the action to trigger
-    @param {...*} args
-    @since 1.0.0
-    @public
-  */
   send(...args: any[]) {
     assert(
       `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,

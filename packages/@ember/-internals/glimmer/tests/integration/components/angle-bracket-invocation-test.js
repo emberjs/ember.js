@@ -550,10 +550,13 @@ moduleFor(
     }
 
     '@test positional parameters are not allowed'() {
+      let TestComponent = class extends Component {};
+      TestComponent.reopenClass({
+        positionalParams: ['first', 'second'],
+      });
+
       this.registerComponent('sample-component', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['first', 'second'],
-        }),
+        ComponentClass: TestComponent,
         template: '{{this.first}}{{this.second}}',
       });
 

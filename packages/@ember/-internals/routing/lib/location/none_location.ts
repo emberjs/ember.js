@@ -25,6 +25,19 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   updateCallback!: UpdateCallback;
   implementation = 'none';
 
+  // Set in reopen so it can be overwritten with extend
+  path!: string;
+
+  /**
+    Will be pre-pended to path.
+
+    @private
+    @property rootURL
+    @default '/'
+  */
+  // Set in reopen so it can be overwritten with extend
+  rootURL!: string;
+
   detect(): void {
     let { rootURL } = this;
 
@@ -114,13 +127,5 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
 
 NoneLocation.reopen({
   path: '',
-
-  /**
-    Will be pre-pended to path.
-
-    @private
-    @property rootURL
-    @default '/'
-  */
   rootURL: '/',
 });

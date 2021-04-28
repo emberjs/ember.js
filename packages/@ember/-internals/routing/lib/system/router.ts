@@ -53,6 +53,7 @@ function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
   once(this, this.trigger, 'didTransition');
 
   if (DEBUG) {
+    // @ts-expect-error namespace isn't public
     if (this.namespace.LOG_TRANSITIONS) {
       // eslint-disable-next-line no-console
       console.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
@@ -69,6 +70,7 @@ function defaultWillTransition(
   once(this, this.trigger, 'willTransition', transition);
 
   if (DEBUG) {
+    // @ts-expect-error namespace isn't public
     if (this.namespace.LOG_TRANSITIONS) {
       // eslint-disable-next-line no-console
       console.log(
@@ -140,9 +142,39 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject {
-  location!: string | IEmberLocation;
+class EmberRouter extends EmberObject.extend(Evented) implements Evented {
+  /**
+   Represents the URL of the root of the application, often '/'. This prefix is
+    assumed on all routes defined on this router.
+
+    @property rootURL
+    @default '/'
+    @public
+  */
+  // Set with reopen to allow overriding via extend
   rootURL!: string;
+
+  /**
+   The `location` property determines the type of URL's that your
+    application will use.
+
+    The following location types are currently available:
+
+    * `history` - use the browser's history API to make the URLs look just like any standard URL
+    * `hash` - use `#` to separate the server part of the URL from the Ember part: `/blog/#/posts/new`
+    * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
+    * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
+
+    This value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
+
+    @property location
+    @default 'hash'
+    @see {Location}
+    @public
+  */
+  // Set with reopen to allow overriding via extend
+  location!: string | IEmberLocation;
+
   _routerMicrolib!: Router<Route>;
   _didSetupRouter = false;
   _initialTransitionStarted = false;
@@ -165,6 +197,104 @@ class EmberRouter extends EmberObject {
 
   _slowTransitionTimer: unknown;
 
+  private namespace: any;
+
+  // Begin Evented
+  on!: (name: string, method: ((...args: any[]) => void) | string) => this;
+  one!: (name: string, method: string | ((...args: any[]) => void)) => this;
+  trigger!: (name: string, ...args: any[]) => any;
+  off!: (name: string, method: string | ((...args: any[]) => void)) => this;
+  has!: (name: string) => boolean;
+  // End Evented
+
+  // Set with reopenClass
+  private static dslCallbacks?: MatchCallback[];
+
+  /**
+    The `Router.map` function allows you to define mappings from URLs to routes
+    in your application. These mappings are defined within the
+    supplied callback function using `this.route`.
+
+    The first parameter is the name of the route which is used by default as the
+    path name as well.
+
+    The second parameter is the optional options hash. Available options are:
+
+      * `path`: allows you to provide your own path as well as mark dynamic
+        segments.
+      * `resetNamespace`: false by default; when nesting routes, ember will
+        combine the route names to form the fully-qualified route name, which is
+        used with `{{link-to}}` or manually transitioning to routes. Setting
+        `resetNamespace: true` will cause the route not to inherit from its
+        parent route's names. This is handy for preventing extremely long route names.
+        Keep in mind that the actual URL path behavior is still retained.
+
+    The third parameter is a function, which can be used to nest routes.
+    Nested routes, by default, will have the parent route tree's route name and
+    path prepended to it's own.
+
+    ```app/router.js
+    Router.map(function(){
+      this.route('post', { path: '/post/:post_id' }, function() {
+        this.route('edit');
+        this.route('comments', { resetNamespace: true }, function() {
+          this.route('new');
+        });
+      });
+    });
+    ```
+
+    @method map
+    @param callback
+    @public
+  */
+  static map(callback: MatchCallback) {
+    if (!this.dslCallbacks) {
+      this.dslCallbacks = [];
+      // FIXME: Can we remove this?
+      this.reopenClass({ dslCallbacks: this.dslCallbacks });
+    }
+
+    this.dslCallbacks.push(callback);
+
+    return this;
+  }
+
+  static _routePath(routeInfos: PrivateRouteInfo[]) {
+    let path: string[] = [];
+
+    // We have to handle coalescing resource names that
+    // are prefixed with their parent's names, e.g.
+    // ['foo', 'foo.bar.baz'] => 'foo.bar.baz', not 'foo.foo.bar.baz'
+
+    function intersectionMatches(a1: string[], a2: string[]) {
+      for (let i = 0; i < a1.length; ++i) {
+        if (a1[i] !== a2[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    let name, nameParts, oldNameParts;
+    for (let i = 1; i < routeInfos.length; i++) {
+      name = routeInfos[i].name;
+      nameParts = name.split('.');
+      oldNameParts = slice.call(path);
+
+      while (oldNameParts.length) {
+        if (intersectionMatches(oldNameParts, nameParts)) {
+          break;
+        }
+        oldNameParts.shift();
+      }
+
+      path.push(...nameParts.slice(oldNameParts.length));
+    }
+
+    return path.join('.');
+  }
+
   constructor(owner: Owner) {
     super(...arguments);
 
@@ -180,7 +310,7 @@ class EmberRouter extends EmberObject {
     this._routerService = routerService;
   }
 
-  _initRouterJs() {
+  _initRouterJs(): void {
     let location = get(this, 'location');
     let router = this;
     let owner = getOwner(this);
@@ -204,7 +334,8 @@ class EmberRouter extends EmberObject {
         let route = routeOwner.lookup<Route>(fullRouteName);
 
         if (seen[name]) {
-          return route!;
+          assert('seen routes should exist', route);
+          return route;
         }
 
         seen[name] = true;
@@ -589,6 +720,7 @@ class EmberRouter extends EmberObject {
       let infos = this._routerMicrolib.currentRouteInfos;
       if (this.namespace.LOG_TRANSITIONS) {
         // eslint-disable-next-line no-console
+        assert('expected infos to be set', infos);
         console.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
       }
     }
@@ -600,7 +732,8 @@ class EmberRouter extends EmberObject {
 
   generate(name: string, ...args: any[]) {
     let url = this._routerMicrolib.generate(name, ...args);
-    return (this.location as IEmberLocation).formatURL(url);
+    assert('expected non-string location', typeof this.location !== 'string');
+    return this.location.formatURL(url);
   }
 
   /**
@@ -1239,6 +1372,66 @@ class EmberRouter extends EmberObject {
 
     return engineInstance;
   }
+
+  /**
+    Handles updating the paths and notifying any listeners of the URL
+    change.
+
+    Triggers the router level `didTransition` hook.
+
+    For example, to notify google analytics when the route changes,
+    you could use this hook.  (Note: requires also including GA scripts, etc.)
+
+    ```javascript
+    import config from './config/environment';
+    import EmberRouter from '@ember/routing/router';
+    import { inject as service } from '@ember/service';
+
+    let Router = EmberRouter.extend({
+      location: config.locationType,
+
+      router: service(),
+
+      didTransition: function() {
+        this._super(...arguments);
+
+        ga('send', 'pageview', {
+          page: this.router.currentURL,
+          title: this.router.currentRouteName,
+        });
+      }
+    });
+    ```
+
+    @method didTransition
+    @public
+    @since 1.2.0
+  */
+  // Set with reopen to allow overriding via extend
+  didTransition!: typeof defaultDidTransition;
+
+  /**
+    Handles notifying any listeners of an impending URL
+    change.
+
+    Triggers the router level `willTransition` hook.
+
+    @method willTransition
+    @public
+    @since 1.11.0
+  */
+  // Set with reopen to allow overriding via extend
+  willTransition!: typeof defaultWillTransition;
+
+  /**
+   Represents the current URL.
+
+    @property url
+    @type {String}
+    @private
+  */
+  // Set with reopen to allow overriding via extend
+  url!: string;
 }
 
 /*
@@ -1527,7 +1720,9 @@ function updatePaths(router: EmberRouter) {
 
   let path = EmberRouter._routePath(infos);
   let currentRouteName = infos[infos.length - 1].name;
-  let currentURL = router.get('location').getURL();
+  let location = router.location;
+  assert('expected location to not be a string', typeof location !== 'string');
+  let currentURL = location.getURL();
 
   set(router, 'currentPath', path);
   set(router, 'currentRouteName', currentRouteName);
@@ -1589,92 +1784,6 @@ function updatePaths(router: EmberRouter) {
     notifyPropertyChange(appController, 'currentRouteName');
   }
 }
-
-EmberRouter.reopenClass({
-  /**
-    The `Router.map` function allows you to define mappings from URLs to routes
-    in your application. These mappings are defined within the
-    supplied callback function using `this.route`.
-
-    The first parameter is the name of the route which is used by default as the
-    path name as well.
-
-    The second parameter is the optional options hash. Available options are:
-
-      * `path`: allows you to provide your own path as well as mark dynamic
-        segments.
-      * `resetNamespace`: false by default; when nesting routes, ember will
-        combine the route names to form the fully-qualified route name, which is
-        used with `{{link-to}}` or manually transitioning to routes. Setting
-        `resetNamespace: true` will cause the route not to inherit from its
-        parent route's names. This is handy for preventing extremely long route names.
-        Keep in mind that the actual URL path behavior is still retained.
-
-    The third parameter is a function, which can be used to nest routes.
-    Nested routes, by default, will have the parent route tree's route name and
-    path prepended to it's own.
-
-    ```app/router.js
-    Router.map(function(){
-      this.route('post', { path: '/post/:post_id' }, function() {
-        this.route('edit');
-        this.route('comments', { resetNamespace: true }, function() {
-          this.route('new');
-        });
-      });
-    });
-    ```
-
-    @method map
-    @param callback
-    @public
-  */
-  map(callback: MatchCallback) {
-    if (!this.dslCallbacks) {
-      this.dslCallbacks = [];
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
-    }
-
-    this.dslCallbacks.push(callback);
-
-    return this;
-  },
-
-  _routePath(routeInfos: PrivateRouteInfo[]) {
-    let path: string[] = [];
-
-    // We have to handle coalescing resource names that
-    // are prefixed with their parent's names, e.g.
-    // ['foo', 'foo.bar.baz'] => 'foo.bar.baz', not 'foo.foo.bar.baz'
-
-    function intersectionMatches(a1: string[], a2: string[]) {
-      for (let i = 0; i < a1.length; ++i) {
-        if (a1[i] !== a2[i]) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    let name, nameParts, oldNameParts;
-    for (let i = 1; i < routeInfos.length; i++) {
-      name = routeInfos[i].name;
-      nameParts = name.split('.');
-      oldNameParts = slice.call(path);
-
-      while (oldNameParts.length) {
-        if (intersectionMatches(oldNameParts, nameParts)) {
-          break;
-        }
-        oldNameParts.shift();
-      }
-
-      path.push(...nameParts.slice(oldNameParts.length));
-    }
-
-    return path.join('.');
-  },
-});
 
 function didBeginTransition(transition: Transition, router: EmberRouter) {
   let routerState = new RouterState(router, router._routerMicrolib, transition[STATE_SYMBOL]!);
@@ -1786,91 +1895,13 @@ function representEmptyRoute(
   }
 }
 
-EmberRouter.reopen(Evented, {
-  /**
-    Handles updating the paths and notifying any listeners of the URL
-    change.
-
-    Triggers the router level `didTransition` hook.
-
-    For example, to notify google analytics when the route changes,
-    you could use this hook.  (Note: requires also including GA scripts, etc.)
-
-    ```javascript
-    import config from './config/environment';
-    import EmberRouter from '@ember/routing/router';
-    import { inject as service } from '@ember/service';
-
-    let Router = EmberRouter.extend({
-      location: config.locationType,
-
-      router: service(),
-
-      didTransition: function() {
-        this._super(...arguments);
-
-        ga('send', 'pageview', {
-          page: this.router.currentURL,
-          title: this.router.currentRouteName,
-        });
-      }
-    });
-    ```
-
-    @method didTransition
-    @public
-    @since 1.2.0
-  */
+EmberRouter.reopen({
   didTransition: defaultDidTransition,
-
-  /**
-    Handles notifying any listeners of an impending URL
-    change.
-
-    Triggers the router level `willTransition` hook.
-
-    @method willTransition
-    @public
-    @since 1.11.0
-  */
   willTransition: defaultWillTransition,
-  /**
-   Represents the URL of the root of the application, often '/'. This prefix is
-   assumed on all routes defined on this router.
-
-   @property rootURL
-   @default '/'
-   @public
-  */
   rootURL: '/',
-
-  /**
-   The `location` property determines the type of URL's that your
-   application will use.
-
-   The following location types are currently available:
-
-   * `history` - use the browser's history API to make the URLs look just like any standard URL
-   * `hash` - use `#` to separate the server part of the URL from the Ember part: `/blog/#/posts/new`
-   * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
-   * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
-
-   This value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
-
-   @property location
-   @default 'hash'
-   @see {Location}
-   @public
- */
   location: 'hash',
 
-  /**
-   Represents the current URL.
-
-   @property url
-   @type {String}
-   @private
- */
+  // FIXME: Does this need to be overrideable via extend?
   url: computed(function (this: Router<Route>) {
     let location = get(this, 'location');
 

@@ -37,7 +37,6 @@ module.exports = {
     '_invoke',
     '_lazyInjections',
     '_logLookup',
-    '_names',
     '_normalizeCache',
     '_onLookup',
     '_options',

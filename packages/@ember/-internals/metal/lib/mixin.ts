@@ -273,7 +273,15 @@ function mergeMixins(
         }
       }
     } else {
-      mergeProps(meta, currentMixin, descs, values, base, keys, keysWithSuper);
+      mergeProps(
+        meta,
+        currentMixin as { [key: string]: any },
+        descs,
+        values,
+        base,
+        keys,
+        keysWithSuper
+      );
     }
   }
 }

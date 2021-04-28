@@ -10,6 +10,7 @@ export interface EmberLocation {
   formatURL(url: string): string;
   detect?(): void;
   initState?(): void;
+  destroy(): void;
 }
 
 export type UpdateCallback = (url: string) => void;
