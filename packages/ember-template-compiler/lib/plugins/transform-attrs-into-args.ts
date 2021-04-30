@@ -29,7 +29,7 @@ import { EmberASTPluginEnvironment } from '../types';
 
 export default function transformAttrsIntoArgs(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
 
   let stack: string[][] = [[]];
 

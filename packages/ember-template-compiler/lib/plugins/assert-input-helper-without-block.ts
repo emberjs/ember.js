@@ -5,7 +5,7 @@ import { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 export default function errorOnInputWithContent(env: EmberASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
 
   return {
     name: 'assert-input-helper-without-block',
@@ -20,7 +20,7 @@ export default function errorOnInputWithContent(env: EmberASTPluginEnvironment):
   };
 }
 
-function assertMessage(moduleName: string, node: AST.BlockStatement): string {
+function assertMessage(moduleName: string | undefined, node: AST.BlockStatement): string {
   let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
 
   return `The {{input}} helper cannot be used in block form. ${sourceInformation}`;

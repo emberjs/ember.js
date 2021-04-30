@@ -43,7 +43,7 @@ function transformPositionalLinkToIntoNamedArguments(
   hasBlock = true
 ): AST.BlockStatement {
   let { builders: b } = env.syntax;
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
   let {
     params,
     hash: { pairs },

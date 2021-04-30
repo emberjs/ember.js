@@ -1,5 +1,5 @@
 declare module 'ember' {
-  declare const Ember: any;
+  const Ember: any;
 
   export default Ember;
 }

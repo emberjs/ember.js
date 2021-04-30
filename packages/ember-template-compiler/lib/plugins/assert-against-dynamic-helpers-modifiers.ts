@@ -7,7 +7,7 @@ import { isPath, trackLocals } from './utils';
 export default function assertAgainstDynamicHelpersModifiers(
   env: EmberASTPluginEnvironment
 ): ASTPlugin {
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
   let { hasLocal, node } = trackLocals();
 
   return {

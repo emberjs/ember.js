@@ -4,7 +4,7 @@ import calculateLocationDisplay from '../system/calculate-location-display';
 import { EmberASTPluginEnvironment } from '../types';
 
 export default function assertSplattributeExpressions(env: EmberASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
 
   return {
     name: 'assert-splattribute-expressions',

@@ -65,7 +65,7 @@ const TARGETS = Object.freeze(['helper', 'modifier']);
 
 export default function transformResolutions(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
   let { hasLocal, node: tracker } = trackLocals();
   let seen: Set<AST.Node> | undefined;
 
@@ -155,7 +155,7 @@ function transformParams(
   b: EmberASTPluginEnvironment['syntax']['builders'],
   params: AST.Expression[],
   type: string,
-  moduleName: string,
+  moduleName: string | undefined,
   loc: AST.SourceLocation | undefined
 ): AST.Expression[] {
   let [first, ...rest] = params;

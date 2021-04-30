@@ -42,7 +42,7 @@ import { isPath } from './utils';
   @class TransformInElement
 */
 export default function transformInElement(env: EmberASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
   let { builders: b } = env.syntax;
 
   return {
