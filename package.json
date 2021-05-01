@@ -89,7 +89,7 @@
     "@glimmer/runtime": "0.78.2",
     "@glimmer/validator": "0.78.2",
     "@simple-dom/document": "^1.4.0",
-    "@types/qunit": "^2.9.1",
+    "@types/qunit": "^2.11.1",
     "@types/rsvp": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
