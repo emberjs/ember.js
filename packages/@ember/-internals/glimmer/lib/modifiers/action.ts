@@ -216,25 +216,8 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     }
 
     let actionId = uuid();
-    let actionState = new ActionState(element, owner, actionId, actionArgs, named, positional);
 
-    deprecate(
-      `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
-      actionState.eventName !== 'mouseEnter' &&
-        actionState.eventName !== 'mouseLeave' &&
-        actionState.eventName !== 'mouseMove',
-      {
-        id: 'ember-views.event-dispatcher.mouseenter-leave-move',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_action-mouseenter-leave-move',
-        for: 'ember-source',
-        since: {
-          enabled: '3.13.0-beta.1',
-        },
-      }
-    );
-
-    return actionState;
+    return new ActionState(element, owner, actionId, actionArgs, named, positional);
   }
 
   getDebugName(): string {
