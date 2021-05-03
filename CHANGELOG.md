@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.24.4 (May 3, 2021)
+
+- [#19477](https://github.com/emberjs/ember.js/pull/19477) Allow `<LinkToExternal />` to override internal assertion
+
 ### v3.24.3 (March 7, 2021)
 
 - [#19448](https://github.com/emberjs/ember.js/pull/19448) Ensure query params are preserved through an intermediate loading state transition
