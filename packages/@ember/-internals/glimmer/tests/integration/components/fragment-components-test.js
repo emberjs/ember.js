@@ -67,7 +67,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
-      }, /You can not define `click,mouseEnter` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
+      }, /You can not define `click` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
     }
 
     ['@test throws an error if a custom defined event function is defined in a tagless component']() {
