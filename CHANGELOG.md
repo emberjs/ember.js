@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.28.0-beta.1 (May 3, 2021)
+
+- [#19472](https://github.com/emberjs/ember.js/pull/19472) [BUGFIX] Prevent transformation of block params called `attrs`
+
 ### v3.27.0 (May 3, 2021)
 
 - [#19309](https://github.com/emberjs/ember.js/pull/19309) / [#19487](https://github.com/emberjs/ember.js/pull/19487) / [#19474](https://github.com/emberjs/ember.js/pull/19474) [FEATURE] Enable `(helper` and `(modifier` helpers per [RFC #432](https://github.com/emberjs/rfcs/blob/master/text/0432-contextual-helpers.md).
