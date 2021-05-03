@@ -1,30 +1,20 @@
 # Ember Changelog
 
-### v3.27.0-beta.4 (April 21, 2021)
+### v3.27.0 (May 3, 2021)
 
-- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX beta] [DEPRECATION] Deprecate `@foo={{helper}}`
-- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX beta] `<:else>` and `<:inverse>` should be aliases (see )
-- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX beta] Fix nested calls to helpers in dynamic helpers (see https://github.com/glimmerjs/glimmer-vm/pull/1293)
-
-### v3.27.0-beta.3 (March 30, 2021)
-
-- [#19477](https://github.com/emberjs/ember.js/pull/19477) [BUGFIX] Move `LinkTo` assertion into a method so `LinkToExternal` can override it
-- [#19481](https://github.com/emberjs/ember.js/pull/19481) [BUGFIX] Export `on` from correct path
-- [#19487](https://github.com/emberjs/ember.js/pull/19487) [BUGFIX] Allow passing a string literal to {{helper}} and {{modifier}}
-
-### v3.27.0-beta.2 (March 25, 2021)
-
-- [#19473](https://github.com/emberjs/ember.js/pull/19473) Update GlimmerVM to latest (fix compatibility for template import proposals)
-- [#19474](https://github.com/emberjs/ember.js/pull/19474) [FEATURE] Enable `(helper` and `(modifier` helpers
-
-### v3.27.0-beta.1 (March 22, 2021)
-
+- [#19309](https://github.com/emberjs/ember.js/pull/19309) / [#19487](https://github.com/emberjs/ember.js/pull/19487) / [#19474](https://github.com/emberjs/ember.js/pull/19474) [FEATURE] Enable `(helper` and `(modifier` helpers per [RFC #432](https://github.com/emberjs/rfcs/blob/master/text/0432-contextual-helpers.md).
 - [#19382](https://github.com/emberjs/ember.js/pull/19382) / [#19430](https://github.com/emberjs/ember.js/pull/19430) [FEATURE] Remaining implementation work per [RFC #671](https://github.com/emberjs/rfcs/blob/master/text/0671-modernize-built-in-components-1.md).
 - [#19457](https://github.com/emberjs/ember.js/pull/19457) / [#19463](https://github.com/emberjs/ember.js/pull/19463) / [#19464](https://github.com/emberjs/ember.js/pull/19464) / [#19467](https://github.com/emberjs/ember.js/pull/19467) [DEPRECATION] Add deprecation for the Ember Global per [RFC #706](https://github.com/emberjs/rfcs/blob/master/text/0706-deprecate-ember-global.md).
 - [#19407](https://github.com/emberjs/ember.js/pull/19407) [DEPRECATION] Add deprecation for `Route#disconnectOutlet` per [RFC #491](https://github.com/emberjs/rfcs/blob/master/text/0491-deprecate-disconnect-outlet.md).
 - [#19433](https://github.com/emberjs/ember.js/pull/19433) [DEPRECATION] Add deprecation for `Route#renderTemplate` per [RFC #418](https://github.com/emberjs/rfcs/blob/master/text/0418-deprecate-route-render-methods.md).
 - [#19442](https://github.com/emberjs/ember.js/pull/19442) [DEPRECATION] Add deprecation for `Route#render` method per [RFC #418](https://github.com/emberjs/rfcs/blob/master/text/0418-deprecate-route-render-methods.md).
 - [#19429](https://github.com/emberjs/ember.js/pull/19429) [DEPRECATION] `registerPlugin` / `unregisterPlugin` and legacy class based AST plugins (private APIs)
+- [#19499](https://github.com/emberjs/ember.js/pull/19499) [DEPRECATION] Deprecate `@foo={{helper}}` per [RFC #496](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md#3-no-implicit-invocation-of-argument-less-helpers).
+- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX] Update rendering engine to `@glimmer/*` 0.78.2 for fixes including:  
+    - `<:else>` and `<:inverse>` should be aliases (see https://github.com/glimmerjs/glimmer-vm/pull/1296)
+    - Fix nested calls to helpers in dynamic helpers (see https://github.com/glimmerjs/glimmer-vm/pull/1293)
+- [#19477](https://github.com/emberjs/ember.js/pull/19477) [BUGFIX] Allow `<LinkToExternal />` to override internal assertion
+- [#19481](https://github.com/emberjs/ember.js/pull/19481) [BUGFIX] Export `on` from correct path
 - [#19466](https://github.com/emberjs/ember.js/pull/19466) [BUGFIX] Rename private runloop functions
 - [#19384](https://github.com/emberjs/ember.js/pull/19384) Use qunit-dom in helper and component test blueprints
 - [#19390](https://github.com/emberjs/ember.js/pull/19390) Refactor the internal Ember loader to use the standard Ember CLI loader
