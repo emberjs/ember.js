@@ -63,6 +63,10 @@
 - [#19441](https://github.com/emberjs/ember.js/pull/19441) Add automated publishing of weekly alpha releases to NPM
 - [#19462](https://github.com/emberjs/ember.js/pull/19462) Use `positional` and `named` as the argument names in `ember g helper` blueprint
 
+### v3.24.4 (May 3, 2021)
+
+- [#19477](https://github.com/emberjs/ember.js/pull/19477) Allow `<LinkToExternal />` to override internal assertion
+
 ### v3.26.1 (March 24, 2021)
 
 - [#19473](https://github.com/emberjs/ember.js/pull/19473) Update Glimmer VM to latest.
@@ -124,7 +128,6 @@
 - [#19336](https://github.com/emberjs/ember.js/pull/19336) [BUGFIX] Ensure Component Lookup Is Well Formed
 - [#19338](https://github.com/emberjs/ember.js/pull/19338) [BUGFIX] Add missing `deprecate` options (`for` + `since`)
 - [#19342](https://github.com/emberjs/ember.js/pull/19342) [BUGFIX] Fix misleading LinkTo error message
-
 
 ### v3.24.3 (March 7, 2021)
 
