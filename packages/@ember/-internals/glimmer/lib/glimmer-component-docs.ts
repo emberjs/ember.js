@@ -163,7 +163,7 @@
   You can also pass parameters to named blocks:
 
   ```app/templates/components/person-profile.hbs
-  <h1>{{yield to="title" @person.name}}</h1>
+  <h1>{{yield @person.name to="title"}}</h1>
   {{yield @person.signature}}
   ```
 
@@ -184,7 +184,7 @@
   ```app/templates/components/person-profile.hbs
   <h1>
     {{#if (has-block "title")}}
-      {{yield to="title" @person.name}}
+      {{yield @person.name to="title"}}
     {{else}}
       {{@person.name}}
     {{/if}}
