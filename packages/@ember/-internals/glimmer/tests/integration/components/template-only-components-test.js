@@ -30,7 +30,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       ['@test it can render named arguments']() {
         this.registerTemplateOnlyComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
-        this.render('{{foo-bar foo=foo bar=bar}}', {
+        this.render('{{foo-bar foo=this.foo bar=this.bar}}', {
           foo: 'foo',
           bar: 'bar',
         });
@@ -53,7 +53,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       }
 
       ['@test it does not reflected arguments as properties']() {
-        this.registerTemplateOnlyComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
+        this.registerTemplateOnlyComponent('foo-bar', '|{{this.foo}}|{{this.bar}}|');
 
         this.render('{{foo-bar foo=foo bar=bar}}', {
           foo: 'foo',
@@ -132,7 +132,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
             wrapper: EmberObject.create({ content: null }),
           }),
           template:
-            '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=wrapper}}</div>{{x-inner value=value wrapper=wrapper}}',
+            '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=wrapper}}</div>{{x-inner value=this.value wrapper=this.wrapper}}',
         });
 
         this.registerComponent('x-inner', {
@@ -174,7 +174,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       ['@test it can render named arguments']() {
         this.registerTemplateOnlyComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
-        this.render('{{foo-bar foo=foo bar=bar}}', {
+        this.render('{{foo-bar foo=this.foo bar=this.bar}}', {
           foo: 'foo',
           bar: 'bar',
         });
@@ -197,9 +197,13 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       }
 
       ['@test it renders named arguments as reflected properties']() {
+        expectDeprecation(
+          /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+        );
+
         this.registerTemplateOnlyComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
 
-        this.render('{{foo-bar foo=foo bar=bar}}', {
+        this.render('{{foo-bar foo=this.foo bar=this.bar}}', {
           foo: 'foo',
           bar: 'bar',
         });
@@ -224,7 +228,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       ['@test it has curly component features']() {
         this.registerTemplateOnlyComponent('foo-bar', 'hello');
 
-        this.render('{{foo-bar tagName="p" class=class}}', {
+        this.render('{{foo-bar tagName="p" class=this.class}}', {
           class: 'foo bar',
         });
 

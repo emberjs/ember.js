@@ -1,15 +1,9 @@
-export {
-  default as computed,
-  autoComputed,
-  isComputed,
-  _globalsComputed,
-  ComputedProperty,
-} from './lib/computed';
+export { default as computed, autoComputed, isComputed, ComputedProperty } from './lib/computed';
 export { getCachedValueFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
 export { PROXY_CONTENT, _getPath, get, getWithDefault, _getProp } from './lib/property_get';
-export { set, trySet } from './lib/property_set';
+export { set, _setProp, trySet } from './lib/property_set';
 export {
   objectAt,
   replace,
@@ -59,14 +53,13 @@ export {
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagForObject, markObjectAsDirty } from './lib/tags';
-export { tracked } from './lib/tracked';
+export { tracked, TrackedDescriptor } from './lib/tracked';
 export { createCache, getValue, isConst } from './lib/cache';
 
 export {
   NAMESPACES,
   NAMESPACES_BY_ID,
   addNamespace,
-  classToString,
   findNamespace,
   findNamespaces,
   processNamespace,

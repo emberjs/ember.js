@@ -2,10 +2,16 @@ import { isObject, setupMandatorySetter, symbol, toString } from '@ember/-intern
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { CUSTOM_TAG_FOR } from '@glimmer/manager';
+import { getCustomTagFor } from '@glimmer/manager';
 import { CONSTANT_TAG, dirtyTagFor, Tag, tagFor, TagMeta } from '@glimmer/validator';
 
 /////////
+
+type CustomTagFnWithMandatorySetter = (
+  obj: object,
+  key: string | symbol,
+  addMandatorySetter: boolean
+) => Tag;
 
 // This is exported for `@tracked`, but should otherwise be avoided. Use `tagForObject`.
 export const SELF_TAG: string | symbol = symbol('SELF_TAG');
@@ -16,8 +22,10 @@ export function tagForProperty(
   addMandatorySetter = false,
   meta?: TagMeta
 ): Tag {
-  if (typeof obj[CUSTOM_TAG_FOR] === 'function') {
-    return obj[CUSTOM_TAG_FOR](propertyKey, addMandatorySetter);
+  let customTagFor = getCustomTagFor(obj);
+
+  if (customTagFor !== undefined) {
+    return (customTagFor as CustomTagFnWithMandatorySetter)(obj, propertyKey, addMandatorySetter);
   }
 
   let tag = tagFor(obj, propertyKey, meta);

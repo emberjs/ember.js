@@ -8,6 +8,10 @@ import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 moduleFor(
   'Syntax test: {{#with}}',
   class extends IfUnlessWithSyntaxTest {
+    beforeEach() {
+      expectDeprecation(/^`{{#with}}` is deprecated\./);
+    }
+
     templateFor({ cond, truthy, falsy }) {
       return `{{#with ${cond}}}${truthy}{{else}}${falsy}{{/with}}`;
     }
@@ -17,6 +21,10 @@ moduleFor(
 moduleFor(
   'Syntax test: {{#with as}}',
   class extends IfUnlessWithSyntaxTest {
+    beforeEach() {
+      expectDeprecation(/^`{{#with}}` is deprecated\./);
+    }
+
     templateFor({ cond, truthy, falsy }) {
       return `{{#with ${cond} as |test|}}${truthy}{{else}}${falsy}{{/with}}`;
     }
@@ -24,7 +32,7 @@ moduleFor(
     ['@test keying off of `undefined` does not render']() {
       this.render(
         strip`
-      {{#with foo.bar.baz as |thing|}}
+      {{#with this.foo.bar.baz as |thing|}}
         {{thing}}
       {{/with}}`,
         { foo: {} }
@@ -46,7 +54,7 @@ moduleFor(
     }
 
     ['@test it renders and hides the given block based on the conditional']() {
-      this.render(`{{#with cond1 as |cond|}}{{cond.greeting}}{{else}}False{{/with}}`, {
+      this.render(`{{#with this.cond1 as |cond|}}{{cond.greeting}}{{else}}False{{/with}}`, {
         cond1: { greeting: 'Hello' },
       });
 
@@ -70,7 +78,7 @@ moduleFor(
     }
 
     ['@test can access alias and original scope']() {
-      this.render(`{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}`, {
+      this.render(`{{#with this.person as |tom|}}{{this.title}}: {{tom.name}}{{/with}}`, {
         title: 'Señor Engineer',
         person: { name: 'Tom Dale' },
       });
@@ -97,7 +105,11 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#with}} block.']() {
-      this.render(`{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}`, {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
+      this.render(`{{name}}-{{#with this.other as |name|}}{{name}}{{/with}}-{{name}}`, {
         name: 'Stef',
         other: 'Yehuda',
       });
@@ -126,7 +138,7 @@ moduleFor(
 
     ['@test inverse template is displayed with context']() {
       this.render(
-        `{{#with falsyThing as |thing|}}Has Thing{{else}}No Thing {{otherThing}}{{/with}}`,
+        `{{#with this.falsyThing as |thing|}}Has Thing{{else}}No Thing {{this.otherThing}}{{/with}}`,
         {
           falsyThing: null,
           otherThing: 'bar',
@@ -160,7 +172,7 @@ moduleFor(
     }
 
     ['@test can access alias of a proxy']() {
-      this.render(`{{#with proxy as |person|}}{{person.name}}{{/with}}`, {
+      this.render(`{{#with this.proxy as |person|}}{{person.name}}{{/with}}`, {
         proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
       });
 
@@ -195,7 +207,7 @@ moduleFor(
 
     ['@test can access alias of an array']() {
       this.render(
-        `{{#with arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/with}}`,
+        `{{#with this.arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/with}}`,
         {
           arrayThing: emberA(['Hello', ' ', 'world']),
         }
@@ -223,7 +235,7 @@ moduleFor(
     }
 
     ['@test `attrs` can be used as a block param [GH#14678]']() {
-      this.render('{{#with hash as |attrs|}}[{{hash.foo}}-{{attrs.foo}}]{{/with}}', {
+      this.render('{{#with this.hash as |attrs|}}[{{this.hash.foo}}-{{attrs.foo}}]{{/with}}', {
         hash: { foo: 'foo' },
       });
 
@@ -247,9 +259,13 @@ moduleFor(
 moduleFor(
   'Syntax test: Multiple {{#with as}} helpers',
   class extends RenderingTestCase {
+    beforeEach() {
+      expectDeprecation(/^`{{#with}}` is deprecated\./);
+    }
+
     ['@test re-using the same variable with different {{#with}} blocks does not override each other']() {
       this.render(
-        `Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`,
+        `Admin: {{#with this.admin as |person|}}{{person.name}}{{/with}} User: {{#with this.user as |person|}}{{person.name}}{{/with}}`,
         {
           admin: { name: 'Tom Dale' },
           user: { name: 'Yehuda Katz' },
@@ -278,8 +294,12 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#with}} block']() {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.render(
-        `{{ring}}-{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}`,
+        `{{ring}}-{{#with this.first as |ring|}}{{ring}}-{{#with this.fifth as |ring|}}{{ring}}-{{#with this.ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}`,
         {
           ring: 'Greed',
           first: 'Limbo',
@@ -319,7 +339,7 @@ moduleFor(
     }
 
     ['@test it should support {{#with name as |foo|}}, then {{#with foo as |bar|}}']() {
-      this.render(`{{#with name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}`, {
+      this.render(`{{#with this.name as |foo|}}{{#with foo as |bar|}}{{bar}}{{/with}}{{/with}}`, {
         name: 'caterpillar',
       });
 
@@ -359,20 +379,24 @@ moduleFor(
     }
 
     ['@test nested {{#with}} blocks should have access to root context']() {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.render(
         strip`
       {{name}}
-      {{#with committer1.name as |name|}}
+      {{#with this.committer1.name as |name|}}
         [{{name}}
-        {{#with committer2.name as |name|}}
+        {{#with this.committer2.name as |name|}}
           [{{name}}]
         {{/with}}
         {{name}}]
       {{/with}}
       {{name}}
-      {{#with committer2.name as |name|}}
+      {{#with this.committer2.name as |name|}}
         [{{name}}
-        {{#with committer1.name as |name|}}
+        {{#with this.committer1.name as |name|}}
           [{{name}}]
         {{/with}}
         {{name}}]

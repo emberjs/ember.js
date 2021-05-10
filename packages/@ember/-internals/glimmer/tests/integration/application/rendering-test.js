@@ -106,6 +106,10 @@ moduleFor(
     }
 
     ['@test it can access the model provided by the route via implicit this fallback']() {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.add(
         'route:application',
         Route.extend({
@@ -138,6 +142,10 @@ moduleFor(
     }
 
     async ['@test interior mutations on the model with set'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -195,6 +203,10 @@ moduleFor(
     }
 
     async ['@test interior mutations on the model with tracked properties'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       class Model {
         @tracked color;
 
@@ -259,6 +271,10 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with set'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -316,6 +332,10 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with tracked properties'](assert) {
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
+
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -420,6 +440,7 @@ moduleFor(
     }
 
     ['@test it can render into named outlets']() {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('colors');
       });
@@ -443,11 +464,13 @@ moduleFor(
         'route:application',
         Route.extend({
           renderTemplate() {
-            this.render();
-            this.render('nav', {
-              into: 'application',
-              outlet: 'nav',
-            });
+            expectDeprecation(() => {
+              this.render();
+              this.render('nav', {
+                into: 'application',
+                outlet: 'nav',
+              });
+            }, /Usage of `render` is deprecated/);
           },
         })
       );
@@ -567,8 +590,8 @@ moduleFor(
         })
       );
 
-      this.addTemplate('a', '{{value}}');
-      this.addTemplate('b', '{{value}}');
+      this.addTemplate('a', '{{this.value}}');
+      this.addTemplate('b', '{{this.value}}');
 
       return this.visit('/a')
         .then(() => {
@@ -579,6 +602,7 @@ moduleFor(
     }
 
     ['@test it should update correctly when the controller changes']() {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('color', { path: '/colors/:color' });
       });
@@ -591,7 +615,10 @@ moduleFor(
           },
 
           renderTemplate(controller, model) {
-            this.render({ controller: model.color, model });
+            expectDeprecation(
+              () => this.render({ controller: model.color, model }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -610,7 +637,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('color', 'model color: {{@model.color}}, controller color: {{color}}');
+      this.addTemplate('color', 'model color: {{@model.color}}, controller color: {{this.color}}');
 
       return this.visit('/colors/red')
         .then(() => {
@@ -623,6 +650,7 @@ moduleFor(
     }
 
     ['@test it should produce a stable DOM when two routes render the same template']() {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       this.router.map(function () {
         this.route('a');
         this.route('b');
@@ -636,7 +664,10 @@ moduleFor(
           },
 
           renderTemplate(controller, model) {
-            this.render('common', { controller: 'common', model });
+            expectDeprecation(
+              () => this.render('common', { controller: 'common', model }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -649,7 +680,10 @@ moduleFor(
           },
 
           renderTemplate(controller, model) {
-            this.render('common', { controller: 'common', model });
+            expectDeprecation(
+              () => this.render('common', { controller: 'common', model }),
+              /Usage of `render` is deprecated/
+            );
           },
         })
       );
@@ -661,7 +695,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('common', '{{prefix}} {{@model}}');
+      this.addTemplate('common', '{{this.prefix}} {{@model}}');
 
       return this.visit('/a')
         .then(() => {
@@ -696,7 +730,9 @@ moduleFor(
         'route:index',
         Route.extend({
           activate() {
-            this.transitionTo('a');
+            expectDeprecation(() => {
+              this.transitionTo('a');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

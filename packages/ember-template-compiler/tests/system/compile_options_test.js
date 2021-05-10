@@ -1,7 +1,8 @@
 import {
   compile,
   compileOptions,
-  defaultPlugins,
+  RESOLUTION_MODE_TRANSFORMS,
+  STRICT_MODE_TRANSFORMS,
   registerPlugin,
   unregisterPlugin,
 } from '../../index';
@@ -14,13 +15,34 @@ moduleFor(
       assert.notEqual(compileOptions(), compileOptions());
     }
 
-    ['@test has default AST plugins'](assert) {
-      assert.expect(defaultPlugins.length);
+    ['@test customizeComponentName asserts name is well formed'](assert) {
+      let options = compileOptions({ moduleName: 'test.js' });
+
+      expectAssertion(() => {
+        options.customizeComponentName('Foo:Bar');
+      }, /You tried to invoke a component named <Foo:Bar \/> in "test.js", but that is not a valid name for a component. Did you mean to use the "::" syntax for nested components\?/);
+
+      assert.ok(options.customizeComponentName('Foo::Bar'));
+    }
+
+    ['@test has default AST plugins in resolution mode'](assert) {
+      assert.expect(RESOLUTION_MODE_TRANSFORMS.length);
 
       let plugins = compileOptions().plugins.ast;
 
-      for (let i = 0; i < defaultPlugins.length; i++) {
-        let plugin = defaultPlugins[i];
+      for (let i = 0; i < RESOLUTION_MODE_TRANSFORMS.length; i++) {
+        let plugin = RESOLUTION_MODE_TRANSFORMS[i];
+        assert.ok(plugins.indexOf(plugin) > -1, `includes ${plugin}`);
+      }
+    }
+
+    ['@test has default AST plugins in strict mode'](assert) {
+      assert.expect(STRICT_MODE_TRANSFORMS.length);
+
+      let plugins = compileOptions({ strictMode: true }).plugins.ast;
+
+      for (let i = 0; i < STRICT_MODE_TRANSFORMS.length; i++) {
+        let plugin = STRICT_MODE_TRANSFORMS[i];
         assert.ok(plugins.indexOf(plugin) > -1, `includes ${plugin}`);
       }
     }
@@ -92,25 +114,40 @@ class CustomPluginsTests extends RenderingTestCase {
   }
 
   ['@test wrapped plugins are only invoked once per template'](assert) {
-    this.render('<div>{{#if falsey}}nope{{/if}}</div>');
+    this.render('<div>{{#if this.falsey}}nope{{/if}}</div>');
     assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
   }
 }
 
 moduleFor(
-  'ember-template-compiler: registerPlugin with a custom plugins in legacy format',
+  'ember-template-compiler: [DEPRECATED] registerPlugin with a custom plugins in legacy format',
   class extends CustomPluginsTests {
     beforeEach() {
+      expectDeprecation(
+        'Using class based template compilation plugins is deprecated, please update to the functional style'
+      );
+      expectDeprecation(
+        'registerPlugin is deprecated, please pass plugins directly via `compile` and/or `precompile`.'
+      );
       registerPlugin('ast', LegacyCustomTransform);
     }
 
     afterEach() {
-      unregisterPlugin('ast', LegacyCustomTransform);
+      expectDeprecation(() => {
+        unregisterPlugin('ast', LegacyCustomTransform);
+      }, /unregisterPlugin is deprecated, please pass plugins directly via `compile` and\/or `precompile`/);
       return super.afterEach();
     }
 
     ['@test custom registered plugins are deduplicated'](assert) {
+      expectDeprecation(
+        'Using class based template compilation plugins is deprecated, please update to the functional style'
+      );
+      expectDeprecation(
+        'registerPlugin is deprecated, please pass plugins directly via `compile` and/or `precompile`.'
+      );
       registerPlugin('ast', LegacyCustomTransform);
+
       this.registerTemplate(
         'application',
         '<div data-test="foo" data-blah="derp" class="hahaha"></div>'
@@ -121,19 +158,27 @@ moduleFor(
 );
 
 moduleFor(
-  'ember-template-compiler: registerPlugin with a custom plugins',
+  'ember-template-compiler: [DEPRECATED] registerPlugin with a custom plugins',
   class extends CustomPluginsTests {
     beforeEach() {
-      registerPlugin('ast', customTransform);
+      expectDeprecation(() => {
+        registerPlugin('ast', customTransform);
+      }, /registerPlugin is deprecated, please pass plugins directly via `compile` and\/or `precompile`/);
     }
 
     afterEach() {
-      unregisterPlugin('ast', customTransform);
+      expectDeprecation(() => {
+        unregisterPlugin('ast', customTransform);
+      }, /unregisterPlugin is deprecated, please pass plugins directly via `compile` and\/or `precompile`/);
+
       return super.afterEach();
     }
 
     ['@test custom registered plugins are deduplicated'](assert) {
-      registerPlugin('ast', customTransform);
+      expectDeprecation(() => {
+        registerPlugin('ast', customTransform);
+      }, /registerPlugin is deprecated, please pass plugins directly via `compile` and\/or `precompile`/);
+
       this.registerTemplate(
         'application',
         '<div data-test="foo" data-blah="derp" class="hahaha"></div>'
@@ -148,6 +193,9 @@ moduleFor(
   class extends RenderingTestCase {
     // override so that we can provide custom AST plugins to compile
     compile(templateString) {
+      expectDeprecation(
+        'Using class based template compilation plugins is deprecated, please update to the functional style'
+      );
       return compile(templateString, {
         plugins: {
           ast: [LegacyCustomTransform],

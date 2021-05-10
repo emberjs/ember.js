@@ -1,6 +1,7 @@
 /**
 @module @ember/object
 */
+import { INIT_FACTORY } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
@@ -11,6 +12,7 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { ALIAS_METHOD } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
@@ -31,7 +33,7 @@ import {
 } from './decorator';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
-import { classToString, setUnprocessedMixins } from './namespace_search';
+import { setUnprocessedMixins } from './namespace_search';
 import { addObserver, removeObserver, revalidateObservers } from './observer';
 import { defineDecorator, defineValue } from './properties';
 
@@ -560,6 +562,8 @@ const MIXINS = new _WeakSet();
   @public
 */
 export default class Mixin {
+  declare static _disableDebugSeal?: boolean;
+
   mixins: Mixin[] | undefined;
   properties: { [key: string]: any } | undefined;
   ownerConstructor: any;
@@ -573,6 +577,8 @@ export default class Mixin {
     this._without = undefined;
 
     if (DEBUG) {
+      // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
+      this[INIT_FACTORY] = null;
       /*
         In debug builds, we seal mixins to help avoid performance pitfalls.
 
@@ -581,7 +587,10 @@ export default class Mixin {
         weak maps in `guidFor`, so we need to prime the guid cache weak map.
       */
       guidFor(this);
-      Object.seal(this);
+
+      if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS && Mixin._disableDebugSeal !== true) {
+        Object.seal(this);
+      }
     }
   }
 
@@ -693,6 +702,15 @@ export default class Mixin {
   }
 }
 
+if (DEBUG && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  Object.defineProperty(Mixin, '_disableDebugSeal', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: false,
+  });
+}
+
 function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined {
   let length = (mixins && mixins.length) || 0;
   let m: Mixin[] | undefined = undefined;
@@ -720,8 +738,6 @@ function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined 
 }
 
 type MixinLike = Mixin | { [key: string]: any };
-
-Mixin.prototype.toString = classToString;
 
 if (DEBUG) {
   Object.seal(Mixin.prototype);

@@ -26,38 +26,41 @@ moduleFor(
       );
     }
 
-    ['@test populates href with fully supplied query param values']() {
+    async ['@test populates href with fully supplied query param values']() {
       this.addTemplate(
         'index',
-        `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`
+        `{{#link-to route='index' query=(hash foo='456' bar='NAW')}}Index{{/link-to}}`
       );
 
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.firstChild, {
-          tagName: 'a',
-          attrs: { href: '/?bar=NAW&foo=456' },
-          content: 'Index',
-        });
+      await this.visit('/');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/?bar=NAW&foo=456' },
+        content: 'Index',
       });
     }
 
-    ['@test populates href with fully supplied query param values, but without @route param']() {
+    async ['@test it populates href with fully supplied query param values, but without @route param']() {
       this.addTemplate(
         'index',
-        `{{#link-to (query-params foo='2' bar='NAW')}}QueryParams{{/link-to}}`
+        `{{#link-to query=(hash foo='2' bar='NAW')}}QueryParams{{/link-to}}`
       );
 
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.firstChild, {
-          tagName: 'a',
-          attrs: { href: '/?bar=NAW&foo=2' },
-          content: 'QueryParams',
-        });
+      await this.visit('/');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/?bar=NAW&foo=2' },
+        content: 'QueryParams',
       });
     }
 
-    ['@test populates href with partially supplied query param values, but omits if value is default value']() {
-      this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
+    async ['@test populates href with partially supplied query param values, but omits if value is default value']() {
+      this.addTemplate(
+        'index',
+        `{{#link-to route='index' query=(hash foo='123')}}Index{{/link-to}}`
+      );
 
       return this.visit('/').then(() => {
         this.assertComponentElement(this.firstChild, {
@@ -68,23 +71,28 @@ moduleFor(
       });
     }
 
-    ['@test `(query-params)` can be used outside of `{{link-to}}'](assert) {
+    async ['@test [DEPRECATED] `query-params` can be used outside of `{{link-to}}'](assert) {
       if (!DEBUG) {
         assert.expect(0);
         return;
       }
 
-      this.addTemplate(
-        'index',
-        `{{#let (query-params foo='456' alon='BUKAI') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
+      expectDeprecation(() => {
+        this.addTemplate(
+          'index',
+          `{{#let (query-params foo='456' alon='BUKAI') as |qp|}}{{#link-to 'index' qp}}Index{{/link-to}}{{/let}}`
+        );
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
+
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        /The `query-params` helper is deprecated/
       );
 
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.firstChild, {
-          tagName: 'a',
-          attrs: { href: '/?alon=BUKAI&foo=456', class: classMatcher('ember-view') },
-          content: 'Index',
-        });
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/?alon=BUKAI&foo=456', class: classMatcher('ember-view') },
+        content: 'Index',
       });
     }
   }
@@ -93,30 +101,34 @@ moduleFor(
 moduleFor(
   '{{link-to}} component with query params (routing)',
   class extends ApplicationTestCase {
-    constructor() {
-      super(...arguments);
+    constructor(...args) {
+      super(...args);
+
       let indexProperties = {
         foo: '123',
         bar: 'abc',
       };
+
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['foo', 'bar', 'abool'],
-          foo: indexProperties.foo,
-          bar: indexProperties.bar,
-          boundThing: 'OMG',
-          abool: true,
-        })
+        class extends Controller {
+          queryParams = ['foo', 'bar', 'abool'];
+          foo = indexProperties.foo;
+          bar = indexProperties.bar;
+          boundThing = 'OMG';
+          abool = true;
+        }
       );
+
       this.add(
         'controller:about',
-        Controller.extend({
-          queryParams: ['baz', 'bat'],
-          baz: 'alex',
-          bat: 'borf',
-        })
+        class extends Controller {
+          queryParams = ['baz', 'bat'];
+          baz = 'alex';
+          bat = 'borf';
+        }
       );
+
       this.indexProperties = indexProperties;
     }
 
@@ -141,105 +153,122 @@ moduleFor(
       );
     }
 
-    [`@test doesn't update controller QP properties on current route when invoked`](assert) {
-      this.addTemplate('index', `{{#link-to 'index' id='the-link'}}Index{{/link-to}}`);
-
-      return this.visit('/').then(() => {
-        this.click('#the-link');
-        let indexController = this.getController('index');
-
-        assert.deepEqual(
-          indexController.getProperties('foo', 'bar'),
-          this.indexProperties,
-          'controller QP properties do not update'
-        );
-      });
-    }
-
-    [`@test doesn't update controller QP properties on current route when invoked (empty query-params obj)`](
+    async [`@test it doesn't update controller QP properties on current route when invoked`](
       assert
     ) {
       this.addTemplate(
         'index',
-        `{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}`
+        `<div id='the-link'>{{#link-to route='index'}}Index{{/link-to}}</div>`
       );
 
-      return this.visit('/').then(() => {
-        this.click('#the-link');
-        let indexController = this.getController('index');
+      await this.visit('/');
 
-        assert.deepEqual(
-          indexController.getProperties('foo', 'bar'),
-          this.indexProperties,
-          'controller QP properties do not update'
-        );
-      });
-    }
+      await this.click('#the-link > a');
 
-    [`@test doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
-      assert
-    ) {
-      this.addTemplate('index', `{{#link-to (query-params) id='the-link'}}Index{{/link-to}}`);
+      let indexController = this.getController('index');
 
-      return this.visit('/').then(() => {
-        this.click('#the-link');
-        let indexController = this.getController('index');
-
-        assert.deepEqual(
-          indexController.getProperties('foo', 'bar'),
-          this.indexProperties,
-          'controller QP properties do not update'
-        );
-      });
-    }
-
-    ['@test updates controller QP properties on current route when invoked'](assert) {
-      this.addTemplate(
-        'index',
-        `
-        {{#link-to 'index' (query-params foo='456') id="the-link"}}
-          Index
-        {{/link-to}}
-        `
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        this.indexProperties,
+        'controller QP properties do not update'
       );
-
-      return this.visit('/').then(() => {
-        this.click('#the-link');
-        let indexController = this.getController('index');
-
-        assert.deepEqual(
-          indexController.getProperties('foo', 'bar'),
-          { foo: '456', bar: 'abc' },
-          'controller QP properties updated'
-        );
-      });
     }
 
-    ['@test updates controller QP properties on current route when invoked (inferred route)'](
+    async [`@test doesn't update controller QP properties on current route when invoked (empty query-params obj)`](
       assert
     ) {
       this.addTemplate(
         'index',
+        `<div id='the-link'>{{#link-to route='index' query=(hash)}}Index{{/link-to}}</div>`
+      );
+
+      await this.visit('/');
+
+      await this.click('#the-link > a');
+
+      let indexController = this.getController('index');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        this.indexProperties,
+        'controller QP properties do not update'
+      );
+    }
+
+    async [`@test it doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
+      assert
+    ) {
+      this.addTemplate(
+        'index',
+        `<div id='the-link'>{{#link-to query=(hash)}}Index{{/link-to}}</div>`
+      );
+
+      await this.visit('/');
+
+      await this.click('#the-link > a');
+
+      let indexController = this.getController('index');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        this.indexProperties,
+        'controller QP properties do not update'
+      );
+    }
+
+    async ['@test it updates controller QP properties on current route when invoked'](assert) {
+      this.addTemplate(
+        'index',
         `
-        {{#link-to (query-params foo='456') id="the-link"}}
-          Index
-        {{/link-to}}
+        <div id="the-link">
+          {{#link-to route='index' query=(hash foo='456')}}
+            Index
+          {{/link-to}}
+        </div>
         `
       );
 
-      return this.visit('/').then(() => {
-        this.click('#the-link');
-        let indexController = this.getController('index');
+      await this.visit('/');
 
-        assert.deepEqual(
-          indexController.getProperties('foo', 'bar'),
-          { foo: '456', bar: 'abc' },
-          'controller QP properties updated'
-        );
-      });
+      await this.click('#the-link > a');
+
+      let indexController = this.getController('index');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        { foo: '456', bar: 'abc' },
+        'controller QP properties updated'
+      );
     }
 
-    ['@test updates controller QP properties on other route after transitioning to that route'](
+    async ['@test it updates controller QP properties on current route when invoked (inferred route)'](
+      assert
+    ) {
+      this.addTemplate(
+        'index',
+        `
+        <div id="the-link">
+          {{#link-to query=(hash foo='456')}}
+            Index
+          {{/link-to}}
+        </div>
+        `
+      );
+
+      await this.visit('/');
+
+      await this.click('#the-link > a');
+
+      let indexController = this.getController('index');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        { foo: '456', bar: 'abc' },
+        'controller QP properties updated'
+      );
+    }
+
+    async ['@test it updates controller QP properties on other route after transitioning to that route'](
       assert
     ) {
       this.router.map(function () {
@@ -249,116 +278,124 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        {{#link-to 'about' (query-params baz='lol') id='the-link'}}
-          About
-        {{/link-to}}
+        <div id='the-link'>
+          {{#link-to route='about' query=(hash baz='lol')}}
+            About
+          {{/link-to}}
+        </div>
         `
       );
 
-      return this.visit('/').then(() => {
-        let theLink = this.$('#the-link');
-        assert.equal(theLink.attr('href'), '/about?baz=lol');
+      await this.visit('/');
 
-        runTask(() => this.click('#the-link'));
+      let theLink = this.$('#the-link > a');
 
-        let aboutController = this.getController('about');
+      assert.equal(theLink.attr('href'), '/about?baz=lol');
 
-        assert.deepEqual(
-          aboutController.getProperties('baz', 'bat'),
-          { baz: 'lol', bat: 'borf' },
-          'about controller QP properties updated'
-        );
-      });
-    }
+      runTask(() => this.click('#the-link > a'));
 
-    ['@test supplied QP properties can be bound'](assert) {
-      this.addTemplate(
-        'index',
-        `{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}`
+      let aboutController = this.getController('about');
+
+      assert.deepEqual(
+        aboutController.getProperties('baz', 'bat'),
+        { baz: 'lol', bat: 'borf' },
+        'about controller QP properties updated'
       );
-
-      return this.visit('/').then(() => {
-        let indexController = this.getController('index');
-        let theLink = this.$('#the-link');
-
-        assert.equal(theLink.attr('href'), '/?foo=OMG');
-
-        runTask(() => indexController.set('boundThing', 'ASL'));
-
-        assert.equal(theLink.attr('href'), '/?foo=ASL');
-      });
     }
 
-    ['@test supplied QP properties can be bound (booleans)'](assert) {
+    async ['@test supplied QP properties can be bound'](assert) {
       this.addTemplate(
         'index',
-        `
-        {{#link-to (query-params abool=boundThing) id='the-link'}}
-          Index
-        {{/link-to}}
-        `
-      );
-
-      return this.visit('/').then(() => {
-        let indexController = this.getController('index');
-        let theLink = this.$('#the-link');
-
-        assert.equal(theLink.attr('href'), '/?abool=OMG');
-
-        runTask(() => indexController.set('boundThing', false));
-
-        assert.equal(theLink.attr('href'), '/?abool=false');
-
-        this.click('#the-link');
-
-        assert.deepEqual(
-          indexController.getProperties('foo', 'bar', 'abool'),
-          { foo: '123', bar: 'abc', abool: false },
-          'bound bool QP properties update'
-        );
-      });
-    }
-
-    async ['@test href updates when unsupplied controller QP props change'](assert) {
-      this.addTemplate(
-        'index',
-        `{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}`
+        `<div id='the-link'>{{#link-to query=(hash foo=this.boundThing)}}Index{{/link-to}}</div>`
       );
 
       await this.visit('/');
 
       let indexController = this.getController('index');
-      let theLink = this.$('#the-link');
+      let theLink = this.$('#the-link > a');
+
+      assert.equal(theLink.attr('href'), '/?foo=OMG');
+
+      runTask(() => indexController.set('boundThing', 'ASL'));
+
+      assert.equal(theLink.attr('href'), '/?foo=ASL');
+    }
+
+    async ['@test supplied QP properties can be bound (booleans)'](assert) {
+      this.addTemplate(
+        'index',
+        `
+        <div id='the-link'>
+          {{#link-to query=(hash abool=this.boundThing)}}
+            Index
+          {{/link-to}}
+        </div>
+        `
+      );
+
+      await this.visit('/');
+
+      let indexController = this.getController('index');
+      let theLink = this.$('#the-link > a');
+
+      assert.equal(theLink.attr('href'), '/?abool=OMG');
+
+      runTask(() => indexController.set('boundThing', false));
+
+      assert.equal(theLink.attr('href'), '/?abool=false');
+
+      await this.click('#the-link > a');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar', 'abool'),
+        { foo: '123', bar: 'abc', abool: false },
+        'bound bool QP properties update'
+      );
+    }
+
+    async ['@test href updates when unsupplied controller QP props change'](assert) {
+      this.addTemplate(
+        'index',
+        `
+        <div id='the-link'>
+          {{#link-to query=(hash foo='lol')}}Index{{/link-to}}
+        </div>
+        `
+      );
+
+      await this.visit('/');
+
+      let indexController = this.getController('index');
+      let theLink = this.$('#the-link > a');
 
       assert.equal(theLink.attr('href'), '/?foo=lol');
 
-      indexController.set('bar', 'BORF');
+      runTask(() => indexController.set('bar', 'BORF'));
       await runLoopSettled();
 
       assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
 
-      indexController.set('foo', 'YEAH');
+      runTask(() => indexController.set('foo', 'YEAH'));
       await runLoopSettled();
 
       assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
     }
 
-    ['@test The {{link-to}} with only query params always transitions to the current route with the query params applied'](
+    async ['@test [GH#12033] with only query params, it always transitions to the current route with the query params applied'](
       assert
     ) {
-      // Test harness for bug #12033
       this.addTemplate(
         'cars',
         `
-        {{#link-to 'cars.create' id='create-link'}}Create new car{{/link-to}}
-        {{#link-to (query-params page='2') id='page2-link'}}Page 2{{/link-to}}
+        <div id='create-link'>{{#link-to route='cars.create'}}Create new car{{/link-to}}</div>
+        <div id='page2-link'>{{#link-to query=(hash page='2')}}Page 2{{/link-to}}</div>
         {{outlet}}
         `
       );
 
       this.addTemplate(
         'cars.create',
-        `{{#link-to 'cars' id='close-link'}}Close create form{{/link-to}}`
+        `<div id='close-link'>{{#link-to route='cars'}}Close create form{{/link-to}}</div>`
       );
 
       this.router.map(function () {
@@ -369,52 +406,52 @@ moduleFor(
 
       this.add(
         'controller:cars',
-        Controller.extend({
-          queryParams: ['page'],
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+        }
       );
 
-      return this.visit('/cars/create').then(() => {
-        let router = this.appRouter;
-        let carsController = this.getController('cars');
+      await this.visit('/cars/create');
 
-        assert.equal(router.currentRouteName, 'cars.create');
+      let router = this.appRouter;
+      let carsController = this.getController('cars');
 
-        runTask(() => this.click('#close-link'));
+      assert.equal(router.currentRouteName, 'cars.create');
 
-        assert.equal(router.currentRouteName, 'cars.index');
-        assert.equal(router.get('url'), '/cars');
-        assert.equal(carsController.get('page'), 1, 'The page query-param is 1');
+      runTask(() => this.click('#close-link > a'));
 
-        runTask(() => this.click('#page2-link'));
+      assert.equal(router.currentRouteName, 'cars.index');
+      assert.equal(router.get('url'), '/cars');
+      assert.equal(carsController.get('page'), 1, 'The page query-param is 1');
 
-        assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
-        assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
-        assert.equal(carsController.get('page'), 2, 'The query params have been updated');
-      });
+      runTask(() => this.click('#page2-link > a'));
+
+      assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
+      assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
+      assert.equal(carsController.get('page'), 2, 'The query params have been updated');
     }
 
-    ['@test the {{link-to}} applies activeClass when query params are not changed'](assert) {
+    async ['@test it applies activeClass when query params are not changed'](assert) {
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}}
-        {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
-        {{#link-to 'index' id='change-nothing'}}Index{{/link-to}}
+        <div id='cat-link'>{{#link-to query=(hash foo='cat')}}Index{{/link-to}}</div>
+        <div id='dog-link'>{{#link-to query=(hash foo='dog')}}Index{{/link-to}}</div>
+        <div id='change-nothing'>{{#link-to route='index'}}Index{{/link-to}}</div>
         `
       );
 
       this.addTemplate(
         'search',
         `
-        {{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}}
-        {{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}}
-        {{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}}
-        {{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}}
-        {{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}}
+        <div id='same-search'>{{#link-to query=(hash search='same')}}Index{{/link-to}}</div>
+        <div id='change-search'>{{#link-to query=(hash search='change')}}Index{{/link-to}}</div>
+        <div id='same-search-add-archive'>{{#link-to query=(hash search='same' archive=true)}}Index{{/link-to}}</div>
+        <div id='only-add-archive'>{{#link-to query=(hash archive=true)}}Index{{/link-to}}</div>
+        <div id='both-same'>{{#link-to query=(hash search='same' archive=true)}}Index{{/link-to}}</div>
+        <div id='change-one'>{{#link-to query=(hash search='different' archive=true)}}Index{{/link-to}}</div>
+        <div id='remove-one'>{{#link-to query=(hash search='different' archive=false)}}Index{{/link-to}}</div>
         {{outlet}}
         `
       );
@@ -422,13 +459,13 @@ moduleFor(
       this.addTemplate(
         'search.results',
         `
-        {{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}}
-        {{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}}
-        {{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}}
-        {{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}}
-        {{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}}
-        {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
+        <div id='same-sort-child-only'>{{#link-to query=(hash sort='title')}}Index{{/link-to}}</div>
+        <div id='same-search-parent-only'>{{#link-to query=(hash search='same')}}Index{{/link-to}}</div>
+        <div id='change-search-parent-only'>{{#link-to query=(hash search='change')}}Index{{/link-to}}</div>
+        <div id='same-search-same-sort-child-and-parent'>{{#link-to query=(hash search='same' sort='title')}}Index{{/link-to}}</div>
+        <div id='same-search-different-sort-child-and-parent'>{{#link-to query=(hash search='same' sort='author')}}Index{{/link-to}}</div>
+        <div id='change-search-same-sort-child-and-parent'>{{#link-to query=(hash search='change' sort='title')}}Index{{/link-to}}</div>
+        <div id='dog-link'>{{#link-to query=(hash foo='dog')}}Index{{/link-to}}</div>
         `
       );
 
@@ -440,144 +477,136 @@ moduleFor(
 
       this.add(
         'controller:search',
-        Controller.extend({
-          queryParams: ['search', 'archive'],
-          search: '',
-          archive: false,
-        })
+        class extends Controller {
+          queryParams = ['search', 'archive'];
+          search = '';
+          archive = false;
+        }
       );
 
       this.add(
         'controller:search.results',
-        Controller.extend({
-          queryParams: ['sort', 'showDetails'],
-          sort: 'title',
-          showDetails: true,
-        })
+        class extends Controller {
+          queryParams = ['sort', 'showDetails'];
+          sort = 'title';
+          showDetails = true;
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          this.shouldNotBeActive(assert, '#cat-link');
-          this.shouldNotBeActive(assert, '#dog-link');
+      await this.visit('/');
 
-          return this.visit('/?foo=cat');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#cat-link');
-          this.shouldNotBeActive(assert, '#dog-link');
+      this.shouldNotBeActive(assert, '#cat-link > a');
+      this.shouldNotBeActive(assert, '#dog-link > a');
 
-          return this.visit('/?foo=dog');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#dog-link');
-          this.shouldNotBeActive(assert, '#cat-link');
-          this.shouldBeActive(assert, '#change-nothing');
+      await this.visit('/?foo=cat');
 
-          return this.visit('/search?search=same');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#same-search');
-          this.shouldNotBeActive(assert, '#change-search');
-          this.shouldNotBeActive(assert, '#same-search-add-archive');
-          this.shouldNotBeActive(assert, '#only-add-archive');
-          this.shouldNotBeActive(assert, '#remove-one');
+      this.shouldBeActive(assert, '#cat-link > a');
+      this.shouldNotBeActive(assert, '#dog-link > a');
 
-          return this.visit('/search?search=same&archive=true');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#both-same');
-          this.shouldNotBeActive(assert, '#change-one');
+      await this.visit('/?foo=dog');
 
-          return this.visit('/search/results?search=same&sort=title&showDetails=true');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#same-sort-child-only');
-          this.shouldBeActive(assert, '#same-search-parent-only');
-          this.shouldNotBeActive(assert, '#change-search-parent-only');
-          this.shouldBeActive(assert, '#same-search-same-sort-child-and-parent');
-          this.shouldNotBeActive(assert, '#same-search-different-sort-child-and-parent');
-          this.shouldNotBeActive(assert, '#change-search-same-sort-child-and-parent');
-        });
+      this.shouldBeActive(assert, '#dog-link > a');
+      this.shouldNotBeActive(assert, '#cat-link > a');
+      this.shouldBeActive(assert, '#change-nothing > a');
+
+      await this.visit('/search?search=same');
+
+      this.shouldBeActive(assert, '#same-search > a');
+      this.shouldNotBeActive(assert, '#change-search > a');
+      this.shouldNotBeActive(assert, '#same-search-add-archive > a');
+      this.shouldNotBeActive(assert, '#only-add-archive > a');
+      this.shouldNotBeActive(assert, '#remove-one > a');
+
+      await this.visit('/search?search=same&archive=true');
+
+      this.shouldBeActive(assert, '#both-same > a');
+      this.shouldNotBeActive(assert, '#change-one > a');
+
+      await this.visit('/search/results?search=same&sort=title&showDetails=true');
+
+      this.shouldBeActive(assert, '#same-sort-child-only > a');
+      this.shouldBeActive(assert, '#same-search-parent-only > a');
+      this.shouldNotBeActive(assert, '#change-search-parent-only > a');
+      this.shouldBeActive(assert, '#same-search-same-sort-child-and-parent > a');
+      this.shouldNotBeActive(assert, '#same-search-different-sort-child-and-parent > a');
+      this.shouldNotBeActive(assert, '#change-search-same-sort-child-and-parent > a');
     }
 
-    ['@test the {{link-to}} applies active class when query-param is a number'](assert) {
+    async ['@test it applies active class when query-param is a number'](assert) {
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params page=pageNumber) id='page-link'}}
-          Index
-        {{/link-to}}
+        <div id='page-link'>
+          {{#link-to query=(hash page=this.pageNumber)}}
+            Index
+          {{/link-to}}
+        </div>
         `
       );
 
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['page'],
-          page: 1,
-          pageNumber: 5,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+          pageNumber = 5;
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          this.shouldNotBeActive(assert, '#page-link');
-          return this.visit('/?page=5');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#page-link');
-        });
+      await this.visit('/');
+
+      this.shouldNotBeActive(assert, '#page-link > a');
+
+      await this.visit('/?page=5');
+
+      this.shouldBeActive(assert, '#page-link > a');
     }
 
-    ['@test the {{link-to}} applies active class when query-param is an array'](assert) {
+    async ['@test it applies active class when query-param is an array'](assert) {
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}}
-        {{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}}
-        {{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}}
+        <div id='array-link'>{{#link-to query=(hash pages=this.pagesArray)}}Index{{/link-to}}</div>
+        <div id='bigger-link'>{{#link-to query=(hash pages=this.biggerArray)}}Index{{/link-to}}</div>
+        <div id='empty-link'>{{#link-to query=(hash pages=this.emptyArray)}}Index{{/link-to}}</div>
         `
       );
 
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['pages'],
-          pages: [],
-          pagesArray: [1, 2],
-          biggerArray: [1, 2, 3],
-          emptyArray: [],
-        })
+        class extends Controller {
+          queryParams = ['pages'];
+          pages = [];
+          pagesArray = [1, 2];
+          biggerArray = [1, 2, 3];
+          emptyArray = [];
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          this.shouldNotBeActive(assert, '#array-link');
+      await this.visit('/');
 
-          return this.visit('/?pages=%5B1%2C2%5D');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#array-link');
-          this.shouldNotBeActive(assert, '#bigger-link');
-          this.shouldNotBeActive(assert, '#empty-link');
+      this.shouldNotBeActive(assert, '#array-link > a');
 
-          return this.visit('/?pages=%5B2%2C1%5D');
-        })
-        .then(() => {
-          this.shouldNotBeActive(assert, '#array-link');
-          this.shouldNotBeActive(assert, '#bigger-link');
-          this.shouldNotBeActive(assert, '#empty-link');
+      await this.visit('/?pages=%5B1%2C2%5D');
 
-          return this.visit('/?pages=%5B1%2C2%2C3%5D');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#bigger-link');
-          this.shouldNotBeActive(assert, '#array-link');
-          this.shouldNotBeActive(assert, '#empty-link');
-        });
+      this.shouldBeActive(assert, '#array-link > a');
+      this.shouldNotBeActive(assert, '#bigger-link > a');
+      this.shouldNotBeActive(assert, '#empty-link > a');
+
+      await this.visit('/?pages=%5B2%2C1%5D');
+
+      this.shouldNotBeActive(assert, '#array-link > a');
+      this.shouldNotBeActive(assert, '#bigger-link > a');
+      this.shouldNotBeActive(assert, '#empty-link > a');
+
+      await this.visit('/?pages=%5B1%2C2%2C3%5D');
+
+      this.shouldBeActive(assert, '#bigger-link > a');
+      this.shouldNotBeActive(assert, '#array-link > a');
+      this.shouldNotBeActive(assert, '#empty-link > a');
     }
-    ['@test the {{link-to}} component applies active class to the parent route'](assert) {
+
+    async ['@test it applies active class to the parent route'](assert) {
       this.router.map(function () {
         this.route('parent', function () {
           this.route('child');
@@ -587,35 +616,34 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-        {{#link-to 'parent' id='parent-link'}}Parent{{/link-to}}
-        {{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}}
-        {{#link-to 'parent' (query-params foo=cat) id='parent-link-qp'}}Parent{{/link-to}}
+        <div id='parent-link'>{{#link-to route='parent'}}Parent{{/link-to}}</div>
+        <div id='parent-child-link'>{{#link-to route='parent.child'}}P}}Child{{/link-to}}</div>
+        <div id='parent-link-qp'>{{#link-to route='parent' query=(hash foo=this.cat)}}P}}Parent{{/link-to}}</div>
         {{outlet}}
         `
       );
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: 'bar',
-        })
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = 'bar';
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          this.shouldNotBeActive(assert, '#parent-link');
-          this.shouldNotBeActive(assert, '#parent-child-link');
-          this.shouldNotBeActive(assert, '#parent-link-qp');
-          return this.visit('/parent/child?foo=dog');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#parent-link');
-          this.shouldNotBeActive(assert, '#parent-link-qp');
-        });
+      await this.visit('/');
+
+      this.shouldNotBeActive(assert, '#parent-link > a');
+      this.shouldNotBeActive(assert, '#parent-child-link > a');
+      this.shouldNotBeActive(assert, '#parent-link-qp > a');
+
+      await this.visit('/parent/child?foo=dog');
+
+      this.shouldBeActive(assert, '#parent-link > a');
+      this.shouldNotBeActive(assert, '#parent-link-qp > a');
     }
 
-    async ['@test The {{link-to}} component disregards query-params in activeness computation when current-when is specified'](
+    async ['@test it disregards query-params in activeness computation when current-when is specified'](
       assert
     ) {
       let appLink;
@@ -627,9 +655,11 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-        {{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}
-          Parent
-        {{/link-to}}
+        <div id='app-link'>
+          {{#link-to route='parent' query=(hash page=1) current-when='parent'}}
+            Parent
+          {{/link-to}}
+        </div>
         {{outlet}}
         `
       );
@@ -637,56 +667,57 @@ moduleFor(
       this.addTemplate(
         'parent',
         `
-        {{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}
-          Parent
-        {{/link-to}}
+        <div id='parent-link'>
+          {{#link-to route='parent' query=(hash page=1) current-when='parent'}}
+            Parent
+          {{/link-to}}
+        </div>
         {{outlet}}
         `
       );
 
       this.add(
         'controller:parent',
-        Controller.extend({
-          queryParams: ['page'],
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+        }
       );
 
       await this.visit('/');
 
-      appLink = this.$('#app-link');
+      appLink = this.$('#app-link > a');
 
       assert.equal(appLink.attr('href'), '/parent');
-      this.shouldNotBeActive(assert, '#app-link');
+      this.shouldNotBeActive(assert, '#app-link > a');
 
       await this.visit('/parent?page=2');
 
-      appLink = this.$('#app-link');
+      appLink = this.$('#app-link > a');
       let router = this.appRouter;
 
       assert.equal(appLink.attr('href'), '/parent');
-      this.shouldBeActive(assert, '#app-link');
-      assert.equal(this.$('#parent-link').attr('href'), '/parent');
-      this.shouldBeActive(assert, '#parent-link');
+      this.shouldBeActive(assert, '#app-link > a');
+      assert.equal(this.$('#parent-link > a').attr('href'), '/parent');
+      this.shouldBeActive(assert, '#parent-link > a');
 
       let parentController = this.getController('parent');
 
       assert.equal(parentController.get('page'), 2);
 
-      parentController.set('page', 3);
+      runTask(() => parentController.set('page', 3));
       await runLoopSettled();
 
       assert.equal(router.get('location.path'), '/parent?page=3');
-      this.shouldBeActive(assert, '#app-link');
-      this.shouldBeActive(assert, '#parent-link');
+      this.shouldBeActive(assert, '#app-link > a');
+      this.shouldBeActive(assert, '#parent-link > a');
 
-      this.click('#app-link');
-      await runLoopSettled();
+      await this.click('#app-link > a');
 
       assert.equal(router.get('location.path'), '/parent');
     }
 
-    ['@test {{link-to}} default query params while in active transition regression test'](assert) {
+    async ['@test it defaults query params while in active transition regression test'](assert) {
       this.router.map(function () {
         this.route('foos');
         this.route('bars');
@@ -698,149 +729,152 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-        {{link-to 'Foos' 'foos' id='foos-link'}}
-        {{link-to 'Baz Foos' 'foos' (query-params baz=true) id='baz-foos-link'}}
-        {{link-to 'Quux Bars' 'bars' (query-params quux=true) id='bars-link'}}
+        <div id='foos-link'>{{#link-to route='foos'}}Foos{{/link-to}}</div>
+        <div id='baz-foos-link'>{{#link-to route='foos' query=(hash baz=true)}}Baz Foos{{/link-to}}</div>
+        <div id='bars-link'>{{#link-to route='bars' query=(hash quux=true)}}Quux Bars{{/link-to}}</div>
         `
       );
 
       this.add(
         'controller:foos',
-        Controller.extend({
-          queryParams: ['status'],
-          baz: false,
-        })
+        class extends Controller {
+          queryParams = ['status'];
+          baz = false;
+        }
       );
 
       this.add(
         'route:foos',
-        Route.extend({
+        class extends Route {
           model() {
             return foos.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'controller:bars',
-        Controller.extend({
-          queryParams: ['status'],
-          quux: false,
-        })
+        class extends Controller {
+          queryParams = ['status'];
+          quux = false;
+        }
       );
 
       this.add(
         'route:bars',
-        Route.extend({
+        class extends Route {
           model() {
             return bars.promise;
-          },
-        })
+          }
+        }
       );
 
-      return this.visit('/').then(() => {
-        let router = this.appRouter;
-        let foosLink = this.$('#foos-link');
-        let barsLink = this.$('#bars-link');
-        let bazLink = this.$('#baz-foos-link');
+      await this.visit('/');
 
-        assert.equal(foosLink.attr('href'), '/foos');
-        assert.equal(bazLink.attr('href'), '/foos?baz=true');
-        assert.equal(barsLink.attr('href'), '/bars?quux=true');
-        assert.equal(router.get('location.path'), '/');
-        this.shouldNotBeActive(assert, '#foos-link');
-        this.shouldNotBeActive(assert, '#baz-foos-link');
-        this.shouldNotBeActive(assert, '#bars-link');
+      let router = this.appRouter;
+      let foosLink = this.$('#foos-link > a');
+      let barsLink = this.$('#bars-link > a');
+      let bazLink = this.$('#baz-foos-link > a');
 
-        runTask(() => barsLink.click());
-        this.shouldNotBeActive(assert, '#bars-link');
+      assert.equal(foosLink.attr('href'), '/foos');
+      assert.equal(bazLink.attr('href'), '/foos?baz=true');
+      assert.equal(barsLink.attr('href'), '/bars?quux=true');
+      assert.equal(router.get('location.path'), '/');
+      this.shouldNotBeActive(assert, '#foos-link > a');
+      this.shouldNotBeActive(assert, '#baz-foos-link > a');
+      this.shouldNotBeActive(assert, '#bars-link > a');
 
-        runTask(() => foosLink.click());
-        this.shouldNotBeActive(assert, '#foos-link');
+      runTask(() => barsLink.click());
+      this.shouldNotBeActive(assert, '#bars-link > a');
 
-        runTask(() => foos.resolve());
+      runTask(() => foosLink.click());
+      this.shouldNotBeActive(assert, '#foos-link > a');
 
-        assert.equal(router.get('location.path'), '/foos');
-        this.shouldBeActive(assert, '#foos-link');
-      });
+      runTask(() => foos.resolve());
+
+      assert.equal(router.get('location.path'), '/foos');
+      this.shouldBeActive(assert, '#foos-link > a');
     }
 
-    ['@test the {{link-to}} does not throw an error if called without a @route argument, but with a @query argument'](
+    async ['@test it does not throw an error if called without a @route argument, but with a @query argument'](
       assert
     ) {
       this.addTemplate(
         'index',
         `
-        {{#link-to (query-params page=pageNumber) id='page-link'}}
-          Index
-        {{/link-to}}
+        <div id='page-link'>
+          {{#link-to query=(hash page=this.pageNumber)}}
+            Index
+          {{/link-to}}
+        </div>
         `
       );
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model() {
             return [
               { id: 'yehuda', name: 'Yehuda Katz' },
               { id: 'tom', name: 'Tom Dale' },
               { id: 'erik', name: 'Erik Brynroflsson' },
             ];
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['page'],
-          page: 1,
-          pageNumber: 5,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+          pageNumber = 5;
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          this.shouldNotBeActive(assert, '#page-link');
-          return this.visit('/?page=5');
-        })
-        .then(() => {
-          this.shouldBeActive(assert, '#page-link');
-        });
+      await this.visit('/');
+
+      this.shouldNotBeActive(assert, '#page-link > a');
+
+      await this.visit('/?page=5');
+
+      this.shouldBeActive(assert, '#page-link > a');
     }
 
-    ['@test [GH#17869] it does not cause shadowing assertion with `hash` local variable']() {
+    async ['@test [DEPRECATED] [GH#17869] it does not cause shadowing assertion with `hash` local variable']() {
       this.router.map(function () {
         this.route('post', { path: '/post/:id' });
       });
 
       this.add(
         'controller:post',
-        Controller.extend({
-          queryParams: ['showComments'],
-          showComments: true,
-        })
+        class extends Controller {
+          queryParams = ['showComments'];
+          showComments = true;
+        }
       );
 
-      this.addTemplate(
-        'index',
-        `
-        {{#let (hash id="1" title="Hello World!" body="Lorem ipsum dolor sit amet...") as |hash|}}
-          {{#link-to "post" hash (query-params showComments=false)}}View Post{{/link-to}}
-        {{/let}}
-        `
-      );
+      expectDeprecation(() => {
+        this.addTemplate(
+          'index',
+          `
+          {{#let (hash id="1" title="Hello World!" body="Lorem ipsum dolor sit amet...") as |hash|}}
+            {{#link-to "post" hash (query-params showComments=false)}}View Post{{/link-to}}
+          {{/let}}
+          `
+        );
+      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
 
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.element.firstElementChild, {
-          tagName: 'a',
-          attrs: { href: '/post/1?showComments=false', class: classMatcher('ember-view') },
-          content: 'View Post',
-        });
+      await this.visit('/');
+
+      this.assertComponentElement(this.element.firstElementChild, {
+        tagName: 'a',
+        attrs: { href: '/post/1?showComments=false', class: classMatcher('ember-view') },
+        content: 'View Post',
       });
     }
 
-    ['@test the {{link-to}} component with dynamic segment and loading route should preserve query parameters'](
+    async ['@test with dynamic segment and loading route, it should preserve query parameters'](
       assert
     ) {
       this.router.map(function () {
@@ -851,33 +885,35 @@ moduleFor(
         });
       });
 
-      this.addTemplate('foo.bar', `{{link-to 'Baz' 'foo.bar.baz' id='baz-link'}}`);
-
+      this.addTemplate(
+        'foo.bar',
+        `<div id='baz-link'>{{#link-to route='foo.bar.baz'}}Baz{{/link-to}}</div>`
+      );
       this.addTemplate('foo.bar.loading', 'Loading');
 
       this.add(
         'controller:foo.bar',
-        Controller.extend({
-          queryParams: ['qux'],
-          qux: null,
-        })
+        class extends Controller {
+          queryParams = ['qux'];
+          qux = null;
+        }
       );
 
       this.add(
         'route:foo.bar.baz',
-        Route.extend({
+        class extends Route {
           model() {
             return new RSVP.Promise((resolve) => {
               setTimeout(resolve, 1);
             });
-          },
-        })
+          }
+        }
       );
 
-      return this.visit('/foo/bar/baz?qux=abc').then(() => {
-        let bazLink = this.$('#baz-link');
-        assert.equal(bazLink.attr('href'), '/foo/bar/baz?qux=abc');
-      });
+      await this.visit('/foo/bar/baz?qux=abc');
+
+      let bazLink = this.$('#baz-link > a');
+      assert.equal(bazLink.attr('href'), '/foo/bar/baz?qux=abc');
     }
   }
 );

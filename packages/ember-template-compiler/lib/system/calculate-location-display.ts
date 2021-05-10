@@ -1,7 +1,7 @@
 import { AST } from '@glimmer/syntax';
 
 export default function calculateLocationDisplay(
-  moduleName: string,
+  moduleName: string | undefined,
   loc?: AST.SourceLocation | undefined
 ): string {
   let moduleInfo = '';

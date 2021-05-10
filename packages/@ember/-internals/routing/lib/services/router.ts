@@ -5,26 +5,11 @@ import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
-import { DEBUG } from '@glimmer/env';
 import { consumeTag, tagFor } from '@glimmer/validator';
-import { Transition } from 'router_js';
 import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
 const ROUTER = symbol('ROUTER') as string;
-
-let freezeRouteInfo: Function;
-if (DEBUG) {
-  freezeRouteInfo = (transition: Transition) => {
-    if (transition.from !== null && !Object.isFrozen(transition.from)) {
-      Object.freeze(transition.from);
-    }
-
-    if (transition.to !== null && !Object.isFrozen(transition.to)) {
-      Object.freeze(transition.to);
-    }
-  };
-}
 
 function cleanURL(url: string, rootURL: string) {
   if (rootURL === '/') {
@@ -73,29 +58,7 @@ export default class RouterService extends Service {
     }
     const owner = getOwner(this) as Owner;
     router = owner.lookup('router:main') as EmberRouter;
-    router.setupRouter();
     return (this[ROUTER] = router);
-  }
-
-  constructor(owner: Owner) {
-    super(owner);
-
-    const router = owner.lookup('router:main') as EmberRouter;
-
-    router.on('routeWillChange', (transition: Transition) => {
-      if (DEBUG) {
-        freezeRouteInfo(transition);
-      }
-      this.trigger('routeWillChange', transition);
-    });
-
-    router.on('routeDidChange', (transition: Transition) => {
-      if (DEBUG) {
-        freezeRouteInfo(transition);
-      }
-
-      this.trigger('routeDidChange', transition);
-    });
   }
 
   /**

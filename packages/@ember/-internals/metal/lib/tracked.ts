@@ -75,6 +75,7 @@ import { SELF_TAG } from './tags';
   @param dependencies Optional dependents to be tracked.
 */
 export function tracked(propertyDesc: { value: any; initializer: () => any }): Decorator;
+export function tracked(target: object, key: string): void;
 export function tracked(
   target: object,
   key: string,
@@ -190,16 +191,16 @@ function descriptorForField([target, key, desc]: [
   return newDesc;
 }
 
-class TrackedDescriptor {
+export class TrackedDescriptor {
   constructor(private _get: () => unknown, private _set: (value: unknown) => void) {
     CHAIN_PASS_THROUGH.add(this);
   }
 
-  get(obj: object) {
+  get(obj: object): unknown {
     return this._get.call(obj);
   }
 
-  set(obj: object, _key: string, value: unknown) {
+  set(obj: object, _key: string, value: unknown): void {
     this._set.call(obj, value);
   }
 }

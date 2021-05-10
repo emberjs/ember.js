@@ -4,14 +4,9 @@
 import { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, Environment, Option, VM, VMArguments } from '@glimmer/interfaces';
+import { CapturedArguments, CurriedType, Option } from '@glimmer/interfaces';
 import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
-import {
-  createCapturedArgs,
-  CurriedComponentDefinition,
-  curry,
-  EMPTY_POSITIONAL,
-} from '@glimmer/runtime';
+import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { MountDefinition } from '../component-managers/mount';
 import { internalHelper } from '../helpers/internal-helper';
 
@@ -56,10 +51,10 @@ import { internalHelper } from '../helpers/internal-helper';
   @public
 */
 export const mountHelper = internalHelper(
-  (args: VMArguments, vm: VM): Reference<CurriedComponentDefinition | null> => {
-    let env = vm.env as Environment<Owner>;
-    let nameRef = args.positional.at(0) as Reference<Option<string>>;
-    let captured: Option<CapturedArguments> = null;
+  (args: CapturedArguments, owner?: Owner): Reference<CurriedValue | null> => {
+    assert('{{mount}} must be used within a component that has an owner', owner);
+    let nameRef = args.positional[0] as Reference<Option<string>>;
+    let captured: CapturedArguments | null;
 
     assert(
       'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
@@ -67,7 +62,7 @@ export const mountHelper = internalHelper(
     );
 
     if (DEBUG && args.named) {
-      let keys = args.named.names;
+      let keys = Object.keys(args.named);
       let extra = keys.filter((k) => k !== 'model');
 
       assert(
@@ -78,21 +73,9 @@ export const mountHelper = internalHelper(
       );
     }
 
-    // TODO: the functionality to create a proper CapturedArgument should be
-    // exported by glimmer, or that it should provide an overload for `curry`
-    // that takes `PreparedArguments`
-    if (args.named.has('model')) {
-      assert(
-        '[BUG] this should already be checked by the template transform',
-        args.named.length === 1
-      );
+    captured = createCapturedArgs(args.named, EMPTY_POSITIONAL);
 
-      let named = args.named.capture();
-
-      captured = createCapturedArgs(named, EMPTY_POSITIONAL);
-    }
-
-    let lastName: Option<string>, lastDef: Option<CurriedComponentDefinition>;
+    let lastName: string | null, lastDef: CurriedValue | null;
 
     return createComputeRef(() => {
       let name = valueForRef(nameRef);
@@ -104,15 +87,11 @@ export const mountHelper = internalHelper(
 
         assert(
           `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-          env.owner.hasRegistration(`engine:${name}`)
+          (owner as Owner).hasRegistration(`engine:${name}`)
         );
 
-        if (!env.owner.hasRegistration(`engine:${name}`)) {
-          return null;
-        }
-
         lastName = name;
-        lastDef = curry(new MountDefinition(name), captured);
+        lastDef = curry(CurriedType.Component, new MountDefinition(name), owner, captured, true);
 
         return lastDef;
       } else {

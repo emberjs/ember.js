@@ -121,18 +121,8 @@ export default EmberObject.extend({
 
   init() {
     this._super();
-
-    assert(
-      'EventDispatcher should never be instantiated in fastboot mode. Please report this as an Ember bug.',
-      (() => {
-        let owner = getOwner(this);
-        let environment = owner.lookup('-environment:main');
-
-        return environment.isInteractive;
-      })()
-    );
-
     this._eventHandlers = Object.create(null);
+    this._didSetup = false;
     this.finalEventNameMapping = null;
     this._sanitizedRootElement = null;
     this.lazyEvents = new Map();
@@ -151,6 +141,16 @@ export default EmberObject.extend({
     @param addedEvents {Object}
   */
   setup(addedEvents, _rootElement) {
+    assert(
+      'EventDispatcher should never be setup in fastboot mode. Please report this as an Ember bug.',
+      (() => {
+        let owner = getOwner(this);
+        let environment = owner.lookup('-environment:main');
+
+        return environment.isInteractive;
+      })()
+    );
+
     let events = (this.finalEventNameMapping = assign({}, get(this, 'events'), addedEvents));
     this._reverseEventNameMapping = Object.keys(events).reduce(
       (result, key) => assign(result, { [events[key]]: key }),
@@ -242,6 +242,8 @@ export default EmberObject.extend({
         lazyEvents.set(event, events[event]);
       }
     }
+
+    this._didSetup = true;
   },
 
   /**
@@ -472,6 +474,10 @@ export default EmberObject.extend({
   },
 
   destroy() {
+    if (this._didSetup === false) {
+      return;
+    }
+
     let rootElementSelector = get(this, 'rootElement');
     let rootElement;
     if (rootElementSelector.nodeType) {

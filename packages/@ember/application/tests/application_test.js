@@ -1,7 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
 import { ENV, context } from '@ember/-internals/environment';
-import { libraries } from '@ember/-internals/metal';
+import { libraries, processAllNamespaces } from '@ember/-internals/metal';
+import { getName } from '@ember/-internals/utils';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
@@ -9,7 +10,6 @@ import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setTemplates } from '@ember/-internals/glimmer';
-import { privatize as P } from '@ember/-internals/container';
 import { assign } from '@ember/polyfills';
 import {
   moduleFor,
@@ -129,25 +129,14 @@ moduleFor(
 
       verifyRegistration(assert, application, 'controller:basic');
       verifyRegistration(assert, application, '-view-registry:main');
-      verifyInjection(assert, application, 'route', '_topLevelViewTemplate', 'template:-outlet');
       verifyRegistration(assert, application, 'route:basic');
       verifyRegistration(assert, application, 'event_dispatcher:main');
-      verifyInjection(assert, application, 'router:main', 'namespace', 'application:main');
       verifyInjection(assert, application, 'view:-outlet', 'namespace', 'application:main');
 
       verifyRegistration(assert, application, 'location:auto');
       verifyRegistration(assert, application, 'location:hash');
       verifyRegistration(assert, application, 'location:history');
       verifyRegistration(assert, application, 'location:none');
-
-      verifyInjection(assert, application, 'controller', 'target', 'router:main');
-      verifyInjection(assert, application, 'controller', 'namespace', 'application:main');
-
-      verifyRegistration(assert, application, P`-bucket-cache:main`);
-      verifyInjection(assert, application, 'router', '_bucketCache', P`-bucket-cache:main`);
-      verifyInjection(assert, application, 'route', '_bucketCache', P`-bucket-cache:main`);
-
-      verifyInjection(assert, application, 'route', '_router', 'router:main');
 
       verifyRegistration(assert, application, 'component:-text-field');
       verifyRegistration(assert, application, 'component:-checkbox');
@@ -156,7 +145,6 @@ moduleFor(
       verifyRegistration(assert, application, 'component:textarea');
 
       verifyRegistration(assert, application, 'service:-routing');
-      verifyInjection(assert, application, 'service:-routing', 'router', 'router:main');
 
       // DEBUGGING
       verifyRegistration(assert, application, 'resolver-for-debugging:main');
@@ -167,19 +155,11 @@ moduleFor(
         'resolver',
         'resolver-for-debugging:main'
       );
-      verifyInjection(
-        assert,
-        application,
-        'data-adapter:main',
-        'containerDebugAdapter',
-        'container-debug-adapter:main'
-      );
       verifyRegistration(assert, application, 'container-debug-adapter:main');
       verifyRegistration(assert, application, 'component-lookup:main');
 
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
-      verifyRegistration(assert, application, 'renderer:-inert');
       verifyRegistration(assert, application, 'template:-outlet');
       verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
 
@@ -215,7 +195,8 @@ moduleFor(
     [`@test acts like a namespace`](assert) {
       this.application = runTask(() => this.createApplication());
       let Foo = (this.application.Foo = EmberObject.extend());
-      assert.equal(Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
+      processAllNamespaces();
+      assert.equal(getName(Foo), 'TestApp.Foo', 'Classes pick up their parent namespace');
     }
 
     [`@test can specify custom router`](assert) {
@@ -322,7 +303,7 @@ moduleFor(
     [`@test Application Controller backs the appplication template`]() {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '<h1>{{greeting}}</h1>');
+        this.addTemplate('application', '<h1>{{this.greeting}}</h1>');
         this.add(
           'controller:application',
           Controller.extend({

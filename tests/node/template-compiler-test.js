@@ -46,11 +46,5 @@ QUnit.module('ember-template-compiler.js', function () {
     ) {
       assert.equal(typeof templateCompiler._Ember.VERSION, 'string', '_Ember.VERSION is present');
     });
-
-    QUnit.test('can generate a template with a server side generated `id`', function (assert) {
-      let TemplateJSON = JSON.parse(templateCompiler.precompile('<div>simple text</div>'));
-
-      assert.ok(TemplateJSON.id, 'an `id` was generated');
-    });
   });
 });

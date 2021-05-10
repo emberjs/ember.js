@@ -14,8 +14,8 @@ moduleFor(
 
       this.render(
         strip`
-          {{#-in-element someElement}}
-            {{text}}
+          {{#-in-element this.someElement}}
+            {{this.text}}
           {{/-in-element}}
         `,
         {
@@ -48,8 +48,8 @@ moduleFor(
 
       this.render(
         strip`
-          {{#-in-element someElement}}
-            {{text}}
+          {{#-in-element this.someElement}}
+            {{this.text}}
           {{/-in-element}}
         `,
         {
@@ -82,8 +82,8 @@ moduleFor(
 
       this.render(
         strip`
-          {{#-in-element someElement insertBefore=null}}
-            {{text}}
+          {{#-in-element this.someElement insertBefore=null}}
+            {{this.text}}
           {{/-in-element}}
         `,
         {
@@ -116,8 +116,8 @@ moduleFor(
 
       this.render(
         strip`
-          {{#-in-element someElement insertBefore=undefined}}
-            {{text}}
+          {{#-in-element this.someElement insertBefore=undefined}}
+            {{this.text}}
           {{/-in-element}}
         `,
         {
@@ -150,8 +150,8 @@ moduleFor(
       expectAssertion(() => {
         this.render(
           strip`
-            {{#-in-element someElement insertBefore=".foo"}}
-              {{text}}
+            {{#-in-element this.someElement insertBefore=".foo"}}
+              {{this.text}}
             {{/-in-element}}
           `,
           {
@@ -180,14 +180,14 @@ moduleFor(
           },
         }),
 
-        template: `{{text}}`,
+        template: `{{this.text}}`,
       });
 
       this.render(
         strip`
-          {{#if showModal}}
-            {{#-in-element someElement}}
-              {{modal-display text=text}}
+          {{#if this.showModal}}
+            {{#-in-element this.someElement}}
+              {{modal-display text=this.text}}
             {{/-in-element}}
           {{/if}}
         `,

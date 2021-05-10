@@ -4,6 +4,7 @@ import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberRoute from '../../lib/system/route';
 import { defineProperty } from '../../../metal';
+import ObjectProxy from '@ember/-internals/runtime/lib/system/object_proxy';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -123,7 +124,7 @@ moduleFor(
 
       expectAssertion(function () {
         route.model({ post_id: 1 });
-      }, /You used the dynamic segment post_id in your route undefined, but <Ember.Object:ember\d+>.Post did not exist and you did not override your route's `model` hook./);
+      }, /You used the dynamic segment post_id in your route undefined, but <.*:ember\d+>.Post did not exist and you did not override your route's `model` hook./);
 
       runDestroy(owner);
     }
@@ -278,6 +279,12 @@ moduleFor(
       let model = { post_id: 3 };
 
       assert.deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, 'serialized correctly');
+    }
+
+    ['@test returns model.id if model is a Proxy'](assert) {
+      let model = ObjectProxy.create({ content: { id: 3 } });
+
+      assert.deepEqual(route.serialize(model, ['id']), { id: 3 }, 'serialized Proxy correctly');
     }
 
     ['@test returns undefined if model is not set'](assert) {
@@ -487,24 +494,32 @@ moduleFor(
       let route = EmberRoute.create({ _router: router });
       setOwner(route, engineInstance);
 
-      assert.strictEqual(
-        route.transitionTo('application'),
-        'foo.bar.application',
-        'properly prefixes application route'
-      );
-      assert.strictEqual(
-        route.transitionTo('posts'),
-        'foo.bar.posts',
-        'properly prefixes child routes'
-      );
-      assert.throws(() => route.transitionTo('/posts'), 'throws when trying to use a url');
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.transitionTo('application'),
+          'foo.bar.application',
+          'properly prefixes application route'
+        );
+      }, /Calling transitionTo on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.transitionTo('posts'),
+          'foo.bar.posts',
+          'properly prefixes child routes'
+        );
+      }, /Calling transitionTo on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.throws(() => route.transitionTo('/posts'), 'throws when trying to use a url');
+      }, /Calling transitionTo on a route is deprecated/);
 
       let queryParams = {};
-      assert.strictEqual(
-        route.transitionTo(queryParams),
-        queryParams,
-        'passes query param only transitions through'
-      );
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.transitionTo(queryParams),
+          queryParams,
+          'passes query param only transitions through'
+        );
+      }, /Calling transitionTo on a route is deprecated/);
     }
 
     ["@test intermediateTransitionTo considers an engine's mountPoint"](assert) {
@@ -558,24 +573,32 @@ moduleFor(
       let route = EmberRoute.create({ _router: router });
       setOwner(route, engineInstance);
 
-      assert.strictEqual(
-        route.replaceWith('application'),
-        'foo.bar.application',
-        'properly prefixes application route'
-      );
-      assert.strictEqual(
-        route.replaceWith('posts'),
-        'foo.bar.posts',
-        'properly prefixes child routes'
-      );
-      assert.throws(() => route.replaceWith('/posts'), 'throws when trying to use a url');
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.replaceWith('application'),
+          'foo.bar.application',
+          'properly prefixes application route'
+        );
+      }, /Calling replaceWith on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.replaceWith('posts'),
+          'foo.bar.posts',
+          'properly prefixes child routes'
+        );
+      }, /Calling replaceWith on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.throws(() => route.replaceWith('/posts'), 'throws when trying to use a url');
+      }, /Calling replaceWith on a route is deprecated/);
 
       let queryParams = {};
-      assert.strictEqual(
-        route.replaceWith(queryParams),
-        queryParams,
-        'passes query param only transitions through'
-      );
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.replaceWith(queryParams),
+          queryParams,
+          'passes query param only transitions through'
+        );
+      }, /Calling replaceWith on a route is deprecated/);
     }
   }
 );

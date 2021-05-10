@@ -1,4 +1,4 @@
-import { run, next, getCurrentRunLoop } from '..';
+import { run, next, _getCurrentRunLoop } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -22,8 +22,8 @@ moduleFor(
       let done = assert.async();
       let firstRunLoop, secondRunLoop;
       run(() => {
-        firstRunLoop = getCurrentRunLoop();
-        next(() => (secondRunLoop = getCurrentRunLoop()));
+        firstRunLoop = _getCurrentRunLoop();
+        next(() => (secondRunLoop = _getCurrentRunLoop()));
       });
 
       setTimeout(() => {
@@ -40,8 +40,8 @@ moduleFor(
       let done = assert.async();
       let secondRunLoop, thirdRunLoop;
       run(() => {
-        next(() => (secondRunLoop = getCurrentRunLoop()));
-        next(() => (thirdRunLoop = getCurrentRunLoop()));
+        next(() => (secondRunLoop = _getCurrentRunLoop()));
+        next(() => (thirdRunLoop = _getCurrentRunLoop()));
       });
 
       setTimeout(() => {

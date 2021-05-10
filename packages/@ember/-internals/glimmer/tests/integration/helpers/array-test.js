@@ -9,11 +9,11 @@ moduleFor(
   class extends RenderingTestCase {
     ['@test returns an array']() {
       this.render(strip`
-      {{#with (array "Sergio") as |people|}}
+      {{#let (array "Sergio") as |people|}}
         {{#each people as |personName|}}
           {{personName}}
         {{/each}}
-      {{/with}}`);
+      {{/let}}`);
 
       this.assertText('Sergio');
 
@@ -22,11 +22,11 @@ moduleFor(
 
     ['@test can have more than one value']() {
       this.render(strip`
-      {{#with (array "Sergio" "Robert") as |people|}}
+      {{#let (array "Sergio" "Robert") as |people|}}
         {{#each people as |personName|}}
           {{personName}},
         {{/each}}
-      {{/with}}`);
+      {{/let}}`);
 
       this.assertText('Sergio,Robert,');
 
@@ -35,11 +35,11 @@ moduleFor(
 
     ['@test binds values when variables are used']() {
       this.render(
-        strip`{{#with (array personOne) as |people|}}
+        strip`{{#let (array this.personOne) as |people|}}
               {{#each people as |personName|}}
                 {{personName}}
               {{/each}}
-            {{/with}}`,
+            {{/let}}`,
         {
           personOne: 'Tom',
         }
@@ -58,11 +58,11 @@ moduleFor(
 
     ['@test binds multiple values when variables are used']() {
       this.render(
-        strip`{{#with (array personOne personTwo) as |people|}}
+        strip`{{#let (array this.personOne this.personTwo) as |people|}}
               {{#each people as |personName|}}
                 {{personName}},
               {{/each}}
-            {{/with}}`,
+            {{/let}}`,
         {
           personOne: 'Tom',
           personTwo: 'Yehuda',
@@ -91,14 +91,14 @@ moduleFor(
 
     ['@test array helpers can be nested']() {
       this.render(
-        strip`{{#with (array (array personOne personTwo)) as |listOfPeople|}}
+        strip`{{#let (array (array this.personOne this.personTwo)) as |listOfPeople|}}
               {{#each listOfPeople as |people|}}
                 List:
                 {{#each people as |personName|}}
                   {{personName}},
                 {{/each}}
               {{/each}}
-            {{/with}}`,
+            {{/let}}`,
         {
           personOne: 'Tom',
           personTwo: 'Yehuda',
@@ -176,7 +176,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash people=(array this.model.personOne personTwo))}}`,
+        template: `{{yield (hash people=(array this.model.personOne this.personTwo))}}`,
       });
 
       this.render(
@@ -216,12 +216,12 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
         template: strip`
-        {{#each people as |personName|}}
+        {{#each this.people as |personName|}}
           {{personName}},
         {{/each}}`,
       });
 
-      this.render(strip`{{foo-bar people=(array "Tom" personTwo)}}`, { personTwo: 'Chad' });
+      this.render(strip`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
 
       this.assertText('Tom,Chad,');
 
@@ -248,12 +248,12 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
         template: strip`
-        {{#each people as |personName|}}
+        {{#each this.people as |personName|}}
           {{personName}},
         {{/each}}`,
       });
 
-      this.render(strip`{{foo-bar people=(array "Tom" personTwo)}}`, { personTwo: 'Chad' });
+      this.render(strip`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
 
       let firstArray = fooBarInstance.people;
 
@@ -273,7 +273,7 @@ moduleFor(
         return 'captured';
       });
 
-      this.render(`{{capture (array 'Tom' personTwo)}}`, { personTwo: 'Godfrey' });
+      this.render(`{{capture (array 'Tom' this.personTwo)}}`, { personTwo: 'Godfrey' });
 
       this.assert.deepEqual(captured, ['Tom', 'Godfrey']);
 

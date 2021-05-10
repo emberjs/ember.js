@@ -10,6 +10,7 @@ export function deprecatingAlias(
   }
 ): any;
 
+export const CoreObject: any;
 export const FrameworkObject: any;
 export const Object: any;
 

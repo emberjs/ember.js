@@ -18,7 +18,7 @@ const EVENTS = [
 
 export default function deprecateSendAction(env: EmberASTPluginEnvironment): ASTPlugin {
   if (SEND_ACTION) {
-    let { moduleName } = env.meta;
+    let moduleName = env.meta?.moduleName;
 
     let deprecationMessage = (node: AST.Node, eventName: string, actionName: string) => {
       let sourceInformation = calculateLocationDisplay(moduleName, node.loc);

@@ -3,6 +3,7 @@ import { moduleFor, AutobootApplicationTestCase, isIE11, runTask } from 'interna
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
+import { action } from '@ember/object';
 import { later } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
@@ -379,7 +380,7 @@ if (!jQueryDisabled) {
           'index',
           `
         {{#index-wrapper}}
-          {{input type="text"}}
+          <Input @type="text"/>
           {{x-checkbox type="checkbox"}}
           {{textarea}}
           <div contenteditable="true"> </div>
@@ -626,7 +627,7 @@ if (!jQueryDisabled) {
         this.addTemplate(
           'components/index-wrapper',
           `
-        {{input type="text" id="scope" class="input"}}
+        <Input @type="text" id="scope" class="input"/>
       `
         );
 
@@ -675,9 +676,9 @@ if (!jQueryDisabled) {
         this.addTemplate(
           'components/index-wrapper',
           `
-        {{input type="text" id="outside-scope" class="input"}}
+        <Input @type="text" id="outside-scope" class="input"/>
         <div id="limited">
-          {{input type="text" id="inside-scope" class="input"}}
+          <Input @type="text" id="inside-scope" class="input"/>
         </div>
       `
         );
@@ -724,7 +725,7 @@ if (!jQueryDisabled) {
         this.addTemplate(
           'components/index-wrapper',
           `
-        {{input type="text" id="foo"}}
+        <Input @type="text" id="foo"/>
       `
         );
         this.addTemplate('index', `{{index-wrapper}}`);
@@ -757,12 +758,10 @@ if (!jQueryDisabled) {
 
         this.addTemplate(
           'index',
-          `
-        <div id="parent">
-          {{input type="text" id="first" class="current"}}
-        </div>
-        {{input type="text" id="second" class="current"}}
-      `
+          `<div id="parent">
+            <Input @type="text" id="first" class="current"/>
+          </div>
+          <Input @type="text" id="second" class="current"/>`
         );
 
         runTask(() => {
@@ -789,21 +788,17 @@ if (!jQueryDisabled) {
         this.add(
           'controller:index',
           Controller.extend({
-            actions: {
-              wasFocused() {
-                wasFocused = true;
-              },
-            },
+            wasFocused: action(function () {
+              wasFocused = true;
+            }),
           })
         );
 
         this.addTemplate(
           'index',
-          `
-        <div id="parent">
-          {{input type="text" id="first" focus-in=(action "wasFocused")}}
-        </div>'
-      `
+          `<div id="parent">
+            <Input @type="text" id="first" {{on "focusin" this.wasFocused}}/>
+          </div>'`
         );
 
         runTask(() => {
@@ -846,11 +841,9 @@ if (!jQueryDisabled) {
 
         this.addTemplate(
           'index',
-          `
-        <input type="text" id="first"
+          `<input type="text" id="first"
             oninput={{action "oninputHandler"}}
-            onchange={{action "onchangeHandler"}}>
-      `
+            onchange={{action "onchangeHandler"}}>`
         );
 
         runTask(() => {
@@ -926,9 +919,9 @@ if (!jQueryDisabled) {
         this.addTemplate(
           'components/index-wrapper',
           `
-        {{input type="text" id="outside-scope" class="input"}}
+        <Input @type="text" id="outside-scope" class="input"/>
         <div id="limited">
-          {{input type="text" id="inside-scope" class="input"}}
+          <Input @type="text" id="inside-scope" class="input"/>
         </div>
       `
         );
@@ -1199,7 +1192,11 @@ if (!jQueryDisabled) {
             'route:user.profile',
             Route.extend({
               beforeModel() {
-                return resolveLater().then(() => this.transitionTo('user.edit'));
+                return resolveLater().then(() => {
+                  return expectDeprecation(() => {
+                    return this.transitionTo('user.edit');
+                  }, /Calling transitionTo on a route is deprecated/);
+                });
               },
             })
           );
@@ -1229,7 +1226,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test currentRouteName for '/user/profile'`](assert) {
-        assert.expect(4);
+        assert.expect(5);
 
         let {
           application: { testHelpers },

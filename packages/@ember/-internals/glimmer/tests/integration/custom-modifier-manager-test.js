@@ -1,6 +1,13 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  defineSimpleHelper,
+  defineSimpleModifier,
+} from 'internal-test-helpers';
 
+import { Component } from '@ember/-internals/glimmer';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { set, tracked } from '@ember/-internals/metal';
@@ -85,7 +92,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('{{#if truthy}}<h1 {{foo-bar truthy}}>hello world</h1>{{/if}}', {
+    this.render('{{#if this.truthy}}<h1 {{foo-bar this.truthy}}>hello world</h1>{{/if}}', {
       truthy: true,
     });
     this.assertHTML(`<h1>hello world</h1>`);
@@ -129,7 +136,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('<h1 {{foo-bar truthy}}>hello world</h1>', {
+    this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>', {
       truthy: true,
     });
     this.assertHTML(`<h1>hello world</h1>`);
@@ -168,7 +175,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('<h1 {{foo-bar truthy}}>hello world</h1>', {
+    this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>', {
       truthy: true,
     });
     this.assertHTML(`<h1>hello world</h1>`);
@@ -215,7 +222,7 @@ class ModifierManagerTest extends RenderingTestCase {
       })
     );
 
-    this.render('<h1 {{foo-bar truthy}}>hello world</h1>');
+    this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>');
     this.assertHTML(`<h1>hello world</h1>`);
 
     assert.equal(insertCount, 1);
@@ -579,6 +586,84 @@ moduleFor(
       runTask(() => set(this.context, 'qux', 'quuuuxxxxxx'));
       assert.equal(updateCount, 1);
     }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a modifier'() {
+      this.registerModifier(
+        'replace',
+        defineSimpleModifier((element, [text]) => (element.innerHTML = text ?? 'Hello, world!'))
+      );
+
+      // BUG: this should work according to the RFC
+      // this.render(
+      //   '[<div {{modifier "replace"}}>Nope</div>][<div {{modifier (modifier "replace") "wow"}}>Nope</div>]'
+      // );
+      this.render(
+        '[<div {{(modifier "replace")}}>Nope</div>][<div {{(modifier "replace") "wow"}}>Nope</div>]'
+      );
+      this.assertText('[Hello, world!][wow]');
+      this.assertStableRerender();
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a modifier'(assert) {
+      this.registerModifier(
+        'replace',
+        defineSimpleModifier((element) => (element.innerHTML = 'Hello, world!'))
+      );
+
+      if (DEBUG) {
+        expectAssertion(
+          () =>
+            this.render(
+              // BUG: this should work according to the RFC
+              // '<div {{modifier this.name}}>Nope</div>',
+              '<div {{(modifier this.name)}}>Nope</div>',
+              { name: 'replace' }
+            ),
+          /Passing a dynamic string to the `\(modifier\)` keyword is disallowed\./
+        );
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can be curried'() {
+      let val = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
+
+      this.registerComponent('foo', {
+        template: '<div {{@value}}></div>',
+      });
+
+      this.registerComponent('bar', {
+        template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
+        ComponentClass: Component.extend({ val }),
+      });
+
+      this.render('<Bar/>');
+      this.assertText('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot be curried when flag is not enabled'() {
+      expectAssertion(() => {
+        this.registerComponent('bar', {
+          template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
+        });
+      }, /Cannot use the \(modifier\) keyword yet, as it has not been implemented/);
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic modifier with a nested dynamic helper'() {
+      let foo = defineSimpleHelper(() => 'Hello, world!');
+      let bar = defineSimpleModifier((element, [value]) => (element.innerHTML = value));
+
+      this.registerComponent('baz', {
+        template: '<div {{this.bar (this.foo)}}></div>',
+        ComponentClass: Component.extend({ tagName: '', foo, bar }),
+      });
+
+      this.render('<Baz/>');
+      this.assertHTML('<div>Hello, world!</div>');
+      this.assertStableRerender();
+    }
   }
 );
 
@@ -637,7 +722,7 @@ moduleFor(
 
       this.registerModifier('foo-bar', ModifierClass);
 
-      this.render('<h1 {{foo-bar baz}}>hello world</h1>');
+      this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
       runTask(() => this.context.set('baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');
@@ -691,7 +776,7 @@ moduleFor(
 
       this.registerModifier('foo-bar', ModifierClass);
 
-      this.render('<h1 {{foo-bar baz}}>hello world</h1>');
+      this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
       runTask(() => this.context.set('baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');

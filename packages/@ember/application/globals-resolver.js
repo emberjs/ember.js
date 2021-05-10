@@ -2,7 +2,7 @@
 @module @ember/application
 */
 
-import { dictionary } from '@ember/-internals/utils';
+import { dictionary, getName } from '@ember/-internals/utils';
 import { get, findNamespace } from '@ember/-internals/metal';
 import { assert, info, deprecate } from '@ember/debug';
 import { capitalize, classify, dasherize, decamelize } from '@ember/string';
@@ -10,6 +10,7 @@ import { Object as EmberObject } from '@ember/-internals/runtime';
 import { getTemplate } from '@ember/-internals/glimmer';
 import { DEBUG } from '@glimmer/env';
 import { GLOBALS_RESOLVER } from '@ember/deprecated-features';
+import { processAllNamespaces } from '@ember/-internals/metal';
 
 /**
   The DefaultResolver defines the default lookup rules to resolve
@@ -109,6 +110,10 @@ if (GLOBALS_RESOLVER) {
           until: '4.0.0',
           id: 'globals-resolver',
           url: 'https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+          for: 'ember-source',
+          since: {
+            enabled: '3.16.0',
+          },
         }
       );
 
@@ -173,9 +178,11 @@ if (GLOBALS_RESOLVER) {
           if (validationAttributes) {
             let [factoryFlag, expectedType] = validationAttributes;
 
+            processAllNamespaces();
+
             assert(
               `Expected ${parsedName.fullName} to resolve to an ${expectedType} but ` +
-                `instead it was ${resolved}.`,
+                `instead it was ${getName(resolved)}.`,
               Boolean(resolved[factoryFlag])
             );
           }
@@ -270,7 +277,7 @@ if (GLOBALS_RESOLVER) {
     }
 
     makeToString(factory) {
-      return factory.toString();
+      return typeof factory === 'string' ? factory : factory.name ?? '(unknown class)';
     }
 
     /**

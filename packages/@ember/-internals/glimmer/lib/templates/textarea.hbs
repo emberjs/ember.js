@@ -1,0 +1,49 @@
+{{~#if this.modernized ~}}
+  <textarea
+    {{!-- for compatibility --}}
+    id={{this.id}}
+    class={{this.class}}
+
+    {{!-- deprecated attribute bindings --}}
+    role={{this.role}}
+    autocapitalize={{this.autocapitalize}}
+    autocorrect={{this.autocorrect}}
+    autofocus={{this.autofocus}}
+    disabled={{this.disabled}}
+    form={{this.form}}
+    maxlength={{this.maxlength}}
+    minlength={{this.minlength}}
+    placeholder={{this.placeholder}}
+    readonly={{this.readonly}}
+    required={{this.required}}
+    selectionDirection={{this.selectionDirection}}
+    spellcheck={{this.spellcheck}}
+    tabindex={{this.tabindex}}
+    title={{this.title}}
+    rows={{this.rows}}
+    cols={{this.cols}}
+    name={{this.name}}
+    selectionEnd={{this.selectionEnd}}
+    selectionStart={{this.selectionStart}}
+    autocomplete={{this.autocomplete}}
+    wrap={{this.wrap}}
+    lang={{this.lang}}
+    dir={{this.dir}}
+
+    ...attributes
+
+    value={{this.value}}
+
+    {{on "change" this.change}}
+    {{on "input" this.input}}
+    {{on "keyup" this.keyUp}}
+    {{on "paste" this.valueDidChange}}
+    {{on "cut" this.valueDidChange}}
+
+    {{this.handleDeprecatedEvents this}}
+  />
+{{~else~}}
+  {{~#let (component '-textarea')  as |Textarea|~}}
+    <Textarea @target={{this.caller}} @__ARGS__={{this.args}} ...attributes />
+  {{~/let~}}
+{{/if}}

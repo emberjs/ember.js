@@ -164,9 +164,9 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`
+        `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
       );
-      this.addTemplate('foo-bar-baz', '{{text}}-{{yield}}');
+      this.addTemplate('foo-bar-baz', '{{this.text}}-{{yield}}');
 
       this.application.instanceInitializer({
         name: 'application-controller',
@@ -203,7 +203,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`
+        `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
       );
       this.addTemplate('foo-bar-baz', 'No way!');
 
@@ -226,7 +226,7 @@ moduleFor(
             Component.extend({
               text: 'inner',
               layoutName: 'foo-bar-baz',
-              layout: compile('{{text}}-{{yield}}'),
+              layout: compile('{{this.text}}-{{yield}}'),
             })
           );
         },

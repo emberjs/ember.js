@@ -24,39 +24,36 @@ import {
 } from '@glimmer/manager';
 import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import {
-  getDynamicVar,
+  array,
+  concat,
+  fn,
+  get,
+  hash,
+  on,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
   templateOnlyComponent,
 } from '@glimmer/runtime';
 import { _WeakSet } from '@glimmer/util';
-import { CURLY_COMPONENT_MANAGER } from './component-managers/curly';
+import { isCurlyManager } from './component-managers/curly';
 import {
-  CLASSIC_HELPER_MANAGER_FACTORY,
+  CLASSIC_HELPER_MANAGER,
   HelperFactory,
   HelperInstance,
   isClassicHelper,
   SimpleHelper,
 } from './helper';
-import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
+import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
+import { default as resolve } from './helpers/-resolve';
 import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
-import { default as array } from './helpers/array';
-import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
-import { default as fn } from './helpers/fn';
-import { default as get } from './helpers/get';
-import { default as hash } from './helpers/hash';
-import { inlineIf, inlineUnless } from './helpers/if-unless';
-import { internalHelper } from './helpers/internal-helper';
-import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import actionModifier from './modifiers/action';
-import onModifier from './modifiers/on';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 
@@ -177,34 +174,52 @@ if (PARTIALS) {
   };
 }
 
-const BUILTINS_HELPERS = {
-  if: inlineIf,
+const BUILTIN_KEYWORD_HELPERS = {
   action,
+  mut,
+  readonly,
+  unbound,
+  'query-params': queryParams,
+  '-hash': hash,
+  '-each-in': eachIn,
+  '-normalize-class': normalizeClassHelper,
+  '-resolve': resolve,
+  '-track-array': trackArray,
+  '-mount': mountHelper,
+  '-outlet': outletHelper,
+  '-in-el-null': inElementNullCheckHelper,
+};
+
+if (DEBUG) {
+  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+} else {
+  // Bug: this may be a quirk of our test setup?
+  // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
+  // to add it at all, but the current test build doesn't produce a "prod compiler", so
+  // we ended up running the debug-build for the template compliler in prod tests. Once
+  // that is fixed, this can be removed. For now, this allows the test to work and does
+  // not really harm anything, since it's just a no-op pass-through helper and the bytes
+  // has to be included anyway. In the future, perhaps we can avoid the latter by using
+  // `import(...)`?
+  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+}
+
+const BUILTIN_HELPERS = {
+  ...BUILTIN_KEYWORD_HELPERS,
   array,
   concat,
   fn,
   get,
   hash,
-  log,
-  mut,
-  'query-params': queryParams,
-  readonly,
-  unbound,
-  unless: inlineUnless,
-  '-hash': hash,
-  '-each-in': eachIn,
-  '-normalize-class': normalizeClassHelper,
-  '-track-array': trackArray,
-  '-get-dynamic-var': internalHelper(getDynamicVar),
-  '-mount': mountHelper,
-  '-outlet': outletHelper,
-  '-assert-implicit-component-helper-argument': componentAssertionHelper,
-  '-in-el-null': inElementNullCheckHelper,
 };
 
-const BUILTINS_MODIFIERS = {
+const BUILTIN_KEYWORD_MODIFIERS = {
   action: actionModifier,
-  on: onModifier,
+};
+
+const BUILTIN_MODIFIERS = {
+  ...BUILTIN_KEYWORD_MODIFIERS,
+  on,
 };
 
 const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
@@ -226,10 +241,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
   lookupHelper(name: string, owner: Owner): Option<HelperDefinitionState> {
     assert(
       `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
-      !(BUILTINS_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
+      !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
     );
 
-    const helper = BUILTINS_HELPERS[name];
+    const helper = BUILTIN_HELPERS[name];
     if (helper !== undefined) {
       return helper;
     }
@@ -259,10 +274,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
         // we'll trigger an assertion
         if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
           CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
-          setInternalHelperManager(CLASSIC_HELPER_MANAGER_FACTORY, factory);
+          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
         }
       } else {
-        setInternalHelperManager(CLASSIC_HELPER_MANAGER_FACTORY, factory);
+        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
       }
 
       return factory;
@@ -271,8 +286,12 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return definition;
   }
 
+  lookupBuiltInHelper(name: string): HelperDefinitionState | null {
+    return BUILTIN_KEYWORD_HELPERS[name] ?? null;
+  }
+
   lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
-    let builtin = BUILTINS_MODIFIERS[name];
+    let builtin = BUILTIN_MODIFIERS[name];
 
     if (builtin !== undefined) {
       return builtin;
@@ -285,6 +304,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     }
 
     return modifier.class || null;
+  }
+
+  lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
+    return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
   }
 
   lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {
@@ -328,9 +351,12 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
           template,
         };
       } else {
+        let factory = owner.factoryFor(P`component:-default`)!;
+        let manager = getInternalComponentManager(factory.class as object);
+
         definition = {
-          state: owner.factoryFor(P`component:-default`)!,
-          manager: CURLY_COMPONENT_MANAGER,
+          state: factory,
+          manager,
           template,
         };
       }
@@ -339,10 +365,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
 
       let factory = pair.component;
       let ComponentClass = factory.class!;
-      let manager = getInternalComponentManager(owner, ComponentClass);
+      let manager = getInternalComponentManager(ComponentClass);
 
       definition = {
-        state: manager === CURLY_COMPONENT_MANAGER ? factory : ComponentClass,
+        state: isCurlyManager(manager) ? factory : ComponentClass,
         manager,
         template,
       };

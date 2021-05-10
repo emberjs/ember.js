@@ -45,6 +45,10 @@ if (LOGGER) {
         id: DEPRECATION_ID,
         until: '4.0.0',
         url: DEPRECATION_URL,
+        for: 'ember-source',
+        since: {
+          enabled: '3.2.0',
+        },
       });
       return console.log(...arguments); // eslint-disable-line no-console
     },
@@ -68,6 +72,10 @@ if (LOGGER) {
         id: DEPRECATION_ID,
         until: '4.0.0',
         url: DEPRECATION_URL,
+        for: 'ember-source',
+        since: {
+          enabled: '3.2.0',
+        },
       });
       return console.warn(...arguments); // eslint-disable-line no-console
     },
@@ -91,6 +99,10 @@ if (LOGGER) {
         id: DEPRECATION_ID,
         until: '4.0.0',
         url: DEPRECATION_URL,
+        for: 'ember-source',
+        since: {
+          enabled: '3.2.0',
+        },
       });
       return console.error(...arguments); // eslint-disable-line no-console
     },
@@ -115,6 +127,10 @@ if (LOGGER) {
         id: DEPRECATION_ID,
         until: '4.0.0',
         url: DEPRECATION_URL,
+        for: 'ember-source',
+        since: {
+          enabled: '3.2.0',
+        },
       });
       return console.info(...arguments); // eslint-disable-line no-console
     },
@@ -139,6 +155,10 @@ if (LOGGER) {
         id: DEPRECATION_ID,
         until: '4.0.0',
         url: DEPRECATION_URL,
+        for: 'ember-source',
+        since: {
+          enabled: '3.2.0',
+        },
       });
       /* eslint-disable no-console */
       if (console.debug) {
@@ -168,6 +188,10 @@ if (LOGGER) {
         id: DEPRECATION_ID,
         until: '4.0.0',
         url: DEPRECATION_URL,
+        for: 'ember-source',
+        since: {
+          enabled: '3.2.0',
+        },
       });
       return console.assert(...arguments); // eslint-disable-line no-console
     },

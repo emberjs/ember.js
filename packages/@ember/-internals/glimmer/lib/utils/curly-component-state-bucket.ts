@@ -1,11 +1,6 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { registerDestructor } from '@glimmer/destroyable';
-import {
-  CapturedNamedArguments,
-  Environment,
-  Template,
-  TemplateFactory,
-} from '@glimmer/interfaces';
+import { CapturedNamedArguments, Template, TemplateFactory } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
 import { Renderer } from '../renderer';
@@ -48,12 +43,12 @@ export default class ComponentStateBucket {
   public argsRevision: Revision;
 
   constructor(
-    public environment: Environment,
     public component: Component,
     public args: CapturedNamedArguments | null,
     public argsTag: Tag,
     public finalizer: Finalizer,
-    public hasWrappedElement: boolean
+    public hasWrappedElement: boolean,
+    public isInteractive: boolean
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : valueForTag(argsTag);
@@ -64,9 +59,9 @@ export default class ComponentStateBucket {
   }
 
   willDestroy(): void {
-    let { component, environment } = this;
+    let { component, isInteractive } = this;
 
-    if (environment.isInteractive) {
+    if (isInteractive) {
       beginUntrackFrame();
       component.trigger('willDestroyElement');
       component.trigger('willClearRender');

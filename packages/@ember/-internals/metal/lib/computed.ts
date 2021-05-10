@@ -1079,6 +1079,4 @@ export function isComputed(obj: object, key: string): boolean {
   return Boolean(descriptorForProperty(obj, key));
 }
 
-export const _globalsComputed = computed.bind(null);
-
 export default computed;

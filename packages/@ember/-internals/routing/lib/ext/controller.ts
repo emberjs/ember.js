@@ -1,6 +1,7 @@
 import { get } from '@ember/-internals/metal';
+import { getOwner } from '@ember/-internals/owner';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
-import { prefixRouteNameArg } from '../utils';
+import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
 
 /**
 @module ember
@@ -9,17 +10,27 @@ import { prefixRouteNameArg } from '../utils';
 ControllerMixin.reopen({
   concatenatedProperties: ['queryParams'],
 
+  init() {
+    this._super(...arguments);
+    let owner = getOwner(this);
+    if (owner) {
+      this.namespace = owner.lookup('application:main');
+      this.target = owner.lookup('router:main');
+    }
+  },
+
   /**
     Defines which query parameters the controller accepts.
     If you give the names `['category','page']` it will bind
     the values of these query parameters to the variables
     `this.category` and `this.page`.
-    By default, Ember coerces query parameter values using `toggleProperty`.
-    This behavior may lead to unexpected results.
-    Available queryParam types: `boolean`, `number`, `array`.
-    If query param type not specified, it will be `string`.
-    To explicitly configure a query parameter property so it coerces as expected, you must define a type property:
 
+    By default, query parameters are parsed as strings. This
+    may cause unexpected behavior if a query parameter is used with `toggleProperty`,
+    because the initial value set for `param=false` will be the string `"false"`, which is truthy.
+
+    To avoid this, you may specify that the query parameter should be parsed as a boolean
+    by using the following verbose form with a `type` property:
     ```javascript
       queryParams: [{
         category: {
@@ -27,6 +38,8 @@ ControllerMixin.reopen({
         }
       }]
     ```
+    Available values for the `type` parameter are `'boolean'`, `'number'`, `'array'`, and `'string'`.
+    If query param type is not specified, it will default to `'string'`.
 
     @for Ember.ControllerMixin
     @property queryParams
@@ -149,9 +162,12 @@ ControllerMixin.reopen({
     @method transitionToRoute
     @return {Transition} the transition object associated with this
       attempted transition
+    @deprecated Use transitionTo from the Router service instead.
     @public
   */
   transitionToRoute(...args: any[]) {
+    deprecateTransitionMethods('controller', 'transitionToRoute');
+
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.transitionToRoute || target.transitionTo;
@@ -218,6 +234,7 @@ ControllerMixin.reopen({
     @public
   */
   replaceRoute(...args: string[]) {
+    deprecateTransitionMethods('controller', 'replaceRoute');
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;

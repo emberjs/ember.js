@@ -14,14 +14,28 @@ function getDescriptor(obj, path) {
   return Object.getOwnPropertyDescriptor(value, last);
 }
 
-export default function confirmExport(Ember, assert, path, moduleId, exportName) {
+export default function confirmExport(Ember, assert, path, moduleId, exportName, isDeprecated) {
   try {
-    let desc = getDescriptor(Ember, path);
-    assert.ok(desc, `the ${path} property exists on the Ember global`);
+    let desc;
 
-    if (typeof exportName === 'string') {
+    if (path !== null) {
+      desc = getDescriptor(Ember, path);
+      assert.ok(desc, `the ${path} property exists on the Ember global`);
+    } else {
+      desc = null;
+    }
+
+    if (isDeprecated) {
+      expectDeprecation();
+    }
+
+    if (desc === null) {
       let mod = require(moduleId);
-      assert.equal(desc.value, mod[exportName], `Ember.${path} is exported correctly`);
+      assert.notEqual(mod[exportName], undefined, `${moduleId}#${exportName} is not \`undefined\``);
+    } else if (typeof exportName === 'string') {
+      let mod = require(moduleId);
+      let value = 'value' in desc ? desc.value : desc.get.call(Ember);
+      assert.equal(value, mod[exportName], `Ember.${path} is exported correctly`);
       assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
     } else if ('value' in desc) {
       assert.equal(desc.value, exportName.value, `Ember.${path} is exported correctly`);

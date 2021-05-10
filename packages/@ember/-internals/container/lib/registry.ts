@@ -362,7 +362,7 @@ export default class Registry implements IRegistry {
     } else if (this.fallback !== null) {
       return this.fallback.makeToString(factory, fullName);
     } else {
-      return factory.toString();
+      return typeof factory === 'string' ? factory : factory.name ?? '(unknown class)';
     }
   }
 

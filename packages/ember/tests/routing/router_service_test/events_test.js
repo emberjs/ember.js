@@ -126,7 +126,7 @@ moduleFor(
     }
 
     '@test redirection with `transitionTo`'(assert) {
-      assert.expect(8);
+      assert.expect(11);
       let toChild = false;
       let toSister = false;
 
@@ -134,7 +134,9 @@ moduleFor(
         `route:parent`,
         Route.extend({
           model() {
-            this.transitionTo('parent.child');
+            expectDeprecation(() => {
+              this.transitionTo('parent.child');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -143,7 +145,9 @@ moduleFor(
         `route:parent.child`,
         Route.extend({
           model() {
-            this.transitionTo('parent.sister');
+            expectDeprecation(() => {
+              this.transitionTo('parent.sister');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -182,7 +186,7 @@ moduleFor(
     }
 
     '@test redirection with `replaceWith`'(assert) {
-      assert.expect(8);
+      assert.expect(11);
       let toChild = false;
       let toSister = false;
 
@@ -190,7 +194,9 @@ moduleFor(
         `route:parent`,
         Route.extend({
           model() {
-            this.replaceWith('parent.child');
+            expectDeprecation(() => {
+              this.replaceWith('parent.child');
+            }, /Calling replaceWith on a route is deprecated/);
           },
         })
       );
@@ -199,7 +205,9 @@ moduleFor(
         `route:parent.child`,
         Route.extend({
           model() {
-            this.replaceWith('parent.sister');
+            expectDeprecation(() => {
+              this.replaceWith('parent.sister');
+            }, /Calling replaceWith on a route is deprecated/);
           },
         })
       );
@@ -238,7 +246,7 @@ moduleFor(
     }
 
     '@test nested redirection with `transitionTo`'(assert) {
-      assert.expect(11);
+      assert.expect(12);
       let toChild = false;
       let toSister = false;
 
@@ -246,7 +254,9 @@ moduleFor(
         `route:parent.child`,
         Route.extend({
           model() {
-            this.transitionTo('parent.sister');
+            expectDeprecation(() => {
+              this.transitionTo('parent.sister');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -295,7 +305,7 @@ moduleFor(
     }
 
     '@test nested redirection with `replaceWith`'(assert) {
-      assert.expect(11);
+      assert.expect(12);
       let toChild = false;
       let toSister = false;
 
@@ -303,7 +313,9 @@ moduleFor(
         `route:parent.child`,
         Route.extend({
           model() {
-            this.replaceWith('parent.sister');
+            expectDeprecation(() => {
+              this.replaceWith('parent.sister');
+            }, /Calling replaceWith on a route is deprecated/);
           },
         })
       );
@@ -467,7 +479,7 @@ moduleFor(
     }
 
     '@test query param redirects with `transitionTo`'(assert) {
-      assert.expect(6);
+      assert.expect(7);
       let toSister = false;
 
       this.add(
@@ -475,7 +487,9 @@ moduleFor(
         Route.extend({
           model() {
             toSister = true;
-            this.transitionTo('/sister?a=a');
+            expectDeprecation(() => {
+              this.transitionTo('/sister?a=a');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -508,7 +522,7 @@ moduleFor(
       return this.visit('/child');
     }
     '@test query param redirects with `replaceWith`'(assert) {
-      assert.expect(6);
+      assert.expect(7);
       let toSister = false;
 
       this.add(
@@ -516,7 +530,9 @@ moduleFor(
         Route.extend({
           model() {
             toSister = true;
-            this.replaceWith('/sister?a=a');
+            expectDeprecation(() => {
+              this.replaceWith('/sister?a=a');
+            }, /Calling replaceWith on a route is deprecated/);
           },
         })
       );

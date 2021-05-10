@@ -108,7 +108,7 @@ moduleFor(
                 queryParams: ['official'],
               })
             );
-            this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
+            this.register('template:application', compile('Engine{{this.lang}}{{outlet}}'));
             this.register(
               'route:application',
               Route.extend({
@@ -255,7 +255,10 @@ moduleFor(
                 contextType: 'Engine',
               })
             );
-            this.register('template:application', compile('Engine {{foo-bar wat=contextType}}'));
+            this.register(
+              'template:application',
+              compile('Engine {{foo-bar wat=this.contextType}}')
+            );
           },
         })
       );
@@ -269,6 +272,9 @@ moduleFor(
       expectDeprecation(
         `The use of \`{{partial}}\` is deprecated, please refactor the "troll" partial to a component`
       );
+      expectDeprecation(
+        'Using {{attrs}} to reference named arguments has been deprecated. {{attrs.wat}} should be updated to {{@wat}}. (L1:C2) '
+      );
 
       this.setupEngineWithAttrs([]);
 
@@ -278,14 +284,18 @@ moduleFor(
     }
 
     ['@test sharing a template between engine and application has separate refinements']() {
-      this.assert.expect(1);
+      this.assert.expect(2);
 
       let sharedTemplate = compile(strip`
-      <h1>{{contextType}}</h1>
+      <h1>{{this.contextType}}</h1>
       {{ambiguous-curlies}}
 
       {{outlet}}
     `);
+
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
 
       this.add('template:application', sharedTemplate);
       this.add(
@@ -332,7 +342,11 @@ moduleFor(
     }
 
     ['@test sharing a layout between engine and application has separate refinements']() {
-      this.assert.expect(1);
+      this.assert.expect(2);
+
+      expectDeprecation(
+        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
+      );
 
       let sharedLayout = compile(strip`
         {{ambiguous-curlies}}
@@ -875,7 +889,9 @@ moduleFor(
 
     ["@test query params don't have stickiness by default between model"](assert) {
       assert.expect(1);
-      let tmpl = '{{#link-to "category" 1337}}Category 1337{{/link-to}}';
+
+      let tmpl = '<LinkTo @route="category" @model={{1337}}>Category 1337</LinkTo>';
+
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
         this.register('template:category', compile(tmpl));
@@ -890,12 +906,31 @@ moduleFor(
       });
     }
 
+    '@test query params only transitions work properly'(assert) {
+      assert.expect(1);
+
+      let tmpl = '<LinkTo @query={{hash type="news"}}>News</LinkTo>';
+
+      this.setupAppAndRoutableEngine();
+      this.additionalEngineRegistrations(function () {
+        this.register('template:category', compile(tmpl));
+      });
+
+      return this.visit('/blog/category/1').then(() => {
+        let suffix = '/blog/category/1?type=news';
+        let href = this.element.querySelector('a').href;
+
+        // check if link ends with the suffix
+        assert.ok(this.stringsEndWith(href, suffix));
+      });
+    }
+
     async ['@test query params in customized controllerName have stickiness by default between model'](
       assert
     ) {
       assert.expect(2);
       let tmpl =
-        '{{#link-to "author" 1337 class="author-1337"}}Author 1337{{/link-to}}{{#link-to "author" 1 class="author-1"}}Author 1{{/link-to}}';
+        '<LinkTo @route="author" @model={{1337}} class="author-1337">Author 1337</LinkTo><LinkTo @route="author" @model=1 class="author-1">Author 1</LinkTo>';
       this.setupAppAndRoutableEngine();
       this.additionalEngineRegistrations(function () {
         this.register('template:author', compile(tmpl));

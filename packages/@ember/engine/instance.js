@@ -184,7 +184,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       'router:main',
       P`-bucket-cache:main`,
       '-view-registry:main',
-      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
+      `renderer:-dom`,
       'service:-document',
     ];
 
@@ -213,15 +213,6 @@ EngineInstance.reopenClass({
     }
 
     registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
-
-    if (options.isInteractive) {
-      registry.injection('view', 'renderer', 'renderer:-dom');
-      registry.injection('component', 'renderer', 'renderer:-dom');
-    } else {
-      registry.injection('view', 'renderer', 'renderer:-inert');
-      registry.injection('component', 'renderer', 'renderer:-inert');
-    }
   },
 });
 

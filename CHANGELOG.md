@@ -1,10 +1,110 @@
 # Ember Changelog
 
-### v3.24.0-beta.2 (November 24, 2020)
+### v3.28.0-beta.1 (May 3, 2021)
 
-- [#19282](https://github.com/emberjs/ember.js/pull/19282) [BUGFIX] Issue deprecations (instead of assertions) for tracked mutation in constructor during rendering
+- [#19472](https://github.com/emberjs/ember.js/pull/19472) [BUGFIX] Prevent transformation of block params called `attrs`
 
-### v3.24.0-beta.1 (November 16, 2020)
+### v3.27.0 (May 3, 2021)
+
+- [#19309](https://github.com/emberjs/ember.js/pull/19309) / [#19487](https://github.com/emberjs/ember.js/pull/19487) / [#19474](https://github.com/emberjs/ember.js/pull/19474) [FEATURE] Enable `(helper` and `(modifier` helpers per [RFC #432](https://github.com/emberjs/rfcs/blob/master/text/0432-contextual-helpers.md).
+- [#19382](https://github.com/emberjs/ember.js/pull/19382) / [#19430](https://github.com/emberjs/ember.js/pull/19430) [FEATURE] Remaining implementation work per [RFC #671](https://github.com/emberjs/rfcs/blob/master/text/0671-modernize-built-in-components-1.md).
+- [#19457](https://github.com/emberjs/ember.js/pull/19457) / [#19463](https://github.com/emberjs/ember.js/pull/19463) / [#19464](https://github.com/emberjs/ember.js/pull/19464) / [#19467](https://github.com/emberjs/ember.js/pull/19467) [DEPRECATION] Add deprecation for the Ember Global per [RFC #706](https://github.com/emberjs/rfcs/blob/master/text/0706-deprecate-ember-global.md).
+- [#19407](https://github.com/emberjs/ember.js/pull/19407) [DEPRECATION] Add deprecation for `Route#disconnectOutlet` per [RFC #491](https://github.com/emberjs/rfcs/blob/master/text/0491-deprecate-disconnect-outlet.md).
+- [#19433](https://github.com/emberjs/ember.js/pull/19433) [DEPRECATION] Add deprecation for `Route#renderTemplate` per [RFC #418](https://github.com/emberjs/rfcs/blob/master/text/0418-deprecate-route-render-methods.md).
+- [#19442](https://github.com/emberjs/ember.js/pull/19442) [DEPRECATION] Add deprecation for `Route#render` method per [RFC #418](https://github.com/emberjs/rfcs/blob/master/text/0418-deprecate-route-render-methods.md).
+- [#19429](https://github.com/emberjs/ember.js/pull/19429) [DEPRECATION] `registerPlugin` / `unregisterPlugin` and legacy class based AST plugins (private APIs)
+- [#19499](https://github.com/emberjs/ember.js/pull/19499) [DEPRECATION] Deprecate `@foo={{helper}}` per [RFC #496](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md#3-no-implicit-invocation-of-argument-less-helpers).
+- [#19499](https://github.com/emberjs/ember.js/pull/19499) [BUGFIX] Update rendering engine to `@glimmer/*` 0.78.2 for fixes including:  
+    - `<:else>` and `<:inverse>` should be aliases (see https://github.com/glimmerjs/glimmer-vm/pull/1296)
+    - Fix nested calls to helpers in dynamic helpers (see https://github.com/glimmerjs/glimmer-vm/pull/1293)
+- [#19477](https://github.com/emberjs/ember.js/pull/19477) [BUGFIX] Allow `<LinkToExternal />` to override internal assertion
+- [#19481](https://github.com/emberjs/ember.js/pull/19481) [BUGFIX] Export `on` from correct path
+- [#19466](https://github.com/emberjs/ember.js/pull/19466) [BUGFIX] Rename private runloop functions
+- [#19384](https://github.com/emberjs/ember.js/pull/19384) Use qunit-dom in helper and component test blueprints
+- [#19390](https://github.com/emberjs/ember.js/pull/19390) Refactor the internal Ember loader to use the standard Ember CLI loader
+- [#19441](https://github.com/emberjs/ember.js/pull/19441) Add automated publishing of weekly alpha releases to NPM
+- [#19462](https://github.com/emberjs/ember.js/pull/19462) Use `positional` and `named` as the argument names in `ember g helper` blueprint
+
+### v3.26.1 (March 24, 2021)
+
+- [#19473](https://github.com/emberjs/ember.js/pull/19473) Update Glimmer VM to latest.
+
+### v3.26.0 (March 22, 2021)
+
+- [#19255](https://github.com/emberjs/ember.js/pull/19255) [DEPRECATION] Deprecate transition methods of controller and route per [RFC #674](https://github.com/emberjs/rfcs/blob/master/text/0674-deprecate-transition-methods-of-controller-and-route.md).
+- [#19345](https://github.com/emberjs/ember.js/pull/19345) [DEPRECATION] Deprecate `<LinkTo>` positional arguments per [RFC #698](https://github.com/emberjs/rfcs/blob/master/text/0698-deprecate-link-to-positional-arguments.md).
+- [#19346](https://github.com/emberjs/ember.js/pull/19346) [DEPRECATION] Deprecate `{{#with}}` per [RFC #445](https://github.com/emberjs/rfcs/blob/master/text/0445-deprecate-with.md)
+- [#19358](https://github.com/emberjs/ember.js/pull/19358) [DEPRECATION] Deprecate implicit injections per [RFC #680](https://github.com/emberjs/rfcs/blob/master/text/0680-implicit-injection-deprecation.md)
+- [#19359](https://github.com/emberjs/ember.js/pull/19359) [DEPRECATION] Deprecates old browser support policy per [RFC #685 New Browser Support Policy](https://github.com/emberjs/rfcs/blob/master/text/0685-new-browser-support-policy.md).
+- [#19371](https://github.com/emberjs/ember.js/pull/19371) [DEPRECATION] Deprecate implicit `this` property lookup fallback per [RFC #308]https://github.com/emberjs/rfcs/blob/master/text/0308-deprecate-property-lookup-fallback.md
+- [#19372](https://github.com/emberjs/ember.js/pull/19372) [DEPRECATION] Adds deprecations for Classic edition and optional features per [RFC #704](https://github.com/emberjs/rfcs/blob/master/text/0704-deprecate-octane-optional-features.md) and [RFC #705](https://github.com/emberjs/rfcs/blob/master/text/0705-deprecate-jquery-optional-feature.md).
+- [#19373](https://github.com/emberjs/ember.js/pull/19373) [DEPRECATION] Deprecate old manager capabilities per [RFC #686](https://github.com/emberjs/rfcs/blob/master/text/0686-deprecate-old-manager-capabilities-versions.md)
+- [#19374](https://github.com/emberjs/ember.js/pull/19374) [DEPRECATION] Deprecate `hasBlock` and `hasBlockParams` per [RFC #689](https://github.com/emberjs/rfcs/blob/master/text/0689-deprecate-has-block.md).
+- [#19375](https://github.com/emberjs/ember.js/pull/19375) [DEPRECATION] Deprecate old class binding syntax and {{attrs}} per [RFC #691](https://github.com/emberjs/rfcs/blob/master/text/0691-deprecate-class-binding-and-class-name-bindings.md) and [RFC #690](https://github.com/emberjs/rfcs/blob/master/text/0690-deprecate-attrs-in-templates.md).
+- [#19381](https://github.com/emberjs/ember.js/pull/19381) [DEPRECATION] Deprecate Array Observers per [RFC #692](https://github.com/emberjs/rfcs/blob/master/text/0692-deprecate-array-observers.md).
+- [#19379](https://github.com/emberjs/ember.js/pull/19379) [CLEANUP] Refactor DataAdapter to not use observers or array observers
+- [#19378](https://github.com/emberjs/ember.js/pull/19378) [BUGFIX] Fix typo in template-only-glimmer-components feature detection
+- [#19298](https://github.com/emberjs/ember.js/pull/19298) [BUGFIX] Route serialize did not extract param off proxy
+- [#19469](https://github.com/emberjs/ember.js/pull/19469) [BUGFIX] Prevent eager argument consumption on modifier destruction
+- [#19405](https://github.com/emberjs/ember.js/pull/19405) [BUGFIX] Avoid instantiation errors when `app/router.js` injects the router service.
+- [#19436](https://github.com/emberjs/ember.js/pull/19436) [BUGFIX] Support observer keys with colons
+
+### v3.25.4 (March 24, 2021)
+
+- [#19473](https://github.com/emberjs/ember.js/pull/19473) Update Glimmer VM to latest.
+
+### v3.25.3 (March 7, 2021)
+
+- [#19448](https://github.com/emberjs/ember.js/pull/19448) Ensure query params are preserved through an intermediate loading state transition
+- [#19450](https://github.com/emberjs/ember.js/pull/19450) Ensure `routerService.currentRoute.name` and `routerService.currentRouteName` match during loading states
+
+
+### v3.25.2 (March 7, 2021)
+
+- [#19389](https://github.com/emberjs/ember.js/pull/19389) Removes template ids
+- [#19395](https://github.com/emberjs/ember.js/pull/19395) [BUGFIX] Ensure `<LinkTo>` can return a valid `href` most of the time
+- [#19396](https://github.com/emberjs/ember.js/pull/19396) [BUGFIX] Revert deprecation of htmlSafe and isHTMLSafe
+- [#19397](https://github.com/emberjs/ember.js/pull/19397) [BUGFIX] Force building Ember bundles when `targets.node` is defined
+- [#19399](https://github.com/emberjs/ember.js/pull/19399) [DOC] Update ArrayProxy Documentation
+- [#19412](https://github.com/emberjs/ember.js/pull/19412) / [#19416](https://github.com/emberjs/ember.js/pull/19416) [BUGFIX] Update Glimmer VM to 0.77 (fix dynamic helpers/modifiers)
+
+
+### v3.25.1 (February 10, 2021)
+
+- [#19326](https://github.com/emberjs/ember.js/pull/19326) / [#19387](https://github.com/emberjs/ember.js/pull/19387) [BUGFIX] Fix usage of `<LinkTo />` prior to routing (e.g. component rendering tests)
+
+### v3.25.0 (February 08, 2021)
+
+- [#19302](https://github.com/emberjs/ember.js/pull/19302) / [#19306](https://github.com/emberjs/ember.js/pull/19306) / [#19319](https://github.com/emberjs/ember.js/pull/19319) [FEATURE] Implement the [Handlebars Strict Mode RFC](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md).
+- [#19318](https://github.com/emberjs/ember.js/pull/19318) [FEATURE] Implement the [Named Blocks RFC](https://github.com/emberjs/rfcs/blob/master/text/0460-yieldable-named-blocks.md).
+- [#19339](https://github.com/emberjs/ember.js/pull/19339) [DEPRECATION] Deprecate importing `htmlSafe` and `isHTMLSafe` from `@ember/string` per the [Deprecate Ember String RFC](https://github.com/emberjs/rfcs/blob/master/text/0236-deprecation-ember-string.md).
+- [#19320](https://github.com/emberjs/ember.js/pull/19320) / [#19317](https://github.com/emberjs/ember.js/pull/19317) / [#19297](https://github.com/emberjs/ember.js/pull/19297) / [#19293](https://github.com/emberjs/ember.js/pull/19293) / [#19278](https://github.com/emberjs/ember.js/pull/19278) / [#19275](https://github.com/emberjs/ember.js/pull/19275) / [#19363](https://github.com/emberjs/ember.js/pull/19363) Update rendering engine to `@glimmer/*` 0.74.2 for various features and bugfixes including ensuring `{{component.name}}` works with implicit this fallback
+- [#18148](https://github.com/emberjs/ember.js/pull/18148) [BUGFIX] Fix empty `htmlSafe` string to be treated as falsy
+- [#19365](https://github.com/emberjs/ember.js/pull/19365) [BUGFIX] Remove non-existing re-export from helper-addon blueprint
+- [#19370](https://github.com/emberjs/ember.js/pull/19370) [BUGFIX] Update glimmer-vm to prevent errors for older inline precompilation
+- [#19351](https://github.com/emberjs/ember.js/pull/19351) [BUGFIX] Ensure locals do not clobber components of the same name
+- [#19336](https://github.com/emberjs/ember.js/pull/19336) [BUGFIX] Ensure Component Lookup Is Well Formed
+- [#19338](https://github.com/emberjs/ember.js/pull/19338) [BUGFIX] Add missing `deprecate` options (`for` + `since`)
+- [#19342](https://github.com/emberjs/ember.js/pull/19342) [BUGFIX] Fix misleading LinkTo error message
+
+
+### v3.24.3 (March 7, 2021)
+
+- [#19448](https://github.com/emberjs/ember.js/pull/19448) Ensure query params are preserved through an intermediate loading state transition
+- [#19450](https://github.com/emberjs/ember.js/pull/19450) Ensure `routerService.currentRoute.name` and `routerService.currentRouteName` match during loading states
+- [#19395](https://github.com/emberjs/ember.js/pull/19395) [BUGFIX] Ensure `<LinkTo>` can return a valid `href` most of the time
+- [#19397](https://github.com/emberjs/ember.js/pull/19397) [BUGFIX] Force building Ember bundles when `targets.node` is defined
+
+
+### v3.24.2 (February 10, 2021)
+
+- [#19326](https://github.com/emberjs/ember.js/pull/19326) / [#19387](https://github.com/emberjs/ember.js/pull/19387) [BUGFIX] Fix usage of `<LinkTo />` prior to routing (e.g. component rendering tests)
+
+### v3.24.1 (January 14, 2021)
+
+- [#19337](https://github.com/emberjs/ember.js/pull/19337) [BUGFIX] Ensure query param only `<LinkTo />` are properly scoped in engines
+
+### v3.24.0 (December 28, 2020)
 
 - [#19224](https://github.com/emberjs/ember.js/pull/19224) [FEATURE] Add `{{page-title}}` helper to route template blueprints to implement [RFC #0654](https://github.com/emberjs/rfcs/blob/master/text/0645-add-ember-page-title-addon.md). 
 - [#19133](https://github.com/emberjs/ember.js/pull/19133) [FEATURE / DEPRECATION] Add new options to `deprecate()` for `for` and `since` and deprecate using `deprecate()` without those options per the [Deprecation Staging RFC](https://github.com/emberjs/rfcs/blob/master/text/0649-deprecation-staging.md).
@@ -14,6 +114,7 @@
 - [#19080](https://github.com/emberjs/ember.js/pull/19080) [BUGFIX] Lazily setup the router in non-application tests
 - [#19253](https://github.com/emberjs/ember.js/pull/19253) [BUGFIX] Correct return of getComponentTemplate from null to undefined to align with original RFC (#481)
 - [#19223](https://github.com/emberjs/ember.js/pull/19223) [BUGFIX] `<LinkTo>` should link within the engine when used inside one
+- [#19280](https://github.com/emberjs/ember.js/pull/19280) [BUGFIX] Ensure aliases cause recompute of a computed property when used with `@each` in the dependent keys of that property
 - [#19196](https://github.com/emberjs/ember.js/pull/19196) [CLEANUP] Remove EMBER_GLIMMER_IN_ELEMENT feature flag
 - [#19204](https://github.com/emberjs/ember.js/pull/19204) [CLEANUP] Remove EMBER_CACHE_API feature flag
 - [#19206](https://github.com/emberjs/ember.js/pull/19206) [CLEANUP] Remove EMBER_ROUTING_MODEL_ARG feature flag

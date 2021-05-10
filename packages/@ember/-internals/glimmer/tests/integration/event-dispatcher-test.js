@@ -1,7 +1,7 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
-import { getCurrentRunLoop } from '@ember/runloop';
+import { _getCurrentRunLoop } from '@ember/runloop';
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
@@ -150,7 +150,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onclick={{action clicked}}>my button</button>`,
+        template: `<button id="is-done" onclick={{action this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);
@@ -169,7 +169,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onClick={{action clicked}}>my button</button>`,
+        template: `<button id="is-done" onClick={{action this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);
@@ -263,7 +263,7 @@ moduleFor(
       this.registerComponent('x-foo', {
         ComponentClass: Component.extend({
           change() {
-            assert.ok(getCurrentRunLoop(), 'a run loop should have started');
+            assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
           },
         }),
         template: `<input id="is-done" type="checkbox">`,

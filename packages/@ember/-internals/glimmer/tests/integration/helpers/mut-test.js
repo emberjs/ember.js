@@ -16,14 +16,14 @@ moduleFor(
             bottom = this;
           },
         }),
-        template: '{{setMe}}',
+        template: '{{this.setMe}}',
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{bottom-mut setMe=value}}',
+        template: '{{bottom-mut setMe=this.value}}',
       });
 
-      this.render('{{middle-mut value=(mut val)}}', {
+      this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
       });
 
@@ -59,7 +59,7 @@ moduleFor(
             bottom = this;
           },
         }),
-        template: '{{setMe}}',
+        template: '{{this.setMe}}',
       });
 
       this.registerComponent('middle-mut', {
@@ -68,10 +68,10 @@ moduleFor(
             middle = this;
           },
         }),
-        template: '{{bottom-mut setMe=(mut value)}}',
+        template: '{{bottom-mut setMe=(mut this.value)}}',
       });
 
-      this.render('{{middle-mut value=(mut val)}}', {
+      this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
       });
 
@@ -103,7 +103,7 @@ moduleFor(
     }
 
     ['@test passing a literal results in a assertion']() {
-      this.registerComponent('bottom-mut', { template: '{{setMe}}' });
+      this.registerComponent('bottom-mut', { template: '{{this.setMe}}' });
 
       expectAssertion(() => {
         this.render('{{bottom-mut setMe=(mut "foo bar")}}');
@@ -111,7 +111,7 @@ moduleFor(
     }
 
     ['@test passing the result of a helper invocation results in an assertion']() {
-      this.registerComponent('bottom-mut', { template: '{{setMe}}' });
+      this.registerComponent('bottom-mut', { template: '{{this.setMe}}' });
 
       expectAssertion(() => {
         this.render('{{bottom-mut setMe=(mut (concat "foo" " " "bar"))}}');
@@ -128,11 +128,11 @@ moduleFor(
             bottom = this;
           },
         }),
-        template: '{{stuff}}',
+        template: '{{this.stuff}}',
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{bottom-mut stuff=value}}',
+        template: '{{bottom-mut stuff=this.value}}',
       });
 
       this.render('{{middle-mut value="foo"}}');
@@ -154,7 +154,7 @@ moduleFor(
             bottom = this;
           },
         }),
-        template: '{{setMe}}',
+        template: '{{this.setMe}}',
       });
 
       this.registerComponent('middle-mut', {
@@ -163,10 +163,10 @@ moduleFor(
             middle = this;
           },
         }),
-        template: '{{bottom-mut setMe=(readonly value)}}',
+        template: '{{bottom-mut setMe=(readonly this.value)}}',
       });
 
-      this.render('{{middle-mut value=(mut val)}}', {
+      this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
       });
 
@@ -237,14 +237,14 @@ moduleFor(
             bottom = this;
           },
         }),
-        template: '{{setMe}}',
+        template: '{{this.setMe}}',
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{bottom-mut setMe=(mut value)}}',
+        template: '{{bottom-mut setMe=(mut this.value)}}',
       });
 
-      this.render('{{middle-mut value=(mut val)}}', {
+      this.render('{{middle-mut value=(mut this.val)}}', {
         val: 12,
       });
 
@@ -285,7 +285,7 @@ moduleFor(
             bottom = this;
           },
         }),
-        template: '{{thingy}}',
+        template: '{{this.thingy}}',
       });
 
       this.registerComponent('middle-mut', {
@@ -298,7 +298,7 @@ moduleFor(
             middle = this;
           },
         }),
-        template: '{{bottom-mut thingy=(mut val)}}',
+        template: '{{bottom-mut thingy=(mut this.val)}}',
       });
 
       this.render('{{middle-mut}}');
@@ -337,14 +337,14 @@ moduleFor(
             inner = this;
           },
         }),
-        template: '{{foo}}',
+        template: '{{this.foo}}',
       });
 
       this.registerComponent('x-outer', {
-        template: '{{x-inner foo=bar}}',
+        template: '{{x-inner foo=this.bar}}',
       });
 
-      this.render('{{x-outer bar=baz}}', { baz: 'foo' });
+      this.render('{{x-outer bar=this.baz}}', { baz: 'foo' });
 
       this.assertText('foo');
 
@@ -458,10 +458,10 @@ moduleFor(
           }),
           height: 20,
         }),
-        template: '{{height}}',
+        template: '{{this.height}}',
       });
 
-      this.render('{{x-output height=height}}{{x-input height=(mut height)}}', {
+      this.render('{{x-output height=this.height}}{{x-input height=(mut this.height)}}', {
         height: 60,
       });
 
@@ -536,10 +536,10 @@ moduleFor(
             },
           }),
         }),
-        template: '{{width}}x{{height}}',
+        template: '{{this.width}}x{{this.height}}',
       });
 
-      this.render('{{x-output width=width}}{{x-input width=(mut width)}}', {
+      this.render('{{x-output width=this.width}}{{x-input width=(mut this.width)}}', {
         width: 70,
       });
 

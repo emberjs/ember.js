@@ -304,5 +304,5 @@
   @public
 */
 
-export { setHelperManager, helperCapabilities as capabilties } from '@glimmer/manager';
-export { invokeHelper } from '@glimmer/runtime';
+export { setHelperManager, helperCapabilities as capabilities } from '@glimmer/manager';
+export { invokeHelper, hash, array, concat, get, fn } from '@glimmer/runtime';

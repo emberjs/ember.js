@@ -1,9 +1,49 @@
 /**
 @module @ember/component
 */
-import { setInternalComponentManager } from '@glimmer/manager';
-import InternalManager from '../component-managers/internal';
-import InternalComponent from './internal';
+import { hasDOM } from '@ember/-internals/browser-environment';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
+import { assert, warn } from '@ember/debug';
+import { action } from '@ember/object';
+import { valueForRef } from '@glimmer/reference';
+import { untrack } from '@glimmer/validator';
+import InputTemplate from '../templates/input';
+import AbstractInput, { handleDeprecatedFeatures, valueFrom } from './abstract-input';
+import Checkbox from './checkbox';
+import { opaquify } from './internal';
+import TextField from './text-field';
+
+let isValidInputType: (type: string) => boolean;
+
+if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  const INPUT_TYPES: Record<string, boolean | undefined> = Object.create(null);
+  const INPUT_ELEMENT = document.createElement('input');
+
+  INPUT_TYPES[''] = false;
+  INPUT_TYPES['text'] = true;
+  INPUT_TYPES['checkbox'] = true;
+
+  isValidInputType = (type: string) => {
+    let isValid = INPUT_TYPES[type];
+
+    if (isValid === undefined) {
+      try {
+        INPUT_ELEMENT.type = type;
+        isValid = INPUT_ELEMENT.type === type;
+      } catch (e) {
+        isValid = false;
+      } finally {
+        INPUT_ELEMENT.type = 'text';
+      }
+
+      INPUT_TYPES[type] = isValid;
+    }
+
+    return isValid;
+  };
+} else {
+  isValidInputType = (type: string) => type !== '';
+}
 
 /**
   See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
@@ -55,6 +95,21 @@ import InternalComponent from './internal';
   ```handlebars
   <Input @value={{this.searchWord}} @enter={{this.query}} />
   ```
+
+  Starting with Ember Octane, we recommend using the `{{on}}` modifier to call actions
+  on specific events, such as the input event.
+
+  ```handlebars
+  <label for="input-name">Name:</label>
+  <Input
+    @id="input-name"
+    @value={{this.name}}
+    {{on "input" this.validateName}}
+  />
+  ```
+
+  The event name (e.g. `focusout`, `input`, `keydown`) always follows the casing
+  that the HTML standard uses.
 
   ### `<input>` HTML Attributes to Avoid
 
@@ -111,12 +166,175 @@ import InternalComponent from './internal';
   @param {Hash} options
   @public
 */
-export default class Input extends InternalComponent {
+class Input extends AbstractInput {
+  static toString(): string {
+    return 'Input';
+  }
+
+  /**
+   * The HTML class attribute.
+   */
+  get class(): string {
+    if (this.isCheckbox) {
+      return 'ember-checkbox ember-view';
+    } else {
+      return 'ember-text-field ember-view';
+    }
+  }
+
+  /**
+   * The HTML type attribute.
+   */
+  get type(): string {
+    let type = this.named('type');
+
+    if (type === null || type === undefined) {
+      return 'text';
+    }
+
+    assert(
+      'The `@type` argument to the <Input> component must be a string',
+      typeof type === 'string'
+    );
+
+    return isValidInputType(type) ? type : 'text';
+  }
+
   get isCheckbox(): boolean {
-    return this.arg('type') === 'checkbox';
+    return this.named('type') === 'checkbox';
+  }
+
+  private _checked = valueFrom(this.args.named.checked);
+
+  get checked(): unknown {
+    if (this.isCheckbox) {
+      warn(
+        '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
+          'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
+          'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
+        untrack(
+          () =>
+            this.args.named.checked !== undefined ||
+            this.args.named.value === undefined ||
+            typeof valueForRef(this.args.named.value) === 'string'
+        ),
+        { id: 'ember.built-in-components.input-checkbox-value' }
+      );
+
+      return this._checked.get();
+    } else {
+      return undefined;
+    }
+  }
+
+  set checked(checked: unknown) {
+    warn(
+      '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
+        'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
+        'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
+      untrack(
+        () =>
+          this.args.named.checked !== undefined ||
+          this.args.named.value === undefined ||
+          typeof valueForRef(this.args.named.value) === 'string'
+      ),
+      { id: 'ember.built-in-components.input-checkbox-value' }
+    );
+
+    this._checked.set(checked);
+  }
+
+  @action change(event: Event): void {
+    if (this.isCheckbox) {
+      this.checkedDidChange(event);
+    } else {
+      super.change(event);
+    }
+  }
+
+  @action input(event: Event): void {
+    if (!this.isCheckbox) {
+      super.input(event);
+    }
+  }
+
+  @action checkedDidChange(event: Event): void {
+    let element = event.target;
+    assert('[BUG] element must be an <input>', element instanceof HTMLInputElement);
+    this.checked = element.checked;
+  }
+
+  protected shouldModernize(): boolean {
+    return (
+      super.shouldModernize() && TextField._wasReopened === false && Checkbox._wasReopened === false
+    );
+  }
+
+  protected isSupportedArgument(name: string): boolean {
+    let supportedArguments = [
+      'type',
+      'value',
+      'checked',
+      'enter',
+      'insert-newline',
+      'escape-press',
+    ];
+
+    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
   }
 }
 
-setInternalComponentManager(InternalManager.for('input'), Input);
+if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+  handleDeprecatedFeatures(Input, [
+    // Component
+    'id',
+    ['id', 'elementId'],
+    'class',
+    ['class', 'classNames'],
+    ['role', 'ariaRole'],
 
-Input.toString = () => '@ember/component/input';
+    // TextSupport
+    'autocapitalize',
+    'autocorrect',
+    'autofocus',
+    'disabled',
+    'form',
+    'maxlength',
+    'minlength',
+    'placeholder',
+    'readonly',
+    'required',
+    'selectionDirection',
+    'spellcheck',
+    'tabindex',
+    'title',
+
+    // TextField
+    'accept',
+    'autocomplete',
+    'autosave',
+    'dir',
+    'formaction',
+    'formenctype',
+    'formmethod',
+    'formnovalidate',
+    'formtarget',
+    'height',
+    'inputmode',
+    'lang',
+    'list',
+    'max',
+    'min',
+    'multiple',
+    'name',
+    'pattern',
+    'size',
+    'step',
+    'width',
+
+    // Checkbox
+    'indeterminate',
+  ]);
+}
+
+export default opaquify(Input, InputTemplate);

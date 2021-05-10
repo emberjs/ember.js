@@ -6,28 +6,14 @@ import {
   CapturedArguments,
   Destroyable,
   InternalModifierManager as ModifierManager,
-  VMArguments,
 } from '@glimmer/interfaces';
-import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
 
 export default class InternalModifier {
-  // Factory interface
-  static create(): never {
-    throw assert('Use constructor instead of create');
-  }
-
-  static get class(): typeof InternalModifier {
-    return this;
-  }
-
-  static get fullName(): string {
-    return this.name;
-  }
-
-  static get normalizedName(): string {
-    return this.name;
+  // Override this
+  static toString(): string {
+    return 'internal modifier';
   }
 
   constructor(
@@ -57,29 +43,32 @@ export default class InternalModifier {
   }
 }
 
-class InternalModifierState implements Destroyable {
-  constructor(readonly name: string, readonly instance: InternalModifier) {}
+function destructor(modifier: InternalModifier): void {
+  modifier.remove();
 }
 
-class InternalModifierManager
+class InternalModifierState implements Destroyable {
+  constructor(readonly instance: InternalModifier) {}
+}
+
+export class InternalModifierManager
   implements ModifierManager<InternalModifierState, typeof InternalModifier> {
-  constructor(private readonly owner: Owner) {}
+  constructor(private ModifierClass: typeof InternalModifier, private name: string) {}
 
   create(
+    owner: Owner,
     element: SimpleElement,
-    factory: typeof InternalModifier,
-    args: VMArguments
+    _definition: unknown,
+    args: CapturedArguments
   ): InternalModifierState {
     assert('element must be an HTMLElement', element instanceof HTMLElement);
 
-    let instance = new factory(this.owner, element, args.capture());
+    let { ModifierClass } = this;
+    let instance = new ModifierClass(owner, element, args);
 
-    registerDestructor(instance, (modifier) => modifier.remove());
+    registerDestructor(instance, destructor);
 
-    return new InternalModifierState(
-      factory.name,
-      new factory(this.owner, element, args.capture())
-    );
+    return new InternalModifierState(instance);
   }
 
   // not needed for now, but feel free to implement this
@@ -87,8 +76,8 @@ class InternalModifierManager
     return null;
   }
 
-  getDebugName({ name }: typeof InternalModifier): string {
-    return name;
+  getDebugName(): string {
+    return this.name;
   }
 
   install({ instance }: InternalModifierState): void {
@@ -104,5 +93,3 @@ class InternalModifierManager
     return instance;
   }
 }
-
-setInternalModifierManager((owner: Owner) => new InternalModifierManager(owner), InternalModifier);

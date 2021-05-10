@@ -9,6 +9,12 @@ import { Cache } from '@ember/-internals/utils';
 import { deprecate } from '@ember/debug';
 import { getString } from './lib/string_registry';
 
+import {
+  htmlSafe as internalHtmlSafe,
+  isHTMLSafe as internalIsHtmlSafe,
+  SafeString,
+} from '@ember/-internals/glimmer';
+
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 
 const STRING_DASHERIZE_CACHE = new Cache<string, string>(1000, (key) =>
@@ -122,7 +128,7 @@ export function loc(str: string, formats: any[]): string {
       for: 'ember-source',
       url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-loc',
       since: {
-        available: '3.24',
+        enabled: '3.24',
       },
     }
   );
@@ -294,6 +300,35 @@ export function capitalize(str: string): string {
   return CAPITALIZE_CACHE.get(str);
 }
 
+function deprecateImportFromString(
+  name: string,
+  message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
+) {
+  // Disabling this deprecation due to unintended errors in 3.25
+  // See https://github.com/emberjs/ember.js/issues/19393 fo more information.
+  deprecate(message, true, {
+    id: 'ember-string.htmlsafe-ishtmlsafe',
+    for: 'ember-source',
+    since: {
+      enabled: '3.25',
+    },
+    until: '4.0.0',
+    url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
+  });
+}
+
+export function htmlSafe(str: string): SafeString {
+  deprecateImportFromString('htmlSafe');
+
+  return internalHtmlSafe(str);
+}
+
+export function isHTMLSafe(str: any | null | undefined): str is SafeString {
+  deprecateImportFromString('isHTMLSafe');
+
+  return internalIsHtmlSafe(str);
+}
+
 if (ENV.EXTEND_PROTOTYPES.String) {
   let deprecateEmberStringPrototypeExtension = function (
     name: string,
@@ -305,7 +340,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
         id: 'ember-string.prototype-extensions',
         for: 'ember-source',
         since: {
-          available: '3.24',
+          enabled: '3.24',
         },
         until: '4.0.0',
         url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-prototype_extensions',

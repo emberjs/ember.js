@@ -1,6 +1,6 @@
 import { Promise } from 'rsvp';
 import Application from '@ember/application';
-import { run, hasScheduledTimers, getCurrentRunLoop } from '@ember/runloop';
+import { run, _hasScheduledTimers, _getCurrentRunLoop } from '@ember/runloop';
 import { compile } from 'ember-template-compiler';
 import { ModuleBasedTestResolver } from 'internal-test-helpers';
 
@@ -22,7 +22,7 @@ module('@ember/test-helpers emulation test', function () {
     function settled() {
       return new Promise(function (resolve) {
         let watcher = setInterval(() => {
-          if (getCurrentRunLoop() || hasScheduledTimers()) {
+          if (_getCurrentRunLoop() || _hasScheduledTimers()) {
             return;
           }
 

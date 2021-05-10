@@ -84,7 +84,7 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
           }
         );
 
-        this.render('{{hello foo=foo}}', {
+        this.render('{{hello foo=this.foo}}', {
           foo: 123,
         });
 
@@ -115,7 +115,7 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
           }
         );
 
-        this.render('{{hello foo}}', {
+        this.render('{{hello this.foo}}', {
           foo: 123,
         });
 

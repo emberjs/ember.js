@@ -3,7 +3,7 @@
 */
 
 import { getFactoryFor } from '@ember/-internals/container';
-import { symbol, setName } from '@ember/-internals/utils';
+import { symbol } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
@@ -26,8 +26,6 @@ export default class EmberObject extends CoreObject {
     return factory !== undefined && factory.fullName;
   }
 }
-
-setName(EmberObject, 'Ember.Object');
 
 Observable.apply(EmberObject.prototype);
 

@@ -7,8 +7,8 @@ import { getOwner, LEGACY_OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import {
   guidFor,
-  getName,
-  setName,
+  lookupDescriptor,
+  inspect,
   makeArray,
   HAS_NATIVE_PROXY,
   HAS_NATIVE_SYMBOL,
@@ -23,12 +23,12 @@ import {
   applyMixin,
   defineProperty,
   descriptorForProperty,
-  classToString,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
+  TrackedDescriptor,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
@@ -63,6 +63,21 @@ function initialize(obj, properties) {
         'definitions, use .extend & .create separately instead.',
       !(properties instanceof Mixin)
     );
+
+    let injectedProperties;
+    if (DEBUG) {
+      // these are all the implicit injectinos
+      injectedProperties = [];
+
+      let factory = getFactoryFor(obj);
+      if (factory) {
+        for (let injection in factory.injections) {
+          if (factory.injections[injection] === properties[injection]) {
+            injectedProperties.push(injection);
+          }
+        }
+      }
+    }
 
     let concatenatedProperties = obj.concatenatedProperties;
     let mergedProperties = obj.mergedProperties;
@@ -112,12 +127,85 @@ function initialize(obj, properties) {
       }
 
       if (isDescriptor) {
+        if (DEBUG && injectedProperties.indexOf(keyName) !== -1) {
+          // need to check if implicit injection owner.inject('component:my-component', 'foo', 'service:bar') does not match explicit injection @service foo
+          // implicit injection takes precedence so need to tell user to rename property on obj
+          let isInjectedProperty = DEBUG_INJECTION_FUNCTIONS.has(possibleDesc._getter);
+          if (isInjectedProperty && value !== possibleDesc.get(obj, keyName)) {
+            implicitInjectionDeprecation(
+              keyName,
+              `You have explicitly defined a service injection for the '${keyName}' property on ${inspect(
+                obj
+              )}. However, a different service or value was injected via implicit injections which overrode your explicit injection. Implicit injections have been deprecated, and will be removed in the near future. In order to prevent breakage, you should inject the same value explicitly that is currently being injected implicitly.`
+            );
+          } else if (possibleDesc instanceof TrackedDescriptor) {
+            let descValue = possibleDesc.get(obj, keyName);
+
+            if (value !== descValue) {
+              implicitInjectionDeprecation(
+                keyName,
+                `A value was injected implicitly on the '${keyName}' tracked property of an instance of ${inspect(
+                  obj
+                )}, overwriting the original value which was ${inspect(
+                  descValue
+                )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
+              );
+            }
+          } else if (possibleDesc._setter === undefined) {
+            implicitInjectionDeprecation(
+              keyName,
+              `A value was injected implicitly on the '${keyName}' computed property of an instance of ${inspect(
+                obj
+              )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
+            );
+          }
+        }
+
         possibleDesc.set(obj, keyName, value);
       } else if (typeof obj.setUnknownProperty === 'function' && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
         if (DEBUG) {
-          defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+          // If deprecation, either 1) an accessor descriptor or 2) class field declaration 3) only an implicit injection
+          let desc = lookupDescriptor(obj, keyName);
+
+          if (injectedProperties.indexOf(keyName) === -1) {
+            // Value was not an injected property, define in like normal
+            defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+          } else if (desc) {
+            // If the property is a value prop, and it isn't the expected value,
+            // then we can warn the user when they attempt to use the value
+            if ('value' in desc && desc.value !== value) {
+              // implicit injection does not match value descriptor set on object
+              defineSelfDestructingImplicitInjectionGetter(
+                obj,
+                keyName,
+                value,
+                `A value was injected implicitly on the '${keyName}' property of an instance of ${inspect(
+                  obj
+                )}, overwriting the original value which was ${inspect(
+                  desc.value
+                )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
+              );
+            } else {
+              // Otherwise, the value is either a getter/setter, or it is the correct value.
+              // If it is a getter/setter, then we don't know what activating it might do - it could
+              // be that the user only defined a getter, and so the value will not be set at all. It
+              // could be that the setter is a no-op that does nothing. Both of these are valid ways
+              // to "override" an implicit injection, so we can't really warn here. So, assign the
+              // value like we would normally.
+              obj[keyName] = value;
+            }
+          } else {
+            defineSelfDestructingImplicitInjectionGetter(
+              obj,
+              keyName,
+              value,
+              `A value was injected implicitly on the '${keyName}' property of an instance of ${inspect(
+                obj
+              )}. Implicit injection is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
+            );
+          }
         } else {
           obj[keyName] = value;
         }
@@ -142,6 +230,20 @@ function initialize(obj, properties) {
   }
 
   sendEvent(obj, 'init', undefined, undefined, undefined, m);
+}
+
+function defineSelfDestructingImplicitInjectionGetter(obj, keyName, value, message) {
+  Object.defineProperty(obj, keyName, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      // only want to deprecate on first access so we make this self destructing
+      Object.defineProperty(obj, keyName, { value });
+
+      implicitInjectionDeprecation(keyName, message);
+      return value;
+    },
+  });
 }
 
 /**
@@ -586,11 +688,7 @@ class CoreObject {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
     let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
 
-    let ret = `<${getName(this) || getFactoryFor(this) || this.constructor.toString()}:${guidFor(
-      this
-    )}${extension}>`;
-
-    return ret;
+    return `<${getFactoryFor(this) || '(unknown)'}:${guidFor(this)}${extension}>`;
   }
 
   /**
@@ -987,10 +1085,11 @@ class CoreObject {
     }
     return p;
   }
-}
 
-CoreObject.toString = classToString;
-setName(CoreObject, 'Ember.CoreObject');
+  static toString() {
+    return `<${getFactoryFor(this) || '(unknown)'}:constructor>`;
+  }
+}
 
 CoreObject.isClass = true;
 CoreObject.isMethod = false;
@@ -1116,6 +1215,30 @@ if (!HAS_NATIVE_SYMBOL) {
 
     set(value) {
       instanceFactory.set(this, value);
+    },
+  });
+
+  Object.defineProperty(CoreObject, INIT_FACTORY, {
+    get() {
+      return instanceFactory.get(this);
+    },
+
+    set(value) {
+      instanceFactory.set(this, value);
+    },
+
+    enumerable: false,
+  });
+}
+
+function implicitInjectionDeprecation(keyName, msg = null) {
+  deprecate(msg, false, {
+    id: 'implicit-injections',
+    until: '4.0.0',
+    url: 'https://deprecations.emberjs.com/v3.x#toc_implicit-injections',
+    for: 'ember-source',
+    since: {
+      enabled: '3.26.0',
     },
   });
 }

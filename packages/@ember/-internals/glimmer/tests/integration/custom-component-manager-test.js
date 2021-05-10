@@ -100,7 +100,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
@@ -118,7 +118,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
@@ -237,7 +237,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world {{count}}</p>`,
+        template: `<p>{{this.greeting}} world {{this.count}}</p>`,
         ComponentClass,
       });
 
@@ -261,7 +261,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
@@ -281,11 +281,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar firstName=firstName lastName=lastName}}', {
+      this.render('{{foo-bar firstName=this.firstName lastName=this.lastName}}', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -313,7 +313,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
@@ -333,11 +333,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar firstName lastName}}', {
+      this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -365,11 +365,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar firstName lastName}}', {
+      this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -397,11 +397,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar firstName lastName}}', {
+      this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -453,11 +453,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
-      this.render('{{#if show}}{{foo-bar}}{{/if}}', { show: true });
+      this.render('{{#if this.show}}{{foo-bar}}{{/if}}', { show: true });
 
       this.assertHTML(`<p>hello world</p>`);
 
@@ -511,11 +511,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} {{@name}}</p>`,
+        template: `<p>{{this.greeting}} {{@name}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar name=name}}', { name: 'world' });
+      this.render('{{foo-bar name=this.name}}', { name: 'world' });
 
       this.assertHTML(`<p>hello world</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
@@ -575,12 +575,12 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} {{@name}}</p>`,
+        template: `<p>{{this.greeting}} {{@name}}</p>`,
         ComponentClass,
       });
 
       assert.throws(() => {
-        this.render('{{foo-bar name=name}}', { name: 'world' });
+        this.render('{{foo-bar name=this.name}}', { name: 'world' });
       }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 
       assert.verifySteps([]);
@@ -600,7 +600,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
@@ -620,7 +620,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
@@ -653,11 +653,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('<FooBar @firstName={{firstName}} @lastName={{lastName}} />', {
+      this.render('<FooBar @firstName={{this.firstName}} @lastName={{this.lastName}} />', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -726,7 +726,7 @@ moduleFor(
         ComponentClass,
       });
 
-      this.render('<FooBar data-test={{value}} />', { value: 'foo' });
+      this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
 
       this.assertHTML(`<p data-test="foo">Hello world!</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
@@ -888,12 +888,12 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} {{@name}}</p>`,
+        template: `<p>{{this.greeting}} {{@name}}</p>`,
         ComponentClass,
       });
 
       assert.throws(() => {
-        this.render('<FooBar @name={{name}} />', { name: 'world' });
+        this.render('<FooBar @name={{this.name}} />', { name: 'world' });
       }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 
       assert.verifySteps([]);

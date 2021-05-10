@@ -1,5 +1,6 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 function assertHasClass(assert, selector, label) {
@@ -17,8 +18,8 @@ function assertHasNoClass(assert, selector, label) {
 moduleFor(
   '{{link-to}} component: .transitioning-in .transitioning-out CSS classes',
   class extends ApplicationTestCase {
-    constructor() {
-      super();
+    constructor(...args) {
+      super(...args);
 
       this.aboutDefer = RSVP.defer();
       this.otherDefer = RSVP.defer();
@@ -33,39 +34,39 @@ moduleFor(
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.aboutDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:other',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.otherDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:news',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.newsDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
         'application',
         `
         {{outlet}}
-        {{link-to 'Index' 'index' id='index-link'}}
-        {{link-to 'About' 'about' id='about-link'}}
-        {{link-to 'Other' 'other' id='other-link'}}
-        {{link-to 'News' 'news' activeClass=false id='news-link'}}
+        <div id='index-link'>{{#link-to route='index'}}Index{{/link-to}}</div>
+        <div id='about-link'>{{#link-to route='about'}}About{{/link-to}}</div>
+        <div id='other-link'>{{#link-to route='other'}}Other{{/link-to}}</div>
+        <div id='news-link'>{{#link-to route='news' activeClass=false}}News{{/link-to}}</div>
         `
       );
     }
@@ -82,11 +83,11 @@ moduleFor(
     }
 
     ['@test while a transition is underway'](assert) {
-      let $index = this.$('#index-link');
-      let $about = this.$('#about-link');
-      let $other = this.$('#other-link');
+      let $index = this.$('#index-link > a');
+      let $about = this.$('#about-link > a');
+      let $other = this.$('#other-link > a');
 
-      $about.click();
+      runTask(() => $about.click());
 
       assertHasClass(assert, $index, 'active');
       assertHasNoClass(assert, $about, 'active');
@@ -116,11 +117,11 @@ moduleFor(
     }
 
     ['@test while a transition is underway with activeClass is false'](assert) {
-      let $index = this.$('#index-link');
-      let $news = this.$('#news-link');
-      let $other = this.$('#other-link');
+      let $index = this.$('#index-link > a');
+      let $news = this.$('#news-link > a');
+      let $other = this.$('#other-link > a');
 
-      $news.click();
+      runTask(() => $news.click());
 
       assertHasClass(assert, $index, 'active');
       assertHasNoClass(assert, $news, 'active');
@@ -152,10 +153,11 @@ moduleFor(
 );
 
 moduleFor(
-  `{{link-to}} component: .transitioning-in .transitioning-out CSS classes - nested link-to's`,
+  `{{link-to}} component: [DEPRECATED] .transitioning-in .transitioning-out CSS classes - nested link-to's`,
   class extends ApplicationTestCase {
-    constructor() {
-      super();
+    constructor(...args) {
+      super(...args);
+
       this.aboutDefer = RSVP.defer();
       this.otherDefer = RSVP.defer();
       let _this = this;
@@ -168,41 +170,45 @@ moduleFor(
       });
       this.add(
         'route:parent-route.about',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.aboutDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:parent-route.other',
-        Route.extend({
+        class extends Route {
           model() {
             return _this.otherDefer.promise;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
         'application',
         `
         {{outlet}}
-        {{#link-to 'index' tagName='li'}}
-          {{link-to 'Index' 'index' id='index-link'}}
+        {{#link-to route='index' tagName='li'}}
+          <div id='index-link'>{{#link-to route='index'}}Index{{/link-to}}</div>
         {{/link-to}}
-        {{#link-to 'parent-route.about' tagName='li'}}
-          {{link-to 'About' 'parent-route.about' id='about-link'}}
+        {{#link-to route='parent-route.about' tagName='li'}}
+          <div id='about-link'>{{#link-to route='parent-route.about'}}About{{/link-to}}</div>
         {{/link-to}}
-        {{#link-to 'parent-route.other' tagName='li'}}
-          {{link-to 'Other' 'parent-route.other' id='other-link'}}
+        {{#link-to route='parent-route.other' tagName='li'}}
+          <div id='other-link'>{{#link-to route='parent-route.other'}}Other{{/link-to}}</div>
         {{/link-to}}
         `
       );
     }
 
-    beforeEach() {
-      return this.visit('/');
+    async beforeEach() {
+      return expectDeprecationAsync(
+        () => this.visit('/'),
+        /Passing the `@tagName` argument to <LinkTo> is deprecated\./,
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
     }
 
     resolveAbout() {
@@ -228,13 +234,13 @@ moduleFor(
     [`@test while a transition is underway with nested link-to's`](assert) {
       // TODO undo changes to this test but currently this test navigates away if navigation
       // outlet is not stable and the second $about.click() is triggered.
-      let $about = this.$('#about-link');
+      let $about = this.$('#about-link > a');
 
-      $about.click();
+      runTask(() => $about.click());
 
-      let $index = this.$('#index-link');
-      $about = this.$('#about-link');
-      let $other = this.$('#other-link');
+      let $index = this.$('#index-link > a');
+      $about = this.$('#about-link > a');
+      let $other = this.$('#other-link > a');
 
       assertHasClass(assert, $index, 'active');
       assertHasNoClass(assert, $about, 'active');
@@ -250,9 +256,9 @@ moduleFor(
 
       this.resolveAbout();
 
-      $index = this.$('#index-link');
-      $about = this.$('#about-link');
-      $other = this.$('#other-link');
+      $index = this.$('#index-link > a');
+      $about = this.$('#about-link > a');
+      $other = this.$('#other-link > a');
 
       assertHasNoClass(assert, $index, 'active');
       assertHasClass(assert, $about, 'active');
@@ -266,11 +272,11 @@ moduleFor(
       assertHasNoClass(assert, $about, 'ember-transitioning-out');
       assertHasNoClass(assert, $other, 'ember-transitioning-out');
 
-      $other.click();
+      runTask(() => $other.click());
 
-      $index = this.$('#index-link');
-      $about = this.$('#about-link');
-      $other = this.$('#other-link');
+      $index = this.$('#index-link > a');
+      $about = this.$('#about-link > a');
+      $other = this.$('#other-link > a');
 
       assertHasNoClass(assert, $index, 'active');
       assertHasClass(assert, $about, 'active');
@@ -286,9 +292,9 @@ moduleFor(
 
       this.resolveOther();
 
-      $index = this.$('#index-link');
-      $about = this.$('#about-link');
-      $other = this.$('#other-link');
+      $index = this.$('#index-link > a');
+      $about = this.$('#about-link > a');
+      $other = this.$('#other-link > a');
 
       assertHasNoClass(assert, $index, 'active');
       assertHasNoClass(assert, $about, 'active');
@@ -302,11 +308,11 @@ moduleFor(
       assertHasNoClass(assert, $about, 'ember-transitioning-out');
       assertHasNoClass(assert, $other, 'ember-transitioning-out');
 
-      $about.click();
+      runTask(() => $about.click());
 
-      $index = this.$('#index-link');
-      $about = this.$('#about-link');
-      $other = this.$('#other-link');
+      $index = this.$('#index-link > a');
+      $about = this.$('#about-link > a');
+      $other = this.$('#other-link > a');
 
       assertHasNoClass(assert, $index, 'active');
       assertHasNoClass(assert, $about, 'active');
@@ -322,9 +328,9 @@ moduleFor(
 
       this.resolveAbout();
 
-      $index = this.$('#index-link');
-      $about = this.$('#about-link');
-      $other = this.$('#other-link');
+      $index = this.$('#index-link > a');
+      $about = this.$('#about-link > a');
+      $other = this.$('#other-link > a');
 
       assertHasNoClass(assert, $index, 'active');
       assertHasClass(assert, $about, 'active');

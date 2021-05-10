@@ -1,4 +1,5 @@
-import { EmberArray } from '@ember/-internals/utils';
+import { EmberArray, getDebugName } from '@ember/-internals/utils';
+import { deprecate } from '@ember/debug';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
 import { notifyPropertyChange } from './property_events';
@@ -91,16 +92,48 @@ function arrayObserversHelper(
 
 export function addArrayObserver<T>(
   array: EmberArray<T>,
-  target: any,
-  opts?: ArrayObserverOptions | undefined
+  target: object | Function | null,
+  opts?: ArrayObserverOptions | undefined,
+  suppress = false
 ): ObjectHasArrayObservers {
+  deprecate(
+    `Array observers have been deprecated. Added an array observer to ${getDebugName?.(array)}.`,
+    suppress,
+    {
+      id: 'array-observers',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_array-observers',
+      until: '4.0.0',
+      for: 'ember-source',
+      since: {
+        enabled: '3.26.0-beta.1',
+      },
+    }
+  );
+
   return arrayObserversHelper(array, target, opts, addListener, false);
 }
 
 export function removeArrayObserver<T>(
   array: EmberArray<T>,
-  target: any,
-  opts?: ArrayObserverOptions | undefined
+  target: object | Function | null,
+  opts?: ArrayObserverOptions | undefined,
+  suppress = false
 ): ObjectHasArrayObservers {
+  deprecate(
+    `Array observers have been deprecated. Removed an array observer from ${getDebugName?.(
+      array
+    )}.`,
+    suppress,
+    {
+      id: 'array-observers',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_array-observers',
+      until: '4.0.0',
+      for: 'ember-source',
+      since: {
+        enabled: '3.26.0-beta.1',
+      },
+    }
+  );
+
   return arrayObserversHelper(array, target, opts, removeListener, true);
 }

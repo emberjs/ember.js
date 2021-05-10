@@ -126,7 +126,7 @@ moduleFor(
 
     // TODO consolidate these next 2 tests
     ['@test Calling sendAction on a component with a reference attr calls the function with arguments']() {
-      this.renderDelegate('{{action-delegate playing=playing}}', {
+      this.renderDelegate('{{action-delegate playing=this.playing}}', {
         playing: null,
       });
 
@@ -150,7 +150,7 @@ moduleFor(
     }
 
     ['@test Calling sendAction on a component with a {{mut}} attr calls the function with arguments']() {
-      this.renderDelegate('{{action-delegate playing=(mut playing)}}', {
+      this.renderDelegate('{{action-delegate playing=(mut this.playing)}}', {
         playing: null,
       });
 
@@ -323,7 +323,7 @@ moduleFor(
         }),
       });
 
-      this.render('{{#if shouldRender}}{{rip-alley}}{{/if}}', {
+      this.render('{{#if this.shouldRender}}{{rip-alley}}{{/if}}', {
         shouldRender: true,
       });
 
@@ -364,7 +364,7 @@ moduleFor(
             component = this;
           },
         }),
-        template: `{{val}}`,
+        template: `{{this.val}}`,
       });
 
       this.add(
@@ -546,7 +546,7 @@ moduleFor(
             assert.ok(true, 'outerSubmit called');
           },
         }),
-        template: '{{inner-component submitAction=(action outerSubmit)}}',
+        template: '{{inner-component submitAction=(action this.outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -583,7 +583,7 @@ moduleFor(
             },
           },
         }),
-        template: `{{inner-component innerSubmit=(action (action "outerSubmit" "${first}") "${second}" third)}}`,
+        template: `{{inner-component innerSubmit=(action (action "outerSubmit" "${first}") "${second}" this.third)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -770,7 +770,7 @@ moduleFor(
         }),
       });
 
-      this.render('{{#if shouldRender}}{{rip-alley}}{{/if}}', {
+      this.render('{{#if this.shouldRender}}{{rip-alley}}{{/if}}', {
         shouldRender: true,
       });
 

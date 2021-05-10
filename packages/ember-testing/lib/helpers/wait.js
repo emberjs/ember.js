@@ -3,7 +3,7 @@
 */
 import { checkWaiters } from '../test/waiters';
 import { RSVP } from '@ember/-internals/runtime';
-import { getCurrentRunLoop, hasScheduledTimers, run } from '@ember/runloop';
+import { _getCurrentRunLoop, _hasScheduledTimers, run } from '@ember/runloop';
 import { pendingRequests } from '../test/pending_requests';
 
 /**
@@ -55,7 +55,7 @@ export default function wait(app, value) {
       }
 
       // 3. If there are scheduled timers or we are inside of a run loop, keep polling
-      if (hasScheduledTimers() || getCurrentRunLoop()) {
+      if (_hasScheduledTimers() || _getCurrentRunLoop()) {
         return;
       }
 

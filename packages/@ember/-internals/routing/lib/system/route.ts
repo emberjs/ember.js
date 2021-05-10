@@ -1,3 +1,4 @@
+import { privatize as P } from '@ember/-internals/container';
 import {
   addObserver,
   computed,
@@ -11,6 +12,7 @@ import {
   setProperties,
 } from '@ember/-internals/metal';
 import { getOwner, Owner } from '@ember/-internals/owner';
+import { BucketCache } from '@ember/-internals/routing';
 import {
   A as emberA,
   ActionHandler,
@@ -18,7 +20,7 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
-import { lookupDescriptor } from '@ember/-internals/utils';
+import { isProxy, lookupDescriptor, symbol } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
@@ -38,6 +40,7 @@ import {
 } from 'router_js';
 import {
   calculateCacheKey,
+  deprecateTransitionMethods,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
   stashParamNames,
@@ -46,6 +49,7 @@ import generateController from './generate_controller';
 import EmberRouter, { QueryParam } from './router';
 
 export const ROUTE_CONNECTIONS = new WeakMap();
+const RENDER = symbol('render') as string;
 
 export function defaultSerialize(
   model: {},
@@ -62,6 +66,8 @@ export function defaultSerialize(
       object[name] = get(model, name);
     } else if (/_id$/.test(name)) {
       object[name] = get(model, 'id');
+    } else if (isProxy(model)) {
+      object[name] = get(model, name);
     }
   } else {
     object = getProperties(model, params);
@@ -97,8 +103,29 @@ class Route extends EmberObject implements IRoute {
   controller!: Controller;
   currentModel: unknown;
 
+  _bucketCache!: BucketCache;
   _internalName!: string;
   _names: unknown;
+  _router!: EmberRouter;
+
+  constructor(owner: Owner) {
+    super(...arguments);
+
+    if (owner) {
+      let router = owner.lookup<EmberRouter>('router:main');
+      let bucketCache = owner.lookup<BucketCache>(P`-bucket-cache:main`);
+
+      assert(
+        'ROUTER BUG: Expected route injections to be defined on the route. This is an internal bug, please open an issue on Github if you see this message!',
+        router && bucketCache
+      );
+
+      this._router = router;
+      this._bucketCache = bucketCache;
+      this._topLevelViewTemplate = owner.lookup('template:-outlet');
+      this._environment = owner.lookup('-environment:main');
+    }
+  }
 
   serialize!: (
     model: {},
@@ -108,8 +135,6 @@ class Route extends EmberObject implements IRoute {
         [key: string]: unknown;
       }
     | undefined;
-
-  _router!: EmberRouter;
 
   /**
     The name of the route, dot-delimited.
@@ -231,7 +256,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/member/interest.js
     import Route from '@ember/routing/route';
 
-    export default class MemberInterestRoute Route {
+    export default class MemberInterestRoute extends Route {
       queryParams = {
         interestQp: { refreshModel: true }
       }
@@ -476,11 +501,15 @@ class Route extends EmberObject implements IRoute {
       @action
       loading(transition, route) {
         let controller = this.controllerFor('foo');
-        controller.set('currentlyLoading', true);
 
-        transition.finally(function() {
-          controller.set('currentlyLoading', false);
-        });
+        // The controller may not be instantiated when initially loading
+        if (controller) {
+          controller.currentlyLoading = true;
+
+          transition.finally(function() {
+            controller.currentlyLoading = false;
+          });
+        }
       }
     }
     ```
@@ -805,10 +834,11 @@ class Route extends EmberObject implements IRoute {
     @return {Transition} the transition object associated with this
       attempted transition
     @since 1.0.0
+    @deprecated Use transitionTo from the Router service instead.
     @public
   */
   transitionTo(...args: any[]) {
-    // eslint-disable-line no-unused-vars
+    deprecateTransitionMethods('route', 'transitionTo');
     return this._router.transitionTo(...prefixRouteNameArg(this, args));
   }
 
@@ -903,6 +933,7 @@ class Route extends EmberObject implements IRoute {
     @public
   */
   replaceWith(...args: any[]) {
+    deprecateTransitionMethods('route', 'replaceWith');
     return this._router.replaceWith(...prefixRouteNameArg(this, args));
   }
 
@@ -962,6 +993,19 @@ class Route extends EmberObject implements IRoute {
     this.setupController(controller, context, transition);
 
     if (this._environment.options.shouldRender) {
+      deprecate(
+        'Usage of `renderTemplate` is deprecated.',
+        this.renderTemplate === Route.prototype.renderTemplate,
+        {
+          id: 'route-render-template',
+          until: '4.0.0',
+          url: 'https://deprecations.emberjs.com/v3.x/#toc_route-render-template',
+          for: 'ember-source',
+          since: {
+            enabled: '3.27.0',
+          },
+        }
+      );
       this.renderTemplate(controller, context);
     }
 
@@ -1447,6 +1491,29 @@ class Route extends EmberObject implements IRoute {
   }
 
   /**
+    `this[RENDER]` is used to render a template into a region of another template
+    (indicated by an `{{outlet}}`).
+
+    @method this[RENDER]
+    @param {String} name the name of the template to render
+    @param {Object} [options] the options
+    @param {String} [options.into] the template to render into,
+                    referenced by name. Defaults to the parent template
+    @param {String} [options.outlet] the outlet inside `options.into` to render into.
+                    Defaults to 'main'
+    @param {String|Object} [options.controller] the controller to use for this template,
+                    referenced by name or as a controller instance. Defaults to the Route's paired controller
+    @param {Object} [options.model] the model object to set on `options.controller`.
+                    Defaults to the return value of the Route's model hook
+    @private
+   */
+  [RENDER](name?: string, options?: PartialRenderOptions) {
+    let renderOptions = buildRenderOptions(this, name, options);
+    ROUTE_CONNECTIONS.get(this).push(renderOptions);
+    once(this._router, '_setOutlets');
+  }
+
+  /**
     A hook you can use to render the template for the current route.
 
     This method is called with the controller for the current route and the
@@ -1482,7 +1549,7 @@ class Route extends EmberObject implements IRoute {
   */
   renderTemplate(_controller: any, _model: {}) {
     // eslint-disable-line no-unused-vars
-    this.render();
+    this[RENDER]();
   }
 
   /**
@@ -1613,9 +1680,16 @@ class Route extends EmberObject implements IRoute {
     @public
   */
   render(name?: string, options?: PartialRenderOptions) {
-    let renderOptions = buildRenderOptions(this, name, options);
-    ROUTE_CONNECTIONS.get(this).push(renderOptions);
-    once(this._router, '_setOutlets');
+    deprecate(`Usage of \`render\` is deprecated. Route: \`${this.routeName}\``, false, {
+      id: 'route-render-template',
+      until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_route-render-template',
+      for: 'ember-source',
+      since: {
+        enabled: '3.27.0',
+      },
+    });
+    this[RENDER](name, options);
   }
 
   /**
@@ -1679,6 +1753,15 @@ class Route extends EmberObject implements IRoute {
     @public
   */
   disconnectOutlet(options: string | { outlet: string; parentView?: string }) {
+    deprecate('The usage of `disconnectOutlet` is deprecated.', false, {
+      id: 'route-disconnect-outlet',
+      until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_route-disconnect-outlet',
+      for: 'ember-source',
+      since: {
+        enabled: '3.27.0',
+      },
+    });
     let outletName;
     let parentView;
     if (options) {

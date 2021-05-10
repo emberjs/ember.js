@@ -104,7 +104,7 @@ moduleFor(
     ['@test Calling transitionTo does not lose query params already on the activeTransition'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(3);
 
       this.router.map(function () {
         this.route('parent', function () {
@@ -117,7 +117,9 @@ moduleFor(
         'route:parent.child',
         Route.extend({
           afterModel() {
-            this.transitionTo('parent.sibling');
+            expectDeprecation(() => {
+              this.transitionTo('parent.sibling');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -140,7 +142,7 @@ moduleFor(
     ['@test Calling transitionTo does not serialize query params already serialized on the activeTransition'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(4);
 
       this.router.map(function () {
         this.route('parent', function () {
@@ -153,7 +155,9 @@ moduleFor(
         'route:parent.child',
         Route.extend({
           afterModel() {
-            this.transitionTo('parent.sibling');
+            expectDeprecation(() => {
+              this.transitionTo('parent.sibling');
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -230,7 +234,7 @@ moduleFor(
       await this.setAndFlush(controller, 'foo', 'WOO');
       this.assertCurrentPath('/?other_foo=WOO', "QP updated correctly without 'as'");
 
-      this.transitionTo('/?other_foo=NAW');
+      await this.transitionTo('/?other_foo=NAW');
       assert.equal(controller.get('foo'), 'NAW', 'QP managed correctly on URL transition');
 
       await this.setAndFlush(controller, 'bar', 'NERK');
@@ -740,7 +744,7 @@ moduleFor(
     ) {
       this.addTemplate(
         'application',
-        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{foo}}</span>{{outlet}}'
+        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
       );
 
       this.setSingleQPController('application', 'foo', 1, {
@@ -962,13 +966,13 @@ moduleFor(
       await this.setAndFlush(appController, 'alex', 'sriracha');
     }
 
-    ['@test can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent'](
+    async ['@test can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent'](
       assert
     ) {
       this.addTemplate('parent', '{{outlet}}');
       this.addTemplate(
         'parent.child',
-        "{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}"
+        "<LinkTo @route='parent' @query={{hash foo='change'}} id='parent-link'>Parent</LinkTo>"
       );
 
       this.router.map(function () {
@@ -980,26 +984,26 @@ moduleFor(
       let parentModelCount = 0;
       this.add(
         'route:parent',
-        Route.extend({
+        class extends Route {
           model() {
             parentModelCount++;
-          },
-          queryParams: {
+          }
+          queryParams = {
             foo: {
               refreshModel: true,
             },
-          },
-        })
+          };
+        }
       );
 
       this.setSingleQPController('parent', 'foo', 'abc');
 
-      return this.visit('/parent/child?foo=lol').then(() => {
-        assert.equal(parentModelCount, 1);
+      await this.visit('/parent/child?foo=lol');
 
-        run(document.getElementById('parent-link'), 'click');
-        assert.equal(parentModelCount, 2);
-      });
+      assert.equal(parentModelCount, 1);
+
+      run(document.getElementById('parent-link'), 'click');
+      assert.equal(parentModelCount, 2);
     }
 
     async ["@test Use Ember.get to retrieve query params 'replace' configuration"](assert) {
@@ -1101,9 +1105,7 @@ moduleFor(
       });
     }
 
-    ['@test Subresource naming style is supported'](assert) {
-      assert.expect(5);
-
+    async ['@test Subresource naming style is supported'](assert) {
       this.router.map(function () {
         this.route('abc.def', { path: '/abcdef' }, function () {
           this.route('zoo');
@@ -1112,22 +1114,26 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{link-to 'A' 'abc.def' (query-params foo='123') id='one'}}{{link-to 'B' 'abc.def.zoo' (query-params foo='123' bar='456') id='two'}}{{outlet}}"
+        `
+        <LinkTo @route='abc.def' @query={{hash foo='123'}} id='one'>A</LinkTo>
+        <LinkTo @route='abc.def.zoo' @query={{hash foo='123' bar='456'}} id='two'>B</LinkTo>
+        {{outlet}}
+        `
       );
 
       this.setSingleQPController('abc.def', 'foo', 'lol');
       this.setSingleQPController('abc.def.zoo', 'bar', 'haha');
 
-      return this.visitAndAssert('/').then(() => {
-        assert.equal(this.$('#one').attr('href'), '/abcdef?foo=123');
-        assert.equal(this.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+      await this.visitAndAssert('/');
 
-        run(this.$('#one'), 'click');
-        this.assertCurrentPath('/abcdef?foo=123');
+      assert.equal(this.$('#one').attr('href'), '/abcdef?foo=123');
+      assert.equal(this.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
-        run(this.$('#two'), 'click');
-        this.assertCurrentPath('/abcdef/zoo?bar=456&foo=123');
-      });
+      run(this.$('#one'), 'click');
+      this.assertCurrentPath('/abcdef?foo=123');
+
+      run(this.$('#two'), 'click');
+      this.assertCurrentPath('/abcdef/zoo?bar=456&foo=123');
     }
 
     async ['@test transitionTo supports query params']() {
@@ -1135,6 +1141,7 @@ moduleFor(
 
       await this.visitAndAssert('/');
       await this.transitionTo({ queryParams: { foo: 'borf' } });
+
       this.assertCurrentPath('/?foo=borf', 'shorthand supported');
 
       await this.transitionTo({ queryParams: { 'index:foo': 'blaf' } });
@@ -1271,8 +1278,10 @@ moduleFor(
       await this.visitAndAssert('/');
       await this.transitionTo({ queryParams: { foo: [2, 3] } });
       this.assertCurrentPath('/?foo=%5B2%2C3%5D', 'shorthand supported');
+
       await this.transitionTo({ queryParams: { 'index:foo': [4, 5] } });
       this.assertCurrentPath('/?foo=%5B4%2C5%5D', 'longform supported');
+
       await this.transitionTo({ queryParams: { foo: [] } });
       this.assertCurrentPath('/?foo=%5B%5D', 'longform supported');
     }
@@ -1396,7 +1405,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        this.transitionTo('other');
+        return this.transitionTo('other');
       });
     }
 
@@ -1435,12 +1444,13 @@ moduleFor(
       this.assertCurrentPath('/home', 'Setting property to undefined');
     }
 
-    ['@test {{link-to}} with null or undefined QPs does not get serialized into url'](assert) {
-      assert.expect(3);
-
+    async ['@test <LinkTo> with null or undefined QPs does not get serialized into url'](assert) {
       this.addTemplate(
         'home',
-        "{{link-to 'Home' 'home' (query-params foo=nullValue) id='null-link'}}{{link-to 'Home' 'home' (query-params foo=undefinedValue) id='undefined-link'}}"
+        `
+        <LinkTo @route='home' @query={{hash foo=this.nullValue}} id='null-link'>Home</LinkTo>
+        <LinkTo @route='home' @query={{hash foo=this.undefinedValue}} id='undefined-link'>Home</LinkTo>
+        `
       );
 
       this.router.map(function () {
@@ -1452,10 +1462,10 @@ moduleFor(
         undefinedValue: undefined,
       });
 
-      return this.visitAndAssert('/home').then(() => {
-        assert.equal(this.$('#null-link').attr('href'), '/home');
-        assert.equal(this.$('#undefined-link').attr('href'), '/home');
-      });
+      await this.visitAndAssert('/home');
+
+      assert.equal(this.$('#null-link').attr('href'), '/home');
+      assert.equal(this.$('#undefined-link').attr('href'), '/home');
     }
 
     ["@test A child of a resource route still defaults to parent route's model even if the child route has a query param"](
@@ -1492,12 +1502,15 @@ moduleFor(
       return this.visitAndAssert('/');
     }
 
-    async ['@test opting into replace does not affect transitions between routes'](assert) {
-      assert.expect(5);
-
+    async ['@test opting into replace does not affect transitions between routes']() {
       this.addTemplate(
         'application',
-        "{{link-to 'Foo' 'foo' id='foo-link'}}{{link-to 'Bar' 'bar' id='bar-no-qp-link'}}{{link-to 'Bar' 'bar' (query-params raytiley='isthebest') id='bar-link'}}{{outlet}}"
+        `
+        <LinkTo @route='foo' id='foo-link'>Foo</LinkTo>
+        <LinkTo @route='bar' id='bar-no-qp-link'>Bar</LinkTo>
+        <LinkTo @route='bar' @query={{hash raytiley='isthebest'}} id='bar-link'>Bar</LinkTo>
+        {{outlet}}
+        `
       );
 
       this.router.map(function () {
@@ -1509,13 +1522,13 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             raytiley: {
               replace: true,
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visit('/');
@@ -1537,44 +1550,47 @@ moduleFor(
       run(document.getElementById('bar-link'), 'click');
     }
 
-    ["@test undefined isn't serialized or deserialized into a string"](assert) {
-      assert.expect(4);
-
+    async ["@test undefined isn't serialized or deserialized into a string"](assert) {
       this.router.map(function () {
         this.route('example');
       });
 
       this.addTemplate(
         'application',
-        "{{link-to 'Example' 'example' (query-params foo=undefined) id='the-link'}}"
+        "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
       );
 
       this.setSingleQPController('example', 'foo', undefined, {
         foo: undefined,
       });
 
+      let entered = 0;
+
       this.add(
         'route:example',
-        Route.extend({
+        class extends Route {
           model(params) {
+            entered++;
             assert.deepEqual(params, { foo: undefined });
-          },
-        })
+          }
+        }
       );
 
-      return this.visitAndAssert('/').then(() => {
-        assert.equal(
-          this.$('#the-link').attr('href'),
-          '/example',
-          'renders without undefined qp serialized'
-        );
+      await this.visitAndAssert('/');
 
-        return this.transitionTo('example', {
-          queryParams: { foo: undefined },
-        }).then(() => {
-          this.assertCurrentPath('/example');
-        });
+      assert.equal(
+        this.$('#the-link').attr('href'),
+        '/example',
+        'renders without undefined qp serialized'
+      );
+
+      await this.transitionTo('example', {
+        queryParams: { foo: undefined },
       });
+
+      assert.equal(entered, 1, 'Should have entered example route');
+
+      this.assertCurrentPath('/example');
     }
 
     ['@test when refreshModel is true and loading hook is undefined, model hook will rerun when QPs change even if previous did not finish']() {
@@ -1740,7 +1756,7 @@ moduleFor(
     async [`@test Updating single query parameter doesn't affect other query parameters. Issue #14438`](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(6);
 
       this.router.map(function () {
         this.route('grandparent', { path: 'grandparent/:foo' }, function () {
@@ -1756,7 +1772,9 @@ moduleFor(
         'route:index',
         Route.extend({
           redirect() {
-            this.transitionTo('grandparent.parent.child', 1);
+            expectDeprecation(() => {
+              this.transitionTo('grandparent.parent.child', 1);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

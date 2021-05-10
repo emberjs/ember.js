@@ -443,7 +443,7 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
 
         assert.throws(() => {
           invokeHelper({}, class {});
-        }, /Attempted to load a helper, but there wasn't a manager associated with the definition. The definition was:/);
+        }, /Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was:/);
       }
     }
   );

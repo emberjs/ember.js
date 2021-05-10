@@ -551,7 +551,10 @@ moduleFor(
         })
       );
 
-      this.addTemplate('root.index', '<a {{action "showStuff" model1 model2}}>{{model1.name}}</a>');
+      this.addTemplate(
+        'root.index',
+        '<a {{action "showStuff" this.model1 this.model2}}>{{this.model1.name}}</a>'
+      );
 
       await this.visit('/');
 
@@ -681,7 +684,9 @@ moduleFor(
         Route.extend({
           redirect() {
             if (destination) {
-              this.transitionTo(destination);
+              expectDeprecation(() => {
+                this.transitionTo(destination);
+              }, /Calling transitionTo on a route is deprecated/);
             }
           },
 
@@ -708,7 +713,7 @@ moduleFor(
     }
 
     ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       this.router.map(function () {
         this.route('home');
@@ -723,7 +728,9 @@ moduleFor(
         'route:bar',
         Route.extend({
           redirect() {
-            this.transitionTo('home');
+            expectDeprecation(() => {
+              this.transitionTo('home');
+            }, /Calling transitionTo on a route is deprecated/);
           },
           setupController() {
             assert.ok(false, 'Should transition before setupController');
@@ -757,7 +764,7 @@ moduleFor(
     ['@test Redirecting to the current target in the middle of a route does not abort initial routing'](
       assert
     ) {
-      assert.expect(6);
+      assert.expect(7);
 
       this.router.map(function () {
         this.route('home');
@@ -774,9 +781,11 @@ moduleFor(
         'route:bar',
         Route.extend({
           redirect() {
-            return this.transitionTo('bar.baz').then(function () {
-              successCount++;
-            });
+            return expectDeprecation(() => {
+              return this.transitionTo('bar.baz').then(function () {
+                successCount++;
+              });
+            }, /Calling transitionTo on a route is deprecated/);
           },
 
           setupController() {
@@ -810,7 +819,7 @@ moduleFor(
     ['@test Redirecting to the current target with a different context aborts the remainder of the routes'](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(7);
 
       this.router.map(function () {
         this.route('home');
@@ -832,7 +841,9 @@ moduleFor(
             if (count++ > 10) {
               assert.ok(false, 'infinite loop');
             } else {
-              this.transitionTo('bar.baz', model);
+              expectDeprecation(() => {
+                this.transitionTo('bar.baz', model);
+              }, /Calling transitionTo on a route is deprecated/);
             }
           },
         })
@@ -880,7 +891,9 @@ moduleFor(
         Route.extend({
           actions: {
             goToQux() {
-              this.transitionTo('foo.qux');
+              expectDeprecation(() => {
+                this.transitionTo('foo.qux');
+              }, /Calling transitionTo on a route is deprecated/);
             },
           },
         })
@@ -906,6 +919,7 @@ moduleFor(
     }
 
     ['@test Router accounts for rootURL on page load when using history location'](assert) {
+      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       let rootURL = window.location.pathname + '/app';
       let postsTemplateRendered = false;
       let setHistory;
@@ -1131,7 +1145,7 @@ moduleFor(
     ['@test Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered'](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(6);
 
       this.router.map(function () {
         this.route('index');
@@ -1149,7 +1163,9 @@ moduleFor(
               assert.ok(true, 'willTransition was called');
               if (redirect) {
                 // router.js won't refire `willTransition` for this redirect
-                this.transitionTo('about');
+                expectDeprecation(() => {
+                  this.transitionTo('about');
+                }, /Calling transitionTo on a route is deprecated/);
               } else {
                 transition.abort();
               }
@@ -1462,7 +1478,9 @@ moduleFor(
         'route:home',
         Route.extend({
           beforeModel() {
-            this.transitionTo('about', null);
+            expectDeprecation(() => {
+              this.transitionTo('about', null);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -1663,7 +1681,7 @@ moduleFor(
     }
 
     async ['@test Errors in transitionTo within redirect hook are logged'](assert) {
-      assert.expect(4);
+      assert.expect(5);
       let actual = [];
 
       this.router.map(function () {
@@ -1675,7 +1693,9 @@ moduleFor(
         'route:yondo',
         Route.extend({
           redirect() {
-            this.transitionTo('stink-bomb', { something: 'goes boom' });
+            expectDeprecation(() => {
+              this.transitionTo('stink-bomb', { something: 'goes boom' });
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -1709,7 +1729,9 @@ moduleFor(
         'route:yondo',
         Route.extend({
           redirect() {
-            this.transitionTo('stink-bomb', { something: 'goes boom' });
+            expectDeprecation(() => {
+              this.transitionTo('stink-bomb', { something: 'goes boom' });
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

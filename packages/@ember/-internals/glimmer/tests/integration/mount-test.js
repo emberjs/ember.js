@@ -30,7 +30,7 @@ moduleFor(
   class extends RenderingTestCase {
     ['@test it asserts when an invalid engine name is provided']() {
       expectAssertion(() => {
-        this.render('{{mount engineName}}', { engineName: {} });
+        this.render('{{mount this.engineName}}', { engineName: {} });
       }, /Invalid engine name '\[object Object\]' specified, engine name must be either a string, null or undefined./i);
     }
 
@@ -73,8 +73,10 @@ moduleFor(
       assert
     ) {
       this.engineRegistrations['template:application'] = compile(
-        '<h2>Chat here, {{username}}</h2>',
-        { moduleName: 'my-app/templates/application.hbs' }
+        '<h2>Chat here, {{this.username}}</h2>',
+        {
+          moduleName: 'my-app/templates/application.hbs',
+        }
       );
 
       let controller;
@@ -119,7 +121,7 @@ moduleFor(
       this.addTemplate('route-with-mount', '{{mount "chat"}}');
 
       this.engineRegistrations['template:application'] = compile(
-        'hi {{person.name}} [{{component-with-backtracking-set person=person}}]',
+        'hi {{this.person.name}} [{{component-with-backtracking-set person=this.person}}]',
         {
           moduleName: 'my-app/templates/application.hbs',
         }
@@ -170,7 +172,7 @@ moduleFor(
           },
         })
       );
-      this.addTemplate('bound-engine-name', '{{mount engineName}}');
+      this.addTemplate('bound-engine-name', '{{mount this.engineName}}');
 
       this.add(
         'engine:foo',
@@ -359,7 +361,7 @@ moduleFor(
       );
       this.addTemplate(
         'engine-params-bound',
-        '{{mount "paramEngine" model=(hash foo=boundParamValue)}}'
+        '{{mount "paramEngine" model=(hash foo=this.boundParamValue)}}'
       );
 
       return this.visit('/engine-params-bound').then(() => {

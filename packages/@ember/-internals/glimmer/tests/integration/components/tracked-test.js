@@ -41,7 +41,7 @@ moduleFor(
         template: '{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}',
       });
 
-      this.render('<PersonWrapper @first={{first}} @last={{last}} />', {
+      this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} />', {
         first: 'robert',
         last: 'jackson',
       });
@@ -76,7 +76,7 @@ moduleFor(
         template: '{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}',
       });
 
-      this.render('<PersonWrapper @first={{first}} @last={{last}} />', {
+      this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} />', {
         first: 'robert',
         last: 'jackson',
       });
@@ -526,7 +526,7 @@ moduleFor(
         template: '{{this.person.first}} {{this.person.last}}',
       });
 
-      this.render('<PersonWrapper @first={{first}} @last={{last}} />', {
+      this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} />', {
         first: 'robert',
         last: 'jackson',
       });

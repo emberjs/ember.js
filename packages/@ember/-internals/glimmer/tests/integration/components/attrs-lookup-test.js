@@ -8,9 +8,9 @@ moduleFor(
   'Components test: attrs lookup',
   class extends RenderingTestCase {
     ['@test it should be able to lookup attrs without `attrs.` - template access']() {
-      this.registerComponent('foo-bar', { template: '{{first}}' });
+      this.registerComponent('foo-bar', { template: '{{this.first}}' });
 
-      this.render(`{{foo-bar first=firstAttr}}`, {
+      this.render(`{{foo-bar first=this.firstAttr}}`, {
         firstAttr: 'first attr',
       });
 
@@ -40,10 +40,10 @@ moduleFor(
       });
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{first}}',
+        template: '{{this.first}}',
       });
 
-      this.render(`{{foo-bar first=firstAttr}}`, {
+      this.render(`{{foo-bar first=this.firstAttr}}`, {
         firstAttr: 'first attr',
       });
 
@@ -76,7 +76,7 @@ moduleFor(
       });
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{first}}',
+        template: '{{this.first}}',
       });
 
       this.render(`{{foo-bar first="first attr"}}`);
@@ -113,7 +113,7 @@ moduleFor(
       });
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-      this.render(`{{foo-bar woot=woot}}`, {
+      this.render(`{{foo-bar woot=this.woot}}`, {
         woot: wootVal,
       });
 
@@ -172,7 +172,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
-      this.render(`{{foo-bar firstPositional first=first second=second}}`, {
+      this.render(`{{foo-bar this.firstPositional first=this.first second=this.second}}`, {
         firstPositional: 'firstPositional',
         first: 'first',
         second: 'second',

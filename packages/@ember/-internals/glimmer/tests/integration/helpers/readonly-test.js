@@ -16,10 +16,10 @@ moduleFor(
             component = this;
           },
         }),
-        template: '{{value}}',
+        template: '{{this.value}}',
       });
 
-      this.render('{{foo-bar value=(readonly val)}}', {
+      this.render('{{foo-bar value=(readonly this.val)}}', {
         val: 12,
       });
 
@@ -56,10 +56,10 @@ moduleFor(
             outer = this;
           },
         }),
-        template: '{{x-inner onClick=(readonly onClick)}}',
+        template: '{{x-inner onClick=(readonly this.onClick)}}',
       });
 
-      this.render('{{x-outer onClick=(action doIt)}}', {
+      this.render('{{x-outer onClick=(action this.doIt)}}', {
         doIt() {
           assert.ok(true, 'action was called');
         },
@@ -90,10 +90,10 @@ moduleFor(
             component = this;
           },
         }),
-        template: '{{value}}',
+        template: '{{this.value}}',
       });
 
-      this.render('{{foo-bar value=(readonly thing)}}', {
+      this.render('{{foo-bar value=(readonly this.thing)}}', {
         thing: 'initial',
       });
 
@@ -125,10 +125,10 @@ moduleFor(
             component = this;
           },
         }),
-        template: '{{value.prop}}',
+        template: '{{this.value.prop}}',
       });
 
-      this.render('{{foo-bar value=(readonly thing)}}', {
+      this.render('{{foo-bar value=(readonly this.thing)}}', {
         thing: {
           prop: 'initial',
         },
@@ -162,7 +162,7 @@ moduleFor(
             component = this;
           },
         }),
-        template: '{{value}}',
+        template: '{{this.value}}',
       });
 
       this.render('{{foo-bar value=(readonly "12")}}');
@@ -193,7 +193,7 @@ moduleFor(
             bottom = this;
           },
         }),
-        template: '{{bar}}',
+        template: '{{this.bar}}',
       });
 
       this.registerComponent('x-middle', {
@@ -202,10 +202,10 @@ moduleFor(
             middle = this;
           },
         }),
-        template: '{{foo}} {{x-bottom bar=(mut foo)}}',
+        template: '{{this.foo}} {{x-bottom bar=(mut this.foo)}}',
       });
 
-      this.render('{{x-middle foo=(readonly val)}}', {
+      this.render('{{x-middle foo=(readonly this.val)}}', {
         val: 12,
       });
 

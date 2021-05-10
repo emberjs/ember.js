@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 

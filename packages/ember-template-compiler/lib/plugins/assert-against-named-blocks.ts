@@ -14,7 +14,7 @@ import { EmberASTPluginEnvironment } from '../types';
   @class AssertAgainstNamedBlocks
 */
 export default function assertAgainstNamedBlocks(env: EmberASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let moduleName = env.meta?.moduleName;
 
   return {
     name: 'assert-against-named-blocks',

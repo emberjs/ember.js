@@ -1,5 +1,7 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
+import Controller from '@ember/controller';
+
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 let counter;
@@ -187,6 +189,155 @@ moduleFor(
           assert.equal(text, 'DUMMY', `dummy template has been rendered`);
         });
         assert.equal(this.currentPath, 'loading', `loading state entered`);
+        deferred.resolve();
+
+        return promise;
+      });
+    }
+
+    ['@test Enter loading route with correct query parameters'](assert) {
+      let deferred = RSVP.defer();
+
+      this.router.map(function () {
+        this.route('dummy');
+      });
+
+      this.add(
+        'route:dummy',
+        Route.extend({
+          model() {
+            step(assert, 1, 'DummyRoute#model');
+            return deferred.promise;
+          },
+        })
+      );
+
+      this.add(
+        'controller:application',
+        class extends Controller {
+          queryParams = ['qux'];
+
+          qux = 'initial';
+        }
+      );
+
+      this.add(
+        'route:loading',
+        Route.extend({
+          setupController() {
+            step(assert, 2, 'LoadingRoute#setupController');
+          },
+        })
+      );
+      this.addTemplate('dummy', 'DUMMY');
+
+      return this.visit('/?qux=updated').then(() => {
+        assert.equal(
+          this.getController('application').qux,
+          'updated',
+          'the application controller has the correct qp value'
+        );
+
+        let promise = this.visit('/dummy?qux=updated').then(() => {
+          let text = this.$('#app').text();
+
+          assert.equal(text, 'DUMMY', `dummy template has been rendered`);
+          assert.equal(
+            this.getController('application').qux,
+            'updated',
+            'the application controller has the correct qp value'
+          );
+        });
+
+        assert.equal(this.currentPath, 'loading', `loading state entered`);
+        assert.equal(
+          this.currentURL,
+          '/dummy?qux=updated',
+          `during loading url reflect the correct state`
+        );
+        assert.equal(
+          this.getController('application').qux,
+          'updated',
+          'the application controller has the correct qp value'
+        );
+
+        deferred.resolve();
+
+        return promise;
+      });
+    }
+
+    ['@test Enter child-loading route with correct query parameters'](assert) {
+      assert.expect(9);
+      let deferred = RSVP.defer();
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+        });
+      });
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          model() {
+            step(assert, 1, 'ChildRoute#model');
+            return deferred.promise;
+          },
+        })
+      );
+
+      this.add(
+        'controller:parent',
+        class extends Controller {
+          queryParams = ['qux'];
+
+          qux = 'initial';
+        }
+      );
+
+      this.add(
+        'route:parent.child_loading',
+        Route.extend({
+          setupController() {
+            step(assert, 2, 'ChildLoadingRoute#setupController');
+          },
+        })
+      );
+      this.addTemplate('parent', 'PARENT {{outlet}}');
+
+      this.addTemplate('parent.child', 'CHILD');
+
+      return this.visit('/parent?qux=updated').then(() => {
+        assert.equal(
+          this.getController('parent').qux,
+          'updated',
+          'in the parent route, the parent controller has the correct qp value'
+        );
+
+        let promise = this.visit('/parent/child?qux=updated').then(() => {
+          let text = this.$('#app').text();
+
+          assert.equal(text, 'PARENT CHILD', `child template has been rendered`);
+          assert.equal(
+            this.getController('parent').qux,
+            'updated',
+            'after entered in the parent.child route, the parent controller has the correct qp value'
+          );
+        });
+
+        assert.equal(this.currentPath, 'parent.child_loading', `child loading state entered`);
+        assert.equal(
+          this.currentURL,
+          '/parent/child?qux=updated',
+          `during child loading, url reflect the correct state`
+        );
+        assert.equal(
+          this.getController('parent').qux,
+          'updated',
+          'in the child_loading route, the parent controller has the correct qp value'
+        );
+
         deferred.resolve();
 
         return promise;
@@ -754,7 +905,9 @@ moduleFor(
             error(err) {
               step(assert, 2, 'MomSallyRoute#actions.error');
               handledError = err;
-              this.transitionTo('mom.this-route-throws');
+              expectDeprecation(() => {
+                this.transitionTo('mom.this-route-throws');
+              }, /Calling transitionTo on a route is deprecated/);
 
               return false;
             },
@@ -829,7 +982,9 @@ moduleFor(
             error(err) {
               step(assert, 2, 'MomSallyRoute#actions.error');
               handledError = err;
-              this.transitionTo('mom.this-route-throws');
+              expectDeprecation(() => {
+                this.transitionTo('mom.this-route-throws');
+              }, /Calling transitionTo on a route is deprecated/);
 
               return false;
             },
@@ -1080,7 +1235,9 @@ moduleFor(
         'route:grandma',
         Route.extend({
           beforeModel: function () {
-            this.transitionTo('memere', 1);
+            expectDeprecation(() => {
+              this.transitionTo('memere', 1);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );

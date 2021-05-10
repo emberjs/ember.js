@@ -31,7 +31,7 @@ function ast(template: string): AST.Program {
     moduleName: '-top-level',
   });
 
-  if (options.plugins.ast) {
+  if (options.plugins?.ast) {
     options.plugins.ast.push(extractProgram);
   }
 

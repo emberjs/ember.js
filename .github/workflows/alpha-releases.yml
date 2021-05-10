@@ -1,0 +1,64 @@
+name: Alpha Releases
+
+on:
+  schedule:
+    - cron:  '0 20 * * 3' # weekly (Wednesday)
+
+jobs:
+  test:
+    name: Basic Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
+      - name: build
+        env:
+          DISABLE_SOURCE_MAPS: true
+          BROCCOLI_ENV: production
+        run: yarn ember build
+      - name: test
+        env:
+          TEST_SUITE: each-package
+        run: yarn test
+
+  release:
+    name: Tag + Release
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+          registry-url: 'https://registry.npmjs.org'
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
+      - name: setup git
+        run: |
+          git config --local user.email 'tomster@emberjs.com'
+          git config --local user.name 'Ember.js Alpha Releaser'
+      - name: tag the next alpha
+        run: npm version prerelease --preid alpha
+      - name: build for publish
+        env:
+          BUILD_TYPE: alpha
+          OVERRIDE_FEATURES: ''
+        run: node bin/build-for-publishing.js
+      - name: publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - name: push branch + tag
+        run: git push origin HEAD --follow-tags
