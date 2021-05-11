@@ -3,6 +3,7 @@ import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'inte
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
 import { LinkComponent } from '@ember/-internals/glimmer';
+import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   '{{link-to}} component (rendering tests)',
@@ -13,6 +14,19 @@ moduleFor(
       expectAssertion(() => {
         this.addTemplate('application', `{{#link-to}}Index{{/link-to}}`);
       }, /You must provide one or more parameters to the `{{link-to}}` component\. \('my-app\/templates\/application\.hbs' @ L1:C0\)/);
+    }
+
+    async [`@test it throws a useful error if you pass the href argument`](assert) {
+      this.addTemplate('application', `{{#link-to href="nope" route="index"}}Index{{/link-to}}`);
+
+      if (DEBUG) {
+        await assert.rejects(
+          this.visit('/'),
+          /Passing the `@href` argument to <LinkTo> is not supported\./
+        );
+      } else {
+        assert.expect(0);
+      }
     }
 
     async ['@test it should be able to be inserted in DOM when the router is not present']() {
