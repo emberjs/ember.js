@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/vm-babel-plugins",
-  "version": "0.79.0",
+  "version": "0.79.1",
   "description": "Compiles out VM assertion and deprecation utilities and debug tooling based on environment",
   "repository": "https://github.com/glimmerjs/glimmer.js",
   "author": "Tom Dale <tom@tomdale.net>",
