@@ -1,3 +1,12 @@
+## v0.79.1 (2021-05-11)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1304](https://github.com/glimmerjs/glimmer-vm/pull/1304) Remove unnecessary property descriptor assertion from hash ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.79.0 (2021-04-27)
 
 #### :boom: Breaking Change
