@@ -66,7 +66,7 @@ moduleFor(
               ),
             publicPath === null
               ? `Using Ember.${name} is deprecated.`
-              : `Using Ember.${name} or importing from '${publicPath}' is deprecated. Install the \`ember-legacy-built-in-components\` addon and use \`import { ${name} } from 'ember-legacy-built-in-components';\` instead.`
+              : `Using Ember.${name} or importing from '${publicPath}' is deprecated. Install the \`@ember/legacy-built-in-components\` addon and use \`import { ${name} } from '@ember/legacy-built-in-components';\` instead.`
           );
         } catch (error) {
           assert.pushResult({

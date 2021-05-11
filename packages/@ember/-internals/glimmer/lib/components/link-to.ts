@@ -393,7 +393,6 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     ['role', 'ariaRole'],
 
     // LinkTo
-    'href',
     'title',
     'rel',
     'tabindex',
@@ -401,6 +400,23 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   ]);
 
   handleDeprecatedEventArguments(LinkTo);
+
+  // @href
+  {
+    let superOnUnsupportedArgument = prototype['onUnsupportedArgument'];
+
+    Object.defineProperty(prototype, 'onUnsupportedArgument', {
+      configurable: true,
+      enumerable: false,
+      value: function onUnsupportedArgument(this: LinkTo, name: string): void {
+        if (name === 'href') {
+          assert(`Passing the \`@href\` argument to <LinkTo> is not supported.`);
+        } else {
+          superOnUnsupportedArgument.call(this, name);
+        }
+      },
+    });
+  }
 
   // @tagName
   {
@@ -454,8 +470,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               {
                 id: 'ember.built-in-components.legacy-arguments',
                 for: 'ember-source',
-                since: {},
+                since: {
+                  enabled: '3.27.0',
+                },
                 until: '4.0.0',
+                url:
+                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
               }
             );
 
@@ -472,8 +492,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               {
                 id: 'ember.built-in-components.legacy-arguments',
                 for: 'ember-source',
-                since: {},
+                since: {
+                  enabled: '3.27.0',
+                },
                 until: '4.0.0',
+                url:
+                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
               }
             );
 
@@ -505,8 +529,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               {
                 id: 'ember.built-in-components.legacy-arguments',
                 for: 'ember-source',
-                since: {},
+                since: {
+                  enabled: '3.27.0',
+                },
                 until: '4.0.0',
+                url:
+                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
               }
             );
           } else {
@@ -519,8 +547,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               {
                 id: 'ember.built-in-components.legacy-arguments',
                 for: 'ember-source',
-                since: {},
+                since: {
+                  enabled: '3.27.0',
+                },
                 until: '4.0.0',
+                url:
+                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
               }
             );
 
@@ -540,8 +572,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               {
                 id: 'ember.built-in-components.legacy-arguments',
                 for: 'ember-source',
-                since: {},
+                since: {
+                  enabled: '3.27.0',
+                },
                 until: '4.0.0',
+                url:
+                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
               }
             );
 
@@ -556,8 +592,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               {
                 id: 'ember.built-in-components.legacy-arguments',
                 for: 'ember-source',
-                since: {},
+                since: {
+                  enabled: '3.27.0',
+                },
                 until: '4.0.0',
+                url:
+                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
               }
             );
           }
