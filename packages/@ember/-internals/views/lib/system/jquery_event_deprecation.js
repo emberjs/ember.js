@@ -30,7 +30,7 @@ export default function addJQueryEventDeprecation(jqEvent) {
               {
                 id: 'ember-views.event-dispatcher.jquery-event',
                 until: '4.0.0',
-                url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-event',
+                url: 'https://deprecations.emberjs.com/v3.x#toc_jquery-event',
                 for: 'ember-source',
                 since: {
                   enabled: '3.9.0',
