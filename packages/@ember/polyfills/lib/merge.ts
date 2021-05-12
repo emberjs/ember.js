@@ -31,7 +31,7 @@ function merge(original: object, updates: object) {
   deprecate('Use of `merge` has been deprecated. Please use `assign` instead.', false, {
     id: 'ember-polyfills.deprecate-merge',
     until: '4.0.0',
-    url: 'https://emberjs.com/deprecations/v3.x/#toc_ember-polyfills-deprecate-merge',
+    url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-polyfills-deprecate-merge',
     for: 'ember-source',
     since: {
       enabled: '3.6.0-beta.1',

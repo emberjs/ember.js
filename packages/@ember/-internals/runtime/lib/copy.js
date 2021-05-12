@@ -100,7 +100,7 @@ export default function copy(obj, deep) {
   deprecate('Use ember-copy addon instead of copy method and Copyable mixin.', false, {
     id: 'ember-runtime.deprecate-copy-copyable',
     until: '4.0.0',
-    url: 'https://emberjs.com/deprecations/v3.x/#toc_ember-runtime-deprecate-copy-copyable',
+    url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-runtime-deprecate-copy-copyable',
     for: 'ember-source',
     since: {
       enabled: '3.3.0',

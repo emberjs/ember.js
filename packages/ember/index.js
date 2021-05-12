@@ -143,7 +143,7 @@ deprecate(
   !isIE,
   {
     id: '3-0-browser-support-policy',
-    url: 'https://emberjs.com/deprecations/v3.x#toc_3-0-browser-support-policy',
+    url: 'https://deprecations.emberjs.com/v3.x#toc_3-0-browser-support-policy',
     until: '4.0.0',
     for: 'ember-source',
     since: {
@@ -513,17 +513,18 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
 
         if (availableInLegacyAddon) {
           message +=
-            ` Install the \`ember-legacy-built-in-components\` addon and use ` +
-            `\`import { ${name} } from 'ember-legacy-built-in-components';\` instead.`;
+            ` Install the \`@ember/legacy-built-in-components\` addon and use ` +
+            `\`import { ${name} } from '@ember/legacy-built-in-components';\` instead.`;
         }
 
         deprecate(message, false, {
-          id: 'ember.built-in-components.legacy-import',
+          id: 'ember.built-in-components.import',
           until: '4.0.0',
           for: 'ember-source',
           since: {
-            // TODO: update this when enabling the feature
+            enabled: '3.27.0',
           },
+          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-import',
         });
 
         return value;
@@ -533,7 +534,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       enumerable: true,
     });
 
-    // Expose a non-deprecated version for tests and the ember-legacy-built-in-components addon
+    // Expose a non-deprecated version for tests and the @ember/legacy-built-in-components addon
     Ember[`_Legacy${name}`] = value;
   });
 } else {
@@ -644,7 +645,7 @@ if (JQUERY_INTEGRATION && !views.jQueryDisabled) {
         {
           id: 'ember-views.curly-components.jquery-element',
           until: '4.0.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
+          url: 'https://deprecations.emberjs.com/v3.x#toc_jquery-apis',
           for: 'ember-source',
           since: {
             enabled: '3.9.0',

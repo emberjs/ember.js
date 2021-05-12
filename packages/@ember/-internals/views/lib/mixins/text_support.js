@@ -328,7 +328,7 @@ function sendAction(eventName, view, event) {
     deprecate(message, false, {
       id: 'ember-component.send-action',
       until: '4.0.0',
-      url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
       for: 'ember-source',
       since: {
         enabled: '3.4.0',
@@ -365,8 +365,11 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         deprecate('Reopening Ember.TextSupport is deprecated.', false, {
           id: 'ember.built-in-components.reopen',
           for: 'ember-source',
-          since: {},
+          since: {
+            enabled: '3.27.0',
+          },
           until: '4.0.0',
+          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
         });
 
         TextSupport._wasReopened = true;

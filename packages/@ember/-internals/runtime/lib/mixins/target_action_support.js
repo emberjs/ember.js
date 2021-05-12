@@ -170,8 +170,11 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         deprecate('Reopening Ember.TargetActionSupport is deprecated.', false, {
           id: 'ember.built-in-components.reopen',
           for: 'ember-source',
-          since: {},
+          since: {
+            enabled: '3.27.0',
+          },
           until: '4.0.0',
+          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
         });
 
         TargetActionSupport._wasReopened = true;

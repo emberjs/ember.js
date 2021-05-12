@@ -239,7 +239,7 @@ export function handleDeprecatedFeatures(
               for: 'ember-source',
               since: {},
               until: '4.0.0',
-              url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+              url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
             }
           );
 
@@ -270,7 +270,7 @@ export function handleDeprecatedFeatures(
                 for: 'ember-source',
                 since: {},
                 until: '4.0.0',
-                url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
               }
             );
 

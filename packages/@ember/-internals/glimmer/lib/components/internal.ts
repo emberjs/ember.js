@@ -274,8 +274,12 @@ export function handleDeprecatedArguments(target: DeprecatingInternalComponentCo
         deprecate(`Passing the \`@${name}\` argument to <${angle}> is deprecated.`, false, {
           id: 'ember.built-in-components.legacy-arguments',
           for: 'ember-source',
-          since: {},
+          since: {
+            enabled: '3.27.0',
+          },
           until: '4.0.0',
+          url:
+            'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
         });
 
         this.modernized = false;
@@ -356,8 +360,12 @@ export function handleDeprecatedAttributeArguments(
               {
                 id: 'ember.built-in-components.legacy-attribute-arguments',
                 for: 'ember-source',
-                since: {},
+                since: {
+                  enabled: '3.27.0',
+                },
                 until: '4.0.0',
+                url:
+                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-attribute-arguments',
               }
             );
 
@@ -517,8 +525,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
             {
               id: 'ember.built-in-components.legacy-attribute-arguments',
               for: 'ember-source',
-              since: {},
+              since: {
+                enabled: '3.27.0',
+              },
               until: '4.0.0',
+              url:
+                'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-attribute-arguments',
             }
           );
 
@@ -530,8 +542,12 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
             {
               id: 'ember.built-in-components.legacy-attribute-arguments',
               for: 'ember-source',
-              since: {},
+              since: {
+                enabled: '3.27.0',
+              },
               until: '4.0.0',
+              url:
+                'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-attribute-arguments',
             }
           );
 
