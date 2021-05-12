@@ -6,7 +6,7 @@ import { LOGGER } from '@ember/deprecated-features';
 const DEPRECATION_MESSAGE = 'Use of Ember.Logger is deprecated. Please use `console` for logging.';
 const DEPRECATION_ID = 'ember-console.deprecate-logger';
 const DEPRECATION_URL =
-  'https://emberjs.com/deprecations/v3.x#toc_use-console-rather-than-ember-logger';
+  'https://deprecations.emberjs.com/v3.x#toc_use-console-rather-than-ember-logger';
 /**
    @module ember
 */
