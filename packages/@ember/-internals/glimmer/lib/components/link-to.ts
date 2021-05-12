@@ -9,6 +9,7 @@ import { isSimpleClick } from '@ember/-internals/views';
 import { assert, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
+import { dependentKeyCompat } from '@ember/object/compat';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent, { HAS_BLOCK } from '../component';
@@ -534,14 +535,16 @@ const LinkComponent = EmberComponent.extend({
     }
   }),
 
-  _query: computed('query', function computeLinkToComponentQuery(this: any) {
-    let { query } = this;
+  _query: dependentKeyCompat({
+    get(this: any) {
+      let { query } = this;
 
-    if (query === UNDEFINED) {
-      return EMPTY_QUERY_PARAMS;
-    } else {
-      return Object.assign({}, query);
-    }
+      if (query === UNDEFINED) {
+        return EMPTY_QUERY_PARAMS;
+      } else {
+        return Object.assign({}, query);
+      }
+    },
   }),
 
   /**
