@@ -449,7 +449,7 @@ if (JQUERY_INTEGRATION) {
       {
         id: 'ember-views.curly-components.jquery-element',
         until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_jquery-apis',
         for: 'ember-source',
         since: {
           enabled: '3.9.0',

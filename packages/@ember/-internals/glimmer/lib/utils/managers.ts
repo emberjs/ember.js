@@ -22,7 +22,7 @@ export function setComponentManager(
       {
         id: 'deprecate-string-based-component-manager',
         until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x/#toc_component-manager-string-lookup',
+        url: 'https://deprecations.emberjs.com/v3.x/#toc_component-manager-string-lookup',
         for: 'ember-source',
         since: {
           enabled: '3.8.0',
@@ -49,7 +49,7 @@ if (DEBUG) {
       version === '3.13',
       {
         id: 'manager-capabilities.components-3-4',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_manager-capabilities-components-3-4',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_manager-capabilities-components-3-4',
         until: '4.0.0',
         for: 'ember-source',
         since: {
@@ -67,7 +67,7 @@ if (DEBUG) {
       version === '3.22',
       {
         id: 'manager-capabilities.modifiers-3-13',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_manager-capabilities-modifiers-3-13',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_manager-capabilities-modifiers-3-13',
         until: '4.0.0',
         for: 'ember-source',
         since: {

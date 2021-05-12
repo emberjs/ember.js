@@ -42,7 +42,7 @@ export default function transformHasBlockSyntax(env: EmberASTPluginEnvironment):
       {
         id: 'has-block-and-has-block-params',
         until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_has-block-and-has-block-params',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_has-block-and-has-block-params',
         for: 'ember-source',
         since: {
           enabled: '3.25.0',

@@ -48,7 +48,7 @@ export default function deprecateSendAction(env: EmberASTPluginEnvironment): AST
                   deprecate(deprecationMessage(node, eventName, value.chars), false, {
                     id: 'ember-component.send-action',
                     until: '4.0.0',
-                    url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                    url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
                     for: 'ember-source',
                     since: {
                       enabled: '3.4.0',
@@ -61,7 +61,7 @@ export default function deprecateSendAction(env: EmberASTPluginEnvironment): AST
                   deprecate(deprecationMessage(node, eventName, value.path.original), false, {
                     id: 'ember-component.send-action',
                     until: '4.0.0',
-                    url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                    url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
                     for: 'ember-source',
                     since: {
                       enabled: '3.4.0',
@@ -83,7 +83,7 @@ export default function deprecateSendAction(env: EmberASTPluginEnvironment): AST
               deprecate(deprecationMessage(node, pair.key, pair.value.original), false, {
                 id: 'ember-component.send-action',
                 until: '4.0.0',
-                url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
                 for: 'ember-source',
                 since: {
                   enabled: '3.4.0',
