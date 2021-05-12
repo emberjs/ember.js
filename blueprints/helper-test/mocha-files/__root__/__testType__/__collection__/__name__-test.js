@@ -19,7 +19,7 @@ describeComponent('<%= dasherizedModuleName %>', 'helper:<%= dasherizedModuleNam
       // `);
       this.set('inputValue', '1234');
 
-      this.render(hbs`{{<%= dasherizedModuleName %> inputValue}}`);
+      this.render(hbs`{{<%= dasherizedModuleName %> this.inputValue}}`);
 
       expect(this.$().text().trim()).to.equal('1234');
     });

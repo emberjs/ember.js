@@ -10,7 +10,7 @@ module('<%= friendlyTestName %>', function(hooks) {
   test('it renders', async function(assert) {
     this.set('inputValue', '1234');
 
-    await render(hbs`{{<%= dasherizedModuleName %> inputValue}}`);
+    await render(hbs`{{<%= dasherizedModuleName %> this.inputValue}}`);
 
     assert.dom(this.element).hasText('1234');
   });
