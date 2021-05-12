@@ -11,7 +11,7 @@ describe('<%= friendlyTestName %>', function() {
   it('renders', async function() {
     this.set('inputValue', '1234');
 
-    await render(hbs`{{<%= dasherizedModuleName %> inputValue}}`);
+    await render(hbs`{{<%= dasherizedModuleName %> this.inputValue}}`);
 
     expect(this.element.textContent.trim()).to.equal('1234');
   });

@@ -9,7 +9,7 @@ moduleForComponent('foo/bar-baz', 'helper:foo/bar-baz', {
 test('it renders', function(assert) {
   this.set('inputValue', '1234');
 
-  this.render(hbs`{{foo/bar-baz inputValue}}`);
+  this.render(hbs`{{foo/bar-baz this.inputValue}}`);
 
   assert.equal(this.$().text().trim(), '1234');
 });

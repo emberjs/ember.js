@@ -10,7 +10,7 @@ module('Integration | Helper | foo/bar-baz', function(hooks) {
   test('it renders', async function(assert) {
     this.set('inputValue', '1234');
 
-    await render(hbs`{{foo/bar-baz inputValue}}`);
+    await render(hbs`{{foo/bar-baz this.inputValue}}`);
 
     assert.dom(this.element).hasText('1234');
   });
