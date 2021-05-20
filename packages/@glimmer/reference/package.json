@@ -1,13 +1,13 @@
 {
   "name": "@glimmer/reference",
-  "version": "0.79.1",
+  "version": "0.79.2",
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "license": "MIT",
   "dependencies": {
     "@glimmer/env": "^0.1.7",
-    "@glimmer/global-context": "0.79.1",
-    "@glimmer/interfaces": "0.79.1",
-    "@glimmer/util": "0.79.1",
-    "@glimmer/validator": "0.79.1"
+    "@glimmer/global-context": "0.79.2",
+    "@glimmer/interfaces": "0.79.2",
+    "@glimmer/util": "0.79.2",
+    "@glimmer/validator": "0.79.2"
   }
 }

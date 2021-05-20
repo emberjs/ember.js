@@ -1,3 +1,12 @@
+## v0.79.2 (2021-05-20)
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1308](https://github.com/glimmerjs/glimmer-vm/pull/1308) Allow all (hash) keys to be set ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.79.1 (2021-05-11)
 
 #### :bug: Bug Fix
