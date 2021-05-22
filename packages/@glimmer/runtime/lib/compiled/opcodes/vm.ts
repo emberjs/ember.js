@@ -1,5 +1,5 @@
 import { toBool } from '@glimmer/global-context';
-import { CompilableTemplate, Option, Op } from '@glimmer/interfaces';
+import { CompilableTemplate, Option, Op, UpdatingOpcode } from '@glimmer/interfaces';
 import {
   Reference,
   valueForRef,
@@ -34,7 +34,7 @@ import {
   CheckPrimitive,
 } from '@glimmer/debug';
 import { stackAssert } from './assert';
-import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
@@ -241,13 +241,10 @@ APPEND_OPCODES.add(Op.ToBoolean, (vm) => {
   stack.push(createComputeRef(() => toBool(valueForRef(valueRef))));
 });
 
-export class Assert extends UpdatingOpcode {
-  public type = 'assert';
-
+export class Assert implements UpdatingOpcode {
   private last: unknown;
 
   constructor(private ref: Reference) {
-    super();
     this.last = valueForRef(ref);
   }
 
@@ -261,13 +258,10 @@ export class Assert extends UpdatingOpcode {
   }
 }
 
-export class AssertFilter<T, U> extends UpdatingOpcode {
-  public type = 'assert-filter';
-
+export class AssertFilter<T, U> implements UpdatingOpcode {
   private last: U;
 
   constructor(private ref: Reference<T>, private filter: (from: T) => U) {
-    super();
     this.last = filter(valueForRef(ref));
   }
 
@@ -281,9 +275,7 @@ export class AssertFilter<T, U> extends UpdatingOpcode {
   }
 }
 
-export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
-  public type = 'jump-if-not-modified';
-
+export class JumpIfNotModifiedOpcode implements UpdatingOpcode {
   private tag: Tag = CONSTANT_TAG;
   private lastRevision: Revision = INITIAL;
   private target?: number;
@@ -309,24 +301,16 @@ export class JumpIfNotModifiedOpcode extends UpdatingOpcode {
   }
 }
 
-export class BeginTrackFrameOpcode extends UpdatingOpcode {
-  public type = 'begin-track-frame';
-
-  constructor(private debugLabel?: string) {
-    super();
-  }
+export class BeginTrackFrameOpcode implements UpdatingOpcode {
+  constructor(private debugLabel?: string) {}
 
   evaluate() {
     beginTrackFrame(this.debugLabel);
   }
 }
 
-export class EndTrackFrameOpcode extends UpdatingOpcode {
-  public type = 'end-track-frame';
-
-  constructor(private target: JumpIfNotModifiedOpcode) {
-    super();
-  }
+export class EndTrackFrameOpcode implements UpdatingOpcode {
+  constructor(private target: JumpIfNotModifiedOpcode) {}
 
   evaluate() {
     let tag = endTrackFrame();

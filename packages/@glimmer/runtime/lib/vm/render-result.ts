@@ -1,9 +1,8 @@
-import { Environment, RenderResult, LiveBlock } from '@glimmer/interfaces';
+import { Environment, RenderResult, LiveBlock, UpdatingOpcode } from '@glimmer/interfaces';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { clear } from '../bounds';
-import { UpdatingOpcode } from '../opcodes';
-import UpdatingVM from './update';
+import UpdatingVMImpl from './update';
 
 export default class RenderResultImpl implements RenderResult {
   constructor(
@@ -18,7 +17,7 @@ export default class RenderResultImpl implements RenderResult {
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
     let { env, updating } = this;
-    let vm = new UpdatingVM(env, { alwaysRevalidate });
+    let vm = new UpdatingVMImpl(env, { alwaysRevalidate });
     vm.execute(updating, this);
   }
 

@@ -25,10 +25,11 @@ import {
   CurriedType,
   ModifierDefinitionState,
   Environment,
+  UpdatingVM,
+  UpdatingOpcode,
 } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
-import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { UpdatingVM } from '../../vm';
+import { APPEND_OPCODES } from '../../opcodes';
 import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
@@ -248,12 +249,10 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
   }
 });
 
-export class UpdateModifierOpcode extends UpdatingOpcode {
-  public type = 'update-modifier';
+export class UpdateModifierOpcode implements UpdatingOpcode {
   private lastUpdated: Revision;
 
   constructor(private tag: Tag, private modifier: ModifierInstance) {
-    super();
     this.lastUpdated = valueForTag(tag);
   }
 
@@ -269,8 +268,7 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   }
 }
 
-export class UpdateDynamicModifierOpcode extends UpdatingOpcode {
-  public type = 'update-dynamic-modifier';
+export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
   private lastUpdated: Revision;
 
   constructor(
@@ -278,7 +276,6 @@ export class UpdateDynamicModifierOpcode extends UpdatingOpcode {
     private instance: ModifierInstance | undefined,
     private instanceRef: Reference<ModifierInstance | undefined>
   ) {
-    super();
     this.lastUpdated = valueForTag(tag ?? CURRENT_TAG);
   }
 
@@ -348,14 +345,10 @@ APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: _trusting, op3: _name
   }
 });
 
-export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
-  public type = 'patch-element';
-
+export class UpdateDynamicAttributeOpcode implements UpdatingOpcode {
   private updateRef: Reference;
 
   constructor(reference: Reference<unknown>, attribute: DynamicAttribute, env: Environment) {
-    super();
-
     let initialized = false;
 
     this.updateRef = createComputeRef(() => {
