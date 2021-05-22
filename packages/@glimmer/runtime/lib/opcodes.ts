@@ -2,11 +2,11 @@ import { debug, logOpcode, opcodeMetadata, recordStackSize } from '@glimmer/debu
 import { Dict, Maybe, Op, Option, RuntimeOp } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { valueForRef } from '@glimmer/reference';
-import { assert, fillNulls, initializeGuid, LOCAL_LOGGER } from '@glimmer/util';
+import { assert, fillNulls, LOCAL_LOGGER } from '@glimmer/util';
 import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
 import { isScopeReference } from './scope';
 import { CONSTANTS, DESTROYABLE_STACK, INNER_VM, STACKS } from './symbols';
-import { LowLevelVM, UpdatingVM, VM } from './vm';
+import { LowLevelVM, VM } from './vm';
 import { InternalVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';
 
@@ -174,16 +174,3 @@ export class AppendOpcodes {
 }
 
 export const APPEND_OPCODES = new AppendOpcodes();
-
-export abstract class AbstractOpcode {
-  public abstract type: string;
-  public _guid!: number; // Set by initializeGuid() in the constructor
-
-  constructor() {
-    initializeGuid(this);
-  }
-}
-
-export abstract class UpdatingOpcode extends AbstractOpcode {
-  abstract evaluate(vm: UpdatingVM): void;
-}
