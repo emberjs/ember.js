@@ -28,7 +28,7 @@ function flush() {
 module('Destroyables', (hooks) => {
   let originalContext: GlobalContext | null;
 
-  hooks.before(() => {
+  hooks.beforeEach(() => {
     originalContext = testOverrideGlobalContext!({
       scheduleDestroy<T extends object>(destroyable: T, destructor: (obj: T) => void) {
         destroyQueue.push(() => destructor(destroyable));
@@ -40,7 +40,7 @@ module('Destroyables', (hooks) => {
     });
   });
 
-  hooks.after(() => {
+  hooks.afterEach(() => {
     testOverrideGlobalContext!(originalContext);
   });
 

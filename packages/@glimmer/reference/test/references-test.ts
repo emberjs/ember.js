@@ -39,7 +39,7 @@ module('References', (hooks) => {
   let getCount = 0;
   let setCount = 0;
 
-  hooks.before(() => {
+  hooks.beforeEach(() => {
     originalContext = testOverrideGlobalContext!({
       getProp(obj: object, key: string): unknown {
         getCount++;
@@ -50,10 +50,12 @@ module('References', (hooks) => {
         setCount++;
         (obj as Record<string, unknown>)[key] = value;
       },
+
+      scheduleRevalidate() {},
     });
   });
 
-  hooks.after(() => {
+  hooks.afterEach(() => {
     testOverrideGlobalContext!(originalContext);
   });
 

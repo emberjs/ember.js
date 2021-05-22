@@ -14,6 +14,10 @@ class StyleWarningsTest extends RenderTest {
       warnIfStyleNotTrusted() {
         warnings++;
       },
+
+      getProp(obj, key) {
+        return (obj as any)[key];
+      },
     });
   }
 
