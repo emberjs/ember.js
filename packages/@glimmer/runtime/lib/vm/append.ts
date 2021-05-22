@@ -19,6 +19,7 @@ import {
   VM as PublicVM,
   ResolutionTimeConstants,
   Owner,
+  UpdatingOpcode,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -51,7 +52,7 @@ import {
   EndTrackFrameOpcode,
   JumpIfNotModifiedOpcode,
 } from '../compiled/opcodes/vm';
-import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
+import { APPEND_OPCODES, DebugState } from '../opcodes';
 import { PartialScopeImpl } from '../scope';
 import { ARGS, CONSTANTS, DESTROYABLE_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
 import { VMArgumentsImpl } from './arguments';

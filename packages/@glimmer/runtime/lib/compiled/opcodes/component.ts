@@ -35,6 +35,7 @@ import {
   ComponentInstanceWithCreate,
   Owner,
   CurriedType,
+  UpdatingOpcode,
 } from '@glimmer/interfaces';
 import { isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import {
@@ -51,7 +52,7 @@ import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
 import { resolveComponent } from '../../component/resolve';
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
-import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
+import { APPEND_OPCODES } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import { ARGS, CONSTANTS } from '../../symbols';
 import { UpdatingVM } from '../../vm';
@@ -861,16 +862,12 @@ APPEND_OPCODES.add(Op.CommitComponentTransaction, (vm) => {
   vm.commitCacheGroup();
 });
 
-export class UpdateComponentOpcode extends UpdatingOpcode {
-  public type = 'update-component';
-
+export class UpdateComponentOpcode implements UpdatingOpcode {
   constructor(
     private component: ComponentInstanceState,
     private manager: WithUpdateHook,
     private dynamicScope: Option<DynamicScope>
-  ) {
-    super();
-  }
+  ) {}
 
   evaluate(_vm: UpdatingVM) {
     let { component, manager, dynamicScope } = this;
@@ -879,12 +876,8 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
   }
 }
 
-export class DidUpdateLayoutOpcode extends UpdatingOpcode {
-  public type = 'did-update-layout';
-
-  constructor(private component: ComponentInstanceWithCreate, private bounds: Bounds) {
-    super();
-  }
+export class DidUpdateLayoutOpcode implements UpdatingOpcode {
+  constructor(private component: ComponentInstanceWithCreate, private bounds: Bounds) {}
 
   evaluate(vm: UpdatingVM) {
     let { component, bounds } = this;
@@ -896,24 +889,16 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
   }
 }
 
-class DebugRenderTreeUpdateOpcode extends UpdatingOpcode {
-  public type = 'debug-render-tree-update';
-
-  constructor(private bucket: object) {
-    super();
-  }
+class DebugRenderTreeUpdateOpcode implements UpdatingOpcode {
+  constructor(private bucket: object) {}
 
   evaluate(vm: UpdatingVM) {
     vm.env.debugRenderTree?.update(this.bucket);
   }
 }
 
-class DebugRenderTreeDidRenderOpcode extends UpdatingOpcode {
-  public type = 'debug-render-tree-did-render';
-
-  constructor(private bucket: object, private bounds: Bounds) {
-    super();
-  }
+class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
+  constructor(private bucket: object, private bounds: Bounds) {}
 
   evaluate(vm: UpdatingVM) {
     vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);

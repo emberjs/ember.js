@@ -4,6 +4,8 @@ import { Reference } from '@glimmer/reference';
 import { Destroyable } from '../core';
 import { DynamicScope } from './scope';
 import { Owner } from './owner';
+import { GlimmerTreeChanges } from '../dom/changes';
+import { ExceptionHandler } from './render';
 /**
  * This is used in the Glimmer Embedding API. In particular, embeddings
  * provide helpers through the `CompileTimeLookup` interface, and the
@@ -16,4 +18,19 @@ export interface VM<O extends Owner = Owner> {
   getOwner(): O;
   getSelf(): Reference;
   associateDestroyable(child: Destroyable): void;
+}
+
+export interface UpdatingVM {
+  env: Environment;
+  dom: GlimmerTreeChanges;
+  alwaysRevalidate: boolean;
+
+  execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler): void;
+  goto(index: number): void;
+  try(ops: UpdatingOpcode[], handler: ExceptionHandler | null): void;
+  throw(): void;
+}
+
+export interface UpdatingOpcode {
+  evaluate(vm: UpdatingVM): void;
 }

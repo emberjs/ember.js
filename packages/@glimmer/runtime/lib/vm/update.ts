@@ -11,6 +11,8 @@ import {
   RuntimeContext,
   Scope,
   UpdatableBlock,
+  UpdatingVM,
+  UpdatingOpcode,
 } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import {
@@ -25,11 +27,10 @@ import { expect, Stack, logStep } from '@glimmer/util';
 import { resetTracking, runInTrackingTransaction } from '@glimmer/validator';
 import { SimpleComment } from '@simple-dom/interface';
 import { clear, move as moveBounds } from '../bounds';
-import { UpdatingOpcode } from '../opcodes';
 import { InternalVM, VmInitCallback } from './append';
 import { LiveBlockList, NewElementBuilder } from './element-builder';
 
-export default class UpdatingVM {
+export default class UpdatingVMImpl implements UpdatingVM {
   public env: Environment;
   public dom: GlimmerTreeChanges;
   public alwaysRevalidate: boolean;
@@ -118,8 +119,7 @@ export class ResumableVMStateImpl implements ResumableVMState {
   }
 }
 
-export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
-  public type = 'block';
+export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   public children: UpdatingOpcode[];
 
   protected readonly bounds: LiveBlock;
@@ -130,8 +130,6 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
     bounds: LiveBlock,
     children: UpdatingOpcode[]
   ) {
-    super();
-
     this.children = children;
     this.bounds = bounds;
   }
@@ -148,7 +146,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
     return this.bounds.lastNode();
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVMImpl) {
     vm.try(this.children, null);
   }
 }
@@ -158,7 +156,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected bounds!: UpdatableBlock; // Hides property on base class
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVMImpl) {
     vm.try(this.children, this);
   }
 
@@ -239,7 +237,7 @@ export class ListBlockOpcode extends BlockOpcode {
     this.opcodeMap.set(opcode.key, opcode);
   }
 
-  evaluate(vm: UpdatingVM) {
+  evaluate(vm: UpdatingVMImpl) {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
