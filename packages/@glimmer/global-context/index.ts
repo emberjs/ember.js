@@ -219,18 +219,20 @@ if (DEBUG) {
       globalContextWasSet = true;
     }
 
-    scheduleRevalidate = context?.scheduleRevalidate || scheduleRevalidate;
-    scheduleDestroy = context?.scheduleDestroy || scheduleDestroy;
-    scheduleDestroyed = context?.scheduleDestroyed || scheduleDestroyed;
-    toIterator = context?.toIterator || toIterator;
-    toBool = context?.toBool || toBool;
-    getProp = context?.getProp || getProp;
-    setProp = context?.setProp || setProp;
-    getPath = context?.getPath || getPath;
-    setPath = context?.setPath || setPath;
-    warnIfStyleNotTrusted = context?.warnIfStyleNotTrusted || warnIfStyleNotTrusted;
-    assert = context?.assert || assert;
-    deprecate = context?.deprecate || deprecate;
+    // We use `undefined as any` here to unset the values when resetting the
+    // context at the end of a test.
+    scheduleRevalidate = context?.scheduleRevalidate || (undefined as any);
+    scheduleDestroy = context?.scheduleDestroy || (undefined as any);
+    scheduleDestroyed = context?.scheduleDestroyed || (undefined as any);
+    toIterator = context?.toIterator || (undefined as any);
+    toBool = context?.toBool || (undefined as any);
+    getProp = context?.getProp || (undefined as any);
+    setProp = context?.setProp || (undefined as any);
+    getPath = context?.getPath || (undefined as any);
+    setPath = context?.setPath || (undefined as any);
+    warnIfStyleNotTrusted = context?.warnIfStyleNotTrusted || (undefined as any);
+    assert = context?.assert || (undefined as any);
+    deprecate = context?.deprecate || (undefined as any);
 
     return originalGlobalContext;
   };
