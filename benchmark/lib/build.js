@@ -2,6 +2,7 @@
 const rollup = require('rollup');
 const sourcemap = require('rollup-plugin-sourcemaps');
 const { terser } = require('rollup-plugin-terser');
+const strip = require('@rollup/plugin-strip');
 const path = require('path');
 const fs = require('fs-extra');
 const symlinkOrCopy = require('symlink-or-copy').sync;
@@ -22,6 +23,9 @@ async function build(dist, out) {
     plugins: [
       benchmark(dist),
       sourcemap(),
+      strip({
+        functions: ['assert', 'deprecate'],
+      }),
       terser({
         compress: {
           // eslint-disable-next-line @typescript-eslint/naming-convention
