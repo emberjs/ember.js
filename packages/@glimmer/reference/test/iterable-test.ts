@@ -54,11 +54,11 @@ class IterableWrapper {
 module('@glimmer/reference: IterableReference', (hooks) => {
   let originalContext: GlobalContext | null;
 
-  hooks.before(() => {
+  hooks.beforeEach(() => {
     originalContext = testOverrideGlobalContext!(TestContext);
   });
 
-  hooks.after(() => {
+  hooks.afterEach(() => {
     testOverrideGlobalContext!(originalContext);
   });
 
