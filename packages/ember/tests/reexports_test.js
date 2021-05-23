@@ -1,9 +1,7 @@
 import Ember from '../index';
 import require from 'require';
-import { FEATURES, EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { confirmExport } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { jQueryDisabled, jQuery } from '@ember/-internals/views';
+import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS, FEATURES } from '@ember/canary-features';
+import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import Resolver from '@ember/application/globals-resolver';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from '@ember/-internals/environment';
@@ -135,26 +133,6 @@ moduleFor(
     }
   }
 );
-
-if (!jQueryDisabled) {
-  moduleFor(
-    'ember reexports: jQuery enabled',
-    class extends AbstractTestCase {
-      [`@test Ember.$ is exported`](assert) {
-        expectDeprecation(() => {
-          let body = Ember.$('body').get(0);
-          assert.equal(body, document.body, 'Ember.$ exports working jQuery instance');
-        }, "Using Ember.$() has been deprecated, use `import jQuery from 'jquery';` instead");
-      }
-
-      '@test Ember.$ _**is**_ window.jQuery'(assert) {
-        expectDeprecation(() => {
-          assert.strictEqual(Ember.$, jQuery);
-        }, "Using Ember.$() has been deprecated, use `import jQuery from 'jquery';` instead");
-      }
-    }
-  );
-}
 
 let allExports = [
   // @ember/application
