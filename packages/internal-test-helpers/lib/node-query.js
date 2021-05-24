@@ -1,7 +1,7 @@
 /* global Node */
 
 import { assert } from '@ember/debug';
-import { fireEvent, focus, matches } from './system/synthetic-events';
+import { blur, fireEvent, focus, matches } from './system/synthetic-events';
 
 export default class NodeQuery {
   static query(selector, context = document) {
@@ -52,6 +52,10 @@ export default class NodeQuery {
 
   focus() {
     this.nodes.forEach(focus);
+  }
+
+  blur() {
+    this.nodes.forEach(blur);
   }
 
   text() {

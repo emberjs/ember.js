@@ -534,6 +534,8 @@ module.exports = {
     'setupController',
     'setupForTesting',
     'setupHandler',
+    'setupHandlerForBrowserEvent',
+    'setupHandlerForEmberEvent',
     'setupRegistry',
     'setURL',
     'shiftObject',

@@ -141,13 +141,6 @@ const TextSupport = Mixin.create({
   disabled: false,
   maxlength: null,
 
-  init() {
-    this._super(...arguments);
-    this.on('paste', this, this._elementValueDidChange);
-    this.on('cut', this, this._elementValueDidChange);
-    this.on('input', this, this._elementValueDidChange);
-  },
-
   /**
     Whether the `keyUp` event that triggers an `action` to be sent continues
     propagating to other views.
@@ -180,6 +173,18 @@ const TextSupport = Mixin.create({
   },
 
   change(event) {
+    this._elementValueDidChange(event);
+  },
+
+  paste(event) {
+    this._elementValueDidChange(event);
+  },
+
+  cut(event) {
+    this._elementValueDidChange(event);
+  },
+
+  input(event) {
     this._elementValueDidChange(event);
   },
 

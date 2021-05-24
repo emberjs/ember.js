@@ -1,6 +1,6 @@
 import { Owner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
-import { ActionManager, isSimpleClick } from '@ember/-internals/views';
+import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
@@ -65,6 +65,7 @@ export let ActionHelper = {
 
 export class ActionState {
   public element: SimpleElement;
+  public owner: Owner;
   public actionId: number;
   public actionName: any;
   public actionArgs: any;
@@ -76,12 +77,14 @@ export class ActionState {
 
   constructor(
     element: SimpleElement,
+    owner: Owner,
     actionId: number,
     actionArgs: any[],
     namedArgs: CapturedNamedArguments,
     positionalArgs: CapturedPositionalArguments
   ) {
     this.element = element;
+    this.owner = owner;
     this.actionId = actionId;
     this.actionArgs = actionArgs;
     this.namedArgs = namedArgs;
@@ -200,7 +203,7 @@ export class ActionState {
 
 class ActionModifierManager implements InternalModifierManager<ActionState, object> {
   create(
-    _owner: Owner,
+    owner: Owner,
     element: SimpleElement,
     _state: object,
     { named, positional }: CapturedArguments
@@ -213,7 +216,7 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     }
 
     let actionId = uuid();
-    let actionState = new ActionState(element, actionId, actionArgs, named, positional);
+    let actionState = new ActionState(element, owner, actionId, actionArgs, named, positional);
 
     deprecate(
       `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
@@ -277,6 +280,7 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     actionState.actionName = actionName;
     actionState.implicitTarget = implicitTarget;
 
+    this.ensureEventSetup(actionState);
     ActionHelper.registerAction(actionState);
 
     element.setAttribute('data-ember-action', '');
@@ -291,7 +295,16 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
       actionState.actionName = valueForRef(actionNameRef);
     }
 
-    actionState.eventName = actionState.getEventName();
+    let newEventName = actionState.getEventName();
+    if (newEventName !== actionState.eventName) {
+      this.ensureEventSetup(actionState);
+      actionState.eventName = actionState.getEventName();
+    }
+  }
+
+  ensureEventSetup(actionState: ActionState): void {
+    let dispatcher = actionState.owner.lookup<EventDispatcher>('event_dispatcher:main');
+    dispatcher?.setupHandlerForEmberEvent(actionState.eventName);
   }
 
   getTag(actionState: ActionState): UpdatableTag {

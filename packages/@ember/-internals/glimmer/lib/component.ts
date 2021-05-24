@@ -6,6 +6,7 @@ import {
   ChildViewsSupport,
   ClassNamesSupport,
   CoreView,
+  EventDispatcher,
   getViewElement,
   ViewMixin,
   ViewStateSupport,
@@ -13,6 +14,7 @@ import {
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { Environment } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
@@ -25,6 +27,11 @@ import {
   DIRTY_TAG,
   IS_DISPATCHING_ATTRS,
 } from './component-managers/curly';
+
+// Keep track of which component classes have already been processed for lazy event setup.
+// Using a WeakSet would be more appropriate here, but this can only be used when IE11 support is dropped.
+// Thus the workaround using a WeakMap<object, true>
+let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakMap<object, true>>();
 
 /**
 @module @ember/component
@@ -660,10 +667,31 @@ const Component = CoreView.extend(
       this[DIRTY_TAG] = createTag();
       this[BOUNDS] = null;
 
-      if (DEBUG && this.renderer._isInteractive && this.tagName === '') {
+      let eventDispatcher = this._dispatcher;
+      if (eventDispatcher) {
+        let lazyEventsProcessedForComponentClass = lazyEventsProcessed.get(eventDispatcher);
+        if (!lazyEventsProcessedForComponentClass) {
+          lazyEventsProcessedForComponentClass = new WeakMap<object, true>();
+          lazyEventsProcessed.set(eventDispatcher, lazyEventsProcessedForComponentClass);
+        }
+
+        let proto = Object.getPrototypeOf(this);
+        if (!lazyEventsProcessedForComponentClass.has(proto)) {
+          let lazyEvents = eventDispatcher.lazyEvents;
+
+          lazyEvents.forEach((mappedEventName: string, event: string) => {
+            if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
+              eventDispatcher.setupHandlerForBrowserEvent(event);
+            }
+          });
+
+          lazyEventsProcessedForComponentClass.set(proto, true);
+        }
+      }
+
+      if (DEBUG && eventDispatcher && this.renderer._isInteractive && this.tagName === '') {
         let eventNames = [];
-        let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
-        let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
+        let events = eventDispatcher.finalEventNameMapping;
 
         // tslint:disable-next-line:forin
         for (let key in events) {
@@ -720,6 +748,25 @@ const Component = CoreView.extend(
           },
         }
       );
+    },
+
+    get _dispatcher(): EventDispatcher | null {
+      if (this.__dispatcher === undefined) {
+        let owner = getOwner(this);
+        if (owner.lookup<Environment>('-environment:main')!.isInteractive) {
+          this.__dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
+        } else {
+          // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
+          this.__dispatcher = null;
+        }
+      }
+
+      return this.__dispatcher;
+    },
+
+    on(eventName: string) {
+      this._dispatcher?.setupHandlerForEmberEvent(eventName);
+      return this._super(...arguments);
     },
 
     rerender() {

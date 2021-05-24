@@ -123,6 +123,9 @@ export default EmberObject.extend({
     this._super();
     this._eventHandlers = Object.create(null);
     this._didSetup = false;
+    this.finalEventNameMapping = null;
+    this._sanitizedRootElement = null;
+    this.lazyEvents = new Map();
   },
 
   /**
@@ -148,7 +151,12 @@ export default EmberObject.extend({
       })()
     );
 
-    let events = (this._finalEvents = assign({}, get(this, 'events'), addedEvents));
+    let events = (this.finalEventNameMapping = assign({}, get(this, 'events'), addedEvents));
+    this._reverseEventNameMapping = Object.keys(events).reduce(
+      (result, key) => assign(result, { [events[key]]: key }),
+      {}
+    );
+    let lazyEvents = this.lazyEvents;
 
     if (_rootElement !== undefined && _rootElement !== null) {
       set(this, 'rootElement', _rootElement);
@@ -225,13 +233,43 @@ export default EmberObject.extend({
       }
     }
 
+    // save off the final sanitized root element (for usage in setupHandler)
+    this._sanitizedRootElement = rootElement;
+
+    // setup event listeners for the non-lazily setup events
     for (let event in events) {
       if (Object.prototype.hasOwnProperty.call(events, event)) {
-        this.setupHandler(rootElement, event, events[event]);
+        lazyEvents.set(event, events[event]);
       }
     }
 
     this._didSetup = true;
+  },
+
+  /**
+    Setup event listeners for the given browser event name
+
+    @private
+    @method setupHandlerForBrowserEvent
+    @param event the name of the event in the browser
+  */
+  setupHandlerForBrowserEvent(event) {
+    this.setupHandler(this._sanitizedRootElement, event, this.finalEventNameMapping[event]);
+  },
+
+  /**
+    Setup event listeners for the given Ember event name (camel case)
+
+    @private
+    @method setupHandlerForEmberEvent
+    @param eventName
+  */
+  setupHandlerForEmberEvent(eventName) {
+    this.setupHandler(
+      this._sanitizedRootElement,
+      this._reverseEventNameMapping[eventName],
+      eventName
+    );
   },
 
   /**
@@ -245,12 +283,12 @@ export default EmberObject.extend({
     @private
     @method setupHandler
     @param {Element} rootElement
-    @param {String} event the browser-originated event to listen to
+    @param {String} event the name of the event in the browser
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler(rootElement, event, eventName) {
-    if (eventName === null) {
-      return;
+    if (eventName === null || !this.lazyEvents.has(event)) {
+      return; // nothing to do
     }
 
     if (!JQUERY_INTEGRATION || jQueryDisabled) {
@@ -431,6 +469,8 @@ export default EmberObject.extend({
         }
       });
     }
+
+    this.lazyEvents.delete(event);
   },
 
   destroy() {
