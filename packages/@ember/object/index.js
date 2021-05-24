@@ -61,7 +61,7 @@ if (DEBUG) {
     Object.defineProperty(computed, key, {
       get() {
         deprecate(
-          `Using \`computed.${key}\` has been deprecated. Instead, import the value directly from @ember/object/computed:\n\n  import { ${key} } from '@ember/runloop';`,
+          `Using \`computed.${key}\` has been deprecated. Instead, import the value directly from @ember/object/computed:\n\n  import { ${key} } from '@ember/object/computed';`,
           false,
           {
             id: 'deprecated-run-loop-and-computed-dot-access',
