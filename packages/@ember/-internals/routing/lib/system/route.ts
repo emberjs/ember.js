@@ -108,8 +108,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   private _names: unknown;
 
   _router!: EmberRouter;
-  _topLevelViewTemplate!: any;
-  _environment!: any;
+  declare _topLevelViewTemplate: any;
+  declare _environment: any;
 
   constructor(owner: Owner) {
     super(...arguments);
@@ -131,11 +131,11 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   }
 
   // Implement Evented
-  on!: (name: string, method: ((...args: any[]) => void) | string) => this;
-  one!: (name: string, method: string | ((...args: any[]) => void)) => this;
-  trigger!: (name: string, ...args: any[]) => any;
-  off!: (name: string, method: string | ((...args: any[]) => void)) => this;
-  has!: (name: string) => boolean;
+  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
+  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
+  declare trigger: (name: string, ...args: any[]) => any;
+  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
+  declare has: (name: string) => boolean;
 
   serialize!: (
     model: {},
@@ -190,7 +190,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   // Set in reopen so it can be overriden with extend
-  queryParams!: any;
+  declare queryParams: Record<string, unknown>;
 
   /**
     The name of the template to use by default when rendering this routes
@@ -223,7 +223,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   // Set in reopen so it can be overriden with extend
-  templateName!: string | null;
+  declare templateName: string | null;
 
   /**
     The name of the controller to associate with this route.
@@ -246,7 +246,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   // Set in reopen so it can be overriden with extend
-  controllerName!: string | null;
+  declare controllerName: string | null;
 
   /**
     The controller associated with this route.
@@ -277,7 +277,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.6.0
     @public
   */
-  controller!: Controller;
+  declare controller: Controller;
 
   /**
     The name of the route, dot-delimited.
@@ -291,7 +291,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.0.0
     @public
   */
-  routeName!: string;
+  declare routeName: string;
 
   /**
     The name of the route, dot-delimited, including the engine prefix
@@ -306,7 +306,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 2.10.0
     @public
   */
-  fullRouteName!: string;
+  declare fullRouteName: string;
 
   /**
     Sets the name for this route, including a fully resolved name for routes
@@ -2207,7 +2207,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   }
 
   // Set in reopen
-  actions!: Record<string, Function>;
+  declare actions: Record<string, (...args: any[]) => any>;
 
   /**
     Sends an action to the router, which will delegate it to the currently
@@ -2258,7 +2258,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   // Set with reopen to override parent behavior
-  send!: (name: string, ...args: any[]) => unknown;
+  declare send: (name: string, ...args: any[]) => unknown;
 }
 
 function parentRoute(route: Route) {
@@ -2271,7 +2271,7 @@ function routeInfoFor(route: Route, routeInfos: InternalRouteInfo<Route>[], offs
     return;
   }
 
-  let current: any;
+  let current: Route | undefined;
   for (let i = 0; i < routeInfos.length; i++) {
     current = routeInfos[i].route;
     if (current === route) {
@@ -2388,17 +2388,14 @@ export interface RenderOptions {
   into?: string;
   outlet: string;
   name: string;
-  controller: unknown;
+  controller: Controller | string | undefined;
   model: unknown;
   template: Template;
 }
 
-interface PartialRenderOptions {
-  into?: string;
-  outlet?: string;
-  controller?: string | any;
-  model?: {};
-}
+type PartialRenderOptions = Partial<
+  Pick<RenderOptions, 'into' | 'outlet' | 'controller' | 'model'>
+>;
 
 export function getFullQueryParams(router: EmberRouter, state: TransitionState<Route>) {
   if (state['fullQueryParams']) {

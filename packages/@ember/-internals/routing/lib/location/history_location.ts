@@ -59,8 +59,8 @@ function _uuid() {
   @protected
 */
 export default class HistoryLocation extends EmberObject implements EmberLocation {
-  location!: any;
-  baseURL!: string;
+  declare location: Location;
+  declare baseURL: string;
 
   history?: any;
 

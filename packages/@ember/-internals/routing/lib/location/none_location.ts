@@ -22,11 +22,11 @@ import { EmberLocation, UpdateCallback } from './api';
   @protected
 */
 export default class NoneLocation extends EmberObject implements EmberLocation {
-  updateCallback!: UpdateCallback;
+  declare updateCallback: UpdateCallback;
   implementation = 'none';
 
   // Set in reopen so it can be overwritten with extend
-  path!: string;
+  declare path: string;
 
   /**
     Will be pre-pended to path.
@@ -36,7 +36,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @default '/'
   */
   // Set in reopen so it can be overwritten with extend
-  rootURL!: string;
+  declare rootURL: string;
 
   detect(): void {
     let { rootURL } = this;

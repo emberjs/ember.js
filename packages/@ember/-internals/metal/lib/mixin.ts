@@ -275,7 +275,7 @@ function mergeMixins(
     } else {
       mergeProps(
         meta,
-        currentMixin as { [key: string]: any },
+        currentMixin as Record<string, unknown>,
         descs,
         values,
         base,

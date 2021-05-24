@@ -152,7 +152,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @public
   */
   // Set with reopen to allow overriding via extend
-  rootURL!: string;
+  declare rootURL: string;
 
   /**
    The `location` property determines the type of URL's that your
@@ -173,7 +173,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @public
   */
   // Set with reopen to allow overriding via extend
-  location!: string | IEmberLocation;
+  declare location: string | IEmberLocation;
 
   _routerMicrolib!: Router<Route>;
   _didSetupRouter = false;
@@ -200,11 +200,11 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   private namespace: any;
 
   // Begin Evented
-  on!: (name: string, method: ((...args: any[]) => void) | string) => this;
-  one!: (name: string, method: string | ((...args: any[]) => void)) => this;
-  trigger!: (name: string, ...args: any[]) => any;
-  off!: (name: string, method: string | ((...args: any[]) => void)) => this;
-  has!: (name: string) => boolean;
+  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
+  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
+  declare trigger: (name: string, ...args: any[]) => unknown;
+  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
+  declare has: (name: string) => boolean;
   // End Evented
 
   // Set with reopenClass
@@ -1408,7 +1408,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @since 1.2.0
   */
   // Set with reopen to allow overriding via extend
-  didTransition!: typeof defaultDidTransition;
+  declare didTransition: typeof defaultDidTransition;
 
   /**
     Handles notifying any listeners of an impending URL
@@ -1421,7 +1421,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @since 1.11.0
   */
   // Set with reopen to allow overriding via extend
-  willTransition!: typeof defaultWillTransition;
+  declare willTransition: typeof defaultWillTransition;
 
   /**
    Represents the current URL.
@@ -1431,7 +1431,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @private
   */
   // Set with reopen to allow overriding via extend
-  url!: string;
+  declare url: string;
 }
 
 /*

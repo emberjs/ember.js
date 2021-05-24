@@ -62,10 +62,10 @@ import {
   @protected
 */
 export default class AutoLocation extends EmberObject implements EmberLocation {
-  getURL!: () => string;
-  setURL!: (url: string) => void;
-  onUpdateURL!: (callback: UpdateCallback) => void;
-  formatURL!: (url: string) => string;
+  declare getURL: () => string;
+  declare setURL: (url: string) => void;
+  declare onUpdateURL: (callback: UpdateCallback) => void;
+  declare formatURL: (url: string) => string;
 
   concreteImplementation?: EmberLocation;
 
@@ -73,6 +73,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
 
   // FIXME: This is never set
   // See https://github.com/emberjs/ember.js/issues/19515
+  /** @internal */
   documentMode: number | undefined;
 
   /**
@@ -85,7 +86,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     @default '/'
   */
   // Added in reopen to allow overriding via extend
-  rootURL!: string;
+  declare rootURL: string;
 
   /**
     @private
@@ -97,7 +98,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     @default environment.location
   */
   // Added in reopen to allow overriding via extend
-  location!: any;
+  declare location: Location;
 
   /**
     @private
@@ -110,7 +111,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     @default environment.history
   */
   // Added in reopen to allow overriding via extend
-  history!: any;
+  declare history: any;
 
   /**
    @private
@@ -122,7 +123,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     @default window
   */
   // Added in reopen to allow overriding via extend
-  global!: any;
+  declare global: any;
 
   /**
     @private
@@ -135,7 +136,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     @default environment.history
   */
   // Added in reopen to allow overriding via extend
-  userAgent!: any;
+  declare userAgent: string;
 
   /**
     @private
@@ -148,7 +149,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     @default false
   */
   // Added in reopen to allow overriding via extend
-  cancelRouterSetup!: boolean | undefined;
+  declare cancelRouterSetup: boolean;
 
   /**
    Called by the router to instruct the location to do any feature detection

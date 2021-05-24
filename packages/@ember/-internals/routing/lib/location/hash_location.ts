@@ -40,8 +40,8 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   implementation = 'hash';
   _hashchangeHandler?: EventListener;
 
-  private _location?: any;
-  declare location: any;
+  private _location?: Location;
+  declare location: Location;
 
   init(): void {
     set(this, 'location', this._location || window.location);
