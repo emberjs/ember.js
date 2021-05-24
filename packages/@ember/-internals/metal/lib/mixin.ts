@@ -221,6 +221,7 @@ function applyMergedProperties(
 
   if (hasFunction) {
     Object.defineProperty(newBase, '_super', {
+      configurable: true,
       enumerable: false,
       writable: true,
       value: ROOT,
@@ -426,6 +427,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], _hideKe
   let keysWithSuper: string[] = [];
 
   Object.defineProperty(obj, '_super', {
+    configurable: true,
     enumerable: false,
     writable: true,
     value: ROOT,
