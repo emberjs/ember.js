@@ -40,6 +40,9 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   implementation = 'hash';
   _hashchangeHandler?: EventListener;
 
+  private _location?: Location;
+  declare location: Location;
+
   init(): void {
     set(this, 'location', this._location || window.location);
     this._hashchangeHandler = undefined;
@@ -113,6 +116,8 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     this.location.replace(`#${path}`);
     set(this, 'lastSetURL', path);
   }
+
+  lastSetURL: string | null = null;
 
   /**
     Register a callback to be invoked when the hash changes. These

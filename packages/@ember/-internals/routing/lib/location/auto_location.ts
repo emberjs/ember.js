@@ -62,13 +62,95 @@ import {
   @protected
 */
 export default class AutoLocation extends EmberObject implements EmberLocation {
-  cancelRouterSetup?: boolean | undefined;
-  getURL!: () => string;
-  setURL!: (url: string) => void;
-  onUpdateURL!: (callback: UpdateCallback) => void;
-  formatURL!: (url: string) => string;
+  declare getURL: () => string;
+  declare setURL: (url: string) => void;
+  declare onUpdateURL: (callback: UpdateCallback) => void;
+  declare formatURL: (url: string) => string;
+
+  concreteImplementation?: EmberLocation;
 
   implementation = 'auto';
+
+  // FIXME: This is never set
+  // See https://github.com/emberjs/ember.js/issues/19515
+  /** @internal */
+  documentMode: number | undefined;
+
+  /**
+    @private
+
+    Will be pre-pended to path upon state change.
+
+    @since 1.5.1
+    @property rootURL
+    @default '/'
+  */
+  // Added in reopen to allow overriding via extend
+  declare rootURL: string;
+
+  /**
+    @private
+
+    The browser's `location` object. This is typically equivalent to
+    `window.location`, but may be overridden for testing.
+
+    @property location
+    @default environment.location
+  */
+  // Added in reopen to allow overriding via extend
+  declare location: Location;
+
+  /**
+    @private
+
+    The browser's `history` object. This is typically equivalent to
+    `window.history`, but may be overridden for testing.
+
+    @since 1.5.1
+    @property history
+    @default environment.history
+  */
+  // Added in reopen to allow overriding via extend
+  declare history: any;
+
+  /**
+   @private
+
+    The user agent's global variable. In browsers, this will be `window`.
+
+    @since 1.11
+    @property global
+    @default window
+  */
+  // Added in reopen to allow overriding via extend
+  declare global: any;
+
+  /**
+    @private
+
+    The browser's `userAgent`. This is typically equivalent to
+    `navigator.userAgent`, but may be overridden for testing.
+
+    @since 1.5.1
+    @property userAgent
+    @default environment.history
+  */
+  // Added in reopen to allow overriding via extend
+  declare userAgent: string;
+
+  /**
+    @private
+
+    This property is used by the router to know whether to cancel the routing
+    setup process, which is needed while we redirect the browser.
+
+    @since 1.5.1
+    @property cancelRouterSetup
+    @default false
+  */
+  // Added in reopen to allow overriding via extend
+  declare cancelRouterSetup: boolean;
+
   /**
    Called by the router to instruct the location to do any feature detection
    necessary. In the case of AutoLocation, we detect whether to use history
@@ -115,16 +197,8 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
 }
 
 AutoLocation.reopen({
-  /**
-    @private
-
-    Will be pre-pended to path upon state change.
-
-    @since 1.5.1
-    @property rootURL
-    @default '/'
-  */
   rootURL: '/',
+
   initState: delegateToConcreteImplementation('initState'),
   getURL: delegateToConcreteImplementation('getURL'),
   setURL: delegateToConcreteImplementation('setURL'),
@@ -132,62 +206,14 @@ AutoLocation.reopen({
   onUpdateURL: delegateToConcreteImplementation('onUpdateURL'),
   formatURL: delegateToConcreteImplementation('formatURL'),
 
-  /**
-    @private
-
-    The browser's `location` object. This is typically equivalent to
-    `window.location`, but may be overridden for testing.
-
-    @property location
-    @default environment.location
-  */
   location: location,
 
-  /**
-    @private
-
-    The browser's `history` object. This is typically equivalent to
-    `window.history`, but may be overridden for testing.
-
-    @since 1.5.1
-    @property history
-    @default environment.history
-  */
   history: history,
 
-  /**
-   @private
-
-   The user agent's global variable. In browsers, this will be `window`.
-
-   @since 1.11
-   @property global
-   @default window
-  */
   global: window,
 
-  /**
-    @private
-
-    The browser's `userAgent`. This is typically equivalent to
-    `navigator.userAgent`, but may be overridden for testing.
-
-    @since 1.5.1
-    @property userAgent
-    @default environment.history
-  */
   userAgent: userAgent,
 
-  /**
-    @private
-
-    This property is used by the router to know whether to cancel the routing
-    setup process, which is needed while we redirect the browser.
-
-    @since 1.5.1
-    @property cancelRouterSetup
-    @default false
-  */
   cancelRouterSetup: false,
 });
 
@@ -196,7 +222,7 @@ function delegateToConcreteImplementation(methodName: string) {
     let { concreteImplementation } = this;
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",
-      Boolean(concreteImplementation)
+      concreteImplementation
     );
     return concreteImplementation[methodName]?.(...args);
   };

@@ -59,6 +59,11 @@ function _uuid() {
   @protected
 */
 export default class HistoryLocation extends EmberObject implements EmberLocation {
+  declare location: Location;
+  declare baseURL: string;
+
+  history?: any;
+
   implementation = 'history';
   _previousURL?: string;
   _popstateHandler?: EventListener;
@@ -86,9 +91,9 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     this._super(...arguments);
 
     let base = document.querySelector('base');
-    let baseURL: string | null = '';
+    let baseURL = '';
     if (base !== null && base.hasAttribute('href')) {
-      baseURL = base.getAttribute('href');
+      baseURL = base.getAttribute('href') ?? '';
     }
 
     set(this, 'baseURL', baseURL);
