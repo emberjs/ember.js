@@ -557,7 +557,7 @@ moduleFor(
     ['@test sends an action with `<Input @enter={{action "foo"}} />` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(1);
 
       this.render(`<Input @enter={{action 'foo'}} />`, {
         actions: {
@@ -647,7 +647,7 @@ moduleFor(
     }
 
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
-      assert.expect(2);
+      assert.expect(1);
 
       this.render(`<Input @insert-newline={{action 'foo'}} />`, {
         actions: {
@@ -665,7 +665,7 @@ moduleFor(
     ['@test sends an action with `<Input @escape-press={{action "foo"}} />` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(1);
 
       this.render(`<Input @escape-press={{action 'foo'}} />`, {
         actions: {
