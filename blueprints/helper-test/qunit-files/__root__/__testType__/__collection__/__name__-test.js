@@ -9,7 +9,7 @@ moduleForComponent('<%= dasherizedModuleName %>', 'helper:<%= dasherizedModuleNa
 test('it renders', function(assert) {
   this.set('inputValue', '1234');
 
-  this.render(hbs`{{<%= dasherizedModuleName %> inputValue}}`);
+  this.render(hbs`{{<%= dasherizedModuleName %> this.inputValue}}`);
 
   assert.equal(this.$().text().trim(), '1234');
 });<% } else if (testType == 'unit') { %>
