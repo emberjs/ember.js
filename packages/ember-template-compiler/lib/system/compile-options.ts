@@ -78,11 +78,16 @@ interface LegacyPlugin {
 }
 type LegacyPluginClass = new (env: ASTPluginEnvironment) => LegacyPlugin;
 
-function wrapLegacyPluginIfNeeded(_plugin: PluginFunc | LegacyPluginClass): PluginFunc {
-  let plugin = _plugin;
-  if (_plugin.prototype && _plugin.prototype.transform) {
+function isLegacyPluginClass(plugin: PluginFunc | LegacyPluginClass): plugin is LegacyPluginClass {
+  return plugin.prototype && typeof plugin.prototype.transform === 'function';
+}
+
+function wrapLegacyPluginIfNeeded(plugin: PluginFunc | LegacyPluginClass): PluginFunc {
+  if (isLegacyPluginClass(plugin)) {
+    const Plugin = plugin;
+
     deprecate(
-      'Using class based template compilation plugins is deprecated, please update to the functional style',
+      `Using class based template compilation plugins is deprecated, please update to the functional style: ${Plugin.name}`,
       false,
       {
         id: 'template-compiler.registerPlugin',
@@ -98,28 +103,29 @@ function wrapLegacyPluginIfNeeded(_plugin: PluginFunc | LegacyPluginClass): Plug
       let pluginInstantiated = false;
 
       return {
-        name: _plugin.constructor && _plugin.constructor.name,
+        name: plugin.name,
 
         visitor: {
           Program(node: AST.Program): AST.Node | void {
             if (!pluginInstantiated) {
               pluginInstantiated = true;
-              let plugin = new (_plugin as LegacyPluginClass)(env);
+              let instance = new Plugin(env);
 
-              plugin.syntax = env.syntax;
+              instance.syntax = env.syntax;
 
-              return plugin.transform(node);
+              return instance.transform(node);
             }
           },
         },
       };
     };
 
-    pluginFunc.__raw = _plugin as LegacyPluginClass;
-    plugin = pluginFunc;
-  }
+    pluginFunc.__raw = Plugin;
 
-  return plugin as PluginFunc;
+    return pluginFunc;
+  } else {
+    return plugin;
+  }
 }
 
 export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginClass): void {
