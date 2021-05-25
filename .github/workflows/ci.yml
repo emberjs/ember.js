@@ -183,6 +183,7 @@ jobs:
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
+          SHOULD_TRANSPILE_FOR_NODE: true
         run: yarn ember build -prod
       - name: test
         run: yarn test:node
