@@ -3,7 +3,6 @@ const allSupportedBrowsers = [
   'last 2 Firefox versions',
   'last 2 Safari versions',
   'last 2 Edge versions',
-  'ie 11',
 ];
 
 const modernBrowsers = [

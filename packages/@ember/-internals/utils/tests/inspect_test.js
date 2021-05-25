@@ -36,12 +36,7 @@ moduleFor(
           return this;
         },
       };
-      // IE 11 doesn't have function name
-      if (obj.foo.name) {
-        assert.equal(inspect(obj), `{ foo: [Function:foo] }`);
-      } else {
-        assert.equal(inspect(obj), `{ foo: [Function] }`);
-      }
+      assert.equal(inspect(obj), `{ foo: [Function:foo] }`);
     }
 
     ['@test objects without a prototype'](assert) {

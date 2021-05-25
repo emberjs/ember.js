@@ -2,19 +2,6 @@
 @module ember
 */
 
-/*
-  Internet Explorer 11 does not support `once` and also does not support
-  passing `eventOptions`. In some situations it then throws a weird script
-  error, like:
-
-  ```
-  Could not complete the operation due to error 80020101
-  ```
-
-  This flag determines, whether `{ once: true }` and thus also event options in
-  general are supported.
-*/
-
 /**
   The `{{on}}` modifier lets you easily add event listeners (it uses
   [EventTarget.addEventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)

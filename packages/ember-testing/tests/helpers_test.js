@@ -1,4 +1,4 @@
-import { moduleFor, AutobootApplicationTestCase, isIE11, runTask } from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
@@ -343,20 +343,7 @@ if (!jQueryDisabled) {
               wrapper.addEventListener('mousedown', (e) => events.push(e.type));
               wrapper.addEventListener('mouseup', (e) => events.push(e.type));
               wrapper.addEventListener('click', (e) => events.push(e.type));
-              wrapper.addEventListener('focusin', (e) => {
-                // IE11 _sometimes_ triggers focusin **twice** in a row
-                // (we believe this is when it is under higher load)
-                //
-                // the goal here is to only push a single focusin when running on
-                // IE11
-                if (isIE11) {
-                  if (events[events.length - 1] !== 'focusin') {
-                    events.push(e.type);
-                  }
-                } else {
-                  events.push(e.type);
-                }
-              });
+              wrapper.addEventListener('focusin', (e) => events.push(e.type));
             },
           })
         );

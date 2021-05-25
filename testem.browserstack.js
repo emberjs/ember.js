@@ -37,24 +37,6 @@ const BrowserStackLaunchers = {
     ],
     protocol: 'browser',
   },
-  BS_IE_11: {
-    exe: 'node_modules/.bin/browserstack-launch',
-    args: [
-      '--os',
-      'Windows',
-      '--osv',
-      '10',
-      '--b',
-      'ie',
-      '--bv',
-      '11.0',
-      '-t',
-      '1500',
-      '--u',
-      '<url>',
-    ],
-    protocol: 'browser',
-  },
 };
 
 module.exports = {
