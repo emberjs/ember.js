@@ -1,3 +1,3 @@
 export let action: MethodDecorator;
 
-export { Object as default } from '@ember/-internals/runtime';
+export { default } from '@ember/-internals/runtime/types/index';
