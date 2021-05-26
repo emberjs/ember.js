@@ -118,7 +118,7 @@ export function removeListener(
 export function sendEvent(
   obj: object,
   eventName: string,
-  params: any[],
+  params?: any[],
   actions?: any[],
   _meta?: Meta | null
 ) {
