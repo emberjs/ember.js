@@ -743,23 +743,31 @@ export function throttle() {
 
 export let _deprecatedGlobalGetCurrentRunLoop;
 
+export let _onDotAccess;
+
 // eslint-disable-next-line no-undef
 if (DEBUG) {
+  let _callback = (dotKey, importKey, module) => {
+    return `Using \`${dotKey}\` has been deprecated. Instead, import the value directly from ${module}:\n\n  import { ${importKey} } from '${module}';`;
+  };
+
+  _onDotAccess = (callback) => {
+    _callback = callback;
+  };
+
   let defineDeprecatedRunloopFunc = (key, func) => {
     Object.defineProperty(run, key, {
       get() {
-        deprecate(
-          `Using \`run.${key}\` has been deprecated. Instead, import the value directly from @ember/runloop:\n\n  import { ${key} } from '@ember/runloop';`,
-          false,
-          {
-            id: 'deprecated-run-loop-and-computed-dot-access',
-            until: '4.0.0',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-          }
-        );
+        let message = _callback(`run.${key}`, key, '@ember/runloop');
+
+        deprecate(message, message === null, {
+          id: 'deprecated-run-loop-and-computed-dot-access',
+          until: '4.0.0',
+          for: 'ember-source',
+          since: {
+            enabled: '3.27.0',
+          },
+        });
 
         return func;
       },
@@ -767,18 +775,16 @@ if (DEBUG) {
   };
 
   _deprecatedGlobalGetCurrentRunLoop = () => {
-    deprecate(
-      `Using \`run.currentRunLoop\` has been deprecated. Instead, import the getCurrentRunLoop() directly from @ember/runloop:\n\n  import { getCurrentRunLoop } from '@ember/runloop';`,
-      false,
-      {
-        id: 'deprecated-run-loop-and-computed-dot-access',
-        until: '4.0.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.27.0',
-        },
-      }
-    );
+    let message = _callback('run.currentRunLoop', 'getCurrentRunLoop', '@ember/runloop');
+
+    deprecate(message, message === null, {
+      id: 'deprecated-run-loop-and-computed-dot-access',
+      until: '4.0.0',
+      for: 'ember-source',
+      since: {
+        enabled: '3.27.0',
+      },
+    });
 
     return _getCurrentRunLoop();
   };
