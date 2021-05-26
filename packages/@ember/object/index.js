@@ -55,23 +55,31 @@ import {
   uniq,
 } from '@ember/object/computed';
 
+export let _onDotAccess;
+
 // eslint-disable-next-line no-undef
 if (DEBUG) {
+  let _callback = (dotKey, importKey, module) => {
+    return `Using \`${dotKey}\` has been deprecated. Instead, import the value directly from ${module}:\n\n  import { ${importKey} } from '${module}';`;
+  };
+
+  _onDotAccess = (callback) => {
+    _callback = callback;
+  };
+
   let defineDeprecatedComputedFunc = (key, func) => {
     Object.defineProperty(computed, key, {
       get() {
-        deprecate(
-          `Using \`computed.${key}\` has been deprecated. Instead, import the value directly from @ember/object/computed:\n\n  import { ${key} } from '@ember/object/computed';`,
-          false,
-          {
-            id: 'deprecated-run-loop-and-computed-dot-access',
-            until: '4.0.0',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-          }
-        );
+        let message = _callback(`computed.${key}`, key, '@ember/object/computed');
+
+        deprecate(message, message === null, {
+          id: 'deprecated-run-loop-and-computed-dot-access',
+          until: '4.0.0',
+          for: 'ember-source',
+          since: {
+            enabled: '3.27.0',
+          },
+        });
 
         return func;
       },
