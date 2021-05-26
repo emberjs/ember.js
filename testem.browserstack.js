@@ -7,7 +7,7 @@ const BrowserStackLaunchers = {
       '--os',
       'OS X',
       '--osv',
-      'Big Sur',
+      'Mojave',
       '--b',
       'safari',
       '--bv',
