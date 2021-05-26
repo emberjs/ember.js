@@ -2,7 +2,6 @@ import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
 import { Component } from '@ember/-internals/glimmer';
 import { getOwner } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
 import { resolve } from 'rsvp';
 
 moduleFor(
@@ -20,7 +19,7 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         rootElement: '#one',
         router: null,
       });
@@ -29,7 +28,7 @@ moduleFor(
     createSecondApplication(options) {
       let { applicationOptions } = this;
       let secondApplicationOptions = { rootElement: '#two' };
-      let myOptions = assign(applicationOptions, secondApplicationOptions, options);
+      let myOptions = Object.assign(applicationOptions, secondApplicationOptions, options);
       this.secondApp = Application.create(myOptions);
       this.secondResolver = this.secondApp.__registry__.resolver;
       return this.secondApp;

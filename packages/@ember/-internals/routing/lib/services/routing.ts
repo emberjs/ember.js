@@ -5,7 +5,6 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { symbol } from '@ember/-internals/utils';
 import { readOnly } from '@ember/object/computed';
-import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import EmberRouter, { QueryParam } from '../system/router';
 import RouterState from '../system/router_state';
@@ -55,7 +54,7 @@ export default class RoutingService extends Service {
   _generateURL(routeName: string, models: {}[], queryParams: {}) {
     let visibleQueryParams = {};
     if (queryParams) {
-      assign(visibleQueryParams, queryParams);
+      Object.assign(visibleQueryParams, queryParams);
       this.normalizeQueryParams(routeName, models, visibleQueryParams as QueryParam);
     }
 

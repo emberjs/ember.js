@@ -4,7 +4,6 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { Route } from '@ember/-internals/routing';
-import { assign } from '@ember/polyfills';
 
 class LoggingApplicationTestCase extends ApplicationTestCase {
   constructor() {
@@ -40,7 +39,7 @@ moduleFor(
   'Application with LOG_ACTIVE_GENERATION=true',
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         LOG_ACTIVE_GENERATION: true,
       });
     }
@@ -102,7 +101,7 @@ moduleFor(
   'Application when LOG_ACTIVE_GENERATION=false',
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         LOG_ACTIVE_GENERATION: false,
       });
     }
@@ -119,7 +118,7 @@ moduleFor(
   'Application with LOG_VIEW_LOOKUPS=true',
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         LOG_VIEW_LOOKUPS: true,
       });
     }
@@ -159,7 +158,7 @@ moduleFor(
   'Application with LOG_VIEW_LOOKUPS=false',
   class extends LoggingApplicationTestCase {
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         LOG_VIEW_LOOKUPS: false,
       });
     }

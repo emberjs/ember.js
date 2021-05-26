@@ -2,12 +2,11 @@ import { RenderingTestCase, moduleFor, classes, applyMixins, runTask } from 'int
 
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { action } from '@ember/object';
-import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
 
 class TextAreaRenderingTest extends RenderingTestCase {
   assertTextArea({ attrs, value } = {}) {
-    let mergedAttrs = assign({ class: classes('ember-view ember-text-area') }, attrs);
+    let mergedAttrs = Object.assign({ class: classes('ember-view ember-text-area') }, attrs);
     this.assertComponentElement(this.firstChild, {
       tagName: 'textarea',
       attrs: mergedAttrs,
@@ -21,7 +20,7 @@ class TextAreaRenderingTest extends RenderingTestCase {
   triggerEvent(type, options = {}) {
     let event = document.createEvent('Events');
     event.initEvent(type, true, true);
-    assign(event, options);
+    Object.assign(event, options);
 
     this.firstChild.dispatchEvent(event);
   }

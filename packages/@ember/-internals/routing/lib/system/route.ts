@@ -25,7 +25,6 @@ import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
@@ -435,7 +434,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     let state = transition ? transition[STATE_SYMBOL] : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
-    let params = assign({}, state!.params[fullName!]);
+    let params = Object.assign({}, state!.params[fullName!]);
     let queryParams = getQueryParamsFor(route, state!);
 
     return Object.keys(queryParams).reduce((params, key) => {
@@ -2403,7 +2402,7 @@ export function getFullQueryParams(router: EmberRouter, state: TransitionState<R
   }
 
   state['fullQueryParams'] = {};
-  assign(state['fullQueryParams'], state.queryParams);
+  Object.assign(state['fullQueryParams'], state.queryParams);
 
   router._deserializeQueryParams(state.routeInfos, state['fullQueryParams'] as QueryParam);
   return state['fullQueryParams'];
@@ -2465,7 +2464,7 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
     }
 
     let newControllerParameterConfiguration = {};
-    assign(newControllerParameterConfiguration, controllerQP[cqpName], routeQP[cqpName]);
+    Object.assign(newControllerParameterConfiguration, controllerQP[cqpName], routeQP[cqpName]);
 
     qps[cqpName] = newControllerParameterConfiguration;
 
@@ -2484,7 +2483,7 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
     }
 
     let newRouteParameterConfiguration = {};
-    assign(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
+    Object.assign(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
     qps[rqpName] = newRouteParameterConfiguration;
   }
 

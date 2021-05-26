@@ -1,4 +1,3 @@
-import { assign } from '@ember/polyfills';
 import { compile } from 'ember-template-compiler';
 import { EventDispatcher } from '@ember/-internals/views';
 import { helper, Helper, Component, _resetRenderers } from '@ember/-internals/glimmer';
@@ -122,7 +121,7 @@ export default class RenderingTestCase extends AbstractTestCase {
       })
     );
 
-    let attrs = assign({}, context, {
+    let attrs = Object.assign({}, context, {
       tagName: '',
       layoutName: '-top-level',
     });

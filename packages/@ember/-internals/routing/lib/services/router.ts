@@ -4,7 +4,6 @@ import { symbol } from '@ember/-internals/utils';
 import { EMBER_ROUTING_ROUTER_SERVICE_REFRESH } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
-import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
 import Route from '../system/route';
@@ -313,7 +312,7 @@ export default class RouterService extends Service {
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
-      queryParams = assign({}, queryParams);
+      queryParams = Object.assign({}, queryParams);
       this._router._prepareQueryParams(
         // UNSAFE: casting `routeName as string` here encodes the existing
         // assumption but may be wrong: `extractRouteArgs` correctly returns it

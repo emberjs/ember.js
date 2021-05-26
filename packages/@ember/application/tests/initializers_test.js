@@ -1,4 +1,3 @@
-import { assign } from '@ember/polyfills';
 import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '..';
 
@@ -12,13 +11,13 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         rootElement: '#one',
       });
     }
 
     createSecondApplication(options, MyApplication = Application) {
-      let myOptions = assign(
+      let myOptions = Object.assign(
         this.applicationOptions,
         {
           rootElement: '#two',

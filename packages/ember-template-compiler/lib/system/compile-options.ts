@@ -1,6 +1,5 @@
 import { EMBER_STRICT_MODE } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
 import { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from '../plugins/index';
 import { EmberPrecompileOptions, PluginFunc } from '../types';
@@ -14,7 +13,7 @@ function malformedComponentLookup(string: string) {
 
 export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
-  let options: EmberPrecompileOptions = assign(
+  let options: EmberPrecompileOptions = Object.assign(
     { meta: {}, isProduction: false, plugins: { ast: [] } },
     _options,
     {

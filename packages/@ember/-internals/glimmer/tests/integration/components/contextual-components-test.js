@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { assign } from '@ember/polyfills';
 import { isEmpty } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
 
@@ -1441,7 +1440,7 @@ class ContextualComponentMutableParamsTest extends RenderingTestCase {
   render(templateStr, context = {}) {
     super.render(
       `${templateStr}<span class="value">{{this.model.val2}}</span>`,
-      assign(context, { model: { val2: 8 } })
+      Object.assign(context, { model: { val2: 8 } })
     );
   }
 }

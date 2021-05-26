@@ -2,7 +2,6 @@ import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test
 
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { action } from '@ember/object';
-import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 
@@ -70,7 +69,7 @@ class InputRenderingTest extends RenderingTestCase {
   triggerEvent(type, options) {
     let event = document.createEvent('Events');
     event.initEvent(type, true, true);
-    assign(event, options);
+    Object.assign(event, options);
 
     let element = this.$input()[0];
     runTask(() => {

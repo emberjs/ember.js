@@ -1,5 +1,4 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
 import { schedule } from '@ember/runloop';
 import { Template } from '@glimmer/interfaces';
 import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
@@ -22,7 +21,7 @@ export default class OutletView {
     return class extends OutletView {
       static create(options: any) {
         if (options) {
-          return super.create(assign({}, injections, options));
+          return super.create(Object.assign({}, injections, options));
         } else {
           return super.create(injections);
         }
@@ -31,7 +30,7 @@ export default class OutletView {
   }
 
   static reopenClass(injections: any): void {
-    assign(this, injections);
+    Object.assign(this, injections);
   }
 
   static create(options: any): OutletView {

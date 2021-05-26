@@ -10,7 +10,6 @@ import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setTemplates } from '@ember/-internals/glimmer';
-import { assign } from '@ember/polyfills';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -37,7 +36,7 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         rootElement: '#one',
         router: null,
         autoboot: true,
@@ -45,7 +44,7 @@ moduleFor(
     }
 
     createSecondApplication(options) {
-      let myOptions = assign(this.applicationOptions, options);
+      let myOptions = Object.assign(this.applicationOptions, options);
       return (this.secondApp = Application.create(myOptions));
     }
 
@@ -187,7 +186,7 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         autoboot: true,
       });
     }

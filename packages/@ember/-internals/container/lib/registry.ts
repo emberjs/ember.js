@@ -1,7 +1,6 @@
 import { Factory } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import Container, { ContainerOptions, LazyInjection } from './container';
 
@@ -607,7 +606,7 @@ export default class Registry implements IRegistry {
       resolverKnown = this.resolver.knownForType(type);
     }
 
-    return assign({}, fallbackKnown, localKnown, resolverKnown);
+    return Object.assign({}, fallbackKnown, localKnown, resolverKnown);
   }
 
   isValidFullName(fullName: string): boolean {

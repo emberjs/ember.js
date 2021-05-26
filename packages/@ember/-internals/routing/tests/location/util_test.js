@@ -1,10 +1,9 @@
-import { assign } from '@ember/polyfills';
 import { replacePath, getPath, getQuery, getFullPath } from '../../lib/location/util';
 import { supportsHistory, supportsHashChange } from '../../lib/location/util';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides, assert) {
-  return assign(
+  return Object.assign(
     {
       href: 'http://test.com/',
       pathname: '/',

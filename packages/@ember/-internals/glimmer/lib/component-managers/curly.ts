@@ -4,7 +4,6 @@ import { addChildView, setElementView, setViewElement } from '@ember/-internals/
 import { assert, debugFreeze } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
-import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
@@ -219,11 +218,11 @@ export default class CurlyComponentManager
       named = {
         [positionalParams]: createComputeRef(() => reifyPositional(captured)),
       };
-      assign(named, args.named.capture());
+      Object.assign(named, args.named.capture());
     } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
       const count = Math.min(positionalParams.length, args.positional.length);
       named = {};
-      assign(named, args.named.capture());
+      Object.assign(named, args.named.capture());
 
       for (let i = 0; i < count; i++) {
         // As of TS 3.7, tsc is giving us the following error on this line without the type annotation
