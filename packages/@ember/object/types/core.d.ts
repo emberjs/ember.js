@@ -1,1 +1,1 @@
-export { CoreObject as default } from '../../-internals/runtime';
+export { default } from '../../-internals/runtime/types/core';

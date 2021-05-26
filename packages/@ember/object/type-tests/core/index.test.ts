@@ -1,5 +1,8 @@
 import { expectTypeOf } from 'expect-type';
-import CoreObject from '../types/core';
+
+import CoreObject from '@ember/object/core';
+
+expectTypeOf(CoreObject.create()).toEqualTypeOf<CoreObject>();
 
 /** Newable tests */
 const co1 = new CoreObject();
@@ -23,3 +26,12 @@ const co3 = CoreObject.create({ foo: '123', bar: 456 });
 
 expectTypeOf(co3.foo).toEqualTypeOf<string>();
 expectTypeOf(co3.bar).toEqualTypeOf<number>();
+
+// @ts-expect-error extend is no longer available in the public API
+CoreObject.extend({ baz: 6 });
+
+// @ts-expect-error reopen is no longer available in the public API
+CoreObject.reopen({ baz: 6 });
+
+// @ts-expect-error reopenClass is no longer available in the public API
+CoreObject.reopenClass({ baz: 6 });
