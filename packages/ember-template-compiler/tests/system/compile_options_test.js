@@ -124,7 +124,7 @@ moduleFor(
   class extends CustomPluginsTests {
     beforeEach() {
       expectDeprecation(
-        'Using class based template compilation plugins is deprecated, please update to the functional style'
+        `Using class based template compilation plugins is deprecated, please update to the functional style: ${LegacyCustomTransform.name}`
       );
       expectDeprecation(
         'registerPlugin is deprecated, please pass plugins directly via `compile` and/or `precompile`.'
@@ -141,7 +141,7 @@ moduleFor(
 
     ['@test custom registered plugins are deduplicated'](assert) {
       expectDeprecation(
-        'Using class based template compilation plugins is deprecated, please update to the functional style'
+        `Using class based template compilation plugins is deprecated, please update to the functional style: ${LegacyCustomTransform.name}`
       );
       expectDeprecation(
         'registerPlugin is deprecated, please pass plugins directly via `compile` and/or `precompile`.'
@@ -194,7 +194,7 @@ moduleFor(
     // override so that we can provide custom AST plugins to compile
     compile(templateString) {
       expectDeprecation(
-        'Using class based template compilation plugins is deprecated, please update to the functional style'
+        'Using class based template compilation plugins is deprecated, please update to the functional style: LegacyCustomTransform'
       );
       return compile(templateString, {
         plugins: {
