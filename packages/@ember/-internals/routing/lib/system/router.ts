@@ -301,7 +301,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   }
 
   _initRouterJs(): void {
-    let location = get(this, 'location');
+    let location = get(this, 'location') as IEmberLocation;
     let router = this;
     let owner = getOwner(this);
     let seen = Object.create(null);
@@ -454,7 +454,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       replaceURL(url: string) {
         if (location.replaceURL) {
           let doReplaceURL = () => {
-            location.replaceURL(url);
+            location.replaceURL!(url);
             set(router, 'currentURL', url);
           };
           once(doReplaceURL);
@@ -534,9 +534,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   */
   startRouting() {
     if (this.setupRouter()) {
-      let initialURL = get(this, 'initialURL');
+      let initialURL = get(this, 'initialURL') as string | undefined;
       if (initialURL === undefined) {
-        initialURL = get(this, 'location').getURL();
+        initialURL = (get(this, 'location') as IEmberLocation).getURL();
       }
       let initialTransition = this.handleURL(initialURL);
       if (initialTransition && initialTransition.error) {
@@ -552,7 +552,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     this._didSetupRouter = true;
     this._setupLocation();
 
-    let location = get(this, 'location');
+    let location = get(this, 'location') as IEmberLocation;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
@@ -1099,7 +1099,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   */
   _getQPMeta(routeInfo: PrivateRouteInfo) {
     let route = routeInfo.route;
-    return route && get(route, '_qp');
+    return route && (get(route, '_qp') as any);
   }
 
   /**
@@ -1856,7 +1856,7 @@ EmberRouter.reopen({
 
   // FIXME: Does this need to be overrideable via extend?
   url: computed(function (this: Router<Route>) {
-    let location = get(this, 'location');
+    let location = get(this, 'location') as string | IEmberLocation;
 
     if (typeof location === 'string') {
       return undefined;

@@ -69,7 +69,7 @@ interface MaybeHasIsDestroyed {
   @return {Object} the property value or `null`.
   @public
 */
-export function get(obj: object, keyName: string): any {
+export function get(obj: object, keyName: string): unknown {
   assert(
     `Get must be called with two arguments; an object and a property key`,
     arguments.length === 2

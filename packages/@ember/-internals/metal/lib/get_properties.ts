@@ -31,7 +31,12 @@ import { get } from './property_get';
   @return {Object}
   @public
 */
-export default function getProperties(obj: object, keys?: string[]): object {
+function getProperties<L extends string[]>(obj: object, list: L): { [Key in L[number]]: unknown };
+function getProperties<L extends string[]>(
+  obj: object,
+  ...list: L
+): { [Key in L[number]]: unknown };
+function getProperties(obj: object, keys?: string[]): object {
   let ret = {};
   let propertyNames = arguments;
   let i = 1;
@@ -45,3 +50,5 @@ export default function getProperties(obj: object, keys?: string[]): object {
   }
   return ret;
 }
+
+export default getProperties;

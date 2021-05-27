@@ -169,7 +169,7 @@ ControllerMixin.reopen({
     deprecateTransitionMethods('controller', 'transitionToRoute');
 
     // target may be either another controller or a router
-    let target = get(this, 'target');
+    let target = get(this, 'target') as any;
     let method = target.transitionToRoute || target.transitionTo;
     return method.apply(target, prefixRouteNameArg(this, args));
   },
@@ -237,7 +237,7 @@ ControllerMixin.reopen({
   replaceRoute(...args: string[]) {
     deprecateTransitionMethods('controller', 'replaceRoute');
     // target may be either another controller or a router
-    let target = get(this, 'target');
+    let target = get(this, 'target') as any;
     let method = target.replaceRoute || target.replaceWith;
     return method.apply(target, prefixRouteNameArg(this, args));
   },

@@ -334,7 +334,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       names = (routeInfo && routeInfo['_names']) || [];
     }
 
-    let qps = get(this, '_qp.qps');
+    let qps = get(this, '_qp.qps') as any;
 
     let namePaths = new Array(names.length);
     for (let a = 0; a < names.length; ++a) {
@@ -494,7 +494,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @property _optionsForQueryParam
   */
   _optionsForQueryParam(qp: QueryParam) {
-    const queryParams = get(this, 'queryParams');
+    const queryParams = get(this, 'queryParams') as any;
     return (
       get(queryParams, qp.urlKey) ||
       get(queryParams, qp.prop) ||
@@ -1107,13 +1107,13 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers. Side effects. Side effects everywhere.
     if (!this.controller) {
-      let qp = get(this, '_qp');
-      let propNames = qp !== undefined ? get(qp, 'propertyNames') : [];
+      let qp = get(this, '_qp') as any;
+      let propNames = qp !== undefined ? (get(qp, 'propertyNames') as string[]) : [];
       addQueryParamsObservers(controller, propNames);
       this.controller = controller;
     }
 
-    let queryParams = get(this, '_qp');
+    let queryParams = get(this, '_qp') as any;
 
     let states = queryParams.states;
 
@@ -1353,7 +1353,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   */
   model(params: {}, transition: Transition) {
     let name, sawParams, value;
-    let queryParams = get(this, '_qp.map');
+    let queryParams = get(this, '_qp.map') as any;
 
     for (let prop in params) {
       if (prop === 'queryParams' || (queryParams && prop in queryParams)) {
@@ -1403,7 +1403,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @private
   */
   findModel(...args: any[]) {
-    return get(this, 'store').find(...args);
+    return (get(this, 'store') as any).find(...args);
   }
 
   /**
@@ -1792,7 +1792,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
     let controller = owner.lookup<Controller>(`controller:${controllerName}`);
-    let queryParameterConfiguraton = get(this, 'queryParams');
+    let queryParameterConfiguraton = get(this, 'queryParams') as this['queryParams'];
     let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
     if (controller) {
@@ -1801,7 +1801,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       // merge in the query params for the route. As a mergedProperty,
       // Route#queryParams is always at least `{}`
 
-      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams') || {};
+      let controllerDefinedQueryParameterConfiguration =
+        (get(controller, 'queryParams') as any) || {};
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
         controllerDefinedQueryParameterConfiguration
       );
@@ -2134,7 +2135,7 @@ function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
   let params = (state['queryParamsFor'][name] = {});
 
   // Copy over all the query params for this route/controller into params hash.
-  let qps = get(route, '_qp.qps');
+  let qps = get(route, '_qp.qps') as any;
   for (let i = 0; i < qps.length; ++i) {
     // Put deserialized qp on params hash.
     let qp = qps[i];
@@ -2148,7 +2149,7 @@ function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
   return params;
 }
 
-function copyDefaultValue(value: unknown[]) {
+function copyDefaultValue(value: unknown) {
   if (Array.isArray(value)) {
     return emberA(value.slice());
   }
@@ -2350,14 +2351,14 @@ Route.reopen({
     @private
    */
     queryParamsDidChange(this: Route, changed: {}, _totalPresent: unknown, removed: {}) {
-      let qpMap = get(this, '_qp').map;
+      let qpMap = (get(this, '_qp') as any).map;
 
       let totalChanged = Object.keys(changed).concat(Object.keys(removed));
       for (let i = 0; i < totalChanged.length; ++i) {
         let qp = qpMap[totalChanged[i]];
         if (
           qp &&
-          get(this._optionsForQueryParam(qp), 'refreshModel') &&
+          (get(this._optionsForQueryParam(qp), 'refreshModel') as boolean) &&
           this._router.currentState
         ) {
           this.refresh();
@@ -2459,7 +2460,7 @@ Route.reopen({
       }
 
       qpMeta.qps.forEach((qp: QueryParam) => {
-        let routeQpMeta = get(qp.route, '_qp');
+        let routeQpMeta = get(qp.route, '_qp') as any;
         let finalizedController = qp.route.controller;
         finalizedController['_qpDelegate'] = get(routeQpMeta, 'states.active');
       });
