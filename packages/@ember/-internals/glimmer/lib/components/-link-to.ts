@@ -11,6 +11,8 @@ import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate, runInDebug, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
+import { dependentKeyCompat } from '@ember/object/compat';
+import { assign } from '@ember/polyfills';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent from '../component';
@@ -543,14 +545,16 @@ const LinkComponent = EmberComponent.extend({
     }
   }),
 
-  _query: computed('query', function computeLinkToComponentQuery(this: any) {
-    let { query } = this;
+  _query: dependentKeyCompat({
+    get(this: any) {
+      let { query } = this;
 
-    if (query === UNDEFINED) {
-      return EMPTY_QUERY_PARAMS;
-    } else {
-      return Object.assign({}, query);
-    }
+      if (query === UNDEFINED) {
+        return EMPTY_QUERY_PARAMS;
+      } else {
+        return assign({}, query);
+      }
+    },
   }),
 
   /**
