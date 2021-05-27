@@ -1,3 +1,21 @@
+## v0.79.3 (2021-05-27)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1318](https://github.com/glimmerjs/glimmer-vm/pull/1318) Ensure hash works with custom tags ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* `@glimmer/destroyable`, `@glimmer/global-context`, `@glimmer/integration-tests`, `@glimmer/reference`
+  * [#1317](https://github.com/glimmerjs/glimmer-vm/pull/1317) Fix global-context test leakage ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/interfaces`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1316](https://github.com/glimmerjs/glimmer-vm/pull/1316) Remove UpdatingOpcode base classes ([@pzuraq](https://github.com/pzuraq))
+* Other
+  * [#1315](https://github.com/glimmerjs/glimmer-vm/pull/1315) Strip assert and deprecate from the benchmark ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.79.2 (2021-05-20)
 
 #### :bug: Bug Fix
