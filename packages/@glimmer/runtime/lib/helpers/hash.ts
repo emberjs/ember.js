@@ -6,8 +6,12 @@ import { combine, Tag, tagFor, track } from '@glimmer/validator';
 import { deprecate } from '@glimmer/global-context';
 import { internalHelper } from './internal-helper';
 
-function tagForKey(hash: CapturedNamedArguments, key: string): Tag {
-  return track(() => valueForRef(hash[key]));
+function tagForKey(namedArgs: CapturedNamedArguments, key: string): Tag {
+  return track(() => {
+    if (key in namedArgs) {
+      valueForRef(namedArgs[key]);
+    }
+  });
 }
 
 let hashProxyFor: (args: CapturedNamedArguments) => Record<string, unknown>;
