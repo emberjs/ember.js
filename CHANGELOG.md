@@ -1,5 +1,15 @@
 # Ember Changelog
 
+### v3.27.2 (May 27, 2021)
+
+- [#19511](https://github.com/emberjs/ember.js/pull/19511) / [#19548](https://github.com/emberjs/ember.js/pull/19548) [BUGFIX] Makes the (hash) helper lazy
+- [#19530](https://github.com/emberjs/ember.js/pull/19530) [DOC] fix passing params to named blocks examples
+- [#19536](https://github.com/emberjs/ember.js/pull/19536) [BUGFIX] Fix `computed.*` deprecation message to include the correct import path
+- [#19544](https://github.com/emberjs/ember.js/pull/19544) [BUGFIX] Use explicit this in helper test blueprints
+- [#19555](https://github.com/emberjs/ember.js/pull/19555) [BUGFIX] Improve class based tranform deprecation message
+- [#19557](https://github.com/emberjs/ember.js/pull/19557) [BUGFIX] Refine Ember Global deprecation message
+- [#19564](https://github.com/emberjs/ember.js/pull/19564) [BUGFIX] Improve computed.* and run.* deprecation message (IE11)
+
 ### v3.27.1 (May 13, 2021)
 
 - [#19540](https://github.com/emberjs/ember.js/pull/19540) [BUGFIX] Ensure ember-testing is loaded lazily
