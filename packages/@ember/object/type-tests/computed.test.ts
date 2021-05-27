@@ -9,9 +9,20 @@ class Foo {
     return `${this.firstName} ${this.lastName}`;
   }
 
-  // @ts-expect-error must decorate a method
+  @(computed('firstName', 'lastName').readOnly())
+  get readonlyFullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  // NOTE: This should probably not work, but types do currently allow it.
   @computed('firstName', 'lastName')
   declare badFullName: string;
+
+  // NOTE: This works, but is not recommended.
+  @computed('firstName', 'lastName', function () {
+    return `${this.firstName} ${this.lastName}`;
+  })
+  declare altFullName: string;
 }
 
 new Foo();

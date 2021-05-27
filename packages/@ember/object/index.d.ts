@@ -1,8 +1,6 @@
 export let action: MethodDecorator;
 
-// NOTE: The internal version of computed is TypeScript.
-// However, it is more permissive than we want.
-export function computed(...dependentKeys: string[]): MethodDecorator;
+export { computed } from '@ember/-internals/metal';
 
 // NOTE: The internal version of defineProperty is TypeScript.
 // However, it is more permissive than we want.
