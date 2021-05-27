@@ -16,7 +16,6 @@ import {
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
-import Logger from '@ember/-internals/console';
 import Controller, { inject as injectController } from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
@@ -100,7 +99,7 @@ import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
-import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
+import { EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 import {
   templateOnlyComponent,
@@ -375,11 +374,6 @@ Object.defineProperty(Ember, 'testing', {
 });
 
 Ember._Backburner = Backburner;
-
-// ****@ember/-internals/console****
-if (LOGGER) {
-  Ember.Logger = Logger;
-}
 
 // ****@ember/-internals/runtime****
 Ember.A = A;

@@ -519,9 +519,6 @@ let allExports = [
   // @ember/-internals/meta
   ['meta', '@ember/-internals/meta'],
 
-  // @ember/-internals/console
-  ['Logger', '@ember/-internals/console', 'default'],
-
   // @ember/-internals/views
   ['ViewUtils.isSimpleClick', '@ember/-internals/views', 'isSimpleClick'],
   ['ViewUtils.getElementView', '@ember/-internals/views', 'getElementView'],
