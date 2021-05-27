@@ -1,18 +1,8 @@
 export let action: MethodDecorator;
 
-export { computed } from '@ember/-internals/metal';
+export { computed, defineProperty } from '@ember/-internals/metal';
 
-// NOTE: The internal version of defineProperty is TypeScript.
-// However, it is more permissive than we want.
-export function defineProperty(
-  obj: object,
-  keyName: string,
-  desc?: PropertyDescriptor,
-  data?: any,
-  meta?: any
-): void;
-
-// NOTE: We don't properly handle types for CPs so we just return unknown for gets
+// NOTE: We don't properly handle types for CPs so we just return unknown for gets.
 export function get(obj: any, key: string): unknown;
 export function getProperties<L extends string[]>(
   obj: any,
