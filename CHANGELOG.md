@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### v3.28.0-beta.2 (May 27, 2021)
+
+- [#19511](https://github.com/emberjs/ember.js/pull/19511) / [#19548](https://github.com/emberjs/ember.js/pull/19548) [BUGFIX] Makes the (hash) helper lazy
+- [#19530](https://github.com/emberjs/ember.js/pull/19530) [DOC] fix passing params to named blocks examples
+- [#19536](https://github.com/emberjs/ember.js/pull/19536) [BUGFIX] Fix `computed.*` deprecation message to include the correct import path
+- [#19544](https://github.com/emberjs/ember.js/pull/19544) [BUGFIX] Use explicit this in helper test blueprints
+- [#19555](https://github.com/emberjs/ember.js/pull/19555) [BUGFIX] Improve class based tranform deprecation message
+- [#19557](https://github.com/emberjs/ember.js/pull/19557) [BUGFIX] Refine Ember Global deprecation message
+- [#19564](https://github.com/emberjs/ember.js/pull/19564) [BUGFIX] Improve computed.* and run.* deprecation message (IE11)
+- [#19491](https://github.com/emberjs/ember.js/pull/19491) [BUGFIX] Fix `owner.lookup` `owner.register` behavior with `singleton: true` option
+
 ### v3.28.0-beta.1 (May 3, 2021)
 
 - [#19472](https://github.com/emberjs/ember.js/pull/19472) [BUGFIX] Prevent transformation of block params called `attrs`
