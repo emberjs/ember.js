@@ -64,8 +64,6 @@ jobs:
     env:
       BROWSERSTACK_USERNAME: glimmervm1
       BROWSERSTACK_ACCESS_KEY: 7DFjbGLxYRsXWmc8tzeh
-      # can be removed once https://github.com/kategengler/ember-cli-browserstack/pull/31 lands
-      CI_JOB_ID: ${{ github.run_id }}
 
     steps:
       - uses: actions/checkout@v2
