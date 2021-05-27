@@ -14,7 +14,6 @@ expectTypeOf(o).toMatchTypeOf<object>();
 // object returned by create type-checks as an instance of Ember.Object
 expectTypeOf(o.isDestroyed).toEqualTypeOf<boolean>(); // from instance
 expectTypeOf(o.isDestroying).toEqualTypeOf<boolean>(); // from instance
-expectTypeOf(o.get).toEqualTypeOf<(key: keyof EmberObject) => unknown>(); // from prototype
 
 /**
  * One-argument case
@@ -37,10 +36,34 @@ export class Person extends EmberObject {
 const p = new Person();
 
 expectTypeOf(p.firstName).toEqualTypeOf<string>();
-// get is deprecated and only returns unknown now
+
+// get not preferred for TS only returns unknown
 expectTypeOf(p.get('firstName')).toEqualTypeOf<unknown>();
-// @ts-expect-error Can't get unknown properties
-p.get('invalid');
+// Also returns unknown for invalid properties
+expectTypeOf(p.get('invalid')).toEqualTypeOf<unknown>();
+
+// get is not preferred for TS and only returns unknown
+let getPropertiesResult = p.getProperties('firstName', 'lastName', 'invalid');
+expectTypeOf(getPropertiesResult).toEqualTypeOf<{
+  firstName: unknown;
+  lastName: unknown;
+  invalid: unknown;
+}>();
+// @ts-expect-error doesn't have unknown properties
+getPropertiesResult.unknown;
+
+expectTypeOf(p.set('firstName', 'Joe')).toEqualTypeOf<string>();
+expectTypeOf(p.set('invalid', 1)).toEqualTypeOf<number>();
+
+let setPropertiesResult = p.setProperties({ firstName: 'Joe', invalid: 1 });
+expectTypeOf(setPropertiesResult).toEqualTypeOf<{
+  firstName: string;
+  invalid: number;
+}>();
+expectTypeOf(setPropertiesResult.firstName).toEqualTypeOf<string>();
+expectTypeOf(setPropertiesResult.invalid).toEqualTypeOf<number>();
+// @ts-expect-error doesn't have unknown properties
+setPropertiesResult.unknown;
 
 const p2 = Person.create({ firstName: 'string' });
 expectTypeOf(p2.firstName).toEqualTypeOf<string>();
