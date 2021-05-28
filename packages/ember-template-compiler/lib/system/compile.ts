@@ -1,9 +1,9 @@
 /**
 @module ember
 */
-import require, { has } from 'require';
 import { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
+import { moduleExists, importSync } from '@embroider/macros';
 
 // FIXME
 type StaticTemplate = unknown;
@@ -23,9 +23,9 @@ export default function compile(
   templateString: string,
   options: Partial<EmberPrecompileOptions> = {}
 ): Factory {
-  if (!template && has('@ember/-internals/glimmer')) {
+  if (!template && moduleExists('@ember/-internals/glimmer')) {
     // tslint:disable-next-line:no-require-imports
-    template = require('@ember/-internals/glimmer').template;
+    template = importSync('@ember/-internals/glimmer').template;
   }
 
   if (!template) {
