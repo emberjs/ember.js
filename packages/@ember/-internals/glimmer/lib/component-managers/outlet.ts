@@ -4,7 +4,6 @@ import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
-import { assign } from '@ember/polyfills';
 import {
   CapturedArguments,
   CompilableProgram,
@@ -205,7 +204,7 @@ export class OutletComponentDefinition
 
 export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
   if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
-    const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
+    const WRAPPED_CAPABILITIES = Object.assign({}, CAPABILITIES, {
       dynamicTag: true,
       elementHook: true,
       wrapped: true,

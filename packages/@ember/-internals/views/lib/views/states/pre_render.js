@@ -1,6 +1,5 @@
 import _default from './default';
-import { assign } from '@ember/polyfills';
 
-const preRender = assign({}, _default);
+const preRender = Object.assign({}, _default);
 
 export default Object.freeze(preRender);

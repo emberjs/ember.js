@@ -1,7 +1,5 @@
 /* global Element */
 
-import { assign } from '@ember/polyfills';
-
 import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
@@ -162,7 +160,11 @@ export default class AbstractTestCase {
     node,
     { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }
   ) {
-    attrs = assign({}, { id: regex(/^ember\d*$/), class: classes('ember-view') }, attrs || {});
+    attrs = Object.assign(
+      {},
+      { id: regex(/^ember\d*$/), class: classes('ember-view') },
+      attrs || {}
+    );
     this.assertElement(node, { ElementType, tagName, attrs, content });
   }
 

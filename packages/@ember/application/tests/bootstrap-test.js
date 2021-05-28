@@ -1,4 +1,3 @@
-import { assign } from '@ember/polyfills';
 import { moduleFor, DefaultResolverApplicationTestCase, runTask } from 'internal-test-helpers';
 
 moduleFor(
@@ -14,7 +13,7 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         autoboot: true,
         rootElement: '#app',
       });

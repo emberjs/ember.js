@@ -1,4 +1,3 @@
-import { assign } from '@ember/polyfills';
 import getAllPropertyNames from './get-all-property-names';
 
 function isGenerator(mixin) {
@@ -14,10 +13,10 @@ export default function applyMixins(TestClass, ...mixins) {
       mixin = {};
 
       generator.cases.forEach((value, idx) => {
-        assign(mixin, generator.generate(value, idx));
+        Object.assign(mixin, generator.generate(value, idx));
       });
 
-      assign(TestClass.prototype, mixin);
+      Object.assign(TestClass.prototype, mixin);
     } else if (typeof mixinOrGenerator === 'function') {
       let properties = getAllPropertyNames(mixinOrGenerator);
       mixin = new mixinOrGenerator();
@@ -29,7 +28,7 @@ export default function applyMixins(TestClass, ...mixins) {
       });
     } else {
       mixin = mixinOrGenerator;
-      assign(TestClass.prototype, mixin);
+      Object.assign(TestClass.prototype, mixin);
     }
   });
 

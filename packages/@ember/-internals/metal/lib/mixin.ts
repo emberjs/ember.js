@@ -15,7 +15,6 @@ import {
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { ALIAS_METHOD } from '@ember/deprecated-features';
-import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
 import {
@@ -204,7 +203,7 @@ function applyMergedProperties(
     return value;
   }
 
-  let newBase = assign({}, baseValue);
+  let newBase = Object.assign({}, baseValue);
   let hasFunction = false;
 
   let props = Object.keys(value);

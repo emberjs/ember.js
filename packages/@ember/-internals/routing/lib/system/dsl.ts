@@ -1,6 +1,5 @@
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { Option } from '@glimmer/interfaces';
 import { MatchCallback } from 'route-recognizer';
 import { EngineInfo, EngineRouteInfo } from './engines';
@@ -136,7 +135,7 @@ export default class DSLImpl implements DSL {
 
     if (this.options.engineInfo) {
       let localFullName = name.slice(this.options.engineInfo.fullName.length + 1);
-      let routeInfo: EngineRouteInfo = assign({ localFullName }, this.options.engineInfo);
+      let routeInfo: EngineRouteInfo = Object.assign({ localFullName }, this.options.engineInfo);
 
       if (serialize) {
         routeInfo.serializeMethod = serialize;
@@ -206,7 +205,7 @@ export default class DSLImpl implements DSL {
         this.options.engineInfo = engineInfo;
       }
 
-      let optionsForChild = assign({ engineInfo }, this.options);
+      let optionsForChild = Object.assign({ engineInfo }, this.options);
       let childDSL = new DSLImpl(fullName, optionsForChild);
 
       createRoute(childDSL, 'loading');
@@ -222,14 +221,14 @@ export default class DSLImpl implements DSL {
     }
 
     let localFullName = 'application';
-    let routeInfo = assign({ localFullName }, engineInfo);
+    let routeInfo = Object.assign({ localFullName }, engineInfo);
 
     if (this.enableLoadingSubstates) {
       // These values are important to register the loading routes under their
       // proper names for the Router and within the Engine's registry.
       let substateName = `${name}_loading`;
       let localFullName = `application_loading`;
-      let routeInfo = assign({ localFullName }, engineInfo);
+      let routeInfo = Object.assign({ localFullName }, engineInfo);
       createRoute(this, substateName, {
         resetNamespace: options.resetNamespace,
       });
@@ -237,7 +236,7 @@ export default class DSLImpl implements DSL {
 
       substateName = `${name}_error`;
       localFullName = `application_error`;
-      routeInfo = assign({ localFullName }, engineInfo);
+      routeInfo = Object.assign({ localFullName }, engineInfo);
       createRoute(this, substateName, {
         resetNamespace: options.resetNamespace,
         path: dummyErrorRoute,

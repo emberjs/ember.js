@@ -1,5 +1,4 @@
 import DefaultResolver from '@ember/application/globals-resolver';
-import { assign } from '@ember/polyfills';
 import { moduleFor, DefaultResolverApplicationTestCase, runTask } from 'internal-test-helpers';
 
 moduleFor(
@@ -18,7 +17,7 @@ moduleFor(
         },
       });
 
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         Resolver,
         autoboot: true,
       });

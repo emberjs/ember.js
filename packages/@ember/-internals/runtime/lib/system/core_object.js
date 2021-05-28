@@ -4,7 +4,6 @@
 
 import { getFactoryFor, setFactoryFor, INIT_FACTORY } from '@ember/-internals/container';
 import { getOwner, LEGACY_OWNER } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
 import {
   guidFor,
   lookupDescriptor,
@@ -122,7 +121,7 @@ function initialize(obj, properties) {
 
         if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
           let baseValue = obj[keyName];
-          value = assign({}, baseValue, value);
+          value = Object.assign({}, baseValue, value);
         }
       }
 
@@ -1130,7 +1129,7 @@ function flattenProps(...props) {
       if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
         let baseValue = initProperties[keyName];
 
-        value = assign({}, baseValue, value);
+        value = Object.assign({}, baseValue, value);
       }
 
       initProperties[keyName] = value;

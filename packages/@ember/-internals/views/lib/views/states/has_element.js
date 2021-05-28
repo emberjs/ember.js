@@ -1,9 +1,8 @@
-import { assign } from '@ember/polyfills';
 import _default from './default';
 import { join } from '@ember/runloop';
 import { flaggedInstrument } from '@ember/instrumentation';
 
-const hasElement = assign({}, _default, {
+const hasElement = Object.assign({}, _default, {
   rerender(view) {
     view.renderer.rerender(view);
   },

@@ -1,4 +1,3 @@
-import { assign } from '@ember/polyfills';
 import { window } from '@ember/-internals/browser-environment';
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
@@ -11,7 +10,7 @@ import NoneLocation from '../../lib/location/none_location';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides, assert) {
-  return assign(
+  return Object.assign(
     {
       href: 'http://test.com/',
       pathname: '/',
@@ -26,7 +25,7 @@ function mockBrowserLocation(overrides, assert) {
 }
 
 function mockBrowserHistory(overrides, assert) {
-  return assign(
+  return Object.assign(
     {
       pushState() {
         assert.ok(false, 'history.pushState should not be called during testing');

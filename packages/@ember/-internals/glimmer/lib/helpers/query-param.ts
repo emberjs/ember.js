@@ -3,7 +3,6 @@
 */
 import { QueryParams } from '@ember/-internals/routing';
 import { assert, deprecate } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef } from '@glimmer/reference';
 import { reifyNamed } from '@glimmer/runtime';
@@ -51,6 +50,6 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
       }
     );
 
-    return new QueryParams(assign({}, reifyNamed(named) as any));
+    return new QueryParams(Object.assign({}, reifyNamed(named) as any));
   });
 });
