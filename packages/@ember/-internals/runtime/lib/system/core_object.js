@@ -9,7 +9,6 @@ import {
   lookupDescriptor,
   inspect,
   makeArray,
-  HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
@@ -317,7 +316,7 @@ class CoreObject {
 
     let self = this;
 
-    if (DEBUG && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
+    if (DEBUG && typeof self.unknownProperty === 'function') {
       let messageFor = (obj, property) => {
         return (
           `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +

@@ -8,7 +8,6 @@ import {
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 
 let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
@@ -749,9 +748,7 @@ if (jQueryDisabled) {
         assert.ok(receivedEvent instanceof jQuery.Event, 'event is a jQuery.Event');
       }
 
-      [`@${HAS_NATIVE_PROXY ? 'test' : 'skip'} accessing jQuery.Event#originalEvent is deprecated`](
-        assert
-      ) {
+      ['@test accessing jQuery.Event#originalEvent is deprecated'](assert) {
         let receivedEvent;
 
         this.registerComponent('x-foo', {
@@ -823,7 +820,7 @@ if (jQueryDisabled) {
       }
 
       [`@${
-        HAS_NATIVE_PROXY && DEBUG ? 'test' : 'skip'
+        DEBUG ? 'test' : 'skip'
       } accessing jQuery.Event#__originalEvent does not trigger deprecations to support ember-jquery-legacy`](
         assert
       ) {
