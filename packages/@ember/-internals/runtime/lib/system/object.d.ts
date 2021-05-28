@@ -38,5 +38,6 @@ export default class Object extends CoreObject implements Observable {
 }
 
 export class FrameworkObject extends CoreObject {
+  /** @internal */
   _debugContainerKey: string | undefined;
 }
