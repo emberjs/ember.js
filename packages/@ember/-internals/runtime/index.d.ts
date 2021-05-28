@@ -2,6 +2,7 @@ import { EmberClassConstructor, Objectify } from './types/-private/types';
 import PublicCoreObject from './types/core';
 import PublicEmberObject from './types/index';
 import Evented from './types/evented';
+export { default as copy } from './lib/copy';
 
 export const TargetActionSupport: any;
 export function isArray(arr: any): boolean;
