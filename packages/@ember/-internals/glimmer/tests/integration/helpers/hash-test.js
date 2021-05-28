@@ -3,7 +3,6 @@ import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 
 import { set, computed } from '@ember/-internals/metal';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 
 moduleFor(
   'Helpers test: {{hash}}',
@@ -294,13 +293,9 @@ moduleFor(
       this.assertText('Chad ');
 
       runTask(() => {
-        if (HAS_NATIVE_PROXY) {
-          expectDeprecation(() => {
-            set(fooBarInstance.hash, 'lastName', 'Hietala');
-          }, /You set the '.*' property on a {{hash}} object/);
-        } else {
+        expectDeprecation(() => {
           set(fooBarInstance.hash, 'lastName', 'Hietala');
-        }
+        }, /You set the '.*' property on a {{hash}} object/);
       });
 
       this.assertText('Chad Hietala');

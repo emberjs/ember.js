@@ -1,5 +1,5 @@
 import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
-import { dictionary, HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
+import { dictionary, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry, Injection } from './registry';
@@ -234,30 +234,26 @@ if (DEBUG) {
  * set on the manager.
  */
 function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>): FactoryManager<T, C> {
-  if (HAS_NATIVE_PROXY) {
-    let validator = {
-      set(_obj: T, prop: keyof T) {
-        throw new Error(
-          `You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
-        );
-      },
-    };
+  let validator = {
+    set(_obj: T, prop: keyof T) {
+      throw new Error(
+        `You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
+      );
+    },
+  };
 
-    // Note:
-    // We have to proxy access to the manager here so that private property
-    // access doesn't cause the above errors to occur.
-    let m = manager;
-    let proxiedManager = {
-      class: m.class,
-      create(props?: { [prop: string]: any }) {
-        return m.create(props);
-      },
-    };
+  // Note:
+  // We have to proxy access to the manager here so that private property
+  // access doesn't cause the above errors to occur.
+  let m = manager;
+  let proxiedManager = {
+    class: m.class,
+    create(props?: { [prop: string]: any }) {
+      return m.create(props);
+    },
+  };
 
-    return new Proxy(proxiedManager, validator as any) as any;
-  }
-
-  return manager;
+  return new Proxy(proxiedManager, validator as any) as any;
 }
 
 function isSingleton(container: Container, fullName: string) {
