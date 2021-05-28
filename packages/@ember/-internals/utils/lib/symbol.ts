@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { GUID_KEY } from './guid';
 import intern from './intern';
-import { HAS_NATIVE_SYMBOL } from './symbol-utils';
 
 const GENERATED_SYMBOLS: string[] = [];
 
@@ -26,4 +25,4 @@ export function enumerableSymbol(debugName: string): string {
   return symbol;
 }
 
-export const symbol = HAS_NATIVE_SYMBOL ? Symbol : enumerableSymbol;
+export const symbol = Symbol;

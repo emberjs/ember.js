@@ -3,7 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
-import { setEmberArray, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
+import { setEmberArray } from '@ember/-internals/utils';
 import {
   get,
   set,
@@ -138,7 +138,7 @@ function insertAt(array, index, item) {
 */
 export function isArray(_obj) {
   let obj = _obj;
-  if (DEBUG && HAS_NATIVE_PROXY && typeof _obj === 'object' && _obj !== null) {
+  if (DEBUG && typeof _obj === 'object' && _obj !== null) {
     let possibleProxyContent = _obj[PROXY_CONTENT];
     if (possibleProxyContent !== undefined) {
       obj = possibleProxyContent;

@@ -2,7 +2,6 @@ import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'inter
 
 import { get, set, notifyPropertyChange, computed, on } from '@ember/-internals/metal';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 import {
@@ -136,13 +135,11 @@ class ForEachable extends ArrayDelegate {
 
 let ArrayIterable;
 
-if (HAS_NATIVE_SYMBOL) {
-  ArrayIterable = class extends ArrayDelegate {
-    [Symbol.iterator]() {
-      return this._array[Symbol.iterator]();
-    }
-  };
-}
+ArrayIterable = class extends ArrayDelegate {
+  [Symbol.iterator]() {
+    return this._array[Symbol.iterator]();
+  }
+};
 
 class TogglingEachTest extends TogglingSyntaxConditionalsTest {
   get truthyValue() {
@@ -162,6 +159,7 @@ const TRUTHY_CASES = [
   new ForEachable(['hello']),
   ArrayProxy.create({ content: ['hello'] }),
   ArrayProxy.create({ content: emberA(['hello']) }),
+  new ArrayIterable(['hello']),
 ];
 
 const FALSY_CASES = [
@@ -176,12 +174,8 @@ const FALSY_CASES = [
   new ForEachable([]),
   ArrayProxy.create({ content: [] }),
   ArrayProxy.create({ content: emberA([]) }),
+  new ArrayIterable([]),
 ];
-
-if (HAS_NATIVE_SYMBOL) {
-  TRUTHY_CASES.push(new ArrayIterable(['hello']));
-  FALSY_CASES.push(new ArrayIterable([]));
-}
 
 applyMixins(
   BasicEachTest,
@@ -1079,17 +1073,15 @@ moduleFor(
   }
 );
 
-if (HAS_NATIVE_SYMBOL) {
-  moduleFor(
-    'Syntax test: {{#each}} with array-like objects implementing Symbol.iterator',
-    class extends EachTest {
-      createList(items) {
-        let iterable = new ArrayIterable(items);
-        return { list: iterable, delegate: iterable };
-      }
+moduleFor(
+  'Syntax test: {{#each}} with array-like objects implementing Symbol.iterator',
+  class extends EachTest {
+    createList(items) {
+      let iterable = new ArrayIterable(items);
+      return { list: iterable, delegate: iterable };
     }
-  );
-}
+  }
+);
 
 moduleFor(
   'Syntax test: {{#each}} with array proxies, modifying itself',

@@ -1,12 +1,11 @@
 /* global Proxy */
 import { deprecate } from '@ember/debug';
 import { global } from '@ember/-internals/environment';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 export default function addJQueryEventDeprecation(jqEvent) {
-  if (DEBUG && JQUERY_INTEGRATION && HAS_NATIVE_PROXY) {
+  if (DEBUG && JQUERY_INTEGRATION) {
     let boundFunctions = new Map();
 
     // wrap the jQuery event in a Proxy to add the deprecation message for originalEvent, according to RFC#294

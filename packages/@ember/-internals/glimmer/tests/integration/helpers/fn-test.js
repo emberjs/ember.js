@@ -1,5 +1,4 @@
 import { set } from '@ember/-internals/metal';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
@@ -121,7 +120,7 @@ moduleFor(
     }
 
     '@test there is no `this` context within the callback'(assert) {
-      if (DEBUG && HAS_NATIVE_PROXY) {
+      if (DEBUG) {
         assert.expect(0);
         return;
       }

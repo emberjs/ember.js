@@ -1,9 +1,4 @@
-import {
-  HAS_NATIVE_PROXY,
-  lookupDescriptor,
-  setWithMandatorySetter,
-  toString,
-} from '@ember/-internals/utils';
+import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
@@ -80,7 +75,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
   }
 
   let currentValue: any;
-  if (DEBUG && HAS_NATIVE_PROXY) {
+  if (DEBUG) {
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
     currentValue = obj[keyName];

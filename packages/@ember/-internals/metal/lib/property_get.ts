@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import { HAS_NATIVE_PROXY, isEmberArray, setProxy, symbol } from '@ember/-internals/utils';
+import { isEmberArray, setProxy, symbol } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -17,7 +17,7 @@ export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
 export let getPossibleMandatoryProxyValue: (obj: object, keyName: string) => any;
 
-if (DEBUG && HAS_NATIVE_PROXY) {
+if (DEBUG) {
   getPossibleMandatoryProxyValue = function getPossibleMandatoryProxyValue(obj, keyName): any {
     let content = obj[PROXY_CONTENT];
     if (content === undefined) {
@@ -106,7 +106,7 @@ export function _getProp(obj: object, keyName: string) {
   let value: unknown;
 
   if (isObjectLike) {
-    if (DEBUG && HAS_NATIVE_PROXY) {
+    if (DEBUG) {
       value = getPossibleMandatoryProxyValue(obj, keyName);
     } else {
       value = obj[keyName];

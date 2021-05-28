@@ -29,9 +29,7 @@ import {
 } from './component-managers/curly';
 
 // Keep track of which component classes have already been processed for lazy event setup.
-// Using a WeakSet would be more appropriate here, but this can only be used when IE11 support is dropped.
-// Thus the workaround using a WeakMap<object, true>
-let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakMap<object, true>>();
+let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
 /**
 @module @ember/component
@@ -671,7 +669,7 @@ const Component = CoreView.extend(
       if (eventDispatcher) {
         let lazyEventsProcessedForComponentClass = lazyEventsProcessed.get(eventDispatcher);
         if (!lazyEventsProcessedForComponentClass) {
-          lazyEventsProcessedForComponentClass = new WeakMap<object, true>();
+          lazyEventsProcessedForComponentClass = new WeakSet<object>();
           lazyEventsProcessed.set(eventDispatcher, lazyEventsProcessedForComponentClass);
         }
 
@@ -685,7 +683,7 @@ const Component = CoreView.extend(
             }
           });
 
-          lazyEventsProcessedForComponentClass.set(proto, true);
+          lazyEventsProcessedForComponentClass.add(proto);
         }
       }
 

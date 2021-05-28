@@ -1,5 +1,5 @@
-import { HAS_NATIVE_SYMBOL, inspect } from '..';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import { inspect } from '..';
+import { AbstractTestCase as TestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor(
   'Ember.inspect',
@@ -130,12 +130,8 @@ How are you?`]: 1,
     }
 
     ['@test inspect outputs the toString() representation of Symbols'](assert) {
-      if (HAS_NATIVE_SYMBOL) {
-        let symbol = Symbol('test');
-        assert.equal(inspect(symbol), 'Symbol(test)');
-      } else {
-        assert.expect(0);
-      }
+      let symbol = Symbol('test');
+      assert.equal(inspect(symbol), 'Symbol(test)');
     }
   }
 );

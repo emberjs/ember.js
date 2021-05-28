@@ -9,7 +9,7 @@ import Service from '@ember/service';
 import EmberRouter, { QueryParam } from '../system/router';
 import RouterState from '../system/router_state';
 
-const ROUTER = symbol('ROUTER') as string;
+const ROUTER = (symbol('ROUTER') as unknown) as string;
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for

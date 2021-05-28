@@ -15,8 +15,6 @@ import InternalComponent, {
   handleDeprecatedEventArguments,
   InternalComponentConstructor,
   jQueryEventShim,
-  ObjectEntries,
-  ObjectValues,
 } from './internal';
 
 const UNINITIALIZED: unknown = Object.freeze({});
@@ -304,7 +302,7 @@ export function handleDeprecatedFeatures(
 
     handleDeprecatedAttributeArguments(target, attributeBindings);
 
-    handleDeprecatedEventArguments(target, ObjectEntries(virtualEvents));
+    handleDeprecatedEventArguments(target, Object.entries(virtualEvents));
 
     {
       let superIsVirtualEventListener = prototype['isVirtualEventListener'];
@@ -318,7 +316,7 @@ export function handleDeprecatedFeatures(
           listener: Function
         ): listener is VirtualEventListener {
           return (
-            ObjectValues(virtualEvents).indexOf(name) !== -1 ||
+            Object.values(virtualEvents).indexOf(name) !== -1 ||
             superIsVirtualEventListener.call(this, name, listener)
           );
         },
