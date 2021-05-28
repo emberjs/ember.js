@@ -8,6 +8,7 @@ import { moduleExists, importSync } from '@embroider/macros';
 // FIXME
 type StaticTemplate = unknown;
 type Factory = any;
+type InternalGlimmer = any;
 
 let template: (templateJS: StaticTemplate) => Factory;
 
@@ -25,7 +26,7 @@ export default function compile(
 ): Factory {
   if (!template && moduleExists('@ember/-internals/glimmer')) {
     // tslint:disable-next-line:no-require-imports
-    template = importSync('@ember/-internals/glimmer').template;
+    template = (importSync('@ember/-internals/glimmer') as InternalGlimmer).template;
   }
 
   if (!template) {
