@@ -42,6 +42,20 @@ expectTypeOf(p.get('firstName')).toEqualTypeOf<unknown>();
 // Also returns unknown for invalid properties
 expectTypeOf(p.get('invalid')).toEqualTypeOf<unknown>();
 
+expectTypeOf(p.incrementProperty('age')).toEqualTypeOf<number>();
+expectTypeOf(p.incrementProperty('age', 2)).toEqualTypeOf<number>();
+// @ts-expect-error must increment by a value
+p.incrementProperty('age', 'foo');
+
+expectTypeOf(p.decrementProperty('age')).toEqualTypeOf<number>();
+expectTypeOf(p.decrementProperty('age', 2)).toEqualTypeOf<number>();
+// @ts-expect-error must decrement by a value
+p.decrementProperty('age', 'foo');
+
+expectTypeOf(p.toggleProperty('age')).toEqualTypeOf<boolean>();
+
+expectTypeOf(p.cacheFor('age')).toEqualTypeOf<unknown>();
+
 // get is not preferred for TS and only returns unknown
 let getPropertiesResult = p.getProperties('firstName', 'lastName', 'invalid');
 expectTypeOf(getPropertiesResult).toEqualTypeOf<{
@@ -65,6 +79,8 @@ expectTypeOf(setPropertiesResult.invalid).toEqualTypeOf<number>();
 // @ts-expect-error doesn't have unknown properties
 setPropertiesResult.unknown;
 
+expectTypeOf(p.notifyPropertyChange('firstName')).toEqualTypeOf(p);
+
 const p2 = Person.create({ firstName: 'string' });
 expectTypeOf(p2.firstName).toEqualTypeOf<string>();
 
@@ -82,3 +98,29 @@ Person.reopen({ fullName: 6 });
 
 // NOTE: This is marked as @internal and will not be publicly available
 Person.reopenClass({ fullName: 6 });
+
+
+class MyComponent extends EmberObject {
+  foo = 'bar';
+
+  constructor() {
+    super();
+    this.addObserver('foo', this, 'fooDidChange');
+    this.addObserver('foo', this, this.fooDidChange);
+    this.removeObserver('foo', this, 'fooDidChange');
+    this.removeObserver('foo', this, this.fooDidChange);
+    const lambda = () => {
+      this.fooDidChange(this, 'foo');
+    };
+    this.addObserver('foo', lambda);
+    this.removeObserver('foo', lambda);
+  }
+
+  fooDidChange(_sender: this, _key: string) {
+    // your code
+  }
+}
+
+const myComponent = MyComponent.create();
+myComponent.addObserver('foo', null, () => {});
+myComponent.set('foo', 'baz');

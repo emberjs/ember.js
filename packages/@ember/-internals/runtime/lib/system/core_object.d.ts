@@ -33,6 +33,7 @@ export default class CoreObject {
    */
   constructor(properties?: object);
 
+  /** @internal */
   _super(...args: any[]): any;
 
   /**
@@ -88,23 +89,31 @@ export default class CoreObject {
     ...args: Args
   ): InstanceType<Class> & MergeArray<Args>;
 
+  /** @internal */
   static detect<Statics, Instance>(
     this: Statics & EmberClassConstructor<Instance>,
     obj: any
   ): obj is Readonly<Statics> & EmberClassConstructor<Instance>;
 
+  /** @internal */
   static detectInstance<Instance>(this: EmberClassConstructor<Instance>, obj: any): obj is Instance;
 
   /**
    * Iterate over each computed property for the class, passing its name and any
    * associated metadata (see metaForProperty) to the callback.
+   * @internal
    */
   static eachComputedProperty(callback: (...args: any[]) => any, binding: {}): void;
   /**
    * Returns the original hash that was passed to meta().
    * @param key property name
+   * @internal
    */
   static metaForProperty(key: string): {};
+
+  /** @internal */
   static isClass: boolean;
+
+  /** @internal */
   static isMethod: boolean;
 }
