@@ -99,7 +99,7 @@ import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
-import { EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
+import { EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
 
 import {
   templateOnlyComponent,
@@ -613,32 +613,6 @@ Object.defineProperty(Ember, 'TEMPLATES', {
 */
 Ember.VERSION = VERSION;
 
-// ****@ember/-internals/views****
-if (JQUERY_INTEGRATION && !views.jQueryDisabled) {
-  Object.defineProperty(Ember, '$', {
-    get() {
-      deprecate(
-        "Using Ember.$() has been deprecated, use `import jQuery from 'jquery';` instead",
-        false,
-        {
-          id: 'ember-views.curly-components.jquery-element',
-          until: '4.0.0',
-          url: 'https://deprecations.emberjs.com/v3.x#toc_jquery-apis',
-          for: 'ember-source',
-          since: {
-            enabled: '3.9.0',
-          },
-        }
-      );
-
-      return views.jQuery;
-    },
-
-    configurable: true,
-    enumerable: true,
-  });
-}
-
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
   getElementView: views.getElementView,
@@ -776,12 +750,3 @@ export default Ember;
  @public
  @static
  */
-
-/**
-  Alias for jQuery
-
-  @for jquery
-  @method $
-  @static
-  @public
-*/

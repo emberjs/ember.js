@@ -3,9 +3,6 @@ import { descriptorForProperty, Mixin, nativeDescDecorator } from '@ember/-inter
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
-import { jQuery, jQueryDisabled } from '../system/jquery';
-import { deprecate } from '@ember/debug';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 function K() {
   return this;
@@ -421,46 +418,6 @@ let mixin = {
     return this._currentState.handleEvent(this, eventName, evt);
   },
 };
-
-if (JQUERY_INTEGRATION) {
-  /**
-   Returns a jQuery object for this view's element. If you pass in a selector
-   string, this method will return a jQuery object, using the current element
-   as its buffer.
-
-   For example, calling `view.$('li')` will return a jQuery object containing
-   all of the `li` elements inside the DOM element of this view.
-
-   @method $
-   @param {String} [selector] a jQuery-compatible selector string
-   @return {jQuery} the jQuery object for the DOM node
-   @public
-   @deprecated
-   */
-  mixin.$ = function $(sel) {
-    assert(
-      "You cannot access this.$() on a component with `tagName: ''` specified.",
-      this.tagName !== ''
-    );
-    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
-    deprecate(
-      'Using this.$() in a component has been deprecated, consider using this.element',
-      false,
-      {
-        id: 'ember-views.curly-components.jquery-element',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_jquery-apis',
-        for: 'ember-source',
-        since: {
-          enabled: '3.9.0',
-        },
-      }
-    );
-    if (this.element) {
-      return sel ? jQuery(sel, this.element) : jQuery(this.element);
-    }
-  };
-}
 
 /**
  @class ViewMixin
