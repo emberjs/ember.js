@@ -1,9 +1,9 @@
 /**
 @module ember
 */
+import { importSync, moduleExists } from '@embroider/macros';
 import { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
-import { moduleExists, importSync } from '@embroider/macros';
 
 // FIXME
 type StaticTemplate = unknown;
