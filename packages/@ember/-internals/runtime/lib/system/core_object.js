@@ -2,7 +2,7 @@
   @module @ember/object
 */
 
-import { getFactoryFor, setFactoryFor, INIT_FACTORY } from '@ember/-internals/container';
+import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
 import { getOwner, LEGACY_OWNER } from '@ember/-internals/owner';
 import {
   guidFor,
@@ -10,7 +10,6 @@ import {
   inspect,
   makeArray,
   HAS_NATIVE_PROXY,
-  HAS_NATIVE_SYMBOL,
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
@@ -1190,44 +1189,6 @@ if (DEBUG) {
 
     return injections;
   };
-}
-
-if (!HAS_NATIVE_SYMBOL) {
-  // Allows OWNER and INIT_FACTORY to be non-enumerable in IE11
-  let instanceOwner = new WeakMap();
-  let instanceFactory = new WeakMap();
-
-  Object.defineProperty(CoreObject.prototype, OWNER, {
-    get() {
-      return instanceOwner.get(this);
-    },
-
-    set(value) {
-      instanceOwner.set(this, value);
-    },
-  });
-
-  Object.defineProperty(CoreObject.prototype, INIT_FACTORY, {
-    get() {
-      return instanceFactory.get(this);
-    },
-
-    set(value) {
-      instanceFactory.set(this, value);
-    },
-  });
-
-  Object.defineProperty(CoreObject, INIT_FACTORY, {
-    get() {
-      return instanceFactory.get(this);
-    },
-
-    set(value) {
-      instanceFactory.set(this, value);
-    },
-
-    enumerable: false,
-  });
 }
 
 function implicitInjectionDeprecation(keyName, msg = null) {

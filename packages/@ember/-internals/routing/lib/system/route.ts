@@ -48,7 +48,7 @@ import generateController from './generate_controller';
 import EmberRouter, { QueryParam } from './router';
 
 export const ROUTE_CONNECTIONS = new WeakMap();
-const RENDER = symbol('render') as string;
+const RENDER = (symbol('render') as unknown) as string;
 
 export function defaultSerialize(
   model: {},

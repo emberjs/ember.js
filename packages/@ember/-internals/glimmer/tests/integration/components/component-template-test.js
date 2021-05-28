@@ -1,8 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
-
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { Component, compile } from '../../utils/helpers';
 
@@ -68,11 +66,9 @@ moduleFor(
         setComponentTemplate(compile('foo'), 'foo');
       }, /Cannot call `setComponentTemplate` on `foo`/);
 
-      if (HAS_NATIVE_SYMBOL) {
-        assert.throws(() => {
-          setComponentTemplate(compile('foo'), Symbol('foo'));
-        }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
-      }
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), Symbol('foo'));
+      }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
     }
 
     '@test calling it twice on the same object asserts'(assert) {

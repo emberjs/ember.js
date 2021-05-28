@@ -2,12 +2,11 @@ import { getOwner } from '@ember/-internals/owner';
 import { _backburner } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { dasherize } from '@ember/string';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 import { Namespace, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 
 function iterate(arr, fn) {
-  if (HAS_NATIVE_SYMBOL && Symbol.iterator in arr) {
+  if (Symbol.iterator in arr) {
     for (let item of arr) {
       fn(item);
     }
