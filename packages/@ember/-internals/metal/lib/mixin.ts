@@ -762,7 +762,11 @@ function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
 // OBSERVER HELPER
 //
 
-type ObserverDefinition = { dependentKeys: string[]; fn: Function; sync: boolean };
+type ObserverDefinition<T extends (...args: any[]) => any> = {
+  dependentKeys: string[];
+  fn: T;
+  sync: boolean;
+};
 
 /**
   Specify a method that observes property changes.
@@ -789,9 +793,11 @@ type ObserverDefinition = { dependentKeys: string[]; fn: Function; sync: boolean
   @public
   @static
 */
-export function observer(...args: (string | Function)[]): Function;
-export function observer(definition: ObserverDefinition): Function;
-export function observer(...args: (string | Function | ObserverDefinition)[]) {
+export function observer<T extends (...args: any[]) => any>(
+  ...args:
+    | [propertyName: string, ...additionalPropertyNames: string[], func: T]
+    | [ObserverDefinition<T>]
+): T {
   let funcOrDef = args.pop();
 
   assert(
@@ -799,16 +805,18 @@ export function observer(...args: (string | Function | ObserverDefinition)[]) {
     typeof funcOrDef === 'function' || (typeof funcOrDef === 'object' && funcOrDef !== null)
   );
 
-  let func, dependentKeys, sync;
+  let func: T;
+  let dependentKeys: string[];
+  let sync: boolean;
 
   if (typeof funcOrDef === 'function') {
     func = funcOrDef;
-    dependentKeys = args;
+    dependentKeys = args as string[];
     sync = !ENV._DEFAULT_ASYNC_OBSERVERS;
   } else {
-    func = (funcOrDef as ObserverDefinition).fn;
-    dependentKeys = (funcOrDef as ObserverDefinition).dependentKeys;
-    sync = (funcOrDef as ObserverDefinition).sync;
+    func = (funcOrDef as ObserverDefinition<T>).fn;
+    dependentKeys = (funcOrDef as ObserverDefinition<T>).dependentKeys;
+    sync = (funcOrDef as ObserverDefinition<T>).sync;
   }
 
   assert('observer called without a function', typeof func === 'function');

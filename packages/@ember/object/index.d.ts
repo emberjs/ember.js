@@ -5,6 +5,7 @@ export {
   defineProperty,
   get,
   getProperties,
+  observer,
   set,
   setProperties,
 } from '@ember/-internals/metal';
