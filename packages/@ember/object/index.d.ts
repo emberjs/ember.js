@@ -8,6 +8,7 @@ export {
   observer,
   set,
   setProperties,
+  trySet,
 } from '@ember/-internals/metal';
 
 export { Object as default } from '@ember/-internals/runtime';
