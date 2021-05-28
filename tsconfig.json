@@ -21,7 +21,9 @@
 
     "newLine": "LF",
     "noEmit": true,
-    "allowJs": false,
+
+    "allowJs": true,
+    "checkJs": false,
 
     "paths": {
       "@glimmer/*": ["../node_modules/@glimmer/*"],
