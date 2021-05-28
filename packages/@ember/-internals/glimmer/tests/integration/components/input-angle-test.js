@@ -1,10 +1,10 @@
-import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runDestroy, runTask } from 'internal-test-helpers';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { action } from '@ember/object';
 import { Checkbox, TextArea, TextField } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 import { TargetActionSupport } from '@ember/-internals/runtime';
-import { getElementView, jQueryDisabled, jQuery, TextSupport } from '@ember/-internals/views';
+import { getElementView, TextSupport } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
 
@@ -557,18 +557,13 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `<Input @enter="foo" />` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(4);
+      assert.expect(3);
 
       expectDeprecation(() => {
         this.render(`<Input @enter="foo" />`, {
           actions: {
-            foo(value, event) {
+            foo() {
               assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
             },
           },
         });
@@ -582,17 +577,12 @@ moduleFor(
     ['@test sends an action with `<Input @enter={{action "foo"}} />` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(1);
 
       this.render(`<Input @enter={{action 'foo'}} />`, {
         actions: {
-          foo(value, event) {
+          foo() {
             assert.ok(true, 'action was triggered');
-            if (jQueryDisabled) {
-              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-            } else {
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-            }
           },
         },
       });
@@ -603,20 +593,15 @@ moduleFor(
     }
 
     ['@test [DEPRECATED] sends an action with `<Input @key-press="foo" />` is pressed'](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
       expectDeprecation(() => {
         this.render(`<Input @value={{this.value}} @key-press='foo' />`, {
           value: 'initial',
 
           actions: {
-            foo(value, event) {
+            foo() {
               assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
             },
           },
         });
@@ -636,14 +621,9 @@ moduleFor(
             value: 'initial',
 
             actions: {
-              foo(value, event) {
+              foo() {
                 triggered++;
                 assert.ok(true, 'action was triggered');
-                if (jQueryDisabled) {
-                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-                } else {
-                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-                }
               },
             },
           });
@@ -707,17 +687,12 @@ moduleFor(
     }
 
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
-      assert.expect(2);
+      assert.expect(1);
 
       this.render(`<Input @insert-newline={{action 'foo'}} />`, {
         actions: {
-          foo(value, event) {
+          foo() {
             assert.ok(true, 'action was triggered');
-            if (jQueryDisabled) {
-              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-            } else {
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-            }
           },
         },
       });
@@ -730,18 +705,13 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `<Input @escape-press="foo" />` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(4);
+      assert.expect(3);
 
       expectDeprecation(() => {
         this.render(`<Input @escape-press='foo' />`, {
           actions: {
-            foo(value, event) {
+            foo() {
               assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
             },
           },
         });
@@ -755,17 +725,12 @@ moduleFor(
     ['@test sends an action with `<Input @escape-press={{action "foo"}} />` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(1);
 
       this.render(`<Input @escape-press={{action 'foo'}} />`, {
         actions: {
-          foo(value, event) {
+          foo() {
             assert.ok(true, 'action was triggered');
-            if (jQueryDisabled) {
-              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-            } else {
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-            }
           },
         },
       });
@@ -776,18 +741,13 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `<Input @key-down="foo" />` when a key is pressed'](
       assert
     ) {
-      assert.expect(4);
+      assert.expect(3);
 
       expectDeprecation(() => {
         this.render(`<Input @key-down='foo' />`, {
           actions: {
-            foo(value, event) {
+            foo() {
               assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
             },
           },
         });
@@ -807,14 +767,9 @@ moduleFor(
         () => {
           this.render(`<Input @key-down={{action 'foo'}} />`, {
             actions: {
-              foo(value, event) {
+              foo() {
                 triggered++;
                 assert.ok(true, 'action was triggered');
-                if (jQueryDisabled) {
-                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-                } else {
-                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-                }
               },
             },
           });
@@ -831,18 +786,13 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `<Input @key-up="foo" />` when a key is pressed'](
       assert
     ) {
-      assert.expect(4);
+      assert.expect(3);
 
       expectDeprecation(() => {
         this.render(`<Input @key-up='foo' />`, {
           actions: {
-            foo(value, event) {
+            foo() {
               assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
             },
           },
         });
@@ -862,14 +812,9 @@ moduleFor(
         () => {
           this.render(`<Input @key-up={{action 'foo'}} />`, {
             actions: {
-              foo(value, event) {
+              foo() {
                 triggered++;
                 assert.ok(true, 'action was triggered');
-                if (jQueryDisabled) {
-                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-                } else {
-                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-                }
               },
             },
           });
