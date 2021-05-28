@@ -1,6 +1,6 @@
 import { DeprecationOptions } from '@ember/debug';
 
-export function alias(dependentKey: string): PropertyDecorator;
+export { alias, expandProperties } from '@ember/-internals/metal';
 
 export function and(dependentKey: string, ...additionalDependentKeys: string[]): PropertyDecorator;
 
@@ -19,8 +19,6 @@ export function deprecatingAlias(
 export function empty(dependentKey: string): PropertyDecorator;
 
 export function equal(dependentKey: string, value: any): PropertyDecorator;
-
-export function expandProperties(pattern: string, callback: (expanded: string) => void): void;
 
 export function filter(
   dependentKey: string,
