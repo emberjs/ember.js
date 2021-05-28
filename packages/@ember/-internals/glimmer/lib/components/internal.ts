@@ -28,24 +28,6 @@ import InternalModifier, { InternalModifierManager } from '../modifiers/internal
 
 function NOOP(): void {}
 
-// TODO: remove me when IE11 support is EOL
-export let ObjectEntries = ((): typeof Object['entries'] => {
-  if (typeof Object.entries === 'function') {
-    return Object.entries;
-  } else {
-    return (obj: {}) => Object.keys(obj).map((key) => [key, obj[key]] as [string, unknown]);
-  }
-})();
-
-// TODO: remove me when IE11 support is EOL
-export let ObjectValues = ((): typeof Object['values'] => {
-  if (typeof Object.values === 'function') {
-    return Object.values;
-  } else {
-    return (obj: {}) => Object.keys(obj).map((key) => obj[key]);
-  }
-})();
-
 export type EventListener = (event: Event) => void;
 
 export default class InternalComponent {
@@ -444,7 +426,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         name: string
       ): boolean {
         let events = [
-          ...ObjectValues(getEventsMap(this.owner)),
+          ...Object.values(getEventsMap(this.owner)),
           'focus-in',
           'focus-out',
           'key-press',
@@ -470,7 +452,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         let { element, component, listenerFor, listeners } = this;
 
         let entries: [event: string, argument: string][] = [
-          ...ObjectEntries(getEventsMap(this.owner)),
+          ...Object.entries(getEventsMap(this.owner)),
           ...extraEvents,
         ];
 
@@ -489,7 +471,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       remove(): void {
         let { element, listeners } = this;
 
-        for (let [event, listener] of ObjectEntries(listeners)) {
+        for (let [event, listener] of Object.entries(listeners)) {
           element.removeEventListener(event, listener);
         }
 
