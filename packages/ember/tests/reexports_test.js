@@ -4,7 +4,6 @@ import { FEATURES, EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-fe
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
-import Resolver from '@ember/application/globals-resolver';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from '@ember/-internals/environment';
 
@@ -120,18 +119,6 @@ moduleFor(
           'Ember.FEATURES contains ${feature} with correct value'
         );
       }
-    }
-
-    ['@test Ember.Resolver is present (but deprecated)'](assert) {
-      expectDeprecation(() => {
-        assert.strictEqual(Ember.Resolver, Resolver, 'Ember.Resolver exists');
-      }, /Using the globals resolver is deprecated/);
-    }
-
-    ['@test Ember.DefaultResolver is present (but deprecated)'](assert) {
-      expectDeprecation(() => {
-        assert.strictEqual(Ember.DefaultResolver, Resolver, 'Ember.DefaultResolver exists');
-      }, /Using the globals resolver is deprecated/);
     }
   }
 );

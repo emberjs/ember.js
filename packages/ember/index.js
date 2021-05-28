@@ -94,7 +94,6 @@ import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
-import Resolver from '@ember/application/globals-resolver';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
@@ -178,32 +177,6 @@ Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
 Ember.Application = Application;
 Ember.ApplicationInstance = ApplicationInstance;
-
-Object.defineProperty(Ember, 'Resolver', {
-  get() {
-    deprecate(
-      'Using the globals resolver is deprecated. Use the ember-resolver package instead. See https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
-      false,
-      {
-        id: 'ember.globals-resolver',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
-        for: 'ember-source',
-        since: {
-          enabled: '3.16.0',
-        },
-      }
-    );
-
-    return Resolver;
-  },
-});
-
-Object.defineProperty(Ember, 'DefaultResolver', {
-  get() {
-    return Ember.Resolver;
-  },
-});
 
 // ****@ember/engine****
 Ember.Engine = Engine;

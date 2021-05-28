@@ -7,7 +7,6 @@ import { Registry } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
-import DefaultResolver from '@ember/application/globals-resolver';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/-internals/routing';
 import { ContainerDebugAdapter } from '@ember/-internals/extension-support';
@@ -420,15 +419,6 @@ Engine.reopenClass({
   /**
     Set this to provide an alternate class to `DefaultResolver`
 
-    @deprecated Use 'Resolver' instead
-    @property resolver
-    @public
-  */
-  resolver: null,
-
-  /**
-    Set this to provide an alternate class to `DefaultResolver`
-
     @property resolver
     @public
   */
@@ -452,7 +442,7 @@ Engine.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  let ResolverClass = get(namespace, 'Resolver') || DefaultResolver;
+  let ResolverClass = get(namespace, 'Resolver');
   let props = { namespace };
   return ResolverClass.create(props);
 }

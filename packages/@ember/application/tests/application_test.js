@@ -1,22 +1,19 @@
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
-import { ENV, context } from '@ember/-internals/environment';
-import { libraries, processAllNamespaces } from '@ember/-internals/metal';
-import { getName } from '@ember/-internals/utils';
+import { ENV } from '@ember/-internals/environment';
+import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { setTemplates } from '@ember/-internals/glimmer';
 import { assign } from '@ember/polyfills';
 import {
   moduleFor,
   ApplicationTestCase,
   AbstractTestCase,
   AutobootApplicationTestCase,
-  DefaultResolverApplicationTestCase,
   verifyInjection,
   verifyRegistration,
   runTask,
@@ -168,54 +165,6 @@ moduleFor(
         { instantiate: false },
         `optionsForType 'helper'`
       );
-    }
-  }
-);
-
-moduleFor(
-  'Application, default resolver with autoboot',
-  class extends DefaultResolverApplicationTestCase {
-    constructor() {
-      super(...arguments);
-      this.originalLookup = context.lookup;
-    }
-
-    teardown() {
-      context.lookup = this.originalLookup;
-      super.teardown();
-      setTemplates({});
-    }
-
-    get applicationOptions() {
-      return assign(super.applicationOptions, {
-        autoboot: true,
-      });
-    }
-
-    [`@test acts like a namespace`](assert) {
-      this.application = runTask(() => this.createApplication());
-      let Foo = (this.application.Foo = EmberObject.extend());
-      processAllNamespaces();
-      assert.equal(getName(Foo), 'TestApp.Foo', 'Classes pick up their parent namespace');
-    }
-
-    [`@test can specify custom router`](assert) {
-      let MyRouter = Router.extend();
-      runTask(() => {
-        this.createApplication();
-        this.application.Router = MyRouter;
-      });
-
-      assert.ok(
-        this.application.__deprecatedInstance__.lookup('router:main') instanceof MyRouter,
-        'application resolved the correct router'
-      );
-    }
-
-    [`@test Minimal Application initialized with just an application template`]() {
-      this.setupFixture('<script type="text/x-handlebars">Hello World</script>');
-      runTask(() => this.createApplication());
-      this.assertInnerHTML('Hello World');
     }
   }
 );
