@@ -1,9 +1,13 @@
-import { ObserverMethod } from './-private/types';
+import { Mixin } from '@ember/-internals/metal';
+
+export type ObserverMethod<Target, Sender> =
+  | keyof Target
+  | ((this: Target, sender: Sender, key: string, value: any, rev: number) => void);
 
 /**
  * This mixin provides properties and property observing functionality, core features of the Ember object model.
  */
-interface Observable {
+export interface Observable {
   /**
    * Retrieves the value of a property from the object.
    */
@@ -69,5 +73,6 @@ interface Observable {
    */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
-// declare const Observable: Mixin<Observable, CoreObject>;
+
+declare const Observable: Mixin;
 export default Observable;

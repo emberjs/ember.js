@@ -74,11 +74,11 @@ expectTypeOf(p2b.firstName).toEqualTypeOf<string>();
 const p2c = Person.create({}, {}, { firstName: 'string' });
 expectTypeOf(p2c.firstName).toEqualTypeOf<string>();
 
-// @ts-expect-error extend is no longer available in the public API
+// NOTE: This is marked as @internal and will not be publicly available
 Person.extend({ fullName: 6 });
 
-// @ts-expect-error reopen is no longer available in the public API
+// NOTE: This is marked as @internal and will not be publicly available
 Person.reopen({ fullName: 6 });
 
-// @ts-expect-error reopenClass is no longer available in the public API
+// NOTE: This is marked as @internal and will not be publicly available
 Person.reopenClass({ fullName: 6 });

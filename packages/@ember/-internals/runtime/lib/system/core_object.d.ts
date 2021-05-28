@@ -1,10 +1,33 @@
-import { EmberClassConstructor, EmberInstanceArguments, Objectify } from './-private/types';
+/**
+ * Used to infer the type of ember classes of type `T`.
+ *
+ * Generally you would use `EmberClass.create()` instead of `new EmberClass()`.
+ *
+ * The single-arg constructor is required by the typescript compiler.
+ * The multi-arg constructor is included for better ergonomics.
+ *
+ * Implementation is carefully chosen for the reasons described in
+ * https://github.com/typed-ember/ember-typings/pull/29
+ */
+type EmberClassConstructor<T> = (new (properties?: object) => T) & (new (...args: any[]) => T);
 
 type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>
   : unknown; // TODO: Is this correct?
 
 export default class CoreObject {
+  /** @internal */
+  static extend<Statics, Instance>(
+    this: Statics & EmberClassConstructor<Instance>,
+    ...args: any[]
+  ): Readonly<Statics> & EmberClassConstructor<Instance>;
+
+  /** @internal */
+  static reopen(...args: any[]): any;
+
+  /** @internal */
+  static reopenClass(...args: any[]): any;
+
   /**
    * CoreObject constructor takes initial object properties as an argument.
    */
@@ -68,7 +91,7 @@ export default class CoreObject {
   static detect<Statics, Instance>(
     this: Statics & EmberClassConstructor<Instance>,
     obj: any
-  ): obj is Objectify<Statics> & EmberClassConstructor<Instance>;
+  ): obj is Readonly<Statics> & EmberClassConstructor<Instance>;
 
   static detectInstance<Instance>(this: EmberClassConstructor<Instance>, obj: any): obj is Instance;
 

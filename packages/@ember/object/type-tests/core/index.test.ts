@@ -27,11 +27,11 @@ const co3 = CoreObject.create({ foo: '123', bar: 456 });
 expectTypeOf(co3.foo).toEqualTypeOf<string>();
 expectTypeOf(co3.bar).toEqualTypeOf<number>();
 
-// @ts-expect-error extend is no longer available in the public API
+// NOTE: This is marked as @internal and will not be publicly available
 CoreObject.extend({ baz: 6 });
 
-// @ts-expect-error reopen is no longer available in the public API
+// NOTE: This is marked as @internal and will not be publicly available
 CoreObject.reopen({ baz: 6 });
 
-// @ts-expect-error reopenClass is no longer available in the public API
+// NOTE: This is marked as @internal and will not be publicly available
 CoreObject.reopenClass({ baz: 6 });

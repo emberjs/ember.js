@@ -1,6 +1,5 @@
-import { ObserverMethod } from './-private/types';
-import CoreObject from './core';
-import Observable from './observable';
+import CoreObject from './core_object';
+import { Observable, ObserverMethod } from '../mixins/observable';
 
 export default class Object extends CoreObject implements Observable {
   get(key: string): unknown;
@@ -21,4 +20,8 @@ export default class Object extends CoreObject implements Observable {
   decrementProperty(keyName: keyof this, decrement?: number): number;
   toggleProperty(keyName: keyof this): boolean;
   cacheFor<K extends keyof this>(key: K): unknown;
+}
+
+export class FrameworkObject extends CoreObject {
+  _debugContainerKey: string | undefined;
 }

@@ -9,4 +9,4 @@ export {
   setProperties,
 } from '@ember/-internals/metal';
 
-export { default } from '@ember/-internals/runtime/types/index';
+export { Object as default } from '@ember/-internals/runtime';

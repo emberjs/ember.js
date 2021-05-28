@@ -525,13 +525,22 @@ const MIXINS = new _WeakSet();
   @public
 */
 export default class Mixin {
+  /** @internal */
   declare static _disableDebugSeal?: boolean;
 
+  /** @internal */
   mixins: Mixin[] | undefined;
+
+  /** @internal */
   properties: { [key: string]: any } | undefined;
+
+  /** @internal */
   ownerConstructor: any;
+
+  /** @internal */
   _without: any[] | undefined;
 
+  /** @internal */
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
     MIXINS.add(this);
     this.properties = extractAccessors(properties);
@@ -572,6 +581,7 @@ export default class Mixin {
 
   // returns the mixins currently applied to the specified object
   // TODO: Make `mixin`
+  /** @internal */
   static mixins(obj: object): Mixin[] {
     let meta = peekMeta(obj);
     let ret: Mixin[] = [];
@@ -593,6 +603,7 @@ export default class Mixin {
     @method reopen
     @param arguments*
     @private
+    @internal
   */
   reopen(...args: any[]) {
     if (args.length === 0) {
@@ -616,6 +627,7 @@ export default class Mixin {
     @param obj
     @return applied object
     @private
+    @internal
   */
   apply(obj: object, _hideKeys = false) {
     // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
@@ -626,6 +638,7 @@ export default class Mixin {
     return applyMixin(obj, [this], _hideKeys);
   }
 
+  /** @internal */
   applyPartial(obj: object) {
     return applyMixin(obj, [this]);
   }
@@ -635,6 +648,7 @@ export default class Mixin {
     @param obj
     @return {Boolean}
     @private
+    @internal
   */
   detect(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) {
@@ -650,16 +664,19 @@ export default class Mixin {
     return meta.hasMixin(this);
   }
 
+  /** @internal */
   without(...args: any[]) {
     let ret = new Mixin([this]);
     ret._without = args;
     return ret;
   }
 
+  /** @internal */
   keys() {
     return _keys(this);
   }
 
+  /** @internal */
   toString() {
     return '(unknown mixin)';
   }
