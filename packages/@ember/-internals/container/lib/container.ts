@@ -1,5 +1,5 @@
 import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
-import { dictionary, HAS_NATIVE_PROXY, HAS_NATIVE_SYMBOL, symbol } from '@ember/-internals/utils';
+import { dictionary, HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry, Injection } from './registry';
@@ -551,7 +551,7 @@ class FactoryManager<T, C> {
     this.injections = undefined;
     setFactoryFor(this, this);
 
-    if (factory && (HAS_NATIVE_SYMBOL || INIT_FACTORY in factory)) {
+    if (factory) {
       setFactoryFor(factory, this);
     }
   }

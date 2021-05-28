@@ -1,6 +1,5 @@
 import { objectAt } from '@ember/-internals/metal';
-import { _contentFor } from '@ember/-internals/runtime';
-import { EmberArray, HAS_NATIVE_SYMBOL, isEmberArray, isObject } from '@ember/-internals/utils';
+import { EmberArray, isEmberArray, isObject } from '@ember/-internals/utils';
 import { Option } from '@glimmer/interfaces';
 import { IteratorDelegate } from '@glimmer/reference';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
@@ -21,7 +20,7 @@ function toEachInIterator(iterable: unknown) {
 
   if (Array.isArray(iterable) || isEmberArray(iterable)) {
     return ObjectIterator.fromIndexable(iterable);
-  } else if (HAS_NATIVE_SYMBOL && isNativeIterable<[unknown, unknown]>(iterable)) {
+  } else if (isNativeIterable<[unknown, unknown]>(iterable)) {
     return MapLikeNativeIterator.from(iterable);
   } else if (hasForEach(iterable)) {
     return ObjectIterator.fromForEachable(iterable);
@@ -39,7 +38,7 @@ function toEachIterator(iterable: unknown) {
     return ArrayIterator.from(iterable);
   } else if (isEmberArray(iterable)) {
     return EmberArrayIterator.from(iterable);
-  } else if (HAS_NATIVE_SYMBOL && isNativeIterable(iterable)) {
+  } else if (isNativeIterable(iterable)) {
     return ArrayLikeNativeIterator.from(iterable);
   } else if (hasForEach(iterable)) {
     return ArrayIterator.fromForEachable(iterable);
