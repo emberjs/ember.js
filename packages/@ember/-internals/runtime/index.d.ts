@@ -5,15 +5,6 @@ import Evented from './types/evented';
 
 export const TargetActionSupport: any;
 export function isArray(arr: any): boolean;
-export const ControllerMixin: any;
-
-export function deprecatingAlias(
-  name: string,
-  opts: {
-    id: string;
-    until: string;
-  }
-): any;
 
 // The public version doesn't export some deprecated methods.
 // However, these are still used internally. Returning `any` is
