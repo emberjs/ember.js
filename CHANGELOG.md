@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.28.0-beta.3 (June 1, 2021)
+
+- [#19565](https://github.com/emberjs/ember.js/pull/19565) [BUGFIX] Ensures that computed can depend on dynamic hash keys
+- [#19571](https://github.com/emberjs/ember.js/pull/19571) [BUGFIX] Delay until: 5.0.0 the removal of the deprecated transition methods of controller and route from [RFC #674](https://github.com/emberjs/rfcs/blob/master/text/0674-deprecate-transition-methods-of-controller-and-route.md).
+
 ### v3.28.0-beta.2 (May 27, 2021)
 
 - [#19511](https://github.com/emberjs/ember.js/pull/19511) / [#19548](https://github.com/emberjs/ember.js/pull/19548) [BUGFIX] Makes the (hash) helper lazy
