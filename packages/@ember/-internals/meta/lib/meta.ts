@@ -57,7 +57,15 @@ if (DEBUG) {
 @module ember
 */
 
-export const UNDEFINED = symbol('undefined');
+const UNDEFINED = symbol('undefined');
+
+export interface Descriptor<T = unknown> {
+  get(obj: object, key: string): T;
+  set(obj: object, key: string, value: T): void;
+  teardown(obj: object, key: string, meta: Meta): void;
+  enumerable?: boolean;
+  _meta?: unknown;
+}
 
 const enum ListenerKind {
   ADD = 0,
@@ -86,7 +94,7 @@ type Listener = StringListener | FunctionListener;
 let currentListenerVersion = 1;
 
 export class Meta {
-  _descriptors: Map<string, any> | undefined;
+  _descriptors: Map<string, Descriptor | typeof UNDEFINED> | undefined;
   _mixins: any | undefined;
   _isInit: boolean;
   _lazyChains: ObjMap<[UpdatableTag, unknown][]> | undefined;
@@ -339,7 +347,7 @@ export class Meta {
     }
   }
 
-  writeDescriptors(subkey: string, value: any) {
+  writeDescriptors(subkey: string, value: Descriptor | typeof UNDEFINED): void {
     assert(
       isDestroyed(this.source)
         ? `Cannot update descriptors for \`${subkey}\` on \`${toString(
@@ -352,16 +360,16 @@ export class Meta {
     map.set(subkey, value);
   }
 
-  peekDescriptors(subkey: string) {
+  peekDescriptors(subkey: string): Descriptor | undefined {
     let possibleDesc = this._findInheritedMap('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
-  removeDescriptors(subkey: string) {
+  removeDescriptors(subkey: string): void {
     this.writeDescriptors(subkey, UNDEFINED);
   }
 
-  forEachDescriptors(fn: Function) {
+  forEachDescriptors(fn: (key: string, value: Descriptor) => void): void {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
     while (pointer !== null) {
@@ -372,7 +380,7 @@ export class Meta {
           if (!seen!.has(key)) {
             seen!.add(key);
             if (value !== UNDEFINED) {
-              fn(key, value);
+              fn(key, value as Descriptor);
             }
           }
         });

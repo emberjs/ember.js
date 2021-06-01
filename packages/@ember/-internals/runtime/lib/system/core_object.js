@@ -26,6 +26,7 @@ import {
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
   TrackedDescriptor,
+  HashCompatDescriptor,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
 import { assert, deprecate } from '@ember/debug';
@@ -33,6 +34,7 @@ import { DEBUG } from '@glimmer/env';
 import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
+import { isHashProxy } from '@glimmer/runtime';
 
 const reopen = Mixin.prototype.reopen;
 
@@ -170,8 +172,13 @@ function initialize(obj, properties) {
           let desc = lookupDescriptor(obj, keyName);
 
           if (injectedProperties.indexOf(keyName) === -1) {
-            // Value was not an injected property, define in like normal
-            defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+            if (isHashProxy(value)) {
+              m.writeDescriptors(keyName, new HashCompatDescriptor());
+              obj[keyName] = value;
+            } else {
+              // Value was not an injected property, define in like normal
+              defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+            }
           } else if (desc) {
             // If the property is a value prop, and it isn't the expected value,
             // then we can warn the user when they attempt to use the value
@@ -207,6 +214,10 @@ function initialize(obj, properties) {
             );
           }
         } else {
+          if (isHashProxy(value)) {
+            m.writeDescriptors(keyName, new HashCompatDescriptor());
+          }
+
           obj[keyName] = value;
         }
       }

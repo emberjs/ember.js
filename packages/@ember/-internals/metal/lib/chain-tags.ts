@@ -1,6 +1,7 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { isHashProxy } from '@glimmer/runtime';
 import { _WeakSet } from '@glimmer/util';
 import {
   combine,
@@ -16,7 +17,7 @@ import { tagForProperty } from './tags';
 
 export const CHAIN_PASS_THROUGH = new _WeakSet();
 
-export function finishLazyChains(meta: Meta, key: string, value: any) {
+export function finishLazyChains(meta: Meta, key: string, value: unknown): void {
   let lazyTags = meta.readableLazyChainsFor(key);
 
   if (lazyTags === undefined) {
@@ -182,7 +183,13 @@ function getChainTags(
       // always be in sync with the aliased value.
       if (CHAIN_PASS_THROUGH.has(descriptor)) {
         // tslint:disable-next-line: no-unused-expression
-        current[segment];
+        let value = current[segment];
+
+        if (isHashProxy(value)) {
+          for (let key in value) {
+            chainTags.push(tagForProperty(value, key));
+          }
+        }
       }
       break;
     }

@@ -1,4 +1,4 @@
-import { meta as metaFor } from '@ember/-internals/meta';
+import { Descriptor, Meta, meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -191,7 +191,7 @@ function descriptorForField([target, key, desc]: [
   return newDesc;
 }
 
-export class TrackedDescriptor {
+export class TrackedDescriptor implements Descriptor {
   constructor(private _get: () => unknown, private _set: (value: unknown) => void) {
     CHAIN_PASS_THROUGH.add(this);
   }
@@ -203,4 +203,6 @@ export class TrackedDescriptor {
   set(obj: object, _key: string, value: unknown): void {
     this._set.call(obj, value);
   }
+
+  teardown(): void {}
 }

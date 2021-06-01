@@ -68,7 +68,7 @@ export function defineProperty(
   let wasDescriptor = previousDesc !== undefined;
 
   if (wasDescriptor) {
-    previousDesc.teardown(obj, keyName, meta);
+    previousDesc!.teardown(obj, keyName, meta);
   }
 
   if (isClassicDecorator(desc)) {

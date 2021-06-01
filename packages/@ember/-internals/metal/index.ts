@@ -14,6 +14,7 @@ export {
 export { arrayContentWillChange, arrayContentDidChange } from './lib/array_events';
 export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
 export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';
+export { HashCompatDescriptor } from './lib/hash-compat';
 
 export { default as isNone } from './lib/is_none';
 export { default as isEmpty } from './lib/is_empty';

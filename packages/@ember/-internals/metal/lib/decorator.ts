@@ -1,4 +1,4 @@
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { Descriptor, Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet as WeakSet } from '@glimmer/util';
@@ -48,7 +48,7 @@ export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
   @class Descriptor
   @private
 */
-export abstract class ComputedDescriptor {
+export abstract class ComputedDescriptor implements Descriptor {
   enumerable = true;
   configurable = true;
   _dependentKeys?: string[] = undefined;

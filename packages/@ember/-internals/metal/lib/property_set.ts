@@ -1,3 +1,4 @@
+import { meta as metaFor } from '@ember/-internals/meta';
 import {
   HAS_NATIVE_PROXY,
   lookupDescriptor,
@@ -7,7 +8,9 @@ import {
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
+import { isHashProxy } from '@glimmer/runtime';
 import { COMPUTED_SETTERS } from './decorator';
+import { HashCompatDescriptor } from './hash-compat';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
@@ -95,7 +98,11 @@ export function _setProp(obj: object, keyName: string, value: any) {
     /* unknown property */
     (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
-    if (DEBUG) {
+    if (isHashProxy(value)) {
+      let meta = metaFor(obj);
+      meta.writeDescriptors(keyName, new HashCompatDescriptor());
+      obj[keyName] = value;
+    } else if (DEBUG) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
       obj[keyName] = value;

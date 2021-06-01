@@ -1,1 +1,1 @@
-export { counters, Meta, meta, MetaCounters, peekMeta, setMeta, UNDEFINED } from './lib/meta';
+export { counters, Meta, meta, MetaCounters, peekMeta, setMeta, Descriptor } from './lib/meta';
