@@ -1,10 +1,16 @@
 import { CapturedArguments, CapturedNamedArguments, Dict } from '@glimmer/interfaces';
 import { setCustomTagFor } from '@glimmer/manager';
 import { createComputeRef, createConstRef, Reference, valueForRef } from '@glimmer/reference';
-import { dict, HAS_NATIVE_PROXY } from '@glimmer/util';
+import { dict, HAS_NATIVE_PROXY, _WeakSet } from '@glimmer/util';
 import { combine, Tag, tagFor, track } from '@glimmer/validator';
 import { deprecate } from '@glimmer/global-context';
 import { internalHelper } from './internal-helper';
+
+const HASH_PROXIES = new _WeakSet();
+
+export function isHashProxy(obj: unknown): boolean {
+  return HASH_PROXIES.has(obj as object);
+}
 
 function tagForKey(namedArgs: CapturedNamedArguments, key: string): Tag {
   return track(() => {
@@ -96,6 +102,8 @@ if (HAS_NATIVE_PROXY) {
       return combine([argTag, proxyTag]);
     });
 
+    HASH_PROXIES.add(proxy);
+
     return proxy;
   };
 } else {
@@ -129,6 +137,8 @@ if (HAS_NATIVE_PROXY) {
 
       return combine([argTag, proxyTag]);
     });
+
+    HASH_PROXIES.add(proxy);
 
     return proxy;
   };
