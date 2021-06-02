@@ -1,11 +1,11 @@
 import require from 'require';
 import { context } from '@ember/-internals/environment';
 import { deprecate } from '@ember/debug';
+import { message, deprecateOnce, setupDotAccess } from './lib/overrides';
 
-const DEFAULT_MESSAGE =
-  'Usage of the Ember Global is deprecated. You should import the Ember module or the specific API instead.';
+setupDotAccess();
 
-export default function bootstrap(message = DEFAULT_MESSAGE, once = false) {
+(function bootstrap() {
   let Ember;
   let disabled = false;
 
@@ -28,7 +28,7 @@ export default function bootstrap(message = DEFAULT_MESSAGE, once = false) {
           },
         });
 
-        if (once) {
+        if (deprecateOnce) {
           disabled = true;
         }
 
@@ -47,4 +47,4 @@ export default function bootstrap(message = DEFAULT_MESSAGE, once = false) {
     // eslint-disable-next-line no-undef
     module.exports = Ember = require('ember').default;
   }
-}
+})();
