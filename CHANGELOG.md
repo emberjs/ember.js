@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.20.7 (June 3, 2021)
+
+- [#19406](https://github.com/emberjs/ember.js/pull/19406) [BUGFIX] Makes user helper computation lazy instead of eager
+- [d462cca7](https://github.com/emberjs/ember.js/commit/d462cca79cf775152d07c4f3c78a02ec0047ee38) Update glimmer-vm to fix printing of elements with comments.
+- [#19263](https://github.com/emberjs/ember.js/pull/19263) [BUGFIX] Remove `@dependentKeyCompat` assertion
+
 ### v3.20.6 (November 11, 2020)
 
 - [#19138](https://github.com/emberjs/ember.js/pull/19138) [BUGFIX] Fix tag cycles in query parameters
