@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v3.27.3 (June 3, 2021)
+
+- [#19565](https://github.com/emberjs/ember.js/pull/19565) [BUGFIX] Ensures that `computed` can depend on dynamic `(hash` keys
+- [#19571](https://github.com/emberjs/ember.js/pull/19571) [BUGFIX] Extend `Route.prototype.transitionTo` deprecation until 5.0.0
+- [#19586](https://github.com/emberjs/ember.js/pull/19586) [BUGFIX] Fix Embroider compatibility 
+
+
 ### v3.27.2 (May 27, 2021)
 
 - [#19511](https://github.com/emberjs/ember.js/pull/19511) / [#19548](https://github.com/emberjs/ember.js/pull/19548) [BUGFIX] Makes the (hash) helper lazy
