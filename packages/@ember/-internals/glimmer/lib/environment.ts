@@ -125,14 +125,6 @@ const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
       enabled: '3.27.0',
     },
   },
-  {
-    id: 'setting-on-hash',
-    until: '4.4.0',
-    for: 'ember-source',
-    since: {
-      enabled: '3.28.0',
-    },
-  },
 ];
 
 const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];

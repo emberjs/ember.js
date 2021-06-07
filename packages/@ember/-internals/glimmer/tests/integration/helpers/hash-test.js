@@ -2,8 +2,7 @@ import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
 
-import { set, computed } from '@ember/-internals/metal';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
+import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: {{hash}}',
@@ -186,79 +185,6 @@ moduleFor(
       });
 
       this.assertText('Chad Hietala');
-    }
-
-    ['@test works with computeds']() {
-      let FooBarComponent = Component.extend({
-        fullName: computed('hash.firstName', 'hash.lastName', function () {
-          return `${this.hash.firstName} ${this.hash.lastName}`;
-        }),
-      });
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{this.fullName}}`,
-      });
-
-      this.render(`{{foo-bar hash=(hash firstName=this.firstName lastName=this.lastName)}}`, {
-        firstName: 'Chad',
-        lastName: 'Hietala',
-      });
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => {
-        set(this.context, 'firstName', 'Godfrey');
-        set(this.context, 'lastName', 'Chan');
-      });
-
-      this.assertText('Godfrey Chan');
-    }
-
-    ['@test works when properties are set dynamically']() {
-      let fooBarInstance;
-      let FooBarComponent = Component.extend({
-        init() {
-          this._super();
-          fooBarInstance = this;
-        },
-      });
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{this.hash.firstName}} {{this.hash.lastName}}`,
-      });
-
-      this.render(`{{foo-bar hash=(hash firstName=this.firstName)}}`, {
-        firstName: 'Chad',
-      });
-
-      this.assertText('Chad ');
-
-      runTask(() => {
-        if (HAS_NATIVE_PROXY) {
-          expectDeprecation(() => {
-            set(fooBarInstance.hash, 'lastName', 'Hietala');
-          }, /You set the '.*' property on a {{hash}} object/);
-        } else {
-          set(fooBarInstance.hash, 'lastName', 'Hietala');
-        }
-      });
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => {
-        expectDeprecation(() => {
-          set(fooBarInstance.hash, 'firstName', 'Godfrey');
-          set(fooBarInstance.hash, 'lastName', 'Chan');
-        }, /You set the '.*' property on a {{hash}} object/);
-      });
-
-      this.assertText('Godfrey Chan');
     }
   }
 );
