@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.28.0-beta.4 (June 7, 2021)
+
+- [#19586](https://github.com/emberjs/ember.js/pull/19586) [BUGFIX] Fix Embroider compatibility
+
 ### v3.28.0-beta.3 (June 1, 2021)
 
 - [#19565](https://github.com/emberjs/ember.js/pull/19565) [BUGFIX] Ensures that computed can depend on dynamic hash keys
