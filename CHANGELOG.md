@@ -24,11 +24,16 @@
 
 - [#19472](https://github.com/emberjs/ember.js/pull/19472) [BUGFIX] Prevent transformation of block params called `attrs`
 
+## v3.27.4 (June 9, 2021)
+
+- [#19594](https://github.com/emberjs/ember.js/pull/19594) [BUGFIX] Revert lazy hash changes
+- [#19596](https://github.com/emberjs/ember.js/pull/19596) [DOC] Fix "Dormant" addon warning typo
+
 ## v3.27.3 (June 3, 2021)
 
 - [#19565](https://github.com/emberjs/ember.js/pull/19565) [BUGFIX] Ensures that `computed` can depend on dynamic `(hash` keys
 - [#19571](https://github.com/emberjs/ember.js/pull/19571) [BUGFIX] Extend `Route.prototype.transitionTo` deprecation until 5.0.0
-- [#19586](https://github.com/emberjs/ember.js/pull/19586) [BUGFIX] Fix Embroider compatibility 
+- [#19586](https://github.com/emberjs/ember.js/pull/19586) [BUGFIX] Fix Embroider compatibility
 
 ### v3.27.2 (May 27, 2021)
 
