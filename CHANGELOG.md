@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v3.27.5 (June 10, 2021)
+
+- [#19597](https://github.com/emberjs/ember.js/pull/19597) [BIGFIX] Fix `<LinkTo>` with nested children
+
 ## v3.27.4 (June 9, 2021)
 
 - [#19594](https://github.com/emberjs/ember.js/pull/19594) [BUGFIX] Revert lazy hash changes
