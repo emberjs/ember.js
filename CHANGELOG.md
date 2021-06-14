@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.28.0-beta.5 (June 14, 2021)
+
+- [#19597](https://github.com/emberjs/ember.js/pull/19597) [BUGFIX] Fix `<LinkTo>` with nested children
+
 ### v3.28.0-beta.4 (June 7, 2021)
 
 - [#19586](https://github.com/emberjs/ember.js/pull/19586) [BUGFIX] Fix Embroider compatibility
