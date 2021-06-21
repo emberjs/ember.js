@@ -1,3 +1,12 @@
+## v0.79.4 (2021-06-21)
+
+#### :rocket: Enhancement
+* `@glimmer/runtime`
+  * [#1319](https://github.com/glimmerjs/glimmer-vm/pull/1319) Adds isHashProxy ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.79.3 (2021-05-27)
 
 #### :bug: Bug Fix
