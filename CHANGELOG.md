@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.28.0-beta.6 (June 21, 2021)
+
+- [#19584](https://github.com/emberjs/ember.js/pull/19584) [BUGFIX] Ensure hash objects correctly entangle as dependencies
+
 ### v3.28.0-beta.5 (June 14, 2021)
 
 - [#19597](https://github.com/emberjs/ember.js/pull/19597) [BUGFIX] Fix `<LinkTo>` with nested children
