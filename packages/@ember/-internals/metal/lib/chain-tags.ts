@@ -1,6 +1,7 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { isHashProxy } from '@glimmer/runtime';
 import { _WeakSet } from '@glimmer/util';
 import {
   combine,
@@ -16,7 +17,7 @@ import { tagForProperty } from './tags';
 
 export const CHAIN_PASS_THROUGH = new _WeakSet();
 
-export function finishLazyChains(meta: Meta, key: string, value: any) {
+export function finishLazyChains(meta: Meta, key: string, value: unknown): void {
   let lazyTags = meta.readableLazyChainsFor(key);
 
   if (lazyTags === undefined) {
@@ -173,20 +174,6 @@ function getChainTags(
 
     chainTags.push(propertyTag);
 
-    // If we're at the end of the path, processing the last segment, and it's
-    // not an alias, we should _not_ get the last value, since we already have
-    // its tag. There's no reason to access it and do more work.
-    if (segmentEnd === pathLength) {
-      // If the key was an alias, we should always get the next value in order to
-      // bootstrap the alias. This is because aliases, unlike other CPs, should
-      // always be in sync with the aliased value.
-      if (CHAIN_PASS_THROUGH.has(descriptor)) {
-        // tslint:disable-next-line: no-unused-expression
-        current[segment];
-      }
-      break;
-    }
-
     if (descriptor === undefined) {
       // If the descriptor is undefined, then its a normal property, so we should
       // lookup the value to chain off of like normal.
@@ -223,8 +210,16 @@ function getChainTags(
       }
     }
 
-    if (!isObject(current)) {
+    if (segmentEnd === pathLength || !isObject(current)) {
       // we've hit the end of the chain for now, break out
+
+      // If the last value is a HashProxy, then entangle all of its tags
+      if (isHashProxy(current)) {
+        for (let key in current) {
+          chainTags.push(tagForProperty(current, key));
+        }
+      }
+
       break;
     }
 
