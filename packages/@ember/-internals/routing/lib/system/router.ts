@@ -1083,7 +1083,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let state = calculatePostTransitionState(this, targetRouteName, models);
     this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
     this._serializeQueryParams(state.routeInfos, queryParams);
-
     if (!_fromRouterService) {
       this._pruneDefaultQueryParamValues(state.routeInfos, queryParams);
     }

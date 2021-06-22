@@ -46,6 +46,7 @@ import {
   stashParamNames,
 } from '../utils';
 import generateController from './generate_controller';
+import { DEFAULT_QUERY_PARAM_VALUE } from './query_params';
 import EmberRouter, { QueryParam } from './router';
 
 export const ROUTE_CONNECTIONS = new WeakMap();
@@ -2680,6 +2681,7 @@ Route.reopen({
         let route = qp.route;
         let controller = route.controller;
         let presentKey = qp.urlKey in params && qp.urlKey;
+        let forcedDefault = false;
 
         // Do a reverse lookup to see if the changed query
         // param URL key corresponds to a QP property on
@@ -2688,6 +2690,10 @@ Route.reopen({
         if (changes.has(qp.urlKey)) {
           // Value updated in/before setupController
           value = get(controller, qp.prop);
+          if (value === DEFAULT_QUERY_PARAM_VALUE) {
+            value = copyDefaultValue(qp.defaultValue);
+            forcedDefault = true;
+          }
           svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
         } else {
           if (presentKey) {
@@ -2727,7 +2733,10 @@ Route.reopen({
         qp.serializedValue = svalue;
 
         let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue;
-        if (!thisQueryParamHasDefaultValue || (transition as any)._keepDefaultQueryParamValues) {
+        if (
+          !thisQueryParamHasDefaultValue ||
+          (!forcedDefault && (transition as any)._keepDefaultQueryParamValues)
+        ) {
           finalParams.push({
             value: svalue,
             visible: true,
