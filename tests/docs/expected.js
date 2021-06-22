@@ -112,6 +112,7 @@ module.exports = {
     'buildRegistry',
     'buildRouteInfoMetadata',
     'cache',
+    'cached',
     'cacheFor',
     'camelize',
     'canCatalogEntriesByType',
