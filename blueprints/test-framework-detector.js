@@ -28,7 +28,7 @@ module.exports = function (blueprint) {
       } else {
         type = 'qunit';
       }
-    } else if ('ember-mocha' in dependencies) {
+    } else if ('ember-mocha' in dependencies || 'ember-mocha2' in dependencies) {
       let checker = new VersionChecker(this.project);
       if (
         fs.existsSync(`${this.path}/${mochaRfcVersion}-files`) &&
