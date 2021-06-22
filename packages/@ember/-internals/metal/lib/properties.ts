@@ -59,7 +59,7 @@ import { revalidateObservers } from './observer';
 export function defineProperty(
   obj: object,
   keyName: string,
-  desc?: Decorator | undefined | null,
+  desc?: Decorator | PropertyDescriptor | undefined | null,
   data?: any | undefined | null,
   _meta?: Meta
 ): void {

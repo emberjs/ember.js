@@ -22,6 +22,7 @@ import {
   ComputedDecorator,
   ComputedProperty,
   ComputedPropertyGetter,
+  ComputedPropertyObj,
   ComputedPropertySetter,
 } from './computed';
 import {
@@ -71,12 +72,12 @@ function concatenatedMixinProperties(
   return concats;
 }
 
-function giveDecoratorSuper(
+function giveDecoratorSuper<Get, Set>(
   key: string,
-  decorator: ComputedDecorator,
-  property: ComputedProperty | true,
+  decorator: ComputedDecorator<Get, Set>,
+  property: ComputedProperty<Get, Set> | true,
   descs: { [key: string]: any }
-): ComputedDecorator {
+): ComputedDecorator<Get, Set> {
   if (property === true) {
     return decorator;
   }
@@ -90,7 +91,7 @@ function giveDecoratorSuper(
   let superDesc = descs[key];
 
   // Check to see if the super property is a decorator first, if so load its descriptor
-  let superProperty: ComputedProperty | true | undefined =
+  let superProperty: ComputedProperty<Get, Set> | true | undefined =
     typeof superDesc === 'function' ? descriptorForDecorator(superDesc) : superDesc;
 
   if (superProperty === undefined || superProperty === true) {
@@ -103,14 +104,14 @@ function giveDecoratorSuper(
     return decorator;
   }
 
-  let get = wrap(originalGetter, superGetter) as ComputedPropertyGetter;
+  let get = wrap(originalGetter, superGetter) as ComputedPropertyGetter<Get>;
   let set;
   let originalSetter = property._setter;
   let superSetter = superProperty._setter;
 
   if (superSetter !== undefined) {
     if (originalSetter !== undefined) {
-      set = wrap(originalSetter, superSetter) as ComputedPropertySetter;
+      set = wrap(originalSetter, superSetter) as ComputedPropertySetter<Set>;
     } else {
       // If the super property has a setter, we default to using it no matter what.
       // This is clearly very broken and weird, but it's what was here so we have
@@ -134,7 +135,7 @@ function giveDecoratorSuper(
       {
         get,
         set,
-      },
+      } as ComputedPropertyObj<Get, Set>,
     ]);
 
     newProperty._readOnly = property._readOnly;
@@ -142,7 +143,7 @@ function giveDecoratorSuper(
     newProperty._meta = property._meta;
     newProperty.enumerable = property.enumerable;
 
-    return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator;
+    return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator<Get, Set>;
   }
 
   return decorator;
@@ -286,7 +287,7 @@ function mergeMixins(
   }
 }
 
-function mergeProps(
+function mergeProps<Get, Set>(
   meta: Meta,
   props: { [key: string]: unknown },
   descs: { [key: string]: unknown },
@@ -340,8 +341,8 @@ function mergeProps(
         // Wrap descriptor function to implement _super() if needed
         descs[key] = giveDecoratorSuper(
           key,
-          value as ComputedDecorator,
-          desc as ComputedProperty,
+          value as ComputedDecorator<Get, Set>,
+          desc as ComputedProperty<Get, Set>,
           descs
         );
         values[key] = undefined;
@@ -570,13 +571,22 @@ const MIXINS = new _WeakSet();
   @public
 */
 export default class Mixin {
+  /** @internal */
   declare static _disableDebugSeal?: boolean;
 
+  /** @internal */
   mixins: Mixin[] | undefined;
+
+  /** @internal */
   properties: { [key: string]: any } | undefined;
+
+  /** @internal */
   ownerConstructor: any;
+
+  /** @internal */
   _without: any[] | undefined;
 
+  /** @internal */
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
     MIXINS.add(this);
     this.properties = extractAccessors(properties);
@@ -617,6 +627,7 @@ export default class Mixin {
 
   // returns the mixins currently applied to the specified object
   // TODO: Make `mixin`
+  /** @internal */
   static mixins(obj: object): Mixin[] {
     let meta = peekMeta(obj);
     let ret: Mixin[] = [];
@@ -638,6 +649,7 @@ export default class Mixin {
     @method reopen
     @param arguments*
     @private
+    @internal
   */
   reopen(...args: any[]) {
     if (args.length === 0) {
@@ -661,6 +673,7 @@ export default class Mixin {
     @param obj
     @return applied object
     @private
+    @internal
   */
   apply(obj: object, _hideKeys = false) {
     // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
@@ -671,6 +684,7 @@ export default class Mixin {
     return applyMixin(obj, [this], _hideKeys);
   }
 
+  /** @internal */
   applyPartial(obj: object) {
     return applyMixin(obj, [this]);
   }
@@ -680,6 +694,7 @@ export default class Mixin {
     @param obj
     @return {Boolean}
     @private
+    @internal
   */
   detect(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) {
@@ -695,16 +710,19 @@ export default class Mixin {
     return meta.hasMixin(this);
   }
 
+  /** @internal */
   without(...args: any[]) {
     let ret = new Mixin([this]);
     ret._without = args;
     return ret;
   }
 
+  /** @internal */
   keys() {
     return _keys(this);
   }
 
+  /** @internal */
   toString() {
     return '(unknown mixin)';
   }
@@ -864,7 +882,11 @@ if (ALIAS_METHOD) {
 // OBSERVER HELPER
 //
 
-type ObserverDefinition = { dependentKeys: string[]; fn: Function; sync: boolean };
+type ObserverDefinition<T extends (...args: any[]) => any> = {
+  dependentKeys: string[];
+  fn: T;
+  sync: boolean;
+};
 
 /**
   Specify a method that observes property changes.
@@ -891,9 +913,11 @@ type ObserverDefinition = { dependentKeys: string[]; fn: Function; sync: boolean
   @public
   @static
 */
-export function observer(...args: (string | Function)[]): Function;
-export function observer(definition: ObserverDefinition): Function;
-export function observer(...args: (string | Function | ObserverDefinition)[]) {
+export function observer<T extends (...args: any[]) => any>(
+  ...args:
+    | [propertyName: string, ...additionalPropertyNames: string[], func: T]
+    | [ObserverDefinition<T>]
+): T {
   let funcOrDef = args.pop();
 
   assert(
@@ -901,16 +925,18 @@ export function observer(...args: (string | Function | ObserverDefinition)[]) {
     typeof funcOrDef === 'function' || (typeof funcOrDef === 'object' && funcOrDef !== null)
   );
 
-  let func, dependentKeys, sync;
+  let func: T;
+  let dependentKeys: string[];
+  let sync: boolean;
 
   if (typeof funcOrDef === 'function') {
     func = funcOrDef;
-    dependentKeys = args;
+    dependentKeys = args as string[];
     sync = !ENV._DEFAULT_ASYNC_OBSERVERS;
   } else {
-    func = (funcOrDef as ObserverDefinition).fn;
-    dependentKeys = (funcOrDef as ObserverDefinition).dependentKeys;
-    sync = (funcOrDef as ObserverDefinition).sync;
+    func = (funcOrDef as ObserverDefinition<T>).fn;
+    dependentKeys = (funcOrDef as ObserverDefinition<T>).dependentKeys;
+    sync = (funcOrDef as ObserverDefinition<T>).sync;
   }
 
   assert('observer called without a function', typeof func === 'function');

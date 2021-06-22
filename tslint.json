@@ -21,5 +21,10 @@
     "quotemark": {
       "options": ["single", "avoid-escape"]
     }
+  },
+  "linterOptions": {
+    "exclude": [
+      "**/type-tests/**/*.ts"
+    ]
   }
 }

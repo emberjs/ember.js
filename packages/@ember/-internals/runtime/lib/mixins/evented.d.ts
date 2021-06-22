@@ -1,4 +1,4 @@
-import Mixin from '../../metal/lib/mixin';
+import Mixin from '../../types/mixin';
 
 /**
  * This mixin allows for Ember objects to subscribe to and emit events.
@@ -44,5 +44,6 @@ interface Evented {
    */
   has(name: string): boolean;
 }
+
 declare const Evented: Mixin;
 export default Evented;

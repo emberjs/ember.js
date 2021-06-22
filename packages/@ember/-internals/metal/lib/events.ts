@@ -118,7 +118,7 @@ export function removeListener(
 export function sendEvent(
   obj: object,
   eventName: string,
-  params: any[],
+  params?: any[],
   actions?: any[],
   _meta?: Meta | null
 ) {
@@ -203,8 +203,10 @@ export function hasListeners(obj: object, eventName: string): boolean {
   @return {Function} the listener function, passed as last argument to on(...)
   @public
 */
-export function on(...args: Array<string | Function>): Function {
-  let func = args.pop() as Function;
+export function on<T extends (...args: any[]) => any>(
+  ...args: [...eventNames: string[], func: T]
+): T {
+  let func = args.pop();
   let events = args as string[];
 
   assert('on expects function as last argument', typeof func === 'function');

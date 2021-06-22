@@ -97,7 +97,7 @@ export function generateGuid(obj: object, prefix = GUID_PREFIX) {
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
-export function guidFor(value: any | null | undefined) {
+export function guidFor(value: any | null | undefined): string {
   let guid;
 
   if (isObject(value)) {

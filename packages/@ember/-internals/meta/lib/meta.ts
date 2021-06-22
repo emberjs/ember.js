@@ -86,22 +86,36 @@ type Listener = StringListener | FunctionListener;
 let currentListenerVersion = 1;
 
 export class Meta {
+  /** @internal */
   _descriptors: Map<string, any> | undefined;
+  /** @internal */
   _mixins: any | undefined;
+  /** @internal */
   _isInit: boolean;
+  /** @internal */
   _lazyChains: ObjMap<[UpdatableTag, unknown][]> | undefined;
+  /** @internal */
   _values: ObjMap<unknown> | undefined;
+  /** @internal */
   _revisions: ObjMap<Revision> | undefined;
+  /** @internal */
   source: object;
+  /** @internal */
   proto: object | undefined;
+  /** @internal */
   _parent: Meta | undefined | null;
 
+  /** @internal */
   _listeners: Listener[] | undefined;
+  /** @internal */
   _listenersVersion = 1;
+  /** @internal */
   _inheritedEnd = -1;
+  /** @internal */
   _flattenedVersion = 0;
 
   // DEBUG
+  /** @internal */
   constructor(obj: object) {
     if (DEBUG) {
       counters!.metaInstantiated++;
@@ -124,7 +138,8 @@ export class Meta {
     this._listeners = undefined;
   }
 
-  get parent() {
+  /** @internal */
+  get parent(): Meta | null {
     let parent = this._parent;
     if (parent === undefined) {
       let proto = getPrototypeOf(this.source);
@@ -135,6 +150,7 @@ export class Meta {
 
   // These methods are here to prevent errors in legacy compat with some addons
   // that used them as intimate API
+  /** @internal */
   setSourceDestroying() {
     deprecate(
       'setSourceDestroying is deprecated, use the destroy() API to destroy the object directly instead',
@@ -150,6 +166,7 @@ export class Meta {
     );
   }
 
+  /** @internal */
   setSourceDestroyed() {
     deprecate(
       'setSourceDestroyed is deprecated, use the destroy() API to destroy the object directly instead',
@@ -165,6 +182,7 @@ export class Meta {
     );
   }
 
+  /** @internal */
   isSourceDestroying() {
     deprecate(
       'isSourceDestroying is deprecated, use the isDestroying() API to check the object destruction state directly instead',
@@ -182,6 +200,7 @@ export class Meta {
     return isDestroying(this.source);
   }
 
+  /** @internal */
   isSourceDestroyed() {
     deprecate(
       'isSourceDestroyed is deprecated, use the isDestroyed() API to check the object destruction state directly instead',
@@ -199,30 +218,37 @@ export class Meta {
     return isDestroyed(this.source);
   }
 
+  /** @internal */
   setInitializing() {
     this._isInit = true;
   }
 
+  /** @internal */
   unsetInitializing() {
     this._isInit = false;
   }
 
+  /** @internal */
   isInitializing() {
     return this._isInit;
   }
 
+  /** @internal */
   isPrototypeMeta(obj: object) {
     return this.proto === this.source && this.source === obj;
   }
 
+  /** @internal */
   _getOrCreateOwnMap(key: string) {
     return this[key] || (this[key] = Object.create(null));
   }
 
+  /** @internal */
   _getOrCreateOwnSet(key: string) {
     return this[key] || (this[key] = new Set());
   }
 
+  /** @internal */
   _findInheritedMap(key: string, subkey: string): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
@@ -237,6 +263,7 @@ export class Meta {
     }
   }
 
+  /** @internal */
   _hasInInheritedSet(key: string, value: any) {
     let pointer: Meta | null = this;
     while (pointer !== null) {
@@ -249,30 +276,35 @@ export class Meta {
     return false;
   }
 
+  /** @internal */
   valueFor(key: string): unknown {
     let values = this._values;
 
     return values !== undefined ? values[key] : undefined;
   }
 
+  /** @internal */
   setValueFor(key: string, value: unknown) {
     let values = this._getOrCreateOwnMap('_values');
 
     values[key] = value;
   }
 
+  /** @internal */
   revisionFor(key: string): Revision | undefined {
     let revisions = this._revisions;
 
     return revisions !== undefined ? revisions[key] : undefined;
   }
 
+  /** @internal */
   setRevisionFor(key: string, revision: Revision | undefined) {
     let revisions = this._getOrCreateOwnMap('_revisions');
 
     revisions[key] = revision;
   }
 
+  /** @internal */
   writableLazyChainsFor(key: string): [UpdatableTag, unknown][] {
     if (DEBUG) {
       counters!.writableLazyChainsCalls++;
@@ -289,6 +321,7 @@ export class Meta {
     return chains;
   }
 
+  /** @internal */
   readableLazyChainsFor(key: string): [UpdatableTag, unknown][] | undefined {
     if (DEBUG) {
       counters!.readableLazyChainsCalls++;
@@ -303,6 +336,7 @@ export class Meta {
     return undefined;
   }
 
+  /** @internal */
   addMixin(mixin: any) {
     assert(
       isDestroyed(this.source)
@@ -316,10 +350,12 @@ export class Meta {
     set.add(mixin);
   }
 
+  /** @internal */
   hasMixin(mixin: any) {
     return this._hasInInheritedSet('_mixins', mixin);
   }
 
+  /** @internal */
   forEachMixins(fn: Function) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
@@ -339,6 +375,7 @@ export class Meta {
     }
   }
 
+  /** @internal */
   writeDescriptors(subkey: string, value: any) {
     assert(
       isDestroyed(this.source)
@@ -352,15 +389,18 @@ export class Meta {
     map.set(subkey, value);
   }
 
+  /** @internal */
   peekDescriptors(subkey: string) {
     let possibleDesc = this._findInheritedMap('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
+  /** @internal */
   removeDescriptors(subkey: string) {
     this.writeDescriptors(subkey, UNDEFINED);
   }
 
+  /** @internal */
   forEachDescriptors(fn: Function) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
@@ -381,6 +421,7 @@ export class Meta {
     }
   }
 
+  /** @internal */
   addToListeners(
     eventName: string,
     target: object | null,
@@ -395,6 +436,7 @@ export class Meta {
     this.pushListener(eventName, target, method, once ? ListenerKind.ONCE : ListenerKind.ADD, sync);
   }
 
+  /** @internal */
   removeFromListeners(eventName: string, target: object | null, method: Function | string): void {
     if (DEBUG) {
       counters!.removeFromListenersCalls++;
@@ -573,6 +615,7 @@ export class Meta {
     return this._listeners;
   }
 
+  /** @internal */
   matchingListeners(eventName: string): (string | boolean | object | null)[] | undefined {
     let listeners = this.flattenedListeners();
     let result;
@@ -605,6 +648,7 @@ export class Meta {
     return result;
   }
 
+  /** @internal */
   observerEvents() {
     let listeners = this.flattenedListeners();
     let result;

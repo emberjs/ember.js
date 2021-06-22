@@ -75,7 +75,7 @@ interface MaybeHasIsDestroyed {
   @return {Object} the property value or `null`.
   @public
 */
-export function get(obj: object, keyName: string): any {
+export function get(obj: object, keyName: string): unknown {
   assert(
     `Get must be called with two arguments; an object and a property key`,
     arguments.length === 2
@@ -177,11 +177,7 @@ export function _getPath<T extends object>(root: T, path: string | string[]): an
   @public
   @deprecated
 */
-export function getWithDefault<T extends object, K extends Extract<keyof T, string>>(
-  root: T,
-  key: K,
-  defaultValue: T[K]
-): T[K] {
+export function getWithDefault(root: object, key: string, defaultValue: any): unknown {
   deprecate(
     'Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined.',
     false,
