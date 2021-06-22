@@ -38,9 +38,14 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   // Set in reopen so it can be overwritten with extend
   declare rootURL: string;
 
-  detect(): void {
+  initState(): void {
+    this._super(...arguments);
+
     let { rootURL } = this;
 
+    // This assert doesn't have anything to do with state initialization,
+    // but we're hijacking this method since it's called after the route has
+    // set the rootURL property on its Location instance.
     assert(
       'rootURL must end with a trailing forward slash e.g. "/app/"',
       rootURL.charAt(rootURL.length - 1) === '/'

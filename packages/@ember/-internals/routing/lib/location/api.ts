@@ -1,4 +1,4 @@
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 
 export interface EmberLocation {
   implementation: string;
@@ -109,6 +109,20 @@ export default {
     assert(
       `Location.create: ${implementation} is not a valid implementation`,
       Boolean(implementationClass)
+    );
+
+    deprecate(
+      "Calling `create` on Location class is deprecated. Instead, use `container.lookup('location:my-location')` to lookup the location you need.",
+      false,
+      {
+        id: 'deprecate-auto-location',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-auto-location',
+        for: 'ember-source',
+        since: {
+          enabled: '3.28.1',
+        },
+      }
     );
 
     return implementationClass.create(...arguments);
