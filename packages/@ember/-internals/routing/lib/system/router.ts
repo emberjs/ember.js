@@ -1004,7 +1004,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     _targetRouteName: string | undefined,
     models: {}[],
     _queryParams: {},
-    _keepDefaultQueryParamValues?: boolean
+    _fromRouterService = false
   ) {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(
@@ -1023,7 +1023,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       targetRouteName,
       models,
       queryParams as QueryParam,
-      Boolean(_keepDefaultQueryParamValues)
+      _fromRouterService,
+      false /* _stripDefaultQueryParamValues */
     );
 
     let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
@@ -1078,13 +1079,14 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     targetRouteName: string,
     models: {}[],
     queryParams: QueryParam,
-    _fromRouterService?: boolean
+    _fromRouterService = false,
+    _stripDefaultQueryParamValues: boolean = _fromRouterService
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
-    this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
+    this._hydrateUnsuppliedQueryParams(state, queryParams, _fromRouterService);
     this._serializeQueryParams(state.routeInfos, queryParams);
 
-    if (!_fromRouterService) {
+    if (!_stripDefaultQueryParamValues) {
       this._pruneDefaultQueryParamValues(state.routeInfos, queryParams);
     }
   }
