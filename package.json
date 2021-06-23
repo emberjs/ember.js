@@ -105,7 +105,7 @@
     "broccoli-source": "^3.0.0",
     "broccoli-string-replace": "^0.1.2",
     "broccoli-typescript-compiler": "^7.0.0",
-    "broccoli-uglify-sourcemap": "^3.2.0",
+    "broccoli-uglify-sourcemap": "^4.0.0",
     "common-tags": "^1.8.0",
     "core-js": "^2.6.5",
     "dag-map": "^2.0.2",
