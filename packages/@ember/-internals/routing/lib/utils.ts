@@ -66,8 +66,10 @@ export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInf
 
     routeInfo['_names'] = names;
 
-    let route = routeInfo.route!;
-    route._stashNames(routeInfo, dynamicParent!);
+    let route = routeInfo.route;
+    if (route !== undefined) {
+      route._stashNames(routeInfo, dynamicParent!);
+    }
   }
 
   routeInfos['_namesStashed'] = true;
