@@ -16,6 +16,9 @@ import { internalHelper } from './internal-helper';
   The default behavior of `{{#each}}` is to yield its inner block once for every
   item in an array passing the item as the first block parameter.
 
+  For performance reasons we are using a standard `for` loop for `{{each}}` iteration,
+  what's why sparse arrays is not supported with `{{each}}`, but supported with `{{each-in}}`.
+
   Assuming the `@developers` argument contains this array:
 
   ```javascript
@@ -121,7 +124,7 @@ import { internalHelper } from './internal-helper';
  */
 
 /**
-  The `{{each-in}}` helper loops over properties on an object.
+  The `{{each-in}}` helper loops over properties on an object or values on sparse arrays.
 
   For example, given this component definition:
 
