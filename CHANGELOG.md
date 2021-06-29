@@ -1,3 +1,12 @@
+## v0.80.0 (2021-06-29)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/reference`, `@glimmer/runtime`
+  * [#1323](https://github.com/glimmerjs/glimmer-vm/pull/1323) Revert hash to bi-modal behavior ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+
 ## v0.79.4 (2021-06-21)
 
 #### :rocket: Enhancement
