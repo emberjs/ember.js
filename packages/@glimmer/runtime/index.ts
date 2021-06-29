@@ -63,7 +63,7 @@ export {
 export { invokeHelper } from './lib/helpers/invoke';
 
 export { default as fn } from './lib/helpers/fn';
-export { default as hash, isHashProxy } from './lib/helpers/hash';
+export { default as hash } from './lib/helpers/hash';
 export { default as array } from './lib/helpers/array';
 export { default as get } from './lib/helpers/get';
 export { default as concat } from './lib/helpers/concat';

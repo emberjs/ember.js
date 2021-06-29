@@ -25,6 +25,7 @@ const enum ReferenceType {
 export interface Reference<_T = unknown> {
   [REFERENCE]: ReferenceType;
   debugLabel?: string;
+  children: null | Map<string | Reference, Reference>;
 }
 
 export default Reference;
