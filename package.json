@@ -84,7 +84,7 @@
     "@glimmer/manager": "0.79.4",
     "@glimmer/node": "0.79.4",
     "@glimmer/opcode-compiler": "0.79.4",
-    "@glimmer/owner": "0.79.4",
+    "@glimmer/owner": "0.80.0",
     "@glimmer/program": "0.79.4",
     "@glimmer/reference": "0.79.4",
     "@glimmer/runtime": "0.79.4",
