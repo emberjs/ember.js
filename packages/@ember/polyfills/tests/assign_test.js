@@ -49,7 +49,9 @@ moduleFor(
   'Ember.assign (polyfill)',
   class extends AssignTests {
     assign() {
-      return assignPolyfill(...arguments);
+      return expectDeprecation(() => {
+        assignPolyfill(...arguments);
+      }, 'Use of `assign` has been deprecated. Please use `Object.assign` or the spread operator instead.');
     }
   }
 );

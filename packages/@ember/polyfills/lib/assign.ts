@@ -1,3 +1,5 @@
+import { deprecate } from '@ember/debug';
+
 /**
  @module @ember/polyfills
 */
@@ -28,6 +30,20 @@ export function assign(target: object, ...sources: any[]): any;
   @static
 */
 export function assign(target: object) {
+  deprecate(
+    'Use of `assign` has been deprecated. Please use `Object.assign` or the spread operator instead.',
+    false,
+    {
+      id: 'ember-polyfills.deprecate-assign',
+      until: '5.0.0',
+      url: 'https://deprecations.emberjs.com/v4.x/#toc_ember-polyfills-deprecate-assign',
+      for: 'ember-source',
+      since: {
+        enabled: '4.0.0',
+      },
+    }
+  );
+
   for (let i = 1; i < arguments.length; i++) {
     let arg = arguments[i];
     if (!arg) {
