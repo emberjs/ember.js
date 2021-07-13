@@ -351,7 +351,6 @@ module.exports = {
     'loading',
     'loadingClass',
     'loadingHref',
-    'loc',
     'localName',
     'location',
     'log',

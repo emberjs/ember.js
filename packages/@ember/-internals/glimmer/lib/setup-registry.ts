@@ -10,7 +10,6 @@ import LinkTo from './components/link-to';
 import TextField from './components/text-field';
 import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
-import loc from './helpers/loc';
 import { Renderer } from './renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
@@ -54,8 +53,6 @@ export function setupEngineRegistry(registry: Registry): void {
   registry.injection('view:-outlet', 'template', 'template:-outlet');
 
   registry.optionsForType('helper', { instantiate: false });
-
-  registry.register('helper:loc', loc);
 
   registry.register('component:-text-field', TextField);
   registry.register('component:-checkbox', Checkbox);
