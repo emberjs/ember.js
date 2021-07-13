@@ -49,7 +49,6 @@ export class Object extends CoreObject implements Observable {
     method: ObserverMethod<Target, this>
   ): this;
   removeObserver(key: keyof this, method: ObserverMethod<this, this>): this;
-  getWithDefault<K extends keyof this>(key: K, defaultValue: any): unknown;
   incrementProperty(keyName: keyof this, increment?: number): number;
   decrementProperty(keyName: keyof this, decrement?: number): number;
   toggleProperty(keyName: keyof this): boolean;

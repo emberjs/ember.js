@@ -52,11 +52,6 @@ interface Observable {
   ): this;
   removeObserver(key: keyof this, method: ObserverMethod<this, this>): this;
   /**
-   * Retrieves the value of a property, or a default value in the case that the
-   * property returns `undefined`.
-   */
-  getWithDefault<K extends keyof this>(key: K, defaultValue: any): unknown;
-  /**
    * Set the value of a property to the current value plus some amount.
    */
   incrementProperty(keyName: keyof this, increment?: number): number;

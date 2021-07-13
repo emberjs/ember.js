@@ -158,52 +158,6 @@ export function _getPath<T extends object>(root: T, path: string | string[]): an
   return obj;
 }
 
-/**
-  Retrieves the value of a property from an Object, or a default value in the
-  case that the property returns `undefined`.
-
-  ```javascript
-  import { getWithDefault } from '@ember/object';
-  getWithDefault(person, 'lastName', 'Doe');
-  ```
-
-  @method getWithDefault
-  @for @ember/object
-  @static
-  @param {Object} obj The object to retrieve from.
-  @param {String} keyName The name of the property to retrieve
-  @param {Object} defaultValue The value to return if the property value is undefined
-  @return {Object} The property value or the defaultValue.
-  @public
-  @deprecated
-*/
-export function getWithDefault<T extends object, K extends Extract<keyof T, string>>(
-  root: T,
-  key: K,
-  defaultValue: T[K]
-): T[K] {
-  deprecate(
-    'Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined.',
-    false,
-    {
-      id: 'ember-metal.get-with-default',
-      until: '4.0.0',
-      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-metal-get-with-default',
-      for: 'ember-source',
-      since: {
-        enabled: '3.21.0',
-      },
-    }
-  );
-
-  let value = get(root, key);
-
-  if (value === undefined) {
-    return defaultValue;
-  }
-  return value;
-}
-
 export default get;
 
 // Warm it up
