@@ -1,10 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { get, set, Mixin, observer, computed } from '../..';
+import { get, Mixin, observer } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
-import { track } from '@glimmer/validator';
 
 function aget(x, y) {
   return x[y];
