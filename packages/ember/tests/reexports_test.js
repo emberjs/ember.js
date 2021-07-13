@@ -373,7 +373,6 @@ let allExports = [
   // @ember/polyfills
   ['assign', '@ember/polyfills', 'assign'],
   ['platform.hasPropertyAccessors', '@ember/polyfills', 'hasPropertyAccessors'],
-  ['merge', '@ember/polyfills', 'merge'],
 
   // @ember/routing/auto-location
   ['AutoLocation', '@ember/routing/auto-location', 'default'],
