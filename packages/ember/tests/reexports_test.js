@@ -468,7 +468,6 @@ let allExports = [
   ['isEqual', '@ember/utils', 'isEqual'],
   ['isNone', '@ember/utils', 'isNone'],
   ['isPresent', '@ember/utils', 'isPresent'],
-  ['tryInvoke', '@ember/utils', 'tryInvoke'],
   ['typeOf', '@ember/utils', 'typeOf'],
 
   // @ember/version

@@ -220,7 +220,6 @@ Ember.guidFor = utils.guidFor;
 Ember.inspect = utils.inspect;
 Ember.makeArray = utils.makeArray;
 Ember.canInvoke = utils.canInvoke;
-Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
 

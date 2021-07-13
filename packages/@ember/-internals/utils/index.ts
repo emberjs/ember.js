@@ -23,7 +23,7 @@ export {
 } from './lib/super';
 export { default as inspect } from './lib/inspect';
 export { default as lookupDescriptor } from './lib/lookup-descriptor';
-export { canInvoke, tryInvoke } from './lib/invoke';
+export { canInvoke } from './lib/invoke';
 export { default as makeArray } from './lib/make-array';
 export { getName, setName } from './lib/name';
 export { default as toString } from './lib/to-string';
