@@ -11,7 +11,6 @@ export {
   set,
   getProperties,
   setProperties,
-  getWithDefault,
   observer,
   computed,
   trySet,

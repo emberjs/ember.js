@@ -1,5 +1,5 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { get, getWithDefault, tracked } from '../..';
+import { get, tracked } from '../..';
 
 let createObj = function () {
   class Obj {
@@ -41,33 +41,6 @@ moduleFor(
       let obj = new Obj();
 
       this.assert.equal(get(obj, 'path.key.value'), 'value for some-key');
-    }
-
-    ['@test should get arbitrary properties on an object (getWithDefault DEPRECATED)']() {
-      expectDeprecation(() => {
-        let obj = createObj();
-
-        for (let key in obj) {
-          this.assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);
-        }
-
-        class Obj {
-          @tracked undef = undefined;
-        }
-
-        let obj2 = new Obj();
-
-        this.assert.equal(
-          getWithDefault(obj2, 'undef', 'default'),
-          'default',
-          'explicit undefined retrieves the default'
-        );
-        this.assert.equal(
-          getWithDefault(obj2, 'not-present', 'default'),
-          'default',
-          'non-present key retrieves the default'
-        );
-      }, /Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined./);
     }
   }
 );

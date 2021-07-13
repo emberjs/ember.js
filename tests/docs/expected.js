@@ -264,7 +264,6 @@ module.exports = {
     'getViewElement',
     'getViewId',
     'getViewRange',
-    'getWithDefault',
     'global',
     'gt',
     'gte',
