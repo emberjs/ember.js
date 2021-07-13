@@ -2,7 +2,7 @@
 @module @ember/object
 */
 import { HAS_NATIVE_PROXY, isEmberArray, setProxy, symbol } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
   consumeTag,
