@@ -164,10 +164,6 @@ let allExports = [
   ['runLoadHooks', '@ember/application', 'runLoadHooks'],
   ['setOwner', '@ember/application', 'setOwner'],
 
-  // @ember/application/deprecations
-  [null, '@ember/application/deprecations', 'deprecate'],
-  [null, '@ember/application/deprecations', 'deprecateFunc'],
-
   // @ember/application/instance
   ['ApplicationInstance', '@ember/application/instance', 'default'],
 
