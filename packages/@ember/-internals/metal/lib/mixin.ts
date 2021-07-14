@@ -13,8 +13,7 @@ import {
   wrap,
 } from '@ember/-internals/utils';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { assert, deprecate } from '@ember/debug';
-import { ALIAS_METHOD } from '@ember/deprecated-features';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
 import {
@@ -26,7 +25,6 @@ import {
 import {
   ComputedDescriptor,
   descriptorForDecorator,
-  descriptorForProperty,
   makeComputedDecorator,
   nativeDescDecorator,
 } from './decorator';
@@ -366,39 +364,6 @@ function mergeProps(
   }
 }
 
-let followMethodAlias: (
-  obj: object,
-  alias: Alias,
-  descs: { [key: string]: any },
-  values: { [key: string]: any }
-) => { desc: any; value: any };
-
-if (ALIAS_METHOD) {
-  followMethodAlias = function (
-    obj: object,
-    alias: Alias,
-    descs: { [key: string]: any },
-    values: { [key: string]: any }
-  ) {
-    let altKey = alias.methodName;
-    let possibleDesc;
-    let desc = descs[altKey];
-    let value = values[altKey];
-
-    if (desc !== undefined || value !== undefined) {
-      // do nothing
-    } else if ((possibleDesc = descriptorForProperty(obj, altKey)) !== undefined) {
-      desc = possibleDesc;
-      value = undefined;
-    } else {
-      desc = undefined;
-      value = obj[altKey];
-    }
-
-    return { desc, value };
-  };
-}
-
 function updateObserversAndListeners(obj: object, key: string, fn: Function, add: boolean) {
   let meta = observerListenerMetaFor(fn);
 
@@ -445,14 +410,6 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], _hideKe
     let key = keys[i];
     let value = values[key];
     let desc = descs[key];
-
-    if (ALIAS_METHOD) {
-      while (value !== undefined && isAlias(value)) {
-        let followed = followMethodAlias(obj, value, descs, values);
-        desc = followed.desc;
-        value = followed.value;
-      }
-    }
 
     if (value !== undefined) {
       if (typeof value === 'function') {
@@ -783,80 +740,6 @@ function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
   }
 
   return ret;
-}
-
-declare class Alias {
-  public methodName: string;
-  constructor(methodName: string);
-}
-
-let AliasImpl: typeof Alias;
-
-let isAlias: (alias: any) => alias is Alias;
-
-if (ALIAS_METHOD) {
-  const ALIASES = new _WeakSet();
-
-  isAlias = (alias: any): alias is Alias => {
-    return ALIASES.has(alias);
-  };
-
-  AliasImpl = class AliasImpl {
-    constructor(public methodName: string) {
-      ALIASES.add(this);
-    }
-  } as typeof Alias;
-}
-
-/**
-  Makes a method available via an additional name.
-
-  ```app/utils/person.js
-  import EmberObject, {
-    aliasMethod
-  } from '@ember/object';
-
-  export default EmberObject.extend({
-    name() {
-      return 'Tomhuda Katzdale';
-    },
-    moniker: aliasMethod('name')
-  });
-  ```
-
-  ```javascript
-  let goodGuy = Person.create();
-
-  goodGuy.name();    // 'Tomhuda Katzdale'
-  goodGuy.moniker(); // 'Tomhuda Katzdale'
-  ```
-
-  @method aliasMethod
-  @static
-  @deprecated Use a shared utility method instead
-  @for @ember/object
-  @param {String} methodName name of the method to alias
-  @public
-*/
-export let aliasMethod: (methodName: string) => any;
-
-if (ALIAS_METHOD) {
-  aliasMethod = function aliasMethod(methodName: string): Alias {
-    deprecate(
-      `You attempted to alias '${methodName}, but aliasMethod has been deprecated. Consider extracting the method into a shared utility function.`,
-      false,
-      {
-        id: 'object.alias-method',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_object-alias-method',
-        for: 'ember-source',
-        since: {
-          enabled: '3.9.0',
-        },
-      }
-    );
-    return new AliasImpl(methodName);
-  };
 }
 
 // ..........................................................

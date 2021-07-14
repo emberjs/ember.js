@@ -50,7 +50,7 @@ export {
   removeObserver,
   flushAsyncObservers,
 } from './lib/observer';
-export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
+export { Mixin, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagForObject, markObjectAsDirty } from './lib/tags';
 export { tracked, TrackedDescriptor } from './lib/tracked';
