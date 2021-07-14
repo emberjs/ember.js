@@ -5,7 +5,6 @@ import {
   classes,
   equalTokens,
   equalsElement,
-  styles,
   runTask,
   runLoopSettled,
 } from 'internal-test-helpers';
@@ -18,7 +17,7 @@ import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
-import { backtrackingMessageFor, debugStackMessageFor } from '../../utils/debug-stack';
+import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 moduleFor(
   'Components test: curly components',
@@ -3148,149 +3147,6 @@ moduleFor(
       expectAssertion(() => {
         this.render('{{foo-bar}}');
       }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
-    }
-
-    ['@test should toggle visibility with isVisible'](assert) {
-      let assertStyle = (expected) => {
-        let matcher = styles(expected);
-        let actual = this.firstChild.getAttribute('style');
-
-        assert.pushResult({
-          result: matcher.match(actual),
-          message: matcher.message(),
-          actual,
-          expected,
-        });
-      };
-
-      this.registerComponent('foo-bar', {
-        template: `<p>foo</p>`,
-      });
-
-      expectDeprecation(() => {
-        this.render(`{{foo-bar id="foo-bar" isVisible=this.visible}}`, {
-          visible: false,
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-
-      this.assertStableRerender();
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', true);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('');
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', false);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-    }
-
-    ['@test isVisible does not overwrite component style']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['style'],
-          style: htmlSafe('color: blue;'),
-        }),
-
-        template: `<p>foo</p>`,
-      });
-
-      expectDeprecation(() => {
-        this.render(`{{foo-bar id="foo-bar" isVisible=this.visible}}`, {
-          visible: false,
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') },
-      });
-
-      this.assertStableRerender();
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', true);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue;') },
-      });
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', false);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') },
-      });
-    }
-
-    ['@test adds isVisible binding when style binding is missing and other bindings exist'](
-      assert
-    ) {
-      let assertStyle = (expected) => {
-        let matcher = styles(expected);
-        let actual = this.firstChild.getAttribute('style');
-
-        assert.pushResult({
-          result: matcher.match(actual),
-          message: matcher.message(),
-          actual,
-          expected,
-        });
-      };
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['foo'],
-          foo: 'bar',
-        }),
-        template: `<p>foo</p>`,
-      });
-
-      expectDeprecation(() => {
-        this.render(`{{foo-bar id="foo-bar" foo=this.foo isVisible=this.visible}}`, {
-          visible: false,
-          foo: 'baz',
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-
-      this.assertStableRerender();
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', true);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('');
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', false);
-          set(this.context, 'foo', 'woo');
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-      assert.equal(this.firstChild.getAttribute('foo'), 'woo');
     }
 
     ['@test it can use readDOMAttr to read input value']() {

@@ -332,7 +332,6 @@ module.exports = {
     'isPresent',
     'isRejected',
     'isSettled',
-    'isVisible',
     'join',
     'jQuery',
     'keyDown',
