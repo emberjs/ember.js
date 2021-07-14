@@ -352,38 +352,6 @@ moduleFor(
       this.assertText('number: EVEN0number: ODD1number: EVEN2number: ODD3');
     }
 
-    ['@test [DEPRECATED] dynamic partials in {{#with}}']() {
-      this.registerPartial('_thing', '{{t}}');
-
-      expectDeprecation(() => {
-        this.render(
-          strip`
-        {{#with this.item.thing as |t|}}
-          {{partial t}}
-        {{else}}
-          Nothing!
-        {{/with}}`,
-          {
-            item: { thing: false },
-          }
-        );
-      }, /`{{#with}}` is deprecated\./);
-
-      this.assertStableRerender();
-
-      this.assertText('Nothing!');
-
-      expectDeprecation(() => {
-        runTask(() => set(this.context, 'item.thing', 'thing'));
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "thing" partial to a component');
-
-      this.assertText('thing');
-
-      runTask(() => set(this.context, 'item', { thing: false }));
-
-      this.assertText('Nothing!');
-    }
-
     ['@test dynamic partials in {{#let}}']() {
       this.registerPartial('_thing', '{{t}}');
 

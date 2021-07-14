@@ -4,7 +4,6 @@ import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
 import AssertSplattributeExpressions from './assert-splattribute-expression';
 import DeprecateSendAction from './deprecate-send-action';
-import DeprecateWith from './deprecate-with';
 import TransformActionSyntax from './transform-action-syntax';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformEachInIntoEach from './transform-each-in-into-each';
@@ -36,7 +35,6 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     AssertSplattributeExpressions,
     TransformEachTrackArray,
     TransformWrapMountAndOutlet,
-    DeprecateWith,
     SEND_ACTION ? DeprecateSendAction : null,
     !EMBER_NAMED_BLOCKS ? AssertAgainstNamedBlocks : null,
     EMBER_DYNAMIC_HELPERS_AND_MODIFIERS
@@ -55,7 +53,6 @@ export const STRICT_MODE_TRANSFORMS = Object.freeze(
     AssertSplattributeExpressions,
     TransformEachTrackArray,
     TransformWrapMountAndOutlet,
-    DeprecateWith,
     SEND_ACTION ? DeprecateSendAction : null,
     !EMBER_NAMED_BLOCKS ? AssertAgainstNamedBlocks : null,
     !EMBER_DYNAMIC_HELPERS_AND_MODIFIERS ? AssertAgainstDynamicHelpersModifiers : null,
