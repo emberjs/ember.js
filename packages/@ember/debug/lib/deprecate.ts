@@ -72,8 +72,6 @@ let missingOptionsUntilDeprecation: string;
 let missingOptionsForDeprecation: MissingOptionDeprecateFunc = () => '';
 let missingOptionsSinceDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
-let FOR_MISSING_DEPRECATIONS = new Set();
-let SINCE_MISSING_DEPRECATIONS = new Set();
 
 if (DEBUG) {
   registerHandler = function registerHandler(handler: HandlerCallback) {
@@ -204,32 +202,8 @@ if (DEBUG) {
     assert(missingOptionsDeprecation, Boolean(options && (options.id || options.until)));
     assert(missingOptionsIdDeprecation, Boolean(options!.id));
     assert(missingOptionsUntilDeprecation, Boolean(options!.until));
-
-    if (!options!.for && !FOR_MISSING_DEPRECATIONS.has(options!.id)) {
-      FOR_MISSING_DEPRECATIONS.add(options!.id);
-
-      deprecate(missingOptionsForDeprecation(options!.id), Boolean(options!.for), {
-        id: 'ember-source.deprecation-without-for',
-        until: '4.0.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.24.0',
-        },
-      });
-    }
-
-    if (!options!.since && !SINCE_MISSING_DEPRECATIONS.has(options!.id)) {
-      SINCE_MISSING_DEPRECATIONS.add(options!.id);
-
-      deprecate(missingOptionsSinceDeprecation(options!.id), Boolean(options!.since), {
-        id: 'ember-source.deprecation-without-since',
-        until: '4.0.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.24.0',
-        },
-      });
-    }
+    assert(missingOptionsForDeprecation(options!.id), Boolean(options!.for));
+    assert(missingOptionsSinceDeprecation(options!.id), Boolean(options!.since));
 
     invoke('deprecate', message, test, options);
   };
@@ -244,6 +218,4 @@ export {
   missingOptionsUntilDeprecation,
   missingOptionsForDeprecation,
   missingOptionsSinceDeprecation,
-  FOR_MISSING_DEPRECATIONS,
-  SINCE_MISSING_DEPRECATIONS,
 };

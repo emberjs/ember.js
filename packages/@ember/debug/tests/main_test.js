@@ -8,8 +8,6 @@ import {
   missingOptionsUntilDeprecation,
   missingOptionsForDeprecation,
   missingOptionsSinceDeprecation,
-  FOR_MISSING_DEPRECATIONS,
-  SINCE_MISSING_DEPRECATIONS,
 } from '../lib/deprecate';
 
 import {
@@ -45,8 +43,6 @@ moduleFor(
     teardown() {
       HANDLERS.deprecate = originalDeprecateHandler;
       HANDLERS.warn = originalWarnHandler;
-      FOR_MISSING_DEPRECATIONS.clear();
-      SINCE_MISSING_DEPRECATIONS.clear();
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
     }
 
@@ -256,6 +252,7 @@ moduleFor(
       assert.expect(4);
       let id = 'ABC';
       let until = 'forever';
+      let since = 'forever';
       let shouldThrow = false;
 
       registerHandler(function (message, options) {
@@ -267,14 +264,24 @@ moduleFor(
       });
 
       try {
-        deprecate('Deprecation for testing purposes', false, { id, until });
+        deprecate('Deprecation for testing purposes', false, {
+          id,
+          until,
+          since,
+          for: 'namespace',
+        });
         assert.ok(true, 'Deprecation did not throw');
       } catch (e) {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
       }
 
       try {
-        deprecate('Deprecation for testing purposes', false, { id, until });
+        deprecate('Deprecation for testing purposes', false, {
+          id,
+          until,
+          since,
+          for: 'namespace',
+        });
         assert.ok(true, 'Deprecation did not throw');
       } catch (e) {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
@@ -337,30 +344,6 @@ moduleFor(
       );
     }
 
-    ['@test deprecate without options.for only triggers once per id'](assert) {
-      ENV.RAISE_ON_DEPRECATION = false;
-      let messages = [];
-      registerHandler(function (message, options, next) {
-        if (options.id === 'ember-source.deprecation-without-for') {
-          messages.push(message);
-        }
-        next(...arguments);
-      });
-
-      deprecate('message1', false, { id: 'test', until: 'forever' });
-      deprecate('message2', false, { id: 'test', until: 'forever' });
-      deprecate('message3', false, { id: 'another', until: 'forever' });
-
-      assert.equal(messages.length, 2, 'correct number of deprecations');
-      assert.equal(messages[0], missingOptionsForDeprecation('test'), 'first message is correct');
-
-      assert.equal(
-        messages[1],
-        missingOptionsForDeprecation('another'),
-        'second message is correct'
-      );
-    }
-
     ['@test deprecate without options.since triggers an assertion'](assert) {
       assert.expect(1);
 
@@ -373,28 +356,6 @@ moduleFor(
           }),
         new RegExp(missingOptionsSinceDeprecation('test')),
         'proper assertion is triggered when options.since is missing'
-      );
-    }
-
-    ['@test deprecate without options.since only triggers once per id'](assert) {
-      ENV.RAISE_ON_DEPRECATION = false;
-      let messages = [];
-      registerHandler(function (message, options, next) {
-        if (options.id === 'ember-source.deprecation-without-since') {
-          messages.push(message);
-        }
-        next(...arguments);
-      });
-      deprecate('foo', false, { id: 'test', until: 'forever', for: 'me' });
-      deprecate('foobar', false, { id: 'test', until: 'forever', for: 'me' });
-      deprecate('baz', false, { id: 'another', until: 'forever', for: 'me' });
-
-      assert.equal(messages.length, 2, 'deprecation message only sent once');
-      assert.equal(messages[0], missingOptionsSinceDeprecation('test'), 'first message is correct');
-      assert.equal(
-        messages[1],
-        missingOptionsSinceDeprecation('another'),
-        'second message is correct'
       );
     }
 
