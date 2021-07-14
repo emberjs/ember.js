@@ -16,7 +16,6 @@ import { setInternalModifierManager } from '@glimmer/manager';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { INVOKE } from '../helpers/action';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -148,27 +147,6 @@ export class ActionState {
         target,
         name: null,
       };
-      if (typeof actionName[INVOKE] === 'function') {
-        deprecate(
-          `Usage of the private INVOKE API to make an object callable via action or fn is no longer supported. Please update to pass in a callback function instead. Received: ${String(
-            actionName
-          )}`,
-          false,
-          {
-            until: '3.25.0',
-            id: 'actions.custom-invoke-invokable',
-            for: 'ember-source',
-            since: {
-              enabled: '3.23.0-beta.1',
-            },
-          }
-        );
-
-        flaggedInstrument('interaction.ember-action', payload, () => {
-          actionName[INVOKE].apply(actionName, args);
-        });
-        return;
-      }
       if (isInvokableRef(actionName)) {
         flaggedInstrument('interaction.ember-action', payload, () => {
           updateRef(actionName, args[0]);

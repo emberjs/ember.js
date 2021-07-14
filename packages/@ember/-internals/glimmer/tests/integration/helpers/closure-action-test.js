@@ -8,7 +8,7 @@ import { _getCurrentRunLoop } from '@ember/runloop';
 import { set, computed } from '@ember/-internals/metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
-import { Component, INVOKE } from '../../utils/helpers';
+import { Component } from '../../utils/helpers';
 
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor(
@@ -1041,56 +1041,6 @@ moduleFor(
       });
 
       this.assert.ok(capturedRunLoop, 'action is called within a run loop');
-    }
-
-    // TODO: This is for intimate APIs, specifically ember-concurrency
-    ['@test objects that define INVOKE can be casted to actions']() {
-      expectDeprecation(() => {
-        let innerComponent;
-        let actionArgs;
-        let invokableArgs;
-
-        let InnerComponent = Component.extend({
-          init() {
-            this._super(...arguments);
-            innerComponent = this;
-          },
-          fireAction() {
-            actionArgs = this.attrs.submit(4, 5, 6);
-          },
-        });
-
-        let OuterComponent = Component.extend({
-          foo: 123,
-          submitTask: computed(function () {
-            return {
-              [INVOKE]: (...args) => {
-                invokableArgs = args;
-                return this.foo;
-              },
-            };
-          }),
-        });
-
-        this.registerComponent('inner-component', {
-          ComponentClass: InnerComponent,
-          template: 'inner',
-        });
-
-        this.registerComponent('outer-component', {
-          ComponentClass: OuterComponent,
-          template: `{{inner-component submit=(action this.submitTask 1 2 3)}}`,
-        });
-
-        this.render('{{outer-component}}');
-
-        runTask(() => {
-          innerComponent.fireAction();
-        });
-
-        this.assert.equal(actionArgs, 123);
-        this.assert.deepEqual(invokableArgs, [1, 2, 3, 4, 5, 6]);
-      }, /Usage of the private INVOKE API to make an object callable/);
     }
 
     ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {

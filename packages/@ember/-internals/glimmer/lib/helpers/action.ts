@@ -2,8 +2,7 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
-import { symbol } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -19,7 +18,6 @@ import { _WeakSet } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
 
 export const ACTIONS = new _WeakSet();
-export const INVOKE: unique symbol = symbol('INVOKE') as any;
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -363,7 +361,7 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 function makeDynamicClosureAction(
   context: object,
   targetRef: Reference<MaybeActionHandler>,
-  actionRef: Reference<string | Function | Invokable>,
+  actionRef: Reference<string | Function>,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
@@ -393,14 +391,10 @@ interface MaybeActionHandler {
   actions?: Record<string, Function>;
 }
 
-interface Invokable {
-  [INVOKE]: Function;
-}
-
 function makeClosureAction(
   context: object,
   target: MaybeActionHandler,
-  action: string | Function | Invokable,
+  action: string | Function,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
@@ -412,46 +406,26 @@ function makeClosureAction(
     action !== undefined && action !== null
   );
 
-  if (typeof action[INVOKE] === 'function') {
-    deprecate(
-      `Usage of the private INVOKE API to make an object callable via action or fn is no longer supported. Please update to pass in a callback function instead. Received: ${String(
-        action
-      )}`,
-      false,
-      {
-        until: '3.25.0',
-        id: 'actions.custom-invoke-invokable',
-        for: 'ember-source',
-        since: {
-          enabled: '3.23.0-beta.1',
-        },
-      }
-    );
+  let typeofAction = typeof action;
 
-    self = action as Invokable;
-    fn = action[INVOKE];
+  if (typeofAction === 'string') {
+    self = target;
+    fn = target.actions! && target.actions![action as string];
+
+    assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
+  } else if (typeofAction === 'function') {
+    self = context;
+    fn = action as Function;
   } else {
-    let typeofAction = typeof action;
-
-    if (typeofAction === 'string') {
-      self = target;
-      fn = target.actions! && target.actions![action as string];
-
-      assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
-    } else if (typeofAction === 'function') {
-      self = context;
-      fn = action as Function;
-    } else {
-      // tslint:disable-next-line:max-line-length
-      assert(
-        `An action could not be made for \`${
-          debugKey || action
-        }\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${
-          debugKey || 'myAction'
-        }')\`) or a function available in ${target}.`,
-        false
-      );
-    }
+    // tslint:disable-next-line:max-line-length
+    assert(
+      `An action could not be made for \`${
+        debugKey || action
+      }\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${
+        debugKey || 'myAction'
+      }')\`) or a function available in ${target}.`,
+      false
+    );
   }
 
   return (...args: any[]) => {
