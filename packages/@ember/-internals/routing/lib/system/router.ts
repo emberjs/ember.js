@@ -9,7 +9,6 @@ import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
 import { APP_CTRL_ROUTER_PROPS, ROUTER_EVENTS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
-import { assign } from '@ember/polyfills';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import EmberLocation, { EmberLocation as IEmberLocation } from '../location/api';
@@ -1018,7 +1017,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
 
-    assign(queryParams, _queryParams);
+    Object.assign(queryParams, _queryParams);
     this._prepareQueryParams(
       targetRouteName,
       models,
@@ -1059,7 +1058,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     // from the active transition.
     this._fullyScopeQueryParams(targetRouteName, models, _queryParams);
     this._fullyScopeQueryParams(targetRouteName, models, unchangedQPs);
-    assign(queryParams, unchangedQPs);
+    Object.assign(queryParams, unchangedQPs);
   }
 
   /**
@@ -1156,7 +1155,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         qps.push(qp);
       }
 
-      assign(map, qpMeta.map);
+      Object.assign(map, qpMeta.map);
     }
 
     let finalQPMeta = { qps, map };
