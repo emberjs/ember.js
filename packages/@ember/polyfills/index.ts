@@ -1,6 +1,6 @@
-import { MERGE, ASSIGN } from '@ember/deprecated-features';
+import { ASSIGN, MERGE } from '@ember/deprecated-features';
+import { assign as assignPolyfill, default as deprecatedAssign } from './lib/assign';
 import { default as deprecatedMerge } from './lib/merge';
-import { default as deprecatedAssign, assign as assignPolyfill } from './lib/assign';
 
 let merge = MERGE ? deprecatedMerge : undefined;
 let assign = ASSIGN ? deprecatedAssign : undefined;
