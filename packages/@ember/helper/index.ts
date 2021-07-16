@@ -264,8 +264,8 @@
     }
   }
 
-  export default class PlusOne extends Component {
-    plusOne = invokeHelper(this, RemoteData, () => {
+  export default class PlusOneComponent extends Component {
+    plusOne = invokeHelper(this, PlusOne, () => {
       return {
         positional: [this.args.number],
       };
