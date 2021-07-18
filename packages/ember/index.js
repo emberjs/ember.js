@@ -305,7 +305,6 @@ Ember.setProperties = metal.setProperties;
 Ember.expandProperties = metal.expandProperties;
 Ember.addObserver = metal.addObserver;
 Ember.removeObserver = metal.removeObserver;
-Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
 Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;

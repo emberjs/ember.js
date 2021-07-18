@@ -282,7 +282,6 @@ let allExports = [
   // @ember/object
   ['Object', '@ember/object', 'default'],
   ['_action', '@ember/object', 'action'],
-  ['aliasMethod', '@ember/object', 'aliasMethod'],
   ['computed', '@ember/object', 'computed'],
   ['defineProperty', '@ember/object', 'defineProperty'],
   ['get', '@ember/object', 'get'],

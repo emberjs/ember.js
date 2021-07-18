@@ -75,7 +75,6 @@ module.exports = {
     'advanceReadiness',
     'afterModel',
     'alias',
-    'aliasMethod',
     'all',
     'allSettled',
     'and',

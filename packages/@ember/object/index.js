@@ -16,7 +16,6 @@ export {
   observer,
   computed,
   trySet,
-  aliasMethod,
 } from '@ember/-internals/metal';
 
 import { computed } from '@ember/-internals/metal';
