@@ -8,7 +8,7 @@ import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-in
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
   assert(
-    `Dependent key passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
+    `Dependent key passed to \`${name}\` computed macro shouldn't contain brace expanding pattern.`,
     !/[[\]{}]/g.test(dependentKey)
   );
 
@@ -43,7 +43,7 @@ function arrayMacro(dependentKey, additionalDependentKeys, callback) {
 
 function multiArrayMacro(_dependentKeys, callback, name) {
   assert(
-    `Dependent keys passed to \`computed.${name}\` shouldn't contain brace expanding pattern.`,
+    `Dependent keys passed to \`${name}\` computed macro shouldn't contain brace expanding pattern.`,
     _dependentKeys.every((dependentKey) => !/[[\]{}]/g.test(dependentKey))
   );
   let dependentKeys = _dependentKeys.map((key) => `${key}.[]`);
@@ -516,12 +516,12 @@ export function mapBy(dependentKey, propertyKey) {
   );
 
   assert(
-    '`computed.mapBy` expects a property string for its second argument, ' +
+    '`mapBy` computed macro expects a property string for its second argument, ' +
       'perhaps you meant to use "map"',
     typeof propertyKey === 'string'
   );
   assert(
-    `Dependent key passed to \`computed.mapBy\` shouldn't contain brace expanding pattern.`,
+    `Dependent key passed to \`mapBy\` computed macro shouldn't contain brace expanding pattern.`,
     !/[[\]{}]/g.test(dependentKey)
   );
 
@@ -745,7 +745,7 @@ export function filterBy(dependentKey, propertyKey, value) {
   );
 
   assert(
-    `Dependent key passed to \`computed.filterBy\` shouldn't contain brace expanding pattern.`,
+    `Dependent key passed to \`filterBy\` computed macro shouldn't contain brace expanding pattern.`,
     !/[[\]{}]/g.test(dependentKey)
   );
 
@@ -913,7 +913,7 @@ export function uniqBy(dependentKey, propertyKey) {
   );
 
   assert(
-    `Dependent key passed to \`computed.uniqBy\` shouldn't contain brace expanding pattern.`,
+    `Dependent key passed to \`uniqBy\` computed macro shouldn't contain brace expanding pattern.`,
     !/[[\]{}]/g.test(dependentKey)
   );
 
@@ -1164,9 +1164,9 @@ export function setDiff(setAProperty, setBProperty) {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  assert('`computed.setDiff` requires exactly two dependent arrays.', arguments.length === 2);
+  assert('`setDiff` computed macro requires exactly two dependent arrays.', arguments.length === 2);
   assert(
-    `Dependent keys passed to \`computed.setDiff\` shouldn't contain brace expanding pattern.`,
+    `Dependent keys passed to \`setDiff\` computed macro shouldn't contain brace expanding pattern.`,
     !/[[\]{}]/g.test(setAProperty) && !/[[\]{}]/g.test(setBProperty)
   );
 
@@ -1448,7 +1448,7 @@ export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
     }
 
     assert(
-      '`computed.sort` can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may receive up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
+      'The `sort` computed macro can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may receive up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
       argumentsValid
     );
   }

@@ -128,14 +128,12 @@ function infoForApp({
 function evalJS(overrides) {
   return eval(`
     (function () {
-      let onEmberGlobalAccess, onComputedDotAccess, onRunloopDotAccess;
+      let onEmberGlobalAccess;
 
       ${overrides.toJS()}
 
       return {
         onEmberGlobalAccess: onEmberGlobalAccess,
-        onComputedDotAccess: onComputedDotAccess,
-        onRunloopDotAccess: onRunloopDotAccess,
       };
     })()
   `);
@@ -600,11 +598,6 @@ QUnit.module('Overrides', function () {
       false,
       'showAllEmberGlobalDeprecations'
     );
-    assert.strictEqual(
-      overrides.showAllDotAccessDeprecations,
-      false,
-      'showAllDotAccessDeprecations'
-    );
     assert.deepEqual(overrides.suggestions, [
       'Upgrade your `devDependencies` on `ember-cli-babel` to `^7.26.6`.',
     ]);
@@ -624,7 +617,7 @@ QUnit.module('Overrides', function () {
       'overrides.globalMessage'
     );
 
-    let { onEmberGlobalAccess, onComputedDotAccess, onRunloopDotAccess } = evalJS(overrides);
+    let { onEmberGlobalAccess } = evalJS(overrides);
 
     assert.equal(
       onEmberGlobalAccess(),
@@ -633,36 +626,6 @@ QUnit.module('Overrides', function () {
     );
 
     assert.strictEqual(onEmberGlobalAccess(), null, 'onEmberGlobalAccess() (second call)');
-
-    assert.ok(
-      onComputedDotAccess('computed.reads', 'reads', '@ember/object/computed').startsWith(
-        'Using `computed.reads` has been deprecated. ' +
-          'Instead, import the value directly from @ember/object/computed:\n\n' +
-          "  import { reads } from '@ember/object/computed';\n\n"
-      ),
-      'onComputedDotAccess() (first call)'
-    );
-
-    assert.strictEqual(
-      onComputedDotAccess('computed.reads', 'reads', '@ember/object/computed'),
-      null,
-      'onComputedDotAccess() (second call)'
-    );
-
-    assert.ok(
-      onRunloopDotAccess('run.next', 'next', '@ember/runloop').startsWith(
-        'Using `run.next` has been deprecated. ' +
-          'Instead, import the value directly from @ember/runloop:\n\n' +
-          "  import { next } from '@ember/runloop';\n\n"
-      ),
-      'onRunloopDotAccess() (first call)'
-    );
-
-    assert.strictEqual(
-      onRunloopDotAccess('run.next', 'next', '@ember/runloop'),
-      null,
-      'onRunloopDotAccess() (second call)'
-    );
   });
 
   // let project, env;

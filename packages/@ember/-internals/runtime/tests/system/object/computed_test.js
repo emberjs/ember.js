@@ -345,7 +345,9 @@ moduleFor(
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
     }
 
-    ['@test observing computed.reads prop and overriding it in create() works'](assert) {
+    ['@test observing prop installed with computed macro reads and overriding it in create() works'](
+      assert
+    ) {
       let Obj = EmberObject.extend({
         name: reads('model.name'),
         nameDidChange: observer('name', function () {}),

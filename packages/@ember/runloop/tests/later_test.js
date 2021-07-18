@@ -31,7 +31,7 @@ function pauseUntil(time) {
 }
 
 moduleFor(
-  'run.later',
+  'runloop `later`',
   class extends AbstractTestCase {
     teardown() {
       _backburner._platform = originalPlatform;

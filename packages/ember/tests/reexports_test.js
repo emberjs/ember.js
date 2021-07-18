@@ -13,22 +13,14 @@ moduleFor(
   class extends AbstractTestCase {
     [`@test Ember exports correctly`](assert) {
       allExports.forEach((reexport) => {
-        let [path, moduleId, exportName, isDeprecated] = reexport;
+        let [path, moduleId, exportName] = reexport;
 
         // default path === exportName if none present
         if (!exportName) {
           exportName = path;
         }
 
-        confirmExport(
-          Ember,
-          assert,
-          path,
-          moduleId,
-          exportName,
-          isDeprecated,
-          `Ember.${path} exports correctly`
-        );
+        confirmExport(Ember, assert, path, moduleId, exportName);
       });
     }
 
@@ -297,39 +289,7 @@ let allExports = [
 
   // @ember/object/computed
   ['ComputedProperty', '@ember/object/computed', 'default'],
-  ['computed.alias', '@ember/object/computed', 'alias', true],
-  ['computed.and', '@ember/object/computed', 'and', true],
-  ['computed.bool', '@ember/object/computed', 'bool', true],
-  ['computed.collect', '@ember/object/computed', 'collect', true],
-  ['computed.deprecatingAlias', '@ember/object/computed', 'deprecatingAlias', true],
-  ['computed.empty', '@ember/object/computed', 'empty', true],
-  ['computed.equal', '@ember/object/computed', 'equal', true],
-  ['expandProperties', '@ember/object/computed', 'expandProperties', true],
-  ['computed.filter', '@ember/object/computed', 'filter', true],
-  ['computed.filterBy', '@ember/object/computed', 'filterBy', true],
-  ['computed.gt', '@ember/object/computed', 'gt', true],
-  ['computed.gte', '@ember/object/computed', 'gte', true],
-  ['computed.intersect', '@ember/object/computed', 'intersect', true],
-  ['computed.lt', '@ember/object/computed', 'lt', true],
-  ['computed.lte', '@ember/object/computed', 'lte', true],
-  ['computed.map', '@ember/object/computed', 'map', true],
-  ['computed.mapBy', '@ember/object/computed', 'mapBy', true],
-  ['computed.match', '@ember/object/computed', 'match', true],
-  ['computed.max', '@ember/object/computed', 'max', true],
-  ['computed.min', '@ember/object/computed', 'min', true],
-  ['computed.none', '@ember/object/computed', 'none', true],
-  ['computed.not', '@ember/object/computed', 'not', true],
-  ['computed.notEmpty', '@ember/object/computed', 'notEmpty', true],
-  ['computed.oneWay', '@ember/object/computed', 'oneWay', true],
-  ['computed.or', '@ember/object/computed', 'or', true],
-  ['computed.readOnly', '@ember/object/computed', 'readOnly', true],
-  ['computed.reads', '@ember/object/computed', 'reads', true],
-  ['computed.setDiff', '@ember/object/computed', 'setDiff', true],
-  ['computed.sort', '@ember/object/computed', 'sort', true],
-  ['computed.sum', '@ember/object/computed', 'sum', true],
-  ['computed.union', '@ember/object/computed', 'union', true],
-  ['computed.uniq', '@ember/object/computed', 'uniq', true],
-  ['computed.uniqBy', '@ember/object/computed', 'uniqBy', true],
+  ['expandProperties', '@ember/object/computed', 'expandProperties'],
 
   // @ember/object/core
   ['CoreObject', '@ember/object/core', 'default'],
@@ -394,27 +354,6 @@ let allExports = [
 
   // @ember/runloop
   ['run', '@ember/runloop', 'run'],
-  ['run.backburner', '@ember/runloop', '_backburner', true],
-  ['run.begin', '@ember/runloop', 'begin', true],
-  ['run.bind', '@ember/runloop', 'bind', true],
-  ['run.cancel', '@ember/runloop', 'cancel', true],
-  ['run.debounce', '@ember/runloop', 'debounce', true],
-  ['run.end', '@ember/runloop', 'end', true],
-  ['run.hasScheduledTimers', '@ember/runloop', '_hasScheduledTimers', true],
-  ['run.join', '@ember/runloop', 'join', true],
-  ['run.later', '@ember/runloop', 'later', true],
-  ['run.next', '@ember/runloop', 'next', true],
-  ['run.once', '@ember/runloop', 'once', true],
-  ['run.schedule', '@ember/runloop', 'schedule', true],
-  ['run.scheduleOnce', '@ember/runloop', 'scheduleOnce', true],
-  ['run.throttle', '@ember/runloop', 'throttle', true],
-  [
-    'run.currentRunLoop',
-    '@ember/runloop',
-    { get: DEBUG ? '_deprecatedGlobalGetCurrentRunLoop' : '_getCurrentRunLoop' },
-    true,
-  ],
-  ['run.cancelTimers', '@ember/runloop', '_cancelTimers', true],
 
   // @ember/service
   ['Service', '@ember/service', 'default'],

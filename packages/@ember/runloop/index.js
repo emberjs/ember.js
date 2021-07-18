@@ -1,8 +1,6 @@
-import { DEBUG } from '@glimmer/env';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
-import { onRunloopDotAccess } from '@ember/-internals/overrides';
 import Backburner from 'backburner';
 
 let currentRunLoop = null;
@@ -740,89 +738,4 @@ export function debounce() {
 */
 export function throttle() {
   return _backburner.throttle(...arguments);
-}
-
-export let _deprecatedGlobalGetCurrentRunLoop;
-
-// eslint-disable-next-line no-undef
-if (DEBUG) {
-  let defaultHandler = (dotKey, importKey, module) => {
-    return `Using \`${dotKey}\` has been deprecated. Instead, import the value directly from ${module}:\n\n  import { ${importKey} } from '${module}';`;
-  };
-
-  let handler = onRunloopDotAccess || defaultHandler;
-
-  let defineDeprecatedRunloopFunc = (key, func) => {
-    Object.defineProperty(run, key, {
-      get() {
-        let message = handler(`run.${key}`, key, '@ember/runloop');
-
-        deprecate(message, message === null, {
-          id: 'deprecated-run-loop-and-computed-dot-access',
-          until: '4.0.0',
-          for: 'ember-source',
-          since: {
-            enabled: '3.27.0',
-          },
-        });
-
-        return func;
-      },
-    });
-  };
-
-  _deprecatedGlobalGetCurrentRunLoop = () => {
-    let message = handler('run.currentRunLoop', 'getCurrentRunLoop', '@ember/runloop');
-
-    deprecate(message, message === null, {
-      id: 'deprecated-run-loop-and-computed-dot-access',
-      until: '4.0.0',
-      for: 'ember-source',
-      since: {
-        enabled: '3.27.0',
-      },
-    });
-
-    return _getCurrentRunLoop();
-  };
-
-  defineDeprecatedRunloopFunc('backburner', _backburner);
-  defineDeprecatedRunloopFunc('begin', begin);
-  defineDeprecatedRunloopFunc('bind', bind);
-  defineDeprecatedRunloopFunc('cancel', cancel);
-  defineDeprecatedRunloopFunc('debounce', debounce);
-  defineDeprecatedRunloopFunc('end', end);
-  defineDeprecatedRunloopFunc('hasScheduledTimers', _hasScheduledTimers);
-  defineDeprecatedRunloopFunc('join', join);
-  defineDeprecatedRunloopFunc('later', later);
-  defineDeprecatedRunloopFunc('next', next);
-  defineDeprecatedRunloopFunc('once', once);
-  defineDeprecatedRunloopFunc('schedule', schedule);
-  defineDeprecatedRunloopFunc('scheduleOnce', scheduleOnce);
-  defineDeprecatedRunloopFunc('throttle', throttle);
-  defineDeprecatedRunloopFunc('cancelTimers', _cancelTimers);
-  Object.defineProperty(run, 'currentRunLoop', {
-    get: _deprecatedGlobalGetCurrentRunLoop,
-    enumerable: false,
-  });
-} else {
-  run.backburner = _backburner;
-  run.begin = begin;
-  run.bind = bind;
-  run.cancel = cancel;
-  run.debounce = debounce;
-  run.end = end;
-  run.hasScheduledTimers = _hasScheduledTimers;
-  run.join = join;
-  run.later = later;
-  run.next = next;
-  run.once = once;
-  run.schedule = schedule;
-  run.scheduleOnce = scheduleOnce;
-  run.throttle = throttle;
-  run.cancelTimers = _cancelTimers;
-  Object.defineProperty(run, 'currentRunLoop', {
-    get: _getCurrentRunLoop,
-    enumerable: false,
-  });
 }
