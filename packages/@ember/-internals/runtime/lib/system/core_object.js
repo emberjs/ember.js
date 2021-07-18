@@ -3,7 +3,7 @@
 */
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
-import { getOwner, LEGACY_OWNER } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import {
   guidFor,
   lookupDescriptor,
@@ -306,9 +306,6 @@ function defineSelfDestructingImplicitInjectionGetter(obj, keyName, value, messa
 */
 class CoreObject {
   constructor(owner) {
-    // setOwner has to set both OWNER and LEGACY_OWNER for backwards compatibility, and
-    // LEGACY_OWNER is enumerable, so setting it would add an enumerable property to the object,
-    // so we just set `OWNER` directly here.
     this[OWNER] = owner;
 
     // prepare prototype...
@@ -378,10 +375,6 @@ class CoreObject {
       return self;
     }
   }
-
-  // Empty setter for absorbing setting the LEGACY_OWNER, which should _not_
-  // become an enumerable property, and should not be used in general.
-  set [LEGACY_OWNER](value) {}
 
   reopen(...args) {
     applyMixin(this, args);

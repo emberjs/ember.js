@@ -38,11 +38,6 @@ export interface Owner {
   routable?: boolean;
 }
 
-import { enumerableSymbol } from '@ember/-internals/utils';
-import { deprecate } from '@ember/debug';
-
-export const LEGACY_OWNER: unique symbol = enumerableSymbol('LEGACY_OWNER') as any;
-
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
   are created via a factory and dependency injection system. Each of these
@@ -88,26 +83,7 @@ export const LEGACY_OWNER: unique symbol = enumerableSymbol('LEGACY_OWNER') as a
   @public
 */
 export function getOwner(object: any): Owner {
-  let owner = glimmerGetOwner(object) as Owner;
-
-  if (owner === undefined) {
-    owner = object[LEGACY_OWNER];
-
-    deprecate(
-      `You accessed the owner using \`getOwner\` on an object, but it was not set on that object with \`setOwner\`. You must use \`setOwner\` to set the owner on all objects. You cannot use Object.assign().`,
-      owner === undefined,
-      {
-        id: 'owner.legacy-owner-injection',
-        until: '3.25.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.22.0',
-        },
-      }
-    );
-  }
-
-  return owner;
+  return glimmerGetOwner(object) as Owner;
 }
 
 /**
@@ -124,5 +100,4 @@ export function getOwner(object: any): Owner {
 */
 export function setOwner(object: any, owner: Owner): void {
   glimmerSetOwner(object, owner);
-  object[LEGACY_OWNER] = owner;
 }
