@@ -3,7 +3,6 @@ import EmberArray, { A as emberA, MutableArray } from '../../lib/mixins/array';
 import { generateGuid, guidFor } from '@ember/-internals/utils';
 import {
   get,
-  set,
   computed,
   addArrayObserver,
   removeArrayObserver,
@@ -11,7 +10,6 @@ import {
   arrayContentDidChange,
 } from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
-import Copyable from '../../lib/mixins/copyable';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {
@@ -147,42 +145,6 @@ class NativeArrayHelpers extends AbstractArrayHelper {
   }
 }
 
-class CopyableNativeArray extends AbstractArrayHelper {
-  newObject() {
-    return emberA([generateGuid()]);
-  }
-
-  isEqual(a, b) {
-    if (!(a instanceof Array)) {
-      return false;
-    }
-
-    if (!(b instanceof Array)) {
-      return false;
-    }
-
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    return a[0] === b[0];
-  }
-}
-
-class CopyableArray extends AbstractArrayHelper {
-  newObject() {
-    return CopyableObject.create();
-  }
-
-  isEqual(a, b) {
-    if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) {
-      return false;
-    }
-
-    return get(a, 'id') === get(b, 'id');
-  }
-}
-
 class ArrayProxyHelpers extends AbstractArrayHelper {
   newObject(ary) {
     return ArrayProxy.create({ content: emberA(super.newObject(ary)) });
@@ -271,21 +233,6 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
   },
 });
 
-const CopyableObject = EmberObject.extend(Copyable, {
-  id: null,
-
-  init() {
-    this._super(...arguments);
-    set(this, 'id', generateGuid());
-  },
-
-  copy() {
-    let ret = CopyableObject.create();
-    set(ret, 'id', get(this, 'id'));
-    return ret;
-  },
-});
-
 class MutableArrayHelpers extends NativeArrayHelpers {
   newObject(ary) {
     return TestMutableArray.create(super.newObject(ary));
@@ -316,15 +263,11 @@ export function runArrayTests(name, Tests, ...types) {
         case 'MutableArray':
           moduleFor(`MutableArray: ${name}`, Tests, MutableArrayHelpers);
           break;
-        case 'CopyableArray':
-          moduleFor(`CopyableArray: ${name}`, Tests, CopyableArray);
-          break;
-        case 'CopyableNativeArray':
-          moduleFor(`CopyableNativeArray: ${name}`, Tests, CopyableNativeArray);
-          break;
         case 'NativeArray':
           moduleFor(`NativeArray: ${name}`, Tests, NativeArrayHelpers);
           break;
+        default:
+          throw new Error(`runArrayTests passed unexpected type ${type}`);
       }
     });
   } else {

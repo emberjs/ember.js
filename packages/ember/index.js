@@ -40,10 +40,8 @@ import {
   RegistryProxyMixin,
   ContainerProxyMixin,
   compare,
-  copy,
   isEqual,
   Array as EmberArray,
-  Copyable,
   MutableEnumerable,
   MutableArray,
   TargetActionSupport,
@@ -375,7 +373,6 @@ Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
 Ember._ContainerProxyMixin = ContainerProxyMixin;
 Ember.compare = compare;
-Ember.copy = copy;
 Ember.isEqual = isEqual;
 
 /**
@@ -408,7 +405,6 @@ Ember.ObjectProxy = ObjectProxy;
 Ember.ActionHandler = ActionHandler;
 Ember.CoreObject = CoreObject;
 Ember.NativeArray = NativeArray;
-Ember.Copyable = Copyable;
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
 Ember.Evented = Evented;
