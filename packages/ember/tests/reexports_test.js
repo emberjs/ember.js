@@ -428,7 +428,6 @@ let allExports = [
   ['String.decamelize', '@ember/string', 'decamelize'],
   ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
   ['String.isHTMLSafe', '@ember/-internals/glimmer', 'isHTMLSafe'],
-  ['String.loc', '@ember/string', 'loc'],
   ['String.underscore', '@ember/string', 'underscore'],
   ['String.w', '@ember/string', 'w'],
   ['STRINGS', '@ember/string', { get: '_getStrings', set: '_setStrings' }],

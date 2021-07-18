@@ -7,7 +7,6 @@ export { getStrings as _getStrings, setStrings as _setStrings } from './lib/stri
 import { ENV } from '@ember/-internals/environment';
 import { Cache } from '@ember/-internals/utils';
 import { deprecate } from '@ember/debug';
-import { getString } from './lib/string_registry';
 
 import {
   htmlSafe as internalHtmlSafe,
@@ -80,66 +79,6 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
   @class String
   @public
 */
-
-function _fmt(str: string, formats: any[]) {
-  // first, replace any ORDERED replacements.
-  let idx = 0; // the current index for non-numerical replacements
-  return str.replace(/%@([0-9]+)?/g, (_s: string, argIndex: string) => {
-    let i = argIndex ? parseInt(argIndex, 10) - 1 : idx++;
-    let r = i < formats.length ? formats[i] : undefined;
-    return typeof r === 'string' ? r : r === null ? '(null)' : r === undefined ? '' : String(r);
-  });
-}
-
-/**
-  Formats the passed string, but first looks up the string in the localized
-  strings hash. This is a convenient way to localize text.
-
-  Note that it is traditional but not required to prefix localized string
-  keys with an underscore or other character so you can easily identify
-  localized strings.
-
-  ```javascript
-  import { loc } from '@ember/string';
-
-  Ember.STRINGS = {
-    '_Hello World': 'Bonjour le monde',
-    '_Hello %@ %@': 'Bonjour %@ %@'
-  };
-
-  loc("_Hello World");  // 'Bonjour le monde';
-  loc("_Hello %@ %@", ["John", "Smith"]);  // "Bonjour John Smith";
-  ```
-
-  @method loc
-  @param {String} str The string to format
-  @param {Array} formats Optional array of parameters to interpolate into string.
-  @return {String} formatted string
-  @public
-  @deprecated
-*/
-export function loc(str: string, formats: any[]): string {
-  deprecate(
-    'loc is deprecated, please use a dedicated localization solution like ember-intl. More alternatives listed at https://emberobserver.com/categories/internationalization.',
-    false,
-    {
-      id: 'ember-string.loc',
-      until: '4.0.0',
-      for: 'ember-source',
-      url: 'https://deprecations.emberjs.com/v3.x#toc_ember-string-loc',
-      since: {
-        enabled: '3.24',
-      },
-    }
-  );
-
-  if (!Array.isArray(formats) || arguments.length > 2) {
-    formats = Array.prototype.slice.call(arguments, 1);
-  }
-
-  str = getString(str) || str;
-  return _fmt(str, formats);
-}
 
 /**
   Splits a string into separate units separated by spaces, eliminating any
@@ -365,24 +304,6 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       enumerable: false,
       writeable: true,
       value: deprecateEmberStringPrototypeExtension('w', w),
-    },
-
-    /**
-      See [String.loc](/ember/release/classes/String/methods/loc?anchor=loc).
-
-      @method loc
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    loc: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value(this: string, ...args: any[]) {
-        return loc(this, args);
-      },
     },
 
     /**
