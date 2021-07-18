@@ -1500,9 +1500,7 @@ moduleFor(
       let InnerComponent = Component.extend({
         click() {
           innerClickCalled = true;
-          expectDeprecation(() => {
-            this.sendAction();
-          }, /You called (.*).sendAction\((.*)\) but Component#sendAction is deprecated. Please use closure actions instead./);
+          this.action();
         },
       });
 
@@ -1510,7 +1508,7 @@ moduleFor(
         ComponentClass: OuterComponent,
         template: strip`
         {{#middle-component}}
-          {{inner-component action="hey"}}
+          {{inner-component action=(action "hey")}}
         {{/middle-component}}
       `,
       });

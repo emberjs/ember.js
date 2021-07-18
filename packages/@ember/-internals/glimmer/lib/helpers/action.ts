@@ -95,10 +95,10 @@ export const ACTIONS = new _WeakSet();
 
   Closure actions curry both their scope and any arguments. When invoked, any
   additional arguments are added to the already curried list.
-  Actions should be invoked using the [sendAction](/ember/release/classes/Component/methods/sendAction?anchor=sendAction)
-  method. The first argument to `sendAction` is the action to be called, and
-  additional arguments are passed to the action function. This has interesting
-  properties combined with currying of arguments. For example:
+  Actions are presented in JavaScript as callbacks, and are
+  invoked like any other JavaScript function.
+
+  For example
 
   ```app/components/update-name.js
   import Component from '@glimmer/component';
@@ -152,7 +152,7 @@ export const ACTIONS = new _WeakSet();
   export default Component.extend({
     click() {
       // Note that model is not passed, it was curried in the template
-      this.sendAction('submit', 'bob');
+      this.submit('bob');
     }
   });
   ```
