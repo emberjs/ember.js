@@ -1357,13 +1357,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test GH#18732 hasBlock works within a yielded curried component invoked within mustaches']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
-      );
+    ['@test GH#18732 (has-block) works within a yielded curried component invoked within mustaches']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>',
+        template: '<div>{{(has-block)}}</div>',
       });
 
       this.registerComponent('yielding-component', {
@@ -1382,14 +1379,10 @@ moduleFor(
       this.assertText('false');
     }
 
-    ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (falsy)']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
-      );
-
+    ['@test GH#18732 (has-block) works within a yielded curried component invoked with angle bracket invocation (falsy)']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>',
+        template: '<div>{{(has-block)}}</div>',
       });
 
       this.registerComponent('yielding-component', {
@@ -1408,14 +1401,10 @@ moduleFor(
       this.assertText('false');
     }
 
-    ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (truthy)']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
-      );
-
+    ['@test GH#18732 (has-block) works within a yielded curried component invoked with angle bracket invocation (truthy)']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>',
+        template: '<div>{{(has-block)}}</div>',
       });
 
       this.registerComponent('yielding-component', {

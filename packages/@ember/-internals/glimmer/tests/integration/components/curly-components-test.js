@@ -1950,14 +1950,10 @@ moduleFor(
       );
     }
 
-    ['@test hasBlock is true when block supplied']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block) is true when block supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlock}}
+        {{#if (has-block)}}
           {{yield}}
         {{else}}
           No Block!
@@ -1976,14 +1972,10 @@ moduleFor(
       this.assertText('In template');
     }
 
-    ['@test hasBlock is false when no block supplied']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block) is false when no block supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlock}}
+        {{#if (has-block)}}
           {{yield}}
         {{else}}
           No Block!
@@ -1999,14 +1991,10 @@ moduleFor(
       this.assertText('No Block!');
     }
 
-    ['@test hasBlockParams is true when block param supplied']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block-params) is true when block param supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlockParams}}
+        {{#if (has-block-params)}}
           {{yield this}} - In Component
         {{else}}
           {{yield}} No Block!
@@ -2025,14 +2013,10 @@ moduleFor(
       this.assertText('In template - In Component');
     }
 
-    ['@test hasBlockParams is false when no block param supplied']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block-params) is false when no block param supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlockParams}}
+        {{#if (has-block-params)}}
           {{yield this}}
         {{else}}
           {{yield}} No Block Param!
@@ -2156,14 +2140,10 @@ moduleFor(
       this.assertText('Yes:Hello42');
     }
 
-    ['@test expression hasBlock inverse']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-inverse.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block) inverse']() {
       this.registerComponent('check-inverse', {
         template: strip`
-        {{#if (hasBlock "inverse")}}
+        {{#if (has-block "inverse")}}
           Yes
         {{else}}
           No
@@ -2180,14 +2160,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test expression hasBlock default']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block) default']() {
       this.registerComponent('check-block', {
         template: strip`
-        {{#if (hasBlock)}}
+        {{#if (has-block)}}
           Yes
         {{else}}
           No
@@ -2204,14 +2180,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test expression hasBlockParams inverse']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-inverse.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block-params) inverse']() {
       this.registerComponent('check-inverse', {
         template: strip`
-        {{#if (hasBlockParams "inverse")}}
+        {{#if (has-block-params "inverse")}}
           Yes
         {{else}}
           No
@@ -2228,14 +2200,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test expression hasBlockParams default']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block-params) default']() {
       this.registerComponent('check-block', {
         template: strip`
-        {{#if (hasBlockParams)}}
+        {{#if (has-block-params)}}
           Yes
         {{else}}
           No
@@ -2252,85 +2220,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test non-expression hasBlock']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
-      );
-
-      this.registerComponent('check-block', {
-        template: strip`
-        {{#if hasBlock}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
-      });
-
-      this.render(strip`
-      {{check-block}}
-      {{#check-block}}{{/check-block}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test expression hasBlockParams']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-params.hbs' @ L1:C6) `
-      );
-
-      this.registerComponent('check-params', {
-        template: strip`
-        {{#if (hasBlockParams)}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
-      });
-
-      this.render(strip`
-      {{#check-params}}{{/check-params}}
-      {{#check-params as |foo|}}{{/check-params}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test non-expression hasBlockParams']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-params.hbs' @ L1:C6) `
-      );
-
-      this.registerComponent('check-params', {
-        template: strip`
-        {{#if hasBlockParams}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
-      });
-
-      this.render(strip`
-      {{#check-params}}{{/check-params}}
-      {{#check-params as |foo|}}{{/check-params}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test hasBlock expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block) expression in an attribute'](assert) {
       this.registerComponent('check-attr', {
-        template: '<button name={{hasBlock}}></button>',
+        template: '<button name={{(has-block)}}></button>',
       });
 
       this.render(strip`
@@ -2343,15 +2235,11 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlock inverse expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block) inverse expression in an attribute'](assert) {
       this.registerComponent(
         'check-attr',
         {
-          template: '<button name={{hasBlock "inverse"}}></button>',
+          template: '<button name={{(has-block "inverse")}}></button>',
         },
         ''
       );
@@ -2366,13 +2254,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block-params) expression in an attribute'](assert) {
       this.registerComponent('check-attr', {
-        template: '<button name={{hasBlockParams}}></button>',
+        template: '<button name={{(has-block-params)}}></button>',
       });
 
       this.render(strip`
@@ -2385,15 +2269,11 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams inverse expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block-params) inverse expression in an attribute'](assert) {
       this.registerComponent(
         'check-attr',
         {
-          template: '<button name={{hasBlockParams "inverse"}}></button>',
+          template: '<button name={{(has-block-params "inverse")}}></button>',
         },
         ''
       );
@@ -2408,13 +2288,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlock as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block) as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if hasBlock "true" "false"}}',
+        template: '{{if (has-block) "true" "false"}}',
       });
 
       this.render(strip`
@@ -2427,32 +2303,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlock as an expression param to a helper']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block) inverse as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlock) "true" "false"}}',
-      });
-
-      this.render(strip`
-      {{check-helper}}
-      {{#check-helper}}{{/check-helper}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test hasBlock inverse as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
-      this.registerComponent('check-helper', {
-        template: '{{if (hasBlock "inverse") "true" "false"}}',
+        template: '{{if (has-block "inverse") "true" "false"}}',
       });
 
       this.render(strip`
@@ -2465,13 +2318,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block-params) as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if hasBlockParams "true" "false"}}',
+        template: '{{if (has-block-params) "true" "false"}}',
       });
 
       this.render(strip`
@@ -2484,32 +2333,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams as an expression param to a helper']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block-params) inverse as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlockParams) "true" "false"}}',
-      });
-
-      this.render(strip`
-      {{#check-helper}}{{/check-helper}}
-      {{#check-helper as |something|}}{{/check-helper}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test hasBlockParams inverse as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
-      this.registerComponent('check-helper', {
-        template: '{{if (hasBlockParams "inverse") "true" "false"}}',
+        template: '{{if (has-block-params "inverse") "true" "false"}}',
       });
 
       this.render(strip`

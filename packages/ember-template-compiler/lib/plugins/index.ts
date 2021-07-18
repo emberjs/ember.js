@@ -8,7 +8,6 @@ import TransformActionSyntax from './transform-action-syntax';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformEachTrackArray from './transform-each-track-array';
-import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformInElement from './transform-in-element';
 import TransformLinkTo from './transform-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
@@ -28,7 +27,6 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     TransformActionSyntax,
     TransformAttrsIntoArgs,
     TransformEachInIntoEach,
-    TransformHasBlockSyntax,
     TransformLinkTo,
     AssertInputHelperWithoutBlock,
     TransformInElement,
