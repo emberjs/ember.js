@@ -92,6 +92,47 @@ moduleFor(
       );
     }
 
+    async ['@test [GH#19546] it navigates into the named route when containing other elements'](
+      assert
+    ) {
+      this.addTemplate(
+        'about',
+        `
+        <h3 class="about">About</h3>
+        <LinkTo @route='index' id='home-link'><span id='inside'>Home</span></LinkTo>
+        <LinkTo @route='about' id='self-link'>Self</LinkTo>
+        `
+      );
+
+      await this.visit('/about');
+
+      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
+      assert.equal(
+        this.$('#self-link.active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#home-link:not(.active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
+
+      await this.click('#inside');
+
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.equal(
+        this.$('#self-link.active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
+    }
+
     async [`@test [DEPRECATED] it doesn't add an href when the tagName isn't 'a'`](assert) {
       this.addTemplate(
         'index',

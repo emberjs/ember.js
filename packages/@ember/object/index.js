@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { assert, deprecate } from '@ember/debug';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
+import { onComputedDotAccess } from '@ember/-internals/overrides';
 
 export { Object as default } from '@ember/-internals/runtime';
 
@@ -54,22 +55,18 @@ import {
   uniq,
 } from '@ember/object/computed';
 
-export let _onDotAccess;
-
 // eslint-disable-next-line no-undef
 if (DEBUG) {
-  let _callback = (dotKey, importKey, module) => {
+  let defaultHandler = (dotKey, importKey, module) => {
     return `Using \`${dotKey}\` has been deprecated. Instead, import the value directly from ${module}:\n\n  import { ${importKey} } from '${module}';`;
   };
 
-  _onDotAccess = (callback) => {
-    _callback = callback;
-  };
+  let handler = onComputedDotAccess || defaultHandler;
 
   let defineDeprecatedComputedFunc = (key, func) => {
     Object.defineProperty(computed, key, {
       get() {
-        let message = _callback(`computed.${key}`, key, '@ember/object/computed');
+        let message = handler(`computed.${key}`, key, '@ember/object/computed');
 
         deprecate(message, message === null, {
           id: 'deprecated-run-loop-and-computed-dot-access',
