@@ -1,30 +1,13 @@
-import { ENV } from '@ember/-internals/environment';
 import { underscore } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
   assert.deepEqual(underscore(given), expected, description);
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    expectDeprecation(() => {
-      assert.deepEqual(given.underscore(), expected, description);
-    }, /String prototype extensions are deprecated/);
-  }
 }
 
 moduleFor(
   'EmberStringUtils.underscore',
   class extends AbstractTestCase {
-    ['@test String.prototype.underscore is not available without EXTEND_PROTOTYPES'](assert) {
-      if (!ENV.EXTEND_PROTOTYPES.String) {
-        assert.ok(
-          'undefined' === typeof String.prototype.underscore,
-          'String.prototype helper disabled'
-        );
-      } else {
-        assert.expect(0);
-      }
-    }
-
     ['@test String underscore tests'](assert) {
       test(assert, 'my favorite items', 'my_favorite_items', 'with normal string');
       test(assert, 'css-class-name', 'css_class_name', 'with dasherized string');

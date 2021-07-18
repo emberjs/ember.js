@@ -4,7 +4,6 @@
 
 export { getStrings as _getStrings, setStrings as _setStrings } from './lib/string_registry';
 
-import { ENV } from '@ember/-internals/environment';
 import { Cache } from '@ember/-internals/utils';
 import { deprecate } from '@ember/debug';
 
@@ -73,8 +72,6 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
 
 /**
   Defines string helper methods including string formatting and localization.
-  Unless `EmberENV.EXTEND_PROTOTYPES.String` is `false` these methods will also be
-  added to the `String.prototype` as well.
 
   @class String
   @public
@@ -82,8 +79,7 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
 
 /**
   Splits a string into separate units separated by spaces, eliminating any
-  empty strings in the process. This is a convenience method for split that
-  is mostly useful when applied to the `String.prototype`.
+  empty strings in the process.
 
   ```javascript
   import { w } from '@ember/string';
@@ -266,140 +262,4 @@ export function isHTMLSafe(str: any | null | undefined): str is SafeString {
   deprecateImportFromString('isHTMLSafe');
 
   return internalIsHtmlSafe(str);
-}
-
-if (ENV.EXTEND_PROTOTYPES.String) {
-  let deprecateEmberStringPrototypeExtension = function (
-    name: string,
-    fn: (utility: string, ...options: any) => string | string[],
-    message = `String prototype extensions are deprecated. Please import ${name} from '@ember/string' instead.`
-  ) {
-    return function (this: string) {
-      deprecate(message, false, {
-        id: 'ember-string.prototype-extensions',
-        for: 'ember-source',
-        since: {
-          enabled: '3.24',
-        },
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-prototype_extensions',
-      });
-
-      return fn(this, ...arguments);
-    };
-  };
-
-  Object.defineProperties(String.prototype, {
-    /**
-      See [String.w](/ember/release/classes/String/methods/w?anchor=w).
-
-      @method w
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    w: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value: deprecateEmberStringPrototypeExtension('w', w),
-    },
-
-    /**
-      See [String.camelize](/ember/release/classes/String/methods/camelize?anchor=camelize).
-
-      @method camelize
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    camelize: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value: deprecateEmberStringPrototypeExtension('camelize', camelize),
-    },
-
-    /**
-      See [String.decamelize](/ember/release/classes/String/methods/decamelize?anchor=decamelize).
-
-      @method decamelize
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    decamelize: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value: deprecateEmberStringPrototypeExtension('decamelize', decamelize),
-    },
-
-    /**
-      See [String.dasherize](/ember/release/classes/String/methods/dasherize?anchor=dasherize).
-
-      @method dasherize
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    dasherize: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value: deprecateEmberStringPrototypeExtension('dasherize', dasherize),
-    },
-
-    /**
-      See [String.underscore](/ember/release/classes/String/methods/underscore?anchor=underscore).
-
-      @method underscore
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    underscore: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value: deprecateEmberStringPrototypeExtension('underscore', underscore),
-    },
-
-    /**
-      See [String.classify](/ember/release/classes/String/methods/classify?anchor=classify).
-
-      @method classify
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    classify: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value: deprecateEmberStringPrototypeExtension('classify', classify),
-    },
-
-    /**
-      See [String.capitalize](/ember/release/classes/String/methods/capitalize?anchor=capitalize).
-
-      @method capitalize
-      @for @ember/string
-      @static
-      @private
-      @deprecated
-    */
-    capitalize: {
-      configurable: true,
-      enumerable: false,
-      writeable: true,
-      value: deprecateEmberStringPrototypeExtension('capitalize', capitalize),
-    },
-  });
 }

@@ -1,6 +1,6 @@
 import require, { has } from 'require';
 
-import { getENV, getLookup, setLookup, ENV } from '@ember/-internals/environment';
+import { getENV, getLookup, setLookup } from '@ember/-internals/environment';
 import * as utils from '@ember/-internals/utils';
 import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
@@ -491,24 +491,6 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
 }
 Ember._captureRenderTree = captureRenderTree;
 
-if (ENV.EXTEND_PROTOTYPES.String) {
-  String.prototype.htmlSafe = function () {
-    deprecate(
-      `String prototype extensions are deprecated. Please import htmlSafe from '@ember/template' instead.`,
-      false,
-      {
-        id: 'ember-string.prototype-extensions',
-        for: 'ember-source',
-        since: {
-          enabled: '3.27.6',
-        },
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
-      }
-    );
-    return htmlSafe(this);
-  };
-}
 const deprecateImportFromString = function (
   name,
   message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
