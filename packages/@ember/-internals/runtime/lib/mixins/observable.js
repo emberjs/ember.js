@@ -5,7 +5,6 @@
 import { peekMeta } from '@ember/-internals/meta';
 import {
   get,
-  getWithDefault,
   set,
   getProperties,
   setProperties,
@@ -402,25 +401,6 @@ export default Mixin.create({
   */
   hasObserverFor(key) {
     return hasListeners(this, `${key}:change`);
-  },
-
-  /**
-    Retrieves the value of a property, or a default value in the case that the
-    property returns `undefined`.
-
-    ```javascript
-    person.getWithDefault('lastName', 'Doe');
-    ```
-
-    @method getWithDefault
-    @param {String} keyName The name of the property to retrieve
-    @param {Object} defaultValue The value to return if the property value is undefined
-    @return {Object} The property value or the defaultValue.
-    @public
-    @deprecated
-  */
-  getWithDefault(keyName, defaultValue) {
-    return getWithDefault(this, keyName, defaultValue);
   },
 
   /**

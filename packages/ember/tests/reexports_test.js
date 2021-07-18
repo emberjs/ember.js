@@ -286,7 +286,6 @@ let allExports = [
   ['defineProperty', '@ember/object', 'defineProperty'],
   ['get', '@ember/object', 'get'],
   ['getProperties', '@ember/object', 'getProperties'],
-  ['getWithDefault', '@ember/object', 'getWithDefault'],
   ['notifyPropertyChange', '@ember/object', 'notifyPropertyChange'],
   ['observer', '@ember/object', 'observer'],
   ['set', '@ember/object', 'set'],

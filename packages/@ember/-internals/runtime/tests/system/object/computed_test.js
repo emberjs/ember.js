@@ -3,7 +3,6 @@ import {
   computed,
   set,
   get,
-  getWithDefault,
   observer,
   defineProperty,
   notifyPropertyChange,
@@ -17,12 +16,10 @@ function K() {
   return this;
 }
 
-function testWithDefault(assert, expect, x, y, z) {
+function testGet(assert, expect, x, y) {
   assert.equal(get(x, y), expect);
-  expectDeprecation(() => {
-    assert.equal(getWithDefault(x, y, z), expect);
-    assert.equal(x.getWithDefault(y, z), expect);
-  }, /Using getWithDefault has been deprecated. Instead, consider using Ember get and explicitly checking for undefined./);
+  assert.equal(get(x, y), expect);
+  assert.equal(x.get(y), expect);
 }
 
 moduleFor(
@@ -35,7 +32,7 @@ moduleFor(
         }),
       });
 
-      testWithDefault(assert, 'FOO', MyClass.create(), 'foo');
+      testGet(assert, 'FOO', MyClass.create(), 'foo');
     }
 
     ['@test computed property on subclass'](assert) {
@@ -51,7 +48,7 @@ moduleFor(
         }),
       });
 
-      testWithDefault(assert, 'BAR', Subclass.create(), 'foo');
+      testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
     ['@test replacing computed property with regular val'](assert) {
@@ -65,10 +62,10 @@ moduleFor(
         foo: 'BAR',
       });
 
-      testWithDefault(assert, 'BAR', Subclass.create(), 'foo');
+      testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
-    ['@test complex depndent keys'](assert) {
+    ['@test complex dependent keys'](assert) {
       let MyClass = EmberObject.extend({
         init() {
           this._super(...arguments);
@@ -90,18 +87,18 @@ moduleFor(
       let obj1 = MyClass.create();
       let obj2 = Subclass.create();
 
-      testWithDefault(assert, 'BIFF 1', obj1, 'foo');
-      testWithDefault(assert, 'BIFF 21', obj2, 'foo');
+      testGet(assert, 'BIFF 1', obj1, 'foo');
+      testGet(assert, 'BIFF 21', obj2, 'foo');
 
       set(get(obj1, 'bar'), 'baz', 'BLARG');
 
-      testWithDefault(assert, 'BLARG 2', obj1, 'foo');
-      testWithDefault(assert, 'BIFF 21', obj2, 'foo');
+      testGet(assert, 'BLARG 2', obj1, 'foo');
+      testGet(assert, 'BIFF 21', obj2, 'foo');
 
       set(get(obj2, 'bar'), 'baz', 'BOOM');
 
-      testWithDefault(assert, 'BLARG 2', obj1, 'foo');
-      testWithDefault(assert, 'BOOM 22', obj2, 'foo');
+      testGet(assert, 'BLARG 2', obj1, 'foo');
+      testGet(assert, 'BOOM 22', obj2, 'foo');
     }
 
     ['@test complex dependent keys changing complex dependent keys'](assert) {
@@ -135,13 +132,13 @@ moduleFor(
 
       let obj2 = Subclass.create();
 
-      testWithDefault(assert, 'BIFF2 1', obj2, 'foo');
+      testGet(assert, 'BIFF2 1', obj2, 'foo');
 
       set(get(obj2, 'bar'), 'baz', 'BLARG');
-      testWithDefault(assert, 'BIFF2 1', obj2, 'foo'); // should not invalidate property
+      testGet(assert, 'BIFF2 1', obj2, 'foo'); // should not invalidate property
 
       set(get(obj2, 'bar2'), 'baz', 'BLARG');
-      testWithDefault(assert, 'BLARG 2', obj2, 'foo'); // should not invalidate property
+      testGet(assert, 'BLARG 2', obj2, 'foo'); // should not invalidate property
     }
 
     ['@test can retrieve metadata for a computed property'](assert) {
