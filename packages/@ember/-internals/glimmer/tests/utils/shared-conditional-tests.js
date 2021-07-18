@@ -2,7 +2,6 @@
 
 import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 
-import { assign } from '@ember/polyfills';
 import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/-internals/metal';
 import {
@@ -115,7 +114,7 @@ export class FalsyGenerator extends AbstractGenerator {
 
 export class StableTruthyGenerator extends TruthyGenerator {
   generate(value, idx) {
-    return assign(super.generate(value, idx), {
+    return Object.assign(super.generate(value, idx), {
       [`@test it maintains DOM stability when condition changes from ${value} to another truthy value and back [${idx}]`]() {
         this.renderValues(value);
 
@@ -141,7 +140,7 @@ export class StableTruthyGenerator extends TruthyGenerator {
 
 export class StableFalsyGenerator extends FalsyGenerator {
   generate(value, idx) {
-    return assign(super.generate(value), {
+    return Object.assign(super.generate(value), {
       [`@test it maintains DOM stability when condition changes from ${value} to another falsy value and back [${idx}]`]() {
         this.renderValues(value);
 
@@ -651,7 +650,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     }
 
     let wrappedTemplate = this.wrapperFor(templates);
-    this.render(wrappedTemplate, assign({ t: 'T', f: 'F' }, context));
+    this.render(wrappedTemplate, Object.assign({ t: 'T', f: 'F' }, context));
   }
 
   ['@test it does not update when the unbound helper is used']() {

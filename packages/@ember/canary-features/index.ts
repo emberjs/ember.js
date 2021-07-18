@@ -1,5 +1,4 @@
 import { ENV } from '@ember/-internals/environment';
-import { assign } from '@ember/polyfills';
 
 /**
   Set `EmberENV.FEATURES` in your application's `config/environment.js` file
@@ -33,7 +32,7 @@ export const DEFAULT_FEATURES = {
   @since 1.1.0
   @public
 */
-export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
+export const FEATURES = Object.assign(DEFAULT_FEATURES, ENV.FEATURES);
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's

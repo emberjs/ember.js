@@ -1,4 +1,3 @@
-import { assign } from '@ember/polyfills';
 import Router, { TransitionState } from 'router_js';
 import { shallowEqual } from '../utils';
 import Route from './route';
@@ -25,7 +24,7 @@ export default class RouterState {
     }
 
     if (queryParams !== undefined && Object.keys(queryParams).length > 0) {
-      let visibleQueryParams = assign({}, queryParams);
+      let visibleQueryParams = Object.assign({}, queryParams);
 
       this.emberRouter._prepareQueryParams(routeName, models, visibleQueryParams);
       return shallowEqual(visibleQueryParams, state.queryParams);

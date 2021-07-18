@@ -32,8 +32,6 @@ function getActionIds(element) {
   );
 }
 
-const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
-
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor(
     'Helpers test: element action instrumentation',
@@ -1144,11 +1142,7 @@ moduleFor(
           .trigger('click', { [prop]: value })[0];
         if (expected) {
           assert.ok(showCalled, `should call action with ${prop}:${value}`);
-
-          // IE11 does not allow simulated events to have a valid `defaultPrevented`
-          if (!isIE11) {
-            assert.ok(event.defaultPrevented, 'should prevent default');
-          }
+          assert.ok(event.defaultPrevented, 'should prevent default');
         } else {
           assert.notOk(showCalled, `should not call action with ${prop}:${value}`);
           assert.notOk(event.defaultPrevented, 'should not prevent default');
@@ -1486,10 +1480,7 @@ moduleFor(
         event = this.$('a').trigger('click')[0];
       });
 
-      // IE11 does not allow simulated events to have a valid `defaultPrevented`
-      if (!isIE11) {
-        this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
-      }
+      this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
     }
 
     ['@test it should target the proper component when `action` is in yielded block [GH #12409]']() {

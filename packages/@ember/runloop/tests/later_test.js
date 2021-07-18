@@ -1,5 +1,4 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { assign } from '@ember/polyfills';
 import { run, later, _backburner, _hasScheduledTimers, _getCurrentRunLoop } from '..';
 
 const originalSetTimeout = window.setTimeout;
@@ -226,7 +225,7 @@ moduleFor(
       // happens when an expired timer callback takes a while to run,
       // which is what we simulate here.
       let newSetTimeoutUsed;
-      _backburner._platform = assign({}, originalPlatform, {
+      _backburner._platform = Object.assign({}, originalPlatform, {
         setTimeout() {
           let wait = arguments[arguments.length - 1];
           newSetTimeoutUsed = true;

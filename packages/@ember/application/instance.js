@@ -2,7 +2,6 @@
 @module @ember/application
 */
 
-import { assign } from '@ember/polyfills';
 import { get, set, computed } from '@ember/-internals/metal';
 import * as environment from '@ember/-internals/browser-environment';
 import { jQuery } from '@ember/-internals/views';
@@ -202,7 +201,7 @@ const ApplicationInstance = EngineInstance.extend({
     let applicationCustomEvents = get(this.application, 'customEvents');
     let instanceCustomEvents = get(this, 'customEvents');
 
-    let customEvents = assign({}, applicationCustomEvents, instanceCustomEvents);
+    let customEvents = Object.assign({}, applicationCustomEvents, instanceCustomEvents);
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
@@ -498,7 +497,7 @@ class BootOptions {
 
   toEnvironment() {
     // Do we really want to assign all of this!?
-    let env = assign({}, environment);
+    let env = Object.assign({}, environment);
     // For compatibility with existing code
     env.hasDOM = this.isBrowser;
     env.isInteractive = this.isInteractive;

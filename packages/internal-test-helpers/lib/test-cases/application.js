@@ -1,7 +1,6 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
 import Application from '@ember/application';
 import { Router } from '@ember/-internals/routing';
-import { assign } from '@ember/polyfills';
 
 import { runTask, runLoopSettled } from '../run';
 
@@ -24,7 +23,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
   }
 
   get applicationOptions() {
-    return assign(super.applicationOptions, {
+    return Object.assign(super.applicationOptions, {
       autoboot: false,
     });
   }

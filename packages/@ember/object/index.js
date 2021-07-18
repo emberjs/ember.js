@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/env';
 import { assert, deprecate } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
 import { onComputedDotAccess } from '@ember/-internals/overrides';
 
@@ -273,7 +272,7 @@ function setupAction(target, key, actionFn) {
   if (!Object.prototype.hasOwnProperty.call(target, 'actions')) {
     let parentActions = target.actions;
     // we need to assign because of the way mixins copy actions down when inheriting
-    target.actions = parentActions ? assign({}, parentActions) : {};
+    target.actions = parentActions ? Object.assign({}, parentActions) : {};
   }
 
   target.actions[key] = actionFn;

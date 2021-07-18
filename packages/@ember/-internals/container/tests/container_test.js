@@ -1,5 +1,4 @@
 import { getOwner } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { Registry } from '..';
@@ -831,7 +830,7 @@ moduleFor(
       class Component {
         static create(options) {
           let instance = new this();
-          assign(instance, options);
+          Object.assign(instance, options);
           return instance;
         }
       }

@@ -1,7 +1,6 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { action } from '@ember/object';
-import { assign } from '@ember/polyfills';
 import { Checkbox, TextArea, TextField } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 import { TargetActionSupport } from '@ember/-internals/runtime';
@@ -71,7 +70,7 @@ class InputRenderingTest extends RenderingTestCase {
   triggerEvent(type, options, selector) {
     let event = document.createEvent('Events');
     event.initEvent(type, true, true);
-    assign(event, options);
+    Object.assign(event, options);
 
     let element = this.$(selector || 'input')[0];
     runTask(() => {

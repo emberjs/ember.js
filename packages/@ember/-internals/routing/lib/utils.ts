@@ -2,7 +2,6 @@ import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { deprecate } from '@ember/debug';
 import EmberError from '@ember/error';
-import { assign } from '@ember/polyfills';
 import Router, { STATE_SYMBOL } from 'router_js';
 import Route from './system/route';
 import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
@@ -182,7 +181,7 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
     }
 
     tmp = accum[key] || { as: null, scope: 'model' };
-    assign(tmp, singleDesc);
+    Object.assign(tmp, singleDesc);
 
     accum[key] = tmp;
   }

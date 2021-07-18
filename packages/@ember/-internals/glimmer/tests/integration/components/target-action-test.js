@@ -6,7 +6,6 @@ import {
   runTask,
 } from 'internal-test-helpers';
 
-import { assign } from '@ember/polyfills';
 import { set, Mixin } from '@ember/-internals/metal';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
@@ -45,7 +44,7 @@ moduleFor(
 
     renderDelegate(template = '{{action-delegate}}', context = {}) {
       let root = this;
-      context = assign(context, {
+      context = Object.assign(context, {
         send(actionName, ...args) {
           root.sendCount++;
           root.actionCounts[actionName] = root.actionCounts[actionName] || 0;

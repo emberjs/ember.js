@@ -16,7 +16,6 @@ import {
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
-import Logger from '@ember/-internals/console';
 import Controller, { inject as injectController } from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
@@ -100,7 +99,7 @@ import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
-import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
+import { EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 import {
   templateOnlyComponent,
@@ -135,22 +134,6 @@ import {
 // ****@ember/-internals/environment****
 
 const Ember = {};
-
-import { isIE } from '@ember/-internals/browser-environment';
-
-deprecate(
-  'Internet Explorer 11 will no longer be supported in the next major version of Ember. For details on the new browser support policy, see the official documentation: http://emberjs.com/browser-support',
-  !isIE,
-  {
-    id: '3-0-browser-support-policy',
-    url: 'https://deprecations.emberjs.com/v3.x#toc_3-0-browser-support-policy',
-    until: '4.0.0',
-    for: 'ember-source',
-    since: {
-      enabled: '3.26.0',
-    },
-  }
-);
 
 Ember.isNamespace = true;
 Ember.toString = function () {
@@ -375,11 +358,6 @@ Object.defineProperty(Ember, 'testing', {
 });
 
 Ember._Backburner = Backburner;
-
-// ****@ember/-internals/console****
-if (LOGGER) {
-  Ember.Logger = Logger;
-}
 
 // ****@ember/-internals/runtime****
 Ember.A = A;

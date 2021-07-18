@@ -1,5 +1,4 @@
 import { getOwner } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
@@ -67,7 +66,7 @@ export default EmberObject.extend({
     @type Object
     @private
   */
-  events: assign(
+  events: Object.assign(
     {
       touchstart: 'touchStart',
       touchmove: 'touchMove',
@@ -151,9 +150,9 @@ export default EmberObject.extend({
       })()
     );
 
-    let events = (this.finalEventNameMapping = assign({}, get(this, 'events'), addedEvents));
+    let events = (this.finalEventNameMapping = Object.assign({}, get(this, 'events'), addedEvents));
     this._reverseEventNameMapping = Object.keys(events).reduce(
-      (result, key) => assign(result, { [events[key]]: key }),
+      (result, key) => Object.assign(result, { [events[key]]: key }),
       {}
     );
     let lazyEvents = this.lazyEvents;

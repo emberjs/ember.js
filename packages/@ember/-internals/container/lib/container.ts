@@ -1,7 +1,6 @@
 import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { dictionary, HAS_NATIVE_PROXY, HAS_NATIVE_SYMBOL, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry, Injection } from './registry';
 
@@ -586,7 +585,7 @@ class FactoryManager<T, C> {
     }
 
     if (options !== undefined) {
-      props = assign({}, props, options);
+      props = Object.assign({}, props, options);
     }
 
     if (DEBUG) {
