@@ -360,7 +360,6 @@ export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/
 // TODO just test these through public API
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
-export { INVOKE } from './lib/helpers/action';
 export { default as OutletView } from './lib/views/outlet';
 export { OutletState } from './lib/utils/outlet';
 export {
