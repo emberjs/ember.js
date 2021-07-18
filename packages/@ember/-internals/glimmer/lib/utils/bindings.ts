@@ -1,8 +1,6 @@
 import { get } from '@ember/-internals/metal';
-import { assert, deprecate } from '@ember/debug';
-import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
+import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
-import { DEBUG } from '@glimmer/env';
 import { ElementOperations } from '@glimmer/interfaces';
 import {
   childRefFor,
@@ -10,12 +8,9 @@ import {
   createComputeRef,
   createPrimitiveRef,
   Reference,
-  UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { logTrackingStack } from '@glimmer/validator';
 import { Component } from './curly-component-state-bucket';
-import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
 function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';
@@ -80,65 +75,7 @@ export function installAttributeBinding(
     !(isSimple && isPath)
   );
 
-  if (EMBER_COMPONENT_IS_VISIBLE && attribute === 'style' && createStyleBindingRef !== undefined) {
-    reference = createStyleBindingRef(reference, childRefFor(rootRef, 'isVisible'));
-  }
-
   operations.setAttribute(attribute, reference, false, null);
-}
-
-const DISPLAY_NONE = 'display: none;';
-const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
-
-let createStyleBindingRef:
-  | undefined
-  | ((inner: Reference, isVisible: Reference) => Reference<string | SafeString>);
-
-export let installIsVisibleBinding:
-  | undefined
-  | ((rootRef: Reference<Component>, operations: ElementOperations) => void);
-
-if (EMBER_COMPONENT_IS_VISIBLE) {
-  createStyleBindingRef = (inner: Reference, isVisibleRef: Reference) => {
-    return createComputeRef(() => {
-      let value = valueForRef(inner);
-      let isVisible = valueForRef(isVisibleRef);
-
-      if (DEBUG && isVisible !== undefined) {
-        deprecate(
-          `The \`isVisible\` property on classic component classes is deprecated. Was accessed:\n\n${logTrackingStack!()}`,
-          false,
-          {
-            id: 'ember-component.is-visible',
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-is-visible',
-            for: 'ember-source',
-            since: {
-              enabled: '3.15.0-beta.1',
-            },
-          }
-        );
-      }
-
-      if (isVisible !== false) {
-        return value as string;
-      } else if (!value) {
-        return SAFE_DISPLAY_NONE;
-      } else {
-        let style = value + ' ' + DISPLAY_NONE;
-        return isHTMLSafe(value) ? htmlSafe(style) : style;
-      }
-    });
-  };
-
-  installIsVisibleBinding = (rootRef: Reference<Component>, operations: ElementOperations) => {
-    operations.setAttribute(
-      'style',
-      createStyleBindingRef!(UNDEFINED_REFERENCE, childRefFor(rootRef, 'isVisible')),
-      false,
-      null
-    );
-  };
 }
 
 export function createClassNameBindingRef(

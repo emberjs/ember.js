@@ -2,7 +2,6 @@ import { Factory, getOwner, Owner, setOwner } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor, symbol } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
-import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -47,7 +46,6 @@ import {
   createClassNameBindingRef,
   createSimpleClassNameBindingRef,
   installAttributeBinding,
-  installIsVisibleBinding,
   parseAttributeBinding,
 } from '../utils/bindings';
 
@@ -102,14 +100,6 @@ function applyAttributeBindings(
   if (seen.indexOf('id') === -1) {
     let id = component.elementId ? component.elementId : guidFor(component);
     operations.setAttribute('id', createPrimitiveRef(id), false, null);
-  }
-
-  if (
-    EMBER_COMPONENT_IS_VISIBLE &&
-    installIsVisibleBinding !== undefined &&
-    seen.indexOf('style') === -1
-  ) {
-    installIsVisibleBinding(rootRef, operations);
   }
 }
 
@@ -390,9 +380,6 @@ export default class CurlyComponentManager
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
       operations.setAttribute('id', createPrimitiveRef(id), false, null);
-      if (EMBER_COMPONENT_IS_VISIBLE) {
-        installIsVisibleBinding!(rootRef, operations);
-      }
     }
 
     if (classRef) {

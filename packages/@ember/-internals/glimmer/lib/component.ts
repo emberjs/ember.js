@@ -1091,16 +1091,6 @@ const Component = CoreView.extend(
       @type String
       @public
     */
-
-    /**
-     If `false`, the view will appear hidden in DOM.
-
-     @property isVisible
-     @type Boolean
-     @default null
-     @deprecated Use `<div hidden={{this.isHidden}}>` or `{{#if this.showComponent}} <MyComponent /> {{/if}}`
-     @public
-     */
   }
 );
 
