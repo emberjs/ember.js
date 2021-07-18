@@ -253,7 +253,7 @@ export function deprecateTransitionMethods(frameworkClass: string, methodName: s
       since: {
         enabled: '3.26.0',
       },
-      until: '4.0.0',
+      until: '5.0.0',
       url: 'https://deprecations.emberjs.com/v3.x/#toc_routing-transition-methods',
     }
   );

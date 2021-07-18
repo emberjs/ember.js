@@ -138,7 +138,7 @@ class LinkTo extends InternalComponent implements DeprecatingInternalComponent {
       return;
     }
 
-    let element = event.target;
+    let element = event.currentTarget;
     assert('[BUG] must be an <a> element', element instanceof HTMLAnchorElement);
 
     let isSelf = element.target === '' || element.target === '_self';

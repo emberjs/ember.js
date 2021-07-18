@@ -78,6 +78,7 @@ export interface SimpleHelper<T = unknown> {
   Additionally, class helpers can call `recompute` to force a new computation.
 
   @class Helper
+  @extends CoreObject
   @public
   @since 1.13.0
 */
