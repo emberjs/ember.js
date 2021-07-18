@@ -80,17 +80,6 @@ class ComponentManagerTest extends RenderingTestCase {
 moduleFor(
   'Component Manager - Curly Invocation',
   class extends ComponentManagerTest {
-    ['@test the string based version of setComponentManager is deprecated']() {
-      expectDeprecation(() => {
-        setComponentManager(
-          'basic',
-          EmberObject.extend({
-            greeting: 'hello',
-          })
-        );
-      }, 'Passing the name of the component manager to "setupComponentManager" is deprecated. Please pass a function that produces an instance of the manager.');
-    }
-
     ['@test it can render a basic component with custom component manager']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
