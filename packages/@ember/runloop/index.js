@@ -2,6 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import { assert, deprecate } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
+import { onRunloopDotAccess } from '@ember/-internals/overrides';
 import Backburner from 'backburner';
 
 let currentRunLoop = null;
@@ -743,22 +744,18 @@ export function throttle() {
 
 export let _deprecatedGlobalGetCurrentRunLoop;
 
-export let _onDotAccess;
-
 // eslint-disable-next-line no-undef
 if (DEBUG) {
-  let _callback = (dotKey, importKey, module) => {
+  let defaultHandler = (dotKey, importKey, module) => {
     return `Using \`${dotKey}\` has been deprecated. Instead, import the value directly from ${module}:\n\n  import { ${importKey} } from '${module}';`;
   };
 
-  _onDotAccess = (callback) => {
-    _callback = callback;
-  };
+  let handler = onRunloopDotAccess || defaultHandler;
 
   let defineDeprecatedRunloopFunc = (key, func) => {
     Object.defineProperty(run, key, {
       get() {
-        let message = _callback(`run.${key}`, key, '@ember/runloop');
+        let message = handler(`run.${key}`, key, '@ember/runloop');
 
         deprecate(message, message === null, {
           id: 'deprecated-run-loop-and-computed-dot-access',
@@ -775,7 +772,7 @@ if (DEBUG) {
   };
 
   _deprecatedGlobalGetCurrentRunLoop = () => {
-    let message = _callback('run.currentRunLoop', 'getCurrentRunLoop', '@ember/runloop');
+    let message = handler('run.currentRunLoop', 'getCurrentRunLoop', '@ember/runloop');
 
     deprecate(message, message === null, {
       id: 'deprecated-run-loop-and-computed-dot-access',

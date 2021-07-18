@@ -350,6 +350,30 @@ moduleFor(
       assert.equal(theLink.attr('href'), '/?foo=ASL');
     }
 
+    async ['@test supplied QP properties can be bound in legacy components'](assert) {
+      expectDeprecation(/Passing the `@tagName` argument to/);
+
+      this.addTemplate(
+        'index',
+        `
+          <LinkTo @tagName="a" id="the-link" @query={{hash foo=this.boundThing}}>
+            Index
+          </LinkTo>
+        `
+      );
+
+      await this.visit('/');
+
+      let indexController = this.getController('index');
+      let theLink = this.$('#the-link');
+
+      assert.equal(theLink.attr('href'), '/?foo=OMG');
+
+      runTask(() => indexController.set('boundThing', 'ASL'));
+
+      assert.equal(theLink.attr('href'), '/?foo=ASL');
+    }
+
     async ['@test supplied QP properties can be bound (booleans)'](assert) {
       this.addTemplate(
         'index',
