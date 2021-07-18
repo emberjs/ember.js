@@ -219,6 +219,60 @@ moduleFor(
       this.assertText('Godfrey Chan');
     }
 
+    ['@test works with computeds on non-defined properties']() {
+      let instance;
+
+      let FooBarComponent = Component.extend({
+        init() {
+          this._super(...arguments);
+
+          if (HAS_NATIVE_PROXY) {
+            expectDeprecation(() => {
+              set(this.hash, 'lastName', 'Hietala');
+            }, /You set the '.*' property on a {{hash}} object/);
+          } else {
+            set(this.hash, 'lastName', 'Hietala');
+          }
+
+          instance = this;
+        },
+
+        fullName: computed('hash.firstName', 'hash.lastName', function () {
+          return `${this.hash.firstName} ${this.hash.lastName}`;
+        }),
+      });
+
+      this.registerComponent('foo-bar', {
+        ComponentClass: FooBarComponent,
+        template: `{{this.fullName}}`,
+      });
+
+      this.render(`{{foo-bar hash=(hash firstName=this.firstName)}}`, {
+        firstName: 'Chad',
+        lastName: 'Hietala',
+      });
+
+      this.assertText('Chad Hietala');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Chad Hietala');
+
+      runTask(() => {
+        set(this.context, 'firstName', 'Godfrey');
+
+        if (HAS_NATIVE_PROXY) {
+          expectDeprecation(() => {
+            set(instance.hash, 'lastName', 'Chan');
+          }, /You set the '.*' property on a {{hash}} object/);
+        } else {
+          set(instance.hash, 'lastName', 'Chan');
+        }
+      });
+
+      this.assertText('Godfrey Chan');
+    }
+
     ['@test works when properties are set dynamically']() {
       let fooBarInstance;
       let FooBarComponent = Component.extend({
