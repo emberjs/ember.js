@@ -23,8 +23,10 @@
   ```
 
   @public
+  @static
   @method templateOnly
   @param {String} moduleName the module name that the template only component represents, this will be used for debugging purposes
+  @for @ember/component/template-only
   @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
 export { templateOnlyComponent as default } from '@glimmer/runtime';
