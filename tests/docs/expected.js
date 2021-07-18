@@ -571,7 +571,6 @@ module.exports = {
     'trigger',
     'triggerAction',
     'triggerEvent',
-    'tryInvoke',
     'trySet',
     'type',
     'typeInjection',
