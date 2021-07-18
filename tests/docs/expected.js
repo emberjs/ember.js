@@ -613,7 +613,6 @@ module.exports = {
     'willRender',
     'willTransition',
     'willUpdate',
-    'with',
     'without',
     'wrap',
     'wrapModelType',

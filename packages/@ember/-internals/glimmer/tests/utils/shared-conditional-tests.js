@@ -217,7 +217,7 @@ class ObjectProxyGenerator extends AbstractGenerator {
 }
 
 // Testing behaviors shared across all conditionals, i.e. {{#if}}, {{#unless}},
-// {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+// {{#each}}, {{#each-in}}, (if) and (unless)
 export class BasicConditionalsTest extends AbstractConditionalsTest {
   ['@test it renders the corresponding block based on the conditional']() {
     this.renderValues(this.truthyValue, this.falsyValue);
@@ -461,7 +461,7 @@ const IfUnlessWithTestCases = [
 ];
 
 // Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
-// {{#unless}}, {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+// {{#unless}}, {{#each}}, {{#each-in}}, (if) and (unless)
 export class TogglingConditionalsTest extends BasicConditionalsTest {}
 
 // Testing behaviors shared across the (if) and (unless) helpers
@@ -632,7 +632,7 @@ export class IfUnlessHelperTest extends TogglingHelperConditionalsTest {}
 applyMixins(IfUnlessHelperTest, ...IfUnlessWithTestCases);
 
 // Testing behaviors shared across the "toggling" syntatical constructs,
-// i.e. {{#if}}, {{#unless}}, {{#with}}, {{#each}} and {{#each-in}}
+// i.e. {{#if}}, {{#unless}}, {{#each}} and {{#each-in}}
 export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   renderValues(...values) {
     let templates = [];

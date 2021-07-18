@@ -89,34 +89,6 @@
  */
 
 /**
-  Use the `{{with}}` helper when you want to alias a property to a new name. This is helpful
-  for semantic clarity as it allows you to retain default scope or to reference a property from another
-  `{{with}}` block.
-
-  If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0`, `NaN` or
-  an empty array, the block will not be rendered.
-
-  ```app/templates/application.hbs
-  {{! Will only render if user.posts contains items}}
-  {{#with @model.posts as |blogPosts|}}
-    <div class="notice">
-      There are {{blogPosts.length}} blog posts written by {{@model.name}}.
-    </div>
-    {{#each blogPosts as |post|}}
-      <li>{{post.title}}</li>
-    {{/each}}
-  {{/with}}
-  ```
-
-  @method with
-  @for Ember.Templates.helpers
-  @param {Object} options
-  @return {String} HTML string
-  @deprecated Use '{{#let}}' instead
-  @public
- */
-
-/**
   `{{yield}}` denotes an area of a template that will be rendered inside
   of another template.
 
