@@ -98,7 +98,7 @@ import Resolver from '@ember/application/globals-resolver';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
-import { assign, merge } from '@ember/polyfills';
+import { assign } from '@ember/polyfills';
 import { EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 import {
@@ -211,7 +211,6 @@ Ember.EngineInstance = EngineInstance;
 
 // ****@ember/polyfills****
 Ember.assign = assign;
-Ember.merge = merge;
 
 // ****@ember/-internals/utils****
 Ember.generateGuid = utils.generateGuid;
