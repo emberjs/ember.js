@@ -361,29 +361,6 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     value: false,
   });
 
-  Object.defineProperty(TextSupport, 'reopen', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopen(...args) {
-      if (this === TextSupport) {
-        deprecate('Reopening Ember.TextSupport is deprecated.', false, {
-          id: 'ember.built-in-components.reopen',
-          for: 'ember-source',
-          since: {
-            enabled: '3.27.0',
-          },
-          until: '4.0.0',
-          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-        });
-
-        TextSupport._wasReopened = true;
-      }
-
-      return Mixin.prototype.reopen.call(this, ...args);
-    },
-  });
-
   if (DEBUG) {
     Object.seal(TextSupport);
     Mixin._disableDebugSeal = false;

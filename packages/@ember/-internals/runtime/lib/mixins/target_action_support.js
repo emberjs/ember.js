@@ -5,7 +5,7 @@
 import { context } from '@ember/-internals/environment';
 import { get, Mixin, computed } from '@ember/-internals/metal';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 if (DEBUG && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
@@ -159,29 +159,6 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     enumerable: false,
     writable: true,
     value: false,
-  });
-
-  Object.defineProperty(TargetActionSupport, 'reopen', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopen(...args) {
-      if (this === TargetActionSupport) {
-        deprecate('Reopening Ember.TargetActionSupport is deprecated.', false, {
-          id: 'ember.built-in-components.reopen',
-          for: 'ember-source',
-          since: {
-            enabled: '3.27.0',
-          },
-          until: '4.0.0',
-          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-        });
-
-        TargetActionSupport._wasReopened = true;
-      }
-
-      return Mixin.prototype.reopen.call(this, ...args);
-    },
   });
 
   if (DEBUG) {

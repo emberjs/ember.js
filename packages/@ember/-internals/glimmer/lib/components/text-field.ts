@@ -3,10 +3,7 @@
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { computed } from '@ember/-internals/metal';
-import { CoreObject } from '@ember/-internals/runtime';
 import { TextSupport } from '@ember/-internals/views';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { deprecate } from '@ember/debug';
 import Component from '../component';
 import layout from '../templates/empty';
 
@@ -203,70 +200,5 @@ const TextField = Component.extend(TextSupport, {
 });
 
 TextField.toString = () => '@ember/component/text-field';
-
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  Object.defineProperty(TextField, '_wasReopened', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: false,
-  });
-
-  Object.defineProperty(TextField, 'reopen', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopen(this: typeof TextField, ...args: unknown[]): unknown {
-      if (this === TextField) {
-        deprecate(
-          'Reopening Ember.TextField is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-          }
-        );
-
-        TextField._wasReopened = true;
-      }
-
-      return CoreObject.reopen.call(this, ...args);
-    },
-  });
-
-  Object.defineProperty(TextField, 'reopenClass', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopenClass(this: typeof TextField, ...args: unknown[]): unknown {
-      if (this === TextField) {
-        deprecate(
-          'Reopening Ember.TextField is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-          }
-        );
-
-        TextField._wasReopened = true;
-      }
-
-      return CoreObject.reopenClass.call(this, ...args);
-    },
-  });
-}
 
 export default TextField;

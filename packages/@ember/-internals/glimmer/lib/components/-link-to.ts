@@ -5,9 +5,7 @@
 import { alias, computed } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import RouterState from '@ember/-internals/routing/lib/system/router_state';
-import { CoreObject } from '@ember/-internals/runtime';
 import { isSimpleClick } from '@ember/-internals/views';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate, runInDebug, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
@@ -1010,73 +1008,6 @@ const LinkComponent = EmberComponent.extend({
 
 LinkComponent.toString = () => '@ember/routing/link-component';
 
-LinkComponent.reopenClass({
-  positionalParams: 'params',
-});
-
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  Object.defineProperty(LinkComponent, '_wasReopened', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: false,
-  });
-
-  Object.defineProperty(LinkComponent, 'reopen', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopen(this: typeof LinkComponent, ...args: unknown[]): unknown {
-      if (this === LinkComponent) {
-        deprecate(
-          'Reopening Ember.LinkComponent is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-          }
-        );
-
-        LinkComponent._wasReopened = true;
-      }
-
-      return CoreObject.reopen.call(this, ...args);
-    },
-  });
-
-  Object.defineProperty(LinkComponent, 'reopenClass', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopenClass(this: typeof LinkComponent, ...args: unknown[]): unknown {
-      if (this === LinkComponent) {
-        deprecate(
-          'Reopening Ember.LinkComponent is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-          }
-        );
-
-        LinkComponent._wasReopened = true;
-      }
-
-      return CoreObject.reopenClass.call(this, ...args);
-    },
-  });
-}
+LinkComponent.positionalParams = 'params';
 
 export default LinkComponent;

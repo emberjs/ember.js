@@ -1597,10 +1597,5 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
         this.assertDeopt(false, false);
       };
     }
-
-    moduleFor(
-      `Components test: [DEPRECATED] <Input /> and <Textarea /> deopt (${label})`,
-      DeoptTest
-    );
   });
 }

@@ -1,7 +1,5 @@
 import { set } from '@ember/-internals/metal';
-import { FrameworkObject } from '@ember/-internals/runtime';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent from '../component';
 import layout from '../templates/empty';
@@ -159,70 +157,5 @@ if (DEBUG) {
 }
 
 Checkbox.toString = () => '@ember/component/checkbox';
-
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  Object.defineProperty(Checkbox, '_wasReopened', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: false,
-  });
-
-  Object.defineProperty(Checkbox, 'reopen', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopen(this: typeof Checkbox, ...args: unknown[]): unknown {
-      if (this === Checkbox) {
-        deprecate(
-          'Reopening Ember.Checkbox is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-          }
-        );
-
-        Checkbox._wasReopened = true;
-      }
-
-      return FrameworkObject.reopen.call(this, ...args);
-    },
-  });
-
-  Object.defineProperty(Checkbox, 'reopenClass', {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: function reopenClass(this: typeof Checkbox, ...args: unknown[]): unknown {
-      if (this === Checkbox) {
-        deprecate(
-          'Reopening Ember.Checkbox is deprecated. Consider implementing your own ' +
-            'wrapper component or create a custom subclass.',
-          false,
-          {
-            id: 'ember.built-in-components.reopen',
-            for: 'ember-source',
-            since: {
-              enabled: '3.27.0',
-            },
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-reopen',
-          }
-        );
-
-        Checkbox._wasReopened = true;
-      }
-
-      return FrameworkObject.reopenClass.call(this, ...args);
-    },
-  });
-}
 
 export default Checkbox;
