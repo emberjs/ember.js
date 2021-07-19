@@ -201,27 +201,6 @@ import layout from '../templates/-link-to';
   When transitioning into the linked route, the `model` hook will
   be triggered with parameters including this passed identifier.
 
-  ### Supplying a `tagName`
-
-  By default `<LinkTo>` renders an `<a>` element. This can be overridden for a single use of
-  `<LinkTo>` by supplying a `tagName` argument:
-
-  ```handlebars
-  <LinkTo @route='photoGallery' @tagName='li'>
-    Great Hamster Photos
-  </LinkTo>
-  ```
-
-  This produces:
-
-  ```html
-  <li>
-    Great Hamster Photos
-  </li>
-  ```
-
-  In general, this is not recommended.
-
   ### Supplying query parameters
 
   If you need to add optional key-value pairs that appear to the right of the ? in a URL,
@@ -791,9 +770,6 @@ const LinkComponent = EmberComponent.extend({
     Sets the element's `href` attribute to the url for
     the `LinkComponent`'s targeted route.
 
-    If the `LinkComponent`'s `tagName` is changed to a value other
-    than `a`, this property will be ignored.
-
     @property href
     @private
   */
@@ -802,14 +778,9 @@ const LinkComponent = EmberComponent.extend({
     '_route',
     '_models',
     '_query',
-    'tagName',
     'loading',
     'loadingHref',
     function computeLinkToComponentHref(this: any) {
-      if (this.tagName !== 'a') {
-        return;
-      }
-
       if (this.loading) {
         return this.loadingHref;
       }
@@ -869,7 +840,6 @@ const LinkComponent = EmberComponent.extend({
 
   /**
     The default href value to use while a link-to is loading.
-    Only applies when tagName is 'a'
 
     @property loadingHref
     @type String

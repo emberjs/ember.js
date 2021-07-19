@@ -418,40 +418,6 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     });
   }
 
-  // @tagName
-  {
-    let superOnUnsupportedArgument = prototype['onUnsupportedArgument'];
-
-    Object.defineProperty(prototype, 'onUnsupportedArgument', {
-      configurable: true,
-      enumerable: false,
-      value: function onUnsupportedArgument(this: LinkTo, name: string): void {
-        if (name === 'tagName') {
-          let tagName = this.named('tagName');
-
-          deprecate(
-            `Passing the \`@tagName\` argument to <LinkTo> is deprecated. Using a <${tagName}> ` +
-              'element for navigation is not recommended as it creates issues with assistive ' +
-              'technologies. Remove this argument to use the default <a> element. In the rare ' +
-              'cases that calls for using a different element, refactor to use the router ' +
-              'service inside a custom event handler instead.',
-            false,
-            {
-              id: 'ember.link-to.tag-name',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-            }
-          );
-
-          this.modernized = false;
-        } else {
-          superOnUnsupportedArgument.call(this, name);
-        }
-      },
-    });
-  }
-
   // @bubbles & @preventDefault
   {
     let superIsSupportedArgument = prototype['isSupportedArgument'];
