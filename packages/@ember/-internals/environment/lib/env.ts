@@ -1,4 +1,3 @@
-import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import global from './global';
 
@@ -220,16 +219,10 @@ export const ENV = {
   if (EXTEND_PROTOTYPES !== undefined) {
     if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {
       ENV.EXTEND_PROTOTYPES.String = EXTEND_PROTOTYPES.String !== false;
-      if (FUNCTION_PROTOTYPE_EXTENSIONS) {
-        ENV.EXTEND_PROTOTYPES.Function = EXTEND_PROTOTYPES.Function !== false;
-      }
       ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES.Array !== false;
     } else {
       let isEnabled = EXTEND_PROTOTYPES !== false;
       ENV.EXTEND_PROTOTYPES.String = isEnabled;
-      if (FUNCTION_PROTOTYPE_EXTENSIONS) {
-        ENV.EXTEND_PROTOTYPES.Function = isEnabled;
-      }
       ENV.EXTEND_PROTOTYPES.Array = isEnabled;
     }
   }
@@ -259,6 +252,6 @@ export const ENV = {
   }
 })(global.EmberENV);
 
-export function getENV() {
+export function getENV(): object {
   return ENV;
 }
