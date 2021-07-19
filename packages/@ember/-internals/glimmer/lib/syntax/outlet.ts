@@ -33,28 +33,6 @@ import { OutletState } from '../utils/outlet';
   <MyFooter />
   ```
 
-  You may also specify a name for the `{{outlet}}`, which is useful when using more than one
-  `{{outlet}}` in a template:
-
-  ```app/templates/application.hbs
-  {{outlet "menu"}}
-  {{outlet "sidebar"}}
-  {{outlet "main"}}
-  ```
-
-  Your routes can then render into a specific one of these `outlet`s by specifying the `outlet`
-  attribute in your `renderTemplate` function:
-
-  ```app/routes/menu.js
-  import Route from '@ember/routing/route';
-
-  export default class MenuRoute extends Route {
-    renderTemplate() {
-      this.render({ outlet: 'menu' });
-    }
-  }
-  ```
-
   See the [routing guide](https://guides.emberjs.com/release/routing/rendering-a-template/) for more
   information on how your `route` interacts with the `{{outlet}}` helper.
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.

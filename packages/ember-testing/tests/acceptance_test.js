@@ -50,7 +50,7 @@ if (!jQueryDisabled) {
           this.add(
             'route:posts',
             Route.extend({
-              renderTemplate() {
+              setupController() {
                 testContext.currentRoute = 'posts';
                 this._super(...arguments);
               },
@@ -72,7 +72,7 @@ if (!jQueryDisabled) {
           this.add(
             'route:comments',
             Route.extend({
-              renderTemplate() {
+              setupController() {
                 testContext.currentRoute = 'comments';
                 this._super(...arguments);
               },
@@ -125,8 +125,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test helpers can be chained with then`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(7);
+        assert.expect(6);
 
         window
           .visit('/posts')
@@ -165,8 +164,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test helpers can be chained to each other (legacy)`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(8);
+        assert.expect(7);
 
         window
           .visit('/posts')
@@ -194,8 +192,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test helpers don't need to be chained`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(6);
+        assert.expect(5);
 
         window.visit('/posts');
 
@@ -222,8 +219,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Nested async helpers`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(6);
+        assert.expect(5);
 
         window.visit('/posts');
 
@@ -251,8 +247,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Multiple nested async helpers`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(4);
+        assert.expect(3);
 
         window.visit('/posts');
 
@@ -275,8 +270,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Helpers nested in thens`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(6);
+        assert.expect(5);
 
         window.visit('/posts').then(() => {
           window.click('a:first', '#comments-link');
@@ -317,8 +311,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Unhandled exceptions are logged via Ember.Test.adapter#exception`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(3);
+        assert.expect(2);
 
         console.error = () => {}; // eslint-disable-line no-console
         let asyncHandled;
@@ -350,8 +343,7 @@ if (!jQueryDisabled) {
       [`@test Unhandled exceptions in 'andThen' are logged via Ember.Test.adapter#exception`](
         assert
       ) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(2);
+        assert.expect(1);
 
         console.error = () => {}; // eslint-disable-line no-console
         Test.adapter = QUnitAdapter.create({
@@ -372,8 +364,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test should not start routing on the root URL when visiting another`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(5);
+        assert.expect(4);
 
         window.visit('/posts');
 
@@ -436,8 +427,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test visiting a URL that causes another transition should yield the correct URL`](assert) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(3);
+        assert.expect(2);
 
         window.visit('/redirect');
 
@@ -449,8 +439,7 @@ if (!jQueryDisabled) {
       [`@test visiting a URL and then visiting a second URL with a transition should yield the correct URL`](
         assert
       ) {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        assert.expect(4);
+        assert.expect(3);
 
         window.visit('/posts');
 

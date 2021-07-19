@@ -919,7 +919,6 @@ moduleFor(
     }
 
     ['@test Router accounts for rootURL on page load when using history location'](assert) {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       let rootURL = window.location.pathname + '/app';
       let postsTemplateRendered = false;
       let setHistory;
@@ -962,8 +961,9 @@ moduleFor(
         'route:posts',
         Route.extend({
           model() {},
-          renderTemplate() {
+          setupController() {
             postsTemplateRendered = true;
+            this._super(...arguments);
           },
         })
       );

@@ -203,53 +203,6 @@ moduleFor(
       });
     }
 
-    [`@test The route controller specified via controllerName is used in render`](assert) {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          controllerName: 'myController',
-          renderTemplate() {
-            expectDeprecation(
-              () => this.render('alternative_home'),
-              /Usage of `render` is deprecated/
-            );
-          },
-        })
-      );
-
-      this.add(
-        'controller:myController',
-        Controller.extend({
-          myValue: 'foo',
-        })
-      );
-
-      this.addTemplate('alternative_home', '<p>alternative home: {{this.myValue}}</p>');
-
-      return this.visit('/').then(() => {
-        let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup('controller:myController');
-        let text = this.$('p').text();
-
-        assert.equal(
-          homeRoute.controller,
-          myController,
-          'route controller is set by controllerName'
-        );
-
-        assert.equal(
-          text,
-          'alternative home: foo',
-          'The homepage template was rendered with data from the custom controller'
-        );
-      });
-    }
-
     [`@test The route controller specified via controllerName is used in render even when a controller with the routeName is available`](
       assert
     ) {
@@ -488,9 +441,7 @@ moduleFor(
     }
 
     ['@test Nested callbacks are not exited when moving to siblings'](assert) {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       let rootSetup = 0;
-      let rootRender = 0;
       let rootModel = 0;
       let rootSerialize = 0;
       let menuItem;
@@ -523,10 +474,6 @@ moduleFor(
 
           setupController() {
             rootSetup++;
-          },
-
-          renderTemplate() {
-            rootRender++;
           },
 
           serialize() {
@@ -563,7 +510,6 @@ moduleFor(
           'The app is now in the initial state'
         );
         assert.equal(rootSetup, 1, 'The root setup was triggered');
-        assert.equal(rootRender, 1, 'The root render was triggered');
         assert.equal(rootSerialize, 0, 'The root serialize was not called');
         assert.equal(rootModel, 1, 'The root model was called');
 
@@ -572,7 +518,6 @@ moduleFor(
 
         return router.transitionTo('special', menuItem).then(function () {
           assert.equal(rootSetup, 1, 'The root setup was not triggered again');
-          assert.equal(rootRender, 1, 'The root render was not triggered again');
           assert.equal(rootSerialize, 0, 'The root serialize was not called');
 
           // TODO: Should this be changed?

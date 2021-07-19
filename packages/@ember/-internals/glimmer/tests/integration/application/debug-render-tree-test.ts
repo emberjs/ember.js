@@ -1,6 +1,5 @@
 import {
   ApplicationTestCase,
-  expectDeprecation,
   ModuleBasedTestResolver,
   moduleFor,
   strip,
@@ -176,117 +175,6 @@ if (ENV._DEBUG_RENDER_TREE) {
                 children: [],
               }),
             ],
-          }),
-        ]);
-      }
-
-      async '@test named outlets'() {
-        expectDeprecation('Usage of `renderTemplate` is deprecated.');
-        this.addTemplate(
-          'application',
-          strip`
-            <div id="header">{{outlet "header"}}</div>
-            {{outlet}}
-          `
-        );
-        this.addTemplate('header', 'header');
-        this.addTemplate('index', 'index');
-
-        this.add(
-          'controller:index',
-          class extends Controller {
-            queryParams = ['showHeader'];
-            showHeader = false;
-          }
-        );
-
-        interface Model {
-          showHeader: boolean;
-        }
-
-        this.add(
-          'route:index',
-          class extends Route {
-            queryParams = {
-              showHeader: {
-                refreshModel: true,
-              },
-            };
-
-            model({ showHeader }: Model): Model {
-              return { showHeader };
-            }
-
-            setupController(controller: Controller, { showHeader }: Model): void {
-              controller.setProperties({ showHeader });
-            }
-
-            renderTemplate(_: Controller, { showHeader }: Model): void {
-              expectDeprecation(() => this.render(), /Usage of `render` is deprecated/);
-
-              if (showHeader) {
-                expectDeprecation(
-                  () => this.render('header', { outlet: 'header' }),
-                  /Usage of `render` is deprecated/
-                );
-              } else {
-                expectDeprecation(
-                  () => this.disconnectOutlet('header'),
-                  'The usage of `disconnectOutlet` is deprecated.'
-                );
-              }
-            }
-          }
-        );
-
-        await this.visit('/');
-
-        this.assertRenderTree([
-          this.outlet({
-            type: 'route-template',
-            name: 'index',
-            args: { positional: [], named: { model: { showHeader: false } } },
-            instance: this.controllerFor('index'),
-            template: 'my-app/templates/index.hbs',
-            bounds: this.nodeBounds(this.element.lastChild),
-            children: [],
-          }),
-        ]);
-
-        await this.visit('/?showHeader');
-
-        this.assertRenderTree([
-          this.outlet('header', {
-            type: 'route-template',
-            name: 'header',
-            args: { positional: [], named: { model: { showHeader: true } } },
-            instance: this.controllerFor('index'),
-            template: 'my-app/templates/header.hbs',
-            bounds: this.elementBounds(this.element.firstChild),
-            children: [],
-          }),
-          this.outlet({
-            type: 'route-template',
-            name: 'index',
-            args: { positional: [], named: { model: { showHeader: true } } },
-            instance: this.controllerFor('index'),
-            template: 'my-app/templates/index.hbs',
-            bounds: this.nodeBounds(this.element.lastChild),
-            children: [],
-          }),
-        ]);
-
-        await this.visit('/');
-
-        this.assertRenderTree([
-          this.outlet({
-            type: 'route-template',
-            name: 'index',
-            args: { positional: [], named: { model: { showHeader: false } } },
-            instance: this.controllerFor('index'),
-            template: 'my-app/templates/index.hbs',
-            bounds: this.nodeBounds(this.element.lastChild),
-            children: [],
           }),
         ]);
       }
