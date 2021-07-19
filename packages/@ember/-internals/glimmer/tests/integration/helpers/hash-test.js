@@ -225,13 +225,9 @@ moduleFor(
         init() {
           this._super(...arguments);
 
-          if (HAS_NATIVE_PROXY) {
-            expectDeprecation(() => {
-              set(this.hash, 'lastName', 'Hietala');
-            }, /You set the '.*' property on a {{hash}} object/);
-          } else {
+          expectDeprecation(() => {
             set(this.hash, 'lastName', 'Hietala');
-          }
+          }, /You set the '.*' property on a {{hash}} object/);
 
           instance = this;
         },
@@ -260,13 +256,9 @@ moduleFor(
       runTask(() => {
         set(this.context, 'firstName', 'Godfrey');
 
-        if (HAS_NATIVE_PROXY) {
-          expectDeprecation(() => {
-            set(instance.hash, 'lastName', 'Chan');
-          }, /You set the '.*' property on a {{hash}} object/);
-        } else {
+        expectDeprecation(() => {
           set(instance.hash, 'lastName', 'Chan');
-        }
+        }, /You set the '.*' property on a {{hash}} object/);
       });
 
       this.assertText('Godfrey Chan');
