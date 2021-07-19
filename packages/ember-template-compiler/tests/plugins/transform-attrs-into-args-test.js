@@ -5,29 +5,40 @@ moduleFor(
   'ember-template-compiler: transforming attrs into @args',
   class extends TransformTestCase {
     ['@test it transforms attrs into @args']() {
-      expectDeprecation(() => {
+      expectAssertion(() => {
         this.assertTransformed(`{{attrs.foo}}`, `{{@foo}}`);
-      }, /Using {{attrs}} to reference named arguments has been deprecated. {{attrs.foo}} should be updated to {{@foo}}./);
+      }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo}} should be updated to {{@foo}}./);
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         this.assertTransformed(`{{attrs.foo.bar}}`, `{{@foo.bar}}`);
-      }, /Using {{attrs}} to reference named arguments has been deprecated. {{attrs.foo.bar}} should be updated to {{@foo.bar}}./);
+      }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo.bar}} should be updated to {{@foo.bar}}./);
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         this.assertTransformed(`{{if attrs.foo "foo"}}`, `{{if @foo "foo"}}`);
-      }, /Using {{attrs}} to reference named arguments has been deprecated. {{attrs.foo}} should be updated to {{@foo}}./);
+      }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo}} should be updated to {{@foo}}./);
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         this.assertTransformed(`{{#if attrs.foo}}{{/if}}`, `{{#if @foo}}{{/if}}`);
-      }, /Using {{attrs}} to reference named arguments has been deprecated. {{attrs.foo}} should be updated to {{@foo}}./);
+      }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo}} should be updated to {{@foo}}./);
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         this.assertTransformed(`{{deeply (nested attrs.foo.bar)}}`, `{{deeply (nested @foo.bar)}}`);
-      }, /Using {{attrs}} to reference named arguments has been deprecated. {{attrs.foo.bar}} should be updated to {{@foo.bar}}./);
+      }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo.bar}} should be updated to {{@foo.bar}}./);
+    }
 
-      expectDeprecation(() => {
-        this.assertTransformed(`{{this.attrs.foo}}`, `{{@foo}}`);
-      }, /Using {{attrs}} to reference named arguments has been deprecated. {{attrs.foo}} should be updated to {{@foo}}./);
+    ['@test it transforms this.attrs into @args']() {
+      this.assertTransformed(`{{this.attrs.foo}}`, `{{@foo}}`);
+
+      this.assertTransformed(`{{this.attrs.foo.bar}}`, `{{@foo.bar}}`);
+
+      this.assertTransformed(`{{if this.attrs.foo "foo"}}`, `{{if @foo "foo"}}`);
+
+      this.assertTransformed(`{{#if this.attrs.foo}}{{/if}}`, `{{#if @foo}}{{/if}}`);
+
+      this.assertTransformed(
+        `{{deeply (nested this.attrs.foo.bar)}}`,
+        `{{deeply (nested @foo.bar)}}`
+      );
     }
   }
 );

@@ -1,4 +1,4 @@
-import { deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import { EmberASTPluginEnvironment } from '../types';
@@ -64,24 +64,17 @@ export default function transformAttrsIntoArgs(env: EmberASTPluginEnvironment): 
         if (isAttrs(node, stack[stack.length - 1])) {
           let path = b.path(node.original.substr(6)) as AST.PathExpression;
 
-          deprecate(
-            `Using {{attrs}} to reference named arguments has been deprecated. {{attrs.${
-              path.original
-            }}} should be updated to {{@${path.original}}}. ${calculateLocationDisplay(
-              moduleName,
-              node.loc
-            )}`,
-            false,
-            {
-              id: 'attrs-arg-access',
-              url: 'https://deprecations.emberjs.com/v3.x/#toc_attrs-arg-access',
-              until: '4.0.0',
-              for: 'ember-source',
-              since: {
-                enabled: '3.26.0',
-              },
-            }
-          );
+          if (node.this === false) {
+            assert(
+              `Using {{attrs}} to reference named arguments is not supported. {{attrs.${
+                path.original
+              }}} should be updated to {{@${path.original}}}. ${calculateLocationDisplay(
+                moduleName,
+                node.loc
+              )}`,
+              false
+            );
+          }
 
           path.original = `@${path.original}`;
           path.data = true;
