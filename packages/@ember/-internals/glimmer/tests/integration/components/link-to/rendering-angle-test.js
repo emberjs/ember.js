@@ -171,6 +171,12 @@ moduleFor(
         content: 'Go to Index',
       });
     }
+
+    ['@test it should throw an error if `tagName` is passed in']() {
+      expectAssertion(() => {
+        this.render(`<LinkTo @route='index' @tagName='button'>Go to Index</LinkTo>`);
+      }, /Passing the `@tagName` argument to <LinkTo> is not supported./);
+    }
   }
 );
 

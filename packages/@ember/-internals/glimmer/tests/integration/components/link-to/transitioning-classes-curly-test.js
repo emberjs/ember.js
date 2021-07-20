@@ -1,6 +1,5 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 function assertHasClass(assert, selector, label) {
@@ -190,13 +189,13 @@ moduleFor(
         'application',
         `
         {{outlet}}
-        {{#link-to route='index' tagName='li'}}
+        {{#link-to route='index'}}
           <div id='index-link'>{{#link-to route='index'}}Index{{/link-to}}</div>
         {{/link-to}}
-        {{#link-to route='parent-route.about' tagName='li'}}
+        {{#link-to route='parent-route.about'}}
           <div id='about-link'>{{#link-to route='parent-route.about'}}About{{/link-to}}</div>
         {{/link-to}}
-        {{#link-to route='parent-route.other' tagName='li'}}
+        {{#link-to route='parent-route.other'}}
           <div id='other-link'>{{#link-to route='parent-route.other'}}Other{{/link-to}}</div>
         {{/link-to}}
         `
@@ -204,11 +203,7 @@ moduleFor(
     }
 
     async beforeEach() {
-      return expectDeprecationAsync(
-        () => this.visit('/'),
-        /Passing the `@tagName` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
+      return this.visit('/');
     }
 
     resolveAbout() {

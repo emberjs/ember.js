@@ -80,6 +80,11 @@ class LinkTo extends InternalComponent implements DeprecatingInternalComponent {
       !('model' in this.args.named && 'models' in this.args.named)
     );
 
+    assert(
+      'Passing the `@tagName` argument to <LinkTo> is not supported.',
+      !('tagName' in this.args.named)
+    );
+
     super.validateArguments();
   }
 

@@ -133,25 +133,6 @@ moduleFor(
       );
     }
 
-    async [`@test [DEPRECATED] it doesn't add an href when the tagName isn't 'a'`](assert) {
-      this.addTemplate(
-        'index',
-        `<div id='about-link'>{{#link-to route='about' tagName='div'}}About{{/link-to}}</div>`
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /Passing the `@tagName` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assert.strictEqual(
-        this.$('#about-link > div').attr('href'),
-        null,
-        'there is no href attribute'
-      );
-    }
-
     async [`@test it applies a 'disabled' class when disabled`](assert) {
       this.addTemplate(
         'index',

@@ -351,12 +351,10 @@ moduleFor(
     }
 
     async ['@test supplied QP properties can be bound in legacy components'](assert) {
-      expectDeprecation(/Passing the `@tagName` argument to/);
-
       this.addTemplate(
         'index',
         `
-          <LinkTo @tagName="a" id="the-link" @query={{hash foo=this.boundThing}}>
+          <LinkTo id="the-link" @query={{hash foo=this.boundThing}}>
             Index
           </LinkTo>
         `
