@@ -10,7 +10,7 @@ import Route from '../system/route';
 import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
-const ROUTER = symbol('ROUTER') as string;
+const ROUTER = (symbol('ROUTER') as unknown) as string;
 
 function cleanURL(url: string, rootURL: string) {
   if (rootURL === '/') {

@@ -21,7 +21,7 @@ export interface DeprecationOptions {
 }
 
 export type DeprecateFunc = (message: string, test?: boolean, options?: DeprecationOptions) => void;
-export type MissingOptionDeprecateFunc = (id: string) => string;
+export type MissingOptionDeprecateFunc = (id: string, missingOption: string) => string;
 
 /**
  @module @ember/debug
@@ -68,12 +68,8 @@ export type MissingOptionDeprecateFunc = (id: string) => string;
 let registerHandler: (handler: HandlerCallback) => void = () => {};
 let missingOptionsDeprecation: string;
 let missingOptionsIdDeprecation: string;
-let missingOptionsUntilDeprecation: string;
-let missingOptionsForDeprecation: MissingOptionDeprecateFunc = () => '';
-let missingOptionsSinceDeprecation: MissingOptionDeprecateFunc = () => '';
+let missingOptionDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
-let FOR_MISSING_DEPRECATIONS = new Set();
-let SINCE_MISSING_DEPRECATIONS = new Set();
 
 if (DEBUG) {
   registerHandler = function registerHandler(handler: HandlerCallback) {
@@ -162,13 +158,9 @@ if (DEBUG) {
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include `id` and `until` properties.';
   missingOptionsIdDeprecation = 'When calling `deprecate` you must provide `id` in options.';
-  missingOptionsUntilDeprecation = 'When calling `deprecate` you must provide `until` in options.';
 
-  missingOptionsForDeprecation = (id: string) => {
-    return `When calling \`deprecate\` you must provide \`for\` in options. Missing options.for in "${id}" deprecation`;
-  };
-  missingOptionsSinceDeprecation = (id: string) => {
-    return `When calling \`deprecate\` you must provide \`since\` in options. Missing options.since in "${id}" deprecation`;
+  missingOptionDeprecation = (id: string, missingOption: string): string => {
+    return `When calling \`deprecate\` you must provide \`${missingOption}\` in options. Missing options.${missingOption} in "${id}" deprecation`;
   };
   /**
    @module @ember/debug
@@ -203,33 +195,9 @@ if (DEBUG) {
   deprecate = function deprecate(message, test, options) {
     assert(missingOptionsDeprecation, Boolean(options && (options.id || options.until)));
     assert(missingOptionsIdDeprecation, Boolean(options!.id));
-    assert(missingOptionsUntilDeprecation, Boolean(options!.until));
-
-    if (!options!.for && !FOR_MISSING_DEPRECATIONS.has(options!.id)) {
-      FOR_MISSING_DEPRECATIONS.add(options!.id);
-
-      deprecate(missingOptionsForDeprecation(options!.id), Boolean(options!.for), {
-        id: 'ember-source.deprecation-without-for',
-        until: '4.0.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.24.0',
-        },
-      });
-    }
-
-    if (!options!.since && !SINCE_MISSING_DEPRECATIONS.has(options!.id)) {
-      SINCE_MISSING_DEPRECATIONS.add(options!.id);
-
-      deprecate(missingOptionsSinceDeprecation(options!.id), Boolean(options!.since), {
-        id: 'ember-source.deprecation-without-since',
-        until: '4.0.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.24.0',
-        },
-      });
-    }
+    assert(missingOptionDeprecation(options!.id, 'until'), Boolean(options!.until));
+    assert(missingOptionDeprecation(options!.id, 'for'), Boolean(options!.for));
+    assert(missingOptionDeprecation(options!.id, 'since'), Boolean(options!.since));
 
     invoke('deprecate', message, test, options);
   };
@@ -241,9 +209,5 @@ export {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation,
-  missingOptionsForDeprecation,
-  missingOptionsSinceDeprecation,
-  FOR_MISSING_DEPRECATIONS,
-  SINCE_MISSING_DEPRECATIONS,
+  missingOptionDeprecation,
 };

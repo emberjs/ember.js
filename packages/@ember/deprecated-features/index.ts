@@ -8,7 +8,6 @@ export const ROUTER_EVENTS = !!'4.0.0';
 export const COMPONENT_MANAGER_STRING_LOOKUP = !!'3.8.0';
 export const JQUERY_INTEGRATION = !!'3.9.0';
 export const APP_CTRL_ROUTER_PROPS = !!'3.10.0-beta.1';
-export const FUNCTION_PROTOTYPE_EXTENSIONS = !!'3.11.0-beta.1';
 export const MOUSE_ENTER_LEAVE_MOVE_EVENTS = !!'3.13.0-beta.1';
 export const PARTIALS = !!'3.15.0-beta.1';
 export const GLOBALS_RESOLVER = !!'3.16.0-beta.1';
