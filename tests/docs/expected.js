@@ -390,7 +390,6 @@ module.exports = {
     'objectsAt',
     'observeModelType',
     'observer',
-    'observes',
     'off',
     'on',
     'once',
