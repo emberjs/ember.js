@@ -3,7 +3,6 @@ import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 
 import { set, computed } from '@ember/-internals/metal';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 
 moduleFor(
   'Helpers test: {{hash}}',
@@ -226,13 +225,9 @@ moduleFor(
         init() {
           this._super(...arguments);
 
-          if (HAS_NATIVE_PROXY) {
-            expectDeprecation(() => {
-              set(this.hash, 'lastName', 'Hietala');
-            }, /You set the '.*' property on a {{hash}} object/);
-          } else {
+          expectDeprecation(() => {
             set(this.hash, 'lastName', 'Hietala');
-          }
+          }, /You set the '.*' property on a {{hash}} object/);
 
           instance = this;
         },
@@ -261,13 +256,9 @@ moduleFor(
       runTask(() => {
         set(this.context, 'firstName', 'Godfrey');
 
-        if (HAS_NATIVE_PROXY) {
-          expectDeprecation(() => {
-            set(instance.hash, 'lastName', 'Chan');
-          }, /You set the '.*' property on a {{hash}} object/);
-        } else {
+        expectDeprecation(() => {
           set(instance.hash, 'lastName', 'Chan');
-        }
+        }, /You set the '.*' property on a {{hash}} object/);
       });
 
       this.assertText('Godfrey Chan');
@@ -294,13 +285,9 @@ moduleFor(
       this.assertText('Chad ');
 
       runTask(() => {
-        if (HAS_NATIVE_PROXY) {
-          expectDeprecation(() => {
-            set(fooBarInstance.hash, 'lastName', 'Hietala');
-          }, /You set the '.*' property on a {{hash}} object/);
-        } else {
+        expectDeprecation(() => {
           set(fooBarInstance.hash, 'lastName', 'Hietala');
-        }
+        }, /You set the '.*' property on a {{hash}} object/);
       });
 
       this.assertText('Chad Hietala');
