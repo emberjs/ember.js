@@ -99,7 +99,6 @@ import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign } from '@ember/polyfills';
-import { EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
 
 import {
   templateOnlyComponent,
@@ -150,28 +149,6 @@ Object.defineProperty(Ember, 'lookup', {
   set: setLookup,
   enumerable: false,
 });
-
-if (EMBER_EXTEND_PROTOTYPES) {
-  Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
-    enumerable: false,
-    get() {
-      deprecate(
-        'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES',
-        false,
-        {
-          id: 'ember-env.old-extend-prototypes',
-          until: '4.0.0',
-          for: 'ember-source',
-          since: {
-            enabled: '3.3.0',
-          },
-        }
-      );
-
-      return ENV.EXTEND_PROTOTYPES;
-    },
-  });
-}
 
 // ****@ember/application****
 Ember.getOwner = getOwner;

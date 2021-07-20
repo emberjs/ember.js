@@ -100,16 +100,6 @@ moduleFor(
       assert.notEqual(glimmer.isHTMLSafe, undefined, 'Ember.String.isHTMLSafe is not `undefined`');
     }
 
-    ['@test Ember.EXTEND_PROTOTYPES is present (but deprecated)'](assert) {
-      expectDeprecation(() => {
-        assert.strictEqual(
-          Ember.ENV.EXTEND_PROTOTYPES,
-          Ember.EXTEND_PROTOTYPES,
-          'Ember.EXTEND_PROTOTYPES exists'
-        );
-      }, /EXTEND_PROTOTYPES is deprecated/);
-    }
-
     '@test Ember.FEATURES is exported'(assert) {
       for (let feature in FEATURES) {
         assert.equal(
