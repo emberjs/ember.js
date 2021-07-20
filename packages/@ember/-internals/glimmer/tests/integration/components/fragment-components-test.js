@@ -227,26 +227,6 @@ moduleFor(
       this.assertText('baz');
     }
 
-    ['@test throws an error if when $() is accessed on component where `tagName` is an empty string']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        init() {
-          this._super();
-          this.$();
-        },
-      });
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
-
-      expectAssertion(() => {
-        this.render(`{{#foo-bar}}{{/foo-bar}}`);
-      }, /You cannot access this.\$\(\) on a component with `tagName: ''` specified/);
-    }
-
     ['@test renders a contained view with omitted start tag and tagless parent view context']() {
       this.registerComponent('root-component', {
         ComponentClass: Component.extend({
