@@ -273,7 +273,6 @@ let allExports = [
 
   // @ember/object/internals
   ['cacheFor', '@ember/object/internals', 'cacheFor'],
-  ['copy', '@ember/object/internals', 'copy'],
   ['guidFor', '@ember/object/internals', 'guidFor'],
 
   // @ember/object/mixin
@@ -441,7 +440,6 @@ let allExports = [
   ['Comparable', '@ember/-internals/runtime'],
   ['ActionHandler', '@ember/-internals/runtime'],
   ['NativeArray', '@ember/-internals/runtime'],
-  ['Copyable', '@ember/-internals/runtime'],
   ['MutableEnumerable', '@ember/-internals/runtime'],
   EMBER_MODERNIZED_BUILT_IN_COMPONENTS
     ? null

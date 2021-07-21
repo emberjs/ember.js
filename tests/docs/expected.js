@@ -148,7 +148,6 @@ module.exports = {
     'controller',
     'controllerFor',
     'controllerName',
-    'copy',
     'create',
     'createCache',
     'current-when',
