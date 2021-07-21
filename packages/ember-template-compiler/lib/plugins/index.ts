@@ -3,7 +3,6 @@ import AssertAgainstNamedBlocks from './assert-against-named-blocks';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
 import AssertSplattributeExpressions from './assert-splattribute-expression';
-import DeprecateSendAction from './deprecate-send-action';
 import TransformActionSyntax from './transform-action-syntax';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformEachInIntoEach from './transform-each-in-into-each';
@@ -17,7 +16,6 @@ import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
 
 import { EMBER_DYNAMIC_HELPERS_AND_MODIFIERS, EMBER_NAMED_BLOCKS } from '@ember/canary-features';
-import { SEND_ACTION } from '@ember/deprecated-features';
 
 // order of plugins is important
 export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
@@ -35,7 +33,6 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     AssertSplattributeExpressions,
     TransformEachTrackArray,
     TransformWrapMountAndOutlet,
-    SEND_ACTION ? DeprecateSendAction : null,
     !EMBER_NAMED_BLOCKS ? AssertAgainstNamedBlocks : null,
     EMBER_DYNAMIC_HELPERS_AND_MODIFIERS
       ? TransformResolutions
@@ -53,7 +50,6 @@ export const STRICT_MODE_TRANSFORMS = Object.freeze(
     AssertSplattributeExpressions,
     TransformEachTrackArray,
     TransformWrapMountAndOutlet,
-    SEND_ACTION ? DeprecateSendAction : null,
     !EMBER_NAMED_BLOCKS ? AssertAgainstNamedBlocks : null,
     !EMBER_DYNAMIC_HELPERS_AND_MODIFIERS ? AssertAgainstDynamicHelpersModifiers : null,
   ].filter(notNull)

@@ -510,7 +510,6 @@ module.exports = {
     'schedule',
     'scheduleOnce',
     'send',
-    'sendAction',
     'sendEvent',
     'serialize',
     'serializeQueryParam',

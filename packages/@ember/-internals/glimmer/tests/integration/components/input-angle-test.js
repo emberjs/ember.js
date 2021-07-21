@@ -554,31 +554,6 @@ moduleFor(
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
 
-    ['@test [DEPRECATED] sends an action with `<Input @enter="foo" />` when <enter> is pressed'](
-      assert
-    ) {
-      assert.expect(4);
-
-      expectDeprecation(() => {
-        this.render(`<Input @enter="foo" />`, {
-          actions: {
-            foo(value, event) {
-              assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
-            },
-          },
-        });
-      }, 'Passing actions to components as strings (like `<Input @enter="foo" />`) is deprecated. Please use closure actions instead (`<Input @enter={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
-
-      expectDeprecation(() => {
-        this.triggerEvent('keyup', { key: 'Enter' });
-      }, 'Passing actions to components as strings (like `<Input @enter="foo" />`) is deprecated. Please use closure actions instead (`<Input @enter={{action "foo"}} />`).');
-    }
-
     ['@test sends an action with `<Input @enter={{action "foo"}} />` when <enter> is pressed'](
       assert
     ) {
@@ -600,31 +575,6 @@ moduleFor(
       this.triggerEvent('keyup', {
         key: 'Enter',
       });
-    }
-
-    ['@test [DEPRECATED] sends an action with `<Input @key-press="foo" />` is pressed'](assert) {
-      assert.expect(4);
-
-      expectDeprecation(() => {
-        this.render(`<Input @value={{this.value}} @key-press='foo' />`, {
-          value: 'initial',
-
-          actions: {
-            foo(value, event) {
-              assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
-            },
-          },
-        });
-      }, /Passing actions to components as strings \(like `({{input key-press="foo"}}|<Input @key-press="foo" \/>)`\) is deprecated\.|Passing the `@key-press` argument to <Input> is deprecated\./);
-
-      expectDeprecation(() => {
-        this.triggerEvent('keypress', { key: 'A' });
-      }, /Passing actions to components as strings \(like `({{input key-press="foo"}}|<Input @key-press="foo" \/>)`\) is deprecated\./);
     }
 
     ['@test sends an action with `<Input @key-press={{action "foo"}} />` is pressed'](assert) {
@@ -727,31 +677,6 @@ moduleFor(
       });
     }
 
-    ['@test [DEPRECATED] sends an action with `<Input @escape-press="foo" />` when <escape> is pressed'](
-      assert
-    ) {
-      assert.expect(4);
-
-      expectDeprecation(() => {
-        this.render(`<Input @escape-press='foo' />`, {
-          actions: {
-            foo(value, event) {
-              assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
-            },
-          },
-        });
-      }, 'Passing actions to components as strings (like `<Input @escape-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @escape-press={{action "foo"}} />`). (\'-top-level\' @ L1:C0) ');
-
-      expectDeprecation(() => {
-        this.triggerEvent('keyup', { key: 'Escape' });
-      }, 'Passing actions to components as strings (like `<Input @escape-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @escape-press={{action "foo"}} />`).');
-    }
-
     ['@test sends an action with `<Input @escape-press={{action "foo"}} />` when <escape> is pressed'](
       assert
     ) {
@@ -771,31 +696,6 @@ moduleFor(
       });
 
       this.triggerEvent('keyup', { key: 'Escape' });
-    }
-
-    ['@test [DEPRECATED] sends an action with `<Input @key-down="foo" />` when a key is pressed'](
-      assert
-    ) {
-      assert.expect(4);
-
-      expectDeprecation(() => {
-        this.render(`<Input @key-down='foo' />`, {
-          actions: {
-            foo(value, event) {
-              assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
-            },
-          },
-        });
-      }, /Passing actions to components as strings \(like `({{input key-down="foo"}}|<Input @key-down="foo" \/>)`\) is deprecated\.|Passing the `@key-down` argument to <Input> is deprecated\./);
-
-      expectDeprecation(() => {
-        this.triggerEvent('keydown', { key: 'A' });
-      }, 'Passing actions to components as strings (like `<Input @key-down="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-down={{action "foo"}} />`).');
     }
 
     ['@test [DEPRECATED] sends an action with `<Input @key-down={{action "foo"}} />` when a key is pressed'](
@@ -826,31 +726,6 @@ moduleFor(
       this.triggerEvent('keydown', { key: 'A' });
 
       assert.equal(triggered, 1, 'The action was triggered exactly once');
-    }
-
-    ['@test [DEPRECATED] sends an action with `<Input @key-up="foo" />` when a key is pressed'](
-      assert
-    ) {
-      assert.expect(4);
-
-      expectDeprecation(() => {
-        this.render(`<Input @key-up='foo' />`, {
-          actions: {
-            foo(value, event) {
-              assert.ok(true, 'action was triggered');
-              if (jQueryDisabled) {
-                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
-              } else {
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
-              }
-            },
-          },
-        });
-      }, /Passing actions to components as strings \(like `({{input key-up="foo"}}|<Input @key-up="foo" \/>)`\) is deprecated\.|Passing the `@key-up` argument to <Input> is deprecated\./);
-
-      expectDeprecation(() => {
-        this.triggerEvent('keyup', { key: 'A' });
-      }, 'Passing actions to components as strings (like `<Input @key-up="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-up={{action "foo"}} />`).');
     }
 
     ['@test [DEPRECATED] sends an action with `<Input @key-up={{action "foo"}} />` when a key is pressed'](
