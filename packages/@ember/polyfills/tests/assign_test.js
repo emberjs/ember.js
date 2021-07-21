@@ -1,4 +1,4 @@
-import { assignPolyfill, assign } from '..';
+import { assign as assignPolyfill } from '..';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 class AssignTests extends TestCase {
@@ -52,15 +52,6 @@ moduleFor(
       return expectDeprecation(() => {
         assignPolyfill(...arguments);
       }, 'Use of `assign` has been deprecated. Please use `Object.assign` or the spread operator instead.');
-    }
-  }
-);
-
-moduleFor(
-  'Ember.assign (maybe not-polyfill ;) )',
-  class extends AssignTests {
-    assign() {
-      return assign(...arguments);
     }
   }
 );

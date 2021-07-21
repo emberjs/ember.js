@@ -1,4 +1,3 @@
-// Export `assignPolyfill` for testing
-export { default as assign, assign as assignPolyfill } from './lib/assign';
+export { assign } from './lib/assign';
 
 export const hasPropertyAccessors = true;
