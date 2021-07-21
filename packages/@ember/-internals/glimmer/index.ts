@@ -150,7 +150,7 @@
  */
 
 /**
-  `{{has-block}}` indicates if the component was invoked with a block.
+  `{{(has-block)}}` indicates if the component was invoked with a block.
 
   This component is invoked with a block:
 
@@ -187,7 +187,7 @@
   {{/if}}
   ```
 
-  @method hasBlock
+  @method has-block
   @for Ember.Templates.helpers
   @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
   @return {Boolean} `true` if the component was invoked with a block
@@ -195,7 +195,7 @@
  */
 
 /**
-  `{{has-block-params}}` indicates if the component was invoked with block params.
+  `{{(has-block-params)}}` indicates if the component was invoked with block params.
 
   This component is invoked with block params:
 
@@ -242,7 +242,7 @@
   {{/if}}
   ```
 
-  @method hasBlockParams
+  @method has-block-params
   @for Ember.Templates.helpers
   @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
   @return {Boolean} `true` if the component was invoked with block params
