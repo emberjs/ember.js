@@ -14,7 +14,7 @@ function getDescriptor(obj, path) {
   return Object.getOwnPropertyDescriptor(value, last);
 }
 
-export default function confirmExport(Ember, assert, path, moduleId, exportName, isDeprecated) {
+export default function confirmExport(Ember, assert, path, moduleId, exportName) {
   try {
     let desc;
 
@@ -23,10 +23,6 @@ export default function confirmExport(Ember, assert, path, moduleId, exportName,
       assert.ok(desc, `the ${path} property exists on the Ember global`);
     } else {
       desc = null;
-    }
-
-    if (isDeprecated) {
-      expectDeprecation();
     }
 
     if (desc === null) {

@@ -646,7 +646,7 @@ moduleFor(
   let [name, macro] = tuple;
 
   moduleFor(
-    `computed.${name}`,
+    `CP macro \`${name}\``,
     class extends AbstractTestCase {
       beforeEach() {
         obj = EmberObject.extend({
@@ -741,7 +741,7 @@ moduleFor(
 });
 
 moduleFor(
-  'computed.uniqBy',
+  'CP Macro `uniqBy`',
   class extends AbstractTestCase {
     beforeEach() {
       obj = EmberObject.extend({
@@ -828,7 +828,7 @@ moduleFor(
 );
 
 moduleFor(
-  'computed.intersect',
+  'CP Macro `intersect`',
   class extends AbstractTestCase {
     beforeEach() {
       obj = EmberObject.extend({
@@ -935,7 +935,7 @@ moduleFor(
             array2: emberA([3, 4, 5]),
           });
         },
-        /`computed\.setDiff` requires exactly two dependent arrays/,
+        /`setDiff` computed macro requires exactly two dependent arrays/,
         'setDiff requires two dependent arrays'
       );
 
@@ -949,7 +949,7 @@ moduleFor(
             array3: emberA([7]),
           });
         },
-        /`computed\.setDiff` requires exactly two dependent arrays/,
+        /`setDiff` computed macro requires exactly two dependent arrays/,
         'setDiff requires two dependent arrays'
       );
     }
@@ -1846,19 +1846,19 @@ moduleFor(
     ['@test it throws on bad inputs']() {
       expectAssertion(() => {
         sort('foo', 'bar', 'baz');
-      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
+      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
 
       expectAssertion(() => {
         sort('foo', ['bar'], 'baz');
-      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
+      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
 
       expectAssertion(() => {
         sort('foo', 'bar', function () {});
-      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
+      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
 
       expectAssertion(() => {
         sort('foo', ['bar'], function () {}, 'baz');
-      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
+      }, /`sort` computed macro can either be used with an array of sort properties or with a sort function/);
     }
   }
 );

@@ -24,7 +24,7 @@ function expandPropertiesToArray(predicateName, properties) {
   for (let i = 0; i < properties.length; i++) {
     let property = properties[i];
     assert(
-      `Dependent keys passed to computed.${predicateName}() can't have spaces.`,
+      `Dependent keys passed to \`${predicateName}\` computed macro can't have spaces.`,
       property.indexOf(' ') < 0
     );
 
@@ -988,11 +988,11 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
 */
 
 /**
-  Where `computed.alias` aliases `get` and `set`, and allows for bidirectional
-  data flow, `computed.oneWay` only provides an aliased `get`. The `set` will
-  not mutate the upstream property, rather causes the current property to become
-  the value set. This causes the downstream property to permanently diverge from
-  the upstream property.
+  Where the `alias` computed macro aliases `get` and `set`, and allows for
+  bidirectional data flow, the `oneWay` computed macro only provides an aliased
+  `get`. The `set` will not mutate the upstream property, rather causes the
+  current property to become the value set. This causes the downstream property
+  to permanently diverge from the upstream property.
 
   Example:
 
@@ -1061,8 +1061,8 @@ export function oneWay(dependentKey) {
 }
 
 /**
-  This is a more semantically meaningful alias of `computed.oneWay`, whose name
-  is somewhat ambiguous as to which direction the data flows.
+  This is a more semantically meaningful alias of the `oneWay` computed macro,
+  whose name is somewhat ambiguous as to which direction the data flows.
 
   @method reads
   @static
@@ -1074,9 +1074,10 @@ export function oneWay(dependentKey) {
  */
 
 /**
-  Where `computed.oneWay` provides oneWay bindings, `computed.readOnly` provides
-  a readOnly one way binding. Very often when using `computed.oneWay` one does
-  not also want changes to propagate back up, as they will replace the value.
+  Where `oneWay` computed macro provides oneWay bindings, the `readOnly`
+  computed macro provides a readOnly one way binding. Very often when using
+  the `oneWay` macro one does not also want changes to propagate back up, as
+  they will replace the value.
 
   This prevents the reverse flow, and also throws an exception when it occurs.
 

@@ -2,7 +2,7 @@ import { run, next, _getCurrentRunLoop } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
-  'run.next',
+  'runloop `next`',
   class extends AbstractTestCase {
     ['@test should invoke immediately on next timeout'](assert) {
       let done = assert.async();
