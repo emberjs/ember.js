@@ -81,6 +81,7 @@ module.exports = {
         Set: true,
         Symbol: true,
         WeakMap: true,
+        Event: true,
       },
 
       rules: {
