@@ -614,6 +614,70 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     });
   }
 
+  // @disabledWhen
+  {
+    let superIsSupportedArgument = prototype['isSupportedArgument'];
+
+    Object.defineProperty(prototype, 'isSupportedArgument', {
+      configurable: true,
+      enumerable: false,
+      value: function isSupportedArgument(this: LinkTo, name: string): boolean {
+        if (this.modernized) {
+          if (name === 'disabledWhen') {
+            deprecate(
+              'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. ' +
+                'Use the `@disabled` argument instead.',
+              false,
+              {
+                id: 'ember.link-to.disabled-when',
+                for: 'ember-source',
+                since: {},
+                until: '4.0.0',
+              }
+            );
+
+            return true;
+          }
+        }
+
+        return superIsSupportedArgument.call(this, name);
+      },
+    });
+
+    let superDescriptor = descriptorFor(prototype, 'isDisabled');
+
+    assert(
+      `[BUG] expecting isDisabled to be a getter on <LinkTo>`,
+      superDescriptor && typeof superDescriptor.get === 'function'
+    );
+
+    let superGetter = superDescriptor.get as (this: LinkTo) => boolean;
+
+    Object.defineProperty(prototype, 'isDisabled', {
+      configurable: true,
+      enumerable: false,
+      get: function isDisabled(this: LinkTo): boolean {
+        if ('disabledWhen' in this.args.named) {
+          deprecate(
+            'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. ' +
+              'Use the `@disabled` argument instead.',
+            false,
+            {
+              id: 'ember.link-to.disabled-when',
+              for: 'ember-source',
+              since: {},
+              until: '4.0.0',
+            }
+          );
+
+          return Boolean(this.named('disabledWhen'));
+        }
+
+        return superGetter.call(this);
+      },
+    });
+  }
+
   // QP
   {
     let superModelsDescriptor = descriptorFor(prototype, 'models');

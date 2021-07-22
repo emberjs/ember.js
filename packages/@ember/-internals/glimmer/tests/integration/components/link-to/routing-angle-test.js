@@ -147,6 +147,64 @@ moduleFor(
       assert.strictEqual(this.$('#about-link').attr('href'), null, 'there is no href attribute');
     }
 
+    async [`@test [DEPRECATED] it applies a 'disabled' class when disabledWhen`](assert) {
+      this.addTemplate(
+        'index',
+        `
+        <LinkTo id="about-link-static" @route="about" @disabledWhen="truthy">About</LinkTo>
+        <LinkTo id="about-link-dynamic" @route="about" @disabledWhen={{this.dynamicDisabledWhen}}>About</LinkTo>
+        `
+      );
+
+      let controller;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          dynamicDisabledWhen = true;
+        }
+      );
+
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
+
+      assert.equal(
+        this.$('#about-link-static.disabled').length,
+        1,
+        'The static link is disabled when its disabledWhen is true'
+      );
+      assert.equal(
+        this.$('#about-link-dynamic.disabled').length,
+        1,
+        'The dynamic link is disabled when its disabledWhen is true'
+      );
+
+      expectDeprecation(
+        () => runTask(() => controller.set('dynamicDisabledWhen', false)),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
+
+      assert.equal(
+        this.$('#about-link-static.disabled').length,
+        1,
+        'The static link is disabled when its disabledWhen is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The dynamic link is re-enabled when its disabledWhen becomes false'
+      );
+    }
+
     async [`@test it applies a 'disabled' class when disabled`](assert) {
       this.addTemplate(
         'index',
@@ -326,6 +384,27 @@ moduleFor(
       );
     }
 
+    async [`@test [DEPRECATED] it does not respond to clicks when disabledWhen`](assert) {
+      this.addTemplate(
+        'index',
+        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}}>About</LinkTo>`
+      );
+
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
+
+      await expectDeprecationAsync(
+        () => this.click('#about-link'),
+        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
+        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
+      );
+
+      assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
+    }
+
     async [`@test it does not respond to clicks when disabled`](assert) {
       this.addTemplate(
         'index',
@@ -372,7 +451,7 @@ moduleFor(
       assert.equal(
         this.$('h3.about').length,
         1,
-        'Transitioning did occur when disabled became false'
+        'Transitioning did occur when disabledWhen became false'
       );
     }
 
