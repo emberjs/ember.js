@@ -135,7 +135,6 @@ function giveDecoratorSuper(
     ]);
 
     newProperty._readOnly = property._readOnly;
-    newProperty._volatile = property._volatile;
     newProperty._meta = property._meta;
     newProperty.enumerable = property.enumerable;
 

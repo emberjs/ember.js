@@ -1,6 +1,6 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { inspect, toString } from '@ember/-internals/utils';
-import { assert, deprecate, warn } from '@ember/debug';
+import { assert, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -249,7 +249,6 @@ function noop(): void {}
   @public
 */
 export class ComputedProperty extends ComputedDescriptor {
-  _volatile = false;
   _readOnly = false;
   protected _hasConfig = false;
 
@@ -370,10 +369,6 @@ export class ComputedProperty extends ComputedDescriptor {
   }
 
   get(obj: object, keyName: string): any {
-    if (this._volatile) {
-      return this._getter!.call(obj, keyName);
-    }
-
     let meta = metaFor(obj);
     let tagMeta = tagMetaFor(obj);
 
@@ -434,10 +429,6 @@ export class ComputedProperty extends ComputedDescriptor {
       `Cannot override the computed property \`${keyName}\` on ${toString(obj)}.`,
       this._setter !== undefined
     );
-
-    if (this._volatile) {
-      return this.volatileSet(obj, keyName, value);
-    }
 
     let meta = metaFor(obj);
 
@@ -500,10 +491,6 @@ export class ComputedProperty extends ComputedDescriptor {
     throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
   }
 
-  volatileSet(obj: object, keyName: string, value: any): any {
-    return this._setter!.call(obj, keyName, value);
-  }
-
   _set(obj: object, keyName: string, value: unknown, meta: Meta): any {
     let hadCachedValue = meta.revisionFor(keyName) !== undefined;
     let cachedValue = meta.valueFor(keyName);
@@ -533,11 +520,9 @@ export class ComputedProperty extends ComputedDescriptor {
 
   /* called before property is overridden */
   teardown(obj: object, keyName: string, meta: Meta): void {
-    if (!this._volatile) {
-      if (meta.revisionFor(keyName) !== undefined) {
-        meta.setRevisionFor(keyName, undefined);
-        meta.setValueFor(keyName, undefined);
-      }
+    if (meta.revisionFor(keyName) !== undefined) {
+      meta.setRevisionFor(keyName, undefined);
+      meta.setValueFor(keyName, undefined);
     }
 
     super.teardown(obj, keyName, meta);
@@ -546,10 +531,6 @@ export class ComputedProperty extends ComputedDescriptor {
 
 class AutoComputedProperty extends ComputedProperty {
   get(obj: object, keyName: string): any {
-    if (this._volatile) {
-      return this._getter!.call(obj, keyName);
-    }
-
     let meta = metaFor(obj);
     let tagMeta = tagMetaFor(obj);
 
@@ -645,67 +626,6 @@ class ComputedDecoratorImpl extends Function {
       !(desc._setter && desc._setter !== desc._getter)
     );
     desc._readOnly = true;
-    return this;
-  }
-
-  /**
-    Call on a computed property to set it into non-cached mode. When in this
-    mode the computed property will not automatically cache the return value.
-    It also does not automatically fire any change events. You must manually notify
-    any changes if you want to observe this property.
-
-    Dependency keys have no effect on volatile properties as they are for cache
-    invalidation and notification when cached value is invalidated.
-
-    Example:
-
-    ```javascript
-    import { computed } from '@ember/object';
-
-    class CallCounter {
-      _calledCount = 0;
-
-      @computed().volatile()
-      get calledCount() {
-        return this._calledCount++;
-      }
-    }
-    ```
-
-    Classic Class Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    let CallCounter = EmberObject.extend({
-      _calledCount: 0,
-
-      value: computed(function() {
-        return this._calledCount++;
-      }).volatile()
-    });
-    ```
-    @method volatile
-    @deprecated
-    @return {ComputedProperty} this
-    @chainable
-    @public
-  */
-  volatile(this: Decorator) {
-    deprecate(
-      'Setting a computed property as volatile has been deprecated. Instead, consider using a native getter with native class syntax.',
-      false,
-      {
-        id: 'computed-property.volatile',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_computed-property-volatile',
-        for: 'ember-source',
-        since: {
-          enabled: '3.9.0-beta.1',
-        },
-      }
-    );
-    (descriptorForDecorator(this) as ComputedProperty)._volatile = true;
     return this;
   }
 
