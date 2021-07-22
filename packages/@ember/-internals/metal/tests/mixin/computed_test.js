@@ -111,7 +111,7 @@ moduleFor(
       assert.ok(superSetOccurred, 'should pass set to _super after getting');
     }
 
-    ['@test setter behavior works properly when overriding computed properties'](assert) {
+    ['@test setter behavior asserts when overriding computed properties'](assert) {
       let obj = {};
 
       let MixinA = Mixin.create({
@@ -156,16 +156,9 @@ moduleFor(
       );
       cpWasCalled = false;
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         set(obj, 'cpWithoutSetter', 'test');
-      }, /The \[object Object\]#cpWithoutSetter computed property was just overridden./);
-
-      assert.equal(
-        get(obj, 'cpWithoutSetter'),
-        'test',
-        'The default setter was called, the value is correct'
-      );
-      assert.ok(!cpWasCalled, 'The default setter was called, not the CP itself');
+      }, /Cannot override the computed property `cpWithoutSetter` on \[object Object\]./);
     }
   }
 );
