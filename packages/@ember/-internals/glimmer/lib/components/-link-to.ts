@@ -879,6 +879,12 @@ const LinkComponent = EmberComponent.extend({
   loadingHref: '#',
 
   didReceiveAttrs() {
+    let { disabledWhen } = this;
+
+    if (disabledWhen !== undefined) {
+      this.set('disabled', disabledWhen);
+    }
+
     let { params } = this;
 
     if (!params || params.length === 0) {
