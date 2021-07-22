@@ -3,7 +3,6 @@ import { TargetActionSupport } from '@ember/-internals/runtime';
 import { TextSupport } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import { action } from '@ember/object';
 import { isConstRef, isUpdatableRef, Reference, updateRef, valueForRef } from '@glimmer/reference';
 import Component from '../component';
@@ -14,7 +13,6 @@ import InternalComponent, {
   handleDeprecatedAttributeArguments,
   handleDeprecatedEventArguments,
   InternalComponentConstructor,
-  jQueryEventShim,
 } from './internal';
 
 const UNINITIALIZED: unknown = Object.freeze({});
@@ -242,9 +240,5 @@ export function handleDeprecatedFeatures(
         },
       });
     }
-  }
-
-  if (JQUERY_INTEGRATION) {
-    jQueryEventShim(target);
   }
 }

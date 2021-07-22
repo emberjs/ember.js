@@ -557,12 +557,13 @@ moduleFor(
     ['@test sends an action with `<Input @enter={{action "foo"}} />` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`<Input @enter={{action 'foo'}} />`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof Event, 'Native event was passed');
           },
         },
       });
@@ -581,9 +582,10 @@ moduleFor(
             value: 'initial',
 
             actions: {
-              foo() {
+              foo(value, event) {
                 triggered++;
                 assert.ok(true, 'action was triggered');
+                assert.ok(event instanceof Event, 'Native event was passed');
               },
             },
           });
@@ -647,12 +649,13 @@ moduleFor(
     }
 
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`<Input @insert-newline={{action 'foo'}} />`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof Event, 'Native event was passed');
           },
         },
       });
@@ -665,12 +668,13 @@ moduleFor(
     ['@test sends an action with `<Input @escape-press={{action "foo"}} />` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`<Input @escape-press={{action 'foo'}} />`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof Event, 'Native event was passed');
           },
         },
       });
@@ -687,9 +691,10 @@ moduleFor(
         () => {
           this.render(`<Input @key-down={{action 'foo'}} />`, {
             actions: {
-              foo() {
+              foo(value, event) {
                 triggered++;
                 assert.ok(true, 'action was triggered');
+                assert.ok(event instanceof Event, 'Native event was passed');
               },
             },
           });
@@ -712,9 +717,10 @@ moduleFor(
         () => {
           this.render(`<Input @key-up={{action 'foo'}} />`, {
             actions: {
-              foo() {
+              foo(value, event) {
                 triggered++;
                 assert.ok(true, 'action was triggered');
+                assert.ok(event instanceof Event, 'Native event was passed');
               },
             },
           });
