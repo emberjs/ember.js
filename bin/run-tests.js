@@ -61,12 +61,6 @@ function generateTestsFor(packageName) {
   testFunctions.push(() => run('package=' + packageName + '&edition=classic'));
   testFunctions.push(() => run('package=' + packageName + '&prebuilt=true'));
   testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
-
-  // TODO: this should ultimately be deleted (when all packages can run with and
-  // without jQuery)
-  if (packageName !== 'ember') {
-    testFunctions.push(() => run('package=' + packageName + '&jquery=none'));
-  }
 }
 
 function generateEachPackageTests() {

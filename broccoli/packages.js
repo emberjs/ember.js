@@ -34,14 +34,6 @@ module.exports.routerES = function _routerES() {
   });
 };
 
-module.exports.jquery = function _jquery() {
-  return new Funnel(findLib('jquery'), {
-    files: ['jquery.js'],
-    destDir: 'jquery',
-    annotation: 'jquery',
-  });
-};
-
 module.exports.loader = function _loader() {
   return new Funnel('packages/loader/lib', {
     files: ['index.js'],

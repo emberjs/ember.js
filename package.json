@@ -2,9 +2,7 @@
   "name": "ember-source",
   "version": "4.1.0-alpha.2",
   "description": "A JavaScript framework for creating ambitious web applications",
-  "keywords": [
-    "ember-addon"
-  ],
+  "keywords": ["ember-addon"],
   "homepage": "https://emberjs.com/",
   "bugs": {
     "url": "https://github.com/emberjs/ember.js/issues"
@@ -69,7 +67,6 @@
     "ember-cli-version-checker": "^5.1.1",
     "ember-router-generator": "^2.0.0",
     "inflection": "^1.13.1",
-    "jquery": "^3.5.1",
     "resolve": "^1.17.0",
     "semver": "^7.3.4",
     "silent-error": "^1.1.1"
