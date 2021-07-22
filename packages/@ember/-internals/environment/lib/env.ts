@@ -129,20 +129,6 @@ export const ENV = {
   _DEBUG_RENDER_TREE: DEBUG,
 
   /**
-    Whether the app is using jQuery. See RFC #294.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _JQUERY_INTEGRATION
-    @for EmberENV
-    @type Boolean
-    @default true
-    @private
-  */
-  _JQUERY_INTEGRATION: true,
-
-  /**
     Whether the app defaults to using async observers.
 
     This is not intended to be set directly, as the implementation may change in

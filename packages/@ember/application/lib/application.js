@@ -11,7 +11,7 @@ import { join, once, run, schedule } from '@ember/runloop';
 import { libraries } from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
 import { RSVP } from '@ember/-internals/runtime';
-import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';
+import { EventDispatcher } from '@ember/-internals/views';
 import {
   Route,
   Router,
@@ -26,9 +26,6 @@ import Engine from '@ember/engine';
 import { privatize as P } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
-
-let librariesRegistered = false;
 
 /**
   An instance of `Application` is the starting point for every Ember
@@ -352,12 +349,6 @@ const Application = Engine.extend({
   init() {
     // eslint-disable-line no-unused-vars
     this._super(...arguments);
-
-    if (!this.$) {
-      this.$ = jQuery;
-    }
-
-    registerLibraries();
 
     if (DEBUG) {
       if (ENV.LOG_VERSION) {
@@ -1168,16 +1159,6 @@ function commonSetupRegistry(registry) {
   });
 
   registry.register('service:router', RouterService);
-}
-
-function registerLibraries() {
-  if (!librariesRegistered) {
-    librariesRegistered = true;
-
-    if (JQUERY_INTEGRATION && hasDOM && !jQueryDisabled) {
-      libraries.registerCoreLibrary('jQuery', jQuery().jquery);
-    }
-  }
 }
 
 export default Application;
