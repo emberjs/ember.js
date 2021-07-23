@@ -417,7 +417,6 @@ module.exports = {
     'positionalParams',
     'preventDefault',
     'promise',
-    'property',
     'pushObject',
     'pushObjects',
     'pushState',

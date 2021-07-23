@@ -734,81 +734,6 @@ class ComputedDecoratorImpl extends Function {
   }
 
   /**
-    Sets the dependent keys on this computed property. Pass any number of
-    arguments containing key paths that this computed property depends on.
-
-    Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    class President {
-      constructor(firstName, lastName) {
-        set(this, 'firstName', firstName);
-        set(this, 'lastName', lastName);
-      }
-
-      // Tell Ember that this computed property depends on firstName
-      // and lastName
-      @computed().property('firstName', 'lastName')
-      get fullName() {
-        return `${this.firstName} ${this.lastName}`;
-      }
-    }
-
-    let president = new President('Barack', 'Obama');
-
-    president.fullName; // 'Barack Obama'
-    ```
-
-    Classic Class Example:
-
-    ```javascript
-    import EmberObject, { computed } from '@ember/object';
-
-    let President = EmberObject.extend({
-      fullName: computed(function() {
-        return this.get('firstName') + ' ' + this.get('lastName');
-
-        // Tell Ember that this computed property depends on firstName
-        // and lastName
-      }).property('firstName', 'lastName')
-    });
-
-    let president = President.create({
-      firstName: 'Barack',
-      lastName: 'Obama'
-    });
-
-    president.get('fullName'); // 'Barack Obama'
-    ```
-
-    @method property
-    @deprecated
-    @param {String} path* zero or more property paths
-    @return {ComputedProperty} this
-    @chainable
-    @public
-  */
-  property(this: Decorator, ...keys: string[]) {
-    deprecate(
-      'Setting dependency keys using the `.property()` modifier has been deprecated. Pass the dependency keys directly to computed as arguments instead. If you are using `.property()` on a computed property macro, consider refactoring your macro to receive additional dependent keys in its initial declaration.',
-      false,
-      {
-        id: 'computed-property.property',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_computed-property-property',
-        for: 'ember-source',
-        since: {
-          enabled: '3.9.0-beta.1',
-        },
-      }
-    );
-    (descriptorForDecorator(this) as ComputedProperty)._property(...keys);
-    return this;
-  }
-
-  /**
     In some cases, you may want to annotate computed properties with additional
     metadata about how they function or what values they operate on. For example,
     computed property functions may close over variables that are then no longer
@@ -1009,16 +934,6 @@ class ComputedDecoratorImpl extends Function {
   _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
   will have [prototype Extensions](https://guides.emberjs.com/release/configuring-ember/disabling-prototype-extensions/) enabled._
-
-  The alternative syntax, with prototype extensions, might look like:
-
-  ```js
-  fullName: function() {
-    return this.get('firstName') + ' ' + this.get('lastName');
-  }.property('firstName', 'lastName')
-  ```
-
-  This form does not work with native decorators.
 
   @method computed
   @for @ember/object
