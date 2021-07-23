@@ -125,20 +125,6 @@ function infoForApp({
 //   };
 // }
 
-function evalJS(overrides) {
-  return eval(`
-    (function () {
-      let onEmberGlobalAccess;
-
-      ${overrides.toJS()}
-
-      return {
-        onEmberGlobalAccess: onEmberGlobalAccess,
-      };
-    })()
-  `);
-}
-
 QUnit.module('Overrides', function () {
   QUnit.module('.addonsInfoFor', function () {
     // app
@@ -593,39 +579,6 @@ QUnit.module('Overrides', function () {
     assert.strictEqual(overrides.hasActionableSuggestions, true, 'hasActionableSuggestions');
     assert.strictEqual(overrides.hasCompatibleAddons, false, 'hasCompatibleAddons');
     assert.strictEqual(overrides.hasDormantAddons, false, 'hasDormantAddons');
-    assert.strictEqual(
-      overrides.showAllEmberGlobalDeprecations,
-      false,
-      'showAllEmberGlobalDeprecations'
-    );
-    assert.deepEqual(overrides.suggestions, [
-      'Upgrade your `devDependencies` on `ember-cli-babel` to `^7.26.6`.',
-    ]);
-    assert.equal(
-      overrides.outdated.length,
-      1 /* number of different old babel versions */,
-      'outdated.length'
-    );
-    assert.ok(
-      overrides.buildTimeWarning.startsWith(
-        '[DEPRECATION] Usage of the Ember Global is deprecated.'
-      ),
-      'overrides.buildTimeWarning'
-    );
-    assert.ok(
-      overrides.globalMessage.startsWith('Usage of the Ember Global is deprecated.'),
-      'overrides.globalMessage'
-    );
-
-    let { onEmberGlobalAccess } = evalJS(overrides);
-
-    assert.equal(
-      onEmberGlobalAccess(),
-      overrides.globalMessage,
-      'onEmberGlobalAccess() (first call)'
-    );
-
-    assert.strictEqual(onEmberGlobalAccess(), null, 'onEmberGlobalAccess() (second call)');
   });
 
   // let project, env;

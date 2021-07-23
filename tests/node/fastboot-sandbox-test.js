@@ -43,7 +43,7 @@ function buildSandboxContext(precompile) {
     URL,
 
     // Convince jQuery not to assume it's in a browser
-    module: { exports: {} },
+    module: { exports: {}, require() {} },
   };
 
   // Set the global as `window`
@@ -69,6 +69,8 @@ var EmberENV = {
   emberScript.runInContext(context);
 
   let applicationSource = `
+let Ember = module.exports;
+
 class Router extends Ember.Router {}
 Router.map(function() {
   this.route('a');
