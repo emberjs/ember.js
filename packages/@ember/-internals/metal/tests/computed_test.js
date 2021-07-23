@@ -129,20 +129,6 @@ moduleFor(
       assert.equal(count, 1, 'should only call getter once');
     }
 
-    ['@test can override volatile computed property'](assert) {
-      obj = {};
-
-      expectDeprecation(() => {
-        defineProperty(obj, 'foo', computed(function () {}).volatile());
-      }, 'Setting a computed property as volatile has been deprecated. Instead, consider using a native getter with native class syntax.');
-
-      expectDeprecation(() => {
-        set(obj, 'foo', 'boom');
-      }, /The \[object Object\]#foo computed property was just overridden./);
-
-      assert.equal(obj.foo, 'boom');
-    }
-
     ['@test defining computed property should invoke property on set'](assert) {
       obj = {};
       let count = 0;
@@ -765,7 +751,7 @@ moduleFor(
       assert.ok(testObj.get('aInt') === 123, 'cp has been updated too');
     }
 
-    ['@test setter can be omited'](assert) {
+    ['@test an omitted setter cannot be set later'](assert) {
       let testObj = EmberObject.extend({
         a: '1',
         b: '2',
@@ -780,11 +766,9 @@ moduleFor(
       assert.ok(testObj.get('aInt') === 1, 'getter works');
       assert.ok(testObj.get('a') === '1');
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         testObj.set('aInt', '123');
-      }, /The <\(unknown\):ember\d*>#aInt computed property was just overridden/);
-
-      assert.ok(testObj.get('aInt') === '123', 'cp has been updated too');
+      }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
     }
 
     ['@test getter can be omited'](assert) {
@@ -979,7 +963,9 @@ moduleFor(
 moduleFor(
   'computed - default setter',
   class extends ComputedTestCase {
-    async ["@test when setting a value on a computed property that doesn't handle sets"](assert) {
+    async ["@test raises assertion when setting a value on a computed property that doesn't handle sets"](
+      assert
+    ) {
       obj = {};
       let observerFired = false;
 
@@ -993,16 +979,13 @@ moduleFor(
 
       addObserver(obj, 'foo', null, () => (observerFired = true));
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         set(obj, 'foo', 'bar');
-      }, /The \[object Object\]#foo computed property was just overridden./);
-
-      assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
-      assert.ok(typeof obj.foo === 'string', 'The computed property was removed');
+      }, /Cannot override the computed property `foo` on \[object Object\]./);
 
       await runLoopSettled();
 
-      assert.ok(observerFired, 'The observer was still notified');
+      assert.notOk(observerFired, 'The observer was not notified');
     }
   }
 );

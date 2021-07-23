@@ -29,14 +29,12 @@ import {
 } from './decorator';
 import expandProperties from './expand_properties';
 import { addObserver, setObserverSuspended } from './observer';
-import { defineProperty } from './properties';
 import {
   beginPropertyChanges,
   endPropertyChanges,
   notifyPropertyChange,
   PROPERTY_DID_CHANGE,
 } from './property_events';
-import { set } from './property_set';
 
 export type ComputedPropertyGetter = (keyName: string) => any;
 export type ComputedPropertySetter = (keyName: string, value: any, cachedValue?: any) => any;
@@ -432,9 +430,10 @@ export class ComputedProperty extends ComputedDescriptor {
       this._throwReadOnlyError(obj, keyName);
     }
 
-    if (!this._setter) {
-      return this.clobberSet(obj, keyName, value);
-    }
+    assert(
+      `Cannot override the computed property \`${keyName}\` on ${toString(obj)}.`,
+      this._setter !== undefined
+    );
 
     if (this._volatile) {
       return this.volatileSet(obj, keyName, value);
@@ -499,29 +498,6 @@ export class ComputedProperty extends ComputedDescriptor {
 
   _throwReadOnlyError(obj: object, keyName: string): never {
     throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
-  }
-
-  clobberSet(obj: object, keyName: string, value: any): any {
-    deprecate(
-      `The ${toString(
-        obj
-      )}#${keyName} computed property was just overridden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually.`,
-      false,
-      {
-        id: 'computed-property.override',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_computed-property-override',
-        for: 'ember-source',
-        since: {
-          enabled: '3.9.0-beta.1',
-        },
-      }
-    );
-
-    let cachedValue = metaFor(obj).valueFor(keyName);
-    defineProperty(obj, keyName, null, cachedValue);
-    set(obj, keyName, value);
-    return value;
   }
 
   volatileSet(obj: object, keyName: string, value: any): any {

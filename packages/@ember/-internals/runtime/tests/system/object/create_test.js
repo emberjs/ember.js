@@ -262,7 +262,7 @@ moduleFor(
       assert.equal(result.foo.bar, 'foo');
     }
 
-    ['@test does raise deprecation if descriptor is a computed property without a setter'](assert) {
+    ['@test does raise assertion if descriptor is a computed property without a setter']() {
       let owner = buildOwner();
 
       class FooService extends Service {
@@ -282,16 +282,12 @@ moduleFor(
       owner.register('foo:main', FooObject);
       owner.inject('foo:main', 'foo', 'service:bar');
 
-      expectDeprecation(
-        /The <.*>#foo computed property was just overridden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually./
-      );
-
-      expectDeprecation(
-        /A value was injected implicitly on the 'foo' computed property of an instance of <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/
-      );
-
-      let result = owner.lookup('foo:main');
-      assert.equal(result.foo.bar, 'bar');
+      expectAssertion(() => {
+        expectDeprecation(
+          /A value was injected implicitly on the 'foo' computed property of an instance of <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/
+        );
+        owner.lookup('foo:main');
+      }, /Cannot override the computed property `foo` on <.*>./);
     }
 
     ['@test does not raise deprecation if descriptor is a getter and equal to the implicit deprecation'](
