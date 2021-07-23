@@ -5,7 +5,6 @@ import { TargetActionSupport } from '@ember/-internals/runtime';
 import { isSimpleClick } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, debugFreeze, deprecate, warn } from '@ember/debug';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
@@ -22,7 +21,6 @@ import InternalComponent, {
   handleDeprecatedArguments,
   handleDeprecatedAttributeArguments,
   handleDeprecatedEventArguments,
-  jQueryEventShim,
   opaquify,
 } from './internal';
 
@@ -772,10 +770,6 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       },
     });
   }
-}
-
-if (JQUERY_INTEGRATION) {
-  jQueryEventShim(LinkTo);
 }
 
 export default opaquify(LinkTo, LinkToTemplate);

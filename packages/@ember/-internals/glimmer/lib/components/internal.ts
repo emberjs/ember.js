@@ -1,9 +1,7 @@
 import { Owner, setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { jQuery, jQueryDisabled } from '@ember/-internals/views';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import {
   CapturedArguments,
   Destroyable,
@@ -551,26 +549,4 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
       value: DeprecatedEventHandlersModifier,
     });
   };
-}
-
-export function jQueryEventShim(target: DeprecatingInternalComponentConstructor): void {
-  if (JQUERY_INTEGRATION) {
-    let { prototype } = target;
-
-    let superListenerFor = prototype['listenerFor'];
-
-    Object.defineProperty(prototype, 'listenerFor', {
-      configurable: true,
-      enumerable: false,
-      value: function listenerFor(this: InternalComponent, name: string): EventListener {
-        let listener = superListenerFor.call(this, name);
-
-        if (jQuery && !jQueryDisabled) {
-          return (event: Event) => listener(new jQuery.Event(event));
-        } else {
-          return listener;
-        }
-      },
-    });
-  }
 }
