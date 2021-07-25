@@ -79,17 +79,6 @@ moduleFor(
       );
     }
 
-    ['@test Throw exception when trying to inject `type:thing` on all type(s)']() {
-      let registry = new Registry();
-      let PostController = factory();
-
-      registry.register('controller:post', PostController);
-
-      expectAssertion(() => {
-        registry.typeInjection('controller', 'injected', 'controller:post');
-      }, /Cannot inject a 'controller:post' on other controller\(s\)\./);
-    }
-
     ['@test The registry can take a hook to resolve factories lazily'](assert) {
       let PostController = factory();
       let resolver = {
@@ -154,26 +143,6 @@ moduleFor(
       );
     }
 
-    ['@test The registry normalizes names when injecting'](assert) {
-      let registry = new Registry();
-      let PostController = factory();
-      let user = { name: 'Stef' };
-
-      registry.normalize = function () {
-        return 'controller:post';
-      };
-
-      registry.register('controller:post', PostController);
-      registry.register('user:post', user, { instantiate: false });
-      registry.injection('controller:post', 'user', 'controller:normalized');
-
-      assert.deepEqual(
-        registry.resolve('controller:post'),
-        user,
-        'Normalizes the name when injecting'
-      );
-    }
-
     ['@test cannot register an `undefined` factory']() {
       let registry = new Registry();
 
@@ -206,29 +175,6 @@ moduleFor(
       }, /Cannot re-register: 'controller:apple', as it has already been resolved\./);
 
       assert.strictEqual(registry.resolve('controller:apple'), FirstApple);
-    }
-
-    ['@test registry.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)'](
-      assert
-    ) {
-      assert.expect(1);
-
-      let registry = new Registry();
-      let FirstApple = factory('first');
-      let SecondApple = factory('second');
-
-      SecondApple.extend = function () {
-        assert.ok(
-          false,
-          'should not extend or touch the injected model, merely to inspect existence of another'
-        );
-      };
-
-      registry.register('controller:apple', FirstApple);
-      registry.register('controller:second-apple', SecondApple);
-      registry.injection('controller:apple', 'badApple', 'controller:second-apple');
-
-      assert.ok(registry.has('controller:apple'));
     }
 
     ['@test registry.has should not error for invalid fullNames'](assert) {
@@ -480,44 +426,6 @@ moduleFor(
         registry.has('controller:post'),
         true,
         'Fallback registry is checked for registration'
-      );
-    }
-
-    ['@test `getInjections` includes injections from a fallback registry'](assert) {
-      let fallback = new Registry();
-      let registry = new Registry({ fallback: fallback });
-
-      assert.strictEqual(
-        registry.getInjections('model:user'),
-        undefined,
-        'No injections in the primary registry'
-      );
-
-      fallback.injection('model:user', 'post', 'model:post');
-
-      assert.equal(
-        registry.getInjections('model:user').length,
-        1,
-        'Injections from the fallback registry are merged'
-      );
-    }
-
-    ['@test `getTypeInjections` includes type injections from a fallback registry'](assert) {
-      let fallback = new Registry();
-      let registry = new Registry({ fallback: fallback });
-
-      assert.strictEqual(
-        registry.getTypeInjections('model'),
-        undefined,
-        'No injections in the primary registry'
-      );
-
-      fallback.injection('model', 'source', 'source:main');
-
-      assert.equal(
-        registry.getTypeInjections('model').length,
-        1,
-        'Injections from the fallback registry are merged'
       );
     }
 

@@ -193,9 +193,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     }
 
     singletons.forEach((key) => this.register(key, parent.lookup(key), { instantiate: false }));
-
-    this.inject('view', '_environment', '-environment:main');
-    this.inject('route', '_environment', '-environment:main');
   },
 });
 
@@ -211,8 +208,6 @@ EngineInstance.reopenClass({
     if (!options) {
       return;
     }
-
-    registry.injection('view', '_environment', '-environment:main');
   },
 });
 

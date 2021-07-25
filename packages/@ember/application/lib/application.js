@@ -1029,8 +1029,6 @@ const Application = Engine.extend({
       } else { // node
         application.register('service:network', NodeNetworkService);
       }
-
-      application.inject('route', 'network', 'service:network');
     };
 
     export default {
@@ -1041,13 +1039,16 @@ const Application = Engine.extend({
 
     ```app/routes/post.js
     import Route from '@ember/routing/route';
+    import { inject as service } from '@ember/service';
 
     // An example of how the (hypothetical) service is used in routes.
 
-    export default Route.extend({
+    export default class IndexRoute extends Route {
+      @service network;
+
       model(params) {
         return this.network.fetch(`/api/posts/${params.post_id}.json`);
-      },
+      }
 
       afterModel(post) {
         if (post.isExternalContent) {
@@ -1056,7 +1057,7 @@ const Application = Engine.extend({
           return post;
         }
       }
-    });
+    }
     ```
 
     ```javascript

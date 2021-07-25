@@ -38,4 +38,4 @@ export {
 } from './lib/test-resolver';
 
 export { isEdge } from './lib/browser-detect';
-export { verifyInjection, verifyRegistration } from './lib/registry-check';
+export { verifyRegistration } from './lib/registry-check';

@@ -2,7 +2,7 @@ import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner
 import { dictionary, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import Registry, { DebugRegistry, Injection } from './registry';
+import Registry, { DebugRegistry } from './registry';
 
 declare global {
   export function gc(): void;
@@ -406,68 +406,6 @@ function instantiateFactory(
   throw new Error('Could not create factory');
 }
 
-interface BuildInjectionsResult {
-  injections: { [key: string]: unknown };
-  isDynamic: boolean;
-}
-
-function processInjections(
-  container: Container,
-  injections: Injection[],
-  result: BuildInjectionsResult
-) {
-  if (DEBUG) {
-    container.registry.validateInjections(injections);
-  }
-
-  let hash = result.injections;
-
-  for (let i = 0; i < injections.length; i++) {
-    let { property, specifier } = injections[i];
-
-    hash[property] = lookup(container, specifier);
-
-    if (!result.isDynamic) {
-      result.isDynamic = !isSingleton(container, specifier);
-    }
-  }
-}
-
-function buildInjections(
-  container: Container,
-  typeInjections: Injection[],
-  injections: Injection[]
-): BuildInjectionsResult {
-  let injectionsHash = {};
-
-  setOwner(injectionsHash, container.owner!);
-
-  let result: BuildInjectionsResult = {
-    injections: injectionsHash,
-    isDynamic: false,
-  };
-
-  if (typeInjections !== undefined) {
-    processInjections(container, typeInjections, result);
-  }
-
-  if (injections !== undefined) {
-    processInjections(container, injections, result);
-  }
-
-  return result;
-}
-
-function injectionsFor(container: Container, fullName: string) {
-  let registry = container.registry;
-  let [type] = fullName.split(':');
-
-  let typeInjections = registry.getTypeInjections(type);
-  let injections = registry.getInjections(fullName);
-
-  return buildInjections(container, typeInjections, injections);
-}
-
 function destroyDestroyables(container: Container): void {
   let cache = container.cache;
   let keys = Object.keys(cache);
@@ -569,16 +507,9 @@ class FactoryManager<T, C> {
       );
     }
 
-    let props = this.injections;
-    if (props === undefined) {
-      let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
-      setFactoryFor(injections, this);
-      props = injections;
-
-      if (!isDynamic) {
-        this.injections = injections;
-      }
-    }
+    let props = {};
+    setOwner(props, container.owner!);
+    setFactoryFor(props, this);
 
     if (options !== undefined) {
       props = Object.assign({}, props, options);
