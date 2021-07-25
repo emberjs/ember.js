@@ -7,8 +7,9 @@ moduleFor(
       super(...arguments);
 
       let CoreOutlet = this.owner.factoryFor('view:-outlet');
-
-      this.component = CoreOutlet.create();
+      let outletTemplateFactory = this.owner.lookup('template:-outlet');
+      let environment = this.owner.lookup('-environment:main');
+      this.component = CoreOutlet.create({ environment, template: outletTemplateFactory });
     }
 
     ['@test should not error when initial rendered template is undefined']() {

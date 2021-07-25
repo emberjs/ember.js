@@ -34,10 +34,10 @@ export default class OutletView {
   }
 
   static create(options: any): OutletView {
-    let { _environment, template: templateFactory } = options;
+    let { environment: _environment, application: namespace, template: templateFactory } = options;
     let owner = getOwner(options);
     let template = templateFactory(owner);
-    return new OutletView(_environment, owner, template);
+    return new OutletView(_environment, owner, template, namespace);
   }
 
   private ref: Reference;
@@ -46,7 +46,8 @@ export default class OutletView {
   constructor(
     private _environment: BootEnvironment,
     public owner: Owner,
-    public template: Template
+    public template: Template,
+    public namespace: any
   ) {
     let outletStateTag = createTag();
     let outletState: OutletState = {

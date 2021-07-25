@@ -1,5 +1,6 @@
 import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
+import { getOwner } from '@ember/-internals/owner';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import Component from './component';
 import LegacyLinkTo from './components/-link-to';
@@ -16,16 +17,14 @@ import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
 
 export function setupApplicationRegistry(registry: Registry): void {
-  registry.injection('renderer', 'env', '-environment:main');
-
   // because we are using injections we can't use instantiate false
   // we need to use bind() to copy the function so factory for
   // association won't leak
   registry.register('service:-dom-builder', {
-    create({ bootOptions }: { bootOptions: { _renderMode: string } }) {
-      let { _renderMode } = bootOptions;
+    create(props) {
+      let env = getOwner(props).lookup('-environment:main') as { _renderMode: string };
 
-      switch (_renderMode) {
+      switch (env._renderMode) {
         case 'serialize':
           return serializeBuilder.bind(null);
         case 'rehydrate':
@@ -35,14 +34,10 @@ export function setupApplicationRegistry(registry: Registry): void {
       }
     },
   });
-  registry.injection('service:-dom-builder', 'bootOptions', '-environment:main');
-  registry.injection('renderer', 'builder', 'service:-dom-builder');
 
   registry.register(P`template:-root`, RootTemplate as any);
-  registry.injection('renderer', 'rootTemplate', P`template:-root`);
 
   registry.register('renderer:-dom', Renderer);
-  registry.injection('renderer', 'document', 'service:-document');
 }
 
 export function setupEngineRegistry(registry: Registry): void {
@@ -50,7 +45,6 @@ export function setupEngineRegistry(registry: Registry): void {
 
   registry.register('view:-outlet', OutletView);
   registry.register('template:-outlet', OutletTemplate as any);
-  registry.injection('view:-outlet', 'template', 'template:-outlet');
 
   registry.optionsForType('helper', { instantiate: false });
 

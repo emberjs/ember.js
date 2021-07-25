@@ -485,10 +485,6 @@ function commonSetupRegistry(registry) {
 
   registry.register('controller:basic', Controller, { instantiate: false });
 
-  registry.injection('renderer', '_viewRegistry', '-view-registry:main');
-
-  registry.injection('view:-outlet', 'namespace', 'application:main');
-
   // Register the routing service...
   registry.register('service:-routing', RoutingService);
 
@@ -496,8 +492,6 @@ function commonSetupRegistry(registry) {
   registry.register('resolver-for-debugging:main', registry.resolver, {
     instantiate: false,
   });
-  registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-  // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
 

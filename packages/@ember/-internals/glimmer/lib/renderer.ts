@@ -1,3 +1,4 @@
+import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { getViewElement, getViewId } from '@ember/-internals/views';
@@ -290,14 +291,16 @@ export class Renderer {
 
   readonly _runtimeResolver: ResolverImpl;
 
-  static create(props: {
-    document: SimpleDocument;
-    env: { isInteractive: boolean; hasDOM: boolean };
-    rootTemplate: TemplateFactory;
-    _viewRegistry: any;
-    builder: any;
-  }): Renderer {
-    let { document, env, rootTemplate, _viewRegistry, builder } = props;
+  static create(props: { _viewRegistry: any }): Renderer {
+    let { _viewRegistry } = props;
+    let document = getOwner(props).lookup('service:-document') as SimpleDocument;
+    let env = getOwner(props).lookup('-environment:main') as {
+      isInteractive: boolean;
+      hasDOM: boolean;
+    };
+    let owner = getOwner(props);
+    let rootTemplate = owner.lookup(P`template:-root`) as TemplateFactory;
+    let builder = owner.lookup('service:-dom-builder') as IBuilder;
     return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, builder);
   }
 
@@ -311,7 +314,7 @@ export class Renderer {
   ) {
     this._owner = owner;
     this._rootTemplate = rootTemplate(owner);
-    this._viewRegistry = viewRegistry;
+    this._viewRegistry = viewRegistry || owner.lookup('-view-registry:main');
     this._roots = [];
     this._removedRoots = [];
     this._builder = builder;

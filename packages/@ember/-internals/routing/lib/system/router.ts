@@ -653,7 +653,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     if (!this._toplevelView) {
       let owner = getOwner(this);
       let OutletView = owner.factoryFor<OutletView, FactoryClass>('view:-outlet')!;
-      this._toplevelView = OutletView.create();
+      let application = owner.lookup('application:main');
+      let environment = owner.lookup('-environment:main');
+      let template = owner.lookup('template:-outlet');
+      this._toplevelView = OutletView.create({ environment, template, application });
       this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
       let instance: any = owner.lookup('-application-instance:main');
       if (instance) {

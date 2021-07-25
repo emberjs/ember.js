@@ -1,6 +1,6 @@
 import { Factory } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import Container, { ContainerOptions, LazyInjection } from './container';
 
@@ -24,14 +24,12 @@ export interface KnownForTypeResult {
 
 export interface IRegistry {
   describe(fullName: string): string;
-  getInjections(fullName: string): Injection[];
   getOption<K extends keyof TypeOptions>(
     fullName: string,
     optionName: K
   ): TypeOptions[K] | undefined;
   getOptions(fullName: string): TypeOptions;
   getOptionsForType(type: string): TypeOptions;
-  getTypeInjections(type: string): Injection[];
   knownForType(type: string): KnownForTypeResult;
   makeToString<T, C>(factory: Factory<T, C>, fullName: string): string;
   normalizeFullName(fullName: string): string;
@@ -82,12 +80,10 @@ export default class Registry implements IRegistry {
   resolver: Resolver | (Resolve & NotResolver) | null;
   readonly fallback: IRegistry | null;
   readonly registrations: { [key: string]: object };
-  readonly _injections: { [key: string]: Injection[] };
   _localLookupCache: { [key: string]: object };
   readonly _normalizeCache: { [key: string]: string };
   readonly _options: { [key: string]: TypeOptions };
   readonly _resolveCache: { [key: string]: object };
-  readonly _typeInjections: { [key: string]: Injection[] };
   readonly _typeOptions: { [key: string]: TypeOptions };
 
   constructor(options: RegistryOptions = {}) {
@@ -95,9 +91,6 @@ export default class Registry implements IRegistry {
     this.resolver = options.resolver || null;
 
     this.registrations = dictionary(options.registrations || null);
-
-    this._typeInjections = dictionary(null);
-    this._injections = dictionary(null);
 
     this._localLookupCache = Object.create(null);
     this._normalizeCache = dictionary(null);
@@ -127,20 +120,6 @@ export default class Registry implements IRegistry {
   /**
    @private
    @property registrations
-   @type InheritingDict
-   */
-
-  /**
-   @private
-
-   @property _typeInjections
-   @type InheritingDict
-   */
-
-  /**
-   @private
-
-   @property _injections
    @type InheritingDict
    */
 
@@ -468,90 +447,9 @@ export default class Registry implements IRegistry {
   }
 
   /**
-   Used only via `injection`.
+   This is deprecated in favor of explicit injection of dependencies.
 
-   Provides a specialized form of injection, specifically enabling
-   all objects of one type to be injected with a reference to another
-   object.
-
-   For example, provided each object of type `controller` needed a `router`.
-   one would do the following:
-
-   ```javascript
-   let registry = new Registry();
-   let container = registry.container();
-
-   registry.register('router:main', Router);
-   registry.register('controller:user', UserController);
-   registry.register('controller:post', PostController);
-
-   registry.typeInjection('controller', 'router', 'router:main');
-
-   let user = container.lookup('controller:user');
-   let post = container.lookup('controller:post');
-
-   user.router instanceof Router; //=> true
-   post.router instanceof Router; //=> true
-
-   // both controllers share the same router
-   user.router === post.router; //=> true
-   ```
-
-   @private
-   @method typeInjection
-   @param {String} type
-   @param {String} property
-   @param {String} fullName
-   */
-  typeInjection(type: string, property: string, fullName: string): void {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
-
-    let fullNameType = fullName.split(':')[0];
-    assert(`Cannot inject a '${fullName}' on other ${type}(s).`, fullNameType !== type);
-
-    let injections = this._typeInjections[type] || (this._typeInjections[type] = []);
-
-    injections.push({ property, specifier: fullName });
-  }
-
-  /**
-   Defines injection rules.
-
-   These rules are used to inject dependencies onto objects when they
-   are instantiated.
-
-   Two forms of injections are possible:
-
-   * Injecting one fullName on another fullName
-   * Injecting one fullName on a type
-
-   Example:
-
-   ```javascript
-   let registry = new Registry();
-   let container = registry.container();
-
-   registry.register('source:main', Source);
-   registry.register('model:user', User);
-   registry.register('model:post', Post);
-
-   // injecting one fullName on another fullName
-   // eg. each user model gets a post model
-   registry.injection('model:user', 'post', 'model:post');
-
-   // injecting one fullName on another type
-   registry.injection('model', 'source', 'source:main');
-
-   let user = container.lookup('model:user');
-   let post = container.lookup('model:post');
-
-   user.source instanceof Source; //=> true
-   post.source instanceof Source; //=> true
-
-   user.post instanceof Post; //=> true
-
-   // and both models share the same source
-   user.source === post.source; //=> true
+   Reference: https://deprecations.emberjs.com/v3.x#toc_implicit-injections
    ```
 
    @private
@@ -559,25 +457,22 @@ export default class Registry implements IRegistry {
    @param {String} factoryName
    @param {String} property
    @param {String} injectionName
+   @deprecated
    */
-  injection(fullName: string, property: string, injectionName: string) {
-    assert(
-      `Invalid injectionName, expected: 'type:name' got: ${injectionName}`,
-      this.isValidFullName(injectionName)
+  injection(fullName: string, property: string) {
+    deprecate(
+      `As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject \`${property}\` on \`${fullName}\`, or look it up directly using the \`getOwner\` API.`,
+      false,
+      {
+        id: 'remove-owner-inject',
+        until: '5.0.0',
+        url: 'https://deprecations.emberjs.com/v4.x#toc_implicit-injections',
+        for: 'ember-source',
+        since: {
+          enabled: '4.0.0',
+        },
+      }
     );
-
-    let normalizedInjectionName = this.normalize(injectionName);
-
-    if (fullName.indexOf(':') === -1) {
-      return this.typeInjection(fullName, property, normalizedInjectionName);
-    }
-
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
-    let normalizedName = this.normalize(fullName);
-
-    let injections = this._injections[normalizedName] || (this._injections[normalizedName] = []);
-
-    injections.push({ property, specifier: normalizedInjectionName });
   }
 
   /**
@@ -611,34 +506,6 @@ export default class Registry implements IRegistry {
 
   isValidFullName(fullName: string): boolean {
     return VALID_FULL_NAME_REGEXP.test(fullName);
-  }
-
-  getInjections(fullName: string) {
-    let injections = this._injections[fullName];
-    if (this.fallback !== null) {
-      let fallbackInjections = this.fallback.getInjections(fullName);
-
-      if (fallbackInjections !== undefined) {
-        injections =
-          injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
-      }
-    }
-
-    return injections;
-  }
-
-  getTypeInjections(type: string): Injection[] {
-    let injections = this._typeInjections[type];
-    if (this.fallback !== null) {
-      let fallbackInjections = this.fallback.getTypeInjections(type);
-
-      if (fallbackInjections !== undefined) {
-        injections =
-          injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
-      }
-    }
-
-    return injections;
   }
 }
 

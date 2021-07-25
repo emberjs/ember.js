@@ -12,7 +12,6 @@ import {
   ApplicationTestCase,
   AbstractTestCase,
   AutobootApplicationTestCase,
-  verifyInjection,
   verifyRegistration,
   runTask,
 } from 'internal-test-helpers';
@@ -126,7 +125,6 @@ moduleFor(
       verifyRegistration(assert, application, '-view-registry:main');
       verifyRegistration(assert, application, 'route:basic');
       verifyRegistration(assert, application, 'event_dispatcher:main');
-      verifyInjection(assert, application, 'view:-outlet', 'namespace', 'application:main');
 
       verifyRegistration(assert, application, 'location:auto');
       verifyRegistration(assert, application, 'location:hash');
@@ -143,20 +141,12 @@ moduleFor(
 
       // DEBUGGING
       verifyRegistration(assert, application, 'resolver-for-debugging:main');
-      verifyInjection(
-        assert,
-        application,
-        'container-debug-adapter:main',
-        'resolver',
-        'resolver-for-debugging:main'
-      );
       verifyRegistration(assert, application, 'container-debug-adapter:main');
       verifyRegistration(assert, application, 'component-lookup:main');
 
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
       verifyRegistration(assert, application, 'template:-outlet');
-      verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
 
       assert.deepEqual(
         application.registeredOptionsForType('helper'),
