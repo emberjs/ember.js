@@ -260,7 +260,10 @@ moduleFor(
 
       runTask(() => {
         set(this.context, 'firstName', 'Godfrey');
+      });
 
+      // needs to be separate task because of the way classic components update args
+      runTask(() => {
         if (HAS_NATIVE_PROXY) {
           expectDeprecation(() => {
             set(instance.hash, 'lastName', 'Chan');
