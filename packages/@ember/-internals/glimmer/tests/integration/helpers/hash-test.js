@@ -255,7 +255,10 @@ moduleFor(
 
       runTask(() => {
         set(this.context, 'firstName', 'Godfrey');
+      });
 
+      // needs to be separate task because of the way classic components update args
+      runTask(() => {
         expectDeprecation(() => {
           set(instance.hash, 'lastName', 'Chan');
         }, /You set the '.*' property on a {{hash}} object/);
