@@ -150,7 +150,7 @@ export default class Container {
     if (this.isDestroyed) {
       throw new Error(`Can not call \`.lookup\` after the owner has been destroyed`);
     }
-    assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
+    assert(this.registry.fullNameErrorMessage, this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
   }
 
@@ -219,7 +219,7 @@ export default class Container {
     }
     let normalizedName = this.registry.normalize(fullName);
 
-    assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
+    assert(this.registry.fullNameErrorMessage, this.registry.isValidFullName(normalizedName));
 
     return factoryFor<T, C>(this, normalizedName, fullName) as Factory<T, C> | undefined;
   }

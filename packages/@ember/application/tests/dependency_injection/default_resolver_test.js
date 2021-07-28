@@ -137,28 +137,28 @@ moduleFor(
     [`@test the default resolver throws an error if the fullName to resolve is invalid`]() {
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration(undefined);
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration(null);
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration('');
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration('');
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration(':');
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration('model');
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration('model:');
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
       expectAssertion(() => {
         this.applicationInstance.resolveRegistration(':type');
-      }, /fullName must be a proper full name/);
+      }, /Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase./);
     }
 
     ['@test the default resolver normalizes lookups'](assert) {

@@ -204,7 +204,7 @@ export default class Registry implements IRegistry {
    @param {Object} options
    */
   register<T, C>(fullName: string, factory: Factory<T, C>, options: object = {}): void {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert(this.fullNameErrorMessage, this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
@@ -236,7 +236,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    */
   unregister(fullName: string): void {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert(this.fullNameErrorMessage, this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
 
@@ -504,7 +504,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    */
   typeInjection(type: string, property: string, fullName: string): void {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert(this.fullNameErrorMessage, this.isValidFullName(fullName));
 
     let fullNameType = fullName.split(':')[0];
     assert(`Cannot inject a '${fullName}' on other ${type}(s).`, fullNameType !== type);
@@ -572,7 +572,7 @@ export default class Registry implements IRegistry {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
+    assert(this.fullNameErrorMessage, this.isValidFullName(fullName));
     let normalizedName = this.normalize(fullName);
 
     let injections = this._injections[normalizedName] || (this._injections[normalizedName] = []);
@@ -608,6 +608,9 @@ export default class Registry implements IRegistry {
 
     return Object.assign({}, fallbackKnown, localKnown, resolverKnown);
   }
+
+  fullNameErrorMessage =
+    'Angle bracket nested component requires the :: separator between the names and the directory names must be in PascalCase.';
 
   isValidFullName(fullName: string): boolean {
     return VALID_FULL_NAME_REGEXP.test(fullName);
