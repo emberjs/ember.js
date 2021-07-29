@@ -252,14 +252,18 @@
   The `invokeHelper` function can be used to create a helper instance in
   JavaScript.
 
+  To access a helper's value you have to use `getValue` from
+  `@glimmer/tracking/primitives/cache`.
+
   ```js
   // app/components/data-loader.js
   import Component from '@glimmer/component';
+  import { getValue } from '@glimmer/tracking/primitives/cache';
   import Helper from '@ember/component/helper';
   import { invokeHelper } from '@ember/helper';
 
   class PlusOne extends Helper {
-    compute([num]) {
+    compute([number]) {
       return number + 1;
     }
   }
@@ -270,10 +274,14 @@
         positional: [this.args.number],
       };
     });
+
+    get value() {
+      return getValue(this.plusOne);
+    }
   }
   ```
   ```hbs
-  {{this.plusOne.value}}
+  {{this.value}}
   ```
 
   It receives three arguments:
