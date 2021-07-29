@@ -670,7 +670,7 @@ class EmberRouter extends EmberObject {
       this._toplevelView = null;
     }
 
-    this._super(...arguments);
+    super.willDestroy();
 
     this.reset();
 
