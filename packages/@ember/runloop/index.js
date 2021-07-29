@@ -64,6 +64,8 @@ export const _backburner = new Backburner(_queues, {
   flush,
 });
 
+export const backburner = _backburner;
+
 /**
  @module @ember/runloop
 */
