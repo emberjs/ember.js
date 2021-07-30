@@ -96,6 +96,11 @@ export default class RouterService extends Service {
 
       this.trigger('routeDidChange', transition);
     });
+
+  willDestroy() {
+    super.willDestroy(...arguments);
+
+    this[ROUTER] = null;
   }
 
   /**
