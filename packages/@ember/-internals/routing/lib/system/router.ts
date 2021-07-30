@@ -802,7 +802,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       this._toplevelView = null;
     }
 
-    this._super(...arguments);
+    super.willDestroy();
 
     this.reset();
 
