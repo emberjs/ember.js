@@ -61,6 +61,12 @@ export default class RouterService extends Service {
     return (this[ROUTER] = router);
   }
 
+  willDestroy() {
+    super.willDestroy(...arguments);
+
+    this[ROUTER] = null;
+  }
+
   /**
      Transition the application into another route. The route may
      be either a single route or route path:
