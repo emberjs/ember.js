@@ -92,15 +92,22 @@ function createApplication() {
 
   let app = this.Ember.Application.extend().create({
     autoboot: false,
+    Resolver: {
+      create: (specifier) => {
+        return this.registry[specifier];
+      },
+    },
   });
 
-  app.Router = this.Ember.Router.extend({
+  let Router = this.Ember.Router.extend({
     location: 'none',
   });
 
   if (this.routesCallback) {
-    app.Router.map(this.routesCallback);
+    Router.map(this.routesCallback);
   }
+
+  this.register('router:main', Router);
 
   registerApplicationClasses(app, this.registry);
 
