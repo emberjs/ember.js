@@ -166,7 +166,7 @@ moduleFor(
     //   assert.deepEqual(cp._dependentKeys, ['qux', 'zoopa.[]']);
     // }
 
-    ['@test defining a computed property with a dependent key more than one level deep beyond @each is not supported']() {
+    ['@test defining a computed property with a dependent key more than one level deep beyond @each throws an assertion']() {
       expectNoWarning(() => {
         obj = {};
         defineProperty(
@@ -185,50 +185,24 @@ moduleFor(
         );
       });
 
-      expectWarning(() => {
+      let expected = /Dependent keys containing @each only work one level deep./;
+
+      expectAssertion(() => {
         obj = {};
         defineProperty(
           obj,
           'someProp',
           computed('todos.@each.owner.name', () => {})
         );
-      }, /You used the key "todos\.@each\.owner\.name" which is invalid\. /);
+      }, expected);
 
-      expectWarning(() => {
+      expectAssertion(() => {
         obj = {};
         defineProperty(
           obj,
           'someProp',
           computed('todos.@each.owner.@each.name', () => {})
         );
-      }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
-
-      let expected = new RegExp(
-        'When using @each in a dependent-key or an observer, ' +
-          'you can only chain one property level deep after the @each\\. ' +
-          'That is, `todos\\.@each\\.owner` is allowed but ' +
-          '`todos\\.@each\\.owner\\.name` \\(which is what you passed\\) is not\\.\n\n' +
-          'This was never supported\\. Currently, the extra segments ' +
-          'are silently ignored, i\\.e\\. `todos\\.@each\\.owner\\.name` ' +
-          'behaves exactly the same as `todos\\.@each\\.owner`\\. ' +
-          'In the future, this will throw an error\\.\n\n' +
-          'If the current behavior is acceptable for your use case, ' +
-          'please remove the extraneous segments by changing your key to ' +
-          '`todos\\.@each\\.owner`\\. Otherwise, please create an ' +
-          'intermediary computed property or switch to using tracked properties\\.'
-      );
-
-      expectDeprecation(() => {
-        obj = {
-          todos: [],
-        };
-        defineProperty(
-          obj,
-          'someProp',
-          computed('todos.@each.owner.name', () => {})
-        );
-
-        get(obj, 'someProp');
       }, expected);
     }
   }

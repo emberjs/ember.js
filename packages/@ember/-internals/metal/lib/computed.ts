@@ -1,6 +1,6 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { inspect, toString } from '@ember/-internals/utils';
-import { assert, warn } from '@ember/debug';
+import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -351,13 +351,14 @@ export class ComputedProperty extends ComputedDescriptor {
     let args: string[] = [];
 
     function addArg(property: string): void {
-      warn(
+      assert(
         `Dependent keys containing @each only work one level deep. ` +
           `You used the key "${property}" which is invalid. ` +
-          `Please create an intermediary computed property.`,
-        DEEP_EACH_REGEX.test(property) === false,
-        { id: 'ember-metal.computed-deep-each' }
+          `Please create an intermediary computed property or ` +
+          `switch to using tracked properties.`,
+        DEEP_EACH_REGEX.test(property) === false
       );
+
       args.push(property);
     }
 

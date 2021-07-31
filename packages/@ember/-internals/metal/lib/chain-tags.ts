@@ -1,6 +1,6 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { _WeakSet } from '@glimmer/util';
 import {
   combine,
@@ -88,33 +88,6 @@ function getChainTags(
     if (segment === '@each' && segmentEnd !== pathLength) {
       lastSegmentEnd = segmentEnd + 1;
       segmentEnd = path.indexOf('.', lastSegmentEnd);
-
-      // There should be exactly one segment after an `@each` (i.e. `@each.foo`, not `@each.foo.bar`)
-      deprecate(
-        `When using @each in a dependent-key or an observer, ` +
-          `you can only chain one property level deep after ` +
-          `the @each. That is, \`${path.slice(0, segmentEnd)}\` ` +
-          `is allowed but \`${path}\` (which is what you passed) ` +
-          `is not.\n\n` +
-          `This was never supported. Currently, the extra segments ` +
-          `are silently ignored, i.e. \`${path}\` behaves exactly ` +
-          `the same as \`${path.slice(0, segmentEnd)}\`. ` +
-          `In the future, this will throw an error.\n\n` +
-          `If the current behavior is acceptable for your use case, ` +
-          `please remove the extraneous segments by changing your ` +
-          `key to \`${path.slice(0, segmentEnd)}\`. ` +
-          `Otherwise, please create an intermediary computed property ` +
-          `or switch to using tracked properties.`,
-        segmentEnd === -1,
-        {
-          until: '3.17.0',
-          id: 'ember-metal.computed-deep-each',
-          for: 'ember-source',
-          since: {
-            enabled: '3.13.0-beta.3',
-          },
-        }
-      );
 
       let arrLength = current.length;
 
