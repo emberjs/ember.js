@@ -298,120 +298,83 @@ moduleFor(
     beforeEach() {
       lookup = context.lookup = {};
 
-      expectDeprecation(() => {
-        object = ObservableObject.extend({
-          computed: computed({
-            get() {
-              this.computedCalls.push('getter-called');
-              return 'computed';
-            },
-            set(key, value) {
-              this.computedCalls.push(value);
-            },
-          }).volatile(),
+      object = ObservableObject.extend({
+        computed: computed({
+          get() {
+            this.computedCalls.push('getter-called');
+            return 'computed';
+          },
+          set(key, value) {
+            this.computedCalls.push(value);
+          },
+        }),
 
-          computedCached: computed({
-            get() {
-              this.computedCachedCalls.push('getter-called');
-              return 'computedCached';
-            },
-            set: function (key, value) {
-              this.computedCachedCalls.push(value);
-            },
-          }),
+        dependent: computed('changer', {
+          get() {
+            this.dependentCalls.push('getter-called');
+            return 'dependent';
+          },
+          set(key, value) {
+            this.dependentCalls.push(value);
+          },
+        }),
 
-          dependent: computed('changer', {
-            get() {
-              this.dependentCalls.push('getter-called');
-              return 'dependent';
-            },
-            set(key, value) {
-              this.dependentCalls.push(value);
-            },
-          }).volatile(),
-          dependentFront: computed('changer', {
-            get() {
-              this.dependentFrontCalls.push('getter-called');
-              return 'dependentFront';
-            },
-            set(key, value) {
-              this.dependentFrontCalls.push(value);
-            },
-          }).volatile(),
-          dependentCached: computed('changer', {
-            get() {
-              this.dependentCachedCalls.push('getter-called!');
-              return 'dependentCached';
-            },
-            set(key, value) {
-              this.dependentCachedCalls.push(value);
-            },
-          }),
+        inc: computed('changer', function () {
+          return this.incCallCount++;
+        }),
 
-          inc: computed('changer', function () {
-            return this.incCallCount++;
-          }),
+        nestedInc: computed('inc', function () {
+          get(this, 'inc');
+          return this.nestedIncCallCount++;
+        }),
 
-          nestedInc: computed('inc', function () {
-            get(this, 'inc');
-            return this.nestedIncCallCount++;
-          }),
+        isOn: computed('state', {
+          get() {
+            return this.get('state') === 'on';
+          },
+          set() {
+            this.set('state', 'on');
+            return this.get('state') === 'on';
+          },
+        }),
 
-          isOn: computed('state', {
-            get() {
-              return this.get('state') === 'on';
-            },
-            set() {
-              this.set('state', 'on');
-              return this.get('state') === 'on';
-            },
-          }).volatile(),
-
-          isOff: computed('state', {
-            get() {
-              return this.get('state') === 'off';
-            },
-            set() {
-              this.set('state', 'off');
-              return this.get('state') === 'off';
-            },
-          }).volatile(),
-        }).create({
-          computedCalls: [],
-          computedCachedCalls: [],
-          changer: 'foo',
-          dependentCalls: [],
-          dependentFrontCalls: [],
-          dependentCachedCalls: [],
-          incCallCount: 0,
-          nestedIncCallCount: 0,
-          state: 'on',
-        });
+        isOff: computed('state', {
+          get() {
+            return this.get('state') === 'off';
+          },
+          set() {
+            this.set('state', 'off');
+            return this.get('state') === 'off';
+          },
+        }),
+      }).create({
+        computedCalls: [],
+        changer: 'foo',
+        dependentCalls: [],
+        incCallCount: 0,
+        nestedIncCallCount: 0,
+        state: 'on',
       });
     }
 
     ['@test getting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      let keys = w('computed computedCached dependent dependentFront dependentCached');
+      let keys = w('computed dependent');
 
       keys.forEach(function (key) {
         assert.equal(object.get(key), key, `Try #1: object.get(${key}) should run function`);
         assert.equal(object.get(key), key, `Try #2: object.get(${key}) should run function`);
       });
 
-      // verify each call count.  cached should only be called once
-      w('computedCalls dependentFrontCalls dependentCalls').forEach((key) => {
-        assert.equal(object[key].length, 2, `non-cached property ${key} should be called 2x`);
-      });
-
-      w('computedCachedCalls dependentCachedCalls').forEach((key) => {
+      // verify each call count. cached should only be called once
+      w('computedCalls dependentCalls').forEach((key) => {
         assert.equal(object[key].length, 1, `non-cached property ${key} should be called 1x`);
       });
     }
 
     ['@test setting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      let keys = w('computed dependent dependentFront computedCached dependentCached');
+      let keys = w('computed dependent');
       let values = w('value1 value2');
 
       keys.forEach((key) => {
@@ -459,13 +422,13 @@ moduleFor(
 
     ['@test notify change should clear cache'](assert) {
       // call get several times to collect call count
-      object.get('computedCached'); // should run func
-      object.get('computedCached'); // should not run func
+      object.get('computed'); // should run func
+      object.get('computed'); // should not run func
 
-      object.notifyPropertyChange('computedCached');
+      object.notifyPropertyChange('computed');
 
-      object.get('computedCached'); // should run again
-      assert.equal(object.computedCachedCalls.length, 2, 'should have invoked method 2x');
+      object.get('computed'); // should run again
+      assert.equal(object.computedCalls.length, 2, 'should have invoked method 2x');
     }
 
     ['@test change dependent should clear cache'](assert) {

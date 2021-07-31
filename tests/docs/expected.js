@@ -586,7 +586,6 @@ module.exports = {
     'validationCache',
     'value',
     'visit',
-    'volatile',
     'w',
     'wait',
     'waitForDOMReady',
