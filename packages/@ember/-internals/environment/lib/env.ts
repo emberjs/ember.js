@@ -16,7 +16,7 @@ export const ENV = {
   ENABLE_OPTIONAL_FEATURES: false,
 
   /**
-    Determines whether Ember should add to `Array`, `Function`, and `String`
+    Determines whether Ember should add to `Array` and `String`
     native object prototypes, a few extra methods in order to provide a more
     friendly API.
 
@@ -36,7 +36,6 @@ export const ENV = {
   */
   EXTEND_PROTOTYPES: {
     Array: true,
-    Function: true,
     String: true,
   },
 
