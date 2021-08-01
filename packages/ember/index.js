@@ -493,6 +493,19 @@ Ember._captureRenderTree = captureRenderTree;
 
 if (ENV.EXTEND_PROTOTYPES.String) {
   String.prototype.htmlSafe = function () {
+    deprecate(
+      `String prototype extensions are deprecated. Please import htmlSafe from '@ember/template' instead.`,
+      false,
+      {
+        id: 'ember-string.prototype-extensions',
+        for: 'ember-source',
+        since: {
+          enabled: '3.27.6',
+        },
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
+      }
+    );
     return htmlSafe(this);
   };
 }
