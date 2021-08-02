@@ -29,7 +29,7 @@ export function assign(target: object, ...sources: object[]): object;
   @public
   @static
 */
-export function assign(target: object): object {
+export function assign(target: object, ...rest: object[]): object {
   deprecate(
     'Use of `assign` has been deprecated. Please use `Object.assign` or the spread operator instead.',
     false,
@@ -44,5 +44,5 @@ export function assign(target: object): object {
     }
   );
 
-  return Object.assign(target, ...arguments);
+  return Object.assign(target, ...rest);
 }
