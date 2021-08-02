@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.28.0-beta.7 (August 2, 2021)
+
+- [#19681](https://github.com/emberjs/ember.js/pull/19681) [BUGFIX] Restore previous hash behavior
+- [#19685](https://github.com/emberjs/ember.js/pull/19685) [BUGFIX] Fix memory leak in RouterService
+- [#19690](https://github.com/emberjs/ember.js/pull/19690) [BUGFIX] Deprecates String.prototype.htmlSafe targeting Ember 4.0, as intended by the original deprecation.
+
 ### v3.28.0-beta.6 (June 21, 2021)
 
 - [#19584](https://github.com/emberjs/ember.js/pull/19584) [BUGFIX] Ensure hash objects correctly entangle as dependencies
