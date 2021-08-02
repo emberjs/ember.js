@@ -309,10 +309,15 @@ moduleFor(
       this.assertText('Chad Hietala');
 
       runTask(() => {
-        expectDeprecation(() => {
+        if (HAS_NATIVE_PROXY) {
+          expectDeprecation(() => {
+            set(fooBarInstance.hash, 'firstName', 'Godfrey');
+            set(fooBarInstance.hash, 'lastName', 'Chan');
+          }, /You set the '.*' property on a {{hash}} object/);
+        } else {
           set(fooBarInstance.hash, 'firstName', 'Godfrey');
           set(fooBarInstance.hash, 'lastName', 'Chan');
-        }, /You set the '.*' property on a {{hash}} object/);
+        }
       });
 
       this.assertText('Godfrey Chan');
