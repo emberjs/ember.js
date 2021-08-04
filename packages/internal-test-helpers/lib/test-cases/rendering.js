@@ -153,16 +153,6 @@ export default class RenderingTestCase extends AbstractTestCase {
     this.owner.register(`helper:${name}`, definition);
   }
 
-  registerPartial(name, template) {
-    let owner = this.owner;
-    if (typeof template === 'string') {
-      owner.register(
-        `template:${name}`,
-        this.compile(template, { moduleName: `my-app/templates/-${name}.hbs` })
-      );
-    }
-  }
-
   registerComponent(name, { ComponentClass = Component, template = null }) {
     let { owner } = this;
 

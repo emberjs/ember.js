@@ -406,7 +406,6 @@ module.exports = {
     'parent',
     'parentView',
     'parentViewDidChange',
-    'partial',
     'pattern',
     'pauseTest',
     'popObject',

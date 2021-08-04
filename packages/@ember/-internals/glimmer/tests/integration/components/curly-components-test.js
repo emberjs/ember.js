@@ -746,50 +746,6 @@ moduleFor(
       });
     }
 
-    ['@test it can render a basic component with a block when the yield is in a partial']() {
-      this.registerPartial('_partialWithYield', 'yielded: [{{yield}}]');
-
-      this.registerComponent('foo-bar', {
-        template: '{{partial "partialWithYield"}} - In component',
-      });
-
-      expectDeprecation(() => {
-        this.render('{{#foo-bar}}hello{{/foo-bar}}');
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-    }
-
-    ['@test it can render a basic component with a block param when the yield is in a partial']() {
-      this.registerPartial('_partialWithYield', 'yielded: [{{yield "hello"}}]');
-
-      this.registerComponent('foo-bar', {
-        template: '{{partial "partialWithYield"}} - In component',
-      });
-
-      expectDeprecation(() => {
-        this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-    }
-
     ['@test it renders the layout with the component instance as the context']() {
       let instance;
 
