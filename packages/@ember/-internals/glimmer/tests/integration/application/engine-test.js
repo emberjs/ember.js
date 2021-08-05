@@ -974,5 +974,64 @@ moduleFor(
           assert.equal(error.message, 'Whoops! Something went wrong...');
         });
     }
+
+    ['@test visit() with `shouldRender: true` queryParams are properly deserialized for lazy routes'](
+      assert
+    ) {
+      assert.expect(2);
+
+      let hooks = [];
+
+      this.setupAppAndRoutableEngine(hooks);
+
+      this.add(
+        'engine:blog',
+        Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
+          init() {
+            this._super(...arguments);
+            this.register(
+              'controller:application',
+              Controller.extend({
+                queryParams: ['lazyQueryParam'],
+              })
+            );
+
+            this.register(
+              'template:application',
+              compile('Engine<div class="lazy-query-param">{{this.lazyQueryParam}}</div>{{outlet}}')
+            );
+
+            this.register(
+              'route:application',
+              Route.extend({
+                queryParams: {
+                  lazyQueryParam: {
+                    defaultValue: null,
+                  },
+                },
+                deserializeQueryParam() {
+                  hooks.push('engine - deserialize query param');
+                  return 'foo';
+                },
+                model() {
+                  hooks.push('engine - application');
+                },
+              })
+            );
+          },
+        })
+      );
+
+      return this.visit('/blog?lazyQueryParam=bar', { shouldRender: true }).then(() => {
+        assert.deepEqual(
+          hooks,
+          ['application - application', 'engine - deserialize query param', 'engine - application'],
+          'the expected hooks were fired'
+        );
+        assert.strictEqual(this.element.querySelector('.lazy-query-param').innerHTML, 'foo');
+      });
+    }
   }
 );
