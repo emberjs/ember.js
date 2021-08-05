@@ -1943,11 +1943,20 @@ export function getFullQueryParams(router: EmberRouter, state: TransitionState<R
     return state['fullQueryParams'];
   }
 
-  state['fullQueryParams'] = {};
-  assign(state['fullQueryParams'], state.queryParams);
+  let fullQueryParamsState = {};
+  let haveAllRouteInfosResolved = state.routeInfos.every((routeInfo) => routeInfo.route);
 
-  router._deserializeQueryParams(state.routeInfos, state['fullQueryParams'] as QueryParam);
-  return state['fullQueryParams'];
+  assign(fullQueryParamsState, state.queryParams);
+  router._deserializeQueryParams(state.routeInfos, fullQueryParamsState as QueryParam);
+
+  // only cache query params state if all routeinfos have resolved; it's possible
+  // for lazy routes to not have resolved when `getFullQueryParams` is called, so
+  // we wait until all routes have resolved prior to caching query params state
+  if (haveAllRouteInfosResolved) {
+    state['fullQueryParams'] = fullQueryParamsState;
+  }
+
+  return fullQueryParamsState;
 }
 
 function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
