@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v3.28.0 (August 9, 2021)
+### v3.28.0 (August 9, 2021)
 
 - [#19697](https://github.com/emberjs/ember.js/pull/19697) [BUGFIX] Ensure `deserializeQueryParam` is called for lazy routes
 - [#19681](https://github.com/emberjs/ember.js/pull/19681) [BUGFIX] Restore previous hash behavior
@@ -9,6 +9,11 @@
 - [#19584](https://github.com/emberjs/ember.js/pull/19584) [BUGFIX] Ensure hash objects correctly entangle as dependencies
 - [#19491](https://github.com/emberjs/ember.js/pull/19491) [BUGFIX] Fix `owner.lookup` `owner.register` behavior with `singleton: true` option
 - [#19472](https://github.com/emberjs/ember.js/pull/19472) [BUGFIX] Prevent transformation of block params called `attrs`
+
+### v3.24.5 (August 9, 2021)
+
+- [#19685](https://github.com/emberjs/ember.js/pull/19685) Fix memory leak with `RouterService` under Chrome
+- [#19683](https://github.com/emberjs/ember.js/pull/19683) Ensure `super.willDestroy` is called correctly in `Router`'s `willDestroy`
 
 ### v3.27.5 (June 10, 2021)
 
