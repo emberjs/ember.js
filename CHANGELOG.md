@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.24.5 (August 9, 2021)
+
+- [#19685](https://github.com/emberjs/ember.js/pull/19685) Fix memory leak with `RouterService` under Chrome
+- [#19683](https://github.com/emberjs/ember.js/pull/19683) Ensure `super.willDestroy` is called correctly in `Router`'s `willDestroy`
+
 ### v3.24.4 (May 3, 2021)
 
 - [#19477](https://github.com/emberjs/ember.js/pull/19477) Allow `<LinkToExternal />` to override internal assertion
