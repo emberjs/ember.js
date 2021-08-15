@@ -250,7 +250,7 @@ moduleFor(
       }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);
     }
 
-    ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as this.attrs.foo']() {
+    ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as @foo']() {
       this.registerComponent('inner-component', {
         template:
           '<button id="inner-button" {{action (action @external-action)}}>Click me</button>',
