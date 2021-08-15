@@ -58,7 +58,7 @@ Promise.resolve()
     // ensures that we tag this correctly
     return exec('auto-dist-tag', ['--write']);
   })
-  .then(() => {
+  .then(() => {afewf
     // do a production build
     return exec('yarn', ['build']);
   })
