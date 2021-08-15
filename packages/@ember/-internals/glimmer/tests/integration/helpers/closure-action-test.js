@@ -253,7 +253,7 @@ moduleFor(
     ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as this.attrs.foo']() {
       this.registerComponent('inner-component', {
         template:
-          '<button id="inner-button" {{action (action this.attrs.external-action)}}>Click me</button>',
+          '<button id="inner-button" {{action (action @external-action)}}>Click me</button>',
       });
 
       this.registerComponent('outer-component', {
