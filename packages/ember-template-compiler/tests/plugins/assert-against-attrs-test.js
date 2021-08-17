@@ -2,51 +2,49 @@ import TransformTestCase from '../utils/transform-test-case';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(
-  'ember-template-compiler: transforming attrs into @args',
+  'ember-template-compiler: assert against attrs',
   class extends TransformTestCase {
-    ['@test it transforms attrs into @args']() {
+    ['@test it asserts against attrs']() {
       expectAssertion(() => {
-        this.assertTransformed(`{{attrs.foo}}`, `{{@foo}}`);
+        this.assertTransformed(`{{attrs.foo}}`, `{{attrs.foo}}`);
       }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo}} should be updated to {{@foo}}./);
 
       expectAssertion(() => {
-        this.assertTransformed(`{{attrs.foo.bar}}`, `{{@foo.bar}}`);
+        this.assertTransformed(`{{attrs.foo.bar}}`, `{{attrs.foo.bar}}`);
       }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo.bar}} should be updated to {{@foo.bar}}./);
 
       expectAssertion(() => {
-        this.assertTransformed(`{{if attrs.foo "foo"}}`, `{{if @foo "foo"}}`);
+        this.assertTransformed(`{{if attrs.foo "foo"}}`, `{{if attrs.foo "foo"}}`);
       }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo}} should be updated to {{@foo}}./);
 
       expectAssertion(() => {
-        this.assertTransformed(`{{#if attrs.foo}}{{/if}}`, `{{#if @foo}}{{/if}}`);
+        this.assertTransformed(`{{#if attrs.foo}}{{/if}}`, `{{#if attrs.foo}}{{/if}}`);
       }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo}} should be updated to {{@foo}}./);
 
       expectAssertion(() => {
-        this.assertTransformed(`{{deeply (nested attrs.foo.bar)}}`, `{{deeply (nested @foo.bar)}}`);
+        this.assertTransformed(
+          `{{deeply (nested attrs.foo.bar)}}`,
+          `{{deeply (nested attrs.foo.bar)}}`
+        );
       }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo.bar}} should be updated to {{@foo.bar}}./);
     }
 
-    ['@test it transforms this.attrs into @args']() {
-      this.assertTransformed(`{{this.attrs.foo}}`, `{{@foo}}`);
-
-      this.assertTransformed(`{{this.attrs.foo.bar}}`, `{{@foo.bar}}`);
-
-      this.assertTransformed(`{{if this.attrs.foo "foo"}}`, `{{if @foo "foo"}}`);
-
-      this.assertTransformed(`{{#if this.attrs.foo}}{{/if}}`, `{{#if @foo}}{{/if}}`);
-
+    ['@test it does not assert against this.attrs']() {
+      this.assertTransformed(`{{this.attrs.foo}}`, `{{this.attrs.foo}}`);
+      this.assertTransformed(`{{if this.attrs.foo "foo"}}`, `{{if this.attrs.foo "foo"}}`);
+      this.assertTransformed(`{{#if this.attrs.foo}}{{/if}}`, `{{#if this.attrs.foo}}{{/if}}`);
       this.assertTransformed(
         `{{deeply (nested this.attrs.foo.bar)}}`,
-        `{{deeply (nested @foo.bar)}}`
+        `{{deeply (nested this.attrs.foo.bar)}}`
       );
     }
   }
 );
 
 moduleFor(
-  'ember-template-compiler: not transforming block params named "attrs" into @args',
+  'ember-template-compiler: not asserting against block params named "attrs"',
   class extends RenderingTestCase {
-    ["@test it doesn't transform block params"]() {
+    ["@test it doesn't assert block params"]() {
       this.registerComponent('foo', {
         template: '{{#let "foo" as |attrs|}}{{attrs}}{{/let}}',
       });
@@ -54,7 +52,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { content: 'foo' });
     }
 
-    ["@test it doesn't transform component block params"]() {
+    ["@test it doesn't assert component block params"]() {
       this.registerComponent('foo', {
         template: '{{yield "foo"}}',
       });
@@ -62,7 +60,7 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { content: 'foo' });
     }
 
-    ["@test it doesn't transform block params with nested keys"]() {
+    ["@test it doesn't assert block params with nested keys"]() {
       this.registerComponent('foo', {
         template: '{{yield (hash bar="baz")}}',
       });

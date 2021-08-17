@@ -8,26 +8,19 @@ import { EmberASTPluginEnvironment } from '../types';
 */
 
 /**
-  A Glimmer2 AST transformation that replaces all instances of
+  A Glimmer2 AST transformation that asserts against
 
   ```handlebars
- {{attrs.foo.bar}}
+  {{attrs.foo.bar}}
   ```
 
-  to
-
-  ```handlebars
- {{@foo.bar}}
-  ```
-
-  as well as `{{#if attrs.foo}}`, `{{deeply (nested attrs.foobar.baz)}}`,
-  `{{this.attrs.foo}}` etc
+  ...as well as `{{#if attrs.foo}}`, `{{deeply (nested attrs.foobar.baz)}}`.
 
   @private
-  @class TransformAttrsToProps
+  @class AssertAgainstAttrs
 */
 
-export default function transformAttrsIntoArgs(env: EmberASTPluginEnvironment): ASTPlugin {
+export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
   let moduleName = env.meta?.moduleName;
 
@@ -39,7 +32,7 @@ export default function transformAttrsIntoArgs(env: EmberASTPluginEnvironment): 
   }
 
   return {
-    name: 'transform-attrs-into-args',
+    name: 'assert-against-attrs',
 
     visitor: {
       Program: {
@@ -64,21 +57,15 @@ export default function transformAttrsIntoArgs(env: EmberASTPluginEnvironment): 
         if (isAttrs(node, stack[stack.length - 1])) {
           let path = b.path(node.original.substr(6)) as AST.PathExpression;
 
-          if (node.this === false) {
-            assert(
-              `Using {{attrs}} to reference named arguments is not supported. {{attrs.${
-                path.original
-              }}} should be updated to {{@${path.original}}}. ${calculateLocationDisplay(
-                moduleName,
-                node.loc
-              )}`,
-              false
-            );
-          }
-
-          path.original = `@${path.original}`;
-          path.data = true;
-          return path;
+          assert(
+            `Using {{attrs}} to reference named arguments is not supported. {{attrs.${
+              path.original
+            }}} should be updated to {{@${path.original}}}. ${calculateLocationDisplay(
+              moduleName,
+              node.loc
+            )}`,
+            node.this !== false
+          );
         }
       },
     },
