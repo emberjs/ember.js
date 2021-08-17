@@ -125,7 +125,7 @@
       <p class="error">{{validationError}}</p>
     {{/if}}
     First name:
-  {{/labeled-textfield}}
+  </LabeledTextfield>
   ```
 
   ```app/components/labeled-textfield.hbs
