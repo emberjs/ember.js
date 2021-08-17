@@ -1,9 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
-import { assert, deprecate } from '@ember/debug';
-import { PARTIALS } from '@ember/deprecated-features';
-import EmberError from '@ember/error';
+import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -11,7 +9,6 @@ import {
   HelperDefinitionState,
   ModifierDefinitionState,
   Option,
-  PartialDefinition,
   ResolvedComponentDefinition,
   RuntimeResolver,
   Template,
@@ -22,7 +19,6 @@ import {
   getInternalComponentManager,
   setInternalHelperManager,
 } from '@glimmer/manager';
-import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import {
   array,
   concat,
@@ -114,66 +110,6 @@ function lookupComponentPair(
   }
 }
 
-let lookupPartial: { templateName: string; owner: Owner } | any;
-let templateFor: { owner: Owner; underscored: string; name: string } | any;
-let parseUnderscoredName: { templateName: string } | any;
-
-if (PARTIALS) {
-  lookupPartial = function (templateName: string, owner: Owner) {
-    deprecate(
-      `The use of \`{{partial}}\` is deprecated, please refactor the "${templateName}" partial to a component`,
-      false,
-      {
-        id: 'ember-views.partial',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-views-partial',
-        for: 'ember-source',
-        since: {
-          enabled: '3.15.0-beta.1',
-        },
-      }
-    );
-
-    if (templateName === null) {
-      return;
-    }
-
-    let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
-
-    assert(`Unable to find partial with name "${templateName}"`, Boolean(template));
-
-    return template;
-  };
-
-  templateFor = function (owner: any, underscored: string, name: string) {
-    if (PARTIALS) {
-      if (!name) {
-        return;
-      }
-      assert(`templateNames are not allowed to contain periods: ${name}`, name.indexOf('.') === -1);
-
-      if (!owner) {
-        throw new EmberError(
-          'Container was not found when looking up a views template. ' +
-            'This is most likely due to manually instantiating an Ember.View. ' +
-            'See: http://git.io/EKPpnA'
-        );
-      }
-
-      return owner.lookup(`template:${underscored}`) || owner.lookup(`template:${name}`);
-    }
-  };
-
-  parseUnderscoredName = function (templateName: string) {
-    let nameParts = templateName.split('/');
-    let lastPart = nameParts[nameParts.length - 1];
-
-    nameParts[nameParts.length - 1] = `_${lastPart}`;
-
-    return nameParts.join('/');
-  };
-}
-
 const BUILTIN_KEYWORD_HELPERS = {
   action,
   mut,
@@ -227,15 +163,8 @@ const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
 export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTimeResolver<Owner> {
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
-  lookupPartial(name: string, owner: Owner): Option<PartialDefinition> {
-    if (PARTIALS) {
-      let templateFactory = lookupPartial(name, owner);
-      let template = templateFactory(owner);
-
-      return new PartialDefinitionImpl(name, template);
-    } else {
-      return null;
-    }
+  lookupPartial(): null {
+    return null;
   }
 
   lookupHelper(name: string, owner: Owner): Option<HelperDefinitionState> {
