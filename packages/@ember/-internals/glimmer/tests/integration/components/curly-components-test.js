@@ -1256,7 +1256,7 @@ moduleFor(
       this.assertText('somecomponent');
     }
 
-    ['@test non-block with properties on attrs']() {
+    ['@test non-block with properties access via attrs is asserted against']() {
       expectAssertion(() => {
         this.registerComponent('non-block', {
           template: 'In layout - someProp: {{attrs.someProp}}',
@@ -1564,7 +1564,7 @@ moduleFor(
       this.assertText('In layout - someProp: something here - In template');
     }
 
-    ['@test block with properties on attrs']() {
+    ['@test block with properties on attrs is asserted against']() {
       expectAssertion(() => {
         this.registerComponent('with-block', {
           template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
@@ -3287,7 +3287,7 @@ moduleFor(
       this.assertText('hello');
     }
 
-    ['@test using attrs for positional params']() {
+    ['@test using attrs for positional params is asserted against']() {
       let MyComponent = Component.extend();
 
       expectAssertion(() => {
