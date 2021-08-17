@@ -282,81 +282,6 @@ abstract class ModifierManagerTest extends RenderTest {
   }
 }
 
-class ModifierManagerTest313 extends ModifierManagerTest {
-  static suiteName = 'Basic Custom Modifier Manager: 3.13';
-
-  CustomModifierManager = class CustomModifierManager implements ModifierManager<CustomModifier> {
-    capabilities = modifierCapabilities('3.13');
-
-    constructor(public owner: Owner) {}
-
-    createModifier(
-      Modifier: { create(owner: Owner, args: Arguments): CustomModifier },
-      args: Arguments
-    ) {
-      return Modifier.create(this.owner, args);
-    }
-
-    installModifier(instance: CustomModifier, element: Element, args: Arguments) {
-      instance.element = element;
-      instance.args = args;
-      instance.didInsertElement();
-    }
-
-    updateModifier(instance: CustomModifier, args: Arguments) {
-      instance.args = args;
-      instance.didUpdate();
-    }
-
-    destroyModifier(instance: CustomModifier) {
-      instance.willDestroyElement();
-    }
-  };
-
-  @test 'modifers consume all arguments'(assert: Assert) {
-    let insertCount = 0;
-    let updateCount = 0;
-
-    let foo = this.defineModifier(
-      class extends CustomModifier {
-        didInsertElement() {
-          insertCount++;
-
-          // consume qux
-          // eslint-disable-next-line no-unused-expressions
-          this.args.named.qux;
-        }
-
-        didUpdate() {
-          updateCount++;
-
-          // consume qux
-          // eslint-disable-next-line no-unused-expressions
-          this.args.named.qux;
-        }
-      }
-    );
-
-    let Main = defineComponent({ foo }, '<h1 {{foo bar=@bar qux=@qux}}>hello world</h1>');
-    let args = trackedObj({ bar: 'bar', qux: 'qux' });
-
-    this.renderComponent(Main, args);
-
-    this.assertHTML(`<h1>hello world</h1>`);
-
-    assert.equal(insertCount, 1);
-    assert.equal(updateCount, 0);
-
-    args.bar = 'other bar';
-    this.rerender();
-    assert.equal(updateCount, 1);
-
-    args.qux = 'quuuuxxxxxx';
-    this.rerender();
-    assert.equal(updateCount, 2);
-  }
-}
-
 class ModifierManagerTest322 extends ModifierManagerTest {
   static suiteName = 'Basic Custom Modifier Manager: 3.22';
 
@@ -488,4 +413,3 @@ class ModifierManagerTest322 extends ModifierManagerTest {
 }
 
 jitSuite(ModifierManagerTest322);
-jitSuite(ModifierManagerTest313);
