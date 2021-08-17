@@ -1,5 +1,49 @@
 # Ember Changelog
 
+### v4.0.0-beta.1 (August 17, 2021)
+
+- [#19649](https://github.com/emberjs/ember.js/pull/19649) / [#19692](https://github.com/emberjs/ember.js/pull/19692) [DEPRECATION] Add deprecation warning to Ember.assign implementing [RFC #750](https://github.com/emberjs/rfcs/blob/master/text/0750-deprecate-ember-assign.md).
+- [#19227](https://github.com/emberjs/ember.js/pull/19227) [BUGFIX] Enable global event dispatcher listeners to be lazily created fixing Passive Listener Violation in Chrome
+- [#19542](https://github.com/emberjs/ember.js/pull/19542) [BUGFIX] Fix initializer test blueprints
+- [#19589](https://github.com/emberjs/ember.js/pull/19589) [BUGFIX] Don’t include type-tests in build output
+- [#19528](https://github.com/emberjs/ember.js/pull/19528) [CLEANUP] Remove Logger
+- [#19558](https://github.com/emberjs/ember.js/pull/19558) [CLEANUP] Remove IE11 support
+- [#19563](https://github.com/emberjs/ember.js/pull/19563) [CLEANUP] Remove internal Ember.assign usage
+- [#19636](https://github.com/emberjs/ember.js/pull/19636) [CLEANUP] Remove copy & Copyable
+- [#19638](https://github.com/emberjs/ember.js/pull/19638) [CLEANUP] Remove deprecated with
+- [#19639](https://github.com/emberjs/ember.js/pull/19639) [CLEANUP] Removes deprecated Private INVOKE API
+- [#19640](https://github.com/emberjs/ember.js/pull/19640) [CLEANUP] Remove old deprecations import path
+- [#19641](https://github.com/emberjs/ember.js/pull/19641) [CLEANUP] Remove isVisible
+- [#19642](https://github.com/emberjs/ember.js/pull/19642) [CLEANUP] Remove aliasMethod
+- [#19643](https://github.com/emberjs/ember.js/pull/19643) [CLEANUP] Remove deprecate without for and since
+- [#19644](https://github.com/emberjs/ember.js/pull/19644) [CLEANUP] Remove -in-element
+- [#19645](https://github.com/emberjs/ember.js/pull/19645) [CLEANUP] Remove tryInvoke
+- [#19646](https://github.com/emberjs/ember.js/pull/19646) [CLEANUP] Remove loc
+- [#19647](https://github.com/emberjs/ember.js/pull/19647) [CLEANUP] Remove Ember.merge
+- [#19648](https://github.com/emberjs/ember.js/pull/19648) [CLEANUP] Remove getWithDefault
+- [#19651](https://github.com/emberjs/ember.js/pull/19651) [CLEANUP] Remove LEGACY_OWNER
+- [#19652](https://github.com/emberjs/ember.js/pull/19652) [CLEANUP] Remove Globals Resolver
+- [#19653](https://github.com/emberjs/ember.js/pull/19653) [CLEANUP] Remove run and computed dot access
+- [#19654](https://github.com/emberjs/ember.js/pull/19654) [CLEANUP] Remove @ember/string methods from native prototype
+- [#19655](https://github.com/emberjs/ember.js/pull/19655) [CLEANUP] Remove meta-destruction-apis
+- [#19656](https://github.com/emberjs/ember.js/pull/19656) [CLEANUP] Remove string-based setComponentManager
+- [#19657](https://github.com/emberjs/ember.js/pull/19657) [CLEANUP] Remove hasBlock and hasBlockParams
+- [#19658](https://github.com/emberjs/ember.js/pull/19658) [CLEANUP] Remove sendAction and string action passing
+- [#19659](https://github.com/emberjs/ember.js/pull/19659) [CLEANUP] Remove renderTemplate, disconnectOutlet, render
+- [#19660](https://github.com/emberjs/ember.js/pull/19660) [CLEANUP] Remove attrs/attrs-arg-access
+- [#19661](https://github.com/emberjs/ember.js/pull/19661) [CLEANUP] Remove EMBER_EXTEND_PROTOTYPES
+- [#19663](https://github.com/emberjs/ember.js/pull/19663) [CLEANUP] Remove function prototype extensions
+- [#19665](https://github.com/emberjs/ember.js/pull/19665) [CLEANUP] Remove deprecated jQuery integration
+- [#19666](https://github.com/emberjs/ember.js/pull/19666) [CLEANUP] Remove jQuery integration in EventDispatcher
+- [#19667](https://github.com/emberjs/ember.js/pull/19667) [CLEANUP] Cleanup IE11 leftovers
+- [#19670](https://github.com/emberjs/ember.js/pull/19670) [CLEANUP] Remove .volatile()
+- [#19671](https://github.com/emberjs/ember.js/pull/19671) [CLEANUP] Remove .property()
+- [#19673](https://github.com/emberjs/ember.js/pull/19673) [CLEANUP] Remove computed deep each
+- [#19674](https://github.com/emberjs/ember.js/pull/19674) [CLEANUP] Remove ability to override computed property
+- [#19678](https://github.com/emberjs/ember.js/pull/19678) [CLEANUP] Remove window.Ember global
+- [#19695](https://github.com/emberjs/ember.js/pull/19695) [CLEANUP] Remove {{partial}}
+- [#19691](https://github.com/emberjs/ember.js/pull/19691) Add build assertion against `{{outlet named}}`
+
 ### v3.28.0 (August 9, 2021)
 
 - [#19697](https://github.com/emberjs/ember.js/pull/19697) [BUGFIX] Ensure `deserializeQueryParam` is called for lazy routes
