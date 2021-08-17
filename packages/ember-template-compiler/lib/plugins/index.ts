@@ -1,5 +1,6 @@
 import AssertAgainstDynamicHelpersModifiers from './assert-against-dynamic-helpers-modifiers';
 import AssertAgainstNamedBlocks from './assert-against-named-blocks';
+import AssertAgainstNamedOutlets from './assert-against-named-outlets';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
 import AssertSplattributeExpressions from './assert-splattribute-expression';
@@ -30,6 +31,7 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     TransformInElement,
     AssertSplattributeExpressions,
     TransformEachTrackArray,
+    AssertAgainstNamedOutlets,
     TransformWrapMountAndOutlet,
     !EMBER_NAMED_BLOCKS ? AssertAgainstNamedBlocks : null,
     EMBER_DYNAMIC_HELPERS_AND_MODIFIERS
@@ -47,6 +49,7 @@ export const STRICT_MODE_TRANSFORMS = Object.freeze(
     TransformInElement,
     AssertSplattributeExpressions,
     TransformEachTrackArray,
+    AssertAgainstNamedOutlets,
     TransformWrapMountAndOutlet,
     !EMBER_NAMED_BLOCKS ? AssertAgainstNamedBlocks : null,
     !EMBER_DYNAMIC_HELPERS_AND_MODIFIERS ? AssertAgainstDynamicHelpersModifiers : null,
