@@ -603,7 +603,6 @@ function defineEmberTemplateCompilerLazyLoad(key) {
 
         EmberHTMLBars.precompile = EmberHandlebars.precompile = templateCompiler.precompile;
         EmberHTMLBars.compile = EmberHandlebars.compile = templateCompiler.compile;
-        EmberHTMLBars.registerPlugin = templateCompiler.registerPlugin;
 
         Object.defineProperty(Ember, 'HTMLBars', {
           configurable: true,

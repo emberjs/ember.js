@@ -31,8 +31,6 @@ export {
   default as compileOptions,
   buildCompileOptions as _buildCompileOptions,
   transformsFor as _transformsFor,
-  registerPlugin,
-  unregisterPlugin,
 } from './lib/system/compile-options';
 export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins/index';
 export { EmberPrecompileOptions } from './lib/types';
