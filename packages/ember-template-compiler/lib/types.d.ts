@@ -4,13 +4,16 @@ import {
   builders,
   PrecompileOptions,
 } from '@glimmer/syntax';
-import { LegacyPluginClass } from './system/compile-options';
 
 export type Builders = typeof builders;
 
-export interface PluginFunc extends ASTPluginBuilder<EmberASTPluginEnvironment> {
-  __raw?: LegacyPluginClass;
-}
+/*
+ * It seems like it should be possible to reepxport the `ASTPluginBuilder`
+ * interface with a new named export, but the I wasn't able to figure out the
+ * typing. Here export the interface subclass with no modification.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface PluginFunc extends ASTPluginBuilder<EmberASTPluginEnvironment> {}
 
 interface Plugins {
   ast: PluginFunc[];
