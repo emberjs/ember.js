@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -72,7 +72,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -101,7 +101,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -148,7 +148,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -172,7 +172,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -196,7 +196,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -218,7 +218,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -241,7 +241,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
           registry-url: 'https://registry.npmjs.org'
       - uses: actions/cache@v2
         with:
@@ -266,7 +266,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
@@ -292,7 +292,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
