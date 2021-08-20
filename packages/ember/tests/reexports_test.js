@@ -3,7 +3,6 @@ import require from 'require';
 import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS, FEATURES } from '@ember/canary-features';
 import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
-import { ENV } from '@ember/-internals/environment';
 
 moduleFor(
   'ember reexports',
@@ -442,9 +441,6 @@ let allExports = [
 
   // backburner
   ['_Backburner', 'backburner', 'default'],
-
-  // jquery
-  ENV._JQUERY_INTEGRATION ? [null, 'jquery', 'default'] : null,
 
   // rsvp
   [null, 'rsvp', 'default'],

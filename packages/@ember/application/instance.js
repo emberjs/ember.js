@@ -4,7 +4,6 @@
 
 import { get, set, computed } from '@ember/-internals/metal';
 import * as environment from '@ember/-internals/browser-environment';
-import { jQuery } from '@ember/-internals/views';
 import EngineInstance from '@ember/engine/instance';
 import { renderSettled } from '@ember/-internals/glimmer';
 
@@ -57,8 +56,7 @@ const ApplicationInstance = EngineInstance.extend({
 
   /**
     The root DOM element of the Application as an element or a
-    [jQuery-compatible selector
-    string](http://api.jquery.com/category/selectors/).
+    CSS selector.
 
     @private
     @property {String|DOMElement} rootElement
@@ -329,20 +327,6 @@ ApplicationInstance.reopenClass({
 class BootOptions {
   constructor(options = {}) {
     /**
-      Provide a specific instance of jQuery. This is useful in conjunction with
-      the `document` option, as it allows you to use a copy of `jQuery` that is
-      appropriately bound to the foreign `document` (e.g. a jsdom).
-
-      This is highly experimental and support very incomplete at the moment.
-
-      @property jQuery
-      @type Object
-      @default auto-detected
-      @private
-    */
-    this.jQuery = jQuery; // This default is overridable below
-
-    /**
       Interactive mode: whether we need to set up event delegation and invoke
       lifecycle callbacks on Components.
 
@@ -392,7 +376,6 @@ class BootOptions {
     }
 
     if (!this.isBrowser) {
-      this.jQuery = null;
       this.isInteractive = false;
       this.location = 'none';
     }
@@ -416,7 +399,6 @@ class BootOptions {
     }
 
     if (!this.shouldRender) {
-      this.jQuery = null;
       this.isInteractive = false;
     }
 
@@ -484,10 +466,6 @@ class BootOptions {
     */
     if (options.location !== undefined) {
       this.location = options.location;
-    }
-
-    if (options.jQuery !== undefined) {
-      this.jQuery = options.jQuery;
     }
 
     if (options.isInteractive !== undefined) {

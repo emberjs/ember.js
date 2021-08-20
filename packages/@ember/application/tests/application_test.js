@@ -4,7 +4,6 @@ import { ENV } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
-import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
@@ -279,12 +278,7 @@ moduleFor(
       runTask(() => this.createApplication());
 
       assert.equal(messages[1], 'Ember  : ' + VERSION);
-      if (jQueryDisabled) {
-        assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
-      } else {
-        assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
-        assert.equal(messages[3], 'my-lib : ' + '2.0.0a');
-      }
+      assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
 
       libraries.deRegister('my-lib');
     }
