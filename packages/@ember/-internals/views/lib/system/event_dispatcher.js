@@ -4,8 +4,6 @@ import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { getElementView } from '@ember/-internals/views';
 import ActionManager from './action_manager';
-import { contains } from './utils';
-import { MOUSE_ENTER_LEAVE_MOVE_EVENTS } from '@ember/deprecated-features';
 
 /**
 @module ember
@@ -13,11 +11,6 @@ import { MOUSE_ENTER_LEAVE_MOVE_EVENTS } from '@ember/deprecated-features';
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
-
-const EVENT_MAP = {
-  mouseenter: 'mouseover',
-  mouseleave: 'mouseout',
-};
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -64,41 +57,32 @@ export default EmberObject.extend({
     @type Object
     @private
   */
-  events: Object.assign(
-    {
-      touchstart: 'touchStart',
-      touchmove: 'touchMove',
-      touchend: 'touchEnd',
-      touchcancel: 'touchCancel',
-      keydown: 'keyDown',
-      keyup: 'keyUp',
-      keypress: 'keyPress',
-      mousedown: 'mouseDown',
-      mouseup: 'mouseUp',
-      contextmenu: 'contextMenu',
-      click: 'click',
-      dblclick: 'doubleClick',
-      focusin: 'focusIn',
-      focusout: 'focusOut',
-      submit: 'submit',
-      input: 'input',
-      change: 'change',
-      dragstart: 'dragStart',
-      drag: 'drag',
-      dragenter: 'dragEnter',
-      dragleave: 'dragLeave',
-      dragover: 'dragOver',
-      drop: 'drop',
-      dragend: 'dragEnd',
-    },
-    MOUSE_ENTER_LEAVE_MOVE_EVENTS
-      ? {
-          mouseenter: 'mouseEnter',
-          mouseleave: 'mouseLeave',
-          mousemove: 'mouseMove',
-        }
-      : {}
-  ),
+  events: {
+    touchstart: 'touchStart',
+    touchmove: 'touchMove',
+    touchend: 'touchEnd',
+    touchcancel: 'touchCancel',
+    keydown: 'keyDown',
+    keyup: 'keyUp',
+    keypress: 'keyPress',
+    mousedown: 'mouseDown',
+    mouseup: 'mouseUp',
+    contextmenu: 'contextMenu',
+    click: 'click',
+    dblclick: 'doubleClick',
+    focusin: 'focusIn',
+    focusout: 'focusOut',
+    submit: 'submit',
+    input: 'input',
+    change: 'change',
+    dragstart: 'dragStart',
+    drag: 'drag',
+    dragenter: 'dragEnter',
+    dragleave: 'dragLeave',
+    dragover: 'dragOver',
+    drop: 'drop',
+    dragend: 'dragEnd',
+  },
 
   /**
     The root DOM element to which event listeners should be attached. Event
@@ -314,90 +298,33 @@ export default EmberObject.extend({
       return result;
     };
 
-    // Special handling of events that don't bubble (event delegation does not work).
-    // Mimics the way this is handled in jQuery,
-    // see https://github.com/jquery/jquery/blob/899c56f6ada26821e8af12d9f35fa039100e838e/src/event.js#L666-L700
-    if (MOUSE_ENTER_LEAVE_MOVE_EVENTS && EVENT_MAP[event] !== undefined) {
-      let mappedEventType = EVENT_MAP[event];
-      let origEventType = event;
+    let handleEvent = (this._eventHandlers[event] = (event) => {
+      let target = event.target;
 
-      let createFakeEvent = (eventType, event) => {
-        let fakeEvent = document.createEvent('MouseEvent');
-        fakeEvent.initMouseEvent(
-          eventType,
-          false,
-          false,
-          event.view,
-          event.detail,
-          event.screenX,
-          event.screenY,
-          event.clientX,
-          event.clientY,
-          event.ctrlKey,
-          event.altKey,
-          event.shiftKey,
-          event.metaKey,
-          event.button,
-          event.relatedTarget
-        );
-
-        // fake event.target as we don't dispatch the event
-        Object.defineProperty(fakeEvent, 'target', { value: event.target, enumerable: true });
-
-        return fakeEvent;
-      };
-
-      let handleMappedEvent = (this._eventHandlers[mappedEventType] = (event) => {
-        let target = event.target;
-        let related = event.relatedTarget;
-
-        while (
-          target &&
-          target.nodeType === 1 &&
-          (related === null || (related !== target && !contains(target, related)))
+      do {
+        if (getElementView(target)) {
+          if (viewHandler(target, event) === false) {
+            event.preventDefault();
+            event.stopPropagation();
+            break;
+          } else if (event.cancelBubble === true) {
+            break;
+          }
+        } else if (
+          typeof target.hasAttribute === 'function' &&
+          target.hasAttribute('data-ember-action')
         ) {
-          // mouseEnter/Leave don't bubble, so there is no logic to prevent it as with other events
-          if (getElementView(target)) {
-            viewHandler(target, createFakeEvent(origEventType, event));
-          } else if (target.hasAttribute('data-ember-action')) {
-            actionHandler(target, createFakeEvent(origEventType, event));
+          if (actionHandler(target, event) === false) {
+            break;
           }
-
-          // separate mouseEnter/Leave events are dispatched for each listening element
-          // until the element (related) has been reached that the pointing device exited from/to
-          target = target.parentNode;
         }
-      });
 
-      rootElement.addEventListener(mappedEventType, handleMappedEvent);
-    } else {
-      let handleEvent = (this._eventHandlers[event] = (event) => {
-        let target = event.target;
+        target = target.parentNode;
+      } while (target && target.nodeType === 1);
+    });
 
-        do {
-          if (getElementView(target)) {
-            if (viewHandler(target, event) === false) {
-              event.preventDefault();
-              event.stopPropagation();
-              break;
-            } else if (event.cancelBubble === true) {
-              break;
-            }
-          } else if (
-            typeof target.hasAttribute === 'function' &&
-            target.hasAttribute('data-ember-action')
-          ) {
-            if (actionHandler(target, event) === false) {
-              break;
-            }
-          }
+    rootElement.addEventListener(event, handleEvent);
 
-          target = target.parentNode;
-        } while (target && target.nodeType === 1);
-      });
-
-      rootElement.addEventListener(event, handleEvent);
-    }
     this.lazyEvents.delete(event);
   },
 
