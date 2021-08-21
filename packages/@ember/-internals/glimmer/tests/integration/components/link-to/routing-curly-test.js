@@ -579,60 +579,6 @@ moduleFor(
       );
     }
 
-    async [`@test [DEPRECATED] it supports 'classNameBindings' with custom values [GH #11699]`](
-      assert
-    ) {
-      expectDeprecation(
-        "Passing the `classNameBindings` property as an argument within templates has been deprecated. Instead, you can pass the class argument and use concatenation to produce the class value dynamically. ('my-app/templates/index.hbs' @ L3:C29) "
-      );
-
-      this.addTemplate(
-        'index',
-        `
-        <h3 class="home">Home</h3>
-        <div id="about-link">{{#link-to route='about' classNameBindings='this.foo:foo-is-true:foo-is-false'}}About{{/link-to}}</div>
-        `
-      );
-
-      let controller;
-
-      this.add(
-        'controller:index',
-        class extends Controller {
-          constructor(...args) {
-            super(...args);
-            controller = this;
-          }
-
-          foo = false;
-        }
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /Passing the `@class` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assert.equal(
-        this.$('#about-link > a.foo-is-false').length,
-        1,
-        'The about-link was rendered with the falsy class'
-      );
-
-      await expectDeprecation(
-        () => runTask(() => controller.set('foo', true)),
-        /Passing the `@class` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assert.equal(
-        this.$('#about-link > a.foo-is-true').length,
-        1,
-        'The about-link was rendered with the truthy class after toggling the property'
-      );
-    }
-
     async ['@test Using {{link-to}} inside a non-routable engine errors'](assert) {
       this.add(
         'engine:not-routable',
