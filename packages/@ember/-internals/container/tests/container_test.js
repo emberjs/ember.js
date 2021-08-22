@@ -223,84 +223,6 @@ moduleFor(
       assert.equal(postController, container.lookup('controller:post'));
     }
 
-    ['@test uses create time injections if factory has no extend'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let AppleController = factory();
-      let PostController = factory();
-
-      PostController.extend = undefined; // remove extend
-
-      registry.register('controller:apple', AppleController);
-      registry.register('controller:post', PostController);
-      registry.injection('controller:post', 'apple', 'controller:apple');
-
-      let postController = container.lookup('controller:post');
-
-      assert.ok(
-        postController.apple instanceof AppleController,
-        'instance receives an apple of instance AppleController'
-      );
-    }
-
-    ["@test A factory type with a registered injection's instances receive that injection"](
-      assert
-    ) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-      let Store = factory();
-
-      registry.register('controller:post', PostController);
-      registry.register('store:main', Store);
-
-      registry.typeInjection('controller', 'store', 'store:main');
-
-      let postController = container.lookup('controller:post');
-      let store = container.lookup('store:main');
-
-      assert.equal(postController.store, store);
-    }
-
-    ['@test An individual factory with a registered injection receives the injection'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-      let Store = factory();
-
-      registry.register('controller:post', PostController);
-      registry.register('store:main', Store);
-
-      registry.injection('controller:post', 'store', 'store:main');
-
-      let postController = container.lookup('controller:post');
-      let store = container.lookup('store:main');
-
-      assert.equal(postController.store, store, 'has the correct store injected');
-    }
-
-    ['@test A factory with both type and individual injections'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-      let Store = factory();
-      let Router = factory();
-
-      registry.register('controller:post', PostController);
-      registry.register('store:main', Store);
-      registry.register('router:main', Router);
-
-      registry.injection('controller:post', 'store', 'store:main');
-      registry.typeInjection('controller', 'router', 'router:main');
-
-      let postController = container.lookup('controller:post');
-      let store = container.lookup('store:main');
-      let router = container.lookup('router:main');
-
-      assert.equal(postController.store, store);
-      assert.equal(postController.router, router);
-    }
-
     ['@test A non-singleton instance is never cached'](assert) {
       let registry = new Registry();
       let container = registry.container();
@@ -341,73 +263,13 @@ moduleFor(
       }, /Failed to create an instance of 'controller:foo'/);
     }
 
-    ['@test Injecting a failed lookup raises an error']() {
-      let registry = new Registry();
-      let container = registry.container();
-
-      let fooInstance = {};
-      let fooFactory = {};
-
-      let Foo = {
-        create() {
-          return fooInstance;
-        },
-        extend() {
-          return fooFactory;
-        },
-      };
-
-      registry.register('model:foo', Foo);
-      registry.injection('model:foo', 'store', 'store:main');
-
-      expectAssertion(() => {
-        container.lookup('model:foo');
-      });
-    }
-
-    ['@test Injecting a falsy value does not raise an error'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let ApplicationController = factory();
-
-      registry.register('controller:application', ApplicationController);
-      registry.register('user:current', null, { instantiate: false });
-      registry.injection('controller:application', 'currentUser', 'user:current');
-
-      assert.strictEqual(container.lookup('controller:application').currentUser, null);
-    }
-
-    ['@test The container returns same value each time even if the value is falsy'](assert) {
+    ['@test The container returns same value each time even if the value is falsey'](assert) {
       let registry = new Registry();
       let container = registry.container();
 
       registry.register('falsy:value', null, { instantiate: false });
 
       assert.strictEqual(container.lookup('falsy:value'), container.lookup('falsy:value'));
-    }
-
-    ['@test Destroying the container destroys any cached singletons'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-      let PostView = factory();
-      let template = function () {};
-
-      registry.register('controller:post', PostController);
-      registry.register('view:post', PostView, { singleton: false });
-      registry.register('template:post', template, { instantiate: false });
-
-      registry.injection('controller:post', 'postView', 'view:post');
-
-      let postController = container.lookup('controller:post');
-      let postView = postController.postView;
-
-      assert.ok(postView instanceof PostView, 'The non-singleton was injected');
-
-      container.destroy();
-
-      assert.ok(postController.isDestroyed, 'Singletons are destroyed');
-      assert.ok(!postView.isDestroyed, 'Non-singletons are not destroyed');
     }
 
     ['@test The container can use a registry hook to resolve factories lazily'](assert) {
@@ -507,27 +369,6 @@ moduleFor(
       assert.ok(postView2 instanceof PostView, 'The correct factory was provided');
 
       assert.ok(postView1 !== postView2, 'The two lookups are different');
-    }
-
-    ['@test An injected non-singleton instance is never cached'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostView = factory();
-      let PostViewHelper = factory();
-
-      registry.register('view:post', PostView, { singleton: false });
-      registry.register('view_helper:post', PostViewHelper, {
-        singleton: false,
-      });
-      registry.injection('view:post', 'viewHelper', 'view_helper:post');
-
-      let postView1 = container.lookup('view:post');
-      let postView2 = container.lookup('view:post');
-
-      assert.ok(
-        postView1.viewHelper !== postView2.viewHelper,
-        'Injected non-singletons are not cached'
-      );
     }
 
     ['@test Factory resolves are cached'](assert) {
@@ -750,39 +591,6 @@ moduleFor(
 
       assert.notEqual(instance1, instance3);
       assert.notEqual(factory1, factory3);
-    }
-
-    ['@test #factoryFor created instances come with instance injections'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-
-      let Component = factory();
-      let Ajax = factory();
-      registry.register('component:foo-bar', Component);
-      registry.register('util:ajax', Ajax);
-      registry.injection('component:foo-bar', 'ajax', 'util:ajax');
-
-      let componentFactory = container.factoryFor('component:foo-bar');
-      let component = componentFactory.create();
-
-      assert.ok(component.ajax);
-      assert.ok(component.ajax instanceof Ajax);
-    }
-
-    ['@test #factoryFor options passed to create clobber injections'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-
-      let Component = factory();
-      let Ajax = factory();
-      registry.register('component:foo-bar', Component);
-      registry.register('util:ajax', Ajax);
-      registry.injection('component:foo-bar', 'ajax', 'util:ajax');
-
-      let componentFactory = container.factoryFor('component:foo-bar');
-      let instrance = componentFactory.create({ ajax: 'fetch' });
-
-      assert.equal(instrance.ajax, 'fetch');
     }
 
     [`@test assert when calling lookup after destroy on a container`](assert) {

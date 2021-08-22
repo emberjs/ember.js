@@ -48,7 +48,8 @@ function setupComponentTest() {
   this._hasRendered = false;
   let OutletView = module.owner.factoryFor('view:-outlet');
   let outletTemplateFactory = module.owner.lookup('template:-outlet');
-  module.component = OutletView.create();
+  let environment = module.owner.lookup('-environment:main');
+  module.component = OutletView.create({ environment, template: outletTemplateFactory });
   this._outletState = {
     render: {
       owner: module.owner || undefined,

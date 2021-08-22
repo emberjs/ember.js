@@ -46,7 +46,9 @@ module('@ember/test-helpers emulation test', function () {
     function setupRenderingContext(context) {
       let { owner } = context;
       let OutletView = owner.factoryFor('view:-outlet');
-      let toplevelView = OutletView.create();
+      let environment = owner.lookup('-environment:main');
+      let outletTemplateFactory = owner.lookup('template:-outlet');
+      let toplevelView = OutletView.create({ environment, template: outletTemplateFactory });
 
       owner.register('-top-level-view:main', {
         create() {

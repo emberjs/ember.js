@@ -64,38 +64,6 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ["@test 'store' can be injected by data persistence frameworks"](assert) {
-      assert.expect(8);
-      runDestroy(route);
-
-      let owner = buildOwner();
-
-      let post = {
-        id: 1,
-      };
-
-      let Store = EmberObject.extend({
-        find(type, value) {
-          assert.ok(true, 'injected model was called');
-          assert.equal(type, 'post', 'correct type was called');
-          assert.equal(value, 1, 'correct value was called');
-          return post;
-        },
-      });
-
-      owner.register('route:index', EmberRoute);
-      owner.register('store:main', Store);
-
-      owner.inject('route', 'store', 'store:main');
-
-      route = owner.lookup('route:index');
-
-      assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
-      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
-
-      runDestroy(owner);
-    }
-
     ["@test assert if 'store.find' method is not found"]() {
       runDestroy(route);
 

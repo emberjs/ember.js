@@ -227,16 +227,16 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
   });
 
   QUnit.test('Resource-discovery setup', function (assert) {
-    this.service('network', {
-      init: function () {
-        this.set('requests', []);
-      },
+    class Network {
+      constructor() {
+        this.requests = [];
+      }
 
-      fetch: function (url) {
-        this.get('requests').push(url);
+      fetch(url) {
+        this.requests.push(url);
         return Promise.resolve();
-      },
-    });
+      }
+    }
 
     this.routes(function () {
       this.route('a');
@@ -246,9 +246,10 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
       this.route('e');
     });
 
+    let network;
     this.route('a', {
       model: function () {
-        return this.network.fetch('/a');
+        return network.fetch('/a');
       },
       afterModel: function () {
         this.replaceWith('b');
@@ -257,7 +258,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
 
     this.route('b', {
       model: function () {
-        return this.network.fetch('/b');
+        return network.fetch('/b');
       },
       afterModel: function () {
         this.replaceWith('c');
@@ -266,13 +267,13 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
 
     this.route('c', {
       model: function () {
-        return this.network.fetch('/c');
+        return network.fetch('/c');
       },
     });
 
     this.route('d', {
       model: function () {
-        return this.network.fetch('/d');
+        return network.fetch('/d');
       },
       afterModel: function () {
         this.replaceWith('e');
@@ -281,7 +282,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
 
     this.route('e', {
       model: function () {
-        return this.network.fetch('/e');
+        return network.fetch('/e');
       },
     });
 
@@ -302,31 +303,37 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
 
     let App = this.createApplication();
 
-    App.inject('route', 'network', 'service:network');
-
     function assertResources(url, resources) {
+      network = new Network();
+
       return App.visit(url, { isBrowser: false, shouldRender: false }).then(function (instance) {
         try {
           let viewRegistry = instance.lookup('-view-registry:main');
           assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
 
-          let networkService = instance.lookup('service:network');
-          assert.deepEqual(networkService.get('requests'), resources);
+          assert.deepEqual(network.requests, resources);
         } finally {
           instance.destroy();
         }
       }, handleError(assert));
     }
 
-    return Promise.all([
-      assertResources('/a', ['/a', '/b', '/c']),
-      assertResources('/b', ['/b', '/c']),
-      assertResources('/c', ['/c']),
-      assertResources('/d', ['/d', '/e']),
-      assertResources('/e', ['/e']),
-    ]).then(function () {
-      assert.strictEqual(xFooInstances, 0, 'it should not create any x-foo components');
-    });
+    return assertResources('/a', ['/a', '/b', '/c'])
+      .then(() => {
+        return assertResources('/b', ['/b', '/c']);
+      })
+      .then(() => {
+        return assertResources('/c', ['/c']);
+      })
+      .then(() => {
+        return assertResources('/d', ['/d', '/e']);
+      })
+      .then(() => {
+        return assertResources('/e', ['/e']);
+      })
+      .then(() => {
+        assert.strictEqual(xFooInstances, 0, 'it should not create any x-foo components');
+      });
   });
 
   QUnit.test('FastBoot: tagless components can render', function (assert) {
