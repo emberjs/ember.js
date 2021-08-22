@@ -145,7 +145,7 @@ moduleFor(
         });
 
         assert.ok(
-          this.currentPath !== 'loading',
+          this.appRouter.currentPath !== 'loading',
           `
         loading state not entered
       `
@@ -188,7 +188,7 @@ moduleFor(
 
           assert.equal(text, 'DUMMY', `dummy template has been rendered`);
         });
-        assert.equal(this.currentPath, 'loading', `loading state entered`);
+        assert.equal(this.appRouter.currentPath, 'loading', `loading state entered`);
         deferred.resolve();
 
         return promise;
@@ -249,7 +249,7 @@ moduleFor(
           );
         });
 
-        assert.equal(this.currentPath, 'loading', `loading state entered`);
+        assert.equal(this.appRouter.currentPath, 'loading', `loading state entered`);
         assert.equal(
           this.currentURL,
           '/dummy?qux=updated',
@@ -268,7 +268,7 @@ moduleFor(
     }
 
     ['@test Enter child-loading route with correct query parameters'](assert) {
-      assert.expect(9);
+      assert.expect(8);
       let deferred = RSVP.defer();
 
       this.router.map(function () {
@@ -326,12 +326,18 @@ moduleFor(
           );
         });
 
-        assert.equal(this.currentPath, 'parent.child_loading', `child loading state entered`);
+        assert.equal(
+          this.appRouter.currentPath,
+          'parent.child_loading',
+          `child loading state entered`
+        );
+
         assert.equal(
           this.currentURL,
           '/parent/child?qux=updated',
           `during child loading, url reflect the correct state`
         );
+
         assert.equal(
           this.getController('parent').qux,
           'updated',
@@ -724,14 +730,6 @@ moduleFor(
       return this.applicationInstance.lookup(`controller:${name}`);
     }
 
-    get currentPath() {
-      let currentPath;
-      expectDeprecation(() => {
-        currentPath = this.getController('application').get('currentPath');
-      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-      return currentPath;
-    }
-
     async ['@test ApplicationRoute#currentPath reflects loading state path'](assert) {
       await this.visit('/');
 
@@ -752,13 +750,21 @@ moduleFor(
         text = this.$('#app').text();
 
         assert.equal(text, 'GRANDMA MOM', `Grandma.mom loaded text is displayed`);
-        assert.equal(this.currentPath, 'grandma.mom.index', `currentPath reflects final state`);
+        assert.equal(
+          this.appRouter.currentPath,
+          'grandma.mom.index',
+          `currentPath reflects final state`
+        );
       });
       let text = this.$('#app').text();
 
       assert.equal(text, 'GRANDMA GRANDMALOADING', `Grandma.mom loading text displayed`);
 
-      assert.equal(this.currentPath, 'grandma.loading', `currentPath reflects loading state`);
+      assert.equal(
+        this.appRouter.currentPath,
+        'grandma.loading',
+        `currentPath reflects loading state`
+      );
 
       momDeferred.resolve();
 
@@ -801,17 +807,17 @@ moduleFor(
       );
 
       let promise = this.visit('/grandma/mom/sally');
-      assert.equal(this.currentPath, 'index', 'Initial route fully loaded');
+      assert.equal(this.appRouter.currentPath, 'index', 'Initial route fully loaded');
 
       sallyDeferred.resolve();
 
       promise
         .then(() => {
-          assert.equal(this.currentPath, 'grandma.mom.sally', 'transition completed');
+          assert.equal(this.appRouter.currentPath, 'grandma.mom.sally', 'transition completed');
 
           let visit = this.visit('/grandma/puppies');
           assert.equal(
-            this.currentPath,
+            this.appRouter.currentPath,
             'grandma.mom.sally',
             'still in initial state because the only loading state is above the pivot route'
           );
@@ -821,7 +827,7 @@ moduleFor(
         .then(() => {
           runTask(() => puppiesDeferred.resolve());
 
-          assert.equal(this.currentPath, 'grandma.puppies', 'Finished transition');
+          assert.equal(this.appRouter.currentPath, 'grandma.puppies', 'Finished transition');
         });
 
       return promise;
@@ -855,7 +861,7 @@ moduleFor(
       step(assert, 3, 'App finished loading');
 
       assert.equal(this.$('#app').text(), 'GRANDMA ERROR: did it broke?', 'error bubbles');
-      assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
+      assert.equal(this.appRouter.currentPath, 'grandma.error', 'Initial route fully loaded');
     }
 
     async [`@test Non-bubbled errors that re-throw aren't swallowed`](assert) {
@@ -1047,7 +1053,7 @@ moduleFor(
         'the more specifically named mome error substate was entered over the other error route'
       );
 
-      assert.equal(this.currentPath, 'grandma.mom_error', 'Initial route fully loaded');
+      assert.equal(this.appRouter.currentPath, 'grandma.mom_error', 'Initial route fully loaded');
     }
 
     async ['@test Slow promises waterfall on startup'](assert) {
@@ -1146,13 +1152,18 @@ moduleFor(
       );
 
       await this.visit('/grandma/mom/sally');
-      assert.equal(this.currentPath, 'grandma.mom.sally', 'Initial route fully loaded');
+      assert.equal(this.appRouter.currentPath, 'grandma.mom.sally', 'Initial route fully loaded');
 
       let promise = runTask(() => this.visit('/grandma/puppies')).then(() => {
-        assert.equal(this.currentPath, 'grandma.puppies', 'Finished transition');
+        assert.equal(this.appRouter.currentPath, 'grandma.puppies', 'Finished transition');
       });
 
-      assert.equal(this.currentPath, 'grandma.loading', `in pivot route's child loading state`);
+      assert.equal(
+        this.appRouter.currentPath,
+        'grandma.loading',
+        `in pivot route's child loading state`
+      );
+
       deferred.resolve();
 
       return promise;
@@ -1261,15 +1272,19 @@ moduleFor(
       );
 
       let promise = runTask(() => this.visit('/grandma')).then(() => {
-        assert.equal(this.currentPath, 'memere.index', 'Transition should be complete');
+        assert.equal(this.appRouter.currentPath, 'memere.index', 'Transition should be complete');
       });
       let memereController = this.getController('memere');
 
-      assert.equal(this.currentPath, 'memere.loading', 'Initial route should be loading');
+      assert.equal(this.appRouter.currentPath, 'memere.loading', 'Initial route should be loading');
 
       memereController.set('test', 3);
 
-      assert.equal(this.currentPath, 'memere.loading', 'Initial route should still be loading');
+      assert.equal(
+        this.appRouter.currentPath,
+        'memere.loading',
+        'Initial route should still be loading'
+      );
 
       assert.equal(
         memereController.get('test'),

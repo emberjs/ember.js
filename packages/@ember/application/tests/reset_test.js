@@ -1,5 +1,4 @@
 import { run } from '@ember/runloop';
-import { get } from '@ember/-internals/metal';
 import Controller from '@ember/controller';
 import { Router } from '@ember/-internals/routing';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
@@ -129,9 +128,7 @@ moduleFor(
           let location = initialRouter.get('location');
 
           assert.equal(location.getURL(), '/one');
-          expectDeprecation(() => {
-            assert.equal(get(initialApplicationController, 'currentPath'), 'one');
-          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+          assert.equal(initialRouter.currentPath, 'one');
 
           this.application.reset();
 
@@ -160,9 +157,7 @@ moduleFor(
           );
 
           assert.equal(location.getURL(), '/one');
-          expectDeprecation(() => {
-            assert.equal(get(applicationController, 'currentPath'), 'one');
-          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+          assert.equal(router.currentPath, 'one');
         });
     }
 
