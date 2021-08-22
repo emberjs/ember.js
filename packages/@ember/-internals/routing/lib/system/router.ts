@@ -6,8 +6,7 @@ import { BucketCache } from '@ember/-internals/routing';
 import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
-import { assert, deprecate, info } from '@ember/debug';
-import { ROUTER_EVENTS } from '@ember/deprecated-features';
+import { assert, info } from '@ember/debug';
 import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -20,7 +19,6 @@ import Route, {
   hasDefaultSerialize,
   RenderOptions,
   ROUTE_CONNECTIONS,
-  ROUTER_EVENT_DEPRECATIONS,
 } from './route';
 import RouterState from './router_state';
 
@@ -381,23 +379,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       didTransition(infos: PrivateRouteInfo[]) {
-        if (ROUTER_EVENTS) {
-          if (router.didTransition !== defaultDidTransition) {
-            deprecate(
-              'You attempted to override the "didTransition" method which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
-              false,
-              {
-                id: 'deprecate-router-events',
-                until: '4.0.0',
-                url: 'https://deprecations.emberjs.com/v3.x#toc_deprecate-router-events',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.11.0',
-                },
-              }
-            );
-          }
-        }
         router.didTransition(infos);
       }
 
@@ -406,23 +387,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         newInfos: PrivateRouteInfo[],
         transition: Transition
       ) {
-        if (ROUTER_EVENTS) {
-          if (router.willTransition !== defaultWillTransition) {
-            deprecate(
-              'You attempted to override the "willTransition" method which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
-              false,
-              {
-                id: 'deprecate-router-events',
-                until: '4.0.0',
-                url: 'https://deprecations.emberjs.com/v3.x#toc_deprecate-router-events',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.11.0',
-                },
-              }
-            );
-          }
-        }
         router.willTransition(oldInfos, newInfos, transition);
       }
 
@@ -1868,7 +1832,4 @@ EmberRouter.reopen({
   }),
 });
 
-if (ROUTER_EVENTS) {
-  EmberRouter.reopen(ROUTER_EVENT_DEPRECATIONS);
-}
 export default EmberRouter;

@@ -52,20 +52,11 @@ moduleFor(
       console.error = originalConsoleError;
     }
 
-    handleURLAborts(assert, path, deprecated) {
+    handleURLAborts(assert, path) {
       run(() => {
         let router = this.applicationInstance.lookup('router:main');
-        let result;
 
-        if (deprecated !== undefined) {
-          expectDeprecation(() => {
-            result = router.handleURL(path);
-          });
-        } else {
-          result = router.handleURL(path);
-        }
-
-        result.then(
+        router.handleURL(path).then(
           function () {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
@@ -1053,59 +1044,6 @@ moduleFor(
         'INDEX',
         'The index route is display.'
       );
-    }
-
-    ['@test Router `willTransition` hook passes in cancellable transition'](assert) {
-      assert.expect(8);
-      this.router.reopen({
-        willTransition(_, _2, transition) {
-          assert.ok(true, 'willTransition was called');
-          if (transition.intent.url !== '/') {
-            transition.abort();
-          }
-        },
-      });
-
-      this.router.map(function () {
-        this.route('nork');
-        this.route('about');
-      });
-
-      this.add(
-        'route:loading',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'LoadingRoute was not entered');
-          },
-        })
-      );
-
-      this.add(
-        'route:nork',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'NorkRoute was not entered');
-          },
-        })
-      );
-
-      this.add(
-        'route:about',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'AboutRoute was not entered');
-          },
-        })
-      );
-
-      let deprecation = /You attempted to override the "willTransition" method which is deprecated\./;
-
-      return expectDeprecationAsync(() => {
-        return this.visit('/').then(() => {
-          this.handleURLAborts(assert, '/nork', deprecation);
-          this.handleURLAborts(assert, '/about', deprecation);
-        });
-      }, deprecation);
     }
 
     ['@test Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered'](
