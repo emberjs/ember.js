@@ -56,14 +56,6 @@ moduleFor(
       });
     }
 
-    get currentPath() {
-      let currentPath;
-      expectDeprecation(() => {
-        currentPath = this.applicationInstance.lookup('controller:application').get('currentPath');
-      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-      return currentPath;
-    }
-
     async ['@test warn on URLs not included in the route set'](assert) {
       await this.visit('/');
 
