@@ -1,13 +1,13 @@
 import { privatize as P } from '@ember/-internals/container';
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
-import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
+import { computed, get, set } from '@ember/-internals/metal';
 import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
 import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
-import { APP_CTRL_ROUTER_PROPS, ROUTER_EVENTS } from '@ember/deprecated-features';
+import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -1734,53 +1734,6 @@ function updatePaths(router: EmberRouter) {
     // substates have been entered since ApplicationRoute hasn't
     // actually been entered at that point.
     return;
-  }
-  if (APP_CTRL_ROUTER_PROPS) {
-    if (!('currentPath' in appController)) {
-      Object.defineProperty(appController, 'currentPath', {
-        get() {
-          deprecate(
-            'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.',
-            false,
-            {
-              id: 'application-controller.router-properties',
-              until: '4.0.0',
-              url:
-                'https://deprecations.emberjs.com/v3.x#toc_application-controller-router-properties',
-              for: 'ember-source',
-              since: {
-                enabled: '3.10.0-beta.1',
-              },
-            }
-          );
-          return get(router, 'currentPath');
-        },
-      });
-    }
-    notifyPropertyChange(appController, 'currentPath');
-
-    if (!('currentRouteName' in appController)) {
-      Object.defineProperty(appController, 'currentRouteName', {
-        get() {
-          deprecate(
-            'Accessing `currentRouteName` on `controller:application` is deprecated, use the `currentRouteName` property on `service:router` instead.',
-            false,
-            {
-              id: 'application-controller.router-properties',
-              until: '4.0.0',
-              url:
-                'https://deprecations.emberjs.com/v3.x#toc_application-controller-router-properties',
-              for: 'ember-source',
-              since: {
-                enabled: '3.10.0-beta.1',
-              },
-            }
-          );
-          return get(router, 'currentRouteName');
-        },
-      });
-    }
-    notifyPropertyChange(appController, 'currentRouteName');
   }
 }
 

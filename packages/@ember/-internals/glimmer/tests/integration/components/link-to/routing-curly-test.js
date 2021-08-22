@@ -1848,16 +1848,11 @@ moduleFor(
 
       await this.click('#about-link > a');
 
-      expectDeprecation(() => {
-        let currentRouteName = this.applicationInstance
-          .lookup('controller:application')
-          .get('currentRouteName');
-        assert.notEqual(
-          currentRouteName,
-          'about',
-          'link-to should not transition if target is not equal to _self or empty'
-        );
-      }, 'Accessing `currentRouteName` on `controller:application` is deprecated, use the `currentRouteName` property on `service:router` instead.');
+      assert.notEqual(
+        this.appRouter.currentRouteName,
+        'about',
+        'link-to should not transition if target is not equal to _self or empty'
+      );
     }
 
     async [`@test it accepts string/numeric arguments`](assert) {
