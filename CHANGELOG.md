@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### v4.0.0-beta.2 (August 23, 2021)
+
+- [#19680](https://github.com/emberjs/ember.js/pull/19680) [DEPRECATION] Deprecate owner.inject per [RFC #680](https://github.com/emberjs/rfcs/blob/sn/owner-inject-deprecation/text/0680-implicit-injection-deprecation.md#1-deprecate-implicit-injection-on-target-object) and cleanup related deprecations that are `until: 4.0.0`.
+- [#19706](https://github.com/emberjs/ember.js/pull/19706) [BUGFIX] Explicitly drop Node 10 support to match support policy.
+- [#19650](https://github.com/emberjs/ember.js/pull/19650) [CLEANUP] Remove deprecated mouse events
+- [#19675](https://github.com/emberjs/ember.js/pull/19675) [CLEANUP] Remove jQuery usage from ember-testing
+- [#19704](https://github.com/emberjs/ember.js/pull/19704) [CLEANUP] Remove template-compiler.registerPlugin
+- [#19707](https://github.com/emberjs/ember.js/pull/19707) [CLEANUP] Remove Application Controller Router Properties
+
 ### v4.0.0-beta.1 (August 17, 2021)
 
 - [#19649](https://github.com/emberjs/ember.js/pull/19649) / [#19692](https://github.com/emberjs/ember.js/pull/19692) [DEPRECATION] Add deprecation warning to Ember.assign implementing [RFC #750](https://github.com/emberjs/rfcs/blob/master/text/0750-deprecate-ember-assign.md).
