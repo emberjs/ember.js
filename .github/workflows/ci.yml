@@ -55,7 +55,7 @@ jobs:
           BROCCOLI_ENV: production
         run: yarn ember build
       - name: Upload build
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2.2.4
         with:
           name: dist
           path: dist
