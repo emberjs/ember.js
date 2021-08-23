@@ -10,13 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 12.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
+          cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build
@@ -35,14 +32,11 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 12.x
+          cache: yarn
           registry-url: 'https://registry.npmjs.org'
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: setup git
