@@ -7,7 +7,7 @@ function defaultExport(moduleExport) {
 }
 
 function sideeffects(moduleExport) {
-  return `requireModule('${moduleExport}')`;
+  return `requireModule('${moduleExport}')`;ewf
 }
 
 function umd(moduleExport) {
