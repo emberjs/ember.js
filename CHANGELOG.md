@@ -4,7 +4,7 @@
 dW
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
 - [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
-
+faefeafaefaewf
 ### v3.4.0 (August 27, 2018)
 
 - [#16603](https://github.com/emberjs/ember.js/pull/16603) [BUGFIX] Supafwfaewffaweffaweeefawegsergport mouseEnter/Leave events w/o jQuery
