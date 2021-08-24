@@ -210,6 +210,29 @@ jobs:
       - name: test
         run: yarn ember test -c testem.ci-browsers.js
 
+  external-partners:
+    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        partner:
+          [
+            ember-test-helpers,
+          ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - name: Install dependencies
+        run: yarn install
+      - name: Run Tests
+        timeout-minutes: 16
+        env:
+          CI: true
+        run: yarn test-external:${{ matrix.partner }}
+
   deploy-tag:
     name: Deploy tags to npm
     runs-on: ubuntu-latest
