@@ -27,17 +27,17 @@ export function modifierCapabilities<Version extends keyof ModifierCapabilitiesV
   managerAPI: Version,
   optionalFeatures: ModifierCapabilitiesVersions[Version] = {}
 ): ModifierCapabilities {
-  if (DEBUG && managerAPI !== '3.13' && managerAPI !== '3.22') {
+  if (DEBUG && managerAPI !== '3.22') {
     throw new Error('Invalid modifier manager compatibility specified');
   }
 
   return buildCapabilities({
     disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
-    useArgsProxy: managerAPI === '3.13' ? false : true,
+    useArgsProxy: true,
 
     // This capability is used in Ember, exclusively in resolution mode. See the
     // Ember glimmer resolver for details.
-    passFactoryToCreate: managerAPI === '3.13',
+    passFactoryToCreate: false,
   });
 }
 
