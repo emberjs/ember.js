@@ -1,11 +1,10 @@
-#!/usr/bin/env node
-
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 
 const execa = require('execa');
+/* eslint-disable-next-line node/no-extraneous-require */
 const debug = require('debug')('test-external');
 const rimraf = require('rimraf');
 const chalk = require('chalk');
@@ -126,13 +125,13 @@ function generateTarball() {
 }
 
 function insertTarballsToPackageJson(fileLocation) {
-    const location = require.resolve(fileLocation);
-    const pkgInfo = JSON.parse(fs.readFileSync(location, 'utf8'));
-  
-    const thisPkgTarballPath = generateTarball();
-    pkgInfo.devDependencies['ember-source'] = thisPkgTarballPath;
-  
-    fs.writeFileSync(location, JSON.stringify(pkgInfo, null, 2));
+  const location = require.resolve(fileLocation);
+  const pkgInfo = JSON.parse(fs.readFileSync(location, 'utf8'));
+
+  const thisPkgTarballPath = generateTarball();
+  pkgInfo.devDependencies['ember-source'] = thisPkgTarballPath;
+
+  fs.writeFileSync(location, JSON.stringify(pkgInfo, null, 2));
 }
 
 try {
