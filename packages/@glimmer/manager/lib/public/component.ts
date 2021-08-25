@@ -43,15 +43,11 @@ export function componentCapabilities<Version extends keyof ComponentCapabilitie
   managerAPI: Version,
   options: ComponentCapabilitiesVersions[Version] = {}
 ): ComponentCapabilities {
-  if (DEBUG && managerAPI !== '3.4' && managerAPI !== '3.13') {
+  if (DEBUG && managerAPI !== '3.13') {
     throw new Error('Invalid component manager compatibility specified');
   }
 
-  let updateHook = true;
-
-  if (managerAPI === '3.13') {
-    updateHook = Boolean((options as ComponentCapabilitiesVersions['3.13']).updateHook);
-  }
+  let updateHook = Boolean((options as ComponentCapabilitiesVersions['3.13']).updateHook);
 
   return buildCapabilities({
     asyncLifeCycleCallbacks: Boolean(options.asyncLifecycleCallbacks),
