@@ -10,7 +10,6 @@ import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformEachTrackArray from './transform-each-track-array';
 import TransformInElement from './transform-in-element';
 import TransformLinkTo from './transform-link-to';
-import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
@@ -20,7 +19,6 @@ import { EMBER_DYNAMIC_HELPERS_AND_MODIFIERS, EMBER_NAMED_BLOCKS } from '@ember/
 // order of plugins is important
 export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
   [
-    TransformOldClassBindingSyntax,
     TransformQuotedBindingsIntoJustBindings,
     AssertReservedNamedArguments,
     TransformActionSyntax,
