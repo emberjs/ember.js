@@ -360,95 +360,11 @@ class ModifierManagerTest extends RenderingTestCase {
 
     assert.throws(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
-    }, /Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13' \| '3.22'\)` \(imported via `import \{ capabilities \} from '@ember\/modifier';`\). /);
+    }, /Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities\('3.22'\)` \(imported via `import \{ capabilities \} from '@ember\/modifier';`\). /);
 
     assert.verifySteps([]);
   }
 }
-
-moduleFor(
-  'Basic Custom Modifier Manager: 3.13',
-  class extends ModifierManagerTest {
-    CustomModifierManager = class CustomModifierManager {
-      capabilities = modifierCapabilities('3.13');
-
-      constructor(owner) {
-        this.owner = owner;
-      }
-
-      createModifier(factory, args) {
-        // factory is the owner.factoryFor result
-        return factory.create(args);
-      }
-
-      installModifier(instance, element, args) {
-        instance.element = element;
-        let { positional, named } = args;
-        instance.didInsertElement(positional, named);
-      }
-
-      updateModifier(instance, args) {
-        let { positional, named } = args;
-        instance.didUpdate(positional, named);
-      }
-
-      destroyModifier(instance) {
-        instance.willDestroyElement();
-      }
-    };
-
-    '@test modifers consume all arguments'(assert) {
-      let insertCount = 0;
-      let updateCount = 0;
-
-      let ModifierClass = setModifierManager(
-        (owner) => {
-          return new this.CustomModifierManager(owner);
-        },
-        EmberObject.extend({
-          didInsertElement() {},
-          didUpdate() {},
-          willDestroyElement() {},
-        })
-      );
-
-      this.registerModifier(
-        'foo-bar',
-        ModifierClass.extend({
-          didInsertElement(_positional, named) {
-            insertCount++;
-
-            // consume qux
-            named.qux;
-          },
-
-          didUpdate(_positiona, named) {
-            updateCount++;
-
-            // consume qux
-            named.qux;
-          },
-        })
-      );
-
-      this.render('<h1 {{foo-bar bar=this.bar qux=this.qux}}>hello world</h1>', {
-        bar: 'bar',
-        qux: 'quz',
-      });
-
-      this.assertHTML(`<h1>hello world</h1>`);
-
-      assert.equal(insertCount, 1);
-      assert.equal(updateCount, 0);
-
-      runTask(() => set(this.context, 'bar', 'other bar'));
-      assert.equal(updateCount, 1);
-
-      runTask(() => set(this.context, 'qux', 'quuuuxxxxxx'));
-      assert.equal(updateCount, 2);
-    }
-  }
-);
 
 moduleFor(
   'Basic Custom Modifier Manager: 3.22',
@@ -672,60 +588,6 @@ moduleFor(
   class extends RenderingTestCase {
     getBootOptions() {
       return { isInteractive: false };
-    }
-
-    [`@test doesn't trigger lifecycle hooks when non-interactive: modifierCapabilities('3.13')`](
-      assert
-    ) {
-      class CustomModifierManager {
-        capabilities = modifierCapabilities('3.13');
-
-        constructor(owner) {
-          this.owner = owner;
-        }
-
-        createModifier(factory, args) {
-          return factory.create(args);
-        }
-
-        installModifier(instance, element, args) {
-          instance.element = element;
-          let { positional, named } = args;
-          instance.didInsertElement(positional, named);
-        }
-
-        updateModifier(instance, args) {
-          let { positional, named } = args;
-          instance.didUpdate(positional, named);
-        }
-
-        destroyModifier(instance) {
-          instance.willDestroyElement();
-        }
-      }
-      let ModifierClass = setModifierManager(
-        (owner) => {
-          return new CustomModifierManager(owner);
-        },
-        EmberObject.extend({
-          didInsertElement() {
-            assert.ok(false);
-          },
-          didUpdate() {
-            assert.ok(false);
-          },
-          willDestroyElement() {
-            assert.ok(false);
-          },
-        })
-      );
-
-      this.registerModifier('foo-bar', ModifierClass);
-
-      this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
-      runTask(() => this.context.set('baz', 'Hello'));
-
-      this.assertHTML('<h1>hello world</h1>');
     }
 
     [`@test doesn't trigger lifecycle hooks when non-interactive: modifierCapabilities('3.22')`](
