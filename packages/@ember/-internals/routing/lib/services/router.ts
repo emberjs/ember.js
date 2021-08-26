@@ -240,6 +240,7 @@ export default class RouterService extends Service {
      @public
    */
   urlFor(routeName: string, ...args: any[]) {
+    this._router.setupRouter();
     return this._router.generate(routeName, ...args);
   }
 
@@ -375,6 +376,7 @@ export default class RouterService extends Service {
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
       url.indexOf(this.rootURL) === 0
     );
+    this._router.setupRouter();
     let internalURL = cleanURL(url, this.rootURL);
     return this._router._routerMicrolib.recognize(internalURL);
   }
@@ -395,6 +397,7 @@ export default class RouterService extends Service {
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
       url.indexOf(this.rootURL) === 0
     );
+    this._router.setupRouter();
     let internalURL = cleanURL(url, this.rootURL);
     return this._router._routerMicrolib.recognizeAndLoad(internalURL);
   }
