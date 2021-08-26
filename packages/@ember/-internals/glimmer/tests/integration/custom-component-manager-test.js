@@ -7,7 +7,7 @@ import { set, setProperties, computed, tracked } from '@ember/-internals/metal';
 import { setComponentManager } from '@ember/-internals/glimmer';
 
 const BasicComponentManager = EmberObject.extend({
-  capabilities: componentCapabilities('3.4'),
+  capabilities: componentCapabilities('3.13'),
 
   createComponent(factory, args) {
     return factory.create({ args });
@@ -39,7 +39,7 @@ class ComponentManagerTest extends RenderingTestCase {
     super(...arguments);
 
     InstrumentedComponentManager = EmberObject.extend({
-      capabilities: componentCapabilities('3.4', {
+      capabilities: componentCapabilities('3.13', {
         destructor: true,
         asyncLifecycleCallbacks: true,
       }),
@@ -119,7 +119,7 @@ moduleFor(
     ['@test it can have no template context']() {
       let ComponentClass = setComponentManager(() => {
         return EmberObject.create({
-          capabilities: componentCapabilities('3.4'),
+          capabilities: componentCapabilities('3.13'),
 
           createComponent() {
             return null;
@@ -147,7 +147,7 @@ moduleFor(
       class Base {}
       setComponentManager(() => {
         return EmberObject.create({
-          capabilities: componentCapabilities('3.4'),
+          capabilities: componentCapabilities('3.13'),
 
           createComponent(Factory, args) {
             return new Factory(args);
@@ -206,7 +206,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: componentCapabilities('3.4'),
+            capabilities: componentCapabilities('3.13'),
 
             createComponent(factory) {
               return factory.create();
@@ -411,7 +411,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: componentCapabilities('3.4', {
+            capabilities: componentCapabilities('3.13', {
               destructor: true,
             }),
 
@@ -461,7 +461,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: componentCapabilities('3.4', {
+            capabilities: componentCapabilities('3.13', {
               asyncLifecycleCallbacks: true,
             }),
 
@@ -570,7 +570,7 @@ moduleFor(
 
       assert.throws(() => {
         this.render('{{foo-bar name=this.name}}', { name: 'world' });
-      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
+      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 
       assert.verifySteps([]);
     }
@@ -665,7 +665,7 @@ moduleFor(
 
     ['@test updating attributes triggers updateComponent and didUpdateComponent'](assert) {
       let TestManager = EmberObject.extend({
-        capabilities: componentCapabilities('3.4', {
+        capabilities: componentCapabilities('3.13', {
           destructor: true,
           asyncLifecycleCallbacks: true,
         }),
@@ -883,7 +883,7 @@ moduleFor(
 
       assert.throws(() => {
         this.render('<FooBar @name={{this.name}} />', { name: 'world' });
-      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.4' \| '3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
+      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
 
       assert.verifySteps([]);
     }
