@@ -66,14 +66,15 @@ moduleFor(
     }
 
     ['@test RouterService#urlFor returns url'](assert) {
-      let router = this.owner.lookup('router:main');
-      router.setupRouter();
       assert.equal(this.routerService.urlFor('parent.child'), '/child');
     }
 
     ['@test RouterService#transitionTo with basic route'](assert) {
       assert.expect(2);
 
+      // Callers who want to actually execute a transition in a non-application
+      // test are doing something weird and therefore should do
+      // `owner.setupRouter()` explicitly in their tests.
       let componentInstance;
       let router = this.owner.lookup('router:main');
       router.setupRouter();
@@ -107,8 +108,6 @@ moduleFor(
     }
 
     ['@test RouterService#recognize recognize returns routeInfo'](assert) {
-      let router = this.owner.lookup('router:main');
-      router.setupRouter();
       let routeInfo = this.routerService.recognize('/dynamic-with-child/123/1?a=b');
       assert.ok(routeInfo);
       let { name, localName, parent, child, params, queryParams, paramNames } = routeInfo;
