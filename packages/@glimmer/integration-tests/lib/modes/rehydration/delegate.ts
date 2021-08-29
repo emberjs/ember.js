@@ -32,7 +32,6 @@ import {
   registerHelper,
   registerInternalHelper,
   registerModifier,
-  registerPartial,
 } from '../jit/register';
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
@@ -194,11 +193,6 @@ export class RehydrationDelegate implements RenderDelegate {
   registerInternalHelper(name: string, helper: Helper) {
     registerInternalHelper(this.clientRegistry, name, helper);
     registerInternalHelper(this.serverRegistry, name, helper);
-  }
-
-  registerPartial(name: string, content: string) {
-    registerPartial(this.clientRegistry, name, content);
-    registerPartial(this.serverRegistry, name, content);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {

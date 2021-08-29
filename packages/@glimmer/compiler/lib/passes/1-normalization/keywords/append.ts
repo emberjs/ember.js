@@ -1,6 +1,5 @@
 import { CurriedType } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError, SourceSlice, SourceSpan } from '@glimmer/syntax';
-import { expect } from '@glimmer/util';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
@@ -72,75 +71,6 @@ export const APPEND_KEYWORDS = keywords('Append')
             to: state.scope.allocateBlock(target.chars),
             positional,
           })
-      );
-    },
-  })
-  .kw('partial', {
-    assert(
-      node: ASTv2.AppendContent,
-      state: NormalizationState
-    ): Result<ASTv2.ExpressionNode | undefined> {
-      if (state.isStrict) {
-        return Err(
-          generateSyntaxError('{{partial}} is not allowed in strict mode templates', node.loc)
-        );
-      }
-
-      let {
-        args: { positional, named },
-      } = node;
-      let { trusting } = node;
-
-      if (positional.isEmpty()) {
-        return Err(
-          generateSyntaxError(
-            `Partial found with no arguments. You must specify a template name`,
-            node.loc
-          )
-        );
-      } else if (positional.size !== 1) {
-        return Err(
-          generateSyntaxError(
-            `Partial found with ${positional.exprs.length} arguments. You must specify a template name`,
-            node.loc
-          )
-        );
-      }
-
-      if (named.isEmpty()) {
-        if (trusting) {
-          return Err(
-            generateSyntaxError(
-              `{{{partial ...}}} is not supported, please use {{partial ...}} instead`,
-              node.loc
-            )
-          );
-        }
-
-        return Ok(expect(positional.nth(0), `already confirmed that positional has a 0th entry`));
-      } else {
-        return Err(generateSyntaxError(`Partial does not take any named argument`, node.loc));
-      }
-    },
-
-    translate(
-      { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
-      expr: ASTv2.ExpressionNode | undefined
-    ): Result<mir.Statement> {
-      state.scope.setHasEval();
-
-      let visited =
-        expr === undefined
-          ? Ok(
-              new ASTv2.LiteralExpression({
-                loc: SourceSpan.synthetic('undefined'),
-                value: undefined,
-              })
-            )
-          : VISIT_EXPRS.visit(expr, state);
-
-      return visited.mapOk(
-        (target) => new mir.Partial({ loc: node.loc, scope: state.scope, target })
       );
     },
   })

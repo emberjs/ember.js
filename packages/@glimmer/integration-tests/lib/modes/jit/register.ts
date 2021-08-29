@@ -3,7 +3,6 @@ import {
   Option,
   Helper as GlimmerHelper,
   InternalModifierManager,
-  PartialDefinition,
   TemplateFactory,
   ResolutionTimeConstants,
   CurriedType,
@@ -16,10 +15,9 @@ import {
   TestModifierDefinitionState,
   TestModifierManager,
 } from '../../modifiers';
-import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { CurriedValue, curry, templateOnlyComponent } from '@glimmer/runtime';
-import { createTemplate, preprocess } from '../../compile';
+import { createTemplate } from '../../compile';
 import {
   getInternalComponentManager,
   setComponentTemplate,
@@ -106,16 +104,6 @@ export function registerModifier(
   let manager = new TestModifierManager();
   setInternalModifierManager(manager, state);
   registry.register('modifier', name, state);
-}
-
-export function registerPartial(
-  registry: TestJitRegistry,
-  name: string,
-  source: string
-): PartialDefinition {
-  let definition = new PartialDefinitionImpl(name, preprocess(source));
-  registry.register('partial', name, definition);
-  return definition;
 }
 
 export function registerComponent<K extends ComponentKind>(

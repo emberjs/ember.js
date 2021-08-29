@@ -885,15 +885,6 @@ operation = "Invoke didCreateElement on the current component manager"
 format = ["DidRenderLayout", "state:register"]
 operation = "Invoke didRenderLayout on the current component manager"
 
-[syscall.invokepartial]
-
-format = ["InvokePartial", "owner:owner", "symbols:str-array", "evalInfo:array"]
-operation = "Lookup and invoke a partial template."
-operand-stack = [
-  ["Reference"],
-  ["$ra", "$fp"]
-]
-
 [syscall.eval_varload]
 
 format = ["ResolveMaybeLocal", "local:str"]

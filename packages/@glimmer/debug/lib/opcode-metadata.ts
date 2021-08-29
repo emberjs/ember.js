@@ -1302,29 +1302,6 @@ METADATA[Op.DidRenderLayout] = {
   check: true,
 };
 
-METADATA[Op.InvokePartial] = {
-  name: 'InvokePartial',
-  mnemonic: 'invokepartial',
-  before: null,
-  stackChange: 1,
-  ops: [
-    {
-      name: 'owner',
-      type: 'owner',
-    },
-    {
-      name: 'symbols',
-      type: 'str-array',
-    },
-    {
-      name: 'evalInfo',
-      type: 'array',
-    },
-  ],
-  operands: 3,
-  check: true,
-};
-
 METADATA[Op.ResolveMaybeLocal] = {
   name: 'ResolveMaybeLocal',
   mnemonic: 'eval_varload',
