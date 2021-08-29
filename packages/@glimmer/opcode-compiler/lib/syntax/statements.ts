@@ -1,4 +1,3 @@
-import { deprecate } from '@glimmer/global-context';
 import {
   CompileTimeComponent,
   ContentType,
@@ -159,24 +158,6 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
         op(MachineOp.PushFrame);
         op(Op.ConstantReference, handle);
         op(MachineOp.InvokeStatic, stdlibOperand('cautious-non-dynamic-append'));
-        op(MachineOp.PopFrame);
-      },
-
-      ifFallback(_name: string) {
-        op(MachineOp.PushFrame);
-        op(HighLevelResolutionOpcode.ResolveLocal, value[1], (name: string, moduleName: string) => {
-          deprecate(
-            `The \`${name}\` property was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
-            false,
-            {
-              id: 'this-property-fallback',
-            }
-          );
-
-          op(Op.GetVariable, 0);
-          op(Op.GetProperty, name);
-        });
-        op(MachineOp.InvokeStatic, stdlibOperand('cautious-append'));
         op(MachineOp.PopFrame);
       },
     });

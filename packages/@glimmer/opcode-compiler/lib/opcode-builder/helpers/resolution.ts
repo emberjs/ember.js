@@ -309,7 +309,7 @@ export function resolveOptionalHelper(
   resolver: CompileTimeResolver,
   constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
-  [, expr, { ifHelper, ifFallback }]: ResolveOptionalHelperOp
+  [, expr, { ifHelper }]: ResolveOptionalHelperOp
 ): void {
   assert(
     isGetFreeOptionalHelper(expr) || isGetFreeDeprecatedHelper(expr),
@@ -320,9 +320,7 @@ export function resolveOptionalHelper(
   let name = upvars[expr[1]];
   let helper = resolver.lookupHelper(name, owner);
 
-  if (helper === null) {
-    ifFallback(name, meta.moduleName);
-  } else {
+  if (helper) {
     ifHelper(constants.helper(helper, name), name, meta.moduleName);
   }
 }
@@ -334,7 +332,7 @@ export function resolveOptionalComponentOrHelper(
   resolver: CompileTimeResolver,
   constants: CompileTimeConstants & ResolutionTimeConstants,
   meta: ContainingMetadata,
-  [, expr, { ifComponent, ifHelper, ifValue, ifFallback }]: ResolveOptionalComponentOrHelperOp
+  [, expr, { ifComponent, ifHelper, ifValue }]: ResolveOptionalComponentOrHelperOp
 ): void {
   assert(
     isGetFreeOptionalComponentOrHelper(expr),
@@ -396,10 +394,7 @@ export function resolveOptionalComponentOrHelper(
 
     if (helper !== null) {
       ifHelper(constants.helper(helper, name));
-      return;
     }
-
-    ifFallback(name);
   }
 }
 
