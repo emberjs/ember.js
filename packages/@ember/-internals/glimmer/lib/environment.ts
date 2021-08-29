@@ -99,16 +99,6 @@ const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
   message?: string;
 })[] = [
   {
-    id: 'this-property-fallback',
-    disabled: ENV._DISABLE_PROPERTY_FALLBACK_DEPRECATION,
-    url: 'https://deprecations.emberjs.com/v3.x#toc_this-property-fallback',
-    until: '4.0.0',
-    for: 'ember-source',
-    since: {
-      enabled: '3.26.0',
-    },
-  },
-  {
     id: 'argument-less-helper-paren-less-invocation',
     url: 'https://deprecations.emberjs.com/v3.x#toc_argument-less-helper-paren-less-invocation',
     until: '4.0.0',
