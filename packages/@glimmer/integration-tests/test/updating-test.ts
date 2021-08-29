@@ -101,7 +101,7 @@ class UpdatingTest extends RenderTest {
     this.render(
       stripTight`
         <div>
-          [{{this.[]}}]
+          [{{this.['']}}]
           [{{this.[1]}}]
           [{{this.[undefined]}}]
           [{{this.[null]}}]
@@ -110,7 +110,7 @@ class UpdatingTest extends RenderTest {
           [{{this.[this]}}]
           [{{this.[foo.bar]}}]
 
-          [{{this.nested.[]}}]
+          [{{this.nested.['']}}]
           [{{this.nested.[1]}}]
           [{{this.nested.[undefined]}}]
           [{{this.nested.[null]}}]
@@ -125,7 +125,7 @@ class UpdatingTest extends RenderTest {
 
     this.assertHTML(stripTight`
       <div>
-        [empty string]
+        []
         [1]
         [undefined]
         [null]
@@ -134,7 +134,7 @@ class UpdatingTest extends RenderTest {
         [this]
         [foo.bar]
 
-        [empty string]
+        []
         [1]
         [undefined]
         [null]
@@ -159,7 +159,7 @@ class UpdatingTest extends RenderTest {
 
     this.assertHTML(stripTight`
       <div>
-        [EMPTY STRING]
+        []
         [ONE]
         [UNDEFINED]
         [NULL]
@@ -168,7 +168,7 @@ class UpdatingTest extends RenderTest {
         [THIS]
         [FOO.BAR]
 
-        [EMPTY STRING]
+        []
         [ONE]
         [UNDEFINED]
         [NULL]
@@ -196,7 +196,7 @@ class UpdatingTest extends RenderTest {
 
     this.assertHTML(stripTight`
       <div>
-        [empty string]
+        []
         [1]
         [undefined]
         [null]
@@ -205,7 +205,7 @@ class UpdatingTest extends RenderTest {
         [this]
         [foo.bar]
 
-        [empty string]
+        []
         [1]
         [undefined]
         [null]
@@ -215,10 +215,6 @@ class UpdatingTest extends RenderTest {
         [foo.bar]
       </div>
     `);
-
-    assert.validateDeprecations(
-      /The `` property was used in the `.*` template without using `this`/
-    );
   }
 
   @test
@@ -935,8 +931,8 @@ class UpdatingTest extends RenderTest {
         foo: "{{foo}}";
         bar: "{{bar}}";
         value: "{{this.value}}";
-        echo foo: "{{echo foo}}";
-        echo bar: "{{echo bar}}";
+        echo foo: "{{echo this.foo}}";
+        echo bar: "{{echo this.bar}}";
         echo value: "{{echo this.value}}";
 
         -----
@@ -946,7 +942,7 @@ class UpdatingTest extends RenderTest {
           bar: "{{bar}}";
           value: "{{this.value}}";
           echo foo: "{{echo foo}}";
-          echo bar: "{{echo bar}}";
+          echo bar: "{{echo this.bar}}";
           echo value: "{{echo this.value}}";
 
           -----
@@ -967,7 +963,7 @@ class UpdatingTest extends RenderTest {
           foo: "{{foo}}";
           bar: "{{bar}}";
           value: "{{this.value}}";
-          echo foo: "{{echo foo}}";
+          echo foo: "{{echo this.foo}}";
           echo bar: "{{echo bar}}";
           echo value: "{{echo this.value}}";
         {{/with}}
@@ -1101,19 +1097,12 @@ class UpdatingTest extends RenderTest {
       </div>`,
       'After reset'
     );
-
-    assert.validateDeprecations(
-      /The `foo` property path was used in the `.*` template without using `this`/,
-      /The `bar` property path was used in the `.*` template without using `this`/,
-      /The `bar` property path was used in the `.*` template without using `this`/,
-      /The `foo` property path was used in the `.*` template without using `this`/
-    );
   }
 
   @test
   'block arguments (ensure balanced push/pop)'() {
     let person = { name: { first: 'Godfrey', last: 'Chan' } };
-    this.render('<div>{{#with this.person.name.first as |f|}}{{f}}{{/with}}{{f}}</div>', {
+    this.render('<div>{{#with this.person.name.first as |f|}}{{f}}{{/with}}{{this.f}}</div>', {
       person,
       f: 'Outer',
     });
@@ -1124,10 +1113,6 @@ class UpdatingTest extends RenderTest {
     this.rerender({ person });
 
     this.assertHTML('<div>GodfreakOuter</div>', 'After updating');
-
-    assert.validateDeprecations(
-      /The `f` property was used in the `.*` template without using `this`/
-    );
   }
 
   @test
