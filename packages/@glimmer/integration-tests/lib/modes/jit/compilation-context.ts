@@ -2,7 +2,6 @@ import {
   CompileTimeResolver,
   Option,
   ResolvedComponentDefinition,
-  PartialDefinition,
   HelperDefinitionState,
   ModifierDefinitionState,
 } from '@glimmer/interfaces';
@@ -21,10 +20,6 @@ export default class JitCompileTimeLookup implements CompileTimeResolver {
 
   lookupComponent(name: string, owner?: object): Option<ResolvedComponentDefinition> {
     return this.resolver.lookupComponent(name, owner);
-  }
-
-  lookupPartial(name: string): Option<PartialDefinition> {
-    return this.resolver.lookupPartial(name);
   }
 
   lookupBuiltInHelper(_name: string): Option<HelperDefinitionState> {

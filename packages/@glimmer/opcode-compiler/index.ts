@@ -16,8 +16,6 @@ export { meta } from './lib/opcode-builder/helpers/shared';
 
 export { StdLib } from './lib/opcode-builder/stdlib';
 
-export { PartialDefinitionImpl } from './lib/partial-template';
-
 export {
   default as templateFactory,
   templateCacheCounters,

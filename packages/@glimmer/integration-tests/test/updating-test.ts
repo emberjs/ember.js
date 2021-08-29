@@ -581,20 +581,6 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
-  'helpers passed as arguments to {{partial}} are not torn down when switching between blocks'() {
-    this.registerPartial('yasss', 'Yes');
-    this.registerPartial('noooo', '');
-
-    let options = {
-      template: '{{partial (stateful-foo)}}',
-      truthyValue: 'yasss',
-      falsyValue: 'noooo',
-    };
-
-    this.testStatefulHelper(assert, options);
-  }
-
-  @test
   'helpers passed as arguments to {{component}} are not torn down when switching between blocks'() {
     this.registerComponent('Glimmer', 'XYasss', 'Yes');
 

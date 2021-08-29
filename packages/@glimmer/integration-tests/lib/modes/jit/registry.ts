@@ -3,7 +3,6 @@ import {
   ResolvedComponentDefinition,
   Invocation,
   Option,
-  PartialDefinition,
   Template,
   HelperDefinitionState,
   ModifierDefinitionState,
@@ -22,7 +21,6 @@ CIRCULAR_OBJECT.inner.outer = CIRCULAR_OBJECT;
 export interface Lookup {
   helper: HelperDefinitionState;
   modifier: ModifierDefinitionState;
-  partial: PartialDefinition;
   component: ResolvedComponentDefinition;
   template: Invocation;
   compilable: Template;
@@ -51,7 +49,6 @@ export class TypedRegistry<T> {
 export default class Registry {
   helper = new TypedRegistry<HelperDefinitionState>();
   modifier = new TypedRegistry<ModifierDefinitionState>();
-  partial = new TypedRegistry<PartialDefinition>();
   component = new TypedRegistry<
     ResolvedComponentDefinition<object, unknown, InternalComponentManager>
   >();

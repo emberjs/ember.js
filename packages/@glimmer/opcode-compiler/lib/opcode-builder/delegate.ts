@@ -36,7 +36,6 @@ export interface ResolverDelegate<R = unknown> {
   lookupHelper?(name: string, referrer: R): Option<number> | void;
   lookupModifier?(name: string, referrer: R): Option<number> | void;
   lookupComponent?(name: string, referrer: R): Option<CompileTimeComponent> | void;
-  lookupPartial?(name: string, referrer: R): Option<number> | void;
 
   // For debugging
   resolve?(handle: number): R;
