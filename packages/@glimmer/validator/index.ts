@@ -67,5 +67,4 @@ export {
   runInTrackingTransaction,
   beginTrackingTransaction,
   endTrackingTransaction,
-  deprecateMutationsInTrackingTransaction,
 } from './lib/debug';

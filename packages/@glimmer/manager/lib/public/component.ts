@@ -18,7 +18,6 @@ import {
 } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { registerDestructor } from '@glimmer/destroyable';
-import { deprecateMutationsInTrackingTransaction } from '@glimmer/validator';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
 import { ManagerFactory } from './index';
@@ -142,15 +141,7 @@ export class CustomComponentManager<O extends Owner, ComponentInstance>
     let delegate = this.getDelegateFor(owner);
     let args = argsProxyFor(vmArgs.capture(), 'component');
 
-    let component: ComponentInstance;
-
-    if (DEBUG && deprecateMutationsInTrackingTransaction !== undefined) {
-      deprecateMutationsInTrackingTransaction(() => {
-        component = delegate.createComponent(definition, args);
-      });
-    } else {
-      component = delegate.createComponent(definition, args);
-    }
+    let component: ComponentInstance = delegate.createComponent(definition, args);
 
     return new CustomComponentState(component!, delegate, args);
   }
