@@ -57,6 +57,10 @@
 - [#19695](https://github.com/emberjs/ember.js/pull/19695) [CLEANUP] Remove {{partial}}
 - [#19691](https://github.com/emberjs/ember.js/pull/19691) Add build assertion against `{{outlet named}}`
 
+### v3.28.1 (August 30, 2021)
+
+- [#19733](https://github.com/emberjs/ember.js/pull/19733) [BUGFIX] Ensure that using `routerService.urlFor(...)` and `routerService.recognize(...)` does not error if the router is not fully initialized
+
 ### v3.28.0 (August 9, 2021)
 
 - [#19697](https://github.com/emberjs/ember.js/pull/19697) [BUGFIX] Ensure `deserializeQueryParam` is called for lazy routes
