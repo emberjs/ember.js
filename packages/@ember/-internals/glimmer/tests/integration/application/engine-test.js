@@ -178,7 +178,7 @@ moduleFor(
     }
 
     ['@test sharing a template between engine and application has separate refinements']() {
-      this.assert.expect(2);
+      this.assert.expect(1);
 
       let sharedTemplate = compile(strip`
       <h1>{{this.contextType}}</h1>
@@ -186,10 +186,6 @@ moduleFor(
 
       {{outlet}}
     `);
-
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
 
       this.add('template:application', sharedTemplate);
       this.add(
@@ -237,10 +233,6 @@ moduleFor(
 
     ['@test sharing a layout between engine and application has separate refinements']() {
       this.assert.expect(2);
-
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
 
       let sharedLayout = compile(strip`
         {{ambiguous-curlies}}

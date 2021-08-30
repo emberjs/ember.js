@@ -35,10 +35,6 @@ moduleFor(
     }
 
     ['@test it does not resolve helpers with a `.` (period)']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.registerHelper('hello.world', () => 'hello world');
 
       this.render('{{hello.world}}', {
