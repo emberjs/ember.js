@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.0.0-beta.3 (August 30, 2021)
+
+- [#19708](https://github.com/emberjs/ember.js/pull/19708) [CLEANUP] Remove class-binding-and-class-name-bindings-in-templates
+
 ### v4.0.0-beta.2 (August 23, 2021)
 
 - [#19680](https://github.com/emberjs/ember.js/pull/19680) [DEPRECATION] Deprecate owner.inject per [RFC #680](https://github.com/emberjs/rfcs/blob/sn/owner-inject-deprecation/text/0680-implicit-injection-deprecation.md#1-deprecate-implicit-injection-on-target-object) and cleanup related deprecations that are `until: 4.0.0`.
