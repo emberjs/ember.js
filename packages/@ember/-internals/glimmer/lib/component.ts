@@ -36,6 +36,12 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 */
 
 /**
+  Note: Classic components are deprecated. Use 
+  [Glimmer components](/ember/release/modules/@glimmer%2Fcomponent)
+  instead. For guidance on converting existing classic components,
+  see the [Octane edition](https://emberjs.com/editions/octane/)
+  resources.
+
   A component is a reusable UI element that consists of a `.hbs` template and an
   optional JavaScript class that defines its behavior. For example, someone
   might make a `button` in the template and handle the click behavior in the
@@ -53,7 +59,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   1. Glimmer components, imported from `@glimmer/component`, which are the
      default component's for Ember Octane (3.15) and more recent editions.
   2. Classic components, imported from `@ember/component`, which were the
-     default for older editions of Ember (pre 3.15).
+     default for older editions of Ember (pre 3.15). Classic components
+     are deprecated in v4 of Ember.
 
   Below is the documentation for Classic components. If you are looking for the
   API documentation for Template-only or Glimmer components, it is

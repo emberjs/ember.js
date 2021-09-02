@@ -729,32 +729,6 @@ class ComputedDecoratorImpl extends Function {
   client.fullName; // 'Betty Fuller'
   ```
 
-  Classic Class Example:
-
-  ```js
-  import EmberObject, { computed } from '@ember/object';
-
-  let Person = EmberObject.extend({
-    init() {
-      this._super(...arguments);
-
-      this.firstName = 'Betty';
-      this.lastName = 'Jones';
-    },
-
-    fullName: computed('firstName', 'lastName', function() {
-      return `${this.get('firstName')} ${this.get('lastName')}`;
-    })
-  });
-
-  let client = Person.create();
-
-  client.get('fullName'); // 'Betty Jones'
-
-  client.set('lastName', 'Fuller');
-  client.get('fullName'); // 'Betty Fuller'
-  ```
-
   You can also provide a setter, either directly on the class using native class
   syntax, or by passing a hash with `get` and `set` functions.
 
@@ -790,38 +764,6 @@ class ComputedDecoratorImpl extends Function {
 
   set(client, 'lastName', 'Fuller');
   client.fullName; // 'Betty Fuller'
-  ```
-
-  Classic Class Example:
-
-  ```js
-  import EmberObject, { computed } from '@ember/object';
-
-  let Person = EmberObject.extend({
-    init() {
-      this._super(...arguments);
-
-      this.firstName = 'Betty';
-      this.lastName = 'Jones';
-    },
-
-    fullName: computed('firstName', 'lastName', {
-      get(key) {
-        return `${this.get('firstName')} ${this.get('lastName')}`;
-      },
-      set(key, value) {
-        let [firstName, lastName] = value.split(/\s+/);
-        this.setProperties({ firstName, lastName });
-        return value;
-      }
-    })
-  });
-
-  let client = Person.create();
-  client.get('firstName'); // 'Betty'
-
-  client.set('fullName', 'Carroll Fuller');
-  client.get('firstName'); // 'Carroll'
   ```
 
   When passed as an argument, the `set` function should accept two parameters,
