@@ -378,25 +378,6 @@ moduleFor(
       }, /You attempted to update `value` on `EmberObject`, but it had already been used previously in the same computation/);
     }
 
-    ['@test gives helpful deprecation when a tracked property is mutated after access within unknownProperty within an autotracking transaction']() {
-      class EmberObject {
-        @tracked foo;
-
-        unknownProperty() {
-          this.foo;
-          this.foo = 123;
-        }
-      }
-
-      let obj = new EmberObject();
-
-      expectDeprecation(() => {
-        track(() => {
-          get(obj, 'bar');
-        });
-      }, /You attempted to update `foo` on `EmberObject`, but it had already been used previously in the same computation/);
-    }
-
     ['@test get() does not entangle in the autotracking stack until after retrieving the value'](
       assert
     ) {

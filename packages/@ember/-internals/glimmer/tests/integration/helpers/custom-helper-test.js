@@ -731,55 +731,6 @@ moduleFor(
       this.assertText('huzza!');
     }
 
-    ['@test class-based helper gives helpful warning when mutating a value that was tracked already']() {
-      this.add(
-        'helper:hello-world',
-        class extends Helper {
-          compute() {
-            this.get('value');
-            this.set('value', 123);
-          }
-        }
-      );
-
-      let expectedMessage = backtrackingMessageFor('value', '<.+?>', {
-        renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        // TODO: this must be a bug??
-        expectDeprecation(
-          backtrackingMessageFor('undefined', undefined, {
-            renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
-          })
-        );
-
-        this.render('{{hello-world}}');
-      }, expectedMessage);
-    }
-
-    ['@test class-based helper gives helpful deprecation when mutating a tracked property that was tracked already']() {
-      this.add(
-        'helper:hello-world',
-        class HelloWorld extends Helper {
-          @tracked value;
-
-          compute() {
-            this.value;
-            this.value = 123;
-          }
-        }
-      );
-
-      let expectedMessage = backtrackingMessageFor('value', '<HelloWorld.+?>', {
-        renderTree: ['\\(result of a `<HelloWorld.*?>` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        this.render('{{hello-world}}');
-      }, expectedMessage);
-    }
-
     '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a helper'() {
       this.registerHelper('hello-world', ([text]) => text ?? 'Hello, world!');
 

@@ -406,46 +406,5 @@ moduleFor(
 
       this.assertText('12');
     }
-
-    '@test simple helper gives helpful warning when mutating a value that was tracked already'() {
-      this.registerHelper('hello-world', function helloWorld([person]) {
-        get(person, 'name');
-        set(person, 'name', 'sam');
-      });
-
-      let expectedMessage = backtrackingMessageFor('name', '\\(unknown object\\)', {
-        renderTree: ['\\(result of a `.*` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        // TODO: this must be a bug??
-        expectDeprecation(
-          backtrackingMessageFor('undefined', undefined, {
-            renderTree: ['\\(result of a `.*` helper\\)'],
-          })
-        );
-
-        this.render('{{hello-world this.model}}', { model: {} });
-      }, expectedMessage);
-    }
-
-    '@test simple helper gives helpful deprecation when mutating a tracked property that was tracked already'() {
-      class Person {
-        @tracked name = 'bob';
-      }
-
-      this.registerHelper('hello-world', ([person]) => {
-        person.name;
-        person.name = 'sam';
-      });
-
-      let expectedMessage = backtrackingMessageFor('name', 'Person', {
-        renderTree: ['\\(result of a `\\(unknown function\\)` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        this.render('{{hello-world this.model}}', { model: new Person() });
-      }, expectedMessage);
-    }
   }
 );
