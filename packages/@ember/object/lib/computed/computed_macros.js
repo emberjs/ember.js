@@ -87,25 +87,6 @@ function generateComputedWithPredicate(name, predicate) {
   todoList.isDone; // true
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { empty } from '@ember/object/computed';
-
-  let ToDoList = EmberObject.extend({
-    isDone: empty('todos')
-  });
-
-  let todoList = ToDoList.create({
-    todos: ['Unit Test', 'Documentation', 'Release']
-  });
-
-  todoList.isDone; // false
-  set(todoList, 'todos', []);
-  todoList.isDone; // true
-  ```
-
   @since 1.6.0
   @method empty
   @static
@@ -155,25 +136,6 @@ export function empty(dependentKey) {
   hamster.hasStuff; // false
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { notEmpty } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    hasStuff: notEmpty('backpack')
-  });
-
-  let hamster = Hamster.create({
-    backpack: ['Food', 'Sleeping Bag', 'Tent']
-  });
-
-  hamster.hasStuff; // true
-  set(hamster, 'backpack', []);
-  hamster.hasStuff; // false
-  ```
-
   @method notEmpty
   @static
   @for @ember/object/computed
@@ -207,27 +169,6 @@ export function notEmpty(dependentKey) {
   }
 
   let hamster = new Hamster();
-
-  hamster.isHungry; // true
-
-  set(hamster, 'food', 'Banana');
-  hamster.isHungry; // false
-
-  set(hamster, 'food', null);
-  hamster.isHungry; // true
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { none } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    isHungry: none('food')
-  });
-
-  let hamster = Hamster.create();
 
   hamster.isHungry; // true
 
@@ -280,25 +221,6 @@ export function none(dependentKey) {
   user.isAnonymous; // false
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { not } from '@ember/object/computed';
-
-  let User = EmberObject.extend({
-    loggedIn: false,
-
-    isAnonymous: not('loggedIn')
-  });
-
-  let user = User.create();
-
-  user.isAnonymous; // true
-  set(user, 'loggedIn', true);
-  user.isAnonymous; // false
-  ```
-
   @method not
   @static
   @for @ember/object/computed
@@ -334,31 +256,6 @@ export function not(dependentKey) {
   }
 
   let hamster = new Hamster();
-
-  hamster.hasBananas; // false
-
-  set(hamster, 'numBananas', 0);
-  hamster.hasBananas; // false
-
-  set(hamster, 'numBananas', 1);
-  hamster.hasBananas; // true
-
-  set(hamster, 'numBananas', null);
-  hamster.hasBananas; // false
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { bool } from '@ember/object/computed';
-
-
-  let Hamster = EmberObject.extend({
-    hasBananas: bool('numBananas')
-  });
-
-  let hamster = Hamster.create();
 
   hamster.hasBananas; // false
 
@@ -417,27 +314,6 @@ export function bool(dependentKey) {
   user.hasValidEmail; // true
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { match } from '@ember/object/computed';
-
-  let User = EmberObject.extend({
-    hasValidEmail: match('email', /^.+@.+\..+$/)
-  });
-
-  let user = User.create();
-
-  user.hasValidEmail; // false
-
-  set(user, 'email', '');
-  user.hasValidEmail; // false
-
-  set(user, 'email', 'ember_hamster@example.com');
-  user.hasValidEmail; // true
-  ```
-
   @method match
   @static
   @for @ember/object/computed
@@ -474,27 +350,6 @@ export function match(dependentKey, regexp) {
   }
 
   let hamster = new Hamster();
-
-  hamster.satisfied; // false
-
-  set(hamster, 'percentCarrotsEaten', 100);
-  hamster.satisfied; // true
-
-  set(hamster, 'percentCarrotsEaten', 50);
-  hamster.satisfied; // false
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { equal } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    satisfied: equal('percentCarrotsEaten', 100)
-  });
-
-  let hamster = Hamster.create();
 
   hamster.satisfied; // false
 
@@ -550,27 +405,6 @@ export function equal(dependentKey, value) {
   hamster.hasTooManyBananas; // true
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { gt } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    hasTooManyBananas: gt('numBananas', 10)
-  });
-
-  let hamster = Hamster.create();
-
-  hamster.hasTooManyBananas; // false
-
-  set(hamster, 'numBananas', 3);
-  hamster.hasTooManyBananas; // false
-
-  set(hamster, 'numBananas', 11);
-  hamster.hasTooManyBananas; // true
-  ```
-
   @method gt
   @static
   @for @ember/object/computed
@@ -606,27 +440,6 @@ export function gt(dependentKey, value) {
   }
 
   let hamster = new Hamster();
-
-  hamster.hasTooManyBananas; // false
-
-  set(hamster, 'numBananas', 3);
-  hamster.hasTooManyBananas; // false
-
-  set(hamster, 'numBananas', 10);
-  hamster.hasTooManyBananas; // true
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { gte } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    hasTooManyBananas: gte('numBananas', 10)
-  });
-
-  let hamster = Hamster.create();
 
   hamster.hasTooManyBananas; // false
 
@@ -682,27 +495,6 @@ export function gte(dependentKey, value) {
   hamster.needsMoreBananas; // true
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { lt } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    needsMoreBananas: lt('numBananas', 3)
-  });
-
-  let hamster = Hamster.create();
-
-  hamster.needsMoreBananas; // true
-
-  set(hamster, 'numBananas', 3);
-  hamster.needsMoreBananas; // false
-
-  set(hamster, 'numBananas', 2);
-  hamster.needsMoreBananas; // true
-  ```
-
   @method lt
   @static
   @for @ember/object/computed
@@ -738,27 +530,6 @@ export function lt(dependentKey, value) {
   }
 
   let hamster = new Hamster();
-
-  hamster.needsMoreBananas; // true
-
-  set(hamster, 'numBananas', 5);
-  hamster.needsMoreBananas; // false
-
-  set(hamster, 'numBananas', 3);
-  hamster.needsMoreBananas; // true
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { lte } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    needsMoreBananas: lte('numBananas', 3)
-  });
-
-  let hamster = Hamster.create();
 
   hamster.needsMoreBananas; // true
 
@@ -825,34 +596,6 @@ export function lte(dependentKey, value) {
   tomster.readyForHike; // null
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { and } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    readyForCamp: and('hasTent', 'hasBackpack'),
-    readyForHike: and('hasWalkingStick', 'hasBackpack')
-  });
-
-  let tomster = Hamster.create();
-
-  tomster.readyForCamp; // false
-
-  set(tomster, 'hasTent', true);
-  tomster.readyForCamp; // false
-
-  set(tomster, 'hasBackpack', true);
-  tomster.readyForCamp; // true
-
-  set(tomster, 'hasBackpack', 'Yes');
-  tomster.readyForCamp; // 'Yes'
-
-  set(tomster, 'hasWalkingStick', null);
-  tomster.readyForHike; // null
-  ```
-
   @method and
   @static
   @for @ember/object/computed
@@ -883,31 +626,6 @@ export const and = generateComputedWithPredicate('and', (value) => value);
   }
 
   let tomster = new Hamster();
-
-  tomster.readyForRain; // undefined
-
-  set(tomster, 'hasUmbrella', true);
-  tomster.readyForRain; // true
-
-  set(tomster, 'hasJacket', 'Yes');
-  tomster.readyForRain; // 'Yes'
-
-  set(tomster, 'hasSunscreen', 'Check');
-  tomster.readyForBeach; // 'Check'
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { or } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    readyForRain: or('hasJacket', 'hasUmbrella'),
-    readyForBeach: or('hasSunscreen', 'hasUmbrella')
-  });
-
-  let tomster = Hamster.create();
 
   tomster.readyForRain; // undefined
 
@@ -957,27 +675,6 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
   alex.name;  // '@machty'
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { alias } from '@ember/object/computed';
-
-  let Person = EmberObject.extend({
-    name: 'Alex Matchneer',
-
-    nomen: alias('name')
-  });
-
-  let alex = Person.create();
-
-  alex.nomen; // 'Alex Matchneer'
-  alex.name;  // 'Alex Matchneer'
-
-  set(alex, 'nomen', '@machty');
-  alex.name;  // '@machty'
-  ```
-
   @method alias
   @static
   @for @ember/object/computed
@@ -1014,31 +711,6 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
   teddy.nickName; // 'Teddy'
 
   set(teddy, 'nickName', 'TeddyBear');
-  teddy.firstName; // 'Teddy'
-  teddy.nickName; // 'TeddyBear'
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { oneWay } from '@ember/object/computed';
-
-  let User = EmberObject.extend({
-    firstName: null,
-    lastName: null,
-
-    nickName: oneWay('firstName')
-  });
-
-  let teddy = User.create({
-    firstName: 'Teddy',
-    lastName: 'Zeenny'
-  });
-
-  teddy.nickName; // 'Teddy'
-
-  set(teddy, 'nickName', 'TeddyBear'); // 'TeddyBear'
   teddy.firstName; // 'Teddy'
   teddy.nickName; // 'TeddyBear'
   ```
@@ -1106,32 +778,6 @@ export function oneWay(dependentKey) {
   teddy.firstName; // 'Teddy'
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { readOnly } from '@ember/object/computed';
-
-  let User = EmberObject.extend({
-    firstName: null,
-    lastName: null,
-
-    nickName: readOnly('firstName')
-  });
-
-  let teddy = User.create({
-    firstName: 'Teddy',
-    lastName:  'Zeenny'
-  });
-
-  teddy.nickName; // 'Teddy'
-
-  set(teddy, 'nickName', 'TeddyBear'); // throws Exception
-  // throw new EmberError('Cannot Set: nickName on: <User:ember27288>' );`
-
-  teddy.firstName; // 'Teddy'
-  ```
-
   @method readOnly
   @static
   @for @ember/object/computed
@@ -1170,25 +816,6 @@ export function readOnly(dependentKey) {
   }
 
   let hamster = new Hamster();
-
-  set(hamster, 'bananaCount', 5); // Prints a deprecation warning.
-  hamster.cavendishCount; // 5
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { deprecatingAlias } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    bananaCount: deprecatingAlias('cavendishCount', {
-      id: 'hamster.deprecate-banana',
-      until: '3.0.0'
-    })
-  });
-
-  let hamster = Hamster.create();
 
   set(hamster, 'bananaCount', 5); // Prints a deprecation warning.
   hamster.cavendishCount; // 5
