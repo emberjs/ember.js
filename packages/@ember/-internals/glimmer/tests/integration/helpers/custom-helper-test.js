@@ -8,8 +8,7 @@ import {
   defineSimpleHelper,
 } from 'internal-test-helpers';
 import { Helper, Component } from '@ember/-internals/glimmer';
-import { set, tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: custom helpers',

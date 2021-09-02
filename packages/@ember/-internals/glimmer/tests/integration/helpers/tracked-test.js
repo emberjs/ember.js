@@ -1,7 +1,5 @@
 import { Object as EmberObject, A, MutableArray } from '@ember/-internals/runtime';
 import {
-  get,
-  set,
   tracked,
   nativeDescDecorator as descriptor,
   notifyPropertyChange,
@@ -9,7 +7,6 @@ import {
 import Service, { inject } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { Component } from '../../utils/helpers';
 
 moduleFor(

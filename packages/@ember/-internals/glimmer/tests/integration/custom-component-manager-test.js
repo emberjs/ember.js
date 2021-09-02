@@ -3,7 +3,7 @@ import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-help
 
 import { componentCapabilities } from '@glimmer/manager';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { set, setProperties, computed, tracked } from '@ember/-internals/metal';
+import { set, setProperties, computed } from '@ember/-internals/metal';
 import { setComponentManager } from '@ember/-internals/glimmer';
 
 const BasicComponentManager = EmberObject.extend({
