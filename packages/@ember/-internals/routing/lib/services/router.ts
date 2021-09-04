@@ -414,7 +414,6 @@ export default class RouterService extends Service {
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing';
-    import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
     export default class extends Route {
@@ -449,7 +448,6 @@ export default class RouterService extends Service {
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing';
-    import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
     export default class extends Route {
