@@ -1,5 +1,4 @@
 import { peekMeta } from '@ember/-internals/meta';
-import { sendEvent } from './events';
 import { notifyPropertyChange } from './property_events';
 
 export function arrayContentWillChange<T extends object>(
@@ -21,8 +20,6 @@ export function arrayContentWillChange<T extends object>(
       addAmt = -1;
     }
   }
-
-  sendEvent(array, '@array:before', [array, startIdx, removeAmt, addAmt]);
 
   return array;
 }
@@ -57,8 +54,6 @@ export function arrayContentDidChange<T extends { length: number }>(
 
     notifyPropertyChange(array, '[]', meta);
   }
-
-  sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
   if (meta !== null) {
     let length = array.length;

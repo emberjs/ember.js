@@ -4,13 +4,7 @@ export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
 export { PROXY_CONTENT, _getPath, get, _getProp } from './lib/property_get';
 export { set, _setProp, trySet } from './lib/property_set';
-export {
-  objectAt,
-  replace,
-  replaceInNativeArray,
-  addArrayObserver,
-  removeArrayObserver,
-} from './lib/array';
+export { objectAt, replace, replaceInNativeArray } from './lib/array';
 export { arrayContentWillChange, arrayContentDidChange } from './lib/array_events';
 export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
 export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';

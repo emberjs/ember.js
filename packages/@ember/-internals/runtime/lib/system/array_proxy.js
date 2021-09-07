@@ -7,11 +7,11 @@ import {
   objectAt,
   alias,
   PROPERTY_DID_CHANGE,
-  addArrayObserver,
-  removeArrayObserver,
   replace,
   arrayContentDidChange,
   tagForProperty,
+  addListener,
+  removeListener,
 } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
@@ -24,6 +24,28 @@ const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
   didChange: '_arrangedContentArrayDidChange',
 };
+
+// Mimic behaviour in old addArrayObserver, but smplified.
+function addArrayObserver(obj, target, opts) {
+  let willChange = (opts && opts.willChange) || 'arrayWillChange';
+  let didChange = (opts && opts.didChange) || 'arrayDidChange';
+
+  addListener(obj, '@array:before', target, willChange);
+  addListener(obj, '@array:change', target, didChange);
+
+  return obj;
+}
+
+// Mimic behaviour in old addArrayObserver, but smplified.
+function removeArrayObserver(obj, target, opts) {
+  let willChange = (opts && opts.willChange) || 'arrayWillChange';
+  let didChange = (opts && opts.didChange) || 'arrayDidChange';
+
+  removeListener(obj, '@array:before', target, willChange);
+  removeListener(obj, '@array:change', target, didChange);
+
+  return obj;
+}
 
 function customTagForArrayProxy(proxy, key) {
   if (key === '[]') {

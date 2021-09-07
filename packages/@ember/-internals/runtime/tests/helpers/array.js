@@ -4,8 +4,6 @@ import { generateGuid, guidFor } from '@ember/-internals/utils';
 import {
   get,
   computed,
-  addArrayObserver,
-  removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
@@ -57,16 +55,6 @@ const ArrayTestsObserverClass = EmberObject.extend({
     } else {
       this.isEnabled = false;
     }
-    return this;
-  },
-
-  observeArray(obj) {
-    addArrayObserver(obj, this);
-    return this;
-  },
-
-  stopObserveArray(obj) {
-    removeArrayObserver(obj, this);
     return this;
   },
 

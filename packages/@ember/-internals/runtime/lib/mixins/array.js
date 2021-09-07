@@ -12,14 +12,10 @@ import {
   replace,
   computed,
   Mixin,
-  hasListeners,
   beginPropertyChanges,
   endPropertyChanges,
-  addArrayObserver,
-  removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
-  nativeDescDecorator as descriptor,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import Enumerable from './enumerable';
@@ -476,106 +472,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     return -1;
   },
 
-  // ..........................................................
-  // ARRAY OBSERVERS
-  //
-
-  /**
-    Adds an array observer to the receiving array. The array observer object
-    normally must implement two methods:
-
-    * `willChange(observedObj, start, removeCount, addCount)` - This method will be
-      called just before the array is modified.
-    * `didChange(observedObj, start, removeCount, addCount)` - This method will be
-      called just after the array is modified.
-
-    Both callbacks will be passed the observed object, starting index of the
-    change as well as a count of the items to be removed and added. You can use
-    these callbacks to optionally inspect the array during the change, clear
-    caches, or do any other bookkeeping necessary.
-
-    In addition to passing a target, you can also include an options hash
-    which you can use to override the method names that will be invoked on the
-    target.
-
-    @method addArrayObserver
-    @param {Object} target The observer object.
-    @param {Object} opts Optional hash of configuration options including
-      `willChange` and `didChange` option.
-    @return {EmberArray} receiver
-    @public
-    @example
-        import Service from '@ember/service';
-
-        export default Service.extend({
-          data: Ember.A(),
-
-          init() {
-            this._super(...arguments);
-
-            this.data.addArrayObserver(this, {
-              willChange: 'dataWillChange',
-              didChange: 'dataDidChange'
-            });
-          },
-
-          dataWillChange(array, start, removeCount, addCount) {
-            console.log('array will change', array, start, removeCount, addCount);
-          },
-
-          dataDidChange(array, start, removeCount, addCount) {
-            console.log('array did change', array, start, removeCount, addCount);
-          }
-        });
-  */
-
-  addArrayObserver(target, opts) {
-    return addArrayObserver(this, target, opts);
-  },
-
-  /**
-    Removes an array observer from the object if the observer is current
-    registered. Calling this method multiple times with the same object will
-    have no effect.
-
-    @method removeArrayObserver
-    @param {Object} target The object observing the array.
-    @param {Object} opts Optional hash of configuration options including
-      `willChange` and `didChange` option.
-    @return {EmberArray} receiver
-    @public
-  */
-  removeArrayObserver(target, opts) {
-    return removeArrayObserver(this, target, opts);
-  },
-
-  /**
-    Becomes true whenever the array currently has observers watching changes
-    on the array.
-
-    ```javascript
-    let arr = [1, 2, 3, 4, 5];
-    arr.hasArrayObservers; // false
-
-    arr.addArrayObserver(this, {
-      willChange() {
-        console.log('willChange');
-      }
-    });
-    arr.hasArrayObservers; // true
-    ```
-
-    @property {Boolean} hasArrayObservers
-    @public
-  */
-  hasArrayObservers: descriptor({
-    configurable: true,
-    enumerable: false,
-    get() {
-      return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
-    },
-  }),
-
   /**
     If you are implementing an object that supports `EmberArray`, call this
     method just before the array content changes to notify any observers and
@@ -583,51 +479,46 @@ const ArrayMixin = Mixin.create(Enumerable, {
     as well as a delta of the amounts to change.
 
     ```app/components/show-post.js
-    import Component from '@ember/component';
-    import EmberObject from '@ember/object';
+    import Component from '@glimmer/component';
+    import EmberObject, { action } from '@ember/object';
+    import { tracked } from '@glimmer/tracking';
 
     const Post = EmberObject.extend({
+      successfulModifications: 0,
+
       body: '',
       save() {}
+
+      length: computed(function() {
+        this.incrementProperty('successfulModifications');
+      }),
     })
 
-    export default Component.extend({
-      attemptsToModify: 0,
-      successfulModifications: 0,
-      posts: null,
+    export default class ShowPost extends Component {
+      posts = null;
 
-      init() {
-        this._super(...arguments);
+      constructor() {
+        super(...arguments);
 
         this.posts = [1, 2, 3].map(i => Post.create({ body: i }));
-        this.posts.addArrayObserver(this, {
-          willChange() {
-            this.incrementProperty('attemptsToModify');
-          },
-          didChange() {
-            this.incrementProperty('successfulModifications');
-          }
-        });
-      },
-
-      actions: {
-        editPost(post, newContent) {
-          let oldContent = post.body,
-              postIndex = this.posts.indexOf(post);
-
-          this.posts.arrayContentWillChange(postIndex, 0, 0); // attemptsToModify = 1
-          post.set('body', newContent);
-
-          post.save()
-            .then(response => {
-              this.posts.arrayContentDidChange(postIndex, 0, 0); // successfulModifications = 1
-            })
-            .catch(error => {
-              post.set('body', oldContent);
-            })
-        }
       }
-    });
+
+      @action
+      editPost(post, newContent) {
+        let oldContent = post.body;
+        let postIndex = this.posts.indexOf(post);
+
+        post.body = newContent;
+
+        post.save()
+          .then(response => {
+            this.posts.arrayContentDidChange(postIndex, 0, 0); // post.successfulModifications = 1
+          })
+          .catch(error => {
+            post.body = oldContent;
+          })
+      }
+    }
     ```
 
     @method arrayContentWillChange

@@ -1,14 +1,7 @@
-import { EmberArray, getDebugName } from '@ember/-internals/utils';
-import { deprecate } from '@ember/debug';
+import { EmberArray } from '@ember/-internals/utils';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
-import { addListener, removeListener } from './events';
-import { notifyPropertyChange } from './property_events';
 
 const EMPTY_ARRAY = Object.freeze([]);
-
-interface ObjectHasArrayObservers {
-  hasArrayObservers?: boolean;
-}
 
 export function objectAt<T>(array: T[] | EmberArray<T>, index: number): T | undefined {
   if (Array.isArray(array)) {
@@ -55,85 +48,4 @@ export function replaceInNativeArray<T>(
   }
 
   arrayContentDidChange(array, start, deleteCount, items.length);
-}
-
-interface ArrayObserverOptions {
-  willChange?: string;
-  didChange?: string;
-}
-
-type Operation = (
-  obj: ObjectHasArrayObservers,
-  eventName: string,
-  target: object | Function | null,
-  callbackName: string
-) => void;
-
-function arrayObserversHelper(
-  obj: ObjectHasArrayObservers,
-  target: object | Function | null,
-  opts: ArrayObserverOptions | undefined,
-  operation: Operation,
-  notify: boolean
-): ObjectHasArrayObservers {
-  let willChange = (opts && opts.willChange) || 'arrayWillChange';
-  let didChange = (opts && opts.didChange) || 'arrayDidChange';
-  let hasObservers = obj.hasArrayObservers;
-
-  operation(obj, '@array:before', target, willChange);
-  operation(obj, '@array:change', target, didChange);
-
-  if (hasObservers === notify) {
-    notifyPropertyChange(obj, 'hasArrayObservers');
-  }
-
-  return obj;
-}
-
-export function addArrayObserver<T>(
-  array: EmberArray<T>,
-  target: object | Function | null,
-  opts?: ArrayObserverOptions | undefined,
-  suppress = false
-): ObjectHasArrayObservers {
-  deprecate(
-    `Array observers have been deprecated. Added an array observer to ${getDebugName?.(array)}.`,
-    suppress,
-    {
-      id: 'array-observers',
-      url: 'https://deprecations.emberjs.com/v3.x#toc_array-observers',
-      until: '4.0.0',
-      for: 'ember-source',
-      since: {
-        enabled: '3.26.0-beta.1',
-      },
-    }
-  );
-
-  return arrayObserversHelper(array, target, opts, addListener, false);
-}
-
-export function removeArrayObserver<T>(
-  array: EmberArray<T>,
-  target: object | Function | null,
-  opts?: ArrayObserverOptions | undefined,
-  suppress = false
-): ObjectHasArrayObservers {
-  deprecate(
-    `Array observers have been deprecated. Removed an array observer from ${getDebugName?.(
-      array
-    )}.`,
-    suppress,
-    {
-      id: 'array-observers',
-      url: 'https://deprecations.emberjs.com/v3.x#toc_array-observers',
-      until: '4.0.0',
-      for: 'ember-source',
-      since: {
-        enabled: '3.26.0-beta.1',
-      },
-    }
-  );
-
-  return arrayObserversHelper(array, target, opts, removeListener, true);
 }
