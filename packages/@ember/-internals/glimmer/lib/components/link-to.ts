@@ -439,7 +439,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               for: 'ember-source',
               since: {},
               until: '4.0.0',
-              url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-built-in-components-legacy-arguments'
+              url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-built-in-components-legacy-arguments',
             }
           );
 
