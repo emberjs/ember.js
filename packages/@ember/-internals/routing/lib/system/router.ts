@@ -6,8 +6,7 @@ import { BucketCache } from '@ember/-internals/routing';
 import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
-import { assert, deprecate, info } from '@ember/debug';
-import { ROUTER_EVENTS } from '@ember/deprecated-features';
+import { assert, info } from '@ember/debug';
 import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -20,7 +19,6 @@ import Route, {
   hasDefaultSerialize,
   RenderOptions,
   ROUTE_CONNECTIONS,
-  ROUTER_EVENT_DEPRECATIONS,
 } from './route';
 import RouterState from './router_state';
 
@@ -47,10 +45,6 @@ function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
   this.notifyPropertyChange('url');
   this.set('currentState', this.targetState);
 
-  // Put this in the runloop so url will be accurate. Seems
-  // less surprising than didTransition being out of sync.
-  once(this, this.trigger, 'didTransition');
-
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
     if (this.namespace.LOG_TRANSITIONS) {
@@ -63,11 +57,8 @@ function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
 function defaultWillTransition(
   this: EmberRouter,
   oldInfos: PrivateRouteInfo[],
-  newInfos: PrivateRouteInfo[],
-  transition: Transition
+  newInfos: PrivateRouteInfo[]
 ) {
-  once(this, this.trigger, 'willTransition', transition);
-
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
     if (this.namespace.LOG_TRANSITIONS) {
@@ -380,50 +371,22 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         });
       }
 
+      // TODO: merge into routeDidChange
       didTransition(infos: PrivateRouteInfo[]) {
-        if (ROUTER_EVENTS) {
-          if (router.didTransition !== defaultDidTransition) {
-            deprecate(
-              'You attempted to override the "didTransition" method which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
-              false,
-              {
-                id: 'deprecate-router-events',
-                until: '4.0.0',
-                url: 'https://deprecations.emberjs.com/v3.x#toc_deprecate-router-events',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.11.0',
-                },
-              }
-            );
-          }
-        }
+        assert(
+          'You attempted to override the "didTransition" method which has been deprecated. Please inject the router service and listen to the "routeDidChange" event.',
+          router.didTransition === defaultDidTransition
+        );
         router.didTransition(infos);
       }
 
-      willTransition(
-        oldInfos: PrivateRouteInfo[],
-        newInfos: PrivateRouteInfo[],
-        transition: Transition
-      ) {
-        if (ROUTER_EVENTS) {
-          if (router.willTransition !== defaultWillTransition) {
-            deprecate(
-              'You attempted to override the "willTransition" method which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
-              false,
-              {
-                id: 'deprecate-router-events',
-                until: '4.0.0',
-                url: 'https://deprecations.emberjs.com/v3.x#toc_deprecate-router-events',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.11.0',
-                },
-              }
-            );
-          }
-        }
-        router.willTransition(oldInfos, newInfos, transition);
+      // TODO: merge into routeWillChange
+      willTransition(oldInfos: PrivateRouteInfo[], newInfos: PrivateRouteInfo[]) {
+        assert(
+          'You attempted to override the "willTransition" method which has been deprecated. Please inject the router service and listen to the "routeWillChange" event.',
+          router.willTransition === defaultWillTransition
+        );
+        router.willTransition(oldInfos, newInfos);
       }
 
       triggerEvent(
@@ -1406,7 +1369,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     ```
 
     @method didTransition
-    @public
+    @private
     @since 1.2.0
   */
   // Set with reopen to allow overriding via extend
@@ -1419,7 +1382,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     Triggers the router level `willTransition` hook.
 
     @method willTransition
-    @public
+    @private
     @since 1.11.0
   */
   // Set with reopen to allow overriding via extend
@@ -1649,6 +1612,7 @@ export function triggerEvent(
     if (ignoreFailure) {
       return;
     }
+    // TODO: update?
     throw new EmberError(
       `Can't trigger action '${name}' because your app hasn't finished transitioning into its first route. To trigger an action on destination routes during a transition, you can call \`.send()\` on the \`Transition\` object passed to the \`model/beforeModel/afterModel\` hooks.`
     );
@@ -1868,7 +1832,4 @@ EmberRouter.reopen({
   }),
 });
 
-if (ROUTER_EVENTS) {
-  EmberRouter.reopen(ROUTER_EVENT_DEPRECATIONS);
-}
 export default EmberRouter;
