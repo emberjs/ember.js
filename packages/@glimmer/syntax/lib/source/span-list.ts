@@ -16,22 +16,22 @@ export class SpanList {
     return new SpanList(span.map(loc)).getRangeOffset(fallback);
   }
 
-  #span: SourceSpan[];
+  _span: SourceSpan[];
 
   constructor(span: SourceSpan[] = []) {
-    this.#span = span;
+    this._span = span;
   }
 
   add(offset: SourceSpan): void {
-    this.#span.push(offset);
+    this._span.push(offset);
   }
 
   getRangeOffset(fallback: SourceSpan): SourceSpan {
-    if (this.#span.length === 0) {
+    if (this._span.length === 0) {
       return fallback;
     } else {
-      let first = this.#span[0];
-      let last = this.#span[this.#span.length - 1];
+      let first = this._span[0];
+      let last = this._span[this._span.length - 1];
 
       return first.extend(last);
     }

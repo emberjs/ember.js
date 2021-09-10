@@ -162,7 +162,7 @@ export class CharPosition implements PositionData {
   readonly kind = OffsetKind.CharPosition;
 
   /** Computed from char offset */
-  #locPos: HbsPosition | BROKEN | null = null;
+  _locPos: HbsPosition | BROKEN | null = null;
 
   constructor(readonly source: Source, readonly charPos: number) {}
 
@@ -206,15 +206,15 @@ export class CharPosition implements PositionData {
    * computing the `HbsPosition` should be a one-time operation.
    */
   toHbsPos(): HbsPosition | null {
-    let locPos = this.#locPos;
+    let locPos = this._locPos;
 
     if (locPos === null) {
       let hbsPos = this.source.hbsPosFor(this.charPos);
 
       if (hbsPos === null) {
-        this.#locPos = locPos = BROKEN;
+        this._locPos = locPos = BROKEN;
       } else {
-        this.#locPos = locPos = new HbsPosition(this.source, hbsPos, this.charPos);
+        this._locPos = locPos = new HbsPosition(this.source, hbsPos, this.charPos);
       }
     }
 
@@ -225,14 +225,14 @@ export class CharPosition implements PositionData {
 export class HbsPosition implements PositionData {
   readonly kind = OffsetKind.HbsPosition;
 
-  #charPos: CharPosition | BROKEN | null;
+  _charPos: CharPosition | BROKEN | null;
 
   constructor(
     readonly source: Source,
     readonly hbsPos: SourcePosition,
     charPos: number | null = null
   ) {
-    this.#charPos = charPos === null ? null : new CharPosition(source, charPos);
+    this._charPos = charPos === null ? null : new CharPosition(source, charPos);
   }
 
   /**
@@ -244,15 +244,15 @@ export class HbsPosition implements PositionData {
    * @implements {PositionData}
    */
   toCharPos(): CharPosition | null {
-    let charPos = this.#charPos;
+    let charPos = this._charPos;
 
     if (charPos === null) {
       let charPosNumber = this.source.charPosFor(this.hbsPos);
 
       if (charPosNumber === null) {
-        this.#charPos = charPos = BROKEN;
+        this._charPos = charPos = BROKEN;
       } else {
-        this.#charPos = charPos = new CharPosition(this.source, charPosNumber);
+        this._charPos = charPos = new CharPosition(this.source, charPosNumber);
       }
     }
 
