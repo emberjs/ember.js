@@ -28,14 +28,14 @@ export type IsInvisible = 'IS_INVISIBLE';
 type Pattern = OffsetKind | IsInvisible | MatchAny;
 
 class WhenList<Out> {
-  #whens: When<Out>[];
+  _whens: When<Out>[];
 
   constructor(whens: When<Out>[]) {
-    this.#whens = whens;
+    this._whens = whens;
   }
 
   first(kind: OffsetKind): Out | null {
-    for (let when of this.#whens) {
+    for (let when of this._whens) {
       let value = when.match(kind);
       if (isPresent(value)) {
         return value[0];
@@ -47,10 +47,10 @@ class WhenList<Out> {
 }
 
 class When<Out> {
-  #map: Map<Pattern, Out> = new Map();
+  _map: Map<Pattern, Out> = new Map();
 
   get(pattern: Pattern, or: () => Out): Out {
-    let value = this.#map.get(pattern);
+    let value = this._map.get(pattern);
 
     if (value) {
       return value;
@@ -58,13 +58,13 @@ class When<Out> {
 
     value = or();
 
-    this.#map.set(pattern, value);
+    this._map.set(pattern, value);
 
     return value;
   }
 
   add(pattern: Pattern, out: Out): void {
-    this.#map.set(pattern, out);
+    this._map.set(pattern, out);
   }
 
   match(kind: OffsetKind): Out[] {
@@ -72,8 +72,8 @@ class When<Out> {
 
     let out: Out[] = [];
 
-    let exact = this.#map.get(pattern);
-    let fallback = this.#map.get(MatchAny);
+    let exact = this._map.get(pattern);
+    let fallback = this._map.get(MatchAny);
 
     if (exact) {
       out.push(exact);
@@ -105,7 +105,7 @@ export function match<Out>(callback: (m: Matcher<Out>) => ExhaustiveMatcher<Out>
 }
 
 class Matcher<Out, M extends Matches = Matches> {
-  #whens: When<When<(left: PositionData, right: PositionData) => Out>> = new When();
+  _whens: When<When<(left: PositionData, right: PositionData) => Out>> = new When();
 
   /**
    * You didn't exhaustively match all possibilities.
@@ -118,7 +118,7 @@ class Matcher<Out, M extends Matches = Matches> {
     left: OffsetKind,
     right: OffsetKind
   ): (left: PositionData, right: PositionData) => Out {
-    let nesteds = this.#whens.match(left);
+    let nesteds = this._whens.match(left);
 
     assert(
       isPresent(nesteds),
@@ -179,7 +179,7 @@ class Matcher<Out, M extends Matches = Matches> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback: (left: any, right: any) => Out
   ): Matcher<Out, Matches> | ExhaustiveMatcher<Out> {
-    this.#whens.get(left, () => new When()).add(right, callback);
+    this._whens.get(left, () => new When()).add(right, callback);
 
     return this;
   }
