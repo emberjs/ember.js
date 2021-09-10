@@ -1,12 +1,7 @@
-import { SimpleElement } from '@simple-dom/interface';
 import { Arguments } from '../runtime';
 import { Capabilities } from './capabilities';
 
 export interface ModifierCapabilitiesVersions {
-  '3.13': {
-    disableAutoTracking?: boolean;
-  };
-
   // passes factoryFor(...).class to `.createModifier`
   // uses args proxy, does not provide a way to opt-out
   '3.22': {
@@ -16,8 +11,6 @@ export interface ModifierCapabilitiesVersions {
 
 export interface ModifierCapabilities extends Capabilities {
   disableAutoTracking: boolean;
-  useArgsProxy: boolean;
-  passFactoryToCreate: boolean;
 }
 
 export interface ModifierManager<ModifierStateBucket> {
