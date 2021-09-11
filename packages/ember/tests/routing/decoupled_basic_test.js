@@ -52,20 +52,10 @@ moduleFor(
       console.error = originalConsoleError;
     }
 
-    handleURLAborts(assert, path, deprecated) {
+    handleURLAborts(assert, path) {
       run(() => {
         let router = this.applicationInstance.lookup('router:main');
-        let result;
-
-        if (deprecated !== undefined) {
-          expectDeprecation(() => {
-            result = router.handleURL(path);
-          });
-        } else {
-          result = router.handleURL(path);
-        }
-
-        result.then(
+        router.handleURL(path).then(
           function () {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
