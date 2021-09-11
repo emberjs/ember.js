@@ -29,33 +29,6 @@ moduleFor(
       console.error = originalConsoleError;
     }
 
-    handleURLAborts(assert, path, deprecated) {
-      run(() => {
-        let router = this.applicationInstance.lookup('router:main');
-        let result;
-
-        if (deprecated !== undefined) {
-          expectDeprecation(() => {
-            result = router.handleURL(path);
-          });
-        } else {
-          result = router.handleURL(path);
-        }
-
-        result.then(
-          function () {
-            assert.ok(false, 'url: `' + path + '` was NOT to be handled');
-          },
-          function (reason) {
-            assert.ok(
-              reason && reason.message === 'TransitionAborted',
-              'url: `' + path + '` was to be aborted'
-            );
-          }
-        );
-      });
-    }
-
     get currentPath() {
       let currentPath;
       expectDeprecation(() => {
