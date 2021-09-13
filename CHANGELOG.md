@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.0.0-beta.4 (September 13, 2021)
+
+- [#19733](https://github.com/emberjs/ember.js/pull/19733) [BUGFIX] Ensure that using `routerService.urlFor(...)` and `routerService.recognize(...)` does not error if the router is not fully initialized
+
 ### v4.0.0-beta.3 (August 30, 2021)
 
 - [#19708](https://github.com/emberjs/ember.js/pull/19708) [CLEANUP] Remove class-binding-and-class-name-bindings-in-templates
