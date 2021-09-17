@@ -212,6 +212,7 @@ if (DEBUG) {
         id: 'ember-source.deprecation-without-for',
         until: '4.0.0',
         for: 'ember-source',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-source-deprecation-without-for',
         since: {
           enabled: '3.24.0',
         },
@@ -225,6 +226,7 @@ if (DEBUG) {
         id: 'ember-source.deprecation-without-since',
         until: '4.0.0',
         for: 'ember-source',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-source-deprecation-without-since',
         since: {
           enabled: '3.24.0',
         },

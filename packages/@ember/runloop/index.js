@@ -761,6 +761,8 @@ if (DEBUG) {
           id: 'deprecated-run-loop-and-computed-dot-access',
           until: '4.0.0',
           for: 'ember-source',
+          url:
+            'https://deprecations.emberjs.com/v3.x#toc_deprecated-run-loop-and-computed-dot-access',
           since: {
             enabled: '3.27.0',
           },
@@ -778,6 +780,7 @@ if (DEBUG) {
       id: 'deprecated-run-loop-and-computed-dot-access',
       until: '4.0.0',
       for: 'ember-source',
+      url: 'https://deprecations.emberjs.com/v3.x#toc_deprecated-run-loop-and-computed-dot-access',
       since: {
         enabled: '3.27.0',
       },

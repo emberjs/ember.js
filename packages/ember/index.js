@@ -179,6 +179,7 @@ if (EMBER_EXTEND_PROTOTYPES) {
           id: 'ember-env.old-extend-prototypes',
           until: '4.0.0',
           for: 'ember-source',
+          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-env-old-extend-prototypes',
           since: {
             enabled: '3.3.0',
           },

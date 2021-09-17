@@ -96,6 +96,7 @@ function wrapLegacyPluginIfNeeded(plugin: PluginFunc | LegacyPluginClass): Plugi
       {
         id: 'template-compiler.registerPlugin',
         until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x/#toc_template-compiler-registerPlugin',
         for: 'ember-source',
         since: {
           enabled: '3.27.0',
@@ -140,6 +141,7 @@ export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginC
       id: 'template-compiler.registerPlugin',
       until: '4.0.0',
       for: 'ember-source',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_template-compiler-registerPlugin',
       since: {
         enabled: '3.27.0',
       },
@@ -172,6 +174,7 @@ export function unregisterPlugin(type: string, PluginClass: PluginFunc | LegacyP
       id: 'template-compiler.registerPlugin',
       until: '4.0.0',
       for: 'ember-source',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_template-compiler-registerPlugin',
       since: {
         enabled: '3.27.0',
       },

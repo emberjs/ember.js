@@ -11,6 +11,7 @@ export function deprecate(message: string, condition: boolean, options: Deprecat
     {
       id: 'old-deprecate-method-paths',
       until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_old-deprecate-method-paths',
       for: 'ember-source',
       since: {
         enabled: '3.0.0',
@@ -28,6 +29,7 @@ export function deprecateFunc(message: string, options: DeprecationOptions, func
     {
       id: 'old-deprecate-method-paths',
       until: '4.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_old-deprecate-method-paths',
       for: 'ember-source',
       since: {
         enabled: '3.0.0',
