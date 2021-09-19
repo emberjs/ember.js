@@ -254,19 +254,20 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
     ```app/routes/form.js
     import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
+    import { inject as service } from '@ember/service';
 
     export default class FormRoute extends Route {
-      @action
-      willTransition(transition) {
-        if (this.controller.get('userHasEnteredData') &&
-            !confirm('Are you sure you want to abandon progress?')) {
-          transition.abort();
-        } else {
-          // Bubble the `willTransition` action so that
-          // parent routes can decide whether or not to abort.
-          return true;
-        }
+      @service router;
+
+      constructor() {
+        super(...arguments);
+
+        this.router.on('routeWillChange', (transition) => {
+          if (this.controller.userHasEnteredData &&
+              !confirm('Are you sure you want to abandon progress?')) {
+            transition.abort();
+          }
+        });
       }
     }
     ```
@@ -560,76 +561,6 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     this.activate(transition);
     this.trigger('activate', transition);
   }
-
-  /**
-    The `willTransition` action is fired at the beginning of any
-    attempted transition with a `Transition` object as the sole
-    argument. This action can be used for aborting, redirecting,
-    or decorating the transition from the currently active routes.
-
-    A good example is preventing navigation when a form is
-    half-filled out:
-
-    ```app/routes/contact-form.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class ContactFormRoute extends Route {
-      @action
-      willTransition(transition) {
-        if (this.controller.get('userHasEnteredData')) {
-          this.controller.displayNavigationConfirm();
-          transition.abort();
-        }
-      }
-    }
-    ```
-
-    You can also redirect elsewhere by calling
-    `this.transitionTo('elsewhere')` from within `willTransition`.
-    Note that `willTransition` will not be fired for the
-    redirecting `transitionTo`, since `willTransition` doesn't
-    fire when there is already a transition underway. If you want
-    subsequent `willTransition` actions to fire for the redirecting
-    transition, you must first explicitly call
-    `transition.abort()`.
-
-    To allow the `willTransition` event to continue bubbling to the parent
-    route, use `return true;`. When the `willTransition` method has a
-    return value of `true` then the parent route's `willTransition` method
-    will be fired, enabling "bubbling" behavior for the event.
-
-    @event willTransition
-    @param {Transition} transition
-    @since 1.0.0
-    @public
-  */
-
-  /**
-    The `didTransition` action is fired after a transition has
-    successfully been completed. This occurs after the normal model
-    hooks (`beforeModel`, `model`, `afterModel`, `setupController`)
-    have resolved. The `didTransition` action has no arguments,
-    however, it can be useful for tracking page views or resetting
-    state on the controller.
-
-    ```app/routes/login.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class LoginRoute extends Route {
-      @action
-      didTransition() {
-        this.controller.get('errors.base').clear();
-        return true; // Bubble the didTransition event
-      }
-    }
-    ```
-
-    @event didTransition
-    @since 1.2.0
-    @public
-  */
 
   /**
     The `loading` action is fired on the route when a route's `model`
@@ -2293,19 +2224,20 @@ Route.reopen({
 
     ```app/routes/form.js
     import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
+    import { inject as service } from '@ember/service';
 
     export default class FormRoute extends Route {
-      @action
-      willTransition(transition) {
-        if (this.controller.get('userHasEnteredData') &&
-            !confirm('Are you sure you want to abandon progress?')) {
-          transition.abort();
-        } else {
-          // Bubble the `willTransition` action so that
-          // parent routes can decide whether or not to abort.
-          return true;
-        }
+      @service router;
+
+      constructor() {
+        super(...arguments);
+
+        this.router.on('routeWillChange', (transition) => {
+          if (this.controller.userHasEnteredData &&
+              !confirm('Are you sure you want to abandon progress?')) {
+            transition.abort();
+          }
+        });
       }
     }
     ```
@@ -2447,50 +2379,5 @@ Route.reopen({
     },
   },
 });
-
-export let ROUTER_EVENT_DEPRECATIONS: any;
-if (ROUTER_EVENTS) {
-  ROUTER_EVENT_DEPRECATIONS = {
-    on(name: string) {
-      this._super(...arguments);
-      let hasDidTransition = name === 'didTransition';
-      let hasWillTransition = name === 'willTransition';
-
-      if (hasDidTransition) {
-        deprecate(
-          'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
-          false,
-          {
-            id: 'deprecate-router-events',
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_deprecate-router-events',
-            for: 'ember-source',
-            since: {
-              enabled: '3.11.0',
-            },
-          }
-        );
-      }
-
-      if (hasWillTransition) {
-        deprecate(
-          'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
-          false,
-          {
-            id: 'deprecate-router-events',
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_deprecate-router-events',
-            for: 'ember-source',
-            since: {
-              enabled: '3.11.0',
-            },
-          }
-        );
-      }
-    },
-  };
-
-  Route.reopen(ROUTER_EVENT_DEPRECATIONS);
-}
 
 export default Route;
