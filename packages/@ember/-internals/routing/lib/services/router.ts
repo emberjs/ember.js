@@ -416,7 +416,7 @@ export default class RouterService extends Service {
     import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
-    export default class extends Route {
+    export default class ContactFormRoute extends Route {
       @service router;
 
       constructor() {
@@ -424,7 +424,7 @@ export default class RouterService extends Service {
 
         this.router.on('routeWillChange', (transition) => {
           if (!transition.to.find(route => route.name === this.routeName)) {
-            alert("Please save or cancel your changes.");
+            alert('Please save or cancel your changes.');
             transition.abort();
           }
         })
@@ -451,7 +451,7 @@ export default class RouterService extends Service {
     import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
-    export default class extends Route {
+    export default class ContactFormRoute extends Route {
       @service router;
 
       constructor() {
