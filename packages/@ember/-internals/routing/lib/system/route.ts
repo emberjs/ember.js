@@ -23,7 +23,6 @@ import {
 import { isProxy, lookupDescriptor, symbol } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
-import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
