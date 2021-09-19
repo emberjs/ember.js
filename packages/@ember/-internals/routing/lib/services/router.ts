@@ -412,7 +412,7 @@ export default class RouterService extends Service {
     half-filled out:
 
     ```app/routes/contact-form.js
-    import Route from '@ember/routing';
+    import Route from '@ember/routing/route';
     import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
@@ -447,7 +447,7 @@ export default class RouterService extends Service {
     A good example is sending some analytics when the route has transitioned:
 
     ```app/routes/contact-form.js
-    import Route from '@ember/routing';
+    import Route from '@ember/routing/route';
     import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
