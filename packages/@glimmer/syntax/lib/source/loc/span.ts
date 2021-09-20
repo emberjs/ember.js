@@ -313,7 +313,7 @@ type AnySpan = HbsSpan | CharPositionSpan | InvisibleSpan;
 class CharPositionSpan implements SpanData {
   readonly kind = OffsetKind.CharPosition;
 
-  #locPosSpan: HbsSpan | BROKEN | null = null;
+  _locPosSpan: HbsSpan | BROKEN | null = null;
 
   constructor(
     readonly source: Source,
@@ -350,16 +350,16 @@ class CharPositionSpan implements SpanData {
   }
 
   toHbsSpan(): HbsSpan | null {
-    let locPosSpan = this.#locPosSpan;
+    let locPosSpan = this._locPosSpan;
 
     if (locPosSpan === null) {
       let start = this.charPositions.start.toHbsPos();
       let end = this.charPositions.end.toHbsPos();
 
       if (start === null || end === null) {
-        locPosSpan = this.#locPosSpan = BROKEN;
+        locPosSpan = this._locPosSpan = BROKEN;
       } else {
-        locPosSpan = this.#locPosSpan = new HbsSpan(this.source, {
+        locPosSpan = this._locPosSpan = new HbsSpan(this.source, {
           start,
           end,
         });
@@ -390,17 +390,17 @@ class CharPositionSpan implements SpanData {
 export class HbsSpan implements SpanData {
   readonly kind = OffsetKind.HbsPosition;
 
-  #charPosSpan: CharPositionSpan | BROKEN | null = null;
+  _charPosSpan: CharPositionSpan | BROKEN | null = null;
 
   // the source location from Handlebars + AST Plugins -- could be wrong
-  #providedHbsLoc: SourceLocation | null;
+  _providedHbsLoc: SourceLocation | null;
 
   constructor(
     readonly source: Source,
     readonly hbsPositions: { start: HbsPosition; end: HbsPosition },
     providedHbsLoc: SourceLocation | null = null
   ) {
-    this.#providedHbsLoc = providedHbsLoc;
+    this._providedHbsLoc = providedHbsLoc;
   }
 
   serialize(): SerializedConcreteSourceSpan {
@@ -413,13 +413,13 @@ export class HbsSpan implements SpanData {
   }
 
   private updateProvided(pos: SourcePosition, edge: 'start' | 'end') {
-    if (this.#providedHbsLoc) {
-      this.#providedHbsLoc[edge] = pos;
+    if (this._providedHbsLoc) {
+      this._providedHbsLoc[edge] = pos;
     }
 
     // invalidate computed character offsets
-    this.#charPosSpan = null;
-    this.#providedHbsLoc = {
+    this._charPosSpan = null;
+    this._providedHbsLoc = {
       start: pos,
       end: pos,
     };
@@ -466,19 +466,19 @@ export class HbsSpan implements SpanData {
   }
 
   toCharPosSpan(): CharPositionSpan | null {
-    let charPosSpan = this.#charPosSpan;
+    let charPosSpan = this._charPosSpan;
 
     if (charPosSpan === null) {
       let start = this.hbsPositions.start.toCharPos();
       let end = this.hbsPositions.end.toCharPos();
 
       if (start && end) {
-        charPosSpan = this.#charPosSpan = new CharPositionSpan(this.source, {
+        charPosSpan = this._charPosSpan = new CharPositionSpan(this.source, {
           start,
           end,
         });
       } else {
-        charPosSpan = this.#charPosSpan = BROKEN;
+        charPosSpan = this._charPosSpan = BROKEN;
         return null;
       }
     }
