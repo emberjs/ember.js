@@ -60,7 +60,7 @@ export function node<T extends string>(
           constructor(fields: BaseNodeFields & Fields) {
             this.type = type;
             this.loc = fields.loc;
-            copy(fields, (this as unknown) as ConstructingTypedNode<Fields>);
+            Object.assign(this, fields);
           }
         } as TypedNodeConstructor<T, BaseNodeFields & Fields>;
       },
@@ -73,18 +73,13 @@ export function node<T extends string>(
 
           constructor(fields: BaseNodeFields & Fields) {
             this.loc = fields.loc;
-
-            copy(fields, (this as unknown) as ConstructingNode<Fields>);
+            Object.assign(this, fields);
           }
         } as NodeConstructor<BaseNodeFields & Fields>;
       },
     };
   }
 }
-
-type ConstructingTypedNode<Fields> = Fields & BaseNodeFields;
-
-type ConstructingNode<Fields> = BaseNodeFields & Fields;
 
 export interface NodeConstructor<Fields> {
   new (fields: Fields): Readonly<Fields>;
@@ -94,14 +89,4 @@ type TypedNode<T extends string, Fields> = { type: T } & Readonly<Fields>;
 
 export interface TypedNodeConstructor<T extends string, Fields> {
   new (options: Fields): TypedNode<T, Fields>;
-}
-
-function keys<O extends object>(object: O): (keyof O)[] {
-  return Object.keys(object) as (keyof O)[];
-}
-
-function copy<O extends object>(object1: O, object2: O) {
-  for (let key of keys(object1)) {
-    object2[key] = object1[key];
-  }
 }
