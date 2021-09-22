@@ -9,9 +9,8 @@ import {
   Owner,
 } from '@glimmer/interfaces';
 import { registerDestructor } from '@glimmer/destroyable';
-import { setOwner } from '@glimmer/owner';
 import { valueForRef } from '@glimmer/reference';
-import { assign, castToBrowser, dict } from '@glimmer/util';
+import { castToBrowser, dict } from '@glimmer/util';
 import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
@@ -28,11 +27,6 @@ export function modifierCapabilities<Version extends keyof ModifierCapabilitiesV
 
   return buildCapabilities({
     disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
-    useArgsProxy: true,
-
-    // This capability is used in Ember, exclusively in resolution mode. See the
-    // Ember glimmer resolver for details.
-    passFactoryToCreate: false,
   });
 }
 
@@ -43,10 +37,6 @@ export interface CustomModifierState<ModifierInstance> {
   delegate: ModifierManager<ModifierInstance>;
   args: Arguments;
   debugName?: string;
-}
-
-interface Factory {
-  create(params: Record<string, unknown>): object;
 }
 
 /**
@@ -105,58 +95,25 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
   create(owner: O, element: SimpleElement, definition: object, capturedArgs: CapturedArguments) {
     let delegate = this.getDelegateFor(owner);
 
-    let { useArgsProxy, passFactoryToCreate } = delegate.capabilities;
-
-    let argsProxy = argsProxyFor(capturedArgs, 'modifier');
-    let args = useArgsProxy ? argsProxy : reifyArgs(capturedArgs);
-
-    let factoryOrDefinition = definition;
-
-    if (passFactoryToCreate) {
-      // Make a fake factory. While not perfect, this should generally prevent
-      // breakage in users of older modifier capabilities.
-      factoryOrDefinition = {
-        create(args: Record<string, unknown>) {
-          let params = assign({}, args);
-          setOwner(params, owner);
-
-          return (definition as Factory).create(args);
-        },
-
-        class: definition,
-      };
-    }
-
-    let instance: ModifierInstance = delegate.createModifier(factoryOrDefinition, args);
+    let args = argsProxyFor(capturedArgs, 'modifier');
+    let instance: ModifierInstance = delegate.createModifier(definition, args);
 
     let tag = createUpdatableTag();
     let state: CustomModifierState<ModifierInstance>;
 
-    if (useArgsProxy) {
-      state = {
-        tag,
-        element,
-        delegate,
-        args,
-        modifier: instance!,
-      };
-    } else {
-      state = {
-        tag,
-        element,
-        modifier: instance!,
-        delegate,
-        get args() {
-          return reifyArgs(capturedArgs);
-        },
-      };
-    }
+    state = {
+      tag,
+      element,
+      delegate,
+      args,
+      modifier: instance!,
+    };
 
     if (DEBUG) {
       state.debugName = typeof definition === 'function' ? definition.name : definition.toString();
     }
 
-    registerDestructor(state, () => delegate.destroyModifier(instance, argsProxy));
+    registerDestructor(state, () => delegate.destroyModifier(instance, args));
 
     return state;
   }
