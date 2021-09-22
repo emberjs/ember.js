@@ -228,11 +228,9 @@ abstract class ModifierManagerTest extends RenderTest {
 
     let Main = defineComponent({ foo }, '<h1 {{foo}}>hello world</h1>');
 
-    this.renderComponent(Main);
-
-    assert.validateDeprecations(
-      /You attempted to update `foo` on `.*`, but it had already been used previously in the same computation/
-    );
+    assert.throws(() => {
+      this.renderComponent(Main);
+    }, /You attempted to update `foo` on `.*`, but it had already been used previously in the same computation/);
   }
 
   @test

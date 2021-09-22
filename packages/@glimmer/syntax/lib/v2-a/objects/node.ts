@@ -1,3 +1,5 @@
+import { assign } from '@glimmer/util';
+
 import { SourceSpan } from '../../source/span';
 
 export interface BaseNodeFields {
@@ -54,13 +56,13 @@ export function node<T extends string>(
     return {
       fields<Fields extends object>(): TypedNodeConstructor<T, BaseNodeFields & Fields> {
         return class {
-          readonly loc: SourceSpan;
+          // SAFETY: initialized via `assign` in the constructor.
+          declare readonly loc: SourceSpan;
           readonly type: T;
 
           constructor(fields: BaseNodeFields & Fields) {
             this.type = type;
-            this.loc = fields.loc;
-            copy(fields, (this as unknown) as ConstructingTypedNode<Fields>);
+            assign(this, fields);
           }
         } as TypedNodeConstructor<T, BaseNodeFields & Fields>;
       },
@@ -69,22 +71,17 @@ export function node<T extends string>(
     return {
       fields<Fields>(): NodeConstructor<Fields & BaseNodeFields> {
         return class {
-          readonly loc: SourceSpan;
+          // SAFETY: initialized via `assign` in the constructor.
+          declare readonly loc: SourceSpan;
 
           constructor(fields: BaseNodeFields & Fields) {
-            this.loc = fields.loc;
-
-            copy(fields, (this as unknown) as ConstructingNode<Fields>);
+            assign(this, fields);
           }
         } as NodeConstructor<BaseNodeFields & Fields>;
       },
     };
   }
 }
-
-type ConstructingTypedNode<Fields> = Fields & BaseNodeFields;
-
-type ConstructingNode<Fields> = BaseNodeFields & Fields;
 
 export interface NodeConstructor<Fields> {
   new (fields: Fields): Readonly<Fields>;
@@ -94,14 +91,4 @@ type TypedNode<T extends string, Fields> = { type: T } & Readonly<Fields>;
 
 export interface TypedNodeConstructor<T extends string, Fields> {
   new (options: Fields): TypedNode<T, Fields>;
-}
-
-function keys<O extends object>(object: O): (keyof O)[] {
-  return Object.keys(object) as (keyof O)[];
-}
-
-function copy<O extends object>(object1: O, object2: O) {
-  for (let key of keys(object1)) {
-    object2[key] = object1[key];
-  }
 }

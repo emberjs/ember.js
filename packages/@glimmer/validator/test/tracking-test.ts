@@ -7,12 +7,9 @@ import {
   createTag,
   beginTrackFrame,
   endTrackFrame,
-  deprecateMutationsInTrackingTransaction,
   dirtyTag,
-  dirtyTagFor,
   isTracking,
   runInTrackingTransaction,
-  tagFor,
   track,
   trackedData,
   untrack,
@@ -495,32 +492,6 @@ module('@glimmer/validator: tracking', () => {
           });
         }, /You attempted to update `foo` on `\(an instance of/);
       });
-
-      test('it can switches to warning/deprecations when attempting to update a value already consumed in the same transaction', (assert) => {
-        class Foo {
-          foo = 123;
-          bar = 456;
-        }
-
-        let { getter, setter } = trackedData<Foo, keyof Foo>('foo', function (this: Foo) {
-          return this.bar;
-        });
-
-        let foo = new Foo();
-
-        runInTrackingTransaction!(() => {
-          track(() => {
-            deprecateMutationsInTrackingTransaction!(() => {
-              getter(foo);
-              setter(foo, 789);
-            });
-          });
-        });
-
-        assert.validateDeprecations(
-          /You attempted to update `foo` on `.*`, but it had already been used previously in the same computation/
-        );
-      });
     }
   });
 
@@ -584,54 +555,6 @@ module('@glimmer/validator: tracking', () => {
             });
           });
         }, /Error: You attempted to update `\(an unknown tag\)`/);
-      });
-
-      test('it can switch to warnings/deprecations', (assert) => {
-        let tag = createTag();
-
-        runInTrackingTransaction!(() => {
-          track(() => {
-            deprecateMutationsInTrackingTransaction!(() => {
-              consumeTag(tag);
-              dirtyTag(tag);
-            });
-          });
-        });
-
-        assert.validateDeprecations(
-          /You attempted to update `.*`, but it had already been used previously in the same computation./
-        );
-      });
-
-      test('it switches back to errors with nested track calls', (assert) => {
-        let tag = createTag();
-
-        assert.throws(() => {
-          runInTrackingTransaction!(() => {
-            deprecateMutationsInTrackingTransaction!(() => {
-              track(() => {
-                consumeTag(tag);
-                dirtyTag(tag);
-              });
-            });
-          });
-        }, /Error: You attempted to update `\(an unknown tag\)`/);
-      });
-
-      test('it gets a better error message with tagFor', (assert) => {
-        class Foo {}
-        let foo = new Foo();
-
-        assert.throws(() => {
-          runInTrackingTransaction!(() => {
-            deprecateMutationsInTrackingTransaction!(() => {
-              track(() => {
-                consumeTag(tagFor(foo, 'bar'));
-                dirtyTagFor(foo, 'bar');
-              });
-            });
-          });
-        }, /Error: You attempted to update `bar` on `\(an instance of .*\)`/);
       });
     });
   }
