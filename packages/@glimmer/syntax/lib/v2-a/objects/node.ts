@@ -1,3 +1,5 @@
+import { assign } from '@glimmer/util';
+
 import { SourceSpan } from '../../source/span';
 
 export interface BaseNodeFields {
@@ -54,13 +56,13 @@ export function node<T extends string>(
     return {
       fields<Fields extends object>(): TypedNodeConstructor<T, BaseNodeFields & Fields> {
         return class {
-          // SAFETY: initialized via Object.assign in the constructor.
+          // SAFETY: initialized via `assign` in the constructor.
           declare readonly loc: SourceSpan;
           readonly type: T;
 
           constructor(fields: BaseNodeFields & Fields) {
             this.type = type;
-            Object.assign(this, fields);
+            assign(this, fields);
           }
         } as TypedNodeConstructor<T, BaseNodeFields & Fields>;
       },
@@ -69,11 +71,11 @@ export function node<T extends string>(
     return {
       fields<Fields>(): NodeConstructor<Fields & BaseNodeFields> {
         return class {
-          // SAFETY: initialized via Object.assign in the constructor.
+          // SAFETY: initialized via `assign` in the constructor.
           declare readonly loc: SourceSpan;
 
           constructor(fields: BaseNodeFields & Fields) {
-            Object.assign(this, fields);
+            assign(this, fields);
           }
         } as NodeConstructor<BaseNodeFields & Fields>;
       },
