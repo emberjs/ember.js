@@ -1,6 +1,6 @@
 import { Tag } from './validators';
 import { DEBUG } from '@glimmer/env';
-import { deprecate, assert } from '@glimmer/global-context';
+import { assert } from '@glimmer/global-context';
 
 export let beginTrackingTransaction:
   | undefined
@@ -9,7 +9,6 @@ export let endTrackingTransaction: undefined | (() => void);
 export let runInTrackingTransaction:
   | undefined
   | (<T>(fn: () => T, debuggingContext?: string | false) => T);
-export let deprecateMutationsInTrackingTransaction: undefined | ((fn: () => void) => void);
 
 export let resetTrackingTransaction: undefined | (() => string);
 export let setTrackingTransactionEnv:
@@ -27,7 +26,6 @@ export let logTrackingStack: undefined | ((transaction?: Transaction) => string)
 interface Transaction {
   parent: Transaction | null;
   debugLabel?: string;
-  deprecate: boolean;
 }
 
 if (DEBUG) {
@@ -61,7 +59,7 @@ if (DEBUG) {
 
   setTrackingTransactionEnv = (env) => Object.assign(TRANSACTION_ENV, env);
 
-  beginTrackingTransaction = (_debugLabel?: string | false, deprecate = false) => {
+  beginTrackingTransaction = (_debugLabel?: string | false) => {
     CONSUMED_TAGS = CONSUMED_TAGS || new WeakMap();
 
     let debugLabel = _debugLabel || undefined;
@@ -71,7 +69,6 @@ if (DEBUG) {
     TRANSACTION_STACK.push({
       parent,
       debugLabel,
-      deprecate,
     });
   };
 
@@ -122,27 +119,6 @@ if (DEBUG) {
       if (didError !== true) {
         endTrackingTransaction!();
       }
-    }
-  };
-
-  /**
-   * Switches to deprecating within an autotracking transaction, if one exists.
-   * If `runInAutotrackingTransaction` is called within the callback of this
-   * method, it switches back to throwing an error, allowing zebra-striping of
-   * the types of errors that are thrown.
-   *
-   * Does not start an autotracking transaction.
-   *
-   * NOTE: For Ember usage only, in general you should assert that these
-   * invariants are true.
-   */
-  deprecateMutationsInTrackingTransaction = (fn: () => void, debugLabel?: string | false) => {
-    beginTrackingTransaction!(debugLabel, true);
-
-    try {
-      fn();
-    } finally {
-      endTrackingTransaction!();
     }
   };
 
@@ -218,31 +194,23 @@ if (DEBUG) {
 
     if (!transaction) return;
 
-    let currentTransaction = TRANSACTION_STACK[TRANSACTION_STACK.length - 1];
+    // This hack makes the assertion message nicer, we can cut off the first
+    // few lines of the stack trace and let users know where the actual error
+    // occurred.
+    try {
+      assert(false, makeTrackingErrorMessage(transaction, obj, keyName));
+    } catch (e) {
+      if (e.stack) {
+        let updateStackBegin = e.stack.indexOf('Stack trace for the update:');
 
-    if (currentTransaction.deprecate) {
-      deprecate(makeTrackingErrorMessage(transaction, obj, keyName), false, {
-        id: 'autotracking.mutation-after-consumption',
-      });
-    } else {
-      // This hack makes the assertion message nicer, we can cut off the first
-      // few lines of the stack trace and let users know where the actual error
-      // occurred.
-      try {
-        assert(false, makeTrackingErrorMessage(transaction, obj, keyName));
-      } catch (e) {
-        if (e.stack) {
-          let updateStackBegin = e.stack.indexOf('Stack trace for the update:');
-
-          if (updateStackBegin !== -1) {
-            let start = nthIndex(e.stack, '\n', 1, updateStackBegin);
-            let end = nthIndex(e.stack, '\n', 4, updateStackBegin);
-            e.stack = e.stack.substr(0, start) + e.stack.substr(end);
-          }
+        if (updateStackBegin !== -1) {
+          let start = nthIndex(e.stack, '\n', 1, updateStackBegin);
+          let end = nthIndex(e.stack, '\n', 4, updateStackBegin);
+          e.stack = e.stack.substr(0, start) + e.stack.substr(end);
         }
-
-        throw e;
       }
+
+      throw e;
     }
   };
 }

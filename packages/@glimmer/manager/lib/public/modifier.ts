@@ -12,12 +12,7 @@ import { registerDestructor } from '@glimmer/destroyable';
 import { setOwner } from '@glimmer/owner';
 import { valueForRef } from '@glimmer/reference';
 import { assign, castToBrowser, dict } from '@glimmer/util';
-import {
-  createUpdatableTag,
-  deprecateMutationsInTrackingTransaction,
-  untrack,
-  UpdatableTag,
-} from '@glimmer/validator';
+import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
@@ -115,8 +110,6 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
     let argsProxy = argsProxyFor(capturedArgs, 'modifier');
     let args = useArgsProxy ? argsProxy : reifyArgs(capturedArgs);
 
-    let instance: ModifierInstance;
-
     let factoryOrDefinition = definition;
 
     if (passFactoryToCreate) {
@@ -134,13 +127,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       };
     }
 
-    if (DEBUG && deprecateMutationsInTrackingTransaction !== undefined) {
-      deprecateMutationsInTrackingTransaction(() => {
-        instance = delegate.createModifier(factoryOrDefinition, args);
-      });
-    } else {
-      instance = delegate.createModifier(factoryOrDefinition, args);
-    }
+    let instance: ModifierInstance = delegate.createModifier(factoryOrDefinition, args);
 
     let tag = createUpdatableTag();
     let state: CustomModifierState<ModifierInstance>;
