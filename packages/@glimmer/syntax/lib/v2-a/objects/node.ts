@@ -54,12 +54,12 @@ export function node<T extends string>(
     return {
       fields<Fields extends object>(): TypedNodeConstructor<T, BaseNodeFields & Fields> {
         return class {
-          readonly loc: SourceSpan;
+          // SAFETY: initialized via Object.assign in the constructor.
+          declare readonly loc: SourceSpan;
           readonly type: T;
 
           constructor(fields: BaseNodeFields & Fields) {
             this.type = type;
-            this.loc = fields.loc;
             Object.assign(this, fields);
           }
         } as TypedNodeConstructor<T, BaseNodeFields & Fields>;
@@ -69,10 +69,10 @@ export function node<T extends string>(
     return {
       fields<Fields>(): NodeConstructor<Fields & BaseNodeFields> {
         return class {
-          readonly loc: SourceSpan;
+          // SAFETY: initialized via Object.assign in the constructor.
+          declare readonly loc: SourceSpan;
 
           constructor(fields: BaseNodeFields & Fields) {
-            this.loc = fields.loc;
             Object.assign(this, fields);
           }
         } as NodeConstructor<BaseNodeFields & Fields>;
