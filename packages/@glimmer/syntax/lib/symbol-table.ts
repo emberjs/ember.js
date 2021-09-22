@@ -47,18 +47,18 @@ export class ProgramSymbolTable extends SymbolTable {
   private blocks = dict<number>();
   private usedTemplateLocals: string[] = [];
 
-  #hasEval = false;
+  _hasEval = false;
 
   getUsedTemplateLocals(): string[] {
     return this.usedTemplateLocals;
   }
 
   setHasEval(): void {
-    this.#hasEval = true;
+    this._hasEval = true;
   }
 
   get hasEval(): boolean {
-    return this.#hasEval;
+    return this._hasEval;
   }
 
   has(name: string): boolean {

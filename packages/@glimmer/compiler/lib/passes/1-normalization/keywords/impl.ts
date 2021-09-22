@@ -168,18 +168,18 @@ function getCalleeExpression(
 
 export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = never>
   implements Keyword<K, OutFor<KeywordList>> {
-  #keywords: Keyword[] = [];
-  #type: K;
+  _keywords: Keyword[] = [];
+  _type: K;
 
   constructor(type: K) {
-    this.#type = type;
+    this._type = type;
   }
 
   kw<S extends string = string, Out = unknown>(
     name: S,
     delegate: KeywordDelegate<KeywordMatches[K], unknown, Out>
   ): Keywords<K, KeywordList | Keyword<K, Out>> {
-    this.#keywords.push(keyword(name, this.#type, delegate));
+    this._keywords.push(keyword(name, this._type, delegate));
 
     return this;
   }
@@ -188,7 +188,7 @@ export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = ne
     node: KeywordCandidates[K],
     state: NormalizationState
   ): Result<OutFor<KeywordList>> | null {
-    for (let keyword of this.#keywords) {
+    for (let keyword of this._keywords) {
       let result = keyword.translate(node, state) as Result<OutFor<KeywordList>>;
       if (result !== null) {
         return result;
@@ -200,7 +200,7 @@ export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = ne
     if (path && path.type === 'Path' && path.ref.type === 'Free' && isKeyword(path.ref.name)) {
       let { name } = path.ref;
 
-      let usedType = this.#type;
+      let usedType = this._type;
       let validTypes = KEYWORDS_TYPES[name];
 
       if (validTypes.indexOf(usedType) === -1) {

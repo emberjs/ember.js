@@ -9,29 +9,29 @@ import { VISIT_STMTS } from './visitors/statements';
  * This is the mutable state for this compiler pass.
  */
 export class NormalizationState {
-  #currentScope: SymbolTable;
-  #cursorCount = 0;
+  _currentScope: SymbolTable;
+  _cursorCount = 0;
 
   constructor(block: SymbolTable, readonly isStrict: boolean) {
-    this.#currentScope = block;
+    this._currentScope = block;
   }
 
   generateUniqueCursor(): string {
-    return `%cursor:${this.#cursorCount++}%`;
+    return `%cursor:${this._cursorCount++}%`;
   }
 
   get scope(): SymbolTable {
-    return this.#currentScope;
+    return this._currentScope;
   }
 
   visitBlock(block: ASTv2.Block): Result<OptionalList<mir.Statement>> {
-    let oldBlock = this.#currentScope;
-    this.#currentScope = block.scope;
+    let oldBlock = this._currentScope;
+    this._currentScope = block.scope;
 
     try {
       return VISIT_STMTS.visitList(block.body, this);
     } finally {
-      this.#currentScope = oldBlock;
+      this._currentScope = oldBlock;
     }
   }
 }
