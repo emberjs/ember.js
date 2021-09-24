@@ -126,7 +126,7 @@
           testsTotal = testsPassed = testsFailed = 0;
 
           if (QUnit.urlParams.hideskipped) {
-            $('#qunit-tests').addClass('hideskipped');
+            document.getElementById('qunit-tests').classList.add('hideskipped');
           }
         });
 
