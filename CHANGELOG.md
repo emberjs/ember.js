@@ -1,3 +1,32 @@
+## v0.81.0 (2021-09-27)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/manager`, `@glimmer/validator`
+  * [#1330](https://github.com/glimmerjs/glimmer-vm/pull/1330) Remove deprecated support for mutation after consumption during certain manager hooks ([@snewcomer](https://github.com/snewcomer))
+* `@glimmer/manager`
+  * [#1328](https://github.com/glimmerjs/glimmer-vm/pull/1328) Remove deprecated Component Manager version 3.4 ([@nlfurniss](https://github.com/nlfurniss))
+* `@glimmer/integration-tests`, `@glimmer/manager`
+  * [#1329](https://github.com/glimmerjs/glimmer-vm/pull/1329) Remove deprecated Modifier Manager version 3.13 ([@nlfurniss](https://github.com/nlfurniss))
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#1341](https://github.com/glimmerjs/glimmer-vm/pull/1341) Remove unused `scope` from Walker ([@chriskrycho](https://github.com/chriskrycho))
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1305](https://github.com/glimmerjs/glimmer-vm/pull/1305) Update simple-html-tokenizer to v0.5.11 and support doctype ([@laurensclaessen](https://github.com/laurensclaessen))
+* `@glimmer/compiler`, `@glimmer/syntax`
+  * [#1335](https://github.com/glimmerjs/glimmer-vm/pull/1335) Use `_private` instead of `#private` properties ([@chriskrycho](https://github.com/chriskrycho))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1338](https://github.com/glimmerjs/glimmer-vm/pull/1338) Use `Object.assign` instead of custom `copy` function ([@chriskrycho](https://github.com/chriskrycho))
+
+#### Committers: 4
+- Chris Krycho ([@chriskrycho](https://github.com/chriskrycho))
+- Laurens Claessen ([@laurensclaessen](https://github.com/laurensclaessen))
+- Nathaniel Furniss ([@nlfurniss](https://github.com/nlfurniss))
+- Scott Newcomer ([@snewcomer](https://github.com/snewcomer))
+
+
 ## v0.80.0 (2021-06-29)
 
 #### :boom: Breaking Change
