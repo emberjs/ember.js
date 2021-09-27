@@ -6,15 +6,9 @@ import { Factory, Owner, setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName, symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
 import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
-import {
-  consumeTag,
-  createTag,
-  deprecateMutationsInTrackingTransaction,
-  dirtyTag,
-} from '@glimmer/validator';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -175,16 +169,9 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 
   getValue({ instance, args }: ClassicHelperStateBucket) {
-    let ret;
     let { positional, named } = args;
 
-    if (DEBUG) {
-      deprecateMutationsInTrackingTransaction!(() => {
-        ret = instance.compute(positional as unknown[], named);
-      });
-    } else {
-      ret = instance.compute(positional as unknown[], named);
-    }
+    let ret = instance.compute(positional as unknown[], named);
 
     consumeTag(instance[RECOMPUTE_TAG]);
 
@@ -224,18 +211,6 @@ class SimpleClassicHelperManager implements HelperManager<() => unknown> {
 
   createHelper(definition: Wrapper, args: Arguments) {
     let { compute } = definition;
-
-    if (DEBUG) {
-      return () => {
-        let ret;
-
-        deprecateMutationsInTrackingTransaction!(() => {
-          ret = compute.call(null, args.positional as unknown[], args.named);
-        });
-
-        return ret;
-      };
-    }
 
     return () => compute.call(null, args.positional as unknown[], args.named);
   }
