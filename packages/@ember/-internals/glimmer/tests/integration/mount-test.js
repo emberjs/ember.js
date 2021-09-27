@@ -6,6 +6,7 @@ import {
   runTask,
 } from 'internal-test-helpers';
 
+import { DEBUG } from '@ember/debug';
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
@@ -113,6 +114,11 @@ moduleFor(
     }
 
     async ['@test it emits a useful backtracking re-render assertion message'](assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
       this.router.map(function () {
         this.route('route-with-mount');
       });

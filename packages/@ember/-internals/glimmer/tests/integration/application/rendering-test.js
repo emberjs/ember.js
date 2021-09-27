@@ -105,47 +105,7 @@ moduleFor(
       });
     }
 
-    ['@test it can access the model provided by the route via implicit this fallback']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
-      this.add(
-        'route:application',
-        Route.extend({
-          model() {
-            return ['red', 'yellow', 'blue'];
-          },
-        })
-      );
-
-      this.addTemplate(
-        'application',
-        strip`
-        <ul>
-          {{#each model as |item|}}
-            <li>{{item}}</li>
-          {{/each}}
-        </ul>
-        `
-      );
-
-      return this.visit('/').then(() => {
-        this.assertInnerHTML(strip`
-        <ul>
-          <li>red</li>
-          <li>yellow</li>
-          <li>blue</li>
-        </ul>
-      `);
-      });
-    }
-
     async ['@test interior mutations on the model with set'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -164,7 +124,7 @@ moduleFor(
         strip`
         [@model: {{@model.color}}]
         [this.model: {{this.model.color}}]
-        [model: {{model.color}}]
+        [model: {{this.model.color}}]
         `
       );
 
@@ -203,10 +163,6 @@ moduleFor(
     }
 
     async ['@test interior mutations on the model with tracked properties'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       class Model {
         @tracked color;
 
@@ -233,7 +189,7 @@ moduleFor(
         strip`
         [@model: {{@model.color}}]
         [this.model: {{this.model.color}}]
-        [model: {{model.color}}]
+        [model: {{this.model.color}}]
         `
       );
 
@@ -271,10 +227,6 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with set'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -293,7 +245,7 @@ moduleFor(
         strip`
         [@model: {{@model}}]
         [this.model: {{this.model}}]
-        [model: {{model}}]
+        [model: {{this.model}}]
         `
       );
 
@@ -332,10 +284,6 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with tracked properties'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -361,7 +309,7 @@ moduleFor(
         strip`
         [@model: {{@model}}]
         [this.model: {{this.model}}]
-        [model: {{model}}]
+        [model: {{this.model}}]
         `
       );
 

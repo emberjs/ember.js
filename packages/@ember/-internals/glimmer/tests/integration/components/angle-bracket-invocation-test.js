@@ -9,7 +9,7 @@ import { Component } from '../../utils/helpers';
 
 class CustomModifierManager {
   constructor(owner) {
-    this.capabilities = modifierCapabilities('3.13');
+    this.capabilities = modifierCapabilities('3.22');
     this.owner = owner;
   }
 

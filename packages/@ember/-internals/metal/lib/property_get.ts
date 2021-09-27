@@ -4,13 +4,7 @@
 import { isEmberArray, setProxy, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import {
-  consumeTag,
-  deprecateMutationsInTrackingTransaction,
-  isTracking,
-  tagFor,
-  track,
-} from '@glimmer/validator';
+import { consumeTag, isTracking, tagFor, track } from '@glimmer/validator';
 import { isPath } from './path_cache';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
@@ -118,13 +112,7 @@ export function _getProp(obj: object, keyName: string) {
       !(keyName in obj) &&
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
     ) {
-      if (DEBUG) {
-        deprecateMutationsInTrackingTransaction!(() => {
-          value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
-        });
-      } else {
-        value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
-      }
+      value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
     }
 
     if (isTracking()) {

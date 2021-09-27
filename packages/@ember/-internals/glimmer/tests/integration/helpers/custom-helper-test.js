@@ -8,8 +8,7 @@ import {
   defineSimpleHelper,
 } from 'internal-test-helpers';
 import { Helper, Component } from '@ember/-internals/glimmer';
-import { set, tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: custom helpers',
@@ -34,36 +33,19 @@ moduleFor(
       this.assertText('hello | hello world');
     }
 
-    ['@test it does not resolve helpers with a `.` (period)']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
+    ['@test it does not resolve helpers with a `.` (period)'](assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
 
       this.registerHelper('hello.world', () => 'hello world');
 
-      this.render('{{hello.world}}', {
-        hello: {
-          world: '',
-        },
-      });
-
-      this.assertText('');
-
-      this.assertStableRerender();
-
-      this.assertText('');
-
-      runTask(() => set(this.context, 'hello', { world: 'hello world!' }));
-
-      this.assertText('hello world!');
-
-      runTask(() => {
-        set(this.context, 'hello', {
-          world: '',
-        });
-      });
-
-      this.assertText('');
+      // cannot use `expectAssertion` because the error is thrown in glimmer-vm
+      // (and doesn't go through Ember's own assertion internals)
+      assert.throws(() => {
+        this.render('{{hello.world}}');
+      }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: hello/);
     }
 
     ['@test it can resolve custom class-based helpers with or without dashes']() {
@@ -729,55 +711,6 @@ moduleFor(
       this.render('{{hello-world}}');
 
       this.assertText('huzza!');
-    }
-
-    ['@test class-based helper gives helpful warning when mutating a value that was tracked already']() {
-      this.add(
-        'helper:hello-world',
-        class extends Helper {
-          compute() {
-            this.get('value');
-            this.set('value', 123);
-          }
-        }
-      );
-
-      let expectedMessage = backtrackingMessageFor('value', '<.+?>', {
-        renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        // TODO: this must be a bug??
-        expectDeprecation(
-          backtrackingMessageFor('undefined', undefined, {
-            renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
-          })
-        );
-
-        this.render('{{hello-world}}');
-      }, expectedMessage);
-    }
-
-    ['@test class-based helper gives helpful deprecation when mutating a tracked property that was tracked already']() {
-      this.add(
-        'helper:hello-world',
-        class HelloWorld extends Helper {
-          @tracked value;
-
-          compute() {
-            this.value;
-            this.value = 123;
-          }
-        }
-      );
-
-      let expectedMessage = backtrackingMessageFor('value', '<HelloWorld.+?>', {
-        renderTree: ['\\(result of a `<HelloWorld.*?>` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        this.render('{{hello-world}}');
-      }, expectedMessage);
     }
 
     '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a helper'() {
