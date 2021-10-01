@@ -123,7 +123,7 @@
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.1",
-    "eslint-plugin-qunit": "^4.0.0",
+    "eslint-plugin-qunit": "^6.2.0",
     "execa": "^5.1.1",
     "expect-type": "^0.12.0",
     "express": "^4.17.1",
