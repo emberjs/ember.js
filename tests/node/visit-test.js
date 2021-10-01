@@ -87,7 +87,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
       ),
     ]).then(function () {
       assert.ok(initCalled, 'Component#init should be called');
-      assert.ok(!didInsertElementCalled, 'Component#didInsertElement should not be called');
+      assert.notOk(didInsertElementCalled, 'Component#didInsertElement should not be called');
     });
   });
 

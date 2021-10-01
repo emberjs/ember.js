@@ -32,7 +32,7 @@ QUnit.module('buildVersion', () => {
     ],
     padEmptyArgs(3, [null, ''])
   ).forEach(({ args, expected }) => {
-    QUnit.test(JSON.stringify(args), (assert) => {
+    QUnit.test(JSON.stringify(args), function (assert) {
       assert.equal(buildVersion(...args), expected);
     });
   });
@@ -49,12 +49,12 @@ QUnit.module('parseTagVersion', () => {
       expected: '3.1.1-beta.2',
     },
   ].forEach(({ tag, expected }) => {
-    QUnit.test(JSON.stringify(tag), (assert) => {
+    QUnit.test(JSON.stringify(tag), function (assert) {
       assert.equal(parseTagVersion(tag), expected);
     });
   });
 
-  QUnit.test('parseTagVersion raises on non-semver tags', (assert) => {
+  QUnit.test('parseTagVersion raises on non-semver tags', function (assert) {
     assert.throws(() => {
       parseTagVersion('some-non-version-tag');
     });
@@ -127,7 +127,7 @@ QUnit.module('buildFromParts', () => {
       },
     },
   ].forEach(({ args, expected }) => {
-    QUnit.test(JSON.stringify(args), (assert) => {
+    QUnit.test(JSON.stringify(args), function (assert) {
       assert.deepEqual(buildFromParts(...args), expected);
     });
   });
