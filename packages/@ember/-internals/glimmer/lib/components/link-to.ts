@@ -629,6 +629,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
               {
                 id: 'ember.link-to.disabled-when',
                 for: 'ember-source',
+                url: 'https://deprecations.emberjs.com/v4.x#toc_ember-link-to-disabled-when',
                 since: {},
                 until: '4.0.0',
               }
@@ -663,6 +664,7 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
             {
               id: 'ember.link-to.disabled-when',
               for: 'ember-source',
+              url: 'https://deprecations.emberjs.com/v4.x#toc_ember-link-to-disabled-when',
               since: {},
               until: '4.0.0',
             }
