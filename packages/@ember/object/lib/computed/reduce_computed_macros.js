@@ -72,23 +72,6 @@ function multiArrayMacro(_dependentKeys, callback, name) {
   invoice.total; // 13.49
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { sum } from '@ember/object/computed';
-
-  let Invoice = EmberObject.extend({
-    lineItems: [1.00, 2.50, 9.99],
-
-    total: sum('lineItems')
-  })
-
-  let invoice = Invoice.create();
-
-  invoice.total; // 13.49
-  ```
-
   @method sum
   @for @ember/object/computed
   @static
@@ -125,42 +108,6 @@ export function sum(dependentKey) {
   }
 
   let lordByron = new Person();
-
-  lordByron.maxChildAge; // -Infinity
-
-  set(lordByron, 'children', [
-    {
-      name: 'Augusta Ada Byron',
-      age: 7
-    }
-  ]);
-  lordByron.maxChildAge; // 7
-
-  set(lordByron, 'children', [
-    ...lordByron.children,
-    {
-      name: 'Allegra Byron',
-      age: 5
-    }, {
-      name: 'Elizabeth Medora Leigh',
-      age: 8
-    }
-  ]);
-  lordByron.maxChildAge; // 8
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { mapBy, max } from '@ember/object/computed';
-
-  let Person = EmberObject.extend({
-    childAges: mapBy('children', 'age'),
-    maxChildAge: max('childAges')
-  });
-
-  let lordByron = Person.create({ children: [] });
 
   lordByron.maxChildAge; // -Infinity
 
@@ -249,42 +196,6 @@ export function max(dependentKey) {
   lordByron.minChildAge; // 5
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { mapBy, min } from '@ember/object/computed';
-
-  let Person = EmberObject.extend({
-    childAges: mapBy('children', 'age'),
-    minChildAge: min('childAges')
-  });
-
-  let lordByron = Person.create({ children: [] });
-
-  lordByron.minChildAge; // Infinity
-
-  set(lordByron, 'children', [
-    {
-      name: 'Augusta Ada Byron',
-      age: 7
-    }
-  ]);
-  lordByron.minChildAge; // 7
-
-  set(lordByron, 'children', [
-    ...lordByron.children,
-    {
-      name: 'Allegra Byron',
-      age: 5
-    }, {
-      name: 'Elizabeth Medora Leigh',
-      age: 8
-    }
-  ]);
-  lordByron.minChildAge; // 5
-  ```
-
   If the types of the arguments are not numbers, they will be converted to
   numbers and the type of the return value will always be `Number`. For example,
   the min of a list of Date objects will be the lowest timestamp as a `Number`.
@@ -335,25 +246,6 @@ export function min(dependentKey) {
   });
 
   let hamster = new Hamster(['clean', 'write more unit tests']);
-
-  hamster.excitingChores; // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { map } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    excitingChores: map('chores', function(chore, index) {
-      return `${chore.toUpperCase()}!`;
-    })
-  });
-
-  let hamster = Hamster.create({
-    chores: ['clean', 'write more unit tests']
-  });
 
   hamster.excitingChores; // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
   ```
@@ -466,41 +358,6 @@ export function map(dependentKey, additionalDependentKeys, callback) {
   lordByron.childAges; // [7, 5, 8]
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { mapBy } from '@ember/object/computed';
-
-  let Person = EmberObject.extend({
-    childAges: mapBy('children', 'age')
-  });
-
-  let lordByron = Person.create({ children: [] });
-
-  lordByron.childAges; // []
-
-  set(lordByron, 'children', [
-    {
-      name: 'Augusta Ada Byron',
-      age: 7
-    }
-  ]);
-  lordByron.childAges; // [7]
-
-  set(lordByron, 'children', [
-    ...lordByron.children,
-    {
-      name: 'Allegra Byron',
-      age: 5
-    }, {
-      name: 'Elizabeth Medora Leigh',
-      age: 8
-    }
-  ]);
-  lordByron.childAges; // [7, 5, 8]
-  ```
-
   @method mapBy
   @for @ember/object/computed
   @static
@@ -562,29 +419,6 @@ export function mapBy(dependentKey, propertyKey) {
     { name: 'clean', done: true },
     { name: 'write more unit tests', done: false }
   ]);
-
-  hamster.remainingChores; // [{name: 'write more unit tests', done: false}]
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { filter } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    remainingChores: filter('chores', function(chore, index, array) {
-      return !chore.done;
-    })
-  });
-
-  let hamster = Hamster.create({
-    chores: [
-      { name: 'cook', done: true },
-      { name: 'clean', done: true },
-      { name: 'write more unit tests', done: false }
-    ]
-  });
 
   hamster.remainingChores; // [{name: 'write more unit tests', done: false}]
   ```
@@ -708,27 +542,6 @@ export function filter(dependentKey, additionalDependentKeys, callback) {
   hamster.remainingChores; // [{ name: 'write more unit tests', done: false }]
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { filterBy } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    remainingChores: filterBy('chores', 'done', false)
-  });
-
-  let hamster = Hamster.create({
-    chores: [
-      { name: 'cook', done: true },
-      { name: 'clean', done: true },
-      { name: 'write more unit tests', done: false }
-    ]
-  });
-
-  hamster.remainingChores; // [{ name: 'write more unit tests', done: false }]
-  ```
-
   @method filterBy
   @for @ember/object/computed
   @static
@@ -783,28 +596,6 @@ export function filterBy(dependentKey, propertyKey, value) {
     'kale',
     'banana'
   ]);
-
-  hamster.uniqueFruits; // ['banana', 'grape', 'kale']
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { uniq } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    uniqueFruits: uniq('fruits')
-  });
-
-  let hamster = Hamster.create({
-    fruits: [
-      'banana',
-      'grape',
-      'kale',
-      'banana'
-    ]
-  });
 
   hamster.uniqueFruits; // ['banana', 'grape', 'kale']
   ```
@@ -875,28 +666,6 @@ export function uniq(...args) {
   hamster.uniqueFruits; // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { uniqBy } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    uniqueFruits: uniqBy('fruits', 'id')
-  });
-
-  let hamster = Hamster.create({
-    fruits: [
-      { id: 1, 'banana' },
-      { id: 2, 'grape' },
-      { id: 3, 'peach' },
-      { id: 1, 'banana' }
-    ]
-  });
-
-  hamster.uniqueFruits; // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
-  ```
-
   @method uniqBy
   @for @ember/object/computed
   @static
@@ -960,34 +729,6 @@ export function uniqBy(dependentKey, propertyKey) {
   hamster.uniqueFruits; // ['banana', 'grape', 'kale', 'tomato', 'carrot', 'lettuce']
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { union } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    uniqueFruits: union('fruits', 'vegetables')
-  });
-
-  let hamster = Hamster.create({
-    fruits: [
-      'banana',
-      'grape',
-      'kale',
-      'banana',
-      'tomato'
-    ],
-    vegetables: [
-      'tomato',
-      'carrot',
-      'lettuce'
-    ]
-  });
-
-  hamster.uniqueFruits; // ['banana', 'grape', 'kale', 'tomato', 'carrot', 'lettuce']
-  ```
-
   @method union
   @for @ember/object/computed
   @static
@@ -1021,24 +762,6 @@ export let union = uniq;
     ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
     ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock']
   );
-
-  groups.friendsInCommon; // ['William King', 'Mary Somerville']
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { intersect } from '@ember/object/computed';
-
-  let FriendGroups = EmberObject.extend({
-    friendsInCommon: intersect('adaFriends', 'charlesFriends')
-  });
-
-  let groups = FriendGroups.create({
-    adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
-    charlesFriends: ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock']
-  });
 
   groups.friendsInCommon; // ['William King', 'Mary Somerville']
   ```
@@ -1124,31 +847,6 @@ export function intersect(...args) {
   hamster.wants; // ['banana']
   ```
 
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { setDiff } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    wants: setDiff('likes', 'fruits')
-  });
-
-  let hamster = Hamster.create({
-    likes: [
-      'banana',
-      'grape',
-      'kale'
-    ],
-    fruits: [
-      'grape',
-      'kale',
-    ]
-  });
-
-  hamster.wants; // ['banana']
-  ```
-
   @method setDiff
   @for @ember/object/computed
   @static
@@ -1200,25 +898,6 @@ export function setDiff(setAProperty, setBProperty) {
   }
 
   let hamster = new Hamster();
-
-  hamster.clothes; // [null, null]
-
-  set(hamster, 'hat', 'Camp Hat');
-  set(hamster, 'shirt', 'Camp Shirt');
-  hamster.clothes; // ['Camp Hat', 'Camp Shirt']
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject, { set } from '@ember/object';
-  import { collect } from '@ember/object/computed';
-
-  let Hamster = EmberObject.extend({
-    clothes: collect('hat', 'shirt')
-  });
-
-  let hamster = Hamster.create();
 
   hamster.clothes; // [null, null]
 
@@ -1311,36 +990,6 @@ export function collect(...dependentKeys) {
     { name: 'Documentation', priority: 3 },
     { name: 'Release', priority: 1 }
   ]);
-
-  todoList.priorityTodos; // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
-  ```
-
-  Classic Class Example:
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { sort } from '@ember/object/computed';
-
-  let ToDoList = EmberObject.extend({
-    // using a custom sort function
-    priorityTodos: sort('todos', function(a, b){
-      if (a.priority > b.priority) {
-        return 1;
-      } else if (a.priority < b.priority) {
-        return -1;
-      }
-
-      return 0;
-    })
-  });
-
-  let todoList = ToDoList.create({
-    todos: [
-      { name: 'Unit Test', priority: 2 },
-      { name: 'Documentation', priority: 3 },
-      { name: 'Release', priority: 1 }
-    ]
-  });
 
   todoList.priorityTodos; // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
   ```
