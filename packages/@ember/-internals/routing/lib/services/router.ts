@@ -424,7 +424,7 @@ export default class RouterService extends Service {
 
         this.router.on('routeWillChange', (transition) => {
           const isTransitioningAway = !transition.to.find(route => route.name === this.routeName);
-          
+
           if (isTransitioningAway && confirm('Are you sure you want to continue? Please save or cancel your changes first.')) {
             transition.abort();
           }
