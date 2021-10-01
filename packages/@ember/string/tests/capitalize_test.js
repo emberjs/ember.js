@@ -1,3 +1,4 @@
+/* eslint-disable qunit/no-test-expect-argument */
 import { capitalize } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
