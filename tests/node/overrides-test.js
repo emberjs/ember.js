@@ -560,25 +560,25 @@ QUnit.module('Overrides', function () {
     let project = new Project(fullExample());
     let overrides = Overrides.for(project, { EMBER_ENV: 'production' });
 
-    assert.strictEqual(overrides.hasOverrides, false, 'hasOverrides');
-    assert.strictEqual(overrides.hasBuildTimeWarning, false, 'hasBuildTimeWarning');
+    assert.false(overrides.hasOverrides, 'hasOverrides');
+    assert.false(overrides.hasBuildTimeWarning, 'hasBuildTimeWarning');
   });
 
   QUnit.test('it does nothing when everything is on new babel', function (assert) {
     let overrides = new Overrides([]);
 
-    assert.strictEqual(overrides.hasOverrides, false, 'hasOverrides');
-    assert.strictEqual(overrides.hasBuildTimeWarning, false, 'hasBuildTimeWarning');
+    assert.false(overrides.hasOverrides, 'hasOverrides');
+    assert.false(overrides.hasBuildTimeWarning, 'hasBuildTimeWarning');
   });
 
   QUnit.test('when app is on old babel', function (assert) {
     let overrides = new Overrides([infoForApp({ version: '6.0.0' })]);
 
-    assert.strictEqual(overrides.hasOverrides, true, 'hasOverrides');
-    assert.strictEqual(overrides.hasBuildTimeWarning, true, 'hasBuildTimeWarning');
-    assert.strictEqual(overrides.hasActionableSuggestions, true, 'hasActionableSuggestions');
-    assert.strictEqual(overrides.hasCompatibleAddons, false, 'hasCompatibleAddons');
-    assert.strictEqual(overrides.hasDormantAddons, false, 'hasDormantAddons');
+    assert.true(overrides.hasOverrides, 'hasOverrides');
+    assert.true(overrides.hasBuildTimeWarning, 'hasBuildTimeWarning');
+    assert.true(overrides.hasActionableSuggestions, 'hasActionableSuggestions');
+    assert.false(overrides.hasCompatibleAddons, 'hasCompatibleAddons');
+    assert.false(overrides.hasDormantAddons, 'hasDormantAddons');
   });
 
   // let project, env;
