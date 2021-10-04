@@ -1,1 +1,1 @@
-export { tracked } from '@ember/-internals/metal';
+export { tracked, cached } from '@ember/-internals/metal';
