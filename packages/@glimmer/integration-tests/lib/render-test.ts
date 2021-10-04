@@ -80,10 +80,6 @@ export class RenderTest implements IRenderTest {
     this.delegate.registerModifier(name, ModifierClass);
   }
 
-  registerPartial(name: string, content: string): void {
-    this.delegate.registerPartial(name, content);
-  }
-
   registerComponent<K extends ComponentKind>(
     type: K,
     name: string,

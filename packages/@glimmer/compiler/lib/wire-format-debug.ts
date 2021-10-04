@@ -94,9 +94,6 @@ export default class WireFormatDebugger {
         case Op.Yield:
           return ['yield', opcode[1], this.formatParams(opcode[2])];
 
-        case Op.Partial:
-          return ['partial', this.formatOpcode(opcode[1]), opcode[2]];
-
         case Op.DynamicArg:
           return ['dynamic-arg', opcode[1], this.formatOpcode(opcode[2])];
 

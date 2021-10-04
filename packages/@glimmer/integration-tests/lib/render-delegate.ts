@@ -41,7 +41,6 @@ export default interface RenderDelegate {
   registerPlugin(plugin: ASTPluginBuilder): void;
   registerHelper(name: string, helper: UserHelper): void;
   registerInternalHelper(name: string, helper: Helper): void;
-  registerPartial(name: string, content: string): void;
   registerModifier(name: string, klass: unknown): void;
   renderTemplate(
     template: string,

@@ -14,7 +14,7 @@ The input to the preprocessor is _the AST_. The AST is the result of parsing a t
 
 In addition to allocating symbols for variable references that refer to in-scope bindings (introduced by block parameters), this pass also allocates symbols for `@arg` references, as well as blocks that are references via the `{{yield}}`, `(has-block)` and `(has-block-params)` keywords.
 
-Finally, this pass is responsible for identifying the presence of the `{{partial}}` and `{{debugger}}` keywords, which require symbol maps at runtime.
+Finally, this pass is responsible for identifying the presence of the `{{debugger}}` keyword, which require symbol maps at runtime.
 
 **Encoding**: The encoding pass turns the MIR into the wire format, which is suitable for wire transport. The current encoding pass is hardcoded to emit the wire format (documented in `@glimmer/wire-format`). This is the stage where any optimizations on the representation are performed (like erasing trailing nulls, or other simple packing optimizations).
 

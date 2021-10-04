@@ -72,13 +72,6 @@ class GeneralStrictModeTest extends RenderTest {
   }
 
   @test
-  'Cannot use partials in strict mode'() {
-    this.assert.throws(() => {
-      defineComponent({}, '{{partial bar}}');
-    }, /{{partial}} is not allowed in strict mode templates/);
-  }
-
-  @test
   'Implicit this lookup does not work'() {
     const Foo = defineComponent(
       {},

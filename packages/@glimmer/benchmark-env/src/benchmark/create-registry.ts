@@ -82,7 +82,6 @@ export default function createRegistry(): Registry {
         lookupHelper: (name) => helpers.get(name) ?? null,
         lookupModifier: (name) => modifiers.get(name) ?? null,
         lookupComponent: (name) => components.get(name) ?? null,
-        lookupPartial: () => null,
 
         lookupBuiltInHelper: () => null,
         lookupBuiltInModifier: () => null,
@@ -97,7 +96,6 @@ export default function createRegistry(): Registry {
         context,
         {
           lookupComponent: () => null,
-          lookupPartial: () => null,
         },
         component,
         args,

@@ -52,7 +52,6 @@ import {
   registerHelper,
   registerInternalHelper,
   registerModifier,
-  registerPartial,
 } from './register';
 import { TestJitRegistry } from './registry';
 import { renderTemplate } from './render';
@@ -183,10 +182,6 @@ export class JitRenderDelegate implements RenderDelegate {
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
     return clientBuilder(env, cursor);
-  }
-
-  registerPartial(name: string, content: string) {
-    registerPartial(this.registry, name, content);
   }
 
   getSelf(_env: Environment, context: unknown): Reference {
