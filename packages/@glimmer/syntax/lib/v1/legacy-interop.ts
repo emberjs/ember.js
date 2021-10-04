@@ -23,7 +23,14 @@ export class PathExpressionImplV1 implements PathExpression {
     this.parts = parts;
   }
 
+  // Cache for the head value.
+  _head?: PathHead = undefined;
+
   get head(): PathHead {
+    if (this._head) {
+      return this._head;
+    }
+
     let firstPart: string;
 
     if (this.this) {
@@ -38,7 +45,7 @@ export class PathExpressionImplV1 implements PathExpression {
       chars: firstPart.length,
     }).loc;
 
-    return b.head(firstPart, firstPartLoc);
+    return (this._head = b.head(firstPart, firstPartLoc));
   }
 
   get tail(): string[] {
