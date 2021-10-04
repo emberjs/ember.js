@@ -1,9 +1,9 @@
 // NOTE: copied from: https://github.com/glimmerjs/glimmer.js/pull/358
 // Both glimmerjs/glimmer.js and emberjs/ember.js have the exact same implementation
 // of @cached, so any changes made to one should also be made to the other
+import { EMBER_CACHED } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { createCache, getValue } from '@glimmer/validator';
-import { EMBER_CACHED } from '@ember/canary-features';
 
 /**
  * @decorator

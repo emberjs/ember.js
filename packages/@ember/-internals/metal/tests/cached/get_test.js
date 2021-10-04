@@ -48,7 +48,6 @@ if (EMBER_CACHED) {
         assert.verifySteps(['Kenneth Larsen'], 'accessing the property triggers a re-computation');
       }
 
-      // https://github.com/ember-polyfills/ember-cached-decorator-polyfill/issues/7
       '@test it has a separate cache per class instance'() {
         let assert = this.assert;
 
