@@ -44,8 +44,6 @@ export class ContentEncoder {
     switch (stmt.type) {
       case 'Debugger':
         return [SexpOpcodes.Debugger, stmt.scope.getEvalInfo()];
-      case 'Partial':
-        return this.Partial(stmt);
       case 'AppendComment':
         return this.AppendComment(stmt);
       case 'AppendTextNode':
@@ -77,10 +75,6 @@ export class ContentEncoder {
       default:
         return exhausted(stmt);
     }
-  }
-
-  Partial({ target, scope }: mir.Partial): WireFormat.Statements.Partial {
-    return [SexpOpcodes.Partial, EXPR.expr(target), scope.getEvalInfo()];
   }
 
   Yield({ to, positional }: mir.Yield): WireFormat.Statements.Yield {

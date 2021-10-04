@@ -97,7 +97,6 @@ export const enum Op {
   CommitComponentTransaction = 98,
   DidCreateElement = 99,
   DidRenderLayout = 100,
-  InvokePartial = 101,
   ResolveMaybeLocal = 102,
   Debugger = 103,
   Size = 104,

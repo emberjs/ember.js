@@ -136,10 +136,6 @@ export class Yield extends node('Yield').fields<{
   to: number;
   positional: Positional;
 }>() {}
-export class Partial extends node('Partial').fields<{
-  target: ExpressionNode;
-  scope: SymbolTable;
-}>() {}
 export class Debugger extends node('Debugger').fields<{ scope: SymbolTable }>() {}
 
 export class CallExpression extends node('CallExpression').fields<{
@@ -243,7 +239,6 @@ export type Statement =
   | Component
   | SimpleElement
   | InvokeBlock
-  | Partial
   | AppendComment
   | If
   | Each

@@ -2,7 +2,6 @@ import {
   RuntimeResolver,
   Option,
   ResolvedComponentDefinition,
-  PartialDefinition,
   ModifierDefinitionState,
   HelperDefinitionState,
 } from '@glimmer/interfaces';
@@ -21,9 +20,5 @@ export class TestJitRuntimeResolver implements RuntimeResolver {
 
   lookupComponent(name: string, _owner?: object): Option<ResolvedComponentDefinition> {
     return this.registry.lookupComponent(name);
-  }
-
-  lookupPartial(name: string): Option<PartialDefinition> {
-    return this.registry.lookup('partial', name);
   }
 }

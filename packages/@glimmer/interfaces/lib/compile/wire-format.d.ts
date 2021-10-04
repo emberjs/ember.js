@@ -47,7 +47,6 @@ export const enum SexpOpcodes {
 
   AttrSplat = 17,
   Yield = 18,
-  Partial = 19,
 
   DynamicArg = 20,
   StaticArg = 21,
@@ -346,7 +345,6 @@ export namespace Statements {
 
   export type AttrSplat = [SexpOpcodes.AttrSplat, YieldTo];
   export type Yield = [SexpOpcodes.Yield, YieldTo, Option<Params>];
-  export type Partial = [SexpOpcodes.Partial, Expression, Core.EvalInfo];
   export type DynamicArg = [SexpOpcodes.DynamicArg, string, Expression];
   export type StaticArg = [SexpOpcodes.StaticArg, string, Expression];
 
@@ -445,7 +443,6 @@ export namespace Statements {
     | Attribute
     | AttrSplat
     | Yield
-    | Partial
     | StaticArg
     | DynamicArg
     | Debugger

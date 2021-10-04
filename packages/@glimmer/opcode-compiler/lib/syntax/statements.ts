@@ -130,24 +130,6 @@ STATEMENTS.add(SexpOpcodes.Component, (op, [, expr, elementBlock, named, blocks]
   }
 });
 
-STATEMENTS.add(SexpOpcodes.Partial, (op, [, name, evalInfo]) => {
-  ReplayableIf(
-    op,
-    () => {
-      expr(op, name);
-      op(Op.Dup, $sp, 0);
-
-      return 2;
-    },
-
-    () => {
-      op(Op.InvokePartial, evalSymbolsOperand(), evalInfo);
-      op(Op.PopScope);
-      op(MachineOp.PopFrame);
-    }
-  );
-});
-
 STATEMENTS.add(SexpOpcodes.Yield, (op, [, to, params]) => YieldBlock(op, to, params));
 
 STATEMENTS.add(SexpOpcodes.AttrSplat, (op, [, to]) => YieldBlock(op, to, null));
