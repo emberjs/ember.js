@@ -141,6 +141,10 @@
 
 - [#19477](https://github.com/emberjs/ember.js/pull/19477) Allow `<LinkToExternal />` to override internal assertion
 
+### v3.26.2 (October 4, 2021)
+
+- [#19683](https://github.com/emberjs/ember.js/pull/19683) [BUGFIX] Use `super.willDestroy` in native classes (instead of `this._super`)
+
 ### v3.26.1 (March 24, 2021)
 
 - [#19473](https://github.com/emberjs/ember.js/pull/19473) Update Glimmer VM to latest.
