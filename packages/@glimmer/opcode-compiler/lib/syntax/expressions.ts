@@ -12,7 +12,6 @@ import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';
 import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { Compilers, PushExpressionOp } from './compilers';
-import { DEBUG } from '@glimmer/env';
 
 export const EXPRESSIONS = new Compilers<PushExpressionOp, ExpressionSexpOpcode>();
 
@@ -57,23 +56,7 @@ EXPRESSIONS.add(SexpOpcodes.GetStrictFree, (op, [, sym, _path]) => {
   });
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, (op, [, freeVar, path]) => {
-  op(HighLevelResolutionOpcode.ResolveLocal, freeVar, (name: string, moduleName: string) => {
-    if (DEBUG) {
-      let propertyPath = path ? [name, ...path].join('.') : name;
-
-      deprecate(
-        `The \`${propertyPath}\` property path was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${propertyPath}}}`,
-        false,
-        {
-          id: 'this-property-fallback',
-        }
-      );
-    }
-
-    op(Op.GetVariable, 0);
-    op(Op.GetProperty, name);
-  });
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, (op, [, , path]) => {
   withPath(op, path);
 });
 
@@ -92,19 +75,6 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (op, expr) => {
     op(HighLevelResolutionOpcode.ResolveOptionalHelper, expr, {
       ifHelper: (handle: number) => {
         Call(op, handle, null, null);
-      },
-
-      ifFallback: (name: string, moduleName: string) => {
-        deprecate(
-          `The \`${name}\` property was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
-          false,
-          {
-            id: 'this-property-fallback',
-          }
-        );
-
-        op(Op.GetVariable, 0);
-        op(Op.GetProperty, name);
       },
     });
   });
@@ -139,19 +109,6 @@ EXPRESSIONS.add(SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback, (op, ex
         );
 
         Call(op, handle, null, null);
-      },
-
-      ifFallback: (name: string, moduleName: string) => {
-        deprecate(
-          `The \`${name}\` property was used in the \`${moduleName}\` template without using \`this\`. This fallback behavior has been deprecated, all properties must be looked up on \`this\` when used in the template: {{this.${name}}}`,
-          false,
-          {
-            id: 'this-property-fallback',
-          }
-        );
-
-        op(Op.GetVariable, 0);
-        op(Op.GetProperty, name);
       },
     });
   });

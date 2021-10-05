@@ -21,29 +21,6 @@ class DynamicHelpersResolutionModeTest extends RenderTest {
   }
 
   @test
-  'Can invoke a helper definition based on this fallback lookup in resolution mode'(
-    assert: Assert
-  ) {
-    const foo = defineSimpleHelper(() => 'Hello, world!');
-    this.registerComponent(
-      'Glimmer',
-      'Bar',
-      '{{x.foo}}',
-      class extends GlimmerishComponent {
-        x = { foo };
-      }
-    );
-
-    this.render('<Bar/>');
-    this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-
-    assert.validateDeprecations(
-      /The `x\.foo` property path was used in the `.*` template without using `this`/
-    );
-  }
-
-  @test
   'Can use a dynamic helper with nested helpers'() {
     const foo = defineSimpleHelper(() => 'world!');
     const bar = defineSimpleHelper((value: string) => 'Hello, ' + value);
