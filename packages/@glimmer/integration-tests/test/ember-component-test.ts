@@ -542,7 +542,7 @@ class CurlyScopeTest extends CurlyTest {
   }
 
   @test
-  'correct scope - self lookup inside #each'(assert: Assert) {
+  'correct scope - self lookup inside #each'() {
     this.registerComponent('TemplateOnly', 'SubItem', `<p>{{@name}}</p>`);
 
     let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
@@ -552,8 +552,7 @@ class CurlyScopeTest extends CurlyTest {
         <div>
           {{#each this.items key="id" as |item|}}
             <SubItem @name={{this.id}} />
-            {{! Intentional property fallback to test self lookup }}
-            <SubItem @name={{id}} />
+            <SubItem @name={{this.id}} />
             <SubItem @name={{item.id}} />
           {{/each}}
         </div>`,
@@ -568,10 +567,6 @@ class CurlyScopeTest extends CurlyTest {
           <p>(self)</p><p>(self)</p><p>42</p>
         </div>
       `
-    );
-
-    assert.validateDeprecations(
-      /The `id` property was used in the `.*` template without using `this`/
     );
   }
 
@@ -1632,32 +1627,6 @@ class CurlyGlimmerComponentTest extends CurlyTest {
 
     this.assertHTML('Foo');
     this.assertStableNodes();
-  }
-
-  @test
-  'Can use implicit this fallback for `component.name` emberjs/ember.js#19313'(assert: Assert) {
-    this.registerComponent(
-      'Glimmer',
-      'Outer',
-      '{{component.name}}',
-      class extends GlimmerishComponent {
-        get component() {
-          return { name: 'Foo' };
-        }
-      }
-    );
-
-    this.render('<Outer />');
-    this.assertHTML('Foo');
-
-    this.rerender();
-
-    this.assertHTML('Foo');
-    this.assertStableNodes();
-
-    assert.validateDeprecations(
-      /The `component\.name` property path was used in the `.*` template without using `this`/
-    );
   }
 }
 
