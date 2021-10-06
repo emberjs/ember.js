@@ -345,30 +345,26 @@ moduleFor(
         }
       );
 
-      this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
 
       runTask(() => this.rerender());
 
-      this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
 
       runTask(() => set(this.context, 'name', 'chancancode'));
 
-      this.assertText('chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
 
       runTask(() => set(this.context, 'committer1', { name: 'krisselden' }));
 
-      this.assertText(
-        'chancancode[krisselden[machty]krisselden]chancancode[machty[krisselden]machty]chancancode'
-      );
+      this.assertText('[krisselden[machty]krisselden][machty[krisselden]machty]');
 
       runTask(() => {
         set(this.context, 'committer1.name', 'wycats');
         set(this.context, 'committer2', { name: 'rwjblue' });
       });
 
-      this.assertText(
-        'chancancode[wycats[rwjblue]wycats]chancancode[rwjblue[wycats]rwjblue]chancancode'
-      );
+      this.assertText('[wycats[rwjblue]wycats][rwjblue[wycats]rwjblue]');
 
       runTask(() => {
         set(this.context, 'name', 'ebryn');
@@ -376,7 +372,7 @@ moduleFor(
         set(this.context, 'committer2', { name: 'machty' });
       });
 
-      this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
     }
   }
 );

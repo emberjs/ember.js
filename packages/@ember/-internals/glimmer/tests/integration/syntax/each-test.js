@@ -729,7 +729,7 @@ class EachTest extends AbstractEachTest {
 
     this.render(`{{name}}-{{#each this.list as |name|}}{{name}}{{/each}}-{{name}}`);
 
-    this.assertText('-Yehuda-Stef');
+    this.assertText('-Yehuda-');
 
     runTask(() => this.rerender());
 

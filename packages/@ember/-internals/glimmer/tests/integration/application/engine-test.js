@@ -227,12 +227,12 @@ moduleFor(
       );
 
       return this.visit('/blog').then(() => {
-        this.assertText('ApplicationController Data!EngineComponent!');
+        this.assertText('ApplicationEngineComponent!');
       });
     }
 
     ['@test sharing a layout between engine and application has separate refinements']() {
-      this.assert.expect(2);
+      this.assert.expect(1);
 
       let sharedLayout = compile(strip`
         {{ambiguous-curlies}}
@@ -285,7 +285,7 @@ moduleFor(
       );
 
       return this.visit('/blog').then(() => {
-        this.assertText('ApplicationLocal Data!EngineComponent!');
+        this.assertText('ApplicationEngineComponent!');
       });
     }
 
