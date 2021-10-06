@@ -1,3 +1,25 @@
+## v0.82.0 (2021-10-06)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`
+  * [#1331](https://github.com/glimmerjs/glimmer-vm/pull/1331) [cleanup]: Remove `this.` property fallback (e.g. the `this-property-fallback` deprecation) ([@snewcomer](https://github.com/snewcomer))
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#1332](https://github.com/glimmerjs/glimmer-vm/pull/1332) Remove support for `{{partial}}` ([@snewcomer](https://github.com/snewcomer))
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#1344](https://github.com/glimmerjs/glimmer-vm/pull/1344) Cache `head` getter in `PathExpressionImplV1` ([@chriskrycho](https://github.com/chriskrycho))
+
+#### :bug: Bug Fix
+* `@glimmer/manager`
+  * [#1343](https://github.com/glimmerjs/glimmer-vm/pull/1343) Remove deprecated versions of modifier/component manager capabilities from error messages ([@nlfurniss](https://github.com/nlfurniss))
+
+#### Committers: 3
+- Chris Krycho ([@chriskrycho](https://github.com/chriskrycho))
+- Nathaniel Furniss ([@nlfurniss](https://github.com/nlfurniss))
+- Scott Newcomer ([@snewcomer](https://github.com/snewcomer))
+
+
 ## v0.81.0 (2021-09-27)
 
 #### :boom: Breaking Change
