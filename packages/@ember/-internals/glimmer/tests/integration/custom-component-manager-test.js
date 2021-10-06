@@ -463,6 +463,7 @@ moduleFor(
           return EmberObject.create({
             capabilities: componentCapabilities('3.13', {
               asyncLifecycleCallbacks: true,
+              updateHook: true,
             }),
 
             createComponent(factory, args) {
@@ -668,6 +669,7 @@ moduleFor(
         capabilities: componentCapabilities('3.13', {
           destructor: true,
           asyncLifecycleCallbacks: true,
+          updateHook: true,
         }),
 
         createComponent(factory, args) {
