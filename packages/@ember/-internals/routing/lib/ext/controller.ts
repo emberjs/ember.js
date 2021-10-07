@@ -231,6 +231,7 @@ ControllerMixin.reopen({
     @method replaceRoute
     @return {Transition} the transition object associated with this
       attempted transition
+    @deprecated Use replaceWith from the Router service instead.
     @public
   */
   replaceRoute(...args: string[]) {

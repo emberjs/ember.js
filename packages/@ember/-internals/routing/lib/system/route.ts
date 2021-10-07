@@ -1074,6 +1074,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @return {Transition} the transition object associated with this
       attempted transition
     @since 1.0.0
+    @deprecated Use replaceWith from the Router service instead.
     @public
   */
   replaceWith(...args: any[]) {
