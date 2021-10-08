@@ -795,6 +795,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     this._initialTransitionStarted = false;
     if (this._routerMicrolib) {
       this._routerMicrolib.reset();
+      this._routerMicrolib.cleanup();
     }
   }
 
