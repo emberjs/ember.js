@@ -1,4 +1,4 @@
-import { inject as injectService } from '@ember/service';
+import { service } from '@ember/service';
 import { Router, NoneLocation } from '@ember/-internals/routing';
 import { get } from '@ember/-internals/metal';
 import { run } from '@ember/runloop';
@@ -83,7 +83,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super(...arguments);
             componentInstance = this;

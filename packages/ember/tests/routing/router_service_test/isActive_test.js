@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import Service, { inject as service } from '@ember/service';
+import Service, { service } from '@ember/service';
 
 moduleFor(
   'Router Service - isActive',

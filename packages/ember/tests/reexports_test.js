@@ -310,7 +310,7 @@ let allExports = [
 
   // @ember/service
   ['Service', '@ember/service', 'default'],
-  ['inject.service', '@ember/service', 'inject'],
+  ['inject.service', '@ember/service', 'service'],
 
   // @ember/string
   ['String.camelize', '@ember/string', 'camelize'],

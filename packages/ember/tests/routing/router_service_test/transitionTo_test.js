@@ -1,4 +1,4 @@
-import { inject as injectService } from '@ember/service';
+import { service } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
@@ -6,7 +6,6 @@ import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
-import { inject as service } from '@ember/service';
 
 moduleFor(
   'Router Service - transitionTo',
@@ -103,7 +102,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;
@@ -135,7 +134,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;
@@ -169,7 +168,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;
@@ -214,7 +213,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;

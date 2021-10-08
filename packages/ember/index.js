@@ -30,7 +30,7 @@ import {
   underscore,
   w,
 } from '@ember/string';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 
 import { action, computed } from '@ember/object';
 import { dependentKeyCompat } from '@ember/object/compat';
@@ -340,7 +340,7 @@ Ember.inject = function inject() {
       .join(' or ')}'`
   );
 };
-Ember.inject.service = injectService;
+Ember.inject.service = service;
 Ember.inject.controller = injectController;
 
 Ember.Array = EmberArray;

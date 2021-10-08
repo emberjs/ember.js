@@ -1039,7 +1039,7 @@ const Application = Engine.extend({
 
     ```app/routes/post.js
     import Route from '@ember/routing/route';
-    import { inject as service } from '@ember/service';
+    import { service } from '@ember/service';
 
     // An example of how the (hypothetical) service is used in routes.
 

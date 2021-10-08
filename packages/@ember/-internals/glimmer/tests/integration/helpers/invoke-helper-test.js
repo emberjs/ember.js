@@ -4,7 +4,7 @@ import { Helper, helper, Component as EmberComponent } from '@ember/-internals/g
 import { tracked, set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_INVOKE_HELPER, EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
-import Service, { inject as service } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
 import { destroy, isDestroyed, registerDestructor } from '@glimmer/destroyable';

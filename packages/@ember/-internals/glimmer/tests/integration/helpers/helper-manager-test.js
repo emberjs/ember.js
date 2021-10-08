@@ -4,7 +4,7 @@ import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { tracked, set } from '@ember/-internals/metal';
 import { setOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_HELPER_MANAGER } from '@ember/canary-features';
-import Service, { inject as service } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { registerDestructor } from '@glimmer/destroyable';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
