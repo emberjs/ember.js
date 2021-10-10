@@ -91,7 +91,7 @@
     "@glimmer/validator": "0.80.0",
     "@simple-dom/document": "^1.4.0",
     "@types/qunit": "^2.11.1",
-    "@types/rsvp": "^4.0.3",
+    "@types/rsvp": "^4.0.4",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "auto-dist-tag": "^1.0.0",
