@@ -5857,10 +5857,10 @@ eslint-plugin-disable-features@^0.1.3:
   dependencies:
     requireindex "~1.1.0"
 
-eslint-plugin-ember-internal@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-ember-internal/-/eslint-plugin-ember-internal-1.1.1.tgz#5327f709799eac010bfcf0dd1be8d0acbc917d34"
-  integrity "sha1-Uyf3CXmerAEL/PDdG+jQrLyRfTQ= sha512-Uqf0fu9NOXIj5mR9pjMW2s+Wb6gXNQpzDvDOje2IAYQVwrX1Fuh/noAsgAHgVKwa3oPiAe4jCKfqaW2j1BHn9w=="
+eslint-plugin-ember-internal@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-ember-internal/-/eslint-plugin-ember-internal-2.0.0.tgz#bebfb829c7bbc47d71ef853adf93ff37e02282b6"
+  integrity sha512-dzPY1Ka3xIMb/ZzTJHMQncKADVCmFsi2EtSuUI3FU6L3jeVg1XOuLVx3Ud5UCxUBIA37DRPhHf7DDKU4E69X2g==
   dependencies:
     line-column "^1.0.2"
     requireindex "~1.1.0"
