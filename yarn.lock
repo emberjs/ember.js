@@ -4060,10 +4060,10 @@ broccoli-source@^2.1.2:
   resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-2.1.2.tgz#e9ae834f143b607e9ec114ade66731500c38b90b"
   integrity sha512-1lLayO4wfS0c0Sj50VfHJXNWf94FYY0WUhxj0R77thbs6uWI7USiOWFqQV5dRmhAJnoKaGN4WyLGQbgjgiYFwQ==
 
-broccoli-source@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-3.0.0.tgz#c7c9ba24505941b72a0244568285bc859f69dfbd"
-  integrity "sha1-x8m6JFBZQbcqAkRWgoW8hZ9p370= sha512-G4Zc8HngZIdASyQOiz/9H/0Gjc2F02EFwhWF4wiueaI+/FBrM9Ixj6Prno/1aiLIYcN0JvRC3oytN9uOVonTww=="
+broccoli-source@^3.0.0, broccoli-source@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-3.0.1.tgz#fd581b2f3877ca1338f724f6ef70acec8c7e1444"
+  integrity sha512-ZbGVQjivWi0k220fEeIUioN6Y68xjMy0xiLAc0LdieHI99gw+tafU8w0CggBDYVNsJMKUr006AZaM7gNEwCxEg==
   dependencies:
     broccoli-node-api "^1.6.0"
 
@@ -7717,6 +7717,11 @@ is-running@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/is-running/-/is-running-2.1.0.tgz#30a73ff5cc3854e4fc25490809e9f5abf8de09e0"
   integrity sha1-MKc/9cw4VOT8JUkICen1q/jeCeA=
+
+is-shared-array-buffer@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/is-shared-array-buffer/-/is-shared-array-buffer-1.0.1.tgz#97b0c85fbdacb59c9c446fe653b82cf2b5b7cfe6"
+  integrity sha512-IU0NmyknYZN0rChcKhRO1X8LYz5Isj/Fsqh8NJOSf+N/hCOTwy29F32Ik7a+QszE63IdvmwdTPDd6cZ5pg4cwA==
 
 is-shared-array-buffer@^1.0.1:
   version "1.0.1"
