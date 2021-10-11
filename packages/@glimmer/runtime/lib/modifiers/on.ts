@@ -115,7 +115,7 @@ export class OnModifierState {
 
       if (typeof value !== 'function') {
         throw new Error(
-          `You must pass a function as the second argument to the \`on\` modifier, you passed ${
+          `You must pass a function as the second argument to the \`on\` modifier; you passed ${
             value === null ? 'null' : typeof value
           }. While rendering:\n\n${userProvidedCallbackReference.debugLabel}`
         );
