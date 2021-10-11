@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.0.0-beta.5 (October 11, 2021)
+
+- [#19761](https://github.com/emberjs/ember.js/pull/19761) [BREAKING] Require ember-auto-import >= 2 or higher to enable ember-source to become a v2 addon in the 4.x cycle
+
 ### v4.0.0-beta.4 (September 13, 2021)
 
 - [#19733](https://github.com/emberjs/ember.js/pull/19733) [BUGFIX] Ensure that using `routerService.urlFor(...)` and `routerService.recognize(...)` does not error if the router is not fully initialized
