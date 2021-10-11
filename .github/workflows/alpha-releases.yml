@@ -55,4 +55,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - name: push branch + tag
-        run: git push origin HEAD --follow-tags
+        run: git push https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_TOKEN }}@github.com/${GITHUB_REPOSITORY} HEAD --follow-tags
