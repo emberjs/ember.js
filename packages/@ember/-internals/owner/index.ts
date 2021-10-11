@@ -9,16 +9,12 @@ export interface LookupOptions {
   instantiate?: boolean;
 }
 
-export interface FactoryClass {
-  positionalParams?: string | string[] | undefined | null;
-}
-
-export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
+export interface Factory<T, C = object> {
   class?: C;
   name?: string;
   fullName?: string;
   normalizedName?: string;
-  create(props?: { [prop: string]: any }): T;
+  create(props?: { [prop: string]: unknown }): T;
 }
 
 export interface EngineInstanceOptions {

@@ -2,6 +2,12 @@ import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner
 import { dictionary, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import {
+  ClassicClass,
+  FactoryInstanceManager,
+  NonInstantiateManager,
+  SingletonInstanceManager,
+} from './managers';
 import Registry, { DebugRegistry } from './registry';
 
 declare global {
@@ -51,7 +57,7 @@ if (DEBUG) {
 export interface ContainerOptions {
   owner?: Owner;
   cache?: { [key: string]: CacheMember };
-  factoryManagerCache?: { [key: string]: FactoryManager<any, any> };
+  factoryManagerCache?: { [key: string]: Factory<unknown> };
   validationCache?: { [key: string]: boolean };
 }
 
@@ -74,7 +80,7 @@ export default class Container {
   readonly owner: Owner | null;
   readonly registry: Registry & DebugRegistry;
   cache: { [key: string]: CacheMember };
-  factoryManagerCache!: { [key: string]: FactoryManager<any, any> };
+  factoryManagerCache!: { [key: string]: Factory<unknown> };
   readonly validationCache!: { [key: string]: boolean };
   isDestroyed: boolean;
   isDestroying: boolean;
@@ -233,7 +239,7 @@ if (DEBUG) {
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
  */
-function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>): FactoryManager<T, C> {
+function wrapManagerInDeprecationProxy<T, C>(manager: Factory<T, C>): Factory<T, C> {
   let validator = {
     set(_obj: T, prop: keyof T) {
       throw new Error(
@@ -248,7 +254,7 @@ function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>): Fac
   let m = manager;
   let proxiedManager = {
     class: m.class,
-    create(props?: { [prop: string]: any }) {
+    create(props?: { [prop: string]: unknown }) {
       return m.create(props);
     },
   };
@@ -264,30 +270,28 @@ function isInstantiatable(container: Container, fullName: string) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
-function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
+function lookup(container: Container, fullName: string, _options: LookupOptions) {
   let normalizedName = fullName;
 
-  if (
-    options.singleton === true ||
-    (options.singleton === undefined && isSingleton(container, fullName))
-  ) {
-    let cached = container.cache[normalizedName];
-    if (cached !== undefined) {
-      return cached;
-    }
-  }
+  // TODO: bring back singleton: false support
 
-  return instantiateFactory(container, normalizedName, fullName, options);
+  let factory = factoryFor(container, normalizedName, fullName);
+
+  return factory?.create();
 }
 
-function factoryFor<T, C>(container: Container, normalizedName: string, fullName: string) {
+function factoryFor<T extends object, C extends ClassicClass<T>>(
+  container: Container,
+  normalizedName: string,
+  fullName: string
+) {
   let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) {
     return cached;
   }
 
-  let factory = container.registry.resolve(normalizedName) as DebugFactory<T, C> | undefined;
+  let factory = container.registry.resolve(normalizedName) as ClassicClass<T> | undefined;
 
   if (factory === undefined) {
     return;
@@ -297,113 +301,30 @@ function factoryFor<T, C>(container: Container, normalizedName: string, fullName
     factory._onLookup(fullName);
   }
 
-  let manager = new FactoryManager(container, factory, fullName, normalizedName);
+  let manager: Factory<T, C>;
+
+  let singleton = isSingleton(container, fullName);
+  let instantiable = isInstantiatable(container, fullName);
+
+  if (singleton && instantiable) {
+    // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
+    // By default majority of objects fall into this case
+    manager = new SingletonInstanceManager<T, C>(container, factory, fullName, normalizedName);
+  } else if (!singleton && instantiable) {
+    // SomeClass { singleton: false, instantiate: true }
+    manager = new FactoryInstanceManager(container, factory, fullName, normalizedName);
+  } else if (singleton && !instantiable) {
+    // SomeClass { singleton: true, instantiate: false } | { instantiate: false } | { singleton: false, instantiation: false }
+    manager = new NonInstantiateManager(container, factory, fullName);
+  }
 
   if (DEBUG) {
-    manager = wrapManagerInDeprecationProxy(manager);
+    manager = wrapManagerInDeprecationProxy<T, C>(manager!);
   }
 
-  container.factoryManagerCache[normalizedName] = manager;
-  return manager;
-}
+  container.factoryManagerCache[normalizedName] = manager!;
 
-interface FactoryOptions {
-  instantiate?: boolean;
-  singleton?: boolean;
-}
-
-function isSingletonClass(
-  container: Container,
-  fullName: string,
-  { instantiate, singleton }: FactoryOptions
-) {
-  return (
-    singleton !== false &&
-    !instantiate &&
-    isSingleton(container, fullName) &&
-    !isInstantiatable(container, fullName)
-  );
-}
-
-function isSingletonInstance(
-  container: Container,
-  fullName: string,
-  { instantiate, singleton }: FactoryOptions
-) {
-  return (
-    singleton !== false &&
-    instantiate !== false &&
-    (singleton === true || isSingleton(container, fullName)) &&
-    isInstantiatable(container, fullName)
-  );
-}
-
-function isFactoryClass(
-  container: Container,
-  fullname: string,
-  { instantiate, singleton }: FactoryOptions
-) {
-  return (
-    instantiate === false &&
-    (singleton === false || !isSingleton(container, fullname)) &&
-    !isInstantiatable(container, fullname)
-  );
-}
-
-function isFactoryInstance(
-  container: Container,
-  fullName: string,
-  { instantiate, singleton }: FactoryOptions
-) {
-  return (
-    instantiate !== false &&
-    (singleton === false || !isSingleton(container, fullName)) &&
-    isInstantiatable(container, fullName)
-  );
-}
-
-function instantiateFactory(
-  container: Container,
-  normalizedName: string,
-  fullName: string,
-  options: FactoryOptions
-) {
-  let factoryManager = factoryFor(container, normalizedName, fullName);
-
-  if (factoryManager === undefined) {
-    return;
-  }
-
-  // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
-  // By default majority of objects fall into this case
-  if (isSingletonInstance(container, fullName, options)) {
-    let instance = (container.cache[normalizedName] = factoryManager.create() as CacheMember);
-
-    // if this lookup happened _during_ destruction (emits a deprecation, but
-    // is still possible) ensure that it gets destroyed
-    if (container.isDestroying) {
-      if (typeof instance.destroy === 'function') {
-        instance.destroy();
-      }
-    }
-
-    return instance;
-  }
-
-  // SomeClass { singleton: false, instantiate: true }
-  if (isFactoryInstance(container, fullName, options)) {
-    return factoryManager.create();
-  }
-
-  // SomeClass { singleton: true, instantiate: false } | { instantiate: false } | { singleton: false, instantiation: false }
-  if (
-    isSingletonClass(container, fullName, options) ||
-    isFactoryClass(container, fullName, options)
-  ) {
-    return factoryManager.class;
-  }
-
-  throw new Error('Could not create factory');
+  return manager!;
 }
 
 function destroyDestroyables(container: Container): void {
@@ -436,108 +357,5 @@ function resetMember(container: Container, fullName: string) {
     if (member.destroy) {
       member.destroy();
     }
-  }
-}
-
-export interface LazyInjection {
-  namespace: string | undefined;
-  source: string | undefined;
-  specifier: string;
-}
-
-declare interface DebugFactory<T, C> extends Factory<T, C> {
-  _onLookup?: (fullName: string) => void;
-  _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
-  _lazyInjections(): { [key: string]: LazyInjection };
-}
-
-export const INIT_FACTORY = symbol('INIT_FACTORY');
-
-export function getFactoryFor(obj: any): FactoryManager<any, any> {
-  return obj[INIT_FACTORY];
-}
-
-export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void {
-  obj[INIT_FACTORY] = factory;
-}
-
-class FactoryManager<T, C> {
-  readonly container: Container;
-  readonly owner: Owner | null;
-  readonly class: Factory<T, C> & DebugFactory<T, C>;
-  readonly fullName: string;
-  readonly normalizedName: string;
-  private madeToString: string | undefined;
-  injections: { [key: string]: unknown } | undefined;
-
-  constructor(
-    container: Container,
-    factory: Factory<T, C>,
-    fullName: string,
-    normalizedName: string
-  ) {
-    this.container = container;
-    this.owner = container.owner;
-    this.class = factory as Factory<T, C> & DebugFactory<T, C>;
-    this.fullName = fullName;
-    this.normalizedName = normalizedName;
-    this.madeToString = undefined;
-    this.injections = undefined;
-    setFactoryFor(this, this);
-
-    if (factory) {
-      setFactoryFor(factory, this);
-    }
-  }
-
-  toString(): string {
-    if (this.madeToString === undefined) {
-      this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
-    }
-
-    return this.madeToString;
-  }
-
-  create(options?: { [prop: string]: any }) {
-    let { container } = this;
-
-    if (container.isDestroyed) {
-      throw new Error(
-        `Can not create new instances after the owner has been destroyed (you attempted to create ${this.fullName})`
-      );
-    }
-
-    let props = {};
-    setOwner(props, container.owner!);
-    setFactoryFor(props, this);
-
-    if (options !== undefined) {
-      props = Object.assign({}, props, options);
-    }
-
-    if (DEBUG) {
-      let lazyInjections;
-      let validationCache = this.container.validationCache;
-      // Ensure that all lazy injections are valid at instantiation time
-      if (
-        !validationCache[this.fullName] &&
-        this.class &&
-        typeof this.class._lazyInjections === 'function'
-      ) {
-        lazyInjections = this.class._lazyInjections();
-        lazyInjections = this.container.registry.normalizeInjectionsHash(lazyInjections);
-
-        this.container.registry.validateInjections(lazyInjections);
-      }
-
-      validationCache[this.fullName] = true;
-
-      assert(
-        `Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or an invalid module export.`,
-        typeof this.class.create === 'function'
-      );
-    }
-
-    return this.class.create(props);
   }
 }
