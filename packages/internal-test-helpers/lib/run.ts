@@ -6,6 +6,7 @@ import {
   next,
   run,
 } from '@ember/runloop';
+import { destroy } from '@glimmer/destroyable';
 
 import { Promise } from 'rsvp';
 
@@ -15,7 +16,7 @@ export function runAppend(view: any): void {
 
 export function runDestroy(toDestroy: any): void {
   if (toDestroy) {
-    run(toDestroy, 'destroy');
+    run(destroy, toDestroy);
   }
 }
 

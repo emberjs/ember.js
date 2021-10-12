@@ -1,8 +1,22 @@
+/* globals URLSearchParams */
+import { DEBUG } from '@glimmer/env';
 import { isEnabled } from '@ember/canary-features';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import { setContext, unsetContext } from './test-context';
 import { all } from 'rsvp';
+import { enableDestroyableTracking, assertDestroyablesDestroyed } from '@glimmer/destroyable';
+
+const ASSERT_DESTROYABLES = (() => {
+  if (typeof URLSearchParams === 'undefined' || typeof document !== 'object') {
+    return false;
+  }
+
+  let queryParams = new URLSearchParams(document.location.search.substring(1));
+  let assertDestroyables = queryParams.get('assertDestroyables');
+
+  return assertDestroyables !== null;
+})();
 
 export default function moduleFor(description, TestClass, ...mixins) {
   QUnit.module(description, function (hooks) {
@@ -10,8 +24,20 @@ export default function moduleFor(description, TestClass, ...mixins) {
   });
 }
 
+function afterEachFinally() {
+  unsetContext();
+
+  if (DEBUG && ASSERT_DESTROYABLES) {
+    assertDestroyablesDestroyed();
+  }
+}
+
 export function setupTestClass(hooks, TestClass, ...mixins) {
   hooks.beforeEach(function (assert) {
+    if (DEBUG && ASSERT_DESTROYABLES) {
+      enableDestroyableTracking();
+    }
+
     let instance = new TestClass(assert);
     this.instance = instance;
 
@@ -41,10 +67,10 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
     // promise when it is not needed
     let filteredPromises = promises.filter(Boolean);
     if (filteredPromises.length > 0) {
-      return all(filteredPromises).finally(() => unsetContext());
+      return all(filteredPromises).finally(afterEachFinally);
     }
 
-    unsetContext();
+    afterEachFinally();
   });
 
   if (mixins.length > 0) {
