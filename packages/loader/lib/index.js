@@ -1,5 +1,6 @@
 /* eslint-disable no-var */
 /* globals global globalThis self */
+/* eslint-disable-next-line no-unused-vars */
 var define, require;
 
 (function () {
