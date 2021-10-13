@@ -87,7 +87,7 @@
     "@glimmer/owner": "0.80.0",
     "@glimmer/program": "0.80.0",
     "@glimmer/reference": "0.82.0",
-    "@glimmer/runtime": "0.80.0",
+    "@glimmer/runtime": "0.82.0",
     "@glimmer/validator": "0.80.0",
     "@simple-dom/document": "^1.4.0",
     "@types/qunit": "^2.11.1",
