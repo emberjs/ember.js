@@ -43,8 +43,13 @@ jobs:
         run: |
           git config --local user.email 'tomster@emberjs.com'
           git config --local user.name 'Ember.js Alpha Releaser'
+      - name: Find next alpha
+        run: |
+          LATEST_ALPHA=`npm view ember-source dist-tags.alpha`
+          export NEXT_ALPHA=`node bin/next-alpha-version.js ${LATEST_ALPHA}`
+          echo "NEXT_ALPHA=$NEXT_ALPHA" >> $GITHUB_ENV
       - name: tag the next alpha
-        run: npm version prerelease --preid alpha
+        run: npm version ${{env.NEXT_ALPHA}} --allow-same-version
       - name: build for publish
         env:
           BUILD_TYPE: alpha
@@ -54,5 +59,6 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      - name: push branch + tag
-        run: git push https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_TOKEN }}@github.com/${GITHUB_REPOSITORY} HEAD --follow-tags
+      - name: push tag
+        # Push in a way that will NOT trigger other workflows
+        run: git push origin v${{env.NEXT_ALPHA}}
