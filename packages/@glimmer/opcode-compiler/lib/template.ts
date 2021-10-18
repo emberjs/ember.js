@@ -104,10 +104,9 @@ class TemplateImpl implements TemplateWithIdAndReferrer {
   readonly result = 'ok';
 
   private layout: Option<CompilableProgram> = null;
-  private partial: Option<CompilableProgram> = null;
   private wrappedLayout: Option<CompilableProgram> = null;
 
-  constructor(private parsedLayout: Omit<LayoutWithContext, 'asPartial'>) {}
+  constructor(private parsedLayout: LayoutWithContext) {}
 
   get moduleName() {
     return this.parsedLayout.moduleName;
@@ -128,30 +127,13 @@ class TemplateImpl implements TemplateWithIdAndReferrer {
 
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
-    return (this.layout = compilable(
-      assign({}, this.parsedLayout, {
-        asPartial: false,
-      }),
-      this.moduleName
-    ));
-  }
-
-  asPartial(): CompilableProgram {
-    if (this.partial) return this.partial;
-    return (this.partial = compilable(
-      assign({}, this.parsedLayout, {
-        asPartial: true,
-      }),
-      this.moduleName
-    ));
+    return (this.layout = compilable(assign({}, this.parsedLayout), this.moduleName));
   }
 
   asWrappedLayout(): CompilableProgram {
     if (this.wrappedLayout) return this.wrappedLayout;
     return (this.wrappedLayout = new WrappedBuilder(
-      assign({}, this.parsedLayout, {
-        asPartial: false,
-      }),
+      assign({}, this.parsedLayout),
       this.moduleName
     ));
   }
