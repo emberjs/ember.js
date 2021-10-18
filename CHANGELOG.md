@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.24.6 (October 18, 2021)
+
+- [glimmerjs/glimmer-vm#1347](https://github.com/glimmerjs/glimmer-vm/pull/1347) Avoid using a nested WeakMap for manager instances for a given owner (makes memory leak debugging easier)
+
 ### v3.24.5 (August 9, 2021)
 
 - [#19685](https://github.com/emberjs/ember.js/pull/19685) Fix memory leak with `RouterService` under Chrome
