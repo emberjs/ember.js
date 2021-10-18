@@ -99,13 +99,9 @@ export function encodeOp(
           freeVar
         ];
 
-        if (meta.asPartial === true) {
-          encoder.push(constants, Op.ResolveMaybeLocal, name);
-        } else {
-          let then = op[2];
+        let andThen = op[2];
 
-          then(name, meta.moduleName);
-        }
+        andThen(name, meta.moduleName);
 
         break;
 

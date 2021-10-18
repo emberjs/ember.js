@@ -110,7 +110,6 @@ export function compileStd(context: CompileTimeCompilationContext): StdLib {
 }
 
 const STDLIB_META = {
-  asPartial: false,
   evalSymbols: null,
   upvars: null,
   moduleName: 'stdlib',

@@ -19,7 +19,6 @@ export interface LayoutWithContext {
   readonly owner: Owner | null;
   readonly scope: (() => unknown[]) | undefined | null;
   readonly isStrictMode: boolean;
-  readonly asPartial: boolean;
 }
 
 export interface BlockWithContext {
@@ -40,7 +39,6 @@ export interface TemplateOk {
 
   // internal casts, these are lazily created and cached
   asLayout(): CompilableProgram;
-  asPartial(): CompilableProgram;
   asWrappedLayout(): CompilableProgram;
 }
 
@@ -95,7 +93,6 @@ export interface NamedBlocks {
 }
 
 export interface ContainingMetadata {
-  asPartial: boolean;
   evalSymbols: Option<string[]>;
   upvars: Option<string[]>;
   scopeValues: unknown[] | null;
