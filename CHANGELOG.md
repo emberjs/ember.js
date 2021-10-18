@@ -81,6 +81,10 @@
 
 - [glimmerjs/glimmer-vm#1351](https://github.com/glimmerjs/glimmer-vm/pull/1351) Support lexical scope in loose mode
 
+### v3.24.6 (October 18, 2021)
+
+- [glimmerjs/glimmer-vm#1347](https://github.com/glimmerjs/glimmer-vm/pull/1347) Avoid using a nested WeakMap for manager instances for a given owner (makes memory leak debugging easier)
+
 ## v3.28.1 (August 30, 2021)
 
 - [#19733](https://github.com/emberjs/ember.js/pull/19733) [BUGFIX] Ensure that using `routerService.urlFor(...)` and `routerService.recognize(...)` does not error if the router is not fully initialized
