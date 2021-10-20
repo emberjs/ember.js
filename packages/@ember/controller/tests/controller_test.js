@@ -64,7 +64,7 @@ moduleFor(
 
       await this.visit('/');
       runTask(() => this.$('button').click());
-      assert.equal(observerRunCount, 1, 'observer ran exactly once');
+      assert.strictEqual(observerRunCount, 1, 'observer ran exactly once');
     }
   }
 );
@@ -124,7 +124,7 @@ moduleFor(
             assert.ok(true, 'foo');
           },
           bar(msg) {
-            assert.equal(msg, 'HELLO');
+            assert.strictEqual(msg, 'HELLO');
           },
         },
       });
@@ -132,7 +132,7 @@ moduleFor(
       let BarControllerMixin = Mixin.create({
         actions: {
           bar(msg) {
-            assert.equal(msg, 'HELLO');
+            assert.strictEqual(msg, 'HELLO');
             this._super(msg);
           },
         },
@@ -188,7 +188,7 @@ moduleFor(
       });
 
       assert.notEqual(controller.get('model'), 'foo-bar', 'model is set properly');
-      assert.equal(controller.get('content'), 'foo-bar', 'content is not set properly');
+      assert.strictEqual(controller.get('content'), 'foo-bar', 'content is not set properly');
     }
 
     ['@test specifying `content` (without `model` specified) does not result in deprecation'](
@@ -201,7 +201,7 @@ moduleFor(
         content: 'foo-bar',
       }).create();
 
-      assert.equal(get(controller, 'content'), 'foo-bar');
+      assert.strictEqual(get(controller, 'content'), 'foo-bar');
     }
 
     ['@test specifying `content` (with `model` specified) does not result in deprecation'](assert) {
@@ -213,8 +213,8 @@ moduleFor(
         model: 'blammo',
       });
 
-      assert.equal(get(controller, 'content'), 'foo-bar');
-      assert.equal(get(controller, 'model'), 'blammo');
+      assert.strictEqual(get(controller, 'content'), 'foo-bar');
+      assert.strictEqual(get(controller, 'model'), 'blammo');
     }
   }
 );
@@ -252,7 +252,7 @@ moduleFor(
       let postController = owner.lookup('controller:post');
       let postsController = owner.lookup('controller:posts');
 
-      assert.equal(
+      assert.strictEqual(
         postsController,
         postController.get('postsController'),
         'controller.posts is injected'
@@ -274,7 +274,7 @@ moduleFor(
       let appController = owner.lookup('controller:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appController.get('authService'), 'service.auth is injected');
+      assert.strictEqual(authService, appController.get('authService'), 'service.auth is injected');
     }
   }
 );

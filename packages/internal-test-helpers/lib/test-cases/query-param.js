@@ -21,7 +21,11 @@ export default class QueryParamTestCase extends ApplicationTestCase {
           }
 
           if (testCase.expectedPushURL) {
-            testCase.assert.equal(path, testCase.expectedPushURL, 'an expected pushState occurred');
+            testCase.assert.strictEqual(
+              path,
+              testCase.expectedPushURL,
+              'an expected pushState occurred'
+            );
             testCase.expectedPushURL = null;
           }
 
@@ -34,7 +38,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
           }
 
           if (testCase.expectedReplaceURL) {
-            testCase.assert.equal(
+            testCase.assert.strictEqual(
               path,
               testCase.expectedReplaceURL,
               'an expected replaceState occurred'
@@ -79,7 +83,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
   }
 
   assertCurrentPath(path, message = `current path equals '${path}'`) {
-    this.assert.equal(this.appRouter.get('location.path'), path, message);
+    this.assert.strictEqual(this.appRouter.get('location.path'), path, message);
   }
 
   /**

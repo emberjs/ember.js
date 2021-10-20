@@ -55,7 +55,11 @@ moduleFor(
       appInstance = run(() => ApplicationInstance.create({ application }));
 
       assert.ok(appInstance, 'instance should be created');
-      assert.equal(appInstance.application, application, 'application should be set to parent');
+      assert.strictEqual(
+        appInstance.application,
+        application,
+        'application should be set to parent'
+      );
     }
 
     ['@test customEvents added to the application before setupEventDispatcher'](assert) {
@@ -70,7 +74,7 @@ moduleFor(
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
       eventDispatcher.setup = function (events) {
-        assert.equal(events.awesome, 'sauce');
+        assert.strictEqual(events.awesome, 'sauce');
       };
 
       appInstance.setupEventDispatcher();
@@ -88,7 +92,7 @@ moduleFor(
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
       eventDispatcher.setup = function (events) {
-        assert.equal(events.awesome, 'sauce');
+        assert.strictEqual(events.awesome, 'sauce');
       };
 
       appInstance.setupEventDispatcher();
@@ -107,7 +111,7 @@ moduleFor(
       let postController1 = appInstance.lookup('controller:post');
       let postController1Factory = appInstance.factoryFor('controller:post');
       assert.ok(postController1 instanceof PostController1, 'precond - lookup creates instance');
-      assert.equal(
+      assert.strictEqual(
         PostController1,
         postController1Factory.class,
         'precond - factoryFor().class matches'
@@ -119,7 +123,11 @@ moduleFor(
       let postController2 = appInstance.lookup('controller:post');
       let postController2Factory = appInstance.factoryFor('controller:post');
       assert.ok(postController2 instanceof PostController2, 'lookup creates instance');
-      assert.equal(PostController2, postController2Factory.class, 'factoryFor().class matches');
+      assert.strictEqual(
+        PostController2,
+        postController2Factory.class,
+        'factoryFor().class matches'
+      );
 
       assert.notStrictEqual(
         postController1,
@@ -217,7 +225,7 @@ moduleFor(
 
       ApplicationInstance.setupRegistry(registry);
 
-      assert.equal(registry.resolve('service:-document'), document);
+      assert.strictEqual(registry.resolve('service:-document'), document);
     }
   }
 );

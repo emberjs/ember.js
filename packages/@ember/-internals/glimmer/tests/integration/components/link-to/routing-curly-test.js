@@ -31,7 +31,11 @@ function shouldBeActive(assert, element) {
 
 function checkActive(assert, element, active) {
   let classList = element.attr('class');
-  assert.equal(classList.indexOf('active') > -1, active, `${element} active should be ${active}`);
+  assert.strictEqual(
+    classList.indexOf('active') > -1,
+    active,
+    `${element} active should be ${active}`
+  );
 }
 
 moduleFor(
@@ -65,13 +69,13 @@ moduleFor(
     async ['@test it navigates into the named route'](assert) {
       await this.visit('/');
 
-      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.strictEqual(
         this.$('#self-link a.active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a:not(.active)').length,
         1,
         'The other link was rendered without active class'
@@ -79,13 +83,13 @@ moduleFor(
 
       await this.click('#about-link > a');
 
-      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.about').length, 1, 'The about template was rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#home-link > a:not(.active)').length,
         1,
         'The other link was rendered without active class'
@@ -106,13 +110,13 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.about').length, 1, 'The about template was rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#home-link > a:not(.active)').length,
         1,
         'The other link was rendered without active class'
@@ -120,13 +124,13 @@ moduleFor(
 
       await this.click('#inside');
 
-      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a:not(.active)').length,
         1,
         'The other link was rendered without active class'
@@ -181,12 +185,12 @@ moduleFor(
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-static > a.disabled').length,
         1,
         'The static link is disabled when its disabledWhen is true'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-dynamic > a.disabled').length,
         1,
         'The dynamic link is disabled when its disabledWhen is true'
@@ -198,7 +202,7 @@ moduleFor(
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-static > a.disabled').length,
         1,
         'The static link is disabled when its disabledWhen is true'
@@ -235,12 +239,12 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-static > a.disabled').length,
         1,
         'The static link is disabled when its disabled is true'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-dynamic > a.disabled').length,
         1,
         'The dynamic link is disabled when its disabled is true'
@@ -248,7 +252,7 @@ moduleFor(
 
       runTask(() => controller.set('dynamicDisabled', false));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-static > a.disabled').length,
         1,
         'The static link is disabled when its disabledWhen is true'
@@ -299,7 +303,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-static > a.do-not-want').length,
         1,
         'The static link is disabled when its disabled is true'
@@ -322,7 +326,7 @@ moduleFor(
 
       runTask(() => controller.set('dynamicDisabled', false));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link-static > a.do-not-want').length,
         1,
         'The static link is disabled when its disabled is true'
@@ -366,7 +370,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a.do-not-want').length,
         1,
         'The link can apply a custom disabled class via bound param'
@@ -379,7 +383,7 @@ moduleFor(
 
       runTask(() => controller.set('disabledClass', 'can-not-use'));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a.can-not-use').length,
         1,
         'The link can apply a custom disabled class via bound param'
@@ -460,7 +464,7 @@ moduleFor(
 
       await this.click('#about-link > a');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('h3.about').length,
         1,
         'Transitioning did occur when disabledWhen became false'
@@ -479,13 +483,13 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.strictEqual(
         this.$('#self-link > a.zomg-active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a:not(.zomg-active)').length,
         1,
         'The other link was rendered without active class'
@@ -528,13 +532,13 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.strictEqual(
         this.$('#self-link > a.zomg-active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a:not(.zomg-active)').length,
         1,
         'The other link was rendered without active class'
@@ -552,12 +556,12 @@ moduleFor(
 
       runTask(() => controller.set('activeClass', 'wow-active'));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#self-link > a.wow-active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a:not(.wow-active)').length,
         1,
         'The other link was rendered without active class'
@@ -678,26 +682,30 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(
+        this.$('#application-layout').length,
+        1,
+        'The application layout was rendered'
+      );
       assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
-      assert.equal(
+      assert.strictEqual(
         this.$('#application-link > a.active').length,
         1,
         'The application link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#engine-link > a:not(.active)').length,
         1,
         'The engine link is not active'
       );
 
-      assert.equal(this.$('h3.home').length, 1, 'The application index page is rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.home').length, 1, 'The application index page is rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The application index link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a:not(.active)').length,
         1,
         'The application about link is not active'
@@ -705,26 +713,30 @@ moduleFor(
 
       await this.click('#about-link > a');
 
-      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(
+        this.$('#application-layout').length,
+        1,
+        'The application layout was rendered'
+      );
       assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
-      assert.equal(
+      assert.strictEqual(
         this.$('#application-link > a.active').length,
         1,
         'The application link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#engine-link > a:not(.active)').length,
         1,
         'The engine link is not active'
       );
 
-      assert.equal(this.$('h3.about').length, 1, 'The application about page is rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.about').length, 1, 'The application about page is rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The application about link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#home-link > a:not(.active)').length,
         1,
         'The application home link is not active'
@@ -732,27 +744,31 @@ moduleFor(
 
       await this.click('#engine-link > a');
 
-      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
-      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
-      assert.equal(
+      assert.strictEqual(
+        this.$('#application-layout').length,
+        1,
+        'The application layout was rendered'
+      );
+      assert.strictEqual(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.strictEqual(
         this.$('#application-link > a.active').length,
         1,
         'The application link is active'
       );
-      assert.equal(this.$('#engine-link > a.active').length, 1, 'The engine link is active');
-      assert.equal(
+      assert.strictEqual(this.$('#engine-link > a.active').length, 1, 'The engine link is active');
+      assert.strictEqual(
         this.$('#engine-application-link > a.active').length,
         1,
         'The engine application link is active'
       );
 
-      assert.equal(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
+      assert.strictEqual(
         this.$('#engine-self-link > a.active').length,
         1,
         'The engine index link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#engine-about-link > a:not(.active)').length,
         1,
         'The engine about link is not active'
@@ -760,27 +776,31 @@ moduleFor(
 
       await this.click('#engine-about-link > a');
 
-      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
-      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
-      assert.equal(
+      assert.strictEqual(
+        this.$('#application-layout').length,
+        1,
+        'The application layout was rendered'
+      );
+      assert.strictEqual(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.strictEqual(
         this.$('#application-link > a.active').length,
         1,
         'The application link is active'
       );
-      assert.equal(this.$('#engine-link > a.active').length, 1, 'The engine link is active');
-      assert.equal(
+      assert.strictEqual(this.$('#engine-link > a.active').length, 1, 'The engine link is active');
+      assert.strictEqual(
         this.$('#engine-application-link > a.active').length,
         1,
         'The engine application link is active'
       );
 
-      assert.equal(this.$('h3.engine-about').length, 1, 'The engine about page is rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.engine-about').length, 1, 'The engine about page is rendered');
+      assert.strictEqual(
         this.$('#engine-self-link > a.active').length,
         1,
         'The engine about link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#engine-home-link > a:not(.active)').length,
         1,
         'The engine home link is not active'
@@ -788,27 +808,31 @@ moduleFor(
 
       await this.click('#engine-application-link > a');
 
-      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
-      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
-      assert.equal(
+      assert.strictEqual(
+        this.$('#application-layout').length,
+        1,
+        'The application layout was rendered'
+      );
+      assert.strictEqual(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.strictEqual(
         this.$('#application-link > a.active').length,
         1,
         'The application link is active'
       );
-      assert.equal(this.$('#engine-link > a.active').length, 1, 'The engine link is active');
-      assert.equal(
+      assert.strictEqual(this.$('#engine-link > a.active').length, 1, 'The engine link is active');
+      assert.strictEqual(
         this.$('#engine-application-link > a.active').length,
         1,
         'The engine application link is active'
       );
 
-      assert.equal(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
+      assert.strictEqual(
         this.$('#engine-self-link > a.active').length,
         1,
         'The engine index link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#engine-about-link > a:not(.active)').length,
         1,
         'The engine about link is not active'
@@ -816,26 +840,30 @@ moduleFor(
 
       await this.click('#application-link > a');
 
-      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(
+        this.$('#application-layout').length,
+        1,
+        'The application layout was rendered'
+      );
       assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
-      assert.equal(
+      assert.strictEqual(
         this.$('#application-link > a.active').length,
         1,
         'The application link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#engine-link > a:not(.active)').length,
         1,
         'The engine link is not active'
       );
 
-      assert.equal(this.$('h3.home').length, 1, 'The application index page is rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.home').length, 1, 'The application index page is rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The application index link is active'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#about-link > a:not(.active)').length,
         1,
         'The application about link is not active'
@@ -1060,12 +1088,20 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         subscribe('interaction.link-to', {
           before(name, timestamp, { routeName }) {
             before++;
-            assert.equal(routeName, 'about', 'instrumentation subscriber was passed route name');
+            assert.strictEqual(
+              routeName,
+              'about',
+              'instrumentation subscriber was passed route name'
+            );
           },
           after(name, timestamp, { routeName, transition }) {
             after++;
-            assert.equal(routeName, 'about', 'instrumentation subscriber was passed route name');
-            assert.equal(
+            assert.strictEqual(
+              routeName,
+              'about',
+              'instrumentation subscriber was passed route name'
+            );
+            assert.strictEqual(
               transition.targetName,
               'about',
               'instrumentation subscriber was passed transition object in the after hook'
@@ -1104,7 +1140,7 @@ moduleFor(
 
       await this.visit('/about/item');
 
-      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+      assert.strictEqual(normalizeUrl(this.$('#item a').attr('href')), '/about');
     }
 
     async [`@test it supports custom, nested, current-when`](assert) {
@@ -1124,7 +1160,7 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#other-link > a.active').length,
         1,
         'The link is active since current-when is a parent route'
@@ -1152,7 +1188,7 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#other-link > a.active').length,
         1,
         'The link is active when current-when is given for explicitly for a route'
@@ -1185,7 +1221,7 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#other-link > a.active').length,
         1,
         'The link is active when current-when is given for explicitly for a route'
@@ -1217,7 +1253,7 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#link1 > a.active').length,
         1,
         'The link is active since current-when contains the parent route'
@@ -1225,7 +1261,7 @@ moduleFor(
 
       await this.visit('/item');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#link2 > a.active').length,
         1,
         'The link is active since you are on the active route'
@@ -1233,7 +1269,7 @@ moduleFor(
 
       await this.visit('/foo');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#link3 > a.active').length,
         0,
         'The link is not active since current-when does not contain the active route'
@@ -1323,9 +1359,9 @@ moduleFor(
 
       await this.click('#about-contact > a');
 
-      assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+      assert.strictEqual(this.$('#contact').text(), 'Contact', 'precond - the link worked');
 
-      assert.equal(hidden, 1, 'The link bubbles');
+      assert.strictEqual(hidden, 1, 'The link bubbles');
     }
 
     async [`@test [DEPRECATED] it supports bubbles=false`](assert) {
@@ -1386,7 +1422,7 @@ moduleFor(
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
-      assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+      assert.strictEqual(this.$('#contact').text(), 'Contact', 'precond - the link worked');
 
       assert.strictEqual(hidden, 0, "The link didn't bubble");
     }
@@ -1451,7 +1487,7 @@ moduleFor(
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
-      assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+      assert.strictEqual(this.$('#contact').text(), 'Contact', 'precond - the link worked');
       assert.strictEqual(hidden, 0, "The link didn't bubble");
     }
 
@@ -1510,8 +1546,8 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.list').length, 1, 'The home template was rendered');
+      assert.strictEqual(
         normalizeUrl(this.$('#home-link > a').attr('href')),
         '/',
         'The home link points back at /'
@@ -1519,21 +1555,21 @@ moduleFor(
 
       await this.click('#yehuda > a');
 
-      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-      assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
+      assert.strictEqual(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.strictEqual(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
 
       await this.click('#home-link > a');
 
       await this.click('#about-link > a');
 
-      assert.equal(normalizeUrl(this.$('li#yehuda > a').attr('href')), '/item/yehuda');
-      assert.equal(normalizeUrl(this.$('li#tom > a').attr('href')), '/item/tom');
-      assert.equal(normalizeUrl(this.$('li#erik > a').attr('href')), '/item/erik');
+      assert.strictEqual(normalizeUrl(this.$('li#yehuda > a').attr('href')), '/item/yehuda');
+      assert.strictEqual(normalizeUrl(this.$('li#tom > a').attr('href')), '/item/tom');
+      assert.strictEqual(normalizeUrl(this.$('li#erik > a').attr('href')), '/item/erik');
 
       await this.click('#erik > a');
 
-      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-      assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
+      assert.strictEqual(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.strictEqual(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
     }
 
     async [`@test [DEPRECATED] it binds some anchor html tag common attributes`](assert) {
@@ -1557,9 +1593,13 @@ moduleFor(
 
       let link = this.$('#self-link > a');
 
-      assert.equal(link.attr('title'), 'title-attr', 'The self-link contains title attribute');
-      assert.equal(link.attr('rel'), 'rel-attr', 'The self-link contains rel attribute');
-      assert.equal(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
+      assert.strictEqual(
+        link.attr('title'),
+        'title-attr',
+        'The self-link contains title attribute'
+      );
+      assert.strictEqual(link.attr('rel'), 'rel-attr', 'The self-link contains rel attribute');
+      assert.strictEqual(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
     }
 
     async [`@test [DEPRECATED] it supports 'target' attribute`](assert) {
@@ -1578,7 +1618,11 @@ moduleFor(
       );
 
       let link = this.$('#self-link > a');
-      assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+      assert.strictEqual(
+        link.attr('target'),
+        '_blank',
+        'The self-link contains `target` attribute'
+      );
     }
 
     async [`@test [DEPRECATED] it supports 'target' attribute specified as a bound param`](assert) {
@@ -1611,7 +1655,11 @@ moduleFor(
       );
 
       let link = this.$('#self-link > a');
-      assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+      assert.strictEqual(
+        link.attr('target'),
+        '_blank',
+        'The self-link contains `target` attribute'
+      );
 
       expectDeprecation(
         () => runTask(() => controller.set('boundLinkTarget', '_self')),
@@ -1619,7 +1667,7 @@ moduleFor(
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
 
-      assert.equal(link.attr('target'), '_self', 'The self-link contains `target` attribute');
+      assert.strictEqual(link.attr('target'), '_self', 'The self-link contains `target` attribute');
     }
 
     async [`@test it calls preventDefault`](assert) {
@@ -1831,11 +1879,11 @@ moduleFor(
 
       await this.visit('/filters/popular');
 
-      assert.equal(normalizeUrl(this.$('#link > a').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#path-link > a').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#post-path-link > a').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#post-number-link > a').attr('href')), '/post/123');
-      assert.equal(
+      assert.strictEqual(normalizeUrl(this.$('#link > a').attr('href')), '/filters/unpopular');
+      assert.strictEqual(normalizeUrl(this.$('#path-link > a').attr('href')), '/filters/unpopular');
+      assert.strictEqual(normalizeUrl(this.$('#post-path-link > a').attr('href')), '/post/123');
+      assert.strictEqual(normalizeUrl(this.$('#post-number-link > a').attr('href')), '/post/123');
+      assert.strictEqual(
         normalizeUrl(this.$('#repo-object-link > a').attr('href')),
         '/repo/ember/ember.js'
       );
@@ -1855,7 +1903,7 @@ moduleFor(
         'route:lobby.index',
         class extends Route {
           model(params) {
-            assert.equal(params.lobby_id, 'foobar');
+            assert.strictEqual(params.lobby_id, 'foobar');
             return params.lobby_id;
           }
         }
@@ -1906,8 +1954,8 @@ moduleFor(
       );
 
       let assertEquality = (href) => {
-        assert.equal(normalizeUrl(this.$('#string-link > a').attr('href')), '/');
-        assert.equal(normalizeUrl(this.$('#path-link > a').attr('href')), href);
+        assert.strictEqual(normalizeUrl(this.$('#string-link > a').attr('href')), '/');
+        assert.strictEqual(normalizeUrl(this.$('#path-link > a').attr('href')), href);
       };
 
       await this.visit('/');
@@ -1948,7 +1996,7 @@ moduleFor(
 
       runTask(() => controller.set('post', post));
 
-      assert.equal(
+      assert.strictEqual(
         normalizeUrl(this.$('#post > a').attr('href')),
         '/posts/1',
         'precond - Link has rendered href attr properly'
@@ -1956,7 +2004,7 @@ moduleFor(
 
       runTask(() => controller.set('post', secondPost));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#post > a').attr('href'),
         '/posts/2',
         'href attr was updated after one of the params had been changed'
@@ -1964,7 +2012,7 @@ moduleFor(
 
       runTask(() => controller.set('post', null));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#post > a').attr('href'),
         '#',
         'href attr becomes # when one of the arguments in nullified'
@@ -1991,13 +2039,29 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(this.$('#about-link > a.active').length, 1, 'The about route link is active');
-      assert.equal(this.$('#item-link > a.active').length, 0, 'The item route link is inactive');
+      assert.strictEqual(
+        this.$('#about-link > a.active').length,
+        1,
+        'The about route link is active'
+      );
+      assert.strictEqual(
+        this.$('#item-link > a.active').length,
+        0,
+        'The item route link is inactive'
+      );
 
       await this.visit('/about/item');
 
-      assert.equal(this.$('#about-link > a.active').length, 1, 'The about route link is active');
-      assert.equal(this.$('#item-link > a.active').length, 1, 'The item route link is active');
+      assert.strictEqual(
+        this.$('#about-link > a.active').length,
+        1,
+        'The about route link is active'
+      );
+      assert.strictEqual(
+        this.$('#item-link > a.active').length,
+        1,
+        'The item route link is active'
+      );
     }
 
     async [`@test it works in an #each'd array of string route names`](assert) {
@@ -2038,13 +2102,13 @@ moduleFor(
       );
 
       let linksEqual = (links, expected) => {
-        assert.equal(links.length, expected.length, 'Has correct number of links');
+        assert.strictEqual(links.length, expected.length, 'Has correct number of links');
 
         let idx;
         for (idx = 0; idx < links.length; idx++) {
           let href = this.$(links[idx]).attr('href');
           // Old IE includes the whole hostname as well
-          assert.equal(
+          assert.strictEqual(
             href.slice(-expected[idx].length),
             expected[idx],
             `Expected link to be '${expected[idx]}', but was '${href}'`
@@ -2098,13 +2162,13 @@ moduleFor(
 
       await this.click('#contact-link > a');
 
-      assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.contact').length, 1, 'The contact template was rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#home-link > a:not(.active)').length,
         1,
         'The other link was rendered without active class'
@@ -2156,7 +2220,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#contact-link > a').text(),
         'Jane',
         'The link title is correctly resolved'
@@ -2164,7 +2228,7 @@ moduleFor(
 
       runTask(() => controller.set('contactName', 'Joe'));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#contact-link > a').text(),
         'Joe',
         'The link title is correctly updated when the bound property changes'
@@ -2172,7 +2236,7 @@ moduleFor(
 
       runTask(() => controller.set('contactName', 'Robert'));
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#contact-link > a').text(),
         'Robert',
         'The link title is correctly updated when the bound property changes a second time'
@@ -2180,13 +2244,13 @@ moduleFor(
 
       await this.click('#contact-link > a');
 
-      assert.equal(this.$('h3.contact').length, 1, 'The contact template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.contact').length, 1, 'The contact template was rendered');
+      assert.strictEqual(
         this.$('#self-link > a.active').length,
         1,
         'The self-link was rendered with active class'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('#home-link > a:not(.active)').length,
         1,
         'The other link was rendered without active class'
@@ -2194,8 +2258,8 @@ moduleFor(
 
       await this.click('#home-link > a');
 
-      assert.equal(this.$('h3.home').length, 1, 'The index template was rendered');
-      assert.equal(
+      assert.strictEqual(this.$('h3.home').length, 1, 'The index template was rendered');
+      assert.strictEqual(
         this.$('#contact-link > a').text(),
         'Robert',
         'The link title is correctly updated when the route changes'
@@ -2251,14 +2315,14 @@ moduleFor(
 
       await this.click('#yehuda > a');
 
-      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-      assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
+      assert.strictEqual(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.strictEqual(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
 
       await this.click('#home-link > a');
 
-      assert.equal(normalizeUrl(this.$('li#yehuda > a').attr('href')), '/item/yehuda');
-      assert.equal(normalizeUrl(this.$('li#tom > a').attr('href')), '/item/tom');
-      assert.equal(normalizeUrl(this.$('li#erik > a').attr('href')), '/item/erik');
+      assert.strictEqual(normalizeUrl(this.$('li#yehuda > a').attr('href')), '/item/yehuda');
+      assert.strictEqual(normalizeUrl(this.$('li#tom > a').attr('href')), '/item/tom');
+      assert.strictEqual(normalizeUrl(this.$('li#erik > a').attr('href')), '/item/erik');
     }
 
     async [`@test [DEPRECATED] The non-block form {{link-to}} performs property lookup`](assert) {
@@ -2293,8 +2357,8 @@ moduleFor(
       await this.visit('/');
 
       let assertEquality = (href) => {
-        assert.equal(normalizeUrl(this.$('#string-link > a').attr('href')), '/');
-        assert.equal(normalizeUrl(this.$('#path-link > a').attr('href')), href);
+        assert.strictEqual(normalizeUrl(this.$('#string-link > a').attr('href')), '/');
+        assert.strictEqual(normalizeUrl(this.$('#path-link > a').attr('href')), href);
       };
 
       assertEquality('/');
@@ -2325,11 +2389,11 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(this.$('#link > a').text(), 'blahzorz');
+      assert.strictEqual(this.$('#link > a').text(), 'blahzorz');
 
       runTask(() => controller.set('display', '<b>BLAMMO</b>'));
 
-      assert.equal(this.$('#link > a').text(), '<b>BLAMMO</b>');
+      assert.strictEqual(this.$('#link > a').text(), '<b>BLAMMO</b>');
       assert.strictEqual(this.$('b').length, 0);
     }
 
@@ -2447,7 +2511,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(this.$('#the-link > a').attr('href'), '/', 'link has right href');
+      assert.strictEqual(this.$('#the-link > a').attr('href'), '/', 'link has right href');
     }
 
     async [`@test it populates href with default query param values with empty query-params object`](
@@ -2468,7 +2532,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(this.$('#the-link > a').attr('href'), '/', 'link has right href');
+      assert.strictEqual(this.$('#the-link > a').attr('href'), '/', 'link has right href');
     }
 
     async [`@test it updates when route changes with only query-params and a block`](assert) {
@@ -2492,7 +2556,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#the-link > a').attr('href'),
         '/?bar=NAW&foo=456',
         'link has right href'
@@ -2500,7 +2564,7 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#the-link > a').attr('href'),
         '/about?bar=NAW&foo=456',
         'link has right href'
@@ -2532,7 +2596,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#the-link > a').attr('href'),
         '/?bar=NAW&foo=456',
         'link has right href'
@@ -2540,7 +2604,7 @@ moduleFor(
 
       await this.visit('/about');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#the-link > a').attr('href'),
         '/about?bar=NAW&foo=456',
         'link has right href'
@@ -2618,14 +2682,14 @@ moduleFor(
 
       let link = this.$('#dynamic-link > a');
 
-      assert.equal(link.attr('href'), '/foo/one/two');
+      assert.strictEqual(link.attr('href'), '/foo/one/two');
 
       expectDeprecation(
         () => runTask(() => controller.set('dynamicLinkParams', ['bar', 'one', 'two', 'three'])),
         /Invoking the `<LinkTo>` component with positional arguments is deprecated/
       );
 
-      assert.equal(link.attr('href'), '/bar/one/two/three');
+      assert.strictEqual(link.attr('href'), '/bar/one/two/three');
     }
 
     async [`@test [GH#13256]: {{link-to}} to a parent root model hook which performs a 'transitionTo' has correct active class`](
@@ -2721,10 +2785,14 @@ moduleFor(
 
       function assertLinkStatus(link, url) {
         if (url) {
-          assert.equal(normalizeUrl(link.attr('href')), url, 'loaded link-to has expected href');
+          assert.strictEqual(
+            normalizeUrl(link.attr('href')),
+            url,
+            'loaded link-to has expected href'
+          );
           assert.ok(!link.hasClass('i-am-loading'), 'loaded linkComponent has no loadingClass');
         } else {
-          assert.equal(normalizeUrl(link.attr('href')), '#', "unloaded link-to has href='#'");
+          assert.strictEqual(normalizeUrl(link.attr('href')), '#', "unloaded link-to has href='#'");
           assert.ok(link.hasClass('i-am-loading'), 'loading linkComponent has loadingClass');
         }
       }
@@ -2767,7 +2835,7 @@ moduleFor(
       // Click the now-active link
       await this.click(staticLink[0]);
 
-      assert.equal(activate, 1, 'About route was entered');
+      assert.strictEqual(activate, 1, 'About route was entered');
     }
   }
 );
@@ -2776,7 +2844,7 @@ function assertNav(options, callback, assert) {
   let nav = false;
 
   function check(event) {
-    assert.equal(
+    assert.strictEqual(
       event.defaultPrevented,
       options.prevented,
       `expected defaultPrevented=${options.prevented}`

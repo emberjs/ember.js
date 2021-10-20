@@ -58,28 +58,28 @@ moduleFor(
       assert
     ) {
       let { indexController, applicationController } = this;
-      assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
+      assert.strictEqual(indexController.get('selectedMenuItem'), this.menuItem);
+      assert.strictEqual(applicationController.get('selectedMenuItem'), this.menuItem);
 
       this.application.reset();
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      assert.strictEqual(indexController.get('selectedMenuItem'), null);
+      assert.strictEqual(applicationController.get('selectedMenuItem'), null);
     }
 
     [`@test Destroying the application resets the router before the appInstance is destroyed`](
       assert
     ) {
       let { indexController, applicationController } = this;
-      assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
+      assert.strictEqual(indexController.get('selectedMenuItem'), this.menuItem);
+      assert.strictEqual(applicationController.get('selectedMenuItem'), this.menuItem);
 
       runTask(() => {
         this.application.destroy();
       });
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      assert.strictEqual(indexController.get('selectedMenuItem'), null);
+      assert.strictEqual(applicationController.get('selectedMenuItem'), null);
     }
   }
 );
@@ -111,13 +111,13 @@ moduleFor(
       let route = this.applicationInstance.lookup('route:index');
 
       runTask(() => router.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+      assert.strictEqual(router._toplevelView, null, 'the toplevelView was cleared');
 
       runTask(() => route.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+      assert.strictEqual(router._toplevelView, null, 'the toplevelView was not reinitialized');
 
       runTask(() => this.application.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+      assert.strictEqual(router._toplevelView, null, 'the toplevelView was not reinitialized');
     }
 
     [`@test initializers can augment an applications customEvents hash`](assert) {

@@ -128,7 +128,7 @@ module('@ember/test-helpers emulation test', function () {
       test('it basically works', async function (assert) {
         await render(compile('Hi!'), this);
 
-        assert.equal(this.element.textContent, 'Hi!');
+        assert.strictEqual(this.element.textContent, 'Hi!');
       });
     });
   });

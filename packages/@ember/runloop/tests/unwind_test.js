@@ -24,7 +24,7 @@ moduleFor(
       // tasks into the already-dead runloop, which will never get
       // flushed. I can't easily demonstrate this in a unit test because
       // autorun explicitly doesn't work in test mode. - ef4
-      assert.equal(
+      assert.strictEqual(
         _getCurrentRunLoop(),
         initialRunLoop,
         'Previous run loop should be cleaned up despite exception'
@@ -44,7 +44,7 @@ moduleFor(
         'boom!'
       );
 
-      assert.equal(
+      assert.strictEqual(
         _getCurrentRunLoop(),
         initialRunLoop,
         'Previous run loop should be cleaned up despite exception'

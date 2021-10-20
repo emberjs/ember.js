@@ -8,10 +8,10 @@ moduleFor(
       let MixinA = Mixin.create();
       let obj = {};
 
-      assert.equal(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
+      assert.strictEqual(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
 
       MixinA.apply(obj);
-      assert.equal(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
+      assert.strictEqual(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
     }
 
     ['@test detect() finds nested mixins'](assert) {
@@ -19,22 +19,22 @@ moduleFor(
       let MixinB = Mixin.create(MixinA);
       let obj = {};
 
-      assert.equal(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
+      assert.strictEqual(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
 
       MixinB.apply(obj);
-      assert.equal(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
+      assert.strictEqual(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
     }
 
     ['@test detect() finds mixins on other mixins'](assert) {
       let MixinA = Mixin.create({});
       let MixinB = Mixin.create(MixinA);
-      assert.equal(MixinA.detect(MixinB), true, 'MixinA is part of MixinB');
-      assert.equal(MixinB.detect(MixinA), false, 'MixinB is not part of MixinA');
+      assert.strictEqual(MixinA.detect(MixinB), true, 'MixinA is part of MixinB');
+      assert.strictEqual(MixinB.detect(MixinA), false, 'MixinB is not part of MixinA');
     }
 
     ['@test detect handles null values'](assert) {
       let MixinA = Mixin.create();
-      assert.equal(MixinA.detect(null), false);
+      assert.strictEqual(MixinA.detect(null), false);
     }
   }
 );

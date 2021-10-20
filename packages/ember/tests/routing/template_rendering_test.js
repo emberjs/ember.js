@@ -82,7 +82,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
+        assert.strictEqual(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
       });
     }
 
@@ -140,7 +140,7 @@ moduleFor(
       return this.visit('/top/middle/bottom').then(() => {
         assert.ok(true, '/top/middle/bottom has been handled');
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
+        assert.strictEqual(
           getTextOf(rootElement.querySelector('.main .middle .bottom p')),
           'BarBazBottom!',
           'The templates were rendered into their appropriate parents'
@@ -166,7 +166,7 @@ moduleFor(
       return this.visit('/top/middle/bottom').then(() => {
         assert.ok(true, '/top/middle/bottom has been handled');
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
+        assert.strictEqual(
           getTextOf(rootElement.querySelector('.main .middle .bottom p')),
           'Bottom!',
           'The templates were rendered into their appropriate parents'
@@ -193,7 +193,7 @@ moduleFor(
       return this.visit('/posts').then(() => {
         assert.ok(true, '/posts has been handled');
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(getTextOf(rootElement.querySelector('h3.render-once')), 'I render once');
+        assert.strictEqual(getTextOf(rootElement.querySelector('h3.render-once')), 'I render once');
       });
     }
 
@@ -221,7 +221,7 @@ moduleFor(
 
       return this.visit('/posts').then(() => {
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(rootElement.textContent.trim(), 'App posts');
+        assert.strictEqual(rootElement.textContent.trim(), 'App posts');
       });
     }
 
@@ -256,20 +256,20 @@ moduleFor(
       await this.visit('/page/first');
 
       assert.ok(true, '/page/first has been handled');
-      assert.equal(getTextOf(rootElement.querySelector('p')), 'first');
-      assert.equal(insertionCount, 1);
+      assert.strictEqual(getTextOf(rootElement.querySelector('p')), 'first');
+      assert.strictEqual(insertionCount, 1);
 
       await this.visit('/page/second');
 
       assert.ok(true, '/page/second has been handled');
-      assert.equal(getTextOf(rootElement.querySelector('p')), 'second');
-      assert.equal(insertionCount, 1, 'view should have inserted only once');
+      assert.strictEqual(getTextOf(rootElement.querySelector('p')), 'second');
+      assert.strictEqual(insertionCount, 1, 'view should have inserted only once');
       let router = this.applicationInstance.lookup('router:main');
 
       await run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
 
-      assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
-      assert.equal(insertionCount, 1, 'view should still have inserted only once');
+      assert.strictEqual(getTextOf(rootElement.querySelector('p')), 'third');
+      assert.strictEqual(insertionCount, 1, 'view should still have inserted only once');
     }
 
     ['@test {{outlet}} works when created after initial render'](assert) {
@@ -287,15 +287,15 @@ moduleFor(
       return this.visit('/')
         .then(() => {
           rootElement = document.getElementById('qunit-fixture');
-          assert.equal(rootElement.textContent.trim(), 'HiBye', 'initial render');
+          assert.strictEqual(rootElement.textContent.trim(), 'HiBye', 'initial render');
 
           run(() => this.applicationInstance.lookup('controller:sample').set('showTheThing', true));
 
-          assert.equal(rootElement.textContent.trim(), 'HiYayBye', 'second render');
+          assert.strictEqual(rootElement.textContent.trim(), 'HiYayBye', 'second render');
           return this.visit('/2');
         })
         .then(() => {
-          assert.equal(rootElement.textContent.trim(), 'HiBooBye', 'third render');
+          assert.strictEqual(rootElement.textContent.trim(), 'HiBooBye', 'third render');
         });
     }
 

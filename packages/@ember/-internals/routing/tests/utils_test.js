@@ -10,8 +10,8 @@ moduleFor(
       let normalized = normalizeControllerQueryParams(params);
 
       assert.ok(normalized[paramName], 'turns the query param name into key');
-      assert.equal(normalized[paramName].as, null, "includes a blank alias in 'as' key");
-      assert.equal(normalized[paramName].scope, 'model', 'defaults scope to model');
+      assert.strictEqual(normalized[paramName].as, null, "includes a blank alias in 'as' key");
+      assert.strictEqual(normalized[paramName].scope, 'model', 'defaults scope to model');
     }
 
     ["@test converts object style [{foo: 'an_alias'}]"](assert) {
@@ -20,8 +20,12 @@ moduleFor(
       let normalized = normalizeControllerQueryParams(params);
 
       assert.ok(normalized[paramName], 'retains the query param name as key');
-      assert.equal(normalized[paramName].as, 'an_alias', "includes the provided alias in 'as' key");
-      assert.equal(normalized[paramName].scope, 'model', 'defaults scope to model');
+      assert.strictEqual(
+        normalized[paramName].as,
+        'an_alias',
+        "includes the provided alias in 'as' key"
+      );
+      assert.strictEqual(normalized[paramName].scope, 'model', 'defaults scope to model');
     }
 
     ["@test retains maximally verbose object style [{foo: {as: 'foo'}}]"](assert) {
@@ -30,8 +34,12 @@ moduleFor(
       let normalized = normalizeControllerQueryParams(params);
 
       assert.ok(normalized[paramName], 'retains the query param name as key');
-      assert.equal(normalized[paramName].as, 'an_alias', "includes the provided alias in 'as' key");
-      assert.equal(normalized[paramName].scope, 'model', 'defaults scope to model');
+      assert.strictEqual(
+        normalized[paramName].as,
+        'an_alias',
+        "includes the provided alias in 'as' key"
+      );
+      assert.strictEqual(normalized[paramName].scope, 'model', 'defaults scope to model');
     }
   }
 );

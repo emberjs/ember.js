@@ -30,7 +30,7 @@ moduleFor(
 
       runTask(() => set(this.context, 'model.viewBoxString', null));
 
-      assert.equal(this.firstChild.getAttribute('svg'), null);
+      assert.strictEqual(this.firstChild.getAttribute('svg'), null);
 
       runTask(() => set(this.context, 'model', { viewBoxString }));
 
@@ -66,7 +66,7 @@ moduleFor(
 
       runTask(() => set(this.context, 'model.viewBoxString', null));
 
-      assert.equal(this.firstChild.getAttribute('svg'), null);
+      assert.strictEqual(this.firstChild.getAttribute('svg'), null);
 
       runTask(() => set(this.context, 'model', { viewBoxString }));
 

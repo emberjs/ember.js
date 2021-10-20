@@ -5,49 +5,49 @@ moduleFor(
   'Ember.inspect',
   class extends TestCase {
     ['@test strings'](assert) {
-      assert.equal(inspect('foo'), '"foo"');
+      assert.strictEqual(inspect('foo'), '"foo"');
     }
 
     ['@test numbers'](assert) {
-      assert.equal(inspect(2.6), '2.6');
+      assert.strictEqual(inspect(2.6), '2.6');
     }
 
     ['@test null'](assert) {
-      assert.equal(inspect(null), 'null');
+      assert.strictEqual(inspect(null), 'null');
     }
 
     ['@test undefined'](assert) {
-      assert.equal(inspect(undefined), 'undefined');
+      assert.strictEqual(inspect(undefined), 'undefined');
     }
 
     ['@test true'](assert) {
-      assert.equal(inspect(true), 'true');
+      assert.strictEqual(inspect(true), 'true');
     }
 
     ['@test false'](assert) {
-      assert.equal(inspect(false), 'false');
+      assert.strictEqual(inspect(false), 'false');
     }
 
     ['@test object'](assert) {
-      assert.equal(inspect({}), '{ }');
-      assert.equal(inspect({ foo: 'bar' }), '{ foo: "bar" }');
+      assert.strictEqual(inspect({}), '{ }');
+      assert.strictEqual(inspect({ foo: 'bar' }), '{ foo: "bar" }');
       let obj = {
         foo() {
           return this;
         },
       };
-      assert.equal(inspect(obj), `{ foo: [Function:foo] }`);
+      assert.strictEqual(inspect(obj), `{ foo: [Function:foo] }`);
     }
 
     ['@test objects without a prototype'](assert) {
       let prototypelessObj = Object.create(null);
       prototypelessObj.a = 1;
       prototypelessObj.b = [Object.create(null)];
-      assert.equal(inspect({ foo: prototypelessObj }), '{ foo: { a: 1, b: [ { } ] } }');
+      assert.strictEqual(inspect({ foo: prototypelessObj }), '{ foo: { a: 1, b: [ { } ] } }');
     }
 
     ['@test array'](assert) {
-      assert.equal(inspect([1, 2, 3]), '[ 1, 2, 3 ]');
+      assert.strictEqual(inspect([1, 2, 3]), '[ 1, 2, 3 ]');
     }
 
     ['@test array list limit'](assert) {
@@ -55,7 +55,7 @@ moduleFor(
       for (let i = 0; i < 120; i++) {
         a.push(1);
       }
-      assert.equal(inspect(a), `[ ${a.slice(0, 100).join(', ')}, ... 20 more items ]`);
+      assert.strictEqual(inspect(a), `[ ${a.slice(0, 100).join(', ')}, ... 20 more items ]`);
     }
 
     ['@test object list limit'](assert) {
@@ -65,18 +65,18 @@ moduleFor(
         obj['key' + i] = i;
         pairs.push(`key${i}: ${i}`);
       }
-      assert.equal(inspect(obj), `{ ${pairs.slice(0, 100).join(', ')}, ... 20 more keys }`);
+      assert.strictEqual(inspect(obj), `{ ${pairs.slice(0, 100).join(', ')}, ... 20 more keys }`);
     }
 
     ['@test depth limit'](assert) {
-      assert.equal(
+      assert.strictEqual(
         inspect([[[['here', { a: 1 }, [1]]]]]),
         '[ [ [ [ "here", [Object], [Array] ] ] ] ]'
       );
     }
 
     ['@test odd key'](assert) {
-      assert.equal(
+      assert.strictEqual(
         inspect({
           [`Hello world!
 How are you?`]: 1,
@@ -90,7 +90,7 @@ How are you?`]: 1,
       obj.inspect = inspect;
       let depth = 2;
       let options = {};
-      assert.equal(obj.inspect(depth, options), obj);
+      assert.strictEqual(obj.inspect(depth, options), obj);
     }
 
     ['@test cycle'](assert) {
@@ -98,7 +98,7 @@ How are you?`]: 1,
       obj.a = obj;
       let arr = [obj];
       arr.push(arr);
-      assert.equal(inspect(arr), '[ { a: [Circular] }, [Circular] ]');
+      assert.strictEqual(inspect(arr), '[ { a: [Circular] }, [Circular] ]');
     }
 
     ['@test custom toString'](assert) {
@@ -112,14 +112,14 @@ How are you?`]: 1,
         }
       }
 
-      assert.equal(
+      assert.strictEqual(
         inspect([new Component(), Component]),
         '[ <@ember/component:ember234>, @ember/component ]'
       );
     }
 
     ['@test regexp'](assert) {
-      assert.equal(inspect(/regexp/), '/regexp/');
+      assert.strictEqual(inspect(/regexp/), '/regexp/');
     }
 
     ['@test date'](assert) {
@@ -131,7 +131,7 @@ How are you?`]: 1,
 
     ['@test inspect outputs the toString() representation of Symbols'](assert) {
       let symbol = Symbol('test');
-      assert.equal(inspect(symbol), 'Symbol(test)');
+      assert.strictEqual(inspect(symbol), 'Symbol(test)');
     }
   }
 );

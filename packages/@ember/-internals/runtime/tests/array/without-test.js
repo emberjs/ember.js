@@ -32,7 +32,7 @@ class WithoutTests extends AbstractTestCase {
     obj = this.newObject(newFixture(3));
 
     ret = obj.without(item);
-    this.assert.equal(ret, obj, 'should be same instance');
+    this.assert.strictEqual(ret, obj, 'should be same instance');
   }
 }
 

@@ -88,17 +88,17 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
           foo: 123,
         });
 
-        assert.equal(count, 1, 'rendered once');
+        assert.strictEqual(count, 1, 'rendered once');
         this.assertText('123');
 
         runTask(() => this.rerender());
 
-        assert.equal(count, 1, 'rendered once');
+        assert.strictEqual(count, 1, 'rendered once');
         this.assertText('123');
 
         runTask(() => set(this.context, 'foo', 456));
 
-        assert.equal(count, 2, 'rendered twice');
+        assert.strictEqual(count, 2, 'rendered twice');
         this.assertText('456');
       }
 
@@ -119,17 +119,17 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
           foo: 123,
         });
 
-        assert.equal(count, 1, 'rendered once');
+        assert.strictEqual(count, 1, 'rendered once');
         this.assertText('123');
 
         runTask(() => this.rerender());
 
-        assert.equal(count, 1, 'rendered once');
+        assert.strictEqual(count, 1, 'rendered once');
         this.assertText('123');
 
         runTask(() => set(this.context, 'foo', 456));
 
-        assert.equal(count, 2, 'rendered twice');
+        assert.strictEqual(count, 2, 'rendered twice');
         this.assertText('456');
       }
 
@@ -156,17 +156,17 @@ if (EMBER_GLIMMER_HELPER_MANAGER) {
 
         this.render('{{hello}}');
 
-        assert.equal(count, 1, 'rendered once');
+        assert.strictEqual(count, 1, 'rendered once');
         this.assertText('123');
 
         runTask(() => this.rerender());
 
-        assert.equal(count, 1, 'rendered once');
+        assert.strictEqual(count, 1, 'rendered once');
         this.assertText('123');
 
         runTask(() => (instance.foo = 456));
 
-        assert.equal(count, 2, 'rendered twice');
+        assert.strictEqual(count, 2, 'rendered twice');
         this.assertText('456');
       }
 

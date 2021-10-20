@@ -6,7 +6,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test classToString: null as this inside class must not throw error'](assert) {
       let mixin = Mixin.create();
-      assert.equal(
+      assert.strictEqual(
         mixin.toString(),
         '(unknown mixin)',
         'this = null should be handled on Mixin.toString() call'

@@ -11,8 +11,8 @@ moduleFor(
       let obj = {};
       mixin(obj, MixinA);
 
-      assert.equal(get(obj, 'foo'), 'FOO', 'should apply foo');
-      assert.equal(get(obj, 'baz'), K, 'should apply foo');
+      assert.strictEqual(get(obj, 'foo'), 'FOO', 'should apply foo');
+      assert.strictEqual(get(obj, 'baz'), K, 'should apply foo');
     }
 
     ['@test applying anonymous properties'](assert) {
@@ -22,8 +22,8 @@ moduleFor(
         baz: K,
       });
 
-      assert.equal(get(obj, 'foo'), 'FOO', 'should apply foo');
-      assert.equal(get(obj, 'baz'), K, 'should apply foo');
+      assert.strictEqual(get(obj, 'foo'), 'FOO', 'should apply foo');
+      assert.strictEqual(get(obj, 'baz'), K, 'should apply foo');
     }
 
     ['@test applying null values']() {

@@ -48,7 +48,7 @@ moduleFor(
 
       let controller = this.applicationInstance.lookup('controller:application');
       assert.ok(controller.get('myService') instanceof MyService);
-      assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
+      assert.strictEqual(serviceOwner, instance, 'should be able to `getOwner` in init');
     }
   }
 );
@@ -75,7 +75,11 @@ moduleFor(
 
       let controller = this.applicationInstance.lookup('controller:application');
       assert.ok(controller.myService instanceof MyService);
-      assert.equal(controller.myService.name, 'The service name', 'service property accessible');
+      assert.strictEqual(
+        controller.myService.name,
+        'The service name',
+        'service property accessible'
+      );
     }
   }
 );

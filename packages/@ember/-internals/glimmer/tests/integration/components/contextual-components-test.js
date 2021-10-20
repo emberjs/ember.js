@@ -753,7 +753,7 @@ moduleFor(
         { first: 'first' }
       );
 
-      assert.equal(value, 'first', 'value is the expected parameter');
+      assert.strictEqual(value, 'first', 'value is the expected parameter');
     }
 
     ['@test renders with dot path and updates attributes'](assert) {
@@ -793,23 +793,23 @@ moduleFor(
         },
       });
 
-      assert.equal(this.$('#nested-prop').text(), '1');
+      assert.strictEqual(this.$('#nested-prop').text(), '1');
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$('#nested-prop').text(), '1');
+      assert.strictEqual(this.$('#nested-prop').text(), '1');
 
       runTask(() => this.$('button').click());
 
-      assert.equal(this.$('#nested-prop').text(), '2');
+      assert.strictEqual(this.$('#nested-prop').text(), '2');
 
       runTask(() => this.$('button').click());
 
-      assert.equal(this.$('#nested-prop').text(), '3');
+      assert.strictEqual(this.$('#nested-prop').text(), '3');
 
       runTask(() => this.context.set('model', { myProp: 1 }));
 
-      assert.equal(this.$('#nested-prop').text(), '1');
+      assert.strictEqual(this.$('#nested-prop').text(), '1');
     }
 
     ["@test adding parameters to a contextual component's instance does not add it to other instances"]() {
@@ -861,19 +861,19 @@ moduleFor(
         }
       );
 
-      assert.equal(this.$('.value').text(), '8');
+      assert.strictEqual(this.$('.value').text(), '8');
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$('.value').text(), '8');
+      assert.strictEqual(this.$('.value').text(), '8');
 
       runTask(() => this.$('.my-button').click());
 
-      assert.equal(this.$('.value').text(), '10');
+      assert.strictEqual(this.$('.value').text(), '10');
 
       runTask(() => this.context.set('model', { val2: 8 }));
 
-      assert.equal(this.$('.value').text(), '8');
+      assert.strictEqual(this.$('.value').text(), '8');
     }
 
     ['@test tagless blockless components render'](assert) {
@@ -885,7 +885,7 @@ moduleFor(
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$().text(), '');
+      assert.strictEqual(this.$().text(), '');
     }
 
     ['@test GH#13494 tagless blockless component with property binding'](assert) {
@@ -911,19 +911,19 @@ moduleFor(
 
       this.render(`{{outer-component}}`);
 
-      assert.equal(this.$().text(), 'message: hello');
+      assert.strictEqual(this.$().text(), 'message: hello');
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$().text(), 'message: hello');
+      assert.strictEqual(this.$().text(), 'message: hello');
 
       runTask(() => this.$('button').click());
 
-      assert.equal(this.$().text(), 'message: goodbye');
+      assert.strictEqual(this.$().text(), 'message: goodbye');
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$().text(), 'message: goodbye');
+      assert.strictEqual(this.$().text(), 'message: goodbye');
     }
 
     ['@test GH#13982 contextual component ref is stable even when bound params change'](assert) {
@@ -955,37 +955,37 @@ moduleFor(
       );
 
       assert.ok(!isEmpty(instance), 'a instance was created');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'open', 'the components text is "open"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'open', 'the components text is "open"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.context.set('isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.context.set('isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'open', 'the components text is "open"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'open', 'the components text is "open"');
     }
 
     ['@test GH#13982 contextual component ref is stable even when bound params change (bound name param)'](
@@ -1020,37 +1020,37 @@ moduleFor(
       );
 
       assert.ok(!isEmpty(instance), 'a instance was created');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'open', 'the components text is "open"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'open', 'the components text is "open"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'open', 'the components text is "open"');
 
       runTask(() => this.context.set('isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'closed', 'the component text is "closed"');
 
       runTask(() => this.context.set('isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
-      assert.equal(previousInstance, undefined, 'no previous component exists');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'open', 'the components text is "open"');
+      assert.strictEqual(previousInstance, undefined, 'no previous component exists');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'open', 'the components text is "open"');
     }
 
     ['@test GH#13982 contextual component ref is recomputed when component name param changes'](
@@ -1098,16 +1098,20 @@ moduleFor(
       );
 
       assert.ok(!isEmpty(instance), 'a instance was created');
-      assert.equal(previousInstance, undefined, 'there is no previous instance');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'my-comp: open');
+      assert.strictEqual(previousInstance, undefined, 'there is no previous instance');
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'my-comp: open');
 
       runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'a instance exists after rerender');
-      assert.equal(previousInstance, undefined, 'there is no previous instance after rerender');
-      assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
-      assert.equal(this.$().text(), 'my-comp: open');
+      assert.strictEqual(
+        previousInstance,
+        undefined,
+        'there is no previous instance after rerender'
+      );
+      assert.strictEqual(initCount, 1, 'the component was constructed exactly 1 time');
+      assert.strictEqual(this.$().text(), 'my-comp: open');
 
       runTask(() => this.context.set('compName', 'your-comp'));
 
@@ -1118,8 +1122,8 @@ moduleFor(
         previousInstance,
         'the instance and previous instance are not the same object'
       );
-      assert.equal(initCount, 2, 'the component was constructed exactly 2 times');
-      assert.equal(this.$().text(), 'your-comp: open');
+      assert.strictEqual(initCount, 2, 'the component was constructed exactly 2 times');
+      assert.strictEqual(this.$().text(), 'your-comp: open');
 
       runTask(() => this.rerender());
 
@@ -1133,8 +1137,8 @@ moduleFor(
         previousInstance,
         'the instance and previous instance are not the same object (rerender)'
       );
-      assert.equal(initCount, 2, 'the component was constructed exactly 2 times (rerender)');
-      assert.equal(this.$().text(), 'your-comp: open');
+      assert.strictEqual(initCount, 2, 'the component was constructed exactly 2 times (rerender)');
+      assert.strictEqual(this.$().text(), 'your-comp: open');
 
       runTask(() => this.context.set('compName', 'my-comp'));
 
@@ -1145,8 +1149,8 @@ moduleFor(
         previousInstance,
         'the instance and previous instance are not the same object'
       );
-      assert.equal(initCount, 3, 'the component was constructed exactly 3 times (rerender)');
-      assert.equal(this.$().text(), 'my-comp: open');
+      assert.strictEqual(initCount, 3, 'the component was constructed exactly 3 times (rerender)');
+      assert.strictEqual(this.$().text(), 'my-comp: open');
     }
 
     ['@test GH#14508 rest positional params are received when passed as named parameter']() {
@@ -1454,19 +1458,19 @@ class MutableParamTestGenerator {
 
         setup.call(this, assert);
 
-        assert.equal(this.$('.value').text(), '8');
+        assert.strictEqual(this.$('.value').text(), '8');
 
         runTask(() => this.rerender());
 
-        assert.equal(this.$('.value').text(), '8');
+        assert.strictEqual(this.$('.value').text(), '8');
 
         runTask(() => this.$('.my-button').click());
 
-        assert.equal(this.$('.value').text(), '10');
+        assert.strictEqual(this.$('.value').text(), '10');
 
         runTask(() => this.context.set('model', { val2: 8 }));
 
-        assert.equal(this.$('.value').text(), '8');
+        assert.strictEqual(this.$('.value').text(), '8');
       },
     };
   }

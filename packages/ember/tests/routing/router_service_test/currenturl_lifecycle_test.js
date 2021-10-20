@@ -138,7 +138,7 @@ moduleFor(
       assert.expect(1);
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/');
+        assert.strictEqual(this.routerService.get('currentURL'), '/');
       });
     }
 
@@ -146,7 +146,7 @@ moduleFor(
       assert.expect(1);
 
       return this.visit('/child').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/child');
+        assert.strictEqual(this.routerService.get('currentURL'), '/child');
       });
     }
 
@@ -158,7 +158,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.sister');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/sister');
+          assert.strictEqual(this.routerService.get('currentURL'), '/sister');
         });
     }
 
@@ -167,17 +167,17 @@ moduleFor(
 
       return this.visit('/child')
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.strictEqual(this.routerService.get('currentURL'), '/child');
 
           return this.visit('/sister');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/sister');
+          assert.strictEqual(this.routerService.get('currentURL'), '/sister');
 
           return this.visit('/brother');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/brother');
+          assert.strictEqual(this.routerService.get('currentURL'), '/brother');
         });
     }
 

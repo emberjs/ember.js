@@ -40,7 +40,7 @@ function checkTemplate(templateName, assert) {
   component = owner.lookup('component:-top-level');
   runAppend(component);
 
-  assert.equal(qunitFixture.textContent.trim(), 'Tobias takes teamocil', 'template works');
+  assert.strictEqual(qunitFixture.textContent.trim(), 'Tobias takes teamocil', 'template works');
   runDestroy(owner);
 }
 
@@ -97,7 +97,7 @@ moduleFor(
       assert.ok(template, 'template with name funkyTemplate available');
 
       // This won't even work with Ember templates
-      assert.equal(template({ name: 'Tobias' }).trim(), 'Tobias');
+      assert.strictEqual(template({ name: 'Tobias' }).trim(), 'Tobias');
     }
 
     ['@test duplicated default application templates should throw exception'](assert) {

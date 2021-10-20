@@ -7,7 +7,7 @@ QUnit.module('sourcemap validation', function () {
 
     let contents = fs.readFileSync(jsPath, 'utf-8');
     let num = count(contents, '//# sourceMappingURL=');
-    assert.equal(num, 1);
+    assert.strictEqual(num, 1);
   });
 });
 

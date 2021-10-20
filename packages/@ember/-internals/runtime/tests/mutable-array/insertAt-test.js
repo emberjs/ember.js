@@ -16,25 +16,29 @@ class InsertAtTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] did change once');
-    this.assert.equal(
+    this.assert.strictEqual(
+      observer.timesCalled('[]'),
+      1,
+      'should have notified [] did change once'
+    );
+    this.assert.strictEqual(
       observer.timesCalled('@each'),
       0,
       'should not have notified @each did change once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.timesCalled('length'),
       1,
       'should have notified length did change once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject did change once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject did change once'
@@ -64,18 +68,22 @@ class InsertAtTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject'
@@ -99,18 +107,22 @@ class InsertAtTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject'
@@ -140,18 +152,22 @@ class InsertAtTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject'
@@ -186,18 +202,22 @@ class InsertAtTests extends AbstractTestCase {
     this.assert.deepEqual(objectAtCalls, [], 'objectAt is not called when only inserting items');
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject'
@@ -221,18 +241,22 @@ class InsertAtTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject'

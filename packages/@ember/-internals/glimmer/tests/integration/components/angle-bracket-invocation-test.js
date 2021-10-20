@@ -397,8 +397,8 @@ moduleFor(
       this.render('<FooBar />');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+      assert.strictEqual(fooBarInstance.parentView, this.component);
+      assert.strictEqual(fooBarBazInstance.parentView, fooBarInstance);
 
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
@@ -406,8 +406,8 @@ moduleFor(
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+      assert.strictEqual(fooBarInstance.parentView, this.component);
+      assert.strictEqual(fooBarBazInstance.parentView, fooBarInstance);
 
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
@@ -1295,7 +1295,7 @@ moduleFor(
       this.render('<TheFoo {{bar "something" foo="else"}}/>', {});
       assert.deepEqual(modifierParams, ['something'], 'positional arguments');
       this.assertNamedArgs(modifierNamedArgs, { foo: 'else' }, 'named arguments');
-      assert.equal(
+      assert.strictEqual(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
         'Modifier is called on the element receiving the splattributes'
@@ -1359,7 +1359,7 @@ moduleFor(
       });
       assert.deepEqual(modifierParams, ['something']);
       this.assertNamedArgs(modifierNamedArgs, { foo: 'else' });
-      assert.equal(
+      assert.strictEqual(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
         'Modifier is called on the element receiving the splattributes'
@@ -1367,7 +1367,7 @@ moduleFor(
       runTask(() => setProperties(this.context, { something: 'another', foo: 'thingy' }));
       assert.deepEqual(modifierParams, ['another']);
       this.assertNamedArgs(modifierNamedArgs, { foo: 'thingy' });
-      assert.equal(
+      assert.strictEqual(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
         'Modifier is called on the element receiving the splattributes'
@@ -1402,17 +1402,17 @@ moduleFor(
         })
       );
       this.render('<TheFoo {{bar "name" this foo=this}}/>', context);
-      assert.equal(modifierParams[1].id, 1);
-      assert.equal(modifierNamedArgs.foo.id, 1);
-      assert.equal(
+      assert.strictEqual(modifierParams[1].id, 1);
+      assert.strictEqual(modifierNamedArgs.foo.id, 1);
+      assert.strictEqual(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
         'Modifier is called on the element receiving the splattributes'
       );
       runTask(() => setProperties(this.context, context2));
-      assert.equal(modifierParams[1].id, 2);
-      assert.equal(modifierNamedArgs.foo.id, 2);
-      assert.equal(
+      assert.strictEqual(modifierParams[1].id, 2);
+      assert.strictEqual(modifierNamedArgs.foo.id, 2);
+      assert.strictEqual(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
         'Modifier is called on the element receiving the splattributes'
@@ -1453,7 +1453,7 @@ moduleFor(
       );
       assert.deepEqual(modifierParams, ['bar']);
       this.assertNamedArgs(modifierNamedArgs, { foo: 'bar' });
-      assert.equal(
+      assert.strictEqual(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
         'Modifier is called on the element receiving the splattributes'
@@ -1461,7 +1461,7 @@ moduleFor(
       runTask(() => setProperties(this.context, { foo: 'qux' }));
       assert.deepEqual(modifierParams, ['qux']);
       this.assertNamedArgs(modifierNamedArgs, { foo: 'qux' });
-      assert.equal(
+      assert.strictEqual(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
         'Modifier is called on the element receiving the splattributes'

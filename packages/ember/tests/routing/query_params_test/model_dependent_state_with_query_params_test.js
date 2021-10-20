@@ -39,19 +39,19 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     await this.setAndFlush(this.controller, 'q', 'lol');
 
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
 
     this.$link2.click();
     await runLoopSettled();
 
-    assert.equal(this.controller.get('q'), 'wat');
-    assert.equal(this.controller.get('z'), 0);
+    assert.strictEqual(this.controller.get('q'), 'wat');
+    assert.strictEqual(this.controller.get('z'), 0);
     assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
   }
 
   async queryParamsStickyTest2(urlPrefix) {
@@ -65,11 +65,11 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     await this.transitionTo(`${urlPrefix}/a-1?q=lol`);
 
     assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
+    assert.strictEqual(this.controller.get('q'), 'lol');
+    assert.strictEqual(this.controller.get('z'), 0);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
 
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
 
@@ -80,21 +80,21 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
       { id: 'a-2' },
       "controller's model changed to a-2"
     );
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
+    assert.strictEqual(this.controller.get('q'), 'lol');
+    assert.strictEqual(this.controller.get('z'), 0);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
 
     this.expectedModelHookParams = { id: 'a-3', q: 'lol', z: 123 };
 
     await this.transitionTo(`${urlPrefix}/a-3?q=lol&z=123`);
 
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 123);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol&z=123`);
+    assert.strictEqual(this.controller.get('q'), 'lol');
+    assert.strictEqual(this.controller.get('z'), 123);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol&z=123`);
   }
 
   async queryParamsStickyTest3(urlPrefix, articleLookup) {
@@ -116,41 +116,41 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     await this.transitionTo(articleLookup, 'a-1');
 
     assert.deepEqual(this.controller.get('model'), { id: 'a-1' });
-    assert.equal(this.controller.get('q'), 'wat');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
+    assert.strictEqual(this.controller.get('q'), 'wat');
+    assert.strictEqual(this.controller.get('z'), 0);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
 
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 0 };
     await this.transitionTo(articleLookup, 'a-2', { queryParams: { q: 'lol' } });
 
     assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
+    assert.strictEqual(this.controller.get('q'), 'lol');
+    assert.strictEqual(this.controller.get('z'), 0);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3`);
 
     this.expectedModelHookParams = { id: 'a-3', q: 'hay', z: 0 };
     await this.transitionTo(articleLookup, 'a-3', { queryParams: { q: 'hay' } });
 
     assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
-    assert.equal(this.controller.get('q'), 'hay');
-    assert.equal(this.controller.get('z'), 0);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=hay`);
+    assert.strictEqual(this.controller.get('q'), 'hay');
+    assert.strictEqual(this.controller.get('z'), 0);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=hay`);
 
     this.expectedModelHookParams = { id: 'a-2', q: 'lol', z: 1 };
     await this.transitionTo(articleLookup, 'a-2', { queryParams: { z: 1 } });
 
     assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 1);
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol&z=1`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=hay`);
+    assert.strictEqual(this.controller.get('q'), 'lol');
+    assert.strictEqual(this.controller.get('z'), 1);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol&z=1`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=hay`);
   }
 
   async queryParamsStickyTest4(urlPrefix, articleLookup) {
@@ -172,37 +172,37 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     await this.setAndFlush(this.controller, 'q', 'lol');
 
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol`);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol`);
 
     this.$link2.click();
     await runLoopSettled();
 
-    assert.equal(this.controller.get('q'), 'lol');
-    assert.equal(this.controller.get('z'), 0);
+    assert.strictEqual(this.controller.get('q'), 'lol');
+    assert.strictEqual(this.controller.get('z'), 0);
     assert.deepEqual(this.controller.get('model'), { id: 'a-2' });
 
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol`);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=lol`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=lol`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=lol`);
 
     this.expectedModelHookParams = { id: 'a-3', q: 'haha', z: 123 };
     await this.transitionTo(`${urlPrefix}/a-3?q=haha&z=123`);
 
     assert.deepEqual(this.controller.get('model'), { id: 'a-3' });
-    assert.equal(this.controller.get('q'), 'haha');
-    assert.equal(this.controller.get('z'), 123);
+    assert.strictEqual(this.controller.get('q'), 'haha');
+    assert.strictEqual(this.controller.get('z'), 123);
 
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=haha`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=haha`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=haha&z=123`);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=haha`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=haha`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=haha&z=123`);
 
     await this.setAndFlush(this.controller, 'q', 'woot');
 
-    assert.equal(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=woot`);
-    assert.equal(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=woot`);
-    assert.equal(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=woot&z=123`);
+    assert.strictEqual(this.$link1.getAttribute('href'), `${urlPrefix}/a-1?q=woot`);
+    assert.strictEqual(this.$link2.getAttribute('href'), `${urlPrefix}/a-2?q=woot`);
+    assert.strictEqual(this.$link3.getAttribute('href'), `${urlPrefix}/a-3?q=woot&z=123`);
   }
 
   async queryParamsStickyTest5(urlPrefix, commentsLookupKey) {
@@ -214,7 +214,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     await this.transitionTo(commentsLookupKey, 'a-1');
 
     let commentsCtrl = this.getController(commentsLookupKey);
-    assert.equal(commentsCtrl.get('page'), 1);
+    assert.strictEqual(commentsCtrl.get('page'), 1);
     this.assertCurrentPath(`${urlPrefix}/a-1/comments`);
 
     await this.setAndFlush(commentsCtrl, 'page', 2);
@@ -224,11 +224,11 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=3`);
 
     await this.transitionTo(commentsLookupKey, 'a-2');
-    assert.equal(commentsCtrl.get('page'), 1);
+    assert.strictEqual(commentsCtrl.get('page'), 1);
     this.assertCurrentPath(`${urlPrefix}/a-2/comments`);
 
     await this.transitionTo(commentsLookupKey, 'a-1');
-    assert.equal(commentsCtrl.get('page'), 3);
+    assert.strictEqual(commentsCtrl.get('page'), 3);
     this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=3`);
   }
 
@@ -260,26 +260,29 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     await this.transitionTo(commentsLookup, 'a-1');
 
     let commentsCtrl = this.getController(commentsLookup);
-    assert.equal(commentsCtrl.get('page'), 1);
+    assert.strictEqual(commentsCtrl.get('page'), 1);
     this.assertCurrentPath(`${urlPrefix}/a-1/comments`);
 
     await this.setAndFlush(commentsCtrl, 'page', 2);
     this.assertCurrentPath(`${urlPrefix}/a-1/comments?page=2`);
 
     await this.transitionTo(commentsLookup, 'a-2');
-    assert.equal(commentsCtrl.get('page'), 1);
-    assert.equal(this.controller.get('q'), 'wat');
+    assert.strictEqual(commentsCtrl.get('page'), 1);
+    assert.strictEqual(this.controller.get('q'), 'wat');
 
     await this.transitionTo(commentsLookup, 'a-1');
     this.assertCurrentPath(`${urlPrefix}/a-1/comments`);
-    assert.equal(commentsCtrl.get('page'), 1);
+    assert.strictEqual(commentsCtrl.get('page'), 1);
 
     await this.transitionTo('about');
-    assert.equal(
+    assert.strictEqual(
       document.getElementById('one').getAttribute('href'),
       `${urlPrefix}/a-1/comments?q=imdone`
     );
-    assert.equal(document.getElementById('two').getAttribute('href'), `${urlPrefix}/a-2/comments`);
+    assert.strictEqual(
+      document.getElementById('two').getAttribute('href'),
+      `${urlPrefix}/a-2/comments`
+    );
   }
 }
 
@@ -358,9 +361,9 @@ moduleFor(
         this.$link2 = document.getElementById('a-2');
         this.$link3 = document.getElementById('a-3');
 
-        assert.equal(this.$link1.getAttribute('href'), '/a/a-1');
-        assert.equal(this.$link2.getAttribute('href'), '/a/a-2');
-        assert.equal(this.$link3.getAttribute('href'), '/a/a-3');
+        assert.strictEqual(this.$link1.getAttribute('href'), '/a/a-1');
+        assert.strictEqual(this.$link2.getAttribute('href'), '/a/a-2');
+        assert.strictEqual(this.$link3.getAttribute('href'), '/a/a-3');
 
         this.controller = this.getController('article');
       });
@@ -469,9 +472,9 @@ moduleFor(
         this.$link2 = document.getElementById('a-2');
         this.$link3 = document.getElementById('a-3');
 
-        assert.equal(this.$link1.getAttribute('href'), '/site/a/a-1');
-        assert.equal(this.$link2.getAttribute('href'), '/site/a/a-2');
-        assert.equal(this.$link3.getAttribute('href'), '/site/a/a-3');
+        assert.strictEqual(this.$link1.getAttribute('href'), '/site/a/a-1');
+        assert.strictEqual(this.$link2.getAttribute('href'), '/site/a/a-2');
+        assert.strictEqual(this.$link3.getAttribute('href'), '/site/a/a-3');
 
         this.controller = this.getController('site.article');
       });
@@ -634,15 +637,15 @@ moduleFor(
         this.links['s-3-a-2'] = document.getElementById('s-3-a-2');
         this.links['s-3-a-3'] = document.getElementById('s-3-a-3');
 
-        assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
-        assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
-        assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
-        assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
-        assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
-        assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-        assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
-        assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-        assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+        assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
+        assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
+        assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
+        assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
+        assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
+        assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+        assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
+        assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+        assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
         this.site_controller = this.getController('site');
         this.article_controller = this.getController('site.article');
@@ -661,63 +664,72 @@ moduleFor(
 
       await this.setAndFlush(this.article_controller, 'q', 'lol');
 
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       await this.setAndFlush(this.site_controller, 'country', 'us');
 
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?country=us&q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?country=us');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?country=us');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(
+        this.links['s-1-a-1'].getAttribute('href'),
+        '/site/s-1/a/a-1?country=us&q=lol'
+      );
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?country=us');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?country=us');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       this.links['s-1-a-2'].click();
       await runLoopSettled();
 
-      assert.equal(this.site_controller.get('country'), 'us');
-      assert.equal(this.article_controller.get('q'), 'wat');
-      assert.equal(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.site_controller.get('country'), 'us');
+      assert.strictEqual(this.article_controller.get('q'), 'wat');
+      assert.strictEqual(this.article_controller.get('z'), 0);
       assert.deepEqual(this.site_controller.get('model'), { id: 's-1' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-2' });
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?country=us&q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?country=us');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?country=us');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(
+        this.links['s-1-a-1'].getAttribute('href'),
+        '/site/s-1/a/a-1?country=us&q=lol'
+      );
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?country=us');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?country=us');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       this.links['s-2-a-2'].click();
       await runLoopSettled();
 
-      assert.equal(this.site_controller.get('country'), 'au');
-      assert.equal(this.article_controller.get('q'), 'wat');
-      assert.equal(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.site_controller.get('country'), 'au');
+      assert.strictEqual(this.article_controller.get('q'), 'wat');
+      assert.strictEqual(this.article_controller.get('z'), 0);
       assert.deepEqual(this.site_controller.get('model'), { id: 's-2' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-2' });
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?country=us&q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?country=us');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?country=us');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(
+        this.links['s-1-a-1'].getAttribute('href'),
+        '/site/s-1/a/a-1?country=us&q=lol'
+      );
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?country=us');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?country=us');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
     }
 
     async ["@test query params have 'model' stickiness by default (url changes)"](assert) {
@@ -742,18 +754,18 @@ moduleFor(
         { id: 'a-1' },
         "article controller's model is a-1"
       );
-      assert.equal(this.site_controller.get('country'), 'au');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 0);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(this.site_controller.get('country'), 'au');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       this.expectedSiteModelHookParams = { site_id: 's-2', country: 'us' };
       this.expectedArticleModelHookParams = {
@@ -773,18 +785,21 @@ moduleFor(
         { id: 'a-1' },
         "article controller's model is a-1"
       );
-      assert.equal(this.site_controller.get('country'), 'us');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 0);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us&q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?country=us');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?country=us');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(this.site_controller.get('country'), 'us');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
+      assert.strictEqual(
+        this.links['s-2-a-1'].getAttribute('href'),
+        '/site/s-2/a/a-1?country=us&q=lol'
+      );
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?country=us');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?country=us');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       this.expectedSiteModelHookParams = { site_id: 's-2', country: 'us' };
       this.expectedArticleModelHookParams = {
@@ -804,18 +819,24 @@ moduleFor(
         { id: 'a-2' },
         "article controller's model is a-2"
       );
-      assert.equal(this.site_controller.get('country'), 'us');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 0);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us&q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?country=us&q=lol');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?country=us');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(this.site_controller.get('country'), 'us');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
+      assert.strictEqual(
+        this.links['s-2-a-1'].getAttribute('href'),
+        '/site/s-2/a/a-1?country=us&q=lol'
+      );
+      assert.strictEqual(
+        this.links['s-2-a-2'].getAttribute('href'),
+        '/site/s-2/a/a-2?country=us&q=lol'
+      );
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?country=us');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       this.expectedSiteModelHookParams = { site_id: 's-2', country: 'us' };
       this.expectedArticleModelHookParams = {
@@ -835,21 +856,27 @@ moduleFor(
         { id: 'a-3' },
         "article controller's model is a-3"
       );
-      assert.equal(this.site_controller.get('country'), 'us');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 123);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=lol&z=123');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us&q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?country=us&q=lol');
-      assert.equal(
+      assert.strictEqual(this.site_controller.get('country'), 'us');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 123);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=lol&z=123');
+      assert.strictEqual(
+        this.links['s-2-a-1'].getAttribute('href'),
+        '/site/s-2/a/a-1?country=us&q=lol'
+      );
+      assert.strictEqual(
+        this.links['s-2-a-2'].getAttribute('href'),
+        '/site/s-2/a/a-2?country=us&q=lol'
+      );
+      assert.strictEqual(
         this.links['s-2-a-3'].getAttribute('href'),
         '/site/s-2/a/a-3?country=us&q=lol&z=123'
       );
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=lol&z=123');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=lol&z=123');
 
       this.expectedSiteModelHookParams = { site_id: 's-3', country: 'nz' };
       this.expectedArticleModelHookParams = {
@@ -869,21 +896,33 @@ moduleFor(
         { id: 'a-3' },
         "article controller's model is a-3"
       );
-      assert.equal(this.site_controller.get('country'), 'nz');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 123);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=lol&z=123');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us&q=lol');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?country=us&q=lol');
-      assert.equal(
+      assert.strictEqual(this.site_controller.get('country'), 'nz');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 123);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=lol');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=lol&z=123');
+      assert.strictEqual(
+        this.links['s-2-a-1'].getAttribute('href'),
+        '/site/s-2/a/a-1?country=us&q=lol'
+      );
+      assert.strictEqual(
+        this.links['s-2-a-2'].getAttribute('href'),
+        '/site/s-2/a/a-2?country=us&q=lol'
+      );
+      assert.strictEqual(
         this.links['s-2-a-3'].getAttribute('href'),
         '/site/s-2/a/a-3?country=us&q=lol&z=123'
       );
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?country=nz&q=lol');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?country=nz&q=lol');
-      assert.equal(
+      assert.strictEqual(
+        this.links['s-3-a-1'].getAttribute('href'),
+        '/site/s-3/a/a-1?country=nz&q=lol'
+      );
+      assert.strictEqual(
+        this.links['s-3-a-2'].getAttribute('href'),
+        '/site/s-3/a/a-2?country=nz&q=lol'
+      );
+      assert.strictEqual(
         this.links['s-3-a-3'].getAttribute('href'),
         '/site/s-3/a/a-3?country=nz&q=lol&z=123'
       );
@@ -905,18 +944,18 @@ moduleFor(
 
       assert.deepEqual(this.site_controller.get('model'), { id: 's-1' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-1' });
-      assert.equal(this.site_controller.get('country'), 'au');
-      assert.equal(this.article_controller.get('q'), 'wat');
-      assert.equal(this.article_controller.get('z'), 0);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(this.site_controller.get('country'), 'au');
+      assert.strictEqual(this.article_controller.get('q'), 'wat');
+      assert.strictEqual(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
       this.expectedArticleModelHookParams = {
@@ -930,18 +969,18 @@ moduleFor(
 
       assert.deepEqual(this.site_controller.get('model'), { id: 's-1' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-2' });
-      assert.equal(this.site_controller.get('country'), 'au');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 0);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?q=lol');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
+      assert.strictEqual(this.site_controller.get('country'), 'au');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3');
 
       this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
       this.expectedArticleModelHookParams = {
@@ -955,18 +994,18 @@ moduleFor(
 
       assert.deepEqual(this.site_controller.get('model'), { id: 's-1' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-3' });
-      assert.equal(this.site_controller.get('country'), 'au');
-      assert.equal(this.article_controller.get('q'), 'hay');
-      assert.equal(this.article_controller.get('z'), 0);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?q=lol');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?q=hay');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
+      assert.strictEqual(this.site_controller.get('country'), 'au');
+      assert.strictEqual(this.article_controller.get('q'), 'hay');
+      assert.strictEqual(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?q=hay');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
 
       this.expectedSiteModelHookParams = { site_id: 's-1', country: 'au' };
       this.expectedArticleModelHookParams = {
@@ -980,18 +1019,18 @@ moduleFor(
 
       assert.deepEqual(this.site_controller.get('model'), { id: 's-1' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-2' });
-      assert.equal(this.site_controller.get('country'), 'au');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 1);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
-      assert.equal(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?q=hay');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
+      assert.strictEqual(this.site_controller.get('country'), 'au');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 1);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1');
+      assert.strictEqual(this.links['s-2-a-2'].getAttribute('href'), '/site/s-2/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?q=hay');
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
 
       this.expectedSiteModelHookParams = { site_id: 's-2', country: 'us' };
       this.expectedArticleModelHookParams = {
@@ -1005,21 +1044,24 @@ moduleFor(
 
       assert.deepEqual(this.site_controller.get('model'), { id: 's-2' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-2' });
-      assert.equal(this.site_controller.get('country'), 'us');
-      assert.equal(this.article_controller.get('q'), 'lol');
-      assert.equal(this.article_controller.get('z'), 1);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us');
-      assert.equal(
+      assert.strictEqual(this.site_controller.get('country'), 'us');
+      assert.strictEqual(this.article_controller.get('q'), 'lol');
+      assert.strictEqual(this.article_controller.get('z'), 1);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
+      assert.strictEqual(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us');
+      assert.strictEqual(
         this.links['s-2-a-2'].getAttribute('href'),
         '/site/s-2/a/a-2?country=us&q=lol&z=1'
       );
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?country=us&q=hay');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
+      assert.strictEqual(
+        this.links['s-2-a-3'].getAttribute('href'),
+        '/site/s-2/a/a-3?country=us&q=hay'
+      );
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
 
       this.expectedSiteModelHookParams = { site_id: 's-2', country: 'us' };
       this.expectedArticleModelHookParams = {
@@ -1033,21 +1075,27 @@ moduleFor(
 
       assert.deepEqual(this.site_controller.get('model'), { id: 's-2' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-1' });
-      assert.equal(this.site_controller.get('country'), 'us');
-      assert.equal(this.article_controller.get('q'), 'yeah');
-      assert.equal(this.article_controller.get('z'), 0);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=yeah');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us&q=yeah');
-      assert.equal(
+      assert.strictEqual(this.site_controller.get('country'), 'us');
+      assert.strictEqual(this.article_controller.get('q'), 'yeah');
+      assert.strictEqual(this.article_controller.get('z'), 0);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=yeah');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay');
+      assert.strictEqual(
+        this.links['s-2-a-1'].getAttribute('href'),
+        '/site/s-2/a/a-1?country=us&q=yeah'
+      );
+      assert.strictEqual(
         this.links['s-2-a-2'].getAttribute('href'),
         '/site/s-2/a/a-2?country=us&q=lol&z=1'
       );
-      assert.equal(this.links['s-2-a-3'].getAttribute('href'), '/site/s-2/a/a-3?country=us&q=hay');
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=yeah');
-      assert.equal(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
+      assert.strictEqual(
+        this.links['s-2-a-3'].getAttribute('href'),
+        '/site/s-2/a/a-3?country=us&q=hay'
+      );
+      assert.strictEqual(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?q=yeah');
+      assert.strictEqual(this.links['s-3-a-2'].getAttribute('href'), '/site/s-3/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-3-a-3'].getAttribute('href'), '/site/s-3/a/a-3?q=hay');
 
       this.expectedSiteModelHookParams = { site_id: 's-3', country: 'nz' };
       this.expectedArticleModelHookParams = {
@@ -1061,27 +1109,33 @@ moduleFor(
 
       assert.deepEqual(this.site_controller.get('model'), { id: 's-3' });
       assert.deepEqual(this.article_controller.get('model'), { id: 'a-3' });
-      assert.equal(this.site_controller.get('country'), 'nz');
-      assert.equal(this.article_controller.get('q'), 'hay');
-      assert.equal(this.article_controller.get('z'), 3);
-      assert.equal(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=yeah');
-      assert.equal(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
-      assert.equal(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay&z=3');
-      assert.equal(this.links['s-2-a-1'].getAttribute('href'), '/site/s-2/a/a-1?country=us&q=yeah');
-      assert.equal(
+      assert.strictEqual(this.site_controller.get('country'), 'nz');
+      assert.strictEqual(this.article_controller.get('q'), 'hay');
+      assert.strictEqual(this.article_controller.get('z'), 3);
+      assert.strictEqual(this.links['s-1-a-1'].getAttribute('href'), '/site/s-1/a/a-1?q=yeah');
+      assert.strictEqual(this.links['s-1-a-2'].getAttribute('href'), '/site/s-1/a/a-2?q=lol&z=1');
+      assert.strictEqual(this.links['s-1-a-3'].getAttribute('href'), '/site/s-1/a/a-3?q=hay&z=3');
+      assert.strictEqual(
+        this.links['s-2-a-1'].getAttribute('href'),
+        '/site/s-2/a/a-1?country=us&q=yeah'
+      );
+      assert.strictEqual(
         this.links['s-2-a-2'].getAttribute('href'),
         '/site/s-2/a/a-2?country=us&q=lol&z=1'
       );
-      assert.equal(
+      assert.strictEqual(
         this.links['s-2-a-3'].getAttribute('href'),
         '/site/s-2/a/a-3?country=us&q=hay&z=3'
       );
-      assert.equal(this.links['s-3-a-1'].getAttribute('href'), '/site/s-3/a/a-1?country=nz&q=yeah');
-      assert.equal(
+      assert.strictEqual(
+        this.links['s-3-a-1'].getAttribute('href'),
+        '/site/s-3/a/a-1?country=nz&q=yeah'
+      );
+      assert.strictEqual(
         this.links['s-3-a-2'].getAttribute('href'),
         '/site/s-3/a/a-2?country=nz&q=lol&z=1'
       );
-      assert.equal(
+      assert.strictEqual(
         this.links['s-3-a-3'].getAttribute('href'),
         '/site/s-3/a/a-3?country=nz&q=hay&z=3'
       );

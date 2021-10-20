@@ -821,7 +821,7 @@ moduleFor(
           return this.visit('/blog');
         })
         .catch((error) => {
-          assert.equal(error.message, 'Whoops! Something went wrong...');
+          assert.strictEqual(error.message, 'Whoops! Something went wrong...');
         });
     }
 

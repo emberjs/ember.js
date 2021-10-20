@@ -31,7 +31,7 @@ moduleFor(
         port: '1337',
 
         replace(url) {
-          assert.equal(url, expectedURL);
+          assert.strictEqual(url, expectedURL);
         },
       };
 
@@ -43,10 +43,14 @@ moduleFor(
       assert
     ) {
       let location = mockBrowserLocation({ pathname: 'test' }, assert);
-      assert.equal(getPath(location), '/test', 'When there is no leading slash, one is added.');
+      assert.strictEqual(
+        getPath(location),
+        '/test',
+        'When there is no leading slash, one is added.'
+      );
 
       location = mockBrowserLocation({ pathname: '/test' }, assert);
-      assert.equal(
+      assert.strictEqual(
         getPath(location),
         '/test',
         "When a leading slash is already there, it isn't added again"
@@ -55,7 +59,7 @@ moduleFor(
 
     ['@test getQuery() should return location.search as-is'](assert) {
       let location = mockBrowserLocation({ search: '?foo=bar' }, assert);
-      assert.equal(getQuery(location), '?foo=bar');
+      assert.strictEqual(getQuery(location), '?foo=bar');
     }
 
     ['@test getFullPath() should return full pathname including query and hash'](assert) {
@@ -69,26 +73,26 @@ moduleFor(
         assert
       );
 
-      assert.equal(getFullPath(location), '/about?foo=bar#foo');
+      assert.strictEqual(getFullPath(location), '/about?foo=bar#foo');
     }
 
     ['@test Feature-Detecting onhashchange'](assert) {
-      assert.equal(
+      assert.strictEqual(
         supportsHashChange(undefined, { onhashchange() {} }),
         true,
         'When not in IE, use onhashchange existence as evidence of the feature'
       );
-      assert.equal(
+      assert.strictEqual(
         supportsHashChange(undefined, {}),
         false,
         'When not in IE, use onhashchange absence as evidence of the feature absence'
       );
-      assert.equal(
+      assert.strictEqual(
         supportsHashChange(7, { onhashchange() {} }),
         false,
         'When in IE7 compatibility mode, never report existence of the feature'
       );
-      assert.equal(
+      assert.strictEqual(
         supportsHashChange(8, { onhashchange() {} }),
         true,
         'When in IE8+, use onhashchange existence as evidence of the feature'
@@ -96,19 +100,23 @@ moduleFor(
     }
 
     ['@test Feature-detecting the history API'](assert) {
-      assert.equal(
+      assert.strictEqual(
         supportsHistory('', { pushState: true }),
         true,
         'returns true if not Android Gingerbread and history.pushState exists'
       );
-      assert.equal(
+      assert.strictEqual(
         supportsHistory('', {}),
         false,
         "returns false if history.pushState doesn't exist"
       );
-      assert.equal(supportsHistory('', undefined), false, "returns false if history doesn't exist");
+      assert.strictEqual(
+        supportsHistory('', undefined),
+        false,
+        "returns false if history doesn't exist"
+      );
 
-      assert.equal(
+      assert.strictEqual(
         supportsHistory(
           'Mozilla/5.0 (Linux; U; Android 2.3.5; en-us; HTC Vision Build/GRI40) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1',
           { pushState: true }
@@ -117,7 +125,7 @@ moduleFor(
         'returns false if Android 2.x stock browser (not Chrome) claiming to support pushState'
       );
 
-      assert.equal(
+      assert.strictEqual(
         supportsHistory(
           'Mozilla/5.0 (Linux; U; Android 4.0.3; nl-nl; GT-N7000 Build/IML74K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30',
           { pushState: true }
@@ -126,7 +134,7 @@ moduleFor(
         'returns false for Android 4.0.x stock browser (not Chrome) claiming to support pushState'
       );
 
-      assert.equal(
+      assert.strictEqual(
         supportsHistory(
           'Mozilla/5.0 (Linux; U; Android 20.3.5; en-us; HTC Vision Build/GRI40) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1',
           { pushState: true }
@@ -135,7 +143,7 @@ moduleFor(
         'returns true if Android version begins with 2, but is greater than 2'
       );
 
-      assert.equal(
+      assert.strictEqual(
         supportsHistory(
           'Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19',
           { pushState: true }
@@ -145,7 +153,7 @@ moduleFor(
       );
 
       // Windows Phone UA and History API: https://github.com/Modernizr/Modernizr/issues/1471
-      assert.equal(
+      assert.strictEqual(
         supportsHistory(
           'Mozilla/5.0 (Mobile; Windows Phone 8.1; Android 4.0; ARM; Trident/7.0; Touch; rv:11.0; IEMobile/11.0; Microsoft; Virtual) like iPhone OS 7_0_3 Mac OS X AppleWebKit/537 (KHTML, like Gecko) Mobile Safari/537',
           { pushState: true }

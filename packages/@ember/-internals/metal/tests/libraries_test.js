@@ -29,8 +29,8 @@ moduleFor(
       libs.register('my-lib', '2.0.0a');
       libs.registerCoreLibrary('DS', '1.0.0-beta.2');
 
-      assert.equal(registry[0].name, 'DS');
-      assert.equal(registry[1].name, 'my-lib');
+      assert.strictEqual(registry[0].name, 'DS');
+      assert.strictEqual(registry[1].name, 'my-lib');
     }
 
     ['@test only the first registration of a library is stored'](assert) {
@@ -41,22 +41,22 @@ moduleFor(
       libs.register('magic', 1.23);
       libs.register('magic', 2.23);
 
-      assert.equal(registry[0].name, 'magic');
-      assert.equal(registry[0].version, 1.23);
-      assert.equal(registry.length, 1);
+      assert.strictEqual(registry[0].name, 'magic');
+      assert.strictEqual(registry[0].version, 1.23);
+      assert.strictEqual(registry.length, 1);
     }
 
     ['@test isRegistered returns correct value'](assert) {
       if (EMBER_LIBRARIES_ISREGISTERED) {
         assert.expect(3);
 
-        assert.equal(libs.isRegistered('magic'), false);
+        assert.strictEqual(libs.isRegistered('magic'), false);
 
         libs.register('magic', 1.23);
-        assert.equal(libs.isRegistered('magic'), true);
+        assert.strictEqual(libs.isRegistered('magic'), true);
 
         libs.deRegister('magic');
-        assert.equal(libs.isRegistered('magic'), false);
+        assert.strictEqual(libs.isRegistered('magic'), false);
       } else {
         assert.expect(0);
       }
@@ -74,7 +74,7 @@ moduleFor(
 
       setDebugFunction('warn', function (msg, test) {
         if (!test) {
-          assert.equal(msg, 'Library "magic" is already registered with Ember.');
+          assert.strictEqual(msg, 'Library "magic" is already registered with Ember.');
         }
       });
 
@@ -92,8 +92,8 @@ moduleFor(
       libs.deRegister('lib1');
       libs.deRegister('lib3');
 
-      assert.equal(registry[0].name, 'lib2');
-      assert.equal(registry.length, 1);
+      assert.strictEqual(registry[0].name, 'lib2');
+      assert.strictEqual(registry.length, 1);
     }
   }
 );

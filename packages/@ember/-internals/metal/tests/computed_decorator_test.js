@@ -28,8 +28,8 @@ moduleFor(
       let obj1 = new Class1();
       let obj2 = Class2.create();
 
-      assert.equal(firstName, obj1.otherFirstName);
-      assert.equal(firstName, obj2.otherFirstName);
+      assert.strictEqual(firstName, obj1.otherFirstName);
+      assert.strictEqual(firstName, obj2.otherFirstName);
     }
 
     ['@test decorator can still have a configuration object'](assert) {
@@ -47,7 +47,7 @@ moduleFor(
 
       let obj1 = new Foo();
 
-      assert.equal('something', obj1.baz);
+      assert.strictEqual('something', obj1.baz);
     }
 
     ['@test it works with functions'](assert) {
@@ -58,8 +58,8 @@ moduleFor(
         last = 'jackson';
 
         @computed('first', 'last', function () {
-          assert.equal(this.first, 'rob');
-          assert.equal(this.last, 'jackson');
+          assert.strictEqual(this.first, 'rob');
+          assert.strictEqual(this.last, 'jackson');
         })
         fullName;
       }
@@ -81,10 +81,10 @@ moduleFor(
         }
       }
 
-      assert.equal(Obj.foo, 123, 'should return value');
+      assert.strictEqual(Obj.foo, 123, 'should return value');
       Obj.foo;
 
-      assert.equal(count, 1, 'should only call getter once');
+      assert.strictEqual(count, 1, 'should only call getter once');
     }
 
     ['@test it works with computed desc'](assert) {
@@ -100,13 +100,13 @@ moduleFor(
 
         @computed('first', 'last', {
           get() {
-            assert.equal(this.first, expectedFirst, 'getter: first name matches');
-            assert.equal(this.last, expectedLast, 'getter: last name matches');
+            assert.strictEqual(this.first, expectedFirst, 'getter: first name matches');
+            assert.strictEqual(this.last, expectedLast, 'getter: last name matches');
             return `${this.first} ${this.last}`;
           },
 
           set(key, name) {
-            assert.equal(name, expectedName, 'setter: name matches');
+            assert.strictEqual(name, expectedName, 'setter: name matches');
 
             let [first, last] = name.split(' ');
             setProperties(this, { first, last });
@@ -212,10 +212,10 @@ moduleFor(
       }
 
       let instance = new TestObj();
-      assert.equal(instance.someGetter, 'true');
+      assert.strictEqual(instance.someGetter, 'true');
 
       set(instance, 'other', false);
-      assert.equal(instance.someGetter, 'false');
+      assert.strictEqual(instance.someGetter, 'false');
     }
 
     ['@test computed property can be accessed without `get`'](assert) {
@@ -229,8 +229,8 @@ moduleFor(
       }
       let obj = new Obj();
 
-      assert.equal(obj.foo, 'computed foo', 'should return value');
-      assert.equal(count, 1, 'should have invoked computed property');
+      assert.strictEqual(obj.foo, 'computed foo', 'should return value');
+      assert.strictEqual(count, 1, 'should have invoked computed property');
     }
 
     ['@test defining computed property should invoke property on get'](assert) {
@@ -244,8 +244,8 @@ moduleFor(
       }
       let obj = new Obj();
 
-      assert.equal(obj.foo, 'computed foo', 'should return value');
-      assert.equal(count, 1, 'should have invoked computed property');
+      assert.strictEqual(obj.foo, 'computed foo', 'should return value');
+      assert.strictEqual(count, 1, 'should have invoked computed property');
     }
 
     ['@test setter is invoked with correct parameters'](assert) {
@@ -264,9 +264,9 @@ moduleFor(
       }
       let obj = new Obj();
 
-      assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value with set()');
-      assert.equal(count, 1, 'should have invoked computed property');
-      assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value with get()');
+      assert.strictEqual(set(obj, 'foo', 'bar'), 'bar', 'should return set value with set()');
+      assert.strictEqual(count, 1, 'should have invoked computed property');
+      assert.strictEqual(get(obj, 'foo'), 'computed bar', 'should return new value with get()');
     }
 
     ['@test when not returning from setter, getter is called'](assert) {
@@ -285,8 +285,8 @@ moduleFor(
       }
       let obj = new Obj();
 
-      assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value with set()');
-      assert.equal(count, 1, 'should have invoked getter');
+      assert.strictEqual(set(obj, 'foo', 'bar'), 'bar', 'should return set value with set()');
+      assert.strictEqual(count, 1, 'should have invoked getter');
     }
 
     ['@test when returning from setter, getter is not called'](assert) {
@@ -307,8 +307,8 @@ moduleFor(
       }
       let obj = new Obj();
 
-      assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value with set()');
-      assert.equal(count, 0, 'should not have invoked getter');
+      assert.strictEqual(set(obj, 'foo', 'bar'), 'bar', 'should return set value with set()');
+      assert.strictEqual(count, 0, 'should not have invoked getter');
     }
 
     ['@test throws if a value is decorated twice']() {

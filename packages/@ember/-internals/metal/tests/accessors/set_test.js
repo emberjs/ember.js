@@ -22,10 +22,10 @@ moduleFor(
           continue;
         }
 
-        assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
+        assert.strictEqual(set(newObj, key, obj[key]), obj[key], 'should return value');
         assert.ok(key in newObj, 'should have key');
         assert.ok(Object.prototype.hasOwnProperty.call(newObj, key), 'should have key');
-        assert.equal(get(newObj, key), obj[key], 'should set value');
+        assert.strictEqual(get(newObj, key), obj[key], 'should set value');
       }
     }
 
@@ -33,7 +33,7 @@ moduleFor(
       let obj = {};
 
       set(obj, 1, 'first');
-      assert.equal(obj[1], 'first');
+      assert.strictEqual(obj[1], 'first');
     }
 
     ['@test should set an array index'](assert) {
@@ -52,15 +52,15 @@ moduleFor(
         },
 
         setUnknownProperty(key, value) {
-          assert.equal(key, 'foo', 'should pass key');
-          assert.equal(value, 'BAR', 'should pass key');
+          assert.strictEqual(key, 'foo', 'should pass key');
+          assert.strictEqual(value, 'BAR', 'should pass key');
           this.count++;
           return 'FOO';
         },
       };
 
-      assert.equal(set(obj, 'foo', 'BAR'), 'BAR', 'should return set value');
-      assert.equal(obj.count, 1, 'should have invoked');
+      assert.strictEqual(set(obj, 'foo', 'BAR'), 'BAR', 'should return set value');
+      assert.strictEqual(obj.count, 1, 'should have invoked');
     }
 
     ['@test warn on attempts to call set with undefined as object']() {
@@ -111,14 +111,14 @@ moduleFor(
 
       set(obj, 'foo', 'bar');
 
-      assert.equal(obj.foo, 'bar');
+      assert.strictEqual(obj.foo, 'bar');
     }
 
     ['@test does not warn on attempts of calling set on a destroyed object with `trySet`'](assert) {
       let obj = { isDestroyed: true };
 
       trySet(obj, 'favoriteFood', 'hot dogs');
-      assert.equal(obj.favoriteFood, undefined, 'does not set and does not error');
+      assert.strictEqual(obj.favoriteFood, undefined, 'does not set and does not error');
     }
 
     ['@test should work with native setters'](assert) {
@@ -139,9 +139,9 @@ moduleFor(
 
       let obj = new Foo();
 
-      assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
-      assert.equal(count, 1, 'should have native setter');
-      assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value');
+      assert.strictEqual(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
+      assert.strictEqual(count, 1, 'should have native setter');
+      assert.strictEqual(get(obj, 'foo'), 'computed bar', 'should return new value');
     }
 
     ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {

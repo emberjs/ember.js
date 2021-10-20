@@ -40,7 +40,7 @@ moduleFor(
             return true;
           },
           factoryFor(fullName) {
-            assert.equal(fullName, 'model:post', 'correct factory was looked up');
+            assert.strictEqual(fullName, 'model:post', 'correct factory was looked up');
 
             return {
               class: Post,
@@ -58,8 +58,8 @@ moduleFor(
       // Override the computed property by redefining it
       defineProperty(route, '_qp', null, null);
 
-      assert.equal(route.model({ post_id: 1 }), post);
-      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+      assert.strictEqual(route.model({ post_id: 1 }), post);
+      assert.strictEqual(route.findModel('post', 1), post, '#findModel returns the correct post');
 
       runDestroy(owner);
     }
@@ -158,9 +158,9 @@ moduleFor(
       let route = EmberRoute.extend({
         actions: {
           returnsTrue(foo, bar) {
-            assert.equal(foo, 1);
-            assert.equal(bar, 2);
-            assert.equal(this, route);
+            assert.strictEqual(foo, 1);
+            assert.strictEqual(bar, 2);
+            assert.strictEqual(this, route);
             return true;
           },
 
@@ -171,9 +171,9 @@ moduleFor(
         },
       }).create();
 
-      assert.equal(route.send('returnsTrue', 1, 2), true);
-      assert.equal(route.send('returnsFalse'), false);
-      assert.equal(route.send('nonexistent', 1, 2, 3), undefined);
+      assert.strictEqual(route.send('returnsTrue', 1, 2), true);
+      assert.strictEqual(route.send('returnsFalse'), false);
+      assert.strictEqual(route.send('nonexistent', 1, 2, 3), undefined);
 
       runDestroy(route);
     }
@@ -184,9 +184,9 @@ moduleFor(
         router: {},
         actions: {
           returnsTrue(foo, bar) {
-            assert.equal(foo, 1);
-            assert.equal(bar, 2);
-            assert.equal(this, route);
+            assert.strictEqual(foo, 1);
+            assert.strictEqual(bar, 2);
+            assert.strictEqual(this, route);
             return true;
           },
 
@@ -197,9 +197,9 @@ moduleFor(
         },
       }).create();
 
-      assert.equal(true, route.send('returnsTrue', 1, 2));
-      assert.equal(false, route.send('returnsFalse'));
-      assert.equal(undefined, route.send('nonexistent', 1, 2, 3));
+      assert.strictEqual(true, route.send('returnsTrue', 1, 2));
+      assert.strictEqual(false, route.send('returnsFalse'));
+      assert.strictEqual(undefined, route.send('nonexistent', 1, 2, 3));
 
       runDestroy(route);
     }
@@ -256,7 +256,11 @@ moduleFor(
     }
 
     ['@test returns undefined if model is not set'](assert) {
-      assert.equal(route.serialize(undefined, ['post_id']), undefined, 'serialized correctly');
+      assert.strictEqual(
+        route.serialize(undefined, ['post_id']),
+        undefined,
+        'serialized correctly'
+      );
     }
   }
 );
@@ -307,7 +311,7 @@ moduleFor(
 
       routeOne.controllerName = 'test';
 
-      assert.equal(routeTwo.controllerFor('one'), testController);
+      assert.strictEqual(routeTwo.controllerFor('one'), testController);
     }
   }
 );
@@ -330,7 +334,7 @@ moduleFor(
       let appRoute = owner.lookup('route:application');
       let authService = owner.lookup('service:auth');
 
-      assert.equal(authService, appRoute.get('authService'), 'service.auth is injected');
+      assert.strictEqual(authService, appRoute.get('authService'), 'service.auth is injected');
     }
   }
 );

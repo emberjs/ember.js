@@ -11,20 +11,20 @@ moduleFor(
       let object = { length: 0 };
       let proxy = ObjectProxy.create({ content: { size: 0 } });
 
-      assert.equal(true, isEmpty(null), 'for null');
-      assert.equal(true, isEmpty(undefined), 'for undefined');
-      assert.equal(true, isEmpty(''), 'for an empty String');
-      assert.equal(false, isEmpty('  '), 'for a whitespace String');
-      assert.equal(false, isEmpty('\n\t'), 'for another whitespace String');
-      assert.equal(false, isEmpty(true), 'for true');
-      assert.equal(false, isEmpty(false), 'for false');
-      assert.equal(false, isEmpty(string), 'for a String');
-      assert.equal(false, isEmpty(fn), 'for a Function');
-      assert.equal(false, isEmpty(0), 'for 0');
-      assert.equal(true, isEmpty([]), 'for an empty Array');
-      assert.equal(false, isEmpty({}), 'for an empty Object');
-      assert.equal(true, isEmpty(object), "for an Object that has zero 'length'");
-      assert.equal(true, isEmpty(proxy), "for a proxy that has zero 'size'");
+      assert.strictEqual(true, isEmpty(null), 'for null');
+      assert.strictEqual(true, isEmpty(undefined), 'for undefined');
+      assert.strictEqual(true, isEmpty(''), 'for an empty String');
+      assert.strictEqual(false, isEmpty('  '), 'for a whitespace String');
+      assert.strictEqual(false, isEmpty('\n\t'), 'for another whitespace String');
+      assert.strictEqual(false, isEmpty(true), 'for true');
+      assert.strictEqual(false, isEmpty(false), 'for false');
+      assert.strictEqual(false, isEmpty(string), 'for a String');
+      assert.strictEqual(false, isEmpty(fn), 'for a Function');
+      assert.strictEqual(false, isEmpty(0), 'for 0');
+      assert.strictEqual(true, isEmpty([]), 'for an empty Array');
+      assert.strictEqual(false, isEmpty({}), 'for an empty Object');
+      assert.strictEqual(true, isEmpty(object), "for an Object that has zero 'length'");
+      assert.strictEqual(true, isEmpty(proxy), "for a proxy that has zero 'size'");
     }
   }
 );

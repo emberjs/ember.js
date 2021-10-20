@@ -10,10 +10,10 @@ moduleFor(
       run(() => {
         schedule('actions', () => cnt++);
         schedule('actions', () => cnt++);
-        assert.equal(cnt, 0, 'should not run action yet');
+        assert.strictEqual(cnt, 0, 'should not run action yet');
       });
 
-      assert.equal(cnt, 2, 'should flush actions now');
+      assert.strictEqual(cnt, 2, 'should flush actions now');
     }
 
     ['@test a scheduled item can be canceled'](assert) {
@@ -32,15 +32,15 @@ moduleFor(
 
       run(() => {
         schedule('actions', () => cnt++);
-        assert.equal(cnt, 0, 'should not run action yet');
+        assert.strictEqual(cnt, 0, 'should not run action yet');
 
         run(() => {
           schedule('actions', () => cnt++);
         });
-        assert.equal(cnt, 1, 'should not run action yet');
+        assert.strictEqual(cnt, 1, 'should not run action yet');
       });
 
-      assert.equal(cnt, 2, 'should flush actions now');
+      assert.strictEqual(cnt, 2, 'should flush actions now');
     }
 
     ['@test prior queues should be flushed before moving on to next queue'](assert) {
@@ -52,27 +52,27 @@ moduleFor(
 
         schedule('actions', () => {
           order.push('actions');
-          assert.equal(runLoop, _getCurrentRunLoop(), 'same run loop used');
+          assert.strictEqual(runLoop, _getCurrentRunLoop(), 'same run loop used');
         });
 
         schedule('afterRender', () => {
           order.push('afterRender');
-          assert.equal(runLoop, _getCurrentRunLoop(), 'same run loop used');
+          assert.strictEqual(runLoop, _getCurrentRunLoop(), 'same run loop used');
 
           schedule('afterRender', () => {
             order.push('afterRender');
-            assert.equal(runLoop, _getCurrentRunLoop(), 'same run loop used');
+            assert.strictEqual(runLoop, _getCurrentRunLoop(), 'same run loop used');
           });
 
           schedule('actions', () => {
             order.push('actions');
-            assert.equal(runLoop, _getCurrentRunLoop(), 'same run loop used');
+            assert.strictEqual(runLoop, _getCurrentRunLoop(), 'same run loop used');
           });
         });
 
         schedule('destroy', () => {
           order.push('destroy');
-          assert.equal(runLoop, _getCurrentRunLoop(), 'same run loop used');
+          assert.strictEqual(runLoop, _getCurrentRunLoop(), 'same run loop used');
         });
       });
 

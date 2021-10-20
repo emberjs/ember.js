@@ -42,7 +42,7 @@ moduleFor(
       }; // Behave like an Ember.Namespace
 
       set(lookup.Foo, 'bar', 'baz');
-      assert.equal(get(lookup.Foo, 'bar'), 'baz');
+      assert.strictEqual(get(lookup.Foo, 'bar'), 'baz');
     }
 
     // ..........................................................
@@ -51,12 +51,12 @@ moduleFor(
 
     ['@test [obj, foo] -> obj.foo'](assert) {
       set(obj, 'foo', 'BAM');
-      assert.equal(get(obj, 'foo'), 'BAM');
+      assert.strictEqual(get(obj, 'foo'), 'BAM');
     }
 
     ['@test [obj, foo.bar] -> obj.foo.bar'](assert) {
       set(obj, 'foo.bar', 'BAM');
-      assert.equal(get(obj, 'foo.bar'), 'BAM');
+      assert.strictEqual(get(obj, 'foo.bar'), 'BAM');
     }
   }
 );
@@ -81,7 +81,7 @@ moduleFor(
       try {
         set(obj, 'bla.bla', 'BAM');
       } catch (ex) {
-        assert.equal(ex.message, exceptionMessage);
+        assert.strictEqual(ex.message, exceptionMessage);
       }
     }
 

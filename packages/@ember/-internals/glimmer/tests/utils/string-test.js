@@ -14,15 +14,15 @@ moduleFor(
     ['@test htmlSafe should return an empty string for null']() {
       let safeString = htmlSafe(null);
 
-      this.assert.equal(safeString instanceof SafeString, true, 'should be a SafeString');
-      this.assert.equal(safeString.toString(), '', 'should return an empty string');
+      this.assert.strictEqual(safeString instanceof SafeString, true, 'should be a SafeString');
+      this.assert.strictEqual(safeString.toString(), '', 'should return an empty string');
     }
 
     ['@test htmlSafe should return an instance of SafeString for an empty string']() {
       let safeString = htmlSafe();
 
-      this.assert.equal(safeString instanceof SafeString, true, 'should be a SafeString');
-      this.assert.equal(safeString.toString(), '', 'should return an empty string');
+      this.assert.strictEqual(safeString instanceof SafeString, true, 'should be a SafeString');
+      this.assert.strictEqual(safeString.toString(), '', 'should return an empty string');
     }
   }
 );

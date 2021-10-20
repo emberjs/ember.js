@@ -15,8 +15,8 @@ moduleFor(
       let obj = {};
       MixinB.apply(obj);
 
-      assert.equal(obj.foo, 'FOO', 'should defined foo');
-      assert.equal(obj.bar, undefined, 'should not define bar');
+      assert.strictEqual(obj.foo, 'FOO', 'should defined foo');
+      assert.strictEqual(obj.bar, undefined, 'should not define bar');
     }
   }
 );

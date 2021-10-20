@@ -34,7 +34,7 @@ function fastbootVisit(App, url) {
 
 function assertFastbootResult(assert, expected) {
   return function (actual) {
-    assert.equal(actual.url, expected.url);
+    assert.strictEqual(actual.url, expected.url);
     assertHTMLMatches(assert, actual.body, expected.body);
   };
 }
@@ -184,7 +184,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
           instance.destroy();
         },
         function (error) {
-          assert.equal(error.message, 'Error from A');
+          assert.strictEqual(error.message, 'Error from A');
         }
       ),
       fastbootVisit(App, '/b').then(
@@ -193,7 +193,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
           instance.destroy();
         },
         function (error) {
-          assert.equal(error.message, 'Error from B');
+          assert.strictEqual(error.message, 'Error from B');
         }
       ),
     ]);

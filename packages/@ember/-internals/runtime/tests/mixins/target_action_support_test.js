@@ -47,8 +47,8 @@ moduleFor(
       let obj = EmberObject.extend(TargetActionSupport).create({
         target: EmberObject.create({
           send(evt, context) {
-            assert.equal(evt, 'anEvent', 'send() method was invoked with correct event name');
-            assert.equal(context, obj, 'send() method was invoked with correct context');
+            assert.strictEqual(evt, 'anEvent', 'send() method was invoked with correct event name');
+            assert.strictEqual(context, obj, 'send() method was invoked with correct context');
           },
         }),
 

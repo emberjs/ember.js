@@ -69,11 +69,11 @@ moduleFor(
 
     ['@test should not reify location until setupRouter is called'](assert) {
       let router = createRouter({ options: { disableSetup: true } });
-      assert.equal(typeof router.location, 'string', 'location is specified as a string');
+      assert.strictEqual(typeof router.location, 'string', 'location is specified as a string');
 
       router.setupRouter();
 
-      assert.equal(typeof router.location, 'object', 'location is reified into an object');
+      assert.strictEqual(typeof router.location, 'object', 'location is reified into an object');
     }
 
     ['@test should destroy its location upon destroying the routers owner.'](assert) {
@@ -94,7 +94,7 @@ moduleFor(
 
       let location = router.get('location');
 
-      assert.equal(location.get('rootURL'), '/rootdir/');
+      assert.strictEqual(location.get('rootURL'), '/rootdir/');
     }
 
     ['@test replacePath should be called with the right path'](assert) {
@@ -109,7 +109,7 @@ moduleFor(
         hash: '',
         search: '',
         replace(url) {
-          assert.equal(url, 'http://test.com/rootdir/#/welcome');
+          assert.strictEqual(url, 'http://test.com/rootdir/#/welcome');
         },
       };
 
@@ -137,17 +137,17 @@ moduleFor(
         return Router._routePath(routeInfos);
       }
 
-      assert.equal(routePath('foo'), 'foo');
-      assert.equal(routePath('foo', 'bar', 'baz'), 'foo.bar.baz');
-      assert.equal(routePath('foo', 'foo.bar'), 'foo.bar');
-      assert.equal(routePath('foo', 'foo.bar', 'foo.bar.baz'), 'foo.bar.baz');
-      assert.equal(routePath('foo', 'foo.bar', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
-      assert.equal(routePath('foo', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
-      assert.equal(routePath('foo.bar', 'bar.baz.wow'), 'foo.bar.baz.wow');
+      assert.strictEqual(routePath('foo'), 'foo');
+      assert.strictEqual(routePath('foo', 'bar', 'baz'), 'foo.bar.baz');
+      assert.strictEqual(routePath('foo', 'foo.bar'), 'foo.bar');
+      assert.strictEqual(routePath('foo', 'foo.bar', 'foo.bar.baz'), 'foo.bar.baz');
+      assert.strictEqual(routePath('foo', 'foo.bar', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
+      assert.strictEqual(routePath('foo', 'foo.bar.baz.wow'), 'foo.bar.baz.wow');
+      assert.strictEqual(routePath('foo.bar', 'bar.baz.wow'), 'foo.bar.baz.wow');
 
       // This makes no sense, not trying to handle it, just
       // making sure it doesn't go boom.
-      assert.equal(routePath('foo.bar.baz', 'foo'), 'foo.bar.baz.foo');
+      assert.strictEqual(routePath('foo.bar.baz', 'foo'), 'foo.bar.baz.foo');
     }
 
     ['@test Router should cancel routing setup when the Location class says so via cancelRouterSetup'](
@@ -188,7 +188,7 @@ moduleFor(
         hash: '',
         search: '',
         replace(url) {
-          assert.equal(url, 'http://test.com/rootdir/#/welcome');
+          assert.strictEqual(url, 'http://test.com/rootdir/#/welcome');
         },
       };
       location.history = null;
@@ -210,8 +210,8 @@ moduleFor(
       let router = createRouter({
         settings: {
           _doURLTransition(routerJsMethod, url) {
-            assert.equal(routerJsMethod, 'handleURL');
-            assert.equal(url, '/foo/bar?time=morphin');
+            assert.strictEqual(routerJsMethod, 'handleURL');
+            assert.strictEqual(url, '/foo/bar?time=morphin');
           },
         },
       });
@@ -301,7 +301,7 @@ moduleFor(
 
     ['@test computed url when location is a string should not crash'](assert) {
       let router = createRouter({ options: { disableSetup: true } });
-      assert.equal(router.url, undefined);
+      assert.strictEqual(router.url, undefined);
     }
   }
 );

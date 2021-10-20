@@ -12,9 +12,9 @@ moduleFor(
       let obj = {};
       MixinA.apply(obj);
 
-      assert.equal(get(obj, 'foo'), 'FOO2', 'mixin() should override');
-      assert.equal(get(obj, 'baz'), 'BAZ', 'preserve MixinA props');
-      assert.equal(get(obj, 'bar'), 'BAR', 'include MixinB props');
+      assert.strictEqual(get(obj, 'foo'), 'FOO2', 'mixin() should override');
+      assert.strictEqual(get(obj, 'baz'), 'BAZ', 'preserve MixinA props');
+      assert.strictEqual(get(obj, 'bar'), 'BAR', 'include MixinB props');
     }
 
     ['@test using reopen() and calling _super where there is not a super function does not cause infinite recursion'](
@@ -47,7 +47,7 @@ moduleFor(
         }
       });
 
-      assert.equal(result, 'Breakfast!');
+      assert.strictEqual(result, 'Breakfast!');
     }
   }
 );

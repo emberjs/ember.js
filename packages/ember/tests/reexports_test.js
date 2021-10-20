@@ -69,7 +69,7 @@ moduleFor(
     ['@skip Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
-        assert.equal(
+        assert.strictEqual(
           Ember.String.htmlSafe,
           glimmer.htmlSafe,
           'Ember.String.htmlSafe is exported correctly'
@@ -81,7 +81,7 @@ moduleFor(
     ['@skip Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
-        assert.equal(
+        assert.strictEqual(
           Ember.String.isHTMLSafe,
           glimmer.isHTMLSafe,
           'Ember.String.isHTMLSafe is exported correctly'
@@ -92,7 +92,7 @@ moduleFor(
 
     '@test Ember.FEATURES is exported'(assert) {
       for (let feature in FEATURES) {
-        assert.equal(
+        assert.strictEqual(
           Ember.FEATURES[feature],
           FEATURES[feature],
           'Ember.FEATURES contains ${feature} with correct value'

@@ -79,25 +79,25 @@ moduleFor(
     }
 
     ['@test should get normal properties'](assert) {
-      assert.equal(object.get('normal'), 'value');
+      assert.strictEqual(object.get('normal'), 'value');
     }
 
     ['@test should call computed properties and return their result'](assert) {
-      assert.equal(object.get('computed'), 'value');
+      assert.strictEqual(object.get('computed'), 'value');
     }
 
     ['@test should return the function for a non-computed property'](assert) {
       let value = object.get('method');
-      assert.equal(typeof value, 'function');
+      assert.strictEqual(typeof value, 'function');
     }
 
     ['@test should return null when property value is null'](assert) {
-      assert.equal(object.get('nullProperty'), null);
+      assert.strictEqual(object.get('nullProperty'), null);
     }
 
     ['@test should call unknownProperty when value is undefined'](assert) {
-      assert.equal(object.get('unknown'), 'unknown');
-      assert.equal(object.lastUnknownProperty, 'unknown');
+      assert.strictEqual(object.get('unknown'), 'unknown');
+      assert.strictEqual(object.lastUnknownProperty, 'unknown');
     }
   }
 );
@@ -133,33 +133,33 @@ moduleFor(
     }
 
     ['@test should get normal properties on Ember.Observable'](assert) {
-      assert.equal(get(objectA, 'normal'), 'value');
+      assert.strictEqual(get(objectA, 'normal'), 'value');
     }
 
     ['@test should call computed properties on Ember.Observable and return their result'](assert) {
-      assert.equal(get(objectA, 'computed'), 'value');
+      assert.strictEqual(get(objectA, 'computed'), 'value');
     }
 
     ['@test should return the function for a non-computed property on Ember.Observable'](assert) {
       let value = get(objectA, 'method');
-      assert.equal(typeof value, 'function');
+      assert.strictEqual(typeof value, 'function');
     }
 
     ['@test should return null when property value is null on Ember.Observable'](assert) {
-      assert.equal(get(objectA, 'nullProperty'), null);
+      assert.strictEqual(get(objectA, 'nullProperty'), null);
     }
 
     ['@test should call unknownProperty when value is undefined on Ember.Observable'](assert) {
-      assert.equal(get(objectA, 'unknown'), 'unknown');
-      assert.equal(objectA.lastUnknownProperty, 'unknown');
+      assert.strictEqual(get(objectA, 'unknown'), 'unknown');
+      assert.strictEqual(objectA.lastUnknownProperty, 'unknown');
     }
 
     ['@test should get normal properties on standard objects'](assert) {
-      assert.equal(get(objectB, 'normal'), 'value');
+      assert.strictEqual(get(objectB, 'normal'), 'value');
     }
 
     ['@test should return null when property is null on standard objects'](assert) {
-      assert.equal(get(objectB, 'nullProperty'), null);
+      assert.strictEqual(get(objectB, 'nullProperty'), null);
     }
 
     ['@test raise if the provided object is undefined']() {
@@ -182,7 +182,7 @@ moduleFor(
         }).create(),
       });
 
-      assert.equal(get(foo, 'bar.baz'), 'blargh');
+      assert.strictEqual(get(foo, 'bar.baz'), 'blargh');
     }
 
     ['@test should return a property at a given path relative to the passed object - JavaScript hash'](
@@ -194,7 +194,7 @@ moduleFor(
         },
       };
 
-      assert.equal(get(foo, 'bar.baz'), 'blargh');
+      assert.strictEqual(get(foo, 'bar.baz'), 'blargh');
     }
   }
 );
@@ -251,39 +251,39 @@ moduleFor(
 
     ['@test should change normal properties and return the value'](assert) {
       let ret = object.set('normal', 'changed');
-      assert.equal(object.get('normal'), 'changed');
-      assert.equal(ret, 'changed');
+      assert.strictEqual(object.get('normal'), 'changed');
+      assert.strictEqual(ret, 'changed');
     }
 
     ['@test should call computed properties passing value and return the value'](assert) {
       let ret = object.set('computed', 'changed');
-      assert.equal(object.get('_computed'), 'changed');
-      assert.equal(ret, 'changed');
+      assert.strictEqual(object.get('_computed'), 'changed');
+      assert.strictEqual(ret, 'changed');
     }
 
     ['@test should change normal properties when passing undefined'](assert) {
       let ret = object.set('normal', undefined);
-      assert.equal(object.get('normal'), undefined);
-      assert.equal(ret, undefined);
+      assert.strictEqual(object.get('normal'), undefined);
+      assert.strictEqual(ret, undefined);
     }
 
     ['@test should replace the function for a non-computed property and return the value'](assert) {
       let ret = object.set('method', 'changed');
-      assert.equal(object.get('_method'), 'method'); // make sure this was NOT run
+      assert.strictEqual(object.get('_method'), 'method'); // make sure this was NOT run
       assert.ok(typeof object.get('method') !== 'function');
-      assert.equal(ret, 'changed');
+      assert.strictEqual(ret, 'changed');
     }
 
     ['@test should replace prover when property value is null'](assert) {
       let ret = object.set('nullProperty', 'changed');
-      assert.equal(object.get('nullProperty'), 'changed');
-      assert.equal(ret, 'changed');
+      assert.strictEqual(object.get('nullProperty'), 'changed');
+      assert.strictEqual(ret, 'changed');
     }
 
     ['@test should call unknownProperty with value when property is undefined'](assert) {
       let ret = object.set('unknown', 'changed');
-      assert.equal(object.get('_unknown'), 'changed');
-      assert.equal(ret, 'changed');
+      assert.strictEqual(object.get('_unknown'), 'changed');
+      assert.strictEqual(ret, 'changed');
     }
   }
 );
@@ -362,13 +362,13 @@ moduleFor(
       let keys = w('computed dependent');
 
       keys.forEach(function (key) {
-        assert.equal(object.get(key), key, `Try #1: object.get(${key}) should run function`);
-        assert.equal(object.get(key), key, `Try #2: object.get(${key}) should run function`);
+        assert.strictEqual(object.get(key), key, `Try #1: object.get(${key}) should run function`);
+        assert.strictEqual(object.get(key), key, `Try #2: object.get(${key}) should run function`);
       });
 
       // verify each call count. cached should only be called once
       w('computedCalls dependentCalls').forEach((key) => {
-        assert.equal(object[key].length, 1, `non-cached property ${key} should be called 1x`);
+        assert.strictEqual(object[key].length, 1, `non-cached property ${key} should be called 1x`);
       });
     }
 
@@ -378,19 +378,19 @@ moduleFor(
       let values = w('value1 value2');
 
       keys.forEach((key) => {
-        assert.equal(
+        assert.strictEqual(
           object.set(key, values[0]),
           values[0],
           `Try #1: object.set(${key}, ${values[0]}) should run function`
         );
 
-        assert.equal(
+        assert.strictEqual(
           object.set(key, values[1]),
           values[1],
           `Try #2: object.set(${key}, ${values[1]}) should run function`
         );
 
-        assert.equal(
+        assert.strictEqual(
           object.set(key, values[1]),
           values[1],
           `Try #3: object.set(${key}, ${values[1]}) should not run function since it is setting same value as before`
@@ -405,13 +405,13 @@ moduleFor(
         // Cached properties first check their cached value before setting the
         // property. Other properties blindly call set.
         expectedLength = 3;
-        assert.equal(
+        assert.strictEqual(
           calls.length,
           expectedLength,
           `set(${key}) should be called the right amount of times`
         );
         for (idx = 0; idx < 2; idx++) {
-          assert.equal(
+          assert.strictEqual(
             calls[idx],
             values[idx],
             `call #${idx + 1} to set(${key}) should have passed value ${values[idx]}`
@@ -428,37 +428,49 @@ moduleFor(
       object.notifyPropertyChange('computed');
 
       object.get('computed'); // should run again
-      assert.equal(object.computedCalls.length, 2, 'should have invoked method 2x');
+      assert.strictEqual(object.computedCalls.length, 2, 'should have invoked method 2x');
     }
 
     ['@test change dependent should clear cache'](assert) {
       // call get several times to collect call count
       let ret1 = object.get('inc'); // should run func
-      assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
+      assert.strictEqual(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       object.set('changer', 'bar');
 
-      assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
+      assert.strictEqual(
+        object.get('inc'),
+        ret1 + 1,
+        'should increment after dependent key changes'
+      ); // should run again
     }
 
     ['@test just notifying change of dependent should clear cache'](assert) {
       // call get several times to collect call count
       let ret1 = object.get('inc'); // should run func
-      assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
+      assert.strictEqual(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       object.notifyPropertyChange('changer');
 
-      assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
+      assert.strictEqual(
+        object.get('inc'),
+        ret1 + 1,
+        'should increment after dependent key changes'
+      ); // should run again
     }
 
     ['@test changing dependent should clear nested cache'](assert) {
       // call get several times to collect call count
       let ret1 = object.get('nestedInc'); // should run func
-      assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
+      assert.strictEqual(
+        object.get('nestedInc'),
+        ret1,
+        'multiple calls should not run cached prop'
+      );
 
       object.set('changer', 'bar');
 
-      assert.equal(
+      assert.strictEqual(
         object.get('nestedInc'),
         ret1 + 1,
         'should increment after dependent key changes'
@@ -468,11 +480,15 @@ moduleFor(
     ['@test just notifying change of dependent should clear nested cache'](assert) {
       // call get several times to collect call count
       let ret1 = object.get('nestedInc'); // should run func
-      assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
+      assert.strictEqual(
+        object.get('nestedInc'),
+        ret1,
+        'multiple calls should not run cached prop'
+      );
 
       object.notifyPropertyChange('changer');
 
-      assert.equal(
+      assert.strictEqual(
         object.get('nestedInc'),
         ret1 + 1,
         'should increment after dependent key changes'
@@ -484,11 +500,15 @@ moduleFor(
     ['@test change dependent should clear cache when observers of dependent are called'](assert) {
       // call get several times to collect call count
       let ret1 = object.get('inc'); // should run func
-      assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
+      assert.strictEqual(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       // add observer to verify change...
       object.addObserver('inc', this, function () {
-        assert.equal(object.get('inc'), ret1 + 1, 'should increment after dependent key changes'); // should run again
+        assert.strictEqual(
+          object.get('inc'),
+          ret1 + 1,
+          'should increment after dependent key changes'
+        ); // should run again
       });
 
       // now run
@@ -504,8 +524,8 @@ moduleFor(
 
       // setting isOff to true should clear the kvo cache
       object.set('isOff', true);
-      assert.equal(object.get('isOff'), true, 'object.isOff should be true');
-      assert.equal(object.get('isOn'), false, 'object.isOn should be false');
+      assert.strictEqual(object.get('isOff'), true, 'object.isOff should be true');
+      assert.strictEqual(object.get('isOn'), false, 'object.isOn should be false');
     }
 
     ['@test dependent keys should be able to be specified as property paths'](assert) {
@@ -519,11 +539,11 @@ moduleFor(
         }),
       });
 
-      assert.equal(depObj.get('menuPrice'), 5, 'precond - initial value returns 5');
+      assert.strictEqual(depObj.get('menuPrice'), 5, 'precond - initial value returns 5');
 
       depObj.set('menu.price', 6);
 
-      assert.equal(
+      assert.strictEqual(
         depObj.get('menuPrice'),
         6,
         'cache is properly invalidated after nested property changes'
@@ -549,12 +569,12 @@ moduleFor(
         });
       });
 
-      assert.equal(DepObj.get('price'), 5, 'precond - computed property is correct');
+      assert.strictEqual(DepObj.get('price'), 5, 'precond - computed property is correct');
 
       run(function () {
         DepObj.set('restaurant.menu.price', 10);
       });
-      assert.equal(
+      assert.strictEqual(
         DepObj.get('price'),
         10,
         'cacheable computed properties are invalidated even if no run loop occurred'
@@ -563,12 +583,12 @@ moduleFor(
       run(function () {
         DepObj.set('restaurant.menu.price', 20);
       });
-      assert.equal(
+      assert.strictEqual(
         DepObj.get('price'),
         20,
         'cacheable computed properties are invalidated after a second get before a run loop'
       );
-      assert.equal(
+      assert.strictEqual(
         DepObj.get('price'),
         20,
         'precond - computed properties remain correct after a run loop'
@@ -583,7 +603,7 @@ moduleFor(
         );
       });
 
-      assert.equal(
+      assert.strictEqual(
         DepObj.get('price'),
         15,
         'cacheable computed properties are invalidated after a middle property changes'
@@ -598,7 +618,7 @@ moduleFor(
         );
       });
 
-      assert.equal(
+      assert.strictEqual(
         DepObj.get('price'),
         25,
         'cacheable computed properties are invalidated after a middle property changes again, before a run loop'
@@ -650,19 +670,19 @@ moduleFor(
     ['@test incrementProperty and decrementProperty'](assert) {
       let newValue = object.incrementProperty('numberVal');
 
-      assert.equal(25, newValue, 'numerical value incremented');
+      assert.strictEqual(25, newValue, 'numerical value incremented');
       object.numberVal = 24;
       newValue = object.decrementProperty('numberVal');
-      assert.equal(23, newValue, 'numerical value decremented');
+      assert.strictEqual(23, newValue, 'numerical value decremented');
       object.numberVal = 25;
       newValue = object.incrementProperty('numberVal', 5);
-      assert.equal(30, newValue, 'numerical value incremented by specified increment');
+      assert.strictEqual(30, newValue, 'numerical value incremented by specified increment');
       object.numberVal = 25;
       newValue = object.incrementProperty('numberVal', -5);
-      assert.equal(20, newValue, 'minus numerical value incremented by specified increment');
+      assert.strictEqual(20, newValue, 'minus numerical value incremented by specified increment');
       object.numberVal = 25;
       newValue = object.incrementProperty('numberVal', 0);
-      assert.equal(25, newValue, 'zero numerical value incremented by specified increment');
+      assert.strictEqual(25, newValue, 'zero numerical value incremented by specified increment');
 
       expectAssertion(function () {
         newValue = object.incrementProperty('numberVal', 0 - void 0); // Increment by NaN
@@ -676,7 +696,7 @@ moduleFor(
         newValue = object.incrementProperty('numberVal', 1 / 0); // Increment by Infinity
       }, /Must pass a numeric value to incrementProperty/i);
 
-      assert.equal(
+      assert.strictEqual(
         25,
         newValue,
         'Attempting to increment by non-numeric values should not increment value'
@@ -684,13 +704,13 @@ moduleFor(
 
       object.numberVal = 25;
       newValue = object.decrementProperty('numberVal', 5);
-      assert.equal(20, newValue, 'numerical value decremented by specified increment');
+      assert.strictEqual(20, newValue, 'numerical value decremented by specified increment');
       object.numberVal = 25;
       newValue = object.decrementProperty('numberVal', -5);
-      assert.equal(30, newValue, 'minus numerical value decremented by specified increment');
+      assert.strictEqual(30, newValue, 'minus numerical value decremented by specified increment');
       object.numberVal = 25;
       newValue = object.decrementProperty('numberVal', 0);
-      assert.equal(25, newValue, 'zero numerical value decremented by specified increment');
+      assert.strictEqual(25, newValue, 'zero numerical value decremented by specified increment');
 
       expectAssertion(function () {
         newValue = object.decrementProperty('numberVal', 0 - void 0); // Decrement by NaN
@@ -704,7 +724,7 @@ moduleFor(
         newValue = object.decrementProperty('numberVal', 1 / 0); // Decrement by Infinity
       }, /Must pass a numeric value to decrementProperty/i);
 
-      assert.equal(
+      assert.strictEqual(
         25,
         newValue,
         'Attempting to decrement by non-numeric values should not decrement value'
@@ -712,9 +732,9 @@ moduleFor(
     }
 
     ['@test toggle function, should be boolean'](assert) {
-      assert.equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
-      assert.equal(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
-      assert.equal(
+      assert.strictEqual(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
+      assert.strictEqual(object.toggleProperty('toggleVal', true, false), object.get('toggleVal'));
+      assert.strictEqual(
         object.toggleProperty('toggleVal', undefined, undefined),
         object.get('toggleVal')
       );
@@ -724,7 +744,7 @@ moduleFor(
       get(object, 'normalArray').replace(0, 0, [6]);
       await runLoopSettled();
 
-      assert.equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
+      assert.strictEqual(object.abnormal, 'notifiedObserver', 'observer should be notified');
     }
   }
 );
@@ -762,7 +782,7 @@ moduleFor(
       objectC.set('normal', 'newValue');
 
       await runLoopSettled();
-      assert.equal(objectC.normal1, 'newZeroValue');
+      assert.strictEqual(objectC.normal1, 'newZeroValue');
     }
 
     async ['@test should register an observer for a property - Special case of chained property'](
@@ -772,12 +792,12 @@ moduleFor(
       objectC.objectE.set('propertyVal', 'chainedPropertyValue');
       await runLoopSettled();
 
-      assert.equal('chainedPropertyObserved', objectC.normal2);
+      assert.strictEqual('chainedPropertyObserved', objectC.normal2);
       objectC.normal2 = 'dependentValue';
       objectC.set('objectE', '');
       await runLoopSettled();
 
-      assert.equal('chainedPropertyObserved', objectC.normal2);
+      assert.strictEqual('chainedPropertyObserved', objectC.normal2);
     }
   }
 );
@@ -829,14 +849,14 @@ moduleFor(
       objectD.set('normal', 'newValue');
       await runLoopSettled();
 
-      assert.equal(objectD.normal1, 'newZeroValue');
+      assert.strictEqual(objectD.normal1, 'newZeroValue');
 
       objectD.set('normal1', 'zeroValue');
       await runLoopSettled();
 
       objectD.removeObserver('normal', objectD, 'addAction');
       objectD.set('normal', 'newValue');
-      assert.equal(objectD.normal1, 'zeroValue');
+      assert.strictEqual(objectD.normal1, 'zeroValue');
     }
 
     async ["@test should unregister an observer for a property - special case when key has a '.' in it."](
@@ -852,12 +872,12 @@ moduleFor(
       objectD.objectF.set('propertyVal', 'removedPropertyValue');
       await runLoopSettled();
 
-      assert.equal('dependentValue', objectD.normal2);
+      assert.strictEqual('dependentValue', objectD.normal2);
 
       objectD.set('objectF', '');
       await runLoopSettled();
 
-      assert.equal('dependentValue', objectD.normal2);
+      assert.strictEqual('dependentValue', objectD.normal2);
     }
 
     async ['@test removing an observer inside of an observer shouldn’t cause any problems'](
@@ -877,7 +897,7 @@ moduleFor(
       } catch (e) {
         encounteredError = true;
       }
-      assert.equal(encounteredError, false);
+      assert.strictEqual(encounteredError, false);
     }
   }
 );

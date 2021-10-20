@@ -90,8 +90,8 @@ moduleFor(
         })
       );
 
-      assert.equal(obj.foo, 'computed foo', 'should return value');
-      assert.equal(count, 1, 'should have invoked computed property');
+      assert.strictEqual(obj.foo, 'computed foo', 'should return value');
+      assert.strictEqual(count, 1, 'should have invoked computed property');
     }
 
     ['@test defining computed property should invoke property on get'](assert) {
@@ -106,8 +106,8 @@ moduleFor(
         })
       );
 
-      assert.equal(get(obj, 'foo'), 'computed foo', 'should return value');
-      assert.equal(count, 1, 'should have invoked computed property');
+      assert.strictEqual(get(obj, 'foo'), 'computed foo', 'should return value');
+      assert.strictEqual(count, 1, 'should have invoked computed property');
     }
 
     ['@test computed property can be defined and accessed on a class constructor'](assert) {
@@ -123,10 +123,10 @@ moduleFor(
         }),
       });
 
-      assert.equal(Obj.foo, 123, 'should return value');
+      assert.strictEqual(Obj.foo, 123, 'should return value');
       Obj.foo;
 
-      assert.equal(count, 1, 'should only call getter once');
+      assert.strictEqual(count, 1, 'should only call getter once');
     }
 
     ['@test defining computed property should invoke property on set'](assert) {
@@ -147,9 +147,9 @@ moduleFor(
         })
       );
 
-      assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
-      assert.equal(count, 1, 'should have invoked computed property');
-      assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value');
+      assert.strictEqual(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
+      assert.strictEqual(count, 1, 'should have invoked computed property');
+      assert.strictEqual(get(obj, 'foo'), 'computed bar', 'should return new value');
     }
 
     // this should be a unit test elsewhere
@@ -232,20 +232,20 @@ moduleFor(
     }
 
     ['@test using get() and set()'](assert) {
-      assert.equal(get(objA, 'foo'), 'FOO', 'should get FOO from A');
-      assert.equal(get(objB, 'foo'), 'FOO', 'should get FOO from B');
+      assert.strictEqual(get(objA, 'foo'), 'FOO', 'should get FOO from A');
+      assert.strictEqual(get(objB, 'foo'), 'FOO', 'should get FOO from B');
 
       set(objA, 'foo', 'BIFF');
-      assert.equal(get(objA, 'foo'), 'computed BIFF', 'should change A');
-      assert.equal(get(objB, 'foo'), 'FOO', 'should NOT change B');
+      assert.strictEqual(get(objA, 'foo'), 'computed BIFF', 'should change A');
+      assert.strictEqual(get(objB, 'foo'), 'FOO', 'should NOT change B');
 
       set(objB, 'foo', 'bar');
-      assert.equal(get(objB, 'foo'), 'computed bar', 'should change B');
-      assert.equal(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
+      assert.strictEqual(get(objB, 'foo'), 'computed bar', 'should change B');
+      assert.strictEqual(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
 
       set(objA, 'foo', 'BAZ');
-      assert.equal(get(objA, 'foo'), 'computed BAZ', 'should change A');
-      assert.equal(get(objB, 'foo'), 'computed bar', 'should NOT change B');
+      assert.strictEqual(get(objA, 'foo'), 'computed BAZ', 'should change A');
+      assert.strictEqual(get(objB, 'foo'), 'computed bar', 'should NOT change B');
     }
   }
 );
@@ -274,20 +274,20 @@ moduleFor(
     }
 
     ['@test using get() and set()'](assert) {
-      assert.equal(get(objA, 'foo'), 'FOO', 'should get FOO from A');
-      assert.equal(get(objB, 'foo'), undefined, 'should get undefined from B');
+      assert.strictEqual(get(objA, 'foo'), 'FOO', 'should get FOO from A');
+      assert.strictEqual(get(objB, 'foo'), undefined, 'should get undefined from B');
 
       set(objA, 'foo', 'BIFF');
-      assert.equal(get(objA, 'foo'), 'computed BIFF', 'should change A');
-      assert.equal(get(objB, 'foo'), undefined, 'should NOT change B');
+      assert.strictEqual(get(objA, 'foo'), 'computed BIFF', 'should change A');
+      assert.strictEqual(get(objB, 'foo'), undefined, 'should NOT change B');
 
       set(objB, 'foo', 'bar');
-      assert.equal(get(objB, 'foo'), 'bar', 'should change B');
-      assert.equal(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
+      assert.strictEqual(get(objB, 'foo'), 'bar', 'should change B');
+      assert.strictEqual(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
 
       set(objA, 'foo', 'BAZ');
-      assert.equal(get(objA, 'foo'), 'computed BAZ', 'should change A');
-      assert.equal(get(objB, 'foo'), 'bar', 'should NOT change B');
+      assert.strictEqual(get(objA, 'foo'), 'computed BAZ', 'should change A');
+      assert.strictEqual(get(objB, 'foo'), 'bar', 'should NOT change B');
     }
   }
 );
@@ -329,20 +329,20 @@ moduleFor(
     }
 
     ['@test using get() and set()'](assert) {
-      assert.equal(get(objA, 'foo'), 'FOO', 'should get FOO from A');
-      assert.equal(get(objB, 'foo'), 'FOO', 'should get FOO from B');
+      assert.strictEqual(get(objA, 'foo'), 'FOO', 'should get FOO from A');
+      assert.strictEqual(get(objB, 'foo'), 'FOO', 'should get FOO from B');
 
       set(objA, 'foo', 'BIFF');
-      assert.equal(get(objA, 'foo'), 'A BIFF', 'should change A');
-      assert.equal(get(objB, 'foo'), 'FOO', 'should NOT change B');
+      assert.strictEqual(get(objA, 'foo'), 'A BIFF', 'should change A');
+      assert.strictEqual(get(objB, 'foo'), 'FOO', 'should NOT change B');
 
       set(objB, 'foo', 'bar');
-      assert.equal(get(objB, 'foo'), 'B bar', 'should change B');
-      assert.equal(get(objA, 'foo'), 'A BIFF', 'should NOT change A');
+      assert.strictEqual(get(objB, 'foo'), 'B bar', 'should change B');
+      assert.strictEqual(get(objA, 'foo'), 'A BIFF', 'should NOT change A');
 
       set(objA, 'foo', 'BAZ');
-      assert.equal(get(objA, 'foo'), 'A BAZ', 'should change A');
-      assert.equal(get(objB, 'foo'), 'B bar', 'should NOT change B');
+      assert.strictEqual(get(objA, 'foo'), 'A BAZ', 'should change A');
+      assert.strictEqual(get(objB, 'foo'), 'B bar', 'should NOT change B');
     }
   }
 );
@@ -354,7 +354,7 @@ moduleFor(
       let computedProperty = computed(function () {});
       computedProperty.meta({ key: 'keyValue' });
 
-      assert.equal(
+      assert.strictEqual(
         computedProperty.meta().key,
         'keyValue',
         'saves passed meta hash to the _meta property'
@@ -386,40 +386,44 @@ moduleFor(
     }
 
     ['@test cacheable should cache'](assert) {
-      assert.equal(get(obj, 'foo'), 'bar 1', 'first get');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'second get');
-      assert.equal(count, 1, 'should only invoke once');
+      assert.strictEqual(get(obj, 'foo'), 'bar 1', 'first get');
+      assert.strictEqual(get(obj, 'foo'), 'bar 1', 'second get');
+      assert.strictEqual(count, 1, 'should only invoke once');
     }
 
     ['@test modifying a cacheable property should update cache'](assert) {
-      assert.equal(get(obj, 'foo'), 'bar 1', 'first get');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'second get');
+      assert.strictEqual(get(obj, 'foo'), 'bar 1', 'first get');
+      assert.strictEqual(get(obj, 'foo'), 'bar 1', 'second get');
 
-      assert.equal(set(obj, 'foo', 'baz'), 'baz', 'setting');
-      assert.equal(get(obj, 'foo'), 'bar 2', 'third get');
-      assert.equal(count, 2, 'should not invoke again');
+      assert.strictEqual(set(obj, 'foo', 'baz'), 'baz', 'setting');
+      assert.strictEqual(get(obj, 'foo'), 'bar 2', 'third get');
+      assert.strictEqual(count, 2, 'should not invoke again');
     }
 
     ['@test inherited property should not pick up cache'](assert) {
       let objB = Object.create(obj);
 
-      assert.equal(get(obj, 'foo'), 'bar 1', 'obj first get');
-      assert.equal(get(objB, 'foo'), 'bar 2', 'objB first get');
+      assert.strictEqual(get(obj, 'foo'), 'bar 1', 'obj first get');
+      assert.strictEqual(get(objB, 'foo'), 'bar 2', 'objB first get');
 
-      assert.equal(get(obj, 'foo'), 'bar 1', 'obj second get');
-      assert.equal(get(objB, 'foo'), 'bar 2', 'objB second get');
+      assert.strictEqual(get(obj, 'foo'), 'bar 1', 'obj second get');
+      assert.strictEqual(get(objB, 'foo'), 'bar 2', 'objB second get');
 
       set(obj, 'foo', 'baz'); // modify A
-      assert.equal(get(obj, 'foo'), 'bar 3', 'obj third get');
-      assert.equal(get(objB, 'foo'), 'bar 2', 'objB third get');
+      assert.strictEqual(get(obj, 'foo'), 'bar 3', 'obj third get');
+      assert.strictEqual(get(objB, 'foo'), 'bar 2', 'objB third get');
     }
 
     ['@test meta.valueFor should return the cached value'](assert) {
-      assert.equal(metaFor(obj).valueFor('foo'), undefined, 'should not yet be a cached value');
+      assert.strictEqual(
+        metaFor(obj).valueFor('foo'),
+        undefined,
+        'should not yet be a cached value'
+      );
 
       get(obj, 'foo');
 
-      assert.equal(metaFor(obj).valueFor('foo'), 'bar 1', 'should retrieve cached value');
+      assert.strictEqual(metaFor(obj).valueFor('foo'), 'bar 1', 'should retrieve cached value');
     }
 
     ['@test meta.valueFor should return falsy cached values'](assert) {
@@ -431,11 +435,15 @@ moduleFor(
         })
       );
 
-      assert.equal(metaFor(obj).valueFor('falsy'), undefined, 'should not yet be a cached value');
+      assert.strictEqual(
+        metaFor(obj).valueFor('falsy'),
+        undefined,
+        'should not yet be a cached value'
+      );
 
       get(obj, 'falsy');
 
-      assert.equal(metaFor(obj).valueFor('falsy'), false, 'should retrieve cached value');
+      assert.strictEqual(metaFor(obj).valueFor('falsy'), false, 'should retrieve cached value');
     }
 
     ['@test setting a cached computed property passes the old value as the third argument'](
@@ -512,17 +520,17 @@ moduleFor(
         })
       );
 
-      assert.equal(get(obj, 'foo'), 'foo 1', 'get once');
-      assert.equal(get(obj, 'foo'), 'foo 1', 'cached retrieve');
+      assert.strictEqual(get(obj, 'foo'), 'foo 1', 'get once');
+      assert.strictEqual(get(obj, 'foo'), 'foo 1', 'cached retrieve');
 
       set(obj, 'bar', 'BIFF'); // should invalidate bar -> foo -> bar
 
-      assert.equal(get(obj, 'foo'), 'foo 3', 'should recache');
-      assert.equal(get(obj, 'foo'), 'foo 3', 'cached retrieve');
+      assert.strictEqual(get(obj, 'foo'), 'foo 3', 'should recache');
+      assert.strictEqual(get(obj, 'foo'), 'foo 3', 'cached retrieve');
     }
 
     ['@test redefining a property should undo old dependent keys'](assert) {
-      assert.equal(get(obj, 'foo'), 'bar 1');
+      assert.strictEqual(get(obj, 'foo'), 'bar 1');
 
       defineProperty(
         obj,
@@ -533,13 +541,13 @@ moduleFor(
         })
       );
 
-      assert.equal(get(obj, 'foo'), 'baz 2');
+      assert.strictEqual(get(obj, 'foo'), 'baz 2');
 
       set(obj, 'bar', 'BIFF'); // should not kill cache
-      assert.equal(get(obj, 'foo'), 'baz 2');
+      assert.strictEqual(get(obj, 'foo'), 'baz 2');
 
       set(obj, 'baz', 'BOP');
-      assert.equal(get(obj, 'foo'), 'baz 3');
+      assert.strictEqual(get(obj, 'foo'), 'baz 3');
     }
 
     ['@test can watch multiple dependent keys specified declaratively via brace expansion'](
@@ -554,21 +562,21 @@ moduleFor(
         })
       );
 
-      assert.equal(get(obj, 'foo'), 'foo 1', 'get once');
-      assert.equal(get(obj, 'foo'), 'foo 1', 'cached retrieve');
+      assert.strictEqual(get(obj, 'foo'), 'foo 1', 'get once');
+      assert.strictEqual(get(obj, 'foo'), 'foo 1', 'cached retrieve');
 
       set(obj, 'qux', {});
       set(obj, 'qux.bar', 'bar'); // invalidate foo
 
-      assert.equal(get(obj, 'foo'), 'foo 2', 'foo invalidated from bar');
+      assert.strictEqual(get(obj, 'foo'), 'foo 2', 'foo invalidated from bar');
 
       set(obj, 'qux.baz', 'baz'); // invalidate foo
 
-      assert.equal(get(obj, 'foo'), 'foo 3', 'foo invalidated from baz');
+      assert.strictEqual(get(obj, 'foo'), 'foo 3', 'foo invalidated from baz');
 
       set(obj, 'qux.quux', 'quux'); // do not invalidate foo
 
-      assert.equal(get(obj, 'foo'), 'foo 3', 'foo not invalidated by quux');
+      assert.strictEqual(get(obj, 'foo'), 'foo 3', 'foo not invalidated by quux');
     }
 
     ['@test throws assertion if brace expansion notation has spaces']() {
@@ -608,7 +616,7 @@ moduleFor(
 
       run(() => destroy(obj));
 
-      assert.equal(get(obj, 'foo'), 'baz', 'CP calculated successfully');
+      assert.strictEqual(get(obj, 'foo'), 'baz', 'CP calculated successfully');
     }
   }
 );
@@ -642,43 +650,43 @@ moduleFor(
       // assign computed property
       defineProperty(obj, 'prop', computed('foo.bar.baz.biff', func));
 
-      assert.equal(get(obj, 'prop'), 'BIFF 1');
+      assert.strictEqual(get(obj, 'prop'), 'BIFF 1');
 
       set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-      assert.equal(get(obj, 'prop'), 'BUZZ 2');
-      assert.equal(get(obj, 'prop'), 'BUZZ 2');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 2');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 2');
 
       set(get(obj, 'foo.bar'), 'baz', { biff: 'BLOB' });
-      assert.equal(get(obj, 'prop'), 'BLOB 3');
-      assert.equal(get(obj, 'prop'), 'BLOB 3');
+      assert.strictEqual(get(obj, 'prop'), 'BLOB 3');
+      assert.strictEqual(get(obj, 'prop'), 'BLOB 3');
 
       set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-      assert.equal(get(obj, 'prop'), 'BUZZ 4');
-      assert.equal(get(obj, 'prop'), 'BUZZ 4');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 4');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 4');
 
       set(get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-      assert.equal(get(obj, 'prop'), 'BOOM 5');
-      assert.equal(get(obj, 'prop'), 'BOOM 5');
+      assert.strictEqual(get(obj, 'prop'), 'BOOM 5');
+      assert.strictEqual(get(obj, 'prop'), 'BOOM 5');
 
       set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-      assert.equal(get(obj, 'prop'), 'BUZZ 6');
-      assert.equal(get(obj, 'prop'), 'BUZZ 6');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 6');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 6');
 
       set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-      assert.equal(get(obj, 'prop'), 'BLARG 7');
-      assert.equal(get(obj, 'prop'), 'BLARG 7');
+      assert.strictEqual(get(obj, 'prop'), 'BLARG 7');
+      assert.strictEqual(get(obj, 'prop'), 'BLARG 7');
 
       set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-      assert.equal(get(obj, 'prop'), 'BUZZ 8');
-      assert.equal(get(obj, 'prop'), 'BUZZ 8');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 8');
+      assert.strictEqual(get(obj, 'prop'), 'BUZZ 8');
 
       defineProperty(obj, 'prop');
       set(obj, 'prop', 'NONE');
-      assert.equal(get(obj, 'prop'), 'NONE');
+      assert.strictEqual(get(obj, 'prop'), 'NONE');
 
       set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-      assert.equal(get(obj, 'prop'), 'NONE'); // should do nothing
-      assert.equal(count, 8, 'should be not have invoked computed again');
+      assert.strictEqual(get(obj, 'prop'), 'NONE'); // should do nothing
+      assert.strictEqual(count, 8, 'should be not have invoked computed again');
     }
 
     ['@test chained dependent keys should evaluate computed properties lazily'](assert) {
@@ -688,7 +696,7 @@ moduleFor(
         'c',
         computed('bar.b', function () {})
       );
-      assert.equal(count, 0, 'b should not run');
+      assert.strictEqual(count, 0, 'b should not run');
     }
   }
 );
@@ -706,13 +714,13 @@ moduleFor(
         b: '2',
         aInt: computed('a', {
           get(keyName) {
-            assert.equal(keyName, 'aInt', 'getter receives the keyName');
+            assert.strictEqual(keyName, 'aInt', 'getter receives the keyName');
             return parseInt(this.get('a'));
           },
           set(keyName, value, oldValue) {
-            assert.equal(keyName, 'aInt', 'setter receives the keyName');
-            assert.equal(value, 123, 'setter receives the new value');
-            assert.equal(oldValue, 1, 'setter receives the old value');
+            assert.strictEqual(keyName, 'aInt', 'setter receives the keyName');
+            assert.strictEqual(value, 123, 'setter receives the new value');
+            assert.strictEqual(oldValue, 1, 'setter receives the old value');
             this.set('a', String(value)); // side effect
             return parseInt(this.get('a'));
           },
@@ -731,7 +739,7 @@ moduleFor(
         b: '2',
         aInt: computed('a', {
           get(keyName) {
-            assert.equal(keyName, 'aInt', 'getter receives the keyName');
+            assert.strictEqual(keyName, 'aInt', 'getter receives the keyName');
             return parseInt(this.get('a'));
           },
         }),
@@ -871,21 +879,21 @@ moduleFor(
         lastNameDidChange++;
       });
 
-      assert.equal(get(obj, 'fullName'), 'Yehuda Katz');
+      assert.strictEqual(get(obj, 'fullName'), 'Yehuda Katz');
 
       set(obj, 'fullName', 'Yehuda Katz');
 
       set(obj, 'fullName', 'Kris Selden');
 
-      assert.equal(get(obj, 'fullName'), 'Kris Selden');
-      assert.equal(get(obj, 'firstName'), 'Kris');
-      assert.equal(get(obj, 'lastName'), 'Selden');
+      assert.strictEqual(get(obj, 'fullName'), 'Kris Selden');
+      assert.strictEqual(get(obj, 'firstName'), 'Kris');
+      assert.strictEqual(get(obj, 'lastName'), 'Selden');
 
       await runLoopSettled();
 
-      assert.equal(fullNameDidChange, 1);
-      assert.equal(firstNameDidChange, 1);
-      assert.equal(lastNameDidChange, 1);
+      assert.strictEqual(fullNameDidChange, 1);
+      assert.strictEqual(firstNameDidChange, 1);
+      assert.strictEqual(lastNameDidChange, 1);
     }
 
     async ['@test setting a cached computed property that modifies the value you give it'](assert) {
@@ -912,24 +920,24 @@ moduleFor(
         plusOneDidChange++;
       });
 
-      assert.equal(get(obj, 'plusOne'), 1);
+      assert.strictEqual(get(obj, 'plusOne'), 1);
 
       set(obj, 'plusOne', 1);
       await runLoopSettled();
 
-      assert.equal(get(obj, 'plusOne'), 2);
+      assert.strictEqual(get(obj, 'plusOne'), 2);
 
       set(obj, 'plusOne', 1);
       await runLoopSettled();
 
-      assert.equal(get(obj, 'plusOne'), 2);
-      assert.equal(plusOneDidChange, 1);
+      assert.strictEqual(get(obj, 'plusOne'), 2);
+      assert.strictEqual(plusOneDidChange, 1);
 
       set(obj, 'foo', 5);
       await runLoopSettled();
 
-      assert.equal(get(obj, 'plusOne'), 6);
-      assert.equal(plusOneDidChange, 2);
+      assert.strictEqual(get(obj, 'plusOne'), 6);
+      assert.strictEqual(plusOneDidChange, 2);
     }
   }
 );
@@ -971,7 +979,7 @@ moduleFor(
       let cp = computed(function () {});
       let readOnlyCp = cp.readOnly();
 
-      assert.equal(cp, readOnlyCp);
+      assert.strictEqual(cp, readOnlyCp);
     }
 
     ['@test throws assertion if called over a CP with a setter defined with the new syntax']() {
@@ -999,13 +1007,13 @@ moduleFor(
         }).readOnly()
       );
 
-      assert.equal(get(obj, 'bar'), 'barValue');
+      assert.strictEqual(get(obj, 'bar'), 'barValue');
 
       assert.throws(() => {
         set(obj, 'bar', 'newBar');
       }, /Cannot set read-only property "bar" on object:/);
 
-      assert.equal(get(obj, 'bar'), 'barValue');
+      assert.strictEqual(get(obj, 'bar'), 'barValue');
     }
   }
 );
@@ -1054,22 +1062,22 @@ moduleFor(
       obj = new ObjectWithLazyDep();
 
       // Get someProp and setup the lazy dependency
-      assert.equal(obj.someProp, 1, 'called the first time');
-      assert.equal(obj.someProp, 1, 'returned cached value the second time');
+      assert.strictEqual(obj.someProp, 1, 'called the first time');
+      assert.strictEqual(obj.someProp, 1, 'returned cached value the second time');
 
       // Finish the lazy dependency
-      assert.equal(obj.lazyObject.value, 123, 'lazyObject returns expected value');
-      assert.equal(
+      assert.strictEqual(obj.lazyObject.value, 123, 'lazyObject returns expected value');
+      assert.strictEqual(
         obj.someProp,
         1,
         'someProp was not dirtied by propB being calculated for the first time'
       );
 
       set(lazyObject, 'value', 456);
-      assert.equal(obj.someProp, 2, 'someProp dirtied by lazyObject.value changing');
+      assert.strictEqual(obj.someProp, 2, 'someProp dirtied by lazyObject.value changing');
 
       set(lazyObject, 'value', 789);
-      assert.equal(
+      assert.strictEqual(
         obj.someProp,
         3,
         'someProp still dirtied by otherProp when lazyObject.value is dirty'
@@ -1096,14 +1104,14 @@ moduleFor(
 
       obj = new ObjectWithLazyDep();
 
-      assert.equal(obj.someProp, 1, 'called the first time');
-      assert.equal(obj.someProp, 1, 'returned cached value the second time');
+      assert.strictEqual(obj.someProp, 1, 'called the first time');
+      assert.strictEqual(obj.someProp, 1, 'returned cached value the second time');
 
       // dirty the object value before the dependency has been finished
       set(lazyObject, 'value', 456);
 
-      assert.equal(obj.lazyObject.value, 456, 'propB returns expected value');
-      assert.equal(
+      assert.strictEqual(obj.lazyObject.value, 456, 'propB returns expected value');
+      assert.strictEqual(
         obj.someProp,
         1,
         'someProp was not dirtied by propB being dirtied before it has been calculated'
@@ -1132,12 +1140,12 @@ moduleFor(
 
       set(lazyObject, 'value', 456);
 
-      assert.equal(obj.someProp, 1, 'called the first time');
-      assert.equal(obj.someProp, 1, 'returned cached value the second time');
+      assert.strictEqual(obj.someProp, 1, 'called the first time');
+      assert.strictEqual(obj.someProp, 1, 'returned cached value the second time');
 
-      assert.equal(obj.lazyObject.value, 456, 'lazyObject returns expected value');
+      assert.strictEqual(obj.lazyObject.value, 456, 'lazyObject returns expected value');
 
-      assert.equal(
+      assert.strictEqual(
         obj.someProp,
         1,
         'someProp was not dirtied by lazyObject being dirtied before it has been calculated'
@@ -1183,7 +1191,7 @@ moduleFor(
 
       await runLoopSettled();
 
-      assert.equal(get(obj, 'someProp'), 456, '');
+      assert.strictEqual(get(obj, 'someProp'), 456, '');
 
       addObserver(obj, 'anotherProp', obj, () => {}, false);
       set(obj, 'anotherProp', 123);

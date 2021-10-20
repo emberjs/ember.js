@@ -81,25 +81,25 @@ moduleFor(
 
       this.render(`<input disabled={{this.model.value}}>`, model);
 
-      this.assert.equal(this.$inputElement().prop('disabled'), false);
+      this.assert.strictEqual(this.$inputElement().prop('disabled'), false);
 
       runTask(() => this.rerender());
 
-      this.assert.equal(this.$inputElement().prop('disabled'), false);
+      this.assert.strictEqual(this.$inputElement().prop('disabled'), false);
 
       runTask(() => this.context.set('model.value', true));
 
-      this.assert.equal(this.$inputElement().prop('disabled'), true);
+      this.assert.strictEqual(this.$inputElement().prop('disabled'), true);
       this.assertHTML('<input disabled="">'); // Note the DOM output is <input disabled>
 
       runTask(() => this.context.set('model.value', 'wat'));
 
-      this.assert.equal(this.$inputElement().prop('disabled'), true);
+      this.assert.strictEqual(this.$inputElement().prop('disabled'), true);
       this.assertHTML('<input disabled="">'); // Note the DOM output is <input disabled>
 
       runTask(() => this.context.set('model', { value: false }));
 
-      this.assert.equal(this.$inputElement().prop('disabled'), false);
+      this.assert.strictEqual(this.$inputElement().prop('disabled'), false);
       this.assertHTML('<input>');
     }
 
@@ -256,16 +256,20 @@ moduleFor(
     }
 
     assertAttributeHasValue(attribute, value, message) {
-      this.assert.equal(this.$inputElement().attr(attribute), value, `${attribute} ${message}`);
+      this.assert.strictEqual(
+        this.$inputElement().attr(attribute),
+        value,
+        `${attribute} ${message}`
+      );
     }
 
     assertPropertyHasValue(property, value, message) {
-      this.assert.equal(this.$inputElement().prop(property), value, `${property} ${message}`);
+      this.assert.strictEqual(this.$inputElement().prop(property), value, `${property} ${message}`);
     }
 
     assertSelectionRange(start, end) {
-      this.assert.equal(this.inputElement().selectionStart, start);
-      this.assert.equal(this.inputElement().selectionEnd, end);
+      this.assert.strictEqual(this.inputElement().selectionStart, start);
+      this.assert.strictEqual(this.inputElement().selectionEnd, end);
     }
   }
 );

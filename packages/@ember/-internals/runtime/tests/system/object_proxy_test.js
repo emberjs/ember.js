@@ -23,8 +23,8 @@ moduleFor(
         cp: 'Bar',
       });
 
-      assert.equal(get(proxy, 'prop'), 'Foo', 'should not have tried to proxy set');
-      assert.equal(proxy._cp, 'Bar', 'should use CP setter');
+      assert.strictEqual(get(proxy, 'prop'), 'Foo', 'should not have tried to proxy set');
+      assert.strictEqual(proxy._cp, 'Bar', 'should use CP setter');
     }
 
     ['@test should proxy properties to content'](assert) {
@@ -37,7 +37,7 @@ moduleFor(
       };
       let proxy = ObjectProxy.create();
 
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'firstName'),
         undefined,
         'get on proxy without content should return undefined'
@@ -48,17 +48,17 @@ moduleFor(
 
       set(proxy, 'content', content);
 
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'firstName'),
         'Tom',
         'get on proxy with content should forward to content'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'lastName'),
         'Dale',
         'get on proxy with content should forward to content'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'foo'),
         'foo unknown',
         'get on proxy with content should forward to content'
@@ -66,17 +66,21 @@ moduleFor(
 
       set(proxy, 'lastName', 'Huda');
 
-      assert.equal(
+      assert.strictEqual(
         get(content, 'lastName'),
         'Huda',
         'content should have new value from set on proxy'
       );
-      assert.equal(get(proxy, 'lastName'), 'Huda', 'proxy should have new value from set on proxy');
+      assert.strictEqual(
+        get(proxy, 'lastName'),
+        'Huda',
+        'proxy should have new value from set on proxy'
+      );
 
       set(proxy, 'content', { firstName: 'Yehuda', lastName: 'Katz' });
 
-      assert.equal(get(proxy, 'firstName'), 'Yehuda', 'proxy should reflect updated content');
-      assert.equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
+      assert.strictEqual(get(proxy, 'firstName'), 'Yehuda', 'proxy should reflect updated content');
+      assert.strictEqual(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
     }
 
     ['@test getting proxied properties with Ember.get should work'](assert) {
@@ -86,7 +90,7 @@ moduleFor(
         },
       });
 
-      assert.equal(get(proxy, 'foo'), 'FOO');
+      assert.strictEqual(get(proxy, 'foo'), 'FOO');
     }
 
     [`@test JSON.stringify doens't assert`](assert) {
@@ -96,7 +100,7 @@ moduleFor(
         },
       });
 
-      assert.equal(JSON.stringify(proxy), JSON.stringify({ content: { foo: 'FOO' } }));
+      assert.strictEqual(JSON.stringify(proxy), JSON.stringify({ content: { foo: 'FOO' } }));
     }
 
     ['@test calling a function on the proxy avoids the assertion'](assert) {
@@ -118,7 +122,7 @@ moduleFor(
           },
         });
 
-        assert.equal(proxy.foobar(), 'xoxo', 'should be able to use a function from a proxy');
+        assert.strictEqual(proxy.foobar(), 'xoxo', 'should be able to use a function from a proxy');
       } else {
         assert.expect(0);
       }
@@ -134,7 +138,7 @@ moduleFor(
         },
       });
 
-      assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
+      assert.strictEqual(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
     }
 
     [`@test setting a property on the proxy's prototype avoids the assertion`](assert) {
@@ -148,7 +152,7 @@ moduleFor(
         },
       });
 
-      assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
+      assert.strictEqual(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
     }
 
     ['@test getting proxied properties with [] should be an error'](assert) {
@@ -199,46 +203,46 @@ moduleFor(
       });
 
       // proxy without content returns undefined
-      assert.equal(get(proxy, 'fullName'), undefined);
+      assert.strictEqual(get(proxy, 'fullName'), undefined);
 
       // setting content causes all watched properties to change
       set(proxy, 'content', content1);
       await runLoopSettled();
 
       // both dependent keys changed
-      assert.equal(count, 2);
-      assert.equal(last, 'Tom Dale');
+      assert.strictEqual(count, 2);
+      assert.strictEqual(last, 'Tom Dale');
 
       // setting property in content causes proxy property to change
       set(content1, 'lastName', 'Huda');
       await runLoopSettled();
 
-      assert.equal(count, 3);
-      assert.equal(last, 'Tom Huda');
+      assert.strictEqual(count, 3);
+      assert.strictEqual(last, 'Tom Huda');
 
       // replacing content causes all watched properties to change
       set(proxy, 'content', content2);
       await runLoopSettled();
 
       // both dependent keys changed
-      assert.equal(count, 5);
-      assert.equal(last, 'Yehuda Katz');
+      assert.strictEqual(count, 5);
+      assert.strictEqual(last, 'Yehuda Katz');
 
       // setting property in new content
       set(content2, 'firstName', 'Tomhuda');
       await runLoopSettled();
 
-      assert.equal(last, 'Tomhuda Katz');
-      assert.equal(count, 6);
+      assert.strictEqual(last, 'Tomhuda Katz');
+      assert.strictEqual(count, 6);
 
       // setting property in proxy syncs with new content
       set(proxy, 'lastName', 'Katzdale');
       await runLoopSettled();
 
-      assert.equal(count, 7);
-      assert.equal(last, 'Tomhuda Katzdale');
-      assert.equal(get(content2, 'firstName'), 'Tomhuda');
-      assert.equal(get(content2, 'lastName'), 'Katzdale');
+      assert.strictEqual(count, 7);
+      assert.strictEqual(last, 'Tomhuda Katzdale');
+      assert.strictEqual(get(content2, 'firstName'), 'Tomhuda');
+      assert.strictEqual(get(content2, 'lastName'), 'Katzdale');
 
       proxy.destroy();
     }
@@ -249,8 +253,8 @@ moduleFor(
       let count = 0;
 
       proxy.set('foo.bar', 'hello');
-      assert.equal(proxy.get('foo.bar'), 'hello');
-      assert.equal(proxy.get('content.foo.bar'), 'hello');
+      assert.strictEqual(proxy.get('foo.bar'), 'hello');
+      assert.strictEqual(proxy.get('content.foo.bar'), 'hello');
 
       proxy.addObserver('foo.bar', function () {
         count++;
@@ -259,9 +263,9 @@ moduleFor(
       proxy.set('foo.bar', 'bye');
       await runLoopSettled();
 
-      assert.equal(count, 1);
-      assert.equal(proxy.get('foo.bar'), 'bye');
-      assert.equal(proxy.get('content.foo.bar'), 'bye');
+      assert.strictEqual(count, 1);
+      assert.strictEqual(proxy.get('foo.bar'), 'bye');
+      assert.strictEqual(proxy.get('content.foo.bar'), 'bye');
 
       proxy.destroy();
     }
@@ -275,45 +279,45 @@ moduleFor(
         count++;
       }
 
-      assert.equal(get(proxy, 'foo'), 'foo');
+      assert.strictEqual(get(proxy, 'foo'), 'foo');
 
       set(content, 'foo', 'bar');
 
-      assert.equal(get(proxy, 'foo'), 'bar');
+      assert.strictEqual(get(proxy, 'foo'), 'bar');
 
       set(proxy, 'foo', 'foo');
 
-      assert.equal(get(content, 'foo'), 'foo');
-      assert.equal(get(proxy, 'foo'), 'foo');
+      assert.strictEqual(get(content, 'foo'), 'foo');
+      assert.strictEqual(get(proxy, 'foo'), 'foo');
 
       addObserver(proxy, 'foo', observer);
 
-      assert.equal(count, 0);
-      assert.equal(get(proxy, 'foo'), 'foo');
+      assert.strictEqual(count, 0);
+      assert.strictEqual(get(proxy, 'foo'), 'foo');
 
       set(content, 'foo', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 1);
-      assert.equal(get(proxy, 'foo'), 'bar');
+      assert.strictEqual(count, 1);
+      assert.strictEqual(get(proxy, 'foo'), 'bar');
 
       set(proxy, 'foo', 'foo');
       await runLoopSettled();
 
-      assert.equal(count, 2);
-      assert.equal(get(content, 'foo'), 'foo');
-      assert.equal(get(proxy, 'foo'), 'foo');
+      assert.strictEqual(count, 2);
+      assert.strictEqual(get(content, 'foo'), 'foo');
+      assert.strictEqual(get(proxy, 'foo'), 'foo');
 
       removeObserver(proxy, 'foo', observer);
 
       set(content, 'foo', 'bar');
 
-      assert.equal(get(proxy, 'foo'), 'bar');
+      assert.strictEqual(get(proxy, 'foo'), 'bar');
 
       set(proxy, 'foo', 'foo');
 
-      assert.equal(get(content, 'foo'), 'foo');
-      assert.equal(get(proxy, 'foo'), 'foo');
+      assert.strictEqual(get(content, 'foo'), 'foo');
+      assert.strictEqual(get(proxy, 'foo'), 'foo');
     }
 
     ['@test setting `undefined` to a proxied content property should override its existing value'](
@@ -325,7 +329,7 @@ moduleFor(
         },
       });
       set(proxyObject, 'prop', undefined);
-      assert.equal(
+      assert.strictEqual(
         get(proxyObject, 'prop'),
         undefined,
         'sets the `undefined` value to the proxied content'
@@ -367,9 +371,9 @@ moduleFor(
       proxy.set('foo', 456);
       await runLoopSettled();
 
-      assert.equal(count, 1);
-      assert.equal(proxy.get('foo'), 456);
-      assert.equal(proxy.get('locals.foo'), 456);
+      assert.strictEqual(count, 1);
+      assert.strictEqual(proxy.get('foo'), 456);
+      assert.strictEqual(proxy.get('locals.foo'), 456);
 
       proxy.destroy();
     }

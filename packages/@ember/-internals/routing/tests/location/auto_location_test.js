@@ -90,7 +90,7 @@ moduleFor(
         return '/lincoln/park';
       };
 
-      assert.equal(location.getURL(), '/lincoln/park');
+      assert.strictEqual(location.getURL(), '/lincoln/park');
     }
 
     ['@test AutoLocation should use a HistoryLocation instance when pushStates is supported'](
@@ -177,7 +177,7 @@ moduleFor(
           port: '',
           search: '',
           replace(path) {
-            assert.equal(
+            assert.strictEqual(
               path,
               'http://test.com/#/test',
               'location.replace should be called with normalized HashLocation path'
@@ -198,7 +198,7 @@ moduleFor(
         get(location, 'concreteImplementation') instanceof NoneLocation,
         'NoneLocation should be used while we attempt to location.replace()'
       );
-      assert.equal(
+      assert.strictEqual(
         get(location, 'cancelRouterSetup'),
         true,
         'cancelRouterSetup should be set so the router knows.'
@@ -225,7 +225,7 @@ moduleFor(
       let browserHistory = mockBrowserHistory(
         {
           replaceState(state, title, path) {
-            assert.equal(
+            assert.strictEqual(
               path,
               '/test',
               'history.replaceState should be called with normalized HistoryLocation url'
@@ -279,7 +279,7 @@ moduleFor(
       location.detect();
 
       let concreteLocation = get(location, 'concreteImplementation');
-      assert.equal(location.rootURL, concreteLocation.rootURL);
+      assert.strictEqual(location.rootURL, concreteLocation.rootURL);
     }
 
     ['@test getHistoryPath() should return a normalized, HistoryLocation-supported path'](assert) {
@@ -293,7 +293,7 @@ moduleFor(
         assert
       );
 
-      assert.equal(
+      assert.strictEqual(
         getHistoryPath('/app/', browserLocation),
         '/app/about?foo=bar#foo',
         'URLs already in HistoryLocation form should come out the same'
@@ -308,7 +308,7 @@ moduleFor(
         },
         assert
       );
-      assert.equal(
+      assert.strictEqual(
         getHistoryPath('/app/', browserLocation),
         '/app/about?foo=bar#foo',
         'HashLocation formed URLs should be normalized'
@@ -323,7 +323,7 @@ moduleFor(
         },
         assert
       );
-      assert.equal(
+      assert.strictEqual(
         getHistoryPath('/app', browserLocation),
         '/app/#about?foo=bar#foo',
         "URLs with a hash not following #/ convention shouldn't be normalized as a route"
@@ -340,7 +340,7 @@ moduleFor(
         },
         assert
       );
-      assert.equal(
+      assert.strictEqual(
         getHashPath('/app/', browserLocation),
         '/app/#/about?foo=bar#foo',
         'URLs already in HistoryLocation form should come out the same'
@@ -355,7 +355,7 @@ moduleFor(
         },
         assert
       );
-      assert.equal(
+      assert.strictEqual(
         getHashPath('/app/', browserLocation),
         '/app/#/about?foo=bar#foo',
         'HistoryLocation formed URLs should be normalized'
@@ -371,7 +371,7 @@ moduleFor(
         assert
       );
 
-      assert.equal(
+      assert.strictEqual(
         getHashPath('/app/', browserLocation),
         '/app/#/#about?foo=bar#foo',
         "URLs with a hash not following #/ convention shouldn't be normalized as a route"

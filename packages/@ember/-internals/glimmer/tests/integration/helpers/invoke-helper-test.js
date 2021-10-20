@@ -169,7 +169,7 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
         let instance = new PlusOne(4);
 
         assert.notOk(getOwner(instance), 'no owner exists on the wrapper');
-        assert.equal(instance.value, 5, 'helper works without an owner');
+        assert.strictEqual(instance.value, 5, 'helper works without an owner');
       }
 
       '@test tracking for arguments works for tracked properties'(assert) {
@@ -200,14 +200,14 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
 
         let instance = new PlusOne(4);
 
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(count, 1, 'helper only called once');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(count, 1, 'helper only called once');
 
         instance.number = 5;
 
-        assert.equal(instance.value, 6, 'helper works');
-        assert.equal(count, 2, 'helper called a second time');
+        assert.strictEqual(instance.value, 6, 'helper works');
+        assert.strictEqual(count, 2, 'helper called a second time');
       }
 
       '@test computeArgs only called when consumed values change'(assert) {
@@ -245,23 +245,23 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
 
         let instance = new PlusN(4, 1);
 
-        assert.equal(count, 0, 'computeArgs not called yet');
+        assert.strictEqual(count, 0, 'computeArgs not called yet');
 
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(count, 1, 'computeArgs only called once');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(count, 1, 'computeArgs only called once');
 
         instance.number = 5;
 
-        assert.equal(instance.value, 6, 'helper works');
-        assert.equal(instance.value, 6, 'helper works');
-        assert.equal(count, 2, 'computeArgs called a second time');
+        assert.strictEqual(instance.value, 6, 'helper works');
+        assert.strictEqual(instance.value, 6, 'helper works');
+        assert.strictEqual(count, 2, 'computeArgs called a second time');
 
         instance.n = 5;
 
-        assert.equal(instance.value, 10, 'helper works');
-        assert.equal(instance.value, 10, 'helper works');
-        assert.equal(count, 3, 'computeArgs called a third time');
+        assert.strictEqual(instance.value, 10, 'helper works');
+        assert.strictEqual(instance.value, 10, 'helper works');
+        assert.strictEqual(count, 3, 'computeArgs called a third time');
       }
 
       '@test helper updates based on internal state changes'(assert) {
@@ -292,14 +292,14 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
 
         let instance = new PlusOne();
 
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(count, 1, 'helper only called once');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(count, 1, 'helper only called once');
 
         helper.number = 5;
 
-        assert.equal(instance.value, 6, 'helper works');
-        assert.equal(count, 2, 'helper called a second time');
+        assert.strictEqual(instance.value, 6, 'helper works');
+        assert.strictEqual(count, 2, 'helper called a second time');
       }
 
       '@test helper that with constant args is constant'(assert) {
@@ -330,14 +330,14 @@ if (EMBER_GLIMMER_INVOKE_HELPER) {
 
         let instance = new PlusOne(4);
 
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(count, 1, 'helper only called once');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(count, 1, 'helper only called once');
 
         instance.number = 5;
 
-        assert.equal(instance.value, 5, 'helper works');
-        assert.equal(count, 1, 'helper not called a second time');
+        assert.strictEqual(instance.value, 5, 'helper works');
+        assert.strictEqual(count, 1, 'helper not called a second time');
       }
 
       '@test helper destroys correctly when context object is destroyed'(assert) {
@@ -553,14 +553,14 @@ if (EMBER_GLIMMER_HELPER_MANAGER && EMBER_GLIMMER_INVOKE_HELPER) {
 
         let instance = new PlusOne(4);
 
-        assert.equal(instance.value, 123, 'helper works');
-        assert.equal(instance.value, 123, 'helper works');
-        assert.equal(count, 1, 'helper only called once');
+        assert.strictEqual(instance.value, 123, 'helper works');
+        assert.strictEqual(instance.value, 123, 'helper works');
+        assert.strictEqual(count, 1, 'helper only called once');
 
         instance.number = 5;
 
-        assert.equal(instance.value, 123, 'helper works');
-        assert.equal(count, 1, 'helper not called a second time');
+        assert.strictEqual(instance.value, 123, 'helper works');
+        assert.strictEqual(count, 1, 'helper not called a second time');
       }
 
       '@test helper destroys correctly when context object is destroyed'(assert) {

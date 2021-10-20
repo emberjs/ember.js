@@ -61,55 +61,59 @@ moduleFor(
         () => didRejectCount++
       );
 
-      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
-      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
-      assert.equal(
+      assert.strictEqual(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.strictEqual(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
+      assert.strictEqual(
         get(proxy, 'isPending'),
         true,
         'expects the proxy to indicate that it is loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         false,
         'expects the proxy to indicate that it is not settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
       );
 
-      assert.equal(didFulfillCount, 0, 'should not yet have been fulfilled');
-      assert.equal(didRejectCount, 0, 'should not yet have been rejected');
+      assert.strictEqual(didFulfillCount, 0, 'should not yet have been fulfilled');
+      assert.strictEqual(didRejectCount, 0, 'should not yet have been rejected');
 
       run(deferred, 'resolve', value);
 
-      assert.equal(didFulfillCount, 1, 'should have been fulfilled');
-      assert.equal(didRejectCount, 0, 'should not have been rejected');
+      assert.strictEqual(didFulfillCount, 1, 'should have been fulfilled');
+      assert.strictEqual(didRejectCount, 0, 'should not have been rejected');
 
-      assert.equal(get(proxy, 'content'), value, 'expects the proxy to have content');
-      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to still have no reason');
-      assert.equal(
+      assert.strictEqual(get(proxy, 'content'), value, 'expects the proxy to have content');
+      assert.strictEqual(
+        get(proxy, 'reason'),
+        undefined,
+        'expects the proxy to still have no reason'
+      );
+      assert.strictEqual(
         get(proxy, 'isPending'),
         false,
         'expects the proxy to indicate that it is no longer loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         true,
         'expects the proxy to indicate that it is settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         true,
         'expects the proxy to indicate that it is fulfilled'
@@ -117,36 +121,40 @@ moduleFor(
 
       run(deferred, 'resolve', value);
 
-      assert.equal(didFulfillCount, 1, 'should still have been only fulfilled once');
-      assert.equal(didRejectCount, 0, 'should still not have been rejected');
+      assert.strictEqual(didFulfillCount, 1, 'should still have been only fulfilled once');
+      assert.strictEqual(didRejectCount, 0, 'should still not have been rejected');
 
       run(deferred, 'reject', value);
 
-      assert.equal(didFulfillCount, 1, 'should still have been only fulfilled once');
-      assert.equal(didRejectCount, 0, 'should still not have been rejected');
+      assert.strictEqual(didFulfillCount, 1, 'should still have been only fulfilled once');
+      assert.strictEqual(didRejectCount, 0, 'should still not have been rejected');
 
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'content'),
         value,
         'expects the proxy to have still have same content'
       );
-      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy still to have no reason');
-      assert.equal(
+      assert.strictEqual(
+        get(proxy, 'reason'),
+        undefined,
+        'expects the proxy still to have no reason'
+      );
+      assert.strictEqual(
         get(proxy, 'isPending'),
         false,
         'expects the proxy to indicate that it is no longer loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         true,
         'expects the proxy to indicate that it is settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         true,
         'expects the proxy to indicate that it is fulfilled'
@@ -170,55 +178,55 @@ moduleFor(
         () => didRejectCount++
       );
 
-      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
-      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
-      assert.equal(
+      assert.strictEqual(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.strictEqual(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
+      assert.strictEqual(
         get(proxy, 'isPending'),
         true,
         'expects the proxy to indicate that it is loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         false,
         'expects the proxy to indicate that it is not settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
       );
 
-      assert.equal(didFulfillCount, 0, 'should not yet have been fulfilled');
-      assert.equal(didRejectCount, 0, 'should not yet have been rejected');
+      assert.strictEqual(didFulfillCount, 0, 'should not yet have been fulfilled');
+      assert.strictEqual(didRejectCount, 0, 'should not yet have been rejected');
 
       run(deferred, 'reject', reason);
 
-      assert.equal(didFulfillCount, 0, 'should not yet have been fulfilled');
-      assert.equal(didRejectCount, 1, 'should have been rejected');
+      assert.strictEqual(didFulfillCount, 0, 'should not yet have been fulfilled');
+      assert.strictEqual(didRejectCount, 1, 'should have been rejected');
 
-      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
-      assert.equal(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
-      assert.equal(
+      assert.strictEqual(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.strictEqual(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
+      assert.strictEqual(
         get(proxy, 'isPending'),
         false,
         'expects the proxy to indicate that it is not longer loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         true,
         'expects the proxy to indicate that it is settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         true,
         'expects the proxy to indicate that it is  rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
@@ -226,32 +234,32 @@ moduleFor(
 
       run(deferred, 'reject', reason);
 
-      assert.equal(didFulfillCount, 0, 'should stll not yet have been fulfilled');
-      assert.equal(didRejectCount, 1, 'should still remain rejected');
+      assert.strictEqual(didFulfillCount, 0, 'should stll not yet have been fulfilled');
+      assert.strictEqual(didRejectCount, 1, 'should still remain rejected');
 
       run(deferred, 'resolve', 1);
 
-      assert.equal(didFulfillCount, 0, 'should stll not yet have been fulfilled');
-      assert.equal(didRejectCount, 1, 'should still remain rejected');
+      assert.strictEqual(didFulfillCount, 0, 'should stll not yet have been fulfilled');
+      assert.strictEqual(didRejectCount, 1, 'should still remain rejected');
 
-      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
-      assert.equal(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
-      assert.equal(
+      assert.strictEqual(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.strictEqual(get(proxy, 'reason'), reason, 'expects the proxy to have a reason');
+      assert.strictEqual(
         get(proxy, 'isPending'),
         false,
         'expects the proxy to indicate that it is not longer loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         true,
         'expects the proxy to indicate that it is settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         true,
         'expects the proxy to indicate that it is  rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
@@ -273,55 +281,55 @@ moduleFor(
         () => didRejectCount++
       );
 
-      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
-      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
-      assert.equal(
+      assert.strictEqual(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.strictEqual(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
+      assert.strictEqual(
         get(proxy, 'isPending'),
         true,
         'expects the proxy to indicate that it is loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         false,
         'expects the proxy to indicate that it is not settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
       );
 
-      assert.equal(didFulfillCount, 0, 'should not yet have been fulfilled');
-      assert.equal(didRejectCount, 0, 'should not yet have been rejected');
+      assert.strictEqual(didFulfillCount, 0, 'should not yet have been fulfilled');
+      assert.strictEqual(didRejectCount, 0, 'should not yet have been rejected');
 
       run(deferred, 'reject');
 
-      assert.equal(didFulfillCount, 0, 'should not yet have been fulfilled');
-      assert.equal(didRejectCount, 1, 'should have been rejected');
+      assert.strictEqual(didFulfillCount, 0, 'should not yet have been fulfilled');
+      assert.strictEqual(didRejectCount, 1, 'should have been rejected');
 
-      assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
-      assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have a reason');
-      assert.equal(
+      assert.strictEqual(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
+      assert.strictEqual(get(proxy, 'reason'), undefined, 'expects the proxy to have a reason');
+      assert.strictEqual(
         get(proxy, 'isPending'),
         false,
         'expects the proxy to indicate that it is not longer loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         true,
         'expects the proxy to indicate that it is settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         true,
         'expects the proxy to indicate that it is  rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
@@ -344,7 +352,7 @@ moduleFor(
       proxy.get('promise');
 
       function onerror(reason) {
-        assert.equal(reason, expectedReason, 'expected reason');
+        assert.strictEqual(reason, expectedReason, 'expected reason');
       }
 
       RSVP.on('error', onerror);
@@ -378,22 +386,22 @@ moduleFor(
         promise: deferred.promise,
       });
 
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isPending'),
         true,
         'expects the proxy to indicate that it is loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         false,
         'expects the proxy to indicate that it is not settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
@@ -401,22 +409,22 @@ moduleFor(
 
       run(deferred, 'resolve');
 
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isPending'),
         false,
         'expects the proxy to indicate that it is no longer loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         true,
         'expects the proxy to indicate that it is settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         true,
         'expects the proxy to indicate that it is fulfilled'
@@ -425,22 +433,22 @@ moduleFor(
       let anotherDeferred = EmberRSVP.defer();
       proxy.set('promise', anotherDeferred.promise);
 
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isPending'),
         true,
         'expects the proxy to indicate that it is loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         false,
         'expects the proxy to indicate that it is not settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         false,
         'expects the proxy to indicate that it is not rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
@@ -448,22 +456,22 @@ moduleFor(
 
       run(anotherDeferred, 'reject');
 
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isPending'),
         false,
         'expects the proxy to indicate that it is not longer loading'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isSettled'),
         true,
         'expects the proxy to indicate that it is settled'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isRejected'),
         true,
         'expects the proxy to indicate that it is  rejected'
       );
-      assert.equal(
+      assert.strictEqual(
         get(proxy, 'isFulfilled'),
         false,
         'expects the proxy to indicate that it is not fulfilled'
@@ -477,7 +485,7 @@ moduleFor(
         promise: deferred.promise,
       });
 
-      proxy.addObserver('isFulfilled', () => assert.equal(get(proxy, 'content'), true));
+      proxy.addObserver('isFulfilled', () => assert.strictEqual(get(proxy, 'content'), true));
 
       run(deferred, 'resolve', true);
     }
@@ -490,12 +498,12 @@ moduleFor(
         promise: deferred.promise,
       });
 
-      proxy.addObserver('isRejected', () => assert.equal(get(proxy, 'reason'), error));
+      proxy.addObserver('isRejected', () => assert.strictEqual(get(proxy, 'reason'), error));
 
       try {
         run(deferred, 'reject', error);
       } catch (e) {
-        assert.equal(e, error);
+        assert.strictEqual(e, error);
       }
     }
 
@@ -567,8 +575,8 @@ moduleFor(
 
       run(deferred, 'resolve', expectedValue);
 
-      assert.equal(didResolveCount, 1, 'callback called');
-      assert.equal(
+      assert.strictEqual(didResolveCount, 1, 'callback called');
+      assert.strictEqual(
         receivedValue,
         expectedValue,
         'passed value is the value the promise was resolved with'
@@ -599,8 +607,8 @@ moduleFor(
 
       run(deferred, 'reject', expectedReason);
 
-      assert.equal(didRejectCount, 1, 'callback called');
-      assert.equal(
+      assert.strictEqual(didRejectCount, 1, 'callback called');
+      assert.strictEqual(
         receivedReason,
         expectedReason,
         'passed reason is the reason the promise was rejected for'

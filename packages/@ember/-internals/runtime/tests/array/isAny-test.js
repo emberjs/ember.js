@@ -9,9 +9,9 @@ class IsAnyTests extends AbstractTestCase {
       EmberObject.create({ foo: 'foo', bar: 'bar' }),
     ]);
 
-    this.assert.equal(obj.isAny('foo', 'foo'), true, 'isAny(foo)');
-    this.assert.equal(obj.isAny('bar', 'bar'), true, 'isAny(bar)');
-    this.assert.equal(obj.isAny('bar', 'BIFF'), false, 'isAny(BIFF)');
+    this.assert.strictEqual(obj.isAny('foo', 'foo'), true, 'isAny(foo)');
+    this.assert.strictEqual(obj.isAny('bar', 'bar'), true, 'isAny(bar)');
+    this.assert.strictEqual(obj.isAny('bar', 'BIFF'), false, 'isAny(BIFF)');
   }
 
   '@test should return true of any property is true'() {
@@ -21,9 +21,9 @@ class IsAnyTests extends AbstractTestCase {
     ]);
 
     // different values - all eval to true
-    this.assert.equal(obj.isAny('foo'), true, 'isAny(foo)');
-    this.assert.equal(obj.isAny('bar'), true, 'isAny(bar)');
-    this.assert.equal(obj.isAny('BIFF'), false, 'isAny(biff)');
+    this.assert.strictEqual(obj.isAny('foo'), true, 'isAny(foo)');
+    this.assert.strictEqual(obj.isAny('bar'), true, 'isAny(bar)');
+    this.assert.strictEqual(obj.isAny('BIFF'), false, 'isAny(biff)');
   }
 
   '@test should return true if any property matches null'() {
@@ -32,21 +32,21 @@ class IsAnyTests extends AbstractTestCase {
       EmberObject.create({ foo: 'foo', bar: null }),
     ]);
 
-    this.assert.equal(obj.isAny('foo', null), true, "isAny('foo', null)");
-    this.assert.equal(obj.isAny('bar', null), true, "isAny('bar', null)");
+    this.assert.strictEqual(obj.isAny('foo', null), true, "isAny('foo', null)");
+    this.assert.strictEqual(obj.isAny('bar', null), true, "isAny('bar', null)");
   }
 
   '@test should return true if any property is undefined'() {
     let obj = this.newObject([{ foo: undefined, bar: 'bar' }, EmberObject.create({ foo: 'foo' })]);
 
-    this.assert.equal(obj.isAny('foo', undefined), true, "isAny('foo', undefined)");
-    this.assert.equal(obj.isAny('bar', undefined), true, "isAny('bar', undefined)");
+    this.assert.strictEqual(obj.isAny('foo', undefined), true, "isAny('foo', undefined)");
+    this.assert.strictEqual(obj.isAny('bar', undefined), true, "isAny('bar', undefined)");
   }
 
   '@test should not match undefined properties without second argument'() {
     let obj = this.newObject([{ foo: undefined }, EmberObject.create({})]);
 
-    this.assert.equal(obj.isAny('foo'), false, "isAny('foo', undefined)");
+    this.assert.strictEqual(obj.isAny('foo'), false, "isAny('foo', undefined)");
   }
 }
 

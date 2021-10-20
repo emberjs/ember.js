@@ -16,23 +16,23 @@ moduleFor(
             this._super(...arguments);
             this.router.on('routeWillChange', (transition) => {
               assert.ok(transition);
-              assert.equal(transition.from, undefined);
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.localName, 'index');
+              assert.strictEqual(transition.from, undefined);
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.localName, 'index');
             });
 
             this.router.on('routeDidChange', (transition) => {
               assert.ok(transition);
               assert.ok(this.router.currentURL, `has URL ${this.router.currentURL}`);
-              assert.equal(this.router.currentURL, '/');
+              assert.strictEqual(this.router.currentURL, '/');
               assert.ok(
                 this.router.currentRouteName,
                 `has route name ${this.router.currentRouteName}`
               );
-              assert.equal(this.router.currentRouteName, 'parent.index');
-              assert.equal(transition.from, undefined);
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.localName, 'index');
+              assert.strictEqual(this.router.currentRouteName, 'parent.index');
+              assert.strictEqual(transition.from, undefined);
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.localName, 'index');
             });
           },
         })
@@ -52,41 +52,45 @@ moduleFor(
             this._super(...arguments);
             this.router.on('routeWillChange', (transition) => {
               if (toParent) {
-                assert.equal(this.router.currentURL, null, 'starts as null');
-                assert.equal(transition.from, undefined);
-                assert.equal(transition.to.name, 'parent.child');
-                assert.equal(transition.to.localName, 'child');
-                assert.equal(transition.to.parent.name, 'parent', 'parent node');
-                assert.equal(
+                assert.strictEqual(this.router.currentURL, null, 'starts as null');
+                assert.strictEqual(transition.from, undefined);
+                assert.strictEqual(transition.to.name, 'parent.child');
+                assert.strictEqual(transition.to.localName, 'child');
+                assert.strictEqual(transition.to.parent.name, 'parent', 'parent node');
+                assert.strictEqual(
                   transition.to.parent.child,
                   transition.to,
                   'parents child node is the `to`'
                 );
-                assert.equal(transition.to.parent.parent.name, 'application', 'top level');
-                assert.equal(transition.to.parent.parent.parent, null, 'top level');
+                assert.strictEqual(transition.to.parent.parent.name, 'application', 'top level');
+                assert.strictEqual(transition.to.parent.parent.parent, null, 'top level');
               } else {
-                assert.equal(this.router.currentURL, '/child', 'not changed until transition');
+                assert.strictEqual(
+                  this.router.currentURL,
+                  '/child',
+                  'not changed until transition'
+                );
                 assert.notEqual(transition.from, undefined);
-                assert.equal(transition.from.name, 'parent.child');
-                assert.equal(transition.from.localName, 'child');
-                assert.equal(transition.to.localName, 'sister');
-                assert.equal(transition.to.name, 'parent.sister');
+                assert.strictEqual(transition.from.name, 'parent.child');
+                assert.strictEqual(transition.from.localName, 'child');
+                assert.strictEqual(transition.to.localName, 'sister');
+                assert.strictEqual(transition.to.name, 'parent.sister');
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
               if (toParent) {
-                assert.equal(this.router.currentURL, '/child');
-                assert.equal(transition.from, undefined);
-                assert.equal(transition.to.name, 'parent.child');
-                assert.equal(transition.to.localName, 'child');
+                assert.strictEqual(this.router.currentURL, '/child');
+                assert.strictEqual(transition.from, undefined);
+                assert.strictEqual(transition.to.name, 'parent.child');
+                assert.strictEqual(transition.to.localName, 'child');
               } else {
-                assert.equal(this.router.currentURL, '/sister');
+                assert.strictEqual(this.router.currentURL, '/sister');
                 assert.notEqual(transition.from, undefined);
-                assert.equal(transition.from.name, 'parent.child');
-                assert.equal(transition.from.localName, 'child');
-                assert.equal(transition.to.localName, 'sister');
-                assert.equal(transition.to.name, 'parent.sister');
+                assert.strictEqual(transition.from.name, 'parent.child');
+                assert.strictEqual(transition.from.localName, 'child');
+                assert.strictEqual(transition.to.localName, 'sister');
+                assert.strictEqual(transition.to.name, 'parent.sister');
               }
             });
           },
@@ -121,7 +125,7 @@ moduleFor(
           return this.visit('/');
         })
         .catch((e) => {
-          assert.equal(e.message, 'TransitionAborted');
+          assert.strictEqual(e.message, 'TransitionAborted');
         });
     }
 
@@ -160,24 +164,24 @@ moduleFor(
             this._super(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.from, undefined, 'initial');
+              assert.strictEqual(transition.from, undefined, 'initial');
               if (toChild) {
                 if (toSister) {
-                  assert.equal(transition.to.name, 'parent.sister', 'going to /sister');
+                  assert.strictEqual(transition.to.name, 'parent.sister', 'going to /sister');
                 } else {
-                  assert.equal(transition.to.name, 'parent.child', 'going to /child');
+                  assert.strictEqual(transition.to.name, 'parent.child', 'going to /child');
                   toSister = true;
                 }
               } else {
                 // Going to `/`
-                assert.equal(transition.to.name, 'parent.index', 'going to /');
+                assert.strictEqual(transition.to.name, 'parent.index', 'going to /');
                 toChild = true;
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.from, undefined, 'initial');
-              assert.equal(transition.to.name, 'parent.sister', 'landed on /sister');
+              assert.strictEqual(transition.from, undefined, 'initial');
+              assert.strictEqual(transition.to.name, 'parent.sister', 'landed on /sister');
             });
           },
         })
@@ -220,24 +224,24 @@ moduleFor(
             this._super(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.from, undefined, 'initial');
+              assert.strictEqual(transition.from, undefined, 'initial');
               if (toChild) {
                 if (toSister) {
-                  assert.equal(transition.to.name, 'parent.sister', 'going to /sister');
+                  assert.strictEqual(transition.to.name, 'parent.sister', 'going to /sister');
                 } else {
-                  assert.equal(transition.to.name, 'parent.child', 'going to /child');
+                  assert.strictEqual(transition.to.name, 'parent.child', 'going to /child');
                   toSister = true;
                 }
               } else {
                 // Going to `/`
-                assert.equal(transition.to.name, 'parent.index', 'going to /');
+                assert.strictEqual(transition.to.name, 'parent.index', 'going to /');
                 toChild = true;
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.from, undefined, 'initial');
-              assert.equal(transition.to.name, 'parent.sister', 'landed on /sister');
+              assert.strictEqual(transition.from, undefined, 'initial');
+              assert.strictEqual(transition.to.name, 'parent.sister', 'landed on /sister');
             });
           },
         })
@@ -270,27 +274,27 @@ moduleFor(
 
             this.router.on('routeWillChange', (transition) => {
               if (toChild) {
-                assert.equal(transition.from.name, 'parent.index');
+                assert.strictEqual(transition.from.name, 'parent.index');
                 if (toSister) {
-                  assert.equal(transition.to.name, 'parent.sister', 'going to /sister');
+                  assert.strictEqual(transition.to.name, 'parent.sister', 'going to /sister');
                 } else {
-                  assert.equal(transition.to.name, 'parent.child', 'going to /child');
+                  assert.strictEqual(transition.to.name, 'parent.child', 'going to /child');
                   toSister = true;
                 }
               } else {
                 // Going to `/`
-                assert.equal(transition.to.name, 'parent.index', 'going to /');
-                assert.equal(transition.from, undefined, 'initial');
+                assert.strictEqual(transition.to.name, 'parent.index', 'going to /');
+                assert.strictEqual(transition.from, undefined, 'initial');
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
               if (toSister) {
-                assert.equal(transition.from.name, 'parent.index', 'initial');
-                assert.equal(transition.to.name, 'parent.sister', 'landed on /sister');
+                assert.strictEqual(transition.from.name, 'parent.index', 'initial');
+                assert.strictEqual(transition.to.name, 'parent.sister', 'landed on /sister');
               } else {
-                assert.equal(transition.from, undefined, 'initial');
-                assert.equal(transition.to.name, 'parent.index', 'landed on /');
+                assert.strictEqual(transition.from, undefined, 'initial');
+                assert.strictEqual(transition.to.name, 'parent.index', 'landed on /');
               }
             });
           },
@@ -299,7 +303,7 @@ moduleFor(
       return this.visit('/').then(() => {
         toChild = true;
         return this.routerService.transitionTo('/child').catch((e) => {
-          assert.equal(e.name, 'TransitionAborted', 'Transition aborted');
+          assert.strictEqual(e.name, 'TransitionAborted', 'Transition aborted');
         });
       });
     }
@@ -329,27 +333,27 @@ moduleFor(
 
             this.router.on('routeWillChange', (transition) => {
               if (toChild) {
-                assert.equal(transition.from.name, 'parent.index');
+                assert.strictEqual(transition.from.name, 'parent.index');
                 if (toSister) {
-                  assert.equal(transition.to.name, 'parent.sister', 'going to /sister');
+                  assert.strictEqual(transition.to.name, 'parent.sister', 'going to /sister');
                 } else {
-                  assert.equal(transition.to.name, 'parent.child', 'going to /child');
+                  assert.strictEqual(transition.to.name, 'parent.child', 'going to /child');
                   toSister = true;
                 }
               } else {
                 // Going to `/`
-                assert.equal(transition.to.name, 'parent.index', 'going to /');
-                assert.equal(transition.from, undefined, 'initial');
+                assert.strictEqual(transition.to.name, 'parent.index', 'going to /');
+                assert.strictEqual(transition.from, undefined, 'initial');
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
               if (toSister) {
-                assert.equal(transition.from.name, 'parent.index', 'initial');
-                assert.equal(transition.to.name, 'parent.sister', 'landed on /sister');
+                assert.strictEqual(transition.from.name, 'parent.index', 'initial');
+                assert.strictEqual(transition.to.name, 'parent.sister', 'landed on /sister');
               } else {
-                assert.equal(transition.from, undefined, 'initial');
-                assert.equal(transition.to.name, 'parent.index', 'landed on /');
+                assert.strictEqual(transition.from, undefined, 'initial');
+                assert.strictEqual(transition.to.name, 'parent.index', 'landed on /');
               }
             });
           },
@@ -358,7 +362,7 @@ moduleFor(
       return this.visit('/').then(() => {
         toChild = true;
         return this.routerService.transitionTo('/child').catch((e) => {
-          assert.equal(e.name, 'TransitionAborted', 'Transition aborted');
+          assert.strictEqual(e.name, 'TransitionAborted', 'Transition aborted');
         });
       });
     }
@@ -387,24 +391,24 @@ moduleFor(
 
             this.router.on('routeWillChange', (transition) => {
               if (didAbort) {
-                assert.equal(transition.to.name, 'parent.index', 'transition aborted');
-                assert.equal(transition.from.name, 'parent.index', 'transition aborted');
+                assert.strictEqual(transition.to.name, 'parent.index', 'transition aborted');
+                assert.strictEqual(transition.from.name, 'parent.index', 'transition aborted');
               } else if (toChild) {
-                assert.equal(transition.from.name, 'parent.index', 'from /');
-                assert.equal(transition.to.name, 'parent.child', 'to /child');
+                assert.strictEqual(transition.from.name, 'parent.index', 'from /');
+                assert.strictEqual(transition.to.name, 'parent.child', 'to /child');
               } else {
-                assert.equal(transition.to.name, 'parent.index', 'going to /');
-                assert.equal(transition.from, undefined, 'initial');
+                assert.strictEqual(transition.to.name, 'parent.index', 'going to /');
+                assert.strictEqual(transition.from, undefined, 'initial');
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
               if (didAbort) {
-                assert.equal(transition.to.name, 'parent.index', 'landed on /');
-                assert.equal(transition.from.name, 'parent.index', 'initial');
+                assert.strictEqual(transition.to.name, 'parent.index', 'landed on /');
+                assert.strictEqual(transition.from.name, 'parent.index', 'initial');
               } else {
-                assert.equal(transition.to.name, 'parent.index', 'transition aborted');
-                assert.equal(transition.from, undefined, 'transition aborted');
+                assert.strictEqual(transition.to.name, 'parent.index', 'transition aborted');
+                assert.strictEqual(transition.from, undefined, 'transition aborted');
               }
             });
           },
@@ -413,7 +417,7 @@ moduleFor(
       return this.visit('/').then(() => {
         toChild = true;
         return this.routerService.transitionTo('/child').catch((e) => {
-          assert.equal(e.name, 'TransitionAborted', 'Transition aborted');
+          assert.strictEqual(e.name, 'TransitionAborted', 'Transition aborted');
         });
       });
     }
@@ -432,9 +436,9 @@ moduleFor(
             this._super(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.name, 'parent.index');
               if (initial) {
-                assert.equal(transition.from, null);
+                assert.strictEqual(transition.from, null);
                 assert.deepEqual(transition.to.queryParams, { a: 'true' });
               } else if (addQP) {
                 assert.deepEqual(transition.from.queryParams, { a: 'true' });
@@ -449,7 +453,7 @@ moduleFor(
 
             this.router.on('routeDidChange', (transition) => {
               if (initial) {
-                assert.equal(transition.from, null);
+                assert.strictEqual(transition.from, null);
                 assert.deepEqual(transition.to.queryParams, { a: 'true' });
               } else if (addQP) {
                 assert.deepEqual(transition.from.queryParams, { a: 'true' });
@@ -503,16 +507,16 @@ moduleFor(
 
             this.router.on('routeWillChange', (transition) => {
               if (toSister) {
-                assert.equal(transition.to.name, 'parent.sister');
+                assert.strictEqual(transition.to.name, 'parent.sister');
                 assert.deepEqual(transition.to.queryParams, { a: 'a' });
               } else {
-                assert.equal(transition.to.name, 'parent.child');
+                assert.strictEqual(transition.to.name, 'parent.child');
                 assert.deepEqual(transition.to.queryParams, {});
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.sister');
+              assert.strictEqual(transition.to.name, 'parent.sister');
               assert.deepEqual(transition.to.queryParams, { a: 'a' });
             });
           },
@@ -546,16 +550,16 @@ moduleFor(
 
             this.router.on('routeWillChange', (transition) => {
               if (toSister) {
-                assert.equal(transition.to.name, 'parent.sister');
+                assert.strictEqual(transition.to.name, 'parent.sister');
                 assert.deepEqual(transition.to.queryParams, { a: 'a' });
               } else {
-                assert.equal(transition.to.name, 'parent.child');
+                assert.strictEqual(transition.to.name, 'parent.child');
                 assert.deepEqual(transition.to.queryParams, {});
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.sister');
+              assert.strictEqual(transition.to.name, 'parent.sister');
               assert.deepEqual(transition.to.queryParams, { a: 'a' });
             });
           },
@@ -592,7 +596,7 @@ moduleFor(
             this._super(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.to.name, 'dynamic');
+              assert.strictEqual(transition.to.name, 'dynamic');
               if (initial) {
                 assert.deepEqual(transition.to.paramNames, ['dynamic_id']);
                 assert.deepEqual(transition.to.params, { dynamic_id: '123' });
@@ -603,7 +607,7 @@ moduleFor(
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.to.name, 'dynamic');
+              assert.strictEqual(transition.to.name, 'dynamic');
               assert.deepEqual(transition.to.paramNames, ['dynamic_id']);
               if (initial) {
                 assert.deepEqual(transition.to.params, { dynamic_id: '123' });
@@ -657,7 +661,7 @@ moduleFor(
             this._super(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.to.name, 'dynamicWithChild.child');
+              assert.strictEqual(transition.to.name, 'dynamicWithChild.child');
               assert.deepEqual(transition.to.paramNames, ['child_id']);
               assert.deepEqual(transition.to.params, { child_id: '456' });
               assert.deepEqual(transition.to.parent.paramNames, ['dynamic_id']);
@@ -671,7 +675,7 @@ moduleFor(
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.to.name, 'dynamicWithChild.child');
+              assert.strictEqual(transition.to.name, 'dynamicWithChild.child');
               assert.deepEqual(transition.to.paramNames, ['child_id']);
               assert.deepEqual(transition.to.params, { child_id: '456' });
               assert.deepEqual(transition.to.parent.paramNames, ['dynamic_id']);

@@ -146,7 +146,7 @@ moduleFor(
 
     checkActive(assert, selector, active) {
       let classList = this.$(selector)[0].className;
-      assert.equal(
+      assert.strictEqual(
         classList.indexOf('active') > -1,
         active,
         selector + ' active should be ' + active.toString()
@@ -290,7 +290,7 @@ moduleFor(
 
       let theLink = this.$('#the-link > a');
 
-      assert.equal(theLink.attr('href'), '/about?baz=lol');
+      assert.strictEqual(theLink.attr('href'), '/about?baz=lol');
 
       runTask(() => this.click('#the-link > a'));
 
@@ -314,11 +314,11 @@ moduleFor(
       let indexController = this.getController('index');
       let theLink = this.$('#the-link > a');
 
-      assert.equal(theLink.attr('href'), '/?foo=OMG');
+      assert.strictEqual(theLink.attr('href'), '/?foo=OMG');
 
       runTask(() => indexController.set('boundThing', 'ASL'));
 
-      assert.equal(theLink.attr('href'), '/?foo=ASL');
+      assert.strictEqual(theLink.attr('href'), '/?foo=ASL');
     }
 
     async ['@test supplied QP properties can be bound (booleans)'](assert) {
@@ -338,11 +338,11 @@ moduleFor(
       let indexController = this.getController('index');
       let theLink = this.$('#the-link > a');
 
-      assert.equal(theLink.attr('href'), '/?abool=OMG');
+      assert.strictEqual(theLink.attr('href'), '/?abool=OMG');
 
       runTask(() => indexController.set('boundThing', false));
 
-      assert.equal(theLink.attr('href'), '/?abool=false');
+      assert.strictEqual(theLink.attr('href'), '/?abool=false');
 
       await this.click('#the-link > a');
 
@@ -368,17 +368,17 @@ moduleFor(
       let indexController = this.getController('index');
       let theLink = this.$('#the-link > a');
 
-      assert.equal(theLink.attr('href'), '/?foo=lol');
+      assert.strictEqual(theLink.attr('href'), '/?foo=lol');
 
       runTask(() => indexController.set('bar', 'BORF'));
       await runLoopSettled();
 
-      assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
+      assert.strictEqual(theLink.attr('href'), '/?bar=BORF&foo=lol');
 
       runTask(() => indexController.set('foo', 'YEAH'));
       await runLoopSettled();
 
-      assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
+      assert.strictEqual(theLink.attr('href'), '/?bar=BORF&foo=lol');
     }
 
     async ['@test [GH#12033] with only query params, it always transitions to the current route with the query params applied'](
@@ -417,19 +417,19 @@ moduleFor(
       let router = this.appRouter;
       let carsController = this.getController('cars');
 
-      assert.equal(router.currentRouteName, 'cars.create');
+      assert.strictEqual(router.currentRouteName, 'cars.create');
 
       runTask(() => this.click('#close-link > a'));
 
-      assert.equal(router.currentRouteName, 'cars.index');
-      assert.equal(router.get('url'), '/cars');
-      assert.equal(carsController.get('page'), 1, 'The page query-param is 1');
+      assert.strictEqual(router.currentRouteName, 'cars.index');
+      assert.strictEqual(router.get('url'), '/cars');
+      assert.strictEqual(carsController.get('page'), 1, 'The page query-param is 1');
 
       runTask(() => this.click('#page2-link > a'));
 
-      assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
-      assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
-      assert.equal(carsController.get('page'), 2, 'The query params have been updated');
+      assert.strictEqual(router.currentRouteName, 'cars.index', 'The active route is still cars');
+      assert.strictEqual(router.get('url'), '/cars?page=2', 'The url has been updated');
+      assert.strictEqual(carsController.get('page'), 2, 'The query params have been updated');
     }
 
     async ['@test it applies activeClass when query params are not changed'](assert) {
@@ -688,7 +688,7 @@ moduleFor(
 
       appLink = this.$('#app-link > a');
 
-      assert.equal(appLink.attr('href'), '/parent');
+      assert.strictEqual(appLink.attr('href'), '/parent');
       this.shouldNotBeActive(assert, '#app-link > a');
 
       await this.visit('/parent?page=2');
@@ -696,25 +696,25 @@ moduleFor(
       appLink = this.$('#app-link > a');
       let router = this.appRouter;
 
-      assert.equal(appLink.attr('href'), '/parent');
+      assert.strictEqual(appLink.attr('href'), '/parent');
       this.shouldBeActive(assert, '#app-link > a');
-      assert.equal(this.$('#parent-link > a').attr('href'), '/parent');
+      assert.strictEqual(this.$('#parent-link > a').attr('href'), '/parent');
       this.shouldBeActive(assert, '#parent-link > a');
 
       let parentController = this.getController('parent');
 
-      assert.equal(parentController.get('page'), 2);
+      assert.strictEqual(parentController.get('page'), 2);
 
       runTask(() => parentController.set('page', 3));
       await runLoopSettled();
 
-      assert.equal(router.get('location.path'), '/parent?page=3');
+      assert.strictEqual(router.get('location.path'), '/parent?page=3');
       this.shouldBeActive(assert, '#app-link > a');
       this.shouldBeActive(assert, '#parent-link > a');
 
       await this.click('#app-link > a');
 
-      assert.equal(router.get('location.path'), '/parent');
+      assert.strictEqual(router.get('location.path'), '/parent');
     }
 
     async ['@test it defaults query params while in active transition regression test'](assert) {
@@ -776,10 +776,10 @@ moduleFor(
       let barsLink = this.$('#bars-link > a');
       let bazLink = this.$('#baz-foos-link > a');
 
-      assert.equal(foosLink.attr('href'), '/foos');
-      assert.equal(bazLink.attr('href'), '/foos?baz=true');
-      assert.equal(barsLink.attr('href'), '/bars?quux=true');
-      assert.equal(router.get('location.path'), '/');
+      assert.strictEqual(foosLink.attr('href'), '/foos');
+      assert.strictEqual(bazLink.attr('href'), '/foos?baz=true');
+      assert.strictEqual(barsLink.attr('href'), '/bars?quux=true');
+      assert.strictEqual(router.get('location.path'), '/');
       this.shouldNotBeActive(assert, '#foos-link > a');
       this.shouldNotBeActive(assert, '#baz-foos-link > a');
       this.shouldNotBeActive(assert, '#bars-link > a');
@@ -792,7 +792,7 @@ moduleFor(
 
       runTask(() => foos.resolve());
 
-      assert.equal(router.get('location.path'), '/foos');
+      assert.strictEqual(router.get('location.path'), '/foos');
       this.shouldBeActive(assert, '#foos-link > a');
     }
 
@@ -913,7 +913,7 @@ moduleFor(
       await this.visit('/foo/bar/baz?qux=abc');
 
       let bazLink = this.$('#baz-link > a');
-      assert.equal(bazLink.attr('href'), '/foo/bar/baz?qux=abc');
+      assert.strictEqual(bazLink.attr('href'), '/foo/bar/baz?qux=abc');
     }
   }
 );

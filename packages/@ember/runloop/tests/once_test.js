@@ -15,7 +15,7 @@ moduleFor(
         once(F);
       });
 
-      assert.equal(count, 1, 'should have invoked once');
+      assert.strictEqual(count, 1, 'should have invoked once');
     }
 
     ['@test should differentiate based on target'](assert) {
@@ -31,8 +31,8 @@ moduleFor(
         once(B, F);
       });
 
-      assert.equal(A.count, 1, 'should have invoked once on A');
-      assert.equal(B.count, 1, 'should have invoked once on B');
+      assert.strictEqual(A.count, 1, 'should have invoked once on A');
+      assert.strictEqual(B.count, 1, 'should have invoked once on B');
     }
 
     ['@test should ignore other arguments - replacing previous ones'](assert) {
@@ -49,8 +49,8 @@ moduleFor(
         once(B, F, 40);
       });
 
-      assert.equal(A.count, 30, 'should have invoked once on A');
-      assert.equal(B.count, 40, 'should have invoked once on B');
+      assert.strictEqual(A.count, 30, 'should have invoked once on A');
+      assert.strictEqual(B.count, 40, 'should have invoked once on B');
     }
 
     ['@test should be inside of a runloop when running'](assert) {

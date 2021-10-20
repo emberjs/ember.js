@@ -13,7 +13,7 @@ moduleFor(
       this.application.register('helper:x-borf', myHelper);
 
       return this.visit('/').then(() => {
-        assert.equal(
+        assert.strictEqual(
           this.$('#wrapper').text(),
           'BORF YES',
           'The helper was invoked from the container'
@@ -42,7 +42,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assert.equal(
+        assert.strictEqual(
           this.$('#wrapper').text(),
           '-- xela',
           'The bound helper was invoked from the container'
@@ -67,7 +67,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assert.equal(
+        assert.strictEqual(
           this.$('#wrapper').text(),
           'OMG|boo|ya',
           'The helper was invoked from the container'

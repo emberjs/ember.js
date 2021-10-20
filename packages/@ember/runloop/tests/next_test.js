@@ -10,10 +10,10 @@ moduleFor(
 
       run(() => next(() => (invoked = true)));
 
-      assert.equal(invoked, false, 'should not have invoked yet');
+      assert.strictEqual(invoked, false, 'should not have invoked yet');
 
       setTimeout(() => {
-        assert.equal(invoked, true, 'should have invoked later item');
+        assert.strictEqual(invoked, true, 'should have invoked later item');
         done();
       }, 20);
     }

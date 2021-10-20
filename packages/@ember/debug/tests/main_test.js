@@ -391,7 +391,7 @@ moduleFor(
       assert.expect(1);
 
       registerWarnHandler(function (message) {
-        assert.equal(message, 'foo', 'warning was triggered');
+        assert.strictEqual(message, 'foo', 'warning was triggered');
       });
 
       warn('foo', { id: 'ember-debug.do-not-raise' });

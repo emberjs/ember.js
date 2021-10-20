@@ -14,8 +14,8 @@ moduleFor(
         bar: 'BAR',
       });
 
-      assert.equal(Subclass.foo(), 'FOO', 'Adds method');
-      assert.equal(get(Subclass, 'bar'), 'BAR', 'Adds property');
+      assert.strictEqual(Subclass.foo(), 'FOO', 'Adds method');
+      assert.strictEqual(get(Subclass, 'bar'), 'BAR', 'Adds property');
     }
 
     ['@test class properties inherited by subclasses'](assert) {
@@ -29,8 +29,8 @@ moduleFor(
 
       let SubSub = Subclass.extend();
 
-      assert.equal(SubSub.foo(), 'FOO', 'Adds method');
-      assert.equal(get(SubSub, 'bar'), 'BAR', 'Adds property');
+      assert.strictEqual(SubSub.foo(), 'FOO', 'Adds method');
+      assert.strictEqual(get(SubSub, 'bar'), 'BAR', 'Adds property');
     }
   }
 );

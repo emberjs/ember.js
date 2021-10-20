@@ -35,7 +35,7 @@ moduleFor(
       });
 
       let proxy = get(obj, 'someProxyishThing');
-      assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+      assert.strictEqual(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
     }
 
     ['@test should not trigger proxy assertion when retrieving a re-registered proxy (GH#16610)'](
@@ -53,7 +53,7 @@ moduleFor(
       // by the host app down to the engine
       owner.register('thing:one', someProxyishThing, { instantiate: false });
 
-      assert.equal(owner.lookup('thing:one'), someProxyishThing);
+      assert.strictEqual(owner.lookup('thing:one'), someProxyishThing);
     }
 
     ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {
@@ -63,7 +63,7 @@ moduleFor(
         },
       }).create();
 
-      assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+      assert.strictEqual(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
 
       // should not trigger an assertion
       getOwner(proxy);
@@ -79,7 +79,7 @@ moduleFor(
           this._super(...arguments);
           let localOwner = getOwner(this);
 
-          assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
+          assert.strictEqual(localOwner, owner, 'should be able to `getOwner` in init');
         },
         unknownProperty() {
           return undefined;
@@ -108,7 +108,7 @@ moduleFor(
       assert.deepEqual(Object.keys(test).sort(), ['anotherProp', 'id', 'myProp']);
       await runLoopSettled();
 
-      assert.equal(callCount, 1);
+      assert.strictEqual(callCount, 1);
 
       test.destroy();
     }

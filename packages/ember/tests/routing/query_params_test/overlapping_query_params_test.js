@@ -167,13 +167,13 @@ moduleFor(
 
       await this.setAndFlush(parentChildController, 'page', 2);
       this.assertCurrentPath('/parent/child?page=2');
-      assert.equal(parentController.get('page'), 1);
-      assert.equal(parentChildController.get('page'), 2);
+      assert.strictEqual(parentController.get('page'), 1);
+      assert.strictEqual(parentChildController.get('page'), 2);
 
       await this.setAndFlush(parentController, 'page', 2);
       this.assertCurrentPath('/parent/child?page=2&yespage=2');
-      assert.equal(parentController.get('page'), 2);
-      assert.equal(parentChildController.get('page'), 2);
+      assert.strictEqual(parentController.get('page'), 2);
+      assert.strictEqual(parentChildController.get('page'), 2);
     }
   }
 );

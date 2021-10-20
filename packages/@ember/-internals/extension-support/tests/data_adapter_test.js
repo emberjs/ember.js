@@ -52,10 +52,10 @@ moduleFor(
         let adapter = this.applicationInstance.lookup('data-adapter:main');
 
         function modelTypesAdded(types) {
-          assert.equal(types.length, 1);
+          assert.strictEqual(types.length, 1);
           let postType = types[0];
-          assert.equal(postType.name, 'post', 'Correctly sets the name');
-          assert.equal(postType.count, 3, 'Correctly sets the record count');
+          assert.strictEqual(postType.name, 'post', 'Correctly sets the name');
+          assert.strictEqual(postType.count, 3, 'Correctly sets the record count');
           assert.strictEqual(postType.object, PostClass, 'Correctly sets the object');
           assert.deepEqual(
             postType.columns,
@@ -73,7 +73,7 @@ moduleFor(
         'data-adapter:main',
         DataAdapter.extend({
           getRecords(klass, name) {
-            assert.equal(name, 'post');
+            assert.strictEqual(name, 'post');
             return emberA();
           },
         })
@@ -113,10 +113,10 @@ moduleFor(
         let adapter = this.applicationInstance.lookup('data-adapter:main');
 
         function modelTypesAdded(types) {
-          assert.equal(types.length, 1);
+          assert.strictEqual(types.length, 1);
           let postType = types[0];
-          assert.equal(postType.name, 'post', 'Correctly sets the name');
-          assert.equal(postType.count, 3, 'Correctly sets the record count');
+          assert.strictEqual(postType.name, 'post', 'Correctly sets the name');
+          assert.strictEqual(postType.count, 3, 'Correctly sets the record count');
           assert.strictEqual(postType.object, PostClass, 'Correctly sets the object');
           assert.deepEqual(
             postType.columns,
@@ -152,7 +152,7 @@ moduleFor(
 
         function modelTypesUpdated(types) {
           let postType = types[0];
-          assert.equal(postType.count, 4, 'Correctly updates the count');
+          assert.strictEqual(postType.count, 4, 'Correctly updates the count');
         }
 
         adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
@@ -188,7 +188,7 @@ moduleFor(
 
         function recordsAdded(records) {
           let record = records[0];
-          assert.equal(record.color, 'blue', 'Sets the color correctly');
+          assert.strictEqual(record.color, 'blue', 'Sets the color correctly');
           assert.deepEqual(
             record.columnValues,
             { title: 'Post ' + countAdded },
@@ -234,12 +234,12 @@ moduleFor(
           adapter = this.applicationInstance.lookup('data-adapter:main');
 
           function recordsAdded(records) {
-            assert.equal(records[0].columnValues.title, 'Post', 'Post added correctly');
+            assert.strictEqual(records[0].columnValues.title, 'Post', 'Post added correctly');
           }
 
           function recordsUpdated(records) {
             updatesCalled++;
-            assert.equal(records[0].columnValues.title, 'Post Modified');
+            assert.strictEqual(records[0].columnValues.title, 'Post Modified');
           }
 
           release = adapter.watchRecords('post', recordsAdded, recordsUpdated);
@@ -254,7 +254,7 @@ moduleFor(
         .then(() => {
           release();
           set(post, 'title', 'New Title');
-          assert.equal(updatesCalled, 1, 'Release function removes observers');
+          assert.strictEqual(updatesCalled, 1, 'Release function removes observers');
         });
     }
 
@@ -266,7 +266,7 @@ moduleFor(
 
         let klass = adapter._nameToClass('foo');
 
-        assert.equal(klass, undefined, 'returns undefined');
+        assert.strictEqual(klass, undefined, 'returns undefined');
       });
     }
   }

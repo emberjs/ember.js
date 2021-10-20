@@ -36,17 +36,17 @@ moduleFor(
       let myObject = MyObject.create({ passedProperty: 'passed-property' });
 
       assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
-      assert.equal(
+      assert.strictEqual(
         myObject.postInitProperty,
         'post-init-property',
         'constructor property available on instance (create)'
       );
-      assert.equal(
+      assert.strictEqual(
         myObject.initProperty,
         'init-property',
         'init property available on instance (create)'
       );
-      assert.equal(
+      assert.strictEqual(
         myObject.passedProperty,
         'passed-property',
         'passed property available on instance (create)'
@@ -185,8 +185,8 @@ moduleFor(
       class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
 
       let myObject = MyObject.create();
-      assert.equal(myObject.property1, 'data-1', 'includes the first mixin');
-      assert.equal(myObject.property2, 'data-2', 'includes the second mixin');
+      assert.strictEqual(myObject.property1, 'data-1', 'includes the first mixin');
+      assert.strictEqual(myObject.property2, 'data-2', 'includes the second mixin');
     }
 
     ['@test using instanceof'](assert) {
@@ -259,8 +259,8 @@ moduleFor(
         bar: 789,
       });
 
-      assert.equal(obj.foo, 456, 'sets class fields on instance correctly');
-      assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
+      assert.strictEqual(obj.foo, 456, 'sets class fields on instance correctly');
+      assert.strictEqual(obj.bar, 789, 'sets passed in properties on instance correctly');
     }
 
     ['@test calling metaForProperty on a native class works'](assert) {
@@ -329,40 +329,40 @@ moduleFor(
       removeObserver(B.prototype, 'foo', null, 'fooDidChange');
       removeListener(B.prototype, 'someEvent', null, 'onSomeEvent');
 
-      assert.equal(fooDidChangeBase, 0);
-      assert.equal(fooDidChangeA, 0);
-      assert.equal(fooDidChangeB, 0);
+      assert.strictEqual(fooDidChangeBase, 0);
+      assert.strictEqual(fooDidChangeA, 0);
+      assert.strictEqual(fooDidChangeB, 0);
 
-      assert.equal(someEventBase, 0);
-      assert.equal(someEventA, 0);
-      assert.equal(someEventB, 0);
+      assert.strictEqual(someEventBase, 0);
+      assert.strictEqual(someEventA, 0);
+      assert.strictEqual(someEventB, 0);
 
       let a = A.create();
       a.set('foo', 'something');
 
       // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
       return runLoopSettled().then(async () => {
-        assert.equal(fooDidChangeBase, 1);
-        assert.equal(fooDidChangeA, 1);
-        assert.equal(fooDidChangeB, 0);
+        assert.strictEqual(fooDidChangeBase, 1);
+        assert.strictEqual(fooDidChangeA, 1);
+        assert.strictEqual(fooDidChangeB, 0);
 
         sendEvent(a, 'someEvent');
-        assert.equal(someEventBase, 1);
-        assert.equal(someEventA, 1);
-        assert.equal(someEventB, 0);
+        assert.strictEqual(someEventBase, 1);
+        assert.strictEqual(someEventA, 1);
+        assert.strictEqual(someEventB, 0);
 
         let b = B.create();
         b.set('foo', 'something');
         await runLoopSettled();
 
-        assert.equal(fooDidChangeBase, 1);
-        assert.equal(fooDidChangeA, 1);
-        assert.equal(fooDidChangeB, 0);
+        assert.strictEqual(fooDidChangeBase, 1);
+        assert.strictEqual(fooDidChangeA, 1);
+        assert.strictEqual(fooDidChangeB, 0);
 
         sendEvent(b, 'someEvent');
-        assert.equal(someEventBase, 1);
-        assert.equal(someEventA, 1);
-        assert.equal(someEventB, 0);
+        assert.strictEqual(someEventBase, 1);
+        assert.strictEqual(someEventA, 1);
+        assert.strictEqual(someEventB, 0);
 
         a.destroy();
         b.destroy();
@@ -512,7 +512,7 @@ moduleFor(
         last: 'Jackson',
       });
 
-      assert.equal(d.full, 'Robert Jackson');
+      assert.strictEqual(d.full, 'Robert Jackson');
 
       d.setProperties({ first: 'Kris', last: 'Selden' });
 
@@ -524,7 +524,7 @@ moduleFor(
           'D fullNameDidChange after super.fullNameDidChange',
         ]);
 
-        assert.equal(d.full, 'Kris Selden');
+        assert.strictEqual(d.full, 'Kris Selden');
 
         d.triggerSomeEvent('event arg');
         assert.deepEqual(events, [

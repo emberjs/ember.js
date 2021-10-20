@@ -51,7 +51,7 @@ moduleFor(
       }
 
       return this.visit('/posts').then(() => {
-        assert.equal(Object.keys(this.logs).length, 4, 'expected logs');
+        assert.strictEqual(Object.keys(this.logs).length, 4, 'expected logs');
       });
     }
 
@@ -62,15 +62,23 @@ moduleFor(
       }
 
       return this.visit('/posts').then(() => {
-        assert.equal(
+        assert.strictEqual(
           this.logs['controller:application'],
           1,
           'expected: ApplicationController was generated'
         );
-        assert.equal(this.logs['controller:posts'], 1, 'expected: PostsController was generated');
+        assert.strictEqual(
+          this.logs['controller:posts'],
+          1,
+          'expected: PostsController was generated'
+        );
 
-        assert.equal(this.logs['route:application'], 1, 'expected: ApplicationRoute was generated');
-        assert.equal(this.logs['route:posts'], 1, 'expected: PostsRoute was generated');
+        assert.strictEqual(
+          this.logs['route:application'],
+          1,
+          'expected: ApplicationRoute was generated'
+        );
+        assert.strictEqual(this.logs['route:posts'], 1, 'expected: PostsRoute was generated');
       });
     }
 
@@ -108,7 +116,7 @@ moduleFor(
 
     [`@test do NOT log class generation if logging disabled`](assert) {
       return this.visit('/posts').then(() => {
-        assert.equal(Object.keys(this.logs).length, 0, 'expected logs');
+        assert.strictEqual(Object.keys(this.logs).length, 0, 'expected logs');
       });
     }
   }
@@ -134,17 +142,17 @@ moduleFor(
       return this.visit('/')
         .then(() => this.visit('/posts'))
         .then(() => {
-          assert.equal(
+          assert.strictEqual(
             this.logs['template:application'],
             undefined,
             'expected: Should not log template:application since it exists.'
           );
-          assert.equal(
+          assert.strictEqual(
             this.logs['template:index'],
             1,
             'expected: Could not find "index" template or view.'
           );
-          assert.equal(
+          assert.strictEqual(
             this.logs['template:posts'],
             1,
             'expected: Could not find "posts" template or view.'
@@ -165,13 +173,13 @@ moduleFor(
 
     [`@test do not log when template and view are missing when flag is not true`](assert) {
       return this.visit('/posts').then(() => {
-        assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
+        assert.strictEqual(Object.keys(this.logs).length, 0, 'expected no logs');
       });
     }
 
     [`@test do not log which views are used with templates when flag is not true`](assert) {
       return this.visit('/posts').then(() => {
-        assert.equal(Object.keys(this.logs).length, 0, 'expected no logs');
+        assert.strictEqual(Object.keys(this.logs).length, 0, 'expected no logs');
       });
     }
   }

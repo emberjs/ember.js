@@ -40,17 +40,17 @@ moduleFor(
 
       obj = {};
       MixinB.apply(obj);
-      assert.equal(get(obj, 'aProp'), 'AB', 'should expose super for B');
+      assert.strictEqual(get(obj, 'aProp'), 'AB', 'should expose super for B');
 
       obj = {};
       MixinC.apply(obj);
-      assert.equal(get(obj, 'aProp'), 'AC', 'should expose super for C');
+      assert.strictEqual(get(obj, 'aProp'), 'AC', 'should expose super for C');
 
       obj = {};
 
       MixinA.apply(obj);
       MixinD.apply(obj);
-      assert.equal(get(obj, 'aProp'), 'AD', 'should define super for D');
+      assert.strictEqual(get(obj, 'aProp'), 'AD', 'should define super for D');
 
       obj = {};
       defineProperty(
@@ -61,7 +61,7 @@ moduleFor(
         })
       );
       MixinD.apply(obj);
-      assert.equal(get(obj, 'aProp'), 'objD', 'should preserve original computed property');
+      assert.strictEqual(get(obj, 'aProp'), 'objD', 'should preserve original computed property');
     }
 
     ['@test calling set on overridden computed properties'](assert) {

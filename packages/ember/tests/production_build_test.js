@@ -25,7 +25,7 @@ moduleFor(
         let fired = false;
         runInDebug(() => (fired = true));
 
-        assert.equal(fired, false, 'runInDebug callback should not be ran');
+        assert.strictEqual(fired, false, 'runInDebug callback should not be ran');
       } else {
         assert.expect(0);
       }

@@ -42,7 +42,7 @@ moduleFor(
       });
 
       assert.ok(engineInstance, 'instance should be created');
-      assert.equal(engineInstance.base, engine, 'base should be set to engine');
+      assert.strictEqual(engineInstance.base, engine, 'base should be set to engine');
     }
 
     ['@test unregistering a factory clears all cached instances of that factory'](assert) {

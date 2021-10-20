@@ -21,8 +21,8 @@ moduleFor(
       MixinA.apply(obj);
 
       // but should be defined
-      assert.equal(props.publicMethod(), 'publicMethod', 'publicMethod is func');
-      assert.equal(props._privateMethod(), 'privateMethod', 'privateMethod is func');
+      assert.strictEqual(props.publicMethod(), 'publicMethod', 'publicMethod is func');
+      assert.strictEqual(props._privateMethod(), 'privateMethod', 'privateMethod is func');
     }
 
     ['@test overriding public methods'](assert) {
@@ -54,16 +54,16 @@ moduleFor(
 
       obj = {};
       MixinB.apply(obj);
-      assert.equal(obj.publicMethod(), 'AB', 'should define super for A and B');
+      assert.strictEqual(obj.publicMethod(), 'AB', 'should define super for A and B');
 
       obj = {};
       MixinD.apply(obj);
-      assert.equal(obj.publicMethod(), 'AD', 'should define super for A and B');
+      assert.strictEqual(obj.publicMethod(), 'AD', 'should define super for A and B');
 
       obj = {};
       MixinA.apply(obj);
       MixinF.apply(obj);
-      assert.equal(obj.publicMethod(), 'AF', 'should define super for A and F');
+      assert.strictEqual(obj.publicMethod(), 'AF', 'should define super for A and F');
 
       obj = {
         publicMethod() {
@@ -71,7 +71,7 @@ moduleFor(
         },
       };
       MixinF.apply(obj);
-      assert.equal(obj.publicMethod(), 'objF', 'should define super for F');
+      assert.strictEqual(obj.publicMethod(), 'objF', 'should define super for F');
     }
 
     ['@test overriding inherited objects'](assert) {
@@ -97,11 +97,11 @@ moduleFor(
 
       cnt = 0;
       objB.foo();
-      assert.equal(cnt, 2, 'should invoke both methods');
+      assert.strictEqual(cnt, 2, 'should invoke both methods');
 
       cnt = 0;
       objA.foo();
-      assert.equal(cnt, 1, 'should not screw w/ parent obj');
+      assert.strictEqual(cnt, 1, 'should not screw w/ parent obj');
     }
 
     ['@test Including the same mixin more than once will only run once'](assert) {
@@ -137,7 +137,7 @@ moduleFor(
       cnt = 0;
       obj.foo();
 
-      assert.equal(cnt, 1, 'should invoke MixinA.foo one time');
+      assert.strictEqual(cnt, 1, 'should invoke MixinA.foo one time');
     }
 
     ['@test _super from a single mixin with no superclass does not error'](assert) {
@@ -197,7 +197,7 @@ moduleFor(
 
       let obj = {};
       MixinA.apply(obj);
-      assert.equal(obj.toString(), 'FOO', 'should override toString w/o error');
+      assert.strictEqual(obj.toString(), 'FOO', 'should override toString w/o error');
 
       obj = {};
       mixin(obj, {
@@ -205,7 +205,7 @@ moduleFor(
           return 'FOO';
         },
       });
-      assert.equal(obj.toString(), 'FOO', 'should override toString w/o error');
+      assert.strictEqual(obj.toString(), 'FOO', 'should override toString w/o error');
     }
   }
 );
@@ -246,7 +246,7 @@ moduleFor(
 
       cnt = 0;
       obj.foo();
-      assert.equal(cnt, 3, 'should invoke all 3 methods');
+      assert.strictEqual(cnt, 3, 'should invoke all 3 methods');
     }
   }
 );

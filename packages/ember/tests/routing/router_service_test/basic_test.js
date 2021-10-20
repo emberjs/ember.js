@@ -12,13 +12,13 @@ moduleFor(
       return this.visit('/').then(() => {
         let currentRoute = this.routerService.currentRoute;
         let { name, localName, params, paramNames, queryParams } = currentRoute;
-        assert.equal(name, 'parent.index');
-        assert.equal(localName, 'index');
+        assert.strictEqual(name, 'parent.index');
+        assert.strictEqual(localName, 'index');
         assert.deepEqual(params, {});
         assert.deepEqual(queryParams, {});
         assert.deepEqual(paramNames, []);
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.index');
+        assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.index');
       });
     }
 
@@ -28,13 +28,13 @@ moduleFor(
       return this.visit('/child').then(() => {
         let currentRoute = this.routerService.currentRoute;
         let { name, localName, params, paramNames, queryParams } = currentRoute;
-        assert.equal(name, 'parent.child');
-        assert.equal(localName, 'child');
+        assert.strictEqual(name, 'parent.child');
+        assert.strictEqual(localName, 'child');
         assert.deepEqual(params, {});
         assert.deepEqual(queryParams, {});
         assert.deepEqual(paramNames, []);
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+        assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.child');
       });
     }
 
@@ -45,18 +45,18 @@ moduleFor(
         .then(() => {
           let currentRoute = this.routerService.currentRoute;
           let { name, localName } = currentRoute;
-          assert.equal(name, 'parent.child');
-          assert.equal(localName, 'child');
+          assert.strictEqual(name, 'parent.child');
+          assert.strictEqual(localName, 'child');
 
           return this.routerService.transitionTo('parent.sister');
         })
         .then(() => {
           let currentRoute = this.routerService.currentRoute;
           let { name, localName } = currentRoute;
-          assert.equal(name, 'parent.sister');
-          assert.equal(localName, 'sister');
+          assert.strictEqual(name, 'parent.sister');
+          assert.strictEqual(localName, 'sister');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+          assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.sister');
         });
     }
 
@@ -77,8 +77,8 @@ moduleFor(
           return this.routerService.transitionTo('/child');
         })
         .catch((e) => {
-          assert.equal(this.routerService.currentRouteName, 'parent.sister');
-          assert.equal(e.message, 'TransitionAborted');
+          assert.strictEqual(this.routerService.currentRouteName, 'parent.sister');
+          assert.strictEqual(e.message, 'TransitionAborted');
         });
     }
 
@@ -89,30 +89,30 @@ moduleFor(
         .then(() => {
           let currentRoute = this.routerService.currentRoute;
           let { name, localName } = currentRoute;
-          assert.equal(name, 'parent.child');
-          assert.equal(localName, 'child');
+          assert.strictEqual(name, 'parent.child');
+          assert.strictEqual(localName, 'child');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+          assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.child');
 
           return this.visit('/sister');
         })
         .then(() => {
           let currentRoute = this.routerService.currentRoute;
           let { name, localName } = currentRoute;
-          assert.equal(name, 'parent.sister');
-          assert.equal(localName, 'sister');
+          assert.strictEqual(name, 'parent.sister');
+          assert.strictEqual(localName, 'sister');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+          assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.sister');
 
           return this.visit('/brother');
         })
         .then(() => {
           let currentRoute = this.routerService.currentRoute;
           let { name, localName } = currentRoute;
-          assert.equal(name, 'parent.brother');
-          assert.equal(localName, 'brother');
+          assert.strictEqual(name, 'parent.brother');
+          assert.strictEqual(localName, 'brother');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.brother');
+          assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.brother');
         });
     }
 
@@ -120,7 +120,7 @@ moduleFor(
       assert.expect(1);
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('rootURL'), '/');
+        assert.strictEqual(this.routerService.get('rootURL'), '/');
       });
     }
 
@@ -138,7 +138,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('rootURL'), '/homepage');
+        assert.strictEqual(this.routerService.get('rootURL'), '/homepage');
       });
     }
 

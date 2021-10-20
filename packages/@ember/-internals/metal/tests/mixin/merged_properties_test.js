@@ -58,7 +58,7 @@ moduleFor(
       });
 
       let obj = mixin({}, MixinA, MixinB);
-      assert.equal(get(obj, 'foo'), null);
+      assert.strictEqual(get(obj, 'foo'), null);
     }
 
     ["@test mergedProperties' properties can get overwritten"](assert) {
@@ -118,8 +118,8 @@ moduleFor(
         },
       });
 
-      assert.equal(get(obj, 'options').a, 'A');
-      assert.equal(get(obj, 'options').b.c, 'ccc');
+      assert.strictEqual(get(obj, 'options').a, 'A');
+      assert.strictEqual(get(obj, 'options').b.c, 'ccc');
     }
 
     ['@test defining mergedProperties at create time should not modify the prototype'](assert) {
@@ -141,8 +141,8 @@ moduleFor(
         },
       });
 
-      assert.equal(get(objA, 'options').a, 2);
-      assert.equal(get(objB, 'options').a, 3);
+      assert.strictEqual(get(objA, 'options').a, 2);
+      assert.strictEqual(get(objB, 'options').a, 3);
     }
 
     ["@test mergedProperties' overwriting methods can call _super"](assert) {
@@ -152,7 +152,7 @@ moduleFor(
         mergedProperties: ['foo'],
         foo: {
           meth(a) {
-            assert.equal(a, 'WOOT', "_super successfully called MixinA's `foo.meth` method");
+            assert.strictEqual(a, 'WOOT', "_super successfully called MixinA's `foo.meth` method");
             return 'WAT';
           },
         },
@@ -177,7 +177,7 @@ moduleFor(
       });
 
       let obj = mixin({}, MixinA, MixinB, MixinC);
-      assert.equal(obj.foo.meth('WOOT'), 'WAT');
+      assert.strictEqual(obj.foo.meth('WOOT'), 'WAT');
     }
 
     ['@test Merging an Array should raise an error'](assert) {

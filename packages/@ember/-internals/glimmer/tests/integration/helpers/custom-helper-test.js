@@ -676,7 +676,7 @@ moduleFor(
 
       runDestroy(this.component);
 
-      assert.equal(destroyCount, 1, 'destroy is called after a view is destroyed');
+      assert.strictEqual(destroyCount, 1, 'destroy is called after a view is destroyed');
     }
 
     ['@test simple helper can be invoked manually via `owner.factoryFor(...).create().compute()'](
@@ -689,8 +689,12 @@ moduleFor(
 
       let instance = this.owner.factoryFor('helper:some-helper').create();
 
-      assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
-      assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
+      assert.strictEqual(
+        typeof instance.compute,
+        'function',
+        'expected instance.compute to be present'
+      );
+      assert.strictEqual(instance.compute(), 'lolol', 'can invoke `.compute`');
     }
 
     ['@test class-based helper can be invoked manually via `owner.factoryFor(...).create().compute()'](
@@ -705,8 +709,12 @@ moduleFor(
 
       let instance = this.owner.factoryFor('helper:some-helper').create();
 
-      assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
-      assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
+      assert.strictEqual(
+        typeof instance.compute,
+        'function',
+        'expected instance.compute to be present'
+      );
+      assert.strictEqual(instance.compute(), 'lolol', 'can invoke `.compute`');
     }
 
     ['@test class-based helper in native ES syntax receives owner'](assert) {
@@ -717,7 +725,11 @@ moduleFor(
           constructor(owner) {
             super(owner);
 
-            assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
+            assert.strictEqual(
+              owner,
+              testContext.owner,
+              'owner was passed as a constructor argument'
+            );
           }
 
           compute() {

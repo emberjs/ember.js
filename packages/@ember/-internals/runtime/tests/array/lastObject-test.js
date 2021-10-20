@@ -7,20 +7,20 @@ class LastObjectTests extends AbstractTestCase {
     let obj = this.newObject();
     let ary = this.toArray(obj);
 
-    this.assert.equal(get(obj, 'lastObject'), ary[ary.length - 1]);
+    this.assert.strictEqual(get(obj, 'lastObject'), ary[ary.length - 1]);
   }
 
   '@test returns undefined if enumerable is empty'() {
     let obj = this.newObject([]);
 
-    this.assert.equal(get(obj, 'lastObject'), undefined);
+    this.assert.strictEqual(get(obj, 'lastObject'), undefined);
   }
 
   '@test can not be set'() {
     let obj = this.newObject();
     let ary = this.toArray(obj);
 
-    this.assert.equal(get(obj, 'lastObject'), ary[ary.length - 1]);
+    this.assert.strictEqual(get(obj, 'lastObject'), ary[ary.length - 1]);
 
     this.assert.throws(function () {
       set(obj, 'lastObject', 'foo!');

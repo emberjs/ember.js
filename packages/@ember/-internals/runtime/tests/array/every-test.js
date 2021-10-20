@@ -13,7 +13,7 @@ class EveryTest extends AbstractTestCase {
       found.push(i);
       return true;
     });
-    this.assert.equal(result, true, 'return value of obj.every');
+    this.assert.strictEqual(result, true, 'return value of obj.every');
     this.assert.deepEqual(found, ary, 'items passed during every() should match');
   }
 
@@ -29,8 +29,8 @@ class EveryTest extends AbstractTestCase {
       found.push(i);
       return --cnt > 0;
     });
-    this.assert.equal(result, false, 'return value of obj.every');
-    this.assert.equal(found.length, exp, 'should invoke proper number of times');
+    this.assert.strictEqual(result, false, 'return value of obj.every');
+    this.assert.strictEqual(found.length, exp, 'should invoke proper number of times');
     this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during every() should match');
   }
 }
@@ -42,8 +42,8 @@ class IsEveryTest extends AbstractTestCase {
       EmberObject.create({ foo: 'foo', bar: 'bar' }),
     ]);
 
-    this.assert.equal(obj.isEvery('foo', 'foo'), true, 'isEvery(foo)');
-    this.assert.equal(obj.isEvery('bar', 'bar'), false, 'isEvery(bar)');
+    this.assert.strictEqual(obj.isEvery('foo', 'foo'), true, 'isEvery(foo)');
+    this.assert.strictEqual(obj.isEvery('bar', 'bar'), false, 'isEvery(bar)');
   }
 
   '@test should return true of every property is true'() {
@@ -53,8 +53,8 @@ class IsEveryTest extends AbstractTestCase {
     ]);
 
     // different values - all eval to true
-    this.assert.equal(obj.isEvery('foo'), true, 'isEvery(foo)');
-    this.assert.equal(obj.isEvery('bar'), false, 'isEvery(bar)');
+    this.assert.strictEqual(obj.isEvery('foo'), true, 'isEvery(foo)');
+    this.assert.strictEqual(obj.isEvery('bar'), false, 'isEvery(bar)');
   }
 
   '@test should return true if every property matches null'() {
@@ -63,8 +63,8 @@ class IsEveryTest extends AbstractTestCase {
       EmberObject.create({ foo: null, bar: null }),
     ]);
 
-    this.assert.equal(obj.isEvery('foo', null), true, "isEvery('foo', null)");
-    this.assert.equal(obj.isEvery('bar', null), false, "isEvery('bar', null)");
+    this.assert.strictEqual(obj.isEvery('foo', null), true, "isEvery('foo', null)");
+    this.assert.strictEqual(obj.isEvery('bar', null), false, "isEvery('bar', null)");
   }
 
   '@test should return true if every property is undefined'() {
@@ -73,8 +73,8 @@ class IsEveryTest extends AbstractTestCase {
       EmberObject.create({ bar: undefined }),
     ]);
 
-    this.assert.equal(obj.isEvery('foo', undefined), true, "isEvery('foo', undefined)");
-    this.assert.equal(obj.isEvery('bar', undefined), false, "isEvery('bar', undefined)");
+    this.assert.strictEqual(obj.isEvery('foo', undefined), true, "isEvery('foo', undefined)");
+    this.assert.strictEqual(obj.isEvery('bar', undefined), false, "isEvery('bar', undefined)");
   }
 }
 

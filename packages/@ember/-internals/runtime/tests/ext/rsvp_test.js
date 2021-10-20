@@ -24,7 +24,7 @@ moduleFor(
         });
         assert.ok(false, 'expected assertion to be thrown');
       } catch (e) {
-        assert.equal(e, error, 'error was re-thrown');
+        assert.strictEqual(e, error, 'error was re-thrown');
       }
     }
 
@@ -45,7 +45,7 @@ moduleFor(
       try {
         run(RSVP, 'reject', 'foo');
       } catch (e) {
-        assert.equal(e, 'foo', 'should throw with rejection message');
+        assert.strictEqual(e, 'foo', 'should throw with rejection message');
       } finally {
         setTesting(wasEmberTesting);
       }
@@ -76,8 +76,8 @@ moduleFor(
       try {
         setTesting(false);
         setOnerror((error) => {
-          assert.equal(error, actualError, 'expected the real error on the jqXHR');
-          assert.equal(
+          assert.strictEqual(error, actualError, 'expected the real error on the jqXHR');
+          assert.strictEqual(
             error.__reason_with_error_thrown__,
             jqXHR,
             'also retains a helpful reference to the rejection reason'
@@ -107,8 +107,8 @@ moduleFor(
       try {
         setTesting(false);
         setOnerror((error) => {
-          assert.equal(error.message, actualError, 'expected the real error on the jqXHR');
-          assert.equal(
+          assert.strictEqual(error.message, actualError, 'expected the real error on the jqXHR');
+          assert.strictEqual(
             error.__reason_with_error_thrown__,
             jqXHR,
             'also retains a helpful reference to the rejection reason'
@@ -136,7 +136,7 @@ moduleFor(
       try {
         setTesting(false);
         setOnerror((error) => {
-          assert.equal(error.message, 'a fail');
+          assert.strictEqual(error.message, 'a fail');
           assert.ok(JSON.stringify(error), 'Error can be serialized');
         });
 

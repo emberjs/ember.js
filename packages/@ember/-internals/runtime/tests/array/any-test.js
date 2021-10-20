@@ -14,7 +14,7 @@ class AnyTests extends AbstractTestCase {
       return false;
     });
 
-    this.assert.equal(result, false, 'return value of obj.any');
+    this.assert.strictEqual(result, false, 'return value of obj.any');
     this.assert.deepEqual(found, ary, 'items passed during any() should match');
   }
 
@@ -30,8 +30,8 @@ class AnyTests extends AbstractTestCase {
       found.push(i);
       return --cnt <= 0;
     });
-    this.assert.equal(result, true, 'return value of obj.any');
-    this.assert.equal(found.length, exp, 'should invoke proper number of times');
+    this.assert.strictEqual(result, true, 'return value of obj.any');
+    this.assert.strictEqual(found.length, exp, 'should invoke proper number of times');
     this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during any() should match');
   }
 
@@ -40,7 +40,7 @@ class AnyTests extends AbstractTestCase {
     let result;
 
     result = obj.any((i) => Boolean(i));
-    this.assert.equal(result, true, 'return value of obj.any');
+    this.assert.strictEqual(result, true, 'return value of obj.any');
   }
 
   '@test any should produce correct results even if the matching element is undefined'(assert) {
@@ -48,7 +48,7 @@ class AnyTests extends AbstractTestCase {
     let result;
 
     result = obj.any(() => true);
-    assert.equal(result, true, 'return value of obj.any');
+    assert.strictEqual(result, true, 'return value of obj.any');
   }
 }
 

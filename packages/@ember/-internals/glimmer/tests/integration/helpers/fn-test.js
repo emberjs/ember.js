@@ -81,20 +81,20 @@ moduleFor(
         arg2: 'bar',
       });
 
-      assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
+      assert.strictEqual(this.stashedFn(), 'arg1: foo, arg2: bar');
 
       runTask(() => set(this.context, 'arg1', 'qux'));
-      assert.equal(this.stashedFn(), 'arg1: qux, arg2: bar');
+      assert.strictEqual(this.stashedFn(), 'arg1: qux, arg2: bar');
 
       runTask(() => set(this.context, 'arg2', 'derp'));
-      assert.equal(this.stashedFn(), 'arg1: qux, arg2: derp');
+      assert.strictEqual(this.stashedFn(), 'arg1: qux, arg2: derp');
 
       runTask(() => {
         set(this.context, 'arg1', 'foo');
         set(this.context, 'arg2', 'bar');
       });
 
-      assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
+      assert.strictEqual(this.stashedFn(), 'arg1: foo, arg2: bar');
     }
 
     '@test a stashed fn result invokes the correct function when the bound function changes'(
@@ -110,13 +110,13 @@ moduleFor(
         arg2: 'bar',
       });
 
-      assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
+      assert.strictEqual(this.stashedFn(), 'arg1: foo, arg2: bar');
 
       runTask(() => set(this.context, 'myFunc', func2));
-      assert.equal(this.stashedFn(), 'arg2: bar, arg1: foo');
+      assert.strictEqual(this.stashedFn(), 'arg2: bar, arg1: foo');
 
       runTask(() => set(this.context, 'myFunc', func1));
-      assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
+      assert.strictEqual(this.stashedFn(), 'arg1: foo, arg2: bar');
     }
 
     '@test there is no `this` context within the callback'(assert) {
@@ -144,7 +144,7 @@ moduleFor(
         arg2: 'bar',
       });
 
-      assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
+      assert.strictEqual(this.stashedFn(), 'arg1: foo, arg2: bar');
     }
 
     '@test partially applies each layer when nested [GH#17959]'() {

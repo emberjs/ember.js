@@ -15,7 +15,7 @@ moduleFor(
 
       set(obj, 'foo', 'bar');
 
-      assert.equal(get(obj, 'foo'), 'bar', 'should return the overridden value');
+      assert.strictEqual(get(obj, 'foo'), 'bar', 'should return the overridden value');
     }
 
     ['@test getting on an object without an owner or container should fail assertion']() {
@@ -39,7 +39,11 @@ moduleFor(
 
       defineProperty(obj, 'foo', inject('type', 'name'));
 
-      assert.equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
+      assert.strictEqual(
+        get(obj, 'foo'),
+        'type:name',
+        'should return the value of container.lookup'
+      );
     }
 
     ['@test getting should return a lookup on the container'](assert) {
@@ -56,7 +60,11 @@ moduleFor(
 
       defineProperty(obj, 'foo', inject('type', 'name'));
 
-      assert.equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
+      assert.strictEqual(
+        get(obj, 'foo'),
+        'type:name',
+        'should return the value of container.lookup'
+      );
     }
 
     ['@test omitting the lookup name should default to the property name'](assert) {
@@ -70,7 +78,11 @@ moduleFor(
 
       defineProperty(obj, 'foo', inject('type'));
 
-      assert.equal(get(obj, 'foo'), 'type:foo', 'should lookup the type using the property name');
+      assert.strictEqual(
+        get(obj, 'foo'),
+        'type:foo',
+        'should lookup the type using the property name'
+      );
     }
   }
 );

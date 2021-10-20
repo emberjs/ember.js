@@ -14,13 +14,13 @@ moduleFor(
           init() {
             this._super(...arguments);
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.metadata, 'parent-index-page');
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.metadata, 'parent-index-page');
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.metadata, 'parent-index-page');
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.metadata, 'parent-index-page');
             });
           },
         })
@@ -50,21 +50,21 @@ moduleFor(
             this._super(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.metadata, 'parent-index-page');
-              assert.equal(transition.to.parent.name, 'parent');
-              assert.equal(transition.to.parent.metadata, 'parent-page');
-              assert.equal(transition.to.parent.parent.name, 'application');
-              assert.equal(transition.to.parent.parent.metadata, 'application-shell');
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.metadata, 'parent-index-page');
+              assert.strictEqual(transition.to.parent.name, 'parent');
+              assert.strictEqual(transition.to.parent.metadata, 'parent-page');
+              assert.strictEqual(transition.to.parent.parent.name, 'application');
+              assert.strictEqual(transition.to.parent.parent.metadata, 'application-shell');
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.metadata, 'parent-index-page');
-              assert.equal(transition.to.parent.name, 'parent');
-              assert.equal(transition.to.parent.metadata, 'parent-page');
-              assert.equal(transition.to.parent.parent.name, 'application');
-              assert.equal(transition.to.parent.parent.metadata, 'application-shell');
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.metadata, 'parent-index-page');
+              assert.strictEqual(transition.to.parent.name, 'parent');
+              assert.strictEqual(transition.to.parent.metadata, 'parent-page');
+              assert.strictEqual(transition.to.parent.parent.name, 'application');
+              assert.strictEqual(transition.to.parent.parent.metadata, 'application-shell');
             });
           },
         })
@@ -100,15 +100,15 @@ moduleFor(
             this._super(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.metadata.name, 'parent-index-page');
-              assert.equal(transition.to.metadata.title('PARENT'), 'My Name is PARENT');
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.metadata.name, 'parent-index-page');
+              assert.strictEqual(transition.to.metadata.title('PARENT'), 'My Name is PARENT');
             });
 
             this.router.on('routeDidChange', (transition) => {
-              assert.equal(transition.to.name, 'parent.index');
-              assert.equal(transition.to.metadata.name, 'parent-index-page');
-              assert.equal(transition.to.metadata.title('PARENT'), 'My Name is PARENT');
+              assert.strictEqual(transition.to.name, 'parent.index');
+              assert.strictEqual(transition.to.metadata.name, 'parent-index-page');
+              assert.strictEqual(transition.to.metadata.title('PARENT'), 'My Name is PARENT');
             });
           },
         })
@@ -142,25 +142,25 @@ moduleFor(
 
             this.router.on('routeWillChange', (transition) => {
               if (transition.to.name === 'parent.index') {
-                assert.equal(transition.to.metadata.name, 'parent-index-page');
-                assert.equal(transition.to.metadata.title('INDEX'), 'My Name is INDEX');
+                assert.strictEqual(transition.to.metadata.name, 'parent-index-page');
+                assert.strictEqual(transition.to.metadata.title('INDEX'), 'My Name is INDEX');
               } else {
-                assert.equal(transition.from.metadata.name, 'parent-index-page');
-                assert.equal(transition.from.metadata.title('INDEX'), 'My Name is INDEX');
-                assert.equal(transition.to.metadata.name, 'parent-child-page');
-                assert.equal(transition.to.metadata.title('CHILD'), 'My Name is CHILD!!');
+                assert.strictEqual(transition.from.metadata.name, 'parent-index-page');
+                assert.strictEqual(transition.from.metadata.title('INDEX'), 'My Name is INDEX');
+                assert.strictEqual(transition.to.metadata.name, 'parent-child-page');
+                assert.strictEqual(transition.to.metadata.title('CHILD'), 'My Name is CHILD!!');
               }
             });
 
             this.router.on('routeDidChange', (transition) => {
               if (transition.to.name === 'parent.index') {
-                assert.equal(transition.to.metadata.name, 'parent-index-page');
-                assert.equal(transition.to.metadata.title('INDEX'), 'My Name is INDEX');
+                assert.strictEqual(transition.to.metadata.name, 'parent-index-page');
+                assert.strictEqual(transition.to.metadata.title('INDEX'), 'My Name is INDEX');
               } else {
-                assert.equal(transition.from.metadata.name, 'parent-index-page');
-                assert.equal(transition.from.metadata.title('INDEX'), 'My Name is INDEX');
-                assert.equal(transition.to.metadata.name, 'parent-child-page');
-                assert.equal(transition.to.metadata.title('CHILD'), 'My Name is CHILD!!');
+                assert.strictEqual(transition.from.metadata.name, 'parent-index-page');
+                assert.strictEqual(transition.from.metadata.title('INDEX'), 'My Name is INDEX');
+                assert.strictEqual(transition.to.metadata.name, 'parent-child-page');
+                assert.strictEqual(transition.to.metadata.title('CHILD'), 'My Name is CHILD!!');
               }
             });
           },
@@ -209,19 +209,19 @@ moduleFor(
 
             this.router.on('routeDidChange', (transition) => {
               if (transition.to.name === 'parent.index') {
-                assert.equal(transition.to.metadata.name, 'parent-index-page');
-                assert.equal(
+                assert.strictEqual(transition.to.metadata.name, 'parent-index-page');
+                assert.strictEqual(
                   transition.to.metadata.title(transition.to.attributes),
                   'My Name is INDEX'
                 );
               } else {
-                assert.equal(transition.from.metadata.name, 'parent-index-page');
-                assert.equal(
+                assert.strictEqual(transition.from.metadata.name, 'parent-index-page');
+                assert.strictEqual(
                   transition.from.metadata.title(transition.from.attributes),
                   'My Name is INDEX'
                 );
-                assert.equal(transition.to.metadata.name, 'parent-child-page');
-                assert.equal(
+                assert.strictEqual(transition.to.metadata.name, 'parent-child-page');
+                assert.strictEqual(
                   transition.to.metadata.title(transition.to.attributes),
                   'My Name is CHILD!!'
                 );

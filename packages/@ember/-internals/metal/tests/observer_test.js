@@ -75,14 +75,14 @@ moduleFor(
       let count = 0;
 
       addObserver(obj, 'foo', function () {
-        assert.equal(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
+        assert.strictEqual(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
         count++;
       });
 
       set(obj, 'foo', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'should have invoked observer');
+      assert.strictEqual(count, 1, 'should have invoked observer');
     }
 
     async ['@test observer supports keys with colons'](assert) {
@@ -90,14 +90,14 @@ moduleFor(
       let count = 0;
 
       addObserver(obj, 'foo:bar:baz', function () {
-        assert.equal(get(obj, 'foo:bar:baz'), 'bar', 'should invoke AFTER value changed');
+        assert.strictEqual(get(obj, 'foo:bar:baz'), 'bar', 'should invoke AFTER value changed');
         count++;
       });
 
       set(obj, 'foo:bar:baz', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'should have invoked observer');
+      assert.strictEqual(count, 1, 'should have invoked observer');
     }
 
     async ['@test observer should fire when dependent property is modified'](assert) {
@@ -114,14 +114,14 @@ moduleFor(
 
       let count = 0;
       addObserver(obj, 'foo', function () {
-        assert.equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
+        assert.strictEqual(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
         count++;
       });
 
       set(obj, 'bar', 'baz');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'should have invoked observer');
+      assert.strictEqual(count, 1, 'should have invoked observer');
     }
 
     // https://github.com/emberjs/ember.js/issues/18246
@@ -144,15 +144,15 @@ moduleFor(
 
       let count = 0;
       addObserver(obj, 'foo', function () {
-        assert.equal(get(obj, 'foo'), 'baz', 'should have invoked after prop change');
+        assert.strictEqual(get(obj, 'foo'), 'baz', 'should have invoked after prop change');
         count++;
       });
 
       set(obj, 'foo', 'baz');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'should have invoked observer');
-      assert.equal(get(obj, 'foo'), 'baz', 'computed should have correct value');
+      assert.strictEqual(count, 1, 'should have invoked observer');
+      assert.strictEqual(get(obj, 'foo'), 'baz', 'computed should have correct value');
     }
 
     async ['@test observer should continue to fire after dependent properties are accessed'](
@@ -187,7 +187,7 @@ moduleFor(
         await runLoopSettled();
       }
 
-      assert.equal(observerCount, 10, 'should continue to fire indefinitely');
+      assert.strictEqual(observerCount, 10, 'should continue to fire indefinitely');
     }
 
     async ['@test observers watching multiple properties via brace expansion should fire when the properties change'](
@@ -205,17 +205,25 @@ moduleFor(
       set(obj, 'foo', 'foo');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
+      assert.strictEqual(
+        count,
+        1,
+        'observer specified via brace expansion invoked on property change'
+      );
 
       set(obj, 'bar', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
+      assert.strictEqual(
+        count,
+        2,
+        'observer specified via brace expansion invoked on property change'
+      );
 
       set(obj, 'baz', 'baz');
       await runLoopSettled();
 
-      assert.equal(count, 2, 'observer not invoked on unspecified property');
+      assert.strictEqual(count, 2, 'observer not invoked on unspecified property');
     }
 
     async ['@test observers watching multiple properties via brace expansion should fire when dependent properties change'](
@@ -251,7 +259,7 @@ moduleFor(
       await runLoopSettled();
 
       // fire once for foo, once for bar
-      assert.equal(
+      assert.strictEqual(
         count,
         2,
         'observer specified via brace expansion invoked on dependent property change'
@@ -260,7 +268,7 @@ moduleFor(
       set(obj, 'quux', 'Quux');
       await runLoopSettled();
 
-      assert.equal(count, 2, 'observer not fired on unspecified property');
+      assert.strictEqual(count, 2, 'observer not fired on unspecified property');
     }
 
     async ['@test removing an chain observer on change should not fail'](assert) {
@@ -298,10 +306,10 @@ moduleFor(
       set(foo, 'bar', 'baz');
       await runLoopSettled();
 
-      assert.equal(count1, 1, 'observer1 fired');
-      assert.equal(count2, 1, 'observer2 fired');
-      assert.equal(count3, 1, 'observer3 fired');
-      assert.equal(count4, 0, 'observer4 did not fire');
+      assert.strictEqual(count1, 1, 'observer1 fired');
+      assert.strictEqual(count2, 1, 'observer2 fired');
+      assert.strictEqual(count3, 1, 'observer3 fired');
+      assert.strictEqual(count4, 0, 'observer4 did not fire');
 
       destroy(obj1);
       destroy(obj2);
@@ -326,7 +334,7 @@ moduleFor(
 
       await runLoopSettled();
 
-      assert.equal(fooCount, 1, 'foo should have fired once');
+      assert.strictEqual(fooCount, 1, 'foo should have fired once');
     }
 
     async ['@test addObserver should respect targets with methods'](assert) {
@@ -336,10 +344,10 @@ moduleFor(
 
         didChange(obj, keyName) {
           let value = get(obj, keyName);
-          assert.equal(this, target1, 'should invoke with this');
-          assert.equal(obj, observed, 'param1 should be observed object');
-          assert.equal(keyName, 'foo', 'param2 should be keyName');
-          assert.equal(value, 'BAZ', 'param3 should new value');
+          assert.strictEqual(this, target1, 'should invoke with this');
+          assert.strictEqual(obj, observed, 'param1 should be observed object');
+          assert.strictEqual(keyName, 'foo', 'param2 should be keyName');
+          assert.strictEqual(value, 'BAZ', 'param3 should new value');
           this.count++;
         },
       };
@@ -349,10 +357,10 @@ moduleFor(
 
         didChange(obj, keyName) {
           let value = get(obj, keyName);
-          assert.equal(this, target2, 'should invoke with this');
-          assert.equal(obj, observed, 'param1 should be observed object');
-          assert.equal(keyName, 'foo', 'param2 should be keyName');
-          assert.equal(value, 'BAZ', 'param3 should new value');
+          assert.strictEqual(this, target2, 'should invoke with this');
+          assert.strictEqual(obj, observed, 'param1 should be observed object');
+          assert.strictEqual(keyName, 'foo', 'param2 should be keyName');
+          assert.strictEqual(value, 'BAZ', 'param3 should new value');
           this.count++;
         },
       };
@@ -363,8 +371,8 @@ moduleFor(
       set(observed, 'foo', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(target1.count, 1, 'target1 observer should have fired');
-      assert.equal(target2.count, 1, 'target2 observer should have fired');
+      assert.strictEqual(target1.count, 1, 'target1 observer should have fired');
+      assert.strictEqual(target2.count, 1, 'target2 observer should have fired');
     }
 
     async ['@test addObserver should allow multiple objects to observe a property'](assert) {
@@ -392,8 +400,8 @@ moduleFor(
       set(observed, 'foo', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(target1.count, 1, 'target1 observer should have fired');
-      assert.equal(target2.count, 1, 'target2 observer should have fired');
+      assert.strictEqual(target1.count, 1, 'target1 observer should have fired');
+      assert.strictEqual(target2.count, 1, 'target2 observer should have fired');
     }
   }
 );
@@ -424,14 +432,14 @@ moduleFor(
       set(obj, 'foo', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'should have invoked observer');
+      assert.strictEqual(count, 1, 'should have invoked observer');
 
       removeObserver(obj, 'foo', F);
 
       set(obj, 'foo', 'baz');
       await runLoopSettled();
 
-      assert.equal(count, 1, "removed observer shouldn't fire");
+      assert.strictEqual(count, 1, "removed observer shouldn't fire");
     }
 
     async ['@test local observers can be removed'](assert) {
@@ -453,7 +461,7 @@ moduleFor(
       set(obj, 'bar', 'HI!');
       await runLoopSettled();
 
-      assert.equal(barObserved, 2, 'precond - observers should be fired');
+      assert.strictEqual(barObserved, 2, 'precond - observers should be fired');
 
       removeObserver(obj, 'bar', null, 'foo1');
 
@@ -461,7 +469,7 @@ moduleFor(
       set(obj, 'bar', 'HI AGAIN!');
       await runLoopSettled();
 
-      assert.equal(barObserved, 1, 'removed observers should not be called');
+      assert.strictEqual(barObserved, 1, 'removed observers should not be called');
     }
 
     async ['@test removeObserver should respect targets with methods'](assert) {
@@ -489,8 +497,8 @@ moduleFor(
       set(observed, 'foo', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(target1.count, 1, 'target1 observer should have fired');
-      assert.equal(target2.count, 1, 'target2 observer should have fired');
+      assert.strictEqual(target1.count, 1, 'target1 observer should have fired');
+      assert.strictEqual(target2.count, 1, 'target2 observer should have fired');
 
       removeObserver(observed, 'foo', target1, 'didChange');
       removeObserver(observed, 'foo', target2, target2.didChange);
@@ -499,8 +507,8 @@ moduleFor(
       set(observed, 'foo', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(target1.count, 0, 'target1 observer should not fire again');
-      assert.equal(target2.count, 0, 'target2 observer should not fire again');
+      assert.strictEqual(target1.count, 0, 'target1 observer should not fire again');
+      assert.strictEqual(target2.count, 0, 'target2 observer should not fire again');
     }
   }
 );
@@ -561,7 +569,7 @@ moduleFor(
         changed++;
       });
 
-      assert.equal(
+      assert.strictEqual(
         metaFor(obj).valueFor('computed'),
         undefined,
         'addObserver should not compute CP'
@@ -570,7 +578,7 @@ moduleFor(
       set(obj, 'computed.foo', 'baz');
       await runLoopSettled();
 
-      assert.equal(changed, 1, 'should fire observer');
+      assert.strictEqual(changed, 1, 'should fire observer');
     }
 
     async ['@test depending on a simple chain'](assert) {
@@ -583,45 +591,45 @@ moduleFor(
       set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
       await runLoopSettled();
 
-      assert.equal(val, 'BUZZ');
-      assert.equal(count, 1);
+      assert.strictEqual(val, 'BUZZ');
+      assert.strictEqual(count, 1);
 
       set(get(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
       await runLoopSettled();
 
-      assert.equal(val, 'BLARG');
-      assert.equal(count, 2);
+      assert.strictEqual(val, 'BLARG');
+      assert.strictEqual(count, 2);
 
       set(get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
       await runLoopSettled();
 
-      assert.equal(val, 'BOOM');
-      assert.equal(count, 3);
+      assert.strictEqual(val, 'BOOM');
+      assert.strictEqual(count, 3);
 
       set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
       await runLoopSettled();
 
-      assert.equal(val, 'BLARG');
-      assert.equal(count, 4);
+      assert.strictEqual(val, 'BLARG');
+      assert.strictEqual(count, 4);
 
       set(get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
       await runLoopSettled();
 
-      assert.equal(val, 'BUZZ');
-      assert.equal(count, 5);
+      assert.strictEqual(val, 'BUZZ');
+      assert.strictEqual(count, 5);
 
       let foo = get(obj, 'foo');
 
       set(obj, 'foo', 'BOO');
       await runLoopSettled();
 
-      assert.equal(val, undefined);
-      assert.equal(count, 6);
+      assert.strictEqual(val, undefined);
+      assert.strictEqual(count, 6);
 
       set(foo.bar.baz, 'biff', 'BOOM');
       await runLoopSettled();
 
-      assert.equal(count, 6, 'should be not have invoked observer');
+      assert.strictEqual(count, 6, 'should be not have invoked observer');
     }
 
     async ['@test depending on a chain with a capitalized first key'](assert) {
@@ -635,45 +643,45 @@ moduleFor(
       set(get(obj, 'Capital.foo.bar.baz'), 'biff', 'BUZZ');
       await runLoopSettled();
 
-      assert.equal(val, 'BUZZ');
-      assert.equal(count, 1);
+      assert.strictEqual(val, 'BUZZ');
+      assert.strictEqual(count, 1);
 
       set(get(obj, 'Capital.foo.bar'), 'baz', { biff: 'BLARG' });
       await runLoopSettled();
 
-      assert.equal(val, 'BLARG');
-      assert.equal(count, 2);
+      assert.strictEqual(val, 'BLARG');
+      assert.strictEqual(count, 2);
 
       set(get(obj, 'Capital.foo'), 'bar', { baz: { biff: 'BOOM' } });
       await runLoopSettled();
 
-      assert.equal(val, 'BOOM');
-      assert.equal(count, 3);
+      assert.strictEqual(val, 'BOOM');
+      assert.strictEqual(count, 3);
 
       set(obj, 'Capital.foo', { bar: { baz: { biff: 'BLARG' } } });
       await runLoopSettled();
 
-      assert.equal(val, 'BLARG');
-      assert.equal(count, 4);
+      assert.strictEqual(val, 'BLARG');
+      assert.strictEqual(count, 4);
 
       set(get(obj, 'Capital.foo.bar.baz'), 'biff', 'BUZZ');
       await runLoopSettled();
 
-      assert.equal(val, 'BUZZ');
-      assert.equal(count, 5);
+      assert.strictEqual(val, 'BUZZ');
+      assert.strictEqual(count, 5);
 
       let foo = get(obj, 'foo');
 
       set(obj, 'Capital.foo', 'BOO');
       await runLoopSettled();
 
-      assert.equal(val, undefined);
-      assert.equal(count, 6);
+      assert.strictEqual(val, undefined);
+      assert.strictEqual(count, 6);
 
       set(foo.bar.baz, 'biff', 'BOOM');
       await runLoopSettled();
 
-      assert.equal(count, 6, 'should be not have invoked observer');
+      assert.strictEqual(count, 6, 'should be not have invoked observer');
     }
   }
 );
@@ -706,17 +714,17 @@ moduleFor(
       set(obj, 'foo', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 0, 'should not trigger observer');
+      assert.strictEqual(count, 0, 'should not trigger observer');
 
       set(obj, 'foo', 'baz');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'should trigger observer');
+      assert.strictEqual(count, 1, 'should trigger observer');
 
       set(obj, 'foo', 'baz');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'should not trigger observer again');
+      assert.strictEqual(count, 1, 'should not trigger observer again');
     }
 
     // The issue here is when a computed property is directly set with a value, then has a
@@ -748,20 +756,20 @@ moduleFor(
       set(obj, 'foo', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 1);
-      assert.equal(get(obj, 'foo'), 'bar');
+      assert.strictEqual(count, 1);
+      assert.strictEqual(get(obj, 'foo'), 'bar');
 
       set(obj, 'baz', 'qux');
       await runLoopSettled();
 
-      assert.equal(count, 2);
-      assert.equal(get(obj, 'foo'), 'qux');
+      assert.strictEqual(count, 2);
+      assert.strictEqual(get(obj, 'foo'), 'qux');
 
       set(obj, 'foo', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 3);
-      assert.equal(get(obj, 'foo'), 'bar');
+      assert.strictEqual(count, 3);
+      assert.strictEqual(get(obj, 'foo'), 'bar');
     }
   }
 );
@@ -961,7 +969,7 @@ moduleFor(
 
         set(obj, 'foo', 1);
 
-        assert.equal(
+        assert.strictEqual(
           addedBeforeFirstChangeObserver.didChangeCount,
           0,
           'addObserver called before the first change is deferred'
@@ -972,7 +980,7 @@ moduleFor(
 
         set(obj, 'foo', 2);
 
-        assert.equal(
+        assert.strictEqual(
           addedAfterFirstChangeObserver.didChangeCount,
           0,
           'addObserver called after the first change is deferred'
@@ -982,32 +990,32 @@ moduleFor(
         removedAfterLastChangeObserver.remove();
       });
 
-      assert.equal(
+      assert.strictEqual(
         removedBeforeFirstChangeObserver.didChangeCount,
         0,
         'removeObserver called before the first change sees none'
       );
-      assert.equal(
+      assert.strictEqual(
         addedBeforeFirstChangeObserver.didChangeCount,
         1,
         'addObserver called before the first change sees only 1'
       );
-      assert.equal(
+      assert.strictEqual(
         addedAfterFirstChangeObserver.didChangeCount,
         1,
         'addObserver called after the first change sees 1'
       );
-      assert.equal(
+      assert.strictEqual(
         addedAfterLastChangeObserver.didChangeCount,
         1,
         'addObserver called after the last change sees 1'
       );
-      assert.equal(
+      assert.strictEqual(
         removedBeforeLastChangeObserver.didChangeCount,
         0,
         'removeObserver called before the last change sees none'
       );
-      assert.equal(
+      assert.strictEqual(
         removedAfterLastChangeObserver.didChangeCount,
         0,
         'removeObserver called after the last change sees none'
@@ -1033,7 +1041,7 @@ moduleFor(
         set(obj, 'foo', 1);
       });
 
-      assert.equal(fooDidChange, 1);
+      assert.strictEqual(fooDidChange, 1);
     }
   }
 );

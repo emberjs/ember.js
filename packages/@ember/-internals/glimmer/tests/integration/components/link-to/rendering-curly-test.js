@@ -86,11 +86,11 @@ moduleFor(
 
       await this.visit('/bar');
 
-      assert.equal(this.firstChild.classList.contains('active'), false);
+      assert.strictEqual(this.firstChild.classList.contains('active'), false);
 
       runTask(() => set(controller, 'routeName', 'bar'));
 
-      assert.equal(this.firstChild.classList.contains('active'), true);
+      assert.strictEqual(this.firstChild.classList.contains('active'), true);
     }
 
     async ['@test [DEPRECATED] escaped inline form (double curlies) escapes link title']() {
@@ -127,7 +127,7 @@ moduleFor(
       await this.visit('/');
 
       this.assertText('blah');
-      assert.equal(this.$('b').length, 1);
+      assert.strictEqual(this.$('b').length, 1);
     }
 
     async ['@test able to safely extend the built-in component and use the normal path']() {

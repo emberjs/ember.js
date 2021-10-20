@@ -16,8 +16,8 @@ moduleFor(
       };
 
       let proxiedFunction = bind(obj, obj.increment, 1);
-      assert.equal(proxiedFunction(), 1);
-      assert.equal(obj.value, 1);
+      assert.strictEqual(proxiedFunction(), 1);
+      assert.strictEqual(obj.value, 1);
     }
 
     ['@test bind keeps the async callback arguments'](assert) {
@@ -25,9 +25,9 @@ moduleFor(
 
       function asyncCallback(increment, increment2, increment3) {
         assert.ok(_getCurrentRunLoop(), 'expected a run-loop');
-        assert.equal(increment, 1);
-        assert.equal(increment2, 2);
-        assert.equal(increment3, 3);
+        assert.strictEqual(increment, 1);
+        assert.strictEqual(increment2, 2);
+        assert.strictEqual(increment3, 3);
       }
 
       function asyncFunction(fn) {

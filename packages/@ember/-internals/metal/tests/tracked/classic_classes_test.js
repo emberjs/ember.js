@@ -37,22 +37,22 @@ moduleFor(
       let tag = track(() => obj.full);
       let snapshot = valueForTag(tag);
 
-      assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-      assert.equal(validateTag(tag, snapshot), true);
+      assert.strictEqual(obj.full, 'Tom Dale', 'The full name starts correct');
+      assert.strictEqual(validateTag(tag, snapshot), true);
 
       snapshot = valueForTag(tag);
-      assert.equal(validateTag(tag, snapshot), true);
+      assert.strictEqual(validateTag(tag, snapshot), true);
 
       obj.full = 'Melanie Sumner';
 
-      assert.equal(validateTag(tag, snapshot), false);
+      assert.strictEqual(validateTag(tag, snapshot), false);
 
-      assert.equal(obj.full, 'Melanie Sumner');
-      assert.equal(obj.first, 'Melanie');
-      assert.equal(obj.last, 'Sumner');
+      assert.strictEqual(obj.full, 'Melanie Sumner');
+      assert.strictEqual(obj.first, 'Melanie');
+      assert.strictEqual(obj.last, 'Sumner');
       snapshot = valueForTag(tag);
 
-      assert.equal(validateTag(tag, snapshot), true);
+      assert.strictEqual(validateTag(tag, snapshot), true);
     }
 
     [`@test can pass a default value to the tracked decorator`](assert) {
@@ -67,7 +67,7 @@ moduleFor(
 
       let obj = new Tracked();
 
-      assert.equal(obj.full, 'Tom Dale', 'Default values are correctly assign');
+      assert.strictEqual(obj.full, 'Tom Dale', 'Default values are correctly assign');
     }
 
     [`@test errors if used directly on a classic class`]() {

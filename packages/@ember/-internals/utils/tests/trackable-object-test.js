@@ -13,7 +13,7 @@ moduleFor(
 
       let instance = new Test();
 
-      assert.equal(isEmberArray(instance), true);
+      assert.strictEqual(isEmberArray(instance), true);
     }
   }
 );

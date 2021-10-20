@@ -8,7 +8,7 @@ class IndexOfTests extends AbstractTestCase {
     let len = 3;
 
     for (let idx = 0; idx < len; idx++) {
-      this.assert.equal(
+      this.assert.strictEqual(
         obj.indexOf(expected[idx]),
         idx,
         `obj.indexOf(${expected[idx]}) should match idx`
@@ -20,7 +20,7 @@ class IndexOfTests extends AbstractTestCase {
     let obj = this.newObject(newFixture(3));
     let foo = {};
 
-    this.assert.equal(obj.indexOf(foo), -1, 'obj.indexOf(foo) should be < 0');
+    this.assert.strictEqual(obj.indexOf(foo), -1, 'obj.indexOf(foo) should be < 0');
   }
 }
 

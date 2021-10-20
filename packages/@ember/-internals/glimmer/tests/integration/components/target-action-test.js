@@ -22,7 +22,7 @@ moduleFor(
           },
           actions: {
             foo(message) {
-              assert.equal('bar', message);
+              assert.strictEqual('bar', message);
             },
           },
         }),
@@ -41,8 +41,8 @@ moduleFor(
       let component;
       let target = {
         send: (message, payload) => {
-          this.assert.equal('foo', message);
-          this.assert.equal('baz', payload);
+          this.assert.strictEqual('foo', message);
+          this.assert.strictEqual('baz', payload);
         },
       };
 
@@ -104,7 +104,7 @@ moduleFor(
             assert.ok(true, 'foo');
           },
           bar(msg) {
-            assert.equal(msg, 'HELLO');
+            assert.strictEqual(msg, 'HELLO');
           },
         },
       });
@@ -112,7 +112,7 @@ moduleFor(
       let BarViewMixin = Mixin.create({
         actions: {
           bar(msg) {
-            assert.equal(msg, 'HELLO');
+            assert.strictEqual(msg, 'HELLO');
             this._super(msg);
           },
         },

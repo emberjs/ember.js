@@ -12,7 +12,7 @@ moduleFor(
       let result = instrument('render', {}, function () {
         return 'hello';
       });
-      assert.equal(result, 'hello', 'called block');
+      assert.strictEqual(result, 'hello', 'called block');
     }
 
     ['@test subscribing to a simple path receives the listener'](assert) {
@@ -198,11 +198,11 @@ moduleFor(
 
       let subscriber = subscribe('render', {
         before() {
-          assert.equal(count, 0);
+          assert.strictEqual(count, 0);
           assert.ok(true, 'Before callback was called');
         },
         after() {
-          assert.equal(count, 0);
+          assert.strictEqual(count, 0);
           assert.ok(true, 'After callback was called');
           count++;
         },

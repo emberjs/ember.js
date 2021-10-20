@@ -121,7 +121,7 @@ moduleFor(
           componentInstance.send('transitionToSister');
         });
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+        assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.sister');
       });
     }
 
@@ -153,7 +153,7 @@ moduleFor(
           componentInstance.send('transitionToSister');
         });
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+        assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.sister');
       });
     }
 
@@ -188,8 +188,8 @@ moduleFor(
         componentInstance.send('transitionToDynamic');
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
-      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      assert.strictEqual(this.routerService.get('currentRouteName'), 'dynamic');
+      assert.strictEqual(this.routerService.get('currentURL'), '/dynamic/1');
       this.assertText('much dynamicism');
     }
 
@@ -233,8 +233,8 @@ moduleFor(
         componentInstance.send('transitionToDynamic');
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
-      assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
+      assert.strictEqual(this.routerService.get('currentRouteName'), 'dynamic');
+      assert.strictEqual(this.routerService.get('currentURL'), '/dynamic/1');
       this.assertText('much dynamicism');
     }
 
@@ -258,7 +258,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          assert.strictEqual(this.routerService.get('currentURL'), '/child?sort=ASC');
         });
     }
 
@@ -279,13 +279,13 @@ moduleFor(
           return this.routerService.transitionTo('parent.child');
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.strictEqual(this.routerService.get('currentURL'), '/child');
         })
         .then(() => {
           return this.routerService.transitionTo(queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          assert.strictEqual(this.routerService.get('currentURL'), '/child?sort=DESC');
         });
     }
 
@@ -309,7 +309,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          assert.strictEqual(this.routerService.get('currentURL'), '/child?sort=ASC');
         });
     }
 
@@ -335,7 +335,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+          assert.strictEqual(this.routerService.get('currentURL'), '/child?url_sort=ASC');
         });
     }
 
@@ -393,7 +393,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+        assert.strictEqual(this.routerService.get('currentURL'), '/child?url_sort=ASC');
       });
     }
 
@@ -419,7 +419,7 @@ moduleFor(
       );
 
       return this.visit('/child?url_sort=a').then(() => {
-        assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
+        assert.strictEqual(this.routerService.get('currentURL'), '/?url_sort=a');
       });
     }
   }

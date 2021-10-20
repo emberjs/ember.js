@@ -116,7 +116,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
           instance.element,
           `this.element should be present on ${instance} during ${hookName}`
         );
-        this.assert.equal(
+        this.assert.strictEqual(
           document.body.contains(instance.element),
           inDOM,
           `element for ${instance} ${
@@ -153,7 +153,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     };
 
     let assertState = (hookName, expectedState, instance) => {
-      this.assert.equal(
+      this.assert.strictEqual(
         instance._state,
         expectedState,
         `within ${hookName} the expected _state is ${expectedState}`
@@ -1139,14 +1139,14 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
+      this.assert.strictEqual(this.component.childViews.length, 5, 'childViews precond');
     }
 
     runTask(() => set(this.context, 'items', []));
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
-      this.assert.equal(this.component.childViews.length, 1, 'childViews updated');
+      this.assert.strictEqual(this.component.childViews.length, 1, 'childViews updated');
     }
 
     this.assertText('Nothing to see here');
@@ -1581,18 +1581,30 @@ moduleFor(
       // Make sure we get the finalized component prototype
       let prototype = Component.proto();
 
-      assert.equal(typeof prototype.didDestroyElement, 'function', 'didDestroyElement exists');
-      assert.equal(typeof prototype.didInsertElement, 'function', 'didInsertElement exists');
-      assert.equal(typeof prototype.didReceiveAttrs, 'function', 'didReceiveAttrs exists');
-      assert.equal(typeof prototype.didRender, 'function', 'didRender exists');
-      assert.equal(typeof prototype.didUpdate, 'function', 'didUpdate exists');
-      assert.equal(typeof prototype.didUpdateAttrs, 'function', 'didUpdateAttrs exists');
-      assert.equal(typeof prototype.willClearRender, 'function', 'willClearRender exists');
-      assert.equal(typeof prototype.willDestroy, 'function', 'willDestroy exists');
-      assert.equal(typeof prototype.willDestroyElement, 'function', 'willDestroyElement exists');
-      assert.equal(typeof prototype.willInsertElement, 'function', 'willInsertElement exists');
-      assert.equal(typeof prototype.willRender, 'function', 'willRender exists');
-      assert.equal(typeof prototype.willUpdate, 'function', 'willUpdate exists');
+      assert.strictEqual(
+        typeof prototype.didDestroyElement,
+        'function',
+        'didDestroyElement exists'
+      );
+      assert.strictEqual(typeof prototype.didInsertElement, 'function', 'didInsertElement exists');
+      assert.strictEqual(typeof prototype.didReceiveAttrs, 'function', 'didReceiveAttrs exists');
+      assert.strictEqual(typeof prototype.didRender, 'function', 'didRender exists');
+      assert.strictEqual(typeof prototype.didUpdate, 'function', 'didUpdate exists');
+      assert.strictEqual(typeof prototype.didUpdateAttrs, 'function', 'didUpdateAttrs exists');
+      assert.strictEqual(typeof prototype.willClearRender, 'function', 'willClearRender exists');
+      assert.strictEqual(typeof prototype.willDestroy, 'function', 'willDestroy exists');
+      assert.strictEqual(
+        typeof prototype.willDestroyElement,
+        'function',
+        'willDestroyElement exists'
+      );
+      assert.strictEqual(
+        typeof prototype.willInsertElement,
+        'function',
+        'willInsertElement exists'
+      );
+      assert.strictEqual(typeof prototype.willRender, 'function', 'willRender exists');
+      assert.strictEqual(typeof prototype.willUpdate, 'function', 'willUpdate exists');
     }
   }
 );
@@ -1600,10 +1612,14 @@ moduleFor(
 function assertDestroyHooks(assert, _actual, _expected) {
   _expected.forEach((expected, i) => {
     let name = expected.name;
-    assert.equal(expected.id, _actual[i].id, `${name} id is the same`);
-    assert.equal(expected.hasParent, _actual[i].hasParent, `${name} has parent node`);
-    assert.equal(expected.nextSibling, _actual[i].nextSibling, `${name} has next sibling node`);
-    assert.equal(
+    assert.strictEqual(expected.id, _actual[i].id, `${name} id is the same`);
+    assert.strictEqual(expected.hasParent, _actual[i].hasParent, `${name} has parent node`);
+    assert.strictEqual(
+      expected.nextSibling,
+      _actual[i].nextSibling,
+      `${name} has next sibling node`
+    );
+    assert.strictEqual(
       expected.previousSibling,
       _actual[i].previousSibling,
       `${name} has previous sibling node`

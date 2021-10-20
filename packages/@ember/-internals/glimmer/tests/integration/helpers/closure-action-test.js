@@ -174,7 +174,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
           this.$('#instrument-button').trigger('click');
         });
 
-        this.assert.equal(actualReturnedValue, returnedValue, 'action can return to caller');
+        this.assert.strictEqual(actualReturnedValue, returnedValue, 'action can return to caller');
       }
     }
   );
@@ -302,7 +302,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(returnedValue, expectedValue, 'action can return to caller');
+      this.assert.strictEqual(returnedValue, expectedValue, 'action can return to caller');
     }
 
     ['@test action should be called on the correct scope']() {
@@ -347,7 +347,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(actualComponent, outerComponent, 'action has the correct context');
+      this.assert.strictEqual(actualComponent, outerComponent, 'action has the correct context');
       this.assert.ok(actualComponent.isOuterComponent, 'action has the correct context');
     }
 
@@ -558,9 +558,9 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(actualFirst, first, 'action has the correct first arg');
-      this.assert.equal(actualSecond, second, 'action has the correct second arg');
-      this.assert.equal(actualThird, third, 'action has the correct third arg');
+      this.assert.strictEqual(actualFirst, first, 'action has the correct first arg');
+      this.assert.strictEqual(actualSecond, second, 'action has the correct second arg');
+      this.assert.strictEqual(actualThird, third, 'action has the correct third arg');
     }
 
     ['@test mut values can be wrapped in actions, are settable']() {
@@ -603,7 +603,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(outerComponent.get('outerMut'), newValue, 'mut value is set');
+      this.assert.strictEqual(outerComponent.get('outerMut'), newValue, 'mut value is set');
     }
 
     ['@test mut values can be wrapped in actions, are settable with a curry']() {
@@ -646,7 +646,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(outerComponent.get('outerMut'), newValue, 'mut value is set');
+      this.assert.strictEqual(outerComponent.get('outerMut'), newValue, 'mut value is set');
     }
 
     ['@test action can create closures over actions']() {
@@ -696,9 +696,9 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(actualReturnedValue, returnValue, 'return value is present');
-      this.assert.equal(actualFirst, first, 'first argument is correct');
-      this.assert.equal(actualSecond, second, 'second argument is correct');
+      this.assert.strictEqual(actualReturnedValue, returnValue, 'return value is present');
+      this.assert.strictEqual(actualFirst, first, 'first argument is correct');
+      this.assert.strictEqual(actualSecond, second, 'second argument is correct');
     }
 
     ['@test provides a helpful error if an action is not present']() {
@@ -839,7 +839,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(actualValue, newValue, 'value is read');
+      this.assert.strictEqual(actualValue, newValue, 'value is read');
     }
 
     ['@test action will read the value of a first property']() {
@@ -882,7 +882,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(actualValue, newValue, 'property is read');
+      this.assert.strictEqual(actualValue, newValue, 'property is read');
     }
 
     ['@test action will read the value of a curried first argument property']() {
@@ -926,7 +926,7 @@ moduleFor(
         innerComponent.fireAction();
       });
 
-      this.assert.equal(actualValue, newValue, 'property is read');
+      this.assert.strictEqual(actualValue, newValue, 'property is read');
     }
 
     ['@test action closure does not get auto-mut wrapped'](assert) {
@@ -950,7 +950,7 @@ moduleFor(
           let attrsSubmitReturnValue = this.attrs['attrs-submit'](second);
           let submitReturnValue = this.attrs.submit(second);
 
-          assert.equal(
+          assert.strictEqual(
             attrsSubmitReturnValue,
             submitReturnValue,
             'both attrs.foo and foo should behave the same'
@@ -993,9 +993,9 @@ moduleFor(
         actualReturnedValue = innerComponent.fireAction();
       });
 
-      this.assert.equal(actualFirst, first, 'first argument is correct');
-      this.assert.equal(actualSecond, second, 'second argument is correct');
-      this.assert.equal(actualReturnedValue, returnValue, 'return value is present');
+      this.assert.strictEqual(actualFirst, first, 'first argument is correct');
+      this.assert.strictEqual(actualSecond, second, 'second argument is correct');
+      this.assert.strictEqual(actualReturnedValue, returnValue, 'return value is present');
     }
 
     ['@test action should be called within a run loop']() {
@@ -1142,31 +1142,31 @@ moduleFor(
 
       this.assertText('clicked: 0; foo: 1');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
 
       runTask(() => this.rerender());
 
       this.assertText('clicked: 0; foo: 1');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
 
       runTask(() => set(this.context, 'foo', 2));
 
       this.assertText('clicked: 0; foo: 2');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
 
       runTask(() => this.$('#string-action').click());
 
       this.assertText('clicked: 1; foo: 2');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
 
       runTask(() => this.$('#function-action').click());
 
       this.assertText('clicked: 2; foo: 2');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
 
       runTask(() =>
         set(outer, 'onClick', function () {
@@ -1176,19 +1176,19 @@ moduleFor(
 
       this.assertText('clicked: 2; foo: 2');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
 
       runTask(() => this.$('#function-action').click());
 
       this.assertText('clicked: 3; foo: 2');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
 
       runTask(() => this.$('#mut-action').click());
 
       this.assertText('clicked: 4; foo: 2');
 
-      assert.equal(didReceiveAttrsFired, 3);
+      assert.strictEqual(didReceiveAttrsFired, 3);
     }
   }
 );

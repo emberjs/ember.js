@@ -59,7 +59,11 @@ moduleFor(
           return false;
         },
       };
-      assert.equal(isEqual(obj, obj), false, 'should return false because isEqual returns false');
+      assert.strictEqual(
+        isEqual(obj, obj),
+        false,
+        'should return false because isEqual returns false'
+      );
     }
   }
 );

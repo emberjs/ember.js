@@ -6,13 +6,13 @@ import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 function assertHasClass(assert, selector, label) {
   let testLabel = `${selector.attr('id')} should have class ${label}`;
 
-  assert.equal(selector.hasClass(label), true, testLabel);
+  assert.strictEqual(selector.hasClass(label), true, testLabel);
 }
 
 function assertHasNoClass(assert, selector, label) {
   let testLabel = `${selector.attr('id')} should not have class ${label}`;
 
-  assert.equal(selector.hasClass(label), false, testLabel);
+  assert.strictEqual(selector.hasClass(label), false, testLabel);
 }
 
 moduleFor(

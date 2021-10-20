@@ -204,7 +204,7 @@ moduleFor(
         'Has a reasonable id attribute (found id=' + newFoundId + ').'
       );
 
-      assert.equal(foundId, newFoundId);
+      assert.strictEqual(foundId, newFoundId);
     }
 
     ['@test id is an alias for elementId'](assert) {
@@ -220,14 +220,14 @@ moduleFor(
       this.render('{{foo-bar id="custom-id"}}');
 
       let foundId = this.$('h1').attr('id');
-      assert.equal(foundId, 'custom-id');
+      assert.strictEqual(foundId, 'custom-id');
 
       runTask(() => this.rerender());
 
       let newFoundId = this.$('h1').attr('id');
-      assert.equal(newFoundId, 'custom-id');
+      assert.strictEqual(newFoundId, 'custom-id');
 
-      assert.equal(foundId, newFoundId);
+      assert.strictEqual(foundId, newFoundId);
     }
 
     ['@test cannot pass both id and elementId at the same time']() {
@@ -341,7 +341,7 @@ moduleFor(
 
       this.render('{{foo-bar class="foo-bar"}}');
 
-      assert.equal(componentClass, 'foo-bar ember-view');
+      assert.strictEqual(componentClass, 'foo-bar ember-view');
     }
 
     ['@test it can have custom classNames']() {
@@ -660,8 +660,8 @@ moduleFor(
       this.render('{{foo-bar}}');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+      assert.strictEqual(fooBarInstance.parentView, this.component);
+      assert.strictEqual(fooBarBazInstance.parentView, fooBarInstance);
 
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
@@ -669,8 +669,8 @@ moduleFor(
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+      assert.strictEqual(fooBarInstance.parentView, this.component);
+      assert.strictEqual(fooBarBazInstance.parentView, fooBarInstance);
 
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
@@ -1174,8 +1174,8 @@ moduleFor(
       );
 
       let [t1, t2, t3, t4] = templateIds;
-      assert.equal(t1, t3);
-      assert.equal(t2, t4);
+      assert.strictEqual(t1, t3);
+      assert.strictEqual(t2, t4);
     }
 
     ['@test can use isStream property without conflict (#13271)']() {
@@ -1442,12 +1442,12 @@ moduleFor(
             click() {
               let currentCounter = this.get('counter');
 
-              assert.equal(currentCounter, 0, 'the current `counter` value is correct');
+              assert.strictEqual(currentCounter, 0, 'the current `counter` value is correct');
 
               let newCounter = currentCounter + 1;
               this.set('counter', newCounter);
 
-              assert.equal(
+              assert.strictEqual(
                 this.get('counter'),
                 newCounter,
                 "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
@@ -1466,7 +1466,7 @@ moduleFor(
 
       runTask(() => this.$('button').click());
 
-      assert.equal(
+      assert.strictEqual(
         componentInstance.get('counter'),
         1,
         '`counter` incremented on click on the component and is not `undefined`'
@@ -1647,13 +1647,13 @@ moduleFor(
       {{sample-component "Foo" 4 "Bar" elementId="args-3"}}
       {{sample-component "Foo" 4 "Bar" 5 "Baz" elementId="args-5"}}`);
 
-      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
-      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+      assert.strictEqual(this.$('#args-3').text(), 'Foo4Bar');
+      assert.strictEqual(this.$('#args-5').text(), 'Foo4Bar5Baz');
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$('#args-3').text(), 'Foo4Bar');
-      assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
+      assert.strictEqual(this.$('#args-3').text(), 'Foo4Bar');
+      assert.strictEqual(this.$('#args-5').text(), 'Foo4Bar5Baz');
     }
 
     ['@test arbitrary positional parameter conflict with hash parameter is reported']() {
@@ -1726,15 +1726,15 @@ moduleFor(
       {{sample-component "one" second="two" elementId="one-positional"}}
       {{sample-component first="one" second="two" elementId="no-positional"}}`);
 
-      assert.equal(this.$('#two-positional').text(), 'one - two');
-      assert.equal(this.$('#one-positional').text(), 'one - two');
-      assert.equal(this.$('#no-positional').text(), 'one - two');
+      assert.strictEqual(this.$('#two-positional').text(), 'one - two');
+      assert.strictEqual(this.$('#one-positional').text(), 'one - two');
+      assert.strictEqual(this.$('#no-positional').text(), 'one - two');
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$('#two-positional').text(), 'one - two');
-      assert.equal(this.$('#one-positional').text(), 'one - two');
-      assert.equal(this.$('#no-positional').text(), 'one - two');
+      assert.strictEqual(this.$('#two-positional').text(), 'one - two');
+      assert.strictEqual(this.$('#one-positional').text(), 'one - two');
+      assert.strictEqual(this.$('#no-positional').text(), 'one - two');
     }
 
     ['@test dynamic arbitrary number of positional parameters']() {
@@ -2327,17 +2327,17 @@ moduleFor(
 
       this.render('{{#x-outer}}{{x-inner-in-template}}{{/x-outer}}');
 
-      assert.equal(
+      assert.strictEqual(
         innerTemplate.parentView,
         outer,
         'receives the wrapping component as its parentView in template blocks'
       );
-      assert.equal(
+      assert.strictEqual(
         innerLayout.parentView,
         outer,
         'receives the wrapping component as its parentView in layout'
       );
-      assert.equal(
+      assert.strictEqual(
         outer.parentView,
         this.context,
         'x-outer receives the ambient scope as its parentView'
@@ -2345,17 +2345,17 @@ moduleFor(
 
       runTask(() => this.rerender());
 
-      assert.equal(
+      assert.strictEqual(
         innerTemplate.parentView,
         outer,
         'receives the wrapping component as its parentView in template blocks'
       );
-      assert.equal(
+      assert.strictEqual(
         innerLayout.parentView,
         outer,
         'receives the wrapping component as its parentView in layout'
       );
-      assert.equal(
+      assert.strictEqual(
         outer.parentView,
         this.context,
         'x-outer receives the ambient scope as its parentView'
@@ -2395,7 +2395,7 @@ moduleFor(
         }
       );
 
-      assert.equal(
+      assert.strictEqual(
         outer.parentView,
         this.context,
         'x-outer receives the ambient scope as its parentView'
@@ -2403,7 +2403,7 @@ moduleFor(
 
       runTask(() => this.rerender());
 
-      assert.equal(
+      assert.strictEqual(
         outer.parentView,
         this.context,
         'x-outer receives the ambient scope as its parentView (after rerender)'
@@ -2411,12 +2411,12 @@ moduleFor(
 
       runTask(() => this.context.set('showInner', true));
 
-      assert.equal(
+      assert.strictEqual(
         outer.parentView,
         this.context,
         'x-outer receives the ambient scope as its parentView'
       );
-      assert.equal(
+      assert.strictEqual(
         inner.parentView,
         outer,
         'receives the wrapping component as its parentView in template blocks'
@@ -2424,7 +2424,7 @@ moduleFor(
 
       runTask(() => this.context.set('showInner', false));
 
-      assert.equal(
+      assert.strictEqual(
         outer.parentView,
         this.context,
         'x-outer receives the ambient scope as its parentView'
@@ -2823,8 +2823,8 @@ moduleFor(
 
       this.render('{{parent}}');
 
-      this.assert.equal(parent.string, 'Hello|World', 'precond - parent value');
-      this.assert.equal(
+      this.assert.strictEqual(parent.string, 'Hello|World', 'precond - parent value');
+      this.assert.strictEqual(
         this.element.querySelector('[data-test-parent-value]').textContent.trim(),
         'Hello|World',
         'precond - parent rendered value'
@@ -2834,9 +2834,9 @@ moduleFor(
         child.set('a', 'Foo');
       });
 
-      this.assert.equal(parent.string, 'Foo|World', 'parent value updated');
+      this.assert.strictEqual(parent.string, 'Foo|World', 'parent value updated');
 
-      this.assert.equal(
+      this.assert.strictEqual(
         this.element.querySelector('[data-test-parent-value]').textContent.trim(),
         'Foo|World',
         'parent updated value rendered'
@@ -2846,8 +2846,8 @@ moduleFor(
         child.set('a', 'Hello');
       });
 
-      this.assert.equal(parent.string, 'Hello|World', 'parent value reset');
-      this.assert.equal(
+      this.assert.strictEqual(parent.string, 'Hello|World', 'parent value reset');
+      this.assert.strictEqual(
         this.element.querySelector('[data-test-parent-value]').textContent.trim(),
         'Hello|World',
         'parent template reset'
@@ -2924,8 +2924,8 @@ moduleFor(
       let assertElement = (expectedValue) => {
         // value is a property, not an attribute
         this.assertHTML(`<input class="ember-view" id="${component.elementId}">`);
-        this.assert.equal(this.firstChild.value, expectedValue, 'value property is correct');
-        this.assert.equal(
+        this.assert.strictEqual(this.firstChild.value, expectedValue, 'value property is correct');
+        this.assert.strictEqual(
           get(component, 'value'),
           expectedValue,
           'component.get("value") is correct'
@@ -3117,7 +3117,7 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
           didReceiveAttrs() {
-            assert.equal(1, this.get('foo'), 'expected attrs to have correct value');
+            assert.strictEqual(1, this.get('foo'), 'expected attrs to have correct value');
           },
         }),
 
@@ -3131,7 +3131,7 @@ moduleFor(
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
           didUpdateAttrs() {
-            assert.equal(5, this.get('foo'), 'expected newAttrs to have new value');
+            assert.strictEqual(5, this.get('foo'), 'expected newAttrs to have new value');
           },
         }),
 
@@ -3189,7 +3189,7 @@ moduleFor(
       this.render(`{{display-toggle target=this}}`, {
         send(actionName) {
           assert.ok(true, 'send should be called when action is "subscribed" to');
-          assert.equal(actionName, 'show');
+          assert.strictEqual(actionName, 'show');
         },
       });
 
@@ -3423,7 +3423,7 @@ moduleFor(
         }
 
         didReceiveAttrs() {
-          assert.equal(this.foo, 'bar', 'received default attrs correctly');
+          assert.strictEqual(this.foo, 'bar', 'received default attrs correctly');
         }
       }
 
@@ -3500,7 +3500,11 @@ moduleFor(
           constructor(owner) {
             super(owner);
 
-            assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
+            assert.strictEqual(
+              owner,
+              testContext.owner,
+              'owner was passed as a constructor argument'
+            );
           }
         },
         template: 'hello',

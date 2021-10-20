@@ -31,7 +31,7 @@ moduleFor(
 
       return this.visit('/')
         .then(() => {
-          assert.equal(this.textValue(), 'Index', 'It rendered the correct template');
+          assert.strictEqual(this.textValue(), 'Index', 'It rendered the correct template');
 
           assert.ok(called, 'Instrumentation called on first render');
           called = false;
@@ -39,7 +39,7 @@ moduleFor(
           return this.visit('/posts');
         })
         .then(() => {
-          assert.equal(this.textValue(), 'Posts', 'It rendered the correct template');
+          assert.strictEqual(this.textValue(), 'Posts', 'It rendered the correct template');
           assert.ok(called, 'Instrumentation called on transition to non-view backed route');
         });
     }

@@ -27,8 +27,8 @@ moduleFor(
       let newObj = new Obj();
 
       for (let key in obj) {
-        assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
-        assert.equal(get(newObj, key), obj[key], 'should set value');
+        assert.strictEqual(set(newObj, key, obj[key]), obj[key], 'should return value');
+        assert.strictEqual(get(newObj, key), obj[key], 'should set value');
       }
     }
 
@@ -45,7 +45,7 @@ moduleFor(
 
       set(newObj, 'value', 123);
 
-      assert.equal(newObj.value, 123, 'it worked');
+      assert.strictEqual(newObj.value, 123, 'it worked');
     }
   }
 );

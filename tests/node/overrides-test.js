@@ -518,7 +518,7 @@ QUnit.module('Overrides', function () {
 
   QUnit.module('.printList', function () {
     QUnit.test('it can print a flat list', function (assert) {
-      assert.equal(
+      assert.strictEqual(
         Overrides.printList(['first', 'second', 'third'], '        '),
         `\
         * first
@@ -529,7 +529,7 @@ QUnit.module('Overrides', function () {
     });
 
     QUnit.test('it can print a nested list', function (assert) {
-      assert.equal(
+      assert.strictEqual(
         Overrides.printList(
           [
             'first',

@@ -159,7 +159,7 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
 
         let source = factory.source();
 
@@ -169,7 +169,7 @@ classes.forEach((TestClass) => {
 
         Object.defineProperty(source, 'foo', { configurable: true, value: 'baz' });
 
-        assert.equal(obj.foo, 'baz');
+        assert.strictEqual(obj.foo, 'baz');
       }
 
       ['@test defining a non-configurable property'](assert) {
@@ -178,7 +178,7 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
 
         let source = factory.source();
 
@@ -193,7 +193,7 @@ classes.forEach((TestClass) => {
           TypeError
         );
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
       }
 
       ['@test defining an enumerable property'](assert) {
@@ -202,7 +202,7 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
 
         let source = factory.source();
 
@@ -215,7 +215,7 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
 
         let source = factory.source();
 
@@ -228,17 +228,17 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
 
         let source = factory.source();
 
         source.foo = 'baz';
 
-        assert.equal(obj.foo, 'baz');
+        assert.strictEqual(obj.foo, 'baz');
 
         obj.foo = 'bat';
 
-        assert.equal(obj.foo, 'bat');
+        assert.strictEqual(obj.foo, 'bat');
       }
 
       ['@test defining a non-writable property'](assert) {
@@ -247,14 +247,14 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
 
         let source = factory.source();
 
         assert.throws(() => (source.foo = 'baz'), TypeError);
         assert.throws(() => (obj.foo = 'baz'), TypeError);
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
       }
 
       ['@test defining a getter'](assert) {
@@ -273,11 +273,11 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.foo, 'bar');
+        assert.strictEqual(obj.foo, 'bar');
 
         obj.__foo__ = 'baz';
 
-        assert.equal(obj.foo, 'baz');
+        assert.strictEqual(obj.foo, 'baz');
       }
 
       ['@test defining a setter'](assert) {
@@ -296,11 +296,11 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.__foo__, 'bar');
+        assert.strictEqual(obj.__foo__, 'bar');
 
         obj.foo = 'baz';
 
-        assert.equal(obj.__foo__, 'baz');
+        assert.strictEqual(obj.__foo__, 'baz');
       }
 
       ['@test combining multiple setter and getters'](assert) {
@@ -349,19 +349,19 @@ classes.forEach((TestClass) => {
 
         let obj = factory.finalize();
 
-        assert.equal(obj.fooBar, 'foo-bar');
+        assert.strictEqual(obj.fooBar, 'foo-bar');
 
         obj.foo = 'FOO';
 
-        assert.equal(obj.fooBar, 'FOO-bar');
+        assert.strictEqual(obj.fooBar, 'FOO-bar');
 
         obj.__bar__ = 'BAR';
 
-        assert.equal(obj.fooBar, 'FOO-BAR');
+        assert.strictEqual(obj.fooBar, 'FOO-BAR');
 
         assert.throws(() => (obj.fooBar = 'foobar'), TypeError);
 
-        assert.equal(obj.fooBar, 'FOO-BAR');
+        assert.strictEqual(obj.fooBar, 'FOO-BAR');
       }
     }
   );

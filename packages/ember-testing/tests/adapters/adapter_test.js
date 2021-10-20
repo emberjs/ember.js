@@ -25,7 +25,7 @@ moduleFor(
       } catch (e) {
         thrown = e;
       }
-      assert.equal(thrown, error);
+      assert.strictEqual(thrown, error);
     }
   }
 );

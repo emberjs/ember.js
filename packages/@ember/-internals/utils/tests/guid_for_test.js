@@ -2,7 +2,7 @@ import { guidFor } from '..';
 import { AbstractTestCase as TestCase, moduleFor } from 'internal-test-helpers';
 
 function sameGuid(assert, a, b, message) {
-  assert.equal(guidFor(a), guidFor(b), message);
+  assert.strictEqual(guidFor(a), guidFor(b), message);
 }
 
 function diffGuid(assert, a, b, message) {

@@ -56,15 +56,15 @@ moduleFor(
           router: false,
         });
 
-        assert.equal(readyWasCalled, 0, 'ready is not called until later');
+        assert.strictEqual(readyWasCalled, 0, 'ready is not called until later');
       });
 
-      assert.equal(readyWasCalled, 1, 'ready was called');
+      assert.strictEqual(readyWasCalled, 1, 'ready was called');
 
       application.domReady();
 
-      assert.equal(callbacks['DOMContentLoaded'], undefined);
-      assert.equal(readyWasCalled, 1, "application's ready was not called again");
+      assert.strictEqual(callbacks['DOMContentLoaded'], undefined);
+      assert.strictEqual(readyWasCalled, 1, "application's ready was not called again");
     }
 
     ["@test Application's ready event is called after the document becomes ready"](assert) {
@@ -72,15 +72,15 @@ moduleFor(
 
       run(() => {
         application = Application.create({ router: false });
-        assert.equal(callbacks['DOMContentLoaded'].length, 1);
+        assert.strictEqual(callbacks['DOMContentLoaded'].length, 1);
       });
 
-      assert.equal(readyWasCalled, 0, "ready wasn't called yet");
+      assert.strictEqual(readyWasCalled, 0, "ready wasn't called yet");
 
       dispatchEvent('DOMContentLoaded');
 
-      assert.equal(callbacks['DOMContentLoaded'].length, 0);
-      assert.equal(readyWasCalled, 1, 'ready was called now that DOM is ready');
+      assert.strictEqual(callbacks['DOMContentLoaded'].length, 0);
+      assert.strictEqual(readyWasCalled, 1, 'ready was called now that DOM is ready');
     }
 
     ["@test Application's ready event can be deferred by other components"](assert) {
@@ -89,26 +89,30 @@ moduleFor(
       run(() => {
         application = Application.create({ router: false });
         application.deferReadiness();
-        assert.equal(readyWasCalled, 0, "ready wasn't called yet");
-        assert.equal(callbacks['DOMContentLoaded'].length, 1);
+        assert.strictEqual(readyWasCalled, 0, "ready wasn't called yet");
+        assert.strictEqual(callbacks['DOMContentLoaded'].length, 1);
       });
 
-      assert.equal(readyWasCalled, 0, "ready wasn't called yet");
+      assert.strictEqual(readyWasCalled, 0, "ready wasn't called yet");
 
       application.domReady();
 
-      assert.equal(readyWasCalled, 0, "ready wasn't called yet");
+      assert.strictEqual(readyWasCalled, 0, "ready wasn't called yet");
 
       run(() => {
         application.advanceReadiness();
-        assert.equal(readyWasCalled, 0);
+        assert.strictEqual(readyWasCalled, 0);
       });
 
-      assert.equal(readyWasCalled, 1, 'ready was called now all readiness deferrals are advanced');
+      assert.strictEqual(
+        readyWasCalled,
+        1,
+        'ready was called now all readiness deferrals are advanced'
+      );
 
       dispatchEvent('DOMContentLoaded');
 
-      assert.equal(callbacks['DOMContentLoaded'].length, 0);
+      assert.strictEqual(callbacks['DOMContentLoaded'].length, 0);
 
       expectAssertion(() => {
         application.deferReadiness();

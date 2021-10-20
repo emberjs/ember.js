@@ -329,7 +329,7 @@ moduleFor(
         foo: '0 0 100 100',
       });
 
-      this.assert.equal(
+      this.assert.strictEqual(
         this.firstChild.getAttribute('viewBox'),
         '0 0 100 100',
         'viewBox attribute'
@@ -343,7 +343,7 @@ moduleFor(
 
       runTask(() => set(this.context, 'foo', '0 0 100 200'));
 
-      this.assert.equal(
+      this.assert.strictEqual(
         this.firstChild.getAttribute('viewBox'),
         '0 0 100 200',
         'viewBox attribute'

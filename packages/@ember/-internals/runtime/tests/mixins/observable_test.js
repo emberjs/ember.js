@@ -13,8 +13,8 @@ moduleFor(
       });
 
       let pojo = obj.getProperties('firstName', 'lastName');
-      assert.equal('Steve', pojo.firstName);
-      assert.equal('Jobs', pojo.lastName);
+      assert.strictEqual('Steve', pojo.firstName);
+      assert.strictEqual('Jobs', pojo.lastName);
     }
 
     ['@test should be able to use getProperties with array parameter to get a POJO of provided keys'](
@@ -27,8 +27,8 @@ moduleFor(
       });
 
       let pojo = obj.getProperties(['firstName', 'lastName']);
-      assert.equal('Steve', pojo.firstName);
-      assert.equal('Jobs', pojo.lastName);
+      assert.strictEqual('Steve', pojo.firstName);
+      assert.strictEqual('Jobs', pojo.lastName);
     }
 
     ['@test should be able to use setProperties to set multiple properties at once'](assert) {
@@ -39,8 +39,8 @@ moduleFor(
       });
 
       obj.setProperties({ firstName: 'Tim', lastName: 'Cook' });
-      assert.equal('Tim', obj.get('firstName'));
-      assert.equal('Cook', obj.get('lastName'));
+      assert.strictEqual('Tim', obj.get('firstName'));
+      assert.strictEqual('Cook', obj.get('lastName'));
     }
 
     async ['@test calling setProperties completes safely despite exceptions'](assert) {
@@ -77,7 +77,7 @@ moduleFor(
 
       await runLoopSettled();
 
-      assert.equal(firstNameChangedCount, 1, 'firstName should have fired once');
+      assert.strictEqual(firstNameChangedCount, 1, 'firstName should have fired once');
 
       obj.destroy();
     }
@@ -93,21 +93,21 @@ moduleFor(
         bar: 'bar',
       });
 
-      assert.equal(
+      assert.strictEqual(
         obj.cacheFor('foo'),
         undefined,
         'should return undefined if no value has been cached'
       );
       get(obj, 'foo');
 
-      assert.equal(get(obj, 'foo'), 'foo', 'precond - should cache the value');
-      assert.equal(
+      assert.strictEqual(get(obj, 'foo'), 'foo', 'precond - should cache the value');
+      assert.strictEqual(
         obj.cacheFor('foo'),
         'foo',
         'should return the cached value after it is invoked'
       );
 
-      assert.equal(
+      assert.strictEqual(
         obj.cacheFor('bar'),
         undefined,
         'returns undefined if the value is not a computed property'
@@ -119,7 +119,7 @@ moduleFor(
         age: '24',
       });
       obj.incrementProperty('age');
-      assert.equal(25, obj.get('age'));
+      assert.strictEqual(25, obj.get('age'));
     }
   }
 );

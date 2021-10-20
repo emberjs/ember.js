@@ -23,7 +23,11 @@ moduleFor(
     ['@test provides ownerInjection helper method'](assert) {
       let result = this.instance.ownerInjection();
 
-      assert.equal(getOwner(result), this.instance, 'returns an object with an associated owner');
+      assert.strictEqual(
+        getOwner(result),
+        this.instance,
+        'returns an object with an associated owner'
+      );
     }
 
     ['@test actions queue completes before destruction'](assert) {

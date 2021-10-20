@@ -26,8 +26,8 @@ moduleFor(
       let Precompiled = exports['default'];
       let Compiled = compile(templateStr, options);
 
-      assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
-      assert.equal(typeof Compiled, 'function', 'compiled is a factory');
+      assert.strictEqual(typeof Precompiled, 'function', 'precompiled is a factory');
+      assert.strictEqual(typeof Compiled, 'function', 'compiled is a factory');
 
       this.expectCacheChanges({}, 'no changes');
 

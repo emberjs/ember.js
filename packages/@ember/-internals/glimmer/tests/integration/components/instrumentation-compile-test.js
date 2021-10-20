@@ -94,7 +94,7 @@ moduleFor(
     }
 
     _assertEvents(label, actual, expected) {
-      this.assert.equal(
+      this.assert.strictEqual(
         actual.length,
         expected.length,
         `${label}: expected ${expected.length} and got ${actual.length}`
@@ -104,7 +104,7 @@ moduleFor(
     }
 
     assertPayload(payload, component) {
-      this.assert.equal(payload.object, component._debugContainerKey, 'payload.object');
+      this.assert.strictEqual(payload.object, component._debugContainerKey, 'payload.object');
     }
   }
 );

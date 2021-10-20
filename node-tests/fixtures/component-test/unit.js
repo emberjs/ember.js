@@ -7,7 +7,7 @@ moduleForComponent('x-foo', 'Unit | Component | x-foo', {
 });
 
 test('it renders', function(assert) {
-  
+
   // Creates the component instance
   /*let component =*/ this.subject();
   // Renders the component to the page

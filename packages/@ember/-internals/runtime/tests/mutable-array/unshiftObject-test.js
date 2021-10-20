@@ -7,7 +7,7 @@ class UnshiftObjectTests extends AbstractTestCase {
     let obj = this.newObject([]);
     let item = newFixture(1)[0];
 
-    this.assert.equal(obj.unshiftObject(item), item, 'should return unshifted object');
+    this.assert.strictEqual(obj.unshiftObject(item), item, 'should return unshifted object');
   }
 
   async '@test [].unshiftObject(X) => [X] + notify'() {
@@ -25,17 +25,21 @@ class UnshiftObjectTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
@@ -59,18 +63,22 @@ class UnshiftObjectTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject'
@@ -94,14 +102,22 @@ class UnshiftObjectTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
 
-    this.assert.equal(observer.validate('firstObject'), true, 'should have notified firstObject');
-    this.assert.equal(
+    this.assert.strictEqual(
+      observer.validate('firstObject'),
+      true,
+      'should have notified firstObject'
+    );
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject'

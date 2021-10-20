@@ -51,19 +51,19 @@ moduleFor(
     }
 
     ['@test Should return its properties when requested using EmberObject#get'](assert) {
-      assert.equal(get(obj, 'foo'), 'bar');
-      assert.equal(get(obj, 'total'), 12345);
+      assert.strictEqual(get(obj, 'foo'), 'bar');
+      assert.strictEqual(get(obj, 'total'), 12345);
     }
 
     ['@test Should allow changing of those properties by calling EmberObject#set'](assert) {
-      assert.equal(get(obj, 'foo'), 'bar');
-      assert.equal(get(obj, 'total'), 12345);
+      assert.strictEqual(get(obj, 'foo'), 'bar');
+      assert.strictEqual(get(obj, 'total'), 12345);
 
       set(obj, 'foo', 'Chunky Bacon');
       set(obj, 'total', 12);
 
-      assert.equal(get(obj, 'foo'), 'Chunky Bacon');
-      assert.equal(get(obj, 'total'), 12);
+      assert.strictEqual(get(obj, 'foo'), 'Chunky Bacon');
+      assert.strictEqual(get(obj, 'total'), 12);
     }
   }
 );
@@ -86,8 +86,8 @@ moduleFor(
     }
 
     ['@test Checking the detect() function on an object and its subclass'](assert) {
-      assert.equal(obj.detect(obj1), true);
-      assert.equal(obj1.detect(obj), false);
+      assert.strictEqual(obj.detect(obj1), true);
+      assert.strictEqual(obj1.detect(obj), false);
     }
 
     ['@test Checking the detectInstance() function on an object and its subclass'](assert) {

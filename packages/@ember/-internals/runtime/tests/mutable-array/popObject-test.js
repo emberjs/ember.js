@@ -9,22 +9,22 @@ class PopObjectTests extends AbstractTestCase {
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-    this.assert.equal(obj.popObject(), undefined, 'popObject results');
+    this.assert.strictEqual(obj.popObject(), undefined, 'popObject results');
 
     // flush observers
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), [], 'post item results');
 
-    this.assert.equal(observer.validate('[]'), false, 'should NOT have notified []');
-    this.assert.equal(observer.validate('@each'), false, 'should NOT have notified @each');
-    this.assert.equal(observer.validate('length'), false, 'should NOT have notified length');
-    this.assert.equal(
+    this.assert.strictEqual(observer.validate('[]'), false, 'should NOT have notified []');
+    this.assert.strictEqual(observer.validate('@each'), false, 'should NOT have notified @each');
+    this.assert.strictEqual(observer.validate('length'), false, 'should NOT have notified length');
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject'
@@ -46,19 +46,23 @@ class PopObjectTests extends AbstractTestCase {
     // flush observers
     await runLoopSettled();
 
-    this.assert.equal(ret, before[0], 'return object');
+    this.assert.strictEqual(ret, before[0], 'return object');
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
@@ -80,20 +84,24 @@ class PopObjectTests extends AbstractTestCase {
     // flush observers
     await runLoopSettled();
 
-    this.assert.equal(ret, before[2], 'return object');
+    this.assert.strictEqual(ret, before[2], 'return object');
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject'

@@ -62,7 +62,7 @@ moduleFor(
       obj.set('foo', 'bar');
       await runLoopSettled();
 
-      assert.equal(count, 1, 'observer was fired once');
+      assert.strictEqual(count, 1, 'observer was fired once');
 
       beginPropertyChanges();
       obj.set('foo', 'quux');
@@ -70,7 +70,7 @@ moduleFor(
       endPropertyChanges();
       await runLoopSettled();
 
-      assert.equal(count, 1, 'observer was not called after object was destroyed');
+      assert.strictEqual(count, 1, 'observer was not called after object was destroyed');
     }
 
     async ['@test destroyed objects should not see each others changes during teardown but a long lived object should'](
@@ -144,8 +144,12 @@ moduleFor(
 
       await runLoopSettled();
 
-      assert.equal(shouldNotChange, 0, 'destroyed graph objs should not see change in willDestroy');
-      assert.equal(shouldChange, 1, 'long lived should see change in willDestroy');
+      assert.strictEqual(
+        shouldNotChange,
+        0,
+        'destroyed graph objs should not see change in willDestroy'
+      );
+      assert.strictEqual(shouldChange, 1, 'long lived should see change in willDestroy');
 
       longLived.destroy();
     }

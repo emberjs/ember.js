@@ -322,7 +322,7 @@ class AbstractAppendTest extends RenderingTestCase {
       content: '[parent: zomg][child: zomg][yielded: zomg]',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement.parentElement,
       this.element,
       'It should be attached to the target'
@@ -334,7 +334,7 @@ class AbstractAppendTest extends RenderingTestCase {
       content: '[parent: zomg][child: zomg][yielded: zomg]',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement.parentElement,
       this.element,
       'It should be attached to the target'
@@ -346,7 +346,7 @@ class AbstractAppendTest extends RenderingTestCase {
       content: '[parent: wow][child: wow][yielded: wow]',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement.parentElement,
       this.element,
       'It should be attached to the target'
@@ -358,7 +358,7 @@ class AbstractAppendTest extends RenderingTestCase {
       content: '[parent: zomg][child: zomg][yielded: zomg]',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement.parentElement,
       this.element,
       'It should be attached to the target'
@@ -369,7 +369,7 @@ class AbstractAppendTest extends RenderingTestCase {
     assert.ok(!this.component.element, 'It should not have an element');
     assert.ok(!componentElement.parentElement, 'The component element should be detached');
 
-    this.assert.equal(willDestroyCalled, 1);
+    this.assert.strictEqual(willDestroyCalled, 1);
   }
 
   ['@test releasing a root component after it has been destroy'](assert) {
@@ -382,11 +382,11 @@ class AbstractAppendTest extends RenderingTestCase {
     this.component = this.owner.factoryFor('component:x-component').create();
     this.append(this.component);
 
-    assert.equal(renderer._roots.length, 1, 'added a root component');
+    assert.strictEqual(renderer._roots.length, 1, 'added a root component');
 
     runTask(() => this.component.destroy());
 
-    assert.equal(renderer._roots.length, 0, 'released the root component');
+    assert.strictEqual(renderer._roots.length, 0, 'released the root component');
   }
 
   ['@test appending, updating and destroying multiple components'](assert) {
@@ -440,12 +440,12 @@ class AbstractAppendTest extends RenderingTestCase {
       content: 'x-second bar!',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement1.parentElement,
       wrapper1,
       'The first component should be attached to the target'
     );
-    assert.equal(
+    assert.strictEqual(
       componentElement2.parentElement,
       wrapper2,
       'The second component should be attached to the target'
@@ -458,12 +458,12 @@ class AbstractAppendTest extends RenderingTestCase {
       content: 'x-second bar!',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement1.parentElement,
       wrapper1,
       'The first component should be attached to the target'
     );
-    assert.equal(
+    assert.strictEqual(
       componentElement2.parentElement,
       wrapper2,
       'The second component should be attached to the target'
@@ -476,12 +476,12 @@ class AbstractAppendTest extends RenderingTestCase {
       content: 'x-second BAR!',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement1.parentElement,
       wrapper1,
       'The first component should be attached to the target'
     );
-    assert.equal(
+    assert.strictEqual(
       componentElement2.parentElement,
       wrapper2,
       'The second component should be attached to the target'
@@ -497,12 +497,12 @@ class AbstractAppendTest extends RenderingTestCase {
       content: 'x-second bar!',
     });
 
-    assert.equal(
+    assert.strictEqual(
       componentElement1.parentElement,
       wrapper1,
       'The first component should be attached to the target'
     );
-    assert.equal(
+    assert.strictEqual(
       componentElement2.parentElement,
       wrapper2,
       'The second component should be attached to the target'
@@ -519,7 +519,7 @@ class AbstractAppendTest extends RenderingTestCase {
     assert.ok(!componentElement1.parentElement, 'The first component element should be detached');
     assert.ok(!componentElement2.parentElement, 'The second component element should be detached');
 
-    this.assert.equal(willDestroyCalled, 2);
+    this.assert.strictEqual(willDestroyCalled, 2);
   }
 
   ['@test can appendTo while rendering']() {
@@ -657,14 +657,14 @@ class AbstractAppendTest extends RenderingTestCase {
 
     this.assertComponentElement(element1, {});
     this.assertComponentElement(element2, { content: 'fake-thing: 0' });
-    assert.equal(instantiatedRoots, 1);
+    assert.strictEqual(instantiatedRoots, 1);
 
     this.assertStableRerender();
 
     runTask(() => set(this.context, 'showFooBar', false));
 
-    assert.equal(instantiatedRoots, 2);
-    assert.equal(destroyedRoots, 1);
+    assert.strictEqual(instantiatedRoots, 2);
+    assert.strictEqual(destroyedRoots, 1);
 
     this.assertComponentElement(element3, {});
     this.assertComponentElement(element4, { content: 'fake-thing: 1' });
@@ -674,8 +674,8 @@ class AbstractAppendTest extends RenderingTestCase {
       component2.destroy();
     });
 
-    assert.equal(instantiatedRoots, 2);
-    assert.equal(destroyedRoots, 2);
+    assert.strictEqual(instantiatedRoots, 2);
+    assert.strictEqual(destroyedRoots, 2);
   }
 }
 

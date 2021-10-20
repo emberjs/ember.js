@@ -23,7 +23,7 @@ moduleFor(
       });
       let postController4 = container.lookup('controller:post');
 
-      assert.equal(
+      assert.strictEqual(
         postController1.toString(),
         postController4.toString(),
         'Singleton factories looked up normally return the same value'
@@ -220,7 +220,7 @@ moduleFor(
         'The lookup is an instance of the factory'
       );
 
-      assert.equal(postController, container.lookup('controller:post'));
+      assert.strictEqual(postController, container.lookup('controller:post'));
     }
 
     ['@test A non-singleton instance is never cached'](assert) {
@@ -242,14 +242,14 @@ moduleFor(
 
       let template = function () {};
       registry.register('template:foo', template, { instantiate: false });
-      assert.equal(container.lookup('template:foo'), template);
+      assert.strictEqual(container.lookup('template:foo'), template);
     }
 
     ['@test A failed lookup returns undefined'](assert) {
       let registry = new Registry();
       let container = registry.container();
 
-      assert.equal(container.lookup('doesnot:exist'), undefined);
+      assert.strictEqual(container.lookup('doesnot:exist'), undefined);
     }
 
     ['@test An invalid factory throws an error']() {
@@ -480,7 +480,7 @@ moduleFor(
 
       let result = container.ownerInjection();
 
-      assert.equal(getOwner(result), owner, 'owner is properly included');
+      assert.strictEqual(getOwner(result), owner, 'owner is properly included');
     }
 
     ['@test ownerInjection should be usable to create a service for testing'](assert) {
@@ -538,7 +538,7 @@ moduleFor(
       let factoryManager2 = container.factoryFor('component:foo-bar');
       let factoryManager3 = container.factoryFor('component:baz-bar');
 
-      assert.equal(factoryManager1, factoryManager2, 'cache hit');
+      assert.strictEqual(factoryManager1, factoryManager2, 'cache hit');
       assert.notEqual(factoryManager1, factoryManager3, 'cache miss');
     }
 
@@ -581,8 +581,8 @@ moduleFor(
       let instance1 = container.lookup('component:foo-bar');
       let instance2 = container.lookup('component:foo-bar');
 
-      assert.equal(instance1, instance2);
-      assert.equal(factory1, factory2);
+      assert.strictEqual(instance1, instance2);
+      assert.strictEqual(factory1, factory2);
 
       container.reset();
 

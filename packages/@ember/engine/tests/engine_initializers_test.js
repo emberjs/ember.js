@@ -265,14 +265,14 @@ moduleFor(
       let firstEngine = FirstEngine.create();
       let firstEngineInstance = firstEngine.buildInstance();
 
-      assert.equal(firstInitializerRunCount, 1, 'first initializer only was run');
-      assert.equal(secondInitializerRunCount, 0, 'first initializer only was run');
+      assert.strictEqual(firstInitializerRunCount, 1, 'first initializer only was run');
+      assert.strictEqual(secondInitializerRunCount, 0, 'first initializer only was run');
 
       let secondEngine = SecondEngine.create();
       let secondEngineInstance = secondEngine.buildInstance();
 
-      assert.equal(firstInitializerRunCount, 1, 'second initializer only was run');
-      assert.equal(secondInitializerRunCount, 1, 'second initializer only was run');
+      assert.strictEqual(firstInitializerRunCount, 1, 'second initializer only was run');
+      assert.strictEqual(secondInitializerRunCount, 1, 'second initializer only was run');
 
       run(function () {
         firstEngineInstance.destroy();
@@ -309,12 +309,12 @@ moduleFor(
       let firstEngine = FirstEngine.create();
       let firstEngineInstance = firstEngine.buildInstance();
 
-      assert.equal(
+      assert.strictEqual(
         firstInitializerRunCount,
         1,
         'first initializer only was run when base class created'
       );
-      assert.equal(
+      assert.strictEqual(
         secondInitializerRunCount,
         0,
         'second initializer was not run when first base class created'
@@ -324,8 +324,12 @@ moduleFor(
       let secondEngine = SecondEngine.create();
       let secondEngineInstance = secondEngine.buildInstance();
 
-      assert.equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
-      assert.equal(
+      assert.strictEqual(
+        firstInitializerRunCount,
+        1,
+        'first initializer was run when subclass created'
+      );
+      assert.strictEqual(
         secondInitializerRunCount,
         1,
         'second initializers was run when subclass created'
@@ -381,7 +385,7 @@ moduleFor(
         name: 'coolInitializer',
         myProperty: 'cool',
         initialize() {
-          assert.equal(this.myProperty, 'cool', 'should have access to its own context');
+          assert.strictEqual(this.myProperty, 'cool', 'should have access to its own context');
         },
       });
 

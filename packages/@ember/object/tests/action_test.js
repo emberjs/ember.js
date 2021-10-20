@@ -43,11 +43,11 @@ moduleFor(
       let foo = Foo.create();
       let bar = Bar.create();
 
-      assert.equal(typeof foo.actions.foo, 'function', 'foo has foo action');
-      assert.equal(typeof foo.actions.bar, 'undefined', 'foo does not have bar action');
+      assert.strictEqual(typeof foo.actions.foo, 'function', 'foo has foo action');
+      assert.strictEqual(typeof foo.actions.bar, 'undefined', 'foo does not have bar action');
 
-      assert.equal(typeof bar.actions.foo, 'function', 'bar has foo action');
-      assert.equal(typeof bar.actions.bar, 'function', 'bar has bar action');
+      assert.strictEqual(typeof bar.actions.foo, 'function', 'bar has foo action');
+      assert.strictEqual(typeof bar.actions.bar, 'function', 'bar has bar action');
     }
 
     '@test actions are properly merged through traditional and ES6 prototype hierarchy'(assert) {
@@ -178,7 +178,7 @@ moduleFor(
 
         @action
         foo() {
-          assert.equal(this.bar, 'some value', 'context bound correctly');
+          assert.strictEqual(this.bar, 'some value', 'context bound correctly');
         }
       }
 
@@ -199,7 +199,7 @@ moduleFor(
 
         @action
         foo() {
-          assert.equal(this.bar, 'some value', 'context bound correctly');
+          assert.strictEqual(this.bar, 'some value', 'context bound correctly');
         }
       }
 

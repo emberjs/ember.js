@@ -38,10 +38,10 @@ moduleFor(
 
       let $ = this.$();
 
-      assert.equal($.findAll('h1').text(), 'People');
-      assert.equal($.findAll('li').length, 2);
-      assert.equal($.findAll('li:nth-of-type(1)').text(), 'Hello, Tom Dale!');
-      assert.equal($.findAll('li:nth-of-type(2)').text(), 'Hello, Yehuda Katz!');
+      assert.strictEqual($.findAll('h1').text(), 'People');
+      assert.strictEqual($.findAll('li').length, 2);
+      assert.strictEqual($.findAll('li:nth-of-type(1)').text(), 'Hello, Tom Dale!');
+      assert.strictEqual($.findAll('li:nth-of-type(2)').text(), 'Hello, Yehuda Katz!');
     }
   }
 );

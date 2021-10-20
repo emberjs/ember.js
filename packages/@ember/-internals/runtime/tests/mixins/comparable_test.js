@@ -28,10 +28,10 @@ moduleFor(
     }
 
     ['@test should be comparable and return the correct result'](assert) {
-      assert.equal(Comparable.detect(r1), true);
-      assert.equal(compare(r1, r1), 0);
-      assert.equal(compare(r1, r2), -1);
-      assert.equal(compare(r2, r1), 1);
+      assert.strictEqual(Comparable.detect(r1), true);
+      assert.strictEqual(compare(r1, r1), 0);
+      assert.strictEqual(compare(r1, r2), -1);
+      assert.strictEqual(compare(r2, r1), 1);
     }
   }
 );

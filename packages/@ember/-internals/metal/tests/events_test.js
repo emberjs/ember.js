@@ -13,16 +13,16 @@ moduleFor(
       }
 
       addListener(obj, 'event!', F);
-      assert.equal(count, 0, 'nothing yet');
+      assert.strictEqual(count, 0, 'nothing yet');
 
       sendEvent(obj, 'event!');
-      assert.equal(count, 1, 'received event');
+      assert.strictEqual(count, 1, 'received event');
 
       removeListener(obj, 'event!', F);
 
       count = 0;
       sendEvent(obj, 'event!');
-      assert.equal(count, 0, 'received event');
+      assert.strictEqual(count, 0, 'received event');
     }
 
     ['@test listeners should be inherited'](assert) {
@@ -38,19 +38,19 @@ moduleFor(
 
       let obj2 = Object.create(obj);
 
-      assert.equal(count, 0, 'nothing yet');
+      assert.strictEqual(count, 0, 'nothing yet');
 
       sendEvent(obj2, 'event!');
-      assert.equal(count, 1, 'received event');
+      assert.strictEqual(count, 1, 'received event');
 
       removeListener(obj2, 'event!', null, 'func');
 
       count = 0;
       sendEvent(obj2, 'event!');
-      assert.equal(count, 0, 'did not receive event');
+      assert.strictEqual(count, 0, 'did not receive event');
 
       sendEvent(obj, 'event!');
-      assert.equal(count, 1, 'should still invoke on parent');
+      assert.strictEqual(count, 1, 'should still invoke on parent');
     }
 
     ['@test adding a listener more than once should only invoke once'](assert) {
@@ -65,7 +65,7 @@ moduleFor(
       addListener(obj, 'event!', null, 'func');
 
       sendEvent(obj, 'event!');
-      assert.equal(count, 1, 'should only invoke once');
+      assert.strictEqual(count, 1, 'should only invoke once');
     }
 
     ['@test adding a listener with a target should invoke with target'](assert) {
@@ -81,7 +81,7 @@ moduleFor(
 
       addListener(obj, 'event!', target, target.method);
       sendEvent(obj, 'event!');
-      assert.equal(target.count, 1, 'should invoke');
+      assert.strictEqual(target.count, 1, 'should invoke');
     }
 
     ['@test adding a listener with string method should lookup method on event delivery'](assert) {
@@ -95,13 +95,13 @@ moduleFor(
 
       addListener(obj, 'event!', target, 'method');
       sendEvent(obj, 'event!');
-      assert.equal(target.count, 0, 'should invoke but do nothing');
+      assert.strictEqual(target.count, 0, 'should invoke but do nothing');
 
       target.method = function () {
         this.count++;
       };
       sendEvent(obj, 'event!');
-      assert.equal(target.count, 1, 'should invoke now');
+      assert.strictEqual(target.count, 1, 'should invoke now');
     }
 
     ['@test calling sendEvent with extra params should be passed to listeners'](assert) {
@@ -121,21 +121,21 @@ moduleFor(
       function F() {}
       function F2() {}
 
-      assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
+      assert.strictEqual(hasListeners(obj, 'event!'), false, 'no listeners at first');
 
       addListener(obj, 'event!', F);
       addListener(obj, 'event!', F2);
 
-      assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+      assert.strictEqual(hasListeners(obj, 'event!'), true, 'has listeners');
 
       removeListener(obj, 'event!', F);
-      assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+      assert.strictEqual(hasListeners(obj, 'event!'), true, 'has listeners');
 
       removeListener(obj, 'event!', F2);
-      assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
+      assert.strictEqual(hasListeners(obj, 'event!'), false, 'has no more listeners');
 
       addListener(obj, 'event!', F);
-      assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+      assert.strictEqual(hasListeners(obj, 'event!'), true, 'has listeners');
     }
 
     ['@test a listener can be added as part of a mixin'](assert) {
@@ -154,7 +154,7 @@ moduleFor(
       MyMixin.apply(obj);
 
       sendEvent(obj, 'bar');
-      assert.equal(triggered, 2, 'should invoke listeners');
+      assert.strictEqual(triggered, 2, 'should invoke listeners');
     }
 
     [`@test 'on' asserts for invalid arguments`]() {
@@ -189,10 +189,10 @@ moduleFor(
       SecondMixin.apply(obj);
 
       sendEvent(obj, 'bar');
-      assert.equal(triggered, 0, 'should not invoke from overridden property');
+      assert.strictEqual(triggered, 0, 'should not invoke from overridden property');
 
       sendEvent(obj, 'baz');
-      assert.equal(triggered, 1, 'should invoke from subclass property');
+      assert.strictEqual(triggered, 1, 'should invoke from subclass property');
     }
   }
 );

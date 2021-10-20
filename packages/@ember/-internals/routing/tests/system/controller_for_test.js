@@ -26,7 +26,7 @@ moduleFor(
         let appInstance = this.applicationInstance;
         let appController = appInstance.lookup('controller:app');
         let controller = controllerFor(appInstance, 'app');
-        assert.equal(appController, controller, 'should find app controller');
+        assert.strictEqual(appController, controller, 'should find app controller');
       });
     }
   }

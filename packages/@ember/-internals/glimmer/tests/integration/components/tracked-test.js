@@ -415,13 +415,13 @@ moduleFor(
 
       this.render('<Parent />');
 
-      assert.equal(this.$('#parent').text(), 'Rob Jackson');
-      assert.equal(this.$('#child').text(), 'Rob Jackson');
+      assert.strictEqual(this.$('#parent').text(), 'Rob Jackson');
+      assert.strictEqual(this.$('#child').text(), 'Rob Jackson');
 
       runTask(() => this.$('button').click());
 
-      assert.equal(this.$('#parent').text(), 'Kris Selden');
-      assert.equal(this.$('#child').text(), 'Kris Selden');
+      assert.strictEqual(this.$('#parent').text(), 'Kris Selden');
+      assert.strictEqual(this.$('#child').text(), 'Kris Selden');
     }
 
     '@test yielded getters update correctly'() {
@@ -628,19 +628,19 @@ moduleFor(
 
       this.assertText('0');
 
-      assert.equal(outerRenderCount, 1);
-      assert.equal(innerRenderCount, 1);
+      assert.strictEqual(outerRenderCount, 1);
+      assert.strictEqual(innerRenderCount, 1);
 
       runTask(() => this.$('button').click());
 
       this.assertText('1');
 
-      assert.equal(
+      assert.strictEqual(
         outerRenderCount,
         1,
         'updating inner component does not cause outer component to rerender'
       );
-      assert.equal(
+      assert.strictEqual(
         innerRenderCount,
         2,
         'updating inner component causes inner component to rerender'
@@ -650,8 +650,8 @@ moduleFor(
 
       this.assertText('2');
 
-      assert.equal(outerRenderCount, 2, 'outer component updates based on context');
-      assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
+      assert.strictEqual(outerRenderCount, 2, 'outer component updates based on context');
+      assert.strictEqual(innerRenderCount, 3, 'inner component updates based on outer component');
     }
 
     '@test computed properties can depend on args'() {

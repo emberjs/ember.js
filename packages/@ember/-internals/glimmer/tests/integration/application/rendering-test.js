@@ -170,7 +170,7 @@ moduleFor(
 
       await this.visit('/red');
 
-      assert.equal(this.currentURL, '/red');
+      assert.strictEqual(this.currentURL, '/red');
 
       this.assertInnerHTML(strip`
         [@model: red]
@@ -180,7 +180,7 @@ moduleFor(
 
       await this.visit('/yellow');
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: yellow]
@@ -193,7 +193,7 @@ moduleFor(
         set(model, 'color', 'blue');
       });
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: blue]
@@ -239,7 +239,7 @@ moduleFor(
 
       await this.visit('/red');
 
-      assert.equal(this.currentURL, '/red');
+      assert.strictEqual(this.currentURL, '/red');
 
       this.assertInnerHTML(strip`
         [@model: red]
@@ -249,7 +249,7 @@ moduleFor(
 
       await this.visit('/yellow');
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: yellow]
@@ -261,7 +261,7 @@ moduleFor(
         this.controllerFor('color').model.color = 'blue';
       });
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: blue]
@@ -299,7 +299,7 @@ moduleFor(
 
       await this.visit('/red');
 
-      assert.equal(this.currentURL, '/red');
+      assert.strictEqual(this.currentURL, '/red');
 
       this.assertInnerHTML(strip`
         [@model: red]
@@ -309,7 +309,7 @@ moduleFor(
 
       await this.visit('/yellow');
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: yellow]
@@ -322,7 +322,7 @@ moduleFor(
         set(controller, 'model', 'blue');
       });
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: yellow]
@@ -367,7 +367,7 @@ moduleFor(
 
       await this.visit('/red');
 
-      assert.equal(this.currentURL, '/red');
+      assert.strictEqual(this.currentURL, '/red');
 
       this.assertInnerHTML(strip`
         [@model: red]
@@ -377,7 +377,7 @@ moduleFor(
 
       await this.visit('/yellow');
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: yellow]
@@ -389,7 +389,7 @@ moduleFor(
         this.controllerFor('color').model = 'blue';
       });
 
-      assert.equal(this.currentURL, '/yellow');
+      assert.strictEqual(this.currentURL, '/yellow');
 
       this.assertInnerHTML(strip`
         [@model: yellow]

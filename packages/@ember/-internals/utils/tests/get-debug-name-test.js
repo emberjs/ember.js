@@ -9,19 +9,19 @@ if (DEBUG) {
       '@test basic'(assert) {
         class Person {}
 
-        assert.equal(getDebugName({}), '(unknown object)');
-        assert.equal(
+        assert.strictEqual(getDebugName({}), '(unknown object)');
+        assert.strictEqual(
           getDebugName(() => {}),
           '(unknown function)'
         );
-        assert.equal(getDebugName(Person), 'Person');
-        assert.equal(getDebugName(new Person()), 'Person');
-        assert.equal(
+        assert.strictEqual(getDebugName(Person), 'Person');
+        assert.strictEqual(getDebugName(new Person()), 'Person');
+        assert.strictEqual(
           getDebugName(function foo() {}),
           'foo'
         );
 
-        assert.equal(
+        assert.strictEqual(
           getDebugName({
             toString() {
               return 'bar';
@@ -36,8 +36,8 @@ if (DEBUG) {
           }
         }
 
-        assert.equal(getDebugName(ClassWithToString), 'ClassWithToString');
-        assert.equal(getDebugName(new ClassWithToString()), 'baz');
+        assert.strictEqual(getDebugName(ClassWithToString), 'ClassWithToString');
+        assert.strictEqual(getDebugName(new ClassWithToString()), 'baz');
 
         class ClassWithEmberLikeToString {
           toString() {
@@ -45,15 +45,15 @@ if (DEBUG) {
           }
         }
 
-        assert.equal(getDebugName(ClassWithEmberLikeToString), 'ClassWithEmberLikeToString');
-        assert.equal(
+        assert.strictEqual(getDebugName(ClassWithEmberLikeToString), 'ClassWithEmberLikeToString');
+        assert.strictEqual(
           getDebugName(new ClassWithEmberLikeToString()),
           '<ClassWithEmberLikeToString:ember1234>'
         );
 
-        assert.equal(getDebugName(true), 'true');
-        assert.equal(getDebugName(123), '123');
-        assert.equal(getDebugName('string'), 'string');
+        assert.strictEqual(getDebugName(true), 'true');
+        assert.strictEqual(getDebugName(123), '123');
+        assert.strictEqual(getDebugName('string'), 'string');
       }
     }
   );

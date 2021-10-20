@@ -80,11 +80,11 @@ class ModifierManagerTest extends RenderingTestCase {
       ModifierClass.extend({
         didUpdate([truthy]) {
           assert.ok(true, 'Called didUpdate');
-          assert.equal(truthy, 'true', 'gets updated args');
+          assert.strictEqual(truthy, 'true', 'gets updated args');
         },
         didInsertElement([truthy]) {
           assert.ok(true, 'Called didInsertElement');
-          assert.equal(truthy, true, 'gets initial args');
+          assert.strictEqual(truthy, true, 'gets initial args');
         },
         willDestroyElement() {
           assert.ok(true, 'Called willDestroyElement');
@@ -121,7 +121,7 @@ class ModifierManagerTest extends RenderingTestCase {
       didInsertElement([truthy]) {
         this._super(...arguments);
         assert.ok(true, 'Called didInsertElement');
-        assert.equal(truthy, true, 'gets initial args');
+        assert.strictEqual(truthy, true, 'gets initial args');
       },
     });
 
@@ -131,7 +131,7 @@ class ModifierManagerTest extends RenderingTestCase {
         didInsertElement([truthy]) {
           this._super(...arguments);
           assert.ok(true, 'Called didInsertElement');
-          assert.equal(truthy, true, 'gets initial args');
+          assert.strictEqual(truthy, true, 'gets initial args');
         },
       })
     );
@@ -163,14 +163,14 @@ class ModifierManagerTest extends RenderingTestCase {
           // consume first positional argument (ensures updates run)
           positional[0];
 
-          assert.equal(this.element.tagName, 'H1');
+          assert.strictEqual(this.element.tagName, 'H1');
           this.set('savedElement', this.element);
         },
         didUpdate() {
-          assert.equal(this.element, this.savedElement);
+          assert.strictEqual(this.element, this.savedElement);
         },
         willDestroyElement() {
-          assert.equal(this.element, this.savedElement);
+          assert.strictEqual(this.element, this.savedElement);
         },
       })
     );
@@ -225,20 +225,20 @@ class ModifierManagerTest extends RenderingTestCase {
     this.render('<h1 {{foo-bar this.truthy}}>hello world</h1>');
     this.assertHTML(`<h1>hello world</h1>`);
 
-    assert.equal(insertCount, 1);
-    assert.equal(updateCount, 0);
+    assert.strictEqual(insertCount, 1);
+    assert.strictEqual(updateCount, 0);
 
     runTask(() => trackedTwo.count++);
-    assert.equal(updateCount, 0);
+    assert.strictEqual(updateCount, 0);
 
     runTask(() => trackedOne.count++);
-    assert.equal(updateCount, 1);
+    assert.strictEqual(updateCount, 1);
 
     runTask(() => trackedOne.count++);
-    assert.equal(updateCount, 1);
+    assert.strictEqual(updateCount, 1);
 
     runTask(() => trackedTwo.count++);
-    assert.equal(updateCount, 2);
+    assert.strictEqual(updateCount, 2);
   }
 
   '@test provides a helpful deprecation when mutating a tracked value that was consumed already within constructor'(
@@ -438,14 +438,14 @@ moduleFor(
 
       this.assertHTML(`<h1>hello world</h1>`);
 
-      assert.equal(insertCount, 1);
-      assert.equal(updateCount, 0);
+      assert.strictEqual(insertCount, 1);
+      assert.strictEqual(updateCount, 0);
 
       runTask(() => set(this.context, 'bar', 'other bar'));
-      assert.equal(updateCount, 1);
+      assert.strictEqual(updateCount, 1);
 
       runTask(() => set(this.context, 'qux', 'quuuuxxxxxx'));
-      assert.equal(updateCount, 2);
+      assert.strictEqual(updateCount, 2);
     }
   }
 );
@@ -526,14 +526,14 @@ moduleFor(
 
       this.assertHTML(`<h1>hello world</h1>`);
 
-      assert.equal(insertCount, 1);
-      assert.equal(updateCount, 0);
+      assert.strictEqual(insertCount, 1);
+      assert.strictEqual(updateCount, 0);
 
       runTask(() => set(this.context, 'positionOne', 'no first?'));
-      assert.equal(updateCount, 0);
+      assert.strictEqual(updateCount, 0);
 
       runTask(() => set(this.context, 'positionTwo', 'YASSSSSSS!!!'));
-      assert.equal(updateCount, 1);
+      assert.strictEqual(updateCount, 1);
     }
 
     '@test modifers only track named arguments they consume'(assert) {
@@ -577,14 +577,14 @@ moduleFor(
 
       this.assertHTML(`<h1>hello world</h1>`);
 
-      assert.equal(insertCount, 1);
-      assert.equal(updateCount, 0);
+      assert.strictEqual(insertCount, 1);
+      assert.strictEqual(updateCount, 0);
 
       runTask(() => set(this.context, 'bar', 'other bar'));
-      assert.equal(updateCount, 0);
+      assert.strictEqual(updateCount, 0);
 
       runTask(() => set(this.context, 'qux', 'quuuuxxxxxx'));
-      assert.equal(updateCount, 1);
+      assert.strictEqual(updateCount, 1);
     }
 
     '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a modifier'() {

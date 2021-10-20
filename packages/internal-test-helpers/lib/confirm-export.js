@@ -31,17 +31,25 @@ export default function confirmExport(Ember, assert, path, moduleId, exportName)
     } else if (typeof exportName === 'string') {
       let mod = require(moduleId);
       let value = 'value' in desc ? desc.value : desc.get.call(Ember);
-      assert.equal(value, mod[exportName], `Ember.${path} is exported correctly`);
+      assert.strictEqual(value, mod[exportName], `Ember.${path} is exported correctly`);
       assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
     } else if ('value' in desc) {
-      assert.equal(desc.value, exportName.value, `Ember.${path} is exported correctly`);
+      assert.strictEqual(desc.value, exportName.value, `Ember.${path} is exported correctly`);
     } else {
       let mod = require(moduleId);
-      assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
+      assert.strictEqual(
+        desc.get,
+        mod[exportName.get],
+        `Ember.${path} getter is exported correctly`
+      );
       assert.notEqual(desc.get, undefined, `Ember.${path} getter is not undefined`);
 
       if (exportName.set) {
-        assert.equal(desc.set, mod[exportName.set], `Ember.${path} setter is exported correctly`);
+        assert.strictEqual(
+          desc.set,
+          mod[exportName.set],
+          `Ember.${path} setter is exported correctly`
+        );
         assert.notEqual(desc.set, undefined, `Ember.${path} setter is not undefined`);
       }
     }

@@ -15,7 +15,7 @@ moduleFor(
         },
       };
 
-      assert.equal(
+      assert.strictEqual(
         run(() => 'FOO'),
         'FOO',
         'pass function only'

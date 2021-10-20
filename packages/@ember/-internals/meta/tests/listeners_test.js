@@ -10,11 +10,11 @@ moduleFor(
       let m = meta({});
       m.addToListeners('hello', t, 'm', 0);
       let matching = m.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-      assert.equal(matching[0], t);
+      assert.strictEqual(matching.length, 3);
+      assert.strictEqual(matching[0], t);
       m.removeFromListeners('hello', t, 'm');
       matching = m.matchingListeners('hello');
-      assert.equal(matching, undefined);
+      assert.strictEqual(matching, undefined);
     }
 
     ['@test inheritance'](assert) {
@@ -57,7 +57,7 @@ moduleFor(
       m1.removeFromListeners('hello', target, 'm');
 
       matching = m1.matchingListeners('hello');
-      assert.equal(matching, undefined, 'listener removed from child1');
+      assert.strictEqual(matching, undefined, 'listener removed from child1');
 
       matching = m2.matchingListeners('hello');
       assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child2');
@@ -72,8 +72,8 @@ moduleFor(
       m.addToListeners('hello', t, 'm', 0);
       m.addToListeners('hello', t, 'm', 0);
       let matching = m.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-      assert.equal(matching[0], t);
+      assert.strictEqual(matching.length, 3);
+      assert.strictEqual(matching[0], t);
     }
 
     ['@test parent caching'](assert) {
@@ -91,17 +91,17 @@ moduleFor(
 
       let matching = m.matchingListeners('hello');
 
-      assert.equal(matching.length, 3);
+      assert.strictEqual(matching.length, 3);
       if (DEBUG) {
-        assert.equal(counters.flattenedListenersCalls, 2);
-        assert.equal(counters.parentListenersUsed, 1);
+        assert.strictEqual(counters.flattenedListenersCalls, 2);
+        assert.strictEqual(counters.parentListenersUsed, 1);
       }
       matching = m.matchingListeners('hello');
 
-      assert.equal(matching.length, 3);
+      assert.strictEqual(matching.length, 3);
       if (DEBUG) {
-        assert.equal(counters.flattenedListenersCalls, 3);
-        assert.equal(counters.parentListenersUsed, 1);
+        assert.strictEqual(counters.flattenedListenersCalls, 3);
+        assert.strictEqual(counters.parentListenersUsed, 1);
       }
     }
 
@@ -121,22 +121,22 @@ moduleFor(
 
       let matching = m.matchingListeners('hello');
 
-      assert.equal(matching.length, 3);
+      assert.strictEqual(matching.length, 3);
       if (DEBUG) {
-        assert.equal(counters.flattenedListenersCalls, 2);
-        assert.equal(counters.parentListenersUsed, 1);
-        assert.equal(counters.listenersInherited, 0);
+        assert.strictEqual(counters.flattenedListenersCalls, 2);
+        assert.strictEqual(counters.parentListenersUsed, 1);
+        assert.strictEqual(counters.listenersInherited, 0);
       }
 
       m.addToListeners('hello', null, 'm2');
 
       matching = m.matchingListeners('hello');
 
-      assert.equal(matching.length, 6);
+      assert.strictEqual(matching.length, 6);
       if (DEBUG) {
-        assert.equal(counters.flattenedListenersCalls, 4);
-        assert.equal(counters.parentListenersUsed, 1);
-        assert.equal(counters.listenersInherited, 1);
+        assert.strictEqual(counters.flattenedListenersCalls, 4);
+        assert.strictEqual(counters.parentListenersUsed, 1);
+        assert.strictEqual(counters.listenersInherited, 1);
       }
     }
 
@@ -166,35 +166,43 @@ moduleFor(
       m1.matchingListeners('hello');
       m2.matchingListeners('hello');
 
-      assert.equal(counters.reopensAfterFlatten, 0, 'no reopen calls yet');
+      assert.strictEqual(counters.reopensAfterFlatten, 0, 'no reopen calls yet');
 
       m1.addToListeners('world', null, 'm', 0);
       m2.addToListeners('world', null, 'm', 0);
       m1.matchingListeners('world');
       m2.matchingListeners('world');
 
-      assert.equal(counters.reopensAfterFlatten, 1, 'reopen calls after invalidating parent cache');
+      assert.strictEqual(
+        counters.reopensAfterFlatten,
+        1,
+        'reopen calls after invalidating parent cache'
+      );
 
       m1.addToListeners('world', null, 'm', 0);
       m2.addToListeners('world', null, 'm', 0);
       m1.matchingListeners('world');
       m2.matchingListeners('world');
 
-      assert.equal(counters.reopensAfterFlatten, 1, 'no reopen calls after mutating leaf nodes');
+      assert.strictEqual(
+        counters.reopensAfterFlatten,
+        1,
+        'no reopen calls after mutating leaf nodes'
+      );
 
       class1Meta.removeFromListeners('hello', null, 'm');
       class2Meta.removeFromListeners('hello', null, 'm');
       m1.matchingListeners('hello');
       m2.matchingListeners('hello');
 
-      assert.equal(counters.reopensAfterFlatten, 2, 'one reopen call after mutating parents');
+      assert.strictEqual(counters.reopensAfterFlatten, 2, 'one reopen call after mutating parents');
 
       class1Meta.addToListeners('hello', null, 'm', 0);
       m1.matchingListeners('hello');
       class2Meta.addToListeners('hello', null, 'm', 0);
       m2.matchingListeners('hello');
 
-      assert.equal(
+      assert.strictEqual(
         counters.reopensAfterFlatten,
         3,
         'one reopen call after mutating parents and flattening out of order'
@@ -222,7 +230,7 @@ moduleFor(
       m1.removeFromListeners('functionListener', null, listenerFunc, 0);
       m1.removeFromListeners('stringListener', null, 'm', 0);
 
-      assert.equal(
+      assert.strictEqual(
         m1.flattenedListeners().length,
         1,
         'instance listeners correctly removed, inherited listeners remain'

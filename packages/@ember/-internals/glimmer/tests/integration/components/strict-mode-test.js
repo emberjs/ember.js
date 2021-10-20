@@ -246,7 +246,7 @@ if (EMBER_STRICT_MODE) {
         assert.expect(1);
 
         let handleClick = (value) => {
-          assert.equal(value, 123);
+          assert.strictEqual(value, 123);
         };
 
         let Foo = defineComponent(

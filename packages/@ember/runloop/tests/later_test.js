@@ -48,7 +48,7 @@ moduleFor(
       });
 
       wait(() => {
-        assert.equal(invoked, true, 'should have invoked later item');
+        assert.strictEqual(invoked, true, 'should have invoked later item');
         done();
       });
     }
@@ -68,7 +68,7 @@ moduleFor(
       });
 
       wait(() => {
-        assert.equal(obj.invoked, true, 'should have invoked later item');
+        assert.strictEqual(obj.invoked, true, 'should have invoked later item');
         done();
       });
     }
@@ -89,7 +89,7 @@ moduleFor(
       });
 
       wait(() => {
-        assert.equal(obj.invoked, 10, 'should have invoked later item');
+        assert.strictEqual(obj.invoked, 10, 'should have invoked later item');
         done();
       });
     }
@@ -117,10 +117,10 @@ moduleFor(
 
       assert.ok(firstRunLoop, 'first run loop captured');
       assert.ok(!_getCurrentRunLoop(), "shouldn't be in a run loop after flush");
-      assert.equal(obj.invoked, 0, "shouldn't have invoked later item yet");
+      assert.strictEqual(obj.invoked, 0, "shouldn't have invoked later item yet");
 
       wait(() => {
-        assert.equal(obj.invoked, 10, 'should have invoked later item');
+        assert.strictEqual(obj.invoked, 10, 'should have invoked later item');
         assert.ok(secondRunLoop, 'second run loop took place');
         assert.ok(secondRunLoop !== firstRunLoop, 'two different run loops took place');
         done();
@@ -250,7 +250,7 @@ moduleFor(
         }, 1);
 
         later(() => {
-          assert.equal(count, 1, 'callbacks called in order');
+          assert.strictEqual(count, 1, 'callbacks called in order');
         }, 50);
       });
 

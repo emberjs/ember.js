@@ -32,7 +32,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(text, 'inner-outer', 'The component is composed correctly');
+        assert.strictEqual(text, 'inner-outer', 'The component is composed correctly');
       });
     }
 
@@ -62,7 +62,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(text, 'outer', 'The component is composed correctly');
+        assert.strictEqual(text, 'outer', 'The component is composed correctly');
       });
     }
     ['@test Components without a block should have the proper content when a template is provided'](
@@ -90,7 +90,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(text, 'inner', 'The component is composed correctly');
+        assert.strictEqual(text, 'inner', 'The component is composed correctly');
       });
     }
 
@@ -118,7 +118,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
+        assert.strictEqual(text, 'Some text inserted', 'The component is composed correctly');
       });
     }
 
@@ -148,7 +148,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
+        assert.strictEqual(text, 'Some text inserted', 'The component is composed correctly');
       });
     }
 
@@ -179,7 +179,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
-        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
+        assert.strictEqual(text, 'Some text inserted', 'The component is composed correctly');
       });
     }
 

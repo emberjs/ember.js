@@ -13,7 +13,7 @@ moduleFor(
 
       function handler(message) {
         assert.ok(true, 'called handler');
-        assert.equal(message, 'Foo bar');
+        assert.strictEqual(message, 'Foo bar');
       }
 
       registerHandler('blarz', handler);
@@ -81,8 +81,16 @@ moduleFor(
 
       function generateHandler(item) {
         return function (message, options, next) {
-          assert.equal(message, expectedMessage, `message supplied to ${item} handler is correct`);
-          assert.equal(options, expectedOptions, `options supplied to ${item} handler is correct`);
+          assert.strictEqual(
+            message,
+            expectedMessage,
+            `message supplied to ${item} handler is correct`
+          );
+          assert.strictEqual(
+            options,
+            expectedOptions,
+            `options supplied to ${item} handler is correct`
+          );
 
           actualCalls.push(item);
 
@@ -124,13 +132,13 @@ moduleFor(
       let handler2Options = { id: 'handler-2' };
 
       function handler1(message, options) {
-        assert.equal(message, handler2Message, 'handler2 message provided to handler1');
-        assert.equal(options, handler2Options, 'handler2 options provided to handler1');
+        assert.strictEqual(message, handler2Message, 'handler2 message provided to handler1');
+        assert.strictEqual(options, handler2Options, 'handler2 options provided to handler1');
       }
 
       function handler2(message, options, next) {
-        assert.equal(message, initialMessage, 'initial message provided to handler2');
-        assert.equal(options, initialOptions, 'initial options proivided to handler2');
+        assert.strictEqual(message, initialMessage, 'initial message provided to handler2');
+        assert.strictEqual(options, initialOptions, 'initial options proivided to handler2');
 
         next(handler2Message, handler2Options);
       }

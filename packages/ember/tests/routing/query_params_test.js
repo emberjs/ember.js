@@ -73,24 +73,24 @@ moduleFor(
       );
 
       await this.visit('/');
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 1);
+      assert.strictEqual(appModelCount, 1, 'appModelCount is 1');
+      assert.strictEqual(indexModelCount, 1);
 
       let indexController = this.getController('index');
       await this.setAndFlush(indexController, 'omg', 'lex');
 
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 2);
+      assert.strictEqual(appModelCount, 1, 'appModelCount is 1');
+      assert.strictEqual(indexModelCount, 2);
 
       await this.setAndFlush(indexController, 'omg', 'hello');
-      assert.equal(appModelCount, 1, 'appModelCount is 1');
-      assert.equal(indexModelCount, 3);
+      assert.strictEqual(appModelCount, 1, 'appModelCount is 1');
+      assert.strictEqual(indexModelCount, 3);
 
       run(function () {
         promiseResolve();
       });
 
-      assert.equal(get(indexController, 'omg'), 'hello', 'At the end last value prevails');
+      assert.strictEqual(get(indexController, 'omg'), 'hello', 'At the end last value prevails');
     }
 
     ["@test No replaceURL occurs on startup because default values don't show up in URL"](assert) {
@@ -131,7 +131,7 @@ moduleFor(
           '/parent/sibling?foo=lol',
           'redirected to the sibling route, instead of child route'
         );
-        assert.equal(
+        assert.strictEqual(
           this.getController('parent').get('foo'),
           'lol',
           'controller has value from the active transition'
@@ -177,7 +177,7 @@ moduleFor(
           '/parent/sibling?array=%5B%22one%22%2C2%5D&string=hello',
           'redirected to the sibling route, instead of child route'
         );
-        assert.equal(
+        assert.strictEqual(
           this.getController('parent').get('string'),
           'hello',
           'controller has value from the active transition'
@@ -235,7 +235,7 @@ moduleFor(
       this.assertCurrentPath('/?other_foo=WOO', "QP updated correctly without 'as'");
 
       await this.transitionTo('/?other_foo=NAW');
-      assert.equal(controller.get('foo'), 'NAW', 'QP managed correctly on URL transition');
+      assert.strictEqual(controller.get('foo'), 'NAW', 'QP managed correctly on URL transition');
 
       await this.setAndFlush(controller, 'bar', 'NERK');
       this.assertCurrentPath('/?other_bar=NERK&other_foo=NAW', "QP mapped correctly with 'as'");
@@ -386,7 +386,7 @@ moduleFor(
         'route:application',
         Route.extend({
           setupController(controller) {
-            assert.equal(
+            assert.strictEqual(
               controller.get('foo'),
               'YEAH',
               "controller's foo QP property set before setupController called"
@@ -407,7 +407,7 @@ moduleFor(
         'route:application',
         Route.extend({
           setupController(controller) {
-            assert.equal(
+            assert.strictEqual(
               controller.get('faz'),
               'YEAH',
               "controller's foo QP property set before setupController called"
@@ -621,14 +621,14 @@ moduleFor(
       );
 
       await this.visitAndAssert('/');
-      assert.equal(appModelCount, 1, 'app model hook ran');
-      assert.equal(indexModelCount, 1, 'index model hook ran');
+      assert.strictEqual(appModelCount, 1, 'app model hook ran');
+      assert.strictEqual(indexModelCount, 1, 'index model hook ran');
 
       let indexController = this.getController('index');
       await this.setAndFlush(indexController, 'omg', 'lex');
 
-      assert.equal(appModelCount, 1, 'app model hook did not run again');
-      assert.equal(indexModelCount, 2, 'index model hook ran again due to refreshModel');
+      assert.strictEqual(appModelCount, 1, 'app model hook did not run again');
+      assert.strictEqual(indexModelCount, 2, 'index model hook ran again due to refreshModel');
     }
 
     async ['@test refreshModel and replace work together'](assert) {
@@ -670,15 +670,15 @@ moduleFor(
       );
 
       await this.visitAndAssert('/');
-      assert.equal(appModelCount, 1, 'app model hook ran');
-      assert.equal(indexModelCount, 1, 'index model hook ran');
+      assert.strictEqual(appModelCount, 1, 'app model hook ran');
+      assert.strictEqual(indexModelCount, 1, 'index model hook ran');
 
       let indexController = this.getController('index');
       this.expectedReplaceURL = '/?omg=lex';
       await this.setAndFlush(indexController, 'omg', 'lex');
 
-      assert.equal(appModelCount, 1, 'app model hook did not run again');
-      assert.equal(indexModelCount, 2, 'index model hook ran again due to refreshModel');
+      assert.strictEqual(appModelCount, 1, 'app model hook did not run again');
+      assert.strictEqual(indexModelCount, 2, 'index model hook ran again due to refreshModel');
     }
 
     async ['@test multiple QP value changes only cause a single model refresh'](assert) {
@@ -713,7 +713,7 @@ moduleFor(
         steely: 'david',
       });
 
-      assert.equal(refreshCount, 1, 'index refresh hook only run once');
+      assert.strictEqual(refreshCount, 1, 'index refresh hook only run once');
     }
 
     ['@test refreshModel does not cause a second transition during app boot '](assert) {
@@ -768,18 +768,18 @@ moduleFor(
       );
 
       await this.visitAndAssert('/');
-      assert.equal(getTextOf(document.getElementById('test-value')), '1');
+      assert.strictEqual(getTextOf(document.getElementById('test-value')), '1');
 
       document.getElementById('test-button').click();
       await runLoopSettled();
 
-      assert.equal(getTextOf(document.getElementById('test-value')), '2');
+      assert.strictEqual(getTextOf(document.getElementById('test-value')), '2');
       this.assertCurrentPath('/?foo=2');
 
       document.getElementById('test-button').click();
       await runLoopSettled();
 
-      assert.equal(getTextOf(document.getElementById('test-value')), '3');
+      assert.strictEqual(getTextOf(document.getElementById('test-value')), '3');
       this.assertCurrentPath('/?foo=3');
     }
 
@@ -821,14 +821,14 @@ moduleFor(
       );
 
       await this.visitAndAssert('/');
-      assert.equal(appModelCount, 1);
-      assert.equal(indexModelCount, 1);
+      assert.strictEqual(appModelCount, 1);
+      assert.strictEqual(indexModelCount, 1);
 
       let indexController = this.getController('index');
       await this.setAndFlush(indexController, 'omg', 'lex');
 
-      assert.equal(appModelCount, 1);
-      assert.equal(indexModelCount, 2);
+      assert.strictEqual(appModelCount, 1);
+      assert.strictEqual(indexModelCount, 2);
     }
 
     async ['@test can use refreshModel even with URL changes that remove QPs from address bar'](
@@ -866,7 +866,7 @@ moduleFor(
       await this.transitionTo('/');
 
       let indexController = this.getController('index');
-      assert.equal(indexController.get('omg'), 'lol');
+      assert.strictEqual(indexController.get('omg'), 'lol');
     }
 
     async ['@test can opt into a replace query by specifying replace:true in the Route config hash'](
@@ -1000,10 +1000,10 @@ moduleFor(
 
       await this.visit('/parent/child?foo=lol');
 
-      assert.equal(parentModelCount, 1);
+      assert.strictEqual(parentModelCount, 1);
 
       run(document.getElementById('parent-link'), 'click');
-      assert.equal(parentModelCount, 2);
+      assert.strictEqual(parentModelCount, 2);
     }
 
     async ["@test Use Ember.get to retrieve query params 'replace' configuration"](assert) {
@@ -1098,10 +1098,10 @@ moduleFor(
 
       return this.visit('/?omg=borf').then(() => {
         let indexController = this.getController('index');
-        assert.equal(indexController.get('omg'), 'borf');
+        assert.strictEqual(indexController.get('omg'), 'borf');
 
         this.transitionTo('/');
-        assert.equal(indexController.get('omg'), 'lol');
+        assert.strictEqual(indexController.get('omg'), 'lol');
       });
     }
 
@@ -1126,8 +1126,8 @@ moduleFor(
 
       await this.visitAndAssert('/');
 
-      assert.equal(this.$('#one').attr('href'), '/abcdef?foo=123');
-      assert.equal(this.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
+      assert.strictEqual(this.$('#one').attr('href'), '/abcdef?foo=123');
+      assert.strictEqual(this.$('#two').attr('href'), '/abcdef/zoo?bar=456&foo=123');
 
       run(this.$('#one'), 'click');
       this.assertCurrentPath('/abcdef?foo=123');
@@ -1220,17 +1220,17 @@ moduleFor(
         'route:index',
         Route.extend({
           model(params) {
-            assert.equal(params.foo, true, 'model hook received foo as boolean true');
+            assert.strictEqual(params.foo, true, 'model hook received foo as boolean true');
           },
         })
       );
 
       return this.visit('/?foo=true').then(() => {
         let controller = this.getController('index');
-        assert.equal(controller.get('foo'), true);
+        assert.strictEqual(controller.get('foo'), true);
 
         this.transitionTo('/?foo=false');
-        assert.equal(controller.get('foo'), false);
+        assert.strictEqual(controller.get('foo'), false);
       });
     }
 
@@ -1247,7 +1247,7 @@ moduleFor(
 
       return this.visit('/?foo=').then(() => {
         let controller = this.getController('index');
-        assert.equal(controller.get('foo'), '');
+        assert.strictEqual(controller.get('foo'), '');
       });
     }
 
@@ -1370,12 +1370,12 @@ moduleFor(
       this.setSingleQPController('home', 'foo', emberA([1]));
 
       await this.visitAndAssert('/');
-      assert.equal(modelCount, 1);
+      assert.strictEqual(modelCount, 1);
 
       let controller = this.getController('home');
       await this.setAndFlush(controller, 'model', emberA([1]));
 
-      assert.equal(modelCount, 1);
+      assert.strictEqual(modelCount, 1);
       this.assertCurrentPath('/');
     }
 
@@ -1464,8 +1464,8 @@ moduleFor(
 
       await this.visitAndAssert('/home');
 
-      assert.equal(this.$('#null-link').attr('href'), '/home');
-      assert.equal(this.$('#undefined-link').attr('href'), '/home');
+      assert.strictEqual(this.$('#null-link').attr('href'), '/home');
+      assert.strictEqual(this.$('#undefined-link').attr('href'), '/home');
     }
 
     ["@test A child of a resource route still defaults to parent route's model even if the child route has a query param"](
@@ -1578,7 +1578,7 @@ moduleFor(
 
       await this.visitAndAssert('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('#the-link').attr('href'),
         '/example',
         'renders without undefined qp serialized'
@@ -1588,7 +1588,7 @@ moduleFor(
         queryParams: { foo: undefined },
       });
 
-      assert.equal(entered, 1, 'Should have entered example route');
+      assert.strictEqual(entered, 1, 'Should have entered example route');
 
       this.assertCurrentPath('/example');
     }
@@ -1644,7 +1644,7 @@ moduleFor(
       await this.visit('/');
       await this.transitionTo('constructor', { queryParams: { foo: '999' } });
       let controller = this.getController('constructor');
-      assert.equal(get(controller, 'foo'), '999');
+      assert.strictEqual(get(controller, 'foo'), '999');
     }
 
     async ['@test Single query params defined with tracked properties can be on the controller and reflected in the url'](
@@ -1804,11 +1804,11 @@ moduleFor(
       let parentController = this.getController('grandparent.parent');
 
       await this.setAndFlush(parentController, 'foo', 'NEW_FOO');
-      assert.equal(parentController.foo, 'NEW_FOO');
+      assert.strictEqual(parentController.foo, 'NEW_FOO');
       this.assertCurrentPath('/grandparent/1/parent/child?foo=NEW_FOO');
 
       await this.setAndFlush(parentController, 'bar', 'NEW_BAR');
-      assert.equal(parentController.bar, 'NEW_BAR');
+      assert.strictEqual(parentController.bar, 'NEW_BAR');
       this.assertCurrentPath('/grandparent/1/parent/child?bar=NEW_BAR&foo=NEW_FOO');
     }
   }

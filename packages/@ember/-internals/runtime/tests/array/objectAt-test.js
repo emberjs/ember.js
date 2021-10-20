@@ -8,7 +8,11 @@ class ObjectAtTests extends AbstractTestCase {
     let len = expected.length;
 
     for (let idx = 0; idx < len; idx++) {
-      this.assert.equal(obj.objectAt(idx), expected[idx], `obj.objectAt(${idx}) should match`);
+      this.assert.strictEqual(
+        obj.objectAt(idx),
+        expected[idx],
+        `obj.objectAt(${idx}) should match`
+      );
     }
   }
 
@@ -16,14 +20,14 @@ class ObjectAtTests extends AbstractTestCase {
     let obj;
 
     obj = this.newObject(newFixture(3));
-    this.assert.equal(
+    this.assert.strictEqual(
       obj.objectAt(obj, 5),
       undefined,
       'should return undefined for obj.objectAt(5) when len = 3'
     );
 
     obj = this.newObject([]);
-    this.assert.equal(
+    this.assert.strictEqual(
       obj.objectAt(obj, 0),
       undefined,
       'should return undefined for obj.objectAt(0) when len = 0'

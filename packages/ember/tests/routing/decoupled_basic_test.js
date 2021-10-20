@@ -27,7 +27,7 @@ function handleURLRejectsWith(context, assert, path, expectedReason) {
       assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
     })
     .catch((reason) => {
-      assert.equal(reason.message, expectedReason);
+      assert.strictEqual(reason.message, expectedReason);
     });
 }
 
@@ -87,10 +87,10 @@ moduleFor(
 
     ['@test The Homepage'](assert) {
       return this.visit('/').then(() => {
-        assert.equal(this.appRouter.currentPath, 'home', 'currently on the home route');
+        assert.strictEqual(this.appRouter.currentPath, 'home', 'currently on the home route');
 
         let text = this.$('.hours').text();
-        assert.equal(text, 'Hours', 'the home template was rendered');
+        assert.strictEqual(text, 'Hours', 'the home template was rendered');
       });
     }
 
@@ -101,18 +101,18 @@ moduleFor(
 
       return this.visit('/camelot')
         .then(() => {
-          assert.equal(this.appRouter.currentPath, 'camelot');
+          assert.strictEqual(this.appRouter.currentPath, 'camelot');
 
           let text = this.$('#camelot').text();
-          assert.equal(text, 'Is a silly place', 'the camelot template was rendered');
+          assert.strictEqual(text, 'Is a silly place', 'the camelot template was rendered');
 
           return this.visit('/');
         })
         .then(() => {
-          assert.equal(this.appRouter.currentPath, 'home');
+          assert.strictEqual(this.appRouter.currentPath, 'home');
 
           let text = this.$('.hours').text();
-          assert.equal(text, 'Hours', 'the home template was rendered');
+          assert.strictEqual(text, 'Hours', 'the home template was rendered');
         });
     }
 
@@ -182,7 +182,7 @@ moduleFor(
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(text, '1', 'The app is now in the specials state');
+        assert.strictEqual(text, '1', 'The app is now in the specials state');
       });
     }
 
@@ -214,7 +214,7 @@ moduleFor(
           },
           actions: {
             error(reason) {
-              assert.equal(
+              assert.strictEqual(
                 reason.message,
                 'Setup error',
                 'SpecialRoute#error received the error thrown from setup'
@@ -255,7 +255,7 @@ moduleFor(
         Route.extend({
           actions: {
             error(reason) {
-              assert.equal(
+              assert.strictEqual(
                 reason.message,
                 'Setup error',
                 'error was correctly passed to custom ApplicationRoute handler'
@@ -416,7 +416,7 @@ moduleFor(
             assert.ok(true, 'foo');
           },
           bar(msg) {
-            assert.equal(msg, 'HELLO', 'bar hander in super route');
+            assert.strictEqual(msg, 'HELLO', 'bar hander in super route');
           },
         },
       });
@@ -424,7 +424,7 @@ moduleFor(
       let RouteMixin = Mixin.create({
         actions: {
           bar(msg) {
-            assert.equal(msg, 'HELLO', 'bar handler in mixin');
+            assert.strictEqual(msg, 'HELLO', 'bar handler in mixin');
             this._super(msg);
           },
         },
@@ -569,15 +569,15 @@ moduleFor(
           set(this, 'path', path);
         };
 
-        assert.equal(urlSetCount, 0);
+        assert.strictEqual(urlSetCount, 0);
 
         run(function () {
           router.transitionTo('foo');
           router.transitionTo('bar');
         });
 
-        assert.equal(urlSetCount, 1);
-        assert.equal(router.get('location').getURL(), '/bar');
+        assert.strictEqual(urlSetCount, 1);
+        assert.strictEqual(router.get('location').getURL(), '/bar');
       });
     }
 
@@ -624,14 +624,14 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(setCount, 1);
-        assert.equal(replaceCount, 0);
+        assert.strictEqual(setCount, 1);
+        assert.strictEqual(replaceCount, 0);
 
         run(() => router.replaceWith('foo'));
 
-        assert.equal(setCount, 1, 'should not call setURL');
-        assert.equal(replaceCount, 1, 'should call replaceURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.strictEqual(setCount, 1, 'should not call setURL');
+        assert.strictEqual(replaceCount, 1, 'should call replaceURL once');
+        assert.strictEqual(router.get('location').getURL(), '/foo');
       });
     }
 
@@ -655,10 +655,10 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
 
-        assert.equal(setCount, 1);
+        assert.strictEqual(setCount, 1);
         run(() => router.replaceWith('foo'));
-        assert.equal(setCount, 2, 'should call setURL once');
-        assert.equal(router.get('location').getURL(), '/foo');
+        assert.strictEqual(setCount, 2, 'should call setURL once');
+        assert.strictEqual(router.get('location').getURL(), '/foo');
       });
     }
 
@@ -690,17 +690,17 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
+        assert.strictEqual(
           chooseFollowed,
           0,
           "The choose route wasn't entered since a transition occurred"
         );
-        assert.equal(
+        assert.strictEqual(
           rootElement.querySelectorAll('h3.hours').length,
           1,
           'The home template was rendered'
         );
-        assert.equal(this.appRouter.currentPath, 'home');
+        assert.strictEqual(this.appRouter.currentPath, 'home');
       });
     }
 
@@ -742,8 +742,8 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
-        assert.equal(router.currentPath, 'home');
-        assert.equal(router.get('location').getURL(), '/home');
+        assert.strictEqual(router.currentPath, 'home');
+        assert.strictEqual(router.get('location').getURL(), '/home');
       });
     }
 
@@ -791,8 +791,8 @@ moduleFor(
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
-        assert.equal(successCount, 1, 'transitionTo success handler was called once');
+        assert.strictEqual(this.appRouter.currentPath, 'foo.bar.baz');
+        assert.strictEqual(successCount, 1, 'transitionTo success handler was called once');
       });
     }
 
@@ -840,8 +840,8 @@ moduleFor(
 
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
-        assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
-        assert.equal(
+        assert.strictEqual(this.appRouter.currentPath, 'foo.bar.baz');
+        assert.strictEqual(
           this.applicationInstance.lookup('router:main').get('location').getURL(),
           '/foo/bar/2/baz'
         );
@@ -877,10 +877,10 @@ moduleFor(
         assert.ok(true, '/foo/bar/baz has been handled');
         let router = this.applicationInstance.lookup('router:main');
 
-        assert.equal(router.currentPath, 'foo.bar.baz');
+        assert.strictEqual(router.currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
-        assert.equal(router.currentPath, 'foo.qux');
-        assert.equal(router.get('location').getURL(), '/foo/qux');
+        assert.strictEqual(router.currentPath, 'foo.qux');
+        assert.strictEqual(router.get('location').getURL(), '/foo/qux');
       });
     }
 
@@ -953,7 +953,7 @@ moduleFor(
             pushState() {},
           },
           initState() {
-            assert.equal(this.get('rootURL'), rootURL);
+            assert.strictEqual(this.get('rootURL'), rootURL);
           },
         })
       );
@@ -994,11 +994,11 @@ moduleFor(
         assert.ok(true, '/posts/1 has been handled');
 
         let route = this.applicationInstance.lookup('route:post');
-        assert.equal(route.modelFor('post'), posts[1]);
+        assert.strictEqual(route.modelFor('post'), posts[1]);
 
         let url = this.applicationInstance.lookup('router:main').generate('post', posts[2]);
-        assert.equal(url, '/posts/2');
-        assert.equal(route.modelFor('post'), posts[1]);
+        assert.strictEqual(url, '/posts/2');
+        assert.strictEqual(route.modelFor('post'), posts[1]);
       });
     }
 
@@ -1042,13 +1042,13 @@ moduleFor(
 
       run(() => this.visit('/'));
       let rootElement = document.getElementById('qunit-fixture');
-      assert.equal(
+      assert.strictEqual(
         getTextOf(rootElement.querySelector('p')),
         'LOADING',
         'The loading state is displaying.'
       );
       run(deferred.resolve);
-      assert.equal(
+      assert.strictEqual(
         getTextOf(rootElement.querySelector('p')),
         'INDEX',
         'The index route is display.'
@@ -1215,7 +1215,7 @@ moduleFor(
 
       router.one('didTransition', function () {
         assert.ok(true, 'didTransition fired on the router');
-        assert.equal(
+        assert.strictEqual(
           router.get('url'),
           '/nork',
           'The url property is updated by the time didTransition fires'
@@ -1241,7 +1241,7 @@ moduleFor(
             this._super(...arguments);
 
             this.on('activate', function (transition) {
-              assert.equal(++eventFired, 1, 'activate event is fired once');
+              assert.strictEqual(++eventFired, 1, 'activate event is fired once');
               assert.ok(transition, 'transition is passed to activate event');
             });
           },
@@ -1273,7 +1273,7 @@ moduleFor(
             this._super(...arguments);
 
             this.on('deactivate', function (transition) {
-              assert.equal(++eventFired, 1, 'deactivate event is fired once');
+              assert.strictEqual(++eventFired, 1, 'deactivate event is fired once');
               assert.ok(transition, 'transition is passed');
             });
           },
@@ -1297,7 +1297,7 @@ moduleFor(
             assert.ok(true, 'foo');
           },
           bar(msg) {
-            assert.equal(msg, 'HELLO');
+            assert.strictEqual(msg, 'HELLO');
           },
         },
       });
@@ -1305,7 +1305,7 @@ moduleFor(
       let RouteMixin = Mixin.create({
         actions: {
           bar(msg) {
-            assert.equal(msg, 'HELLO');
+            assert.strictEqual(msg, 'HELLO');
             this._super(msg);
           },
         },
@@ -1350,7 +1350,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         let transition = run(() => router.transitionTo('bar'));
-        assert.equal(transition instanceof Transition, true);
+        assert.strictEqual(transition instanceof Transition, true);
       });
     }
 
@@ -1367,7 +1367,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         let transition = run(() => router.transitionTo('/bar/baz'));
-        assert.equal(transition instanceof Transition, true);
+        assert.strictEqual(transition instanceof Transition, true);
       });
     }
 
@@ -1397,8 +1397,8 @@ moduleFor(
             run(router, 'transitionTo', path);
           }
 
-          assert.equal(router.currentPath, expectedPath);
-          assert.equal(router.currentRouteName, expectedRouteName);
+          assert.strictEqual(router.currentPath, expectedPath);
+          assert.strictEqual(router.currentRouteName, expectedRouteName);
         }
 
         transitionAndCheck(null, 'index', 'index');
@@ -1451,7 +1451,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(router.get('location.path'), '/about/TreeklesMcGeekles');
+        assert.strictEqual(router.get('location.path'), '/about/TreeklesMcGeekles');
       });
     }
 
@@ -1468,17 +1468,21 @@ moduleFor(
       });
 
       console.error = function (initialMessage, errorMessage, errorStack) {
-        assert.equal(
+        assert.strictEqual(
           initialMessage,
           'Error while processing route: yippie',
           'a message with the current route name is printed'
         );
-        assert.equal(
+        assert.strictEqual(
           errorMessage,
           rejectedMessage,
           "the rejected reason's message property is logged"
         );
-        assert.equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
+        assert.strictEqual(
+          errorStack,
+          rejectedStack,
+          "the rejected reason's stack property is logged"
+        );
       };
 
       this.add(
@@ -1496,7 +1500,7 @@ moduleFor(
       await assert.rejects(
         this.visit('/'),
         function (err) {
-          assert.equal(err.message, rejectedMessage);
+          assert.strictEqual(err.message, rejectedMessage);
           return true;
         },
         'expected an exception'
@@ -1515,17 +1519,21 @@ moduleFor(
       });
 
       console.error = function (initialMessage, errorMessage, errorStack) {
-        assert.equal(
+        assert.strictEqual(
           initialMessage,
           'Error while processing route: yippie',
           'a message with the current route name is printed'
         );
-        assert.equal(
+        assert.strictEqual(
           errorMessage,
           rejectedMessage,
           "the rejected reason's message property is logged"
         );
-        assert.equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
+        assert.strictEqual(
+          errorStack,
+          rejectedStack,
+          "the rejected reason's stack property is logged"
+        );
       };
 
       this.add(
@@ -1542,7 +1550,7 @@ moduleFor(
       await assert.rejects(
         this.visit('/'),
         function ({ errorThrown: err }) {
-          assert.equal(err.message, rejectedMessage);
+          assert.strictEqual(err.message, rejectedMessage);
           return true;
         },
         'expected an exception'
@@ -1556,7 +1564,7 @@ moduleFor(
       });
 
       console.error = function (initialMessage) {
-        assert.equal(
+        assert.strictEqual(
           initialMessage,
           'Error while processing route: wowzers',
           'a message with the current route name is printed'
@@ -1584,12 +1592,12 @@ moduleFor(
       });
 
       console.error = function (initialMessage, errorMessage) {
-        assert.equal(
+        assert.strictEqual(
           initialMessage,
           'Error while processing route: yondo',
           'a message with the current route name is printed'
         );
-        assert.equal(
+        assert.strictEqual(
           errorMessage,
           rejectedMessage,
           "the rejected reason's message property is logged"
@@ -1671,8 +1679,12 @@ moduleFor(
 
       await assert.rejects(this.visit('/'), /More context objects were passed/);
 
-      assert.equal(actual.length, 1, 'the error is only logged once');
-      assert.equal(actual[0][0], 'Error while processing route: yondo', 'source route is printed');
+      assert.strictEqual(actual.length, 1, 'the error is only logged once');
+      assert.strictEqual(
+        actual[0][0],
+        'Error while processing route: yondo',
+        'source route is printed'
+      );
       assert.ok(
         actual[0][1].match(
           /More context objects were passed than there are dynamic segments for the route: stink-bomb/
@@ -1703,7 +1715,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let rootElement = document.querySelector('#qunit-fixture');
-        assert.equal(
+        assert.strictEqual(
           rootElement.querySelectorAll('#error').length,
           1,
           'Error template was rendered.'
@@ -1863,7 +1875,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(
+        assert.strictEqual(
           router._routerMicrolib.generate('blog.post', { id: '13' }),
           '/blog/post/13',
           'url is generated properly'
@@ -1945,13 +1957,13 @@ moduleFor(
           let router = this.applicationInstance.lookup('router:main');
 
           run(router, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+          assert.strictEqual(router._toplevelView, null, 'the toplevelView was cleared');
 
           run(route, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.strictEqual(router._toplevelView, null, 'the toplevelView was not reinitialized');
 
           run(this.applicationInstance, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.strictEqual(router._toplevelView, null, 'the toplevelView was not reinitialized');
         });
     }
 

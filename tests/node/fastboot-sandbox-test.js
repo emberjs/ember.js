@@ -112,8 +112,8 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
   QUnit.test('FastBoot: basic', async function (assert) {
     let result = await fastbootVisit(this.context, '/');
 
-    assert.equal(result.url, '/', 'landed on correct url');
-    assert.equal(
+    assert.strictEqual(result.url, '/', 'landed on correct url');
+    assert.strictEqual(
       result.body,
       '<body><h1>Hello world!</h1>\n<!----></body>',
       'results in expected HTML'

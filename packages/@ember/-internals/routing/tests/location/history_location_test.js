@@ -89,7 +89,7 @@ moduleFor(
           this._super(...arguments);
           // these two should be equal to be able
           // to successfully detect webkit initial popstate
-          assert.equal(this._previousURL, this.getURL());
+          assert.strictEqual(this._previousURL, this.getURL());
         },
       });
 
@@ -147,7 +147,7 @@ moduleFor(
         initState() {
           this._super(...arguments);
 
-          assert.equal(this.getURL(), '/foo/bar');
+          assert.strictEqual(this.getURL(), '/foo/bar');
         },
       });
 
@@ -171,7 +171,7 @@ moduleFor(
       location.initState();
       location.setURL('/one/two');
 
-      assert.equal(location.history.state.path, '/base/one/two');
+      assert.strictEqual(location.history.state.path, '/base/one/two');
       assert.ok(location.history.state.uuid);
     }
 
@@ -182,7 +182,7 @@ moduleFor(
       FakeHistory.pushState(null);
       location.setURL('/three/four');
 
-      assert.equal(location.history.state.path, '/three/four');
+      assert.strictEqual(location.history.state.path, '/three/four');
       assert.ok(location.history.state.uuid);
     }
 
@@ -193,7 +193,7 @@ moduleFor(
       FakeHistory.pushState(null);
       location.replaceURL('/three/four');
 
-      assert.equal(location.history.state.path, '/three/four');
+      assert.strictEqual(location.history.state.path, '/three/four');
       assert.ok(location.history.state.uuid);
     }
 
@@ -212,7 +212,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar');
+      assert.strictEqual(location.getURL(), '/foo/bar');
     }
 
     ['@test HistoryLocation.getURL() returns the current url, does not remove rootURL if its not at start of url'](
@@ -229,7 +229,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar/baz');
+      assert.strictEqual(location.getURL(), '/foo/bar/baz');
     }
 
     ['@test HistoryLocation.getURL() will not remove the rootURL when only a partial match'](
@@ -245,7 +245,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/bars/baz');
+      assert.strictEqual(location.getURL(), '/bars/baz');
     }
 
     ['@test HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url'](
@@ -262,7 +262,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar/baz');
+      assert.strictEqual(location.getURL(), '/foo/bar/baz');
     }
 
     ['@test HistoryLocation.getURL() will not remove the baseURL when only a partial match'](
@@ -278,7 +278,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/bars/baz');
+      assert.strictEqual(location.getURL(), '/bars/baz');
     }
 
     ['@test HistoryLocation.getURL() includes location.search'](assert) {
@@ -291,7 +291,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar?time=morphin');
+      assert.strictEqual(location.getURL(), '/foo/bar?time=morphin');
     }
 
     ['@test HistoryLocation.getURL() includes location.hash'](assert) {
@@ -304,7 +304,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar#pink-power-ranger');
+      assert.strictEqual(location.getURL(), '/foo/bar#pink-power-ranger');
     }
 
     ['@test HistoryLocation.getURL() includes location.hash and location.search'](assert) {
@@ -317,7 +317,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
+      assert.strictEqual(location.getURL(), '/foo/bar?time=morphin#pink-power-ranger');
     }
 
     ['@test HistoryLocation.getURL() drops duplicate slashes'](assert) {
@@ -332,7 +332,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/admin/profile/');
+      assert.strictEqual(location.getURL(), '/admin/profile/');
     }
 
     ['@test Existing state is preserved on init'](assert) {

@@ -1231,7 +1231,7 @@ moduleFor(
 
       runTask(() => set(this.context, 'fooBar', false));
 
-      assert.equal(this.firstChild.className, '');
+      assert.strictEqual(this.firstChild.className, '');
 
       runTask(() => set(this.context, 'fooBar', true));
 

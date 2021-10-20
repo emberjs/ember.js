@@ -31,12 +31,12 @@ moduleFor(
     }
 
     ['@test default ContainerDebugAdapter cannot catalog certain entries by type'](assert) {
-      assert.equal(
+      assert.strictEqual(
         this.adapter.canCatalogEntriesByType('model'),
         false,
         'canCatalogEntriesByType should return false for model'
       );
-      assert.equal(
+      assert.strictEqual(
         this.adapter.canCatalogEntriesByType('template'),
         false,
         'canCatalogEntriesByType should return false for template'
@@ -44,17 +44,17 @@ moduleFor(
     }
 
     ['@test default ContainerDebugAdapter can catalog typical entries by type'](assert) {
-      assert.equal(
+      assert.strictEqual(
         this.adapter.canCatalogEntriesByType('controller'),
         true,
         'canCatalogEntriesByType should return true for controller'
       );
-      assert.equal(
+      assert.strictEqual(
         this.adapter.canCatalogEntriesByType('route'),
         true,
         'canCatalogEntriesByType should return true for route'
       );
-      assert.equal(
+      assert.strictEqual(
         this.adapter.canCatalogEntriesByType('view'),
         true,
         'canCatalogEntriesByType should return true for view'
@@ -65,8 +65,8 @@ moduleFor(
       this.application.PostController = EmberController.extend();
       let controllerClasses = this.adapter.catalogEntriesByType('controller');
 
-      assert.equal(controllerClasses.length, 1, 'found 1 class');
-      assert.equal(controllerClasses[0], 'post', 'found the right class');
+      assert.strictEqual(controllerClasses.length, 1, 'found 1 class');
+      assert.strictEqual(controllerClasses[0], 'post', 'found the right class');
     }
   }
 );

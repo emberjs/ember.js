@@ -33,7 +33,7 @@ moduleFor(
         });
       }, /silly mistake in init/);
 
-      assert.equal(
+      assert.strictEqual(
         this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
@@ -86,7 +86,7 @@ moduleFor(
         runTask(() => set(this.context, 'switch', true));
       }, /silly mistake in init/);
 
-      assert.equal(
+      assert.strictEqual(
         this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
@@ -130,7 +130,7 @@ moduleFor(
         });
       }, /silly mistake/);
 
-      assert.equal(
+      assert.strictEqual(
         this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'

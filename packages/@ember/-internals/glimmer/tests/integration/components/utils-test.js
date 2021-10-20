@@ -300,17 +300,17 @@ moduleFor(
 
       let { parentElement, firstNode, lastNode } = getViewBounds(component);
 
-      assert.equal(
+      assert.strictEqual(
         parentElement,
         this.element,
         'a regular component should have the right parentElement'
       );
-      assert.equal(
+      assert.strictEqual(
         firstNode,
         component.element,
         'a regular component should have a single node that is its element'
       );
-      assert.equal(
+      assert.strictEqual(
         lastNode,
         component.element,
         'a regular component should have a single node that is its element'
@@ -334,17 +334,17 @@ moduleFor(
 
       let { parentElement, firstNode, lastNode } = getViewBounds(component);
 
-      assert.equal(
+      assert.strictEqual(
         parentElement,
         this.element,
         'a tagless component should have the right parentElement'
       );
-      assert.equal(
+      assert.strictEqual(
         firstNode,
         this.$('#start-node')[0],
         'a tagless component should have a range enclosing all of its nodes'
       );
-      assert.equal(
+      assert.strictEqual(
         lastNode,
         this.$('#before-end-node')[0].nextSibling,
         'a tagless component should have a range enclosing all of its nodes'

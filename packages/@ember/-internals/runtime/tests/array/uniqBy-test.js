@@ -22,7 +22,7 @@ class UniqByTests extends AbstractTestCase {
     ]);
 
     let keyFunction = (val) => {
-      this.assert.equal(arguments.length, 1);
+      this.assert.strictEqual(arguments.length, 1);
       return val.value;
     };
 

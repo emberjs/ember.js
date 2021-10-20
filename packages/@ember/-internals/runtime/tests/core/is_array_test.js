@@ -21,17 +21,17 @@ moduleFor(
       let asyncFn = async function () {};
       let arrayProxy = ArrayProxy.create({ content: emberA() });
 
-      assert.equal(isArray(numarray), true, '[1,2,3]');
-      assert.equal(isArray(number), false, '23');
-      assert.equal(isArray(strarray), true, '["Hello", "Hi"]');
-      assert.equal(isArray(string), false, '"Hello"');
-      assert.equal(isArray(object), false, '{}');
-      assert.equal(isArray(length), true, '{ length: 12 }');
-      assert.equal(isArray(strangeLength), false, '{ length: "yes" }');
-      assert.equal(isArray(global), false, 'global');
-      assert.equal(isArray(fn), false, 'function() {}');
-      assert.equal(isArray(asyncFn), false, 'async function() {}');
-      assert.equal(isArray(arrayProxy), true, '[]');
+      assert.strictEqual(isArray(numarray), true, '[1,2,3]');
+      assert.strictEqual(isArray(number), false, '23');
+      assert.strictEqual(isArray(strarray), true, '["Hello", "Hi"]');
+      assert.strictEqual(isArray(string), false, '"Hello"');
+      assert.strictEqual(isArray(object), false, '{}');
+      assert.strictEqual(isArray(length), true, '{ length: 12 }');
+      assert.strictEqual(isArray(strangeLength), false, '{ length: "yes" }');
+      assert.strictEqual(isArray(global), false, 'global');
+      assert.strictEqual(isArray(fn), false, 'function() {}');
+      assert.strictEqual(isArray(asyncFn), false, 'async function() {}');
+      assert.strictEqual(isArray(arrayProxy), true, '[]');
     }
 
     '@test Ember.isArray does not trigger proxy assertion when probing for length GH#16495'(
@@ -44,7 +44,7 @@ moduleFor(
         },
       }).create();
 
-      assert.equal(isArray(instance), false);
+      assert.strictEqual(isArray(instance), false);
     }
 
     ['@test Ember.isArray(fileList)'](assert) {
@@ -52,7 +52,7 @@ moduleFor(
         let fileListElement = document.createElement('input');
         fileListElement.type = 'file';
         let fileList = fileListElement.files;
-        assert.equal(isArray(fileList), false, 'fileList');
+        assert.strictEqual(isArray(fileList), false, 'fileList');
       } else {
         assert.ok(true, 'FileList is not present on window');
       }

@@ -25,7 +25,7 @@ moduleFor(
 
       let bar = Bar.create();
 
-      assert.equal(bar.callBlah(), 'bar', 'can call local function without call/apply');
+      assert.strictEqual(bar.callBlah(), 'bar', 'can call local function without call/apply');
     }
   }
 );

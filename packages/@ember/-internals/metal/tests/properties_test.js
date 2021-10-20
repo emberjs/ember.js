@@ -9,7 +9,7 @@ moduleFor(
       defineProperty(obj, 'toString', undefined, function () {
         return 'FOO';
       });
-      assert.equal(obj.toString(), 'FOO', 'should replace toString');
+      assert.strictEqual(obj.toString(), 'FOO', 'should replace toString');
     }
   }
 );
@@ -26,10 +26,10 @@ moduleFor(
       deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
 
       expectDeprecation();
-      assert.equal(obj.baz, obj.foo, 'baz and foo are equal');
+      assert.strictEqual(obj.baz, obj.foo, 'baz and foo are equal');
 
       obj.foo = 'blammo';
-      assert.equal(obj.baz, obj.foo, 'baz and foo are equal');
+      assert.strictEqual(obj.baz, obj.foo, 'baz and foo are equal');
     }
 
     ['@test deprecatedKey is not enumerable'](assert) {
@@ -55,8 +55,8 @@ moduleFor(
 
       expectDeprecation();
       obj.baz = 'bloop';
-      assert.equal(obj.foo, 'bloop', 'updating baz updates foo');
-      assert.equal(obj.baz, obj.foo, 'baz and foo are equal');
+      assert.strictEqual(obj.foo, 'bloop', 'updating baz updates foo');
+      assert.strictEqual(obj.baz, obj.foo, 'baz and foo are equal');
     }
   }
 );

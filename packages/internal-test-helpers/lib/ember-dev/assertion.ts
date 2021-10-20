@@ -103,7 +103,7 @@ function check(
           `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`
         );
       } else {
-        assert.equal(
+        assert.strictEqual(
           actualMessage,
           expectedMessage,
           `Expected failing Ember.assert: '${expectedMessage}', but got '${actualMessage}'.`

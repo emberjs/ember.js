@@ -9,15 +9,15 @@ moduleFor(
       let SomeClass = EmberObject.extend({ foo: 'BAR' });
       assert.ok(SomeClass.isClass, 'A class has isClass of true');
       let obj = SomeClass.create();
-      assert.equal(obj.foo, 'BAR');
+      assert.strictEqual(obj.foo, 'BAR');
     }
 
     ['@test Sub-subclass'](assert) {
       let SomeClass = EmberObject.extend({ foo: 'BAR' });
       let AnotherClass = SomeClass.extend({ bar: 'FOO' });
       let obj = AnotherClass.create();
-      assert.equal(obj.foo, 'BAR');
-      assert.equal(obj.bar, 'FOO');
+      assert.strictEqual(obj.foo, 'BAR');
+      assert.strictEqual(obj.bar, 'FOO');
     }
 
     ['@test Overriding a method several layers deep'](assert) {
@@ -52,8 +52,8 @@ moduleFor(
       let obj = FinalClass.create();
       obj.foo();
       obj.bar();
-      assert.equal(obj.fooCnt, 2, 'should invoke both');
-      assert.equal(obj.barCnt, 2, 'should invoke both');
+      assert.strictEqual(obj.fooCnt, 2, 'should invoke both');
+      assert.strictEqual(obj.barCnt, 2, 'should invoke both');
 
       // Try overriding on create also
       obj = FinalClass.extend({
@@ -65,8 +65,8 @@ moduleFor(
 
       obj.foo();
       obj.bar();
-      assert.equal(obj.fooCnt, 3, 'should invoke final as well');
-      assert.equal(obj.barCnt, 2, 'should invoke both');
+      assert.strictEqual(obj.fooCnt, 3, 'should invoke final as well');
+      assert.strictEqual(obj.barCnt, 2, 'should invoke both');
     }
 
     ['@test With concatenatedProperties'](assert) {

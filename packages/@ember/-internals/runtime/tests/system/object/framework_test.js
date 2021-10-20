@@ -13,13 +13,17 @@ moduleFor(
         constructor(owner) {
           super(owner);
 
-          assert.equal(
+          assert.strictEqual(
             getOwner(this),
             testContext.owner,
             'owner was assigned properly in the root constructor'
           );
 
-          assert.equal(owner, testContext.owner, 'owner was passed properly to the constructor');
+          assert.strictEqual(
+            owner,
+            testContext.owner,
+            'owner was passed properly to the constructor'
+          );
         }
       }
       this.owner.register('model:blah', Model);

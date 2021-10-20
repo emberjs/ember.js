@@ -14,7 +14,7 @@ moduleFor(
       expectNoDeprecation();
 
       let o = EmberObject.create({ ohai: 'there' });
-      assert.equal(o.get('ohai'), 'there');
+      assert.strictEqual(o.get('ohai'), 'there');
     }
 
     ['@test explicit injection does not raise deprecation'](assert) {
@@ -32,7 +32,7 @@ moduleFor(
       owner.register('foo:main', FooObject);
 
       let obj = owner.lookup('foo:main');
-      assert.equal(obj.foo.bar, 'foo');
+      assert.strictEqual(obj.foo.bar, 'foo');
     }
 
     ['@test implicit injections raises deprecation']() {
@@ -64,7 +64,7 @@ moduleFor(
       });
 
       let o = MyClass.create({ foo: 'bar' });
-      assert.equal(o.get('foo'), 'bar');
+      assert.strictEqual(o.get('foo'), 'bar');
     }
 
     ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
@@ -76,7 +76,7 @@ moduleFor(
         });
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('foo'), 'bar');
+        assert.strictEqual(o.get('foo'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');
@@ -101,7 +101,7 @@ moduleFor(
         });
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('fooAlias'), 'bar');
+        assert.strictEqual(o.get('fooAlias'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');
@@ -124,7 +124,7 @@ moduleFor(
         });
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('fooAlias'), 'bar');
+        assert.strictEqual(o.get('fooAlias'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');
@@ -148,7 +148,7 @@ moduleFor(
         });
 
         let o = MyClass.create({});
-        assert.equal(o.get('foo'), 'bar');
+        assert.strictEqual(o.get('foo'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(!descriptor, 'Mandatory setter was not setup');
@@ -222,7 +222,7 @@ moduleFor(
       let baseObj = EmberObject.create({ foo: 'bar' });
       let secondaryObj = EmberObject.create(baseObj);
 
-      assert.equal(
+      assert.strictEqual(
         secondaryObj.foo,
         baseObj.foo,
         'Em.O.create inherits properties from EmberObject parameter'
@@ -250,7 +250,7 @@ moduleFor(
           this._super(...arguments);
           let localOwner = getOwner(this);
 
-          assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
+          assert.strictEqual(localOwner, owner, 'should be able to `getOwner` in init');
         },
         unknownProperty() {
           return undefined;
@@ -271,7 +271,7 @@ moduleFor(
       let instance = componentFactory.create();
 
       assert.deepEqual(Object.keys(instance), [], 'no enumerable properties were added');
-      assert.equal(getOwner(instance), container.owner, 'owner was defined on the instance');
+      assert.strictEqual(getOwner(instance), container.owner, 'owner was defined on the instance');
       assert.ok(getFactoryFor(instance), 'factory was defined on the instance');
     }
 
@@ -287,7 +287,7 @@ moduleFor(
       let instance = container.lookup('component:foo-bar');
 
       assert.deepEqual(Object.keys(instance), [], 'no enumerable properties were added');
-      assert.equal(getOwner(instance), container.owner, 'owner was defined on the instance');
+      assert.strictEqual(getOwner(instance), container.owner, 'owner was defined on the instance');
       assert.ok(getFactoryFor(instance), 'factory was defined on the instance');
     }
   }

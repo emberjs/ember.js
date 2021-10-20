@@ -70,7 +70,7 @@ moduleFor(
         assert
       );
 
-      assert.equal(location.getURL(), '/foo/bar');
+      assert.strictEqual(location.getURL(), '/foo/bar');
     }
 
     ['@test HashLocation.getURL() includes extra hashes'](assert) {
@@ -81,7 +81,7 @@ moduleFor(
         assert
       );
 
-      assert.equal(location.getURL(), '/foo#bar#car');
+      assert.strictEqual(location.getURL(), '/foo#bar#car');
     }
 
     ['@test HashLocation.getURL() assumes location.hash without #/ prefix is not a route path'](
@@ -94,7 +94,7 @@ moduleFor(
         assert
       );
 
-      assert.equal(location.getURL(), '/#foo#bar');
+      assert.strictEqual(location.getURL(), '/#foo#bar');
     }
 
     ['@test HashLocation.getURL() returns a normal forward slash when there is no location.hash'](
@@ -107,7 +107,7 @@ moduleFor(
         assert
       );
 
-      assert.equal(location.getURL(), '/');
+      assert.strictEqual(location.getURL(), '/');
     }
 
     ['@test HashLocation.setURL() correctly sets the url'](assert) {
@@ -115,8 +115,8 @@ moduleFor(
 
       location.setURL('/bar');
 
-      assert.equal(get(location, 'location.hash'), '/bar');
-      assert.equal(get(location, 'lastSetURL'), '/bar');
+      assert.strictEqual(get(location, 'location.hash'), '/bar');
+      assert.strictEqual(get(location, 'lastSetURL'), '/bar');
     }
 
     ['@test HashLocation.replaceURL() correctly replaces to the path with a page reload'](assert) {
@@ -126,7 +126,7 @@ moduleFor(
         {
           _location: {
             replace(path) {
-              assert.equal(path, '#/foo');
+              assert.strictEqual(path, '#/foo');
             },
           },
         },
@@ -135,7 +135,7 @@ moduleFor(
 
       location.replaceURL('/foo');
 
-      assert.equal(get(location, 'lastSetURL'), '/foo');
+      assert.strictEqual(get(location, 'lastSetURL'), '/foo');
     }
 
     ['@test HashLocation.onUpdateURL callback executes as expected'](assert) {
@@ -149,7 +149,7 @@ moduleFor(
       );
 
       let callback = function (param) {
-        assert.equal(param, '/foo/bar', 'path is passed as param');
+        assert.strictEqual(param, '/foo/bar', 'path is passed as param');
       };
 
       location.onUpdateURL(callback);
@@ -182,7 +182,7 @@ moduleFor(
     ['@test HashLocation.formatURL() prepends a # to the provided string'](assert) {
       createLocation({}, assert);
 
-      assert.equal(location.formatURL('/foo#bar'), '#/foo#bar');
+      assert.strictEqual(location.formatURL('/foo#bar'), '#/foo#bar');
     }
 
     ['@test HashLocation.willDestroy() cleans up hashchange event listener'](assert) {

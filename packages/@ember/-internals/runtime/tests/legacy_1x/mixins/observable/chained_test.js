@@ -42,19 +42,23 @@ moduleFor(
         momma.children[i].set('name', 'Juan');
         await runLoopSettled();
       }
-      assert.equal(observerFiredCount, 3, 'observer fired after changing child names');
+      assert.strictEqual(observerFiredCount, 3, 'observer fired after changing child names');
 
       observerFiredCount = 0;
       get(momma, 'children').pushObject(child4);
       await runLoopSettled();
 
-      assert.equal(observerFiredCount, 1, 'observer fired after adding a new item');
+      assert.strictEqual(observerFiredCount, 1, 'observer fired after adding a new item');
 
       observerFiredCount = 0;
       set(child4, 'name', 'Herbert');
       await runLoopSettled();
 
-      assert.equal(observerFiredCount, 1, 'observer fired after changing property on new object');
+      assert.strictEqual(
+        observerFiredCount,
+        1,
+        'observer fired after changing property on new object'
+      );
 
       set(momma, 'children', []);
       await runLoopSettled();
@@ -63,7 +67,7 @@ moduleFor(
       set(child1, 'name', 'Hanna');
       await runLoopSettled();
 
-      assert.equal(
+      assert.strictEqual(
         observerFiredCount,
         0,
         'observer did not fire after removing changing property on a removed object'

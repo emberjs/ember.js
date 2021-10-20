@@ -65,8 +65,8 @@ moduleFor(
 
       await runLoopSettled();
 
-      assert.equal(cpCount, 1, 'The computed property is only invoked once');
-      assert.equal(obsCount, 1, 'The observer is only invoked once');
+      assert.strictEqual(cpCount, 1, 'The computed property is only invoked once');
+      assert.strictEqual(obsCount, 1, 'The observer is only invoked once');
     }
 
     ['@test computed properties are not executed if they are the last segment of an observer chain pain'](
@@ -88,7 +88,7 @@ moduleFor(
 
       notifyPropertyChange(get(obj, 'bar.baz'), 'bam');
 
-      assert.equal(count, 0, 'should not have recomputed property');
+      assert.strictEqual(count, 0, 'should not have recomputed property');
     }
   }
 );

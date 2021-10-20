@@ -28,13 +28,13 @@ moduleFor(
 
       this.render('{{#if this.switch}}{{foo-bar}}{{/if}}', { switch: true });
 
-      assert.equal(didInsertElementCount, 1, 'didInsertElement was called once');
+      assert.strictEqual(didInsertElementCount, 1, 'didInsertElement was called once');
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
       runTask(() => set(this.context, 'switch', false));
 
-      assert.equal(willDestroyElementCount, 1, 'willDestroyElement was called once');
+      assert.strictEqual(willDestroyElementCount, 1, 'willDestroyElement was called once');
 
       this.assertText('');
     }

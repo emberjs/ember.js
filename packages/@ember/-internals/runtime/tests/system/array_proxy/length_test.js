@@ -15,11 +15,11 @@ moduleFor(
         content: a([1, 2, 3]),
       });
 
-      assert.equal(proxy.get('length'), 3, 'precond - length is 3');
+      assert.strictEqual(proxy.get('length'), 3, 'precond - length is 3');
 
       proxy.set('content', null);
 
-      assert.equal(proxy.get('length'), 0, 'length updates');
+      assert.strictEqual(proxy.get('length'), 0, 'length updates');
     }
 
     ['@test should update length for null content when there is a computed property watching length'](
@@ -31,7 +31,7 @@ moduleFor(
         content: a([1, 2, 3]),
       });
 
-      assert.equal(proxy.get('length'), 3, 'precond - length is 3');
+      assert.strictEqual(proxy.get('length'), 3, 'precond - length is 3');
 
       // Consume computed property that depends on length
       proxy.get('isEmpty');
@@ -39,7 +39,7 @@ moduleFor(
       // update content
       proxy.set('content', null);
 
-      assert.equal(proxy.get('length'), 0, 'length updates');
+      assert.strictEqual(proxy.get('length'), 0, 'length updates');
     }
 
     ['@test getting length does not recompute the object cache'](assert) {
@@ -54,28 +54,28 @@ moduleFor(
         content: a([1, 2, 3, 4, 5]),
       });
 
-      assert.equal(get(proxy, 'length'), 5);
+      assert.strictEqual(get(proxy, 'length'), 5);
       assert.deepEqual(indexes, []);
 
       indexes.length = 0;
       proxy.set('content', a([6, 7, 8]));
-      assert.equal(get(proxy, 'length'), 3);
+      assert.strictEqual(get(proxy, 'length'), 3);
       assert.deepEqual(indexes, []);
 
       indexes.length = 0;
       proxy.content.replace(1, 0, [1, 2, 3]);
-      assert.equal(get(proxy, 'length'), 6);
+      assert.strictEqual(get(proxy, 'length'), 6);
       assert.deepEqual(indexes, []);
     }
 
     '@test accessing length after content set to null'(assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
-      assert.equal(obj.length, 2, 'precond');
+      assert.strictEqual(obj.length, 2, 'precond');
 
       set(obj, 'content', null);
 
-      assert.equal(obj.length, 0, 'length is 0 without content');
+      assert.strictEqual(obj.length, 0, 'length is 0 without content');
       assert.deepEqual(obj.content, null, 'content was updated');
     }
 
@@ -89,67 +89,67 @@ moduleFor(
         content: ['foo', 'bar'],
       });
 
-      assert.equal(obj.length, 2, 'precond');
+      assert.strictEqual(obj.length, 2, 'precond');
 
       runTask(() => obj.destroy());
 
-      assert.equal(obj.length, 0, 'length is 0 without content');
+      assert.strictEqual(obj.length, 0, 'length is 0 without content');
       assert.deepEqual(obj.content, null, 'content was updated');
     }
 
     '@test setting length to 0'(assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
-      assert.equal(obj.length, 2, 'precond');
+      assert.strictEqual(obj.length, 2, 'precond');
 
       set(obj, 'length', 0);
 
-      assert.equal(obj.length, 0, 'length was updated');
+      assert.strictEqual(obj.length, 0, 'length was updated');
       assert.deepEqual(obj.content, [], 'content length was truncated');
     }
 
     '@test setting length to smaller value'(assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
-      assert.equal(obj.length, 2, 'precond');
+      assert.strictEqual(obj.length, 2, 'precond');
 
       set(obj, 'length', 1);
 
-      assert.equal(obj.length, 1, 'length was updated');
+      assert.strictEqual(obj.length, 1, 'length was updated');
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
     '@test setting length to larger value'(assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
-      assert.equal(obj.length, 2, 'precond');
+      assert.strictEqual(obj.length, 2, 'precond');
 
       set(obj, 'length', 3);
 
-      assert.equal(obj.length, 3, 'length was updated');
+      assert.strictEqual(obj.length, 3, 'length was updated');
       assert.deepEqual(obj.content, ['foo', 'bar', undefined], 'content length was updated');
     }
 
     '@test setting length after content set to null'(assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
-      assert.equal(obj.length, 2, 'precond');
+      assert.strictEqual(obj.length, 2, 'precond');
 
       set(obj, 'content', null);
-      assert.equal(obj.length, 0, 'length was updated');
+      assert.strictEqual(obj.length, 0, 'length was updated');
 
       set(obj, 'length', 0);
-      assert.equal(obj.length, 0, 'length is still updated');
+      assert.strictEqual(obj.length, 0, 'length is still updated');
     }
 
     '@test setting length to greater than zero'(assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
-      assert.equal(obj.length, 2, 'precond');
+      assert.strictEqual(obj.length, 2, 'precond');
 
       set(obj, 'length', 1);
 
-      assert.equal(obj.length, 1, 'length was updated');
+      assert.strictEqual(obj.length, 1, 'length was updated');
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
@@ -181,28 +181,32 @@ moduleFor(
 
       await runLoopSettled();
 
-      assert.equal(obj.get('colors.content.length'), 3);
-      assert.equal(obj.get('colors.length'), 3);
-      assert.equal(obj.get('length'), 3);
+      assert.strictEqual(obj.get('colors.content.length'), 3);
+      assert.strictEqual(obj.get('colors.length'), 3);
+      assert.strictEqual(obj.get('length'), 3);
 
-      assert.equal(aCalled, 1, 'expected observer `length` to be called ONCE');
-      assert.equal(bCalled, 1, 'expected observer `colors.length` to be called ONCE');
-      assert.equal(cCalled, 1, 'expected observer `colors.content.length` to be called ONCE');
-      assert.equal(dCalled, 1, 'expected observer `colors.[]` to be called ONCE');
-      assert.equal(eCalled, 1, 'expected observer `colors.content.[]` to be called ONCE');
+      assert.strictEqual(aCalled, 1, 'expected observer `length` to be called ONCE');
+      assert.strictEqual(bCalled, 1, 'expected observer `colors.length` to be called ONCE');
+      assert.strictEqual(cCalled, 1, 'expected observer `colors.content.length` to be called ONCE');
+      assert.strictEqual(dCalled, 1, 'expected observer `colors.[]` to be called ONCE');
+      assert.strictEqual(eCalled, 1, 'expected observer `colors.content.[]` to be called ONCE');
 
       obj.get('colors').pushObjects(['green', 'red']);
       await runLoopSettled();
 
-      assert.equal(obj.get('colors.content.length'), 5);
-      assert.equal(obj.get('colors.length'), 5);
-      assert.equal(obj.get('length'), 5);
+      assert.strictEqual(obj.get('colors.content.length'), 5);
+      assert.strictEqual(obj.get('colors.length'), 5);
+      assert.strictEqual(obj.get('length'), 5);
 
-      assert.equal(aCalled, 2, 'expected observer `length` to be called TWICE');
-      assert.equal(bCalled, 2, 'expected observer `colors.length` to be called TWICE');
-      assert.equal(cCalled, 2, 'expected observer `colors.content.length` to be called TWICE');
-      assert.equal(dCalled, 2, 'expected observer `colors.[]` to be called TWICE');
-      assert.equal(eCalled, 2, 'expected observer `colors.content.[]` to be called TWICE');
+      assert.strictEqual(aCalled, 2, 'expected observer `length` to be called TWICE');
+      assert.strictEqual(bCalled, 2, 'expected observer `colors.length` to be called TWICE');
+      assert.strictEqual(
+        cCalled,
+        2,
+        'expected observer `colors.content.length` to be called TWICE'
+      );
+      assert.strictEqual(dCalled, 2, 'expected observer `colors.[]` to be called TWICE');
+      assert.strictEqual(eCalled, 2, 'expected observer `colors.content.[]` to be called TWICE');
 
       obj.destroy();
     }
@@ -214,19 +218,19 @@ moduleFor(
 
       let lengthCache = createCache(() => proxy.length);
 
-      assert.equal(getValue(lengthCache), 3, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 3, 'length is correct');
 
       proxy.pushObject(4);
 
-      assert.equal(getValue(lengthCache), 4, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 4, 'length is correct');
 
       proxy.removeObject(1);
 
-      assert.equal(getValue(lengthCache), 3, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 3, 'length is correct');
 
       proxy.set('content', []);
 
-      assert.equal(getValue(lengthCache), 0, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 0, 'length is correct');
     }
 
     async ['@test array proxy length is reactive when accessed using get'](assert) {
@@ -236,19 +240,19 @@ moduleFor(
 
       let lengthCache = createCache(() => get(proxy, 'length'));
 
-      assert.equal(getValue(lengthCache), 3, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 3, 'length is correct');
 
       proxy.pushObject(4);
 
-      assert.equal(getValue(lengthCache), 4, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 4, 'length is correct');
 
       proxy.removeObject(1);
 
-      assert.equal(getValue(lengthCache), 3, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 3, 'length is correct');
 
       proxy.set('content', []);
 
-      assert.equal(getValue(lengthCache), 0, 'length is correct');
+      assert.strictEqual(getValue(lengthCache), 0, 'length is correct');
     }
   }
 );

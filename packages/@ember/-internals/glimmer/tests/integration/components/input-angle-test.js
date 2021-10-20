@@ -26,31 +26,31 @@ class InputRenderingTest extends RenderingTestCase {
   }
 
   assertInputId(expectedId) {
-    this.assert.equal(this.inputID(), expectedId, 'the input id should be `expectedId`');
+    this.assert.strictEqual(this.inputID(), expectedId, 'the input id should be `expectedId`');
   }
 
   assertSingleInput() {
-    this.assert.equal(this.$('input').length, 1, 'A single text field was inserted');
+    this.assert.strictEqual(this.$('input').length, 1, 'A single text field was inserted');
   }
 
   assertSingleCheckbox() {
-    this.assert.equal(this.$('input[type=checkbox]').length, 1, 'A single checkbox is added');
+    this.assert.strictEqual(this.$('input[type=checkbox]').length, 1, 'A single checkbox is added');
   }
 
   assertCheckboxIsChecked() {
-    this.assert.equal(this.$input().prop('checked'), true, 'the checkbox is checked');
+    this.assert.strictEqual(this.$input().prop('checked'), true, 'the checkbox is checked');
   }
 
   assertCheckboxIsNotChecked() {
-    this.assert.equal(this.$input().prop('checked'), false, 'the checkbox is not checked');
+    this.assert.strictEqual(this.$input().prop('checked'), false, 'the checkbox is not checked');
   }
 
   assertValue(expected) {
-    this.assert.equal(this.$input().val(), expected, `the input value should be ${expected}`);
+    this.assert.strictEqual(this.$input().val(), expected, `the input value should be ${expected}`);
   }
 
   assertAttr(name, expected) {
-    this.assert.equal(
+    this.assert.strictEqual(
       this.$input().attr(name),
       expected,
       `the input ${name} attribute has the value '${expected}'`
@@ -63,8 +63,12 @@ class InputRenderingTest extends RenderingTestCase {
 
   assertSelectionRange(start, end) {
     let input = this.$input()[0];
-    this.assert.equal(input.selectionStart, start, `the cursor start position should be ${start}`);
-    this.assert.equal(input.selectionEnd, end, `the cursor end position should be ${end}`);
+    this.assert.strictEqual(
+      input.selectionStart,
+      start,
+      `the cursor start position should be ${start}`
+    );
+    this.assert.strictEqual(input.selectionEnd, end, `the cursor end position should be ${end}`);
   }
 
   triggerEvent(type, options, selector) {
@@ -157,7 +161,7 @@ class InputRenderingTest extends RenderingTestCase {
     let $standard = this.$('#standard');
     let $custom = this.$('#custom');
 
-    this.assert.equal($standard.type, $custom.type);
+    this.assert.strictEqual($standard.type, $custom.type);
 
     Object.keys(events).forEach((event) => {
       // triggerEvent does not seem to work with focusin and focusout events
@@ -596,7 +600,7 @@ moduleFor(
 
       this.triggerEvent('keypress', { key: 'A' });
 
-      assert.equal(triggered, 1, 'The action was triggered exactly once');
+      assert.strictEqual(triggered, 1, 'The action was triggered exactly once');
     }
 
     ['@test sends an action to the parent level when `bubbles=true` is provided'](assert) {
@@ -705,7 +709,7 @@ moduleFor(
 
       this.triggerEvent('keydown', { key: 'A' });
 
-      assert.equal(triggered, 1, 'The action was triggered exactly once');
+      assert.strictEqual(triggered, 1, 'The action was triggered exactly once');
     }
 
     ['@test [DEPRECATED] sends an action with `<Input @key-up={{action "foo"}} />` when a key is pressed'](
@@ -731,14 +735,14 @@ moduleFor(
 
       this.triggerEvent('keyup', { key: 'A' });
 
-      assert.equal(triggered, 1, 'The action was triggered exactly once');
+      assert.strictEqual(triggered, 1, 'The action was triggered exactly once');
     }
 
     ['@test GH#14727 can render a file input after having had render an input of other type']() {
       this.render(`<Input @type="text" /><Input @type="file" />`);
 
-      this.assert.equal(this.$input()[0].type, 'text');
-      this.assert.equal(this.$input()[1].type, 'file');
+      this.assert.strictEqual(this.$input()[0].type, 'text');
+      this.assert.strictEqual(this.$input()[1].type, 'file');
     }
 
     ['@test sends an action with `<Input EVENT={{action "foo"}} />` for native DOM events']() {
@@ -820,9 +824,9 @@ moduleFor(
       );
 
       let inputs = this.element.querySelectorAll('input');
-      this.assert.equal(inputs.length, 2, 'there are two inputs');
-      this.assert.equal(inputs[0].getAttribute('type'), 'password');
-      this.assert.equal(inputs[1].getAttribute('type'), 'email');
+      this.assert.strictEqual(inputs.length, 2, 'there are two inputs');
+      this.assert.strictEqual(inputs[0].getAttribute('type'), 'password');
+      this.assert.strictEqual(inputs[1].getAttribute('type'), 'email');
     }
   }
 );

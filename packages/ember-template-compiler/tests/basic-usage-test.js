@@ -37,7 +37,7 @@ moduleFor(
       // print back to a handlebars string
       let result = _print(transformedTemplateAST, { entityEncoding: 'raw' });
 
-      assert.equal(result, '<div data-blah="derp" class="hahaha">&nbsp;</div>');
+      assert.strictEqual(result, '<div data-blah="derp" class="hahaha">&nbsp;</div>');
     }
   }
 );

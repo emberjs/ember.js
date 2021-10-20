@@ -56,18 +56,18 @@ moduleFor(
 
       let fooService = this.applicationInstance.lookup('service:foo');
 
-      assert.equal(fooService.isChildActive, false);
-      assert.equal(fooService.isSisterActive, false);
+      assert.strictEqual(fooService.isChildActive, false);
+      assert.strictEqual(fooService.isSisterActive, false);
 
       await this.routerService.transitionTo('parent.child');
 
-      assert.equal(fooService.isChildActive, true);
-      assert.equal(fooService.isSisterActive, false);
+      assert.strictEqual(fooService.isChildActive, true);
+      assert.strictEqual(fooService.isSisterActive, false);
 
       await this.routerService.transitionTo('parent.sister');
 
-      assert.equal(fooService.isChildActive, false);
-      assert.equal(fooService.isSisterActive, true);
+      assert.strictEqual(fooService.isChildActive, false);
+      assert.strictEqual(fooService.isSisterActive, true);
     }
 
     ['@test RouterService#isActive does not eagerly instantiate controller for query params'](

@@ -44,46 +44,46 @@ moduleFor(
 
       setTesting(true);
 
-      assert.equal(asyncStarted, 0);
-      assert.equal(asyncEnded, 0);
+      assert.strictEqual(asyncStarted, 0);
+      assert.strictEqual(asyncEnded, 0);
 
       let user = RSVP.Promise.resolve({ name: 'tomster' });
 
-      assert.equal(asyncStarted, 0);
-      assert.equal(asyncEnded, 0);
+      assert.strictEqual(asyncStarted, 0);
+      assert.strictEqual(asyncEnded, 0);
 
       user
         .then(function (user) {
-          assert.equal(asyncStarted, 1);
-          assert.equal(asyncEnded, 1);
+          assert.strictEqual(asyncStarted, 1);
+          assert.strictEqual(asyncEnded, 1);
 
-          assert.equal(user.name, 'tomster');
+          assert.strictEqual(user.name, 'tomster');
 
           return RSVP.Promise.resolve(1).then(function () {
-            assert.equal(asyncStarted, 1);
-            assert.equal(asyncEnded, 1);
+            assert.strictEqual(asyncStarted, 1);
+            assert.strictEqual(asyncEnded, 1);
           });
         })
         .then(function () {
-          assert.equal(asyncStarted, 1);
-          assert.equal(asyncEnded, 1);
+          assert.strictEqual(asyncStarted, 1);
+          assert.strictEqual(asyncEnded, 1);
 
           return new RSVP.Promise(function (resolve) {
             setTimeout(function () {
-              assert.equal(asyncStarted, 1);
-              assert.equal(asyncEnded, 1);
+              assert.strictEqual(asyncStarted, 1);
+              assert.strictEqual(asyncEnded, 1);
 
               resolve({ name: 'async tomster' });
 
-              assert.equal(asyncStarted, 2);
-              assert.equal(asyncEnded, 1);
+              assert.strictEqual(asyncStarted, 2);
+              assert.strictEqual(asyncEnded, 1);
             }, 0);
           });
         })
         .then(function (user) {
-          assert.equal(user.name, 'async tomster');
-          assert.equal(asyncStarted, 2);
-          assert.equal(asyncEnded, 2);
+          assert.strictEqual(user.name, 'async tomster');
+          assert.strictEqual(asyncStarted, 2);
+          assert.strictEqual(asyncEnded, 2);
           done();
         });
     }

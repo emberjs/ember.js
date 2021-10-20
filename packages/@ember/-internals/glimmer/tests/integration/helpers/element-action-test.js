@@ -67,19 +67,27 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.render('{{example-component}}');
 
-        this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
+        this.assert.strictEqual(subscriberCallCount, 0, 'subscriber has not been called');
 
         runTask(() => this.rerender());
 
-        this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
+        this.assert.strictEqual(subscriberCallCount, 0, 'subscriber has not been called');
 
         runTask(() => {
           this.$('button').click();
         });
 
-        this.assert.equal(subscriberCallCount, 1, 'subscriber has been called 1 time');
-        this.assert.equal(subscriberPayload.name, 'foo', 'subscriber called with correct name');
-        this.assert.equal(subscriberPayload.args[0], 'bar', 'subscriber called with correct args');
+        this.assert.strictEqual(subscriberCallCount, 1, 'subscriber has been called 1 time');
+        this.assert.strictEqual(
+          subscriberPayload.name,
+          'foo',
+          'subscriber called with correct name'
+        );
+        this.assert.strictEqual(
+          subscriberPayload.args[0],
+          'bar',
+          'subscriber called with correct args'
+        );
       }
     }
   );
@@ -106,23 +114,23 @@ moduleFor(
 
       this.render('{{example-component}}');
 
-      this.assert.equal(fooCallCount, 0, 'foo has not been called');
+      this.assert.strictEqual(fooCallCount, 0, 'foo has not been called');
 
       runTask(() => this.rerender());
 
-      this.assert.equal(fooCallCount, 0, 'foo has not been called');
+      this.assert.strictEqual(fooCallCount, 0, 'foo has not been called');
 
       runTask(() => {
         this.$('button').click();
       });
 
-      this.assert.equal(fooCallCount, 1, 'foo has been called 1 time');
+      this.assert.strictEqual(fooCallCount, 1, 'foo has been called 1 time');
 
       runTask(() => {
         this.$('button').click();
       });
 
-      this.assert.equal(fooCallCount, 2, 'foo has been called 2 times');
+      this.assert.strictEqual(fooCallCount, 2, 'foo has been called 2 times');
     }
 
     ['@test it can call an action with parameters']() {
@@ -291,7 +299,7 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.equal(targetWatted, true, 'the specified target was watted');
+      this.assert.strictEqual(targetWatted, true, 'the specified target was watted');
     }
 
     ['@test it should lazily evaluate the target']() {
@@ -330,7 +338,7 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.equal(firstEdit, 1);
+      this.assert.strictEqual(firstEdit, 1);
 
       runTask(() => {
         set(component, 'theTarget', second);
@@ -340,8 +348,8 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.equal(firstEdit, 1);
-      this.assert.equal(secondEdit, 1);
+      this.assert.strictEqual(firstEdit, 1);
+      this.assert.strictEqual(secondEdit, 1);
     }
 
     ['@test it should register an event handler']() {
@@ -371,13 +379,13 @@ moduleFor(
         this.$('a[data-ember-action]').trigger('click', { altKey: true });
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the event handler was called');
 
       runTask(() => {
         this.$('div[data-ember-action]').trigger('click', { ctrlKey: true });
       });
 
-      this.assert.equal(
+      this.assert.strictEqual(
         shortcutHandlerWasCalled,
         true,
         'the "any" shortcut\'s event handler was called'
@@ -413,13 +421,13 @@ moduleFor(
         this.$('a[data-ember-action]').trigger('click', { altKey: true });
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the event handler was called');
 
       runTask(() => {
         this.$('div[data-ember-action]').trigger('click', { ctrlKey: true });
       });
 
-      this.assert.equal(
+      this.assert.strictEqual(
         shortcutHandlerWasCalled,
         true,
         'the "any" shortcut\'s event handler was called'
@@ -454,7 +462,7 @@ moduleFor(
         this.$('a[data-ember-action]').trigger('click', { altKey: true });
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the event handler was called');
 
       editHandlerWasCalled = false;
 
@@ -466,7 +474,7 @@ moduleFor(
         this.$('div[data-ember-action]').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, false, 'the event handler was not called');
+      this.assert.strictEqual(editHandlerWasCalled, false, 'the event handler was not called');
     }
 
     ['@test should be able to use action more than once for the same event within a view']() {
@@ -505,9 +513,9 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
-      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
-      this.assert.equal(
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.strictEqual(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.strictEqual(
         originalHandlerWasCalled,
         true,
         'the click handler was called (due to bubbling)'
@@ -519,9 +527,9 @@ moduleFor(
         this.$('#delete').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
-      this.assert.equal(deleteHandlerWasCalled, true, 'the delete action was called');
-      this.assert.equal(
+      this.assert.strictEqual(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.strictEqual(deleteHandlerWasCalled, true, 'the delete action was called');
+      this.assert.strictEqual(
         originalHandlerWasCalled,
         true,
         'the click handler was called (due to bubbling)'
@@ -533,9 +541,9 @@ moduleFor(
         this.wrap(component.element).click();
       });
 
-      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
-      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
-      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.strictEqual(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.strictEqual(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test the event should not bubble if `bubbles=false` is passed']() {
@@ -574,9 +582,9 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
-      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
-      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.strictEqual(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.strictEqual(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -584,9 +592,9 @@ moduleFor(
         this.$('#delete').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
-      this.assert.equal(deleteHandlerWasCalled, true, 'the delete action was called');
-      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
+      this.assert.strictEqual(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.strictEqual(deleteHandlerWasCalled, true, 'the delete action was called');
+      this.assert.strictEqual(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -594,9 +602,9 @@ moduleFor(
         this.wrap(component.element).click();
       });
 
-      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
-      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
-      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.strictEqual(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.strictEqual(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test the event should not bubble if `bubbles=false` is passed bound']() {
@@ -636,9 +644,9 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
-      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
-      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.strictEqual(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.strictEqual(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -646,9 +654,9 @@ moduleFor(
         this.$('#delete').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
-      this.assert.equal(deleteHandlerWasCalled, true, 'the delete action was called');
-      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
+      this.assert.strictEqual(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.strictEqual(deleteHandlerWasCalled, true, 'the delete action was called');
+      this.assert.strictEqual(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = deleteHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -656,9 +664,9 @@ moduleFor(
         this.wrap(component.element).click();
       });
 
-      this.assert.equal(editHandlerWasCalled, false, 'the edit action was not called');
-      this.assert.equal(deleteHandlerWasCalled, false, 'the delete action was not called');
-      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, false, 'the edit action was not called');
+      this.assert.strictEqual(deleteHandlerWasCalled, false, 'the delete action was not called');
+      this.assert.strictEqual(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test the bubbling depends on the bound parameter']() {
@@ -693,8 +701,8 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
-      this.assert.equal(originalHandlerWasCalled, false, 'the click handler was not called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.strictEqual(originalHandlerWasCalled, false, 'the click handler was not called');
 
       editHandlerWasCalled = originalHandlerWasCalled = false;
 
@@ -706,8 +714,8 @@ moduleFor(
         this.$('#edit').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the edit action was called');
-      this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the edit action was called');
+      this.assert.strictEqual(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
     ['@test multiple actions with bubbles=false for same event are called but prevent bubbling']() {
@@ -773,7 +781,7 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the event handler was called');
     }
 
     ['@test it should work properly in a {{#let foo as |bar|}} block']() {
@@ -800,7 +808,7 @@ moduleFor(
         this.$('a').click();
       });
 
-      this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
+      this.assert.strictEqual(editHandlerWasCalled, true, 'the event handler was called');
     }
 
     ['@test it should unregister event handlers when an element action is removed'](assert) {
@@ -819,7 +827,7 @@ moduleFor(
         isActive: true,
       });
 
-      assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
+      assert.strictEqual(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
       let actionId;
 
@@ -829,7 +837,7 @@ moduleFor(
 
       runTask(() => this.rerender());
 
-      assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is still present');
+      assert.strictEqual(this.$('a[data-ember-action]').length, 1, 'The element is still present');
 
       assert.ok(ActionManager.registeredActions[actionId], 'The action is still registered');
 
@@ -841,7 +849,7 @@ moduleFor(
 
       runTask(() => set(this.context, 'isActive', true));
 
-      assert.equal(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
+      assert.strictEqual(this.$('a[data-ember-action]').length, 1, 'The element is rendered');
 
       actionId = getActionIds(this.$('a[data-ember-action]')[0])[0];
 
@@ -1330,7 +1338,7 @@ moduleFor(
       });
 
       this.assert.ok(submitCalled, 'submit function called');
-      this.assert.equal(incomingArg, arg, 'argument passed');
+      this.assert.strictEqual(incomingArg, arg, 'argument passed');
     }
 
     ['@test a quoteless parameter that does not resolve to a value asserts']() {
@@ -1443,7 +1451,7 @@ moduleFor(
         event = this.$('a').click()[0];
       });
 
-      this.assert.equal(event.defaultPrevented, false, 'should not preventDefault');
+      this.assert.strictEqual(event.defaultPrevented, false, 'should not preventDefault');
     }
 
     ['@test it should respect preventDefault option if provided bound']() {
@@ -1473,14 +1481,14 @@ moduleFor(
         event = this.$('a').trigger(event)[0];
       });
 
-      this.assert.equal(event.defaultPrevented, false, 'should not preventDefault');
+      this.assert.strictEqual(event.defaultPrevented, false, 'should not preventDefault');
 
       runTask(() => {
         component.set('shouldPreventDefault', true);
         event = this.$('a').trigger('click')[0];
       });
 
-      this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
+      this.assert.strictEqual(event.defaultPrevented, true, 'should preventDefault');
     }
 
     ['@test it should target the proper component when `action` is in yielded block [GH #12409]']() {
@@ -1596,7 +1604,7 @@ moduleFor(
         { show: true }
       );
 
-      this.assert.equal(this.$('button').text().trim(), 'Show (true)');
+      this.assert.strictEqual(this.$('button').text().trim(), 'Show (true)');
       // We need to focus in to simulate an actual click.
       runTask(() => {
         document.getElementById('ddButton').focus();
@@ -1628,7 +1636,7 @@ moduleFor(
         this.$('button').click();
       });
 
-      this.assert.equal(actionCount, 1, 'Click action only fired once.');
+      this.assert.strictEqual(actionCount, 1, 'Click action only fired once.');
       this.assert.ok(
         this.$('button').hasClass('selected'),
         "Element with action handler has properly updated it's conditional class"
@@ -1638,7 +1646,7 @@ moduleFor(
         this.$('button').click();
       });
 
-      this.assert.equal(actionCount, 2, 'Second click action only fired once.');
+      this.assert.strictEqual(actionCount, 2, 'Second click action only fired once.');
       this.assert.ok(
         !this.$('button').hasClass('selected'),
         "Element with action handler has properly updated it's conditional class"

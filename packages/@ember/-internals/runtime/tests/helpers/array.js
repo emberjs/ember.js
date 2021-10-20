@@ -79,12 +79,12 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   arrayWillChange() {
-    this.assert.equal(this._before, null, 'should only call once');
+    this.assert.strictEqual(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
   arrayDidChange() {
-    this.assert.equal(this._after, null, 'should only call once');
+    this.assert.strictEqual(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   },
 

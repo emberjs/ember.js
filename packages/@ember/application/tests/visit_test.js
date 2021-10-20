@@ -52,7 +52,7 @@ moduleFor(
 
       ENV._APPLICATION_TEMPLATE_WRAPPER = false;
       return this.visit('/', bootOptions).then(() => {
-        assert.equal(
+        assert.strictEqual(
           rootElement.innerHTML,
           templateContent,
           'without serialize flag renders as expected'
@@ -96,7 +96,7 @@ moduleFor(
           };
 
           this.application.visit('/', bootOptions).then((instance) => {
-            assert.equal(
+            assert.strictEqual(
               instance.rootElement.innerHTML,
               indexTemplate,
               'was not properly rehydrated'
@@ -246,7 +246,7 @@ moduleFor(
         },
         (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
-          assert.equal(error.message, 'boot failure');
+          assert.strictEqual(error.message, 'boot failure');
         }
       );
     }
@@ -267,7 +267,7 @@ moduleFor(
         },
         (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
-          assert.equal(error.message, 'boot failure');
+          assert.strictEqual(error.message, 'boot failure');
         }
       );
     }
@@ -310,7 +310,7 @@ moduleFor(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
         );
-        assert.equal(instance.getURL(), '/c/zomg', 'It should follow all redirects');
+        assert.strictEqual(instance.getURL(), '/c/zomg', 'It should follow all redirects');
       });
     }
 
@@ -360,7 +360,7 @@ moduleFor(
         },
         (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
-          assert.equal(error.message, 'transition failure');
+          assert.strictEqual(error.message, 'transition failure');
         }
       );
     }
@@ -378,7 +378,7 @@ moduleFor(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
           );
-          assert.equal(instance.getURL(), '/');
+          assert.strictEqual(instance.getURL(), '/');
 
           return instance.visit('/a');
         })
@@ -387,7 +387,7 @@ moduleFor(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
           );
-          assert.equal(instance.getURL(), '/a');
+          assert.strictEqual(instance.getURL(), '/a');
 
           return instance.visit('/b');
         })
@@ -396,7 +396,7 @@ moduleFor(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
           );
-          assert.equal(instance.getURL(), '/b');
+          assert.strictEqual(instance.getURL(), '/b');
 
           return instance.visit('/c');
         })
@@ -405,7 +405,7 @@ moduleFor(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
           );
-          assert.equal(instance.getURL(), '/c');
+          assert.strictEqual(instance.getURL(), '/c');
         });
     }
 
@@ -419,7 +419,7 @@ moduleFor(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
         );
-        assert.equal(
+        assert.strictEqual(
           this.element.textContent,
           'Hello world',
           'the application was rendered once the promise resolves'
@@ -760,37 +760,46 @@ moduleFor(
           assert.ok(xBarInitCalled);
           assert.ok(xBarDidInsertElementCalled);
 
-          assert.equal(foo.querySelector('h1').textContent, 'X-Foo');
-          assert.equal(
+          assert.strictEqual(foo.querySelector('h1').textContent, 'X-Foo');
+          assert.strictEqual(
             foo.querySelector('p').textContent,
             'Hello Godfrey, I have been clicked 0 times (0 times combined)!'
           );
           assert.ok(foo.textContent.indexOf('X-Bar') === -1);
 
-          assert.equal(bar.querySelector('h1').textContent, 'X-Bar');
-          assert.equal(bar.querySelector('button').textContent, 'Join 0 others in clicking me!');
+          assert.strictEqual(bar.querySelector('h1').textContent, 'X-Bar');
+          assert.strictEqual(
+            bar.querySelector('button').textContent,
+            'Join 0 others in clicking me!'
+          );
           assert.ok(bar.textContent.indexOf('X-Foo') === -1);
 
           runTask(() => {
             this.click(foo.querySelector('x-foo'));
           });
 
-          assert.equal(
+          assert.strictEqual(
             foo.querySelector('p').textContent,
             'Hello Godfrey, I have been clicked 1 times (1 times combined)!'
           );
-          assert.equal(bar.querySelector('button').textContent, 'Join 1 others in clicking me!');
+          assert.strictEqual(
+            bar.querySelector('button').textContent,
+            'Join 1 others in clicking me!'
+          );
 
           runTask(() => {
             this.click(bar.querySelector('button'));
             this.click(bar.querySelector('button'));
           });
 
-          assert.equal(
+          assert.strictEqual(
             foo.querySelector('p').textContent,
             'Hello Godfrey, I have been clicked 1 times (3 times combined)!'
           );
-          assert.equal(bar.querySelector('button').textContent, 'Join 3 others in clicking me!');
+          assert.strictEqual(
+            bar.querySelector('button').textContent,
+            'Join 3 others in clicking me!'
+          );
         })
         .finally(() => {
           runTask(() => {

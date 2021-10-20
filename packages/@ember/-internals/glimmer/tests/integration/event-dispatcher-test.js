@@ -311,7 +311,11 @@ moduleFor(
       this.dispatcher.setup({ myevent: 'myEvent' }, '#app');
 
       assert.ok(this.$('#app').hasClass('ember-application'), 'custom rootElement was used');
-      assert.equal(this.dispatcher.rootElement, '#app', 'the dispatchers rootElement was updated');
+      assert.strictEqual(
+        this.dispatcher.rootElement,
+        '#app',
+        'the dispatchers rootElement was updated'
+      );
     }
 
     ['@test default events can be disabled via `customEvents`'](assert) {
@@ -374,17 +378,17 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.$('div').trigger('click');
 
-        assert.equal(clicked, 1, 'precond - the click handler was invoked');
+        assert.strictEqual(clicked, 1, 'precond - the click handler was invoked');
 
         let clickInstrumented = 0;
         instrumentationSubscribe('interaction.click', {
           before() {
             clickInstrumented++;
-            assert.equal(clicked, 1, 'invoked before event is handled');
+            assert.strictEqual(clicked, 1, 'invoked before event is handled');
           },
           after() {
             clickInstrumented++;
-            assert.equal(clicked, 2, 'invoked after event is handled');
+            assert.strictEqual(clicked, 2, 'invoked after event is handled');
           },
         });
 
@@ -400,8 +404,8 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.$('div').trigger('click');
         this.$('div').trigger('change');
-        assert.equal(clicked, 2, 'precond - The click handler was invoked');
-        assert.equal(clickInstrumented, 2, 'The click was instrumented');
+        assert.strictEqual(clicked, 2, 'precond - The click handler was invoked');
+        assert.strictEqual(clickInstrumented, 2, 'The click was instrumented');
         assert.strictEqual(keypressInstrumented, 0, 'The keypress was not instrumented');
       }
     }
@@ -425,7 +429,7 @@ if (canDataTransfer) {
         this.render(`{{x-foo}}`);
 
         fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
-        assert.equal(receivedEvent.dataTransfer, 'success');
+        assert.strictEqual(receivedEvent.dataTransfer, 'success');
       }
     }
   );

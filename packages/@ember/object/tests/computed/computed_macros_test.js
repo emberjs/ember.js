@@ -34,14 +34,18 @@ moduleFor(
         lannisters: emberA(),
       });
 
-      assert.equal(get(obj, 'bestLannisterUnspecified'), true, 'bestLannister initially empty');
-      assert.equal(get(obj, 'noLannistersKnown'), true, 'lannisters initially empty');
+      assert.strictEqual(
+        get(obj, 'bestLannisterUnspecified'),
+        true,
+        'bestLannister initially empty'
+      );
+      assert.strictEqual(get(obj, 'noLannistersKnown'), true, 'lannisters initially empty');
 
       get(obj, 'lannisters').pushObject('Tyrion');
       set(obj, 'bestLannister', 'Tyrion');
 
-      assert.equal(get(obj, 'bestLannisterUnspecified'), false, 'empty respects strings');
-      assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
+      assert.strictEqual(get(obj, 'bestLannisterUnspecified'), false, 'empty respects strings');
+      assert.strictEqual(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
     ['@test notEmpty part 1/2'](assert) {
@@ -55,24 +59,28 @@ moduleFor(
         lannisters: emberA(),
       });
 
-      assert.equal(get(obj, 'bestLannisterSpecified'), false, 'bestLannister initially empty');
-      assert.equal(get(obj, 'LannistersKnown'), false, 'lannisters initially empty');
+      assert.strictEqual(
+        get(obj, 'bestLannisterSpecified'),
+        false,
+        'bestLannister initially empty'
+      );
+      assert.strictEqual(get(obj, 'LannistersKnown'), false, 'lannisters initially empty');
 
       get(obj, 'lannisters').pushObject('Tyrion');
       set(obj, 'bestLannister', 'Tyrion');
 
-      assert.equal(get(obj, 'bestLannisterSpecified'), true, 'empty respects strings');
-      assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
+      assert.strictEqual(get(obj, 'bestLannisterSpecified'), true, 'empty respects strings');
+      assert.strictEqual(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
     }
 
     ['@test not'](assert) {
       let obj = { foo: true };
       defineProperty(obj, 'notFoo', not('foo'));
-      assert.equal(get(obj, 'notFoo'), false);
+      assert.strictEqual(get(obj, 'notFoo'), false);
 
       obj = { foo: { bar: true } };
       defineProperty(obj, 'notFoo', not('foo.bar'));
-      assert.equal(get(obj, 'notFoo'), false);
+      assert.strictEqual(get(obj, 'notFoo'), false);
     }
 
     ['@test empty part 2/2'](assert) {
@@ -82,14 +90,14 @@ moduleFor(
       defineProperty(obj, 'bazEmpty', empty('baz'));
       defineProperty(obj, 'quzEmpty', empty('quz'));
 
-      assert.equal(get(obj, 'fooEmpty'), true);
+      assert.strictEqual(get(obj, 'fooEmpty'), true);
       set(obj, 'foo', [1]);
-      assert.equal(get(obj, 'fooEmpty'), false);
-      assert.equal(get(obj, 'barEmpty'), true);
-      assert.equal(get(obj, 'bazEmpty'), true);
-      assert.equal(get(obj, 'quzEmpty'), true);
+      assert.strictEqual(get(obj, 'fooEmpty'), false);
+      assert.strictEqual(get(obj, 'barEmpty'), true);
+      assert.strictEqual(get(obj, 'bazEmpty'), true);
+      assert.strictEqual(get(obj, 'quzEmpty'), true);
       set(obj, 'quz', 'asdf');
-      assert.equal(get(obj, 'quzEmpty'), false);
+      assert.strictEqual(get(obj, 'quzEmpty'), false);
     }
 
     ['@test bool'](assert) {
@@ -98,10 +106,10 @@ moduleFor(
       defineProperty(obj, 'barBool', bool('bar'));
       defineProperty(obj, 'bazBool', bool('baz'));
       defineProperty(obj, 'quzBool', bool('quz'));
-      assert.equal(get(obj, 'fooBool'), true);
-      assert.equal(get(obj, 'barBool'), true);
-      assert.equal(get(obj, 'bazBool'), false);
-      assert.equal(get(obj, 'quzBool'), false);
+      assert.strictEqual(get(obj, 'fooBool'), true);
+      assert.strictEqual(get(obj, 'barBool'), true);
+      assert.strictEqual(get(obj, 'bazBool'), false);
+      assert.strictEqual(get(obj, 'quzBool'), false);
     }
 
     ['@test alias'](assert) {
@@ -119,22 +127,22 @@ moduleFor(
       defineProperty(obj, 'quzAlias', alias('quz'));
       defineProperty(obj, 'bayAlias', alias('bay'));
 
-      assert.equal(get(obj, 'barAlias'), 'asdf');
-      assert.equal(get(obj, 'bazAlias'), null);
-      assert.equal(get(obj, 'quzAlias'), false);
-      assert.equal(get(obj, 'bayAlias'), 'apple');
+      assert.strictEqual(get(obj, 'barAlias'), 'asdf');
+      assert.strictEqual(get(obj, 'bazAlias'), null);
+      assert.strictEqual(get(obj, 'quzAlias'), false);
+      assert.strictEqual(get(obj, 'bayAlias'), 'apple');
 
       set(obj, 'barAlias', 'newBar');
       set(obj, 'bazAlias', 'newBaz');
       set(obj, 'quzAlias', null);
 
-      assert.equal(get(obj, 'barAlias'), 'newBar');
-      assert.equal(get(obj, 'bazAlias'), 'newBaz');
-      assert.equal(get(obj, 'quzAlias'), null);
+      assert.strictEqual(get(obj, 'barAlias'), 'newBar');
+      assert.strictEqual(get(obj, 'bazAlias'), 'newBaz');
+      assert.strictEqual(get(obj, 'quzAlias'), null);
 
-      assert.equal(get(obj, 'bar'), 'newBar');
-      assert.equal(get(obj, 'baz'), 'newBaz');
-      assert.equal(get(obj, 'quz'), null);
+      assert.strictEqual(get(obj, 'bar'), 'newBar');
+      assert.strictEqual(get(obj, 'baz'), 'newBaz');
+      assert.strictEqual(get(obj, 'quz'), null);
     }
 
     ['@test alias set'](assert) {
@@ -155,250 +163,250 @@ moduleFor(
       );
       defineProperty(obj, 'aliased', alias('original'));
 
-      assert.equal(get(obj, 'original'), constantValue);
-      assert.equal(get(obj, 'aliased'), constantValue);
+      assert.strictEqual(get(obj, 'original'), constantValue);
+      assert.strictEqual(get(obj, 'aliased'), constantValue);
 
       set(obj, 'aliased', 'should not set to this value');
 
-      assert.equal(get(obj, 'original'), constantValue);
-      assert.equal(get(obj, 'aliased'), constantValue);
+      assert.strictEqual(get(obj, 'original'), constantValue);
+      assert.strictEqual(get(obj, 'aliased'), constantValue);
     }
 
     ['@test match'](assert) {
       let obj = { name: 'Paul' };
       defineProperty(obj, 'isPaul', match('name', /Paul/));
 
-      assert.equal(get(obj, 'isPaul'), true, 'is Paul');
+      assert.strictEqual(get(obj, 'isPaul'), true, 'is Paul');
 
       set(obj, 'name', 'Pierre');
 
-      assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
+      assert.strictEqual(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
     ['@test notEmpty part 2/2'](assert) {
       let obj = { items: [1] };
       defineProperty(obj, 'hasItems', notEmpty('items'));
 
-      assert.equal(get(obj, 'hasItems'), true, 'is not empty');
+      assert.strictEqual(get(obj, 'hasItems'), true, 'is not empty');
 
       set(obj, 'items', []);
 
-      assert.equal(get(obj, 'hasItems'), false, 'is empty');
+      assert.strictEqual(get(obj, 'hasItems'), false, 'is empty');
     }
 
     ['@test equal'](assert) {
       let obj = { name: 'Paul' };
       defineProperty(obj, 'isPaul', computedEqual('name', 'Paul'));
 
-      assert.equal(get(obj, 'isPaul'), true, 'is Paul');
+      assert.strictEqual(get(obj, 'isPaul'), true, 'is Paul');
 
       set(obj, 'name', 'Pierre');
 
-      assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
+      assert.strictEqual(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
     ['@test gt'](assert) {
       let obj = { number: 2 };
       defineProperty(obj, 'isGreaterThenOne', gt('number', 1));
 
-      assert.equal(get(obj, 'isGreaterThenOne'), true, 'is gt');
+      assert.strictEqual(get(obj, 'isGreaterThenOne'), true, 'is gt');
 
       set(obj, 'number', 1);
 
-      assert.equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
+      assert.strictEqual(get(obj, 'isGreaterThenOne'), false, 'is not gt');
 
       set(obj, 'number', 0);
 
-      assert.equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
+      assert.strictEqual(get(obj, 'isGreaterThenOne'), false, 'is not gt');
     }
 
     ['@test gte'](assert) {
       let obj = { number: 2 };
       defineProperty(obj, 'isGreaterOrEqualThenOne', gte('number', 1));
 
-      assert.equal(get(obj, 'isGreaterOrEqualThenOne'), true, 'is gte');
+      assert.strictEqual(get(obj, 'isGreaterOrEqualThenOne'), true, 'is gte');
 
       set(obj, 'number', 1);
 
-      assert.equal(get(obj, 'isGreaterOrEqualThenOne'), true, 'is gte');
+      assert.strictEqual(get(obj, 'isGreaterOrEqualThenOne'), true, 'is gte');
 
       set(obj, 'number', 0);
 
-      assert.equal(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
+      assert.strictEqual(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
     }
 
     ['@test lt'](assert) {
       let obj = { number: 0 };
       defineProperty(obj, 'isLesserThenOne', lt('number', 1));
 
-      assert.equal(get(obj, 'isLesserThenOne'), true, 'is lt');
+      assert.strictEqual(get(obj, 'isLesserThenOne'), true, 'is lt');
 
       set(obj, 'number', 1);
 
-      assert.equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
+      assert.strictEqual(get(obj, 'isLesserThenOne'), false, 'is not lt');
 
       set(obj, 'number', 2);
 
-      assert.equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
+      assert.strictEqual(get(obj, 'isLesserThenOne'), false, 'is not lt');
     }
 
     ['@test lte'](assert) {
       let obj = { number: 0 };
       defineProperty(obj, 'isLesserOrEqualThenOne', lte('number', 1));
 
-      assert.equal(get(obj, 'isLesserOrEqualThenOne'), true, 'is lte');
+      assert.strictEqual(get(obj, 'isLesserOrEqualThenOne'), true, 'is lte');
 
       set(obj, 'number', 1);
 
-      assert.equal(get(obj, 'isLesserOrEqualThenOne'), true, 'is lte');
+      assert.strictEqual(get(obj, 'isLesserOrEqualThenOne'), true, 'is lte');
 
       set(obj, 'number', 2);
 
-      assert.equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
+      assert.strictEqual(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
     }
 
     ['@test and, with two properties'](assert) {
       let obj = { one: true, two: true };
       defineProperty(obj, 'oneAndTwo', and('one', 'two'));
 
-      assert.equal(get(obj, 'oneAndTwo'), true, 'one and two');
+      assert.strictEqual(get(obj, 'oneAndTwo'), true, 'one and two');
 
       set(obj, 'one', false);
 
-      assert.equal(get(obj, 'oneAndTwo'), false, 'one and not two');
+      assert.strictEqual(get(obj, 'oneAndTwo'), false, 'one and not two');
 
       set(obj, 'one', null);
       set(obj, 'two', 'Yes');
 
-      assert.equal(get(obj, 'oneAndTwo'), null, 'returns falsy value as in &&');
+      assert.strictEqual(get(obj, 'oneAndTwo'), null, 'returns falsy value as in &&');
 
       set(obj, 'one', true);
       set(obj, 'two', 2);
 
-      assert.equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
+      assert.strictEqual(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
     }
 
     ['@test and, with three properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', and('one', 'two', 'three'));
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one and two and three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one and two and three');
 
       set(obj, 'one', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
 
       set(obj, 'one', true);
       set(obj, 'two', 2);
       set(obj, 'three', 3);
 
-      assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
+      assert.strictEqual(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
     ['@test and, with expand properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', and('{one,two,three}'));
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one and two and three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one and two and three');
 
       set(obj, 'one', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), false, 'one and not two and not three');
 
       set(obj, 'one', true);
       set(obj, 'two', 2);
       set(obj, 'three', 3);
 
-      assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
+      assert.strictEqual(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
     ['@test or, with two properties'](assert) {
       let obj = { one: true, two: true };
       defineProperty(obj, 'oneOrTwo', or('one', 'two'));
 
-      assert.equal(get(obj, 'oneOrTwo'), true, 'one or two');
+      assert.strictEqual(get(obj, 'oneOrTwo'), true, 'one or two');
 
       set(obj, 'one', false);
 
-      assert.equal(get(obj, 'oneOrTwo'), true, 'one or two');
+      assert.strictEqual(get(obj, 'oneOrTwo'), true, 'one or two');
 
       set(obj, 'two', false);
 
-      assert.equal(get(obj, 'oneOrTwo'), false, 'nor one nor two');
+      assert.strictEqual(get(obj, 'oneOrTwo'), false, 'nor one nor two');
 
       set(obj, 'two', null);
 
-      assert.equal(get(obj, 'oneOrTwo'), null, 'returns last falsy value as in ||');
+      assert.strictEqual(get(obj, 'oneOrTwo'), null, 'returns last falsy value as in ||');
 
       set(obj, 'two', true);
 
-      assert.equal(get(obj, 'oneOrTwo'), true, 'one or two');
+      assert.strictEqual(get(obj, 'oneOrTwo'), true, 'one or two');
 
       set(obj, 'one', 1);
 
-      assert.equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
+      assert.strictEqual(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
     }
 
     ['@test or, with three properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', or('one', 'two', 'three'));
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'one', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'two', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'three', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), false, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), false, 'one or two or three');
 
       set(obj, 'three', null);
 
-      assert.equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
+      assert.strictEqual(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
 
       set(obj, 'two', true);
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'one', 1);
 
-      assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
+      assert.strictEqual(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
     ['@test or, with expand properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', or('{one,two,three}'));
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'one', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'two', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'three', false);
 
-      assert.equal(get(obj, 'oneTwoThree'), false, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), false, 'one or two or three');
 
       set(obj, 'three', null);
 
-      assert.equal(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
+      assert.strictEqual(get(obj, 'oneTwoThree'), null, 'returns last falsy value as in ||');
 
       set(obj, 'two', true);
 
-      assert.equal(get(obj, 'oneTwoThree'), true, 'one or two or three');
+      assert.strictEqual(get(obj, 'oneTwoThree'), true, 'one or two or three');
 
       set(obj, 'one', 1);
 
-      assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
+      assert.strictEqual(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
     ['@test or and and, warn about dependent keys with spaces']() {
@@ -420,20 +428,20 @@ moduleFor(
 
       defineProperty(obj, 'nickName', oneWay('firstName'));
 
-      assert.equal(get(obj, 'firstName'), 'Teddy');
-      assert.equal(get(obj, 'lastName'), 'Zeenny');
-      assert.equal(get(obj, 'nickName'), 'Teddy');
+      assert.strictEqual(get(obj, 'firstName'), 'Teddy');
+      assert.strictEqual(get(obj, 'lastName'), 'Zeenny');
+      assert.strictEqual(get(obj, 'nickName'), 'Teddy');
 
       set(obj, 'nickName', 'TeddyBear');
 
-      assert.equal(get(obj, 'firstName'), 'Teddy');
-      assert.equal(get(obj, 'lastName'), 'Zeenny');
+      assert.strictEqual(get(obj, 'firstName'), 'Teddy');
+      assert.strictEqual(get(obj, 'lastName'), 'Zeenny');
 
-      assert.equal(get(obj, 'nickName'), 'TeddyBear');
+      assert.strictEqual(get(obj, 'nickName'), 'TeddyBear');
 
       set(obj, 'firstName', 'TEDDDDDDDDYYY');
 
-      assert.equal(get(obj, 'nickName'), 'TeddyBear');
+      assert.strictEqual(get(obj, 'nickName'), 'TeddyBear');
     }
 
     ['@test readOnly'](assert) {
@@ -444,22 +452,22 @@ moduleFor(
 
       defineProperty(obj, 'nickName', readOnly('firstName'));
 
-      assert.equal(get(obj, 'firstName'), 'Teddy');
-      assert.equal(get(obj, 'lastName'), 'Zeenny');
-      assert.equal(get(obj, 'nickName'), 'Teddy');
+      assert.strictEqual(get(obj, 'firstName'), 'Teddy');
+      assert.strictEqual(get(obj, 'lastName'), 'Zeenny');
+      assert.strictEqual(get(obj, 'nickName'), 'Teddy');
 
       assert.throws(function () {
         set(obj, 'nickName', 'TeddyBear');
       }, / /);
 
-      assert.equal(get(obj, 'firstName'), 'Teddy');
-      assert.equal(get(obj, 'lastName'), 'Zeenny');
+      assert.strictEqual(get(obj, 'firstName'), 'Teddy');
+      assert.strictEqual(get(obj, 'lastName'), 'Zeenny');
 
-      assert.equal(get(obj, 'nickName'), 'Teddy');
+      assert.strictEqual(get(obj, 'nickName'), 'Teddy');
 
       set(obj, 'firstName', 'TEDDDDDDDDYYY');
 
-      assert.equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
+      assert.strictEqual(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
     }
 
     ['@test deprecatingAlias'](assert) {
@@ -494,19 +502,19 @@ moduleFor(
       );
 
       expectDeprecation(function () {
-        assert.equal(get(obj, 'barAlias'), 'asdf');
+        assert.strictEqual(get(obj, 'barAlias'), 'asdf');
       }, 'Usage of `barAlias` is deprecated, use `bar` instead.');
 
       expectDeprecation(function () {
-        assert.equal(get(obj, 'bazAlias'), null);
+        assert.strictEqual(get(obj, 'bazAlias'), null);
       }, 'Usage of `bazAlias` is deprecated, use `baz` instead.');
 
       expectDeprecation(function () {
-        assert.equal(get(obj, 'quzAlias'), false);
+        assert.strictEqual(get(obj, 'quzAlias'), false);
       }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
 
       expectDeprecation(function () {
-        assert.equal(get(obj, 'bayAlias'), 'apple');
+        assert.strictEqual(get(obj, 'bayAlias'), 'apple');
       }, 'Usage of `bayAlias` is deprecated, use `bay` instead.');
 
       expectDeprecation(function () {
@@ -521,13 +529,13 @@ moduleFor(
         set(obj, 'quzAlias', null);
       }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
 
-      assert.equal(get(obj, 'barAlias'), 'newBar');
-      assert.equal(get(obj, 'bazAlias'), 'newBaz');
-      assert.equal(get(obj, 'quzAlias'), null);
+      assert.strictEqual(get(obj, 'barAlias'), 'newBar');
+      assert.strictEqual(get(obj, 'bazAlias'), 'newBaz');
+      assert.strictEqual(get(obj, 'quzAlias'), null);
 
-      assert.equal(get(obj, 'bar'), 'newBar');
-      assert.equal(get(obj, 'baz'), 'newBaz');
-      assert.equal(get(obj, 'quz'), null);
+      assert.strictEqual(get(obj, 'bar'), 'newBar');
+      assert.strictEqual(get(obj, 'baz'), 'newBaz');
+      assert.strictEqual(get(obj, 'quz'), null);
     }
   }
 );

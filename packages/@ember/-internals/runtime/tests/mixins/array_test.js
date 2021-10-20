@@ -58,7 +58,7 @@ moduleFor(
         length: 0,
       });
       let y = x.slice(1);
-      assert.equal(EmberArray.detect(y), true, 'mixin should be applied');
+      assert.strictEqual(EmberArray.detect(y), true, 'mixin should be applied');
     }
 
     ['@test slice supports negative index arguments'](assert) {
@@ -109,13 +109,13 @@ moduleFor(
         _count: 0,
       });
 
-      assert.equal(obj._count, 0, 'should not have invoked yet');
+      assert.strictEqual(obj._count, 0, 'should not have invoked yet');
 
       arrayContentWillChange(obj, 0, 1, 1);
       arrayContentDidChange(obj, 0, 1, 1);
       await runLoopSettled();
 
-      assert.equal(obj._count, 1, 'should have invoked');
+      assert.strictEqual(obj._count, 1, 'should have invoked');
     }
 
     afterEach() {
@@ -141,7 +141,7 @@ moduleFor(
         _after: 0,
       });
 
-      assert.equal(obj._after, 0, 'should not have fired yet');
+      assert.strictEqual(obj._after, 0, 'should not have fired yet');
     }
 
     afterEach() {
@@ -153,12 +153,12 @@ moduleFor(
       arrayContentWillChange(obj);
       await runLoopSettled();
 
-      assert.equal(obj._after, 0);
+      assert.strictEqual(obj._after, 0);
 
       arrayContentDidChange(obj);
       await runLoopSettled();
 
-      assert.equal(obj._after, 1);
+      assert.strictEqual(obj._after, 1);
     }
 
     // API variation that included items only
@@ -166,24 +166,24 @@ moduleFor(
       arrayContentWillChange(obj, 0, 1, 1);
       await runLoopSettled();
 
-      assert.equal(obj._after, 0);
+      assert.strictEqual(obj._after, 0);
 
       arrayContentDidChange(obj, 0, 1, 1);
       await runLoopSettled();
 
-      assert.equal(obj._after, 0);
+      assert.strictEqual(obj._after, 0);
     }
 
     async ['@test should notify when passed lengths are different'](assert) {
       arrayContentWillChange(obj, 0, 1, 2);
       await runLoopSettled();
 
-      assert.equal(obj._after, 0);
+      assert.strictEqual(obj._after, 0);
 
       arrayContentDidChange(obj, 0, 1, 2);
       await runLoopSettled();
 
-      assert.equal(obj._after, 1);
+      assert.strictEqual(obj._after, 1);
     }
   }
 );
@@ -202,12 +202,12 @@ moduleFor(
 
       observer = EmberObject.extend({
         arrayWillChange() {
-          assert.equal(this._before, null); // should only call once
+          assert.strictEqual(this._before, null); // should only call once
           this._before = Array.prototype.slice.call(arguments);
         },
 
         arrayDidChange() {
-          assert.equal(this._after, null); // should only call once
+          assert.strictEqual(this._after, null); // should only call once
           this._after = Array.prototype.slice.call(arguments);
         },
       }).create({
@@ -257,7 +257,7 @@ moduleFor(
     }
 
     ['@test hasArrayObservers should work'](assert) {
-      assert.equal(
+      assert.strictEqual(
         obj.hasArrayObservers,
         true,
         'correctly shows it has an array observer when one exists'
@@ -265,7 +265,7 @@ moduleFor(
 
       removeArrayObserver(obj, observer);
 
-      assert.equal(
+      assert.strictEqual(
         obj.hasArrayObservers,
         false,
         'correctly shows it has an array observer when one exists'
@@ -318,7 +318,7 @@ moduleFor(
       );
 
       await runLoopSettled();
-      assert.equal(called, 1, 'calls observer when object is pushed');
+      assert.strictEqual(called, 1, 'calls observer when object is pushed');
     }
 
     async ['@test using @each to observe arrays that does not return objects raise error'](assert) {
@@ -346,13 +346,13 @@ moduleFor(
       }, /When using @each to observe the array/);
 
       await runLoopSettled();
-      assert.equal(called, 0, 'not calls observer when object is pushed');
+      assert.strictEqual(called, 0, 'not calls observer when object is pushed');
     }
 
     ['@test `objectAt` returns correct object'](assert) {
       let arr = ['first', 'second', 'third', 'fourth'];
-      assert.equal(objectAt(arr, 2), 'third');
-      assert.equal(objectAt(arr, 4), undefined);
+      assert.strictEqual(objectAt(arr, 2), 'third');
+      assert.strictEqual(objectAt(arr, 4), undefined);
     }
 
     ['@test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization'](
@@ -370,10 +370,10 @@ moduleFor(
       }).create();
 
       get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
-      assert.equal('HI!', get(obj, 'common'));
+      assert.strictEqual('HI!', get(obj, 'common'));
 
       set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
-      assert.equal('BYE!', get(obj, 'common'));
+      assert.strictEqual('BYE!', get(obj, 'common'));
     }
 
     async ['@test observers that contain @each in the path should fire only once the first time they are accessed'](
@@ -399,7 +399,7 @@ moduleFor(
       set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
       await runLoopSettled();
 
-      assert.equal(count, 2, 'observers should be called twice');
+      assert.strictEqual(count, 2, 'observers should be called twice');
 
       obj.destroy();
     }

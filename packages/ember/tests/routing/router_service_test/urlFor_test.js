@@ -23,7 +23,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child');
 
-        assert.equal('/child', expectedURL);
+        assert.strictEqual('/child', expectedURL);
       });
     }
 
@@ -37,7 +37,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', dynamicModel);
 
-        assert.equal('/dynamic/1', expectedURL);
+        assert.strictEqual('/dynamic/1', expectedURL);
       });
     }
 
@@ -49,7 +49,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
-        assert.equal('/child?foo=bar', expectedURL);
+        assert.strictEqual('/child?foo=bar', expectedURL);
       });
     }
 
@@ -71,7 +71,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
-        assert.equal('/child?sort=ASC', expectedURL);
+        assert.strictEqual('/child?sort=ASC', expectedURL);
       });
     }
 
@@ -90,12 +90,12 @@ moduleFor(
 
       return this.visit('/child/?sort=DESC').then(() => {
         let controller = this.applicationInstance.lookup('controller:parent.child');
-        assert.equal(get(controller, 'sort'), 'DESC', 'sticky is set');
+        assert.strictEqual(get(controller, 'sort'), 'DESC', 'sticky is set');
 
         let queryParams = this.buildQueryParams({ foo: 'derp' });
         let actual = this.routerService.urlFor('parent.child', queryParams);
 
-        assert.equal(actual, '/child?foo=derp', 'does not use "stickiness"');
+        assert.strictEqual(actual, '/child?foo=derp', 'does not use "stickiness"');
       });
     }
 
@@ -109,7 +109,10 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
-        assert.equal('/child?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c', expectedURL);
+        assert.strictEqual(
+          '/child?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c',
+          expectedURL
+        );
       });
     }
 
@@ -121,7 +124,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
-        assert.equal('/child', expectedURL);
+        assert.strictEqual('/child', expectedURL);
       });
     }
 
@@ -135,7 +138,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('parent.child', queryParams);
 
-        assert.equal('/child', expectedURL);
+        assert.strictEqual('/child', expectedURL);
       });
     }
 
@@ -149,7 +152,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
-        assert.equal('/dynamic/1?foo=bar', expectedURL);
+        assert.strictEqual('/dynamic/1?foo=bar', expectedURL);
       });
     }
 
@@ -165,7 +168,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
-        assert.equal(
+        assert.strictEqual(
           '/dynamic/1?selectedItems[]=a&selectedItems[]=b&selectedItems[]=c',
           expectedURL
         );
@@ -182,7 +185,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
-        assert.equal('/dynamic/1', expectedURL);
+        assert.strictEqual('/dynamic/1', expectedURL);
       });
     }
 
@@ -196,7 +199,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let expectedURL = this.routerService.urlFor('dynamic', { id: 1 }, queryParams);
 
-        assert.equal('/dynamic/1', expectedURL);
+        assert.strictEqual('/dynamic/1', expectedURL);
       });
     }
 
@@ -212,7 +215,7 @@ moduleFor(
           return this.routerService.transitionTo(expectedURL);
         })
         .then(() => {
-          assert.equal(expectedURL, this.routerService.get('currentURL'));
+          assert.strictEqual(expectedURL, this.routerService.get('currentURL'));
         });
     }
 
@@ -240,7 +243,7 @@ moduleFor(
           return this.routerService.transitionTo(expectedURL);
         })
         .then(() => {
-          assert.equal(expectedURL, this.routerService.get('currentURL'));
+          assert.strictEqual(expectedURL, this.routerService.get('currentURL'));
         });
     }
 
@@ -262,7 +265,7 @@ moduleFor(
         .then(() => {
           actualURL = `${this.routerService.get('currentURL')}?foo=bar`;
 
-          assert.equal(expectedURL, actualURL);
+          assert.strictEqual(expectedURL, actualURL);
         });
     }
 
@@ -294,7 +297,7 @@ moduleFor(
         .then(() => {
           actualURL = `${this.routerService.get('currentURL')}?foo=bar`;
 
-          assert.equal(expectedURL, actualURL);
+          assert.strictEqual(expectedURL, actualURL);
         });
     }
   }

@@ -20,7 +20,7 @@ moduleFor(
       let obj = createObj();
 
       for (let key in obj) {
-        this.assert.equal(get(obj, key), obj[key], key);
+        this.assert.strictEqual(get(obj, key), obj[key], key);
       }
     }
 
@@ -40,7 +40,7 @@ moduleFor(
 
       let obj = new Obj();
 
-      this.assert.equal(get(obj, 'path.key.value'), 'value for some-key');
+      this.assert.strictEqual(get(obj, 'path.key.value'), 'value for some-key');
     }
   }
 );

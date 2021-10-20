@@ -215,8 +215,8 @@ moduleFor(
       // This is not a public way to access the container; we just
       // need to make some assertions about the created router
       let router = this.applicationInstance.lookup('router:main');
-      assert.equal(router instanceof Router, true, 'Router was set from initialize call');
-      assert.equal(
+      assert.strictEqual(router instanceof Router, true, 'Router was set from initialize call');
+      assert.strictEqual(
         router.location instanceof NoneLocation,
         true,
         'Location was set from location implementation name'
@@ -233,7 +233,7 @@ moduleFor(
       // This is not a public way to access the container; we just
       // need to make some assertions about the created router
       let router = this.application.__deprecatedInstance__.lookup('router:main');
-      assert.equal(router instanceof Router, true, 'Router was set from initialize call');
+      assert.strictEqual(router instanceof Router, true, 'Router was set from initialize call');
       this.assertText('Hello!');
     }
 
@@ -267,8 +267,8 @@ moduleFor(
 
       runTask(() => this.createApplication());
 
-      assert.equal(messages[1], 'Ember  : ' + VERSION);
-      assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
+      assert.strictEqual(messages[1], 'Ember  : ' + VERSION);
+      assert.strictEqual(messages[2], 'my-lib : ' + '2.0.0a');
 
       libraries.deRegister('my-lib');
     }
@@ -300,11 +300,11 @@ moduleFor(
     }
 
     [`@test does not leak itself in onLoad._loaded`](assert) {
-      assert.equal(_loaded.application, undefined);
+      assert.strictEqual(_loaded.application, undefined);
       runTask(() => this.createApplication());
-      assert.equal(_loaded.application, this.application);
+      assert.strictEqual(_loaded.application, this.application);
       runTask(() => this.application.destroy());
-      assert.equal(_loaded.application, undefined);
+      assert.strictEqual(_loaded.application, undefined);
     }
 
     [`@test can build a registry via Application.buildRegistry() --- simulates ember-test-helpers`](
@@ -316,7 +316,7 @@ moduleFor(
 
       let registry = Application.buildRegistry(namespace);
 
-      assert.equal(registry.resolve('application:main'), namespace);
+      assert.strictEqual(registry.resolve('application:main'), namespace);
     }
   }
 );
@@ -333,7 +333,7 @@ moduleFor(
 
       let registry = Application.buildRegistry(namespace);
 
-      assert.equal(registry.resolve('application:main'), namespace);
+      assert.strictEqual(registry.resolve('application:main'), namespace);
     }
   }
 );

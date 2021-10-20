@@ -87,7 +87,7 @@ moduleFor(
 
       return this.visit('/track/2')
         .then(() => {
-          assert.equal(
+          assert.strictEqual(
             document.querySelector('h3').innerText,
             '2',
             'the derived property matches the id'
@@ -95,7 +95,7 @@ moduleFor(
         })
         .then(() => {
           return this.visit('/track/3').then(() => {
-            assert.equal(
+            assert.strictEqual(
               document.querySelector('h3').innerText,
               '3',
               'the derived property matches the id'
@@ -129,7 +129,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
 
-        assert.equal(
+        assert.strictEqual(
           text,
           'Sunday: Noon to 6pm',
           'The template was rendered with the hours context'
@@ -154,7 +154,7 @@ moduleFor(
         let homeRoute = this.applicationInstance.lookup('route:home');
         let homeController = this.applicationInstance.lookup('controller:home');
 
-        assert.equal(
+        assert.strictEqual(
           homeRoute.controller,
           homeController,
           'route controller is the home controller'
@@ -182,12 +182,12 @@ moduleFor(
         let myController = this.applicationInstance.lookup('controller:myController');
         let text = this.$('p').text();
 
-        assert.equal(
+        assert.strictEqual(
           homeRoute.controller,
           myController,
           'route controller is set by controllerName'
         );
-        assert.equal(
+        assert.strictEqual(
           text,
           'foo',
           'The homepage template was rendered with data from the custom controller'
@@ -230,13 +230,13 @@ moduleFor(
         let myController = this.applicationInstance.lookup('controller:myController');
         let text = this.$('p').text();
 
-        assert.equal(
+        assert.strictEqual(
           homeRoute.controller,
           myController,
           'route controller is set by controllerName'
         );
 
-        assert.equal(
+        assert.strictEqual(
           text,
           'home: myController',
           'The homepage template was rendered with data from the custom controller'
@@ -270,7 +270,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
 
-        assert.equal(
+        assert.strictEqual(
           text,
           'Sunday: Noon to 6pm',
           'The template was rendered with the hours context'
@@ -304,7 +304,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
 
-        assert.equal(
+        assert.strictEqual(
           text,
           'Sunday: Noon to 6pm',
           'The template was rendered with the context intact'
@@ -329,7 +329,7 @@ moduleFor(
           },
 
           setupController(controller, model) {
-            assert.equal(this.controllerFor('home'), controller);
+            assert.strictEqual(this.controllerFor('home'), controller);
 
             this.controllerFor('home').set('hours', model);
           },
@@ -344,7 +344,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let text = this.$('ul li:nth-child(3)').text();
 
-        assert.equal(
+        assert.strictEqual(
           text,
           'Sunday: Noon to 6pm',
           'The template was rendered with the hours context'
@@ -374,7 +374,7 @@ moduleFor(
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
 
-        assert.equal(text, '1', 'The model was used to render the template');
+        assert.strictEqual(text, '1', 'The model was used to render the template');
       });
     }
 
@@ -427,7 +427,7 @@ moduleFor(
           return this.visit('/specials/1', promiseContext);
         })
         .then(() => {
-          assert.equal(this.currentURL, '/specials/1');
+          assert.strictEqual(this.currentURL, '/specials/1');
           this.assertText('1', 'The app is now transitioned');
         });
     }
@@ -496,27 +496,27 @@ moduleFor(
       return this.visit('/').then(() => {
         rootElement = document.getElementById('qunit-fixture');
 
-        assert.equal(
+        assert.strictEqual(
           getTextOf(rootElement.querySelector('h3')),
           'Home',
           'The app is now in the initial state'
         );
-        assert.equal(rootSetup, 1, 'The root setup was triggered');
-        assert.equal(rootSerialize, 0, 'The root serialize was not called');
-        assert.equal(rootModel, 1, 'The root model was called');
+        assert.strictEqual(rootSetup, 1, 'The root setup was triggered');
+        assert.strictEqual(rootSerialize, 0, 'The root serialize was not called');
+        assert.strictEqual(rootModel, 1, 'The root model was called');
 
         let router = this.applicationInstance.lookup('router:main');
         let menuItem = MenuItem.create({ id: 1 });
 
         return router.transitionTo('special', menuItem).then(function () {
-          assert.equal(rootSetup, 1, 'The root setup was not triggered again');
-          assert.equal(rootSerialize, 0, 'The root serialize was not called');
+          assert.strictEqual(rootSetup, 1, 'The root setup was not triggered again');
+          assert.strictEqual(rootSerialize, 0, 'The root serialize was not called');
 
           // TODO: Should this be changed?
-          assert.equal(rootModel, 1, 'The root model was called again');
+          assert.strictEqual(rootModel, 1, 'The root model was called again');
 
           assert.deepEqual(router.location.path, '/specials/1');
-          assert.equal(router.currentPath, 'root.special');
+          assert.strictEqual(router.currentPath, 'root.special');
         });
       });
     }
@@ -567,7 +567,7 @@ moduleFor(
           afterModel(post /*, transition */) {
             let parent_model = this.modelFor('the-post');
 
-            assert.equal(post, parent_model);
+            assert.strictEqual(post, parent_model);
           },
         })
       );
@@ -587,7 +587,7 @@ moduleFor(
           afterModel(share /*, transition */) {
             let parent_model = this.modelFor('shares');
 
-            assert.equal(share, parent_model);
+            assert.strictEqual(share, parent_model);
           },
         })
       );
@@ -652,7 +652,7 @@ moduleFor(
           afterModel(post /*, transition */) {
             let parent_model = this.modelFor('the-post');
 
-            assert.equal(post, parent_model);
+            assert.strictEqual(post, parent_model);
           },
         })
       );
@@ -704,7 +704,7 @@ moduleFor(
         'route:comments',
         Route.extend({
           model() {
-            assert.equal(this.modelFor('the-post'), currentPost);
+            assert.strictEqual(this.modelFor('the-post'), currentPost);
           },
         })
       );
@@ -799,7 +799,7 @@ moduleFor(
         run(() => router.send('editPost'));
         run(() => router.send('showPost', { id: '2' }));
         run(() => router.send('editPost'));
-        assert.equal(editCount, 2, 'set up the edit route twice without failure');
+        assert.strictEqual(editCount, 2, 'set up the edit route twice without failure');
         assert.deepEqual(
           editedPostIds,
           ['1', '2'],
@@ -827,8 +827,8 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let routerService = this.applicationInstance.lookup('service:router');
-        assert.equal(routerService.currentRouteName, 'index', 'currentPath is index');
-        assert.equal(
+        assert.strictEqual(routerService.currentRouteName, 'index', 'currentPath is index');
+        assert.strictEqual(
           'currentPath' in model,
           false,
           'should have defined currentPath on controller'
@@ -852,7 +852,7 @@ moduleFor(
       });
 
       return this.visit('/post/1').then(() => {
-        assert.equal(Post, post);
+        assert.strictEqual(Post, post);
       });
     }
 
@@ -878,7 +878,7 @@ moduleFor(
         'route:parent',
         Route.extend({
           model(params) {
-            assert.equal(params.parent_id, '123');
+            assert.strictEqual(params.parent_id, '123');
             ++parentcount;
           },
           actions: {
@@ -903,21 +903,21 @@ moduleFor(
       return this.visit('/')
         .then(() => {
           router = this.applicationInstance.lookup('router:main');
-          assert.equal(appcount, 1);
-          assert.equal(parentcount, 0);
-          assert.equal(childcount, 0);
+          assert.strictEqual(appcount, 1);
+          assert.strictEqual(parentcount, 0);
+          assert.strictEqual(childcount, 0);
           return run(router, 'transitionTo', 'parent.child', '123');
         })
         .then(() => {
-          assert.equal(appcount, 1);
-          assert.equal(parentcount, 1);
-          assert.equal(childcount, 1);
+          assert.strictEqual(appcount, 1);
+          assert.strictEqual(parentcount, 1);
+          assert.strictEqual(childcount, 1);
           return run(router, 'send', 'refreshParent');
         })
         .then(() => {
-          assert.equal(appcount, 1);
-          assert.equal(parentcount, 2);
-          assert.equal(childcount, 2);
+          assert.strictEqual(appcount, 1);
+          assert.strictEqual(parentcount, 2);
+          assert.strictEqual(childcount, 2);
         });
     }
   }

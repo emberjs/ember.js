@@ -133,8 +133,8 @@ moduleFor(
       this.render('{{component "foo-bar"}}');
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+      assert.strictEqual(fooBarInstance.parentView, this.component);
+      assert.strictEqual(fooBarBazInstance.parentView, fooBarInstance);
 
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
@@ -142,8 +142,8 @@ moduleFor(
       runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+      assert.strictEqual(fooBarInstance.parentView, this.component);
+      assert.strictEqual(fooBarBazInstance.parentView, fooBarInstance);
 
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
@@ -333,7 +333,7 @@ moduleFor(
         template: 'hello from foo-bar',
         ComponentClass: Component.extend({
           willDestroyElement() {
-            assert.equal(
+            assert.strictEqual(
               testContext.$(`#${this.elementId}`).length,
               1,
               'element is still attached to the document'
@@ -466,13 +466,13 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      assert.equal(actionTriggered, 0, 'action was not triggered');
+      assert.strictEqual(actionTriggered, 0, 'action was not triggered');
 
       runTask(() => {
         this.$('.inner-component').click();
       });
 
-      assert.equal(actionTriggered, 1, 'action was triggered');
+      assert.strictEqual(actionTriggered, 1, 'action was triggered');
     }
 
     ['@test nested component helpers']() {

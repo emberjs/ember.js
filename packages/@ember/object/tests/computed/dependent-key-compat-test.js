@@ -24,11 +24,11 @@ moduleFor(
 
       let tom = new Person();
 
-      assert.equal(tom.fullName, 'Tom Dale');
+      assert.strictEqual(tom.fullName, 'Tom Dale');
 
       tom.firstName = 'Thomas';
 
-      assert.equal(tom.fullName, 'Thomas Dale');
+      assert.strictEqual(tom.fullName, 'Thomas Dale');
     }
 
     '@test it works with classic classes'(assert) {
@@ -49,11 +49,11 @@ moduleFor(
 
       let tom = Person.create();
 
-      assert.equal(tom.fullName, 'Tom Dale');
+      assert.strictEqual(tom.fullName, 'Tom Dale');
 
       tom.firstName = 'Thomas';
 
-      assert.equal(tom.fullName, 'Thomas Dale');
+      assert.strictEqual(tom.fullName, 'Thomas Dale');
     }
 
     async '@test it works with async observers'(assert) {
@@ -80,15 +80,15 @@ moduleFor(
 
       let tom = Person.create();
 
-      assert.equal(count, 0);
+      assert.strictEqual(count, 0);
 
       // check the alias, and bootstrap it
-      assert.equal(tom.givenName, 'Tom', 'alias works');
+      assert.strictEqual(tom.givenName, 'Tom', 'alias works');
 
       tom.firstName = 'Thomas';
       await runLoopSettled();
 
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
 
       tom.destroy();
     }
@@ -117,11 +117,11 @@ moduleFor(
 
       let tom = Person.create();
 
-      assert.equal(count, 0);
+      assert.strictEqual(count, 0);
 
       tom.firstName = 'Thomas';
 
-      assert.equal(count, 0);
+      assert.strictEqual(count, 0);
 
       tom.destroy();
     }

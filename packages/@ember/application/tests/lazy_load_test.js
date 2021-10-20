@@ -25,7 +25,7 @@ moduleFor(
         runLoadHooks('__test_hook__', 1);
       });
 
-      assert.equal(count, 1, 'the object was passed into the load hook');
+      assert.strictEqual(count, 1, 'the object was passed into the load hook');
     }
 
     ['@test if runLoadHooks was already run, it executes newly added hooks immediately'](assert) {
@@ -41,7 +41,7 @@ moduleFor(
         onLoad('__test_hook__', (object) => (count += object));
       });
 
-      assert.equal(count, 1, 'the original object was passed into the load hook');
+      assert.strictEqual(count, 1, 'the original object was passed into the load hook');
     }
 
     ["@test hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"](assert) {
@@ -52,7 +52,7 @@ moduleFor(
         runLoadHooks('__before_ember_test_hook__', 1);
       });
 
-      assert.equal(
+      assert.strictEqual(
         window.EmberENV.__test_hook_count__,
         1,
         'the object was passed into the load hook'
@@ -69,7 +69,7 @@ moduleFor(
 
         window.addEventListener('__test_hook_for_events__', function (e) {
           assert.ok(true, 'custom event was fired');
-          assert.equal(e.detail, eventObject, 'event details are provided properly');
+          assert.strictEqual(e.detail, eventObject, 'event details are provided properly');
         });
 
         run(() => {

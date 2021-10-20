@@ -16,12 +16,12 @@ moduleFor(
       });
 
       let obj = MyClass.create();
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
 
       obj.destroy();
     }
@@ -33,22 +33,22 @@ moduleFor(
       });
 
       let obj = MyClass.create();
-      assert.equal(get(obj, 'mood'), 'good');
+      assert.strictEqual(get(obj, 'mood'), 'good');
 
       set(obj, 'mood', 'bad');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'mood'), 'bad');
+      assert.strictEqual(get(obj, 'mood'), 'bad');
 
       set(obj, 'mood', undefined);
       await runLoopSettled();
 
-      assert.equal(get(obj, 'mood'), undefined);
+      assert.strictEqual(get(obj, 'mood'), undefined);
 
       set(obj, 'mood', 'awesome');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'mood'), 'awesome');
+      assert.strictEqual(get(obj, 'mood'), 'awesome');
 
       obj.destroy();
     }
@@ -69,17 +69,17 @@ moduleFor(
       });
 
       let obj = Subclass.create();
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer after change');
 
       set(obj, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
 
       obj.destroy();
     }
@@ -93,12 +93,12 @@ moduleFor(
         count: 0,
       });
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
 
       obj.destroy();
       await runLoopSettled();
@@ -120,17 +120,17 @@ moduleFor(
         }),
       }).create();
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer after change');
 
       set(obj, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
 
       obj.destroy();
     }
@@ -143,7 +143,7 @@ moduleFor(
         }),
       }).create();
 
-      assert.equal(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
       run(() => obj.destroy());
 
@@ -151,7 +151,7 @@ moduleFor(
         set(obj, 'bar', 'BAZ');
       }, `calling set on destroyed object: ${obj}.bar = BAZ`);
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer after change');
 
       obj.destroy();
     }
@@ -177,20 +177,20 @@ moduleFor(
         bar: { baz: 'biff2' },
       });
 
-      assert.equal(get(obj1, 'count'), 0, 'should not invoke yet');
-      assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
+      assert.strictEqual(get(obj1, 'count'), 0, 'should not invoke yet');
+      assert.strictEqual(get(obj2, 'count'), 0, 'should not invoke yet');
 
       set(get(obj1, 'bar'), 'baz', 'BIFF1');
       await runLoopSettled();
 
-      assert.equal(get(obj1, 'count'), 1, 'should invoke observer on obj1');
-      assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
+      assert.strictEqual(get(obj1, 'count'), 1, 'should invoke observer on obj1');
+      assert.strictEqual(get(obj2, 'count'), 0, 'should not invoke yet');
 
       set(get(obj2, 'bar'), 'baz', 'BIFF2');
       await runLoopSettled();
 
-      assert.equal(get(obj1, 'count'), 1, 'should not invoke again');
-      assert.equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
+      assert.strictEqual(get(obj1, 'count'), 1, 'should not invoke again');
+      assert.strictEqual(get(obj2, 'count'), 1, 'should invoke observer on obj2');
 
       obj1.destroy();
       obj2.destroy();
@@ -218,26 +218,26 @@ moduleFor(
         bar2: { baz: 'biff3' },
       });
 
-      assert.equal(get(obj1, 'count'), 0, 'should not invoke yet');
-      assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
+      assert.strictEqual(get(obj1, 'count'), 0, 'should not invoke yet');
+      assert.strictEqual(get(obj2, 'count'), 0, 'should not invoke yet');
 
       set(get(obj1, 'bar'), 'baz', 'BIFF1');
       await runLoopSettled();
 
-      assert.equal(get(obj1, 'count'), 1, 'should invoke observer on obj1');
-      assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
+      assert.strictEqual(get(obj1, 'count'), 1, 'should invoke observer on obj1');
+      assert.strictEqual(get(obj2, 'count'), 0, 'should not invoke yet');
 
       set(get(obj2, 'bar'), 'baz', 'BIFF2');
       await runLoopSettled();
 
-      assert.equal(get(obj1, 'count'), 1, 'should not invoke again');
-      assert.equal(get(obj2, 'count'), 0, 'should not invoke yet');
+      assert.strictEqual(get(obj1, 'count'), 1, 'should not invoke again');
+      assert.strictEqual(get(obj2, 'count'), 0, 'should not invoke yet');
 
       set(get(obj2, 'bar2'), 'baz', 'BIFF3');
       await runLoopSettled();
 
-      assert.equal(get(obj1, 'count'), 1, 'should not invoke again');
-      assert.equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
+      assert.strictEqual(get(obj1, 'count'), 1, 'should not invoke again');
+      assert.strictEqual(get(obj2, 'count'), 1, 'should invoke observer on obj2');
 
       obj1.destroy();
       obj2.destroy();
@@ -268,17 +268,17 @@ moduleFor(
 
       let parent = ParentClass.create();
 
-      assert.equal(changed, false, 'precond');
+      assert.strictEqual(changed, false, 'precond');
 
       set(parent, 'one.two', 'new');
       await runLoopSettled();
 
-      assert.equal(changed, true, 'child should have been notified of change to path');
+      assert.strictEqual(changed, true, 'child should have been notified of change to path');
 
       set(parent, 'one', { two: 'newer' });
       await runLoopSettled();
 
-      assert.equal(changed, true, 'child should have been notified of change to path');
+      assert.strictEqual(changed, true, 'child should have been notified of change to path');
 
       parent.child.destroy();
       parent.destroy();
@@ -312,7 +312,7 @@ moduleFor(
 
       obj.notifyPropertyChange('foo');
 
-      assert.equal(changed, true, 'observer fired successfully');
+      assert.strictEqual(changed, true, 'observer fired successfully');
 
       obj.destroy();
     }

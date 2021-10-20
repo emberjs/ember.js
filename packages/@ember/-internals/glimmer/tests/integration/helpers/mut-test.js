@@ -137,7 +137,7 @@ moduleFor(
 
       this.render('{{middle-mut value="foo"}}');
 
-      this.assert.equal(get(bottom, 'stuff'), 'foo', 'the data propagated');
+      this.assert.strictEqual(get(bottom, 'stuff'), 'foo', 'the data propagated');
       this.assertText('foo');
 
       this.assertStableRerender();
@@ -352,8 +352,8 @@ moduleFor(
 
       runTask(() => inner.attrs.foo.update('bar'));
 
-      this.assert.equal(inner.attrs.foo.value, 'bar');
-      this.assert.equal(get(inner, 'foo'), 'bar');
+      this.assert.strictEqual(inner.attrs.foo.value, 'bar');
+      this.assert.strictEqual(get(inner, 'foo'), 'bar');
       this.assertText('bar');
 
       runTask(() => inner.attrs.foo.update('foo'));
@@ -385,8 +385,8 @@ moduleFor(
 
       runTask(() => inner.attrs.model.update(42));
 
-      this.assert.equal(inner.attrs.model.value, 42);
-      this.assert.equal(get(inner, 'model'), 42);
+      this.assert.strictEqual(inner.attrs.model.value, 42);
+      this.assert.strictEqual(get(inner, 'model'), 42);
       this.assertText('42');
 
       runTask(() => inner.attrs.model.update(undefined));
@@ -421,8 +421,8 @@ moduleFor(
 
       runTask(() => inner.attrs.model.update(42));
 
-      this.assert.equal(inner.attrs.model.value, 42);
-      this.assert.equal(get(inner, 'model'), 42);
+      this.assert.strictEqual(inner.attrs.model.value, 42);
+      this.assert.strictEqual(get(inner, 'model'), 42);
       this.assertText('hello42');
 
       runTask(() => inner.attrs.model.update('foo'));

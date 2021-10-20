@@ -16,8 +16,8 @@ moduleFor(
       let obj = {};
       MixinA.apply(obj);
 
-      assert.equal(obj.prop, 0, 'getter defined correctly');
-      assert.equal(obj.prop, 1, 'getter defined correctly');
+      assert.strictEqual(obj.prop, 0, 'getter defined correctly');
+      assert.strictEqual(obj.prop, 1, 'getter defined correctly');
     }
 
     ['@test works with setters'](assert) {
@@ -32,7 +32,7 @@ moduleFor(
 
       obj.prop = 0;
 
-      assert.equal(obj._prop, 1, 'setter defined correctly');
+      assert.strictEqual(obj._prop, 1, 'setter defined correctly');
     }
   }
 );

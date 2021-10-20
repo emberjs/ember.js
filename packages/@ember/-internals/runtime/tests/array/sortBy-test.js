@@ -7,8 +7,8 @@ class SortByTests extends AbstractTestCase {
     let obj = this.newObject([{ a: 2 }, { a: 1 }]);
     let sorted = obj.sortBy('a');
 
-    this.assert.equal(get(sorted[0], 'a'), 1);
-    this.assert.equal(get(sorted[1], 'a'), 2);
+    this.assert.strictEqual(get(sorted[0], 'a'), 1);
+    this.assert.strictEqual(get(sorted[1], 'a'), 2);
   }
 
   '@test supports multiple propertyNames'() {
@@ -18,8 +18,8 @@ class SortByTests extends AbstractTestCase {
     ]);
     let sorted = obj.sortBy('a', 'b');
 
-    this.assert.equal(get(sorted[0], 'b'), 1);
-    this.assert.equal(get(sorted[1], 'b'), 2);
+    this.assert.strictEqual(get(sorted[0], 'b'), 1);
+    this.assert.strictEqual(get(sorted[1], 'b'), 2);
   }
 }
 

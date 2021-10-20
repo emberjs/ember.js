@@ -13,7 +13,7 @@ class FindTests extends AbstractTestCase {
       found.push(i);
       return false;
     });
-    this.assert.equal(result, undefined, 'return value of obj.find');
+    this.assert.strictEqual(result, undefined, 'return value of obj.find');
     this.assert.deepEqual(found, ary, 'items passed during find() should match');
   }
 
@@ -29,8 +29,8 @@ class FindTests extends AbstractTestCase {
       found.push(i);
       return --cnt >= 0;
     });
-    this.assert.equal(result, ary[exp - 1], 'return value of obj.find');
-    this.assert.equal(found.length, exp, 'should invoke proper number of times');
+    this.assert.strictEqual(result, ary[exp - 1], 'return value of obj.find');
+    this.assert.strictEqual(found.length, exp, 'should invoke proper number of times');
     this.assert.deepEqual(found, ary.slice(0, -2), 'items passed during find() should match');
   }
 }
@@ -43,8 +43,8 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', 'foo'), ary[0], 'findBy(foo)');
-    this.assert.equal(obj.findBy('bar', 'bar'), ary[1], 'findBy(bar)');
+    this.assert.strictEqual(obj.findBy('foo', 'foo'), ary[0], 'findBy(foo)');
+    this.assert.strictEqual(obj.findBy('bar', 'bar'), ary[1], 'findBy(bar)');
   }
 
   '@test should return first object with truthy prop'() {
@@ -55,8 +55,8 @@ class FindByTests extends AbstractTestCase {
     obj = this.newObject(ary);
 
     // different values - all eval to true
-    this.assert.equal(obj.findBy('foo'), ary[0], 'findBy(foo)');
-    this.assert.equal(obj.findBy('bar'), ary[1], 'findBy(bar)');
+    this.assert.strictEqual(obj.findBy('foo'), ary[0], 'findBy(foo)');
+    this.assert.strictEqual(obj.findBy('bar'), ary[1], 'findBy(bar)');
   }
 
   '@test should return first null property match'() {
@@ -66,8 +66,8 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', null), ary[0], "findBy('foo', null)");
-    this.assert.equal(obj.findBy('bar', null), ary[1], "findBy('bar', null)");
+    this.assert.strictEqual(obj.findBy('foo', null), ary[0], "findBy('foo', null)");
+    this.assert.strictEqual(obj.findBy('bar', null), ary[1], "findBy('bar', null)");
   }
 
   '@test should return first undefined property match'() {
@@ -77,8 +77,8 @@ class FindByTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
 
-    this.assert.equal(obj.findBy('foo', undefined), ary[0], "findBy('foo', undefined)");
-    this.assert.equal(obj.findBy('bar', undefined), ary[1], "findBy('bar', undefined)");
+    this.assert.strictEqual(obj.findBy('foo', undefined), ary[0], "findBy('foo', undefined)");
+    this.assert.strictEqual(obj.findBy('bar', undefined), ary[1], "findBy('bar', undefined)");
   }
 }
 

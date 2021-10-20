@@ -81,12 +81,12 @@ moduleFor(
 
       await this.visitAndAssert('/');
 
-      assert.equal(
+      assert.strictEqual(
         this.$('.post-link.is-1337').attr('href'),
         '/post/1337?foo=bar',
         'renders correctly with default QP value'
       );
-      assert.equal(
+      assert.strictEqual(
         this.$('.post-link.is-7331').attr('href'),
         '/post/7331?foo=boo',
         'renders correctly with non-default QP value'
@@ -121,7 +121,7 @@ moduleFor(
           return this.transitionTo('post', 1337, {
             queryParams: { foo: 'boo' },
           }).then(() => {
-            assert.equal(
+            assert.strictEqual(
               postController.get('foo'),
               'boo',
               'simple QP is correctly set on controller'
@@ -133,7 +133,7 @@ moduleFor(
           return this.transitionTo('post', 1337, {
             queryParams: { foo: 'bar' },
           }).then(() => {
-            assert.equal(
+            assert.strictEqual(
               postController.get('foo'),
               'bar',
               'simple QP is correctly set with default value'
@@ -202,12 +202,12 @@ moduleFor(
           return this.transitionTo('post.index', 1337, {
             queryParams: { note: 6, foo: 'boo' },
           }).then(() => {
-            assert.equal(
+            assert.strictEqual(
               postController.get('foo'),
               'boo',
               'simple QP is correctly set on controller'
             );
-            assert.equal(
+            assert.strictEqual(
               postIndexController.get('comment'),
               6,
               'mapped QP is correctly set on controller'
@@ -219,12 +219,12 @@ moduleFor(
           return this.transitionTo('post', 1337, {
             queryParams: { foo: 'bar' },
           }).then(() => {
-            assert.equal(
+            assert.strictEqual(
               postController.get('foo'),
               'bar',
               'simple QP is correctly set with default value'
             );
-            assert.equal(
+            assert.strictEqual(
               postIndexController.get('comment'),
               6,
               'mapped QP retains value scoped to model'
@@ -255,12 +255,12 @@ moduleFor(
           postIndexController = this.getController('post.index');
 
           return this.transitionTo('/post/1337?foo=boo&note=6').then(() => {
-            assert.equal(
+            assert.strictEqual(
               postController.get('foo'),
               'boo',
               'simple QP is correctly deserialized on controller'
             );
-            assert.equal(
+            assert.strictEqual(
               postIndexController.get('comment'),
               6,
               'mapped QP is correctly deserialized on controller'
@@ -270,12 +270,12 @@ moduleFor(
         })
         .then(() => {
           return this.transitionTo('/post/1337?note=6').then(() => {
-            assert.equal(
+            assert.strictEqual(
               postController.get('foo'),
               'bar',
               'simple QP is correctly deserialized with default value'
             );
-            assert.equal(
+            assert.strictEqual(
               postIndexController.get('comment'),
               6,
               'mapped QP retains value scoped to model'
@@ -311,7 +311,7 @@ moduleFor(
       );
 
       return this.visitAndAssert('/').then(() => {
-        assert.equal(
+        assert.strictEqual(
           this.$('#the-link').attr('href'),
           '/example',
           'renders without undefined qp serialized'

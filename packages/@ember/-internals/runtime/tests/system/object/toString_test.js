@@ -19,12 +19,12 @@ moduleFor(
       setName(Foo, 'Foo');
       setName(Bar, 'Bar');
 
-      assert.equal(
+      assert.strictEqual(
         bar.toString(),
         '<(unknown):' + guidFor(bar) + '>',
         'does not include toStringExtension part'
       );
-      assert.equal(
+      assert.strictEqual(
         foo.toString(),
         '<(unknown):' + guidFor(foo) + ':fooey>',
         'Includes toStringExtension result'

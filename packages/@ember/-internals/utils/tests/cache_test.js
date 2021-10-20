@@ -7,19 +7,19 @@ moduleFor(
     ['@test basic'](assert) {
       let cache = new Cache(100, (key) => key.toUpperCase());
 
-      assert.equal(cache.get('foo'), 'FOO');
-      assert.equal(cache.get('bar'), 'BAR');
-      assert.equal(cache.get('foo'), 'FOO');
+      assert.strictEqual(cache.get('foo'), 'FOO');
+      assert.strictEqual(cache.get('bar'), 'BAR');
+      assert.strictEqual(cache.get('foo'), 'FOO');
     }
 
     ['@test explicit sets'](assert) {
       let cache = new Cache(100, (key) => key.toUpperCase());
 
-      assert.equal(cache.get('foo'), 'FOO');
+      assert.strictEqual(cache.get('foo'), 'FOO');
 
-      assert.equal(cache.set('foo', 'FOO!!!'), 'FOO!!!');
+      assert.strictEqual(cache.set('foo', 'FOO!!!'), 'FOO!!!');
 
-      assert.equal(cache.get('foo'), 'FOO!!!');
+      assert.strictEqual(cache.get('foo'), 'FOO!!!');
 
       assert.strictEqual(cache.set('foo', undefined), undefined);
 
@@ -33,15 +33,15 @@ moduleFor(
         return key.toUpperCase();
       });
 
-      assert.equal(count, 0);
+      assert.strictEqual(count, 0);
       cache.get('foo');
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
       cache.get('bar');
-      assert.equal(count, 2);
+      assert.strictEqual(count, 2);
       cache.get('bar');
-      assert.equal(count, 2);
+      assert.strictEqual(count, 2);
       cache.get('foo');
-      assert.equal(count, 2);
+      assert.strictEqual(count, 2);
     }
 
     ['@test handles undefined value correctly'](assert) {
@@ -50,15 +50,15 @@ moduleFor(
         count++;
       });
 
-      assert.equal(count, 0);
+      assert.strictEqual(count, 0);
       assert.strictEqual(cache.get('foo'), undefined);
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
       assert.strictEqual(cache.get('bar'), undefined);
-      assert.equal(count, 2);
+      assert.strictEqual(count, 2);
       assert.strictEqual(cache.get('bar'), undefined);
-      assert.equal(count, 2);
+      assert.strictEqual(count, 2);
       assert.strictEqual(cache.get('foo'), undefined);
-      assert.equal(count, 2);
+      assert.strictEqual(count, 2);
     }
 
     ['@test continues working after reaching cache limit'](assert) {
@@ -68,10 +68,10 @@ moduleFor(
       cache.get('b');
       cache.get('c');
 
-      assert.equal(cache.get('d'), 'D');
-      assert.equal(cache.get('a'), 'A');
-      assert.equal(cache.get('b'), 'B');
-      assert.equal(cache.get('c'), 'C');
+      assert.strictEqual(cache.get('d'), 'D');
+      assert.strictEqual(cache.get('a'), 'A');
+      assert.strictEqual(cache.get('b'), 'B');
+      assert.strictEqual(cache.get('c'), 'C');
     }
   }
 );

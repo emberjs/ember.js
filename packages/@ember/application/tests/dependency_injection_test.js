@@ -55,13 +55,13 @@ moduleFor(
     }
 
     ['@test registered entities can be looked up later'](assert) {
-      assert.equal(registry.resolve('model:person'), application.Person);
-      assert.equal(registry.resolve('model:user'), application.User);
-      assert.equal(registry.resolve('fruit:favorite'), application.Orange);
-      assert.equal(registry.resolve('communication:main'), application.Email);
-      assert.equal(registry.resolve('controller:postIndex'), application.PostIndexController);
+      assert.strictEqual(registry.resolve('model:person'), application.Person);
+      assert.strictEqual(registry.resolve('model:user'), application.User);
+      assert.strictEqual(registry.resolve('fruit:favorite'), application.Orange);
+      assert.strictEqual(registry.resolve('communication:main'), application.Email);
+      assert.strictEqual(registry.resolve('controller:postIndex'), application.PostIndexController);
 
-      assert.equal(
+      assert.strictEqual(
         locator.lookup('fruit:favorite'),
         locator.lookup('fruit:favorite'),
         'singleton lookup worked'

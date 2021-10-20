@@ -85,7 +85,7 @@ moduleFor(
     ['@test Should insert a textarea'](assert) {
       this.render('{{textarea}}');
 
-      assert.equal(this.$('textarea').length, 1);
+      assert.strictEqual(this.$('textarea').length, 1);
 
       this.assertStableRerender();
     }
@@ -96,7 +96,7 @@ moduleFor(
         /Passing the `@elementId` argument to <Textarea> is deprecated\./,
         EMBER_MODERNIZED_BUILT_IN_COMPONENTS
       );
-      assert.equal(this.$('textarea').attr('id'), 'test-textarea');
+      assert.strictEqual(this.$('textarea').attr('id'), 'test-textarea');
     }
 
     ['@test [DEPRECATED] Should respect disabled'](assert) {

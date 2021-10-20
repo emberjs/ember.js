@@ -7,7 +7,7 @@ class PushObjectTests extends AbstractTestCase {
     let exp = newFixture(1)[0];
     let obj = this.newObject([]);
 
-    this.assert.equal(obj.pushObject(exp), exp, 'should return pushed object');
+    this.assert.strictEqual(obj.pushObject(exp), exp, 'should return pushed object');
   }
 
   async '@test [].pushObject(X) => [X] + notify'() {
@@ -24,17 +24,21 @@ class PushObjectTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
@@ -58,18 +62,22 @@ class PushObjectTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject'
@@ -93,18 +101,26 @@ class PushObjectTests extends AbstractTestCase {
     await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
-    this.assert.equal(get(obj, 'length'), after.length, 'length');
+    this.assert.strictEqual(get(obj, 'length'), after.length, 'length');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject'
     );
-    this.assert.equal(observer.validate('lastObject'), true, 'should have notified lastObject');
+    this.assert.strictEqual(
+      observer.validate('lastObject'),
+      true,
+      'should have notified lastObject'
+    );
 
     obj.destroy();
   }

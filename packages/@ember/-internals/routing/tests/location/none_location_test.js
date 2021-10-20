@@ -38,7 +38,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.formatURL('/foo/bar'), '/en/foo/bar');
+      assert.strictEqual(location.formatURL('/foo/bar'), '/en/foo/bar');
     }
 
     ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
@@ -52,7 +52,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/bar');
+      assert.strictEqual(location.getURL(), '/bar');
     }
 
     ['@test NoneLocation.getURL() will remove the rootURL only from the beginning of a url'](
@@ -68,7 +68,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar/baz');
+      assert.strictEqual(location.getURL(), '/foo/bar/baz');
     }
 
     ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](assert) {
@@ -82,7 +82,7 @@ moduleFor(
 
       createLocation();
 
-      assert.equal(location.getURL(), '/bars/baz');
+      assert.strictEqual(location.getURL(), '/bars/baz');
     }
   }
 );

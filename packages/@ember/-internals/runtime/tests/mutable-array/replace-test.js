@@ -16,15 +16,19 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), exp, 'post item results');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('firstObject'),
       1,
       'should have notified firstObject once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
@@ -48,17 +52,17 @@ class ReplaceTests extends AbstractTestCase {
     // flush observers
     await runLoopSettled();
 
-    this.assert.equal(
+    this.assert.strictEqual(
       called,
       0,
       'should NOT have called objectAt upon replace when firstObject/lastObject are not cached'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject since not cached'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject since not cached'
@@ -84,16 +88,20 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject once'
@@ -119,16 +127,20 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.validate('length'), false, 'should NOT have notified length');
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.validate('length'), false, 'should NOT have notified length');
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject once'
@@ -154,16 +166,20 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject once'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('lastObject'),
       false,
       'should NOT have notified lastObject once'
@@ -188,16 +204,20 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject once'
@@ -222,16 +242,20 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
 
-    this.assert.equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-    this.assert.equal(observer.timesCalled('@each'), 0, 'should not have notified @each once');
-    this.assert.equal(observer.timesCalled('length'), 1, 'should have notified length once');
-    this.assert.equal(
+    this.assert.strictEqual(observer.timesCalled('[]'), 1, 'should have notified [] once');
+    this.assert.strictEqual(
+      observer.timesCalled('@each'),
+      0,
+      'should not have notified @each once'
+    );
+    this.assert.strictEqual(observer.timesCalled('length'), 1, 'should have notified length once');
+    this.assert.strictEqual(
       observer.timesCalled('lastObject'),
       1,
       'should have notified lastObject once'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       observer.validate('firstObject'),
       false,
       'should NOT have notified firstObject once'

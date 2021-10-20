@@ -40,44 +40,44 @@ if (EMBER_ROUTING_ROUTER_SERVICE_REFRESH) {
         );
 
         await this.visit('/');
-        assert.equal(parentCounter, 1);
-        assert.equal(childCounter, 0);
-        assert.equal(sisterCounter, 0);
+        assert.strictEqual(parentCounter, 1);
+        assert.strictEqual(childCounter, 0);
+        assert.strictEqual(sisterCounter, 0);
 
         await this.routerService.refresh();
-        assert.equal(parentCounter, 2);
-        assert.equal(childCounter, 0);
-        assert.equal(sisterCounter, 0);
+        assert.strictEqual(parentCounter, 2);
+        assert.strictEqual(childCounter, 0);
+        assert.strictEqual(sisterCounter, 0);
 
         await this.routerService.refresh('application');
-        assert.equal(parentCounter, 3);
-        assert.equal(childCounter, 0);
-        assert.equal(sisterCounter, 0);
+        assert.strictEqual(parentCounter, 3);
+        assert.strictEqual(childCounter, 0);
+        assert.strictEqual(sisterCounter, 0);
 
         await this.routerService.transitionTo('parent.child');
-        assert.equal(parentCounter, 3);
-        assert.equal(childCounter, 1);
-        assert.equal(sisterCounter, 0);
+        assert.strictEqual(parentCounter, 3);
+        assert.strictEqual(childCounter, 1);
+        assert.strictEqual(sisterCounter, 0);
 
         await this.routerService.refresh('parent.child');
-        assert.equal(parentCounter, 3);
-        assert.equal(childCounter, 2);
-        assert.equal(sisterCounter, 0);
+        assert.strictEqual(parentCounter, 3);
+        assert.strictEqual(childCounter, 2);
+        assert.strictEqual(sisterCounter, 0);
 
         await this.routerService.refresh('parent');
-        assert.equal(parentCounter, 4);
-        assert.equal(childCounter, 3);
-        assert.equal(sisterCounter, 0);
+        assert.strictEqual(parentCounter, 4);
+        assert.strictEqual(childCounter, 3);
+        assert.strictEqual(sisterCounter, 0);
 
         await this.routerService.transitionTo('parent.sister');
-        assert.equal(parentCounter, 4);
-        assert.equal(childCounter, 3);
-        assert.equal(sisterCounter, 1);
+        assert.strictEqual(parentCounter, 4);
+        assert.strictEqual(childCounter, 3);
+        assert.strictEqual(sisterCounter, 1);
 
         await this.routerService.refresh();
-        assert.equal(parentCounter, 5);
-        assert.equal(childCounter, 3);
-        assert.equal(sisterCounter, 2);
+        assert.strictEqual(parentCounter, 5);
+        assert.strictEqual(childCounter, 3);
+        assert.strictEqual(sisterCounter, 2);
       }
 
       async ['@test RouterService#refresh verifies that the provided route exists']() {

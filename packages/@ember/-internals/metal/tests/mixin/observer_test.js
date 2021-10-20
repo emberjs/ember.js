@@ -25,12 +25,12 @@ moduleFor(
       });
 
       obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
     async ['@test global observer helper takes multiple params'](assert) {
@@ -43,7 +43,7 @@ moduleFor(
       });
 
       obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       await runLoopSettled();
@@ -51,7 +51,7 @@ moduleFor(
       set(obj, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 2, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 2, 'should invoke observer after change');
 
       destroy(obj);
       await runLoopSettled();
@@ -73,17 +73,17 @@ moduleFor(
       });
 
       obj = mixin({}, MyMixin, Mixin2);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer after change');
 
       set(obj, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 10, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 10, 'should invoke observer after change');
     }
 
     async ['@test observing chain with property before'](assert) {
@@ -98,12 +98,12 @@ moduleFor(
       });
 
       obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj2, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
     async ['@test observing chain with property after'](assert) {
@@ -118,12 +118,12 @@ moduleFor(
       });
 
       obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj2, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
     async ['@test observing chain with property in mixin applied later'](assert) {
@@ -139,15 +139,15 @@ moduleFor(
       let MyMixin2 = Mixin.create({ bar: obj2 });
 
       obj = mixin({}, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       MyMixin2.apply(obj);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj2, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
     async ['@test observing chain with existing property'](assert) {
@@ -161,12 +161,12 @@ moduleFor(
       });
 
       obj = mixin({ bar: obj2 }, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj2, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
     async ['@test observing chain with property in mixin before'](assert) {
@@ -181,12 +181,12 @@ moduleFor(
       });
 
       obj = mixin({}, MyMixin2, MyMixin);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj2, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
     async ['@test observing chain with property in mixin after'](assert) {
@@ -201,12 +201,12 @@ moduleFor(
       });
 
       obj = mixin({}, MyMixin, MyMixin2);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj2, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
     async ['@test observing chain with overridden property'](assert) {
@@ -223,17 +223,17 @@ moduleFor(
       });
 
       obj = mixin({ bar: obj2 }, MyMixin, MyMixin2);
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj2, 'baz', 'BAZ');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 0, 'should not invoke observer after change');
 
       set(obj3, 'baz', 'BEAR');
       await runLoopSettled();
 
-      assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
+      assert.strictEqual(get(obj, 'count'), 1, 'should invoke observer after change');
     }
   }
 );

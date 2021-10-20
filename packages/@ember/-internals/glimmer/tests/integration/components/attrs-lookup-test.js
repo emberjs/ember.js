@@ -47,15 +47,15 @@ moduleFor(
         firstAttr: 'first attr',
       });
 
-      assert.equal(instance.get('first'), 'first attr');
+      assert.strictEqual(instance.get('first'), 'first attr');
 
       runTask(() => this.rerender());
 
-      assert.equal(instance.get('first'), 'first attr');
+      assert.strictEqual(instance.get('first'), 'first attr');
 
       runTask(() => set(this.context, 'firstAttr', 'second attr'));
 
-      assert.equal(instance.get('first'), 'second attr');
+      assert.strictEqual(instance.get('first'), 'second attr');
 
       runTask(() => set(this.context, 'firstAttr', 'first attr'));
 
@@ -81,12 +81,12 @@ moduleFor(
 
       this.render(`{{foo-bar first="first attr"}}`);
 
-      assert.equal(instance.get('first'), 'FIRST ATTR', 'component lookup uses local state');
+      assert.strictEqual(instance.get('first'), 'FIRST ATTR', 'component lookup uses local state');
       this.assertText('FIRST ATTR');
 
       runTask(() => this.rerender());
 
-      assert.equal(
+      assert.strictEqual(
         instance.get('first'),
         'FIRST ATTR',
         'component lookup uses local state during rerender'
@@ -108,7 +108,7 @@ moduleFor(
         },
 
         didReceiveAttrs() {
-          assert.equal(this.get('woot'), wootVal, 'found attr in didReceiveAttrs');
+          assert.strictEqual(this.get('woot'), wootVal, 'found attr in didReceiveAttrs');
         },
       });
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
@@ -117,25 +117,25 @@ moduleFor(
         woot: wootVal,
       });
 
-      assert.equal(instance.get('woot'), 'yes', 'component found attr');
+      assert.strictEqual(instance.get('woot'), 'yes', 'component found attr');
 
       runTask(() => this.rerender());
 
-      assert.equal(instance.get('woot'), 'yes', 'component found attr after rerender');
+      assert.strictEqual(instance.get('woot'), 'yes', 'component found attr after rerender');
 
       runTask(() => {
         wootVal = 'nope';
         set(this.context, 'woot', wootVal);
       });
 
-      assert.equal(instance.get('woot'), 'nope', 'component found attr after attr change');
+      assert.strictEqual(instance.get('woot'), 'nope', 'component found attr after attr change');
 
       runTask(() => {
         wootVal = 'yes';
         set(this.context, 'woot', wootVal);
       });
 
-      assert.equal(instance.get('woot'), 'yes', 'component found attr after reset');
+      assert.strictEqual(instance.get('woot'), 'yes', 'component found attr after reset');
     }
 
     ['@test getAttr() should return the same value as get()'](assert) {
@@ -156,13 +156,13 @@ moduleFor(
           let attrFirst = this.getAttr('first');
           let attrSecond = this.getAttr('second');
 
-          assert.equal(
+          assert.strictEqual(
             rootFirstPositional,
             attrFirstPositional,
             'root property matches attrs value'
           );
-          assert.equal(rootFirst, attrFirst, 'root property matches attrs value');
-          assert.equal(rootSecond, attrSecond, 'root property matches attrs value');
+          assert.strictEqual(rootFirst, attrFirst, 'root property matches attrs value');
+          assert.strictEqual(rootSecond, attrSecond, 'root property matches attrs value');
         },
       });
 
@@ -178,39 +178,39 @@ moduleFor(
         second: 'second',
       });
 
-      assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
-      assert.equal(instance.get('first'), 'first', 'matches known value');
-      assert.equal(instance.get('second'), 'second', 'matches known value');
+      assert.strictEqual(instance.get('firstPositional'), 'firstPositional', 'matches known value');
+      assert.strictEqual(instance.get('first'), 'first', 'matches known value');
+      assert.strictEqual(instance.get('second'), 'second', 'matches known value');
 
       runTask(() => this.rerender());
 
-      assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
-      assert.equal(instance.get('first'), 'first', 'matches known value');
-      assert.equal(instance.get('second'), 'second', 'matches known value');
+      assert.strictEqual(instance.get('firstPositional'), 'firstPositional', 'matches known value');
+      assert.strictEqual(instance.get('first'), 'first', 'matches known value');
+      assert.strictEqual(instance.get('second'), 'second', 'matches known value');
 
       runTask(() => {
         set(this.context, 'first', 'third');
       });
 
-      assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
-      assert.equal(instance.get('first'), 'third', 'matches known value');
-      assert.equal(instance.get('second'), 'second', 'matches known value');
+      assert.strictEqual(instance.get('firstPositional'), 'firstPositional', 'matches known value');
+      assert.strictEqual(instance.get('first'), 'third', 'matches known value');
+      assert.strictEqual(instance.get('second'), 'second', 'matches known value');
 
       runTask(() => {
         set(this.context, 'second', 'fourth');
       });
 
-      assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
-      assert.equal(instance.get('first'), 'third', 'matches known value');
-      assert.equal(instance.get('second'), 'fourth', 'matches known value');
+      assert.strictEqual(instance.get('firstPositional'), 'firstPositional', 'matches known value');
+      assert.strictEqual(instance.get('first'), 'third', 'matches known value');
+      assert.strictEqual(instance.get('second'), 'fourth', 'matches known value');
 
       runTask(() => {
         set(this.context, 'firstPositional', 'fifth');
       });
 
-      assert.equal(instance.get('firstPositional'), 'fifth', 'matches known value');
-      assert.equal(instance.get('first'), 'third', 'matches known value');
-      assert.equal(instance.get('second'), 'fourth', 'matches known value');
+      assert.strictEqual(instance.get('firstPositional'), 'fifth', 'matches known value');
+      assert.strictEqual(instance.get('first'), 'third', 'matches known value');
+      assert.strictEqual(instance.get('second'), 'fourth', 'matches known value');
 
       runTask(() => {
         set(this.context, 'firstPositional', 'firstPositional');
@@ -218,9 +218,9 @@ moduleFor(
         set(this.context, 'second', 'second');
       });
 
-      assert.equal(instance.get('firstPositional'), 'firstPositional', 'matches known value');
-      assert.equal(instance.get('first'), 'first', 'matches known value');
-      assert.equal(instance.get('second'), 'second', 'matches known value');
+      assert.strictEqual(instance.get('firstPositional'), 'firstPositional', 'matches known value');
+      assert.strictEqual(instance.get('first'), 'first', 'matches known value');
+      assert.strictEqual(instance.get('second'), 'second', 'matches known value');
     }
 
     ['@test bound computed properties can be overridden in extensions, set during init, and passed in as attrs']() {

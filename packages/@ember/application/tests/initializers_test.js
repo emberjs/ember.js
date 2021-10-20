@@ -81,7 +81,7 @@ moduleFor(
             },
             (error) => {
               assert.ok(error instanceof Error, 'The boot promise should reject with an error');
-              assert.equal(error.message, 'boot failure');
+              assert.strictEqual(error.message, 'boot failure');
             }
           );
         });
@@ -293,13 +293,13 @@ moduleFor(
 
       runTask(() => this.createApplication({}, FirstApp));
 
-      assert.equal(firstInitializerRunCount, 1, 'first initializer only was run');
-      assert.equal(secondInitializerRunCount, 0, 'first initializer only was run');
+      assert.strictEqual(firstInitializerRunCount, 1, 'first initializer only was run');
+      assert.strictEqual(secondInitializerRunCount, 0, 'first initializer only was run');
 
       runTask(() => this.createSecondApplication({}, SecondApp));
 
-      assert.equal(firstInitializerRunCount, 1, 'second initializer only was run');
-      assert.equal(secondInitializerRunCount, 1, 'second initializer only was run');
+      assert.strictEqual(firstInitializerRunCount, 1, 'second initializer only was run');
+      assert.strictEqual(secondInitializerRunCount, 1, 'second initializer only was run');
     }
 
     [`@test initializers are concatenated`](assert) {
@@ -324,12 +324,12 @@ moduleFor(
 
       runTask(() => this.createApplication({}, FirstApp));
 
-      assert.equal(
+      assert.strictEqual(
         firstInitializerRunCount,
         1,
         'first initializer only was run when base class created'
       );
-      assert.equal(
+      assert.strictEqual(
         secondInitializerRunCount,
         0,
         'first initializer only was run when base class created'
@@ -338,8 +338,12 @@ moduleFor(
       firstInitializerRunCount = 0;
       runTask(() => this.createSecondApplication({}, SecondApp));
 
-      assert.equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
-      assert.equal(
+      assert.strictEqual(
+        firstInitializerRunCount,
+        1,
+        'first initializer was run when subclass created'
+      );
+      assert.strictEqual(
         secondInitializerRunCount,
         1,
         'second initializers was run when subclass created'
@@ -380,7 +384,7 @@ moduleFor(
         name: 'coolInitializer',
         myProperty: 'cool',
         initialize() {
-          assert.equal(this.myProperty, 'cool', 'should have access to its own context');
+          assert.strictEqual(this.myProperty, 'cool', 'should have access to its own context');
         },
       });
 

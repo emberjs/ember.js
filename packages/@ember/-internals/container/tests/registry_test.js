@@ -67,12 +67,12 @@ moduleFor(
 
       registry.register('controller:post', PostController);
 
-      assert.equal(
+      assert.strictEqual(
         registry.has('controller:post'),
         true,
         'The `has` method returned true for registered factories'
       );
-      assert.equal(
+      assert.strictEqual(
         registry.has('controller:posts'),
         false,
         'The `has` method returned false for unregistered factories'
@@ -136,7 +136,7 @@ moduleFor(
       registry.register('controller:post', PostController);
       let isPresent = registry.has('controller:normalized');
 
-      assert.equal(
+      assert.strictEqual(
         isPresent,
         true,
         'Normalizes the name when checking if the factory or instance is present'
@@ -200,7 +200,7 @@ moduleFor(
         },
       };
 
-      assert.equal(registry.resolve('models:bar'), Bar);
+      assert.strictEqual(registry.resolve('models:bar'), Bar);
     }
 
     ['@test factory resolves are cached'](assert) {
@@ -294,7 +294,7 @@ moduleFor(
 
       let registry = new Registry({ fallback, resolver });
 
-      assert.equal(
+      assert.strictEqual(
         registry.describe('controller:post'),
         'controller:post-resolver',
         '`describe` handled by the resolver first.'
@@ -302,7 +302,7 @@ moduleFor(
 
       registry.resolver = null;
 
-      assert.equal(
+      assert.strictEqual(
         registry.describe('controller:post'),
         'controller:post-fallback',
         '`describe` handled by fallback registry next.'
@@ -310,7 +310,7 @@ moduleFor(
 
       registry.fallback = null;
 
-      assert.equal(
+      assert.strictEqual(
         registry.describe('controller:post'),
         'controller:post',
         '`describe` by default returns argument.'
@@ -334,7 +334,7 @@ moduleFor(
 
       let registry = new Registry({ fallback, resolver });
 
-      assert.equal(
+      assert.strictEqual(
         registry.normalizeFullName('controller:post'),
         'controller:post-resolver',
         '`normalizeFullName` handled by the resolver first.'
@@ -342,7 +342,7 @@ moduleFor(
 
       registry.resolver = null;
 
-      assert.equal(
+      assert.strictEqual(
         registry.normalizeFullName('controller:post'),
         'controller:post-fallback',
         '`normalizeFullName` handled by fallback registry next.'
@@ -350,7 +350,7 @@ moduleFor(
 
       registry.fallback = null;
 
-      assert.equal(
+      assert.strictEqual(
         registry.normalizeFullName('controller:post'),
         'controller:post',
         '`normalizeFullName` by default returns argument.'
@@ -374,7 +374,7 @@ moduleFor(
 
       let registry = new Registry({ fallback, resolver });
 
-      assert.equal(
+      assert.strictEqual(
         registry.makeToString('controller:post'),
         'controller:post-resolver',
         '`makeToString` handled by the resolver first.'
@@ -382,7 +382,7 @@ moduleFor(
 
       registry.resolver = null;
 
-      assert.equal(
+      assert.strictEqual(
         registry.makeToString('controller:post'),
         'controller:post-fallback',
         '`makeToString` handled by fallback registry next.'
@@ -390,7 +390,7 @@ moduleFor(
 
       registry.fallback = null;
 
-      assert.equal(
+      assert.strictEqual(
         registry.makeToString('controller:post'),
         'controller:post',
         '`makeToString` by default returns argument.'
@@ -422,7 +422,7 @@ moduleFor(
 
       fallback.register('controller:post', PostController);
 
-      assert.equal(
+      assert.strictEqual(
         registry.has('controller:post'),
         true,
         'Fallback registry is checked for registration'
@@ -466,7 +466,7 @@ moduleFor(
       let resolver = {
         knownForType(type) {
           assert.ok(true, 'knownForType called on the resolver');
-          assert.equal(type, 'foo', 'the type was passed through');
+          assert.strictEqual(type, 'foo', 'the type was passed through');
 
           return { 'foo:yorp': true };
         },
@@ -495,8 +495,8 @@ moduleFor(
       let matched = privatized.match(/^([^:]+):([^:]+)-(\d+)$/);
 
       assert.ok(matched, 'privatized format was recognized');
-      assert.equal(matched[1], 'secret');
-      assert.equal(matched[2], 'factory');
+      assert.strictEqual(matched[1], 'secret');
+      assert.strictEqual(matched[2], 'factory');
       assert.ok(/^\d+$/.test(matched[3]));
     }
   }

@@ -17,9 +17,9 @@ function K() {
 }
 
 function testGet(assert, expect, x, y) {
-  assert.equal(get(x, y), expect);
-  assert.equal(get(x, y), expect);
-  assert.equal(x.get(y), expect);
+  assert.strictEqual(get(x, y), expect);
+  assert.strictEqual(get(x, y), expect);
+  assert.strictEqual(x.get(y), expect);
 }
 
 moduleFor(
@@ -146,7 +146,7 @@ moduleFor(
         computedProperty: computed(function () {}).meta({ key: 'keyValue' }),
       });
 
-      assert.equal(
+      assert.strictEqual(
         get(MyClass.metaForProperty('computedProperty'), 'key'),
         'keyValue',
         'metadata saved on the computed property can be retrieved'
@@ -158,7 +158,7 @@ moduleFor(
         staticProperty: 12,
       });
 
-      assert.equal(
+      assert.strictEqual(
         typeof ClassWithNoMetadata.metaForProperty('computedProperty'),
         'object',
         'returns empty hash if no metadata has been saved'
@@ -356,8 +356,8 @@ moduleFor(
       let obj1 = Obj.create({ name: '1' });
       let obj2 = Obj.create({ name: '2' });
 
-      assert.equal(obj1.get('name'), '1');
-      assert.equal(obj2.get('name'), '2');
+      assert.strictEqual(obj1.get('name'), '1');
+      assert.strictEqual(obj2.get('name'), '2');
 
       obj1.destroy();
       obj2.destroy();
@@ -380,9 +380,9 @@ moduleFor(
 
       let instance = MyClass.create();
 
-      assert.equal(instance.foo, 123, 'getters work');
+      assert.strictEqual(instance.foo, 123, 'getters work');
       instance.foo = 456;
-      assert.equal(instance.bar, 456, 'setters work');
+      assert.strictEqual(instance.bar, 456, 'setters work');
     }
 
     ['@test @each on maybe array'](assert) {

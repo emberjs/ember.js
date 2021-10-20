@@ -43,7 +43,7 @@ moduleFor(
       for (suspectIndex = 0; suspectIndex < data.length; suspectIndex++) {
         suspect = data[suspectIndex];
 
-        assert.equal(compare(suspect, suspect), 0, suspectIndex + ' should equal itself');
+        assert.strictEqual(compare(suspect, suspect), 0, suspectIndex + ' should equal itself');
 
         for (comparableIndex = suspectIndex + 1; comparableIndex < data.length; comparableIndex++) {
           comparable = data[comparableIndex];
@@ -59,7 +59,7 @@ moduleFor(
             typeOf(comparable) +
             ')';
 
-          assert.equal(compare(suspect, comparable), -1, failureMessage);
+          assert.strictEqual(compare(suspect, comparable), -1, failureMessage);
         }
       }
     }
@@ -77,13 +77,17 @@ moduleFor(
         val: 1,
       });
 
-      assert.equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
-      assert.equal(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');
-      assert.equal(compare(one, 'c'), 1, 'First item comparable - returns  1 (not negated)');
+      assert.strictEqual(
+        compare(negOne, 'a'),
+        -1,
+        'First item comparable - returns -1 (not negated)'
+      );
+      assert.strictEqual(compare(zero, 'b'), 0, 'First item comparable - returns  0 (not negated)');
+      assert.strictEqual(compare(one, 'c'), 1, 'First item comparable - returns  1 (not negated)');
 
-      assert.equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
-      assert.equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
-      assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
+      assert.strictEqual(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
+      assert.strictEqual(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
+      assert.strictEqual(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
     }
   }
 );

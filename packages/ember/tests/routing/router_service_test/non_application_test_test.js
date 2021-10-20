@@ -45,11 +45,11 @@ moduleFor(
 
     ['@test RouterService properties can be accessed with default'](assert) {
       assert.expect(5);
-      assert.equal(this.routerService.get('currentRouteName'), null);
-      assert.equal(this.routerService.get('currentURL'), null);
-      assert.equal(this.routerService.get('location'), 'none');
-      assert.equal(this.routerService.get('rootURL'), '/');
-      assert.equal(this.routerService.get('currentRoute'), null);
+      assert.strictEqual(this.routerService.get('currentRouteName'), null);
+      assert.strictEqual(this.routerService.get('currentURL'), null);
+      assert.strictEqual(this.routerService.get('location'), 'none');
+      assert.strictEqual(this.routerService.get('rootURL'), '/');
+      assert.strictEqual(this.routerService.get('currentRoute'), null);
     }
 
     ['@test RouterService properties of router can be accessed with default when router is present'](
@@ -58,15 +58,15 @@ moduleFor(
       assert.expect(5);
       let router = this.owner.lookup('router:main');
       router.setupRouter();
-      assert.equal(this.routerService.get('currentRouteName'), null);
-      assert.equal(this.routerService.get('currentURL'), null);
+      assert.strictEqual(this.routerService.get('currentRouteName'), null);
+      assert.strictEqual(this.routerService.get('currentURL'), null);
       assert.ok(this.routerService.get('location') instanceof NoneLocation);
-      assert.equal(this.routerService.get('rootURL'), '/');
-      assert.equal(this.routerService.get('currentRoute'), null);
+      assert.strictEqual(this.routerService.get('rootURL'), '/');
+      assert.strictEqual(this.routerService.get('currentRoute'), null);
     }
 
     ['@test RouterService#urlFor returns url'](assert) {
-      assert.equal(this.routerService.urlFor('parent.child'), '/child');
+      assert.strictEqual(this.routerService.urlFor('parent.child'), '/child');
     }
 
     ['@test RouterService#transitionTo with basic route'](assert) {
@@ -103,7 +103,7 @@ moduleFor(
         componentInstance.send('transitionToSister');
       });
 
-      assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+      assert.strictEqual(this.routerService.get('currentRouteName'), 'parent.sister');
       assert.ok(this.routerService.isActive('parent.sister'));
     }
 
@@ -111,10 +111,10 @@ moduleFor(
       let routeInfo = this.routerService.recognize('/dynamic-with-child/123/1?a=b');
       assert.ok(routeInfo);
       let { name, localName, parent, child, params, queryParams, paramNames } = routeInfo;
-      assert.equal(name, 'dynamicWithChild.child');
-      assert.equal(localName, 'child');
+      assert.strictEqual(name, 'dynamicWithChild.child');
+      assert.strictEqual(localName, 'child');
       assert.ok(parent);
-      assert.equal(parent.name, 'dynamicWithChild');
+      assert.strictEqual(parent.name, 'dynamicWithChild');
       assert.notOk(child);
       assert.deepEqual(params, { child_id: '1' });
       assert.deepEqual(queryParams, { a: 'b' });

@@ -47,7 +47,11 @@ class MapTests extends AbstractTestCase {
     });
 
     obj.map(() => {
-      this.assert.equal(guidFor(this), guidFor(target), 'should pass target as this if context');
+      this.assert.strictEqual(
+        guidFor(this),
+        guidFor(target),
+        'should pass target as this if context'
+      );
     }, target);
   }
 
@@ -57,9 +61,9 @@ class MapTests extends AbstractTestCase {
     let loc = 0;
 
     obj.map((item, idx, enumerable) => {
-      this.assert.equal(item, ary[loc], 'item param');
-      this.assert.equal(idx, loc, 'idx param');
-      this.assert.equal(guidFor(enumerable), guidFor(obj), 'enumerable param');
+      this.assert.strictEqual(item, ary[loc], 'item param');
+      this.assert.strictEqual(idx, loc, 'idx param');
+      this.assert.strictEqual(guidFor(enumerable), guidFor(obj), 'enumerable param');
       loc++;
     });
   }

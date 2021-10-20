@@ -18,7 +18,7 @@ QUnit.module('instrumentation', function (hooks) {
       return 'hello';
     });
 
-    assert.equal(result, 'hello', 'called block');
+    assert.strictEqual(result, 'hello', 'called block');
 
     global.window = _originalWindow;
   });

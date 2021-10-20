@@ -8,11 +8,11 @@ moduleFor(
       let proxy = {};
       setProxy(proxy);
 
-      assert.equal(isProxy(proxy), true);
+      assert.strictEqual(isProxy(proxy), true);
 
-      assert.equal(isProxy({}), false);
-      assert.equal(isProxy(undefined), false);
-      assert.equal(isProxy(null), false);
+      assert.strictEqual(isProxy({}), false);
+      assert.strictEqual(isProxy(undefined), false);
+      assert.strictEqual(isProxy(null), false);
     }
   }
 );

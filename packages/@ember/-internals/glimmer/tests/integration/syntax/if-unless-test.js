@@ -72,7 +72,7 @@ moduleFor(
       runTask(() => set(this.context, 'cond', false));
 
       this.assertText('Nothing Here!');
-      assert.equal(destroyedChildrenCount, 3, 'the children were properly destroyed');
+      assert.strictEqual(destroyedChildrenCount, 3, 'the children were properly destroyed');
 
       runTask(() => set(this.context, 'cond', true));
 

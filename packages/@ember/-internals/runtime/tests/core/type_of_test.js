@@ -22,26 +22,26 @@ moduleFor(
         async asyncMethod() {},
       });
 
-      assert.equal(typeOf(), 'undefined', 'undefined');
-      assert.equal(typeOf(null), 'null', 'null');
-      assert.equal(typeOf('Cyril'), 'string', 'Cyril');
-      assert.equal(typeOf(101), 'number', '101');
-      assert.equal(typeOf(true), 'boolean', 'true');
-      assert.equal(typeOf([1, 2, 90]), 'array', '[1,2,90]');
-      assert.equal(typeOf(/abc/), 'regexp', '/abc/');
-      assert.equal(typeOf(date), 'date', 'new Date()');
-      assert.equal(typeOf(mockedDate), 'date', 'mocked date');
-      assert.equal(typeOf(error), 'error', 'error');
-      assert.equal(typeOf(object), 'object', 'object');
-      assert.equal(typeOf(undefined), 'undefined', 'item of type undefined');
-      assert.equal(typeOf(a), 'null', 'item of type null');
-      assert.equal(typeOf(arr), 'array', 'item of type array');
-      assert.equal(typeOf(obj), 'object', 'item of type object');
-      assert.equal(typeOf(instance), 'instance', 'item of type instance');
-      assert.equal(typeOf(instance.method), 'function', 'item of type function');
-      assert.equal(typeOf(instance.asyncMethod), 'function', 'item of type async function');
-      assert.equal(typeOf(EmberObject.extend()), 'class', 'item of type class');
-      assert.equal(typeOf(new Error()), 'error', 'item of type error');
+      assert.strictEqual(typeOf(), 'undefined', 'undefined');
+      assert.strictEqual(typeOf(null), 'null', 'null');
+      assert.strictEqual(typeOf('Cyril'), 'string', 'Cyril');
+      assert.strictEqual(typeOf(101), 'number', '101');
+      assert.strictEqual(typeOf(true), 'boolean', 'true');
+      assert.strictEqual(typeOf([1, 2, 90]), 'array', '[1,2,90]');
+      assert.strictEqual(typeOf(/abc/), 'regexp', '/abc/');
+      assert.strictEqual(typeOf(date), 'date', 'new Date()');
+      assert.strictEqual(typeOf(mockedDate), 'date', 'mocked date');
+      assert.strictEqual(typeOf(error), 'error', 'error');
+      assert.strictEqual(typeOf(object), 'object', 'object');
+      assert.strictEqual(typeOf(undefined), 'undefined', 'item of type undefined');
+      assert.strictEqual(typeOf(a), 'null', 'item of type null');
+      assert.strictEqual(typeOf(arr), 'array', 'item of type array');
+      assert.strictEqual(typeOf(obj), 'object', 'item of type object');
+      assert.strictEqual(typeOf(instance), 'instance', 'item of type instance');
+      assert.strictEqual(typeOf(instance.method), 'function', 'item of type function');
+      assert.strictEqual(typeOf(instance.asyncMethod), 'function', 'item of type async function');
+      assert.strictEqual(typeOf(EmberObject.extend()), 'class', 'item of type class');
+      assert.strictEqual(typeOf(new Error()), 'error', 'item of type error');
     }
 
     ['@test Ember.typeOf(fileList)'](assert) {
@@ -49,7 +49,7 @@ moduleFor(
         let fileListElement = document.createElement('input');
         fileListElement.type = 'file';
         let fileList = fileListElement.files;
-        assert.equal(typeOf(fileList), 'filelist', 'item of type filelist');
+        assert.strictEqual(typeOf(fileList), 'filelist', 'item of type filelist');
       } else {
         assert.ok(true, 'FileList is not present on window');
       }

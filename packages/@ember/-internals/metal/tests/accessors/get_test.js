@@ -25,27 +25,27 @@ moduleFor(
         if (!Object.prototype.hasOwnProperty.call(obj, key)) {
           continue;
         }
-        assert.equal(get(obj, key), obj[key], key);
+        assert.strictEqual(get(obj, key), obj[key], key);
       }
     }
 
     ['@test should retrieve a number key on an object'](assert) {
       let obj = { 1: 'first' };
 
-      assert.equal(get(obj, 1), 'first');
+      assert.strictEqual(get(obj, 1), 'first');
     }
 
     ['@test should retrieve an array index'](assert) {
       let arr = ['first', 'second'];
 
-      assert.equal(get(arr, 0), 'first');
-      assert.equal(get(arr, 1), 'second');
+      assert.strictEqual(get(arr, 0), 'first');
+      assert.strictEqual(get(arr, 1), 'second');
     }
 
     ['@test should retrieve an empty string key on an object'](assert) {
       let obj = { '': 'empty-string' };
 
-      assert.equal(get(obj, ''), 'empty-string');
+      assert.strictEqual(get(obj, ''), 'empty-string');
     }
 
     ['@test should return undefined when passed an empty string if that key does not exist on an object'](
@@ -53,7 +53,7 @@ moduleFor(
     ) {
       let obj = { tomster: true };
 
-      assert.equal(get(obj, ''), undefined);
+      assert.strictEqual(get(obj, ''), undefined);
     }
 
     ['@test should not access a property more than once'](assert) {
@@ -66,7 +66,7 @@ moduleFor(
 
       get(obj, 'id');
 
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
     }
 
     ['@test should call unknownProperty on watched values if the value is undefined using getFromEmberMetal()/set()'](
@@ -74,11 +74,11 @@ moduleFor(
     ) {
       let obj = {
         unknownProperty(key) {
-          assert.equal(key, 'foo', 'should pass key');
+          assert.strictEqual(key, 'foo', 'should pass key');
           return 'FOO';
         },
       };
-      assert.equal(get(obj, 'foo'), 'FOO', 'should return value from unknown');
+      assert.strictEqual(get(obj, 'foo'), 'FOO', 'should return value from unknown');
     }
 
     ['@test should call unknownProperty on watched values if the value is undefined using accessors'](
@@ -87,11 +87,11 @@ moduleFor(
       if (ENV.USES_ACCESSORS) {
         let obj = {
           unknownProperty(key) {
-            assert.equal(key, 'foo', 'should pass key');
+            assert.strictEqual(key, 'foo', 'should pass key');
             return 'FOO';
           },
         };
-        assert.equal(aget(obj, 'foo'), 'FOO', 'should return value from unknown');
+        assert.strictEqual(aget(obj, 'foo'), 'FOO', 'should return value from unknown');
       } else {
         assert.ok('SKIPPING ACCESSORS');
       }
@@ -104,17 +104,17 @@ moduleFor(
       let destroyedObj = EmberObject.create({ bar: 'great' });
       run(() => destroyedObj.destroy());
 
-      assert.equal(get({ foo: null }, 'foo.bar'), undefined);
-      assert.equal(get({ foo: { bar: 'hello' } }, 'foo.bar.length'), 5);
-      assert.equal(get({ foo: func }, 'foo.bar'), 'awesome');
-      assert.equal(get({ foo: func }, 'foo.bar.length'), 7);
-      assert.equal(get({}, 'foo.bar.length'), undefined);
-      assert.equal(
+      assert.strictEqual(get({ foo: null }, 'foo.bar'), undefined);
+      assert.strictEqual(get({ foo: { bar: 'hello' } }, 'foo.bar.length'), 5);
+      assert.strictEqual(get({ foo: func }, 'foo.bar'), 'awesome');
+      assert.strictEqual(get({ foo: func }, 'foo.bar.length'), 7);
+      assert.strictEqual(get({}, 'foo.bar.length'), undefined);
+      assert.strictEqual(
         get(function () {}, 'foo.bar.length'),
         undefined
       );
-      assert.equal(get('', 'foo.bar.length'), undefined);
-      assert.equal(get({ foo: destroyedObj }, 'foo.bar'), undefined);
+      assert.strictEqual(get('', 'foo.bar.length'), undefined);
+      assert.strictEqual(get({ foo: destroyedObj }, 'foo.bar'), undefined);
     }
 
     ['@test warn on attempts to call get with no arguments']() {
@@ -194,7 +194,7 @@ moduleFor(
       let baseObject = MyMixin.apply({});
       let theRealObject = Object.create(baseObject);
 
-      assert.equal(
+      assert.strictEqual(
         get(theRealObject, 'someProperty'),
         'foo',
         'should return the set value, not false'

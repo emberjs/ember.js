@@ -8,7 +8,7 @@ moduleFor(
     ['@test notifies property changes on instances'](assert) {
       class Foo {
         [PROPERTY_DID_CHANGE](prop) {
-          assert.equal(prop, 'bar', 'property change notified');
+          assert.strictEqual(prop, 'bar', 'property change notified');
         }
       }
 
@@ -20,7 +20,7 @@ moduleFor(
     ['@test notifies property changes on instances with meta'](assert) {
       class Foo {
         [PROPERTY_DID_CHANGE](prop) {
-          assert.equal(prop, 'bar', 'property change notified');
+          assert.strictEqual(prop, 'bar', 'property change notified');
         }
       }
 
@@ -36,7 +36,7 @@ moduleFor(
 
       class Foo {
         [PROPERTY_DID_CHANGE](prop) {
-          assert.equal(prop, 'bar', 'property change notified');
+          assert.strictEqual(prop, 'bar', 'property change notified');
         }
       }
 
@@ -52,7 +52,7 @@ moduleFor(
 
       let foo = {
         [PROPERTY_DID_CHANGE](prop) {
-          assert.equal(prop, 'baz', 'property change notified');
+          assert.strictEqual(prop, 'baz', 'property change notified');
         },
       };
 

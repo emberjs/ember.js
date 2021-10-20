@@ -22,11 +22,11 @@ class InvokeTests extends AbstractTestCase {
 
     obj = this.newObject(ary);
     obj.invoke('foo');
-    this.assert.equal(cnt, 3, 'should have invoked 3 times');
+    this.assert.strictEqual(cnt, 3, 'should have invoked 3 times');
 
     cnt = 0;
     obj.invoke('foo', 2);
-    this.assert.equal(cnt, 6, 'should have invoked 3 times, passing param');
+    this.assert.strictEqual(cnt, 6, 'should have invoked 3 times, passing param');
   }
 
   '@test invoke should return an array containing the results of each invoked method'(assert) {

@@ -90,17 +90,17 @@ moduleFor(
         this.createApplication();
         this.add('event_dispatcher:main', FakeEventDispatcher);
 
-        assert.equal(eventDispatcherWasSetup, 0, 'not setup yet');
-        assert.equal(eventDispatcherWasDestroyed, 0, 'not destroyed yet');
+        assert.strictEqual(eventDispatcherWasSetup, 0, 'not setup yet');
+        assert.strictEqual(eventDispatcherWasDestroyed, 0, 'not destroyed yet');
       });
 
-      assert.equal(eventDispatcherWasSetup, 1, 'setup');
-      assert.equal(eventDispatcherWasDestroyed, 0, 'still not destroyed');
+      assert.strictEqual(eventDispatcherWasSetup, 1, 'setup');
+      assert.strictEqual(eventDispatcherWasDestroyed, 0, 'still not destroyed');
 
       this.application.reset();
 
-      assert.equal(eventDispatcherWasDestroyed, 1, 'destroyed');
-      assert.equal(eventDispatcherWasSetup, 2, 'setup called after reset');
+      assert.strictEqual(eventDispatcherWasDestroyed, 1, 'destroyed');
+      assert.strictEqual(eventDispatcherWasSetup, 2, 'setup called after reset');
     }
 
     ['@test When an application is reset, the router URL is reset to `/`'](assert) {
@@ -127,8 +127,8 @@ moduleFor(
           initialRouter = this.applicationInstance.lookup('router:main');
           let location = initialRouter.get('location');
 
-          assert.equal(location.getURL(), '/one');
-          assert.equal(initialRouter.currentPath, 'one');
+          assert.strictEqual(location.getURL(), '/one');
+          assert.strictEqual(initialRouter.currentPath, 'one');
 
           this.application.reset();
 
@@ -156,8 +156,8 @@ moduleFor(
             'a different application controller is created'
           );
 
-          assert.equal(location.getURL(), '/one');
-          assert.equal(router.currentPath, 'one');
+          assert.strictEqual(location.getURL(), '/one');
+          assert.strictEqual(router.currentPath, 'one');
         });
     }
 
@@ -174,16 +174,16 @@ moduleFor(
         });
 
         this.application.deferReadiness();
-        assert.equal(readyCallCount, 0, 'ready has not yet been called');
+        assert.strictEqual(readyCallCount, 0, 'ready has not yet been called');
       });
 
       run(this.application, 'advanceReadiness');
 
-      assert.equal(readyCallCount, 1, 'ready was called once');
+      assert.strictEqual(readyCallCount, 1, 'ready was called once');
 
       this.application.reset();
 
-      assert.equal(readyCallCount, 2, 'ready was called twice');
+      assert.strictEqual(readyCallCount, 2, 'ready was called twice');
     }
   }
 );

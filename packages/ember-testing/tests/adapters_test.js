@@ -133,12 +133,16 @@ moduleFor(
         caughtInCatch = e;
       }
 
-      assert.equal(
+      assert.strictEqual(
         caughtInAdapter,
         undefined,
         'test adapter should never receive synchronous errors'
       );
-      assert.equal(caughtInCatch, thrown, 'a "normal" try/catch should catch errors in sync run');
+      assert.strictEqual(
+        caughtInCatch,
+        thrown,
+        'a "normal" try/catch should catch errors in sync run'
+      );
     }
 
     ['@test when both Ember.onerror (which rethrows) and TestAdapter are registered - sync run'](
@@ -203,12 +207,12 @@ moduleFor(
       }
 
       setTimeout(() => {
-        assert.equal(
+        assert.strictEqual(
           caughtInAdapter,
           undefined,
           'test adapter should never catch errors in run loops'
         );
-        assert.equal(
+        assert.strictEqual(
           caughtInCatch,
           undefined,
           'a "normal" try/catch should never catch errors in an async run'

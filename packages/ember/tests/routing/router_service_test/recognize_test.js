@@ -9,10 +9,10 @@ moduleFor(
         let routeInfo = this.routerService.recognize('/dynamic-with-child/123/1?a=b');
         assert.ok(routeInfo);
         let { name, localName, parent, child, params, queryParams, paramNames } = routeInfo;
-        assert.equal(name, 'dynamicWithChild.child');
-        assert.equal(localName, 'child');
+        assert.strictEqual(name, 'dynamicWithChild.child');
+        assert.strictEqual(localName, 'child');
         assert.ok(parent);
-        assert.equal(parent.name, 'dynamicWithChild');
+        assert.strictEqual(parent.name, 'dynamicWithChild');
         assert.notOk(child);
         assert.deepEqual(params, { child_id: '1' });
         assert.deepEqual(queryParams, { a: 'b' });
@@ -27,7 +27,7 @@ moduleFor(
       return this.visit('/').then(() => {
         this.routerService.recognize('/dynamic-with-child/123/1?a=b');
         this.assertText('Parent', 'Did not transition and cause render');
-        assert.equal(this.routerService.currentURL, '/', 'Did not transition');
+        assert.strictEqual(this.routerService.currentURL, '/', 'Did not transition');
       });
     }
 
@@ -40,9 +40,9 @@ moduleFor(
         let routeInfo = this.routerService.recognize('/app/child/');
         assert.ok(routeInfo);
         let { name, localName, parent } = routeInfo;
-        assert.equal(name, 'parent.child');
-        assert.equal(localName, 'child');
-        assert.equal(parent.name, 'parent');
+        assert.strictEqual(name, 'parent.child');
+        assert.strictEqual(localName, 'child');
+        assert.strictEqual(parent.name, 'parent');
       });
     }
 
@@ -64,7 +64,7 @@ moduleFor(
     '@test returns `null` if URL is not recognized'(assert) {
       return this.visit('/').then(() => {
         let routeInfo = this.routerService.recognize('/foo');
-        assert.equal(routeInfo, null);
+        assert.strictEqual(routeInfo, null);
       });
     }
   }
@@ -106,9 +106,9 @@ moduleFor(
             params,
             queryParams,
           } = routeInfoWithAttributes;
-          assert.equal(name, 'dynamicWithChild.child');
-          assert.equal(localName, 'child');
-          assert.equal(parent.name, 'dynamicWithChild');
+          assert.strictEqual(name, 'dynamicWithChild.child');
+          assert.strictEqual(localName, 'child');
+          assert.strictEqual(parent.name, 'dynamicWithChild');
           assert.deepEqual(params, { child_id: '1' });
           assert.deepEqual(queryParams, { a: 'b' });
           assert.deepEqual(paramNames, ['child_id']);
@@ -138,7 +138,7 @@ moduleFor(
           return this.routerService.recognizeAndLoad('/child');
         })
         .then(() => {
-          assert.equal(this.routerService.currentURL, '/');
+          assert.strictEqual(this.routerService.currentURL, '/');
           this.assertText('Parent');
         });
     }
@@ -155,9 +155,9 @@ moduleFor(
         .then((routeInfoWithAttributes) => {
           assert.ok(routeInfoWithAttributes);
           let { name, localName, parent } = routeInfoWithAttributes;
-          assert.equal(name, 'parent.child');
-          assert.equal(localName, 'child');
-          assert.equal(parent.name, 'parent');
+          assert.strictEqual(name, 'parent.child');
+          assert.strictEqual(localName, 'child');
+          assert.strictEqual(parent.name, 'parent');
         });
     }
 
@@ -194,7 +194,7 @@ moduleFor(
             assert.ok(false, 'never');
           },
           (reason) => {
-            assert.equal(reason, 'URL /foo was not recognized');
+            assert.strictEqual(reason, 'URL /foo was not recognized');
           }
         );
     }
@@ -220,7 +220,7 @@ moduleFor(
             assert.ok(false, 'never');
           },
           (err) => {
-            assert.equal(err.message, 'Unhandled');
+            assert.strictEqual(err.message, 'Unhandled');
           }
         );
     }

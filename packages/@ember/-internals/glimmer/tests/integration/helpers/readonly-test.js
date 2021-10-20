@@ -31,7 +31,7 @@ moduleFor(
       this.assert.notOk(component.attrs.value.update);
 
       this.assertText('13', 'local property is updated');
-      this.assert.equal(get(this.context, 'val'), 12, 'upstream attribute is not updated');
+      this.assert.strictEqual(get(this.context, 'val'), 12, 'upstream attribute is not updated');
 
       // No U-R
     }
@@ -65,14 +65,14 @@ moduleFor(
         },
       });
 
-      assert.equal(
+      assert.strictEqual(
         typeof outer.attrs.onClick,
         'function',
         'function itself is present in outer component attrs'
       );
       outer.attrs.onClick();
 
-      assert.equal(
+      assert.strictEqual(
         typeof inner.attrs.onClick,
         'function',
         'function itself is present in inner component attrs'
@@ -213,61 +213,61 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.assert.equal(get(bottom, 'bar'), 12, "bottom's local bar received the value");
-      this.assert.equal(get(middle, 'foo'), 12, "middle's local foo received the value");
+      this.assert.strictEqual(get(bottom, 'bar'), 12, "bottom's local bar received the value");
+      this.assert.strictEqual(get(middle, 'foo'), 12, "middle's local foo received the value");
 
       // updating the mut-cell directly
       runTask(() => bottom.attrs.bar.update(13));
 
-      this.assert.equal(
+      this.assert.strictEqual(
         get(bottom, 'bar'),
         13,
         "bottom's local bar was updated after set of bottom's bar"
       );
-      this.assert.equal(
+      this.assert.strictEqual(
         get(middle, 'foo'),
         13,
         "middle's local foo was updated after set of bottom's bar"
       );
       this.assertText('13 13');
-      this.assert.equal(get(this.context, 'val'), 12, 'But context val is not updated');
+      this.assert.strictEqual(get(this.context, 'val'), 12, 'But context val is not updated');
 
       runTask(() => set(bottom, 'bar', 14));
 
-      this.assert.equal(
+      this.assert.strictEqual(
         get(bottom, 'bar'),
         14,
         "bottom's local bar was updated after set of bottom's bar"
       );
-      this.assert.equal(
+      this.assert.strictEqual(
         get(middle, 'foo'),
         14,
         "middle's local foo was updated after set of bottom's bar"
       );
       this.assertText('14 14');
-      this.assert.equal(get(this.context, 'val'), 12, 'But context val is not updated');
+      this.assert.strictEqual(get(this.context, 'val'), 12, 'But context val is not updated');
 
       this.assert.notOk(middle.attrs.foo.update, "middle's foo attr is not a mutable cell");
       runTask(() => set(middle, 'foo', 15));
 
       this.assertText('15 15');
-      this.assert.equal(get(middle, 'foo'), 15, "set of middle's foo took effect");
-      this.assert.equal(
+      this.assert.strictEqual(get(middle, 'foo'), 15, "set of middle's foo took effect");
+      this.assert.strictEqual(
         get(bottom, 'bar'),
         15,
         "bottom's local bar was updated after set of middle's foo"
       );
-      this.assert.equal(get(this.context, 'val'), 12, 'Context val remains unchanged');
+      this.assert.strictEqual(get(this.context, 'val'), 12, 'Context val remains unchanged');
 
       runTask(() => set(this.context, 'val', 10));
 
       this.assertText('10 10');
-      this.assert.equal(
+      this.assert.strictEqual(
         get(bottom, 'bar'),
         10,
         "bottom's local bar was updated after set of context's val"
       );
-      this.assert.equal(
+      this.assert.strictEqual(
         get(middle, 'foo'),
         10,
         "middle's local foo was updated after set of context's val"
@@ -277,12 +277,12 @@ moduleFor(
       runTask(() => set(bottom, 'bar', undefined));
 
       this.assertText(' ');
-      this.assert.equal(
+      this.assert.strictEqual(
         get(bottom, 'bar'),
         undefined,
         "bottom's local bar was updated to a falsy value"
       );
-      this.assert.equal(
+      this.assert.strictEqual(
         get(middle, 'foo'),
         undefined,
         "middle's local foo was updated to a falsy value"

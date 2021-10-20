@@ -318,7 +318,7 @@ moduleFor(
     ) {
       let ComponentClass = templateOnlyComponent('my-app/components/foo');
 
-      assert.equal(`${ComponentClass}`, 'my-app/components/foo');
+      assert.strictEqual(`${ComponentClass}`, 'my-app/components/foo');
     }
   }
 );

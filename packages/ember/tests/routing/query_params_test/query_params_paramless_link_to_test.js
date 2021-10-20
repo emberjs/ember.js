@@ -18,7 +18,10 @@ moduleFor(
       );
 
       return this.visit('/?foo=YEAH').then(() => {
-        assert.equal(document.getElementById('index-link').getAttribute('href'), '/?foo=YEAH');
+        assert.strictEqual(
+          document.getElementById('index-link').getAttribute('href'),
+          '/?foo=YEAH'
+        );
       });
     }
 

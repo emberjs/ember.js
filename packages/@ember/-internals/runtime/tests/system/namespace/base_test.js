@@ -45,14 +45,14 @@ moduleFor(
 
     ['@test Namespace is found and named'](assert) {
       let nsA = (lookup.NamespaceA = Namespace.create());
-      assert.equal(
+      assert.strictEqual(
         nsA.toString(),
         'NamespaceA',
         'namespaces should have a name if they are on lookup'
       );
 
       let nsB = (lookup.NamespaceB = Namespace.create());
-      assert.equal(
+      assert.strictEqual(
         nsB.toString(),
         'NamespaceB',
         'namespaces work if created after the first namespace processing pass'
@@ -63,16 +63,24 @@ moduleFor(
       let nsA = (lookup.NamespaceA = Namespace.create());
       nsA.Foo = EmberObject.extend();
       Namespace.processAll();
-      assert.equal(getName(nsA.Foo), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
+      assert.strictEqual(
+        getName(nsA.Foo),
+        'NamespaceA.Foo',
+        'Classes pick up their parent namespace'
+      );
 
       nsA.Bar = EmberObject.extend();
       Namespace.processAll();
-      assert.equal(getName(nsA.Bar), 'NamespaceA.Bar', 'New Classes get the naming treatment too');
+      assert.strictEqual(
+        getName(nsA.Bar),
+        'NamespaceA.Bar',
+        'New Classes get the naming treatment too'
+      );
 
       let nsB = (lookup.NamespaceB = Namespace.create());
       nsB.Foo = EmberObject.extend();
       Namespace.processAll();
-      assert.equal(
+      assert.strictEqual(
         getName(nsB.Foo),
         'NamespaceB.Foo',
         'Classes in new namespaces get the naming treatment'
@@ -88,7 +96,7 @@ moduleFor(
     ['@test Lowercase namespaces are no longer supported'](assert) {
       let nsC = (lookup.namespaceC = Namespace.create());
       Namespace.processAll();
-      assert.equal(getName(nsC), guidFor(nsC));
+      assert.strictEqual(getName(nsC), guidFor(nsC));
     }
 
     ['@test A namespace can be assigned a custom name'](assert) {
@@ -106,12 +114,12 @@ moduleFor(
 
         Namespace.processAll();
 
-        assert.equal(
+        assert.strictEqual(
           getName(nsA.Foo),
           'NamespaceA.Foo',
           "The namespace's name is used when the namespace is not in the lookup object"
         );
-        assert.equal(
+        assert.strictEqual(
           getName(nsB.Foo),
           'CustomNamespaceB.Foo',
           "The namespace's name is used when the namespace is in the lookup object"
@@ -131,8 +139,8 @@ moduleFor(
 
       Namespace.processAll();
 
-      assert.equal(getName(namespace.ClassA), 'NS.ClassA');
-      assert.equal(getName(namespace.ClassB), 'NS.ClassB');
+      assert.strictEqual(getName(namespace.ClassA), 'NS.ClassA');
+      assert.strictEqual(getName(namespace.ClassB), 'NS.ClassB');
     }
 
     ['@test A namespace can be looked up by its name'](assert) {
@@ -140,16 +148,16 @@ moduleFor(
       let UI = (lookup.UI = Namespace.create());
       let CF = (lookup.CF = Namespace.create());
 
-      assert.equal(Namespace.byName('NS'), NS);
-      assert.equal(Namespace.byName('UI'), UI);
-      assert.equal(Namespace.byName('CF'), CF);
+      assert.strictEqual(Namespace.byName('NS'), NS);
+      assert.strictEqual(Namespace.byName('UI'), UI);
+      assert.strictEqual(Namespace.byName('CF'), CF);
     }
 
     ['@test A nested namespace can be looked up by its name'](assert) {
       let UI = (lookup.UI = Namespace.create());
       UI.Nav = Namespace.create();
 
-      assert.equal(Namespace.byName('UI.Nav'), UI.Nav);
+      assert.strictEqual(Namespace.byName('UI.Nav'), UI.Nav);
 
       run(UI.Nav, 'destroy');
     }
@@ -160,7 +168,11 @@ moduleFor(
       let CF = (lookup.CF = Namespace.create());
 
       run(CF, 'destroy');
-      assert.equal(Namespace.byName('CF'), undefined, 'namespace can not be found after destroyed');
+      assert.strictEqual(
+        Namespace.byName('CF'),
+        undefined,
+        'namespace can not be found after destroyed'
+      );
     }
 
     ['@test Destroying a namespace after looking up removes it from the list of namespaces'](
@@ -168,10 +180,18 @@ moduleFor(
     ) {
       let CF = (lookup.CF = Namespace.create());
 
-      assert.equal(Namespace.byName('CF'), CF, 'precondition - namespace can be looked up by name');
+      assert.strictEqual(
+        Namespace.byName('CF'),
+        CF,
+        'precondition - namespace can be looked up by name'
+      );
 
       run(CF, 'destroy');
-      assert.equal(Namespace.byName('CF'), undefined, 'namespace can not be found after destroyed');
+      assert.strictEqual(
+        Namespace.byName('CF'),
+        undefined,
+        'namespace can not be found after destroyed'
+      );
     }
   }
 );

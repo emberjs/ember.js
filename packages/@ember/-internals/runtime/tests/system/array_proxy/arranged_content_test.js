@@ -46,21 +46,21 @@ moduleFor(
     }
 
     ['@test indexOf - returns index of object in arrangedContent'](assert) {
-      assert.equal(array.indexOf(4), 1, 'returns arranged index');
+      assert.strictEqual(array.indexOf(4), 1, 'returns arranged index');
     }
 
     ['@test lastIndexOf - returns last index of object in arrangedContent'](assert) {
       array.get('content').pushObject(4);
-      assert.equal(array.lastIndexOf(4), 2, 'returns last arranged index');
+      assert.strictEqual(array.lastIndexOf(4), 2, 'returns last arranged index');
     }
 
     ['@test objectAt - returns object at index in arrangedContent'](assert) {
-      assert.equal(objectAt(array, 1), 4, 'returns object at index');
+      assert.strictEqual(objectAt(array, 1), 4, 'returns object at index');
     }
 
     // Not sure if we need a specific test for it, since it's internal
     ['@test objectAtContent - returns object at index in arrangedContent'](assert) {
-      assert.equal(array.objectAtContent(1), 4, 'returns object at index');
+      assert.strictEqual(array.objectAtContent(1), 4, 'returns object at index');
     }
 
     ['@test objectsAt - returns objects at indices in arrangedContent'](assert) {
@@ -91,11 +91,11 @@ moduleFor(
     }
 
     ['@test lastObject - returns last arranged object'](assert) {
-      assert.equal(array.get('lastObject'), 1, 'returns last arranged object');
+      assert.strictEqual(array.get('lastObject'), 1, 'returns last arranged object');
     }
 
     ['@test firstObject - returns first arranged object'](assert) {
-      assert.equal(array.get('firstObject'), 5, 'returns first arranged object');
+      assert.strictEqual(array.get('firstObject'), 5, 'returns first arranged object');
     }
   }
 );
@@ -181,21 +181,21 @@ moduleFor(
     }
 
     ['@test indexOf - returns index of object in arrangedContent'](assert) {
-      assert.equal(array.indexOf('4'), 1, 'returns arranged index');
+      assert.strictEqual(array.indexOf('4'), 1, 'returns arranged index');
     }
 
     ['@test lastIndexOf - returns last index of object in arrangedContent'](assert) {
       array.get('content').pushObject(4);
-      assert.equal(array.lastIndexOf('4'), 2, 'returns last arranged index');
+      assert.strictEqual(array.lastIndexOf('4'), 2, 'returns last arranged index');
     }
 
     ['@test objectAt - returns object at index in arrangedContent'](assert) {
-      assert.equal(objectAt(array, 1), '4', 'returns object at index');
+      assert.strictEqual(objectAt(array, 1), '4', 'returns object at index');
     }
 
     // Not sure if we need a specific test for it, since it's internal
     ['@test objectAtContent - returns object at index in arrangedContent'](assert) {
-      assert.equal(array.objectAtContent(1), '4', 'returns object at index');
+      assert.strictEqual(array.objectAtContent(1), '4', 'returns object at index');
     }
 
     ['@test objectsAt - returns objects at indices in arrangedContent'](assert) {
@@ -219,11 +219,11 @@ moduleFor(
     }
 
     ['@test lastObject - returns last arranged object'](assert) {
-      assert.equal(array.get('lastObject'), '1', 'returns last arranged object');
+      assert.strictEqual(array.get('lastObject'), '1', 'returns last arranged object');
     }
 
     ['@test firstObject - returns first arranged object'](assert) {
-      assert.equal(array.get('firstObject'), '5', 'returns first arranged object');
+      assert.strictEqual(array.get('firstObject'), '5', 'returns first arranged object');
     }
   }
 );
@@ -252,7 +252,7 @@ moduleFor(
 
     ['@test popObject - removes last object in arrangedContent'](assert) {
       let popped = array.popObject();
-      assert.equal(popped, '5', 'returns last object');
+      assert.strictEqual(popped, '5', 'returns last object');
       assert.deepEqual(array.toArray(), ['1', '2', '4'], 'removes from content');
     }
 
@@ -268,7 +268,7 @@ moduleFor(
 
     ['@test shiftObject - removes from start of arrangedContent'](assert) {
       let shifted = array.shiftObject();
-      assert.equal(shifted, '1', 'returns first object');
+      assert.strictEqual(shifted, '1', 'returns first object');
       assert.deepEqual(array.toArray(), ['2', '4', '5'], 'removes object from content');
     }
   }

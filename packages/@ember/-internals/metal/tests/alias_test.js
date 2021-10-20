@@ -37,13 +37,13 @@ moduleFor(
 
     ['@test should proxy get to alt key'](assert) {
       defineProperty(obj, 'bar', alias('foo.faz'));
-      assert.equal(get(obj, 'bar'), 'FOO');
+      assert.strictEqual(get(obj, 'bar'), 'FOO');
     }
 
     ['@test should proxy set to alt key'](assert) {
       defineProperty(obj, 'bar', alias('foo.faz'));
       set(obj, 'bar', 'BAR');
-      assert.equal(get(obj, 'foo.faz'), 'BAR');
+      assert.strictEqual(get(obj, 'foo.faz'), 'BAR');
     }
 
     async ['@test old dependent keys should not trigger property changes'](assert) {
@@ -58,14 +58,14 @@ moduleFor(
       set(obj1, 'foo', 'FOO');
       await runLoopSettled();
 
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
 
       removeObserver(obj1, 'baz', incrementCount);
 
       set(obj1, 'foo', 'OOF');
       await runLoopSettled();
 
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
     }
 
     ['@test nested aliases should trigger computed property invalidation [GH#19279]'](assert) {
@@ -84,9 +84,9 @@ moduleFor(
       });
 
       let model = RootModel.create();
-      assert.equal(model.allAdditives.length, 0);
+      assert.strictEqual(model.allAdditives.length, 0);
       model.metaAttributes[0].additives.pushObject('foo');
-      assert.equal(model.allAdditives.length, 1);
+      assert.strictEqual(model.allAdditives.length, 1);
     }
 
     async [`@test inheriting an observer of the alias from the prototype then
@@ -108,14 +108,14 @@ moduleFor(
       set(obj2, 'foo', 'FOO');
       await runLoopSettled();
 
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
 
       removeObserver(obj2, 'baz', null, 'incrementCount');
 
       set(obj2, 'foo', 'OOF');
       await runLoopSettled();
 
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
     }
 
     async ['@test an observer of the alias works if added after defining the alias'](assert) {
@@ -125,7 +125,7 @@ moduleFor(
       set(obj, 'foo.faz', 'BAR');
 
       await runLoopSettled();
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
     }
 
     async ['@test an observer of the alias works if added before defining the alias'](assert) {
@@ -135,7 +135,7 @@ moduleFor(
       set(obj, 'foo.faz', 'BAR');
 
       await runLoopSettled();
-      assert.equal(count, 1);
+      assert.strictEqual(count, 1);
     }
 
     ['@test alias is dirtied if interior object of alias is set after consumption'](assert) {
@@ -178,7 +178,7 @@ moduleFor(
       defineProperty(obj, 'bar', alias('foo.faz'));
 
       assertPropertyTagUnchanged(obj, 'bar', () => {
-        assert.equal(get(obj, 'bar'), 'FOO');
+        assert.strictEqual(get(obj, 'bar'), 'FOO');
       });
 
       assertPropertyTagChanged(obj, 'bar', () => {
@@ -186,7 +186,7 @@ moduleFor(
       });
 
       assertPropertyTagUnchanged(obj, 'bar', () => {
-        assert.equal(get(obj, 'bar'), 'BAR');
+        assert.strictEqual(get(obj, 'bar'), 'BAR');
       });
 
       assertPropertyTagUnchanged(obj, 'bar', () => {
@@ -199,7 +199,7 @@ moduleFor(
       });
 
       assertPropertyTagUnchanged(obj, 'bar', () => {
-        assert.equal(get(obj, 'bar'), 'FOO');
+        assert.strictEqual(get(obj, 'bar'), 'FOO');
       });
     }
 
@@ -226,14 +226,14 @@ moduleFor(
 
       let outer = new Outer();
 
-      assert.equal(outer.value, 123, 'Property works');
+      assert.strictEqual(outer.value, 123, 'Property works');
 
       outer.value;
-      assert.equal(count, 1, 'Property was properly cached');
+      assert.strictEqual(count, 1, 'Property was properly cached');
 
       set(outer, 'inner.pojo.value', 456);
 
-      assert.equal(outer.value, 456, 'Property was invalidated correctly');
+      assert.strictEqual(outer.value, 456, 'Property was invalidated correctly');
     }
   }
 );

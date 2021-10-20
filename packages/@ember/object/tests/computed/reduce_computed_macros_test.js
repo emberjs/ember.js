@@ -97,7 +97,7 @@ moduleFor(
     ['@test it has the correct `this`'](assert) {
       obj = EmberObject.extend({
         mapped: map('array', function (item) {
-          assert.equal(this, obj, 'should have correct context');
+          assert.strictEqual(this, obj, 'should have correct context');
           return this.upperCase(item);
         }),
         upperCase(string) {
@@ -259,7 +259,7 @@ moduleFor(
       obj.get('array').pushObject({ v: 5 });
       await runLoopSettled();
 
-      assert.equal(calls, 1, 'mapBy is observable');
+      assert.strictEqual(calls, 1, 'mapBy is observable');
     }
   }
 );
@@ -306,7 +306,7 @@ moduleFor(
     ['@test it has the correct `this`'](assert) {
       obj = EmberObject.extend({
         filtered: filter('array', function (item, index) {
-          assert.equal(this, obj);
+          assert.strictEqual(this, obj);
           return this.isOne(index);
         }),
         isOne(value) {
@@ -1602,7 +1602,7 @@ moduleFor(
     ['@test sort has correct `this`'](assert) {
       let obj = EmberObject.extend({
         sortedItems: sort('items.@each.fname', function (a, b) {
-          assert.equal(this, obj, 'expected the object to be `this`');
+          assert.strictEqual(this, obj, 'expected the object to be `this`');
           return this.sortByLastName(a, b);
         }),
         sortByLastName(a, b) {
@@ -2070,29 +2070,29 @@ moduleFor(
     }
 
     ['@test max tracks the max number as objects are added'](assert) {
-      assert.equal(obj.get('max'), 3, 'precond - max is initially correct');
+      assert.strictEqual(obj.get('max'), 3, 'precond - max is initially correct');
 
       let items = obj.get('items');
 
       items.pushObject(5);
 
-      assert.equal(obj.get('max'), 5, 'max updates when a larger number is added');
+      assert.strictEqual(obj.get('max'), 5, 'max updates when a larger number is added');
 
       items.pushObject(2);
 
-      assert.equal(obj.get('max'), 5, 'max does not update when a smaller number is added');
+      assert.strictEqual(obj.get('max'), 5, 'max does not update when a smaller number is added');
     }
 
     ['@test max recomputes when the current max is removed'](assert) {
-      assert.equal(obj.get('max'), 3, 'precond - max is initially correct');
+      assert.strictEqual(obj.get('max'), 3, 'precond - max is initially correct');
 
       obj.get('items').removeObject(2);
 
-      assert.equal(obj.get('max'), 3, 'max is unchanged when a non-max item is removed');
+      assert.strictEqual(obj.get('max'), 3, 'max is unchanged when a non-max item is removed');
 
       obj.get('items').removeObject(3);
 
-      assert.equal(obj.get('max'), 1, 'max is recomputed when the current max is removed');
+      assert.strictEqual(obj.get('max'), 1, 'max is recomputed when the current max is removed');
     }
   }
 );
@@ -2119,29 +2119,29 @@ moduleFor(
     }
 
     ['@test min tracks the min number as objects are added'](assert) {
-      assert.equal(obj.get('min'), 1, 'precond - min is initially correct');
+      assert.strictEqual(obj.get('min'), 1, 'precond - min is initially correct');
 
       obj.get('items').pushObject(-2);
 
-      assert.equal(obj.get('min'), -2, 'min updates when a smaller number is added');
+      assert.strictEqual(obj.get('min'), -2, 'min updates when a smaller number is added');
 
       obj.get('items').pushObject(2);
 
-      assert.equal(obj.get('min'), -2, 'min does not update when a larger number is added');
+      assert.strictEqual(obj.get('min'), -2, 'min does not update when a larger number is added');
     }
 
     ['@test min recomputes when the current min is removed'](assert) {
       let items = obj.get('items');
 
-      assert.equal(obj.get('min'), 1, 'precond - min is initially correct');
+      assert.strictEqual(obj.get('min'), 1, 'precond - min is initially correct');
 
       items.removeObject(2);
 
-      assert.equal(obj.get('min'), 1, 'min is unchanged when a non-min item is removed');
+      assert.strictEqual(obj.get('min'), 1, 'min is unchanged when a non-min item is removed');
 
       items.removeObject(1);
 
-      assert.equal(obj.get('min'), 3, 'min is recomputed when the current min is removed');
+      assert.strictEqual(obj.get('min'), 3, 'min is recomputed when the current min is removed');
     }
   }
 );
@@ -2195,15 +2195,19 @@ moduleFor(
     ['@test filtering, sorting and reduce (max) can be combined'](assert) {
       let items = obj.get('items');
 
-      assert.equal(16, obj.get('oldestStarkAge'), 'precond - end of chain is initially correct');
+      assert.strictEqual(
+        16,
+        obj.get('oldestStarkAge'),
+        'precond - end of chain is initially correct'
+      );
 
       items.pushObject({ fname: 'Rickon', lname: 'Stark', age: 5 });
 
-      assert.equal(16, obj.get('oldestStarkAge'), 'chain is updated correctly');
+      assert.strictEqual(16, obj.get('oldestStarkAge'), 'chain is updated correctly');
 
       items.pushObject({ fname: 'Eddard', lname: 'Stark', age: 35 });
 
-      assert.equal(35, obj.get('oldestStarkAge'), 'chain is updated correctly');
+      assert.strictEqual(35, obj.get('oldestStarkAge'), 'chain is updated correctly');
     }
   }
 );
@@ -2299,7 +2303,7 @@ moduleFor(
     }
 
     async ['@test it computes interdependent array computed properties'](assert) {
-      assert.equal(obj.get('max'), 3, 'sanity - it properly computes the maximum value');
+      assert.strictEqual(obj.get('max'), 3, 'sanity - it properly computes the maximum value');
 
       let calls = 0;
 
@@ -2308,9 +2312,9 @@ moduleFor(
       obj.get('array').pushObject({ v: 5 });
       await runLoopSettled();
 
-      assert.equal(obj.get('max'), 5, 'maximum value is updated correctly');
-      assert.equal(userFnCalls, 1, 'object defined observers fire');
-      assert.equal(calls, 1, 'runtime created observers fire');
+      assert.strictEqual(obj.get('max'), 5, 'maximum value is updated correctly');
+      assert.strictEqual(userFnCalls, 1, 'object defined observers fire');
+      assert.strictEqual(calls, 1, 'runtime created observers fire');
     }
   }
 );
@@ -2337,28 +2341,28 @@ moduleFor(
     }
 
     ['@test sums the values in the dependentKey'](assert) {
-      assert.equal(obj.get('total'), 6, 'sums the values');
+      assert.strictEqual(obj.get('total'), 6, 'sums the values');
     }
 
     ['@test if the dependentKey is neither an array nor object, it will return `0`'](assert) {
       set(obj, 'array', null);
-      assert.equal(get(obj, 'total'), 0, 'returns 0');
+      assert.strictEqual(get(obj, 'total'), 0, 'returns 0');
 
       set(obj, 'array', undefined);
-      assert.equal(get(obj, 'total'), 0, 'returns 0');
+      assert.strictEqual(get(obj, 'total'), 0, 'returns 0');
 
       set(obj, 'array', 'not an array');
-      assert.equal(get(obj, 'total'), 0, 'returns 0');
+      assert.strictEqual(get(obj, 'total'), 0, 'returns 0');
     }
 
     ['@test updates when array is modified'](assert) {
       obj.get('array').pushObject(1);
 
-      assert.equal(obj.get('total'), 7, 'recomputed when elements are added');
+      assert.strictEqual(obj.get('total'), 7, 'recomputed when elements are added');
 
       obj.get('array').popObject();
 
-      assert.equal(obj.get('total'), 6, 'recomputes when elements are removed');
+      assert.strictEqual(obj.get('total'), 6, 'recomputes when elements are removed');
     }
   }
 );

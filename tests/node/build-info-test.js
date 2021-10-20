@@ -33,7 +33,7 @@ QUnit.module('buildVersion', () => {
     padEmptyArgs(3, [null, ''])
   ).forEach(({ args, expected }) => {
     QUnit.test(JSON.stringify(args), function (assert) {
-      assert.equal(buildVersion(...args), expected);
+      assert.strictEqual(buildVersion(...args), expected);
     });
   });
 });
@@ -50,7 +50,7 @@ QUnit.module('parseTagVersion', () => {
     },
   ].forEach(({ tag, expected }) => {
     QUnit.test(JSON.stringify(tag), function (assert) {
-      assert.equal(parseTagVersion(tag), expected);
+      assert.strictEqual(parseTagVersion(tag), expected);
     });
   });
 
