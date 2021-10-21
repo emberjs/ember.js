@@ -91,19 +91,29 @@ class FunctionalModifierManager implements ModifierManager<SimpleModifierState> 
 const FUNCTIONAL_MODIFIER_MANAGER = new FunctionalModifierManager();
 const FUNCTIONAL_MODIFIER_MANAGER_FACTORY = () => FUNCTIONAL_MODIFIER_MANAGER;
 
+export interface DefineComponentOptions {
+  // defaults to templateOnlyComponent
+  definition?: object;
+
+  // defaults to true when some scopeValues are passed and false otherwise
+  strictMode?: boolean;
+}
+
 export function defineComponent(
   scopeValues: Record<string, unknown> | null,
   templateSource: string,
-  definition: object = templateOnlyComponent()
+  options: DefineComponentOptions = {}
 ) {
-  let templateFactory = createTemplate(
-    templateSource,
-    { strictMode: scopeValues !== null },
-    scopeValues ?? {}
-  );
+  let strictMode: boolean;
+  if (typeof options.strictMode === 'boolean') {
+    strictMode = options.strictMode;
+  } else {
+    strictMode = scopeValues !== null;
+  }
 
+  let definition = options.definition ?? templateOnlyComponent();
+  let templateFactory = createTemplate(templateSource, { strictMode }, scopeValues ?? {});
   setComponentTemplate(templateFactory, definition);
-
   return definition;
 }
 

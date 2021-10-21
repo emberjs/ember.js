@@ -140,13 +140,11 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     const bar = defineSimpleModifier(
       (element: Element, value: string) => (element.innerHTML = value)
     );
-    const Bar = defineComponent(
-      { foo },
-      '<div {{this.bar (foo)}}></div>',
-      class extends GlimmerishComponent {
+    const Bar = defineComponent({ foo }, '<div {{this.bar (foo)}}></div>', {
+      definition: class extends GlimmerishComponent {
         bar = bar;
-      }
-    );
+      },
+    });
 
     this.renderComponent(Bar);
     this.assertHTML('<div>Hello, world!</div>');
@@ -159,14 +157,12 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     const bar = defineSimpleModifier(
       (element: Element, value: string) => (element.innerHTML = value)
     );
-    const Bar = defineComponent(
-      {},
-      '<div {{this.bar (this.foo)}}></div>',
-      class extends GlimmerishComponent {
+    const Bar = defineComponent({}, '<div {{this.bar (this.foo)}}></div>', {
+      definition: class extends GlimmerishComponent {
         foo = foo;
         bar = bar;
-      }
-    );
+      },
+    });
 
     this.renderComponent(Bar);
     this.assertHTML('<div>Hello, world!</div>');
