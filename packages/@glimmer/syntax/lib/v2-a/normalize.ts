@@ -40,7 +40,7 @@ export function normalize(
   );
 
   let top = SymbolTable.top(
-    normalizeOptions.strictMode ? normalizeOptions.locals : [],
+    normalizeOptions.locals,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     options.customizeComponentName ?? ((name) => name)
   );
