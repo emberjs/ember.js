@@ -86,27 +86,23 @@ class MountManager implements WithCreateInstance<object>, WithSubOwner<object> {
 setInternalComponentManager(new MountManager(), MountComponent);
 
 function defineMountComponent(owner: object, scope: Record<string, unknown>, template: string) {
-  return defineComponent(
-    scope,
-    template,
-    class extends MountComponent {
+  return defineComponent(scope, template, {
+    definition: class extends MountComponent {
       static owner = owner;
-    }
-  );
+    },
+  });
 }
 
 function defineCheckOwnerComponent(ownerToCheck: object | undefined, assert: Assert) {
-  return defineComponent(
-    {},
-    '{{yield}}',
-    class extends GlimmerishComponent {
+  return defineComponent({}, '{{yield}}', {
+    definition: class extends GlimmerishComponent {
       constructor(owner: object, args: Record<string, unknown>) {
         super(owner, args);
 
         assert.equal(owner, ownerToCheck, 'owner is correct');
       }
-    }
-  );
+    },
+  });
 }
 
 class OwnerTest extends RenderTest {
