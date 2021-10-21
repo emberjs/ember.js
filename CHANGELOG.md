@@ -65,7 +65,11 @@
 - [#19695](https://github.com/emberjs/ember.js/pull/19695) [CLEANUP] Remove {{partial}}
 - [#19691](https://github.com/emberjs/ember.js/pull/19691) Add build assertion against `{{outlet named}}`
 
-### v3.28.1 (August 30, 2021)
+## v3.28.2 (October 21, 2021)
+
+- [glimmerjs/glimmer-vm#1351](https://github.com/glimmerjs/glimmer-vm/pull/1351) Support lexical scope in loose mode
+
+## v3.28.1 (August 30, 2021)
 
 - [#19733](https://github.com/emberjs/ember.js/pull/19733) [BUGFIX] Ensure that using `routerService.urlFor(...)` and `routerService.recognize(...)` does not error if the router is not fully initialized
 
