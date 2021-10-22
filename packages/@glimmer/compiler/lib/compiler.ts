@@ -124,19 +124,17 @@ export function precompile(
     isStrictMode: options.strictMode ?? false,
   };
 
-  if (!options.strictMode) {
+  if (usedLocals.length === 0) {
     delete templateJSONObject.scope;
   }
 
   // JSON is javascript
   let stringified = JSON.stringify(templateJSONObject);
 
-  if (options.strictMode && usedLocals.length > 0) {
+  if (usedLocals.length > 0) {
     let scopeFn = `()=>[${usedLocals.join(',')}]`;
 
     stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, scopeFn);
-  } else {
-    stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, 'null');
   }
 
   return stringified;
