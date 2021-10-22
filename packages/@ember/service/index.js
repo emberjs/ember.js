@@ -25,21 +25,6 @@ import { inject as metalInject } from '@ember/-internals/metal';
   }
   ```
 
-  Classic Class Example:
-
-  ```app/routes/application.js
-  import Route from '@ember/routing/route';
-  import { inject as service } from '@ember/service';
-
-  export default Route.extend({
-    authManager: service('auth'),
-
-    model() {
-      return this.get('authManager').findCurrentUser();
-    }
-  });
-  ```
-
   This example will create an `authManager` property on the application route
   that looks up the `auth` service in the container, making it easily accessible
   in the `model` hook.

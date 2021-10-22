@@ -11,18 +11,6 @@
   - Components _with_ JavaScript, which consist of a template and a backing
     class.
 
-  Ember ships with two types of JavaScript classes for components:
-
-  1. Glimmer components, imported from `@glimmer/component`, which are the
-     default component's for Ember Octane (3.15) and more recent editions.
-  2. Classic components, imported from `@ember/component`, which were the
-     default for older editions of Ember (pre 3.15).
-
-  Below is the documentation for Template-only and Glimmer components. If you
-  are looking for the API documentation for Classic components, it is
-  [available here](/ember/release/classes/Component). The source code for
-  Glimmer components can be found in [`@glimmer/component`](https://github.com/glimmerjs/glimmer.js/tree/master/packages/%40glimmer/component).
-
   ## Defining a Template-only Component
 
   The simplest way to create a component is to create a template file in
