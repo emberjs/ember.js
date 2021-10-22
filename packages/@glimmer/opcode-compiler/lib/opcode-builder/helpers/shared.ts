@@ -107,7 +107,6 @@ export function meta(layout: LayoutWithContext): ContainingMetadata {
   let [, symbols, , upvars] = layout.block;
 
   return {
-    asPartial: layout.asPartial || false,
     evalSymbols: evalSymbols(layout),
     upvars: upvars,
     scopeValues: layout.scope?.() ?? null,
