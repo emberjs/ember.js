@@ -37,6 +37,15 @@ export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrec
     options.locals = undefined;
   }
 
+  if ('locals' in options && !options.locals) {
+    // Glimmer's precompile options declare `locals` like:
+    //    locals?: string[]
+    // but many in-use versions of babel-plugin-htmlbars-inline-precompile will
+    // set locals to `null`. This used to work but only because glimmer was
+    // ignoring locals for non-strict templates, and now it supports that case.
+    delete options.locals;
+  }
+
   // move `moduleName` into `meta` property
   if (options.moduleName) {
     let meta = options.meta;
