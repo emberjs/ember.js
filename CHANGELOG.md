@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v3.28.3 (October 22, 2021)
+
+- [#19799](https://github.com/emberjs/ember.js/pull/19799) / [glimmerjs/glimmer-vm#1354](https://github.com/glimmerjs/glimmer-vm/pull/1354) Fixes for errors while precompiling inline templates (introduced in 3.28.2)
+
 ## v3.28.2 (October 21, 2021)
 
 - [glimmerjs/glimmer-vm#1351](https://github.com/glimmerjs/glimmer-vm/pull/1351) Support lexical scope in loose mode
