@@ -1680,7 +1680,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
-    import { inject as service } from '@ember/service';
+    import { service } from '@ember/service';
 
     export default class ApplicationRoute extends Route {
       @service router

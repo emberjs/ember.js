@@ -7,6 +7,20 @@ import { inject as metalInject } from '@ember/-internals/metal';
  */
 
 /**
+  @method inject
+  @static
+  @since 1.10.0
+  @for @ember/service
+  @param {String} name (optional) name of the service to inject, defaults to
+         the property's name
+  @return {ComputedDecorator} injection decorator instance
+  @public
+*/
+export function inject() {
+  return metalInject('service', ...arguments);
+}
+
+/**
   Creates a property that lazily looks up a service in the container. There are
   no restrictions as to what objects a service can be injected into.
 
@@ -14,7 +28,7 @@ import { inject as metalInject } from '@ember/-internals/metal';
 
   ```app/routes/application.js
   import Route from '@ember/routing/route';
-  import { inject as service } from '@ember/service';
+  import { service } from '@ember/service';
 
   export default class ApplicationRoute extends Route {
     @service('auth') authManager;
@@ -29,7 +43,7 @@ import { inject as metalInject } from '@ember/-internals/metal';
 
   ```app/routes/application.js
   import Route from '@ember/routing/route';
-  import { inject as service } from '@ember/service';
+  import { service } from '@ember/service';
 
   export default Route.extend({
     authManager: service('auth'),
@@ -44,16 +58,16 @@ import { inject as metalInject } from '@ember/-internals/metal';
   that looks up the `auth` service in the container, making it easily accessible
   in the `model` hook.
 
-  @method inject
+  @method service
   @static
-  @since 1.10.0
+  @since 4.1.0
   @for @ember/service
   @param {String} name (optional) name of the service to inject, defaults to
          the property's name
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function inject() {
+export function service() {
   return metalInject('service', ...arguments);
 }
 

@@ -1387,7 +1387,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     ```javascript
     import config from './config/environment';
     import EmberRouter from '@ember/routing/router';
-    import { inject as service } from '@ember/service';
+    import { service } from '@ember/service';
 
     let Router = EmberRouter.extend({
       location: config.locationType,

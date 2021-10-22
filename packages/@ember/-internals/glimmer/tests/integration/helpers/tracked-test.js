@@ -6,7 +6,7 @@ import {
   nativeDescDecorator as descriptor,
   notifyPropertyChange,
 } from '@ember/-internals/metal';
-import Service, { inject } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -293,7 +293,7 @@ moduleFor(
 
       this.registerComponent('person', {
         ComponentClass: Component.extend({
-          currentUser: inject('current-user'),
+          currentUser: service('current-user'),
         }),
 
         template: strip`

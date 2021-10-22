@@ -11,7 +11,7 @@ import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, deprecate, runInDebug, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
-import { inject as injectService } from '@ember/service';
+import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent from '../component';
 import { HAS_BLOCK } from '../component-managers/curly';
@@ -506,7 +506,7 @@ const LinkComponent = EmberComponent.extend({
     this.on(eventName, this, this._invoke);
   },
 
-  _routing: injectService('-routing'),
+  _routing: service('-routing'),
   _currentRoute: alias('_routing.currentRouteName'),
   _currentRouterState: alias('_routing.currentState'),
   _targetRouterState: alias('_routing.targetState'),

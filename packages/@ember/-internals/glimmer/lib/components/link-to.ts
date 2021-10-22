@@ -8,7 +8,7 @@ import { assert, debugFreeze, deprecate, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
-import { inject as service } from '@ember/service';
+import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { Maybe, Option } from '@glimmer/interfaces';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';

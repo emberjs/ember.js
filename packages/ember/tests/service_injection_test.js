@@ -1,6 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { _ProxyMixin } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from '@ember/-internals/metal';
@@ -12,7 +12,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          myService: injectService('my-service'),
+          myService: service('my-service'),
         })
       );
       let MyService = Service.extend();
@@ -31,7 +31,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          myService: injectService('my-service'),
+          myService: service('my-service'),
         })
       );
       let MyService = Service.extend(_ProxyMixin, {
@@ -60,7 +60,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          myService: injectService('my-service'),
+          myService: service('my-service'),
         })
       );
       let MyService = Service.extend({

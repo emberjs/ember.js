@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { run } from '@ember/runloop';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
@@ -27,14 +27,14 @@ moduleFor(
       this.add(
         'controller:home',
         Controller.extend({
-          filters: injectService(),
+          filters: service(),
         })
       );
 
       this.add(
         'controller:dashboard',
         Controller.extend({
-          filters: injectService(),
+          filters: service(),
           queryParams: [{ 'filters.shared': 'shared' }],
         })
       );

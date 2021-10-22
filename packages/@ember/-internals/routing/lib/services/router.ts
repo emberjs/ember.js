@@ -33,7 +33,7 @@ function cleanURL(url: string, rootURL: string) {
    ```app/components/example.js
    import Component from '@glimmer/component';
    import { action } from '@ember/object';
-   import { inject as service } from '@ember/service';
+   import { service } from '@ember/service';
 
    export default class ExampleComponent extends Component {
      @service router;
@@ -85,7 +85,7 @@ export default class RouterService extends Service {
      ```app/components/example.js
      import Component from '@glimmer/component';
      import { action } from '@ember/object';
-     import { inject as service } from '@ember/service';
+     import { service } from '@ember/service';
 
      export default class extends Component {
        @service router;
@@ -184,7 +184,7 @@ export default class RouterService extends Service {
 
     ```app/components/copy-link.js
     import Component from '@glimmer/component';
-    import { inject as service } from '@ember/service';
+    import { service } from '@ember/service';
     import { action } from '@ember/object';
 
     export default class CopyLinkComponent extends Component {
@@ -211,7 +211,7 @@ export default class RouterService extends Service {
 
     ```app/components/copy-link.js
     import Component from '@glimmer/component';
-    import { inject as service } from '@ember/service';
+    import { service } from '@ember/service';
     import { action } from '@ember/object';
 
     export default class CopyLinkComponent extends Component {
@@ -254,7 +254,7 @@ export default class RouterService extends Service {
 
      ```app/components/posts.js
      import Component from '@glimmer/component';
-     import { inject as service } from '@ember/service';
+     import { service } from '@ember/service';
 
      export default class extends Component {
        @service router;
@@ -270,7 +270,7 @@ export default class RouterService extends Service {
 
      ```app/components/posts.js
      import Component from '@glimmer/component';
-     import { inject as service } from '@ember/service';
+     import { service } from '@ember/service';
 
      export default class extends Component {
        @service router;
@@ -354,7 +354,7 @@ export default class RouterService extends Service {
 
      ```
      import Component from '@ember/component';
-     import { inject as service } from '@ember/service';
+     import { service } from '@ember/service';
 
      export default class extends Component {
        @service router;
@@ -414,7 +414,7 @@ export default class RouterService extends Service {
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing';
-    import { inject as service } from '@ember/service';
+    import { service } from '@ember/service';
 
     export default class extends Route {
       @service router;
@@ -448,7 +448,7 @@ export default class RouterService extends Service {
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing';
-    import { inject as service } from '@ember/service';
+    import { service } from '@ember/service';
 
     export default class extends Route {
       @service router;
@@ -656,7 +656,7 @@ RouterService.reopen(Evented, {
     Usage example:
     ```app/components/header.js
       import Component from '@glimmer/component';
-      import { inject as service } from '@ember/service';
+      import { service } from '@ember/service';
       import { notEmpty } from '@ember/object/computed';
 
       export default class extends Component {

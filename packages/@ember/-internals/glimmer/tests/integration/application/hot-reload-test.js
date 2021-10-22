@@ -1,7 +1,7 @@
 import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { Component, Helper } from '@ember/-internals/glimmer';
 import { expect } from '@glimmer/util';
 
@@ -59,7 +59,7 @@ moduleFor(
       this.add(
         'helper:hot-reload',
         Helper.extend({
-          reloader: injectService(),
+          reloader: service(),
 
           init() {
             this._super(...arguments);

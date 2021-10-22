@@ -12,7 +12,7 @@ import {
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { alias, set, get, observer, on, computed, tracked } from '@ember/-internals/metal';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
@@ -2855,13 +2855,13 @@ moduleFor(
     }
 
     ['@test services can be injected into components']() {
-      let service;
+      let serviceInstance;
       this.registerService(
         'name',
         Service.extend({
           init() {
             this._super(...arguments);
-            service = this;
+            serviceInstance = this;
           },
           last: 'Jackson',
         })
@@ -2869,7 +2869,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          name: injectService(),
+          name: service(),
         }),
         template: '{{this.name.last}}',
       });
@@ -2883,13 +2883,13 @@ moduleFor(
       this.assertText('Jackson');
 
       runTask(() => {
-        service.set('last', 'McGuffey');
+        serviceInstance.set('last', 'McGuffey');
       });
 
       this.assertText('McGuffey');
 
       runTask(() => {
-        service.set('last', 'Jackson');
+        serviceInstance.set('last', 'Jackson');
       });
 
       this.assertText('Jackson');
@@ -2898,7 +2898,7 @@ moduleFor(
     ['@test injecting an unknown service raises an exception']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          missingService: injectService(),
+          missingService: service(),
         }),
       });
 

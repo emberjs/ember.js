@@ -489,6 +489,7 @@ module.exports = {
     'serialize',
     'serializeQueryParam',
     'serializeQueryParamKey',
+    'service',
     'set',
     'setClassicDecorator',
     'setDiff',
