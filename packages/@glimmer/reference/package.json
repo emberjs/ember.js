@@ -3,6 +3,11 @@
   "version": "0.82.0",
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/glimmerjs/glimmer-vm.git",
+    "directory": "packages/@glimmer/reference"
+  },
   "dependencies": {
     "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "0.82.0",
