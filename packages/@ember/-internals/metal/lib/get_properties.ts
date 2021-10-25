@@ -32,16 +32,13 @@ import { get } from './property_get';
   @public
 */
 export default function getProperties(obj: object, keys?: string[]): object {
-  let ret = {};
-  let propertyNames = arguments;
-  let i = 1;
+  if (keys && Array.isArray(keys)) {
+    return keys.reduce((result, propertyName) => {
+      result[propertyName] = get(obj, propertyName);
 
-  if (arguments.length === 2 && Array.isArray(keys)) {
-    i = 0;
-    propertyNames = arguments[1];
+      return result;
+    }, {});
   }
-  for (; i < propertyNames.length; i++) {
-    ret[propertyNames[i]] = get(obj, propertyNames[i]);
-  }
-  return ret;
+
+  return {};
 }
