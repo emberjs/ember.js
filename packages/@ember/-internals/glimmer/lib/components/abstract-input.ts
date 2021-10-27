@@ -1,19 +1,8 @@
 import { tracked } from '@ember/-internals/metal';
-import { TargetActionSupport } from '@ember/-internals/runtime';
-import { TextSupport } from '@ember/-internals/views';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { action } from '@ember/object';
 import { isConstRef, isUpdatableRef, Reference, updateRef, valueForRef } from '@glimmer/reference';
-import Component from '../component';
-import InternalComponent, {
-  DeprecatingInternalComponent,
-  EventListener,
-  handleDeprecatedArguments,
-  handleDeprecatedAttributeArguments,
-  handleDeprecatedEventArguments,
-  InternalComponentConstructor,
-} from './internal';
+import InternalComponent, { EventListener } from './internal';
 
 const UNINITIALIZED: unknown = Object.freeze({});
 
@@ -109,11 +98,7 @@ class ForkedValue implements Value {
   }
 }
 
-export default abstract class AbstractInput
-  extends InternalComponent
-  implements DeprecatingInternalComponent {
-  modernized = this.shouldModernize();
-
+export default abstract class AbstractInput extends InternalComponent {
   validateArguments(): void {
     assert(
       `The ${this.constructor} component does not take any positional arguments`,
@@ -121,15 +106,6 @@ export default abstract class AbstractInput
     );
 
     super.validateArguments();
-  }
-
-  protected shouldModernize(): boolean {
-    return (
-      Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
-      Component._wasReopened === false &&
-      TextSupport._wasReopened === false &&
-      TargetActionSupport._wasReopened === false
-    );
   }
 
   private _value = valueFrom(this.args.named.value);
@@ -198,47 +174,5 @@ export default abstract class AbstractInput
     let virtualEvents = ['enter', 'insert-newline', 'escape-press'];
 
     return virtualEvents.indexOf(name) !== -1;
-  }
-}
-
-export function handleDeprecatedFeatures(
-  target: InternalComponentConstructor<AbstractInput>,
-  attributeBindings: Array<string | [attribute: string, argument: string]>
-): void {
-  if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-    let { prototype } = target;
-
-    let virtualEvents = {
-      focusin: 'focus-in',
-      focusout: 'focus-out',
-      keypress: 'key-press',
-      keyup: 'key-up',
-      keydown: 'key-down',
-    };
-
-    handleDeprecatedArguments(target);
-
-    handleDeprecatedAttributeArguments(target, attributeBindings);
-
-    handleDeprecatedEventArguments(target, Object.entries(virtualEvents));
-
-    {
-      let superIsVirtualEventListener = prototype['isVirtualEventListener'];
-
-      Object.defineProperty(prototype, 'isVirtualEventListener', {
-        configurable: true,
-        enumerable: false,
-        value: function isVirtualEventListener(
-          this: AbstractInput,
-          name: string,
-          listener: Function
-        ): listener is VirtualEventListener {
-          return (
-            Object.values(virtualEvents).indexOf(name) !== -1 ||
-            superIsVirtualEventListener.call(this, name, listener)
-          );
-        },
-      });
-    }
   }
 }

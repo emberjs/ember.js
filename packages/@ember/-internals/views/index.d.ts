@@ -8,7 +8,6 @@ export const ClassNamesSupport: any;
 export const CoreView: any;
 export const ViewMixin: any;
 export const ViewStateSupport: any;
-export const TextSupport: any;
 
 export function getElementView(element: SimpleElement): unknown;
 export function getViewElement(view: unknown): Option<SimpleElement>;

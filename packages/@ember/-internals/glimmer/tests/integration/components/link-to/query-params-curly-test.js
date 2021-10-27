@@ -1,7 +1,6 @@
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { DEBUG } from '@glimmer/env';
 import {
   ApplicationTestCase,
   classes as classMatcher,
@@ -68,31 +67,6 @@ moduleFor(
           attrs: { href: '/', class: classMatcher('ember-view active') },
           content: 'Index',
         });
-      });
-    }
-
-    async ['@test [DEPRECATED] `query-params` can be used outside of `{{link-to}}'](assert) {
-      if (!DEBUG) {
-        assert.expect(0);
-        return;
-      }
-
-      expectDeprecation(() => {
-        this.addTemplate(
-          'index',
-          `{{#let (query-params foo='456' alon='BUKAI') as |qp|}}{{#link-to 'index' qp}}Index{{/link-to}}{{/let}}`
-        );
-      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /The `query-params` helper is deprecated/
-      );
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'a',
-        attrs: { href: '/?alon=BUKAI&foo=456', class: classMatcher('ember-view') },
-        content: 'Index',
       });
     }
   }
@@ -839,39 +813,6 @@ moduleFor(
       await this.visit('/?page=5');
 
       this.shouldBeActive(assert, '#page-link > a');
-    }
-
-    async ['@test [DEPRECATED] [GH#17869] it does not cause shadowing assertion with `hash` local variable']() {
-      this.router.map(function () {
-        this.route('post', { path: '/post/:id' });
-      });
-
-      this.add(
-        'controller:post',
-        class extends Controller {
-          queryParams = ['showComments'];
-          showComments = true;
-        }
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate(
-          'index',
-          `
-          {{#let (hash id="1" title="Hello World!" body="Lorem ipsum dolor sit amet...") as |hash|}}
-            {{#link-to "post" hash (query-params showComments=false)}}View Post{{/link-to}}
-          {{/let}}
-          `
-        );
-      }, /Invoking the `<LinkTo>` component with positional arguments is deprecated/);
-
-      await this.visit('/');
-
-      this.assertComponentElement(this.element.firstElementChild, {
-        tagName: 'a',
-        attrs: { href: '/post/1?showComments=false', class: classMatcher('ember-view') },
-        content: 'View Post',
-      });
     }
 
     async ['@test with dynamic segment and loading route, it should preserve query parameters'](

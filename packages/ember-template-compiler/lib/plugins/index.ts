@@ -9,7 +9,6 @@ import TransformActionSyntax from './transform-action-syntax';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformEachTrackArray from './transform-each-track-array';
 import TransformInElement from './transform-in-element';
-import TransformLinkTo from './transform-link-to';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
@@ -24,7 +23,6 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     TransformActionSyntax,
     AssertAgainstAttrs,
     TransformEachInIntoEach,
-    TransformLinkTo,
     AssertInputHelperWithoutBlock,
     TransformInElement,
     AssertSplattributeExpressions,
