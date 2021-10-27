@@ -38,8 +38,22 @@ QUnit.module('App Boot', function (hooks) {
     });
   });
 
+  QUnit.test('<LinkTo>', function (assert) {
+    this.template('application', "<h1><LinkTo @route='photos'>Go to photos</LinkTo></h1>");
+    this.routes(function () {
+      this.route('photos');
+    });
+
+    return this.renderToHTML('/').then(function (html) {
+      assert.htmlMatches(
+        html,
+        '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a></h1></div></body>'
+      );
+    });
+  });
+
   QUnit.test('{{link-to}}', function (assert) {
-    this.template('application', "<h1>{{#link-to 'photos'}}Go to photos{{/link-to}}</h1>");
+    this.template('application', "<h1>{{#link-to route='photos'}}Go to photos{{/link-to}}</h1>");
     this.routes(function () {
       this.route('photos');
     });

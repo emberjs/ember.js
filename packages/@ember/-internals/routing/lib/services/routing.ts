@@ -12,7 +12,7 @@ import RouterState from '../system/router_state';
 const ROUTER = (symbol('ROUTER') as unknown) as string;
 
 /**
-  The Routing service is used by LinkComponent, and provides facilities for
+  The Routing service is used by LinkTo, and provides facilities for
   the component/view layer to interact with the router.
 
   This is a private service for internal usage only. For public usage,

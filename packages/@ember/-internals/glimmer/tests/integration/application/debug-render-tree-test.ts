@@ -9,7 +9,6 @@ import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
 import { EngineInstanceOptions, Owner } from '@ember/-internals/owner';
 import { Route } from '@ember/-internals/routing';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
@@ -1173,19 +1172,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
-            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-              ? []
-              : [
-                  {
-                    type: 'component',
-                    name: '-text-field',
-                    args: { positional: [], named: { target, type: 'text', value: 'first' } },
-                    instance: (instance: object) => instance['value'] === 'first',
-                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                    bounds: this.nodeBounds(this.element.firstChild),
-                    children: [],
-                  },
-                ],
+            children: [],
           },
         ]);
 
@@ -1199,19 +1186,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
-            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-              ? []
-              : [
-                  {
-                    type: 'component',
-                    name: '-text-field',
-                    args: { positional: [], named: { target, type: 'text', value: 'first' } },
-                    instance: (instance: object) => instance['value'] === 'first',
-                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                    bounds: this.nodeBounds(this.element.firstChild),
-                    children: [],
-                  },
-                ],
+            children: [],
           },
           {
             type: 'component',
@@ -1220,19 +1195,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.lastChild),
-            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-              ? []
-              : [
-                  {
-                    type: 'component',
-                    name: '-checkbox',
-                    args: { positional: [], named: { target, type: 'checkbox', checked: false } },
-                    instance: (instance: object) => instance['checked'] === false,
-                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                    bounds: this.nodeBounds(this.element.lastChild),
-                    children: [],
-                  },
-                ],
+            children: [],
           },
         ]);
 
@@ -1246,19 +1209,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element.firstChild),
-            children: EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-              ? []
-              : [
-                  {
-                    type: 'component',
-                    name: '-text-field',
-                    args: { positional: [], named: { target, type: 'text', value: 'first' } },
-                    instance: (instance: object) => instance['value'] === 'first',
-                    template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-                    bounds: this.nodeBounds(this.element.firstChild),
-                    children: [],
-                  },
-                ],
+            children: [],
           },
         ]);
       }
@@ -1278,27 +1229,15 @@ if (ENV._DEBUG_RENDER_TREE) {
         await this.visit('/');
 
         let textareaNode = (value: string, node: Node): ExpectedRenderNode => {
-          if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-            return {
-              type: 'component',
-              name: 'textarea',
-              args: { positional: [], named: { value } },
-              instance: (instance: object) => instance['value'] === value,
-              bounds: this.nodeBounds(node),
-              template: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
-              children: [],
-            };
-          } else {
-            return {
-              type: 'component',
-              name: 'textarea',
-              args: { positional: [], named: { value } },
-              instance: (instance: object) => instance['value'] === value,
-              bounds: this.nodeBounds(node),
-              template: 'packages/@ember/-internals/glimmer/lib/templates/empty.hbs',
-              children: [],
-            };
-          }
+          return {
+            type: 'component',
+            name: 'textarea',
+            args: { positional: [], named: { value } },
+            instance: (instance: object) => instance['value'] === value,
+            bounds: this.nodeBounds(node),
+            template: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
+            children: [],
+          };
         };
 
         this.assertRenderTree([textareaNode('first', this.element.firstChild)]);
@@ -1338,9 +1277,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         await this.visit('/');
 
-        let template = `packages/@ember/-internals/glimmer/lib/templates/${
-          EMBER_MODERNIZED_BUILT_IN_COMPONENTS ? 'link-to' : '-link-to'
-        }.hbs`;
+        let template = `packages/@ember/-internals/glimmer/lib/templates/link-to.hbs`;
 
         this.assertRenderTree([
           {

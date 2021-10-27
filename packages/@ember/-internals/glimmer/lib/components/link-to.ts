@@ -1,10 +1,8 @@
 import { Owner } from '@ember/-internals/owner';
 import { RouterState, RoutingService } from '@ember/-internals/routing';
 import { QueryParam } from '@ember/-internals/routing/lib/system/router';
-import { TargetActionSupport } from '@ember/-internals/runtime';
 import { isSimpleClick } from '@ember/-internals/views';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { assert, debugFreeze, deprecate, warn } from '@ember/debug';
+import { assert, debugFreeze, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
@@ -13,16 +11,8 @@ import { DEBUG } from '@glimmer/env';
 import { Maybe, Option } from '@glimmer/interfaces';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import { Transition } from 'router_js';
-import Component from '../component';
 import LinkToTemplate from '../templates/link-to';
-import LegacyLinkTo from './-link-to';
-import InternalComponent, {
-  DeprecatingInternalComponent,
-  handleDeprecatedArguments,
-  handleDeprecatedAttributeArguments,
-  handleDeprecatedEventArguments,
-  opaquify,
-} from './internal';
+import InternalComponent, { opaquify } from './internal';
 
 const EMPTY_ARRAY: {}[] = [];
 const EMPTY_QUERY_PARAMS = {};
@@ -47,12 +37,243 @@ function isQueryParams(value: unknown): value is QueryParams {
   return typeof value === 'object' && value !== null && value['isQueryParams'] === true;
 }
 
-class LinkTo extends InternalComponent implements DeprecatingInternalComponent {
+/**
+  The `LinkTo` component renders a link to the supplied `routeName` passing an optionally
+  supplied model to the route as its `model` context of the route. The block for `LinkTo`
+  becomes the contents of the rendered element:
+
+  ```handlebars
+  <LinkTo @route='photoGallery'>
+    Great Hamster Photos
+  </LinkTo>
+  ```
+
+  This will result in:
+
+  ```html
+  <a href="/hamster-photos">
+    Great Hamster Photos
+  </a>
+  ```
+
+  ### Disabling the `LinkTo` component
+
+  The `LinkTo` component can be disabled by using the `disabled` argument. A disabled link
+  doesn't result in a transition when activated, and adds the `disabled` class to the `<a>`
+  element.
+
+  (The class name to apply to the element can be overridden by using the `disabledClass`
+  argument)
+
+  ```handlebars
+  <LinkTo @route='photoGallery' @disabled={{true}}>
+    Great Hamster Photos
+  </LinkTo>
+  ```
+
+  ### Handling `href`
+
+  `<LinkTo>` will use your application's Router to fill the element's `href` property with a URL
+  that matches the path to the supplied `routeName`.
+
+  ### Handling current route
+
+  The `LinkTo` component will apply a CSS class name of 'active' when the application's current
+  route matches the supplied routeName. For example, if the application's current route is
+  'photoGallery.recent', then the following invocation of `LinkTo`:
+
+  ```handlebars
+  <LinkTo @route='photoGallery.recent'>
+    Great Hamster Photos
+  </LinkTo>
+  ```
+
+  will result in
+
+  ```html
+  <a href="/hamster-photos/this-week" class="active">
+    Great Hamster Photos
+  </a>
+  ```
+
+  The CSS class used for active classes can be customized by passing an `activeClass` argument:
+
+  ```handlebars
+  <LinkTo @route='photoGallery.recent' @activeClass="current-url">
+    Great Hamster Photos
+  </LinkTo>
+  ```
+
+  ```html
+  <a href="/hamster-photos/this-week" class="current-url">
+    Great Hamster Photos
+  </a>
+  ```
+
+  ### Keeping a link active for other routes
+
+  If you need a link to be 'active' even when it doesn't match the current route, you can use the
+  `current-when` argument.
+
+  ```handlebars
+  <LinkTo @route='photoGallery' @current-when='photos'>
+    Photo Gallery
+  </LinkTo>
+  ```
+
+  This may be helpful for keeping links active for:
+
+  * non-nested routes that are logically related
+  * some secondary menu approaches
+  * 'top navigation' with 'sub navigation' scenarios
+
+  A link will be active if `current-when` is `true` or the current
+  route is the route this link would transition to.
+
+  To match multiple routes 'space-separate' the routes:
+
+  ```handlebars
+  <LinkTo @route='gallery' @current-when='photos drawings paintings'>
+    Art Gallery
+  </LinkTo>
+  ```
+
+  ### Supplying a model
+
+  An optional `model` argument can be used for routes whose
+  paths contain dynamic segments. This argument will become
+  the model context of the linked route:
+
+  ```javascript
+  Router.map(function() {
+    this.route("photoGallery", {path: "hamster-photos/:photo_id"});
+  });
+  ```
+
+  ```handlebars
+  <LinkTo @route='photoGallery' @model={{this.aPhoto}}>
+    {{aPhoto.title}}
+  </LinkTo>
+  ```
+
+  ```html
+  <a href="/hamster-photos/42">
+    Tomster
+  </a>
+  ```
+
+  ### Supplying multiple models
+
+  For deep-linking to route paths that contain multiple
+  dynamic segments, the `models` argument can be used.
+
+  As the router transitions through the route path, each
+  supplied model argument will become the context for the
+  route with the dynamic segments:
+
+  ```javascript
+  Router.map(function() {
+    this.route("photoGallery", { path: "hamster-photos/:photo_id" }, function() {
+      this.route("comment", {path: "comments/:comment_id"});
+    });
+  });
+  ```
+
+  This argument will become the model context of the linked route:
+
+  ```handlebars
+  <LinkTo @route='photoGallery.comment' @models={{array this.aPhoto this.comment}}>
+    {{comment.body}}
+  </LinkTo>
+  ```
+
+  ```html
+  <a href="/hamster-photos/42/comments/718">
+    A+++ would snuggle again.
+  </a>
+  ```
+
+  ### Supplying an explicit dynamic segment value
+
+  If you don't have a model object available to pass to `LinkTo`,
+  an optional string or integer argument can be passed for routes whose
+  paths contain dynamic segments. This argument will become the value
+  of the dynamic segment:
+
+  ```javascript
+  Router.map(function() {
+    this.route("photoGallery", { path: "hamster-photos/:photo_id" });
+  });
+  ```
+
+  ```handlebars
+  <LinkTo @route='photoGallery' @model={{aPhotoId}}>
+    {{this.aPhoto.title}}
+  </LinkTo>
+  ```
+
+  ```html
+  <a href="/hamster-photos/42">
+    Tomster
+  </a>
+  ```
+
+  When transitioning into the linked route, the `model` hook will
+  be triggered with parameters including this passed identifier.
+
+  ### Supplying query parameters
+
+  If you need to add optional key-value pairs that appear to the right of the ? in a URL,
+  you can use the `query` argument.
+
+  ```handlebars
+  <LinkTo @route='photoGallery' @query={{hash page=1 per_page=20}}>
+    Great Hamster Photos
+  </LinkTo>
+  ```
+
+  This will result in:
+
+  ```html
+  <a href="/hamster-photos?page=1&per_page=20">
+    Great Hamster Photos
+  </a>
+  ```
+
+  @for Ember.Templates.components
+  @method LinkTo
+  @public
+*/
+
+/**
+  @module @ember/routing
+*/
+
+/**
+  See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
+
+  @for Ember.Templates.helpers
+  @method link-to
+  @see {Ember.Templates.components.LinkTo}
+  @public
+**/
+
+/**
+  An opaque interface which can be imported and used in strict-mode
+  templates to call <LinkTo>.
+
+  See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
+
+  @for @ember/routing
+  @method LinkTo
+  @see {Ember.Templates.components.LinkTo}
+  @public
+**/
+
+class LinkTo extends InternalComponent {
   static toString(): string {
     return 'LinkTo';
   }
-
-  modernized = this.shouldModernize();
 
   @service('-routing') private declare routing: RoutingService;
 
@@ -61,13 +282,12 @@ class LinkTo extends InternalComponent implements DeprecatingInternalComponent {
       'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
         'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
         'See https://ember-engines.com/docs/links for more info.',
-      !this.modernized || !this.isEngine || this.engineMountPoint !== undefined
+      !this.isEngine || this.engineMountPoint !== undefined
     );
 
     assert(
-      'You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo>`.',
-      !this.modernized ||
-        'route' in this.args.named ||
+      'You must provide at least one of the `@route`, `@model`, `@models` or `@query` arguments to `<LinkTo>`.',
+      'route' in this.args.named ||
         'model' in this.args.named ||
         'models' in this.args.named ||
         'query' in this.args.named
@@ -338,15 +558,6 @@ class LinkTo extends InternalComponent implements DeprecatingInternalComponent {
     event.preventDefault();
   }
 
-  private shouldModernize(): boolean {
-    return (
-      Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
-      Component._wasReopened === false &&
-      TargetActionSupport._wasReopened === false &&
-      LegacyLinkTo._wasReopened === false
-    );
-  }
-
   protected isSupportedArgument(name: string): boolean {
     let supportedArguments = [
       'route',
@@ -365,413 +576,114 @@ class LinkTo extends InternalComponent implements DeprecatingInternalComponent {
   }
 }
 
-// Deprecated features
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  let { prototype } = LinkTo;
+let { prototype } = LinkTo;
 
-  let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
-    if (target) {
-      return (
-        Object.getOwnPropertyDescriptor(target, property) ||
-        descriptorFor(Object.getPrototypeOf(target), property)
-      );
-    } else {
-      return null;
-    }
-  };
-
-  handleDeprecatedArguments(LinkTo);
-
-  handleDeprecatedAttributeArguments(LinkTo, [
-    // Component
-    'id',
-    ['id', 'elementId'],
-    'class',
-    ['class', 'classNames'],
-    ['role', 'ariaRole'],
-
-    // LinkTo
-    'title',
-    'rel',
-    'tabindex',
-    'target',
-  ]);
-
-  handleDeprecatedEventArguments(LinkTo);
-
-  // @href
-  {
-    let superOnUnsupportedArgument = prototype['onUnsupportedArgument'];
-
-    Object.defineProperty(prototype, 'onUnsupportedArgument', {
-      configurable: true,
-      enumerable: false,
-      value: function onUnsupportedArgument(this: LinkTo, name: string): void {
-        if (name === 'href') {
-          assert(`Passing the \`@href\` argument to <LinkTo> is not supported.`);
-        } else {
-          superOnUnsupportedArgument.call(this, name);
-        }
-      },
-    });
-  }
-
-  // @tagName
-  {
-    let superOnUnsupportedArgument = prototype['onUnsupportedArgument'];
-
-    Object.defineProperty(prototype, 'onUnsupportedArgument', {
-      configurable: true,
-      enumerable: false,
-      value: function onUnsupportedArgument(this: LinkTo, name: string): void {
-        if (name === 'tagName') {
-          let tagName = this.named('tagName');
-
-          deprecate(
-            `Passing the \`@tagName\` argument to <LinkTo> is deprecated. Using a <${tagName}> ` +
-              'element for navigation is not recommended as it creates issues with assistive ' +
-              'technologies. Remove this argument to use the default <a> element. In the rare ' +
-              'cases that calls for using a different element, refactor to use the router ' +
-              'service inside a custom event handler instead.',
-            false,
-            {
-              id: 'ember.link-to.tag-name',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-            }
-          );
-
-          this.modernized = false;
-        } else {
-          superOnUnsupportedArgument.call(this, name);
-        }
-      },
-    });
-  }
-
-  // @bubbles & @preventDefault
-  {
-    let superIsSupportedArgument = prototype['isSupportedArgument'];
-
-    Object.defineProperty(prototype, 'isSupportedArgument', {
-      configurable: true,
-      enumerable: false,
-      value: function isSupportedArgument(this: LinkTo, name: string): boolean {
-        if (this.modernized) {
-          if (name === 'bubbles') {
-            deprecate(
-              'Passing the `@bubbles` argument to <LinkTo> is deprecated. ' +
-                'Use the {{on}} modifier to attach a custom event handler to ' +
-                'control event propagation.',
-              false,
-              {
-                id: 'ember.built-in-components.legacy-arguments',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.27.0',
-                },
-                until: '4.0.0',
-                url:
-                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
-              }
-            );
-
-            return true;
-          }
-
-          if (name === 'preventDefault') {
-            deprecate(
-              'Passing the `@preventDefault` argument to <LinkTo> is deprecated. ' +
-                '`preventDefault()` is called automatically on events that are ' +
-                'handled by the <LinkTo> component to prevent the browser from ' +
-                'navigating away from the page.',
-              false,
-              {
-                id: 'ember.built-in-components.legacy-arguments',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.27.0',
-                },
-                until: '4.0.0',
-                url:
-                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
-              }
-            );
-
-            return true;
-          }
-        }
-
-        return superIsSupportedArgument.call(this, name);
-      },
-    });
-
-    Object.defineProperty(prototype, 'preventDefault', {
-      configurable: true,
-      enumerable: false,
-      value: function preventDefault(this: LinkTo, event: Event): void {
-        let shouldPreventDefault = true;
-        let shouldStopPropagation = false;
-
-        if ('preventDefault' in this.args.named) {
-          let value = this.named('preventDefault');
-
-          if (isMissing(value) || value) {
-            deprecate(
-              'Passing the `@preventDefault` argument to <LinkTo> is deprecated. ' +
-                '`preventDefault()` is called automatically on events that are ' +
-                'handled by the <LinkTo> component to prevent the browser from ' +
-                'navigating away from the page.',
-              false,
-              {
-                id: 'ember.built-in-components.legacy-arguments',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.27.0',
-                },
-                until: '4.0.0',
-                url:
-                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
-              }
-            );
-          } else {
-            deprecate(
-              'Passing the `@preventDefault` argument to <LinkTo> is deprecated. ' +
-                '`preventDefault()` should always be called on events that are ' +
-                'handled by the <LinkTo> component to prevent the browser from ' +
-                'navigating away from the page.',
-              false,
-              {
-                id: 'ember.built-in-components.legacy-arguments',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.27.0',
-                },
-                until: '4.0.0',
-                url:
-                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
-              }
-            );
-
-            shouldPreventDefault = false;
-          }
-        }
-
-        if ('bubbles' in this.args.named) {
-          let value = this.named('bubbles');
-
-          if (value === false) {
-            deprecate(
-              'Passing the `@bubbles` argument to <LinkTo> is deprecated. ' +
-                'Use the {{on}} modifier to attach a custom event handler to ' +
-                'control event propagation.',
-              false,
-              {
-                id: 'ember.built-in-components.legacy-arguments',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.27.0',
-                },
-                until: '4.0.0',
-                url:
-                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
-              }
-            );
-
-            shouldStopPropagation = true;
-          } else {
-            deprecate(
-              'Passing the `@bubbles` argument to <LinkTo> is deprecated. ' +
-                '`stopPropagation()` is not automatically called so there is ' +
-                'no need to pass this argument when you DO want the event to ' +
-                'propagate normally',
-              false,
-              {
-                id: 'ember.built-in-components.legacy-arguments',
-                for: 'ember-source',
-                since: {
-                  enabled: '3.27.0',
-                },
-                until: '4.0.0',
-                url:
-                  'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-legacy-arguments',
-              }
-            );
-          }
-        }
-
-        if (shouldPreventDefault) {
-          event.preventDefault();
-        }
-
-        if (shouldStopPropagation) {
-          event.stopPropagation();
-        }
-      },
-    });
-  }
-
-  // @disabledWhen
-  {
-    let superIsSupportedArgument = prototype['isSupportedArgument'];
-
-    Object.defineProperty(prototype, 'isSupportedArgument', {
-      configurable: true,
-      enumerable: false,
-      value: function isSupportedArgument(this: LinkTo, name: string): boolean {
-        if (this.modernized) {
-          if (name === 'disabledWhen') {
-            deprecate(
-              'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. ' +
-                'Use the `@disabled` argument instead.',
-              false,
-              {
-                id: 'ember.link-to.disabled-when',
-                for: 'ember-source',
-                url: 'https://deprecations.emberjs.com/v4.x#toc_ember-link-to-disabled-when',
-                since: {},
-                until: '4.0.0',
-              }
-            );
-
-            return true;
-          }
-        }
-
-        return superIsSupportedArgument.call(this, name);
-      },
-    });
-
-    let superDescriptor = descriptorFor(prototype, 'isDisabled');
-
-    assert(
-      `[BUG] expecting isDisabled to be a getter on <LinkTo>`,
-      superDescriptor && typeof superDescriptor.get === 'function'
+let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
+  if (target) {
+    return (
+      Object.getOwnPropertyDescriptor(target, property) ||
+      descriptorFor(Object.getPrototypeOf(target), property)
     );
-
-    let superGetter = superDescriptor.get as (this: LinkTo) => boolean;
-
-    Object.defineProperty(prototype, 'isDisabled', {
-      configurable: true,
-      enumerable: false,
-      get: function isDisabled(this: LinkTo): boolean {
-        if ('disabledWhen' in this.args.named) {
-          deprecate(
-            'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. ' +
-              'Use the `@disabled` argument instead.',
-            false,
-            {
-              id: 'ember.link-to.disabled-when',
-              for: 'ember-source',
-              url: 'https://deprecations.emberjs.com/v4.x#toc_ember-link-to-disabled-when',
-              since: {},
-              until: '4.0.0',
-            }
-          );
-
-          return Boolean(this.named('disabledWhen'));
-        }
-
-        return superGetter.call(this);
-      },
-    });
+  } else {
+    return null;
   }
+};
 
-  // QP
-  {
-    let superModelsDescriptor = descriptorFor(prototype, 'models');
+// @href
+{
+  let superOnUnsupportedArgument = prototype['onUnsupportedArgument'];
 
-    assert(
-      `[BUG] expecting models to be a getter on <LinkTo>`,
-      superModelsDescriptor && typeof superModelsDescriptor.get === 'function'
-    );
+  Object.defineProperty(prototype, 'onUnsupportedArgument', {
+    configurable: true,
+    enumerable: false,
+    value: function onUnsupportedArgument(this: LinkTo, name: string): void {
+      if (name === 'href') {
+        assert(`Passing the \`@href\` argument to <LinkTo> is not supported.`);
+      } else {
+        superOnUnsupportedArgument.call(this, name);
+      }
+    },
+  });
+}
 
-    let superModelsGetter = superModelsDescriptor.get as (this: LinkTo) => {}[];
+// QP
+{
+  let superModelsDescriptor = descriptorFor(prototype, 'models');
 
-    Object.defineProperty(prototype, 'models', {
-      configurable: true,
-      enumerable: false,
-      get: function models(this: LinkTo): {}[] {
+  assert(
+    `[BUG] expecting models to be a getter on <LinkTo>`,
+    superModelsDescriptor && typeof superModelsDescriptor.get === 'function'
+  );
+
+  let superModelsGetter = superModelsDescriptor.get as (this: LinkTo) => {}[];
+
+  Object.defineProperty(prototype, 'models', {
+    configurable: true,
+    enumerable: false,
+    get: function models(this: LinkTo): {}[] {
+      let models = superModelsGetter.call(this);
+
+      if (models.length > 0 && !('query' in this.args.named)) {
+        if (isQueryParams(models[models.length - 1])) {
+          models = models.slice(0, -1);
+        }
+      }
+
+      return models;
+    },
+  });
+
+  let superQueryDescriptor = descriptorFor(prototype, 'query');
+
+  assert(
+    `[BUG] expecting query to be a getter on <LinkTo>`,
+    superQueryDescriptor && typeof superQueryDescriptor.get === 'function'
+  );
+
+  let superQueryGetter = superQueryDescriptor.get as (this: LinkTo) => {};
+
+  Object.defineProperty(prototype, 'query', {
+    configurable: true,
+    enumerable: false,
+    get: function query(this: LinkTo): {} {
+      if ('query' in this.args.named) {
+        let qp = superQueryGetter.call(this);
+
+        if (isQueryParams(qp)) {
+          return qp.values ?? EMPTY_QUERY_PARAMS;
+        } else {
+          return qp;
+        }
+      } else {
         let models = superModelsGetter.call(this);
 
-        if (models.length > 0 && !('query' in this.args.named)) {
-          if (isQueryParams(models[models.length - 1])) {
-            models = models.slice(0, -1);
+        if (models.length > 0) {
+          let qp = models[models.length - 1];
+
+          if (isQueryParams(qp) && qp.values !== null) {
+            return qp.values;
           }
         }
 
-        return models;
-      },
-    });
+        return EMPTY_QUERY_PARAMS;
+      }
+    },
+  });
+}
 
-    let superQueryDescriptor = descriptorFor(prototype, 'query');
+// Positional Arguments
+{
+  let superOnUnsupportedArgument = prototype['onUnsupportedArgument'];
 
-    assert(
-      `[BUG] expecting query to be a getter on <LinkTo>`,
-      superQueryDescriptor && typeof superQueryDescriptor.get === 'function'
-    );
-
-    let superQueryGetter = superQueryDescriptor.get as (this: LinkTo) => {};
-
-    Object.defineProperty(prototype, 'query', {
-      configurable: true,
-      enumerable: false,
-      get: function query(this: LinkTo): {} {
-        if ('query' in this.args.named) {
-          let qp = superQueryGetter.call(this);
-
-          if (isQueryParams(qp)) {
-            return qp.values ?? EMPTY_QUERY_PARAMS;
-          } else {
-            return qp;
-          }
-        } else {
-          let models = superModelsGetter.call(this);
-
-          if (models.length > 0) {
-            let qp = models[models.length - 1];
-
-            if (isQueryParams(qp) && qp.values !== null) {
-              return qp.values;
-            }
-          }
-
-          return EMPTY_QUERY_PARAMS;
-        }
-      },
-    });
-  }
-
-  // Positional Arguments
-  {
-    let superValidateArguments = prototype['validateArguments'];
-
-    Object.defineProperty(prototype, 'validateArguments', {
-      configurable: true,
-      enumerable: false,
-      value: function validateArguments(this: LinkTo): void {
-        if (this.args.positional.length !== 0 || 'params' in this.args.named) {
-          // Already deprecated in the legacy implementation
-          this.modernized = false;
-        }
-
-        superValidateArguments.call(this);
-      },
-    });
-
-    let superOnUnsupportedArgument = prototype['onUnsupportedArgument'];
-
-    Object.defineProperty(prototype, 'onUnsupportedArgument', {
-      configurable: true,
-      enumerable: false,
-      value: function onUnsupportedArgument(this: LinkTo, name: string): void {
-        if (name !== 'params') {
-          superOnUnsupportedArgument.call(this, name);
-        }
-      },
-    });
-  }
+  Object.defineProperty(prototype, 'onUnsupportedArgument', {
+    configurable: true,
+    enumerable: false,
+    value: function onUnsupportedArgument(this: LinkTo, name: string): void {
+      if (name !== 'params') {
+        superOnUnsupportedArgument.call(this, name);
+      }
+    },
+  });
 }
 
 export default opaquify(LinkTo, LinkToTemplate);

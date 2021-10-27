@@ -8,7 +8,8 @@ import {
 } from 'internal-test-helpers';
 import { EMBER_STRICT_MODE } from '@ember/canary-features';
 
-import { Input, LinkComponent as LinkTo, TextArea } from '@ember/-internals/glimmer';
+import { Input, Textarea } from '@ember/component';
+import { LinkTo } from '@ember/routing';
 import { hash, array, concat, get, on, fn } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
@@ -178,8 +179,8 @@ if (EMBER_STRICT_MODE) {
         this.assertStableRerender();
       }
 
-      '@test Can use TextArea'() {
-        let Foo = defineComponent({ TextArea }, '<TextArea/>');
+      '@test Can use Textarea'() {
+        let Foo = defineComponent({ Textarea }, '<Textarea/>');
 
         this.registerComponent('foo', { ComponentClass: Foo });
 
@@ -274,7 +275,7 @@ if (EMBER_STRICT_MODE) {
         return this.visit('/').then(() => {
           this.assertComponentElement(this.firstChild, {
             tagName: 'a',
-            attrs: { href: '/', class: 'active ember-view' },
+            attrs: { href: '/', class: 'ember-view active' },
             content: 'Index',
           });
         });

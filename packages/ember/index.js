@@ -11,7 +11,6 @@ import {
   isEnabled,
   EMBER_GLIMMER_HELPER_MANAGER,
   EMBER_GLIMMER_INVOKE_HELPER,
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
 } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
@@ -44,7 +43,6 @@ import {
   Array as EmberArray,
   MutableEnumerable,
   MutableArray,
-  TargetActionSupport,
   Evented,
   PromiseProxyMixin,
   Observable,
@@ -63,7 +61,6 @@ import {
   A,
 } from '@ember/-internals/runtime';
 import {
-  Checkbox,
   Component,
   componentCapabilities,
   modifierCapabilities,
@@ -74,11 +71,8 @@ import {
   helper,
   htmlSafe,
   isHTMLSafe,
-  LinkComponent,
   setTemplates,
   template,
-  TextField,
-  TextArea,
   Input,
   isSerializationFirstNode,
 } from '@ember/-internals/glimmer';
@@ -416,59 +410,6 @@ Object.defineProperty(Ember, 'BOOTED', {
 Ember.Component = Component;
 Helper.helper = helper;
 Ember.Helper = Helper;
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  [
-    ['Checkbox', '@ember/component/checkbox', Checkbox, true],
-    ['TextField', '@ember/component/text-field', TextField, true],
-    ['TextArea', '@ember/component/text-area', TextArea, true],
-    ['LinkComponent', '@ember/routing/link-component', LinkComponent, true],
-    ['TextSupport', null, views.TextSupport, false],
-    ['TargetActionSupport', null, TargetActionSupport, false],
-  ].forEach(([name, path, value, availableInLegacyAddon]) => {
-    Object.defineProperty(Ember, name, {
-      get() {
-        let message = `Using Ember.${name}`;
-
-        if (path !== null) {
-          message += ` or importing from '${path}'`;
-        }
-
-        message += ` is deprecated.`;
-
-        if (availableInLegacyAddon) {
-          message +=
-            ` Install the \`@ember/legacy-built-in-components\` addon and use ` +
-            `\`import { ${name} } from '@ember/legacy-built-in-components';\` instead.`;
-        }
-
-        deprecate(message, false, {
-          id: 'ember.built-in-components.import',
-          until: '4.0.0',
-          for: 'ember-source',
-          since: {
-            enabled: '3.27.0',
-          },
-          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-built-in-components-import',
-        });
-
-        return value;
-      },
-
-      configurable: true,
-      enumerable: true,
-    });
-
-    // Expose a non-deprecated version for tests and the @ember/legacy-built-in-components addon
-    Ember[`_Legacy${name}`] = value;
-  });
-} else {
-  Ember.Checkbox = Checkbox;
-  Ember.TextField = TextField;
-  Ember.TextArea = TextArea;
-  Ember.LinkComponent = LinkComponent;
-  Ember.TextSupport = views.TextSupport;
-  Ember.TargetActionSupport = TargetActionSupport;
-}
 Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = componentCapabilities;
 Ember._setModifierManager = setModifierManager;

@@ -46,7 +46,6 @@ import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
 import { default as eachIn } from './helpers/each-in';
 import { default as mut } from './helpers/mut';
-import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import actionModifier from './modifiers/action';
@@ -115,7 +114,6 @@ const BUILTIN_KEYWORD_HELPERS = {
   mut,
   readonly,
   unbound,
-  'query-params': queryParams,
   '-hash': hash,
   '-each-in': eachIn,
   '-normalize-class': normalizeClassHelper,

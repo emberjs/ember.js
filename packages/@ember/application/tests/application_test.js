@@ -131,8 +131,6 @@ moduleFor(
       verifyRegistration(assert, application, 'location:history');
       verifyRegistration(assert, application, 'location:none');
 
-      verifyRegistration(assert, application, 'component:-text-field');
-      verifyRegistration(assert, application, 'component:-checkbox');
       verifyRegistration(assert, application, 'component:link-to');
 
       verifyRegistration(assert, application, 'component:textarea');

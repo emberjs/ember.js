@@ -1,6 +1,6 @@
 import Ember from '../index';
 import require from 'require';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS, FEATURES } from '@ember/canary-features';
+import { FEATURES } from '@ember/canary-features';
 import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
 
@@ -17,52 +17,6 @@ moduleFor(
         }
 
         confirmExport(Ember, assert, path, moduleId, exportName);
-      });
-    }
-
-    ['@feature(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) deprecated built-in components'](assert) {
-      [
-        ['Checkbox', '@ember/component/checkbox', '@ember/-internals/glimmer'],
-        ['TextField', '@ember/component/text-field', '@ember/-internals/glimmer'],
-        ['TextArea', '@ember/component/text-area', '@ember/-internals/glimmer'],
-        ['LinkComponent', '@ember/routing/link-component', '@ember/-internals/glimmer'],
-        ['TextSupport', null, '@ember/-internals/views'],
-        ['TargetActionSupport', null, '@ember/-internals/runtime'],
-      ].forEach(([name, publicPath, privatePath]) => {
-        // loosely based on confirmExport
-        try {
-          let module = require(privatePath);
-          let value = module[name];
-
-          assert.ok(
-            Object.prototype.hasOwnProperty.call(Ember, name),
-            `the ${name} property exists on the Ember global`
-          );
-
-          assert.strictEqual(
-            Ember[`_Legacy${name}`],
-            value,
-            `Ember._Legacy${name} has the correct value and does not trigger a deprecation`
-          );
-
-          expectDeprecation(
-            () =>
-              assert.strictEqual(
-                Ember[name],
-                value,
-                `Ember.${name} has the correct value triggers a deprecation`
-              ),
-            publicPath === null
-              ? `Using Ember.${name} is deprecated.`
-              : `Using Ember.${name} or importing from '${publicPath}' is deprecated. Install the \`@ember/legacy-built-in-components\` addon and use \`import { ${name} } from '@ember/legacy-built-in-components';\` instead.`
-          );
-        } catch (error) {
-          assert.pushResult({
-            result: false,
-            message: `An error occurred while testing ${name} is exported from ${privatePath}.`,
-            source: error,
-          });
-        }
       });
     }
 
@@ -133,14 +87,10 @@ let allExports = [
 
   // @ember/component
   ['Component', '@ember/component', 'default'],
-  ['_Input', '@ember/component', 'Input'],
   ['_componentManagerCapabilities', '@ember/component', 'capabilities'],
   ['_getComponentTemplate', '@ember/component', 'getComponentTemplate'],
   ['_setComponentManager', '@ember/component', 'setComponentManager'],
   ['_setComponentTemplate', '@ember/component', 'setComponentTemplate'],
-
-  // @ember/component/checkbox
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS ? null : ['Checkbox', '@ember/component/checkbox'],
 
   // @ember/component/helper
   ['Helper', '@ember/component/helper', 'default'],
@@ -148,12 +98,6 @@ let allExports = [
 
   // @ember/component/template-only
   ['_templateOnlyComponent', '@ember/component/template-only', 'default'],
-
-  // @ember/component/text-area
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS ? null : ['TextArea', '@ember/-component/text-area'],
-
-  // @ember/component/text-field
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS ? null : ['TextField', '@ember/component/text-field'],
 
   // @ember/controller
   ['Controller', '@ember/controller', 'default'],
@@ -290,9 +234,6 @@ let allExports = [
   // @ember/routing/history-location
   ['HistoryLocation', '@ember/routing/history-location', 'default'],
 
-  // @ember/routing/link-component
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS ? null : ['LinkComponent', '@ember/-internals/glimmer'],
-
   // @ember/routing/location
   ['Location', '@ember/routing/location', 'default'],
 
@@ -412,13 +353,13 @@ let allExports = [
   ['ViewUtils.getRootViews', '@ember/-internals/views', 'getRootViews'],
   ['ViewUtils.getChildViews', '@ember/-internals/views', 'getChildViews'],
   ['ViewUtils.isSerializationFirstNode', '@ember/-internals/glimmer', 'isSerializationFirstNode'],
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS ? null : ['TextSupport', '@ember/-internals/views'],
   ['ComponentLookup', '@ember/-internals/views'],
   ['EventDispatcher', '@ember/-internals/views'],
 
   // @ember/-internals/glimmer
   ['TEMPLATES', '@ember/-internals/glimmer', { get: 'getTemplates', set: 'setTemplates' }],
   ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
+  ['_Input', '@ember/-internals/glimmer', 'Input'],
 
   // @ember/-internals/runtime
   ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin'],
@@ -427,9 +368,6 @@ let allExports = [
   ['ActionHandler', '@ember/-internals/runtime'],
   ['NativeArray', '@ember/-internals/runtime'],
   ['MutableEnumerable', '@ember/-internals/runtime'],
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-    ? null
-    : ['TargetActionSupport', '@ember/-internals/runtime'],
   ['ControllerMixin', '@ember/controller/lib/controller_mixin', 'default'],
   ['_ProxyMixin', '@ember/-internals/runtime'],
 
