@@ -14,7 +14,6 @@ Error.stackTraceLimit = Infinity;
 
 const {
   routerES,
-  jquery,
   loader,
   qunit,
   handlebarsES,
@@ -249,14 +248,7 @@ function templateCompilerBundle(emberPackages, transpileTree) {
 }
 
 function testHarness() {
-  return new MergeTrees([
-    emptyTestem(),
-    testPolyfills(),
-    testIndexHTML(),
-    loader(),
-    qunit(),
-    jquery(),
-  ]);
+  return new MergeTrees([emptyTestem(), testPolyfills(), testIndexHTML(), loader(), qunit()]);
 }
 
 function emptyTestem() {
