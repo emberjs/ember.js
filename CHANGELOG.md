@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.0.0-beta.6 (October 26, 2021)
+
+- [#19799](https://github.com/emberjs/ember.js/pull/19799) / [glimmerjs/glimmer-vm#1354](https://github.com/glimmerjs/glimmer-vm/pull/1354) Fixes for errors while precompiling inline templates (introduced in 3.28.2)
+
 ### v4.0.0-beta.5 (October 11, 2021)
 
 - [#19761](https://github.com/emberjs/ember.js/pull/19761) [BREAKING] Require ember-auto-import >= 2 or higher to enable ember-source to become a v2 addon in the 4.x cycle
