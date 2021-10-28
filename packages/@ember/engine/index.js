@@ -339,7 +339,6 @@ Engine.reopenClass({
     Example instanceInitializer to preload data into the store.
 
     ```app/initializer/preload-data.js
-    import $ from 'jquery';
 
     export function initialize(application) {
         var userConfig, userConfigEncoded, store;
@@ -352,7 +351,7 @@ Engine.reopenClass({
         // should not be relied upon for security or authorization.
 
         // Grab the encoded data from the meta tag
-        userConfigEncoded = $('head meta[name=app-user-config]').attr('content');
+        userConfigEncoded = document.querySelector('head meta[name=app-user-config]').attr('content');
 
         // Unescape the text, then parse the resulting JSON into a real object
         userConfig = JSON.parse(unescape(userConfigEncoded));

@@ -272,12 +272,16 @@ Ember._isDestroyed = isDestroyed;
   and reporting code.
 
   ```javascript
-  import $ from 'jquery';
 
   Ember.onerror = function(error) {
-    $.ajax('/report-error', 'POST', {
+    const payload = {
       stack: error.stack,
       otherInformation: 'whatever app state you want to provide'
+    };
+
+    fetch('/report-error', {
+      method: 'POST',
+      body: JSON.stringify(payload)
     });
   };
   ```
@@ -675,14 +679,3 @@ Ember.__loader = {
 };
 
 export default Ember;
-
-/**
- @module jquery
- @public
- */
-
-/**
- @class jquery
- @public
- @static
- */

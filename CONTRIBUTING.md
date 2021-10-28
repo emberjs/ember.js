@@ -141,10 +141,6 @@ example:
 
 To test multiple packages, you can separate them with commas.
 
-You can also pass `jquery=VERSION` in the test URL to test different
-versions of jQuery. You can also pass `jquery=none` to run tests without jQuery
-integration.
-
 ## From the CLI
 
 Run `yarn test` to run a basic test suite or run `TEST_SUITE=all yarn test` to
