@@ -20,15 +20,6 @@
       };
     </script>
 
-    <script type="text/javascript">
-      // Load custom version of jQuery if possible
-      var jQueryVersion = QUnit.urlParams.jquery;
-      if (jQueryVersion && jQueryVersion !== 'none') {
-        loadScript('https://code.jquery.com/jquery-'+jQueryVersion+'.js');
-      }
-      // Close the script tag to make sure document.write happens
-    </script>
-
     <script>
       (function() {
         window.EmberENV = window.EmberENV || {};

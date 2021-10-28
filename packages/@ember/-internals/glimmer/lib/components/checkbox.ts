@@ -21,7 +21,7 @@ import layout from '../templates/empty';
   The `checked` attribute of an `Checkbox` object should always be set
   through the Ember object or by interacting with its rendered element
   representation via the mouse, keyboard, or touch. Updating the value of the
-  checkbox via jQuery will result in the checked value of the object and its
+  checkbox programmatically will result in the checked value of the object and its
   element losing synchronization.
 
   ## Layout and LayoutName properties
