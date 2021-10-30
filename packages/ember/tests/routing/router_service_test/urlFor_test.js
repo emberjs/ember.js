@@ -113,6 +113,26 @@ moduleFor(
       });
     }
 
+    ['@test RouterService#urlFor returns URL for simple route with nested object as query params'](assert) {
+      assert.expect(1);
+
+      let queryParams = this.buildQueryParams({
+        filter: {
+          user: {
+            name: {
+              $contains: 'foo',
+            },
+          },
+        },
+      });
+
+      return this.visit('/').then(() => {
+        let expectedURL = this.routerService.urlFor('parent.child', queryParams);
+
+        assert.equal('/child?filter=[user][name][$contains]=foo', expectedURL);
+      });
+    }
+
     ['@test RouterService#urlFor returns URL for simple route with null query params'](assert) {
       assert.expect(1);
 
