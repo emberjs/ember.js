@@ -24,4 +24,3 @@ describe('<%= friendlyTestName %>', function() {
     expect(this.$().text().trim()).to.equal('1234');
   });
 });
-
