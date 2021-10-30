@@ -48,15 +48,6 @@ describe('Blueprint: helper', function () {
       });
     });
 
-    it('helper foo/bar-baz unit', function () {
-      return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], (_file) => {
-        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
-        expect(_file('tests/unit/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/unit.js')
-        );
-      });
-    });
-
     it('helper foo/bar-baz --pod', function () {
       return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], (_file) => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
