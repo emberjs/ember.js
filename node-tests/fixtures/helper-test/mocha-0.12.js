@@ -24,4 +24,3 @@ describe('Integration | Helper | foo/bar-baz', function() {
     expect(this.$().text().trim()).to.equal('1234');
   });
 });
-
