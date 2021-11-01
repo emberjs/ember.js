@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.0.0-beta.7 (November 1, 2021)
+
+- [#19677](https://github.com/emberjs/ember.js/pull/19677) [CLEANUP] Remove jQuery from build
+
 ### v4.0.0-beta.6 (October 26, 2021)
 
 - [#19799](https://github.com/emberjs/ember.js/pull/19799) / [glimmerjs/glimmer-vm#1354](https://github.com/glimmerjs/glimmer-vm/pull/1354) Fixes for errors while precompiling inline templates (introduced in 3.28.2)
