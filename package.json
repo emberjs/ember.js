@@ -83,7 +83,7 @@
     "@glimmer/opcode-compiler": "0.80.2",
     "@glimmer/owner": "0.80.2",
     "@glimmer/program": "0.80.2",
-    "@glimmer/reference": "0.80.2",
+    "@glimmer/reference": "0.80.3",
     "@glimmer/runtime": "0.80.2",
     "@glimmer/validator": "0.80.2",
     "@simple-dom/document": "^1.4.0",
