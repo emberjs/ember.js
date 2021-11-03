@@ -485,7 +485,7 @@ class FactoryManager<T, C> {
     this.injections = undefined;
     setFactoryFor(this, this);
 
-    if (factory) {
+    if (isInstantiatable(container, fullName)) {
       setFactoryFor(factory, this);
     }
   }
