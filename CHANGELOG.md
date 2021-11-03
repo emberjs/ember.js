@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v3.28.5 (November 3, 2021)
+
+- [#19820](https://github.com/emberjs/ember.js/pull/19820) Fix memory leak when looking up non-instantiable objects from the owner
+
 ## v3.28.4 (October 22, 2021)
 
 - [#19798](https://github.com/emberjs/ember.js/pull/19798) More fixes for errors while precompiling inline templates (introduced in 3.28.2)
