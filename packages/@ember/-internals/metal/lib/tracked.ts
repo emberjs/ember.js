@@ -32,7 +32,8 @@ import { SELF_TAG } from './tags';
   will be tracked:
 
   ```typescript
-  import Component, { tracked } from '@glimmer/component';
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   export default class MyComponent extends Component {
     @tracked
@@ -53,7 +54,8 @@ import { SELF_TAG } from './tags';
   `eatenApples`, and `remainingApples`.
 
   ```typescript
-  import Component, { tracked } from '@glimmer/component';
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   const totalApples = 100;
 
