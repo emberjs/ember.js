@@ -552,7 +552,7 @@ class FactoryManager<T, C> {
     this.injections = undefined;
     setFactoryFor(this, this);
 
-    if (factory && (HAS_NATIVE_SYMBOL || INIT_FACTORY in factory)) {
+    if (isInstantiatable(container, fullName) && (HAS_NATIVE_SYMBOL || INIT_FACTORY in factory)) {
       setFactoryFor(factory, this);
     }
   }
