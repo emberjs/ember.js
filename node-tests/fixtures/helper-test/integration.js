@@ -11,5 +11,5 @@ test('it renders', function(assert) {
 
   this.render(hbs`{{foo/bar-baz this.inputValue}}`);
 
-  assert.equal(this.$().text().trim(), '1234');
+  assert.strictEqual(this.$().text().trim(), '1234');
 });

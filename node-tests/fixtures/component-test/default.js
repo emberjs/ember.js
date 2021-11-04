@@ -11,7 +11,7 @@ test('it renders', function(assert) {
 
   this.render(hbs`<XFoo />`);
 
-  assert.equal(this.$().text().trim(), '');
+  assert.strictEqual(this.$().text().trim(), '');
 
   // Template block usage:
   this.render(hbs`
@@ -20,5 +20,5 @@ test('it renders', function(assert) {
     </XFoo>
   `);
 
-  assert.equal(this.$().text().trim(), 'template block text');
+  assert.strictEqual(this.$().text().trim(), 'template block text');
 });

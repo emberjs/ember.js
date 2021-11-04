@@ -7,6 +7,6 @@ test('visiting /foo', function(assert) {
   visit('/foo');
 
   andThen(function() {
-    assert.equal(currentURL(), '/foo');
+    assert.strictEqual(currentURL(), '/foo');
   });
 });
