@@ -1084,10 +1084,10 @@ if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
             id: 'ember.component.reopen',
             for: 'ember-source',
             since: {
-              enabled: '4.0.0',
+              enabled: '3.27.0',
             },
-            url: 'https://deprecations.emberjs.com/v4.x#toc_ember-component-reopen',
-            until: '5.0.0',
+            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-reopen',
+            until: '4.0.0',
           }
         );
 
