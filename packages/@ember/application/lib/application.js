@@ -120,7 +120,7 @@ import { RouterService } from '@ember/-internals/routing';
   });
   ```
 
-  The `rootElement` can be either a DOM element or a jQuery-compatible selector
+  The `rootElement` can be either a DOM element or a CSS selector
   string. Note that *views appended to the DOM outside the root element will
   not receive events.* If you specify a custom root element, make sure you only
   append views inside it!
@@ -184,8 +184,7 @@ import { RouterService } from '@ember/-internals/routing';
 const Application = Engine.extend({
   /**
     The root DOM element of the Application. This can be specified as an
-    element or a
-    [jQuery-compatible selector string](http://api.jquery.com/category/selectors/).
+    element or a [selector string](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors#reference_table_of_selectors).
 
     This is the element that will be passed to the Application's,
     `eventDispatcher`, which sets up the listeners for event delegation. Every
@@ -548,11 +547,10 @@ const Application = Engine.extend({
 
     App.deferReadiness();
 
-    // $ is a reference to the jQuery object/function
-    import $ from 'jquery;
-
-    $.getJSON('/auth-token', function(token) {
-      App.token = token;
+    fetch('/auth-token')
+    .then(response => response.json())
+    .then(data => {
+      App.token = data.token;
       App.advanceReadiness();
     });
     ```
@@ -1000,7 +998,7 @@ const Application = Engine.extend({
     implement a limited subset of the full DOM API. The `SimpleDOM` library is known
     to work.
 
-    Since there is no access to jQuery in the non-browser environment, you must also
+    Since there is no DOM access in the non-browser environment, you must also
     specify a DOM `Element` object in the same `document` for the `rootElement` option
     (as opposed to a selector string like `"body"`).
 

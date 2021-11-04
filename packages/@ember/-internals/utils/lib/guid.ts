@@ -6,9 +6,6 @@ import { isObject } from './spec';
 */
 
 /**
- Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
- jQuery master. We'll just bootstrap our own uuid now.
-
  @private
  @return {Number} the uuid
  */
@@ -22,7 +19,7 @@ let _uuid = 0;
  @public
  @return {Number} [description]
  */
-export function uuid() {
+export function uuid(): number {
   return ++_uuid;
 }
 
@@ -73,7 +70,7 @@ export const GUID_KEY = intern(`__ember${Date.now()}`);
     separate the guid into separate namespaces.
   @return {String} the guid
 */
-export function generateGuid(obj: object, prefix = GUID_PREFIX) {
+export function generateGuid(obj: object, prefix = GUID_PREFIX): String {
   let guid = prefix + uuid();
 
   if (isObject(obj)) {
@@ -97,7 +94,7 @@ export function generateGuid(obj: object, prefix = GUID_PREFIX) {
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
-export function guidFor(value: any | null | undefined) {
+export function guidFor(value: any | null | undefined): string {
   let guid;
 
   if (isObject(value)) {

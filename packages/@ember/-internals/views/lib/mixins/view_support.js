@@ -166,7 +166,7 @@ let mixin = {
    and does not have an ancestor element that is associated with an Ember view.
 
    @method appendTo
-   @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+   @param {String|DOMElement} A selector, element, HTML string
    @return {Ember.View} receiver
    @private
    */
@@ -197,11 +197,11 @@ let mixin = {
       target = selector;
 
       assert(
-        `You tried to append to a selector string (${selector}) in an environment without jQuery`,
+        `You tried to append to a selector string (${selector}) in an environment without a DOM`,
         typeof target !== 'string'
       );
       assert(
-        `You tried to append to a non-Element (${selector}) in an environment without jQuery`,
+        `You tried to append to a non-Element (${selector}) in an environment without a DOM`,
         typeof selector.appendChild === 'function'
       );
     }
@@ -354,7 +354,7 @@ let mixin = {
    Component properties that depend on the presence of an outer element, such
    as `classNameBindings` and `attributeBindings`, do not work with tagless
    components. Tagless components cannot implement methods to handle events,
-   and have no associated jQuery object to return with `$()`.
+   and their `element` property has a `null` value.
 
    @property tagName
    @type String
