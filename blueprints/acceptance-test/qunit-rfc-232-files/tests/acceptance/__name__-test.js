@@ -8,6 +8,6 @@ module('<%= friendlyTestName %>', function(hooks) {
   test('visiting /<%= dasherizedModuleName %>', async function(assert) {
     await visit('/<%= dasherizedModuleName %>');
 
-    assert.equal(currentURL(), '/<%= dasherizedModuleName %>');
+    assert.strictEqual(currentURL(), '/<%= dasherizedModuleName %>');
   });
 });

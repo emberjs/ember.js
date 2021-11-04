@@ -7,6 +7,6 @@ test('visiting /<%= dasherizedModuleName %>', function(assert) {
   visit('/<%= dasherizedModuleName %>');
 
   andThen(function() {
-    assert.equal(currentURL(), '/<%= dasherizedModuleName %>');
+    assert.strictEqual(currentURL(), '/<%= dasherizedModuleName %>');
   });
 });
