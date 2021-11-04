@@ -100,9 +100,18 @@
 - [#19695](https://github.com/emberjs/ember.js/pull/19695) [CLEANUP] Remove {{partial}}
 - [#19691](https://github.com/emberjs/ember.js/pull/19691) Add build assertion against `{{outlet named}}`
 
+## v3.28.6 (November 4, 2021)
+
+- [#19683](https://github.com/emberjs/ember.js/pull/19683) Ensure super.willDestroy is called correctly in Router's willDestroy
+
 ## v3.28.5 (November 3, 2021)
 
 - [#19820](https://github.com/emberjs/ember.js/pull/19820) Fix memory leak when looking up non-instantiable objects from the owner
+
+## v3.28.4 (October 22, 2021)
+
+- [#19798](https://github.com/emberjs/ember.js/pull/19798) More fixes for errors while precompiling inline templates (introduced in 3.28.2)
+- [glimmerjs/glimmer-vm@0.80.3](https://github.com/glimmerjs/glimmer-vm/releases/tag/v0.80.3) Improve template compilation speed regression
 
 ## v3.28.3 (October 22, 2021)
 
