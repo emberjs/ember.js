@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v3.28.6 (November 4, 2021)
+
+- [#19683](https://github.com/emberjs/ember.js/pull/19683) Ensure super.willDestroy is called correctly in Router's willDestroy
+
 ## v3.28.5 (November 3, 2021)
 
 - [#19820](https://github.com/emberjs/ember.js/pull/19820) Fix memory leak when looking up non-instantiable objects from the owner
