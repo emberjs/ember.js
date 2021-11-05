@@ -63,7 +63,6 @@ import { SELF_TAG } from './tags';
     @tracked
     eatenApples = 0
 
-    @tracked('eatenApples')
     get remainingApples() {
       return totalApples - this.eatenApples;
     }
