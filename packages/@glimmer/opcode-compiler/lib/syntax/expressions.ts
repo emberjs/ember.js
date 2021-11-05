@@ -56,10 +56,6 @@ EXPRESSIONS.add(SexpOpcodes.GetStrictFree, (op, [, sym, _path]) => {
   });
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsFallback, (op, [, , path]) => {
-  withPath(op, path);
-});
-
 EXPRESSIONS.add(SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, () => {
   // TODO: The logic for this opcode currently exists in STATEMENTS.Append, since
   // we want different wrapping logic depending on if we are invoking a component,

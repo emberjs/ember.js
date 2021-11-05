@@ -20,7 +20,6 @@ export const enum VariableResolutionContext {
   AmbiguousAppend = 1,
   AmbiguousAppendInvoke = 2,
   AmbiguousInvoke = 3,
-  LooseFreeVariable = 4,
   ResolveAsCallHead = 5,
   ResolveAsModifierHead = 6,
   ResolveAsComponentHead = 7,
@@ -69,9 +68,6 @@ export const enum SexpOpcodes {
   // Free variables are only keywords in strict mode
   GetStrictFree = 31,
 
-  // falls back to `this.` (or locals in the case of partials), but
-  // never turns into a component or helper invocation
-  GetFreeAsFallback = 33,
   // `{{x}}` in append position (might be a helper or component invocation, otherwise fall back to `this`)
   GetFreeAsComponentOrHelperHeadOrThisFallback = 34,
   // a component or helper (`{{<expr> x}}` in append position)
@@ -117,7 +113,6 @@ export type GetContextualFreeOp =
   | SexpOpcodes.GetFreeAsHelperHead
   | SexpOpcodes.GetFreeAsModifierHead
   | SexpOpcodes.GetFreeAsComponentHead
-  | SexpOpcodes.GetFreeAsFallback
   | SexpOpcodes.GetStrictFree;
 
 export type AttrOp =
@@ -167,7 +162,6 @@ export namespace Expressions {
   export type GetSymbol = [SexpOpcodes.GetSymbol, number];
   export type GetTemplateSymbol = [SexpOpcodes.GetTemplateSymbol, number];
   export type GetStrictFree = [SexpOpcodes.GetStrictFree, number];
-  export type GetFreeAsFallback = [SexpOpcodes.GetFreeAsFallback, number];
   export type GetFreeAsComponentOrHelperHeadOrThisFallback = [
     SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
     number
@@ -186,7 +180,6 @@ export namespace Expressions {
   export type GetFreeAsComponentHead = [SexpOpcodes.GetFreeAsComponentHead, number];
 
   export type GetContextualFree =
-    | GetFreeAsFallback
     | GetFreeAsComponentOrHelperHeadOrThisFallback
     | GetFreeAsComponentOrHelperHead
     | GetFreeAsHelperHeadOrThisFallback
@@ -200,7 +193,6 @@ export namespace Expressions {
   export type GetPathSymbol = [SexpOpcodes.GetSymbol, number, Path];
   export type GetPathTemplateSymbol = [SexpOpcodes.GetTemplateSymbol, number, Path];
   export type GetPathStrictFree = [SexpOpcodes.GetStrictFree, number, Path];
-  export type GetPathFreeAsFallback = [SexpOpcodes.GetFreeAsFallback, number, Path];
   export type GetPathFreeAsComponentOrHelperHeadOrThisFallback = [
     SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
     number,
@@ -226,7 +218,6 @@ export namespace Expressions {
   export type GetPathFreeAsComponentHead = [SexpOpcodes.GetFreeAsComponentHead, number, Path];
 
   export type GetPathContextualFree =
-    | GetPathFreeAsFallback
     | GetPathFreeAsComponentOrHelperHeadOrThisFallback
     | GetPathFreeAsComponentOrHelperHead
     | GetPathFreeAsHelperHeadOrThisFallback
