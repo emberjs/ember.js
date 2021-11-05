@@ -13,7 +13,7 @@ test('it renders', function(assert) {
 
   this.render(hbs`<%= selfCloseComponent(componentName) %>`);
 
-  assert.equal(this.$().text().trim(), '');
+  assert.strictEqual(this.$().text().trim(), '');
 
   // Template block usage:
   this.render(hbs`
@@ -22,10 +22,10 @@ test('it renders', function(assert) {
     <%= closeComponent(componentName) %>
   `);
 
-  assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>
+  assert.strictEqual(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>
   // Creates the component instance
   /*let component =*/ this.subject();
   // Renders the component to the page
   this.render();
-  assert.equal(this.$().text().trim(), '');<% } %>
+  assert.strictEqual(this.$().text().trim(), '');<% } %>
 });
