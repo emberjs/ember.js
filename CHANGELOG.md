@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v4.0.0-beta.8 (November 5, 2021)
+
+- [#19823](https://github.com/emberjs/ember.js/pull/19823) / [#19828](https://github.com/emberjs/ember.js/pull/19828) [BUGFIX] Fix deprecation `until` and link for Component.reopenClass and Component.reopen
+- [#19825](https://github.com/emberjs/ember.js/pull/19825) [BUGFIX] Replace `assert.equal` in blueprints with `assert.strictEqual` to pass eslint-plugin-qunit v7 on generation
+- [#19808](https://github.com/emberjs/ember.js/pull/19808) [CLEANUP] Remove the `--test-type` option from the helper blueprint
+- [#19820](https://github.com/emberjs/ember.js/pull/19820) Fix memory leak when looking up non-instantiable objects from the owner
+
 ### v4.0.0-beta.7 (November 1, 2021)
 
 - [#19677](https://github.com/emberjs/ember.js/pull/19677) [CLEANUP] Remove jQuery from build
