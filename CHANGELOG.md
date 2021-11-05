@@ -1,3 +1,19 @@
+## v0.83.0 (2021-11-05)
+
+#### :boom: Breaking Change
+* `@glimmer/interfaces`, `@glimmer/opcode-compiler`
+  * [#1349](https://github.com/glimmerjs/glimmer-vm/pull/1349) Follow up: more {{partial}} cleanup after removal ([@snewcomer](https://github.com/snewcomer))
+
+#### :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#1351](https://github.com/glimmerjs/glimmer-vm/pull/1351) Support lexical scope in loose mode ([@ef4](https://github.com/ef4))
+
+#### Committers: 3
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- Jaydon  Peng ([@v-jiepeng](https://github.com/v-jiepeng))
+- Scott Newcomer ([@snewcomer](https://github.com/snewcomer))
+
+
 ## v0.82.0 (2021-10-06)
 
 #### :boom: Breaking Change
