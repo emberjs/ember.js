@@ -1,3 +1,13 @@
+## v0.83.1 (2021-11-08)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/syntax`
+  * [#1362](https://github.com/glimmerjs/glimmer-vm/pull/1362) Fix issues with "loose free variable" lookup by dropping unneeded `GetFreeAsFallback` op code ([@ef4](https://github.com/ef4))
+
+#### Committers: 1
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+
+
 ## v0.83.0 (2021-11-05)
 
 #### :boom: Breaking Change
