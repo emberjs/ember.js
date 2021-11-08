@@ -145,7 +145,7 @@ export class LooseModeResolution {
 
   resolution(): GetContextualFreeOp {
     if (this.ambiguity.namespaces.length === 0) {
-      return SexpOpcodes.GetFreeAsFallback;
+      return SexpOpcodes.GetStrictFree;
     } else if (this.ambiguity.namespaces.length === 1) {
       if (this.ambiguity.fallback) {
         // simple namespaced resolution with fallback must be attr={{x}}
