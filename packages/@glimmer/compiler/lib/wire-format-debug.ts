@@ -171,9 +171,6 @@ export default class WireFormatDebugger {
         case Op.GetStrictFree:
           return ['get-strict-free', this.upvars[opcode[1]], opcode[2]];
 
-        case Op.GetFreeAsFallback:
-          return ['GetFreeAsFallback', this.upvars[opcode[1]], opcode[2]];
-
         case Op.GetFreeAsComponentOrHelperHeadOrThisFallback:
           return [
             'GetFreeAsComponentOrHelperHeadOrThisFallback',

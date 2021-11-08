@@ -327,7 +327,7 @@ function buildKeyword(
       return [Op.If, expect(params, 'if requires params')[0], block, inverse];
     case 'each':
       let keyExpr = normalized.hash ? normalized.hash['key'] : null;
-      let key = keyExpr ? buildExpression(keyExpr, 'Generic', symbols) : null;
+      let key = keyExpr ? buildExpression(keyExpr, 'Strict', symbols) : null;
 
       return [Op.Each, expect(params, 'if requires params')[0], key, block, inverse];
     default:
@@ -489,7 +489,6 @@ type ExprResolution =
   | 'TrustedAppend'
   | 'AttrValue'
   | 'SubExpression'
-  | 'Generic'
   | 'Strict';
 
 function varContext(context: ExprResolution, bare: boolean): VarResolution {
@@ -528,7 +527,7 @@ export function buildExpression(
       let builtHash = buildHash(expr.hash, symbols);
       let builtExpr = buildCallHead(
         expr.head,
-        context === 'Generic' ? 'SubExpression' : varContext(context, false),
+        context === 'Strict' ? 'SubExpression' : varContext(context, false),
         symbols
       );
 
@@ -540,7 +539,7 @@ export function buildExpression(
         Op.HasBlock,
         buildVar(
           { kind: VariableKind.Block, name: expr.name, mode: 'loose' },
-          VariableResolutionContext.LooseFreeVariable,
+          VariableResolutionContext.Strict,
           symbols
         ),
       ];
@@ -551,7 +550,7 @@ export function buildExpression(
         Op.HasBlockParams,
         buildVar(
           { kind: VariableKind.Block, name: expr.name, mode: 'loose' },
-          VariableResolutionContext.LooseFreeVariable,
+          VariableResolutionContext.Strict,
           symbols
         ),
       ];
@@ -583,12 +582,7 @@ export function buildCallHead(
 }
 
 export function buildGetPath(head: NormalizedPath, symbols: Symbols): Expressions.GetPath {
-  return buildVar(
-    head.path.head,
-    VariableResolutionContext.LooseFreeVariable,
-    symbols,
-    head.path.tail
-  );
+  return buildVar(head.path.head, VariableResolutionContext.Strict, symbols, head.path.tail);
 }
 
 type VarResolution =
@@ -600,7 +594,6 @@ type VarResolution =
   | 'AttrValueBare'
   | 'AttrValueInvoke'
   | 'SubExpression'
-  | 'Generic'
   | 'Strict';
 
 export function buildVar(
@@ -640,8 +633,6 @@ export function buildVar(
         op = SexpOpcodes.GetFreeAsHelperHead;
       } else if (context === 'SubExpression') {
         op = SexpOpcodes.GetFreeAsHelperHead;
-      } else if (context === 'Generic') {
-        op = SexpOpcodes.GetFreeAsFallback;
       } else {
         op = expressionContextOp(context);
       }
@@ -688,8 +679,6 @@ export function expressionContextOp(context: VariableResolutionContext): GetCont
       return Op.GetFreeAsComponentOrHelperHead;
     case VariableResolutionContext.AmbiguousInvoke:
       return Op.GetFreeAsHelperHeadOrThisFallback;
-    case VariableResolutionContext.LooseFreeVariable:
-      return Op.GetFreeAsFallback;
     case VariableResolutionContext.ResolveAsCallHead:
       return Op.GetFreeAsHelperHead;
     case VariableResolutionContext.ResolveAsModifierHead:
@@ -707,7 +696,7 @@ export function buildParams(
 ): Option<WireFormat.Core.Params> {
   if (exprs === null || !isPresent(exprs)) return null;
 
-  return exprs.map((e) => buildExpression(e, 'Generic', symbols)) as WireFormat.Core.ConcatParams;
+  return exprs.map((e) => buildExpression(e, 'Strict', symbols)) as WireFormat.Core.ConcatParams;
 }
 
 export function buildConcat(
@@ -724,7 +713,7 @@ export function buildHash(exprs: Option<NormalizedHash>, symbols: Symbols): Wire
 
   Object.keys(exprs).forEach((key) => {
     out[0].push(key);
-    out[1].push(buildExpression(exprs[key], 'Generic', symbols));
+    out[1].push(buildExpression(exprs[key], 'Strict', symbols));
   });
 
   return out as WireFormat.Core.Hash;
