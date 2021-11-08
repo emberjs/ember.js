@@ -6,7 +6,7 @@ import { BucketCache } from '@ember/-internals/routing';
 import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
-import { assert, info } from '@ember/debug';
+import { assert, deprecate, info } from '@ember/debug';
 import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
