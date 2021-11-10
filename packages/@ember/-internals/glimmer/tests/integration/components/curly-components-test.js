@@ -3515,24 +3515,6 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
 
-    ['@test can use `{{component.foo}}` in a template GH#19313']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
-      this.registerComponent('foo-bar', {
-        template: '{{component.foo}}',
-      });
-
-      this.render('{{foo-bar component=(hash foo="bar")}}');
-
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
-    }
-
     ['@test can use `{{@component.foo}}` in a template GH#19313']() {
       this.registerComponent('foo-bar', {
         template: '{{@component.foo}}',

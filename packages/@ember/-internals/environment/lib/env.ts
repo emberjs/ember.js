@@ -155,23 +155,6 @@ export const ENV = {
    */
   _RERENDER_LOOP_LIMIT: 1000,
 
-  /**
-    Allows disabling the implicit this property fallback deprecation. This could be useful
-    as a way to control the volume of deprecations that are issued by temporarily disabling
-    the implicit this fallback deprecations, which would allow the other deprecations to be more easily
-    identified in the console).
-
-    NOTE: The fallback behavior **will be removed** in Ember 4.0.0, disabling **_IS NOT_**
-    a viable strategy for handling this deprecation.
-
-    @property _DISABLE_PROPERTY_FALLBACK_DEPRECATION
-    @for EmberENV
-    @type boolean
-    @default false
-    @private
-   */
-  _DISABLE_PROPERTY_FALLBACK_DEPRECATION: false,
-
   EMBER_LOAD_HOOKS: {} as {
     [hook: string]: Function[];
   },

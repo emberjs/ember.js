@@ -16,7 +16,7 @@ QUnit.module('App Boot', function (hooks) {
     this.template(
       'components/root-component',
       "\
-      <h1>Hello {{#if hasExistence}}{{location}}{{/if}}</h1>\
+      <h1>Hello {{#if this.hasExistence}}{{this.location}}{{/if}}</h1>\
       <div>{{component 'foo-bar'}}</div>\
     "
     );
@@ -57,7 +57,7 @@ QUnit.module('App Boot', function (hooks) {
       this.route('photos');
     });
 
-    this.template('application', '<h1>{{{title}}}</h1>');
+    this.template('application', '<h1>{{{this.title}}}</h1>');
     this.controller('application', {
       title: '<b>Hello world</b>',
     });

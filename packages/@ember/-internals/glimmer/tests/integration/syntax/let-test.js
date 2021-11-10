@@ -96,35 +96,29 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#let}} block.']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.render(`{{name}}-{{#let this.other as |name|}}{{name}}{{/let}}-{{name}}`, {
-        name: 'Stef',
         other: 'Yehuda',
       });
 
-      this.assertText('Stef-Yehuda-Stef');
+      this.assertText('-Yehuda-');
 
       runTask(() => this.rerender());
 
-      this.assertText('Stef-Yehuda-Stef');
+      this.assertText('-Yehuda-');
 
       runTask(() => set(this.context, 'other', 'Chad'));
 
-      this.assertText('Stef-Chad-Stef');
+      this.assertText('-Chad-');
 
       runTask(() => set(this.context, 'name', 'Tom'));
 
-      this.assertText('Tom-Chad-Tom');
+      this.assertText('-Chad-');
 
       runTask(() => {
-        set(this.context, 'name', 'Stef');
         set(this.context, 'other', 'Yehuda');
       });
 
-      this.assertText('Stef-Yehuda-Stef');
+      this.assertText('-Yehuda-');
     }
 
     ['@test can access alias of a proxy']() {
@@ -246,48 +240,41 @@ moduleFor(
     }
 
     ['@test the scoped variable is not available outside the {{#let}} block']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.render(
         `{{ring}}-{{#let this.first as |ring|}}{{ring}}-{{#let this.fifth as |ring|}}{{ring}}-{{#let this.ninth as |ring|}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}-{{/let}}{{ring}}`,
         {
-          ring: 'Greed',
           first: 'Limbo',
           fifth: 'Wrath',
           ninth: 'Treachery',
         }
       );
 
-      this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+      this.assertText('-Limbo-Wrath-Treachery-Wrath-Limbo-');
 
       runTask(() => this.rerender());
 
-      this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+      this.assertText('-Limbo-Wrath-Treachery-Wrath-Limbo-');
 
       runTask(() => {
-        set(this.context, 'ring', 'O');
         set(this.context, 'fifth', 'D');
       });
 
-      this.assertText('O-Limbo-D-Treachery-D-Limbo-O');
+      this.assertText('-Limbo-D-Treachery-D-Limbo-');
 
       runTask(() => {
         set(this.context, 'first', 'I');
         set(this.context, 'ninth', 'K');
       });
 
-      this.assertText('O-I-D-K-D-I-O');
+      this.assertText('-I-D-K-D-I-');
 
       runTask(() => {
-        set(this.context, 'ring', 'Greed');
         set(this.context, 'first', 'Limbo');
         set(this.context, 'fifth', 'Wrath');
         set(this.context, 'ninth', 'Treachery');
       });
 
-      this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+      this.assertText('-Limbo-Wrath-Treachery-Wrath-Limbo-');
     }
 
     ['@test it should support {{#let name as |foo|}}, then {{#let foo as |bar|}}']() {
@@ -331,10 +318,6 @@ moduleFor(
     }
 
     ['@test nested {{#let}} blocks should have access to root context']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.render(
         strip`
         {{name}}
@@ -362,30 +345,26 @@ moduleFor(
         }
       );
 
-      this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
 
       runTask(() => this.rerender());
 
-      this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
 
       runTask(() => set(this.context, 'name', 'chancancode'));
 
-      this.assertText('chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
 
       runTask(() => set(this.context, 'committer1', { name: 'krisselden' }));
 
-      this.assertText(
-        'chancancode[krisselden[machty]krisselden]chancancode[machty[krisselden]machty]chancancode'
-      );
+      this.assertText('[krisselden[machty]krisselden][machty[krisselden]machty]');
 
       runTask(() => {
         set(this.context, 'committer1.name', 'wycats');
         set(this.context, 'committer2', { name: 'rwjblue' });
       });
 
-      this.assertText(
-        'chancancode[wycats[rwjblue]wycats]chancancode[rwjblue[wycats]rwjblue]chancancode'
-      );
+      this.assertText('[wycats[rwjblue]wycats][rwjblue[wycats]rwjblue]');
 
       runTask(() => {
         set(this.context, 'name', 'ebryn');
@@ -393,7 +372,7 @@ moduleFor(
         set(this.context, 'committer2', { name: 'machty' });
       });
 
-      this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
+      this.assertText('[trek[machty]trek][machty[trek]machty]');
     }
   }
 );

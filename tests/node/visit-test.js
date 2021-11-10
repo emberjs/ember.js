@@ -51,7 +51,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
     this.template('application', '<h1>Hello world</h1>\n{{outlet}}');
     this.template('a', '<h2>Welcome to {{x-foo page="A"}}</h2>');
     this.template('b', '<h2>{{x-foo page="B"}}</h2>');
-    this.template('components/x-foo', 'Page {{page}}');
+    this.template('components/x-foo', 'Page {{this.page}}');
 
     let initCalled = false;
     let didInsertElementCalled = false;
@@ -135,7 +135,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
   });
 
   QUnit.test('FastBoot: attributes are sanitized', function (assert) {
-    this.template('application', '<a href={{test}}></a>');
+    this.template('application', '<a href={{this.test}}></a>');
 
     this.controller('application', {
       test: 'javascript:alert("hello")',
