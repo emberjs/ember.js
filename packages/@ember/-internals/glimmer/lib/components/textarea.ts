@@ -1,11 +1,9 @@
 /**
 @module @ember/component
 */
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { action } from '@ember/object';
 import TextareaTemplate from '../templates/textarea';
-import LegacyTextArea from './-textarea';
-import AbstractInput, { handleDeprecatedFeatures } from './abstract-input';
+import AbstractInput from './abstract-input';
 import { opaquify } from './internal';
 
 /**
@@ -118,7 +116,6 @@ import { opaquify } from './internal';
 
   @method Textarea
   @for Ember.Templates.components
-  @see {TextArea}
   @public
 */
 
@@ -127,9 +124,21 @@ import { opaquify } from './internal';
 
   @method textarea
   @for Ember.Templates.helpers
-  @see {Ember.Templates.components.textarea}
+  @see {Ember.Templates.components.Textarea}
   @public
 */
+
+/**
+  An opaque interface which can be imported and used in strict-mode
+  templates to call <Textarea>.
+
+  See [Ember.Templates.components.Textarea](/ember/release/classes/Ember.Templates.components/methods/Textarea?anchor=Input).
+
+  @for @ember/component
+  @method Textarea
+  @see {Ember.Templates.components.Textarea}
+  @public
+**/
 class Textarea extends AbstractInput {
   static toString(): string {
     return 'Textarea';
@@ -149,53 +158,10 @@ class Textarea extends AbstractInput {
     super.input(event);
   }
 
-  protected shouldModernize(): boolean {
-    return super.shouldModernize() && LegacyTextArea._wasReopened === false;
-  }
-
   protected isSupportedArgument(name: string): boolean {
     let supportedArguments = ['type', 'value', 'enter', 'insert-newline', 'escape-press'];
     return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
   }
-}
-
-// Deprecated features
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  handleDeprecatedFeatures(Textarea, [
-    // Component
-    'id',
-    ['id', 'elementId'],
-    'class',
-    ['class', 'classNames'],
-    ['role', 'ariaRole'],
-
-    // TextSupport
-    'autocapitalize',
-    'autocorrect',
-    'autofocus',
-    'disabled',
-    'form',
-    'maxlength',
-    'minlength',
-    'placeholder',
-    'readonly',
-    'required',
-    'selectionDirection',
-    'spellcheck',
-    'tabindex',
-    'title',
-
-    // TextField
-    'rows',
-    'cols',
-    'name',
-    'selectionEnd',
-    'selectionStart',
-    'autocomplete',
-    'wrap',
-    'lang',
-    'dir',
-  ]);
 }
 
 export default opaquify(Textarea, TextareaTemplate);

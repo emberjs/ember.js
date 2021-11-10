@@ -60,8 +60,6 @@ moduleFor(
       );
       verifyRegistration(assert, engine, 'controller:basic');
 
-      verifyRegistration(assert, engine, 'component:-text-field');
-      verifyRegistration(assert, engine, 'component:-checkbox');
       verifyRegistration(assert, engine, 'component:link-to');
 
       verifyRegistration(assert, engine, 'component:textarea');

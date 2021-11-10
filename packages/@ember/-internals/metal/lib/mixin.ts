@@ -12,7 +12,6 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
@@ -551,7 +550,7 @@ export default class Mixin {
       */
       guidFor(this);
 
-      if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS && Mixin._disableDebugSeal !== true) {
+      if (Mixin._disableDebugSeal !== true) {
         Object.seal(this);
       }
     }
@@ -665,7 +664,7 @@ export default class Mixin {
   }
 }
 
-if (DEBUG && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+if (DEBUG) {
   Object.defineProperty(Mixin, '_disableDebugSeal', {
     configurable: true,
     enumerable: false,

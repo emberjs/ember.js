@@ -2,20 +2,17 @@
 @module @ember/component
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
 import { valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 import InputTemplate from '../templates/input';
-import AbstractInput, { handleDeprecatedFeatures, valueFrom } from './abstract-input';
-import Checkbox from './checkbox';
+import AbstractInput, { valueFrom } from './abstract-input';
 import { opaquify } from './internal';
-import TextField from './text-field';
 
 let isValidInputType: (type: string) => boolean;
 
-if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+if (hasDOM) {
   const INPUT_TYPES: Record<string, boolean | undefined> = Object.create(null);
   const INPUT_ELEMENT = document.createElement('input');
 
@@ -53,6 +50,18 @@ if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   @param {Hash} options
   @public
   */
+
+/**
+  An opaque interface which can be imported and used in strict-mode
+  templates to call <Input>.
+
+  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
+
+  @for @ember/component
+  @method Input
+  @see {Ember.Templates.components.Input}
+  @public
+**/
 
 /**
   The `Input` component lets you create an HTML `<input>` element.
@@ -264,12 +273,6 @@ class Input extends AbstractInput {
     this.checked = element.checked;
   }
 
-  protected shouldModernize(): boolean {
-    return (
-      super.shouldModernize() && TextField._wasReopened === false && Checkbox._wasReopened === false
-    );
-  }
-
   protected isSupportedArgument(name: string): boolean {
     let supportedArguments = [
       'type',
@@ -282,59 +285,6 @@ class Input extends AbstractInput {
 
     return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
   }
-}
-
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  handleDeprecatedFeatures(Input, [
-    // Component
-    'id',
-    ['id', 'elementId'],
-    'class',
-    ['class', 'classNames'],
-    ['role', 'ariaRole'],
-
-    // TextSupport
-    'autocapitalize',
-    'autocorrect',
-    'autofocus',
-    'disabled',
-    'form',
-    'maxlength',
-    'minlength',
-    'placeholder',
-    'readonly',
-    'required',
-    'selectionDirection',
-    'spellcheck',
-    'tabindex',
-    'title',
-
-    // TextField
-    'accept',
-    'autocomplete',
-    'autosave',
-    'dir',
-    'formaction',
-    'formenctype',
-    'formmethod',
-    'formnovalidate',
-    'formtarget',
-    'height',
-    'inputmode',
-    'lang',
-    'list',
-    'max',
-    'min',
-    'multiple',
-    'name',
-    'pattern',
-    'size',
-    'step',
-    'width',
-
-    // Checkbox
-    'indeterminate',
-  ]);
 }
 
 export default opaquify(Input, InputTemplate);
