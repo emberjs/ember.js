@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### v4.0.0-beta.9 (November 20, 2021)
+### v4.0.0-beta.9 (November 10, 2021)
 
 - [#19749](https://github.com/emberjs/ember.js/pull/19749) [CLEANUP] Remove `deprecate-router-events` support code
 - [#19762](https://github.com/emberjs/ember.js/pull/19762) [CLEANUP] Update GlimmerVM to 0.81
