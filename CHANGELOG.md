@@ -1,5 +1,19 @@
 # Ember Changelog
 
+### v4.0.0-beta.9 (November 20, 2021)
+
+- [#19749](https://github.com/emberjs/ember.js/pull/19749) [CLEANUP] Remove `deprecate-router-events` support code
+- [#19762](https://github.com/emberjs/ember.js/pull/19762) [CLEANUP] Update GlimmerVM to 0.81
+  - removes deprecation of mutations during helper compute 
+  - removes deprecation of mutations during unknownProperty
+  - `@glimmer/integration-tests`, `@glimmer/manager`, `@glimmer/validator`
+    * [#1330](https://github.com/glimmerjs/glimmer-vm/pull/1330) Remove deprecated support for mutation after consumption during certain manager hooks ([@snewcomer](https://github.com/snewcomer))
+  - `@glimmer/manager`
+    * [#1328](https://github.com/glimmerjs/glimmer-vm/pull/1328) Remove deprecated Component Manager version 3.4 ([@nlfurniss](https://github.com/nlfurniss))
+  - `@glimmer/integration-tests`, `@glimmer/manager`
+    * [#1329](https://github.com/glimmerjs/glimmer-vm/pull/1329) Remove deprecated Modifier Manager version 3.13 ([@nlfurniss](https://github.com/nlfurniss))
+- [#19806](https://github.com/emberjs/ember.js/pull/19806) [CLEANUP] Drop export of built-ins, remove legacy components 
+
 ### v4.0.0-beta.8 (November 5, 2021)
 
 - [#19823](https://github.com/emberjs/ember.js/pull/19823) / [#19828](https://github.com/emberjs/ember.js/pull/19828) [BUGFIX] Fix deprecation `until` and link for Component.reopenClass and Component.reopen
