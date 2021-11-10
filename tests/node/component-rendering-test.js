@@ -12,7 +12,7 @@ QUnit.module('Components can be rendered without a DOM dependency', function (ho
   QUnit.test('Component with dynamic value', function (assert) {
     this.set('location', 'World');
 
-    let html = this.render('<h1>Hello {{location}}</h1>');
+    let html = this.render('<h1>Hello {{this.location}}</h1>');
 
     assert.ok(html.match(/<h1>Hello World<\/h1>/));
   });
