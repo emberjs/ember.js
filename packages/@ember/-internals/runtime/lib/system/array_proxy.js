@@ -11,6 +11,7 @@ import {
   removeArrayObserver,
   replace,
   arrayContentDidChange,
+  arrayContentWillChange,
   tagForProperty,
 } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
@@ -256,11 +257,11 @@ export default class ArrayProxy extends EmberObject {
     let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
 
     this._removeArrangedContentArrayObserver();
-    this.arrayContentWillChange(0, oldLength, newLength);
+    arrayContentWillChange(this, 0, oldLength, newLength);
 
     this._invalidate();
 
-    this.arrayContentDidChange(0, oldLength, newLength);
+    arrayContentDidChange(this, 0, oldLength, newLength, false);
     this._addArrangedContentArrayObserver(arrangedContent);
   }
 
@@ -272,7 +273,7 @@ export default class ArrayProxy extends EmberObject {
         isArray(arrangedContent) || arrangedContent.isDestroyed
       );
 
-      addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING, true);
+      addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING);
 
       this._arrangedContent = arrangedContent;
     }
@@ -280,14 +281,14 @@ export default class ArrayProxy extends EmberObject {
 
   _removeArrangedContentArrayObserver() {
     if (this._arrangedContent) {
-      removeArrayObserver(this._arrangedContent, this, ARRAY_OBSERVER_MAPPING, true);
+      removeArrayObserver(this._arrangedContent, this, ARRAY_OBSERVER_MAPPING);
     }
   }
 
   _arrangedContentArrayWillChange() {}
 
   _arrangedContentArrayDidChange(proxy, idx, removedCnt, addedCnt) {
-    this.arrayContentWillChange(idx, removedCnt, addedCnt);
+    arrayContentWillChange(this, idx, removedCnt, addedCnt);
 
     let dirtyIndex = idx;
     if (dirtyIndex < 0) {
@@ -301,7 +302,7 @@ export default class ArrayProxy extends EmberObject {
 
     this._lengthDirty = true;
 
-    this.arrayContentDidChange(idx, removedCnt, addedCnt);
+    arrayContentDidChange(this, idx, removedCnt, addedCnt, false);
   }
 
   _invalidate() {
@@ -351,10 +352,4 @@ ArrayProxy.reopen(MutableArray, {
     @public
   */
   arrangedContent: alias('content'),
-
-  // Array proxies don't need to notify when they change since their `[]` tag is
-  // already dependent on the `[]` tag of `arrangedContent`
-  arrayContentDidChange(startIdx, removeAmt, addAmt) {
-    return arrayContentDidChange(this, startIdx, removeAmt, addAmt, false);
-  },
 });

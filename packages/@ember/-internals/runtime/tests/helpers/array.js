@@ -61,12 +61,18 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   observeArray(obj) {
-    addArrayObserver(obj, this);
+    addArrayObserver(obj, this, {
+      willChange: 'arrayWillChange',
+      didChange: 'arrayDidChange',
+    });
     return this;
   },
 
   stopObserveArray(obj) {
-    removeArrayObserver(obj, this);
+    removeArrayObserver(obj, this, {
+      willChange: 'arrayWillChange',
+      didChange: 'arrayDidChange',
+    });
     return this;
   },
 
