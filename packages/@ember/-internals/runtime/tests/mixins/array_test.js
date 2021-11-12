@@ -193,11 +193,9 @@ moduleFor(
 //
 
 moduleFor(
-  'notify array observers',
+  'notify array observers (internal)',
   class extends AbstractTestCase {
     beforeEach(assert) {
-      expectDeprecation(/Array observers have been deprecated/);
-
       obj = DummyArray.create();
 
       observer = EmberObject.extend({
@@ -215,7 +213,10 @@ moduleFor(
         _after: null,
       });
 
-      addArrayObserver(obj, observer);
+      addArrayObserver(obj, observer, {
+        willChange: 'arrayWillChange',
+        didChange: 'arrayDidChange',
+      });
     }
 
     afterEach() {
@@ -248,28 +249,15 @@ moduleFor(
     }
 
     ['@test removing array observer should disable'](assert) {
-      removeArrayObserver(obj, observer);
+      removeArrayObserver(obj, observer, {
+        willChange: 'arrayWillChange',
+        didChange: 'arrayDidChange',
+      });
       arrayContentWillChange(obj);
       assert.deepEqual(observer._before, null);
 
       arrayContentDidChange(obj);
       assert.deepEqual(observer._after, null);
-    }
-
-    ['@test hasArrayObservers should work'](assert) {
-      assert.equal(
-        obj.hasArrayObservers,
-        true,
-        'correctly shows it has an array observer when one exists'
-      );
-
-      removeArrayObserver(obj, observer);
-
-      assert.equal(
-        obj.hasArrayObservers,
-        false,
-        'correctly shows it has an array observer when one exists'
-      );
     }
   }
 );
