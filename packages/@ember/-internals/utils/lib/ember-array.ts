@@ -4,7 +4,6 @@ const EMBER_ARRAYS = new _WeakSet();
 
 export interface EmberArray<T> {
   length: number;
-  hasArrayObservers?: boolean;
   objectAt(index: number): T | undefined;
   replace(start: number, deleteCount: number, items: T[]): void;
   splice(start: number, deleteCount: number, ...items: T[]): void;
