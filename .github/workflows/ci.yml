@@ -218,7 +218,8 @@ jobs:
       matrix:
         partner:
           [
-            ember-stateful-promise,
+            ember-string,
+            ember-legacy-built-in-components,
           ]
     steps:
       - uses: actions/checkout@v2

@@ -68,6 +68,7 @@ try {
   );
 }
 
+const useYarn = fs.existsSync(path.join(projectTempDir, 'yarn.lock'));
 const packageJsonLocation = path.join(projectTempDir, 'package.json');
 
 let smokeTestPassed = true;
@@ -81,7 +82,7 @@ let commitTestPassed = true;
 try {
   debug('Running Smoke Test');
   try {
-    execCommand('yarn install');
+    execCommand(`${useYarn ? 'yarn install' : 'npm install'}`);
   } catch (e) {
     debug(e);
     throw new Error(`Unable to complete install of dependencies for ${externalProjectName}`);
@@ -142,9 +143,9 @@ try {
   // clear node_modules installed for the smoke-test
   execCommand(`rm -rf node_modules`);
 
-  execCommand('yarn install --frozen-lockfile --non-interactive');
+  execCommand(`${useYarn ? 'yarn install' : 'npm install'}`);
 } catch (e) {
-  console.log(`Unable to yarn install tarballs for ${externalProjectName}. Original error below:`);
+  console.log(`Unable to npm install tarballs for ${externalProjectName}. Original error below:`);
 
   throw e;
 }
