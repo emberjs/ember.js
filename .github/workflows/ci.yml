@@ -229,8 +229,6 @@ jobs:
         run: yarn install
       - name: Run Tests
         timeout-minutes: 16
-        env:
-          CI: true
         run: yarn test-external:${{ matrix.partner }}
 
   deploy-tag:
