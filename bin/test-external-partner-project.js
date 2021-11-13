@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 'use strict';
 
 const fs = require('fs');
@@ -141,7 +142,7 @@ try {
   // clear node_modules installed for the smoke-test
   execCommand(`rm -rf node_modules`);
 
-  execCommand('yarn install --cache-folder=tmp/yarn-cache');
+  execCommand('yarn install');
 } catch (e) {
   console.log(`Unable to yarn install tarballs for ${externalProjectName}. Original error below:`);
 
