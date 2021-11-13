@@ -1742,7 +1742,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
           Boolean(modelClass)
         );
 
-        if (!modelClass) {
+        if (!modelClass || !modelClass.find) {
           return;
         }
 
