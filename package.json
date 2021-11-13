@@ -43,7 +43,8 @@
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
-    "test-external:ember-test-helpers": "node ./bin/test-external-partner-project.js ember-test-helpers https://github.com/emberjs/ember-test-helpers"
+    "test-external:ember-test-helpers": "node ./bin/test-external-partner-project.js ember-test-helpers https://github.com/emberjs/ember-test-helpers",
+    "test-external:ember-stateful-promise": "node ./bin/test-external-partner-project.js ember-stateful-promise https://github.com/snewcomer/ember-stateful-promise"
   },
   "dependencies": {
     "@babel/helper-module-imports": "^7.16.7",

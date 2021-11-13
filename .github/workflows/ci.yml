@@ -218,7 +218,7 @@ jobs:
       matrix:
         partner:
           [
-            ember-test-helpers,
+            ember-stateful-promise,
           ]
     steps:
       - uses: actions/checkout@v2

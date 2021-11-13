@@ -142,7 +142,7 @@ try {
   // clear node_modules installed for the smoke-test
   execCommand(`rm -rf node_modules`);
 
-  execCommand('yarn install');
+  execCommand('yarn install --frozen-lockfile --non-interactive');
 } catch (e) {
   console.log(`Unable to yarn install tarballs for ${externalProjectName}. Original error below:`);
 
