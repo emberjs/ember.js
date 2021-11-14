@@ -1,6 +1,5 @@
 'use strict';
 /* globals print, Ember, SimpleDOM */
-
 let Router = Ember.Router.extend({
   location: 'none',
   rootURL: '/',
