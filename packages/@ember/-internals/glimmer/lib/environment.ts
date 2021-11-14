@@ -66,6 +66,15 @@ setGlobalContext({
     if (DEBUG) {
       let { id } = options;
 
+      if (id === 'argument-less-helper-paren-less-invocation') {
+        throw new Error(
+          `A resolved helper cannot be passed as a named argument as the syntax is ` +
+            `ambiguously a pass-by-reference or invocation. Use the ` +
+            `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
+            `invoke the helper with parens: \`{{(fooHelper)}}\`.`
+        );
+      }
+
       let override = VM_DEPRECATION_OVERRIDES.filter((o) => o.id === id)[0];
 
       if (!override) throw new Error(`deprecation override for ${id} not found`);
@@ -98,15 +107,6 @@ const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
   disabled?: boolean;
   message?: string;
 })[] = [
-  {
-    id: 'argument-less-helper-paren-less-invocation',
-    url: 'https://deprecations.emberjs.com/v3.x#toc_argument-less-helper-paren-less-invocation',
-    until: '4.0.0',
-    for: 'ember-source',
-    since: {
-      enabled: '3.27.0',
-    },
-  },
   {
     id: 'setting-on-hash',
     until: '4.4.0',
