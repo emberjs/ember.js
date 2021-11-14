@@ -152,7 +152,6 @@ try {
 
 try {
   debug('Running tests against ember.js commit');
-  execCommand('rm -rf vendor');
   execCommand('./node_modules/.bin/ember build', true);
   execCommand('./node_modules/.bin/ember test --path="./dist"', true);
 } catch (e) {
