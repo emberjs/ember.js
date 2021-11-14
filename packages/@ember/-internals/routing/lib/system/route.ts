@@ -2330,7 +2330,7 @@ Route.reopen(ActionHandler, Evented, {
     @type {Object}
     @private
   */
-  store: computed(function() {
+  store: computed(function (this: Route) {
     let owner = getOwner(this);
     let routeName = this.routeName;
     let namespace = get(this, '_router.namespace');
@@ -2352,10 +2352,7 @@ Route.reopen(ActionHandler, Evented, {
 
         modelClass = modelClass.class;
 
-        assert(
-          `${classify(name)} has no method \`find\`.`,
-          typeof modelClass.find === 'function'
-        );
+        assert(`${classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
 
         return modelClass.find(value);
       },
