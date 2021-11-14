@@ -2330,42 +2330,36 @@ Route.reopen(ActionHandler, Evented, {
     @type {Object}
     @private
   */
-  store: computed({
-    get(this: Route) {
-      let owner = getOwner(this);
-      let routeName = this.routeName;
-      let namespace = get(this, '_router.namespace');
+  store: computed(function() {
+    let owner = getOwner(this);
+    let routeName = this.routeName;
+    let namespace = get(this, '_router.namespace');
 
-      return {
-        find(name: string, value: unknown) {
-          let modelClass: any = owner.factoryFor(`model:${name}`);
+    return {
+      find(name: string, value: unknown) {
+        let modelClass: any = owner.factoryFor(`model:${name}`);
 
-          assert(
-            `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(
-              name
-            )} did not exist and you did not override your route's \`model\` hook.`,
-            Boolean(modelClass)
-          );
+        assert(
+          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(
+            name
+          )} did not exist and you did not override your route's \`model\` hook.`,
+          Boolean(modelClass)
+        );
 
-          if (!modelClass) {
-            return;
-          }
+        if (!modelClass) {
+          return;
+        }
 
-          modelClass = modelClass.class;
+        modelClass = modelClass.class;
 
-          assert(
-            `${classify(name)} has no method \`find\`.`,
-            typeof modelClass.find === 'function'
-          );
+        assert(
+          `${classify(name)} has no method \`find\`.`,
+          typeof modelClass.find === 'function'
+        );
 
-          return modelClass.find(value);
-        },
-      };
-    },
-
-    set(key, value) {
-      defineProperty(this, key, null, value);
-    },
+        return modelClass.find(value);
+      },
+    };
   }),
 
   /**
