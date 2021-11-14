@@ -229,6 +229,10 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/download-artifact@v2.0.10
+        with:
+          name: dist
+          path: dist
       - name: Run Tests
         run: yarn test-external:${{ matrix.partner }}
 
