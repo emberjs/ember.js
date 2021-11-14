@@ -5,13 +5,13 @@
 //   3. no, in the cwd where you want v8 to live type: `fetch v8`
 //   4. build (for your local architecture) `make native` (otherwise you may wait for a very long time)
 //   5. now, you have a d8 at your disposale /path/to/v8/out/x64.debug/d8
-//
+
 // GETTING EMBER WORKING:
 // most likely you will need to run:
 // npm install
 // bower install
 // npm run build // for one time production build
-//
+
 // for active iteration, recommendation is: `ember server --env production`
 // Please note: production builds (due to minification, can be abit slow)
 //
@@ -19,7 +19,7 @@
 
 // handy d8 stuff:
 // ---------------
-//
+
 // --trace-opt-verbose
 // --prof + tick-processor
 // enableProfiler() / disableProfiler()
@@ -34,7 +34,7 @@
 // --help
 // --expose-gc
 // --print-opt-code --code-comments
-//
+
 // begin MISC setup;
 
 /* globals load, print */
@@ -44,12 +44,12 @@ global.self = global;
 function loadFile(file) {
   print('load: ' + file);
   load(file);
-}
+};
 
 global.console = {
   log(...args) {
     print(...args);
-  },
+  }
 };
 
 global.setTimeout = function (callback) {
