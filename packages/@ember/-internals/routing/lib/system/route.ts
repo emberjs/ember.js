@@ -1749,10 +1749,6 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         modelClass = modelClass.class;
 
         if (!modelClass.find) {
-          assert(
-            `${classify(name)} has no method \`find\`.`,
-            typeof modelClass.find === 'function'
-          );
           return;
         }
 
