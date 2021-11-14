@@ -8,7 +8,7 @@ moduleFor(
     ['@test Router.map returns an Ember Router class'](assert) {
       assert.expect(1);
 
-      let ret = this.router.map(function() {
+      let ret = this.router.map(function () {
         this.route('hello');
       });
 
@@ -21,11 +21,11 @@ moduleFor(
       this.addTemplate('hello', 'Hello!');
       this.addTemplate('goodbye', 'Goodbye!');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('hello');
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('goodbye');
       });
 

@@ -7,13 +7,13 @@ class RejectTest extends AbstractTestCase {
     let obj = this.newObject([1, 2, 3, 4]);
     let result;
 
-    result = obj.reject(i => i < 3);
+    result = obj.reject((i) => i < 3);
     this.assert.deepEqual(result, [3, 4], 'reject the correct items');
   }
 
   '@test should be the inverse of filter'() {
     let obj = this.newObject([1, 2, 3, 4]);
-    let isEven = i => i % 2 === 0;
+    let isEven = (i) => i % 2 === 0;
     let filtered, rejected;
 
     filtered = obj.filter(isEven);

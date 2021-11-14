@@ -12,7 +12,7 @@ moduleFor(
         },
       }).create();
 
-      let noop = function() {};
+      let noop = function () {};
 
       eventedProxyObj.on('foo', noop);
       eventedProxyObj.off('foo', noop);

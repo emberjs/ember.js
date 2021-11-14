@@ -5,11 +5,15 @@ import { run } from '@ember/runloop';
 import { privatize as P } from '@ember/-internals/container';
 import { factory } from 'internal-test-helpers';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ModuleBasedTestResolver,
+  AbstractTestCase as TestCase,
+} from 'internal-test-helpers';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
-const noop = function() {};
+const noop = function () {};
 
 let application, appInstance;
 
@@ -23,7 +27,13 @@ moduleFor(
       document.getElementById('qunit-fixture').innerHTML = `
       <div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>
     `;
-      application = run(() => Application.create({ rootElement: '#one', router: null }));
+      application = run(() =>
+        Application.create({
+          rootElement: '#one',
+          router: null,
+          Resolver: ModuleBasedTestResolver,
+        })
+      );
     }
 
     teardown() {
@@ -59,25 +69,7 @@ moduleFor(
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
-      eventDispatcher.setup = function(events) {
-        assert.equal(events.awesome, 'sauce');
-      };
-
-      appInstance.setupEventDispatcher();
-    }
-
-    ['@test customEvents added to the application before setupEventDispatcher'](assert) {
-      assert.expect(1);
-
-      appInstance = run(() => ApplicationInstance.create({ application }));
-      appInstance.setupRegistry();
-
-      application.customEvents = {
-        awesome: 'sauce',
-      };
-
-      let eventDispatcher = appInstance.lookup('event_dispatcher:main');
-      eventDispatcher.setup = function(events) {
+      eventDispatcher.setup = function (events) {
         assert.equal(events.awesome, 'sauce');
       };
 
@@ -95,7 +87,7 @@ moduleFor(
       };
 
       let eventDispatcher = appInstance.lookup('event_dispatcher:main');
-      eventDispatcher.setup = function(events) {
+      eventDispatcher.setup = function (events) {
         assert.equal(events.awesome, 'sauce');
       };
 
@@ -165,9 +157,11 @@ moduleFor(
     }
 
     ['@test can build and boot a registered engine'](assert) {
-      assert.expect(11);
+      assert.expect(10);
 
-      let ChatEngine = Engine.extend();
+      let ChatEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       let chatEngineInstance;
 
       application.register('engine:chat', ChatEngine);
@@ -181,9 +175,9 @@ moduleFor(
       return chatEngineInstance.boot().then(() => {
         assert.ok(true, 'boot successful');
 
-        let registrations = ['route:basic', 'service:-routing', 'service:-glimmer-environment'];
+        let registrations = ['route:basic', 'service:-routing'];
 
-        registrations.forEach(key => {
+        registrations.forEach((key) => {
           assert.strictEqual(
             chatEngineInstance.resolveRegistration(key),
             appInstance.resolveRegistration(key),
@@ -200,10 +194,9 @@ moduleFor(
           'event_dispatcher:main',
         ];
 
-        let env = appInstance.lookup('-environment:main');
-        singletons.push(env.isInteractive ? 'renderer:-dom' : 'renderer:-inert');
+        singletons.push('renderer:-dom');
 
-        singletons.forEach(key => {
+        singletons.forEach((key) => {
           assert.strictEqual(
             chatEngineInstance.lookup(key),
             appInstance.lookup(key),
@@ -217,7 +210,7 @@ moduleFor(
       assert
     ) {
       let namespace = EmberObject.create({
-        Resolver: { create: function() {} },
+        Resolver: { create: function () {} },
       });
 
       let registry = Application.buildRegistry(namespace);

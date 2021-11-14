@@ -124,8 +124,7 @@ export function sendEvent(
 ) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
-    actions =
-      typeof meta === 'object' && meta !== null ? meta.matchingListeners(eventName) : undefined;
+    actions = meta !== null ? meta.matchingListeners(eventName) : undefined;
   }
 
   if (actions === undefined || actions.length === 0) {
@@ -147,11 +146,13 @@ export function sendEvent(
     if (!target) {
       target = obj;
     }
-    if ('string' === typeof method) {
-      method = target[method] as Function;
+
+    let type = typeof method;
+    if (type === 'string' || type === 'symbol') {
+      method = target[method as string] as Function;
     }
 
-    method.apply(target, params);
+    (method as Function).apply(target, params);
   }
   return true;
 }
@@ -209,7 +210,7 @@ export function on(...args: Array<string | Function>): Function {
   assert('on expects function as last argument', typeof func === 'function');
   assert(
     'on called without valid event names',
-    events.length > 0 && events.every(p => typeof p === 'string' && p.length > 0)
+    events.length > 0 && events.every((p) => typeof p === 'string' && p.length > 0)
   );
 
   setListeners(func, events);

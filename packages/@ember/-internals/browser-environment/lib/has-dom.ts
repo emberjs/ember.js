@@ -1,7 +1,7 @@
 // check if window exists and actually is the global
 export default typeof self === 'object' &&
   self !== null &&
-  (self as any).Object === Object &&
+  (self as Window['self']).Object === Object &&
   typeof Window !== 'undefined' &&
   self.constructor === Window &&
   typeof document === 'object' &&

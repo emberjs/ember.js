@@ -39,6 +39,8 @@ class PushObjectTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].pushObject(X) => [A,B,C,X] + notify'() {
@@ -72,6 +74,8 @@ class PushObjectTests extends AbstractTestCase {
       false,
       'should NOT have notified firstObject'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C,C].pushObject(A) => [A,B,C,C] + notify'() {
@@ -101,6 +105,8 @@ class PushObjectTests extends AbstractTestCase {
       'should NOT have notified firstObject'
     );
     this.assert.equal(observer.validate('lastObject'), true, 'should have notified lastObject');
+
+    obj.destroy();
   }
 }
 

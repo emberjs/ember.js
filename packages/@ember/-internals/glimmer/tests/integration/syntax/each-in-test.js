@@ -1,13 +1,12 @@
-import { moduleFor, RenderingTestCase, strip, applyMixins, runTask } from 'internal-test-helpers';
+import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 
 import {
+  FalsyGenerator,
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
-  FalsyGenerator,
 } from '../../utils/shared-conditional-tests';
 
 function EmptyFunction() {}
@@ -143,7 +142,7 @@ class EachInTest extends AbstractEachInTest {
     this.makeHash({ Smartphones: 8203, 'JavaScript Frameworks': Infinity });
 
     this.render(
-      `<ul>{{#each-in hash as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`
     );
 
     this.assertText('Smartphones: 8203JavaScript Frameworks: Infinity');
@@ -169,7 +168,7 @@ class EachInTest extends AbstractEachInTest {
     });
 
     this.render(
-      `<ul>{{#each-in hash as |category data|}}<li>{{category}}: {{data.reports.unitsSold}}</li>{{else}}Empty!{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash as |category data|}}<li>{{category}}: {{data.reports.unitsSold}}</li>{{else}}Empty!{{/each-in}}</ul>`
     );
 
     this.assertText('Smartphones: 8203JavaScript Frameworks: Infinity');
@@ -200,7 +199,7 @@ class EachInTest extends AbstractEachInTest {
     });
 
     this.render(
-      `<ul>{{#each-in hash key='@identity' as |category count|}}<li>{{category}}: {{count}}</li>{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash key='@identity' as |category count|}}<li>{{category}}: {{count}}</li>{{/each-in}}</ul>`
     );
 
     this.assertText('Smartphones: 8203Tablets: 8203JavaScript Frameworks: InfinityBugs: Infinity');
@@ -237,7 +236,7 @@ class EachInTest extends AbstractEachInTest {
       },
     };
     this.render(
-      `<ul>{{#each-in (get hashes hashes.type) as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
+      `<ul>{{#each-in (get this.hashes this.hashes.type) as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
       context
     );
 
@@ -267,7 +266,9 @@ class EachInTest extends AbstractEachInTest {
   ['@test keying off of `undefined` does not render']() {
     this.makeHash({});
 
-    this.render(`{{#each-in hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`);
+    this.render(
+      `{{#each-in this.hash as |key value|}}{{key}}: {{value.baz}}{{else}}Empty!{{/each-in}}`
+    );
 
     this.assertText('Empty!');
 
@@ -286,10 +287,26 @@ class EachInTest extends AbstractEachInTest {
     this.makeHash({ '': 'empty-string', a: 'a' });
 
     this.render(
-      `<ul>{{#each-in hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
+      `<ul>{{#each-in this.hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
     );
 
     this.assertText(': empty-stringa: a');
+
+    this.assertStableRerender();
+
+    this.clear();
+
+    this.assertText('Empty!');
+  }
+
+  [`@test it can render items that contain keys with periods in them`]() {
+    this.makeHash({ 'period.key': 'a', 'other.period.key': 'b' });
+
+    this.render(
+      `<ul>{{#each-in this.hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
+    );
+
+    this.assertText('period.key: aother.period.key: b');
 
     this.assertStableRerender();
 
@@ -333,7 +350,7 @@ moduleFor(
       categories['Alarm Clocks'] = 999;
 
       this.render(
-        `<ul>{{#each-in categories as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
+        `<ul>{{#each-in this.categories as |category count|}}<li>{{category}}: {{count}}</li>{{else}}Empty!{{/each-in}}</ul>`,
         { categories }
       );
 
@@ -357,7 +374,7 @@ moduleFor(
       this.render(
         strip`
       <ul>
-        {{#each-in categories as |category count|}}
+        {{#each-in this.categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
@@ -427,7 +444,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each-in arr as |key value|}}
+      {{#each-in this.arr as |key value|}}
         [{{key}}:{{value}}]
       {{/each-in}}`,
         { arr }
@@ -444,7 +461,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each-in arr as |key value|}}
+      {{#each-in this.arr as |key value|}}
         [{{key}}:{{value}}]
       {{/each-in}}`,
         { arr }
@@ -534,7 +551,7 @@ moduleFor(
       this.render(
         strip`
       <ul>
-        {{#each-in categories as |category count|}}
+        {{#each-in this.categories as |category count|}}
           <li>{{category}}: {{count}}</li>
         {{/each-in}}
       </ul>
@@ -606,7 +623,7 @@ moduleFor(
   class extends EachInTest {
     createHash(pojo) {
       let map = new Map();
-      Object.keys(pojo).forEach(key => {
+      Object.keys(pojo).forEach((key) => {
         map.set(key, pojo[key]);
       });
       return {
@@ -628,7 +645,7 @@ moduleFor(
       this.render(
         strip`
       <ul>
-        {{#each-in map key="@identity" as |key value|}}
+        {{#each-in this.map key="@identity" as |key value|}}
           <li>{{key.name}}: {{value}}</li>
         {{/each-in}}
       </ul>`,
@@ -659,35 +676,33 @@ moduleFor(
   }
 );
 
-if (HAS_NATIVE_SYMBOL) {
-  moduleFor(
-    'Syntax test: {{#each-in}} with custom iterables',
-    class extends EachInTest {
-      createHash(pojo) {
-        let ary = Object.keys(pojo).reduce((accum, key) => {
-          return accum.concat([[key, pojo[key]]]);
-        }, []);
-        let iterable = {
-          [Symbol.iterator]: () => makeIterator(ary),
-        };
-        return {
-          hash: iterable,
-          delegate: {
-            updateNestedValue(context, key, innerKey, value) {
-              let ary = Array.from(context.hash);
-              let target = ary.find(([k]) => k === key)[1];
-              set(target, innerKey, value);
-            },
+moduleFor(
+  'Syntax test: {{#each-in}} with custom iterables',
+  class extends EachInTest {
+    createHash(pojo) {
+      let ary = Object.keys(pojo).reduce((accum, key) => {
+        return accum.concat([[key, pojo[key]]]);
+      }, []);
+      let iterable = {
+        [Symbol.iterator]: () => makeIterator(ary),
+      };
+      return {
+        hash: iterable,
+        delegate: {
+          updateNestedValue(context, key, innerKey, value) {
+            let ary = Array.from(context.hash);
+            let target = ary.find(([k]) => k === key)[1];
+            set(target, innerKey, value);
           },
-        };
-      }
+        },
+      };
     }
-  );
-}
+  }
+);
 
 // Utils
 function makeIterator(ary) {
-  var index = 0;
+  let index = 0;
 
   return {
     next() {

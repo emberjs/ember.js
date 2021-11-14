@@ -1,14 +1,14 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
-import { Revision, value, VersionedReference } from '@glimmer/reference';
-import { CapturedNamedArguments } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
-import Environment from '../environment';
-import { Factory as TemplateFactory, OwnedTemplate } from '../template';
+import { registerDestructor } from '@glimmer/destroyable';
+import { CapturedNamedArguments, Template, TemplateFactory } from '@glimmer/interfaces';
+import { createConstRef, Reference } from '@glimmer/reference';
+import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
+import { Renderer } from '../renderer';
 
 export interface Component {
   _debugContainerKey: string;
   _transitionTo(name: string): void;
-  layout?: TemplateFactory | OwnedTemplate;
+  layout?: TemplateFactory | Template;
   layoutName?: string;
   attributeBindings: Array<string>;
   classNames: Array<string>;
@@ -20,6 +20,7 @@ export interface Component {
   trigger(event: string): void;
   destroy(): void;
   setProperties(props: { [key: string]: any }): void;
+  renderer: Renderer;
 }
 
 type Finalizer = () => void;
@@ -37,26 +38,34 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  public classRef: VersionedReference<Opaque> | null = null;
+  public classRef: Reference | null = null;
+  public rootRef: Reference<Component>;
   public argsRevision: Revision;
 
   constructor(
-    public environment: Environment,
     public component: Component,
     public args: CapturedNamedArguments | null,
+    public argsTag: Tag,
     public finalizer: Finalizer,
-    public hasWrappedElement: boolean
+    public hasWrappedElement: boolean,
+    public isInteractive: boolean
   ) {
     this.classRef = null;
-    this.argsRevision = args === null ? 0 : value(args.tag);
+    this.argsRevision = args === null ? 0 : valueForTag(argsTag);
+    this.rootRef = createConstRef(component, 'this');
+
+    registerDestructor(this, () => this.willDestroy(), true);
+    registerDestructor(this, () => this.component.destroy());
   }
 
-  destroy() {
-    let { component, environment } = this;
+  willDestroy(): void {
+    let { component, isInteractive } = this;
 
-    if (environment.isInteractive) {
+    if (isInteractive) {
+      beginUntrackFrame();
       component.trigger('willDestroyElement');
       component.trigger('willClearRender');
+      endUntrackFrame();
 
       let element = getViewElement(component);
 
@@ -66,10 +75,10 @@ export default class ComponentStateBucket {
       }
     }
 
-    environment.destroyedComponents.push(component);
+    component.renderer.unregister(component);
   }
 
-  finalize() {
+  finalize(): void {
     let { finalizer } = this;
     finalizer();
     this.finalizer = NOOP;

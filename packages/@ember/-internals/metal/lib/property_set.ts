@@ -1,17 +1,9 @@
-import { Meta, peekMeta } from '@ember/-internals/meta';
-import {
-  HAS_NATIVE_PROXY,
-  lookupDescriptor,
-  setWithMandatorySetter as trackedSetWithMandatorySetter,
-  toString,
-} from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { descriptorForProperty } from './descriptor_map';
+import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
-import { MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
 
@@ -19,15 +11,6 @@ interface ExtendedObject {
   isDestroyed?: boolean;
   setUnknownProperty?: (keyName: string, value: any) => any;
 }
-
-let setWithMandatorySetter: <T extends object, K extends Extract<keyof T, string>>(
-  obj: T,
-  keyName: K,
-  value: T[K],
-  meta: Meta | null
-) => void;
-
-let makeEnumerable: (obj: object, keyName: string) => void;
 
 /**
  @module @ember/object
@@ -54,7 +37,7 @@ let makeEnumerable: (obj: object, keyName: string) => void;
   @return {Object} the passed value.
   @public
 */
-export function set(obj: object, keyName: string, value: any, tolerant?: boolean): any {
+export function set<T = unknown>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -77,23 +60,22 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
       `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
     );
-    return;
+    return value;
   }
 
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
-  }
+  return isPath(keyName) ? _setPath(obj, keyName, value, tolerant) : _setProp(obj, keyName, value);
+}
 
-  let meta = peekMeta(obj);
-  let descriptor = descriptorForProperty(obj, keyName, meta);
+export function _setProp(obj: object, keyName: string, value: any) {
+  let descriptor = lookupDescriptor(obj, keyName);
 
-  if (descriptor !== undefined) {
-    descriptor.set(obj, keyName, value);
+  if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
+    obj[keyName] = value;
     return value;
   }
 
   let currentValue: any;
-  if (DEBUG && HAS_NATIVE_PROXY) {
+  if (DEBUG) {
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
     currentValue = obj[keyName];
@@ -109,48 +91,20 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
     if (DEBUG) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        trackedSetWithMandatorySetter!(obj, keyName, value);
-      } else {
-        setWithMandatorySetter<any, any>(obj, keyName, value, meta);
-      }
+      setWithMandatorySetter!(obj, keyName, value);
     } else {
       obj[keyName] = value;
     }
 
     if (currentValue !== value) {
-      notifyPropertyChange(obj, keyName, meta);
+      notifyPropertyChange(obj, keyName);
     }
   }
 
   return value;
 }
 
-if (DEBUG) {
-  setWithMandatorySetter = (obj, keyName, value, meta) => {
-    if (meta !== null && meta.peekWatching(keyName) > 0) {
-      makeEnumerable(obj, keyName);
-      meta.writeValue(obj, keyName, value);
-    } else {
-      obj[keyName] = value;
-    }
-  };
-
-  makeEnumerable = (obj: object, key: string) => {
-    let desc = lookupDescriptor(obj, key);
-
-    if (
-      desc !== null &&
-      desc.set !== undefined &&
-      (desc.set as MandatorySetterFunction).isMandatorySetter
-    ) {
-      desc.enumerable = true;
-      Object.defineProperty(obj, key, desc);
-    }
-  };
-}
-
-function setPath(root: object, path: string, value: any, tolerant?: boolean): any {
+function _setPath(root: object, path: string, value: any, tolerant?: boolean): any {
   let parts = path.split('.');
   let keyName = parts.pop()!;
 

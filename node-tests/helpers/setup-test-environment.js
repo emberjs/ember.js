@@ -1,24 +1,15 @@
+const { setEdition, clearEdition } = require('@ember/edition-utils');
+
 function enableOctane() {
-  beforeEach(function() {
-    process.env.EMBER_VERSION = 'OCTANE';
+  beforeEach(function () {
+    setEdition('octane');
   });
 
-  afterEach(function() {
-    delete process.env.EMBER_VERSION;
-  });
-}
-
-function enableModuleUnification() {
-  beforeEach(function() {
-    process.env.EMBER_CLI_MODULE_UNIFICATION = 'true';
-  });
-
-  afterEach(function() {
-    delete process.env.EMBER_CLI_MODULE_UNIFICATION;
+  afterEach(function () {
+    clearEdition();
   });
 }
 
 module.exports = {
-  enableModuleUnification,
   enableOctane,
 };

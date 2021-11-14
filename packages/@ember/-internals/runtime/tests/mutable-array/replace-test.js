@@ -29,14 +29,16 @@ class ReplaceTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [].replace(0,0,"X") => ["X"] + avoid calling objectAt and notifying fistObject/lastObject when not in cache'() {
-    var obj, exp, observer;
-    var called = 0;
+    let obj, exp, observer;
+    let called = 0;
     exp = newFixture(1);
     obj = this.newObject([]);
-    obj.objectAt = function() {
+    obj.objectAt = function () {
       called++;
     };
     observer = this.newObserver(obj, 'firstObject', 'lastObject');
@@ -61,6 +63,8 @@ class ReplaceTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject since not cached'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C,D].replace(1,2,X) => [A,X,D] + notify'() {
@@ -94,6 +98,8 @@ class ReplaceTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C,D].replace(1,2,[X,Y]) => [A,X,Y,D] + notify'() {
@@ -127,6 +133,8 @@ class ReplaceTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify'() {
@@ -160,6 +168,8 @@ class ReplaceTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C,D].replace(2,2) => [A,B] + notify'() {
@@ -192,6 +202,8 @@ class ReplaceTests extends AbstractTestCase {
       false,
       'should NOT have notified firstObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C,D].replace(-1,1) => [A,B,C] + notify'() {
@@ -224,9 +236,11 @@ class ReplaceTests extends AbstractTestCase {
       false,
       'should NOT have notified firstObject once'
     );
+
+    obj.destroy();
   }
 
-  async '@test Adding object should notify array observer'() {
+  async '@test Adding object should notify array observer (internal)'() {
     let fixtures = newFixture(4);
     let obj = this.newObject(fixtures);
     let observer = this.newObserver(obj).observeArray(obj);
@@ -239,6 +253,8 @@ class ReplaceTests extends AbstractTestCase {
 
     this.assert.deepEqual(observer._before, [obj, 2, 2, 1], 'before');
     this.assert.deepEqual(observer._after, [obj, 2, 2, 1], 'after');
+
+    obj.destroy();
   }
 }
 

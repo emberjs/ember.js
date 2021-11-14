@@ -1,9 +1,10 @@
 /**
 @module @ember/component
 */
-import { TextSupport } from '@ember/-internals/views';
-import Component from '../component';
-import layout from '../templates/empty';
+import { action } from '@ember/object';
+import TextareaTemplate from '../templates/textarea';
+import AbstractInput from './abstract-input';
+import { opaquify } from './internal';
 
 /**
   The `Textarea` component inserts a new instance of `<textarea>` tag into the template.
@@ -34,7 +35,7 @@ import layout from '../templates/empty';
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
-  export default class extends Component {
+  export default class WordEditorComponent extends Component {
     @tracked writtenWords = "Lots of text that IS bound";
   }
   ```
@@ -115,7 +116,6 @@ import layout from '../templates/empty';
 
   @method Textarea
   @for Ember.Templates.components
-  @see {TextArea}
   @public
 */
 
@@ -124,41 +124,44 @@ import layout from '../templates/empty';
 
   @method textarea
   @for Ember.Templates.helpers
-  @see {Ember.Templates.components.textarea}
+  @see {Ember.Templates.components.Textarea}
   @public
 */
 
 /**
-  The internal representation used for `Textarea` invocations.
+  An opaque interface which can be imported and used in strict-mode
+  templates to call <Textarea>.
 
-  @class TextArea
-  @extends Component
+  See [Ember.Templates.components.Textarea](/ember/release/classes/Ember.Templates.components/methods/Textarea?anchor=Input).
+
+  @for @ember/component
+  @method Textarea
   @see {Ember.Templates.components.Textarea}
-  @uses Ember.TextSupport
   @public
-*/
-const TextArea = Component.extend(TextSupport, {
-  classNames: ['ember-text-area'],
+**/
+class Textarea extends AbstractInput {
+  static toString(): string {
+    return 'Textarea';
+  }
 
-  layout,
+  get class(): string {
+    return 'ember-text-area ember-view';
+  }
 
-  tagName: 'textarea',
-  attributeBindings: [
-    'rows',
-    'cols',
-    'name',
-    'selectionEnd',
-    'selectionStart',
-    'autocomplete',
-    'wrap',
-    'lang',
-    'dir',
-    'value',
-  ],
-  rows: null,
-  cols: null,
-});
+  // See abstract-input.ts for why these are needed
 
-TextArea.toString = () => '@ember/component/text-area';
+  @action change(event: Event): void {
+    super.change(event);
+  }
 
-export default TextArea;
+  @action input(event: Event): void {
+    super.input(event);
+  }
+
+  protected isSupportedArgument(name: string): boolean {
+    let supportedArguments = ['type', 'value', 'enter', 'insert-newline', 'escape-press'];
+    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
+  }
+}
+
+export default opaquify(Textarea, TextareaTemplate);

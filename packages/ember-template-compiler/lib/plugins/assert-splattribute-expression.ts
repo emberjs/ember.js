@@ -1,9 +1,10 @@
 import { assert } from '@ember/debug';
-import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { EmberASTPluginEnvironment } from '../types';
 
-export default function assertSplattributeExpressions(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+export default function assertSplattributeExpressions(env: EmberASTPluginEnvironment): ASTPlugin {
+  let moduleName = env.meta?.moduleName;
 
   return {
     name: 'assert-splattribute-expressions',

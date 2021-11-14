@@ -1,15 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  addObserver,
-  observer,
-  computed,
-  get,
-  set,
-  isWatching,
-  removeObserver,
-} from '@ember/-internals/metal';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { addObserver, observer, computed, get, set, removeObserver } from '@ember/-internals/metal';
 import ObjectProxy from '../../lib/system/object_proxy';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -110,11 +100,11 @@ moduleFor(
     }
 
     ['@test calling a function on the proxy avoids the assertion'](assert) {
-      if (DEBUG && HAS_NATIVE_PROXY) {
+      if (DEBUG) {
         let proxy = ObjectProxy.extend({
           init() {
             if (!this.foobar) {
-              this.foobar = function() {
+              this.foobar = function () {
                 let content = get(this, 'content');
                 return content.foobar.apply(content, []);
               };
@@ -162,7 +152,7 @@ moduleFor(
     }
 
     ['@test getting proxied properties with [] should be an error'](assert) {
-      if (DEBUG && HAS_NATIVE_PROXY) {
+      if (DEBUG) {
         let proxy = ObjectProxy.create({
           content: {
             foo: 'FOO',
@@ -182,7 +172,7 @@ moduleFor(
       let last;
 
       let Proxy = ObjectProxy.extend({
-        fullName: computed('firstName', 'lastName', function() {
+        fullName: computed('firstName', 'lastName', function () {
           let firstName = this.get('firstName');
           let lastName = this.get('lastName');
 
@@ -200,11 +190,11 @@ moduleFor(
       });
 
       // We need separate observers for each property for async observers
-      addObserver(proxy, 'firstName', function() {
+      addObserver(proxy, 'firstName', function () {
         count++;
       });
 
-      addObserver(proxy, 'lastName', function() {
+      addObserver(proxy, 'lastName', function () {
         count++;
       });
 
@@ -234,12 +224,6 @@ moduleFor(
       assert.equal(count, 5);
       assert.equal(last, 'Yehuda Katz');
 
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        // content1 is no longer watched
-        assert.ok(!isWatching(content1, 'firstName'), 'not watching firstName');
-        assert.ok(!isWatching(content1, 'lastName'), 'not watching lastName');
-      }
-
       // setting property in new content
       set(content2, 'firstName', 'Tomhuda');
       await runLoopSettled();
@@ -255,6 +239,8 @@ moduleFor(
       assert.equal(last, 'Tomhuda Katzdale');
       assert.equal(get(content2, 'firstName'), 'Tomhuda');
       assert.equal(get(content2, 'lastName'), 'Katzdale');
+
+      proxy.destroy();
     }
 
     async ['@test set and get should work with paths'](assert) {
@@ -266,7 +252,7 @@ moduleFor(
       assert.equal(proxy.get('foo.bar'), 'hello');
       assert.equal(proxy.get('content.foo.bar'), 'hello');
 
-      proxy.addObserver('foo.bar', function() {
+      proxy.addObserver('foo.bar', function () {
         count++;
       });
 
@@ -276,6 +262,8 @@ moduleFor(
       assert.equal(count, 1);
       assert.equal(proxy.get('foo.bar'), 'bye');
       assert.equal(proxy.get('content.foo.bar'), 'bye');
+
+      proxy.destroy();
     }
 
     async ['@test should transition between watched and unwatched strategies'](assert) {
@@ -349,9 +337,41 @@ moduleFor(
     ) {
       assert.expect(0);
 
-      ObjectProxy.extend({
-        observe: observer('foo', function() {}),
+      let obj = ObjectProxy.extend({
+        observe: observer('foo', function () {}),
       }).create();
+
+      obj.destroy();
+    }
+
+    async '@test custom proxies should be able to notify property changes manually'(assert) {
+      let proxy = ObjectProxy.extend({
+        locals: { foo: 123 },
+
+        unknownProperty(key) {
+          return this.locals[key];
+        },
+
+        setUnknownProperty(key, value) {
+          this.locals[key] = value;
+          this.notifyPropertyChange(key);
+        },
+      }).create();
+
+      let count = 0;
+
+      proxy.addObserver('foo', function () {
+        count++;
+      });
+
+      proxy.set('foo', 456);
+      await runLoopSettled();
+
+      assert.equal(count, 1);
+      assert.equal(proxy.get('foo'), 456);
+      assert.equal(proxy.get('locals.foo'), 456);
+
+      proxy.destroy();
     }
   }
 );

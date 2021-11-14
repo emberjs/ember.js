@@ -8,23 +8,23 @@ const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-describe('Blueprint: component-addon', function() {
+describe('Blueprint: component-addon', function () {
   setupTestHooks(this);
 
-  describe('in addon', function() {
-    beforeEach(function() {
+  describe('in addon', function () {
+    beforeEach(function () {
       return emberNew({ target: 'addon' });
     });
 
-    it('component-addon foo', function() {
-      return emberGenerateDestroy(['component-addon', 'foo'], _file => {
+    it('component-addon foo', function () {
+      return emberGenerateDestroy(['component-addon', 'foo'], (_file) => {
         expect(_file('app/components/foo.js')).to.contain(
           "export { default } from 'my-addon/components/foo';"
         );
       });
     });
-    it('component-addon foo-bar', function() {
-      return emberGenerateDestroy(['component-addon', 'foo-bar'], _file => {
+    it('component-addon foo-bar', function () {
+      return emberGenerateDestroy(['component-addon', 'foo-bar'], (_file) => {
         expect(_file('app/components/foo-bar.js')).to.contain(
           "export { default } from 'my-addon/components/foo-bar';"
         );

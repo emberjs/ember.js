@@ -10,7 +10,7 @@ import { getHash } from './util';
 let popstateFired = false;
 
 function _uuid() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     let r, v;
     r = (Math.random() * 16) | 0;
     v = c === 'x' ? r : (r & 3) | 8;
@@ -44,12 +44,29 @@ function _uuid() {
   Keep in mind that your server must serve the Ember app at all the routes you
   define.
 
+  Using `HistoryLocation` will also result in location states being recorded by
+  the browser `history` API with the following schema:
+
+  ```
+  window.history.state -> { path: '/', uuid: '3552e730-b4a6-46bd-b8bf-d8c3c1a97e0a' }
+  ```
+
+  This allows each in-app location state to be tracked uniquely across history
+  state changes via the `uuid` field.
+
   @class HistoryLocation
   @extends EmberObject
   @protected
 */
 export default class HistoryLocation extends EmberObject implements EmberLocation {
+  declare location: Location;
+  declare baseURL: string;
+
+  history?: any;
+
   implementation = 'history';
+  _previousURL?: string;
+  _popstateHandler?: EventListener;
 
   /**
     Will be pre-pended to path upon state change
@@ -66,17 +83,17 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
 
     @method getHash
   */
-  getHash() {
+  getHash(): string {
     return getHash(this.location);
   }
 
-  init() {
+  init(): void {
     this._super(...arguments);
 
     let base = document.querySelector('base');
-    let baseURL: string | null = '';
-    if (base) {
-      baseURL = base.getAttribute('href');
+    let baseURL = '';
+    if (base !== null && base.hasAttribute('href')) {
+      baseURL = base.getAttribute('href') ?? '';
     }
 
     set(this, 'baseURL', baseURL);
@@ -91,15 +108,11 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @private
     @method initState
   */
-  initState() {
+  initState(): void {
     let history = this.history || window.history;
     set(this, 'history', history);
 
-    if (history && 'state' in history) {
-      this.supportsHistory = true;
-    }
-
-    let state = this.getState();
+    let { state } = history;
     let path = this.formatURL(this.getURL());
     if (state && state.path === path) {
       // preserve existing state
@@ -117,7 +130,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method getURL
     @return url {String}
   */
-  getURL() {
+  getURL(): string {
     let { location, rootURL, baseURL } = this;
     let path = location.pathname;
 
@@ -144,8 +157,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method setURL
     @param path {String}
   */
-  setURL(path: string) {
-    let state = this.getState();
+  setURL(path: string): void {
+    let { state } = this.history;
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
@@ -161,35 +174,13 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method replaceURL
     @param path {String}
   */
-  replaceURL(path: string) {
-    let state = this.getState();
+  replaceURL(path: string): void {
+    let { state } = this.history;
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
       this.replaceState(path);
     }
-  }
-
-  /**
-    Get the current `history.state`. Checks for if a polyfill is
-    required and if so fetches this._historyState. The state returned
-    from getState may be null if an iframe has changed a window's
-    history.
-
-    The object returned will contain a `path` for the given state as well
-    as a unique state `id`. The state index will allow the app to distinguish
-    between two states with similar paths but should be unique from one another.
-
-    @private
-    @method getState
-    @return state {Object}
-  */
-  getState() {
-    if (this.supportsHistory) {
-      return this.history.state;
-    }
-
-    return this._historyState;
   }
 
   /**
@@ -199,12 +190,10 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
    @method pushState
    @param path {String}
   */
-  pushState(path: string) {
+  pushState(path: string): void {
     let state = { path, uuid: _uuid() };
 
     this.history.pushState(state, null, path);
-
-    this._historyState = state;
 
     // used for webkit workaround
     this._previousURL = this.getURL();
@@ -217,12 +206,10 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
    @method replaceState
    @param path {String}
   */
-  replaceState(path: string) {
+  replaceState(path: string): void {
     let state = { path, uuid: _uuid() };
 
     this.history.replaceState(state, null, path);
-
-    this._historyState = state;
 
     // used for webkit workaround
     this._previousURL = this.getURL();
@@ -236,7 +223,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback: UpdateCallback) {
+  onUpdateURL(callback: UpdateCallback): void {
     this._removeEventListener();
 
     this._popstateHandler = () => {
@@ -261,7 +248,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @param url {String}
     @return formatted url {String}
   */
-  formatURL(url: string) {
+  formatURL(url: string): string {
     let { rootURL, baseURL } = this;
 
     if (url !== '') {
@@ -283,11 +270,11 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @private
     @method willDestroy
   */
-  willDestroy() {
+  willDestroy(): void {
     this._removeEventListener();
   }
 
-  _removeEventListener() {
+  _removeEventListener(): void {
     if (this._popstateHandler) {
       window.removeEventListener('popstate', this._popstateHandler);
     }

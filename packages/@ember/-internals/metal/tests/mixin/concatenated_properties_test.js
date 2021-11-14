@@ -18,7 +18,7 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
     }
 
-    ['@test defining concatenated properties should concat future version'](assert) {
+    ['@test ensure we do not needlessly scan concatenatedProperties array'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: null,
       });
@@ -58,7 +58,7 @@ moduleFor(
       assert.deepEqual(get(obj, 'bar'), [1, 2, 3, 4, 5, 6], 'get bar');
     }
 
-    ['@test adding a prop that is not an array should make array'](assert) {
+    ['@test adding a prop that is a number should make array'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
         foo: [1, 2, 3],
@@ -72,7 +72,7 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), [1, 2, 3, 4]);
     }
 
-    ['@test adding a prop that is not an array should make array'](assert) {
+    ['@test adding a prop that is a string should make array'](assert) {
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
         foo: 'bar',

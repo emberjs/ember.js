@@ -5,7 +5,7 @@ import {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation,
+  missingOptionDeprecation,
 } from '../lib/deprecate';
 
 import {
@@ -23,7 +23,7 @@ let originalDeprecateHandler;
 let originalWarnHandler;
 
 const originalConsoleWarn = console.warn; // eslint-disable-line no-console
-const noop = function() {};
+const noop = function () {};
 
 moduleFor(
   'ember-debug',
@@ -41,7 +41,6 @@ moduleFor(
     teardown() {
       HANDLERS.deprecate = originalDeprecateHandler;
       HANDLERS.warn = originalWarnHandler;
-
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
     }
 
@@ -56,7 +55,12 @@ moduleFor(
       ENV.RAISE_ON_DEPRECATION = false;
 
       try {
-        deprecate('Should not throw', false, { id: 'test', until: 'forever' });
+        deprecate('Should not throw', false, {
+          id: 'test',
+          until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
+        });
         assert.ok(true, 'deprecate did not throw');
       } catch (e) {
         assert.ok(false, `Expected deprecate not to throw but it did: ${e.message}`);
@@ -72,7 +76,12 @@ moduleFor(
       ENV.RAISE_ON_DEPRECATION = false;
 
       try {
-        deprecate('Should not throw', false, { id: 'test', until: 'forever' });
+        deprecate('Should not throw', false, {
+          id: 'test',
+          until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
+        });
         assert.ok(true, 'deprecate did not throw');
       } catch (e) {
         assert.ok(false, `Expected deprecate not to throw but it did: ${e.message}`);
@@ -81,7 +90,12 @@ moduleFor(
       ENV.RAISE_ON_DEPRECATION = true;
 
       assert.throws(() => {
-        deprecate('Should throw', false, { id: 'test', until: 'forever' });
+        deprecate('Should throw', false, {
+          id: 'test',
+          until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
+        });
       }, /Should throw/);
     }
 
@@ -91,7 +105,7 @@ moduleFor(
       assert.expect(3);
 
       ENV.RAISE_ON_DEPRECATION = true;
-      registerHandler(function(message, options, next) {
+      registerHandler(function (message, options, next) {
         if (!options || options.id !== 'my-deprecation') {
           next(...arguments);
         }
@@ -101,6 +115,8 @@ moduleFor(
         deprecate('should be silenced with matching id', false, {
           id: 'my-deprecation',
           until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
         });
         assert.ok(true, 'Did not throw when level is set by id');
       } catch (e) {
@@ -111,6 +127,8 @@ moduleFor(
         deprecate('Should throw with no matching id', false, {
           id: 'test',
           until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
         });
       }, /Should throw with no matching id/);
 
@@ -118,6 +136,8 @@ moduleFor(
         deprecate('Should throw with non-matching id', false, {
           id: 'other-id',
           until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
         });
       }, /Should throw with non-matching id/);
     }
@@ -129,10 +149,26 @@ moduleFor(
         deprecate('Deprecation is thrown', false, {
           id: 'test',
           until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
         })
       );
-      assert.throws(() => deprecate('Deprecation is thrown', '', { id: 'test', until: 'forever' }));
-      assert.throws(() => deprecate('Deprecation is thrown', 0, { id: 'test', until: 'forever' }));
+      assert.throws(() =>
+        deprecate('Deprecation is thrown', '', {
+          id: 'test',
+          until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
+        })
+      );
+      assert.throws(() =>
+        deprecate('Deprecation is thrown', 0, {
+          id: 'test',
+          until: 'forever',
+          for: 'me',
+          since: { enabled: '1.0.0' },
+        })
+      );
     }
 
     ['@test deprecate does not invoke a function as the second argument'](assert) {
@@ -140,10 +176,10 @@ moduleFor(
 
       deprecate(
         'Deprecation is thrown',
-        function() {
+        function () {
           assert.ok(false, 'this function should not be invoked');
         },
-        { id: 'test', until: 'forever' }
+        { id: 'test', until: 'forever', for: 'me', since: { enabled: '1.0.0' } }
       );
 
       assert.ok(true, 'deprecations were not thrown');
@@ -155,9 +191,21 @@ moduleFor(
       deprecate('Deprecation is thrown', true, {
         id: 'test',
         until: 'forever',
+        for: 'me',
+        since: { enabled: '1.0.0' },
       });
-      deprecate('Deprecation is thrown', '1', { id: 'test', until: 'forever' });
-      deprecate('Deprecation is thrown', 1, { id: 'test', until: 'forever' });
+      deprecate('Deprecation is thrown', '1', {
+        id: 'test',
+        until: 'forever',
+        for: 'me',
+        since: { enabled: '1.0.0' },
+      });
+      deprecate('Deprecation is thrown', 1, {
+        id: 'test',
+        until: 'forever',
+        for: 'me',
+        since: { enabled: '1.0.0' },
+      });
 
       assert.ok(true, 'deprecations were not thrown');
     }
@@ -202,9 +250,10 @@ moduleFor(
       assert.expect(4);
       let id = 'ABC';
       let until = 'forever';
+      let since = 'forever';
       let shouldThrow = false;
 
-      registerHandler(function(message, options) {
+      registerHandler(function (message, options) {
         if (options && options.id === id) {
           if (shouldThrow) {
             throw new Error(message);
@@ -213,14 +262,24 @@ moduleFor(
       });
 
       try {
-        deprecate('Deprecation for testing purposes', false, { id, until });
+        deprecate('Deprecation for testing purposes', false, {
+          id,
+          until,
+          since,
+          for: 'namespace',
+        });
         assert.ok(true, 'Deprecation did not throw');
       } catch (e) {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
       }
 
       try {
-        deprecate('Deprecation for testing purposes', false, { id, until });
+        deprecate('Deprecation for testing purposes', false, {
+          id,
+          until,
+          since,
+          for: 'namespace',
+        });
         assert.ok(true, 'Deprecation did not throw');
       } catch (e) {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
@@ -228,11 +287,11 @@ moduleFor(
 
       shouldThrow = true;
 
-      assert.throws(function() {
+      assert.throws(function () {
         deprecate('Deprecation is thrown', false, { id, until });
       });
 
-      assert.throws(function() {
+      assert.throws(function () {
         deprecate('Deprecation is thrown', false, { id, until });
       });
     }
@@ -257,7 +316,7 @@ moduleFor(
       assert.expect(1);
 
       assert.throws(
-        () => deprecate('foo', false, { until: 'forever' }),
+        () => deprecate('foo', false, { until: 'forever', for: 'me', since: { enabled: '1.0.0' } }),
         new RegExp(missingOptionsIdDeprecation),
         'proper assertion is triggered when options.id is missing'
       );
@@ -268,8 +327,33 @@ moduleFor(
 
       assert.throws(
         () => deprecate('foo', false, { id: 'test' }),
-        new RegExp(missingOptionsUntilDeprecation),
+        new RegExp(missingOptionDeprecation('test', 'until')),
         'proper assertion is triggered when options.until is missing'
+      );
+    }
+
+    ['@test deprecate without options.for triggers an assertion'](assert) {
+      assert.expect(1);
+
+      assert.throws(
+        () => deprecate('message1', false, { id: 'test', until: 'forever' }),
+        new RegExp(missingOptionDeprecation('test', 'for')),
+        'proper assertion is triggered when options.for is missing'
+      );
+    }
+
+    ['@test deprecate without options.since triggers an assertion'](assert) {
+      assert.expect(1);
+
+      assert.throws(
+        () =>
+          deprecate('foo', false, {
+            id: 'test',
+            until: 'forever',
+            for: 'me',
+          }),
+        new RegExp(missingOptionDeprecation('test', 'since')),
+        'proper assertion is triggered when options.since is missing'
       );
     }
 
@@ -306,7 +390,7 @@ moduleFor(
     ['@test warn without test but with options does not trigger an assertion'](assert) {
       assert.expect(1);
 
-      registerWarnHandler(function(message) {
+      registerWarnHandler(function (message) {
         assert.equal(message, 'foo', 'warning was triggered');
       });
 

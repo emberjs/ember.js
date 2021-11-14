@@ -1,15 +1,16 @@
 'use strict';
 
+const chalk = require('chalk');
 const path = require('path');
 const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const { isModuleUnificationProject } = require('../module-unification');
 const { EOL } = require('os');
+const { has } = require('@ember/edition-utils');
 
-const OCTANE = process.env.EMBER_VERSION === 'octane';
+const OCTANE = has('octane');
 
 // TODO: this should be reading from the @ember/canary-features module
 // need to refactor broccoli/features.js to be able to work more similarly
@@ -37,21 +38,22 @@ module.exports = {
         { tc: '@ember/component/template-only' },
         { nc: '' },
         { 'no-component-class': '' },
+        { 'with-component-class': OCTANE ? '@glimmer/component' : '@ember/component' },
       ],
     },
     {
       name: 'component-structure',
-      type: ['flat', 'nested', 'classic'],
+      type: OCTANE ? ['flat', 'nested', 'classic'] : ['classic'],
       default: OCTANE ? 'flat' : 'classic',
-      aliases: [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }],
+      aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
     },
   ],
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    let isOctane = process.env.EMBER_VERSION === 'OCTANE';
+    let isOctane = has('octane');
 
-    this.availableOptions.forEach(option => {
+    this.availableOptions.forEach((option) => {
       if (option.name === 'component-class') {
         if (isOctane) {
           option.default = '--no-component-class';
@@ -59,14 +61,32 @@ module.exports = {
           option.default = '@ember/component';
         }
       } else if (option.name === 'component-structure') {
-        option.default = isOctane ? 'flat' : 'classic';
+        if (isOctane) {
+          option.type = ['flat', 'nested', 'classic'];
+          option.default = 'flat';
+          option.aliases = [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }];
+        } else {
+          option.type = ['classic'];
+          option.default = 'classic';
+          option.aliases = [{ cs: 'classic' }];
+        }
       }
     });
+
+    this.skippedJsFiles = new Set();
+    this.savedLocals = {};
 
     this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = EMBER_GLIMMER_SET_COMPONENT_TEMPLATE || isOctane;
   },
 
   install(options) {
+    // Normalize the `componentClass` option. This is usually handled for us,
+    // but we wanted to show '--no-component-class' as the default so that is
+    // what's passed to us literally if the user didn't override it.
+    if (options.componentClass === '--no-component-class') {
+      options.componentClass = '';
+    }
+
     if (!this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
       if (options.componentClass !== '@ember/component') {
         throw new SilentError(
@@ -84,34 +104,38 @@ module.exports = {
     return this._super.install.apply(this, arguments);
   },
 
+  uninstall(options) {
+    // Force the `componentClass` option to be non-empty. It doesn't really
+    // matter what it is set to. All we want is to delete the optional JS
+    // file if the user had created one (when using this generator, created
+    // manually, added later with component-class generator...).
+    options.componentClass = '@ember/component';
+
+    return this._super.uninstall.apply(this, arguments);
+  },
+
+  beforeInstall(options, locals) {
+    this.savedLocals = locals;
+  },
+
+  afterInstall(options) {
+    this._super.afterInstall.apply(this, arguments);
+
+    this.skippedJsFiles.forEach((file) => {
+      let mapped = this.mapFile(file, this.savedLocals);
+      this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
+    });
+
+    if (this.skippedJsFiles.size > 0) {
+      let command = `ember generate component-class ${options.entity.name}`;
+      this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
+    }
+  },
+
   fileMapTokens(options) {
     let commandOptions = this.options;
 
-    if (isModuleUnificationProject(this.project)) {
-      return {
-        __name__: function() {
-          return 'component';
-        },
-        __root__(options) {
-          if (options.inRepoAddon) {
-            return path.join('packages', options.inRepoAddon, 'src');
-          }
-          if (options.inDummy) {
-            return path.join('tests', 'dummy', 'src');
-          }
-          return 'src';
-        },
-        __path__(options) {
-          return path.join('ui', 'components', options.dasherizedModuleName);
-        },
-        __templatepath__(options) {
-          return path.join('ui', 'components', options.dasherizedModuleName);
-        },
-        __templatename__: function() {
-          return 'template';
-        },
-      };
-    } else if (commandOptions.pod) {
+    if (commandOptions.pod) {
       return {
         __path__() {
           return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
@@ -177,11 +201,15 @@ module.exports = {
   files() {
     let files = this._super.files.apply(this, arguments);
 
-    if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      (this.options.componentClass === '' || this.options.componentClass === '--no-component-class')
-    ) {
-      files = files.filter(file => !file.endsWith('.js'));
+    if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && this.options.componentClass === '') {
+      files = files.filter((file) => {
+        if (file.endsWith('.js')) {
+          this.skippedJsFiles.add(file);
+          return false;
+        } else {
+          return true;
+        }
+      });
     }
 
     return files;
@@ -201,21 +229,16 @@ module.exports = {
     let importComponent = '';
     let importTemplate = '';
     let defaultExport = '';
-    let contents = '';
 
-    if (!isModuleUnificationProject(this.project)) {
-      // if we're in an addon, build import statement
-      if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
-        if (options.pod) {
-          templatePath = './template';
-        } else {
-          templatePath =
-            pathUtil.getRelativeParentPath(options.entity.name) +
-            'templates/components/' +
-            stringUtil.dasherize(options.entity.name);
-        }
-        importTemplate = "import layout from '" + templatePath + "';" + EOL;
-        contents = EOL + '  layout';
+    // if we're in an addon, build import statement
+    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
+      if (options.pod) {
+        templatePath = './template';
+      } else {
+        templatePath =
+          pathUtil.getRelativeParentPath(options.entity.name) +
+          'templates/components/' +
+          stringUtil.dasherize(options.entity.name);
       }
     }
 
@@ -226,13 +249,17 @@ module.exports = {
     switch (componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
-        defaultExport = `Component.extend({${contents}\n});`;
+        if (templatePath) {
+          importTemplate = `import layout from '${templatePath}';${EOL}`;
+          defaultExport = `Component.extend({${EOL}  layout${EOL}});`;
+        } else {
+          defaultExport = `Component.extend({${EOL}});`;
+        }
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        defaultExport = `class ${classifiedModuleName}Component extends Component {\n}`;
+        defaultExport = `class ${classifiedModuleName}Component extends Component {${EOL}}`;
         break;
-      case '':
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
         defaultExport = `templateOnly();`;

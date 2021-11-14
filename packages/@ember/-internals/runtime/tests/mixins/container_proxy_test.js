@@ -1,9 +1,10 @@
-import { OWNER, getOwner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { Container, Registry } from '@ember/-internals/container';
 import ContainerProxy from '../../lib/mixins/container_proxy';
 import EmberObject from '../../lib/system/object';
 import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
   '@ember/-internals/runtime/mixins/container_proxy',
@@ -22,7 +23,7 @@ moduleFor(
     ['@test provides ownerInjection helper method'](assert) {
       let result = this.instance.ownerInjection();
 
-      assert.equal(result[OWNER], this.instance, 'returns an object with the OWNER symbol');
+      assert.equal(getOwner(result), this.instance, 'returns an object with an associated owner');
     }
 
     ['@test actions queue completes before destruction'](assert) {
@@ -42,6 +43,27 @@ moduleFor(
       run(() => {
         schedule('actions', service, 'destroy');
         this.instance.destroy();
+      });
+    }
+
+    '@test being destroyed by @ember/destroyable properly destroys the container and created instances'(
+      assert
+    ) {
+      assert.expect(1);
+
+      this.registry.register(
+        'service:foo',
+        class FooService extends EmberObject {
+          willDestroy() {
+            assert.ok(true, 'is properly destroyed');
+          }
+        }
+      );
+
+      this.instance.lookup('service:foo');
+
+      run(() => {
+        destroy(this.instance);
       });
     }
   }

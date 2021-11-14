@@ -1,10 +1,46 @@
 /**
 @module @ember/component
 */
-import { computed } from '@ember/-internals/metal';
-import { Object as EmberObject } from '@ember/-internals/runtime';
-import { InputComponentManagerFactory } from '../component-managers/input';
-import { setManager } from '../utils/managers';
+import { hasDOM } from '@ember/-internals/browser-environment';
+import { assert, warn } from '@ember/debug';
+import { action } from '@ember/object';
+import { valueForRef } from '@glimmer/reference';
+import { untrack } from '@glimmer/validator';
+import InputTemplate from '../templates/input';
+import AbstractInput, { valueFrom } from './abstract-input';
+import { opaquify } from './internal';
+
+let isValidInputType: (type: string) => boolean;
+
+if (hasDOM) {
+  const INPUT_TYPES: Record<string, boolean | undefined> = Object.create(null);
+  const INPUT_ELEMENT = document.createElement('input');
+
+  INPUT_TYPES[''] = false;
+  INPUT_TYPES['text'] = true;
+  INPUT_TYPES['checkbox'] = true;
+
+  isValidInputType = (type: string) => {
+    let isValid = INPUT_TYPES[type];
+
+    if (isValid === undefined) {
+      try {
+        INPUT_ELEMENT.type = type;
+        isValid = INPUT_ELEMENT.type === type;
+      } catch (e) {
+        isValid = false;
+      } finally {
+        INPUT_ELEMENT.type = 'text';
+      }
+
+      INPUT_TYPES[type] = isValid;
+    }
+
+    return isValid;
+  };
+} else {
+  isValidInputType = (type: string) => type !== '';
+}
 
 /**
   See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
@@ -14,6 +50,18 @@ import { setManager } from '../utils/managers';
   @param {Hash} options
   @public
   */
+
+/**
+  An opaque interface which can be imported and used in strict-mode
+  templates to call <Input>.
+
+  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
+
+  @for @ember/component
+  @method Input
+  @see {Ember.Templates.components.Input}
+  @public
+**/
 
 /**
   The `Input` component lets you create an HTML `<input>` element.
@@ -30,7 +78,7 @@ import { setManager } from '../utils/managers';
 
   ```handlebars
   Search:
-  <Input @value={{this.searchWord}}>
+  <Input @value={{this.searchWord}} />
   ```
 
   In this example, the initial value in the `<input>` will be set to the value of
@@ -47,6 +95,7 @@ import { setManager } from '../utils/managers';
   * `escape-press`
   * `focus-in`
   * `focus-out`
+  * `key-down`
   * `key-press`
   * `key-up`
 
@@ -55,6 +104,21 @@ import { setManager } from '../utils/managers';
   ```handlebars
   <Input @value={{this.searchWord}} @enter={{this.query}} />
   ```
+
+  Starting with Ember Octane, we recommend using the `{{on}}` modifier to call actions
+  on specific events, such as the input event.
+
+  ```handlebars
+  <label for="input-name">Name:</label>
+  <Input
+    @id="input-name"
+    @value={{this.name}}
+    {{on "input" this.validateName}}
+  />
+  ```
+
+  The event name (e.g. `focusout`, `input`, `keydown`) always follows the casing
+  that the HTML standard uses.
 
   ### `<input>` HTML Attributes to Avoid
 
@@ -111,21 +175,116 @@ import { setManager } from '../utils/managers';
   @param {Hash} options
   @public
 */
-const Input = EmberObject.extend({
-  isCheckbox: computed('type', function(this: { type?: unknown }) {
-    return this.type === 'checkbox';
-  }),
-});
+class Input extends AbstractInput {
+  static toString(): string {
+    return 'Input';
+  }
 
-setManager(
-  {
-    factory: InputComponentManagerFactory,
-    internal: true,
-    type: 'component',
-  },
-  Input
-);
+  /**
+   * The HTML class attribute.
+   */
+  get class(): string {
+    if (this.isCheckbox) {
+      return 'ember-checkbox ember-view';
+    } else {
+      return 'ember-text-field ember-view';
+    }
+  }
 
-Input.toString = () => '@ember/component/input';
+  /**
+   * The HTML type attribute.
+   */
+  get type(): string {
+    let type = this.named('type');
 
-export default Input;
+    if (type === null || type === undefined) {
+      return 'text';
+    }
+
+    assert(
+      'The `@type` argument to the <Input> component must be a string',
+      typeof type === 'string'
+    );
+
+    return isValidInputType(type) ? type : 'text';
+  }
+
+  get isCheckbox(): boolean {
+    return this.named('type') === 'checkbox';
+  }
+
+  private _checked = valueFrom(this.args.named.checked);
+
+  get checked(): unknown {
+    if (this.isCheckbox) {
+      warn(
+        '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
+          'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
+          'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
+        untrack(
+          () =>
+            this.args.named.checked !== undefined ||
+            this.args.named.value === undefined ||
+            typeof valueForRef(this.args.named.value) === 'string'
+        ),
+        { id: 'ember.built-in-components.input-checkbox-value' }
+      );
+
+      return this._checked.get();
+    } else {
+      return undefined;
+    }
+  }
+
+  set checked(checked: unknown) {
+    warn(
+      '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
+        'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
+        'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
+      untrack(
+        () =>
+          this.args.named.checked !== undefined ||
+          this.args.named.value === undefined ||
+          typeof valueForRef(this.args.named.value) === 'string'
+      ),
+      { id: 'ember.built-in-components.input-checkbox-value' }
+    );
+
+    this._checked.set(checked);
+  }
+
+  @action change(event: Event): void {
+    if (this.isCheckbox) {
+      this.checkedDidChange(event);
+    } else {
+      super.change(event);
+    }
+  }
+
+  @action input(event: Event): void {
+    if (!this.isCheckbox) {
+      super.input(event);
+    }
+  }
+
+  @action checkedDidChange(event: Event): void {
+    let element = event.target;
+    assert('[BUG] element must be an <input>', element instanceof HTMLInputElement);
+    this.checked = element.checked;
+  }
+
+  protected isSupportedArgument(name: string): boolean {
+    let supportedArguments = [
+      'type',
+      'value',
+      'checked',
+      'enter',
+      'insert-newline',
+      'escape-press',
+    ];
+
+    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
+  }
+}
+
+export default opaquify(Input, InputTemplate);

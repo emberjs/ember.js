@@ -1,6 +1,8 @@
-import { Mixin, tracked } from '@ember/-internals/metal';
+import { Mixin, computed } from '@ember/-internals/metal';
 import { ActionHandler } from '@ember/-internals/runtime';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { symbol } from '@ember/-internals/utils';
+
+const MODEL = symbol('MODEL');
 
 /**
 @module ember
@@ -43,5 +45,13 @@ export default Mixin.create(ActionHandler, {
     @property model
     @public
   */
-  model: EMBER_METAL_TRACKED_PROPERTIES ? tracked() : null,
+  model: computed({
+    get() {
+      return this[MODEL];
+    },
+
+    set(key, value) {
+      return (this[MODEL] = value);
+    },
+  }),
 });

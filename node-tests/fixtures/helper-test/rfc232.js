@@ -6,12 +6,12 @@ import hbs from 'htmlbars-inline-precompile';
 module('Integration | Helper | foo/bar-baz', function(hooks) {
   setupRenderingTest(hooks);
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   test('it renders', async function(assert) {
     this.set('inputValue', '1234');
 
-    await render(hbs`{{foo/bar-baz inputValue}}`);
+    await render(hbs`{{foo/bar-baz this.inputValue}}`);
 
-    assert.equal(this.element.textContent.trim(), '1234');
+    assert.dom(this.element).hasText('1234');
   });
 });

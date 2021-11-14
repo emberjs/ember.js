@@ -12,13 +12,13 @@ class DebugAssert {
     this.tracker = null;
   }
 
-  inject() {}
+  inject(): void {}
 
-  restore() {
+  restore(): void {
     this.reset();
   }
 
-  reset() {
+  reset(): void {
     if (this.tracker) {
       this.tracker.restoreMethod();
     }
@@ -26,7 +26,7 @@ class DebugAssert {
     this.tracker = null;
   }
 
-  assert() {
+  assert(): void {
     if (this.tracker) {
       this.tracker.assert();
     }
@@ -35,10 +35,19 @@ class DebugAssert {
   // Run an expectation callback within the context of a new tracker, optionally
   // accepting a function to run, which asserts immediately
   runExpectation(
-    func: (() => any) | undefined,
+    func: (() => void) | undefined,
+    callback: (tracker: MethodCallTracker) => void
+  ): void;
+  runExpectation(
+    func: () => Promise<void>,
+    callback: (tracker: MethodCallTracker) => void,
+    async: true
+  ): Promise<void>;
+  runExpectation(
+    func: (() => void) | (() => Promise<void>) | undefined,
     callback: (tracker: MethodCallTracker) => void,
     async = false
-  ) {
+  ): void | Promise<void> {
     let originalTracker: MethodCallTracker | null = null;
 
     // When helpers are passed a callback, they get a new tracker context
@@ -57,20 +66,26 @@ class DebugAssert {
     // Once the given callback is invoked, the pending assertions should be
     // flushed immediately
     if (func) {
-      let maybePromise = func();
+      if (async) {
+        return (async () => {
+          try {
+            await func();
+          } finally {
+            this.assert();
+            this.reset();
 
-      if (async && typeof maybePromise.then === 'function') {
-        return maybePromise.then(() => {
+            this.tracker = originalTracker;
+          }
+        })();
+      } else {
+        try {
+          func();
+        } finally {
           this.assert();
           this.reset();
 
           this.tracker = originalTracker;
-        });
-      } else {
-        this.assert();
-        this.reset();
-
-        this.tracker = originalTracker;
+        }
       }
     }
   }

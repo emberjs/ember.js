@@ -1,4 +1,3 @@
-import { assign } from '@ember/polyfills';
 import Router, { TransitionState } from 'router_js';
 import { shallowEqual } from '../utils';
 import Route from './route';
@@ -18,19 +17,14 @@ export default class RouterState {
     this.routerJsState = routerJsState;
   }
 
-  isActiveIntent(
-    routeName: string,
-    models: {}[],
-    queryParams: QueryParam,
-    queryParamsMustMatch?: boolean
-  ) {
+  isActiveIntent(routeName: string, models: {}[], queryParams?: QueryParam): boolean {
     let state = this.routerJsState;
     if (!this.router.isActiveIntent(routeName, models, undefined, state)) {
       return false;
     }
 
-    if (queryParamsMustMatch && Object.keys(queryParams).length > 0) {
-      let visibleQueryParams = assign({}, queryParams);
+    if (queryParams !== undefined && Object.keys(queryParams).length > 0) {
+      let visibleQueryParams = Object.assign({}, queryParams);
 
       this.emberRouter._prepareQueryParams(routeName, models, visibleQueryParams);
       return shallowEqual(visibleQueryParams, state.queryParams);

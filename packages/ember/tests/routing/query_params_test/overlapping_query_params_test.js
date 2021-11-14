@@ -7,8 +7,8 @@ moduleFor(
   'Query Params - overlapping query param property names',
   class extends QueryParamTestCase {
     setupBase() {
-      this.router.map(function() {
-        this.route('parent', function() {
+      this.router.map(function () {
+        this.route('parent', function () {
           this.route('child');
         });
       });

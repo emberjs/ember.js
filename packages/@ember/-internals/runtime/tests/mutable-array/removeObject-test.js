@@ -8,6 +8,8 @@ class RemoveObjectTests extends AbstractTestCase {
     let obj = this.newObject(before);
 
     this.assert.equal(obj.removeObject(before[1]), obj, 'should return receiver');
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].removeObject(B) => [A,C] + notify'() {
@@ -42,6 +44,8 @@ class RemoveObjectTests extends AbstractTestCase {
         'should NOT have notified lastObject once'
       );
     }
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].removeObject(D) => [A,B,C]'() {
@@ -77,6 +81,8 @@ class RemoveObjectTests extends AbstractTestCase {
         'should NOT have notified lastObject once'
       );
     }
+
+    obj.destroy();
   }
 }
 

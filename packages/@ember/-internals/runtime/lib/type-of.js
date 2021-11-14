@@ -8,6 +8,7 @@ const TYPE_MAP = {
   '[object Number]': 'number',
   '[object String]': 'string',
   '[object Function]': 'function',
+  '[object AsyncFunction]': 'function',
   '[object Array]': 'array',
   '[object Date]': 'date',
   '[object RegExp]': 'regexp',
@@ -61,6 +62,7 @@ const { toString } = Object.prototype;
   typeOf(true);                   // 'boolean'
   typeOf(new Boolean(true));      // 'boolean'
   typeOf(A);                      // 'function'
+  typeOf(A());                    // 'array'
   typeOf([1, 2, 90]);             // 'array'
   typeOf(/abc/);                  // 'regexp'
   typeOf(new Date());             // 'date'

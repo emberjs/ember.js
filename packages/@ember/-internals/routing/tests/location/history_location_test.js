@@ -97,6 +97,42 @@ moduleFor(
       location.initState();
     }
 
+    ['@test <base> with href sets `baseURL`'](assert) {
+      assert.expect(1);
+
+      let base = document.createElement('base');
+      base.setAttribute('href', '/foo/');
+
+      document.head.appendChild(base);
+
+      try {
+        createLocation();
+        location.initState();
+
+        assert.strictEqual(location.get('baseURL'), '/foo/');
+      } finally {
+        document.head.removeChild(base);
+      }
+    }
+
+    ['@test <base> without href is ignored'](assert) {
+      assert.expect(1);
+
+      let base = document.createElement('base');
+      base.setAttribute('target', '_parent');
+
+      document.head.appendChild(base);
+
+      try {
+        createLocation();
+        location.initState();
+
+        assert.strictEqual(location.get('baseURL'), '');
+      } finally {
+        document.head.removeChild(base);
+      }
+    }
+
     ['@test base URL is removed when retrieving the current pathname'](assert) {
       assert.expect(1);
 
@@ -135,8 +171,8 @@ moduleFor(
       location.initState();
       location.setURL('/one/two');
 
-      assert.equal(location._historyState.path, '/base/one/two');
-      assert.ok(location._historyState.uuid);
+      assert.equal(location.history.state.path, '/base/one/two');
+      assert.ok(location.history.state.uuid);
     }
 
     ['@test setURL continues to set even with a null state (iframes may set this)'](assert) {
@@ -146,8 +182,8 @@ moduleFor(
       FakeHistory.pushState(null);
       location.setURL('/three/four');
 
-      assert.equal(location._historyState.path, '/three/four');
-      assert.ok(location._historyState.uuid);
+      assert.equal(location.history.state.path, '/three/four');
+      assert.ok(location.history.state.uuid);
     }
 
     ['@test replaceURL continues to set even with a null state (iframes may set this)'](assert) {
@@ -157,8 +193,8 @@ moduleFor(
       FakeHistory.pushState(null);
       location.replaceURL('/three/four');
 
-      assert.equal(location._historyState.path, '/three/four');
-      assert.ok(location._historyState.uuid);
+      assert.equal(location.history.state.path, '/three/four');
+      assert.ok(location.history.state.uuid);
     }
 
     ['@test HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL'](
@@ -316,7 +352,7 @@ moduleFor(
 
       createLocation();
       location.initState();
-      assert.deepEqual(location.getState(), existingState);
+      assert.deepEqual(location.history.state, existingState);
     }
   }
 );

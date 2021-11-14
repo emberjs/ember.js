@@ -1,18 +1,23 @@
-import { FACTORY_FOR } from '@ember/-internals/container';
-import { Factory } from '@ember/-internals/owner';
+import { getFactoryFor } from '@ember/-internals/container';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities } from '@glimmer/interfaces';
-import { Arguments, ComponentDefinition } from '@glimmer/runtime';
-import { DIRTY_TAG } from '../component';
-import Environment from '../environment';
+import {
+  ComponentDefinition,
+  Environment,
+  InternalComponentCapabilities,
+  Option,
+  Owner,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { capabilityFlagsFrom } from '@glimmer/manager';
+import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
 import { DynamicScope } from '../renderer';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
+  DIRTY_TAG,
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
-import DefinitionState from './definition-state';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -22,26 +27,14 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getLayout(_state: DefinitionState) {
-    const template = this.templateFor(this.component);
-    const layout = template.asWrappedLayout();
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
-  }
-
   create(
-    environment: Environment,
-    _state: DefinitionState,
-    _args: Arguments | null,
+    _owner: Owner,
+    _state: unknown,
+    _args: Option<VMArguments>,
+    { isInteractive }: Environment,
     dynamicScope: DynamicScope
   ) {
     let component = this.component;
-
-    if (DEBUG) {
-      this._pushToDebugStack((component as any)._debugContainerKey, environment);
-    }
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
@@ -51,13 +44,13 @@ class RootComponentManager extends CurlyComponentManager {
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (!hasWrappedElement) {
-      if (environment.isInteractive) {
+      if (isInteractive) {
         component.trigger('willRender');
       }
 
       component._transitionTo('hasElement');
 
-      if (environment.isInteractive) {
+      if (isInteractive) {
         component.trigger('willInsertElement');
       }
     }
@@ -66,14 +59,25 @@ class RootComponentManager extends CurlyComponentManager {
       processComponentInitializationAssertions(component, {});
     }
 
-    return new ComponentStateBucket(environment, component, null, finalizer, hasWrappedElement);
+    let bucket = new ComponentStateBucket(
+      component,
+      null,
+      CONSTANT_TAG,
+      finalizer,
+      hasWrappedElement,
+      isInteractive
+    );
+
+    consumeTag(component[DIRTY_TAG]);
+
+    return bucket;
   }
 }
 
 // ROOT is the top-level template it has nothing but one yield.
 // it is supposed to have a dummy element
-export const ROOT_CAPABILITIES: ComponentCapabilities = {
-  dynamicLayout: false,
+export const ROOT_CAPABILITIES: InternalComponentCapabilities = {
+  dynamicLayout: true,
   dynamicTag: true,
   prepareArgs: false,
   createArgs: false,
@@ -83,25 +87,23 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: true,
+  willDestroy: false,
+  hasSubOwner: false,
 };
 
 export class RootComponentDefinition implements ComponentDefinition {
-  state: DefinitionState;
+  // handle is not used by this custom definition
+  handle = -1;
+
+  resolvedName = '-top-level';
+  state: object;
   manager: RootComponentManager;
+  capabilities = capabilityFlagsFrom(ROOT_CAPABILITIES);
+  compilable = null;
 
-  constructor(public component: Component) {
-    let manager = new RootComponentManager(component);
-    this.manager = manager;
-    let factory = FACTORY_FOR.get(component);
-    this.state = {
-      name: factory!.fullName.slice(10),
-      capabilities: ROOT_CAPABILITIES,
-      ComponentClass: factory as Factory<any, any>,
-      handle: null,
-    };
-  }
-
-  getTag({ component }: ComponentStateBucket) {
-    return component[DIRTY_TAG];
+  constructor(component: Component) {
+    this.manager = new RootComponentManager(component);
+    this.state = getFactoryFor(component);
   }
 }

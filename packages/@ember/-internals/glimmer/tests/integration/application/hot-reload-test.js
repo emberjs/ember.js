@@ -1,7 +1,7 @@
 import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { Component, Helper } from '@ember/-internals/glimmer';
 import { expect } from '@glimmer/util';
 
@@ -19,7 +19,7 @@ moduleFor(
       ENV._APPLICATION_TEMPLATE_WRAPPER = false;
       ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
 
-      let didCreateReloader = reloader => {
+      let didCreateReloader = (reloader) => {
         this.reloader = reloader;
       };
 
@@ -51,7 +51,7 @@ moduleFor(
 
             this.revisions[name] = ++revision;
 
-            this.callbacks.forEach(callback => callback());
+            this.callbacks.forEach((callback) => callback());
           },
         })
       );
@@ -59,7 +59,7 @@ moduleFor(
       this.add(
         'helper:hot-reload',
         Helper.extend({
-          reloader: injectService(),
+          reloader: service(),
 
           init() {
             this._super(...arguments);

@@ -61,11 +61,11 @@ moduleFor(
       });
 
       this.registerComponent('x-bar', {
-        template: '[x-bar: {{bar}}]',
+        template: '[x-bar: {{this.bar}}]',
         ComponentClass: BaseClass.extend(),
       });
 
-      this.render(`[-top-level: {{foo}}] {{x-bar bar=bar}}`, {
+      this.render(`[-top-level: {{this.foo}}] {{x-bar bar=this.bar}}`, {
         foo: 'foo',
         bar: 'bar',
       });

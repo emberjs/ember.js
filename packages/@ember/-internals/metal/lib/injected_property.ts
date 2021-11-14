@@ -1,5 +1,4 @@
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
@@ -10,10 +9,6 @@ export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
 
 if (DEBUG) {
   DEBUG_INJECTION_FUNCTIONS = new WeakMap();
-}
-
-export interface InjectedPropertyOptions {
-  source: string;
 }
 
 /**
@@ -32,44 +27,21 @@ export interface InjectedPropertyOptions {
          to the property's name
   @private
 */
-export default function inject(
-  type: string,
-  name: string,
-  options?: InjectedPropertyOptions
-): Decorator;
-export default function inject(
+function inject(type: string, name: string): Decorator;
+function inject(
   type: string,
   target: object,
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
-export default function inject(
-  type: string,
-  ...args: any[]
-): Decorator | DecoratorPropertyDescriptor {
+function inject(type: string, ...args: any[]): Decorator | DecoratorPropertyDescriptor {
   assert('a string type must be provided to inject', typeof type === 'string');
 
   let calledAsDecorator = isElementDescriptor(args);
-  let source: string | undefined, namespace: string | undefined;
 
   let name = calledAsDecorator ? undefined : args[0];
-  let options = calledAsDecorator ? undefined : args[1];
 
-  if (EMBER_MODULE_UNIFICATION) {
-    source = options ? options.source : undefined;
-    namespace = undefined;
-
-    if (name !== undefined) {
-      let namespaceDelimiterOffset = name.indexOf('::');
-
-      if (namespaceDelimiterOffset !== -1) {
-        namespace = name.slice(0, namespaceDelimiterOffset);
-        name = name.slice(namespaceDelimiterOffset + 2);
-      }
-    }
-  }
-
-  let getInjection = function(this: any, propertyName: string) {
+  let getInjection = function (this: any, propertyName: string) {
     let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
     assert(
@@ -77,13 +49,11 @@ export default function inject(
       Boolean(owner)
     );
 
-    return owner.lookup(`${type}:${name || propertyName}`, { source, namespace });
+    return owner.lookup(`${type}:${name || propertyName}`);
   };
 
   if (DEBUG) {
     DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
-      namespace,
-      source,
       type,
       name,
     });
@@ -103,3 +73,5 @@ export default function inject(
     return decorator;
   }
 }
+
+export default inject;

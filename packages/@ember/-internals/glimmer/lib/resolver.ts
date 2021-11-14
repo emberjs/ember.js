@@ -1,68 +1,59 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
-import { lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
-import {
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-  EMBER_MODULE_UNIFICATION,
-} from '@ember/canary-features';
-import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
+import { DEBUG } from '@glimmer/env';
 import {
-  ComponentDefinition,
-  Opaque,
+  CompileTimeResolver,
+  HelperDefinitionState,
+  ModifierDefinitionState,
   Option,
-  RuntimeResolver as IRuntimeResolver,
+  ResolvedComponentDefinition,
+  RuntimeResolver,
+  Template,
+  TemplateFactory,
 } from '@glimmer/interfaces';
-import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
-import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
-import CompileTimeLookup from './compile-time-lookup';
-import { CurlyComponentDefinition } from './component-managers/curly';
-import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
-import InternalComponentManager, {
-  InternalComponentDefinition,
-} from './component-managers/internal';
-import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
-import { isHelperFactory, isSimpleHelper } from './helper';
-import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
-import { default as classHelper } from './helpers/-class';
-import { default as inputTypeHelper } from './helpers/-input-type';
+import {
+  getComponentTemplate,
+  getInternalComponentManager,
+  setInternalHelperManager,
+} from '@glimmer/manager';
+import {
+  array,
+  concat,
+  fn,
+  get,
+  hash,
+  on,
+  TEMPLATE_ONLY_COMPONENT_MANAGER,
+  templateOnlyComponent,
+} from '@glimmer/runtime';
+import { _WeakSet } from '@glimmer/util';
+import { isCurlyManager } from './component-managers/curly';
+import {
+  CLASSIC_HELPER_MANAGER,
+  HelperFactory,
+  HelperInstance,
+  isClassicHelper,
+  SimpleHelper,
+} from './helper';
+import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
+import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
+import { default as resolve } from './helpers/-resolve';
+import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
-import { default as array } from './helpers/array';
-import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
-import { default as fn } from './helpers/fn';
-import { default as get } from './helpers/get';
-import { default as hash } from './helpers/hash';
-import { inlineIf, inlineUnless } from './helpers/if-unless';
-import { default as log } from './helpers/log';
 import { default as mut } from './helpers/mut';
-import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
-import ActionModifierManager from './modifiers/action';
-import { CustomModifierDefinition, ModifierManagerDelegate } from './modifiers/custom';
-import OnModifierManager from './modifiers/on';
-import { populateMacros } from './syntax';
+import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { Factory as TemplateFactory, OwnedTemplate } from './template';
-import { getComponentTemplate } from './utils/component-template';
-import { getModifierManager } from './utils/custom-modifier-manager';
-import { getManager } from './utils/managers';
-import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
-}
-
-function makeOptions(moduleName: string, namespace?: string): LookupOptions {
-  return {
-    source: moduleName !== undefined ? `template:${moduleName}` : undefined,
-    namespace,
-  };
 }
 
 function componentFor(
@@ -74,46 +65,10 @@ function componentFor(
   return owner.factoryFor(fullName, options) || null;
 }
 
-function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<OwnedTemplate> {
+function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<Template> {
   let templateFullName = `template:components/${name}`;
 
   return owner.lookup(templateFullName, options) || null;
-}
-
-function lookupModuleUnificationComponentPair(
-  owner: Owner,
-  name: string,
-  options?: LookupOptions
-): Option<LookupResult> {
-  let localComponent = componentFor(name, owner, options);
-  let localLayout = layoutFor(name, owner, options);
-
-  let globalComponent = componentFor(name, owner);
-  let globalLayout = layoutFor(name, owner);
-
-  // TODO: we shouldn't have to recheck fallback, we should have a lookup that doesn't fallback
-  if (
-    localComponent !== null &&
-    globalComponent !== null &&
-    globalComponent.class === localComponent.class
-  ) {
-    localComponent = null;
-  }
-  if (
-    localLayout !== null &&
-    globalLayout !== null &&
-    localLayout.referrer.moduleName === globalLayout.referrer.moduleName
-  ) {
-    localLayout = null;
-  }
-
-  if (localComponent !== null || localLayout !== null) {
-    return { component: localComponent, layout: localLayout } as LookupResult;
-  } else if (globalComponent !== null || globalLayout !== null) {
-    return { component: globalComponent, layout: globalLayout } as LookupResult;
-  } else {
-    return null;
-  }
 }
 
 type LookupResult =
@@ -137,13 +92,11 @@ function lookupComponentPair(
 ): Option<LookupResult> {
   let component = componentFor(name, owner, options);
 
-  if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-    if (component !== null && component.class !== undefined) {
-      let layout = getComponentTemplate(component.class);
+  if (component !== null && component.class !== undefined) {
+    let layout = getComponentTemplate(component.class);
 
-      if (layout !== null) {
-        return { component, layout };
-      }
+    if (layout !== undefined) {
+      return { component, layout };
     }
   }
 
@@ -156,267 +109,150 @@ function lookupComponentPair(
   }
 }
 
-function lookupComponent(owner: Owner, name: string, options: LookupOptions): Option<LookupResult> {
-  if (options.source || options.namespace) {
-    if (EMBER_MODULE_UNIFICATION) {
-      return lookupModuleUnificationComponentPair(owner, name, options);
-    }
-
-    let pair = lookupComponentPair(owner, name, options);
-
-    if (pair !== null) {
-      return pair;
-    }
-  }
-
-  if (EMBER_MODULE_UNIFICATION) {
-    return lookupModuleUnificationComponentPair(owner, name);
-  }
-
-  return lookupComponentPair(owner, name);
-}
-
-interface IBuiltInHelpers {
-  [name: string]: Helper | undefined;
-}
-
-const BUILTINS_HELPERS: IBuiltInHelpers = {
-  if: inlineIf,
+const BUILTIN_KEYWORD_HELPERS = {
   action,
+  mut,
+  readonly,
+  unbound,
+  '-hash': hash,
+  '-each-in': eachIn,
+  '-normalize-class': normalizeClassHelper,
+  '-resolve': resolve,
+  '-track-array': trackArray,
+  '-mount': mountHelper,
+  '-outlet': outletHelper,
+  '-in-el-null': inElementNullCheckHelper,
+};
+
+if (DEBUG) {
+  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+} else {
+  // Bug: this may be a quirk of our test setup?
+  // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
+  // to add it at all, but the current test build doesn't produce a "prod compiler", so
+  // we ended up running the debug-build for the template compliler in prod tests. Once
+  // that is fixed, this can be removed. For now, this allows the test to work and does
+  // not really harm anything, since it's just a no-op pass-through helper and the bytes
+  // has to be included anyway. In the future, perhaps we can avoid the latter by using
+  // `import(...)`?
+  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+}
+
+const BUILTIN_HELPERS = {
+  ...BUILTIN_KEYWORD_HELPERS,
   array,
   concat,
   fn,
   get,
   hash,
-  log,
-  mut,
-  'query-params': queryParams,
-  readonly,
-  unbound,
-  unless: inlineUnless,
-  '-class': classHelper,
-  '-each-in': eachIn,
-  '-input-type': inputTypeHelper,
-  '-normalize-class': normalizeClassHelper,
-  '-get-dynamic-var': getDynamicVar,
-  '-mount': mountHelper,
-  '-outlet': outletHelper,
-  '-assert-implicit-component-helper-argument': componentAssertionHelper,
 };
 
-interface IBuiltInModifiers {
-  [name: string]: ModifierDefinition | undefined;
-}
+const BUILTIN_KEYWORD_MODIFIERS = {
+  action: actionModifier,
+};
 
-export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
-  public isInteractive: boolean;
-  public compiler: LazyCompiler<OwnedTemplateMeta>;
+const BUILTIN_MODIFIERS = {
+  ...BUILTIN_KEYWORD_MODIFIERS,
+  on,
+};
 
-  private handles: any[] = [
-    undefined, // ensure no falsy handle
-  ];
-  private objToHandle = new WeakMap<any, number>();
+const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
 
-  private builtInHelpers: IBuiltInHelpers = BUILTINS_HELPERS;
+export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTimeResolver<Owner> {
+  private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
-  private builtInModifiers: IBuiltInModifiers;
-
-  private componentDefinitionCache: Map<object, ComponentDefinition | null> = new Map();
-
-  public componentDefinitionCount = 0;
-  public helperDefinitionCount = 0;
-
-  constructor(isInteractive: boolean) {
-    let macros = new Macros();
-    populateMacros(macros);
-    this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
-    this.isInteractive = isInteractive;
-
-    this.builtInModifiers = {
-      action: { manager: new ActionModifierManager(), state: null },
-      on: { manager: new OnModifierManager(isInteractive), state: null },
-    };
-  }
-
-  /***  IRuntimeResolver ***/
-
-  /**
-   * public componentDefHandleCount = 0;
-   * Called while executing Append Op.PushDynamicComponentManager if string
-   */
-  lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
-    let handle = this.lookupComponentHandle(name, meta);
-    if (handle === null) {
-      assert(
-        `Could not find component named "${name}" (no component or template with that name was found)`
-      );
-      return null;
-    }
-    return this.resolve(handle);
-  }
-
-  lookupComponentHandle(name: string, meta: OwnedTemplateMeta) {
-    let nextHandle = this.handles.length;
-    let handle = this.handle(this._lookupComponentDefinition(name, meta));
-
-    assert(
-      'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
-      !(name === 'text-area' && handle === null)
-    );
-
-    if (nextHandle === handle) {
-      this.componentDefinitionCount++;
-    }
-    return handle;
-  }
-
-  /**
-   * Called by RuntimeConstants to lookup unresolved handles.
-   */
-  resolve<U>(handle: number): U {
-    return this.handles[handle];
-  }
-  // End IRuntimeResolver
-
-  /**
-   * Called by CompileTimeLookup compiling Unknown or Helper OpCode
-   */
-  lookupHelper(name: string, meta: OwnedTemplateMeta): Option<number> {
-    let nextHandle = this.handles.length;
-    let helper = this._lookupHelper(name, meta);
-    if (helper !== null) {
-      let handle = this.handle(helper);
-
-      if (nextHandle === handle) {
-        this.helperDefinitionCount++;
-      }
-      return handle;
-    }
+  lookupPartial(): null {
     return null;
   }
 
-  /**
-   * Called by CompileTimeLookup compiling the
-   */
-  lookupModifier(name: string, meta: OwnedTemplateMeta): Option<number> {
-    return this.handle(this._lookupModifier(name, meta));
-  }
+  lookupHelper(name: string, owner: Owner): Option<HelperDefinitionState> {
+    assert(
+      `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
+      !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
+    );
 
-  /**
-   * Called by CompileTimeLookup to lookup partial
-   */
-  lookupPartial(name: string, meta: OwnedTemplateMeta): Option<number> {
-    let partial = this._lookupPartial(name, meta);
-    return this.handle(partial);
-  }
-
-  // end CompileTimeLookup
-
-  // needed for lazy compile time lookup
-  private handle(obj: Opaque) {
-    if (obj === undefined || obj === null) {
-      return null;
-    }
-    let handle: number | undefined = this.objToHandle.get(obj);
-    if (handle === undefined) {
-      handle = this.handles.push(obj) - 1;
-      this.objToHandle.set(obj, handle);
-    }
-    return handle;
-  }
-
-  private _lookupHelper(_name: string, meta: OwnedTemplateMeta): Option<Helper> {
-    const helper = this.builtInHelpers[_name];
+    const helper = BUILTIN_HELPERS[name];
     if (helper !== undefined) {
       return helper;
     }
 
-    const { owner, moduleName } = meta;
+    const factory = owner.factoryFor<
+      SimpleHelper | HelperInstance,
+      HelperFactory<SimpleHelper | HelperInstance>
+    >(`helper:${name}`);
 
-    let name = _name;
-    let namespace = undefined;
-    if (EMBER_MODULE_UNIFICATION) {
-      const parsed = this._parseNameForNamespace(_name);
-      name = parsed.name;
-      namespace = parsed.namespace;
-    }
-
-    const options: LookupOptions = makeOptions(moduleName, namespace);
-
-    const factory =
-      owner.factoryFor(`helper:${name}`, options) || owner.factoryFor(`helper:${name}`);
-
-    if (!isHelperFactory(factory)) {
+    if (factory === undefined) {
       return null;
     }
 
-    return (vm, args) => {
-      const helper = factory.create();
-      if (isSimpleHelper(helper)) {
-        return SimpleHelperReference.create(helper.compute, args.capture());
+    let definition = factory.class;
+
+    if (definition === undefined) {
+      return null;
+    }
+
+    if (typeof definition === 'function' && isClassicHelper(definition)) {
+      // For classic class based helpers, we need to pass the factoryFor result itself rather
+      // than the raw value (`factoryFor(...).class`). This is because injections are already
+      // bound in the factoryFor result, including type-based injections
+
+      if (DEBUG) {
+        // In DEBUG we need to only set the associated value once, otherwise
+        // we'll trigger an assertion
+        if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
+          CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
+          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+        }
+      } else {
+        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
       }
-      vm.newDestroyable(helper);
-      return ClassBasedHelperReference.create(helper, args.capture());
-    };
-  }
 
-  private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
-    let templateFactory = lookupPartial(name, meta.owner);
-    let template = templateFactory(meta.owner);
-
-    return new PartialDefinition(name, template);
-  }
-
-  private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
-    let builtin = this.builtInModifiers[name];
-
-    if (builtin === undefined) {
-      let { owner } = meta;
-      let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
-      if (modifier !== undefined) {
-        let managerFactory = getModifierManager<ModifierManagerDelegate<Opaque>>(modifier.class);
-        let manager = managerFactory!(owner);
-
-        return new CustomModifierDefinition(name, modifier, manager, this.isInteractive);
-      }
+      return factory;
     }
 
-    return builtin;
+    return definition;
   }
 
-  private _parseNameForNamespace(_name: string) {
-    let name = _name;
-    let namespace = undefined;
-    let namespaceDelimiterOffset = _name.indexOf('::');
-    if (namespaceDelimiterOffset !== -1) {
-      name = _name.slice(namespaceDelimiterOffset + 2);
-      namespace = _name.slice(0, namespaceDelimiterOffset);
-    }
-
-    return { name, namespace };
+  lookupBuiltInHelper(name: string): HelperDefinitionState | null {
+    return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
-  private _lookupComponentDefinition(
-    _name: string,
-    { moduleName, owner }: OwnedTemplateMeta
-  ): Option<ComponentDefinition> {
-    let name = _name;
-    let namespace = undefined;
-    if (EMBER_MODULE_UNIFICATION) {
-      const parsed = this._parseNameForNamespace(_name);
-      name = parsed.name;
-      namespace = parsed.namespace;
+  lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
+    let builtin = BUILTIN_MODIFIERS[name];
+
+    if (builtin !== undefined) {
+      return builtin;
     }
-    let pair = lookupComponent(owner, name, makeOptions(moduleName, namespace));
+
+    let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
+
+    if (modifier === undefined) {
+      return null;
+    }
+
+    return modifier.class || null;
+  }
+
+  lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
+    return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
+  }
+
+  lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {
+    let pair = lookupComponentPair(owner, name);
+
     if (pair === null) {
+      assert(
+        'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
+        name !== 'text-area'
+      );
       return null;
     }
 
-    let layout: Option<OwnedTemplate> = null;
+    let template: Template | null = null;
     let key: object;
 
     if (pair.component === null) {
-      key = layout = pair.layout!(owner);
+      key = template = pair.layout!(owner);
     } else {
       key = pair.component;
     }
@@ -426,66 +262,53 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return cachedComponentDefinition;
     }
 
-    if (layout === null && pair.layout !== null) {
-      layout = pair.layout(owner);
+    if (template === null && pair.layout !== null) {
+      template = pair.layout(owner);
     }
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
 
-    let definition: Option<ComponentDefinition> = null;
+    let definition: Option<ResolvedComponentDefinition> = null;
 
     if (pair.component === null) {
       if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        definition = new TemplateOnlyComponentDefinition(layout!);
-      }
-    } else if (
-      EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      isTemplateOnlyComponent(pair.component.class)
-    ) {
-      definition = new TemplateOnlyComponentDefinition(layout!);
-    }
+        definition = {
+          state: templateOnlyComponent(undefined, name),
+          manager: TEMPLATE_ONLY_COMPONENT_MANAGER,
+          template,
+        };
+      } else {
+        let factory = owner.factoryFor(P`component:-default`)!;
+        let manager = getInternalComponentManager(factory.class as object);
 
-    if (pair.component !== null) {
+        definition = {
+          state: factory,
+          manager,
+          template,
+        };
+      }
+    } else {
       assert(`missing component class ${name}`, pair.component.class !== undefined);
 
-      let ComponentClass = pair.component.class!;
-      let wrapper = getManager(ComponentClass);
+      let factory = pair.component;
+      let ComponentClass = factory.class!;
+      let manager = getInternalComponentManager(ComponentClass);
 
-      if (wrapper !== null && wrapper.type === 'component') {
-        let { factory } = wrapper;
-
-        if (wrapper.internal) {
-          assert(`missing layout for internal component ${name}`, pair.layout !== null);
-
-          definition = new InternalComponentDefinition(
-            factory(owner) as InternalComponentManager<Opaque>,
-            ComponentClass as Factory<any, any>,
-            layout!
-          );
-        } else {
-          definition = new CustomManagerDefinition(
-            name,
-            pair.component,
-            factory(owner) as ManagerDelegate<Opaque>,
-            layout !== null
-              ? layout
-              : owner.lookup<TemplateFactory>(P`template:components/-default`)!(owner)
-          );
-        }
-      }
-    }
-
-    if (definition === null) {
-      definition = new CurlyComponentDefinition(
-        name,
-        pair.component || owner.factoryFor(P`component:-default`),
-        null,
-        layout
-      );
+      definition = {
+        state: isCurlyManager(manager) ? factory : ComponentClass,
+        manager,
+        template,
+      };
     }
 
     finalizer();
     this.componentDefinitionCache.set(key, definition);
+
+    assert(
+      'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
+      !(definition === null && name === 'text-area')
+    );
+
     return definition;
   }
 }

@@ -19,7 +19,7 @@ describe('Unit | Initializer | foo', function() {
     run(application, 'destroy');
   });
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   it('works', function() {
     initialize(application);
 

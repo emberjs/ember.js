@@ -2,7 +2,6 @@
 @module @ember/engine
 */
 
-import { guidFor } from '@ember/-internals/utils';
 import {
   Object as EmberObject,
   ContainerProxyMixin,
@@ -12,6 +11,7 @@ import {
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
+import { guidFor } from '@ember/-internals/utils';
 import { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 /**
@@ -37,6 +37,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   init() {
     this._super(...arguments);
 
+    // Ensure the guid gets setup for this instance
     guidFor(this);
 
     let base = this.base;
@@ -76,7 +77,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       return this._bootPromise;
     }
 
-    this._bootPromise = new RSVP.Promise(resolve => resolve(this._bootSync(options)));
+    this._bootPromise = new RSVP.Promise((resolve) => resolve(this._bootSync(options)));
 
     return this._bootPromise;
   },
@@ -172,9 +173,9 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   cloneParentDependencies() {
     let parent = getEngineParent(this);
 
-    let registrations = ['route:basic', 'service:-routing', 'service:-glimmer-environment'];
+    let registrations = ['route:basic', 'service:-routing'];
 
-    registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
+    registrations.forEach((key) => this.register(key, parent.resolveRegistration(key)));
 
     let env = parent.lookup('-environment:main');
     this.register('-environment:main', env, { instantiate: false });
@@ -183,19 +184,15 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       'router:main',
       P`-bucket-cache:main`,
       '-view-registry:main',
-      `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
+      `renderer:-dom`,
       'service:-document',
-      P`template-compiler:main`,
     ];
 
     if (env.isInteractive) {
       singletons.push('event_dispatcher:main');
     }
 
-    singletons.forEach(key => this.register(key, parent.lookup(key), { instantiate: false }));
-
-    this.inject('view', '_environment', '-environment:main');
-    this.inject('route', '_environment', '-environment:main');
+    singletons.forEach((key) => this.register(key, parent.lookup(key), { instantiate: false }));
   },
 });
 
@@ -210,17 +207,6 @@ EngineInstance.reopenClass({
     // when no options/environment is present, do nothing
     if (!options) {
       return;
-    }
-
-    registry.injection('view', '_environment', '-environment:main');
-    registry.injection('route', '_environment', '-environment:main');
-
-    if (options.isInteractive) {
-      registry.injection('view', 'renderer', 'renderer:-dom');
-      registry.injection('component', 'renderer', 'renderer:-dom');
-    } else {
-      registry.injection('view', 'renderer', 'renderer:-inert');
-      registry.injection('component', 'renderer', 'renderer:-inert');
     }
   },
 });

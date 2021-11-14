@@ -1,15 +1,21 @@
-import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
+import {
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  moduleFor,
+  runTask,
+} from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA, RSVP } from '@ember/-internals/runtime';
-import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
+import { compile } from '../../../utils/helpers';
 
 // IE includes the host name
 function normalizeUrl(url) {
-  return url.replace(/https?:\/\/[^\/]+/, '');
+  return url.replace(/https?:\/\/[^/]+/, '');
 }
 
 function shouldNotBeActive(assert, element) {
@@ -31,7 +37,7 @@ moduleFor(
     constructor() {
       super();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -53,300 +59,619 @@ moduleFor(
       );
     }
 
-    ['@test The <LinkTo /> component navigates into the named route'](assert) {
-      return this.visit('/')
-        .then(() => {
-          assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-          assert.equal(
-            this.$('#self-link.active').length,
-            1,
-            'The self-link was rendered with active class'
-          );
-          assert.equal(
-            this.$('#about-link:not(.active)').length,
-            1,
-            'The other link was rendered without active class'
-          );
+    async ['@test it navigates into the named route'](assert) {
+      await this.visit('/');
 
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
-          assert.equal(
-            this.$('#self-link.active').length,
-            1,
-            'The self-link was rendered with active class'
-          );
-          assert.equal(
-            this.$('#home-link:not(.active)').length,
-            1,
-            'The other link was rendered without active class'
-          );
-        });
-    }
-
-    [`@test the <LinkTo /> component doesn't add an href when the tagName isn't 'a'`](assert) {
-      this.addTemplate(
-        'index',
-        `<LinkTo @route='about' id='about-link' @tagName='div'>About</LinkTo>`
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.equal(
+        this.$('#self-link.active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The other link was rendered without active class'
       );
 
-      return this.visit('/').then(() => {
-        assert.equal(this.$('#about-link').attr('href'), undefined, 'there is no href attribute');
-      });
+      await this.click('#about-link');
+
+      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
+      assert.equal(
+        this.$('#self-link.active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#home-link:not(.active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
     }
 
-    [`@test the <LinkTo /> component applies a 'disabled' class when disabled`](assert) {
-      this.addTemplate(
-        'index',
-        `
-        <LinkTo id="about-link-static" @route="about" @disabledWhen="shouldDisable">About</LinkTo>
-        <LinkTo id="about-link-dynamic" @route="about" @disabledWhen={{dynamicDisabledWhen}}>About</LinkTo>
-        `
-      );
-
-      this.add(
-        'controller:index',
-        Controller.extend({
-          shouldDisable: true,
-          dynamicDisabledWhen: 'shouldDisable',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        assert.equal(
-          this.$('#about-link-static.disabled').length,
-          1,
-          'The static link is disabled when its disabledWhen is true'
-        );
-        assert.equal(
-          this.$('#about-link-dynamic.disabled').length,
-          1,
-          'The dynamic link is disabled when its disabledWhen is true'
-        );
-
-        let controller = this.applicationInstance.lookup('controller:index');
-        runTask(() => controller.set('dynamicDisabledWhen', false));
-
-        assert.equal(
-          this.$('#about-link-dynamic.disabled').length,
-          0,
-          'The dynamic link is re-enabled when its disabledWhen becomes false'
-        );
-      });
-    }
-
-    [`@test the <LinkTo /> component doesn't apply a 'disabled' class if disabledWhen is not provided`](
+    async ['@test [GH#19546] it navigates into the named route when containing other elements'](
       assert
     ) {
-      this.addTemplate('index', `<LinkTo id="about-link" @route="about">About</LinkTo>`);
-
-      return this.visit('/').then(() => {
-        assert.ok(
-          !this.$('#about-link').hasClass('disabled'),
-          'The link is not disabled if disabledWhen not provided'
-        );
-      });
-    }
-
-    [`@test the <LinkTo /> component supports a custom disabledClass`](assert) {
       this.addTemplate(
-        'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass="do-not-want">About</LinkTo>`
+        'about',
+        `
+        <h3 class="about">About</h3>
+        <LinkTo @route='index' id='home-link'><span id='inside'>Home</span></LinkTo>
+        <LinkTo @route='about' id='self-link'>Self</LinkTo>
+        `
       );
 
-      return this.visit('/').then(() => {
-        assert.equal(
-          this.$('#about-link.do-not-want').length,
-          1,
-          'The link can apply a custom disabled class'
-        );
-      });
+      await this.visit('/about');
+
+      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
+      assert.equal(
+        this.$('#self-link.active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#home-link:not(.active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
+
+      await this.click('#inside');
+
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.equal(
+        this.$('#self-link.active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
     }
 
-    [`@test the <LinkTo /> component supports a custom disabledClass set via bound param`](assert) {
+    async [`@test it applies a 'disabled' class when disabled`](assert) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass={{disabledClass}}>About</LinkTo>`
+        `
+        <LinkTo id="about-link-static" @route="about" @disabled="truthy">About</LinkTo>
+        <LinkTo id="about-link-dynamic" @route="about" @disabled={{this.dynamicDisabled}}>About</LinkTo>
+        `
       );
+
+      let controller;
 
       this.add(
         'controller:index',
-        Controller.extend({
-          disabledClass: 'do-not-want',
-        })
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          dynamicDisabled = true;
+        }
       );
 
-      return this.visit('/').then(() => {
-        assert.equal(
-          this.$('#about-link.do-not-want').length,
-          1,
-          'The link can apply a custom disabled class via bound param'
-        );
-      });
+      await this.visit('/');
+
+      assert.equal(
+        this.$('#about-link-static.disabled').length,
+        1,
+        'The static link is disabled when its disabled is true'
+      );
+      assert.equal(
+        this.$('#about-link-dynamic.disabled').length,
+        1,
+        'The dynamic link is disabled when its disabled is true'
+      );
+
+      runTask(() => controller.set('dynamicDisabled', false));
+
+      assert.equal(
+        this.$('#about-link-static.disabled').length,
+        1,
+        'The static link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The dynamic link is re-enabled when its disabled becomes false'
+      );
     }
 
-    [`@test the <LinkTo /> component does not respond to clicks when disabledWhen`](assert) {
+    async [`@test it doesn't apply a 'disabled' class when not disabled`](assert) {
+      this.addTemplate('index', `<LinkTo id="about-link" @route="about">About</LinkTo>`);
+
+      await this.visit('/');
+
+      assert.ok(
+        !this.$('#about-link').hasClass('disabled'),
+        'The link is not disabled if disabled was not provided'
+      );
+    }
+
+    async [`@test it supports a custom disabledClass`](assert) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}}>About</LinkTo>`
+        `
+        <LinkTo id="about-link-static" @route="about" @disabledClass="do-not-want" @disabled={{true}}>About</LinkTo>
+        <LinkTo id="about-link-dynamic" @route="about" @disabledClass="do-not-want" @disabled={{this.dynamicDisabled}}>About</LinkTo>
+        `
       );
 
-      return this.visit('/')
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
-        });
+      let controller;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          dynamicDisabled = true;
+        }
+      );
+
+      await this.visit('/');
+
+      assert.equal(
+        this.$('#about-link-static.do-not-want').length,
+        1,
+        'The static link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.do-not-want').length,
+        1,
+        'The dynamic link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-static.disabled').length,
+        0,
+        'The default disabled class is not added on the static link'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The default disabled class is not added on the dynamic link'
+      );
+
+      runTask(() => controller.set('dynamicDisabled', false));
+
+      assert.equal(
+        this.$('#about-link-static.do-not-want').length,
+        1,
+        'The static link is disabled when its disabled is true'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The dynamic link is re-enabled when its disabled becomes false'
+      );
+      assert.strictEqual(
+        this.$('#about-link-static.disabled').length,
+        0,
+        'The default disabled class is not added on the static link'
+      );
+      assert.strictEqual(
+        this.$('#about-link-dynamic.disabled').length,
+        0,
+        'The default disabled class is not added on the dynamic link'
+      );
     }
 
-    [`@test the <LinkTo /> component does not respond to clicks when disabled`](assert) {
+    async [`@test it supports a custom disabledClass set via bound param`](assert) {
+      this.addTemplate(
+        'index',
+        `<LinkTo id="about-link" @route="about" @disabledClass={{this.disabledClass}} @disabled={{true}}>About</LinkTo>`
+      );
+
+      let controller;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          disabledClass = 'do-not-want';
+        }
+      );
+
+      await this.visit('/');
+
+      assert.equal(
+        this.$('#about-link.do-not-want').length,
+        1,
+        'The link can apply a custom disabled class via bound param'
+      );
+      assert.strictEqual(
+        this.$('#about-link.disabled').length,
+        0,
+        'The default disabled class is not added'
+      );
+
+      runTask(() => controller.set('disabledClass', 'can-not-use'));
+
+      assert.equal(
+        this.$('#about-link.can-not-use').length,
+        1,
+        'The link can apply a custom disabled class via bound param'
+      );
+      assert.strictEqual(this.$('#about-link.do-not-want').length, 0, 'The old class is removed');
+      assert.strictEqual(
+        this.$('#about-link.disabled').length,
+        0,
+        'The default disabled class is not added'
+      );
+    }
+
+    async [`@test it does not respond to clicks when disabled`](assert) {
       this.addTemplate(
         'index',
         `<LinkTo id="about-link" @route="about" @disabled={{true}}>About</LinkTo>`
       );
 
-      return this.visit('/')
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
-        });
+      await this.visit('/');
+
+      await this.click('#about-link');
+
+      assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
     }
 
-    [`@test the <LinkTo /> component responds to clicks according to its disabledWhen bound param`](
-      assert
-    ) {
+    async [`@test it responds to clicks according to its disabled bound param`](assert) {
       this.addTemplate(
         'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{disabledWhen}}>About</LinkTo>`
+        `<LinkTo id="about-link" @route="about" @disabled={{this.dynamicDisabled}}>About</LinkTo>`
       );
+
+      let controller;
 
       this.add(
         'controller:index',
-        Controller.extend({
-          disabledWhen: true,
-        })
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          dynamicDisabled = true;
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.about').length, 0, 'Transitioning did not occur');
+      await this.visit('/');
 
-          let controller = this.applicationInstance.lookup('controller:index');
-          controller.set('disabledWhen', false);
+      await this.click('#about-link');
 
-          return runLoopSettled();
-        })
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(
-            this.$('h3.about').length,
-            1,
-            'Transitioning did occur when disabledWhen became false'
-          );
-        });
+      assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
+
+      runTask(() => controller.set('dynamicDisabled', false));
+
+      await this.click('#about-link');
+
+      assert.equal(
+        this.$('h3.about').length,
+        1,
+        'Transitioning did occur when disabled became false'
+      );
     }
 
-    [`@test The <LinkTo /> component supports a custom activeClass`](assert) {
+    async [`@test it supports a custom activeClass`](assert) {
       this.addTemplate(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about'>About</LinkTo>
+        <LinkTo id='about-link' @route='about' @activeClass='zomg-active'>About</LinkTo>
         <LinkTo id='self-link' @route='index' @activeClass='zomg-active'>Self</LinkTo>
         `
       );
 
-      return this.visit('/').then(() => {
-        assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-        assert.equal(
-          this.$('#self-link.zomg-active').length,
-          1,
-          'The self-link was rendered with active class'
-        );
-        assert.equal(
-          this.$('#about-link:not(.active)').length,
-          1,
-          'The other link was rendered without active class'
-        );
-      });
+      await this.visit('/');
+
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.equal(
+        this.$('#self-link.zomg-active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#about-link:not(.zomg-active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
+      assert.strictEqual(
+        this.$('#self-link.active').length,
+        0,
+        'The self-link was rendered without the default active class'
+      );
+      assert.strictEqual(
+        this.$('#about-link.active').length,
+        0,
+        'The other link was rendered without the default active class'
+      );
     }
 
-    [`@test The <LinkTo /> component supports a custom activeClass from a bound param`](assert) {
+    async [`@test it supports a custom activeClass from a bound param`](assert) {
       this.addTemplate(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about'>About</LinkTo>
-        <LinkTo id='self-link' @route='index' @activeClass={{activeClass}}>Self</LinkTo>
+        <LinkTo id='about-link' @route='about' @activeClass={{this.activeClass}}>About</LinkTo>
+        <LinkTo id='self-link' @route='index' @activeClass={{this.activeClass}}>Self</LinkTo>
         `
       );
 
+      let controller;
+
       this.add(
         'controller:index',
-        Controller.extend({
-          activeClass: 'zomg-active',
-        })
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          activeClass = 'zomg-active';
+        }
       );
 
-      return this.visit('/').then(() => {
-        assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
-        assert.equal(
-          this.$('#self-link.zomg-active').length,
-          1,
-          'The self-link was rendered with active class'
-        );
-        assert.equal(
-          this.$('#about-link:not(.active)').length,
-          1,
-          'The other link was rendered without active class'
-        );
-      });
+      await this.visit('/');
+
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+      assert.equal(
+        this.$('#self-link.zomg-active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#about-link:not(.zomg-active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
+      assert.strictEqual(
+        this.$('#self-link.active').length,
+        0,
+        'The self-link was rendered without the default active class'
+      );
+      assert.strictEqual(
+        this.$('#about-link.active').length,
+        0,
+        'The other link was rendered without the default active class'
+      );
+
+      runTask(() => controller.set('activeClass', 'wow-active'));
+
+      assert.equal(
+        this.$('#self-link.wow-active').length,
+        1,
+        'The self-link was rendered with active class'
+      );
+      assert.equal(
+        this.$('#about-link:not(.wow-active)').length,
+        1,
+        'The other link was rendered without active class'
+      );
+      assert.strictEqual(
+        this.$('#self-link.zomg-active').length,
+        0,
+        'The self-link was rendered without the previous active class'
+      );
+      assert.strictEqual(
+        this.$('#self-link.active').length,
+        0,
+        'The self-link was rendered without the default active class'
+      );
+      assert.strictEqual(
+        this.$('#about-link.active').length,
+        0,
+        'The other link was rendered without the default active class'
+      );
     }
 
-    // See https://github.com/emberjs/ember.js/issues/17771
-    [`@skip The <LinkTo /> component supports 'classNameBindings' with custom values [GH #11699]`](
-      assert
-    ) {
-      this.addTemplate(
-        'index',
-        `
-        <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about' @classNameBindings='foo:foo-is-true:foo-is-false'>About</LinkTo>
-        `
-      );
-
+    async ['@test Using <LinkTo> inside a non-routable engine errors'](assert) {
       this.add(
-        'controller:index',
-        Controller.extend({
-          foo: false,
-        })
+        'engine:not-routable',
+        class NotRoutableEngine extends Engine {
+          Resolver = ModuleBasedTestResolver;
+
+          init() {
+            super.init(...arguments);
+            this.register(
+              'template:application',
+              compile(`<LinkTo @route='about'>About</LinkTo>`, {
+                moduleName: 'non-routable/templates/application.hbs',
+              })
+            );
+          }
+        }
       );
 
-      return this.visit('/').then(() => {
-        assert.equal(
-          this.$('#about-link.foo-is-false').length,
-          1,
-          'The about-link was rendered with the falsy class'
-        );
+      this.addTemplate('index', `{{mount 'not-routable'}}`);
 
-        let controller = this.applicationInstance.lookup('controller:index');
-        runTask(() => controller.set('foo', true));
+      await assert.rejectsAssertion(
+        this.visit('/'),
+        'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
+          'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
+          'See https://ember-engines.com/docs/links for more info.'
+      );
+    }
 
-        assert.equal(
-          this.$('#about-link.foo-is-true').length,
-          1,
-          'The about-link was rendered with the truthy class after toggling the property'
-        );
+    async ['@test Using <LinkTo> inside a routable engine link within the engine'](assert) {
+      this.add(
+        'engine:routable',
+        class RoutableEngine extends Engine {
+          Resolver = ModuleBasedTestResolver;
+
+          init() {
+            super.init(...arguments);
+            this.register(
+              'template:application',
+              compile(
+                `
+                <h2 id='engine-layout'>Routable Engine</h2>
+                {{outlet}}
+                <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
+                `,
+                {
+                  moduleName: 'routable/templates/application.hbs',
+                }
+              )
+            );
+            this.register(
+              'template:index',
+              compile(
+                `
+                <h3 class='engine-home'>Engine Home</h3>
+                <LinkTo @route='about' id='engine-about-link'>Engine About</LinkTo>
+                <LinkTo @route='index' id='engine-self-link'>Engine Self</LinkTo>
+                `,
+                {
+                  moduleName: 'routable/templates/index.hbs',
+                }
+              )
+            );
+            this.register(
+              'template:about',
+              compile(
+                `
+                <h3 class='engine-about'>Engine About</h3>
+                <LinkTo @route='index' id='engine-home-link'>Engine Home</LinkTo>
+                <LinkTo @route='about' id='engine-self-link'>Engine Self</LinkTo>
+                `,
+                {
+                  moduleName: 'routable/templates/about.hbs',
+                }
+              )
+            );
+          }
+        }
+      );
+
+      this.router.map(function () {
+        this.mount('routable');
       });
+
+      this.add('route-map:routable', function () {
+        this.route('about');
+      });
+
+      this.addTemplate(
+        'application',
+        `
+        <h1 id='application-layout'>Application</h1>
+        {{outlet}}
+        <LinkTo @route='application' id='application-link'>Appliction</LinkTo>
+        <LinkTo @route='routable' id='engine-link'>Engine</LinkTo>
+        `
+      );
+
+      await this.visit('/');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link:not(.active)').length, 1, 'The engine link is not active');
+
+      assert.equal(this.$('h3.home').length, 1, 'The application index page is rendered');
+      assert.equal(this.$('#self-link.active').length, 1, 'The application index link is active');
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The application about link is not active'
+      );
+
+      await this.click('#about-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link:not(.active)').length, 1, 'The engine link is not active');
+
+      assert.equal(this.$('h3.about').length, 1, 'The application about page is rendered');
+      assert.equal(this.$('#self-link.active').length, 1, 'The application about link is active');
+      assert.equal(
+        this.$('#home-link:not(.active)').length,
+        1,
+        'The application home link is not active'
+      );
+
+      await this.click('#engine-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link.active').length, 1, 'The engine link is active');
+      assert.equal(
+        this.$('#engine-application-link.active').length,
+        1,
+        'The engine application link is active'
+      );
+
+      assert.equal(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
+      assert.equal(this.$('#engine-self-link.active').length, 1, 'The engine index link is active');
+      assert.equal(
+        this.$('#engine-about-link:not(.active)').length,
+        1,
+        'The engine about link is not active'
+      );
+
+      await this.click('#engine-about-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link.active').length, 1, 'The engine link is active');
+      assert.equal(
+        this.$('#engine-application-link.active').length,
+        1,
+        'The engine application link is active'
+      );
+
+      assert.equal(this.$('h3.engine-about').length, 1, 'The engine about page is rendered');
+      assert.equal(this.$('#engine-self-link.active').length, 1, 'The engine about link is active');
+      assert.equal(
+        this.$('#engine-home-link:not(.active)').length,
+        1,
+        'The engine home link is not active'
+      );
+
+      await this.click('#engine-application-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.equal(this.$('#engine-layout').length, 1, 'The engine layout was rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link.active').length, 1, 'The engine link is active');
+      assert.equal(
+        this.$('#engine-application-link.active').length,
+        1,
+        'The engine application link is active'
+      );
+
+      assert.equal(this.$('h3.engine-home').length, 1, 'The engine index page is rendered');
+      assert.equal(this.$('#engine-self-link.active').length, 1, 'The engine index link is active');
+      assert.equal(
+        this.$('#engine-about-link:not(.active)').length,
+        1,
+        'The engine about link is not active'
+      );
+
+      await this.click('#application-link');
+
+      assert.equal(this.$('#application-layout').length, 1, 'The application layout was rendered');
+      assert.strictEqual(this.$('#engine-layout').length, 0, 'The engine layout was not rendered');
+      assert.equal(this.$('#application-link.active').length, 1, 'The application link is active');
+      assert.equal(this.$('#engine-link:not(.active)').length, 1, 'The engine link is not active');
+
+      assert.equal(this.$('h3.home').length, 1, 'The application index page is rendered');
+      assert.equal(this.$('#self-link.active').length, 1, 'The application index link is active');
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The application about link is not active'
+      );
     }
   }
 );
@@ -361,21 +686,22 @@ moduleFor(
       this.replaceCount = 0;
 
       let testContext = this;
+
       this.add(
         'location:none',
-        NoneLocation.extend({
-          setURL() {
+        class extends NoneLocation {
+          setURL(...args) {
             testContext.updateCount++;
-            return this._super(...arguments);
-          },
-          replaceURL() {
+            return super.setURL(...args);
+          }
+          replaceURL(...args) {
             testContext.replaceCount++;
-            return this._super(...arguments);
-          },
-        })
+            return super.setURL(...args);
+          }
+        }
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -397,14 +723,14 @@ moduleFor(
       );
     }
 
-    visit() {
-      return super.visit(...arguments).then(() => {
-        this.updateCountAfterVisit = this.updateCount;
-        this.replaceCountAfterVisit = this.replaceCount;
-      });
+    async visit(...args) {
+      await super.visit(...args);
+
+      this.updateCountAfterVisit = this.updateCount;
+      this.replaceCountAfterVisit = this.replaceCount;
     }
 
-    ['@test The <LinkTo /> component supports URL replacement'](assert) {
+    async ['@test it supports URL replacement'](assert) {
       this.addTemplate(
         'index',
         `
@@ -413,80 +739,87 @@ moduleFor(
         `
       );
 
-      return this.visit('/')
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(this.updateCount, this.updateCountAfterVisit, 'setURL should not be called');
-          assert.equal(
-            this.replaceCount,
-            this.replaceCountAfterVisit + 1,
-            'replaceURL should be called once'
-          );
-        });
+      await this.visit('/');
+
+      await this.click('#about-link');
+
+      assert.strictEqual(
+        this.updateCount,
+        this.updateCountAfterVisit,
+        'setURL should not be called'
+      );
+
+      assert.strictEqual(
+        this.replaceCount,
+        this.replaceCountAfterVisit + 1,
+        'replaceURL should be called once'
+      );
     }
 
-    ['@test The <LinkTo /> component supports URL replacement via replace=boundTruthyThing'](
-      assert
-    ) {
+    async ['@test it supports URL replacement via replace=boundTruthyThing'](assert) {
       this.addTemplate(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about' @replace={{boundTruthyThing}}>About</LinkTo>
+        <LinkTo id='about-link' @route='about' @replace={{this.boundTruthyThing}}>About</LinkTo>
         `
       );
 
       this.add(
         'controller:index',
-        Controller.extend({
-          boundTruthyThing: true,
-        })
+        class extends Controller {
+          boundTruthyThing = true;
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(this.updateCount, this.updateCountAfterVisit, 'setURL should not be called');
-          assert.equal(
-            this.replaceCount,
-            this.replaceCountAfterVisit + 1,
-            'replaceURL should be called once'
-          );
-        });
+      await this.visit('/');
+
+      await this.click('#about-link');
+
+      assert.strictEqual(
+        this.updateCount,
+        this.updateCountAfterVisit,
+        'setURL should not be called'
+      );
+
+      assert.strictEqual(
+        this.replaceCount,
+        this.replaceCountAfterVisit + 1,
+        'replaceURL should be called once'
+      );
     }
 
-    ['@test The <LinkTo /> component supports setting replace=boundFalseyThing'](assert) {
+    async ['@test it supports setting replace=boundFalseyThing'](assert) {
       this.addTemplate(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='about-link' @route='about' replace={{boundFalseyThing}}>About</LinkTo>
+        <LinkTo id='about-link' @route='about' replace={{this.boundFalseyThing}}>About</LinkTo>
         `
       );
 
       this.add(
         'controller:index',
-        Controller.extend({
-          boundFalseyThing: false,
-        })
+        class extends Controller {
+          boundFalseyThing = false;
+        }
       );
 
-      return this.visit('/')
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(this.updateCount, this.updateCountAfterVisit + 1, 'setURL should be called');
-          assert.equal(
-            this.replaceCount,
-            this.replaceCountAfterVisit,
-            'replaceURL should not be called'
-          );
-        });
+      await this.visit('/');
+
+      await this.click('#about-link');
+
+      assert.strictEqual(
+        this.updateCount,
+        this.updateCountAfterVisit + 1,
+        'setURL should be called'
+      );
+
+      assert.strictEqual(
+        this.replaceCount,
+        this.replaceCountAfterVisit,
+        'replaceURL should not be called'
+      );
     }
   }
 );
@@ -498,7 +831,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
       constructor() {
         super();
 
-        this.router.map(function() {
+        this.router.map(function () {
           this.route('about');
         });
 
@@ -530,53 +863,55 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         return super.afterEach();
       }
 
-      ['@test The <LinkTo /> component fires an interaction event'](assert) {
-        assert.expect(2);
+      async ['@test it fires an interaction event'](assert) {
+        let before = 0;
+        let after = 0;
 
         subscribe('interaction.link-to', {
           before() {
-            assert.ok(true, 'instrumentation subscriber was called');
+            before++;
           },
           after() {
-            assert.ok(true, 'instrumentation subscriber was called');
+            after++;
           },
         });
 
-        return this.click('#about-link');
+        assert.strictEqual(before, 0, 'instrumentation subscriber (before) was not called');
+        assert.strictEqual(after, 0, 'instrumentation subscriber (after) was not called');
+
+        await this.click('#about-link');
+
+        assert.strictEqual(before, 1, 'instrumentation subscriber (before) was called');
+        assert.strictEqual(after, 1, 'instrumentation subscriber (after) was called');
       }
 
-      ['@test The <LinkTo /> component interaction event includes the route name'](assert) {
-        assert.expect(2);
+      async ['@test it interaction event includes the route name and transition object'](assert) {
+        let before = 0;
+        let after = 0;
 
         subscribe('interaction.link-to', {
           before(name, timestamp, { routeName }) {
+            before++;
             assert.equal(routeName, 'about', 'instrumentation subscriber was passed route name');
           },
-          after(name, timestamp, { routeName }) {
+          after(name, timestamp, { routeName, transition }) {
+            after++;
             assert.equal(routeName, 'about', 'instrumentation subscriber was passed route name');
-          },
-        });
-
-        return this.click('#about-link');
-      }
-
-      ['@test The <LinkTo /> component interaction event includes the transition in the after hook'](
-        assert
-      ) {
-        assert.expect(1);
-
-        subscribe('interaction.link-to', {
-          before() {},
-          after(name, timestamp, { transition }) {
             assert.equal(
               transition.targetName,
               'about',
-              'instrumentation subscriber was passed route name'
+              'instrumentation subscriber was passed transition object in the after hook'
             );
           },
         });
 
-        return this.click('#about-link');
+        assert.strictEqual(before, 0, 'instrumentation subscriber (before) was not called');
+        assert.strictEqual(after, 0, 'instrumentation subscriber (after) was not called');
+
+        await this.click('#about-link');
+
+        assert.strictEqual(before, 1, 'instrumentation subscriber (before) was called');
+        assert.strictEqual(after, 1, 'instrumentation subscriber (after) was called');
       }
     }
   );
@@ -585,9 +920,9 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 moduleFor(
   'The <LinkTo /> component - nested routes and link-to arguments',
   class extends ApplicationTestCase {
-    ['@test The <LinkTo /> component supports leaving off .index for nested routes'](assert) {
-      this.router.map(function() {
-        this.route('about', function() {
+    async ['@test it supports leaving off .index for nested routes'](assert) {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('item');
         });
       });
@@ -596,14 +931,14 @@ moduleFor(
       this.addTemplate('about.index', `<div id='index'>Index</div>`);
       this.addTemplate('about.item', `<div id='item'><LinkTo @route='about'>About</LinkTo></div>`);
 
-      return this.visit('/about/item').then(() => {
-        assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
-      });
+      await this.visit('/about/item');
+
+      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
     }
 
-    [`@test The <LinkTo /> component supports custom, nested, current-when`](assert) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+    async [`@test it supports custom, nested, current-when`](assert) {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
 
@@ -616,24 +951,24 @@ moduleFor(
         `<LinkTo id='other-link' @route='item' @current-when='index'>ITEM</LinkTo>`
       );
 
-      return this.visit('/about').then(() => {
-        assert.equal(
-          this.$('#other-link.active').length,
-          1,
-          'The link is active since current-when is a parent route'
-        );
-      });
+      await this.visit('/about');
+
+      assert.equal(
+        this.$('#other-link.active').length,
+        1,
+        'The link is active since current-when is a parent route'
+      );
     }
 
-    [`@test The <LinkTo /> component does not disregard current-when when it is given explicitly for a route`](
+    async [`@test it does not disregard current-when when it is given explicitly for a route`](
       assert
     ) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
 
-        this.route('items', function() {
+        this.route('items', function () {
           this.route('item');
         });
       });
@@ -644,53 +979,51 @@ moduleFor(
         `<LinkTo id='other-link' @route='items' @current-when='index'>ITEM</LinkTo>`
       );
 
-      return this.visit('/about').then(() => {
-        assert.equal(
-          this.$('#other-link.active').length,
-          1,
-          'The link is active when current-when is given for explicitly for a route'
-        );
-      });
+      await this.visit('/about');
+
+      assert.equal(
+        this.$('#other-link.active').length,
+        1,
+        'The link is active when current-when is given for explicitly for a route'
+      );
     }
 
-    ['@test The <LinkTo /> component does not disregard current-when when it is set via a bound param'](
-      assert
-    ) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+    async ['@test it does not disregard current-when when it is set via a bound param'](assert) {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
 
-        this.route('items', function() {
+        this.route('items', function () {
           this.route('item');
         });
       });
 
       this.add(
         'controller:index.about',
-        Controller.extend({
-          currentWhen: 'index',
-        })
+        class extends Controller {
+          currentWhen = 'index';
+        }
       );
 
       this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
       this.addTemplate(
         'index.about',
-        `<LinkTo id='other-link' @route='items' @current-when={{currentWhen}}>ITEM</LinkTo>`
+        `<LinkTo id='other-link' @route='items' @current-when={{this.currentWhen}}>ITEM</LinkTo>`
       );
 
-      return this.visit('/about').then(() => {
-        assert.equal(
-          this.$('#other-link.active').length,
-          1,
-          'The link is active when current-when is given for explicitly for a route'
-        );
-      });
+      await this.visit('/about');
+
+      assert.equal(
+        this.$('#other-link.active').length,
+        1,
+        'The link is active when current-when is given for explicitly for a route'
+      );
     }
 
-    ['@test The <LinkTo /> component supports multiple current-when routes'](assert) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+    async ['@test it supports multiple current-when routes'](assert) {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
         this.route('item');
@@ -711,37 +1044,34 @@ moduleFor(
         `<LinkTo id='link3' @route='item' @current-when='item index'>ITEM</LinkTo>`
       );
 
-      return this.visit('/about')
-        .then(() => {
-          assert.equal(
-            this.$('#link1.active').length,
-            1,
-            'The link is active since current-when contains the parent route'
-          );
+      await this.visit('/about');
 
-          return this.visit('/item');
-        })
-        .then(() => {
-          assert.equal(
-            this.$('#link2.active').length,
-            1,
-            'The link is active since you are on the active route'
-          );
+      assert.equal(
+        this.$('#link1.active').length,
+        1,
+        'The link is active since current-when contains the parent route'
+      );
 
-          return this.visit('/foo');
-        })
-        .then(() => {
-          assert.equal(
-            this.$('#link3.active').length,
-            0,
-            'The link is not active since current-when does not contain the active route'
-          );
-        });
+      await this.visit('/item');
+
+      assert.equal(
+        this.$('#link2.active').length,
+        1,
+        'The link is active since you are on the active route'
+      );
+
+      await this.visit('/foo');
+
+      assert.equal(
+        this.$('#link3.active').length,
+        0,
+        'The link is not active since current-when does not contain the active route'
+      );
     }
 
-    ['@test The <LinkTo /> component supports boolean values for current-when'](assert) {
-      this.router.map(function() {
-        this.route('index', { path: '/' }, function() {
+    async ['@test it supports boolean values for current-when'](assert) {
+      this.router.map(function () {
+        this.route('index', { path: '/' }, function () {
           this.route('about');
         });
         this.route('item');
@@ -750,38 +1080,49 @@ moduleFor(
       this.addTemplate(
         'index.about',
         `
-        <LinkTo id='index-link' @route='index' @current-when={{isCurrent}}>ITEM</LinkTo>
+        <LinkTo id='index-link' @route='index' @current-when={{this.isCurrent}}>ITEM</LinkTo>
         <LinkTo id='about-link' @route='item' @current-when={{true}}>ITEM</LinkTo>
         `
       );
 
-      this.add('controller:index.about', Controller.extend({ isCurrent: false }));
+      let controller;
 
-      return this.visit('/about').then(() => {
-        assert.ok(
-          this.$('#about-link').hasClass('active'),
-          'The link is active since current-when is true'
-        );
-        assert.notOk(
-          this.$('#index-link').hasClass('active'),
-          'The link is not active since current-when is false'
-        );
+      this.add(
+        'controller:index.about',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
 
-        let controller = this.applicationInstance.lookup('controller:index.about');
-        runTask(() => controller.set('isCurrent', true));
+          isCurrent = false;
+        }
+      );
 
-        assert.ok(
-          this.$('#index-link').hasClass('active'),
-          'The link is active since current-when is true'
-        );
-      });
+      await this.visit('/about');
+
+      assert.ok(
+        this.$('#about-link').hasClass('active'),
+        'The link is active since current-when is true'
+      );
+      assert.notOk(
+        this.$('#index-link').hasClass('active'),
+        'The link is not active since current-when is false'
+      );
+
+      runTask(() => controller.set('isCurrent', true));
+
+      assert.ok(
+        this.$('#index-link').hasClass('active'),
+        'The link is active since current-when is true'
+      );
     }
 
-    ['@test The <LinkTo /> component defaults to bubbling'](assert) {
+    async ['@test it defaults to bubbling'](assert) {
       this.addTemplate(
         'about',
         `
-        <div {{action 'hide'}}>
+        <div {{action this.hide}}>
           <LinkTo id='about-contact' @route='about.contact'>About</LinkTo>
         </div>
         {{outlet}}
@@ -790,105 +1131,49 @@ moduleFor(
 
       this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
-      this.router.map(function() {
-        this.route('about', function() {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('contact');
         });
       });
 
       let hidden = 0;
-
-      this.add(
-        'route:about',
-        Route.extend({
-          actions: {
-            hide() {
-              hidden++;
-            },
-          },
-        })
-      );
-
-      return this.visit('/about')
-        .then(() => {
-          return this.click('#about-contact');
-        })
-        .then(() => {
-          assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-
-          assert.equal(hidden, 1, 'The link bubbles');
-        });
-    }
-
-    [`@test The <LinkTo /> component supports bubbles=false`](assert) {
-      this.addTemplate(
-        'about',
-        `
-        <div {{action 'hide'}}>
-          <LinkTo id='about-contact' @route='about.contact' @bubbles={{false}}>
-            About
-          </LinkTo>
-        </div>
-        {{outlet}}
-        `
-      );
-
-      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
-
-      this.router.map(function() {
-        this.route('about', function() {
-          this.route('contact');
-        });
-      });
-
-      let hidden = 0;
-
-      this.add(
-        'route:about',
-        Route.extend({
-          actions: {
-            hide() {
-              hidden++;
-            },
-          },
-        })
-      );
-
-      return this.visit('/about')
-        .then(() => {
-          return this.click('#about-contact');
-        })
-        .then(() => {
-          assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-
-          assert.equal(hidden, 0, "The link didn't bubble");
-        });
-    }
-
-    [`@test The <LinkTo /> component supports bubbles=boundFalseyThing`](assert) {
-      this.addTemplate(
-        'about',
-        `
-        <div {{action 'hide'}}>
-          <LinkTo id='about-contact' @route='about.contact' @bubbles={{boundFalseyThing}}>
-            About
-          </LinkTo>
-        </div>
-        {{outlet}}
-        `
-      );
-
-      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
       this.add(
         'controller:about',
-        Controller.extend({
-          boundFalseyThing: false,
-        })
+        class extends Controller {
+          hide() {
+            hidden++;
+          }
+        }
       );
 
-      this.router.map(function() {
-        this.route('about', function() {
+      await this.visit('/about');
+
+      await this.click('#about-contact');
+
+      assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+
+      assert.equal(hidden, 1, 'The link bubbles');
+    }
+
+    async [`The propagation of the click event can be stopped`](assert) {
+      this.addTemplate(
+        'about',
+        `
+        <div {{on 'click' this.hide}}>
+          <LinkTo id='about-contact' @route='about.contact' {{on 'click' this.stopPropagation}}>
+            About
+          </LinkTo>
+        </div>
+        {{outlet}}
+        `
+      );
+
+      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
+
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('contact');
         });
       });
@@ -896,28 +1181,29 @@ moduleFor(
       let hidden = 0;
 
       this.add(
-        'route:about',
-        Route.extend({
-          actions: {
-            hide() {
-              hidden++;
-            },
-          },
-        })
+        'controller:about',
+        class extends Controller {
+          hide() {
+            hidden++;
+          }
+
+          stopPropagation(event) {
+            event.stopPropagation();
+          }
+        }
       );
 
-      return this.visit('/about')
-        .then(() => {
-          return this.click('#about-contact');
-        })
-        .then(() => {
-          assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-          assert.equal(hidden, 0, "The link didn't bubble");
-        });
+      await this.visit('/about');
+
+      await this.click('#about-contact');
+
+      assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
+
+      assert.equal(hidden, 0, "The link didn't bubble");
     }
 
-    [`@test The <LinkTo /> component moves into the named route with context`](assert) {
-      this.router.map(function() {
+    async [`@test it moves into the named route with context`](assert) {
+      this.router.map(function () {
         this.route('about');
         this.route('item', { path: '/item/:id' });
       });
@@ -927,7 +1213,7 @@ moduleFor(
         `
         <h3 class="list">List</h3>
         <ul>
-          {{#each model as |person|}}
+          {{#each @model as |person|}}
             <li>
               <LinkTo id={{person.id}} @route='item' @model={{person}}>
                 {{person.name}}
@@ -943,7 +1229,7 @@ moduleFor(
         'item',
         `
         <h3 class="item">Item</h3>
-        <p>{{model.name}}</p>
+        <p>{{@model.name}}</p>
         <LinkTo id='home-link' @route='index'>Home</LinkTo>
         `
       );
@@ -958,51 +1244,46 @@ moduleFor(
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           model() {
             return [
               { id: 'yehuda', name: 'Yehuda Katz' },
               { id: 'tom', name: 'Tom Dale' },
               { id: 'erik', name: 'Erik Brynroflsson' },
             ];
-          },
-        })
+          }
+        }
       );
 
-      return this.visit('/about')
-        .then(() => {
-          assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-          assert.equal(
-            normalizeUrl(this.$('#home-link').attr('href')),
-            '/',
-            'The home link points back at /'
-          );
+      await this.visit('/about');
 
-          return this.click('#yehuda');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-          assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
+      assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
+      assert.equal(
+        normalizeUrl(this.$('#home-link').attr('href')),
+        '/',
+        'The home link points back at /'
+      );
 
-          return this.click('#home-link');
-        })
-        .then(() => {
-          return this.click('#about-link');
-        })
-        .then(() => {
-          assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
-          assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
-          assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+      await this.click('#yehuda');
 
-          return this.click('#erik');
-        })
-        .then(() => {
-          assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
-          assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
-        });
+      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
+
+      await this.click('#home-link');
+
+      await this.click('#about-link');
+
+      assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
+      assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
+      assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+
+      await this.click('#erik');
+
+      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
     }
 
-    [`@test The <LinkTo /> component binds some anchor html tag common attributes`](assert) {
+    async [`@test it binds some anchor html tag common attributes`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1013,15 +1294,15 @@ moduleFor(
         `
       );
 
-      return this.visit('/').then(() => {
-        let link = this.$('#self-link');
-        assert.equal(link.attr('title'), 'title-attr', 'The self-link contains title attribute');
-        assert.equal(link.attr('rel'), 'rel-attr', 'The self-link contains rel attribute');
-        assert.equal(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
-      });
+      await this.visit('/');
+
+      let link = this.$('#self-link');
+      assert.equal(link.attr('title'), 'title-attr', 'The self-link contains title attribute');
+      assert.equal(link.attr('rel'), 'rel-attr', 'The self-link contains rel attribute');
+      assert.equal(link.attr('tabindex'), '-1', 'The self-link contains tabindex attribute');
     }
 
-    [`@test The <LinkTo /> component supports 'target' attribute`](assert) {
+    async [`@test it supports 'target' attribute`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1030,92 +1311,58 @@ moduleFor(
         `
       );
 
-      return this.visit('/').then(() => {
-        let link = this.$('#self-link');
-        assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
-      });
+      await this.visit('/');
+
+      let link = this.$('#self-link');
+      assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
     }
 
-    [`@test The <LinkTo /> component supports 'target' attribute specified as a bound param`](
-      assert
-    ) {
+    async [`@test it supports 'target' attribute specified as a bound param`](assert) {
       this.addTemplate(
         'index',
         `
         <h3 class="home">Home</h3>
-        <LinkTo id='self-link' @route='index' target={{boundLinkTarget}}>Self</LinkTo>
+        <LinkTo id='self-link' @route='index' target={{this.boundLinkTarget}}>Self</LinkTo>
         `
       );
 
+      let controller = this;
+
       this.add(
         'controller:index',
-        Controller.extend({
-          boundLinkTarget: '_blank',
-        })
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          boundLinkTarget = '_blank';
+        }
       );
 
-      return this.visit('/').then(() => {
-        let link = this.$('#self-link');
-        assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
-      });
+      await this.visit('/');
+
+      let link = this.$('#self-link');
+      assert.equal(link.attr('target'), '_blank', 'The self-link contains `target` attribute');
+
+      runTask(() => controller.set('boundLinkTarget', '_self'));
+
+      assert.equal(link.attr('target'), '_self', 'The self-link contains `target` attribute');
     }
 
-    [`@test the <LinkTo /> component calls preventDefault`](assert) {
-      this.router.map(function() {
+    async [`@test it calls preventDefault`](assert) {
+      this.router.map(function () {
         this.route('about');
       });
 
       this.addTemplate('index', `<LinkTo @route='about' id='about-link'>About</LinkTo>`);
 
-      return this.visit('/').then(() => {
-        assertNav({ prevented: true }, () => this.$('#about-link').click(), assert);
-      });
+      await this.visit('/');
+
+      assertNav({ prevented: true }, () => this.$('#about-link').click(), assert);
     }
 
-    [`@test the <LinkTo /> component does not call preventDefault if '@preventDefault={{false}}' is passed as an option`](
-      assert
-    ) {
-      this.router.map(function() {
-        this.route('about');
-      });
-
-      this.addTemplate(
-        'index',
-        `<LinkTo id='about-link' @route='about' @preventDefault={{false}}>About</LinkTo>`
-      );
-
-      return this.visit('/').then(() => {
-        assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'), assert);
-      });
-    }
-
-    [`@test the <LinkTo /> component does not call preventDefault if '@preventDefault={{boundFalseyThing}}' is passed as an option`](
-      assert
-    ) {
-      this.router.map(function() {
-        this.route('about');
-      });
-
-      this.addTemplate(
-        'index',
-        `<LinkTo id='about-link' @route='about' @preventDefault={{boundFalseyThing}}>About</LinkTo>`
-      );
-
-      this.add(
-        'controller:index',
-        Controller.extend({
-          boundFalseyThing: false,
-        })
-      );
-
-      return this.visit('/').then(() => {
-        assertNav({ prevented: false }, () => this.$('#about-link').trigger('click'), assert);
-      });
-    }
-
-    [`@test The <LinkTo /> component does not call preventDefault if 'target' attribute is provided`](
-      assert
-    ) {
+    async [`@test it does not call preventDefault if 'target' attribute is provided`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1124,12 +1371,12 @@ moduleFor(
         `
       );
 
-      return this.visit('/').then(() => {
-        assertNav({ prevented: false }, () => this.$('#self-link').click(), assert);
-      });
+      await this.visit('/');
+
+      assertNav({ prevented: false }, () => this.$('#self-link').click(), assert);
     }
 
-    [`@test The <LinkTo /> component should preventDefault when 'target = _self'`](assert) {
+    async [`@test it should preventDefault when 'target = _self'`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1138,14 +1385,12 @@ moduleFor(
         `
       );
 
-      return this.visit('/').then(() => {
-        assertNav({ prevented: true }, () => this.$('#self-link').click(), assert);
-      });
+      await this.visit('/');
+
+      assertNav({ prevented: true }, () => this.$('#self-link').click(), assert);
     }
 
-    [`@test The <LinkTo /> component should not transition if target is not equal to _self or empty`](
-      assert
-    ) {
+    async [`@test it should not transition if target is not equal to _self or empty`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1155,28 +1400,23 @@ moduleFor(
         `
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
-      return this.visit('/')
-        .then(() => this.click('#about-link'))
-        .then(() => {
-          expectDeprecation(() => {
-            let currentRouteName = this.applicationInstance
-              .lookup('controller:application')
-              .get('currentRouteName');
-            assert.notEqual(
-              currentRouteName,
-              'about',
-              'link-to should not transition if target is not equal to _self or empty'
-            );
-          }, 'Accessing `currentRouteName` on `controller:application` is deprecated, use the `currentRouteName` property on `service:router` instead.');
-        });
+      await this.visit('/');
+
+      await this.click('#about-link');
+
+      assert.notEqual(
+        this.appRouter.currentRouteName,
+        'about',
+        'link-to should not transition if target is not equal to _self or empty'
+      );
     }
 
-    [`@test The <LinkTo /> component accepts string/numeric arguments`](assert) {
-      this.router.map(function() {
+    async [`@test it accepts string/numeric arguments`](assert) {
+      this.router.map(function () {
         this.route('filter', { path: '/filters/:filter' });
         this.route('post', { path: '/post/:post_id' });
         this.route('repo', { path: '/repo/:owner/:name' });
@@ -1184,43 +1424,39 @@ moduleFor(
 
       this.add(
         'controller:filter',
-        Controller.extend({
-          filter: 'unpopular',
-          repo: { owner: 'ember', name: 'ember.js' },
-          post_id: 123,
-        })
+        class extends Controller {
+          filter = 'unpopular';
+          repo = { owner: 'ember', name: 'ember.js' };
+          post_id = 123;
+        }
       );
 
       this.addTemplate(
         'filter',
         `
-        <p>{{filter}}</p>
+        <p>{{this.filter}}</p>
         <LinkTo id="link" @route="filter" @model="unpopular">Unpopular</LinkTo>
-        <LinkTo id="path-link" @route="filter" @model={{filter}}>Unpopular</LinkTo>
-        <LinkTo id="post-path-link" @route="post" @model={{post_id}}>Post</LinkTo>
+        <LinkTo id="path-link" @route="filter" @model={{this.filter}}>Unpopular</LinkTo>
+        <LinkTo id="post-path-link" @route="post" @model={{this.post_id}}>Post</LinkTo>
         <LinkTo id="post-number-link" @route="post" @model={{123}}>Post</LinkTo>
-        <LinkTo id="repo-object-link" @route="repo" @model={{repo}}>Repo</LinkTo>
+        <LinkTo id="repo-object-link" @route="repo" @model={{this.repo}}>Repo</LinkTo>
         `
       );
 
-      return this.visit('/filters/popular').then(() => {
-        assert.equal(normalizeUrl(this.$('#link').attr('href')), '/filters/unpopular');
-        assert.equal(normalizeUrl(this.$('#path-link').attr('href')), '/filters/unpopular');
-        assert.equal(normalizeUrl(this.$('#post-path-link').attr('href')), '/post/123');
-        assert.equal(normalizeUrl(this.$('#post-number-link').attr('href')), '/post/123');
-        assert.equal(
-          normalizeUrl(this.$('#repo-object-link').attr('href')),
-          '/repo/ember/ember.js'
-        );
-      });
+      await this.visit('/filters/popular');
+
+      assert.equal(normalizeUrl(this.$('#link').attr('href')), '/filters/unpopular');
+      assert.equal(normalizeUrl(this.$('#path-link').attr('href')), '/filters/unpopular');
+      assert.equal(normalizeUrl(this.$('#post-path-link').attr('href')), '/post/123');
+      assert.equal(normalizeUrl(this.$('#post-number-link').attr('href')), '/post/123');
+      assert.equal(normalizeUrl(this.$('#repo-object-link').attr('href')), '/repo/ember/ember.js');
     }
 
-    [`@test Issue 4201 - Shorthand for route.index shouldn't throw errors about context arguments`](
+    async [`@test [GH#4201] Shorthand for route.index shouldn't throw errors about context arguments`](
       assert
     ) {
-      assert.expect(2);
-      this.router.map(function() {
-        this.route('lobby', function() {
+      this.router.map(function () {
+        this.route('lobby', function () {
           this.route('index', { path: ':lobby_id' });
           this.route('list');
         });
@@ -1228,12 +1464,12 @@ moduleFor(
 
       this.add(
         'route:lobby.index',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.equal(params.lobby_id, 'foobar');
             return params.lobby_id;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -1246,13 +1482,15 @@ moduleFor(
         `<LinkTo id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`
       );
 
-      return this.visit('/lobby/list')
-        .then(() => this.click('#lobby-link'))
-        .then(() => shouldBeActive(assert, this.$('#lobby-link')));
+      await this.visit('/lobby/list');
+
+      await this.click('#lobby-link');
+
+      shouldBeActive(assert, this.$('#lobby-link'));
     }
 
-    [`@test Quoteless route param performs property lookup`](assert) {
-      this.router.map(function() {
+    async [`@test Quoteless route param performs property lookup`](assert) {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -1260,75 +1498,93 @@ moduleFor(
         'index',
         `
         <LinkTo id='string-link' @route='index'>string</LinkTo>
-        <LinkTo id='path-link' @route={{foo}}>path</LinkTo>
+        <LinkTo id='path-link' @route={{this.foo}}>path</LinkTo>
         `
       );
 
+      let controller;
+
       this.add(
         'controller:index',
-        Controller.extend({
-          foo: 'index',
-        })
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          foo = 'index';
+        }
       );
 
-      let assertEquality = href => {
+      let assertEquality = (href) => {
         assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
         assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
       };
 
-      return this.visit('/').then(() => {
-        assertEquality('/');
+      await this.visit('/');
 
-        let controller = this.applicationInstance.lookup('controller:index');
-        runTask(() => controller.set('foo', 'about'));
+      assertEquality('/');
 
-        assertEquality('/about');
-      });
+      runTask(() => controller.set('foo', 'about'));
+
+      assertEquality('/about');
     }
 
-    [`@test The <LinkTo /> component refreshes href element when one of params changes`](assert) {
-      this.router.map(function() {
+    async [`@test it refreshes href element when one of params changes`](assert) {
+      this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
 
       let post = { id: '1' };
       let secondPost = { id: '2' };
 
-      this.addTemplate('index', `<LinkTo id="post" @route="post" @model={{post}}>post</LinkTo>`);
+      this.addTemplate(
+        'index',
+        `<LinkTo id="post" @route="post" @model={{this.post}}>post</LinkTo>`
+      );
 
-      this.add('controller:index', Controller.extend());
+      let controller;
 
-      return this.visit('/').then(() => {
-        let indexController = this.applicationInstance.lookup('controller:index');
-        runTask(() => indexController.set('post', post));
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+        }
+      );
 
-        assert.equal(
-          normalizeUrl(this.$('#post').attr('href')),
-          '/posts/1',
-          'precond - Link has rendered href attr properly'
-        );
+      await this.visit('/');
 
-        runTask(() => indexController.set('post', secondPost));
+      runTask(() => controller.set('post', post));
 
-        assert.equal(
-          this.$('#post').attr('href'),
-          '/posts/2',
-          'href attr was updated after one of the params had been changed'
-        );
+      assert.equal(
+        normalizeUrl(this.$('#post').attr('href')),
+        '/posts/1',
+        'precond - Link has rendered href attr properly'
+      );
 
-        runTask(() => indexController.set('post', null));
+      runTask(() => controller.set('post', secondPost));
 
-        assert.equal(
-          this.$('#post').attr('href'),
-          '#',
-          'href attr becomes # when one of the arguments in nullified'
-        );
-      });
+      assert.equal(
+        this.$('#post').attr('href'),
+        '/posts/2',
+        'href attr was updated after one of the params had been changed'
+      );
+
+      runTask(() => controller.set('post', null));
+
+      assert.equal(
+        this.$('#post').attr('href'),
+        '#',
+        'href attr becomes # when one of the arguments in nullified'
+      );
     }
 
-    [`@test The <LinkTo /> component is active when a route is active`](assert) {
-      this.router.map(function() {
-        this.route('about', function() {
+    async [`@test it is active when a route is active`](assert) {
+      this.router.map(function () {
+        this.route('about', function () {
           this.route('item');
         });
       });
@@ -1344,46 +1600,51 @@ moduleFor(
         `
       );
 
-      return this.visit('/about')
-        .then(() => {
-          assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
-          assert.equal(this.$('#item-link.active').length, 0, 'The item route link is inactive');
+      await this.visit('/about');
 
-          return this.visit('/about/item');
-        })
-        .then(() => {
-          assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
-          assert.equal(this.$('#item-link.active').length, 1, 'The item route link is active');
-        });
+      assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
+      assert.equal(this.$('#item-link.active').length, 0, 'The item route link is inactive');
+
+      await this.visit('/about/item');
+
+      assert.equal(this.$('#about-link.active').length, 1, 'The about route link is active');
+      assert.equal(this.$('#item-link.active').length, 1, 'The item route link is active');
     }
 
-    [`@test The <LinkTo /> component works in an #each'd array of string route names`](assert) {
-      this.router.map(function() {
+    async [`@test it works in an #each'd array of string route names`](assert) {
+      this.router.map(function () {
         this.route('foo');
         this.route('bar');
         this.route('rar');
       });
 
+      let controller;
+
       this.add(
         'controller:index',
-        Controller.extend({
-          routeNames: emberA(['foo', 'bar', 'rar']),
-          route1: 'bar',
-          route2: 'foo',
-        })
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          routeNames = emberA(['foo', 'bar', 'rar']);
+          route1 = 'bar';
+          route2 = 'foo';
+        }
       );
 
       this.addTemplate(
         'index',
         `
-        {{#each routeNames as |routeName|}}
+        {{#each this.routeNames as |routeName|}}
           <LinkTo @route={{routeName}}>{{routeName}}</LinkTo>
         {{/each}}
-        {{#each routeNames as |r|}}
+        {{#each this.routeNames as |r|}}
           <LinkTo @route={{r}}>{{r}}</LinkTo>
         {{/each}}
-        <LinkTo @route={{route1}}>a</LinkTo>
-        <LinkTo @route={{route2}}>b</LinkTo>
+        <LinkTo @route={{this.route1}}>a</LinkTo>
+        <LinkTo @route={{this.route2}}>b</LinkTo>
         `
       );
 
@@ -1402,27 +1663,26 @@ moduleFor(
         }
       };
 
-      return this.visit('/').then(() => {
-        linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
+      await this.visit('/');
 
-        let indexController = this.applicationInstance.lookup('controller:index');
-        runTask(() => indexController.set('route1', 'rar'));
+      linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
-        linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
+      runTask(() => controller.set('route1', 'rar'));
 
-        runTask(() => indexController.routeNames.shiftObject());
+      linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
-        linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
-      });
+      runTask(() => controller.routeNames.shiftObject());
+
+      linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
     }
 
-    async [`@test the <LinkTo /> component throws a useful error if you invoke it wrong`](assert) {
+    async [`@test it throws a useful error if you invoke it wrong`](assert) {
       if (!DEBUG) {
         assert.expect(0);
         return;
       }
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: 'post/:post_id' });
       });
 
@@ -1434,10 +1694,10 @@ moduleFor(
       );
     }
 
-    [`@test the <LinkTo /> component does not throw an error if its route has exited`](assert) {
+    async [`@test it does not throw an error if its route has exited`](assert) {
       assert.expect(0);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: 'post/:post_id' });
       });
 
@@ -1445,48 +1705,50 @@ moduleFor(
         'application',
         `
         <LinkTo id='home-link' @route='index'>Home</LinkTo>
-        <LinkTo id='default-post-link' @route='post' @model={{defaultPost}}>Default Post</LinkTo>
-        {{#if currentPost}}
-          <LinkTo id='current-post-link' @route='post' @model={{currentPost}}>Current Post</LinkTo>
+        <LinkTo id='default-post-link' @route='post' @model={{this.defaultPost}}>Default Post</LinkTo>
+        {{#if this.currentPost}}
+          <LinkTo id='current-post-link' @route='post' @model={{this.currentPost}}>Current Post</LinkTo>
         {{/if}}
         `
       );
 
       this.add(
         'controller:application',
-        Controller.extend({
-          defaultPost: { id: 1 },
-          postController: injectController('post'),
-          currentPost: alias('postController.model'),
-        })
+        class extends Controller {
+          defaultPost = { id: 1 };
+
+          @injectController('post') postController;
+
+          get currentPost() {
+            return this.postController.model;
+          }
+        }
       );
 
-      this.add('controller:post', Controller.extend());
+      this.add('controller:post', class extends Controller {});
 
       this.add(
         'route:post',
-        Route.extend({
+        class extends Route {
           model() {
             return { id: 2 };
-          },
+          }
           serialize(model) {
             return { post_id: model.id };
-          },
-        })
+          }
+        }
       );
 
-      return this.visit('/')
-        .then(() => this.click('#default-post-link'))
-        .then(() => this.click('#home-link'))
-        .then(() => this.click('#current-post-link'))
-        .then(() => this.click('#home-link'));
+      await this.visit('/');
+      await this.click('#default-post-link');
+      await this.click('#home-link');
+      await this.click('#current-post-link');
+      await this.click('#home-link');
     }
 
-    [`@test the <LinkTo /> component's active property respects changing parent route context`](
-      assert
-    ) {
-      this.router.map(function() {
-        this.route('things', { path: '/things/:name' }, function() {
+    async [`@test its active property respects changing parent route context`](assert) {
+      this.router.map(function () {
+        this.route('things', { path: '/things/:name' }, function () {
           this.route('other');
         });
       });
@@ -1499,72 +1761,68 @@ moduleFor(
         `
       );
 
-      return this.visit('/things/omg')
-        .then(() => {
-          shouldBeActive(assert, this.$('#omg-link'));
-          shouldNotBeActive(assert, this.$('#lol-link'));
+      await this.visit('/things/omg');
 
-          return this.visit('/things/omg/other');
-        })
-        .then(() => {
-          shouldBeActive(assert, this.$('#omg-link'));
-          shouldNotBeActive(assert, this.$('#lol-link'));
-        });
+      shouldBeActive(assert, this.$('#omg-link'));
+      shouldNotBeActive(assert, this.$('#lol-link'));
+
+      await this.visit('/things/omg/other');
+
+      shouldBeActive(assert, this.$('#omg-link'));
+      shouldNotBeActive(assert, this.$('#lol-link'));
     }
 
-    [`@test the <LinkTo /> component populates href with default query param values even without query-params object`](
+    async [`@test it populates href with default query param values even without query-params object`](
       assert
     ) {
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: '123',
-        })
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = '123';
+        }
       );
 
       this.addTemplate('index', `<LinkTo id='the-link' @route='index'>Index</LinkTo>`);
 
-      return this.visit('/').then(() => {
-        assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
-      });
+      await this.visit('/');
+
+      assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
     }
 
-    [`@test the <LinkTo /> component populates href with default query param values with empty query-params object`](
+    async [`@test it populates href with default query param values with empty query-params object`](
       assert
     ) {
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: '123',
-        })
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = '123';
+        }
       );
 
       this.addTemplate(
         'index',
-        `<LinkTo id='the-link' @route='index' @query={{hash}}>Index</LinkTo>`
+        `<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`
       );
 
-      return this.visit('/').then(() => {
-        assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
-      });
+      await this.visit('/');
+
+      assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
     }
 
-    [`@test the <LinkTo /> component with only query-params and a block updates when route changes`](
-      assert
-    ) {
-      this.router.map(function() {
+    async [`@test it updates when route changes with only query-params and a block`](assert) {
+      this.router.map(function () {
         this.route('about');
       });
 
       this.add(
         'controller:application',
-        Controller.extend({
-          queryParams: ['foo', 'bar'],
-          foo: '123',
-          bar: 'yes',
-        })
+        class extends Controller {
+          queryParams = ['foo', 'bar'];
+          foo = '123';
+          bar = 'yes';
+        }
       );
 
       this.addTemplate(
@@ -1572,130 +1830,82 @@ moduleFor(
         `<LinkTo id='the-link' @query={{hash foo='456' bar='NAW'}}>Index</LinkTo>`
       );
 
-      return this.visit('/')
-        .then(() => {
-          assert.equal(
-            this.$('#the-link').attr('href'),
-            '/?bar=NAW&foo=456',
-            'link has right href'
-          );
+      await this.visit('/');
 
-          return this.visit('/about');
-        })
-        .then(() => {
-          assert.equal(
-            this.$('#the-link').attr('href'),
-            '/about?bar=NAW&foo=456',
-            'link has right href'
-          );
-        });
+      assert.equal(this.$('#the-link').attr('href'), '/?bar=NAW&foo=456', 'link has right href');
+
+      await this.visit('/about');
+
+      assert.equal(
+        this.$('#the-link').attr('href'),
+        '/about?bar=NAW&foo=456',
+        'link has right href'
+      );
     }
 
-    ['@test [GH#17018] passing model to <LinkTo /> with `hash` helper works']() {
-      this.router.map(function() {
+    async ['@test [GH#17018] passing model to <LinkTo /> with `hash` helper works']() {
+      this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.hash({
               user: { name: 'Papa Smurf' },
             });
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
         'index',
-        `<LinkTo @route='post' @model={{hash id="someId" user=this.model.user}}>Post</LinkTo>`
+        `<LinkTo @route='post' @model={{hash id="someId" user=@model.user}}>Post</LinkTo>`
       );
 
-      this.addTemplate('post', 'Post: {{this.model.user.name}}');
+      this.addTemplate('post', 'Post: {{@model.user.name}}');
 
-      return this.visit('/')
-        .then(() => {
-          this.assertComponentElement(this.firstChild, {
-            tagName: 'a',
-            attrs: { href: '/posts/someId' },
-            content: 'Post',
-          });
+      await this.visit('/');
 
-          return this.click('a');
-        })
-        .then(() => {
-          this.assertText('Post: Papa Smurf');
-        });
-    }
-
-    [`@test The <LinkTo /> component can use dynamic params`](assert) {
-      this.router.map(function() {
-        this.route('foo', { path: 'foo/:some/:thing' });
-        this.route('bar', { path: 'bar/:some/:thing/:else' });
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/posts/someId' },
+        content: 'Post',
       });
 
-      this.add(
-        'controller:index',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
-            this.dynamicLinkParams = ['foo', 'one', 'two'];
-          },
-        })
-      );
+      await this.click('a');
 
-      this.addTemplate(
-        'index',
-        `
-        <h3 class="home">Home</h3>
-        <LinkTo id="dynamic-link" @params={{dynamicLinkParams}}>Dynamic</LinkTo>
-        `
-      );
-
-      return this.visit('/').then(() => {
-        let link = this.$('#dynamic-link');
-
-        assert.equal(link.attr('href'), '/foo/one/two');
-
-        let controller = this.applicationInstance.lookup('controller:index');
-        runTask(() => {
-          controller.set('dynamicLinkParams', ['bar', 'one', 'two', 'three']);
-        });
-
-        assert.equal(link.attr('href'), '/bar/one/two/three');
-      });
+      this.assertText('Post: Papa Smurf');
     }
 
-    [`@test GJ: <LinkTo /> to a parent root model hook which performs a 'transitionTo' has correct active class #13256`](
+    async [`@test [GH#13256]: <LinkTo /> to a parent root model hook which performs a 'transitionTo' has correct active class`](
       assert
     ) {
-      assert.expect(1);
-
-      this.router.map(function() {
-        this.route('parent', function() {
+      this.router.map(function () {
+        this.route('parent', function () {
           this.route('child');
         });
       });
 
       this.add(
         'route:parent',
-        Route.extend({
+        class extends Route {
           afterModel() {
-            this.transitionTo('parent.child');
-          },
-        })
+            expectDeprecation(() => {
+              this.transitionTo('parent.child');
+            }, /Calling transitionTo on a route is deprecated/);
+          }
+        }
       );
 
       this.addTemplate('application', `<LinkTo id='parent-link' @route='parent'>Parent</LinkTo>`);
 
-      return this.visit('/')
-        .then(() => {
-          return this.click('#parent-link');
-        })
-        .then(() => {
-          shouldBeActive(assert, this.$('#parent-link'));
-        });
+      await this.visit('/');
+
+      await this.click('#parent-link');
+
+      shouldBeActive(assert, this.$('#parent-link'));
     }
   }
 );
@@ -1703,12 +1913,13 @@ moduleFor(
 moduleFor(
   'The <LinkTo /> component - loading states and warnings',
   class extends ApplicationTestCase {
-    [`@test <LinkTo /> with null/undefined dynamic parameters are put in a loading state`](assert) {
-      assert.expect(19);
+    async [`@test <LinkTo /> with null/undefined dynamic parameters are put in a loading state`](
+      assert
+    ) {
       let warningMessage =
         'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('thing', { path: '/thing/:thing_id' });
         this.route('about');
       });
@@ -1716,31 +1927,40 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-        <LinkTo id='context-link' @route={{destinationRoute}} @model={{routeContext}} @loadingClass='i-am-loading'>
+        <LinkTo id='context-link' @route={{this.destinationRoute}} @model={{this.routeContext}} @loadingClass='i-am-loading'>
           string
         </LinkTo>
-        <LinkTo id='static-link' @route={{secondRoute}} @loadingClass={{loadingClass}}>
+        <LinkTo id='static-link' @route={{this.secondRoute}} @loadingClass={{this.loadingClass}}>
           string
         </LinkTo>
         `
       );
 
+      let controller;
+
       this.add(
         'controller:index',
-        Controller.extend({
-          destinationRoute: null,
-          routeContext: null,
-          loadingClass: 'i-am-loading',
-        })
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
+            controller = this;
+          }
+
+          destinationRoute = null;
+          routeContext = null;
+          loadingClass = 'i-am-loading';
+        }
       );
+
+      let activate = 0;
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           activate() {
-            assert.ok(true, 'About was entered');
-          },
-        })
+            activate++;
+          }
+        }
       );
 
       function assertLinkStatus(link, url) {
@@ -1753,55 +1973,45 @@ moduleFor(
         }
       }
 
-      let contextLink, staticLink, controller;
+      await this.visit('/');
 
-      return this.visit('/')
-        .then(() => {
-          contextLink = this.$('#context-link');
-          staticLink = this.$('#static-link');
-          controller = this.applicationInstance.lookup('controller:index');
+      let contextLink = this.$('#context-link');
+      let staticLink = this.$('#static-link');
 
-          assertLinkStatus(contextLink);
-          assertLinkStatus(staticLink);
+      assertLinkStatus(contextLink);
+      assertLinkStatus(staticLink);
 
-          return expectWarning(() => {
-            return this.click(contextLink[0]);
-          }, warningMessage);
-        })
-        .then(() => {
-          // Set the destinationRoute (context is still null).
-          runTask(() => controller.set('destinationRoute', 'thing'));
-          assertLinkStatus(contextLink);
+      await expectWarning(() => this.click(contextLink[0]), warningMessage);
 
-          // Set the routeContext to an id
-          runTask(() => controller.set('routeContext', '456'));
-          assertLinkStatus(contextLink, '/thing/456');
+      // Set the destinationRoute (context is still null).
+      runTask(() => controller.set('destinationRoute', 'thing'));
+      assertLinkStatus(contextLink);
 
-          // Test that 0 isn't interpreted as falsy.
-          runTask(() => controller.set('routeContext', 0));
-          assertLinkStatus(contextLink, '/thing/0');
+      // Set the routeContext to an id
+      runTask(() => controller.set('routeContext', '456'));
+      assertLinkStatus(contextLink, '/thing/456');
 
-          // Set the routeContext to an object
-          runTask(() => {
-            controller.set('routeContext', { id: 123 });
-          });
-          assertLinkStatus(contextLink, '/thing/123');
+      // Test that 0 isn't interpreted as falsy.
+      runTask(() => controller.set('routeContext', 0));
+      assertLinkStatus(contextLink, '/thing/0');
 
-          // Set the destinationRoute back to null.
-          runTask(() => controller.set('destinationRoute', null));
-          assertLinkStatus(contextLink);
+      // Set the routeContext to an object
+      runTask(() => controller.set('routeContext', { id: 123 }));
+      assertLinkStatus(contextLink, '/thing/123');
 
-          return expectWarning(() => {
-            return this.click(staticLink[0]);
-          }, warningMessage);
-        })
-        .then(() => {
-          runTask(() => controller.set('secondRoute', 'about'));
-          assertLinkStatus(staticLink, '/about');
+      // Set the destinationRoute back to null.
+      runTask(() => controller.set('destinationRoute', null));
+      assertLinkStatus(contextLink);
 
-          // Click the now-active link
-          return this.click(staticLink[0]);
-        });
+      await expectWarning(() => this.click(staticLink[0]), warningMessage);
+
+      runTask(() => controller.set('secondRoute', 'about'));
+      assertLinkStatus(staticLink, '/about');
+
+      // Click the now-active link
+      await this.click(staticLink[0]);
+
+      assert.equal(activate, 1, 'About route was entered');
     }
   }
 );

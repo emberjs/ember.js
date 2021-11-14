@@ -1,24 +1,20 @@
 import { dasherize } from '@ember/string';
-import { Arguments, VM } from '@glimmer/runtime';
-import { InternalHelperReference } from '../utils/references';
+import { CapturedArguments } from '@glimmer/interfaces';
+import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
-function normalizeClass({ positional }: any) {
-  let classNameParts = positional
-    .at(0)
-    .value()
-    .split('.');
-  let className = classNameParts[classNameParts.length - 1];
-  let value = positional.at(1).value();
+export default internalHelper(({ positional }: CapturedArguments) => {
+  return createComputeRef(() => {
+    let classNameParts = (valueForRef(positional[0]) as string).split('.');
+    let className = classNameParts[classNameParts.length - 1];
+    let value = valueForRef(positional[1]);
 
-  if (value === true) {
-    return dasherize(className);
-  } else if (!value && value !== 0) {
-    return '';
-  } else {
-    return String(value);
-  }
-}
-
-export default function(_vm: VM, args: Arguments) {
-  return new InternalHelperReference(normalizeClass, args.capture());
-}
+    if (value === true) {
+      return dasherize(className);
+    } else if (!value && value !== 0) {
+      return '';
+    } else {
+      return String(value);
+    }
+  });
+});

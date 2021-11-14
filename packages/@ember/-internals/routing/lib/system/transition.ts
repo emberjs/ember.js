@@ -139,7 +139,7 @@
  * where the router is transitioning to. It's important
  * to note that a `RouteInfo` is a linked list and this
  * property represents the leafmost route.
- * @property {RouteInfo|RouteInfoWithAttributes} to
+ * @property {null|RouteInfo|RouteInfoWithAttributes} to
  * @public
  */
 
@@ -150,7 +150,7 @@
  * property represents the head node of the list.
  * In the case of an initial render, `from` will be set to
  * `null`.
- * @property {RouteInfoWithAttributes} from
+ * @property {null|RouteInfoWithAttributes} from
  * @public
  */
 
@@ -165,4 +165,30 @@
   @return {Promise} a promise that fulfills with the same
     value that the final redirecting transition fulfills with
   @public
+*/
+
+/**
+  In non-production builds, this function will return the stack that this Transition was
+  created within. In production builds, this function will not be present.
+
+  @method debugCreationStack
+  @return string
+*/
+
+/**
+  In non-production builds, this function will return the stack that this Transition was
+  aborted within (or `undefined` if the Transition has not been aborted yet). In production
+  builds, this function will not be present.
+
+  @method debugAbortStack
+  @return string
+*/
+
+/**
+  In non-production builds, this property references the Transition that _this_ Transition
+  was derived from or `undefined` if this transition did not derive from another. In
+  production builds, this property will not be present.
+
+  @property debugPreviousTransition
+  @type {Transition | undefined}
 */

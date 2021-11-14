@@ -2,7 +2,6 @@ import { history, location, userAgent, window } from '@ember/-internals/browser-
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { tryInvoke } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { EmberLocation, UpdateCallback } from './api';
 import {
@@ -63,13 +62,95 @@ import {
   @protected
 */
 export default class AutoLocation extends EmberObject implements EmberLocation {
-  cancelRouterSetup?: boolean | undefined;
-  getURL!: () => string;
-  setURL!: (url: string) => void;
-  onUpdateURL!: (callback: UpdateCallback) => void;
-  formatURL!: (url: string) => string;
+  declare getURL: () => string;
+  declare setURL: (url: string) => void;
+  declare onUpdateURL: (callback: UpdateCallback) => void;
+  declare formatURL: (url: string) => string;
+
+  concreteImplementation?: EmberLocation;
 
   implementation = 'auto';
+
+  // FIXME: This is never set
+  // See https://github.com/emberjs/ember.js/issues/19515
+  /** @internal */
+  documentMode: number | undefined;
+
+  /**
+    @private
+
+    Will be pre-pended to path upon state change.
+
+    @since 1.5.1
+    @property rootURL
+    @default '/'
+  */
+  // Added in reopen to allow overriding via extend
+  declare rootURL: string;
+
+  /**
+    @private
+
+    The browser's `location` object. This is typically equivalent to
+    `window.location`, but may be overridden for testing.
+
+    @property location
+    @default environment.location
+  */
+  // Added in reopen to allow overriding via extend
+  declare location: Location;
+
+  /**
+    @private
+
+    The browser's `history` object. This is typically equivalent to
+    `window.history`, but may be overridden for testing.
+
+    @since 1.5.1
+    @property history
+    @default environment.history
+  */
+  // Added in reopen to allow overriding via extend
+  declare history: any;
+
+  /**
+   @private
+
+    The user agent's global variable. In browsers, this will be `window`.
+
+    @since 1.11
+    @property global
+    @default window
+  */
+  // Added in reopen to allow overriding via extend
+  declare global: any;
+
+  /**
+    @private
+
+    The browser's `userAgent`. This is typically equivalent to
+    `navigator.userAgent`, but may be overridden for testing.
+
+    @since 1.5.1
+    @property userAgent
+    @default environment.history
+  */
+  // Added in reopen to allow overriding via extend
+  declare userAgent: string;
+
+  /**
+    @private
+
+    This property is used by the router to know whether to cancel the routing
+    setup process, which is needed while we redirect the browser.
+
+    @since 1.5.1
+    @property cancelRouterSetup
+    @default false
+  */
+  // Added in reopen to allow overriding via extend
+  declare cancelRouterSetup: boolean;
+
   /**
    Called by the router to instruct the location to do any feature detection
    necessary. In the case of AutoLocation, we detect whether to use history
@@ -77,7 +158,7 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
 
    @private
   */
-  detect() {
+  detect(): void {
     let rootURL = this.rootURL;
 
     assert(
@@ -102,11 +183,11 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     let concrete = getOwner(this).lookup<EmberLocation>(`location:${implementation}`);
     assert(`Could not find location '${implementation}'.`, concrete !== undefined);
 
-    set(concrete!, 'rootURL', rootURL);
-    set(this, 'concreteImplementation', concrete!);
+    set(concrete, 'rootURL', rootURL);
+    set(this, 'concreteImplementation', concrete);
   }
 
-  willDestroy() {
+  willDestroy(): void {
     let { concreteImplementation } = this;
 
     if (concreteImplementation) {
@@ -116,16 +197,8 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
 }
 
 AutoLocation.reopen({
-  /**
-    @private
-
-    Will be pre-pended to path upon state change.
-
-    @since 1.5.1
-    @property rootURL
-    @default '/'
-  */
   rootURL: '/',
+
   initState: delegateToConcreteImplementation('initState'),
   getURL: delegateToConcreteImplementation('getURL'),
   setURL: delegateToConcreteImplementation('setURL'),
@@ -133,73 +206,25 @@ AutoLocation.reopen({
   onUpdateURL: delegateToConcreteImplementation('onUpdateURL'),
   formatURL: delegateToConcreteImplementation('formatURL'),
 
-  /**
-    @private
-
-    The browser's `location` object. This is typically equivalent to
-    `window.location`, but may be overridden for testing.
-
-    @property location
-    @default environment.location
-  */
   location: location,
 
-  /**
-    @private
-
-    The browser's `history` object. This is typically equivalent to
-    `window.history`, but may be overridden for testing.
-
-    @since 1.5.1
-    @property history
-    @default environment.history
-  */
   history: history,
 
-  /**
-   @private
-
-   The user agent's global variable. In browsers, this will be `window`.
-
-   @since 1.11
-   @property global
-   @default window
-  */
   global: window,
 
-  /**
-    @private
-
-    The browser's `userAgent`. This is typically equivalent to
-    `navigator.userAgent`, but may be overridden for testing.
-
-    @since 1.5.1
-    @property userAgent
-    @default environment.history
-  */
   userAgent: userAgent,
 
-  /**
-    @private
-
-    This property is used by the router to know whether to cancel the routing
-    setup process, which is needed while we redirect the browser.
-
-    @since 1.5.1
-    @property cancelRouterSetup
-    @default false
-  */
   cancelRouterSetup: false,
 });
 
 function delegateToConcreteImplementation(methodName: string) {
-  return function(this: AutoLocation, ...args: any[]) {
+  return function (this: AutoLocation, ...args: unknown[]) {
     let { concreteImplementation } = this;
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",
-      Boolean(concreteImplementation)
+      concreteImplementation
     );
-    return tryInvoke(concreteImplementation, methodName, args);
+    return concreteImplementation[methodName]?.(...args);
   };
 }
 
@@ -218,8 +243,8 @@ function delegateToConcreteImplementation(methodName: string) {
 */
 
 interface DetectionOptions {
-  location: Location | null;
-  history: History | null;
+  location: Location;
+  history: History;
   userAgent: string;
   rootURL: string;
   documentMode: number | undefined;
@@ -231,24 +256,24 @@ function detectImplementation(options: DetectionOptions) {
 
   let implementation = 'none';
   let cancelRouterSetup = false;
-  let currentPath = getFullPath(location!);
+  let currentPath = getFullPath(location);
 
-  if (supportsHistory(userAgent, history!)) {
-    let historyPath = getHistoryPath(rootURL, location!);
+  if (supportsHistory(userAgent, history)) {
+    let historyPath = getHistoryPath(rootURL, location);
 
     // If the browser supports history and we have a history path, we can use
     // the history location with no redirects.
     if (currentPath === historyPath) {
       implementation = 'history';
     } else if (currentPath.substr(0, 2) === '/#') {
-      history!.replaceState({ path: historyPath }, '', historyPath);
+      history.replaceState({ path: historyPath }, '', historyPath);
       implementation = 'history';
     } else {
       cancelRouterSetup = true;
-      replacePath(location!, historyPath);
+      replacePath(location, historyPath);
     }
   } else if (supportsHashChange(documentMode, global)) {
-    let hashPath = getHashPath(rootURL, location!);
+    let hashPath = getHashPath(rootURL, location);
 
     // Be sure we're using a hashed path, otherwise let's switch over it to so
     // we start off clean and consistent. We'll count an index path with no
@@ -259,7 +284,7 @@ function detectImplementation(options: DetectionOptions) {
       // Our URL isn't in the expected hash-supported format, so we want to
       // cancel the router setup and replace the URL to start off clean
       cancelRouterSetup = true;
-      replacePath(location!, hashPath);
+      replacePath(location, hashPath);
     }
   }
 
@@ -277,12 +302,14 @@ function detectImplementation(options: DetectionOptions) {
   browsers. This may very well differ from the real current path (e.g. if it
   starts off as a hashed URL)
 */
-export function getHistoryPath(rootURL: string, location: Location) {
+export function getHistoryPath(rootURL: string, location: Location): string {
   let path = getPath(location);
   let hash = getHash(location);
   let query = getQuery(location);
   let rootURLIndex = path.indexOf(rootURL);
-  let routeHash, hashParts;
+
+  let routeHash: string;
+  let hashParts;
 
   assert(`Path ${path} does not start with the provided rootURL ${rootURL}`, rootURLIndex === 0);
 
@@ -293,12 +320,12 @@ export function getHistoryPath(rootURL: string, location: Location) {
     // There could be extra hash segments after the route
     hashParts = hash.substr(1).split('#');
     // The first one is always the route url
-    routeHash = hashParts.shift();
+    routeHash = hashParts.shift() as string;
 
     // If the path already has a trailing slash, remove the one
     // from the hashed route so we don't double up.
     if (path.charAt(path.length - 1) === '/') {
-      routeHash = routeHash!.substr(1);
+      routeHash = routeHash.substr(1);
     }
 
     // This is the "expected" final order
@@ -322,7 +349,7 @@ export function getHistoryPath(rootURL: string, location: Location) {
 
   @method _getHashPath
 */
-export function getHashPath(rootURL: string, location: Location) {
+export function getHashPath(rootURL: string, location: Location): string {
   let path = rootURL;
   let historyPath = getHistoryPath(rootURL, location);
   let routePath = historyPath.substr(rootURL.length);

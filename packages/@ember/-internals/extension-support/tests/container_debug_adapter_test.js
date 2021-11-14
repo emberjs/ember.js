@@ -1,5 +1,4 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { assign } from '@ember/polyfills';
 import { run } from '@ember/runloop';
 import EmberController from '@ember/controller';
 import '../index'; // Must be required to export Ember.ContainerDebugAdapter.
@@ -17,7 +16,7 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         autoboot: true,
       });
     }

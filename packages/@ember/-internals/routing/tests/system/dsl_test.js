@@ -1,19 +1,23 @@
-import { setOwner } from '@ember/-internals/owner';
 import EmberRouter from '../../lib/system/router';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
-
-let Router;
 
 moduleFor(
   'Ember Router DSL',
   class extends AbstractTestCase {
     constructor() {
       super();
-      Router = EmberRouter.extend();
+      this.Router = class extends EmberRouter {};
+
+      this.routerInstance = new this.Router(
+        buildOwner({
+          ownerOptions: { routable: true },
+        })
+      );
     }
 
     teardown() {
-      Router = null;
+      this.Router = null;
+      this.routerInstance = null;
     }
 
     ['@test should fail when using a reserved route name'](assert) {
@@ -21,43 +25,39 @@ moduleFor(
 
       assert.expect(reservedNames.length);
 
-      reservedNames.forEach(reservedName => {
+      reservedNames.forEach((reservedName) => {
         expectAssertion(() => {
-          Router = EmberRouter.extend();
+          let Router = class extends this.Router {};
 
-          Router.map(function() {
+          Router.map(function () {
             this.route(reservedName);
           });
 
-          let router = Router.create();
-          router._initRouterJs();
+          new Router(buildOwner())._initRouterJs();
         }, "'" + reservedName + "' cannot be used as a route name.");
       });
     }
 
     ['@test [GH#16642] better error when using a colon in a route name']() {
       expectAssertion(() => {
-        Router = EmberRouter.extend();
-
-        Router.map(function() {
+        this.Router.map(function () {
           this.route('resource/:id');
         });
 
-        let router = Router.create();
-        router._initRouterJs();
+        this.routerInstance._initRouterJs();
       }, "'resource/:id' is not a valid route name. It cannot contain a ':'. You may want to use the 'path' option instead.");
     }
 
     ['@test should retain resource namespace if nested with routes'](assert) {
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      this.Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.route('blork');
           });
         });
       });
 
-      let router = Router.create();
+      let router = this.routerInstance;
       router._initRouterJs();
 
       assert.ok(
@@ -75,16 +75,17 @@ moduleFor(
     }
 
     ['@test should add loading and error routes if _isRouterMapResult is true'](assert) {
-      Router.map(function() {
+      this.Router.map(function () {
         this.route('blork');
       });
 
-      let router = Router.create({
+      this.routerInstance.reopen({
         _hasModuleBasedResolver() {
           return true;
         },
       });
 
+      let router = this.routerInstance;
       router._initRouterJs();
 
       assert.ok(router._routerMicrolib.recognizer.names['blork'], 'main route was created');
@@ -96,11 +97,11 @@ moduleFor(
     }
 
     ['@test should not add loading and error routes if _isRouterMapResult is false'](assert) {
-      Router.map(function() {
+      this.Router.map(function () {
         this.route('blork');
       });
 
-      let router = Router.create();
+      let router = this.routerInstance;
       router._initRouterJs(false);
 
       assert.ok(router._routerMicrolib.recognizer.names['blork'], 'main route was created');
@@ -117,19 +118,20 @@ moduleFor(
     ['@test should reset namespace of loading and error routes for routes with resetNamespace'](
       assert
     ) {
-      Router.map(function() {
-        this.route('blork', function() {
+      this.Router.map(function () {
+        this.route('blork', function () {
           this.route('blorp');
           this.route('bleep', { resetNamespace: true });
         });
       });
 
-      let router = Router.create({
+      this.routerInstance.reopen({
         _hasModuleBasedResolver() {
           return true;
         },
       });
 
+      let router = this.routerInstance;
       router._initRouterJs();
 
       assert.ok(router._routerMicrolib.recognizer.names['blork.blorp'], 'nested route was created');
@@ -167,13 +169,13 @@ moduleFor(
     }
 
     ['@test should throw an error when defining a route serializer outside an engine'](assert) {
-      Router.map(function() {
+      this.Router.map(function () {
         assert.throws(() => {
-          this.route('posts', { serialize: function() {} });
+          this.route('posts', { serialize: function () {} });
         }, /Defining a route serializer on route 'posts' outside an Engine is not allowed/);
       });
 
-      Router.create()._initRouterJs();
+      this.routerInstance._initRouterJs();
     }
   }
 );
@@ -183,30 +185,31 @@ moduleFor(
   class extends AbstractTestCase {
     constructor() {
       super();
-      Router = EmberRouter.extend();
+      this.Router = class extends EmberRouter {};
+      this.routerInstance = new this.Router(
+        buildOwner({
+          ownerOptions: { routable: true },
+        })
+      );
     }
 
     teardown() {
-      Router = null;
+      this.Router = null;
+      this.routerInstance = null;
     }
 
     ['@test should allow mounting of engines'](assert) {
       assert.expect(3);
 
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      this.Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.mount('chat');
           });
         });
       });
 
-      let engineInstance = buildOwner({
-        ownerOptions: { routable: true },
-      });
-
-      let router = Router.create();
-      setOwner(router, engineInstance);
+      let router = this.routerInstance;
       router._initRouterJs();
 
       assert.ok(
@@ -226,26 +229,21 @@ moduleFor(
     ['@test should allow mounting of engines at a custom path'](assert) {
       assert.expect(1);
 
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      this.Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.mount('chat', { path: 'custom-chat' });
           });
         });
       });
 
-      let engineInstance = buildOwner({
-        ownerOptions: { routable: true },
-      });
-
-      let router = Router.create();
-      setOwner(router, engineInstance);
+      let router = this.routerInstance;
       router._initRouterJs();
 
       assert.deepEqual(
         router._routerMicrolib.recognizer.names['bleep.bloop.chat'].segments
           .slice(1, 4)
-          .map(s => s.value),
+          .map((s) => s.value),
         ['bleep', 'bloop', 'custom-chat'],
         'segments are properly associated with mounted engine'
       );
@@ -254,48 +252,38 @@ moduleFor(
     ['@test should allow aliasing of engine names with `as`'](assert) {
       assert.expect(1);
 
-      Router = Router.map(function() {
-        this.route('bleep', function() {
-          this.route('bloop', function() {
+      this.Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
             this.mount('chat', { as: 'blork' });
           });
         });
       });
 
-      let engineInstance = buildOwner({
-        ownerOptions: { routable: true },
-      });
-
-      let router = Router.create();
-      setOwner(router, engineInstance);
+      let router = this.routerInstance;
       router._initRouterJs();
 
       assert.deepEqual(
         router._routerMicrolib.recognizer.names['bleep.bloop.blork'].segments
           .slice(1, 4)
-          .map(s => s.value),
+          .map((s) => s.value),
         ['bleep', 'bloop', 'blork'],
         'segments are properly associated with mounted engine with aliased name'
       );
     }
 
     ['@test should add loading and error routes to a mount if _isRouterMapResult is true'](assert) {
-      Router.map(function() {
+      this.Router.map(function () {
         this.mount('chat');
       });
 
-      let engineInstance = buildOwner({
-        ownerOptions: { routable: true },
-      });
-
-      let router = Router.create({
+      this.routerInstance.reopen({
         _hasModuleBasedResolver() {
           return true;
         },
       });
-      setOwner(router, engineInstance);
-      router._initRouterJs();
-
+      this.routerInstance._initRouterJs();
+      let router = this.routerInstance;
       assert.ok(router._routerMicrolib.recognizer.names['chat'], 'main route was created');
       assert.ok(router._routerMicrolib.recognizer.names['chat_loading'], 'loading route was added');
       assert.ok(router._routerMicrolib.recognizer.names['chat_error'], 'error route was added');
@@ -304,21 +292,17 @@ moduleFor(
     ['@test should add loading and error routes to a mount alias if _isRouterMapResult is true'](
       assert
     ) {
-      Router.map(function() {
+      this.Router.map(function () {
         this.mount('chat', { as: 'shoutbox' });
       });
 
-      let engineInstance = buildOwner({
-        ownerOptions: { routable: true },
-      });
-
-      let router = Router.create({
+      this.routerInstance.reopen({
         _hasModuleBasedResolver() {
           return true;
         },
       });
-      setOwner(router, engineInstance);
-      router._initRouterJs();
+      this.routerInstance._initRouterJs();
+      let router = this.routerInstance;
 
       assert.ok(router._routerMicrolib.recognizer.names['shoutbox'], 'main route was created');
       assert.ok(
@@ -331,16 +315,11 @@ moduleFor(
     ['@test should not add loading and error routes to a mount if _isRouterMapResult is false'](
       assert
     ) {
-      Router.map(function() {
+      this.Router.map(function () {
         this.mount('chat');
       });
 
-      let engineInstance = buildOwner({
-        ownerOptions: { routable: true },
-      });
-
-      let router = Router.create();
-      setOwner(router, engineInstance);
+      let router = this.routerInstance;
       router._initRouterJs(false);
 
       assert.ok(router._routerMicrolib.recognizer.names['chat'], 'main route was created');
@@ -357,24 +336,20 @@ moduleFor(
     ['@test should reset namespace of loading and error routes for mounts with resetNamespace'](
       assert
     ) {
-      Router.map(function() {
-        this.route('news', function() {
+      this.Router.map(function () {
+        this.route('news', function () {
           this.mount('chat');
           this.mount('blog', { resetNamespace: true });
         });
       });
 
-      let engineInstance = buildOwner({
-        ownerOptions: { routable: true },
-      });
-
-      let router = Router.create({
+      this.routerInstance.reopen({
         _hasModuleBasedResolver() {
           return true;
         },
       });
-      setOwner(router, engineInstance);
-      router._initRouterJs();
+      this.routerInstance._initRouterJs();
+      let router = this.routerInstance;
 
       assert.ok(router._routerMicrolib.recognizer.names['news.chat'], 'nested route was created');
       assert.ok(

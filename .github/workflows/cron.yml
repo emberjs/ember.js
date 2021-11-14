@@ -1,0 +1,56 @@
+name: Cron
+
+on:
+  schedule:
+    - cron:  '0 7 * * *' # daily, 7am
+
+jobs:
+  trigger-ci:
+    name: Trigger cron build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch:
+          - master
+          - beta
+          - release
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{matrix.branch}}
+
+      - name: Make a commit to have a unique sha
+        run: |
+          touch cron.txt
+          git config --local user.email 'cron@example.com'
+          git config --local user.name 'Ember.js Cron CI'
+          git add cron.txt
+          git commit -m "Cron $(date +%Y-%m-%d) for ${{matrix.branch}}"
+          export SHA=`git rev-parse HEAD`
+          echo "SHA=$SHA" >> $GITHUB_ENV
+
+      - name: Push branch to trigger Build workflow
+        # This must use a personal access token because of a Github Actions
+        # limitation where it will not trigger workflows from pushes from
+        # other workflows with the token it provides.
+        # The PERSONAL_ACCESS secret must be a token with `repo` scope.
+        # See https://help.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token
+        run: |
+          git checkout -B cron-${{matrix.branch}}-${{env.SHA}}
+          git push https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_TOKEN }}@github.com/${GITHUB_REPOSITORY} cron-${{matrix.branch}}-${{env.SHA}} --force
+
+      - name: Wait for Build completion
+        uses: jitterbit/await-check-suites@v1
+        with:
+          ref: ${{ env.SHA }}
+          appSlugFilter: github-actions
+          onlyFirstCheckSuite: true
+          timeoutSeconds: 1800
+
+      - name: Cleanup
+        # Always cleanup the cron-* branches
+        if: always()
+        run: git push https://${GITHUB_ACTOR}:${{ secrets.PERSONAL_TOKEN}}@github.com/${GITHUB_REPOSITORY} --delete cron-${{matrix.branch}}-${{env.SHA}} || true # Don't fail build if cleanup fails

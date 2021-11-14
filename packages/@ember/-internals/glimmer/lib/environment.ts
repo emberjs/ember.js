@@ -1,156 +1,132 @@
-import { OWNER, Owner } from '@ember/-internals/owner';
+import { ENV } from '@ember/-internals/environment';
+import { _getProp, _setProp, get, set } from '@ember/-internals/metal';
+import { Owner } from '@ember/-internals/owner';
+import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
-import { warn } from '@ember/debug';
+import { assert, deprecate, warn } from '@ember/debug';
+import { DeprecationOptions } from '@ember/debug/lib/deprecate';
+import { _backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { Option, Simple } from '@glimmer/interfaces';
-import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
-import {
-  ElementBuilder,
-  Environment as GlimmerEnvironment,
-  SimpleDynamicAttribute,
-} from '@glimmer/runtime';
-import { Destroyable, Opaque } from '@glimmer/util';
-import DebugStack from './utils/debug-stack';
-import createIterable from './utils/iterable';
-import { ConditionalReference, UpdatableReference } from './utils/references';
+import setGlobalContext from '@glimmer/global-context';
+import { EnvironmentDelegate } from '@glimmer/runtime';
+import { setTrackingTransactionEnv } from '@glimmer/validator';
+import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
+import toBool from './utils/to-bool';
 
-import installPlatformSpecificProtocolForURL from './protocol-for-url';
+///////////
 
-import { OwnedTemplate } from './template';
+// Setup global context
 
-export interface CompilerFactory {
-  id: string;
-  new (template: OwnedTemplate): any;
-}
+setGlobalContext({
+  scheduleRevalidate() {
+    _backburner.ensureInstance();
+  },
 
-export default class Environment extends GlimmerEnvironment {
-  static create(options: any) {
-    return new this(options);
-  }
+  toBool,
+  toIterator,
 
-  public owner: Owner;
-  public isInteractive: boolean;
-  public destroyedComponents: Destroyable[];
+  getProp: _getProp,
+  setProp: _setProp,
+  getPath: get,
+  setPath: set,
 
-  public debugStack: typeof DebugStack;
-  public inTransaction = false;
+  scheduleDestroy(destroyable, destructor) {
+    schedule('actions', null, destructor, destroyable);
+  },
 
-  constructor(injections: any) {
-    super(injections);
-    this.owner = injections[OWNER];
-    this.isInteractive = this.owner.lookup<any>('-environment:main').isInteractive;
+  scheduleDestroyed(finalizeDestructor) {
+    schedule('destroy', null, finalizeDestructor);
+  },
 
-    // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
-    this.destroyedComponents = [];
+  warnIfStyleNotTrusted(value: unknown) {
+    warn(
+      constructStyleDeprecationMessage(value),
+      (() => {
+        if (value === null || value === undefined || isHTMLSafe(value)) {
+          return true;
+        }
+        return false;
+      })(),
+      { id: 'ember-htmlbars.style-xss-warning' }
+    );
+  },
 
-    installPlatformSpecificProtocolForURL(this);
-
+  assert(test: unknown, msg: string, options?: { id: string }) {
     if (DEBUG) {
-      this.debugStack = new DebugStack();
+      let id = options?.id;
+
+      let override = VM_ASSERTION_OVERRIDES.filter((o) => o.id === id)[0];
+
+      assert(override?.message ?? msg, test);
     }
-  }
+  },
 
-  // this gets clobbered by installPlatformSpecificProtocolForURL
-  // it really should just delegate to a platform specific injection
-  protocolForURL(s: string): string {
-    return s;
-  }
+  deprecate(msg: string, test: unknown, options: { id: string }) {
+    if (DEBUG) {
+      let { id } = options;
 
-  toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
-    return ConditionalReference.create(reference);
-  }
+      if (id === 'argument-less-helper-paren-less-invocation') {
+        throw new Error(
+          `A resolved helper cannot be passed as a named argument as the syntax is ` +
+            `ambiguously a pass-by-reference or invocation. Use the ` +
+            `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
+            `invoke the helper with parens: \`{{(fooHelper)}}\`.`
+        );
+      }
 
-  iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
-    return createIterable(ref, key);
-  }
+      let override = VM_DEPRECATION_OVERRIDES.filter((o) => o.id === id)[0];
 
-  scheduleInstallModifier(modifier: any, manager: any): void {
-    if (this.isInteractive) {
-      super.scheduleInstallModifier(modifier, manager);
+      if (!override) throw new Error(`deprecation override for ${id} not found`);
+
+      // allow deprecations to be disabled in the VM_DEPRECATION_OVERRIDES array below
+      if (!override.disabled) {
+        deprecate(override.message ?? msg, Boolean(test), override);
+      }
     }
-  }
-
-  scheduleUpdateModifier(modifier: any, manager: any): void {
-    if (this.isInteractive) {
-      super.scheduleUpdateModifier(modifier, manager);
-    }
-  }
-
-  didDestroy(destroyable: Destroyable): void {
-    destroyable.destroy();
-  }
-
-  begin(): void {
-    this.inTransaction = true;
-
-    super.begin();
-  }
-
-  commit(): void {
-    let destroyedComponents = this.destroyedComponents;
-    this.destroyedComponents = [];
-    // components queued for destruction must be destroyed before firing
-    // `didCreate` to prevent errors when removing and adding a component
-    // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < destroyedComponents.length; i++) {
-      destroyedComponents[i].destroy();
-    }
-
-    try {
-      super.commit();
-    } finally {
-      this.inTransaction = false;
-    }
-  }
-}
+  },
+});
 
 if (DEBUG) {
-  class StyleAttributeManager extends SimpleDynamicAttribute {
-    set(dom: ElementBuilder, value: Opaque, env: GlimmerEnvironment): void {
-      warn(
-        constructStyleDeprecationMessage(value),
-        (() => {
-          if (value === null || value === undefined || isHTMLSafe(value)) {
-            return true;
-          }
-          return false;
-        })(),
-        { id: 'ember-htmlbars.style-xss-warning' }
-      );
-      super.set(dom, value, env);
-    }
-    update(value: Opaque, env: GlimmerEnvironment): void {
-      warn(
-        constructStyleDeprecationMessage(value),
-        (() => {
-          if (value === null || value === undefined || isHTMLSafe(value)) {
-            return true;
-          }
-          return false;
-        })(),
-        { id: 'ember-htmlbars.style-xss-warning' }
-      );
-      super.update(value, env);
-    }
-  }
+  setTrackingTransactionEnv?.({
+    debugMessage(obj, keyName) {
+      let dirtyString = keyName
+        ? `\`${keyName}\` on \`${getDebugName?.(obj)}\``
+        : `\`${getDebugName?.(obj)}\``;
 
-  Environment.prototype.attributeFor = function(
-    element,
-    attribute: string,
-    isTrusting: boolean,
-    namespace: Option<Simple.AttrNamespace>
-  ) {
-    if (attribute === 'style' && !isTrusting) {
-      return new StyleAttributeManager({ element, name: attribute, namespace });
-    }
+      return `You attempted to update ${dirtyString}, but it had already been used previously in the same computation.  Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.`;
+    },
+  });
+}
 
-    return GlimmerEnvironment.prototype.attributeFor.call(
-      this,
-      element,
-      attribute,
-      isTrusting,
-      namespace
-    );
-  };
+///////////
+
+// VM Assertion/Deprecation overrides
+
+const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
+  disabled?: boolean;
+  message?: string;
+})[] = [
+  {
+    id: 'setting-on-hash',
+    until: '4.4.0',
+    for: 'ember-source',
+    since: {
+      enabled: '3.28.0',
+    },
+  },
+];
+
+const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
+
+///////////
+
+// Define environment delegate
+
+export class EmberEnvironmentDelegate implements EnvironmentDelegate {
+  public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
+
+  constructor(public owner: Owner, public isInteractive: boolean) {}
+
+  onTransactionCommit(): void {}
 }

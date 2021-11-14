@@ -2,138 +2,99 @@ import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'inte
 
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
-import { LinkComponent } from '@ember/-internals/glimmer';
+import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   '{{link-to}} component (rendering tests)',
   class extends ApplicationTestCase {
-    [`@test throws a useful error if you invoke it wrong`](assert) {
-      assert.expect(1);
+    async [`@test it throws a useful error if you invoke it wrong`](assert) {
+      this.addTemplate('application', `{{#link-to}}Index{{/link-to}}`);
 
-      expectAssertion(() => {
-        this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
-      }, /You must provide one or more parameters to the `{{link-to}}` component\. \('my-app\/templates\/application\.hbs' @ L1:C0\)/);
+      if (DEBUG) {
+        await assert.rejects(
+          this.visit('/'),
+          /You must provide at least one of the `@route`, `@model`, `@models` or `@query` arguments to `<LinkTo>`./
+        );
+      } else {
+        assert.expect(0);
+      }
     }
 
-    ['@test should be able to be inserted in DOM when the router is not present']() {
-      this.addTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
+    async [`@test it throws a useful error if you pass the href argument`](assert) {
+      this.addTemplate('application', `{{#link-to href="nope" route="index"}}Index{{/link-to}}`);
 
-      return this.visit('/').then(() => {
-        this.assertText('Go to Index');
-      });
+      if (DEBUG) {
+        await assert.rejects(
+          this.visit('/'),
+          /Passing the `@href` argument to <LinkTo> is not supported\./
+        );
+      } else {
+        assert.expect(0);
+      }
     }
 
-    ['@test re-renders when title changes']() {
+    async ['@test it should be able to be inserted in DOM when the router is not present']() {
+      this.addTemplate('application', `{{#link-to route='index'}}Go to Index{{/link-to}}`);
+
+      await this.visit('/');
+
+      this.assertText('Go to Index');
+    }
+
+    async ['@test it re-renders when title changes']() {
       let controller;
 
-      this.addTemplate('application', `{{link-to title 'index'}}`);
+      this.addTemplate('application', `{{#link-to route='index'}}{{this.title}}{{/link-to}}`);
 
       this.add(
         'controller:application',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
             controller = this;
-          },
-          title: 'foo',
-        })
+          }
+
+          title = 'foo';
+        }
       );
 
-      return this.visit('/').then(() => {
-        this.assertText('foo');
-        runTask(() => set(controller, 'title', 'bar'));
-        this.assertText('bar');
-      });
+      await this.visit('/');
+
+      this.assertText('foo');
+
+      runTask(() => set(controller, 'title', 'bar'));
+
+      this.assertText('bar');
     }
 
-    ['@test re-computes active class when params change'](assert) {
+    async ['@test it re-computes active class when params change'](assert) {
       let controller;
 
-      this.addTemplate('application', '{{link-to "foo" routeName}}');
+      this.addTemplate('application', '{{#link-to route=this.routeName}}foo{{/link-to}}');
 
       this.add(
         'controller:application',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
+        class extends Controller {
+          constructor(...args) {
+            super(...args);
             controller = this;
-          },
-          routeName: 'index',
-        })
+          }
+
+          routeName = 'index';
+        }
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('bar', { path: '/bar' });
       });
 
-      return this.visit('/bar').then(() => {
-        assert.equal(this.firstChild.classList.contains('active'), false);
-        runTask(() => set(controller, 'routeName', 'bar'));
-        assert.equal(this.firstChild.classList.contains('active'), true);
-      });
-    }
+      await this.visit('/bar');
 
-    ['@test escaped inline form (double curlies) escapes link title']() {
-      this.addTemplate('application', `{{link-to title 'index'}}`);
-      this.add(
-        'controller:application',
-        Controller.extend({
-          title: '<b>blah</b>',
-        })
-      );
+      assert.equal(this.firstChild.classList.contains('active'), false);
 
-      return this.visit('/').then(() => {
-        this.assertText('<b>blah</b>');
-      });
-    }
+      runTask(() => set(controller, 'routeName', 'bar'));
 
-    ['@test unescaped inline form (triple curlies) does not escape link title'](assert) {
-      this.addTemplate('application', `{{{link-to title 'index'}}}`);
-      this.add(
-        'controller:application',
-        Controller.extend({
-          title: '<b>blah</b>',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        this.assertText('blah');
-        assert.equal(this.$('b').length, 1);
-      });
-    }
-
-    ['@test able to safely extend the built-in component and use the normal path']() {
-      this.addComponent('custom-link-to', {
-        ComponentClass: LinkComponent.extend(),
-      });
-      this.addTemplate('application', `{{#custom-link-to 'index'}}{{title}}{{/custom-link-to}}`);
-      this.add(
-        'controller:application',
-        Controller.extend({
-          title: 'Hello',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        this.assertText('Hello');
-      });
-    }
-
-    ['@test [GH#13432] able to safely extend the built-in component and invoke it inline']() {
-      this.addComponent('custom-link-to', {
-        ComponentClass: LinkComponent.extend(),
-      });
-      this.addTemplate('application', `{{custom-link-to title 'index'}}`);
-      this.add(
-        'controller:application',
-        Controller.extend({
-          title: 'Hello',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        this.assertText('Hello');
-      });
+      assert.equal(this.firstChild.classList.contains('active'), true);
     }
   }
 );
@@ -141,14 +102,8 @@ moduleFor(
 moduleFor(
   '{{link-to}} component (rendering tests, without router)',
   class extends RenderingTestCase {
-    ['@test should be able to be inserted in DOM when the router is not present - block']() {
-      this.render(`{{#link-to 'index'}}Go to Index{{/link-to}}`);
-
-      this.assertText('Go to Index');
-    }
-
-    ['@test should be able to be inserted in DOM when the router is not present - inline']() {
-      this.render(`{{link-to 'Go to Index' 'index'}}`);
+    ['@test it should be able to be inserted in DOM when the router is not present - block']() {
+      this.render(`{{#link-to route='index'}}Go to Index{{/link-to}}`);
 
       this.assertText('Go to Index');
     }

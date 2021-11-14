@@ -1,15 +1,54 @@
+import { getFactoryFor, Registry } from '@ember/-internals/container';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { computed, Mixin, observer } from '@ember/-internals/metal';
+import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals/metal';
+import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
   'EmberObject.create',
   class extends AbstractTestCase {
     ['@test simple properties are set'](assert) {
+      expectNoDeprecation();
+
       let o = EmberObject.create({ ohai: 'there' });
       assert.equal(o.get('ohai'), 'there');
+    }
+
+    ['@test explicit injection does not raise deprecation'](assert) {
+      expectNoDeprecation();
+
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class FooObject extends EmberObject {
+        @service foo;
+      }
+      owner.register('service:foo', FooService);
+      owner.register('foo:main', FooObject);
+
+      let obj = owner.lookup('foo:main');
+      assert.equal(obj.foo.bar, 'foo');
+    }
+
+    ['@test implicit injections raises deprecation']() {
+      let owner = buildOwner();
+
+      class FooService extends Service {
+        bar = 'foo';
+      }
+      class FooObject extends EmberObject {}
+      owner.register('service:foo', FooService);
+      owner.register('foo:main', FooObject);
+
+      expectDeprecation(
+        () => owner.inject('foo:main', 'foo', 'service:foo'),
+        /As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject `foo` on `foo:main`, or look it up directly using the `getOwner` API./
+      );
     }
 
     ['@test calls computed property setters'](assert) {
@@ -28,12 +67,12 @@ moduleFor(
       assert.equal(o.get('foo'), 'bar');
     }
 
-    ['@test sets up mandatory setters for watched simple properties'](assert) {
+    ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
       if (DEBUG) {
         let MyClass = EmberObject.extend({
           foo: null,
           bar: null,
-          fooDidChange: observer('foo', function() {}),
+          fooDidChange: observer('foo', function () {}),
         });
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
@@ -44,12 +83,99 @@ moduleFor(
 
         descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
         assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        o.destroy();
       } else {
         assert.expect(0);
       }
     }
 
-    ['@test calls setUnknownProperty if defined'](assert) {
+    ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
+      if (DEBUG) {
+        let MyClass = EmberObject.extend({
+          foo: null,
+          bar: null,
+          fooAlias: computed('foo', function () {
+            return this.foo;
+          }),
+        });
+
+        let o = MyClass.create({ foo: 'bar', bar: 'baz' });
+        assert.equal(o.get('fooAlias'), 'bar');
+
+        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+        assert.ok(descriptor.set, 'Mandatory setter was setup');
+
+        descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
+        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        o.destroy();
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test sets up mandatory setters for simple properties watched with aliases'](assert) {
+      if (DEBUG) {
+        let MyClass = EmberObject.extend({
+          foo: null,
+          bar: null,
+          fooAlias: alias('foo'),
+        });
+
+        let o = MyClass.create({ foo: 'bar', bar: 'baz' });
+        assert.equal(o.get('fooAlias'), 'bar');
+
+        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+        assert.ok(descriptor.set, 'Mandatory setter was setup');
+
+        descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
+        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        o.destroy();
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test does not sets up separate mandatory setters on getters'](assert) {
+      if (DEBUG) {
+        let MyClass = EmberObject.extend({
+          get foo() {
+            return 'bar';
+          },
+          fooDidChange: observer('foo', function () {}),
+        });
+
+        let o = MyClass.create({});
+        assert.equal(o.get('foo'), 'bar');
+
+        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+        assert.ok(!descriptor, 'Mandatory setter was not setup');
+
+        // cleanup
+        o.destroy();
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test does not sets up separate mandatory setters on arrays'](assert) {
+      if (DEBUG) {
+        let arr = [123];
+
+        addObserver(arr, 0, function () {});
+
+        let descriptor = Object.getOwnPropertyDescriptor(arr, 0);
+        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+
+        destroy(arr);
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    ['@test calls setUnknownProperty if undefined'](assert) {
       let setUnknownPropertyCalled = false;
 
       let MyClass = EmberObject.extend({
@@ -63,15 +189,15 @@ moduleFor(
     }
 
     ['@test throws if you try to define a computed property']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         EmberObject.create({
-          foo: computed(function() {}),
+          foo: computed(function () {}),
         });
       }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
     }
 
     ['@test throws if you try to call _super in a method']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         EmberObject.create({
           foo() {
             this._super(...arguments);
@@ -87,7 +213,7 @@ moduleFor(
         },
       });
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         EmberObject.create(myMixin);
       }, 'EmberObject.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
     }
@@ -130,6 +256,39 @@ moduleFor(
           return undefined;
         },
       }).create(options);
+    }
+
+    ['@test does not create enumerable properties for owner and init factory when created by the container factory'](
+      assert
+    ) {
+      let registry = new Registry();
+      let container = registry.container();
+      container.owner = {};
+
+      registry.register('component:foo-bar', EmberObject);
+
+      let componentFactory = container.factoryFor('component:foo-bar');
+      let instance = componentFactory.create();
+
+      assert.deepEqual(Object.keys(instance), [], 'no enumerable properties were added');
+      assert.equal(getOwner(instance), container.owner, 'owner was defined on the instance');
+      assert.ok(getFactoryFor(instance), 'factory was defined on the instance');
+    }
+
+    ['@test does not create enumerable properties for owner and init factory when looked up on the container'](
+      assert
+    ) {
+      let registry = new Registry();
+      let container = registry.container();
+      container.owner = {};
+
+      registry.register('component:foo-bar', EmberObject);
+
+      let instance = container.lookup('component:foo-bar');
+
+      assert.deepEqual(Object.keys(instance), [], 'no enumerable properties were added');
+      assert.equal(getOwner(instance), container.owner, 'owner was defined on the instance');
+      assert.ok(getFactoryFor(instance), 'factory was defined on the instance');
     }
   }
 );

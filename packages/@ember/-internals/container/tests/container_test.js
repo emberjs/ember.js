@@ -1,53 +1,13 @@
-import { OWNER } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
+import { getOwner } from '@ember/-internals/owner';
+import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
 
 moduleFor(
-  'Container',
+  'Container.lookup',
   class extends AbstractTestCase {
-    ['@test A registered factory returns the same instance each time'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-
-      registry.register('controller:post', PostController);
-
-      let postController = container.lookup('controller:post');
-
-      assert.ok(
-        postController instanceof PostController,
-        'The lookup is an instance of the factory'
-      );
-
-      assert.equal(postController, container.lookup('controller:post'));
-    }
-
-    ['@test uses create time injections if factory has no extend'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let AppleController = factory();
-      let PostController = factory();
-
-      PostController.extend = undefined; // remove extend
-
-      registry.register('controller:apple', AppleController);
-      registry.register('controller:post', PostController);
-      registry.injection('controller:post', 'apple', 'controller:apple');
-
-      let postController = container.lookup('controller:post');
-
-      assert.ok(
-        postController.apple instanceof AppleController,
-        'instance receives an apple of instance AppleController'
-      );
-    }
-
-    ['@test A registered factory returns a fresh instance if singleton: false is passed as an option'](
-      assert
-    ) {
+    ['@test lookup returns a fresh instance if singleton: false is passed as an option'](assert) {
       let registry = new Registry();
       let container = registry.container();
       let PostController = factory();
@@ -102,62 +62,165 @@ moduleFor(
       );
     }
 
-    ["@test A factory type with a registered injection's instances receive that injection"](
+    ['@test lookup returns a fresh instance if singleton: false is passed as an option to lookup'](
       assert
     ) {
+      class TestFactory {
+        constructor(opts) {
+          Object.assign(this, opts);
+        }
+        static create(opts) {
+          return new this(opts);
+        }
+      }
+
       let registry = new Registry();
       let container = registry.container();
-      let PostController = factory();
-      let Store = factory();
+      registry.register('thing:test/obj', TestFactory);
 
-      registry.register('controller:post', PostController);
-      registry.register('store:main', Store);
+      let instance1 = container.lookup('thing:test/obj');
+      let instance2 = container.lookup('thing:test/obj', {
+        singleton: false,
+      });
+      let instance3 = container.lookup('thing:test/obj', {
+        singleton: false,
+      });
+      let instance4 = container.lookup('thing:test/obj');
 
-      registry.typeInjection('controller', 'store', 'store:main');
-
-      let postController = container.lookup('controller:post');
-      let store = container.lookup('store:main');
-
-      assert.equal(postController.store, store);
+      assert.ok(
+        instance1 === instance4,
+        'factories looked up up without singleton: false are the same instance'
+      );
+      assert.ok(
+        instance1 !== instance2,
+        'factories looked up with singleton: false are a different instance'
+      );
+      assert.ok(
+        instance2 !== instance3,
+        'factories looked up with singleton: false are a different instance'
+      );
+      assert.ok(
+        instance3 !== instance4,
+        'factories looked up after a call to singleton: false is a different instance'
+      );
+      assert.ok(
+        instance1 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance2 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance3 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance4 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
     }
 
-    ['@test An individual factory with a registered injection receives the injection'](assert) {
+    ['@test lookup returns a fresh instance if singleton: false is passed as an option to register'](
+      assert
+    ) {
+      class TestFactory {
+        constructor(opts) {
+          Object.assign(this, opts);
+        }
+        static create(opts) {
+          return new this(opts);
+        }
+      }
+
       let registry = new Registry();
       let container = registry.container();
-      let PostController = factory();
-      let Store = factory();
+      registry.register('thing:test/obj', TestFactory, { singleton: false });
 
-      registry.register('controller:post', PostController);
-      registry.register('store:main', Store);
+      let instance1 = container.lookup('thing:test/obj');
+      let instance2 = container.lookup('thing:test/obj');
+      let instance3 = container.lookup('thing:test/obj');
 
-      registry.injection('controller:post', 'store', 'store:main');
-
-      let postController = container.lookup('controller:post');
-      let store = container.lookup('store:main');
-
-      assert.equal(postController.store, store, 'has the correct store injected');
+      assert.ok(instance1 !== instance2, 'each lookup is a different instance');
+      assert.ok(instance2 !== instance3, 'each lookup is a different instance');
+      assert.ok(instance1 !== instance3, 'each lookup is a different instance');
+      assert.ok(
+        instance1 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance2 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance3 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
     }
 
-    ['@test A factory with both type and individual injections'](assert) {
+    ['@test lookup returns a singleton instance if singleton: true is passed as an option even if registered as singleton: false'](
+      assert
+    ) {
+      class TestFactory {
+        constructor(opts) {
+          Object.assign(this, opts);
+        }
+        static create(opts) {
+          return new this(opts);
+        }
+      }
+
+      let registry = new Registry();
+      let container = registry.container();
+      registry.register('thing:test/obj', TestFactory, { singleton: false });
+
+      let instance1 = container.lookup('thing:test/obj');
+      let instance2 = container.lookup('thing:test/obj', { singleton: true });
+      let instance3 = container.lookup('thing:test/obj', { singleton: true });
+      let instance4 = container.lookup('thing:test/obj');
+
+      assert.ok(instance1 !== instance2, 'each lookup is a different instance');
+      assert.ok(instance2 === instance3, 'each singleton: true lookup is the same instance');
+      assert.ok(instance3 !== instance4, 'each lookup is a different instance');
+      assert.ok(instance1 !== instance4, 'each lookup is a different instance');
+      assert.ok(
+        instance1 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance2 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance3 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+      assert.ok(
+        instance4 instanceof TestFactory,
+        'All instances are instances of the registered factory'
+      );
+    }
+  }
+);
+
+moduleFor(
+  'Container',
+  class extends AbstractTestCase {
+    ['@test A registered factory returns the same instance each time'](assert) {
       let registry = new Registry();
       let container = registry.container();
       let PostController = factory();
-      let Store = factory();
-      let Router = factory();
 
       registry.register('controller:post', PostController);
-      registry.register('store:main', Store);
-      registry.register('router:main', Router);
-
-      registry.injection('controller:post', 'store', 'store:main');
-      registry.typeInjection('controller', 'router', 'router:main');
 
       let postController = container.lookup('controller:post');
-      let store = container.lookup('store:main');
-      let router = container.lookup('router:main');
 
-      assert.equal(postController.store, store);
-      assert.equal(postController.router, router);
+      assert.ok(
+        postController instanceof PostController,
+        'The lookup is an instance of the factory'
+      );
+
+      assert.equal(postController, container.lookup('controller:post'));
     }
 
     ['@test A non-singleton instance is never cached'](assert) {
@@ -177,7 +240,7 @@ moduleFor(
       let registry = new Registry();
       let container = registry.container();
 
-      let template = function() {};
+      let template = function () {};
       registry.register('template:foo', template, { instantiate: false });
       assert.equal(container.lookup('template:foo'), template);
     }
@@ -189,84 +252,24 @@ moduleFor(
       assert.equal(container.lookup('doesnot:exist'), undefined);
     }
 
-    ['@test An invalid factory throws an error'](assert) {
+    ['@test An invalid factory throws an error']() {
       let registry = new Registry();
       let container = registry.container();
 
       registry.register('controller:foo', {});
 
-      assert.throws(() => {
-        container.lookup('controller:foo');
-      }, /Failed to create an instance of \'controller:foo\'/);
-    }
-
-    ['@test Injecting a failed lookup raises an error']() {
-      let registry = new Registry();
-      let container = registry.container();
-
-      let fooInstance = {};
-      let fooFactory = {};
-
-      let Foo = {
-        create() {
-          return fooInstance;
-        },
-        extend() {
-          return fooFactory;
-        },
-      };
-
-      registry.register('model:foo', Foo);
-      registry.injection('model:foo', 'store', 'store:main');
-
       expectAssertion(() => {
-        container.lookup('model:foo');
-      });
+        container.lookup('controller:foo');
+      }, /Failed to create an instance of 'controller:foo'/);
     }
 
-    ['@test Injecting a falsy value does not raise an error'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let ApplicationController = factory();
-
-      registry.register('controller:application', ApplicationController);
-      registry.register('user:current', null, { instantiate: false });
-      registry.injection('controller:application', 'currentUser', 'user:current');
-
-      assert.strictEqual(container.lookup('controller:application').currentUser, null);
-    }
-
-    ['@test The container returns same value each time even if the value is falsy'](assert) {
+    ['@test The container returns same value each time even if the value is falsey'](assert) {
       let registry = new Registry();
       let container = registry.container();
 
       registry.register('falsy:value', null, { instantiate: false });
 
       assert.strictEqual(container.lookup('falsy:value'), container.lookup('falsy:value'));
-    }
-
-    ['@test Destroying the container destroys any cached singletons'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
-      let PostView = factory();
-      let template = function() {};
-
-      registry.register('controller:post', PostController);
-      registry.register('view:post', PostView, { singleton: false });
-      registry.register('template:post', template, { instantiate: false });
-
-      registry.injection('controller:post', 'postView', 'view:post');
-
-      let postController = container.lookup('controller:post');
-      let postView = postController.postView;
-
-      assert.ok(postView instanceof PostView, 'The non-singleton was injected');
-
-      container.destroy();
-
-      assert.ok(postController.isDestroyed, 'Singletons are destroyed');
-      assert.ok(!postView.isDestroyed, 'Non-singletons are not destroyed');
     }
 
     ['@test The container can use a registry hook to resolve factories lazily'](assert) {
@@ -292,7 +295,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
 
-      registry.normalizeFullName = function() {
+      registry.normalizeFullName = function () {
         return 'controller:post';
       };
 
@@ -307,7 +310,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
 
-      registry.normalizeFullName = function() {
+      registry.normalizeFullName = function () {
         return 'controller:post';
       };
 
@@ -368,33 +371,12 @@ moduleFor(
       assert.ok(postView1 !== postView2, 'The two lookups are different');
     }
 
-    ['@test An injected non-singleton instance is never cached'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-      let PostView = factory();
-      let PostViewHelper = factory();
-
-      registry.register('view:post', PostView, { singleton: false });
-      registry.register('view_helper:post', PostViewHelper, {
-        singleton: false,
-      });
-      registry.injection('view:post', 'viewHelper', 'view_helper:post');
-
-      let postView1 = container.lookup('view:post');
-      let postView2 = container.lookup('view:post');
-
-      assert.ok(
-        postView1.viewHelper !== postView2.viewHelper,
-        'Injected non-singletons are not cached'
-      );
-    }
-
     ['@test Factory resolves are cached'](assert) {
       let registry = new Registry();
       let container = registry.container();
       let PostController = factory();
       let resolveWasCalled = [];
-      registry.resolve = function(fullName) {
+      registry.resolve = function (fullName) {
         resolveWasCalled.push(fullName);
         return PostController;
       };
@@ -412,7 +394,7 @@ moduleFor(
       let container = registry.container();
       let PostController = factory();
       let resolveWasCalled = [];
-      registry.resolve = function(fullName) {
+      registry.resolve = function (fullName) {
         resolveWasCalled.push(fullName);
         return PostController;
       };
@@ -431,7 +413,7 @@ moduleFor(
       let PostController = {};
       let resolveWasCalled = [];
 
-      registry.resolve = function(fullName) {
+      registry.resolve = function (fullName) {
         resolveWasCalled.push(fullName);
         return PostController;
       };
@@ -498,28 +480,19 @@ moduleFor(
 
       let result = container.ownerInjection();
 
-      assert.equal(result[OWNER], owner, 'owner is properly included');
+      assert.equal(getOwner(result), owner, 'owner is properly included');
     }
 
-    ['@test lookup passes options through to expandlocallookup'](assert) {
+    ['@test ownerInjection should be usable to create a service for testing'](assert) {
+      assert.expect(0);
+
+      let owner = {};
       let registry = new Registry();
-      let container = registry.container();
-      let PostController = factory();
+      let container = registry.container({ owner });
 
-      registry.register('controller:post', PostController);
-      registry.expandLocalLookup = (fullName, options) => {
-        assert.ok(true, 'expandLocalLookup was called');
-        assert.equal(fullName, 'foo:bar');
-        assert.deepEqual(options, { source: 'baz:qux' });
+      let result = container.ownerInjection();
 
-        return 'controller:post';
-      };
-
-      let PostControllerLookupResult = container.lookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.ok(PostControllerLookupResult instanceof PostController);
+      Service.create(result);
     }
 
     ['@test #factoryFor class is registered class'](assert) {
@@ -620,69 +593,12 @@ moduleFor(
       assert.notEqual(factory1, factory3);
     }
 
-    ['@test #factoryFor created instances come with instance injections'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-
-      let Component = factory();
-      let Ajax = factory();
-      registry.register('component:foo-bar', Component);
-      registry.register('util:ajax', Ajax);
-      registry.injection('component:foo-bar', 'ajax', 'util:ajax');
-
-      let componentFactory = container.factoryFor('component:foo-bar');
-      let component = componentFactory.create();
-
-      assert.ok(component.ajax);
-      assert.ok(component.ajax instanceof Ajax);
-    }
-
-    ['@test #factoryFor options passed to create clobber injections'](assert) {
-      let registry = new Registry();
-      let container = registry.container();
-
-      let Component = factory();
-      let Ajax = factory();
-      registry.register('component:foo-bar', Component);
-      registry.register('util:ajax', Ajax);
-      registry.injection('component:foo-bar', 'ajax', 'util:ajax');
-
-      let componentFactory = container.factoryFor('component:foo-bar');
-      let instrance = componentFactory.create({ ajax: 'fetch' });
-
-      assert.equal(instrance.ajax, 'fetch');
-    }
-
-    ['@test #factoryFor does not add properties to the object being instantiated when _initFactory is present'](
-      assert
-    ) {
-      let registry = new Registry();
-      let container = registry.container();
-
-      class Component {
-        static _initFactory() {}
-        static create(options) {
-          let instance = new this();
-          assign(instance, options);
-          return instance;
-        }
-      }
-      registry.register('component:foo-bar', Component);
-
-      let componentFactory = container.factoryFor('component:foo-bar');
-      let instance = componentFactory.create();
-
-      // note: _guid and isDestroyed are being set in the `factory` constructor
-      // not via registry/container shenanigans
-      assert.deepEqual(Object.keys(instance), []);
-    }
-
     [`@test assert when calling lookup after destroy on a container`](assert) {
       let registry = new Registry();
       let container = registry.container();
-      let Component = factory();
-      registry.register('component:foo-bar', Component);
-      let instance = container.lookup('component:foo-bar');
+      registry.register('service:foo', factory());
+
+      let instance = container.lookup('service:foo');
       assert.ok(instance, 'precond lookup successful');
 
       runTask(() => {
@@ -690,17 +606,17 @@ moduleFor(
         container.finalizeDestroy();
       });
 
-      expectAssertion(() => {
-        container.lookup('component:foo-bar');
-      });
+      assert.throws(() => {
+        container.lookup('service:foo');
+      }, /Can not call `.lookup` after the owner has been destroyed/);
     }
 
     [`@test assert when calling factoryFor after destroy on a container`](assert) {
       let registry = new Registry();
       let container = registry.container();
-      let Component = factory();
-      registry.register('component:foo-bar', Component);
-      let instance = container.factoryFor('component:foo-bar');
+      registry.register('service:foo', factory());
+
+      let instance = container.lookup('service:foo');
       assert.ok(instance, 'precond lookup successful');
 
       runTask(() => {
@@ -708,9 +624,9 @@ moduleFor(
         container.finalizeDestroy();
       });
 
-      expectAssertion(() => {
-        container.factoryFor('component:foo-bar');
-      });
+      assert.throws(() => {
+        container.factoryFor('service:foo');
+      }, /Can not call `.factoryFor` after the owner has been destroyed/);
     }
 
     // this is skipped until templates and the glimmer environment do not require `OWNER` to be
@@ -722,7 +638,7 @@ moduleFor(
       class Component {
         static create(options) {
           let instance = new this();
-          assign(instance, options);
+          Object.assign(instance, options);
           return instance;
         }
       }
@@ -735,144 +651,46 @@ moduleFor(
       // not via registry/container shenanigans
       assert.deepEqual(Object.keys(instance), []);
     }
+
+    '@test instantiating via container.lookup during destruction enqueues destruction'(assert) {
+      let registry = new Registry();
+      let container = registry.container();
+      let otherInstance;
+      class Service extends factory() {
+        destroy() {
+          otherInstance = container.lookup('service:other');
+
+          assert.ok(otherInstance.isDestroyed, 'service:other was destroyed');
+        }
+      }
+      registry.register('service:foo', Service);
+      registry.register('service:other', factory());
+      let instance = container.lookup('service:foo');
+      assert.ok(instance, 'precond lookup successful');
+
+      runTask(() => {
+        container.destroy();
+        container.finalizeDestroy();
+      });
+    }
+
+    '@test instantiating via container.factoryFor().create() after destruction throws an error'(
+      assert
+    ) {
+      let registry = new Registry();
+      let container = registry.container();
+      registry.register('service:foo', factory());
+      registry.register('service:other', factory());
+      let Factory = container.factoryFor('service:other');
+
+      runTask(() => {
+        container.destroy();
+        container.finalizeDestroy();
+      });
+
+      assert.throws(() => {
+        Factory.create();
+      }, /Can not create new instances after the owner has been destroyed \(you attempted to create service:other\)/);
+    }
   }
 );
-
-if (EMBER_MODULE_UNIFICATION) {
-  moduleFor(
-    'Container module unification',
-    class extends AbstractTestCase {
-      ['@test The container can expand and resolve a source to factoryFor'](assert) {
-        let PrivateComponent = factory();
-        let lookup = 'component:my-input';
-        let expectedSource = 'template:routes/application';
-        let registry = new Registry();
-        let resolveCount = 0;
-        let expandedKey = 'boom, special expanded key';
-        registry.expandLocalLookup = (specifier, options) => {
-          this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(options.source, expectedSource, 'source is expanded');
-          return expandedKey;
-        };
-        registry.resolve = function(fullName) {
-          resolveCount++;
-          if (fullName === expandedKey) {
-            return PrivateComponent;
-          }
-        };
-
-        let container = registry.container();
-
-        assert.strictEqual(
-          container.factoryFor(lookup, { source: expectedSource }).class,
-          PrivateComponent,
-          'The correct factory was provided'
-        );
-        assert.strictEqual(
-          container.factoryFor(lookup, { source: expectedSource }).class,
-          PrivateComponent,
-          'The correct factory was provided again'
-        );
-        assert.equal(
-          resolveCount,
-          1,
-          'resolve called only once and a cached factory was returned the second time'
-        );
-      }
-
-      ['@test The container can expand and resolve a source to lookup']() {
-        let PrivateComponent = factory();
-        let lookup = 'component:my-input';
-        let expectedSource = 'template:routes/application';
-        let registry = new Registry();
-        let expandedKey = 'boom, special expanded key';
-        registry.expandLocalLookup = (specifier, options) => {
-          this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(options.source, expectedSource, 'source is expanded');
-          return expandedKey;
-        };
-        registry.resolve = function(fullName) {
-          if (fullName === expandedKey) {
-            return PrivateComponent;
-          }
-        };
-
-        let container = registry.container();
-
-        let result = container.lookup(lookup, { source: expectedSource });
-        this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
-
-        this.assert.ok(
-          container.cache[expandedKey] instanceof PrivateComponent,
-          'The correct factory was stored in the cache with the correct key which includes the source.'
-        );
-      }
-
-      ['@test The container can expand and resolve a namespace to factoryFor'](assert) {
-        let PrivateComponent = factory();
-        let lookup = 'component:my-input';
-        let expectedNamespace = 'my-addon';
-        let registry = new Registry();
-        let resolveCount = 0;
-        let expandedKey = 'boom, special expanded key';
-        registry.expandLocalLookup = (specifier, options) => {
-          this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(options.namespace, expectedNamespace, 'namespace is expanded');
-          return expandedKey;
-        };
-        registry.resolve = function(fullName) {
-          resolveCount++;
-          if (fullName === expandedKey) {
-            return PrivateComponent;
-          }
-        };
-
-        let container = registry.container();
-
-        assert.strictEqual(
-          container.factoryFor(lookup, { namespace: expectedNamespace }).class,
-          PrivateComponent,
-          'The correct factory was provided'
-        );
-        assert.strictEqual(
-          container.factoryFor(lookup, { namespace: expectedNamespace }).class,
-          PrivateComponent,
-          'The correct factory was provided again'
-        );
-        assert.equal(
-          resolveCount,
-          1,
-          'resolve called only once and a cached factory was returned the second time'
-        );
-      }
-
-      ['@test The container can expand and resolve a namespace to lookup']() {
-        let PrivateComponent = factory();
-        let lookup = 'component:my-input';
-        let expectedNamespace = 'my-addon';
-        let registry = new Registry();
-        let expandedKey = 'boom, special expanded key';
-        registry.expandLocalLookup = (specifier, options) => {
-          this.assert.strictEqual(specifier, lookup, 'specifier is expanded');
-          this.assert.strictEqual(options.namespace, expectedNamespace, 'namespace is expanded');
-          return expandedKey;
-        };
-        registry.resolve = function(fullName) {
-          if (fullName === expandedKey) {
-            return PrivateComponent;
-          }
-        };
-
-        let container = registry.container();
-
-        let result = container.lookup(lookup, { namespace: expectedNamespace });
-        this.assert.ok(result instanceof PrivateComponent, 'The correct factory was provided');
-
-        this.assert.ok(
-          container.cache[expandedKey] instanceof PrivateComponent,
-          'The correct factory was stored in the cache with the correct key which includes the source.'
-        );
-      }
-    }
-  );
-}

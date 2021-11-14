@@ -1,10 +1,10 @@
 /**
 @module ember
 */
-import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { Arguments, VM } from '@glimmer/runtime';
-import { INVOKE, UPDATE } from '../utils/references';
+import { CapturedArguments } from '@glimmer/interfaces';
+import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the
@@ -74,34 +74,14 @@ import { INVOKE, UPDATE } from '../utils/references';
   </button>
   ```
 
-  You can also use the `value` option:
-
-  ```handlebars
-  <input value={{name}} oninput={{fn (mut name) value="target.value"}}>
-  ```
-
   @method mut
   @param {Object} [attr] the "two-way" attribute that can be modified.
   @for Ember.Templates.helpers
   @public
 */
-const MUT_REFERENCE = symbol('MUT');
-const SOURCE = symbol('SOURCE');
 
-export function isMut(ref: any): boolean {
-  return ref && ref[MUT_REFERENCE];
-}
-
-export function unMut(ref: any) {
-  return ref[SOURCE] || ref;
-}
-
-export default function(_vm: VM, args: Arguments) {
-  let rawRef = args.positional.at(0);
-
-  if (isMut(rawRef)) {
-    return rawRef;
-  }
+export default internalHelper(({ positional }: CapturedArguments) => {
+  let ref = positional[0];
 
   // TODO: Improve this error message. This covers at least two distinct
   // cases:
@@ -115,13 +95,7 @@ export default function(_vm: VM, args: Arguments) {
   //
   // This message is alright for the first case, but could be quite
   // confusing for the second case.
-  assert('You can only pass a path to mut', rawRef[UPDATE]);
+  assert('You can only pass a path to mut', isUpdatableRef(ref));
 
-  let wrappedRef = Object.create(rawRef);
-
-  wrappedRef[SOURCE] = rawRef;
-  wrappedRef[INVOKE] = rawRef[UPDATE];
-  wrappedRef[MUT_REFERENCE] = true;
-
-  return wrappedRef;
-}
+  return createInvokableRef(ref);
+});

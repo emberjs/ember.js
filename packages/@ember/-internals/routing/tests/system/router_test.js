@@ -1,4 +1,3 @@
-import { setOwner } from '@ember/-internals/owner';
 import HashLocation from '../../lib/location/hash_location';
 import HistoryLocation from '../../lib/location/history_location';
 import AutoLocation from '../../lib/location/auto_location';
@@ -8,12 +7,11 @@ import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-te
 
 let owner;
 
-function createRouter(settings, options = {}) {
-  let CustomRouter = Router.extend();
-  let router = CustomRouter.create(settings);
-
-  if (!options.skipOwner) {
-    setOwner(router, owner);
+function createRouter({ settings = {}, options = {} } = {}) {
+  let CustomRouter = class extends Router {};
+  let router = new CustomRouter(owner);
+  for (let setting in settings) {
+    router[setting] = settings[setting];
   }
 
   if (!options.disableSetup) {
@@ -42,27 +40,35 @@ moduleFor(
       owner = null;
     }
 
-    ['@test can create a router without an owner'](assert) {
-      createRouter(undefined, { disableSetup: true, skipOwner: true });
-
-      assert.ok(true, 'no errors were thrown when creating without a container');
-    }
-
     ['@test [GH#15237] EmberError is imported correctly'](assert) {
       // If we get the right message it means Error is being imported correctly.
-      assert.throws(function() {
+      assert.throws(function () {
         triggerEvent(null, false, []);
       }, /because your app hasn't finished transitioning/);
     }
 
     ['@test should not create a router.js instance upon init'](assert) {
-      let router = createRouter(undefined, { disableSetup: true });
+      let router = createRouter({ options: { disableSetup: true } });
 
       assert.ok(!router._routerMicrolib);
     }
 
+    ['@test should create a router.js instance after setupRouter'](assert) {
+      let router = createRouter({ options: { disableSetup: false } });
+
+      assert.ok(router._didSetupRouter);
+      assert.ok(router._routerMicrolib);
+    }
+
+    ['@test should return false if setupRouter is called multiple times'](assert) {
+      let router = createRouter({ options: { disableSetup: true } });
+
+      assert.ok(router.setupRouter());
+      assert.notOk(router.setupRouter());
+    }
+
     ['@test should not reify location until setupRouter is called'](assert) {
-      let router = createRouter(undefined, { disableSetup: true });
+      let router = createRouter({ options: { disableSetup: true } });
       assert.equal(typeof router.location, 'string', 'location is specified as a string');
 
       router.setupRouter();
@@ -81,15 +87,18 @@ moduleFor(
 
     ['@test should instantiate its location with its `rootURL`'](assert) {
       let router = createRouter({
-        rootURL: '/rootdir/',
+        settings: {
+          rootURL: '/rootdir/',
+        },
       });
+
       let location = router.get('location');
 
       assert.equal(location.get('rootURL'), '/rootdir/');
     }
 
     ['@test replacePath should be called with the right path'](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       let location = owner.lookup('location:auto');
 
@@ -108,9 +117,13 @@ moduleFor(
       location.global = { onhashchange() {} };
       location.history = null;
 
-      createRouter({
-        location: 'auto',
-        rootURL: '/rootdir/',
+      expectDeprecation(() => {
+        createRouter({
+          settings: {
+            location: 'auto',
+            rootURL: '/rootdir/',
+          },
+        });
       });
     }
 
@@ -118,7 +131,7 @@ moduleFor(
       createRouter();
 
       function routePath() {
-        let routeInfos = Array.prototype.slice.call(arguments).map(function(s) {
+        let routeInfos = Array.prototype.slice.call(arguments).map(function (s) {
           return { name: s };
         });
         routeInfos.unshift({ name: 'ignored' });
@@ -166,7 +179,7 @@ moduleFor(
     }
 
     ["@test AutoLocation should replace the url when it's not in the preferred format"](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       let location = owner.lookup('location:auto');
 
@@ -180,14 +193,19 @@ moduleFor(
           assert.equal(url, 'http://test.com/rootdir/#/welcome');
         },
       };
+
       location.history = null;
       location.global = {
         onhashchange() {},
       };
 
-      createRouter({
-        location: 'auto',
-        rootURL: '/rootdir/',
+      expectDeprecation(() => {
+        createRouter({
+          settings: {
+            location: 'auto',
+            rootURL: '/rootdir/',
+          },
+        });
       });
     }
 
@@ -195,9 +213,11 @@ moduleFor(
       assert.expect(2);
 
       let router = createRouter({
-        _doURLTransition(routerJsMethod, url) {
-          assert.equal(routerJsMethod, 'handleURL');
-          assert.equal(url, '/foo/bar?time=morphin');
+        settings: {
+          _doURLTransition(routerJsMethod, url) {
+            assert.equal(routerJsMethod, 'handleURL');
+            assert.equal(url, '/foo/bar?time=morphin');
+          },
         },
       });
 
@@ -275,13 +295,18 @@ moduleFor(
 
       router.currentRouteName = 'route-a';
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         router.transitionTo('route-b');
       }, "A transition was attempted from 'route-a' to 'route-b' but the application instance has already been destroyed.");
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         router.transitionTo('./route-b/1');
       }, "A transition was attempted from 'route-a' to './route-b/1' but the application instance has already been destroyed.");
+    }
+
+    ['@test computed url when location is a string should not crash'](assert) {
+      let router = createRouter({ options: { disableSetup: true } });
+      assert.equal(router.url, undefined);
     }
   }
 );

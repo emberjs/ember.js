@@ -1,24 +1,16 @@
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
+import { symbol } from '@ember/-internals/utils';
+import { EMBER_ROUTING_ROUTER_SERVICE_REFRESH } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
-import { DEBUG } from '@glimmer/env';
-import { Transition } from 'router_js';
-import EmberRouter from '../system/router';
+import { consumeTag, tagFor } from '@glimmer/validator';
+import Route from '../system/route';
+import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
-let freezeRouteInfo: Function;
-if (DEBUG) {
-  freezeRouteInfo = (transition: Transition) => {
-    if (transition.from !== null && !Object.isFrozen(transition.from)) {
-      Object.freeze(transition.from);
-    }
-
-    if (transition.to !== null && !Object.isFrozen(transition.to)) {
-      Object.freeze(transition.to);
-    }
-  };
-}
+const ROUTER = (symbol('ROUTER') as unknown) as string;
 
 function cleanURL(url: string, rootURL: string) {
   if (rootURL === '/') {
@@ -37,19 +29,20 @@ function cleanURL(url: string, rootURL: string) {
 
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
-   ```javascript
-   import Component from '@ember/component';
-   import { inject as service } from '@ember/service';
 
-   export default Component.extend({
-     router: service(),
+   ```app/components/example.js
+   import Component from '@glimmer/component';
+   import { action } from '@ember/object';
+   import { service } from '@ember/service';
 
-     actions: {
-       next() {
-         this.router.transitionTo('other.route');
-       }
+   export default class ExampleComponent extends Component {
+     @service router;
+
+     @action
+     next() {
+       this.router.transitionTo('other.route');
      }
-   });
+   }
    ```
 
    Like any service, it can also be injected into helpers, routes, etc.
@@ -59,25 +52,20 @@ function cleanURL(url: string, rootURL: string) {
    @class RouterService
  */
 export default class RouterService extends Service {
-  _router!: EmberRouter;
+  get _router(): EmberRouter {
+    let router = this[ROUTER];
+    if (router !== undefined) {
+      return router;
+    }
+    const owner = getOwner(this) as Owner;
+    router = owner.lookup('router:main') as EmberRouter;
+    return (this[ROUTER] = router);
+  }
 
-  init() {
-    super.init(...arguments);
+  willDestroy() {
+    super.willDestroy(...arguments);
 
-    this._router.on('routeWillChange', (transition: Transition) => {
-      if (DEBUG) {
-        freezeRouteInfo(transition);
-      }
-      this.trigger('routeWillChange', transition);
-    });
-
-    this._router.on('routeDidChange', (transition: Transition) => {
-      if (DEBUG) {
-        freezeRouteInfo(transition);
-      }
-
-      this.trigger('routeDidChange', transition);
-    });
+    this[ROUTER] = null;
   }
 
   /**
@@ -91,36 +79,47 @@ export default class RouterService extends Service {
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
      In the following example we use the Router service to navigate to a route with a
-     specific model from a Component.
+     specific model from a Component in the first action, and in the second we trigger
+     a query-params only transition.
 
-     ```javascript
-     import Component from '@ember/component';
-     import { inject as service } from '@ember/service';
+     ```app/components/example.js
+     import Component from '@glimmer/component';
+     import { action } from '@ember/object';
+     import { service } from '@ember/service';
 
-     export default Component.extend({
-       router: service(),
+     export default class extends Component {
+       @service router;
 
-       actions: {
-         goToComments(post) {
-           this.router.transitionTo('comments', post);
-         }
+       @action
+       goToComments(post) {
+         this.router.transitionTo('comments', post);
        }
-     });
+
+       @action
+       fetchMoreComments(latestComment) {
+         this.router.transitionTo({
+           queryParams: { commentsAfter: latestComment }
+         });
+       }
+     }
      ```
 
      @method transitionTo
-     @param {String} routeNameOrUrl the name of the route or a URL
-     @param {...Object} models the model(s) or identifier(s) to be used while
+     @param {String} [routeNameOrUrl] the name of the route or a URL
+     @param {...Object} [models] the model(s) or identifier(s) to be used while
        transitioning to the route.
      @param {Object} [options] optional hash with a queryParams property
-       containing a mapping of query parameters
+       containing a mapping of query parameters. May be supplied as the only
+      parameter to trigger a query-parameter-only transition.
      @return {Transition} the transition object associated with this
        attempted transition
      @public
    */
-  transitionTo(...args: string[]) {
+  transitionTo(...args: (string | object)[]) {
     if (resemblesURL(args[0])) {
-      return this._router._doURLTransition('transitionTo', args[0]);
+      // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
+      // in 3.6+, so it can be removed when TS is upgraded.
+      return this._router._doURLTransition('transitionTo', args[0] as string);
     }
 
     let { routeName, models, queryParams } = extractRouteArgs(args);
@@ -132,8 +131,11 @@ export default class RouterService extends Service {
   }
 
   /**
-     Transition into another route while replacing the current URL, if possible.
-     The route may be either a single route or route path:
+     Similar to `transitionTo`, but instead of adding the destination to the browser's URL history,
+     it replaces the entry for the current route.
+     When the user clicks the "back" button in the browser, there will be fewer steps.
+     This is most commonly used to manage redirects in a way that does not cause confusing additions
+     to the user's browsing history.
 
      See [replaceWith](/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
 
@@ -146,7 +148,7 @@ export default class RouterService extends Service {
      ```app/routes/application.js
      import Route from '@ember/routing/route';
 
-     export default Route.extend({
+     export default class extends Route {
        beforeModel() {
          if (!authorized()){
            this.replaceWith('unauthorized');
@@ -156,9 +158,9 @@ export default class RouterService extends Service {
      ```
 
      @method replaceWith
-     @param {String} routeNameOrUrl the name of the route or a URL
+     @param {String} routeNameOrUrl the name of the route or a URL of the desired destination
      @param {...Object} models the model(s) or identifier(s) to be used while
-       transitioning to the route.
+       transitioning to the route i.e. an object of params to pass to the destination route
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters
      @return {Transition} the transition object associated with this
@@ -176,43 +178,47 @@ export default class RouterService extends Service {
     In this example, the URL for the `author.books` route for a given author
     is copied to the clipboard.
 
+    ```app/templates/application.hbs
+    <CopyLink @author={{hash id="tomster" name="Tomster"}} />
+    ```
+
     ```app/components/copy-link.js
-    import Component from '@ember/component';
-    import {inject as service} from '@ember/service';
+    import Component from '@glimmer/component';
+    import { service } from '@ember/service';
+    import { action } from '@ember/object';
 
-    export default Component.extend({
-      router: service('router'),
-      clipboard: service('clipboard')
+    export default class CopyLinkComponent extends Component {
+      @service router;
+      @service clipboard;
 
-      // Provided in the template
-      // { id: 'tomster', name: 'Tomster' }
-      author: null,
-
+      @action
       copyBooksURL() {
         if (this.author) {
-          const url = this.router.urlFor('author.books', this.author);
+          const url = this.router.urlFor('author.books', this.args.author);
           this.clipboard.set(url);
           // Clipboard now has /author/tomster/books
         }
       }
-    });
+    }
     ```
 
     Just like with `transitionTo` and `replaceWith`, `urlFor` can also handle
     query parameters.
 
+    ```app/templates/application.hbs
+    <CopyLink @author={{hash id="tomster" name="Tomster"}} />
+    ```
+
     ```app/components/copy-link.js
-    import Component from '@ember/component';
-    import {inject as service} from '@ember/service';
+    import Component from '@glimmer/component';
+    import { service } from '@ember/service';
+    import { action } from '@ember/object';
 
-    export default Component.extend({
-      router: service('router'),
-      clipboard: service('clipboard')
+    export default class CopyLinkComponent extends Component {
+      @service router;
+      @service clipboard;
 
-      // Provided in the template
-      // { id: 'tomster', name: 'Tomster' }
-      author: null,
-
+      @action
       copyOnlyEmberBooksURL() {
         if (this.author) {
           const url = this.router.urlFor('author.books', this.author, {
@@ -222,7 +228,7 @@ export default class RouterService extends Service {
           // Clipboard now has /author/tomster/books?filter=emberjs
         }
       }
-    });
+    }
     ```
 
      @method urlFor
@@ -235,16 +241,52 @@ export default class RouterService extends Service {
      @public
    */
   urlFor(routeName: string, ...args: any[]) {
+    this._router.setupRouter();
     return this._router.generate(routeName, ...args);
   }
 
   /**
-     Determines whether a route is active.
+     Returns `true` if `routeName/models/queryParams` is the active route, where `models` and `queryParams` are optional.
+     See [model](api/ember/release/classes/Route/methods/model?anchor=model) and
+     [queryParams](/api/ember/3.7/classes/Route/properties/queryParams?anchor=queryParams) for more information about these arguments.
+
+     In the following example, `isActive` will return `true` if the current route is `/posts`.
+
+     ```app/components/posts.js
+     import Component from '@glimmer/component';
+     import { service } from '@ember/service';
+
+     export default class extends Component {
+       @service router;
+
+       displayComments() {
+         return this.router.isActive('posts');
+       }
+     });
+     ```
+
+     The next example includes a dynamic segment, and will return `true` if the current route is `/posts/1`,
+     assuming the post has an id of 1:
+
+     ```app/components/posts.js
+     import Component from '@glimmer/component';
+     import { service } from '@ember/service';
+
+     export default class extends Component {
+       @service router;
+
+       displayComments(post) {
+         return this.router.isActive('posts', post.id);
+       }
+     });
+     ```
+
+     Where `post.id` is the id of a specific post, which is represented in the route as /posts/[post.id].
+     If `post.id` is equal to 1, then isActive will return true if the current route is /posts/1, and false if the route is anything else.
 
      @method isActive
      @param {String} routeName the name of the route
-     @param {...Object} models the model(s) or identifier(s) to be used while
-       transitioning to the route.
+     @param {...Object} models the model(s) or identifier(s) to be used when determining the active route.
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters
      @return {boolean} true if the provided routeName/models/queryParams are active
@@ -254,18 +296,46 @@ export default class RouterService extends Service {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
-    if (!routerMicrolib.isActiveIntent(routeName, models)) {
+    // When using isActive() in a getter, we want to entagle with the auto-tracking system
+    // for example,
+    // in
+    // get isBarActive() {
+    //   return isActive('foo.bar');
+    // }
+    //
+    // you'd expect isBarActive to be dirtied when the route changes.
+    //
+    // https://github.com/emberjs/ember.js/issues/19004
+    consumeTag(tagFor(this._router, 'currentURL'));
+
+    // UNSAFE: casting `routeName as string` here encodes the existing
+    // assumption but may be wrong: `extractRouteArgs` correctly returns it as
+    // `string | undefined`. There may be bugs if `isActiveIntent` does
+    // not correctly account for `undefined` values for `routeName`. Spoilers:
+    // it *does not* account for this being `undefined`.
+    if (!routerMicrolib.isActiveIntent(routeName as string, models)) {
       return false;
     }
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
+      queryParams = Object.assign({}, queryParams);
       this._router._prepareQueryParams(
-        routeName,
+        // UNSAFE: casting `routeName as string` here encodes the existing
+        // assumption but may be wrong: `extractRouteArgs` correctly returns it
+        // as `string | undefined`. There may be bugs if `_prepareQueryParams`
+        // does not correctly account for `undefined` values for `routeName`.
+        //  Spoilers: under the hood this currently uses router.js APIs which
+        // *do not* account for this being `undefined`.
+        routeName as string,
         models,
-        queryParams,
+        // UNSAFE: downstream consumers treat this as `QueryParam`, which the
+        // type system here *correctly* reports as incorrect, because it may be
+        // just an empty object.
+        queryParams as QueryParam,
         true /* fromRouterService */
       );
+
       return shallowEqual(queryParams, routerMicrolib.state!.queryParams);
     }
 
@@ -284,18 +354,18 @@ export default class RouterService extends Service {
 
      ```
      import Component from '@ember/component';
-     import { inject as service } from '@ember/service';
+     import { service } from '@ember/service';
 
-     export default Component.extend({
-       router: service(),
-       path: '/',
+     export default class extends Component {
+       @service router;
+       path = '/';
 
        click() {
-         if(this.router.recognize(this.path)) {
+         if (this.router.recognize(this.path)) {
            this.router.transitionTo(this.path);
          }
        }
-     });
+     }
      ```
 
       @method recognize
@@ -307,6 +377,7 @@ export default class RouterService extends Service {
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
       url.indexOf(this.rootURL) === 0
     );
+    this._router.setupRouter();
     let internalURL = cleanURL(url, this.rootURL);
     return this._router._routerMicrolib.recognize(internalURL);
   }
@@ -327,6 +398,7 @@ export default class RouterService extends Service {
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
       url.indexOf(this.rootURL) === 0
     );
+    this._router.setupRouter();
     let internalURL = cleanURL(url, this.rootURL);
     return this._router._routerMicrolib.recognizeAndLoad(internalURL);
   }
@@ -341,12 +413,15 @@ export default class RouterService extends Service {
     half-filled out:
 
     ```app/routes/contact-form.js
-    import {inject as service} from '@ember/service';
+    import Route from '@ember/routing';
+    import { service } from '@ember/service';
 
-    export default Route.extend({
-      router: service('router'),
-      init() {
-        this._super(...arguments);
+    export default class extends Route {
+      @service router;
+
+      constructor() {
+        super(...arguments);
+
         this.router.on('routeWillChange', (transition) => {
           if (!transition.to.find(route => route.name === this.routeName)) {
             alert("Please save or cancel your changes.");
@@ -354,7 +429,7 @@ export default class RouterService extends Service {
           }
         })
       }
-    });
+    }
     ```
 
     The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
@@ -372,12 +447,15 @@ export default class RouterService extends Service {
     A good example is sending some analytics when the route has transitioned:
 
     ```app/routes/contact-form.js
-    import {inject as service} from '@ember/service';
+    import Route from '@ember/routing';
+    import { service } from '@ember/service';
 
-    export default Route.extend({
-      router: service('router'),
-      init() {
-        this._super(...arguments);
+    export default class extends Route {
+      @service router;
+
+      constructor() {
+        super(...arguments);
+
         this.router.on('routeDidChange', (transition) => {
           ga.send('pageView', {
             current: transition.to.name,
@@ -385,13 +463,57 @@ export default class RouterService extends Service {
           });
         })
       }
-    });
+    }
     ```
+
+    `routeDidChange` will be called after any `Route`'s
+    [didTransition](/ember/release/classes/Route/events/didTransition?anchor=didTransition)
+    action has been fired.
+    The updates of properties
+    [currentURL](/ember/release/classes/RouterService/properties/currentURL?anchor=currentURL),
+    [currentRouteName](/ember/release/classes/RouterService/properties/currentURL?anchor=currentRouteName)
+    and
+    [currentRoute](/ember/release/classes/RouterService/properties/currentURL?anchor=currentRoute)
+    are completed at the time `routeDidChange` is called.
 
     @event routeDidChange
     @param {Transition} transition
     @public
   */
+}
+
+if (EMBER_ROUTING_ROUTER_SERVICE_REFRESH) {
+  RouterService.reopen({
+    /**
+     * Refreshes all currently active routes, doing a full transition.
+     * If a route name is provided and refers to a currently active route,
+     * it will refresh only that route and its descendents.
+     * Returns a promise that will be resolved once the refresh is complete.
+     * All resetController, beforeModel, model, afterModel, redirect, and setupController
+     * hooks will be called again. You will get new data from the model hook.
+     *
+     * @method refresh
+     * @param {String} [routeName] the route to refresh (along with all child routes)
+     * @return Transition
+     * @category EMBER_ROUTING_ROUTER_SERVICE_REFRESH
+     * @public
+     */
+    refresh(pivotRouteName?: string) {
+      if (!pivotRouteName) {
+        return this._router._routerMicrolib.refresh();
+      }
+
+      assert(`The route "${pivotRouteName}" was not found`, this._router.hasRoute(pivotRouteName));
+      assert(
+        `The route "${pivotRouteName}" is currently not active`,
+        this.isActive(pivotRouteName)
+      );
+
+      let pivotRoute = getOwner(this).lookup(`route:${pivotRouteName}`) as Route;
+
+      return this._router._routerMicrolib.refresh(pivotRoute);
+    },
+  });
 }
 
 RouterService.reopen(Evented, {
@@ -533,14 +655,14 @@ RouterService.reopen(Evented, {
 
     Usage example:
     ```app/components/header.js
-      import Component from '@ember/component';
-      import { inject as service } from '@ember/service';
-      import { computed } from '@ember/object';
+      import Component from '@glimmer/component';
+      import { service } from '@ember/service';
+      import { notEmpty } from '@ember/object/computed';
 
-      export default Component.extend({
-        router: service(),
+      export default class extends Component {
+        @service router;
 
-        isChildRoute: computed.notEmpty('router.currentRoute.child')
+        @notEmpty('router.currentRoute.child') isChildRoute;
       });
     ```
 

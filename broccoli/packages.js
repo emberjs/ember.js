@@ -1,6 +1,6 @@
 'use strict';
 
-const { readFileSync, existsSync } = require('fs');
+const { existsSync } = require('fs');
 const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
@@ -16,7 +16,7 @@ const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
-const transfromBabelPlugins = require('./transforms/transform-babel-plugins');
+const canaryFeatures = require('./canary-features');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
@@ -34,15 +34,7 @@ module.exports.routerES = function _routerES() {
   });
 };
 
-module.exports.jquery = function _jquery() {
-  return new Funnel(findLib('jquery'), {
-    files: ['jquery.js'],
-    destDir: 'jquery',
-    annotation: 'jquery',
-  });
-};
-
-module.exports.internalLoader = function _internalLoader() {
+module.exports.loader = function _loader() {
   return new Funnel('packages/loader/lib', {
     files: ['index.js'],
     getDestinationPath() {
@@ -79,16 +71,12 @@ module.exports.getPackagesES = function getPackagesES() {
     `get-packages-es:templates-output`
   );
 
-  let nonTypeScriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
-    srcDir: 'packages',
-    exclude: ['**/*.ts'],
-  });
-
-  // tsc / typescript handles decorators and class properties on its own
-  // so for non ts, transpile the proposal features (decorators, etc)
-  let transpiledProposals = debugTree(
-    transfromBabelPlugins(debugTree(nonTypeScriptContents, `get-packages-es:babel-plugins:input`)),
-    `get-packages-es:babel-plugins:output`
+  let nonTypeScriptContents = debugTree(
+    new Funnel(debuggedCompiledTemplatesAndTypeScript, {
+      srcDir: 'packages',
+      exclude: ['**/*.ts'],
+    }),
+    'get-packages-es:js:output'
   );
 
   let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
@@ -103,7 +91,7 @@ module.exports.getPackagesES = function getPackagesES() {
 
   let debuggedCompiledTypescript = debugTree(typescriptCompiled, `get-packages-es:ts:output`);
 
-  let mergedFinalOutput = new MergeTrees([transpiledProposals, debuggedCompiledTypescript], {
+  let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], {
     overwrite: true,
   });
 
@@ -112,43 +100,26 @@ module.exports.getPackagesES = function getPackagesES() {
     `get-packages-es:package-json`
   );
 
-  mergedFinalOutput = new MergeTrees([mergedFinalOutput, packageJSON], { overwrite: true });
+  mergedFinalOutput = canaryFeatures(
+    new MergeTrees([mergedFinalOutput, packageJSON], { overwrite: true })
+  );
 
   return debugTree(mergedFinalOutput, `get-packages-es:output`);
 };
 
 module.exports.handlebarsES = function _handlebars() {
-  return new Rollup(findLib('handlebars', 'lib'), {
-    annotation: 'handlebars',
+  return new Rollup(findLib('@handlebars/parser', 'dist/esm'), {
+    annotation: '@handlebars/parser',
     rollup: {
-      input: 'handlebars/compiler/base.js',
+      input: 'index.js',
       output: {
-        file: 'handlebars.js',
+        file: '@handlebars/parser/index.js',
         format: 'es',
         exports: 'named',
       },
-      plugins: [handlebarsFix()],
     },
   });
 };
-
-function handlebarsFix() {
-  var HANDLEBARS_PARSER = /[\/\\]parser.js$/;
-  return {
-    load: function(id) {
-      if (HANDLEBARS_PARSER.test(id)) {
-        var code = readFileSync(id, 'utf8');
-        return {
-          code: code
-            .replace('exports.__esModule = true;', '')
-            .replace("exports['default'] = handlebars;", 'export default handlebars;'),
-
-          map: { mappings: null },
-        };
-      }
-    },
-  };
-}
 
 module.exports.rsvpES = function _rsvpES() {
   let lib = path.resolve(path.dirname(require.resolve('rsvp')), '../lib');
@@ -216,16 +187,25 @@ module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
   });
 };
 
-const glimmerTrees = new Map();
+const _glimmerTrees = new Map();
 
 function rollupGlimmerPackage(pkg) {
   let name = pkg.name;
-  let tree = glimmerTrees.get(name);
+  let tree = _glimmerTrees.get(name);
+
+  // @glimmer/debug and @glimmer/local-debug-flags are external dependencies,
+  // but exist in dev-dependencies because they are fully removed before
+  // publishing. Including them here allows Rollup to work for local builds.
+  let externalDeps = (pkg.dependencies || []).concat([
+    '@glimmer/debug',
+    '@glimmer/local-debug-flags',
+  ]);
+
   if (tree === undefined) {
     tree = new Rollup(pkg.module.dir, {
       rollup: {
         input: pkg.module.base,
-        external: pkg.dependencies,
+        external: externalDeps,
         output: {
           file: name + '.js',
           format: 'es',
@@ -233,28 +213,25 @@ function rollupGlimmerPackage(pkg) {
       },
       annotation: name,
     });
-    glimmerTrees.set(name, tree);
+    _glimmerTrees.set(name, tree);
   }
   return tree;
 }
 
-module.exports.glimmerTrees = function glimmerTrees(entries) {
+function glimmerTrees(entries) {
   let seen = new Set();
-
-  // glimmer runtime has dependency on this even though it is only in tests
-  seen.add('@glimmer/object');
-  seen.add('@glimmer/object-reference');
 
   let trees = [];
   let queue = Array.isArray(entries) ? entries.slice() : [entries];
   let name;
+
   while ((name = queue.pop()) !== undefined) {
     if (seen.has(name)) {
       continue;
     }
     seen.add(name);
 
-    if (!name.startsWith('@glimmer/')) {
+    if (!name.startsWith('@glimmer/') && !name.startsWith('@simple-dom/')) {
       continue;
     }
 
@@ -269,24 +246,44 @@ module.exports.glimmerTrees = function glimmerTrees(entries) {
       queue.push(...dependencies);
     }
   }
-  return trees;
+
+  return new MergeTrees(trees);
+}
+
+module.exports.glimmerCompilerES = () => {
+  return glimmerTrees(['@glimmer/compiler']);
+};
+
+module.exports.glimmerES = function glimmerES(environment) {
+  let glimmerEntries = [
+    '@glimmer/node',
+    '@simple-dom/document',
+    '@glimmer/manager',
+    '@glimmer/destroyable',
+    '@glimmer/owner',
+    '@glimmer/opcode-compiler',
+    '@glimmer/runtime',
+  ];
+
+  if (environment === 'development') {
+    let hasGlimmerDebug = true;
+    try {
+      require.resolve('@glimmer/debug'); // eslint-disable-line node/no-missing-require
+    } catch (e) {
+      hasGlimmerDebug = false;
+    }
+    if (hasGlimmerDebug) {
+      glimmerEntries.push('@glimmer/debug', '@glimmer/local-debug-flags');
+    }
+  }
+
+  return glimmerTrees(glimmerEntries);
 };
 
 module.exports.emberVersionES = function _emberVersionES() {
   let content = 'export default ' + JSON.stringify(VERSION) + ';\n';
   return new WriteFile('ember/version.js', content, {
     annotation: 'ember/version',
-  });
-};
-
-module.exports.buildEmberEnvFlagsES = function(flags) {
-  let content = '';
-  for (let key in flags) {
-    content += `\nexport const ${key} = ${flags[key]};`;
-  }
-
-  return new WriteFile('@glimmer/env.js', content, {
-    annotation: '@glimmer/env',
   });
 };
 
@@ -305,11 +302,5 @@ module.exports.emberLicense = function _emberLicense() {
       },
     ],
     annotation: 'license',
-  });
-};
-
-module.exports.nodeTests = function _nodeTests() {
-  return new Funnel('tests', {
-    include: ['**/*/*.js'],
   });
 };

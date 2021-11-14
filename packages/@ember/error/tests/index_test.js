@@ -9,7 +9,7 @@ moduleFor(
         () => {
           throw new EmberError('A Message');
         },
-        function(e) {
+        function (e) {
           return e.message === 'A Message';
         },
         'the assigned message was displayed'

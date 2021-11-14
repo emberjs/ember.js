@@ -1,7 +1,6 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
 import Application from '@ember/application';
 import { Router } from '@ember/-internals/routing';
-import { assign } from '@ember/polyfills';
 
 import { runTask, runLoopSettled } from '../run';
 
@@ -24,7 +23,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
   }
 
   get applicationOptions() {
-    return assign(super.applicationOptions, {
+    return Object.assign(super.applicationOptions, {
       autoboot: false,
     });
   }
@@ -33,9 +32,16 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     return this.applicationInstance.lookup('router:main');
   }
 
+  get currentURL() {
+    return this.appRouter.get('currentURL');
+  }
+
   async transitionTo() {
     await this.appRouter.transitionTo(...arguments);
-
     await runLoopSettled();
+  }
+
+  controllerFor(name) {
+    return this.applicationInstance.lookup(`controller:${name}`);
   }
 }

@@ -1,33 +1,44 @@
-import { context, ENV } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment';
 import { FEATURES } from '@ember/canary-features';
+import * as _GlimmerSyntax from '@glimmer/syntax';
 import VERSION from 'ember/version';
+import require from 'require';
 
-export const _Ember =
-  (typeof (context.imports as any).Ember === 'object' && (context.imports as any).Ember) || {};
+declare global {
+  interface NodeRequire {
+    has(name: string): boolean;
+  }
 
-// private API used by ember-cli-htmlbars to setup ENV and FEATURES
-if (!_Ember.ENV) {
-  _Ember.ENV = ENV;
-}
-if (!_Ember.FEATURES) {
-  _Ember.FEATURES = FEATURES;
-}
-if (!_Ember.VERSION) {
-  _Ember.VERSION = VERSION;
+  function define(path: string, deps: string[], module: () => void): void;
 }
 
-// used for adding Ember.Handlebars.compile for backwards compat
-import setupGlobal from './lib/compat';
-setupGlobal(_Ember);
+export let _Ember: unknown;
+
+try {
+  // tslint:disable-next-line: no-require-imports
+  _Ember = require('ember');
+} catch (e) {
+  _Ember = {
+    ENV,
+    FEATURES,
+    VERSION,
+  };
+}
 
 export { default as precompile } from './lib/system/precompile';
 export { default as compile } from './lib/system/compile';
 export {
   default as compileOptions,
-  registerPlugin,
-  unregisterPlugin,
+  buildCompileOptions as _buildCompileOptions,
+  transformsFor as _transformsFor,
 } from './lib/system/compile-options';
-export { default as defaultPlugins } from './lib/plugins/index';
+export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins/index';
+export { EmberPrecompileOptions } from './lib/types';
+
+export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';
+export { precompile as _precompile } from '@glimmer/compiler';
+
+export { _GlimmerSyntax, VERSION };
 
 // used to bootstrap templates
 import './lib/system/bootstrap';

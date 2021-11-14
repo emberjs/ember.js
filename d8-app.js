@@ -1,12 +1,12 @@
 'use strict';
 /* globals print, Ember, SimpleDOM */
 
-var Router = Ember.Router.extend({
+let Router = Ember.Router.extend({
   location: 'none',
   rootURL: '/',
 });
-Router.map(function() {
-  this.route('my-route', { path: '/my-route' }, function() {});
+Router.map(function () {
+  this.route('my-route', { path: '/my-route' }, function () {});
 });
 Ember.TEMPLATES['index'] = Ember.HTMLBars.template({
   id: null,
@@ -20,14 +20,14 @@ Ember.TEMPLATES['my-route/index'] = Ember.HTMLBars.template({
     '{"statements":[["text","my-route"]],"locals":[],"named":[],"yields":[],"blocks":[],"hasPartials":false}',
   meta: {},
 });
-var App = Ember.Application.extend({
+let App = Ember.Application.extend({
   Router: Router,
   autoboot: false,
 });
-var app = new App();
-var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-var doc = new SimpleDOM.Document();
-var options = {
+let app = new App();
+let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+let doc = new SimpleDOM.Document();
+let options = {
   isBrowser: false,
   document: doc,
   rootElement: doc.body,
@@ -35,19 +35,19 @@ var options = {
 };
 app
   .visit('/', options)
-  .then(function(instance) {
+  .then(function (instance) {
     print(serializer.serialize(doc.body));
-    var router = instance.lookup('router:main');
+    let router = instance.lookup('router:main');
     return router.transitionTo('/my-route');
   })
-  .then(function() {
-    return new Ember.RSVP.Promise(function(resolve) {
+  .then(function () {
+    return new Ember.RSVP.Promise(function (resolve) {
       Ember.run.schedule('afterRender', resolve);
     });
   })
-  .then(function() {
+  .then(function () {
     print(serializer.serialize(doc.body));
   })
-  .catch(function(err) {
+  .catch(function (err) {
     print(err.stack);
   });

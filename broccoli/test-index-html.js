@@ -7,7 +7,6 @@ const FEATURES = require('./features');
 module.exports = function testIndexHTML() {
   let index = new Funnel('tests', {
     files: ['index.html'],
-    destDir: 'tests',
     annotation: 'tests/index.html',
   });
   index = new StringReplace(index, {

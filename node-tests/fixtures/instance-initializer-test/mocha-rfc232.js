@@ -19,7 +19,7 @@ describe('Unit | Instance Initializer | foo', function() {
     run(this.application, 'destroy');
   });
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   it('works', async function() {
     await this.instance.boot();
 

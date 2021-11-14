@@ -1,7 +1,7 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
-import { guidFor } from '@ember/-internals/utils';
+import { guidFor, getName } from '@ember/-internals/utils';
 import EmberObject from '../../../lib/system/object';
 import Namespace from '../../../lib/system/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -62,19 +62,18 @@ moduleFor(
     ['@test Classes under an Namespace are properly named'](assert) {
       let nsA = (lookup.NamespaceA = Namespace.create());
       nsA.Foo = EmberObject.extend();
-      assert.equal(nsA.Foo.toString(), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
+      Namespace.processAll();
+      assert.equal(getName(nsA.Foo), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
 
       nsA.Bar = EmberObject.extend();
-      assert.equal(
-        nsA.Bar.toString(),
-        'NamespaceA.Bar',
-        'New Classes get the naming treatment too'
-      );
+      Namespace.processAll();
+      assert.equal(getName(nsA.Bar), 'NamespaceA.Bar', 'New Classes get the naming treatment too');
 
       let nsB = (lookup.NamespaceB = Namespace.create());
       nsB.Foo = EmberObject.extend();
+      Namespace.processAll();
       assert.equal(
-        nsB.Foo.toString(),
+        getName(nsB.Foo),
         'NamespaceB.Foo',
         'Classes in new namespaces get the naming treatment'
       );
@@ -88,7 +87,8 @@ moduleFor(
 
     ['@test Lowercase namespaces are no longer supported'](assert) {
       let nsC = (lookup.namespaceC = Namespace.create());
-      assert.equal(nsC.toString(), guidFor(nsC));
+      Namespace.processAll();
+      assert.equal(getName(nsC), guidFor(nsC));
     }
 
     ['@test A namespace can be assigned a custom name'](assert) {
@@ -104,13 +104,15 @@ moduleFor(
         nsA.Foo = EmberObject.extend();
         nsB.Foo = EmberObject.extend();
 
+        Namespace.processAll();
+
         assert.equal(
-          nsA.Foo.toString(),
+          getName(nsA.Foo),
           'NamespaceA.Foo',
           "The namespace's name is used when the namespace is not in the lookup object"
         );
         assert.equal(
-          nsB.Foo.toString(),
+          getName(nsB.Foo),
           'CustomNamespaceB.Foo',
           "The namespace's name is used when the namespace is in the lookup object"
         );
@@ -129,8 +131,8 @@ moduleFor(
 
       Namespace.processAll();
 
-      assert.equal(namespace.ClassA.toString(), 'NS.ClassA');
-      assert.equal(namespace.ClassB.toString(), 'NS.ClassB');
+      assert.equal(getName(namespace.ClassA), 'NS.ClassA');
+      assert.equal(getName(namespace.ClassB), 'NS.ClassB');
     }
 
     ['@test A namespace can be looked up by its name'](assert) {

@@ -1,13 +1,15 @@
 import { isEmpty } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import ObjectProxy from '../../runtime/lib/system/object_proxy';
 
 moduleFor(
   'isEmpty',
   class extends AbstractTestCase {
     ['@test isEmpty'](assert) {
       let string = 'string';
-      let fn = function() {};
+      let fn = function () {};
       let object = { length: 0 };
+      let proxy = ObjectProxy.create({ content: { size: 0 } });
 
       assert.equal(true, isEmpty(null), 'for null');
       assert.equal(true, isEmpty(undefined), 'for undefined');
@@ -22,6 +24,7 @@ moduleFor(
       assert.equal(true, isEmpty([]), 'for an empty Array');
       assert.equal(false, isEmpty({}), 'for an empty Object');
       assert.equal(true, isEmpty(object), "for an Object that has zero 'length'");
+      assert.equal(true, isEmpty(proxy), "for a proxy that has zero 'size'");
     }
   }
 );

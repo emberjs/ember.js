@@ -13,9 +13,10 @@ export {
 } from './lib/system/generate_controller';
 export { default as controllerFor } from './lib/system/controller_for';
 export { default as RouterDSL } from './lib/system/dsl';
-export { default as Router } from './lib/system/router';
+export { default as Router, QueryParam } from './lib/system/router';
 export { default as Route } from './lib/system/route';
 export { default as QueryParams } from './lib/system/query_params';
 export { default as RoutingService } from './lib/services/routing';
 export { default as RouterService } from './lib/services/router';
+export { default as RouterState } from './lib/system/router_state';
 export { default as BucketCache } from './lib/system/cache';

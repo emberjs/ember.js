@@ -6,7 +6,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test isNone'](assert) {
       let string = 'string';
-      let fn = function() {};
+      let fn = function () {};
 
       assert.equal(true, isNone(null), 'for null');
       assert.equal(true, isNone(undefined), 'for undefined');

@@ -11,8 +11,7 @@ import {
   arrayContentWillChange,
 } from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
-import EmberArray from '../../lib/mixins/array';
-import { A as emberA } from '../../lib/mixins/array';
+import EmberArray, { A as emberA } from '../../lib/mixins/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*
@@ -46,7 +45,7 @@ const TestArray = EmberObject.extend(EmberArray, {
     return this._content[idx];
   },
 
-  length: computed(function() {
+  length: computed(function () {
     return this._content.length;
   }),
 });
@@ -103,7 +102,7 @@ moduleFor(
   class extends AbstractTestCase {
     async ['@test should notify observers of []'](assert) {
       obj = DummyArray.extend({
-        enumerablePropertyDidChange: emberObserver('[]', function() {
+        enumerablePropertyDidChange: emberObserver('[]', function () {
           this._count++;
         }),
       }).create({
@@ -118,6 +117,11 @@ moduleFor(
 
       assert.equal(obj._count, 1, 'should have invoked');
     }
+
+    afterEach() {
+      obj.destroy();
+      obj = undefined;
+    }
   }
 );
 
@@ -130,7 +134,7 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach(assert) {
       obj = DummyArray.extend({
-        lengthDidChange: emberObserver('length', function() {
+        lengthDidChange: emberObserver('length', function () {
           this._after++;
         }),
       }).create({
@@ -141,7 +145,8 @@ moduleFor(
     }
 
     afterEach() {
-      obj = null;
+      obj.destroy();
+      obj = undefined;
     }
 
     async ['@test should notify observers when call with no params'](assert) {
@@ -188,7 +193,7 @@ moduleFor(
 //
 
 moduleFor(
-  'notify array observers',
+  'notify array observers (internal)',
   class extends AbstractTestCase {
     beforeEach(assert) {
       obj = DummyArray.create();
@@ -208,7 +213,10 @@ moduleFor(
         _after: null,
       });
 
-      addArrayObserver(obj, observer);
+      addArrayObserver(obj, observer, {
+        willChange: 'arrayWillChange',
+        didChange: 'arrayDidChange',
+      });
     }
 
     afterEach() {
@@ -241,7 +249,10 @@ moduleFor(
     }
 
     ['@test removing array observer should disable'](assert) {
-      removeArrayObserver(obj, observer);
+      removeArrayObserver(obj, observer, {
+        willChange: 'arrayWillChange',
+        didChange: 'arrayDidChange',
+      });
       arrayContentWillChange(obj);
       assert.deepEqual(observer._before, null);
 
@@ -272,6 +283,7 @@ moduleFor(
     }
 
     afterEach() {
+      ary.destroy();
       ary = null;
     }
 
@@ -340,7 +352,7 @@ moduleFor(
           set(this, 'resources', emberA());
         },
 
-        common: computed('resources.@each.common', function() {
+        common: computed('resources.@each.common', function () {
           return get(objectAt(get(this, 'resources'), 0), 'common');
         }),
       }).create();
@@ -376,6 +388,8 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(count, 2, 'observers should be called twice');
+
+      obj.destroy();
     }
   }
 );

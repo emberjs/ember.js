@@ -1,10 +1,19 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  RenderingTestCase,
+  runTask,
+} from 'internal-test-helpers';
 
-import { getOwner } from '@ember/-internals/owner';
-import { compile, Component } from '../utils/helpers';
-import Controller from '@ember/controller';
+import { DEBUG } from '@ember/debug';
 import { set } from '@ember/-internals/metal';
+import { getOwner } from '@ember/-internals/owner';
+import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
+
+import { backtrackingMessageFor } from '../utils/debug-stack';
+import { compile, Component } from '../utils/helpers';
 
 moduleFor(
   '{{mount}} single param assertion',
@@ -22,7 +31,7 @@ moduleFor(
   class extends RenderingTestCase {
     ['@test it asserts when an invalid engine name is provided']() {
       expectAssertion(() => {
-        this.render('{{mount engineName}}', { engineName: {} });
+        this.render('{{mount this.engineName}}', { engineName: {} });
       }, /Invalid engine name '\[object Object\]' specified, engine name must be either a string, null or undefined./i);
     }
 
@@ -46,11 +55,12 @@ moduleFor(
         'engine:chat',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
 
           init() {
             this._super(...arguments);
 
-            Object.keys(engineRegistrations).forEach(fullName => {
+            Object.keys(engineRegistrations).forEach((fullName) => {
               this.register(fullName, engineRegistrations[fullName]);
             });
           },
@@ -64,8 +74,10 @@ moduleFor(
       assert
     ) {
       this.engineRegistrations['template:application'] = compile(
-        '<h2>Chat here, {{username}}</h2>',
-        { moduleName: 'my-app/templates/application.hbs' }
+        '<h2>Chat here, {{this.username}}</h2>',
+        {
+          moduleName: 'my-app/templates/application.hbs',
+        }
       );
 
       let controller;
@@ -102,7 +114,12 @@ moduleFor(
     }
 
     async ['@test it emits a useful backtracking re-render assertion message'](assert) {
-      this.router.map(function() {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      this.router.map(function () {
         this.route('route-with-mount');
       });
 
@@ -110,11 +127,18 @@ moduleFor(
       this.addTemplate('route-with-mount', '{{mount "chat"}}');
 
       this.engineRegistrations['template:application'] = compile(
-        'hi {{person.name}} [{{component-with-backtracking-set person=person}}]',
-        { moduleName: 'my-app/templates/application.hbs' }
+        'hi {{this.person.name}} [{{component-with-backtracking-set person=this.person}}]',
+        {
+          moduleName: 'my-app/templates/application.hbs',
+        }
       );
       this.engineRegistrations['controller:application'] = Controller.extend({
-        person: { name: 'Alex' },
+        person: {
+          name: 'Alex',
+          toString() {
+            return `Person (${this.name})`;
+          },
+        },
       });
 
       this.engineRegistrations['template:components/component-with-backtracking-set'] = compile(
@@ -130,7 +154,9 @@ moduleFor(
         },
       });
 
-      let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/route-with-mount.hbs" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['application', 'route-with-mount', 'chat', 'this.person.name'],
+      });
 
       await this.visit('/');
 
@@ -138,7 +164,7 @@ moduleFor(
     }
 
     ['@test it renders with a bound engine name']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('bound-engine-name');
       });
       let controller;
@@ -152,12 +178,14 @@ moduleFor(
           },
         })
       );
-      this.addTemplate('bound-engine-name', '{{mount engineName}}');
+      this.addTemplate('bound-engine-name', '{{mount this.engineName}}');
 
       this.add(
         'engine:foo',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -173,6 +201,8 @@ moduleFor(
         'engine:bar',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -215,7 +245,7 @@ moduleFor(
     }
 
     ['@test it declares the event dispatcher as a singleton']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-event-dispatcher-singleton');
       });
 
@@ -237,6 +267,8 @@ moduleFor(
         'engine:foo',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -292,11 +324,13 @@ moduleFor(
         'engine:paramEngine',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
               'template:application',
-              compile('<h2>Param Engine: {{model.foo}}</h2>', {
+              compile('<h2>Param Engine: {{@model.foo}}</h2>', {
                 moduleName: 'my-app/templates/application.hbs',
               })
             );
@@ -306,7 +340,7 @@ moduleFor(
     }
 
     ['@test it renders with static parameters']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-params-static');
       });
       this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
@@ -317,7 +351,7 @@ moduleFor(
     }
 
     ['@test it renders with bound parameters']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-params-bound');
       });
       let controller;
@@ -333,7 +367,7 @@ moduleFor(
       );
       this.addTemplate(
         'engine-params-bound',
-        '{{mount "paramEngine" model=(hash foo=boundParamValue)}}'
+        '{{mount "paramEngine" model=(hash foo=this.boundParamValue)}}'
       );
 
       return this.visit('/engine-params-bound').then(() => {
@@ -366,7 +400,7 @@ moduleFor(
     }
 
     ['@test it renders contextual components passed as parameter values']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('engine-params-contextual-component');
       });
 
@@ -381,11 +415,13 @@ moduleFor(
         'engine:componentParamEngine',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
               'template:application',
-              compile('{{model.foo}}', {
+              compile('{{@model.foo}}', {
                 moduleName: 'my-app/templates/application.hbs',
               })
             );

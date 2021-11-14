@@ -1,7 +1,8 @@
 import { Promise } from 'rsvp';
 import Application from '@ember/application';
-import { run, hasScheduledTimers, getCurrentRunLoop } from '@ember/runloop';
+import { run, _hasScheduledTimers, _getCurrentRunLoop } from '@ember/runloop';
 import { compile } from 'ember-template-compiler';
+import { ModuleBasedTestResolver } from 'internal-test-helpers';
 
 const { module, test } = QUnit;
 
@@ -14,14 +15,14 @@ const { module, test } = QUnit;
   `@ember/test-helpers` here (will make a nested module for each significant
   revision).
 */
-module('@ember/test-helpers emulation test', function() {
-  module('v1.6.0', function() {
+module('@ember/test-helpers emulation test', function () {
+  module('v1.6.0', function () {
     let EMPTY_TEMPLATE = compile('');
 
     function settled() {
-      return new Promise(function(resolve) {
+      return new Promise(function (resolve) {
         let watcher = setInterval(() => {
-          if (getCurrentRunLoop() || hasScheduledTimers()) {
+          if (_getCurrentRunLoop() || _hasScheduledTimers()) {
             return;
           }
 
@@ -45,7 +46,9 @@ module('@ember/test-helpers emulation test', function() {
     function setupRenderingContext(context) {
       let { owner } = context;
       let OutletView = owner.factoryFor('view:-outlet');
-      let toplevelView = OutletView.create();
+      let environment = owner.lookup('-environment:main');
+      let outletTemplateFactory = owner.lookup('template:-outlet');
+      let toplevelView = OutletView.create({ environment, template: outletTemplateFactory });
 
       owner.register('-top-level-view:main', {
         create() {
@@ -105,23 +108,24 @@ module('@ember/test-helpers emulation test', function() {
       return settled();
     }
 
-    module('setupRenderingContext', function(hooks) {
-      hooks.beforeEach(async function() {
+    module('setupRenderingContext', function (hooks) {
+      hooks.beforeEach(async function () {
         this.application = Application.create({
           rootElement: '#qunit-fixture',
           autoboot: false,
+          Resolver: ModuleBasedTestResolver,
         });
 
         await setupContext(this);
         await setupRenderingContext(this);
       });
 
-      hooks.afterEach(function() {
+      hooks.afterEach(function () {
         run(this.owner, 'destroy');
         run(this.application, 'destroy');
       });
 
-      test('it basically works', async function(assert) {
+      test('it basically works', async function (assert) {
         await render(compile('Hi!'), this);
 
         assert.equal(this.element.textContent, 'Hi!');

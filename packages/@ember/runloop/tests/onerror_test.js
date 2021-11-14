@@ -37,7 +37,7 @@ moduleFor(
       let originalIsTesting = isTesting();
 
       let caught;
-      setOnerror(error => {
+      setOnerror((error) => {
         caught = error;
       });
       setDispatchOverride(null);

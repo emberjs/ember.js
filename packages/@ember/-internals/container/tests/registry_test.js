@@ -1,11 +1,5 @@
 import { Registry, privatize } from '..';
-import {
-  factory,
-  moduleFor,
-  AbstractTestCase,
-  ModuleBasedTestResolver,
-} from 'internal-test-helpers';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
+import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Registry',
@@ -85,17 +79,6 @@ moduleFor(
       );
     }
 
-    ['@test Throw exception when trying to inject `type:thing` on all type(s)']() {
-      let registry = new Registry();
-      let PostController = factory();
-
-      registry.register('controller:post', PostController);
-
-      expectAssertion(() => {
-        registry.typeInjection('controller', 'injected', 'controller:post');
-      }, /Cannot inject a 'controller:post' on other controller\(s\)\./);
-    }
-
     ['@test The registry can take a hook to resolve factories lazily'](assert) {
       let PostController = factory();
       let resolver = {
@@ -132,7 +115,7 @@ moduleFor(
       let registry = new Registry();
       let PostController = factory();
 
-      registry.normalizeFullName = function() {
+      registry.normalizeFullName = function () {
         return 'controller:post';
       };
 
@@ -146,7 +129,7 @@ moduleFor(
       let registry = new Registry();
       let PostController = factory();
 
-      registry.normalizeFullName = function(fullName) {
+      registry.normalizeFullName = function (fullName) {
         return fullName === 'controller:normalized' ? 'controller:post' : fullName;
       };
 
@@ -157,26 +140,6 @@ moduleFor(
         isPresent,
         true,
         'Normalizes the name when checking if the factory or instance is present'
-      );
-    }
-
-    ['@test The registry normalizes names when injecting'](assert) {
-      let registry = new Registry();
-      let PostController = factory();
-      let user = { name: 'Stef' };
-
-      registry.normalize = function() {
-        return 'controller:post';
-      };
-
-      registry.register('controller:post', PostController);
-      registry.register('user:post', user, { instantiate: false });
-      registry.injection('controller:post', 'user', 'controller:normalized');
-
-      assert.deepEqual(
-        registry.resolve('controller:post'),
-        user,
-        'Normalizes the name when injecting'
       );
     }
 
@@ -207,34 +170,11 @@ moduleFor(
       registry.register('controller:apple', FirstApple);
       assert.strictEqual(registry.resolve('controller:apple'), FirstApple);
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         registry.register('controller:apple', SecondApple);
       }, /Cannot re-register: 'controller:apple', as it has already been resolved\./);
 
       assert.strictEqual(registry.resolve('controller:apple'), FirstApple);
-    }
-
-    ['@test registry.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)'](
-      assert
-    ) {
-      assert.expect(1);
-
-      let registry = new Registry();
-      let FirstApple = factory('first');
-      let SecondApple = factory('second');
-
-      SecondApple.extend = function() {
-        assert.ok(
-          false,
-          'should not extend or touch the injected model, merely to inspect existence of another'
-        );
-      };
-
-      registry.register('controller:apple', FirstApple);
-      registry.register('controller:second-apple', SecondApple);
-      registry.injection('controller:apple', 'badApple', 'controller:second-apple');
-
-      assert.ok(registry.has('controller:apple'));
     }
 
     ['@test registry.has should not error for invalid fullNames'](assert) {
@@ -489,44 +429,6 @@ moduleFor(
       );
     }
 
-    ['@test `getInjections` includes injections from a fallback registry'](assert) {
-      let fallback = new Registry();
-      let registry = new Registry({ fallback: fallback });
-
-      assert.strictEqual(
-        registry.getInjections('model:user'),
-        undefined,
-        'No injections in the primary registry'
-      );
-
-      fallback.injection('model:user', 'post', 'model:post');
-
-      assert.equal(
-        registry.getInjections('model:user').length,
-        1,
-        'Injections from the fallback registry are merged'
-      );
-    }
-
-    ['@test `getTypeInjections` includes type injections from a fallback registry'](assert) {
-      let fallback = new Registry();
-      let registry = new Registry({ fallback: fallback });
-
-      assert.strictEqual(
-        registry.getTypeInjections('model'),
-        undefined,
-        'No injections in the primary registry'
-      );
-
-      fallback.injection('model', 'source', 'source:main');
-
-      assert.equal(
-        registry.getTypeInjections('model').length,
-        1,
-        'Injections from the fallback registry are merged'
-      );
-    }
-
     ['@test `knownForType` contains keys for each item of a given type'](assert) {
       let registry = new Registry();
 
@@ -582,227 +484,6 @@ moduleFor(
         'foo:bar-baz': true,
       });
     }
-
-    ['@test resolver.expandLocalLookup is not required'](assert) {
-      let registry = new Registry({
-        resolver: {},
-      });
-
-      let result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, null);
-    }
-
-    ['@test expandLocalLookup is called on the resolver if present'](assert) {
-      assert.expect(4);
-
-      let resolver = {
-        expandLocalLookup: (targetFullName, sourceFullName) => {
-          assert.ok(true, 'expandLocalLookup is called on the resolver');
-          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
-          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
-
-          return 'foo:qux/bar';
-        },
-      };
-
-      let registry = new Registry({
-        resolver,
-      });
-
-      let result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, 'foo:qux/bar');
-    }
-
-    ['@test `expandLocalLookup` is handled by the resolver, then by the fallback registry, if available'](
-      assert
-    ) {
-      assert.expect(9);
-
-      let fallbackResolver = {
-        expandLocalLookup: (targetFullName, sourceFullName) => {
-          assert.ok(true, 'expandLocalLookup is called on the fallback resolver');
-          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
-          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
-
-          return 'foo:qux/bar-fallback';
-        },
-      };
-
-      let resolver = {
-        expandLocalLookup: (targetFullName, sourceFullName) => {
-          assert.ok(true, 'expandLocalLookup is called on the resolver');
-          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
-          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
-
-          return 'foo:qux/bar-resolver';
-        },
-      };
-
-      let fallbackRegistry = new Registry({
-        resolver: fallbackResolver,
-      });
-
-      let registry = new Registry({
-        fallback: fallbackRegistry,
-        resolver,
-      });
-
-      let result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, 'foo:qux/bar-resolver', 'handled by the resolver');
-
-      registry.resolver = null;
-
-      result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, 'foo:qux/bar-fallback', 'handled by the fallback registry');
-
-      registry.fallback = null;
-
-      result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(
-        result,
-        null,
-        'null is returned by default when no resolver or fallback registry is present'
-      );
-    }
-
-    ['@test resolver.expandLocalLookup result is cached'](assert) {
-      assert.expect(3);
-      let result;
-
-      let resolver = {
-        expandLocalLookup: () => {
-          assert.ok(true, 'expandLocalLookup is called on the resolver');
-
-          return 'foo:qux/bar';
-        },
-      };
-
-      let registry = new Registry({
-        resolver,
-      });
-
-      result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, 'foo:qux/bar');
-
-      result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, 'foo:qux/bar');
-    }
-
-    ['@test resolver.expandLocalLookup cache is busted when any unregister is called'](assert) {
-      assert.expect(4);
-      let result;
-
-      let resolver = {
-        expandLocalLookup: () => {
-          assert.ok(true, 'expandLocalLookup is called on the resolver');
-
-          return 'foo:qux/bar';
-        },
-      };
-
-      let registry = new Registry({
-        resolver,
-      });
-
-      result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, 'foo:qux/bar');
-
-      registry.unregister('foo:bar');
-
-      result = registry.expandLocalLookup('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.equal(result, 'foo:qux/bar');
-    }
-
-    ['@test resolve calls expandLocallookup when it receives options.source'](assert) {
-      assert.expect(3);
-
-      let resolver = {
-        resolve() {},
-        expandLocalLookup: (targetFullName, sourceFullName) => {
-          assert.ok(true, 'expandLocalLookup is called on the resolver');
-          assert.equal(targetFullName, 'foo:bar', 'the targetFullName was passed through');
-          assert.equal(sourceFullName, 'baz:qux', 'the sourceFullName was passed through');
-
-          return 'foo:qux/bar';
-        },
-      };
-
-      let registry = new Registry({
-        resolver,
-      });
-
-      registry.resolve('foo:bar', {
-        source: 'baz:qux',
-      });
-    }
-
-    ['@test has uses expandLocalLookup'](assert) {
-      assert.expect(5);
-      let resolvedFullNames = [];
-      let result;
-
-      let resolver = {
-        resolve(name) {
-          resolvedFullNames.push(name);
-          return 'yippie!';
-        },
-
-        expandLocalLookup: targetFullName => {
-          assert.ok(true, 'expandLocalLookup is called on the resolver');
-
-          if (targetFullName === 'foo:bar') {
-            return 'foo:qux/bar';
-          } else {
-            return null;
-          }
-        },
-      };
-
-      let registry = new Registry({
-        resolver,
-      });
-
-      result = registry.has('foo:bar', {
-        source: 'baz:qux',
-      });
-
-      assert.ok(result, 'found foo:bar/qux');
-
-      result = registry.has('foo:baz', {
-        source: 'baz:qux',
-      });
-
-      assert.ok(!result, 'foo:baz/qux not found');
-
-      assert.deepEqual(['foo:qux/bar'], resolvedFullNames);
-    }
   }
 );
 
@@ -820,72 +501,3 @@ moduleFor(
     }
   }
 );
-
-if (EMBER_MODULE_UNIFICATION) {
-  moduleFor(
-    'Registry module unification',
-    class extends AbstractTestCase {
-      ['@test The registry can pass a source to the resolver'](assert) {
-        let PrivateComponent = factory();
-        let type = 'component';
-        let name = 'my-input';
-        let specifier = `${type}:${name}`;
-        let source = 'template:routes/application';
-
-        let resolver = new ModuleBasedTestResolver();
-        resolver.add({ specifier, source }, PrivateComponent);
-        let registry = new Registry({ resolver });
-
-        assert.strictEqual(
-          registry.resolve(specifier),
-          undefined,
-          'Not returned when specifier not scoped'
-        );
-        assert.strictEqual(
-          registry.resolve(specifier, { source }),
-          PrivateComponent,
-          'The correct factory was provided'
-        );
-        assert.strictEqual(
-          registry.resolve(specifier, { source }),
-          PrivateComponent,
-          'The correct factory was provided again'
-        );
-      }
-
-      ['@test The registry can pass a namespace to the resolver'](assert) {
-        let PrivateComponent = factory();
-        let type = 'component';
-        let name = 'my-input';
-        let specifier = `${type}:${name}`;
-        let source = 'template:routes/application';
-        let namespace = 'my-addon';
-
-        let resolver = new ModuleBasedTestResolver();
-        resolver.add({ specifier, source, namespace }, PrivateComponent);
-        let registry = new Registry({ resolver });
-
-        assert.strictEqual(
-          registry.resolve(specifier),
-          undefined,
-          'Not returned when specifier not scoped'
-        );
-        assert.strictEqual(
-          registry.resolve(specifier, { source }),
-          undefined,
-          'Not returned when specifier is missing namespace'
-        );
-        assert.strictEqual(
-          registry.resolve(specifier, { source, namespace }),
-          PrivateComponent,
-          'The correct factory was provided'
-        );
-        assert.strictEqual(
-          registry.resolve(specifier, { source, namespace }),
-          PrivateComponent,
-          'The correct factory was provided again'
-        );
-      }
-    }
-  );
-}

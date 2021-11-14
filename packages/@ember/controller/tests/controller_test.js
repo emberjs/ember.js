@@ -1,9 +1,73 @@
 import Controller, { inject as injectController } from '@ember/controller';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Mixin, get } from '@ember/-internals/metal';
+import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';
+import { action } from '@ember/object';
+
+moduleFor(
+  'Controller model',
+  class extends ApplicationTestCase {
+    async '@test model is tracked'() {
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor() {
+            super(...arguments);
+            this.model = 0;
+          }
+
+          get derived() {
+            return this.model + 1;
+          }
+
+          @action
+          update() {
+            this.model++;
+          }
+        }
+      );
+
+      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.derived}}</button>');
+
+      await this.visit('/');
+
+      this.assertText('1');
+
+      runTask(() => this.$('button').click());
+      this.assertText('2');
+    }
+
+    async '@test model can be observed with sync observers'(assert) {
+      let observerRunCount = 0;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor() {
+            super(...arguments);
+            this.model = 0;
+
+            this.addObserver('model', this, () => observerRunCount++, true);
+          }
+
+          @action
+          update() {
+            this.model++;
+          }
+        }
+      );
+
+      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.model}}</button>');
+
+      await this.visit('/');
+      runTask(() => this.$('button').click());
+      assert.equal(observerRunCount, 1, 'observer ran exactly once');
+    }
+  }
+);
 
 moduleFor(
   'Controller event handling',
@@ -23,6 +87,8 @@ moduleFor(
 
     ['@test A handled action can be bubbled to the target for continued processing'](assert) {
       assert.expect(2);
+      let owner = buildOwner();
+
       let TestController = Controller.extend({
         actions: {
           poke() {
@@ -31,6 +97,8 @@ moduleFor(
           },
         },
       });
+
+      owner.register('controller:index', TestController);
 
       let controller = TestController.create({
         target: Controller.extend({
@@ -41,6 +109,9 @@ moduleFor(
           },
         }).create(),
       });
+
+      setOwner(controller, owner);
+
       controller.send('poke');
     }
 
@@ -110,7 +181,7 @@ moduleFor(
       assert.expect(2);
       let controller;
 
-      ignoreDeprecation(function() {
+      ignoreDeprecation(function () {
         controller = Controller.extend({
           content: 'foo-bar',
         }).create();
@@ -152,7 +223,7 @@ moduleFor(
   'Controller deprecations -> Controller injected properties',
   class extends AbstractTestCase {
     ['@test defining a controller on a non-controller should fail assertion']() {
-      expectAssertion(function() {
+      expectAssertion(function () {
         let owner = buildOwner();
 
         let AnObject = EmberObject.extend({
@@ -194,7 +265,7 @@ moduleFor(
       owner.register(
         'controller:application',
         Controller.extend({
-          authService: injectService('auth'),
+          authService: service('auth'),
         })
       );
 

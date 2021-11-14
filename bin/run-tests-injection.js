@@ -2,13 +2,13 @@
 /* eslint-disable no-console */
 /* globals QUnit */
 'use strict';
-document.addEventListener('DOMContentLoaded', function() {
-  var testsTotal = 0;
-  var testsPassed = 0;
-  var testsFailed = 0;
-  var currentTestAssertions = [];
-  QUnit.log(function(details) {
-    var response;
+document.addEventListener('DOMContentLoaded', function () {
+  let testsTotal = 0;
+  let testsPassed = 0;
+  let testsFailed = 0;
+  let currentTestAssertions = [];
+  QUnit.log(function (details) {
+    let response;
 
     // Ignore passing assertions
     if (details.result) {
@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
     currentTestAssertions.push('Failed assertion: ' + response);
   });
 
-  QUnit.testDone(function(result) {
-    var i,
+  QUnit.testDone(function (result) {
+    let i,
       len,
       name = '';
 
@@ -58,13 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
     currentTestAssertions.length = 0;
   });
 
-  QUnit.moduleDone(m => {
+  QUnit.moduleDone((m) => {
     console.log(
       `Module "${m.name}" finished ${m.total} tests${m.failed > 0 ? `${m.failed} failed` : ''}`
     );
   });
 
-  QUnit.done(function(result) {
+  QUnit.done(function (result) {
     console.log(
       '\n' +
         'Took ' +

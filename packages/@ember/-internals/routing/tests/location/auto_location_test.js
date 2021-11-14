@@ -1,8 +1,7 @@
-import { OWNER } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
 import { window } from '@ember/-internals/browser-environment';
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
+import { setOwner } from '@glimmer/owner';
 import AutoLocation from '../../lib/location/auto_location';
 import { getHistoryPath, getHashPath } from '../../lib/location/auto_location';
 import HistoryLocation from '../../lib/location/history_location';
@@ -11,7 +10,7 @@ import NoneLocation from '../../lib/location/none_location';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides, assert) {
-  return assign(
+  return Object.assign(
     {
       href: 'http://test.com/',
       pathname: '/',
@@ -26,7 +25,7 @@ function mockBrowserLocation(overrides, assert) {
 }
 
 function mockBrowserHistory(overrides, assert) {
-  return assign(
+  return Object.assign(
     {
       pushState() {
         assert.ok(false, 'history.pushState should not be called during testing');
@@ -46,12 +45,15 @@ function createLocation(location, history) {
   owner.register('location:hash', HashLocation);
   owner.register('location:none', NoneLocation);
 
-  let autolocation = AutoLocation.create({
-    [OWNER]: owner,
+  let props = {
     location: location,
     history: history,
     global: {},
-  });
+  };
+
+  setOwner(props, owner);
+
+  let autolocation = AutoLocation.create(props);
 
   return autolocation;
 }
@@ -84,7 +86,7 @@ moduleFor(
 
       let concreteImplementation = get(location, 'concreteImplementation');
 
-      concreteImplementation.getURL = function() {
+      concreteImplementation.getURL = function () {
         return '/lincoln/park';
       };
 
@@ -246,18 +248,18 @@ moduleFor(
       location = createLocation(browserLocation);
       location.rootURL = 'app';
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         location.detect();
       }, expectedMsg);
 
       location.rootURL = '/app';
-      expectAssertion(function() {
+      expectAssertion(function () {
         location.detect();
       }, expectedMsg);
 
       // Note the trailing whitespace
       location.rootURL = '/app/ ';
-      expectAssertion(function() {
+      expectAssertion(function () {
         location.detect();
       }, expectedMsg);
     }

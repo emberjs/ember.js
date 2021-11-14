@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
+import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import { ENV } from '@ember/-internals/environment';
-import { setModifierManager } from '@ember/-internals/glimmer';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 
 import { set, setProperties } from '@ember/-internals/metal';
@@ -9,6 +9,7 @@ import { Component } from '../../utils/helpers';
 
 class CustomModifierManager {
   constructor(owner) {
+    this.capabilities = modifierCapabilities('3.22');
     this.owner = owner;
   }
 
@@ -32,7 +33,7 @@ class CustomModifierManager {
   }
 }
 let BaseModifier = setModifierManager(
-  owner => {
+  (owner) => {
     return new CustomModifierManager(owner);
   },
   EmberObject.extend({
@@ -83,7 +84,7 @@ moduleFor(
 
     '@test it can render a basic component with template and javascript'() {
       this.registerComponent('foo-bar', {
-        template: 'FIZZ BAR {{local}}',
+        template: 'FIZZ BAR {{this.local}}',
         ComponentClass: Component.extend({ local: 'hey' }),
       });
 
@@ -119,9 +120,9 @@ moduleFor(
     }
 
     '@test it can have a custom id and it is not bound'() {
-      this.registerComponent('foo-bar', { template: '{{id}} {{elementId}}' });
+      this.registerComponent('foo-bar', { template: '{{this.id}} {{this.elementId}}' });
 
-      this.render('<FooBar @id={{customId}} />', {
+      this.render('<FooBar @id={{this.customId}} />', {
         customId: 'bizz',
       });
 
@@ -153,7 +154,7 @@ moduleFor(
     '@test it can have a custom id attribute and it is bound'() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('<FooBar id={{customId}} />', {
+      this.render('<FooBar id={{this.customId}} />', {
         customId: 'bizz',
       });
 
@@ -255,7 +256,7 @@ moduleFor(
     '@test class property on components can be dynamic'() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('<FooBar @class={{if fooBar "foo-bar"}} />', {
+      this.render('<FooBar @class={{if this.fooBar "foo-bar"}} />', {
         fooBar: true,
       });
 
@@ -417,7 +418,7 @@ moduleFor(
         template: '{{@foo}}',
       });
 
-      this.render('<FooBar @foo={{model.bar}} />', {
+      this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
           bar: 'Hola',
         },
@@ -440,10 +441,10 @@ moduleFor(
 
     '@test it reflects named arguments as properties'() {
       this.registerComponent('foo-bar', {
-        template: '{{foo}}',
+        template: '{{this.foo}}',
       });
 
-      this.render('<FooBar @foo={{model.bar}} />', {
+      this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
           bar: 'Hola',
         },
@@ -495,11 +496,11 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: '{{yield greeting greetee.firstName}}',
+        template: '{{yield this.greeting this.greetee.firstName}}',
       });
 
       this.render(
-        '<FooBar @greetee={{person}} as |greeting name|>{{name}} {{person.lastName}}, {{greeting}}</FooBar>',
+        '<FooBar @greetee={{this.person}} as |greeting name|>{{name}} {{this.person.lastName}}, {{greeting}}</FooBar>',
         {
           person: {
             firstName: 'Joel',
@@ -549,11 +550,14 @@ moduleFor(
     }
 
     '@test positional parameters are not allowed'() {
+      let TestComponent = class extends Component {};
+      TestComponent.reopenClass({
+        positionalParams: ['first', 'second'],
+      });
+
       this.registerComponent('sample-component', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: ['first', 'second'],
-        }),
-        template: '{{first}}{{second}}',
+        ComponentClass: TestComponent,
+        template: '{{this.first}}{{this.second}}',
       });
 
       // this is somewhat silly as the browser "corrects" for these as
@@ -568,9 +572,9 @@ moduleFor(
       this.registerComponent('foo-bar', { template: 'hello' });
 
       this.render(strip`
-        {{#with (component 'foo-bar') as |Other|}}
+        {{#let (component 'foo-bar') as |Other|}}
           <Other />
-        {{/with}}
+        {{/let}}
       `);
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
@@ -611,20 +615,12 @@ moduleFor(
     }
 
     '@test can not invoke curried components with an implicit `this` path'(assert) {
-      assert.expect(0);
-      this.registerComponent('foo-bar', {
-        template: 'hello',
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            assert.ok(false, 'should not have instantiated');
-          },
-        }),
-      });
-      this.registerComponent('test-harness', {
-        template: '<foo.bar />',
-      });
-      this.render(strip`{{test-harness foo=(hash bar=(component 'foo-bar'))}}`);
+      assert.throws(() => {
+        // attempting to compile this template will throw
+        this.registerComponent('test-harness', {
+          template: '<foo.bar />',
+        });
+      }, /Error: You used foo.bar as a tag name, but foo is not in scope/);
     }
 
     '@test has-block'() {
@@ -653,7 +649,10 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -732,7 +731,10 @@ moduleFor(
         template: '<div ...attributes>hello</div>',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -782,10 +784,13 @@ moduleFor(
             this.localProp = 'qux';
           },
         }),
-        template: '<div data-derp={{localProp}} ...attributes>hello</div>',
+        template: '<div data-derp={{this.localProp}} ...attributes>hello</div>',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -837,10 +842,10 @@ moduleFor(
             this.localProp = 'qux';
           },
         }),
-        template: '<div class={{localProp}} ...attributes>hello</div>',
+        template: '<div class={{this.localProp}} ...attributes>hello</div>',
       });
 
-      this.render('<FooBar class={{bar}} />', { bar: 'bar' });
+      this.render('<FooBar class={{this.bar}} />', { bar: 'bar' });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -890,10 +895,10 @@ moduleFor(
             this.localProp = 'qux';
           },
         }),
-        template: '<div ...attributes class={{localProp}}>hello</div>',
+        template: '<div ...attributes class={{this.localProp}}>hello</div>',
       });
 
-      this.render('<FooBar class={{bar}} />', { bar: 'bar' });
+      this.render('<FooBar class={{this.bar}} />', { bar: 'bar' });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1059,7 +1064,10 @@ moduleFor(
         template: '<div ...attributes>hello</div><p ...attributes>world</p>',
       });
 
-      this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+      this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
+        foo: 'foo',
+        bar: 'bar',
+      });
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1257,6 +1265,15 @@ moduleFor(
 moduleFor(
   'Element modifiers on AngleBracket components',
   class extends RenderingTestCase {
+    assertNamedArgs(actual, expected, message) {
+      // `actual` is likely to be a named args proxy, while the `deepEqual` below would see
+      // the values as the same it would still flag as not deep equals because the constructors
+      // of the two objects do not match (one is a proxy, one is Object)
+      let reifiedActual = Object.assign({}, actual);
+
+      this.assert.deepEqual(reifiedActual, expected, message);
+    }
+
     '@test modifiers are forwarded to a single element receiving the splattributes'(assert) {
       let modifierParams = null;
       let modifierNamedArgs = null;
@@ -1276,8 +1293,8 @@ moduleFor(
         })
       );
       this.render('<TheFoo {{bar "something" foo="else"}}/>', {});
-      assert.deepEqual(modifierParams, ['something']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+      assert.deepEqual(modifierParams, ['something'], 'positional arguments');
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'else' }, 'named arguments');
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1292,12 +1309,13 @@ moduleFor(
         template:
           '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>',
       });
+      let test = this;
       this.registerModifier(
         'bar',
         BaseModifier.extend({
           didInsertElement(params, namedArgs) {
             assert.deepEqual(params, ['something']);
-            assert.deepEqual(namedArgs, { foo: 'else' });
+            test.assertNamedArgs(namedArgs, { foo: 'else' });
             if (this.element) {
               elementIds.push(this.element.getAttribute('id'));
             }
@@ -1340,7 +1358,7 @@ moduleFor(
         foo: 'else',
       });
       assert.deepEqual(modifierParams, ['something']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'else' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1348,7 +1366,7 @@ moduleFor(
       );
       runTask(() => setProperties(this.context, { something: 'another', foo: 'thingy' }));
       assert.deepEqual(modifierParams, ['another']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'thingy' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'thingy' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1434,7 +1452,7 @@ moduleFor(
         { foo: 'bar' }
       );
       assert.deepEqual(modifierParams, ['bar']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'bar' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1442,7 +1460,7 @@ moduleFor(
       );
       runTask(() => setProperties(this.context, { foo: 'qux' }));
       assert.deepEqual(modifierParams, ['qux']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'qux' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'qux' });
       assert.equal(
         modifiedElement && modifiedElement.getAttribute('id'),
         'inner-div',
@@ -1485,7 +1503,7 @@ moduleFor(
         { foo: 'bar' }
       );
       assert.deepEqual(modifierParams, ['bar']);
-      assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+      this.assertNamedArgs(modifierNamedArgs, { foo: 'bar' });
       assert.deepEqual(
         elementIds,
         ['outer-div', 'inner-div'],

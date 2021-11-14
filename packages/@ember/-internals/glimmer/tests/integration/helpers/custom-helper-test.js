@@ -1,17 +1,23 @@
 import { DEBUG } from '@glimmer/env';
 
-import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
-import { Helper } from '@ember/-internals/glimmer';
+import {
+  RenderingTestCase,
+  moduleFor,
+  runDestroy,
+  runTask,
+  defineSimpleHelper,
+} from 'internal-test-helpers';
+import { Helper, Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: custom helpers',
   class extends RenderingTestCase {
     ['@test it cannot override built-in syntax']() {
-      this.registerHelper('if', () => 'Nope');
+      this.registerHelper('array', () => 'Nope');
       expectAssertion(() => {
-        this.render(`{{if foo 'LOL'}}`, { foo: true });
-      }, /You attempted to overwrite the built-in helper \"if\" which is not allowed. Please rename the helper./);
+        this.render(`{{array this.foo 'LOL'}}`, { foo: true });
+      }, /You attempted to overwrite the built-in helper "array" which is not allowed. Please rename the helper./);
     }
 
     ['@test it can resolve custom simple helpers with or without dashes']() {
@@ -27,32 +33,19 @@ moduleFor(
       this.assertText('hello | hello world');
     }
 
-    ['@test it does not resolve helpers with a `.` (period)']() {
+    ['@test it does not resolve helpers with a `.` (period)'](assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
       this.registerHelper('hello.world', () => 'hello world');
 
-      this.render('{{hello.world}}', {
-        hello: {
-          world: '',
-        },
-      });
-
-      this.assertText('');
-
-      this.assertStableRerender();
-
-      this.assertText('');
-
-      runTask(() => set(this.context, 'hello', { world: 'hello world!' }));
-
-      this.assertText('hello world!');
-
-      runTask(() => {
-        set(this.context, 'hello', {
-          world: '',
-        });
-      });
-
-      this.assertText('');
+      // cannot use `expectAssertion` because the error is thrown in glimmer-vm
+      // (and doesn't go through Ember's own assertion internals)
+      assert.throws(() => {
+        this.render('{{hello.world}}');
+      }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: hello/);
     }
 
     ['@test it can resolve custom class-based helpers with or without dashes']() {
@@ -84,7 +77,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render('{{hello-world}}');
-      }, /You must call `this._super\(...arguments\);` when overriding `init` on a framework object. Please update .* to call `this._super\(...arguments\);` from `init`./);
+      }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
     }
 
     ['@test class-based helper can recompute a new value'](assert) {
@@ -119,6 +112,48 @@ moduleFor(
       this.assertText('2');
 
       assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
+    }
+
+    ['@test class-based helper lifecycle'](assert) {
+      let hooks = [];
+      let helper;
+
+      this.registerHelper('hello-world', {
+        init() {
+          this._super(...arguments);
+          hooks.push('init');
+          helper = this;
+        },
+        compute() {
+          hooks.push('compute');
+        },
+        willDestroy() {
+          hooks.push('willDestroy');
+          this._super();
+        },
+        destroy() {
+          hooks.push('destroy');
+          this._super();
+        },
+      });
+
+      this.render('{{#if this.show}}{{hello-world}}{{/if}}', {
+        show: true,
+      });
+
+      assert.deepEqual(hooks, ['init', 'compute']);
+
+      runTask(() => this.rerender());
+
+      assert.deepEqual(hooks, ['init', 'compute']);
+
+      runTask(() => helper.recompute());
+
+      assert.deepEqual(hooks, ['init', 'compute', 'compute']);
+
+      runTask(() => set(this.context, 'show', false));
+
+      assert.deepEqual(hooks, ['init', 'compute', 'compute', 'destroy', 'willDestroy']);
     }
 
     ['@test class-based helper with static arguments can recompute a new value'](assert) {
@@ -193,11 +228,11 @@ moduleFor(
     }
 
     ['@test helper params can be returned']() {
-      this.registerHelper('hello-world', values => {
+      this.registerHelper('hello-world', (values) => {
         return values;
       });
 
-      this.render('{{#each (hello-world model) as |item|}}({{item}}){{/each}}', {
+      this.render('{{#each (hello-world this.model) as |item|}}({{item}}){{/each}}', {
         model: ['bob'],
       });
 
@@ -209,7 +244,7 @@ moduleFor(
         return hash.model;
       });
 
-      this.render(`{{get (hello-world model=model) 'name'}}`, {
+      this.render(`{{get (hello-world model=this.model) 'name'}}`, {
         model: { name: 'bob' },
       });
 
@@ -224,7 +259,7 @@ moduleFor(
         return `${value}-value`;
       });
 
-      this.render('{{hello-world model.name}}', {
+      this.render('{{hello-world this.model.name}}', {
         model: { name: 'bob' },
       });
 
@@ -266,7 +301,7 @@ moduleFor(
         },
       });
 
-      this.render('{{hello-world model.name}}', {
+      this.render('{{hello-world this.model.name}}', {
         model: { name: 'bob' },
       });
 
@@ -299,7 +334,7 @@ moduleFor(
         return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
       });
 
-      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      this.render('{{hello-world this.model.name "rich" first=this.model.age last="sam"}}', {
         model: {
           name: 'bob',
           age: 42,
@@ -332,7 +367,7 @@ moduleFor(
         },
       });
 
-      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      this.render('{{hello-world this.model.name "rich" first=this.model.age last="sam"}}', {
         model: {
           name: 'bob',
           age: 42,
@@ -368,7 +403,7 @@ moduleFor(
       this.render(
         `{{join-words "Who"
                    (join-words "overcomes" "by")
-                   model.reason
+                   this.model.reason
                    (join-words (join-words "hath overcome but" "half"))
                    (join-words "his" (join-words "foe"))}}`,
         { model: { reason: 'force' } }
@@ -417,40 +452,59 @@ moduleFor(
       this.assertHTML('<div data-foo-bar="baz"></div>');
     }
 
-    ['@test simple helper not usable with a block']() {
+    ['@test simple helper not usable with a block'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
       this.registerHelper('some-helper', () => {});
 
-      expectAssertion(() => {
+      assert.throws(() => {
         this.render(`{{#some-helper}}{{/some-helper}}`);
-      }, /Helpers may not be used in the block form/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a component, but nothing was found./);
     }
 
-    ['@test class-based helper not usable with a block']() {
+    ['@test class-based helper not usable with a block'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       this.registerHelper('some-helper', {
         compute() {},
       });
 
-      expectAssertion(() => {
+      assert.throws(() => {
         this.render(`{{#some-helper}}{{/some-helper}}`);
-      }, /Helpers may not be used in the block form/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a component, but nothing was found./);
     }
 
-    ['@test simple helper not usable within element']() {
+    ['@test simple helper not usable within element'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       this.registerHelper('some-helper', () => {});
 
-      this.assert.throws(() => {
+      assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a modifier, but nothing was found./);
     }
 
-    ['@test class-based helper not usable within element']() {
+    ['@test class-based helper not usable within element'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       this.registerHelper('some-helper', {
         compute() {},
       });
 
-      this.assert.throws(() => {
+      assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }, /Attempted to resolve `some-helper`, which was expected to be a modifier, but nothing was found./);
     }
 
     ['@test class-based helper is torn down'](assert) {
@@ -541,7 +595,7 @@ moduleFor(
       });
 
       this.registerComponent('some-component', {
-        template: '{{first}} {{second}} {{third}} {{fourth}} {{fifth}}',
+        template: '{{@first}} {{@second}} {{@third}} {{@fourth}} {{@fifth}}',
       });
 
       this.render(
@@ -658,6 +712,79 @@ moduleFor(
 
       this.assertText('huzza!');
     }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a helper'() {
+      this.registerHelper('hello-world', ([text]) => text ?? 'Hello, world!');
+
+      this.render('[{{helper "hello-world"}}][{{helper (helper "hello-world") "wow"}}]');
+      this.assertText('[Hello, world!][wow]');
+      this.assertStableRerender();
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a helper'(assert) {
+      this.registerHelper('hello-world', () => 'Hello, world!');
+
+      if (DEBUG) {
+        expectAssertion(
+          () => this.render('{{helper this.name}}', { name: 'hello-world' }),
+          /Passing a dynamic string to the `\(helper\)` keyword is disallowed\./
+        );
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
+      let val = defineSimpleHelper((value) => value);
+
+      this.registerComponent('foo', {
+        template: '{{@value}}',
+      });
+
+      this.registerComponent('bar', {
+        template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
+        ComponentClass: Component.extend({ val }),
+      });
+
+      this.render('<Bar/>');
+      this.assertText('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
+      expectAssertion(() => {
+        this.registerComponent('bar', {
+          template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
+        });
+      }, /Cannot use the \(helper\) keyword yet, as it has not been implemented/);
+    }
+
+    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic helper with nested helpers'() {
+      let foo = defineSimpleHelper(() => 'world!');
+      let bar = defineSimpleHelper((value) => 'Hello, ' + value);
+
+      this.registerComponent('baz', {
+        template: '{{this.bar (this.foo)}}',
+        ComponentClass: Component.extend({ foo, bar }),
+      });
+
+      this.render('<Baz/>');
+      this.assertText('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    ['@test helpers are not computed eagerly when used with if expressions'](assert) {
+      this.registerHelper('is-ok', () => 'hello');
+      this.registerHelper('throws-error', () => assert.ok(false, 'helper was computed eagerly'));
+
+      this.render('{{if true (is-ok) (throws-error)}}');
+
+      this.assertText('hello');
+
+      runTask(() => this.rerender());
+
+      this.assertText('hello');
+    }
   }
 );
 
@@ -686,15 +813,15 @@ if (DEBUG) {
     }
 
     ['@test cannot mutate params - no positional specified / named specified']() {
-      this.render('{{test-helper foo=bar}}', { bar: 'derp' });
+      this.render('{{test-helper foo=this.bar}}', { bar: 'derp' });
     }
 
     ['@test cannot mutate params - positional specified / no named specified']() {
-      this.render('{{test-helper bar}}', { bar: 'derp' });
+      this.render('{{test-helper this.bar}}', { bar: 'derp' });
     }
 
     ['@test cannot mutate params - positional specified / named specified']() {
-      this.render('{{test-helper bar foo=qux}}', { bar: 'derp', qux: 'baz' });
+      this.render('{{test-helper this.bar foo=this.qux}}', { bar: 'derp', qux: 'baz' });
     }
 
     ['@test cannot mutate params - no positional specified / no named specified']() {
@@ -726,6 +853,91 @@ if (DEBUG) {
         let compute = this.buildCompute();
 
         this.registerHelper('test-helper', compute);
+      }
+    }
+  );
+
+  moduleFor(
+    'Helpers test: argument-less helper invocation in named arguments position',
+    class extends RenderingTestCase {
+      constructor() {
+        super(...arguments);
+
+        this.registerComponent('bar', {
+          template: '[{{is-string @content}}][{{@content}}]',
+        });
+
+        this.registerHelper('is-string', ([value]) => typeof value === 'string');
+      }
+
+      ['@test invoking an argument-less helper without parens in named argument position throws'](
+        assert
+      ) {
+        this.registerHelper('foo', () => 'Hello, world!');
+
+        assert.throws(
+          () => this.render('<Bar @content={{foo}} />', { foo: 'Not it!' }),
+          `A resolved helper cannot be passed as a named argument as the syntax is ` +
+            `ambiguously a pass-by-reference or invocation. Use the ` +
+            `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
+            `invoke the helper with parens: \`{{(fooHelper)}}\`.`
+        );
+      }
+
+      ['@test invoking an argument-less helper with parens in named argument position']() {
+        this.registerHelper('foo', () => 'Hello, world!');
+
+        expectNoDeprecation(() => this.render('<Bar @content={{(foo)}} />', { foo: 'Not it!' }));
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      ['@test invoking an argument-less helper with quotes in named argument position']() {
+        this.registerHelper('foo', () => 'Hello, world!');
+
+        expectNoDeprecation(() => this.render('<Bar @content="{{foo}}" />', { foo: 'Not it!' }));
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      ['@test passing a local helper in named argument position']() {
+        let foo = defineSimpleHelper(() => 'Hello, world!');
+
+        expectNoDeprecation(() =>
+          this.render(`{{#let this.foo as |foo|}}<Bar @content={{foo}} />{{/let}}`, { foo })
+        );
+
+        this.assertText('[false][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      // TODO: this one really should work, and there is a passing test in glimmer-vm,
+      // but somehow it doesn't work here. This is almost certainly a VM bug as something
+      // is trying to call `block.compile()` but `block` is the reference for `this.foo`.
+      // So the execution stack is probably off-by-one or something.
+
+      ['@test invoking a local helper with parens in named argument position']() {
+        let foo = defineSimpleHelper(() => 'Hello, world!');
+
+        expectNoDeprecation(() =>
+          this.render(`{{#let this.foo as |foo|}}<Bar @content={{(foo)}} />{{/let}}`, { foo })
+        );
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
+      }
+
+      ['@skip invoking a helper with quotes in named argument position']() {
+        let foo = defineSimpleHelper(() => 'Hello, world!');
+
+        expectNoDeprecation(() =>
+          this.render(`{{#let this.foo as |foo|}}<Bar @content="{{foo}}" />{{/let}}`, { foo })
+        );
+
+        this.assertText('[true][Hello, world!]');
+        this.assertStableRerender();
       }
     }
   );

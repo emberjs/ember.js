@@ -8,8 +8,8 @@ const yarnConfig = JSON.parse(
     })
   ).data
 );
-const linkedModules = yarnConfig.linkedModules.filter(m => m.startsWith('@glimmer/'));
+const linkedModules = yarnConfig.linkedModules.filter((m) => m.startsWith('@glimmer/'));
 
-linkedModules.forEach(mod => {
+linkedModules.forEach((mod) => {
   child_process.execSync(`yarn link "${mod}"`);
 });

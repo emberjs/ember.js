@@ -2,13 +2,17 @@
 @module ember
 */
 
+import { getOwner, Owner } from '@ember/-internals/owner';
+import { symbol } from '@ember/-internals/utils';
 import { readOnly } from '@ember/object/computed';
-import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import EmberRouter, { QueryParam } from '../system/router';
+import RouterState from '../system/router_state';
+
+const ROUTER = (symbol('ROUTER') as unknown) as string;
 
 /**
-  The Routing service is used by LinkComponent, and provides facilities for
+  The Routing service is used by LinkTo, and provides facilities for
   the component/view layer to interact with the router.
 
   This is a private service for internal usage only. For public usage,
@@ -18,7 +22,17 @@ import EmberRouter, { QueryParam } from '../system/router';
   @class RoutingService
 */
 export default class RoutingService extends Service {
-  router!: EmberRouter;
+  get router(): EmberRouter {
+    let router = this[ROUTER];
+    if (router !== undefined) {
+      return router;
+    }
+    const owner = getOwner(this) as Owner;
+    router = owner.lookup('router:main') as EmberRouter;
+    router.setupRouter();
+    return (this[ROUTER] = router);
+  }
+
   hasRoute(routeName: string) {
     return this.router.hasRoute(routeName);
   }
@@ -37,31 +51,38 @@ export default class RoutingService extends Service {
     this.router._prepareQueryParams(routeName, models, queryParams);
   }
 
-  generateURL(routeName: string, models: {}[], queryParams: {}) {
-    let router = this.router;
-    // return early when the router microlib is not present, which is the case for {{link-to}} in integration tests
-    if (!router._routerMicrolib) {
-      return;
-    }
-
+  _generateURL(routeName: string, models: {}[], queryParams: {}) {
     let visibleQueryParams = {};
     if (queryParams) {
-      assign(visibleQueryParams, queryParams);
+      Object.assign(visibleQueryParams, queryParams);
       this.normalizeQueryParams(routeName, models, visibleQueryParams as QueryParam);
     }
 
-    return router.generate(routeName, ...models, {
+    return this.router.generate(routeName, ...models, {
       queryParams: visibleQueryParams,
     });
   }
 
+  generateURL(routeName: string, models: {}[], queryParams: {}) {
+    if (this.router._initialTransitionStarted) {
+      return this._generateURL(routeName, models, queryParams);
+    } else {
+      // Swallow error when transition has not started.
+      // When rendering in tests without visit(), we cannot infer the route context which <LinkTo/> needs be aware of
+      try {
+        return this._generateURL(routeName, models, queryParams);
+      } catch (_e) {
+        return;
+      }
+    }
+  }
+
   isActiveForRoute(
     contexts: {}[],
-    queryParams: {},
+    queryParams: QueryParam | undefined,
     routeName: string,
-    routerState: any,
-    isCurrentWhenSpecified: any
-  ) {
+    routerState: RouterState
+  ): boolean {
     let handlers = this.router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
     let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
@@ -80,7 +101,7 @@ export default class RoutingService extends Service {
       routeName = leafName;
     }
 
-    return routerState.isActiveIntent(routeName, contexts, queryParams, !isCurrentWhenSpecified);
+    return routerState.isActiveIntent(routeName, contexts, queryParams);
   }
 }
 

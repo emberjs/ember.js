@@ -2,11 +2,12 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { privatize as P } from '@ember/-internals/container';
+import { processAllNamespaces } from '@ember/-internals/metal';
+import { getName } from '@ember/-internals/utils';
 import {
   moduleFor,
   AbstractTestCase as TestCase,
-  verifyInjection,
+  ModuleBasedTestResolver,
   verifyRegistration,
 } from 'internal-test-helpers';
 
@@ -20,7 +21,9 @@ moduleFor(
       super();
 
       run(() => {
-        engine = Engine.create();
+        engine = Engine.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         context.lookup = { TestEngine: engine };
       });
     }
@@ -35,11 +38,8 @@ moduleFor(
 
     ['@test acts like a namespace'](assert) {
       engine.Foo = EmberObject.extend();
-      assert.equal(
-        engine.Foo.toString(),
-        'TestEngine.Foo',
-        'Classes pick up their parent namespace'
-      );
+      processAllNamespaces();
+      assert.equal(getName(engine.Foo), 'TestEngine.Foo', 'Classes pick up their parent namespace');
     }
 
     ['@test builds a registry'](assert) {
@@ -59,59 +59,20 @@ moduleFor(
         `optionsForType 'view'`
       );
       verifyRegistration(assert, engine, 'controller:basic');
-      verifyInjection(assert, engine, 'view', '_viewRegistry', '-view-registry:main');
-      verifyInjection(assert, engine, 'renderer', '_viewRegistry', '-view-registry:main');
-      verifyInjection(assert, engine, 'route', '_topLevelViewTemplate', 'template:-outlet');
-      verifyInjection(assert, engine, 'view:-outlet', 'namespace', 'application:main');
 
-      verifyInjection(assert, engine, 'controller', 'target', 'router:main');
-      verifyInjection(assert, engine, 'controller', 'namespace', 'application:main');
-
-      verifyInjection(assert, engine, 'router', '_bucketCache', P`-bucket-cache:main`);
-      verifyInjection(assert, engine, 'route', '_bucketCache', P`-bucket-cache:main`);
-
-      verifyInjection(assert, engine, 'route', '_router', 'router:main');
-
-      verifyRegistration(assert, engine, 'component:-text-field');
-      verifyRegistration(assert, engine, 'component:-checkbox');
       verifyRegistration(assert, engine, 'component:link-to');
 
       verifyRegistration(assert, engine, 'component:textarea');
 
       verifyRegistration(assert, engine, 'service:-routing');
-      verifyInjection(assert, engine, 'service:-routing', 'router', 'router:main');
 
       // DEBUGGING
       verifyRegistration(assert, engine, 'resolver-for-debugging:main');
-      verifyInjection(
-        assert,
-        engine,
-        'container-debug-adapter:main',
-        'resolver',
-        'resolver-for-debugging:main'
-      );
-      verifyInjection(
-        assert,
-        engine,
-        'data-adapter:main',
-        'containerDebugAdapter',
-        'container-debug-adapter:main'
-      );
       verifyRegistration(assert, engine, 'container-debug-adapter:main');
       verifyRegistration(assert, engine, 'component-lookup:main');
 
-      verifyInjection(assert, engine, 'service:-dom-changes', 'document', 'service:-document');
-      verifyInjection(
-        assert,
-        engine,
-        'service:-dom-tree-construction',
-        'document',
-        'service:-document'
-      );
       verifyRegistration(assert, engine, 'view:-outlet');
-      verifyRegistration(assert, engine, P`template:components/-default`);
       verifyRegistration(assert, engine, 'template:-outlet');
-      verifyInjection(assert, engine, 'view:-outlet', 'template', 'template:-outlet');
       assert.deepEqual(
         engine.registeredOptionsForType('helper'),
         { instantiate: false },

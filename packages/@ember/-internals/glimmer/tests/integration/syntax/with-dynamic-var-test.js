@@ -26,7 +26,7 @@ moduleFor(
       this.assertText('bar');
     }
 
-    ['@test does not allow setting values other than outletState']() {
+    ['@test does not allow getting values other than outletState']() {
       expectAssertion(() => {
         this.render(`{{-get-dynamic-var 'foo'}}`);
       }, /Using `-get-dynamic-scope` is only supported for `outletState` \(you used `foo`\)./);

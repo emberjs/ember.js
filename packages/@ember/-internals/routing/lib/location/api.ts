@@ -1,4 +1,4 @@
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 
 export interface EmberLocation {
   implementation: string;
@@ -10,6 +10,7 @@ export interface EmberLocation {
   formatURL(url: string): string;
   detect?(): void;
   initState?(): void;
+  destroy(): void;
 }
 
 export type UpdateCallback = (url: string) => void;
@@ -58,13 +59,16 @@ export type UpdateCallback = (url: string) => void;
   import HistoryLocation from '@ember/routing/history-location';
 
   export default class MyHistory {
-    implementation: 'my-custom-history',
+    implementation = 'my-custom-history';
+
     constructor() {
       this._history = HistoryLocation.create(...arguments);
     }
+
     create() {
       return new this(...arguments);
     }
+
     pushState(path) {
        this._history.pushState(path);
     }
@@ -96,14 +100,29 @@ export default {
     need.
     @private
   */
-  create(options: { implementation: string }) {
+  create(options: { implementation: string }): EmberLocation {
     let implementation = options && options.implementation;
     assert("Location.create: you must specify a 'implementation' option", Boolean(implementation));
 
     let implementationClass = this.implementations[implementation];
+
     assert(
       `Location.create: ${implementation} is not a valid implementation`,
       Boolean(implementationClass)
+    );
+
+    deprecate(
+      "Calling `create` on Location class is deprecated. Instead, use `container.lookup('location:my-location')` to lookup the location you need.",
+      false,
+      {
+        id: 'deprecate-auto-location',
+        until: '5.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-auto-location',
+        for: 'ember-source',
+        since: {
+          enabled: '4.1.0',
+        },
+      }
     );
 
     return implementationClass.create(...arguments);

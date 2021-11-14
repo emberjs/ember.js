@@ -259,7 +259,7 @@ export default Mixin.create({
 });
 
 function registryAlias(name) {
-  return function() {
+  return function () {
     return this.__registry__[name](...arguments);
   };
 }

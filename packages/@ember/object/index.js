@@ -1,6 +1,19 @@
 import { assert } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
+
+export { Object as default } from '@ember/-internals/runtime';
+
+export {
+  notifyPropertyChange,
+  defineProperty,
+  get,
+  set,
+  getProperties,
+  setProperties,
+  observer,
+  computed,
+  trySet,
+} from '@ember/-internals/metal';
 
 /**
   Decorator that turns the target function into an Action which can be accessed
@@ -106,12 +119,13 @@ import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/meta
   They also do not have equivalents in JavaScript directly, so they cannot be
   used for other situations where binding would be useful.
 
+  @public
   @method action
   @for @ember/object
   @static
-  @param {} elementDesc the descriptor of the element to decorate
-  @return {ElementDescriptor} the decorated descriptor
-  @private
+  @param {Function|undefined} callback The function to turn into an action,
+                                       when used in classic classes
+  @return {PropertyDecorator} property decorator instance
 */
 
 const BINDINGS_MAP = new WeakMap();
@@ -121,10 +135,10 @@ function setupAction(target, key, actionFn) {
     target.constructor.proto();
   }
 
-  if (!target.hasOwnProperty('actions')) {
+  if (!Object.prototype.hasOwnProperty.call(target, 'actions')) {
     let parentActions = target.actions;
     // we need to assign because of the way mixins copy actions down when inheriting
-    target.actions = parentActions ? assign({}, parentActions) : {};
+    target.actions = parentActions ? Object.assign({}, parentActions) : {};
   }
 
   target.actions[key] = actionFn;
@@ -156,7 +170,7 @@ export function action(target, key, desc) {
   if (!isElementDescriptor([target, key, desc])) {
     actionFn = target;
 
-    let decorator = function(target, key, desc, meta, isClassicDecorator) {
+    let decorator = function (target, key, desc, meta, isClassicDecorator) {
       assert(
         'The @action decorator may only be passed a method when used in classic classes. You should decorate methods directly in native classes',
         isClassicDecorator

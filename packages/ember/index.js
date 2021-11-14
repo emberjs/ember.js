@@ -1,17 +1,20 @@
 import require, { has } from 'require';
 
-import { getENV, getLookup, setLookup, ENV, context } from '@ember/-internals/environment';
-import { IS_NODE, module } from 'node-module';
+import { getENV, getLookup, setLookup } from '@ember/-internals/environment';
 import * as utils from '@ember/-internals/utils';
 import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
-import { deleteMeta, meta } from '@ember/-internals/meta';
+import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import { FEATURES, isEnabled, EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
+import {
+  FEATURES,
+  isEnabled,
+  EMBER_GLIMMER_HELPER_MANAGER,
+  EMBER_GLIMMER_INVOKE_HELPER,
+} from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
-import { assert, deprecate } from '@ember/debug';
+import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
-import Logger from '@ember/-internals/console';
 import Controller, { inject as injectController } from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
@@ -26,56 +29,20 @@ import {
   underscore,
   w,
 } from '@ember/string';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 
-import { action } from '@ember/object';
+import { action, computed } from '@ember/object';
 import { dependentKeyCompat } from '@ember/object/compat';
-
-import {
-  and,
-  bool,
-  collect,
-  deprecatingAlias,
-  empty,
-  equal,
-  filterBy,
-  filter,
-  gte,
-  gt,
-  intersect,
-  lte,
-  lt,
-  mapBy,
-  map,
-  match,
-  max,
-  min,
-  none,
-  notEmpty,
-  not,
-  oneWay,
-  or,
-  readOnly,
-  setDiff,
-  sort,
-  sum,
-  union,
-  uniqBy,
-  uniq,
-} from '@ember/object/computed';
 
 import {
   Object as EmberObject,
   RegistryProxyMixin,
   ContainerProxyMixin,
   compare,
-  copy,
   isEqual,
   Array as EmberArray,
-  Copyable,
   MutableEnumerable,
   MutableArray,
-  TargetActionSupport,
   Evented,
   PromiseProxyMixin,
   Observable,
@@ -92,29 +59,22 @@ import {
   CoreObject,
   NativeArray,
   A,
-  setFrameworkClass,
 } from '@ember/-internals/runtime';
 import {
-  Checkbox,
   Component,
+  componentCapabilities,
+  modifierCapabilities,
   setComponentManager,
-  capabilities,
   escapeExpression,
   getTemplates,
   Helper,
   helper,
   htmlSafe,
   isHTMLSafe,
-  LinkComponent,
   setTemplates,
   template,
-  TextField,
-  TextArea,
+  Input,
   isSerializationFirstNode,
-  setModifierManager,
-  modifierCapabilties,
-  setComponentTemplate,
-  getComponentTemplate,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
@@ -122,23 +82,51 @@ import * as views from '@ember/-internals/views';
 import * as routing from '@ember/-internals/routing';
 import * as extensionSupport from '@ember/-internals/extension-support';
 import EmberError from '@ember/error';
-import * as runloop from '@ember/runloop';
+import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
-import Resolver from '@ember/application/globals-resolver';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
-import { assign, merge } from '@ember/polyfills';
-import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
-import templateOnlyComponent from '@ember/component/template-only';
+import { assign } from '@ember/polyfills';
+
+import {
+  templateOnlyComponent,
+  invokeHelper,
+  hash,
+  array,
+  concat,
+  get,
+  on,
+  fn,
+} from '@glimmer/runtime';
+
+import {
+  helperCapabilities,
+  setModifierManager,
+  setComponentTemplate,
+  getComponentTemplate,
+  setHelperManager,
+} from '@glimmer/manager';
+
+import {
+  assertDestroyablesDestroyed,
+  associateDestroyableChild,
+  destroy,
+  enableDestroyableTracking,
+  isDestroying,
+  isDestroyed,
+  registerDestructor,
+  unregisterDestructor,
+} from '@ember/destroyable';
+
 // ****@ember/-internals/environment****
 
-const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
+const Ember = {};
 
 Ember.isNamespace = true;
-Ember.toString = function() {
+Ember.toString = function () {
   return 'Ember';
 };
 
@@ -153,29 +141,10 @@ Object.defineProperty(Ember, 'lookup', {
   enumerable: false,
 });
 
-if (EMBER_EXTEND_PROTOTYPES) {
-  Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
-    enumerable: false,
-    get() {
-      deprecate(
-        'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES',
-        false,
-        {
-          id: 'ember-env.old-extend-prototypes',
-          until: '4.0.0',
-        }
-      );
-
-      return ENV.EXTEND_PROTOTYPES;
-    },
-  });
-}
-
 // ****@ember/application****
 Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
 Ember.Application = Application;
-Ember.DefaultResolver = Ember.Resolver = Resolver;
 Ember.ApplicationInstance = ApplicationInstance;
 
 // ****@ember/engine****
@@ -184,7 +153,6 @@ Ember.EngineInstance = EngineInstance;
 
 // ****@ember/polyfills****
 Ember.assign = assign;
-Ember.merge = merge;
 
 // ****@ember/-internals/utils****
 Ember.generateGuid = utils.generateGuid;
@@ -193,7 +161,6 @@ Ember.guidFor = utils.guidFor;
 Ember.inspect = utils.inspect;
 Ember.makeArray = utils.makeArray;
 Ember.canInvoke = utils.canInvoke;
-Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
 
@@ -234,62 +201,23 @@ Ember.Instrumentation = {
 
 // ****@ember/runloop****
 
-// Using _globalsRun here so that mutating the function (adding
-// `next`, `later`, etc to it) is only available in globals builds
-Ember.run = runloop._globalsRun;
-Ember.run.backburner = runloop.backburner;
-Ember.run.begin = runloop.begin;
-Ember.run.bind = runloop.bind;
-Ember.run.cancel = runloop.cancel;
-Ember.run.debounce = runloop.debounce;
-Ember.run.end = runloop.end;
-Ember.run.hasScheduledTimers = runloop.hasScheduledTimers;
-Ember.run.join = runloop.join;
-Ember.run.later = runloop.later;
-Ember.run.next = runloop.next;
-Ember.run.once = runloop.once;
-Ember.run.schedule = runloop.schedule;
-Ember.run.scheduleOnce = runloop.scheduleOnce;
-Ember.run.throttle = runloop.throttle;
-Ember.run.cancelTimers = runloop.cancelTimers;
-Object.defineProperty(Ember.run, 'currentRunLoop', {
-  get: runloop.getCurrentRunLoop,
-  enumerable: false,
-});
+Ember.run = run;
 
 // ****@ember/-internals/metal****
 
-// Using _globalsComputed here so that mutating the function is only available
 // in globals builds
-const computed = metal._globalsComputed;
 Ember.computed = computed;
 Ember._descriptor = metal.nativeDescDecorator;
 Ember._tracked = metal.tracked;
-computed.alias = metal.alias;
 Ember.cacheFor = metal.getCachedValueFor;
 Ember.ComputedProperty = metal.ComputedProperty;
-Object.defineProperty(Ember, '_setComputedDecorator', {
-  get() {
-    deprecate(
-      'Please migrate from Ember._setComputedDecorator to Ember._setClassicDecorator',
-      false,
-      {
-        id: 'ember._setComputedDecorator',
-        until: '3.13.0',
-      }
-    );
-
-    return metal.setClassicDecorator;
-  },
-});
 Ember._setClassicDecorator = metal.setClassicDecorator;
 Ember.meta = meta;
 Ember.get = metal.get;
-Ember.getWithDefault = metal.getWithDefault;
 Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
-Ember.FEATURES = assign({ isEnabled }, FEATURES);
+Ember.FEATURES = Object.assign({ isEnabled }, FEATURES);
 Ember._Cache = utils.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
@@ -301,7 +229,6 @@ Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
-Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;
 Ember.changeProperties = metal.changeProperties;
@@ -310,27 +237,28 @@ Ember.platform = {
   hasPropertyAccessors: true,
 };
 Ember.defineProperty = metal.defineProperty;
-Ember.watchKey = metal.watchKey;
-Ember.unwatchKey = metal.unwatchKey;
-Ember.removeChainWatcher = metal.removeChainWatcher;
-Ember._ChainNode = metal.ChainNode;
-Ember.finishChains = metal.finishChains;
-Ember.watchPath = metal.watchPath;
-Ember.unwatchPath = metal.unwatchPath;
-Ember.watch = metal.watch;
-Ember.isWatching = metal.isWatching;
-Ember.unwatch = metal.unwatch;
-Ember.destroy = deleteMeta;
+Ember.destroy = destroy;
 Ember.libraries = metal.libraries;
 Ember.getProperties = metal.getProperties;
 Ember.setProperties = metal.setProperties;
 Ember.expandProperties = metal.expandProperties;
 Ember.addObserver = metal.addObserver;
 Ember.removeObserver = metal.removeObserver;
-Ember.aliasMethod = metal.aliasMethod;
 Ember.observer = metal.observer;
 Ember.mixin = metal.mixin;
 Ember.Mixin = metal.Mixin;
+
+Ember._createCache = metal.createCache;
+Ember._cacheGetValue = metal.getValue;
+Ember._cacheIsConst = metal.isConst;
+
+Ember._registerDestructor = registerDestructor;
+Ember._unregisterDestructor = unregisterDestructor;
+Ember._associateDestroyableChild = associateDestroyableChild;
+Ember._assertDestroyablesDestroyed = assertDestroyablesDestroyed;
+Ember._enableDestroyableTracking = enableDestroyableTracking;
+Ember._isDestroying = isDestroying;
+Ember._isDestroyed = isDestroyed;
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
@@ -338,12 +266,16 @@ Ember.Mixin = metal.Mixin;
   and reporting code.
 
   ```javascript
-  import $ from 'jquery';
 
   Ember.onerror = function(error) {
-    $.ajax('/report-error', 'POST', {
+    const payload = {
       stack: error.stack,
       otherInformation: 'whatever app state you want to provide'
+    };
+
+    fetch('/report-error', {
+      method: 'POST',
+      body: JSON.stringify(payload)
     });
   };
   ```
@@ -369,11 +301,6 @@ Object.defineProperty(Ember, 'testing', {
 
 Ember._Backburner = Backburner;
 
-// ****@ember/-internals/console****
-if (LOGGER) {
-  Ember.Logger = Logger;
-}
-
 // ****@ember/-internals/runtime****
 Ember.A = A;
 Ember.String = {
@@ -390,9 +317,7 @@ Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
 Ember._ContainerProxyMixin = ContainerProxyMixin;
 Ember.compare = compare;
-Ember.copy = copy;
 Ember.isEqual = isEqual;
-Ember._setFrameworkClass = setFrameworkClass;
 
 /**
 @module ember
@@ -409,11 +334,11 @@ Ember._setFrameworkClass = setFrameworkClass;
 Ember.inject = function inject() {
   assert(
     `Injected properties must be created through helpers, see '${Object.keys(inject)
-      .map(k => `'inject.${k}'`)
+      .map((k) => `'inject.${k}'`)
       .join(' or ')}'`
   );
 };
-Ember.inject.service = injectService;
+Ember.inject.service = service;
 Ember.inject.controller = injectController;
 
 Ember.Array = EmberArray;
@@ -424,10 +349,8 @@ Ember.ObjectProxy = ObjectProxy;
 Ember.ActionHandler = ActionHandler;
 Ember.CoreObject = CoreObject;
 Ember.NativeArray = NativeArray;
-Ember.Copyable = Copyable;
 Ember.MutableEnumerable = MutableEnumerable;
 Ember.MutableArray = MutableArray;
-Ember.TargetActionSupport = TargetActionSupport;
 Ember.Evented = Evented;
 Ember.PromiseProxyMixin = PromiseProxyMixin;
 Ember.Observable = Observable;
@@ -445,40 +368,6 @@ Ember.Namespace = Namespace;
 
 Ember._action = action;
 Ember._dependentKeyCompat = dependentKeyCompat;
-
-computed.empty = empty;
-computed.notEmpty = notEmpty;
-computed.none = none;
-computed.not = not;
-computed.bool = bool;
-computed.match = match;
-computed.equal = equal;
-computed.gt = gt;
-computed.gte = gte;
-computed.lt = lt;
-computed.lte = lte;
-computed.oneWay = oneWay;
-computed.reads = oneWay;
-computed.readOnly = readOnly;
-computed.deprecatingAlias = deprecatingAlias;
-computed.and = and;
-computed.or = or;
-
-computed.sum = sum;
-computed.min = min;
-computed.max = max;
-computed.map = map;
-computed.sort = sort;
-computed.setDiff = setDiff;
-computed.mapBy = mapBy;
-computed.filter = filter;
-computed.filterBy = filterBy;
-computed.uniq = uniq;
-
-computed.uniqBy = uniqBy;
-computed.union = union;
-computed.intersect = intersect;
-computed.collect = collect;
 
 /**
   Defines the hash of localized strings for the current language. Used by
@@ -521,36 +410,64 @@ Object.defineProperty(Ember, 'BOOTED', {
 Ember.Component = Component;
 Helper.helper = helper;
 Ember.Helper = Helper;
-Ember.Checkbox = Checkbox;
-Ember.TextField = TextField;
-Ember.TextArea = TextArea;
-Ember.LinkComponent = LinkComponent;
 Ember._setComponentManager = setComponentManager;
-Ember._componentManagerCapabilities = capabilities;
+Ember._componentManagerCapabilities = componentCapabilities;
 Ember._setModifierManager = setModifierManager;
-Ember._modifierManagerCapabilties = modifierCapabilties;
-if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-  Ember._getComponentTemplate = getComponentTemplate;
-  Ember._setComponentTemplate = setComponentTemplate;
-  Ember._templateOnlyComponent = templateOnlyComponent;
-}
-Ember.Handlebars = {
-  template,
-  Utils: {
-    escapeExpression,
-  },
-};
-Ember.HTMLBars = {
-  template,
-};
+Ember._modifierManagerCapabilities = modifierCapabilities;
 
-if (ENV.EXTEND_PROTOTYPES.String) {
-  String.prototype.htmlSafe = function() {
-    return htmlSafe(this);
-  };
+Ember._getComponentTemplate = getComponentTemplate;
+Ember._setComponentTemplate = setComponentTemplate;
+Ember._templateOnlyComponent = templateOnlyComponent;
+
+Ember._Input = Input;
+Ember._hash = hash;
+Ember._array = array;
+Ember._concat = concat;
+Ember._get = get;
+Ember._on = on;
+Ember._fn = fn;
+
+if (EMBER_GLIMMER_HELPER_MANAGER) {
+  Ember._helperManagerCapabilities = helperCapabilities;
+  Ember._setHelperManager = setHelperManager;
 }
-Ember.String.htmlSafe = htmlSafe;
-Ember.String.isHTMLSafe = isHTMLSafe;
+if (EMBER_GLIMMER_INVOKE_HELPER) {
+  Ember._invokeHelper = invokeHelper;
+}
+Ember._captureRenderTree = captureRenderTree;
+
+const deprecateImportFromString = function (
+  name,
+  message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
+) {
+  // Disabling this deprecation due to unintended errors in 3.25
+  // See https://github.com/emberjs/ember.js/issues/19393 fo more information.
+  deprecate(message, true, {
+    id: 'ember-string.htmlsafe-ishtmlsafe',
+    for: 'ember-source',
+    since: {
+      enabled: '3.25',
+    },
+    until: '4.0.0',
+    url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
+  });
+};
+Object.defineProperty(Ember.String, 'htmlSafe', {
+  enumerable: true,
+  configurable: true,
+  get() {
+    deprecateImportFromString('htmlSafe');
+    return htmlSafe;
+  },
+});
+Object.defineProperty(Ember.String, 'isHTMLSafe', {
+  enumerable: true,
+  configurable: true,
+  get() {
+    deprecateImportFromString('isHTMLSafe');
+    return isHTMLSafe;
+  },
+});
 
 /**
   Global hash of shared templates. This will automatically be populated
@@ -578,28 +495,6 @@ Object.defineProperty(Ember, 'TEMPLATES', {
 */
 Ember.VERSION = VERSION;
 
-// ****@ember/-internals/views****
-if (JQUERY_INTEGRATION && !views.jQueryDisabled) {
-  Object.defineProperty(Ember, '$', {
-    get() {
-      deprecate(
-        "Using Ember.$() has been deprecated, use `import jQuery from 'jquery';` instead",
-        false,
-        {
-          id: 'ember-views.curly-components.jquery-element',
-          until: '4.0.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
-        }
-      );
-
-      return views.jQuery;
-    },
-
-    configurable: true,
-    enumerable: true,
-  });
-}
-
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
   getElementView: views.getElementView,
@@ -611,7 +506,6 @@ Ember.ViewUtils = {
   getChildViews: views.getChildViews,
   isSerializationFirstNode: isSerializationFirstNode,
 };
-Ember.TextSupport = views.TextSupport;
 Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
@@ -633,47 +527,96 @@ runLoadHooks('Ember.Application', Application);
 Ember.DataAdapter = extensionSupport.DataAdapter;
 Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
 
-if (has('ember-template-compiler')) {
-  require('ember-template-compiler');
+let EmberHandlebars = {
+  template,
+  Utils: {
+    escapeExpression,
+  },
+};
+
+let EmberHTMLBars = {
+  template,
+};
+
+function defineEmberTemplateCompilerLazyLoad(key) {
+  Object.defineProperty(Ember, key, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      if (has('ember-template-compiler')) {
+        let templateCompiler = require('ember-template-compiler');
+
+        EmberHTMLBars.precompile = EmberHandlebars.precompile = templateCompiler.precompile;
+        EmberHTMLBars.compile = EmberHandlebars.compile = templateCompiler.compile;
+
+        Object.defineProperty(Ember, 'HTMLBars', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: EmberHTMLBars,
+        });
+        Object.defineProperty(Ember, 'Handlebars', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: EmberHandlebars,
+        });
+      }
+
+      return key === 'Handlebars' ? EmberHandlebars : EmberHTMLBars;
+    },
+  });
 }
+
+defineEmberTemplateCompilerLazyLoad('HTMLBars');
+defineEmberTemplateCompilerLazyLoad('Handlebars');
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
-if (has('ember-testing')) {
-  let testing = require('ember-testing');
+function defineEmberTestingLazyLoad(key) {
+  Object.defineProperty(Ember, key, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      if (has('ember-testing')) {
+        let testing = require('ember-testing');
 
-  Ember.Test = testing.Test;
-  Ember.Test.Adapter = testing.Adapter;
-  Ember.Test.QUnitAdapter = testing.QUnitAdapter;
-  Ember.setupForTesting = testing.setupForTesting;
+        let { Test, Adapter, QUnitAdapter, setupForTesting } = testing;
+        Test.Adapter = Adapter;
+        Test.QUnitAdapter = QUnitAdapter;
+
+        Object.defineProperty(Ember, 'Test', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: Test,
+        });
+        Object.defineProperty(Ember, 'setupForTesting', {
+          configurable: true,
+          writable: true,
+          enumerable: true,
+          value: setupForTesting,
+        });
+
+        return key === 'Test' ? Test : setupForTesting;
+      }
+
+      return undefined;
+    },
+  });
 }
+
+defineEmberTestingLazyLoad('Test');
+defineEmberTestingLazyLoad('setupForTesting');
 
 runLoadHooks('Ember');
 
+Ember.__loader = {
+  require,
+  // eslint-disable-next-line no-undef
+  define,
+  // eslint-disable-next-line no-undef
+  registry: typeof requirejs !== 'undefined' ? requirejs.entries : require.entries,
+};
+
 export default Ember;
-
-if (IS_NODE) {
-  module.exports = Ember;
-} else {
-  context.exports.Ember = context.exports.Em = Ember;
-}
-
-/**
- @module jquery
- @public
- */
-
-/**
- @class jquery
- @public
- @static
- */
-
-/**
-  Alias for jQuery
-
-  @for jquery
-  @method $
-  @static
-  @public
-*/

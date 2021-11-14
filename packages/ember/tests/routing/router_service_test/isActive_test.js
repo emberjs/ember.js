@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import Service, { service } from '@ember/service';
 
 moduleFor(
   'Router Service - isActive',
@@ -31,6 +32,42 @@ moduleFor(
         .then(() => {
           assert.ok(this.routerService.isActive('dynamic', dynamicModel));
         });
+    }
+
+    async ['@test RouterService#isActive entangles with route transitions'](assert) {
+      assert.expect(6);
+
+      this.add(
+        `service:foo`,
+        class extends Service {
+          @service router;
+
+          get isChildActive() {
+            return this.router.isActive('parent.child');
+          }
+
+          get isSisterActive() {
+            return this.router.isActive('parent.sister');
+          }
+        }
+      );
+
+      await this.visit('/');
+
+      let fooService = this.applicationInstance.lookup('service:foo');
+
+      assert.equal(fooService.isChildActive, false);
+      assert.equal(fooService.isSisterActive, false);
+
+      await this.routerService.transitionTo('parent.child');
+
+      assert.equal(fooService.isChildActive, true);
+      assert.equal(fooService.isSisterActive, false);
+
+      await this.routerService.transitionTo('parent.sister');
+
+      assert.equal(fooService.isChildActive, false);
+      assert.equal(fooService.isSisterActive, true);
     }
 
     ['@test RouterService#isActive does not eagerly instantiate controller for query params'](
@@ -103,6 +140,31 @@ moduleFor(
               this.buildQueryParams({ sort: 'descending' })
             )
           );
+        });
+    }
+
+    ['@test RouterService#isActive does not alter query params hash'](assert) {
+      assert.expect(3);
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['sort', 'page'],
+          sort: 'ASC',
+          page: 1,
+        })
+      );
+
+      let qp = this.buildQueryParams({ sort: 'ascending' });
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('parent.child', qp);
+        })
+        .then(() => {
+          assert.ok(this.routerService.isActive('parent.child', qp));
+          assert.ok(this.routerService.isActive('parent.child', qp)); // using same qp second time should not fail
+          assert.deepEqual(qp.queryParams, { sort: 'ascending' });
         });
     }
   }

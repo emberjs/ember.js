@@ -1,11 +1,10 @@
 import { RenderingTestCase, moduleFor, classes, applyMixins, runTask } from 'internal-test-helpers';
 
-import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
 
 class TextAreaRenderingTest extends RenderingTestCase {
   assertTextArea({ attrs, value } = {}) {
-    let mergedAttrs = assign({ class: classes('ember-view ember-text-area') }, attrs);
+    let mergedAttrs = Object.assign({ class: classes('ember-view ember-text-area') }, attrs);
     this.assertComponentElement(this.firstChild, {
       tagName: 'textarea',
       attrs: mergedAttrs,
@@ -19,7 +18,7 @@ class TextAreaRenderingTest extends RenderingTestCase {
   triggerEvent(type, options = {}) {
     let event = document.createEvent('Events');
     event.initEvent(type, true, true);
-    assign(event, options);
+    Object.assign(event, options);
 
     this.firstChild.dispatchEvent(event);
   }
@@ -33,22 +32,7 @@ class BoundTextAreaAttributes {
   generate({ attribute, first, second }) {
     return {
       [`@test ${attribute} (HTML attribute)`]() {
-        this.render(`<Textarea ${attribute}={{value}} />`, {
-          value: first,
-        });
-        this.assertTextArea({ attrs: { [attribute]: first } });
-
-        this.assertStableRerender();
-
-        runTask(() => set(this.context, 'value', second));
-        this.assertTextArea({ attrs: { [attribute]: second } });
-
-        runTask(() => set(this.context, 'value', first));
-        this.assertTextArea({ attrs: { [attribute]: first } });
-      },
-
-      [`@test @${attribute} (named argument)`]() {
-        this.render(`<Textarea @${attribute}={{value}} />`, {
+        this.render(`<Textarea ${attribute}={{this.value}} />`, {
           value: first,
         });
         this.assertTextArea({ attrs: { [attribute]: first } });
@@ -68,6 +52,7 @@ class BoundTextAreaAttributes {
 applyMixins(
   TextAreaRenderingTest,
   new BoundTextAreaAttributes([
+    { attribute: 'role', first: 'textbox', second: 'search' },
     { attribute: 'placeholder', first: 'Stuff here', second: 'Other stuff' },
     { attribute: 'name', first: 'Stuff here', second: 'Other stuff' },
     { attribute: 'title', first: 'Stuff here', second: 'Other stuff' },
@@ -96,48 +81,21 @@ moduleFor(
     }
 
     ['@test Should respect disabled (HTML attribute)'](assert) {
-      this.render('<Textarea disabled={{disabled}} />', {
-        disabled: true,
-      });
-      assert.ok(this.$('textarea').is(':disabled'));
-    }
-
-    ['@test Should respect @disabled (named argument)'](assert) {
-      this.render('<Textarea @disabled={{disabled}} />', {
+      this.render('<Textarea disabled={{this.disabled}} />', {
         disabled: true,
       });
       assert.ok(this.$('textarea').is(':disabled'));
     }
 
     ['@test Should respect disabled (HTML attribute) when false'](assert) {
-      this.render('<Textarea disabled={{disabled}} />', {
-        disabled: false,
-      });
-      assert.ok(this.$('textarea').is(':not(:disabled)'));
-    }
-
-    ['@test Should respect @disabled (named argument) when false'](assert) {
-      this.render('<Textarea @disabled={{disabled}} />', {
+      this.render('<Textarea disabled={{this.disabled}} />', {
         disabled: false,
       });
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
     ['@test Should become disabled (HTML attribute) when the context changes'](assert) {
-      this.render('<Textarea disabled={{disabled}} />');
-      assert.ok(this.$('textarea').is(':not(:disabled)'));
-
-      this.assertStableRerender();
-
-      runTask(() => set(this.context, 'disabled', true));
-      assert.ok(this.$('textarea').is(':disabled'));
-
-      runTask(() => set(this.context, 'disabled', false));
-      assert.ok(this.$('textarea').is(':not(:disabled)'));
-    }
-
-    ['@test Should become @disabled (named argument) when the context changes'](assert) {
-      this.render('<Textarea @disabled={{disabled}} />');
+      this.render('<Textarea disabled={{this.disabled}} />');
       assert.ok(this.$('textarea').is(':not(:disabled)'));
 
       this.assertStableRerender();
@@ -150,7 +108,7 @@ moduleFor(
     }
 
     ['@test Should bind its contents to the specified @value']() {
-      this.render('<Textarea @value={{model.val}} />', {
+      this.render('<Textarea @value={{this.model.val}} />', {
         model: { val: 'A beautiful day in Seattle' },
       });
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
@@ -165,7 +123,7 @@ moduleFor(
     }
 
     ['@test GH#14001 Should correctly handle an empty string bound value']() {
-      this.render('<Textarea @value={{message}} />', { message: '' });
+      this.render('<Textarea @value={{this.message}} />', { message: '' });
 
       this.assert.strictEqual(this.firstChild.value, '');
 
@@ -181,7 +139,7 @@ moduleFor(
     }
 
     ['@test should update the @value for `cut` / `input` / `change` events']() {
-      this.render('<Textarea @value={{model.val}} />', {
+      this.render('<Textarea @value={{this.model.val}} />', {
         model: { val: 'A beautiful day in Seattle' },
       });
       this.assertTextArea({ value: 'A beautiful day in Seattle' });

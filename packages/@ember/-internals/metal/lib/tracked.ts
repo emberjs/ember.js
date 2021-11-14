@@ -1,43 +1,17 @@
+import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/reference';
-import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
-import { setClassicDecorator } from './descriptor_map';
-import { markObjectAsDirty, tagForProperty } from './tags';
-
-type Option<T> = T | null;
-
-/**
-  An object that that tracks @tracked properties that were consumed.
-
-  @private
-*/
-export class Tracker {
-  private tags = new Set<Tag>();
-  private last: Option<Tag> = null;
-
-  add(tag: Tag): void {
-    this.tags.add(tag);
-    this.last = tag;
-  }
-
-  get size(): number {
-    return this.tags.size;
-  }
-
-  combine(): Tag {
-    if (this.tags.size === 0) {
-      return CONSTANT_TAG;
-    } else if (this.tags.size === 1) {
-      return this.last as Tag;
-    } else {
-      let tags: Tag[] = [];
-      this.tags.forEach(tag => tags.push(tag));
-      return combine(tags);
-    }
-  }
-}
+import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+import { CHAIN_PASS_THROUGH } from './chain-tags';
+import {
+  COMPUTED_SETTERS,
+  Decorator,
+  DecoratorPropertyDescriptor,
+  isElementDescriptor,
+  setClassicDecorator,
+} from './decorator';
+import { SELF_TAG } from './tags';
 
 /**
   @decorator
@@ -58,7 +32,8 @@ export class Tracker {
   will be tracked:
 
   ```typescript
-  import Component, { tracked } from '@glimmer/component';
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   export default class MyComponent extends Component {
     @tracked
@@ -79,7 +54,8 @@ export class Tracker {
   `eatenApples`, and `remainingApples`.
 
   ```typescript
-  import Component, { tracked } from '@glimmer/component';
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   const totalApples = 100;
 
@@ -101,6 +77,7 @@ export class Tracker {
   @param dependencies Optional dependents to be tracked.
 */
 export function tracked(propertyDesc: { value: any; initializer: () => any }): Decorator;
+export function tracked(target: object, key: string): void;
 export function tracked(
   target: object,
   key: string,
@@ -138,7 +115,7 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
     let initializer = propertyDesc ? propertyDesc.initializer : undefined;
     let value = propertyDesc ? propertyDesc.value : undefined;
 
-    let decorator = function(
+    let decorator = function (
       target: object,
       key: string,
       _desc: DecoratorPropertyDescriptor,
@@ -171,7 +148,7 @@ if (DEBUG) {
   setClassicDecorator(tracked);
 }
 
-function descriptorForField([_target, key, desc]: [
+function descriptorForField([target, key, desc]: [
   object,
   string,
   DecoratorPropertyDescriptor
@@ -181,134 +158,51 @@ function descriptorForField([_target, key, desc]: [
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
-  let initializer = desc ? desc.initializer : undefined;
-  let values = new WeakMap();
-  let hasInitializer = typeof initializer === 'function';
+  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
 
-  return {
+  function get(this: object): unknown {
+    let value = getter(this);
+
+    // Add the tag of the returned value if it is an array, since arrays
+    // should always cause updates if they are consumed and then changed
+    if (Array.isArray(value) || isEmberArray(value)) {
+      consumeTag(tagFor(value, '[]'));
+    }
+
+    return value;
+  }
+
+  function set(this: object, newValue: unknown): void {
+    setter(this, newValue);
+    dirtyTagFor(this, SELF_TAG);
+  }
+
+  let newDesc = {
     enumerable: true,
     configurable: true,
+    isTracked: true,
 
-    get(): any {
-      let propertyTag = tagForProperty(this, key) as UpdatableTag;
-
-      if (CURRENT_TRACKER) CURRENT_TRACKER.add(propertyTag);
-
-      let value;
-
-      // If the field has never been initialized, we should initialize it
-      if (hasInitializer && !values.has(this)) {
-        value = initializer.call(this);
-
-        values.set(this, value);
-      } else {
-        value = values.get(this);
-      }
-
-      // Add the tag of the returned value if it is an array, since arrays
-      // should always cause updates if they are consumed and then changed
-      if (Array.isArray(value) || isEmberArray(value)) {
-        update(propertyTag, tagForProperty(value, '[]'));
-      }
-
-      return value;
-    },
-
-    set(newValue: any): void {
-      markObjectAsDirty(this, key);
-
-      values.set(this, newValue);
-
-      if (propertyDidChange !== null) {
-        propertyDidChange();
-      }
-    },
+    get,
+    set,
   };
+
+  COMPUTED_SETTERS.add(set);
+
+  metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
+
+  return newDesc;
 }
 
-/**
-  @private
-
-  Whenever a tracked computed property is entered, the current tracker is
-  saved off and a new tracker is replaced.
-
-  Any tracked properties consumed are added to the current tracker.
-
-  When a tracked computed property is exited, the tracker's tags are
-  combined and added to the parent tracker.
-
-  The consequence is that each tracked computed property has a tag
-  that corresponds to the tracked properties consumed inside of
-  itself, including child tracked computed properties.
-*/
-let CURRENT_TRACKER: Option<Tracker> = null;
-
-export function track(callback: () => void) {
-  let parent = CURRENT_TRACKER;
-  let current = new Tracker();
-
-  CURRENT_TRACKER = current;
-
-  try {
-    callback();
-  } finally {
-    CURRENT_TRACKER = parent;
+export class TrackedDescriptor {
+  constructor(private _get: () => unknown, private _set: (value: unknown) => void) {
+    CHAIN_PASS_THROUGH.add(this);
   }
 
-  return current.combine();
-}
-
-export function consume(tag: Tag) {
-  if (CURRENT_TRACKER !== null) {
-    CURRENT_TRACKER.add(tag);
-  }
-}
-
-export function isTracking() {
-  return CURRENT_TRACKER !== null;
-}
-
-export function untrack(callback: () => void) {
-  let parent = CURRENT_TRACKER;
-  CURRENT_TRACKER = null;
-
-  try {
-    callback();
-  } finally {
-    CURRENT_TRACKER = parent;
-  }
-}
-
-export type Key = string;
-
-export interface Interceptors {
-  [key: string]: boolean;
-}
-
-let propertyDidChange: (() => void) | null = null;
-
-export function setPropertyDidChange(cb: () => void): void {
-  propertyDidChange = cb;
-}
-
-export class UntrackedPropertyError extends Error {
-  static for(obj: any, key: string): UntrackedPropertyError {
-    return new UntrackedPropertyError(
-      obj,
-      key,
-      `The property '${key}' on ${obj} was changed after being rendered. If you want to change a property used in a template after the component has rendered, mark the property as a tracked property with the @tracked decorator.`
-    );
+  get(obj: object): unknown {
+    return this._get.call(obj);
   }
 
-  constructor(public target: any, public key: string, message: string) {
-    super(message);
+  set(obj: object, _key: string, value: unknown): void {
+    this._set.call(obj, value);
   }
-}
-
-/**
- * Function that can be used in development mode to generate more meaningful
- * error messages.
- */
-export interface UntrackedPropertyErrorThrower {
-  (obj: any, key: string): void;
 }

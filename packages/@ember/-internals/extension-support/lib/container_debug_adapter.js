@@ -1,5 +1,6 @@
 import { classify, dasherize } from '@ember/string';
 import { A as emberA, typeOf, Namespace, Object as EmberObject } from '@ember/-internals/runtime';
+import { getOwner } from '@ember/-internals/owner';
 
 /**
 @module @ember/debug
@@ -40,6 +41,12 @@ import { A as emberA, typeOf, Namespace, Object as EmberObject } from '@ember/-i
   @public
 */
 export default EmberObject.extend({
+  init() {
+    this._super(...arguments);
+
+    this.resolver = getOwner(this).lookup('resolver-for-debugging:main');
+  },
+
   /**
     The resolver instance of the application
     being debugged. This property will be injected
@@ -81,9 +88,9 @@ export default EmberObject.extend({
     let types = emberA();
     let typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
-    namespaces.forEach(namespace => {
+    namespaces.forEach((namespace) => {
       for (let key in namespace) {
-        if (!namespace.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(namespace, key)) {
           continue;
         }
         if (typeSuffixRegex.test(key)) {

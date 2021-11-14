@@ -3,9 +3,6 @@ import { descriptorForProperty, Mixin, nativeDescDecorator } from '@ember/-inter
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
-import { default as jQuery, jQueryDisabled } from '../system/jquery';
-import { deprecate } from '@ember/debug';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 function K() {
   return this;
@@ -84,7 +81,9 @@ let mixin = {
   nearestOfType(klass) {
     let view = this.parentView;
     let isOfType =
-      klass instanceof Mixin ? view => klass.detect(view) : view => klass.detect(view.constructor);
+      klass instanceof Mixin
+        ? (view) => klass.detect(view)
+        : (view) => klass.detect(view.constructor);
 
     while (view) {
       if (isOfType(view)) {
@@ -167,7 +166,7 @@ let mixin = {
    and does not have an ancestor element that is associated with an Ember view.
 
    @method appendTo
-   @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+   @param {String|DOMElement} A selector, element, HTML string
    @return {Ember.View} receiver
    @private
    */
@@ -198,11 +197,11 @@ let mixin = {
       target = selector;
 
       assert(
-        `You tried to append to a selector string (${selector}) in an environment without jQuery`,
+        `You tried to append to a selector string (${selector}) in an environment without a DOM`,
         typeof target !== 'string'
       );
       assert(
-        `You tried to append to a non-Element (${selector}) in an environment without jQuery`,
+        `You tried to append to a non-Element (${selector}) in an environment without a DOM`,
         typeof selector.appendChild === 'function'
       );
     }
@@ -355,7 +354,7 @@ let mixin = {
    Component properties that depend on the presence of an outer element, such
    as `classNameBindings` and `attributeBindings`, do not work with tagless
    components. Tagless components cannot implement methods to handle events,
-   and have no associated jQuery object to return with `$()`.
+   and their `element` property has a `null` value.
 
    @property tagName
    @type String
@@ -419,42 +418,6 @@ let mixin = {
     return this._currentState.handleEvent(this, eventName, evt);
   },
 };
-
-if (JQUERY_INTEGRATION) {
-  /**
-   Returns a jQuery object for this view's element. If you pass in a selector
-   string, this method will return a jQuery object, using the current element
-   as its buffer.
-
-   For example, calling `view.$('li')` will return a jQuery object containing
-   all of the `li` elements inside the DOM element of this view.
-
-   @method $
-   @param {String} [selector] a jQuery-compatible selector string
-   @return {jQuery} the jQuery object for the DOM node
-   @public
-   @deprecated
-   */
-  mixin.$ = function $(sel) {
-    assert(
-      "You cannot access this.$() on a component with `tagName: ''` specified.",
-      this.tagName !== ''
-    );
-    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
-    deprecate(
-      'Using this.$() in a component has been deprecated, consider using this.element',
-      false,
-      {
-        id: 'ember-views.curly-components.jquery-element',
-        until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
-      }
-    );
-    if (this.element) {
-      return sel ? jQuery(sel, this.element) : jQuery(this.element);
-    }
-  };
-}
 
 /**
  @class ViewMixin

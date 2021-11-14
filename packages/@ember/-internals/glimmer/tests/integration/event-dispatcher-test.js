@@ -1,15 +1,12 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
-import { getCurrentRunLoop, run } from '@ember/runloop';
+import { _getCurrentRunLoop } from '@ember/runloop';
 import {
-  subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
+  subscribe as instrumentationSubscribe,
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-import { jQueryDisabled, jQuery } from '@ember/-internals/views';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { DEBUG } from '@glimmer/env';
 
 let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
 
@@ -20,9 +17,108 @@ function fireNativeWithDataTransfer(node, type, dataTransfer) {
   node.dispatchEvent(event);
 }
 
+function triggerEvent(node, event) {
+  switch (event) {
+    case 'focusin':
+      return node.focus();
+    case 'focusout':
+      return node.blur();
+    default:
+      return node.trigger(event);
+  }
+}
+
+const SUPPORTED_EMBER_EVENTS = {
+  touchstart: 'touchStart',
+  touchmove: 'touchMove',
+  touchend: 'touchEnd',
+  touchcancel: 'touchCancel',
+  keydown: 'keyDown',
+  keyup: 'keyUp',
+  keypress: 'keyPress',
+  mousedown: 'mouseDown',
+  mouseup: 'mouseUp',
+  contextmenu: 'contextMenu',
+  click: 'click',
+  dblclick: 'doubleClick',
+  focusin: 'focusIn',
+  focusout: 'focusOut',
+  submit: 'submit',
+  input: 'input',
+  change: 'change',
+  dragstart: 'dragStart',
+  drag: 'drag',
+  dragenter: 'dragEnter',
+  dragleave: 'dragLeave',
+  dragover: 'dragOver',
+  drop: 'drop',
+  dragend: 'dragEnd',
+};
+
 moduleFor(
   'EventDispatcher',
   class extends RenderingTestCase {
+    ['@test event handler methods are called when event is triggered'](assert) {
+      let receivedEvent;
+      let browserEvent;
+
+      this.registerComponent('x-button', {
+        ComponentClass: Component.extend(
+          {
+            tagName: 'button',
+          },
+          Object.keys(SUPPORTED_EMBER_EVENTS)
+            .map((browerEvent) => ({
+              [SUPPORTED_EMBER_EVENTS[browerEvent]](event) {
+                receivedEvent = event;
+              },
+            }))
+            .reduce((result, singleEventHandler) => ({ ...result, ...singleEventHandler }), {})
+        ),
+      });
+
+      this.render(`{{x-button}}`);
+
+      let elementNode = this.$('button');
+      let element = elementNode[0];
+
+      for (browserEvent in SUPPORTED_EMBER_EVENTS) {
+        receivedEvent = null;
+        runTask(() => triggerEvent(elementNode, browserEvent));
+        assert.ok(receivedEvent, `${browserEvent} event was triggered`);
+        assert.strictEqual(receivedEvent.target, element);
+      }
+    }
+
+    ['@test event listeners are called when event is triggered'](assert) {
+      let receivedEvent;
+      let browserEvent;
+
+      this.registerComponent('x-button', {
+        ComponentClass: Component.extend({
+          tagName: 'button',
+          init() {
+            this._super();
+            Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
+              this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
+            });
+          },
+        }),
+      });
+
+      this.render(`{{x-button}}`);
+
+      let elementNode = this.$('button');
+      let element = elementNode[0];
+
+      for (browserEvent in SUPPORTED_EMBER_EVENTS) {
+        receivedEvent = null;
+        runTask(() => triggerEvent(elementNode, browserEvent));
+        assert.ok(receivedEvent, `${browserEvent} event was triggered`);
+        assert.strictEqual(receivedEvent.target, element);
+      }
+    }
+
     ['@test events bubble view hierarchy for form elements'](assert) {
       let receivedEvent;
 
@@ -51,7 +147,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onclick={{action clicked}}>my button</button>`,
+        template: `<button id="is-done" onclick={{action this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);
@@ -70,7 +166,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onClick={{action clicked}}>my button</button>`,
+        template: `<button id="is-done" onClick={{action this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);
@@ -164,7 +260,7 @@ moduleFor(
       this.registerComponent('x-foo', {
         ComponentClass: Component.extend({
           change() {
-            assert.ok(getCurrentRunLoop(), 'a run loop should have started');
+            assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
           },
         }),
         template: `<input id="is-done" type="checkbox">`,
@@ -173,243 +269,6 @@ moduleFor(
       this.render(`{{x-foo}}`);
 
       this.$('#is-done').trigger('click');
-    }
-
-    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave'](assert) {
-      let receivedEnterEvents = [];
-      let receivedLeaveEvents = [];
-
-      this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
-          mouseEnter(event) {
-            receivedEnterEvents.push(event);
-          },
-          mouseLeave(event) {
-            receivedLeaveEvents.push(event);
-          },
-        }),
-        template: `<div id="inner"></div>`,
-      });
-
-      expectDeprecation(
-        () => this.render(`{{x-foo id="outer"}}`),
-        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
-      );
-
-      let parent = this.element;
-      let outer = this.$('#outer')[0];
-      let inner = this.$('#inner')[0];
-
-      // mouse moves over #outer
-      runTask(() => {
-        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
-        this.$(outer).trigger('mouseover', { relatedTarget: parent });
-        this.$(parent).trigger('mouseout', { relatedTarget: outer });
-      });
-      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was triggered');
-      assert.strictEqual(receivedEnterEvents[0].target, outer);
-
-      // mouse moves over #inner
-      runTask(() => {
-        this.$(inner).trigger('mouseover', { relatedTarget: outer });
-        this.$(outer).trigger('mouseout', { relatedTarget: inner });
-      });
-      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was not triggered again');
-
-      // mouse moves out of #inner
-      runTask(() => {
-        this.$(inner).trigger('mouseout', { relatedTarget: outer });
-        this.$(outer).trigger('mouseover', { relatedTarget: inner });
-      });
-      assert.equal(receivedLeaveEvents.length, 0, 'mouseleave event was not triggered');
-
-      // mouse moves out of #outer
-      runTask(() => {
-        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
-        this.$(outer).trigger('mouseout', { relatedTarget: parent });
-        this.$(parent).trigger('mouseover', { relatedTarget: outer });
-      });
-      assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
-      assert.strictEqual(receivedLeaveEvents[0].target, outer);
-    }
-
-    ['@test [DEPRECATED] delegated event listeners work for mouseEnter on SVG elements'](assert) {
-      let receivedEnterEvents = [];
-      let receivedLeaveEvents = [];
-
-      this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
-          tagName: 'svg',
-          mouseEnter(event) {
-            receivedEnterEvents.push(event);
-          },
-          mouseLeave(event) {
-            receivedLeaveEvents.push(event);
-          },
-        }),
-        template: `<g id="inner"></g>`,
-      });
-
-      expectDeprecation(
-        () => this.render(`{{x-foo id="outer"}}`),
-        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
-      );
-
-      let parent = this.element;
-      let outer = this.$('#outer')[0];
-      let inner = this.$('#inner')[0];
-
-      // mouse moves over #outer
-      runTask(() => {
-        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
-        this.$(outer).trigger('mouseover', { relatedTarget: parent });
-        this.$(parent).trigger('mouseout', { relatedTarget: outer });
-      });
-      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was triggered');
-      assert.strictEqual(receivedEnterEvents[0].target, outer);
-
-      // mouse moves over #inner
-      runTask(() => {
-        this.$(inner).trigger('mouseover', { relatedTarget: outer });
-        this.$(outer).trigger('mouseout', { relatedTarget: inner });
-      });
-      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was not triggered again');
-
-      // mouse moves out of #inner
-      runTask(() => {
-        this.$(inner).trigger('mouseout', { relatedTarget: outer });
-        this.$(outer).trigger('mouseover', { relatedTarget: inner });
-      });
-      assert.equal(receivedLeaveEvents.length, 0, 'mouseleave event was not triggered');
-
-      // mouse moves out of #outer
-      runTask(() => {
-        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
-        this.$(outer).trigger('mouseout', { relatedTarget: parent });
-        this.$(parent).trigger('mouseover', { relatedTarget: outer });
-      });
-      assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
-      assert.strictEqual(receivedLeaveEvents[0].target, outer);
-    }
-
-    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave with skipped events'](
-      assert
-    ) {
-      let receivedEnterEvents = [];
-      let receivedLeaveEvents = [];
-
-      this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
-          mouseEnter(event) {
-            receivedEnterEvents.push(event);
-          },
-          mouseLeave(event) {
-            receivedLeaveEvents.push(event);
-          },
-        }),
-        template: `<div id="inner"></div>`,
-      });
-
-      expectDeprecation(
-        () => this.render(`{{x-foo id="outer"}}`),
-        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
-      );
-
-      let parent = this.element;
-      let outer = this.$('#outer')[0];
-      let inner = this.$('#inner')[0];
-
-      // we replicate fast mouse movement, where mouseover is fired directly in #inner, skipping #outer
-      runTask(() => {
-        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
-        this.$(inner).trigger('mouseover', { relatedTarget: parent });
-        this.$(parent).trigger('mouseout', { relatedTarget: inner });
-      });
-      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was triggered');
-      assert.strictEqual(receivedEnterEvents[0].target, inner);
-
-      // mouse moves out of #outer
-      runTask(() => {
-        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
-        this.$(inner).trigger('mouseout', { relatedTarget: parent });
-        this.$(parent).trigger('mouseover', { relatedTarget: inner });
-      });
-      assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
-      assert.strictEqual(receivedLeaveEvents[0].target, inner);
-    }
-
-    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave with skipped events and subcomponent'](
-      assert
-    ) {
-      let receivedEnterEvents = [];
-      let receivedLeaveEvents = [];
-
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          mouseEnter(event) {
-            receivedEnterEvents.push(event);
-          },
-          mouseLeave(event) {
-            receivedLeaveEvents.push(event);
-          },
-        }),
-        template: `{{yield}}`,
-      });
-
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend(),
-        template: ``,
-      });
-
-      expectDeprecation(
-        () => this.render(`{{#x-outer id="outer"}}{{x-inner id="inner"}}{{/x-outer}}`),
-        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
-      );
-
-      let parent = this.element;
-      let outer = this.$('#outer')[0];
-      let inner = this.$('#inner')[0];
-
-      // we replicate fast mouse movement, where mouseover is fired directly in #inner, skipping #outer
-      runTask(() => {
-        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
-        this.$(inner).trigger('mouseover', { relatedTarget: parent });
-        this.$(parent).trigger('mouseout', { relatedTarget: inner });
-      });
-      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was triggered');
-      assert.strictEqual(receivedEnterEvents[0].target, inner);
-
-      // mouse moves out of #inner
-      runTask(() => {
-        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
-        this.$(inner).trigger('mouseout', { relatedTarget: parent });
-        this.$(parent).trigger('mouseover', { relatedTarget: inner });
-      });
-
-      assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
-      assert.strictEqual(receivedLeaveEvents[0].target, inner);
-    }
-
-    ['@test [DEPRECATED] supports mouseMove events'](assert) {
-      let receivedEvent;
-
-      this.registerComponent('x-foo', {
-        ComponentClass: Component.extend({
-          mouseMove(event) {
-            receivedEvent = event;
-          },
-        }),
-        template: `<div id="inner"></div>`,
-      });
-
-      expectDeprecation(
-        'Using `mouseMove` event handler methods in components has been deprecated.'
-      );
-
-      this.render(`{{x-foo}}`);
-
-      runTask(() => this.$('#inner').trigger('mousemove'));
-      assert.ok(receivedEvent, 'mousemove event was triggered');
     }
   }
 );
@@ -420,10 +279,13 @@ moduleFor(
     constructor() {
       super(...arguments);
 
-      let dispatcher = this.owner.lookup('event_dispatcher:main');
-      run(dispatcher, 'destroy');
-      this.owner.__container__.reset('event_dispatcher:main');
       this.dispatcher = this.owner.lookup('event_dispatcher:main');
+    }
+
+    getBootOptions() {
+      return {
+        skipEventDispatcher: true,
+      };
     }
 
     ['@test additional events can be specified'](assert) {
@@ -564,186 +426,6 @@ if (canDataTransfer) {
 
         fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
         assert.equal(receivedEvent.dataTransfer, 'success');
-      }
-    }
-  );
-}
-
-if (jQueryDisabled) {
-  moduleFor(
-    'EventDispatcher#native-events',
-    class extends RenderingTestCase {
-      ['@test native events are passed when jQuery is not present'](assert) {
-        let receivedEvent;
-
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            click(event) {
-              receivedEvent = event;
-            },
-          }),
-          template: `<button id="foo">bar</button>`,
-        });
-
-        this.render(`{{x-foo}}`);
-
-        runTask(() => this.$('#foo').click());
-        assert.ok(receivedEvent, 'click event was triggered');
-        assert.notOk(receivedEvent.originalEvent, 'event is not a jQuery.Event');
-      }
-
-      ['@test native event on text node does not throw on hasAttribute [ISSUE #16730]'](assert) {
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            actions: {
-              someAction() {},
-            },
-          }),
-          template: `<a id="inner" href="#" {{action 'someAction'}}>test</a>`,
-        });
-
-        this.render(`{{x-foo id="outer"}}`);
-
-        let node = this.$('#inner')[0].childNodes[0];
-
-        runTask(() => {
-          let event = document.createEvent('HTMLEvents');
-          event.initEvent('mousemove', true, true);
-          node.dispatchEvent(event);
-        });
-
-        assert.ok(true);
-      }
-    }
-  );
-} else {
-  moduleFor(
-    'EventDispatcher#jquery-events',
-    class extends RenderingTestCase {
-      beforeEach() {
-        this.jqueryIntegration = window.ENV._JQUERY_INTEGRATION;
-      }
-
-      afterEach() {
-        window.ENV._JQUERY_INTEGRATION = this.jqueryIntegration;
-      }
-
-      ['@test jQuery events are passed when jQuery is present'](assert) {
-        let receivedEvent;
-
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            click(event) {
-              receivedEvent = event;
-            },
-          }),
-          template: `<button id="foo">bar</button>`,
-        });
-
-        this.render(`{{x-foo}}`);
-
-        runTask(() => this.$('#foo').click());
-        assert.ok(receivedEvent, 'click event was triggered');
-        assert.ok(receivedEvent instanceof jQuery.Event, 'event is a jQuery.Event');
-      }
-
-      [`@${HAS_NATIVE_PROXY ? 'test' : 'skip'} accessing jQuery.Event#originalEvent is deprecated`](
-        assert
-      ) {
-        let receivedEvent;
-
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            click(event) {
-              receivedEvent = event;
-            },
-          }),
-          template: `<button id="foo">bar</button>`,
-        });
-
-        this.render(`{{x-foo}}`);
-
-        runTask(() => this.$('#foo').click());
-        expectDeprecation(() => {
-          let { originalEvent } = receivedEvent;
-          assert.ok(originalEvent, 'jQuery event has originalEvent property');
-          assert.equal(originalEvent.type, 'click', 'properties of originalEvent are available');
-        }, 'Accessing jQuery.Event specific properties is deprecated. Either use the ember-jquery-legacy addon to normalize events to native events, or explicitly opt into jQuery integration using @ember/optional-features.');
-      }
-
-      ['@test other jQuery.Event properties do not trigger deprecation'](assert) {
-        let receivedEvent;
-
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            click(event) {
-              receivedEvent = event;
-            },
-          }),
-          template: `<button id="foo">bar</button>`,
-        });
-
-        this.render(`{{x-foo}}`);
-
-        runTask(() => this.$('#foo').click());
-        expectNoDeprecation(() => {
-          receivedEvent.stopPropagation();
-          receivedEvent.stopImmediatePropagation();
-          receivedEvent.preventDefault();
-          assert.ok(receivedEvent.bubbles, 'properties of jQuery event are available');
-          assert.equal(receivedEvent.type, 'click', 'properties of jQuery event are available');
-        });
-      }
-
-      ['@test accessing jQuery.Event#originalEvent does not trigger deprecations when jquery integration is explicitly enabled'](
-        assert
-      ) {
-        let receivedEvent;
-        window.ENV._JQUERY_INTEGRATION = true;
-
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            click(event) {
-              receivedEvent = event;
-            },
-          }),
-          template: `<button id="foo">bar</button>`,
-        });
-
-        this.render(`{{x-foo}}`);
-
-        runTask(() => this.$('#foo').click());
-        expectNoDeprecation(() => {
-          let { originalEvent } = receivedEvent;
-          assert.ok(originalEvent, 'jQuery event has originalEvent property');
-          assert.equal(originalEvent.type, 'click', 'properties of originalEvent are available');
-        });
-      }
-
-      [`@${
-        HAS_NATIVE_PROXY && DEBUG ? 'test' : 'skip'
-      } accessing jQuery.Event#__originalEvent does not trigger deprecations to support ember-jquery-legacy`](
-        assert
-      ) {
-        let receivedEvent;
-
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            click(event) {
-              receivedEvent = event;
-            },
-          }),
-          template: `<button id="foo">bar</button>`,
-        });
-
-        this.render(`{{x-foo}}`);
-
-        runTask(() => this.$('#foo').click());
-        expectNoDeprecation(() => {
-          let { __originalEvent: originalEvent } = receivedEvent;
-          assert.ok(originalEvent, 'jQuery event has __originalEvent property');
-          assert.equal(originalEvent.type, 'click', 'properties of __originalEvent are available');
-        });
       }
     }
   );

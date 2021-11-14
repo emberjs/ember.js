@@ -22,17 +22,17 @@ function GlimmerTemplatePrecompiler(inputTree, options) {
 GlimmerTemplatePrecompiler.prototype.extensions = ['hbs'];
 GlimmerTemplatePrecompiler.prototype.targetExtension = 'js';
 
-GlimmerTemplatePrecompiler.prototype.baseDir = function() {
+GlimmerTemplatePrecompiler.prototype.baseDir = function () {
   return __dirname;
 };
 
-GlimmerTemplatePrecompiler.prototype.processString = function(content, relativePath) {
-  var compiled = this.precompile(content, {
+GlimmerTemplatePrecompiler.prototype.processString = function (content, relativePath) {
+  let compiled = this.precompile(content, {
     meta: { moduleName: relativePath },
   });
   return stripIndent`
-    import template from '../template';
-    export default template(${compiled});
+    import { templateFactory } from '@glimmer/opcode-compiler';
+    export default templateFactory(${compiled});
   `;
 };
 

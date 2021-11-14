@@ -104,7 +104,11 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     this.addTemplate(
       'application',
-      `{{#each articles as |a|}} {{link-to 'Article' '${articleLookup}' a.id id=a.id}} {{/each}}`
+      `
+      {{#each articles as |a|}}
+        <LinkTo @route='${articleLookup}' @model={{a.id}} id={{a.id}}>Article</LinkTo>
+      {{/each}}
+      `
     );
 
     await this.boot();
@@ -246,7 +250,10 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
 
     this.addTemplate(
       'about',
-      `{{link-to 'A' '${commentsLookup}' 'a-1' id='one'}} {{link-to 'B' '${commentsLookup}' 'a-2' id='two'}}`
+      `
+      <LinkTo @route='${commentsLookup}' @model='a-1' id='one'>A</LinkTo>
+      <LinkTo @route='${commentsLookup}' @model='a-2' id='two'>B</LinkTo>
+      `
     );
 
     await this.visitApplication();
@@ -280,8 +287,8 @@ moduleFor(
   'Query Params - model-dependent state',
   class extends ModelDependentQPTestCase {
     setupApplication() {
-      this.router.map(function() {
-        this.route('article', { path: '/a/:id' }, function() {
+      this.router.map(function () {
+        this.route('article', { path: '/a/:id' }, function () {
           this.route('comments', { resetNamespace: true });
         });
         this.route('about');
@@ -334,7 +341,12 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each articles as |a|}} 1{{link-to 'Article' 'article' a id=a.id}} {{/each}} {{outlet}}"
+        `
+        {{#each this.articles as |a|}}
+          <LinkTo @route='article' @model={{a}} id={{a.id}}>Article</LinkTo>
+        {{/each}}
+        {{outlet}}
+        `
       );
     }
 
@@ -384,9 +396,9 @@ moduleFor(
   'Query Params - model-dependent state (nested)',
   class extends ModelDependentQPTestCase {
     setupApplication() {
-      this.router.map(function() {
-        this.route('site', function() {
-          this.route('article', { path: '/a/:id' }, function() {
+      this.router.map(function () {
+        this.route('site', function () {
+          this.route('article', { path: '/a/:id' }, function () {
             this.route('comments');
           });
         });
@@ -440,7 +452,12 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each articles as |a|}} {{link-to 'Article' 'site.article' a id=a.id}} {{/each}} {{outlet}}"
+        `
+        {{#each this.articles as |a|}}
+          <LinkTo @route='site.article' @model={{a}} id={{a.id}}>Article</LinkTo>
+        {{/each}}
+        {{outlet}}
+        `
       );
     }
 
@@ -490,9 +507,9 @@ moduleFor(
   'Query Params - model-dependent state (nested & more than 1 dynamic segment)',
   class extends ModelDependentQPTestCase {
     setupApplication() {
-      this.router.map(function() {
-        this.route('site', { path: '/site/:site_id' }, function() {
-          this.route('article', { path: '/a/:article_id' }, function() {
+      this.router.map(function () {
+        this.route('site', { path: '/site/:site_id' }, function () {
+          this.route('article', { path: '/a/:article_id' }, function () {
             this.route('comments');
           });
         });
@@ -511,9 +528,9 @@ moduleFor(
               let ret = [];
               let siteArticles = this.siteArticles;
               let sites = this.sites;
-              sites.forEach(site => {
+              sites.forEach((site) => {
                 ret = ret.concat(
-                  siteArticles.map(article => {
+                  siteArticles.map((article) => {
                     return {
                       id: `${site.id}-${article.id}`,
                       site_id: site.id,
@@ -591,7 +608,14 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        "{{#each allSitesAllArticles as |a|}} {{#link-to 'site.article' a.site_id a.article_id id=a.id}}Article [{{a.site_id}}] [{{a.article_id}}]{{/link-to}} {{/each}} {{outlet}}"
+        `
+        {{#each this.allSitesAllArticles as |a|}}
+          <LinkTo @route='site.article' @models={{array a.site_id a.article_id}} id={{a.id}}>
+            Article [{{a.site_id}}] [{{a.article_id}}]
+          </LinkTo>
+        {{/each}}
+        {{outlet}}
+        `
       );
     }
 

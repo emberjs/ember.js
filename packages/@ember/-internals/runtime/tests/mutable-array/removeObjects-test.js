@@ -2,6 +2,7 @@ import { get } from '@ember/-internals/metal';
 import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture, newObjectsFixture } from '../helpers/array';
 import { A as emberA } from '../../lib/mixins/array';
+import { destroy } from '@glimmer/destroyable';
 
 class RemoveObjectsTests extends AbstractTestCase {
   '@test should return receiver'() {
@@ -42,6 +43,8 @@ class RemoveObjectsTests extends AbstractTestCase {
         'should NOT have notified lastObject'
       );
     }
+
+    destroy(obj);
   }
 
   async '@test [{A},{B},{C}].removeObjects([{B}]) => [{A},{C}] + notify'() {
@@ -75,6 +78,8 @@ class RemoveObjectsTests extends AbstractTestCase {
         'should NOT have notified lastObject'
       );
     }
+
+    destroy(obj);
   }
 
   async '@test [A,B,C].removeObjects([A,B]) => [C] + notify'() {
@@ -104,6 +109,8 @@ class RemoveObjectsTests extends AbstractTestCase {
         'should NOT have notified lastObject'
       );
     }
+
+    destroy(obj);
   }
 
   async '@test [{A},{B},{C}].removeObjects([{A},{B}]) => [{C}] + notify'() {
@@ -133,6 +140,8 @@ class RemoveObjectsTests extends AbstractTestCase {
         'should NOT have notified lastObject'
       );
     }
+
+    destroy(obj);
   }
 
   async '@test [A,B,C].removeObjects([A,B,C]) => [] + notify'() {
@@ -158,6 +167,8 @@ class RemoveObjectsTests extends AbstractTestCase {
       this.assert.equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject');
       this.assert.equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject');
     }
+
+    destroy(obj);
   }
 
   async '@test [{A},{B},{C}].removeObjects([{A},{B},{C}]) => [] + notify'() {
@@ -183,6 +194,8 @@ class RemoveObjectsTests extends AbstractTestCase {
       this.assert.equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject');
       this.assert.equal(observer.validate('lastObject'), 1, 'should have notified lastObject');
     }
+
+    destroy(obj);
   }
 
   async '@test [A,B,C].removeObjects([D]) => [A,B,C]'() {
@@ -217,6 +230,8 @@ class RemoveObjectsTests extends AbstractTestCase {
         'should NOT have notified lastObject'
       );
     }
+
+    destroy(obj);
   }
 }
 

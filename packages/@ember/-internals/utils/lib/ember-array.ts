@@ -1,7 +1,18 @@
-import symbol from './symbol';
+import { _WeakSet } from '@glimmer/util';
 
-export const EMBER_ARRAY = symbol('EMBER_ARRAY');
+const EMBER_ARRAYS = new _WeakSet();
 
-export function isEmberArray(obj: any) {
-  return obj && obj[EMBER_ARRAY];
+export interface EmberArray<T> {
+  length: number;
+  objectAt(index: number): T | undefined;
+  replace(start: number, deleteCount: number, items: T[]): void;
+  splice(start: number, deleteCount: number, ...items: T[]): void;
+}
+
+export function setEmberArray(obj: object) {
+  EMBER_ARRAYS.add(obj);
+}
+
+export function isEmberArray(obj: unknown): obj is EmberArray<unknown> {
+  return EMBER_ARRAYS.has(obj as object);
 }

@@ -1,23 +1,17 @@
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
-import { ENV, context } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
-import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { setTemplates } from '@ember/-internals/glimmer';
-import { privatize as P } from '@ember/-internals/container';
-import { assign } from '@ember/polyfills';
 import {
   moduleFor,
   ApplicationTestCase,
   AbstractTestCase,
   AutobootApplicationTestCase,
-  DefaultResolverApplicationTestCase,
-  verifyInjection,
   verifyRegistration,
   runTask,
 } from 'internal-test-helpers';
@@ -37,7 +31,7 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         rootElement: '#one',
         router: null,
         autoboot: true,
@@ -45,7 +39,7 @@ moduleFor(
     }
 
     createSecondApplication(options) {
-      let myOptions = assign(this.applicationOptions, options);
+      let myOptions = Object.assign(this.applicationOptions, options);
       return (this.secondApp = Application.create(myOptions));
     }
 
@@ -129,132 +123,34 @@ moduleFor(
 
       verifyRegistration(assert, application, 'controller:basic');
       verifyRegistration(assert, application, '-view-registry:main');
-      verifyInjection(assert, application, 'view', '_viewRegistry', '-view-registry:main');
-      verifyInjection(assert, application, 'route', '_topLevelViewTemplate', 'template:-outlet');
       verifyRegistration(assert, application, 'route:basic');
       verifyRegistration(assert, application, 'event_dispatcher:main');
-      verifyInjection(assert, application, 'router:main', 'namespace', 'application:main');
-      verifyInjection(assert, application, 'view:-outlet', 'namespace', 'application:main');
 
       verifyRegistration(assert, application, 'location:auto');
       verifyRegistration(assert, application, 'location:hash');
       verifyRegistration(assert, application, 'location:history');
       verifyRegistration(assert, application, 'location:none');
 
-      verifyInjection(assert, application, 'controller', 'target', 'router:main');
-      verifyInjection(assert, application, 'controller', 'namespace', 'application:main');
-
-      verifyRegistration(assert, application, P`-bucket-cache:main`);
-      verifyInjection(assert, application, 'router', '_bucketCache', P`-bucket-cache:main`);
-      verifyInjection(assert, application, 'route', '_bucketCache', P`-bucket-cache:main`);
-
-      verifyInjection(assert, application, 'route', '_router', 'router:main');
-
-      verifyRegistration(assert, application, 'component:-text-field');
-      verifyRegistration(assert, application, 'component:-checkbox');
       verifyRegistration(assert, application, 'component:link-to');
 
       verifyRegistration(assert, application, 'component:textarea');
 
       verifyRegistration(assert, application, 'service:-routing');
-      verifyInjection(assert, application, 'service:-routing', 'router', 'router:main');
 
       // DEBUGGING
       verifyRegistration(assert, application, 'resolver-for-debugging:main');
-      verifyInjection(
-        assert,
-        application,
-        'container-debug-adapter:main',
-        'resolver',
-        'resolver-for-debugging:main'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'data-adapter:main',
-        'containerDebugAdapter',
-        'container-debug-adapter:main'
-      );
       verifyRegistration(assert, application, 'container-debug-adapter:main');
       verifyRegistration(assert, application, 'component-lookup:main');
 
-      verifyRegistration(assert, application, 'service:-glimmer-environment');
-      verifyRegistration(assert, application, 'service:-dom-changes');
-      verifyRegistration(assert, application, 'service:-dom-tree-construction');
-      verifyInjection(
-        assert,
-        application,
-        'service:-glimmer-environment',
-        'appendOperations',
-        'service:-dom-tree-construction'
-      );
-      verifyInjection(
-        assert,
-        application,
-        'service:-glimmer-environment',
-        'updateOperations',
-        'service:-dom-changes'
-      );
-      verifyInjection(assert, application, 'renderer', 'env', 'service:-glimmer-environment');
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
-      verifyRegistration(assert, application, 'renderer:-inert');
-      verifyRegistration(assert, application, P`template:components/-default`);
       verifyRegistration(assert, application, 'template:-outlet');
-      verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
 
       assert.deepEqual(
         application.registeredOptionsForType('helper'),
         { instantiate: false },
         `optionsForType 'helper'`
       );
-    }
-  }
-);
-
-moduleFor(
-  'Application, default resolver with autoboot',
-  class extends DefaultResolverApplicationTestCase {
-    constructor() {
-      super(...arguments);
-      this.originalLookup = context.lookup;
-    }
-
-    teardown() {
-      context.lookup = this.originalLookup;
-      super.teardown();
-      setTemplates({});
-    }
-
-    get applicationOptions() {
-      return assign(super.applicationOptions, {
-        autoboot: true,
-      });
-    }
-
-    [`@test acts like a namespace`](assert) {
-      this.application = runTask(() => this.createApplication());
-      let Foo = (this.application.Foo = EmberObject.extend());
-      assert.equal(Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
-    }
-
-    [`@test can specify custom router`](assert) {
-      let MyRouter = Router.extend();
-      runTask(() => {
-        this.createApplication();
-        this.application.Router = MyRouter;
-      });
-
-      assert.ok(
-        this.application.__deprecatedInstance__.lookup('router:main') instanceof MyRouter,
-        'application resolved the correct router'
-      );
-    }
-
-    [`@test Minimal Application initialized with just an application template`]() {
-      this.setupFixture('<script type="text/x-handlebars">Hello World</script>');
-      runTask(() => this.createApplication());
-      this.assertInnerHTML('Hello World');
     }
   }
 );
@@ -342,7 +238,7 @@ moduleFor(
     [`@test Application Controller backs the appplication template`]() {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('application', '<h1>{{greeting}}</h1>');
+        this.addTemplate('application', '<h1>{{this.greeting}}</h1>');
         this.add(
           'controller:application',
           Controller.extend({
@@ -363,19 +259,14 @@ moduleFor(
 
       ENV.LOG_VERSION = true;
 
-      setDebugFunction('debug', message => messages.push(message));
+      setDebugFunction('debug', (message) => messages.push(message));
 
       libraries.register('my-lib', '2.0.0a');
 
       runTask(() => this.createApplication());
 
       assert.equal(messages[1], 'Ember  : ' + VERSION);
-      if (jQueryDisabled) {
-        assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
-      } else {
-        assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
-        assert.equal(messages[3], 'my-lib : ' + '2.0.0a');
-      }
+      assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
 
       libraries.deRegister('my-lib');
     }
@@ -418,7 +309,7 @@ moduleFor(
       assert
     ) {
       let namespace = EmberObject.create({
-        Resolver: { create: function() {} },
+        Resolver: { create: function () {} },
       });
 
       let registry = Application.buildRegistry(namespace);

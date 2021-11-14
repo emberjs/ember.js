@@ -18,7 +18,14 @@ moduleFor(
         },
       };
 
-      let outletView = new OutletView({}, renderer);
+      let outletView = new OutletView(
+        {},
+        {
+          lookup() {
+            return renderer;
+          },
+        }
+      );
 
       run(() => {
         assert.equal(

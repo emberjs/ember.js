@@ -1,17 +1,9 @@
-import {
-  moduleFor,
-  RenderingTestCase,
-  classes,
-  strip,
-  runAppend,
-  runTask,
-} from 'internal-test-helpers';
+import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
-import { getViewId, getViewElement, jQueryDisabled } from '@ember/-internals/views';
-import { tryInvoke } from '@ember/-internals/utils';
+import { getViewElement, getViewId } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
 
@@ -70,7 +62,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
     let topLevelId = getViewId(this.component);
     let actual = Object.keys(viewRegistry)
       .sort()
-      .filter(id => id !== topLevelId);
+      .filter((id) => id !== topLevelId);
 
     if (this.isInteractive) {
       let expected = this.componentRegistry.sort();
@@ -82,13 +74,13 @@ class LifeCycleHooksTest extends RenderingTestCase {
   }
 
   registerComponent(name, { template = null }) {
-    let pushComponent = instance => {
+    let pushComponent = (instance) => {
       this.components[name] = instance;
       this.componentRegistry.push(getViewId(instance));
     };
 
-    let removeComponent = instance => {
-      let index = this.componentRegistry.indexOf(instance);
+    let removeComponent = (instance) => {
+      let index = this.componentRegistry.indexOf(getViewId(instance));
       this.componentRegistry.splice(index, 1);
 
       delete this.components[name];
@@ -299,7 +291,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
   assertHooks({ label, interactive, nonInteractive }) {
     let rawHooks = this.isInteractive ? interactive : nonInteractive;
-    let hooks = rawHooks.map(raw => hook(...raw));
+    let hooks = rawHooks.map((raw) => hook(...raw));
     this.assert.deepEqual(json(this.hooks), json(hooks), label);
     this.hooks = [];
   }
@@ -330,7 +322,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       </div>`,
     });
 
-    this.render(invoke('the-top', { twitter: expr('twitter') }), {
+    this.render(invoke('the-top', { twitter: expr(attr('twitter')) }), {
       twitter: '@tomdale',
     });
 
@@ -563,9 +555,9 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     this.render(
       invoke('the-parent', {
-        twitter: expr('twitter'),
-        name: expr('name'),
-        website: expr('website'),
+        twitter: expr(attr('twitter')),
+        name: expr(attr('name')),
+        website: expr(attr('website')),
       }),
       {
         twitter: '@tomdale',
@@ -884,7 +876,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       </div>`,
     });
 
-    this.render(invoke('the-top', { twitter: expr('twitter') }), {
+    this.render(invoke('the-top', { twitter: expr(attr('twitter')) }), {
       twitter: '@tomdale',
     });
 
@@ -1050,7 +1042,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     this.registerComponent('an-item', {
       template: strip`
-      {{#nested-item}}Item: {{count}}{{/nested-item}}
+      {{#nested-item}}Item: {{this.count}}{{/nested-item}}
     `,
     });
 
@@ -1062,7 +1054,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
     this.render(
       strip`
-      {{#each items as |item|}}
+      {{#each this.items as |item|}}
         ${invoke('an-item', { count: expr('item') })}
       {{else}}
         ${invoke('no-items')}
@@ -1077,7 +1069,11 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.assertRegisteredViews('intial render');
 
     let initialHooks = () => {
-      let ret = [['an-item', 'init'], ['an-item', 'on(init)'], ['an-item', 'didReceiveAttrs']];
+      let ret = [
+        ['an-item', 'init'],
+        ['an-item', 'on(init)'],
+        ['an-item', 'didReceiveAttrs'],
+      ];
       if (this.isInteractive) {
         ret.push(['an-item', 'willRender'], ['an-item', 'willInsertElement']);
       }
@@ -1192,21 +1188,21 @@ class LifeCycleHooksTest extends RenderingTestCase {
         ['nested-item', 'willRender'],
         ['nested-item', 'willInsertElement'],
 
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-        ['an-item', 'didDestroyElement'],
-        ['nested-item', 'didDestroyElement'],
-
         ['nested-item', 'didInsertElement'],
         ['nested-item', 'didRender'],
         ['no-items', 'didInsertElement'],
         ['no-items', 'didRender'],
+
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
+        ['an-item', 'didDestroyElement'],
+        ['nested-item', 'didDestroyElement'],
 
         ['an-item', 'willDestroy'],
         ['nested-item', 'willDestroy'],
@@ -1259,7 +1255,10 @@ class LifeCycleHooksTest extends RenderingTestCase {
           ['nested-item', 'willDestroy'],
         ],
 
-        nonInteractive: [['no-items', 'willDestroy'], ['nested-item', 'willDestroy']],
+        nonInteractive: [
+          ['no-items', 'willDestroy'],
+          ['nested-item', 'willDestroy'],
+        ],
       });
 
       this.assertRegisteredViews('after destroy');
@@ -1274,13 +1273,13 @@ class CurlyComponentsTest extends LifeCycleHooksTest {
 
   invocationFor(name, namedArgs = {}) {
     let attrs = Object.keys(namedArgs)
-      .map(k => `${k}=${this.val(namedArgs[k])}`)
+      .map((k) => `${k}=${this.val(namedArgs[k])}`)
       .join(' ');
     return `{{${name} ${attrs}}}`;
   }
 
   attrFor(name) {
-    return `${name}`;
+    return `this.${name}`;
   }
 
   /* private */
@@ -1352,7 +1351,7 @@ moduleFor(
         },
       });
 
-      let template = `{{width}}`;
+      let template = `{{this.width}}`;
       this.registerComponent('foo-bar', { ComponentClass, template });
 
       this.render('{{foo-bar}}');
@@ -1374,11 +1373,11 @@ moduleFor(
         },
       });
 
-      let template = `{{foo}}`;
+      let template = `{{this.foo}}`;
 
       this.registerComponent('foo-bar', { ComponentClass, template });
 
-      this.render('{{foo-bar parent=this foo=foo}}');
+      this.render('{{foo-bar parent=this foo=this.foo}}');
 
       this.assertText('wat');
 
@@ -1432,8 +1431,8 @@ moduleFor(
       let PartentTemplate = strip`
       {{yield}}
       <ul>
-        {{#nested-component nestedId=(concat itemId '-A')}}A{{/nested-component}}
-        {{#nested-component nestedId=(concat itemId '-B')}}B{{/nested-component}}
+        {{#nested-component nestedId=(concat this.itemId '-A')}}A{{/nested-component}}
+        {{#nested-component nestedId=(concat this.itemId '-B')}}B{{/nested-component}}
       </ul>
     `;
 
@@ -1465,16 +1464,16 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each items as |item|}}
-        {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
-      {{/each}}
-      {{#if model.shouldShow}}
-        {{#parent-component itemId=6}}6{{/parent-component}}
-      {{/if}}
-      {{#if model.shouldShow}}
-        {{#parent-component itemId=7}}7{{/parent-component}}
-      {{/if}}
-    `,
+        {{#each this.items as |item|}}
+          {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
+        {{/each}}
+        {{#if this.model.shouldShow}}
+          {{#parent-component itemId=6}}6{{/parent-component}}
+        {{/if}}
+        {{#if this.model.shouldShow}}
+          {{#parent-component itemId=7}}7{{/parent-component}}
+        {{/if}}
+        `,
         {
           items: array,
           model: { shouldShow: true },
@@ -1597,54 +1596,6 @@ moduleFor(
     }
   }
 );
-
-if (!jQueryDisabled) {
-  moduleFor(
-    'Run loop and lifecycle hooks - jQuery only',
-    class extends RenderingTestCase {
-      ['@test lifecycle hooks have proper access to this.$()'](assert) {
-        assert.expect(7);
-        let component;
-        let FooBarComponent = Component.extend({
-          tagName: 'div',
-          init() {
-            assert.notOk(this.$(), 'no access to element via this.$() on init() enter');
-            this._super(...arguments);
-            assert.notOk(this.$(), 'no access to element via this.$() after init() finished');
-          },
-          willInsertElement() {
-            component = this;
-            assert.ok(this.$(), 'willInsertElement has access to element via this.$()');
-          },
-          didInsertElement() {
-            assert.ok(this.$(), 'didInsertElement has access to element via this.$()');
-          },
-          willDestroyElement() {
-            assert.ok(this.$(), 'willDestroyElement has access to element via this.$()');
-          },
-          didDestroyElement() {
-            assert.notOk(
-              this.$(),
-              'didDestroyElement does not have access to element via this.$()'
-            );
-          },
-        });
-        this.registerComponent('foo-bar', {
-          ComponentClass: FooBarComponent,
-          template: 'hello',
-        });
-        let { owner } = this;
-
-        expectDeprecation(() => {
-          let comp = owner.lookup('component:foo-bar');
-          runAppend(comp);
-          runTask(() => tryInvoke(component, 'destroy'));
-        }, 'Using this.$() in a component has been deprecated, consider using this.element');
-        runTask(() => tryInvoke(component, 'destroy'));
-      }
-    }
-  );
-}
 
 function assertDestroyHooks(assert, _actual, _expected) {
   _expected.forEach((expected, i) => {

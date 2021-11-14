@@ -1,9 +1,9 @@
 /**
 @module ember
 */
-import { Arguments, VM } from '@glimmer/runtime';
-import { ReadonlyReference } from '../utils/references';
-import { unMut } from './mut';
+import { CapturedArguments } from '@glimmer/interfaces';
+import { createReadOnlyRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
   The `readonly` helper let's you specify that a binding is one-way only,
@@ -120,8 +120,6 @@ import { unMut } from './mut';
   @for Ember.Templates.helpers
   @private
 */
-export default function(_vm: VM, args: Arguments) {
-  let ref = unMut(args.positional.at(0));
-
-  return new ReadonlyReference(ref);
-}
+export default internalHelper(({ positional }: CapturedArguments) => {
+  return createReadOnlyRef(positional[0]);
+});

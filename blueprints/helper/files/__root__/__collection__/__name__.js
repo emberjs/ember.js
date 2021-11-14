@@ -1,5 +1,5 @@
 import { helper } from '@ember/component/helper';
 
-export default helper(function <%= camelizedModuleName %>(params/*, hash*/) {
-  return params;
+export default helper(function <%= camelizedModuleName %>(positional/*, named*/) {
+  return positional;
 });

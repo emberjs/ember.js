@@ -1,4 +1,4 @@
-export default function lookupDescriptor(obj: object, keyName: string) {
+export default function lookupDescriptor(obj: object, keyName: string | symbol) {
   let current: object | null = obj;
   do {
     let descriptor = Object.getOwnPropertyDescriptor(current, keyName);

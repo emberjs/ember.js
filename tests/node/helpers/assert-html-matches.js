@@ -13,8 +13,8 @@ module.exports = {
    * auto-generates. Attribute ordering is also ignored.
    */
   register() {
-    QUnit.assert.htmlMatches = function(actual, expected, message) {
-      var isEqual = htmlDiffer.isEqual(actual, expected);
+    QUnit.assert.htmlMatches = function (actual, expected, message) {
+      let isEqual = htmlDiffer.isEqual(actual, expected);
 
       this.pushResult({
         result: isEqual,

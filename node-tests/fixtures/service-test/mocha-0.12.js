@@ -8,7 +8,7 @@ describe('Unit | Service | foo', function() {
     // needs: ['service:foo']
   });
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   it('exists', function() {
     let service = this.subject();
     expect(service).to.be.ok;

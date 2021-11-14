@@ -1,14 +1,13 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { assign } from '@ember/polyfills';
-import { run, later, backburner, hasScheduledTimers, getCurrentRunLoop } from '..';
+import { run, later, _backburner, _hasScheduledTimers, _getCurrentRunLoop } from '..';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;
-const originalPlatform = backburner._platform;
+const originalPlatform = _backburner._platform;
 
 function wait(callback, maxWaitCount = 100) {
   originalSetTimeout(() => {
-    if (maxWaitCount > 0 && (hasScheduledTimers() || getCurrentRunLoop())) {
+    if (maxWaitCount > 0 && (_hasScheduledTimers() || _getCurrentRunLoop())) {
       wait(callback, maxWaitCount - 1);
 
       return;
@@ -32,10 +31,10 @@ function pauseUntil(time) {
 }
 
 moduleFor(
-  'run.later',
+  'runloop `later`',
   class extends AbstractTestCase {
     teardown() {
-      backburner._platform = originalPlatform;
+      _backburner._platform = originalPlatform;
       window.setTimeout = originalSetTimeout;
       Date.prototype.valueOf = originalDateValueOf;
     }
@@ -61,7 +60,7 @@ moduleFor(
       run(() => {
         later(
           obj,
-          function() {
+          function () {
             this.invoked = true;
           },
           100
@@ -81,7 +80,7 @@ moduleFor(
       run(() => {
         later(
           obj,
-          function(amt) {
+          function (amt) {
             this.invoked += amt;
           },
           10,
@@ -101,13 +100,13 @@ moduleFor(
       let firstRunLoop, secondRunLoop;
 
       run(() => {
-        firstRunLoop = getCurrentRunLoop();
+        firstRunLoop = _getCurrentRunLoop();
 
         later(
           obj,
-          function(amt) {
+          function (amt) {
             this.invoked += amt;
-            secondRunLoop = getCurrentRunLoop();
+            secondRunLoop = _getCurrentRunLoop();
           },
           10,
           1
@@ -117,7 +116,7 @@ moduleFor(
       });
 
       assert.ok(firstRunLoop, 'first run loop captured');
-      assert.ok(!getCurrentRunLoop(), "shouldn't be in a run loop after flush");
+      assert.ok(!_getCurrentRunLoop(), "shouldn't be in a run loop after flush");
       assert.equal(obj.invoked, 0, "shouldn't have invoked later item yet");
 
       wait(() => {
@@ -191,19 +190,19 @@ moduleFor(
       let runLoop, finished;
 
       run(() => {
-        runLoop = getCurrentRunLoop();
+        runLoop = _getCurrentRunLoop();
         assert.ok(runLoop);
 
         later(() => {
           assert.ok(
-            getCurrentRunLoop() && getCurrentRunLoop() !== runLoop,
+            _getCurrentRunLoop() && _getCurrentRunLoop() !== runLoop,
             'first later callback has own run loop'
           );
-          runLoop = getCurrentRunLoop();
+          runLoop = _getCurrentRunLoop();
 
           later(() => {
             assert.ok(
-              getCurrentRunLoop() && getCurrentRunLoop() !== runLoop,
+              _getCurrentRunLoop() && _getCurrentRunLoop() !== runLoop,
               'second later callback has own run loop'
             );
             finished = true;
@@ -226,7 +225,7 @@ moduleFor(
       // happens when an expired timer callback takes a while to run,
       // which is what we simulate here.
       let newSetTimeoutUsed;
-      backburner._platform = assign({}, originalPlatform, {
+      _backburner._platform = Object.assign({}, originalPlatform, {
         setTimeout() {
           let wait = arguments[arguments.length - 1];
           newSetTimeoutUsed = true;

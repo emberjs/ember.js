@@ -1,4 +1,4 @@
-import { _WeakSet as WeakSet } from '@ember/polyfills';
+import { _WeakSet as WeakSet } from '@glimmer/util';
 import { isObject } from './spec';
 
 const PROXIES = new WeakSet();

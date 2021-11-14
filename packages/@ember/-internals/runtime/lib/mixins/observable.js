@@ -2,9 +2,9 @@
 @module @ember/object
 */
 
+import { peekMeta } from '@ember/-internals/meta';
 import {
   get,
-  getWithDefault,
   set,
   getProperties,
   setProperties,
@@ -15,7 +15,6 @@ import {
   endPropertyChanges,
   addObserver,
   removeObserver,
-  getCachedValueFor,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
@@ -294,7 +293,7 @@ export default Mixin.create({
     observer should be prepared to handle that.
 
     There are two common invocation patterns for `.addObserver()`:
-    
+
     - Passing two arguments:
       - the name of the property to observe (as a string)
       - the function to invoke (an actual function)
@@ -362,11 +361,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @param {Boolean} sync Whether the observer is sync or not
     @return {Observable}
     @public
   */
-  addObserver(key, target, method) {
-    addObserver(this, key, target, method);
+  addObserver(key, target, method, sync) {
+    addObserver(this, key, target, method, sync);
     return this;
   },
 
@@ -379,11 +379,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @param {Boolean} sync Whether the observer is async or not
     @return {Observable}
     @public
   */
-  removeObserver(key, target, method) {
-    removeObserver(this, key, target, method);
+  removeObserver(key, target, method, sync) {
+    removeObserver(this, key, target, method, sync);
     return this;
   },
 
@@ -400,24 +401,6 @@ export default Mixin.create({
   */
   hasObserverFor(key) {
     return hasListeners(this, `${key}:change`);
-  },
-
-  /**
-    Retrieves the value of a property, or a default value in the case that the
-    property returns `undefined`.
-
-    ```javascript
-    person.getWithDefault('lastName', 'Doe');
-    ```
-
-    @method getWithDefault
-    @param {String} keyName The name of the property to retrieve
-    @param {Object} defaultValue The value to return if the property value is undefined
-    @return {Object} The property value or the defaultValue.
-    @public
-  */
-  getWithDefault(keyName, defaultValue) {
-    return getWithDefault(this, keyName, defaultValue);
   },
 
   /**
@@ -493,6 +476,10 @@ export default Mixin.create({
     @public
   */
   cacheFor(keyName) {
-    return getCachedValueFor(this, keyName);
+    let meta = peekMeta(this);
+
+    if (meta !== null) {
+      return meta.valueFor(keyName);
+    }
   },
 });

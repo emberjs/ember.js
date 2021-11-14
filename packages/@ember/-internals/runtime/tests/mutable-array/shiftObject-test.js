@@ -45,6 +45,8 @@ class ShiftObjectTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [X].shiftObject() => [] + notify'() {
@@ -76,6 +78,8 @@ class ShiftObjectTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].shiftObject() => [B,C] + notify'() {
@@ -108,6 +112,8 @@ class ShiftObjectTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 }
 

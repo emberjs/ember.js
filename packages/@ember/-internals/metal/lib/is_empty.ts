@@ -41,7 +41,7 @@ export default function isEmpty(obj: any): boolean {
     return none;
   }
 
-  if (typeof obj.size === 'number') {
+  if (typeof obj.unknownProperty !== 'function' && typeof obj.size === 'number') {
     return !obj.size;
   }
 

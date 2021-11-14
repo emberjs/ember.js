@@ -22,7 +22,8 @@ moduleFor(
           tagName: '',
         }),
 
-        template: '<div id="{{id}}">[{{id}}] {{#if isShowing}}{{yield}}{{/if}}</div>',
+        template:
+          '<div id="{{this.id}}">[{{this.id}}] {{#if this.isShowing}}{{yield}}{{/if}}</div>',
       });
 
       this.addComponent('x-toggle', {
@@ -35,14 +36,14 @@ moduleFor(
           },
         }),
 
-        template: '[{{id}}] {{#if isExpanded}}{{yield}}{{/if}}',
+        template: '[{{this.id}}] {{#if this.isExpanded}}{{yield}}{{/if}}',
       });
 
       let ToggleController = Controller.extend({
         isExpanded: true,
 
         actions: {
-          toggle: function() {
+          toggle: function () {
             this.toggleProperty('isExpanded');
           },
         },
@@ -65,7 +66,7 @@ moduleFor(
 
       <button id="toggle-application" {{action "toggle"}}>Toggle</button>
 
-      {{#if isExpanded}}
+      {{#if this.isExpanded}}
         {{x-toggle id="root-3"}}
       {{/if}}
 
@@ -95,7 +96,7 @@ moduleFor(
 
       <button id="toggle-index" {{action "toggle"}}>Toggle</button>
 
-      {{#if isExpanded}}
+      {{#if this.isExpanded}}
         {{x-toggle id="root-6"}}
       {{/if}}
     `
@@ -127,8 +128,8 @@ moduleFor(
     `
       );
 
-      this.router.map(function() {
-        this.route('zomg', function() {
+      this.router.map(function () {
+        this.route('zomg', function () {
           this.route('lol');
         });
       });
@@ -166,7 +167,7 @@ moduleFor(
       let owner = this.applicationInstance;
 
       let actual = getRootViews(owner)
-        .map(view => view.id)
+        .map((view) => view.id)
         .sort();
       let expected = ids.sort();
 
@@ -245,7 +246,7 @@ moduleFor(
       let parentView = this.viewFor(parentId);
       let childViews = getChildViews(parentView);
 
-      let actual = childViews.map(view => view.id).sort();
+      let actual = childViews.map((view) => view.id).sort();
       let expected = childIds.sort();
 
       this.assert.deepEqual(actual, expected, `child views for #${parentId}`);
@@ -262,7 +263,7 @@ moduleFor(
 let hasGetClientRects, hasGetBoundingClientRect;
 let ClientRectListCtor, ClientRectCtor;
 
-(function() {
+(function () {
   if (document.createRange) {
     let range = document.createRange();
 

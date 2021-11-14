@@ -56,7 +56,7 @@ Promise.resolve()
   .then(() => {
     updatePackageJSONVersion();
     // ensures that we tag this correctly
-    return exec('auto-dist-tag', ['--write']);
+    return exec('node_modules/.bin/auto-dist-tag', ['--write']);
   })
   .then(() => {
     // do a production build
@@ -86,8 +86,8 @@ Promise.resolve()
   })
   .then(
     // eslint-disable-next-line
-    () => console.log('build-for-publishing completed succesfully!'),
-    error => {
+    () => console.log('build-for-publishing completed successfully!'),
+    (error) => {
       // eslint-disable-next-line
       console.error(error);
       // eslint-disable-next-line

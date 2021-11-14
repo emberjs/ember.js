@@ -5,17 +5,13 @@
 import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
-import { assert, isTesting } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { bind, join, once, run, schedule } from '@ember/runloop';
-import {
-  libraries,
-  processAllNamespaces,
-  setNamespaceSearchDisabled,
-} from '@ember/-internals/metal';
+import { join, once, run, schedule } from '@ember/runloop';
+import { libraries } from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
 import { RSVP } from '@ember/-internals/runtime';
-import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';
+import { EventDispatcher } from '@ember/-internals/views';
 import {
   Route,
   Router,
@@ -30,52 +26,35 @@ import Engine from '@ember/engine';
 import { privatize as P } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
-
-let librariesRegistered = false;
 
 /**
   An instance of `Application` is the starting point for every Ember
-  application. It helps to instantiate, initialize and coordinate the many
+  application. It instantiates, initializes and coordinates the
   objects that make up your app.
 
-  Each Ember app has one and only one `Application` object. In fact, the
-  very first thing you should do in your application is create the instance:
+  Each Ember app has one and only one `Application` object. Although
+  Ember CLI creates this object implicitly, the `Application` class
+  is defined in the `app/app.js`. You can define a `ready` method on the
+  `Application` class, which will be run by Ember when the application is
+  initialized.
 
-  ```javascript
-  import Application from '@ember/application';
-
-  window.App = Application.create();
+  ```app/app.js
+  const App = Application.extend({
+    ready() {
+      // your code here
+    }
+  })
   ```
 
-  Typically, the application object is the only global variable. All other
-  classes in your app should be properties on the `Application` instance,
-  which highlights its first role: a global namespace.
-
-  For example, if you define a view class, it might look like this:
-
-  ```javascript
-  import Application from '@ember/application';
-
-  App.MyView = Ember.View.extend();
-  ```
-
-  By default, calling `Application.create()` will automatically initialize
-  your application by calling the `Application.initialize()` method. If
-  you need to delay initialization, you can call your app's `deferReadiness()`
-  method. When you are ready for your app to be initialized, call its
-  `advanceReadiness()` method.
-
-  You can define a `ready` method on the `Application` instance, which
-  will be run by Ember when the application is initialized.
-
-  Because `Application` inherits from `Ember.Namespace`, any classes
+  Because `Application` ultimately inherits from `Ember.Namespace`, any classes
   you create will have useful string representations when calling `toString()`.
   See the `Ember.Namespace` documentation for more information.
 
   While you can think of your `Application` as a container that holds the
   other classes in your application, there are several other responsibilities
-  going on under-the-hood that you may want to understand.
+  going on under-the-hood that you may want to understand. It is also important
+  to understand that an `Application` is different from an `ApplicationInstance`.
+  Refer to the Guides to understand the difference between these.
 
   ### Event Delegation
 
@@ -98,10 +77,10 @@ let librariesRegistered = false;
   default, you can specify custom events and their corresponding view method
   names by setting the application's `customEvents` property:
 
-  ```javascript
+  ```app/app.js
   import Application from '@ember/application';
 
-  let App = Application.create({
+  let App = Application.extend({
     customEvents: {
       // add support for the paste event
       paste: 'paste'
@@ -113,10 +92,10 @@ let librariesRegistered = false;
   specify the event name with a `null` value in the `customEvents`
   property:
 
-  ```javascript
+  ```app/app.js
   import Application from '@ember/application';
 
-  let App = Application.create({
+  let App = Application.extend({
     customEvents: {
       // prevent listeners for mouseenter/mouseleave events
       mouseenter: null,
@@ -133,15 +112,15 @@ let librariesRegistered = false;
   For example, if only events inside a DOM element with the ID of `ember-app`
   should be delegated, set your application's `rootElement` property:
 
-  ```javascript
+  ```app/app.js
   import Application from '@ember/application';
 
-  let App = Application.create({
+  let App = Application.extend({
     rootElement: '#ember-app'
   });
   ```
 
-  The `rootElement` can be either a DOM element or a jQuery-compatible selector
+  The `rootElement` can be either a DOM element or a CSS selector
   string. Note that *views appended to the DOM outside the root element will
   not receive events.* If you specify a custom root element, make sure you only
   append views inside it!
@@ -152,25 +131,23 @@ let librariesRegistered = false;
 
   ### Initializers
 
-  Libraries on top of Ember can add initializers, like so:
+  To add behavior to the Application's boot process, you can define initializers in
+  the `app/initializers` directory, or with `ember generate initializer` using Ember CLI.
+  These files should export a named `initialize` function which will receive the created `application`
+  object as its first argument.
 
   ```javascript
-  import Application from '@ember/application';
-
-  Application.initializer({
-    name: 'api-adapter',
-
-    initialize: function(application) {
-      application.register('api-adapter:main', ApiAdapter);
-    }
-  });
+  export function initialize(application) {
+    // application.inject('route', 'foo', 'service:foo');
+  }
   ```
 
-  Initializers provide an opportunity to access the internal registry, which
-  organizes the different components of an Ember application. Additionally
-  they provide a chance to access the instantiated application. Beyond
-  being used for libraries, initializers are also a great way to organize
-  dependency injection or setup in your own application.
+  Application initializers can be used for a variety of reasons including:
+
+  - setting up external libraries
+  - injecting dependencies
+  - setting up event listeners in embedded apps
+  - deferring the boot process using the `deferReadiness` and `advanceReadiness` APIs.
 
   ### Routing
 
@@ -207,8 +184,7 @@ let librariesRegistered = false;
 const Application = Engine.extend({
   /**
     The root DOM element of the Application. This can be specified as an
-    element or a
-    [jQuery-compatible selector string](http://api.jquery.com/category/selectors/).
+    element or a [selector string](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors#reference_table_of_selectors).
 
     This is the element that will be passed to the Application's,
     `eventDispatcher`, which sets up the listeners for event delegation. Every
@@ -220,6 +196,15 @@ const Application = Engine.extend({
     @public
   */
   rootElement: 'body',
+
+  /**
+
+    @property _document
+    @type Document | null
+    @default 'window.document'
+    @private
+  */
+  _document: hasDOM ? window.document : null,
 
   /**
     The `Ember.EventDispatcher` responsible for delegating events to this
@@ -255,10 +240,10 @@ const Application = Engine.extend({
 
     To add new events to be listened to:
 
-    ```javascript
+    ```app/app.js
     import Application from '@ember/application';
 
-    let App = Application.create({
+    let App = Application.extend({
       customEvents: {
         // add support for the paste event
         paste: 'paste'
@@ -268,10 +253,10 @@ const Application = Engine.extend({
 
     To prevent default events from being listened to:
 
-    ```javascript
+    ```app/app.js
     import Application from '@ember/application';
 
-    let App = Application.create({
+    let App = Application.extend({
       customEvents: {
         // remove support for mouseenter / mouseleave events
         mouseenter: null,
@@ -364,12 +349,6 @@ const Application = Engine.extend({
     // eslint-disable-line no-unused-vars
     this._super(...arguments);
 
-    if (!this.$) {
-      this.$ = jQuery;
-    }
-
-    registerLibraries();
-
     if (DEBUG) {
       if (ENV.LOG_VERSION) {
         // we only need to see this once per Application#init
@@ -403,6 +382,16 @@ const Application = Engine.extend({
     @return {ApplicationInstance} the application instance
   */
   buildInstance(options = {}) {
+    assert(
+      'You cannot build new instances of this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert(
+      'You cannot build new instances of this application since it is being destroyed',
+      !this.isDestroying
+    );
+
     options.base = this;
     options.application = this;
     return ApplicationInstance.create(options);
@@ -489,10 +478,15 @@ const Application = Engine.extend({
     @method waitForDOMReady
   */
   waitForDOMReady() {
-    if (!this.$ || this.$.isReady) {
+    if (this._document === null || this._document.readyState !== 'loading') {
       schedule('actions', this, 'domReady');
     } else {
-      this.$().ready(bind(this, 'domReady'));
+      let callback = () => {
+        this._document.removeEventListener('DOMContentLoaded', callback);
+        run(this, 'domReady');
+      };
+
+      this._document.addEventListener('DOMContentLoaded', callback);
     }
   },
 
@@ -532,7 +526,7 @@ const Application = Engine.extend({
     @method domReady
   */
   domReady() {
-    if (this.isDestroyed) {
+    if (this.isDestroying || this.isDestroyed) {
       return;
     }
 
@@ -553,11 +547,10 @@ const Application = Engine.extend({
 
     App.deferReadiness();
 
-    // $ is a reference to the jQuery object/function
-    import $ from 'jquery;
-
-    $.getJSON('/auth-token', function(token) {
-      App.token = token;
+    fetch('/auth-token')
+    .then(response => response.json())
+    .then(data => {
+      App.token = data.token;
       App.advanceReadiness();
     });
     ```
@@ -576,10 +569,19 @@ const Application = Engine.extend({
       'You must call deferReadiness on an instance of Application',
       this instanceof Application
     );
+
+    assert('You cannot defer readiness since application has already destroyed', !this.isDestroyed);
+
     assert(
-      'You cannot defer readiness since the `ready()` hook has already been called.',
+      'You cannot defer readiness since the application is being destroyed',
+      !this.isDestroying
+    );
+
+    assert(
+      'You cannot defer readiness since the `ready()` hook has already been called',
       this._readinessDeferrals > 0
     );
+
     this._readinessDeferrals++;
   },
 
@@ -597,6 +599,22 @@ const Application = Engine.extend({
       'You must call advanceReadiness on an instance of Application',
       this instanceof Application
     );
+
+    assert(
+      'You cannot advance readiness since application has already destroyed',
+      !this.isDestroyed
+    );
+
+    assert(
+      'You cannot advance readiness since the application is being destroyed',
+      !this.isDestroying
+    );
+
+    assert(
+      'You cannot advance readiness since the `ready()` hook has already been called',
+      this._readinessDeferrals > 0
+    );
+
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
@@ -621,6 +639,13 @@ const Application = Engine.extend({
     @return {Promise<Application,Error>}
   */
   boot() {
+    assert(
+      'You cannot boot this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert('You cannot boot this application since it is being destroyed', !this.isDestroying);
+
     if (this._bootPromise) {
       return this._bootPromise;
     }
@@ -649,7 +674,7 @@ const Application = Engine.extend({
     @private
   */
   _bootSync() {
-    if (this._booted) {
+    if (this._booted || this.isDestroying || this.isDestroyed) {
       return;
     }
 
@@ -747,6 +772,13 @@ const Application = Engine.extend({
   */
   reset() {
     assert(
+      'You cannot reset this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert('You cannot reset this application since it is being destroyed', !this.isDestroying);
+
+    assert(
       `Calling reset() on instances of \`Application\` is not
             supported when globals mode is disabled; call \`visit()\` to
             create new \`ApplicationInstance\`s and dispose them
@@ -775,13 +807,12 @@ const Application = Engine.extend({
     @method didBecomeReady
   */
   didBecomeReady() {
+    if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
     try {
       // TODO: Is this still needed for _globalsMode = false?
-      if (!isTesting()) {
-        // Eagerly name all classes that are already loaded
-        processAllNamespaces();
-        setNamespaceSearchDisabled(true);
-      }
 
       // See documentation on `_autoboot()` for details
       if (this.autoboot) {
@@ -835,17 +866,13 @@ const Application = Engine.extend({
   // This method must be moved to the application instance object
   willDestroy() {
     this._super(...arguments);
-    setNamespaceSearchDisabled(false);
-    this._booted = false;
-    this._bootPromise = null;
-    this._bootResolver = null;
 
     if (_loaded.application === this) {
       _loaded.application = undefined;
     }
 
     if (this._applicationInstances.size) {
-      this._applicationInstances.forEach(i => i.destroy());
+      this._applicationInstances.forEach((i) => i.destroy());
       this._applicationInstances.clear();
     }
   },
@@ -971,7 +998,7 @@ const Application = Engine.extend({
     implement a limited subset of the full DOM API. The `SimpleDOM` library is known
     to work.
 
-    Since there is no access to jQuery in the non-browser environment, you must also
+    Since there is no DOM access in the non-browser environment, you must also
     specify a DOM `Element` object in the same `document` for the `rootElement` option
     (as opposed to a selector string like `"body"`).
 
@@ -1000,8 +1027,6 @@ const Application = Engine.extend({
       } else { // node
         application.register('service:network', NodeNetworkService);
       }
-
-      application.inject('route', 'network', 'service:network');
     };
 
     export default {
@@ -1012,13 +1037,16 @@ const Application = Engine.extend({
 
     ```app/routes/post.js
     import Route from '@ember/routing/route';
+    import { service } from '@ember/service';
 
     // An example of how the (hypothetical) service is used in routes.
 
-    export default Route.extend({
+    export default class IndexRoute extends Route {
+      @service network;
+
       model(params) {
         return this.network.fetch(`/api/posts/${params.post_id}.json`);
-      },
+      }
 
       afterModel(post) {
         if (post.isExternalContent) {
@@ -1027,7 +1055,7 @@ const Application = Engine.extend({
           return post;
         }
       }
-    });
+    }
     ```
 
     ```javascript
@@ -1048,13 +1076,20 @@ const Application = Engine.extend({
     @return {Promise<ApplicationInstance, Error>}
   */
   visit(url, options) {
+    assert(
+      'You cannot visit this application since it has already been destroyed',
+      !this.isDestroyed
+    );
+
+    assert('You cannot visit this application since it is being destroyed', !this.isDestroying);
+
     return this.boot().then(() => {
       let instance = this.buildInstance();
 
       return instance
         .boot(options)
         .then(() => instance.visit(url))
-        .catch(error => {
+        .catch((error) => {
           run(instance, 'destroy');
           throw error;
         });
@@ -1101,7 +1136,7 @@ Application.reopenClass({
 });
 
 function commonSetupRegistry(registry) {
-  registry.register('router:main', Router.extend());
+  registry.register('router:main', Router);
   registry.register('-view-registry:main', {
     create() {
       return dictionary(null);
@@ -1110,8 +1145,6 @@ function commonSetupRegistry(registry) {
 
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
-
-  registry.injection('router:main', 'namespace', 'application:main');
 
   registry.register('location:auto', AutoLocation);
   registry.register('location:hash', HashLocation);
@@ -1125,17 +1158,6 @@ function commonSetupRegistry(registry) {
   });
 
   registry.register('service:router', RouterService);
-  registry.injection('service:router', '_router', 'router:main');
-}
-
-function registerLibraries() {
-  if (!librariesRegistered) {
-    librariesRegistered = true;
-
-    if (JQUERY_INTEGRATION && hasDOM && !jQueryDisabled) {
-      libraries.registerCoreLibrary('jQuery', jQuery().jquery);
-    }
-  }
 }
 
 export default Application;

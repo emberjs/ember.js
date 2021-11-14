@@ -1,3 +1,4 @@
+import { ENV } from '@ember/-internals/environment';
 import {
   RenderingTestCase,
   moduleFor,
@@ -22,7 +23,7 @@ moduleFor(
 
       this.render(
         `
-          {{~#if cond~}}
+          {{~#if this.cond~}}
             {{foo-bar}}
           {{~else~}}
             {{baz-qux}}
@@ -38,6 +39,8 @@ moduleFor(
           helperDefinitionCount: 1,
           // from this.render
           templateCacheMisses: 1,
+          // from debugRenderTree
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
         },
         'calculate foo-bar helper only'
       );
@@ -78,7 +81,7 @@ moduleFor(
       this.getCacheCounters();
 
       // show component-one for the first time
-      this.render(`{{component componentName}}`, {
+      this.render(`{{component this.componentName}}`, {
         componentName: 'component-one',
       });
 
@@ -88,6 +91,8 @@ moduleFor(
           componentDefinitionCount: 1,
           // 1 from this.render, 1 from component-one
           templateCacheMisses: 2,
+          // debugRenderTree
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
         },
         'test case component and component-one no change'
       );
@@ -128,8 +133,11 @@ moduleFor(
       this.registerComponent('component-two', { ComponentClass: Two });
 
       // inject layout onto component, share layout with component-one
-      this.registerComponent('root-component', { ComponentClass: Component });
-      this.owner.inject('component:root-component', 'layout', 'template:components/component-one');
+      let Root = Component.extend({
+        layout: this.owner.lookup('template:components/component-one'),
+      });
+
+      this.registerComponent('root-component', { ComponentClass: Root });
 
       // template instance shared between to template managers
       let rootFactory = this.owner.factoryFor('component:root-component');
@@ -140,7 +148,7 @@ moduleFor(
       // show component-one for the first time
       this.render(
         `
-    {{~#if cond~}}
+    {{~#if this.cond~}}
       {{component-one}}
     {{~else~}}
       {{component-two}}
@@ -155,6 +163,7 @@ moduleFor(
         {
           componentDefinitionCount: 1,
           templateCacheMisses: 2,
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
         },
         'test case component and component-one no change'
       );
@@ -167,6 +176,7 @@ moduleFor(
         {
           templateCacheMisses: 1,
           componentDefinitionCount: 1,
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 1 : 0,
         },
         'component-two first render misses template cache'
       );
@@ -183,7 +193,7 @@ moduleFor(
       this.assertText('Two');
       this.expectCacheChanges(
         {
-          templateCacheHits: 1,
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 2 : 1,
         },
         'toggle back to component-two hits template cache'
       );
@@ -195,7 +205,7 @@ moduleFor(
         this.assertText('TwoOne');
         // roots have different capabilities so this will hit
         this.expectCacheChanges(
-          { templateCacheHits: 1 },
+          { templateCacheHits: ENV._DEBUG_RENDER_TREE ? 2 : 1 },
           'append root with component-one no change'
         );
 
@@ -204,7 +214,10 @@ moduleFor(
         try {
           runAppend(root2);
           this.assertText('TwoOneOne');
-          this.expectCacheChanges({ templateCacheHits: 1 }, 'append another root no change');
+          this.expectCacheChanges(
+            { templateCacheHits: ENV._DEBUG_RENDER_TREE ? 2 : 1 },
+            'append another root no change'
+          );
         } finally {
           runDestroy(root2);
         }
@@ -214,11 +227,11 @@ moduleFor(
     }
 
     getCacheCounters() {
-      let { componentDefinitionCount, helperDefinitionCount } = this.runtimeResolver;
+      let { componentDefinitionCount, helperDefinitionCount } = this.renderer._context.constants;
 
       return (this._counters = {
-        templateCacheHits: templateCacheCounters.cacheHit,
-        templateCacheMisses: templateCacheCounters.cacheMiss,
+        templateCacheHits: templateCacheCounters.cacheHit || 0,
+        templateCacheMisses: templateCacheCounters.cacheMiss || 0,
         componentDefinitionCount,
         helperDefinitionCount,
       });
@@ -228,14 +241,24 @@ moduleFor(
       let lastState = this._counters;
       let state = this.getCacheCounters();
       let actual = diff(state, lastState);
-      this.assert.deepEqual(actual, expected, message);
+      this.assert.deepEqual(actual, stripZeroes(expected), message);
     }
   }
 );
 
+function stripZeroes(value) {
+  let res = {};
+  Object.keys(value).forEach((key) => {
+    if (value[key]) {
+      res[key] = value[key];
+    }
+  });
+  return res;
+}
+
 function diff(state, lastState) {
   let res = {};
-  Object.keys(state).forEach(key => {
+  Object.keys(state).forEach((key) => {
     let delta = state[key] - lastState[key];
     if (delta !== 0) {
       res[key] = state[key] - lastState[key];

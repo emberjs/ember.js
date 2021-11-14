@@ -4,7 +4,7 @@ export default function getAllPropertyNames(Klass) {
 
   while (proto !== Object.prototype) {
     let names = Object.getOwnPropertyNames(proto);
-    names.forEach(name => properties.add(name));
+    names.forEach((name) => properties.add(name));
     proto = Object.getPrototypeOf(proto);
   }
 

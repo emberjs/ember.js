@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-<% if (testType == 'integration') { %>
 import { describeComponent, it } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 
@@ -19,21 +18,9 @@ describeComponent('<%= dasherizedModuleName %>', 'helper:<%= dasherizedModuleNam
       // `);
       this.set('inputValue', '1234');
 
-      this.render(hbs`{{<%= dasherizedModuleName %> inputValue}}`);
+      this.render(hbs`{{<%= dasherizedModuleName %> this.inputValue}}`);
 
       expect(this.$().text().trim()).to.equal('1234');
     });
   }
 );
-<% } else if (testType == 'unit') { %>import { describe, it } from 'mocha';
-import { <%= camelizedModuleName %> } from '<%= dasherizedPackageName %>/helpers/<%= dasherizedModuleName %>';
-
-describe('<%= friendlyTestName %>', function() {
-
-  // Replace this with your real tests.
-  it('works', function() {
-    let result = <%= camelizedModuleName %>(42);
-    expect(result).to.be.ok;
-  });
-});
-<% } %>

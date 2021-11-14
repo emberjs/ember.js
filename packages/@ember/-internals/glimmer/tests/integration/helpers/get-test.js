@@ -3,12 +3,13 @@ import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { set, get } from '@ember/-internals/metal';
 
 import { Component } from '../../utils/helpers';
+import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Helpers test: {{get}}',
   class extends RenderingTestCase {
     ['@test should be able to get an object value with a static key']() {
-      this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
+      this.render(`[{{get this.colors 'apple'}}] [{{if true (get this.colors 'apple')}}]`, {
         colors: { apple: 'red' },
       });
 
@@ -32,13 +33,16 @@ moduleFor(
     }
 
     ['@test should be able to get an object value with nested static key']() {
-      this.render(`[{{get colors "apple.gala"}}] [{{if true (get colors "apple.gala")}}]`, {
-        colors: {
-          apple: {
-            gala: 'red and yellow',
+      this.render(
+        `[{{get this.colors "apple.gala"}}] [{{if true (get this.colors "apple.gala")}}]`,
+        {
+          colors: {
+            apple: {
+              gala: 'red and yellow',
+            },
           },
-        },
-      });
+        }
+      );
 
       this.assertText('[red and yellow] [red and yellow]');
 
@@ -56,7 +60,7 @@ moduleFor(
     }
 
     ['@test should be able to get an object value with a number']() {
-      this.render(`[{{get items 1}}][{{get items 2}}][{{get items 3}}]`, {
+      this.render(`[{{get this.items 1}}][{{get this.items 2}}][{{get this.items 3}}]`, {
         indexes: [1, 2, 3],
         items: {
           1: 'First',
@@ -81,7 +85,7 @@ moduleFor(
     }
 
     ['@test should be able to get an array value with a number']() {
-      this.render(`[{{get numbers 0}}][{{get numbers 1}}][{{get numbers 2}}]`, {
+      this.render(`[{{get this.numbers 0}}][{{get this.numbers 1}}][{{get this.numbers 2}}]`, {
         numbers: [1, 2, 3],
       });
 
@@ -101,7 +105,7 @@ moduleFor(
     }
 
     ['@test should be able to get an object value with a path evaluating to a number']() {
-      this.render(`{{#each indexes as |index|}}[{{get items index}}]{{/each}}`, {
+      this.render(`{{#each this.indexes as |index|}}[{{get this.items index}}]{{/each}}`, {
         indexes: [1, 2, 3],
         items: {
           1: 'First',
@@ -126,7 +130,7 @@ moduleFor(
     }
 
     ['@test should be able to get an array value with a path evaluating to a number']() {
-      this.render(`{{#each numbers as |num index|}}[{{get numbers index}}]{{/each}}`, {
+      this.render(`{{#each this.numbers as |num index|}}[{{get this.numbers index}}]{{/each}}`, {
         numbers: [1, 2, 3],
       });
 
@@ -142,7 +146,7 @@ moduleFor(
     }
 
     ['@test should be able to get an object value with a bound/dynamic key']() {
-      this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
+      this.render(`[{{get this.colors this.key}}] [{{if true (get this.colors this.key)}}]`, {
         colors: { apple: 'red', banana: 'yellow' },
         key: 'apple',
       });
@@ -174,7 +178,7 @@ moduleFor(
     }
 
     ['@test should be able to get an object value with nested dynamic key']() {
-      this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
+      this.render(`[{{get this.colors this.key}}] [{{if true (get this.colors this.key)}}]`, {
         colors: {
           apple: {
             gala: 'red and yellow',
@@ -206,7 +210,7 @@ moduleFor(
 
     ['@test should be able to get an object value with subexpression returning nested key']() {
       this.render(
-        `[{{get colors (concat 'apple' '.' 'gala')}}] [{{if true (get colors (concat 'apple' '.' 'gala'))}}]`,
+        `[{{get this.colors (concat 'apple' '.' 'gala')}}] [{{if true (get this.colors (concat 'apple' '.' 'gala'))}}]`,
         {
           colors: {
             apple: {
@@ -246,7 +250,7 @@ moduleFor(
 
     ['@test should be able to get an object value with a get helper as the key']() {
       this.render(
-        `[{{get colors (get possibleKeys key)}}] [{{if true (get colors (get possibleKeys key))}}]`,
+        `[{{get this.colors (get this.possibleKeys this.key)}}] [{{if true (get this.colors (get this.possibleKeys this.key))}}]`,
         {
           colors: { apple: 'red', banana: 'yellow' },
           key: 'key1',
@@ -282,7 +286,7 @@ moduleFor(
 
     ['@test should be able to get an object value with a get helper value as a bound/dynamic key']() {
       this.render(
-        `[{{get (get possibleValues objectKey) key}}] [{{if true (get (get possibleValues objectKey) key)}}]`,
+        `[{{get (get this.possibleValues this.objectKey) this.key}}] [{{if true (get (get this.possibleValues this.objectKey) this.key)}}]`,
         {
           possibleValues: {
             colors1: { apple: 'red', banana: 'yellow' },
@@ -324,7 +328,7 @@ moduleFor(
 
     ['@test should be able to get an object value with a get helper as the value and a get helper as the key']() {
       this.render(
-        `[{{get (get possibleValues objectKey) (get possibleKeys key)}}] [{{if true (get (get possibleValues objectKey) (get possibleKeys key))}}]`,
+        `[{{get (get this.possibleValues this.objectKey) (get this.possibleKeys this.key)}}] [{{if true (get (get this.possibleValues this.objectKey) (get this.possibleKeys this.key))}}]`,
         {
           possibleValues: {
             colors1: { apple: 'red', banana: 'yellow' },
@@ -381,10 +385,10 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (get colors mcintosh)}}`,
+        template: `{{yield (get this.colors this.mcintosh)}}`,
       });
 
-      this.render(`{{#foo-bar colors=colors as |value|}}{{value}}{{/foo-bar}}`, {
+      this.render(`{{#foo-bar colors=this.colors as |value|}}{{value}}{{/foo-bar}}`, {
         colors: {
           red: 'banana',
         },
@@ -412,7 +416,7 @@ moduleFor(
     }
 
     ['@test should handle object values as nulls']() {
-      this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
+      this.render(`[{{get this.colors 'apple'}}] [{{if true (get this.colors 'apple')}}]`, {
         colors: null,
       });
 
@@ -432,7 +436,7 @@ moduleFor(
     }
 
     ['@test should handle object keys as nulls']() {
-      this.render(`[{{get colors key}}] [{{if true (get colors key)}}]`, {
+      this.render(`[{{get this.colors this.key}}] [{{if true (get this.colors this.key)}}]`, {
         colors: {
           apple: 'red',
           banana: 'yellow',
@@ -456,7 +460,7 @@ moduleFor(
     }
 
     ['@test should handle object values and keys as nulls']() {
-      this.render(`[{{get colors 'apple'}}] [{{if true (get colors key)}}]`, {
+      this.render(`[{{get this.colors 'apple'}}] [{{if true (get this.colors this.key)}}]`, {
         colors: null,
         key: null,
       });
@@ -464,12 +468,15 @@ moduleFor(
       this.assertText('[] []');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - static key'](assert) {
-      this.render(`{{input type='text' value=(mut (get source 'banana')) id='get-input'}}`, {
-        source: {
-          banana: 'banana',
-        },
-      });
+    ['@test get helper value should be updatable using <Input> and (mut) - static key'](assert) {
+      this.render(
+        `<Input @type='text' @value={{mut (get this.source 'banana')}} id='get-input'/>`,
+        {
+          source: {
+            banana: 'banana',
+          },
+        }
+      );
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
@@ -481,11 +488,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'yellow');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some value');
       assert.strictEqual(get(this.context, 'source.banana'), 'some value');
@@ -495,14 +498,17 @@ moduleFor(
       assert.strictEqual(this.$('#get-input').val(), 'banana');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - dynamic key'](assert) {
-      this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
-        source: {
-          apple: 'apple',
-          banana: 'banana',
-        },
-        key: 'banana',
-      });
+    ['@test get helper value should be updatable using <Input> and (mut) - dynamic key'](assert) {
+      this.render(
+        `<Input @type='text' @value={{mut (get this.source this.key)}} id='get-input'/>`,
+        {
+          source: {
+            apple: 'apple',
+            banana: 'banana',
+          },
+          key: 'banana',
+        }
+      );
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
@@ -514,11 +520,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'yellow');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some value');
       assert.strictEqual(get(this.context, 'source.banana'), 'some value');
@@ -527,11 +529,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'apple');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some other value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some other value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some other value');
       assert.strictEqual(get(this.context, 'source.apple'), 'some other value');
@@ -544,19 +542,22 @@ moduleFor(
       assert.strictEqual(this.$('#get-input').val(), 'banana');
     }
 
-    ['@test get helper value should be updatable using {{input}} and (mut) - dynamic nested key'](
+    ['@test get helper value should be updatable using <Input> and (mut) - dynamic nested key'](
       assert
     ) {
-      this.render(`{{input type='text' value=(mut (get source key)) id='get-input'}}`, {
-        source: {
-          apple: {
-            gala: 'gala',
-            mcintosh: 'mcintosh',
+      this.render(
+        `<Input @type='text' @value={{mut (get this.source this.key)}} id='get-input'/>`,
+        {
+          source: {
+            apple: {
+              gala: 'gala',
+              mcintosh: 'mcintosh',
+            },
+            banana: 'banana',
           },
-          banana: 'banana',
-        },
-        key: 'apple.mcintosh',
-      });
+          key: 'apple.mcintosh',
+        }
+      );
 
       assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
 
@@ -568,11 +569,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'red');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some value');
       assert.strictEqual(get(this.context, 'source.apple.mcintosh'), 'some value');
@@ -581,11 +578,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'gala');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('some other value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('some other value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'some other value');
       assert.strictEqual(get(this.context, 'source.apple.gala'), 'some other value');
@@ -594,11 +587,7 @@ moduleFor(
 
       assert.strictEqual(this.$('#get-input').val(), 'banana');
 
-      runTask(() =>
-        this.$('#get-input')
-          .val('yet another value')
-          .trigger('change')
-      );
+      runTask(() => this.$('#get-input').val('yet another value').trigger('change'));
 
       assert.strictEqual(this.$('#get-input').val(), 'yet another value');
       assert.strictEqual(get(this.context, 'source.banana'), 'yet another value');
@@ -615,6 +604,32 @@ moduleFor(
       });
 
       assert.strictEqual(this.$('#get-input').val(), 'mcintosh');
+    }
+
+    '@test should be able to get an object value with a path from this.args in a glimmer component'() {
+      class PersonComponent extends GlimmerishComponent {
+        options = ['first', 'last', 'age'];
+      }
+
+      this.registerComponent('person-wrapper', {
+        ComponentClass: PersonComponent,
+        template: '{{#each this.options as |option|}}{{get this.args option}}{{/each}}',
+      });
+
+      this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} @age={{this.age}}/>', {
+        first: 'miguel',
+        last: 'andrade',
+      });
+
+      this.assertText('miguelandrade');
+
+      runTask(() => this.rerender());
+
+      this.assertText('miguelandrade');
+
+      runTask(() => set(this.context, 'age', 30));
+
+      this.assertText('miguelandrade30');
     }
   }
 );

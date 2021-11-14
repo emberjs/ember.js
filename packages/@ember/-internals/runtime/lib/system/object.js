@@ -2,16 +2,13 @@
 @module @ember/object
 */
 
-import { FACTORY_FOR } from '@ember/-internals/container';
-import { OWNER, setOwner } from '@ember/-internals/owner';
-import { symbol, setName } from '@ember/-internals/utils';
+import { getFactoryFor } from '@ember/-internals/container';
+import { symbol } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-
-let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
 
 /**
   `EmberObject` is the main base class for all Ember objects. It is a subclass
@@ -25,27 +22,10 @@ let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
 */
 export default class EmberObject extends CoreObject {
   get _debugContainerKey() {
-    let factory = FACTORY_FOR.get(this);
+    let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
   }
-
-  get [OWNER]() {
-    if (this[OVERRIDE_OWNER]) {
-      return this[OVERRIDE_OWNER];
-    }
-
-    let factory = FACTORY_FOR.get(this);
-    return factory !== undefined && factory.owner;
-  }
-
-  // we need a setter here largely to support
-  // folks calling `owner.ownerInjection()` API
-  set [OWNER](value) {
-    this[OVERRIDE_OWNER] = value;
-  }
 }
-
-setName(EmberObject, 'Ember.Object');
 
 Observable.apply(EmberObject.prototype);
 
@@ -53,14 +33,8 @@ export let FrameworkObject;
 
 FrameworkObject = class FrameworkObject extends CoreObject {
   get _debugContainerKey() {
-    let factory = FACTORY_FOR.get(this);
+    let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
-  }
-
-  constructor(owner) {
-    super();
-
-    setOwner(this, owner);
   }
 };
 
@@ -78,7 +52,7 @@ if (DEBUG) {
 
     [ASSERT_INIT_WAS_CALLED]() {
       assert(
-        `You must call \`this._super(...arguments);\` when overriding \`init\` on a framework object. Please update ${this} to call \`this._super(...arguments);\` from \`init\`.`,
+        `You must call \`super.init(...arguments);\` or \`this._super(...arguments)\` when overriding \`init\` on a framework object. Please update ${this} to call \`super.init(...arguments);\` from \`init\` when using native classes or \`this._super(...arguments)\` when using \`EmberObject.extend()\`.`,
         this[INIT_WAS_CALLED]
       );
     }

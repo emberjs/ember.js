@@ -1,135 +1,160 @@
-import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
-import { ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
-import { Destroyable, Opaque, Option } from '@glimmer/util';
-
 import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { TemplateFactory } from '../..';
-import Environment from '../environment';
+import EngineInstance from '@ember/engine/instance';
+import { associateDestroyableChild } from '@glimmer/destroyable';
+import {
+  CapturedArguments,
+  ComponentDefinition,
+  CustomRenderNode,
+  Destroyable,
+  Environment,
+  InternalComponentCapabilities,
+  Option,
+  TemplateFactory,
+  VMArguments,
+  WithCreateInstance,
+  WithCustomDebugRenderTree,
+  WithDynamicLayout,
+  WithSubOwner,
+} from '@glimmer/interfaces';
+import { capabilityFlagsFrom } from '@glimmer/manager';
+import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
+import { unwrapTemplate } from '@glimmer/util';
 import RuntimeResolver from '../resolver';
-import { RootReference } from '../utils/references';
-import AbstractManager from './abstract';
-
-// TODO: remove these stubbed interfaces when better typing is in place
-interface EngineInstance extends Owner {
-  boot(): void;
-  destroy(): void;
-}
 
 interface EngineState {
   engine: EngineInstance;
   controller: any;
-  self: RootReference<any>;
-  tag: Tag;
-}
-
-interface EngineWithModelState extends EngineState {
-  modelRef: VersionedPathReference<Opaque>;
-  modelRev: number;
+  self: Reference;
+  modelRef?: Reference;
 }
 
 interface EngineDefinitionState {
   name: string;
-  modelRef: VersionedPathReference<Opaque> | undefined;
 }
 
 const CAPABILITIES = {
   dynamicLayout: true,
   dynamicTag: false,
   prepareArgs: false,
-  createArgs: false,
+  createArgs: true,
   attributeHook: false,
   elementHook: false,
   createCaller: true,
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
+  willDestroy: false,
+  hasSubOwner: true,
 };
 
 class MountManager
-  extends AbstractManager<EngineState | EngineWithModelState, EngineDefinitionState>
   implements
-    WithDynamicLayout<EngineState | EngineWithModelState, OwnedTemplateMeta, RuntimeResolver> {
-  getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
+    WithCreateInstance<EngineState>,
+    WithDynamicLayout<EngineState, RuntimeResolver>,
+    WithCustomDebugRenderTree<EngineState, EngineDefinitionState>,
+    WithSubOwner<EngineState> {
+  getDynamicLayout(state: EngineState) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
-    let template = templateFactory(state.engine);
-    let layout = template.asLayout();
-
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return unwrapTemplate(templateFactory(state.engine)).asLayout();
   }
 
-  getCapabilities(): ComponentCapabilities {
+  getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
-  create(environment: Environment, state: EngineDefinitionState) {
-    if (DEBUG) {
-      this._pushEngineToDebugStack(`engine:${state.name}`, environment);
-    }
+  getOwner(state: EngineState) {
+    return state.engine;
+  }
 
+  create(owner: Owner, { name }: EngineDefinitionState, args: VMArguments, env: Environment) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = environment.owner.buildChildEngineInstance<EngineInstance>(state.name);
+    let engine = owner.buildChildEngineInstance(name);
 
     engine.boot();
 
     let applicationFactory = engine.factoryFor(`controller:application`);
     let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
     let controller: any;
-    let self: RootReference<any>;
-    let bucket: EngineState | EngineWithModelState;
-    let tag: Tag;
-    let modelRef = state.modelRef;
+    let self: Reference;
+    let bucket: EngineState;
+    let modelRef;
+
+    if (args.named.has('model')) {
+      modelRef = args.named.get('model');
+    }
+
     if (modelRef === undefined) {
       controller = controllerFactory.create();
-      self = new RootReference(controller);
-      tag = CONSTANT_TAG;
-      bucket = { engine, controller, self, tag };
+      self = createConstRef(controller, 'this');
+      bucket = { engine, controller, self, modelRef };
     } else {
-      let model = modelRef.value();
-      let modelRev = value(modelRef.tag);
+      let model = valueForRef(modelRef);
       controller = controllerFactory.create({ model });
-      self = new RootReference(controller);
-      tag = modelRef.tag;
-      bucket = { engine, controller, self, tag, modelRef, modelRev };
+      self = createConstRef(controller, 'this');
+      bucket = { engine, controller, self, modelRef };
+    }
+
+    if (env.debugRenderTree) {
+      associateDestroyableChild(engine, controller);
     }
 
     return bucket;
   }
 
-  getSelf({ self }: EngineState): VersionedPathReference<Opaque> {
+  getDebugName({ name }: EngineDefinitionState) {
+    return name;
+  }
+
+  getDebugCustomRenderTree(
+    definition: EngineDefinitionState,
+    state: EngineState,
+    args: CapturedArguments,
+    templateModuleName?: string
+  ): CustomRenderNode[] {
+    return [
+      {
+        bucket: state.engine,
+        instance: state.engine,
+        type: 'engine',
+        name: definition.name,
+        args,
+      },
+      {
+        bucket: state.controller,
+        instance: state.controller,
+        type: 'route-template',
+        name: 'application',
+        args,
+        template: templateModuleName,
+      },
+    ];
+  }
+
+  getSelf({ self }: EngineState): Reference {
     return self;
   }
 
-  getTag(state: EngineState | EngineWithModelState): Tag {
-    return state.tag;
+  getDestroyable(bucket: EngineState): Option<Destroyable> {
+    return bucket.engine;
   }
 
-  getDestructor({ engine }: EngineState): Option<Destroyable> {
-    return engine;
-  }
+  didCreate() {}
+  didUpdate() {}
 
-  didRenderLayout(): void {
-    if (DEBUG) {
-      this.debugStack.pop();
-    }
-  }
+  didRenderLayout(): void {}
+  didUpdateLayout(): void {}
 
-  update(bucket: EngineWithModelState): void {
-    let { controller, modelRef, modelRev } = bucket;
-    if (!validate(modelRef.tag, modelRev!)) {
-      let model = modelRef.value();
-      bucket.modelRev = value(modelRef.tag);
-      controller.set('model', model);
+  update(bucket: EngineState): void {
+    let { controller, modelRef } = bucket;
+
+    if (modelRef !== undefined) {
+      controller.set('model', valueForRef(modelRef!));
     }
   }
 }
@@ -137,10 +162,15 @@ class MountManager
 const MOUNT_MANAGER = new MountManager();
 
 export class MountDefinition implements ComponentDefinition {
+  // handle is not used by this custom definition
+  public handle = -1;
+
   public state: EngineDefinitionState;
   public manager = MOUNT_MANAGER;
+  public compilable = null;
+  public capabilities = capabilityFlagsFrom(CAPABILITIES);
 
-  constructor(name: string, modelRef: VersionedPathReference<Opaque> | undefined) {
-    this.state = { name, modelRef };
+  constructor(public resolvedName: string) {
+    this.state = { name: resolvedName };
   }
 }

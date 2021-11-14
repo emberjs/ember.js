@@ -1,97 +1,161 @@
 import { ENV } from '@ember/-internals/environment';
+import { Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
-import { assign } from '@ember/polyfills';
-import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option, Simple } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
+  CapturedArguments,
+  CompilableProgram,
   ComponentDefinition,
-  ElementOperations,
+  CustomRenderNode,
+  Destroyable,
   Environment,
-  Invocation,
-  UNDEFINED_REFERENCE,
+  InternalComponentCapabilities,
+  InternalComponentCapability,
+  Option,
+  Template,
+  VMArguments,
+  WithCreateInstance,
+  WithCustomDebugRenderTree,
   WithDynamicTagName,
-  WithStaticLayout,
-} from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+} from '@glimmer/interfaces';
+import { capabilityFlagsFrom } from '@glimmer/manager';
+import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
+import { EMPTY_ARGS } from '@glimmer/runtime';
+import { unwrapTemplate } from '@glimmer/util';
+
+import { SimpleElement } from '@simple-dom/interface';
 import { DynamicScope } from '../renderer';
-import RuntimeResolver from '../resolver';
-import { OwnedTemplate } from '../template';
 import { OutletState } from '../utils/outlet';
-import { RootReference } from '../utils/references';
 import OutletView from '../views/outlet';
-import AbstractManager from './abstract';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   return { object: `${def.name}:${def.outlet}` };
 }
 
 interface OutletInstanceState {
-  self: VersionedPathReference<any | undefined>;
+  self: Reference;
+  outlet?: { name: string };
+  engineBucket?: { mountPoint: string };
+  engine?: EngineInstance;
   finalize: () => void;
 }
 
 export interface OutletDefinitionState {
-  ref: VersionedPathReference<OutletState | undefined>;
+  ref: Reference<OutletState | undefined>;
   name: string;
   outlet: string;
-  template: OwnedTemplate;
-  controller: any | undefined;
+  template: Template;
+  controller: unknown;
+  model: unknown;
 }
 
-const CAPABILITIES: ComponentCapabilities = {
+const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
   createArgs: false,
   attributeHook: false,
   elementHook: false,
-  createCaller: true,
+  createCaller: false,
   dynamicScope: true,
   updateHook: false,
   createInstance: true,
+  wrapped: false,
+  willDestroy: false,
+  hasSubOwner: false,
 };
 
-class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
+class OutletComponentManager
   implements
-    WithStaticLayout<
-      OutletInstanceState,
-      OutletDefinitionState,
-      OwnedTemplateMeta,
-      RuntimeResolver
-    > {
+    WithCreateInstance<OutletInstanceState>,
+    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
   create(
-    environment: Environment,
+    _owner: Owner,
     definition: OutletDefinitionState,
-    _args: Arguments,
+    _args: VMArguments,
+    env: Environment,
     dynamicScope: DynamicScope
-  ) {
-    if (DEBUG) {
-      this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
-    }
-    dynamicScope.outletState = definition.ref;
+  ): OutletInstanceState {
+    let parentStateRef = dynamicScope.get('outletState');
+    let currentStateRef = definition.ref;
 
-    let controller = definition.controller;
-    let self = controller === undefined ? UNDEFINED_REFERENCE : new RootReference(controller);
-    return {
-      self,
+    dynamicScope.set('outletState', currentStateRef);
+
+    let state: OutletInstanceState = {
+      self: createConstRef(definition.controller, 'this'),
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
+
+    if (env.debugRenderTree !== undefined) {
+      state.outlet = { name: definition.outlet };
+      let parentState = valueForRef(parentStateRef);
+      let parentOwner = parentState && parentState.render && parentState.render.owner;
+      let currentOwner = valueForRef(currentStateRef)!.render!.owner;
+
+      if (parentOwner && parentOwner !== currentOwner) {
+        let engine = currentOwner as EngineInstance;
+
+        assert('invalid engine: missing mountPoint', typeof currentOwner.mountPoint === 'string');
+        assert('invalid engine: missing routable', currentOwner.routable === true);
+
+        let mountPoint = engine.mountPoint!;
+
+        state.engine = engine;
+        state.engineBucket = { mountPoint };
+      }
+    }
+
+    return state;
   }
 
-  getLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
-    // The router has already resolved the template
-    const layout = template.asLayout();
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+  getDebugName({ name }: OutletDefinitionState) {
+    return name;
   }
 
-  getCapabilities(): ComponentCapabilities {
+  getDebugCustomRenderTree(
+    definition: OutletDefinitionState,
+    state: OutletInstanceState,
+    args: CapturedArguments
+  ): CustomRenderNode[] {
+    let nodes: CustomRenderNode[] = [];
+
+    if (state.outlet) {
+      nodes.push({
+        bucket: state.outlet,
+        type: 'outlet',
+        name: state.outlet.name,
+        args: EMPTY_ARGS,
+        instance: undefined,
+        template: undefined,
+      });
+    }
+
+    if (state.engineBucket) {
+      nodes.push({
+        bucket: state.engineBucket,
+        type: 'engine',
+        name: state.engineBucket.mountPoint,
+        args: EMPTY_ARGS,
+        instance: state.engine,
+        template: undefined,
+      });
+    }
+
+    nodes.push({
+      bucket: state,
+      type: 'route-template',
+      name: definition.name,
+      args: args,
+      instance: definition.controller,
+      template: unwrapTemplate(definition.template).moduleName,
+    });
+
+    return nodes;
+  }
+
+  getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
@@ -99,20 +163,16 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     return self;
   }
 
-  getTag(): Tag {
-    // an outlet has no hooks
-    return CONSTANT_TAG;
-  }
+  didCreate() {}
+  didUpdate() {}
 
-  didRenderLayout(state: OutletInstanceState) {
+  didRenderLayout(state: OutletInstanceState): void {
     state.finalize();
-
-    if (DEBUG) {
-      this.debugStack.pop();
-    }
   }
 
-  getDestructor(): Option<Destroyable> {
+  didUpdateLayout() {}
+
+  getDestroyable(): Option<Destroyable> {
     return null;
   }
 }
@@ -120,45 +180,48 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
-  implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
+  implements
+    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
+  // handle is not used by this custom definition
+  public handle = -1;
+
+  public resolvedName: string;
+  public compilable: CompilableProgram;
+  public capabilities: InternalComponentCapability;
+
   constructor(
     public state: OutletDefinitionState,
     public manager: OutletComponentManager = OUTLET_MANAGER
-  ) {}
+  ) {
+    let capabilities = manager.getCapabilities();
+    this.capabilities = capabilityFlagsFrom(capabilities);
+    this.compilable = capabilities.wrapped
+      ? unwrapTemplate(state.template).asWrappedLayout()
+      : unwrapTemplate(state.template).asLayout();
+    this.resolvedName = state.name;
+  }
 }
 
 export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
   if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
-    const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
+    const WRAPPED_CAPABILITIES = Object.assign({}, CAPABILITIES, {
       dynamicTag: true,
       elementHook: true,
+      wrapped: true,
     });
 
-    const WrappedOutletComponentManager = class extends OutletComponentManager
+    const WrappedOutletComponentManager = class
+      extends OutletComponentManager
       implements WithDynamicTagName<OutletInstanceState> {
-      getTagName(_component: OutletInstanceState) {
+      getTagName() {
         return 'div';
       }
 
-      getLayout(state: OutletDefinitionState): Invocation {
-        // The router has already resolved the template
-        const template = state.template;
-        const layout = template.asWrappedLayout();
-        return {
-          handle: layout.compile(),
-          symbolTable: layout.symbolTable,
-        };
-      }
-
-      getCapabilities(): ComponentCapabilities {
+      getCapabilities(): InternalComponentCapabilities {
         return WRAPPED_CAPABILITIES;
       }
 
-      didCreateElement(
-        component: OutletInstanceState,
-        element: Simple.Element,
-        _operations: ElementOperations
-      ): void {
+      didCreateElement(component: OutletInstanceState, element: SimpleElement): void {
         // to add GUID id and class
         element.setAttribute('class', 'ember-view');
         element.setAttribute('id', guidFor(component));

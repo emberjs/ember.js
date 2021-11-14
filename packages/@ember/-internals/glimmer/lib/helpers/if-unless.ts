@@ -2,51 +2,6 @@
 @module ember
 */
 
-import { assert } from '@ember/debug';
-import { combine, createUpdatableTag, isConst, UpdatableTag, update } from '@glimmer/reference';
-import { Arguments, PrimitiveReference, VM } from '@glimmer/runtime';
-import { CachedReference, ConditionalReference } from '../utils/references';
-
-class ConditionalHelperReference extends CachedReference {
-  public branchTag: UpdatableTag;
-  public tag: any;
-  public cond: any;
-  public truthy: any;
-  public falsy: any;
-
-  static create(
-    _condRef: any,
-    truthyRef: PrimitiveReference<boolean>,
-    falsyRef: PrimitiveReference<boolean>
-  ) {
-    let condRef = ConditionalReference.create(_condRef);
-    if (isConst(condRef)) {
-      return condRef.value() ? truthyRef : falsyRef;
-    } else {
-      return new ConditionalHelperReference(condRef, truthyRef, falsyRef);
-    }
-  }
-
-  constructor(cond: any, truthy: any, falsy: any) {
-    super();
-
-    this.branchTag = createUpdatableTag();
-    this.tag = combine([cond.tag, this.branchTag]);
-
-    this.cond = cond;
-    this.truthy = truthy;
-    this.falsy = falsy;
-  }
-
-  compute() {
-    let branch = this.cond.value() ? this.truthy : this.falsy;
-
-    update(this.branchTag, branch.tag);
-
-    return branch.value();
-  }
-}
-
 /**
   The `if` helper allows you to conditionally render one of two branches,
   depending on the "truthiness" of a property.
@@ -62,19 +17,22 @@ class ConditionalHelperReference extends CachedReference {
   using the block form to wrap the section of template you want to conditionally render.
   Like so:
 
-  ```handlebars
-  {{! will not render if foo is falsey}}
-  {{#if foo}}
-    Welcome to the {{foo.bar}}
+  ```app/templates/application.hbs
+  <Weather />
+  ```
+
+  ```app/components/weather.hbs
+  {{! will not render because greeting is undefined}}
+  {{#if @isRaining}}
+    Yes, grab an umbrella!
   {{/if}}
   ```
 
-  You can also specify a template to show if the property is falsey by using
+  You can also define what to show if the property is falsey by using
   the `else` helper.
 
-  ```handlebars
-  {{! is it raining outside?}}
-  {{#if isRaining}}
+  ```app/components/weather.hbs
+  {{#if @isRaining}}
     Yes, grab an umbrella!
   {{else}}
     No, it's lovely outside!
@@ -84,15 +42,25 @@ class ConditionalHelperReference extends CachedReference {
   You are also able to combine `else` and `if` helpers to create more complex
   conditional logic.
 
-  ```handlebars
-  {{#if isMorning}}
-    Good morning
-  {{else if isAfternoon}}
-    Good afternoon
+  For the following template:
+
+   ```app/components/weather.hbs
+  {{#if @isRaining}}
+    Yes, grab an umbrella!
+  {{else if @isCold}}
+    Grab a coat, it's chilly!
   {{else}}
-    Good night
+    No, it's lovely outside!
   {{/if}}
   ```
+
+  If you call it by saying `isCold` is true:
+
+  ```app/templates/application.hbs
+  <Weather @isCold={{true}} />
+  ```
+
+  Then `Grab a coat, it's chilly!` will be rendered.
 
   ## Inline form
 
@@ -103,28 +71,18 @@ class ConditionalHelperReference extends CachedReference {
 
   For example, if `useLongGreeting` is truthy, the following:
 
-  ```handlebars
-  {{if useLongGreeting "Hello" "Hi"}} Alex
+  ```app/templates/application.hbs
+  <Greeting @useLongGreeting={{true}} />
+  ```
+
+  ```app/components/greeting.hbs
+  {{if @useLongGreeting "Hello" "Hi"}} Alex
   ```
 
   Will render:
 
   ```html
   Hello Alex
-  ```
-
-  ### Nested `if`
-
-  You can use the `if` helper inside another helper as a nested helper:
-
-  ```handlebars
-  <SomeComponent @height={{if isBig "100" "10"}} />
-  ```
-
-  or
-
-  ```handlebars
-  {{some-component height=(if isBig "100" "10")}}
   ```
 
   One detail to keep in mind is that both branches of the `if` helper will be evaluated,
@@ -135,14 +93,6 @@ class ConditionalHelperReference extends CachedReference {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineIf(_vm: VM, { positional }: Arguments) {
-  assert(
-    'The inline form of the `if` helper expects two or three arguments, e.g. ' +
-      '`{{if trialExpired "Expired" expiryDate}}`.',
-    positional.length === 3 || positional.length === 2
-  );
-  return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
-}
 
 /**
   The `unless` helper is the inverse of the `if` helper. It displays if a value
@@ -156,57 +106,70 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   the second argument will be displayed, otherwise, the third argument will be
   displayed
 
-  For example, if `useLongGreeting` is false below:
+  For example, if you pass a falsey `useLongGreeting` to the `Greeting` component:
 
-  ```handlebars
-  {{unless useLongGreeting "Hi" "Hello"}} Ben
+  ```app/templates/application.hbs
+  <Greeting @useLongGreeting={{false}} />
+  ```
+
+  ```app/components/greeting.hbs
+  {{unless @useLongGreeting "Hi" "Hello"}} Ben
   ```
 
   Then it will display:
 
   ```html
-  Hi
-  ```
-
-  You can use the `unless` helper inside another helper as a subexpression.
-  If isBig is not true, it will set the height to 10:
-
-  ```handlebars
-  {{! If isBig is not true, it will set the height to 10.}}
-  <SomeComponent @height={{unless isBig "10" "100"}} />
-  ```
-
-  or
-
-  ```handlebars
-  {{some-component height=(unless isBig "10" "100")}}
+  Hi Ben
   ```
 
   ## Block form
 
-  Like the `if` helper, `unless` helper also has a block form.
+  Like the `if` helper, the `unless` helper also has a block form.
 
-  ```handlebars
-  {{! If greetings are found, the text below will not render.}}
-  {{#unless greetings}}
-    No greetings were found. Why not set one?
+  The following will not render anything:
+
+  ```app/templates/application.hbs
+  <Greeting />
+  ```
+
+  ```app/components/greeting.hbs
+  {{#unless @greeting}}
+    No greeting was found. Why not set one?
   {{/unless}}
   ```
 
   You can also use an `else` helper with the `unless` block. The
   `else` will display if the value is truthy.
 
-  ```handlebars
-  {{! Is the user logged in?}}
-  {{#unless userData}}
+  If you have the following component:
+
+  ```app/components/logged-in.hbs
+  {{#unless @userData}}
     Please login.
   {{else}}
     Welcome back!
   {{/unless}}
   ```
 
-  If `userData` is false, undefined, null, or empty in the above example,
-  then it will render:
+  Calling it with a truthy `userData`:
+
+  ```app/templates/application.hbs
+  <LoggedIn @userData={{hash username="Zoey"}} />
+  ```
+
+  Will render:
+
+  ```html
+  Welcome back!
+  ```
+
+  and calling it with a falsey `userData`:
+
+  ```app/templates/application.hbs
+  <LoggedIn @userData={{false}} />
+  ```
+
+  Will render:
 
   ```html
   Please login.
@@ -216,11 +179,3 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineUnless(_vm: VM, { positional }: Arguments) {
-  assert(
-    'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
-      '`{{unless isFirstLogin "Welcome back!"}}`.',
-    positional.length === 3 || positional.length === 2
-  );
-  return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
-}

@@ -1,27 +1,38 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
+import { deprecate } from '@ember/debug';
 import EmberError from '@ember/error';
-import { assign } from '@ember/polyfills';
 import Router, { STATE_SYMBOL } from 'router_js';
 import Route from './system/route';
 import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export function extractRouteArgs(args: any[]) {
+export function extractRouteArgs(args: unknown[]) {
   args = args.slice();
   let possibleQueryParams = args[args.length - 1];
 
   let queryParams;
-  if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
-    queryParams = args.pop().queryParams;
+  if (
+    possibleQueryParams &&
+    Object.prototype.hasOwnProperty.call(possibleQueryParams, 'queryParams')
+  ) {
+    // SAFETY: this cast is safe because we have just checked whether
+    // `possibleQueryParams` -- defined as the last item in args -- both exists
+    // and has the property `queryParams`. If either of these invariants change,
+    // ***this is unsafe and should be changed***.
+    queryParams = (args.pop() as { queryParams: object }).queryParams;
   } else {
     queryParams = {};
   }
 
-  let routeName = args.shift();
+  // UNSAFE: these are simply assumed as the existing behavior of the system.
+  // However, this could break if upstream refactors change it, and the types
+  // here would not be able to tell us; we would lie to everything downstream.
+  let routeName = args.shift() as string | undefined;
+  let models = args as {}[];
 
-  return { routeName, models: args, queryParams };
+  return { routeName, models, queryParams };
 }
 
 export function getActiveTargetName(router: Router<Route>) {
@@ -160,7 +171,7 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
   }
 
   for (let key in desc) {
-    if (!desc.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(desc, key)) {
       return;
     }
 
@@ -170,7 +181,7 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
     }
 
     tmp = accum[key] || { as: null, scope: 'model' };
-    assign(tmp, singleDesc);
+    Object.assign(tmp, singleDesc);
 
     accum[key] = tmp;
   }
@@ -181,7 +192,7 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
 
   @private
 */
-export function resemblesURL(str: string) {
+export function resemblesURL(str: unknown): str is string {
   return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
@@ -215,7 +226,7 @@ export function shallowEqual(a: {}, b: {}) {
   let aCount = 0;
   let bCount = 0;
   for (k in a) {
-    if (a.hasOwnProperty(k)) {
+    if (Object.prototype.hasOwnProperty.call(a, k)) {
       if (a[k] !== b[k]) {
         return false;
       }
@@ -224,10 +235,26 @@ export function shallowEqual(a: {}, b: {}) {
   }
 
   for (k in b) {
-    if (b.hasOwnProperty(k)) {
+    if (Object.prototype.hasOwnProperty.call(b, k)) {
       bCount++;
     }
   }
 
   return aCount === bCount;
+}
+
+export function deprecateTransitionMethods(frameworkClass: string, methodName: string) {
+  deprecate(
+    `Calling ${methodName} on a ${frameworkClass} is deprecated. Use the RouterService instead.`,
+    false,
+    {
+      id: 'routing.transition-methods',
+      for: 'ember-source',
+      since: {
+        enabled: '3.26.0',
+      },
+      until: '5.0.0',
+      url: 'https://deprecations.emberjs.com/v3.x/#toc_routing-transition-methods',
+    }
+  );
 }

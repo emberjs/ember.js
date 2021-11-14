@@ -8,7 +8,7 @@ describe('Unit | Controller | foo/bar', function() {
     // needs: ['controller:foo']
   });
 
-  // Replace this with your real tests.
+  // TODO: Replace this with your real tests.
   it('exists', function() {
     let controller = this.subject();
     expect(controller).to.be.ok;

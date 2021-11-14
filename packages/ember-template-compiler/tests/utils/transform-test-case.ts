@@ -5,7 +5,7 @@ import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
 
 export default class extends AbstractTestCase {
-  assertTransformed(before: string, after: string) {
+  assertTransformed(before: string, after: string): void {
     this.assert.deepEqual(deloc(ast(before)), deloc(ast(after)));
   }
 }
@@ -31,9 +31,11 @@ function ast(template: string): AST.Program {
     moduleName: '-top-level',
   });
 
-  options.plugins!.ast!.push(extractProgram);
+  if (options.plugins?.ast) {
+    options.plugins.ast.push(extractProgram);
+  }
 
-  precompile(template, options);
+  precompile(template, options as any);
 
   return program!;
 }
@@ -42,7 +44,7 @@ function clone<T extends object>(node: T): T {
   let out = Object.create(null);
   let keys = Object.keys(node);
 
-  keys.forEach(key => {
+  keys.forEach((key) => {
     let value = node[key];
 
     if (value !== null && typeof value === 'object') {
@@ -59,7 +61,7 @@ function deloc<T extends object, U extends { loc?: AST.SourceLocation }>(node: T
   let out = Object.create(null);
   let keys = Object.keys(node);
 
-  keys.forEach(key => {
+  keys.forEach((key) => {
     let value = node[key];
 
     if (key === 'loc') {

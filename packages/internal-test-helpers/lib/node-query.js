@@ -1,7 +1,7 @@
 /* global Node */
 
 import { assert } from '@ember/debug';
-import { fireEvent, focus, matches } from './system/synthetic-events';
+import { blur, fireEvent, focus, matches } from './system/synthetic-events';
 
 export default class NodeQuery {
   static query(selector, context = document) {
@@ -35,7 +35,7 @@ export default class NodeQuery {
   findAll(selector) {
     let nodes = [];
 
-    this.nodes.forEach(node => {
+    this.nodes.forEach((node) => {
       nodes.push(...node.querySelectorAll(selector));
     });
 
@@ -43,7 +43,7 @@ export default class NodeQuery {
   }
 
   trigger(eventName, options) {
-    return this.nodes.map(node => fireEvent(node, eventName, options));
+    return this.nodes.map((node) => fireEvent(node, eventName, options));
   }
 
   click() {
@@ -54,8 +54,12 @@ export default class NodeQuery {
     this.nodes.forEach(focus);
   }
 
+  blur() {
+    this.nodes.forEach(blur);
+  }
+
   text() {
-    return this.nodes.map(node => node.textContent).join('');
+    return this.nodes.map((node) => node.textContent).join('');
   }
 
   attr(name) {
@@ -79,7 +83,7 @@ export default class NodeQuery {
   }
 
   setProp(name, value) {
-    this.nodes.forEach(node => (node[name] = value));
+    this.nodes.forEach((node) => (node[name] = value));
 
     return this;
   }
@@ -93,7 +97,7 @@ export default class NodeQuery {
   }
 
   is(selector) {
-    return this.nodes.every(node => matches(node, selector));
+    return this.nodes.every((node) => matches(node, selector));
   }
 
   hasClass(className) {

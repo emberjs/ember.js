@@ -1,6 +1,5 @@
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { assign } from '@ember/polyfills';
 import { Option } from '@glimmer/interfaces';
 import { MatchCallback } from 'route-recognizer';
 import { EngineInfo, EngineRouteInfo } from './engines';
@@ -10,7 +9,7 @@ let uuid = 0;
 export interface RouteOptions {
   path?: string;
   resetNamespace?: boolean;
-  serialize?: any;
+  serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined };
   overrideNameAssertion?: boolean;
 }
 
@@ -43,16 +42,14 @@ function isOptions(value?: RouteOptions | DSLCallback): value is RouteOptions {
 }
 export interface DSLImplOptions {
   enableLoadingSubstates: boolean;
-  overrideNameAssertion?: boolean;
   engineInfo?: EngineInfo;
   addRouteForEngine(name: string, routeOptions: EngineRouteInfo): void;
   resolveRouteMap(name: string): Factory<any, any>;
-  path?: string;
 }
 
 export default class DSLImpl implements DSL {
   parent: string | null;
-  matches: any[];
+  matches: Array<Object | undefined>;
   enableLoadingSubstates: boolean;
   explicitIndex = false;
   options: DSLImplOptions;
@@ -69,7 +66,7 @@ export default class DSLImpl implements DSL {
   route(name: string, callback: DSLCallback): void;
   route(name: string, options: RouteOptions): void;
   route(name: string, options: RouteOptions, callback: DSLCallback): void;
-  route(name: string, _options?: RouteOptions | DSLCallback, _callback?: DSLCallback) {
+  route(name: string, _options?: RouteOptions | DSLCallback, _callback?: DSLCallback): void {
     let options: RouteOptions;
     let callback: Option<DSLCallback> = null;
 
@@ -127,14 +124,18 @@ export default class DSLImpl implements DSL {
       createRoute(this, name, options);
     }
   }
-  /* eslint-enable no-dupe-class-members */
 
-  push(url: string, name: string, callback?: MatchCallback, serialize?: any) {
+  push(
+    url: string,
+    name: string,
+    callback?: MatchCallback,
+    serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined }
+  ): void {
     let parts = name.split('.');
 
     if (this.options.engineInfo) {
       let localFullName = name.slice(this.options.engineInfo.fullName.length + 1);
-      let routeInfo: EngineRouteInfo = assign({ localFullName }, this.options.engineInfo);
+      let routeInfo: EngineRouteInfo = Object.assign({ localFullName }, this.options.engineInfo);
 
       if (serialize) {
         routeInfo.serializeMethod = serialize;
@@ -161,14 +162,17 @@ export default class DSLImpl implements DSL {
       this.route('index', { path: '/' });
     }
 
-    return match => {
+    return (match) => {
       for (let i = 0; i < dslMatches.length; i += 3) {
-        match(dslMatches[i]).to(dslMatches[i + 1], dslMatches[i + 2]);
+        match(dslMatches[i] as string).to(
+          dslMatches[i + 1] as string,
+          dslMatches[i + 2] as MatchCallback
+        );
       }
     };
   }
 
-  mount(_name: string, options: MountOptions = {}) {
+  mount(_name: string, options: MountOptions = {}): void {
     let engineRouteMap = this.options.resolveRouteMap(_name);
     let name = _name;
 
@@ -201,7 +205,7 @@ export default class DSLImpl implements DSL {
         this.options.engineInfo = engineInfo;
       }
 
-      let optionsForChild = assign({ engineInfo }, this.options);
+      let optionsForChild = Object.assign({ engineInfo }, this.options);
       let childDSL = new DSLImpl(fullName, optionsForChild);
 
       createRoute(childDSL, 'loading');
@@ -217,14 +221,14 @@ export default class DSLImpl implements DSL {
     }
 
     let localFullName = 'application';
-    let routeInfo = assign({ localFullName }, engineInfo);
+    let routeInfo = Object.assign({ localFullName }, engineInfo);
 
     if (this.enableLoadingSubstates) {
       // These values are important to register the loading routes under their
       // proper names for the Router and within the Engine's registry.
       let substateName = `${name}_loading`;
       let localFullName = `application_loading`;
-      let routeInfo = assign({ localFullName }, engineInfo);
+      let routeInfo = Object.assign({ localFullName }, engineInfo);
       createRoute(this, substateName, {
         resetNamespace: options.resetNamespace,
       });
@@ -232,7 +236,7 @@ export default class DSLImpl implements DSL {
 
       substateName = `${name}_error`;
       localFullName = `application_error`;
-      routeInfo = assign({ localFullName }, engineInfo);
+      routeInfo = Object.assign({ localFullName }, engineInfo);
       createRoute(this, substateName, {
         resetNamespace: options.resetNamespace,
         path: dummyErrorRoute,

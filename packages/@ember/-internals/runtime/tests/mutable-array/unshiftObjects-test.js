@@ -39,6 +39,8 @@ class UnshiftObjectsTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify'() {
@@ -72,6 +74,8 @@ class UnshiftObjectsTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify'() {
@@ -105,6 +109,8 @@ class UnshiftObjectsTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject'
     );
+
+    obj.destroy();
   }
 }
 

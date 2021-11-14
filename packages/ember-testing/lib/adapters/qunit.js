@@ -22,6 +22,7 @@ export default Adapter.extend({
   asyncStart() {
     if (typeof QUnit.stop === 'function') {
       // very old QUnit version
+      // eslint-disable-next-line qunit/no-qunit-stop
       QUnit.stop();
     } else {
       this.doneCallbacks.push(QUnit.config.current ? QUnit.config.current.assert.async() : null);

@@ -2,33 +2,13 @@ import { getOwner, setOwner } from '@ember/-internals/owner';
 import { get, set, observer } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
 import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
+import { track } from '@glimmer/validator';
+import { destroy } from '@glimmer/destroyable';
+import { run } from '@ember/runloop';
 
 moduleFor(
   'Ember.CoreObject',
   class extends AbstractTestCase {
-    ['@test throws an error with new (one arg)']() {
-      expectAssertion(() => {
-        new CoreObject({
-          firstName: 'Stef',
-          lastName: 'Penner',
-        });
-      }, /You may have either used `new` instead of `.create\(\)`/);
-    }
-
-    ['@test throws an error with new (> 1 arg)']() {
-      expectAssertion(() => {
-        new CoreObject(
-          {
-            firstName: 'Stef',
-            lastName: 'Penner',
-          },
-          {
-            other: 'name',
-          }
-        );
-      }, /You may have either used `new` instead of `.create\(\)`/);
-    }
-
     ['@test toString should be not be added as a property when calling toString()'](assert) {
       let obj = CoreObject.create({
         firstName: 'Foo',
@@ -38,7 +18,7 @@ moduleFor(
       obj.toString();
 
       assert.notOk(
-        obj.hasOwnProperty('toString'),
+        Object.prototype.hasOwnProperty.call(obj, 'toString'),
         'Calling toString() should not create a toString class property'
       );
     }
@@ -112,7 +92,7 @@ moduleFor(
       let Test = CoreObject.extend({
         myProp: null,
         anotherProp: undefined,
-        didChangeMyProp: observer('myProp', function() {
+        didChangeMyProp: observer('myProp', function () {
           callCount++;
         }),
       });
@@ -129,6 +109,42 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(callCount, 1);
+
+      test.destroy();
+    }
+
+    ['@test native getters/setters do not cause rendering invalidation during init'](assert) {
+      let objectMeta = Object.create(null);
+
+      class TestObject extends CoreObject {
+        get hiddenValue() {
+          let v = get(objectMeta, 'hiddenValue');
+          return v !== undefined ? v : false;
+        }
+        set hiddenValue(v) {
+          set(objectMeta, 'hiddenValue', v);
+        }
+      }
+
+      track(() => {
+        TestObject.create({ hiddenValue: true });
+        assert.ok(true, 'We did not error');
+      });
+    }
+    '@test destroy method is called when being destroyed by @ember/destroyable'(assert) {
+      assert.expect(1);
+
+      class TestObject extends CoreObject {
+        destroy() {
+          assert.ok(true, 'destroy was invoked');
+        }
+      }
+
+      let instance = TestObject.create();
+
+      run(() => {
+        destroy(instance);
+      });
     }
   }
 );

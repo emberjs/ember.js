@@ -17,7 +17,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=foo isEnabled=isEnabled isHappy=isHappy}}', {
+      this.render('{{foo-bar foo=this.foo isEnabled=this.isEnabled isHappy=this.isHappy}}', {
         foo: 'foo',
         isEnabled: true,
         isHappy: false,
@@ -82,7 +82,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar joker=model.wat batman=model.super}}', {
+      this.render('{{foo-bar joker=this.model.wat batman=this.model.super}}', {
         model: { wat: false, super: { robin: true } },
       });
 
@@ -125,78 +125,6 @@ moduleFor(
       });
     }
 
-    ['@test it can have class name bindings in the template']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render(
-        '{{foo-bar classNameBindings="model.someInitiallyTrueProperty model.someInitiallyFalseProperty model.someInitiallyUndefinedProperty :static model.isBig:big model.isOpen:open:closed model.isUp::down model.bar:isTruthy:isFalsy"}}',
-        {
-          model: {
-            someInitiallyTrueProperty: true,
-            someInitiallyFalseProperty: false,
-            isBig: true,
-            isOpen: false,
-            isUp: true,
-            bar: true,
-          },
-        }
-      );
-
-      this.assertComponentElement(this.firstChild, {
-        attrs: {
-          class: classes('ember-view some-initially-true-property static big closed isTruthy'),
-        },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        attrs: {
-          class: classes('ember-view some-initially-true-property static big closed isTruthy'),
-        },
-        content: 'hello',
-      });
-
-      runTask(() => {
-        set(this.context, 'model.someInitiallyTrueProperty', false);
-        set(this.context, 'model.someInitiallyFalseProperty', true);
-        set(this.context, 'model.someInitiallyUndefinedProperty', true);
-        set(this.context, 'model.isBig', false);
-        set(this.context, 'model.isOpen', true);
-        set(this.context, 'model.isUp', false);
-        set(this.context, 'model.bar', false);
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        attrs: {
-          class: classes(
-            'ember-view some-initially-false-property some-initially-undefined-property static open down isFalsy'
-          ),
-        },
-        content: 'hello',
-      });
-
-      runTask(() => {
-        set(this.context, 'model', {
-          someInitiallyTrueProperty: true,
-          someInitiallyFalseProperty: false,
-          someInitiallyUndefinedProperty: undefined,
-          isBig: true,
-          isOpen: false,
-          isUp: true,
-          bar: true,
-        });
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        attrs: {
-          class: classes('ember-view some-initially-true-property static big closed isTruthy'),
-        },
-        content: 'hello',
-      });
-    }
-
     ['@test it can have class name bindings with nested paths']() {
       let FooBarComponent = Component.extend({
         classNameBindings: ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad'],
@@ -207,7 +135,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=foo is=is}}', {
+      this.render('{{foo-bar foo=this.foo is=this.is}}', {
         foo: { bar: 'foo-bar' },
         is: { enabled: true, happy: false },
       });
@@ -281,7 +209,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar fooBar=fooBar nested=nested}}', {
+      this.render('{{foo-bar fooBar=this.fooBar nested=this.nested}}', {
         fooBar: true,
         nested: { fooBarBaz: false },
       });
@@ -342,43 +270,6 @@ moduleFor(
       });
     }
 
-    ['@test const bindings can be set as attrs']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-      this.render('{{foo-bar classNameBindings="foo:enabled:disabled"}}', {
-        foo: true,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view enabled') },
-        content: 'hello',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view enabled') },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'foo', false));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view disabled') },
-        content: 'hello',
-      });
-
-      runTask(() => set(this.context, 'foo', true));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { class: classes('ember-view enabled') },
-        content: 'hello',
-      });
-    }
-
     ['@test :: class name syntax works with an empty true class']() {
       let FooBarComponent = Component.extend({
         classNameBindings: ['isEnabled::not-enabled'],
@@ -389,7 +280,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar isEnabled=enabled}}', {
+      this.render('{{foo-bar isEnabled=this.enabled}}', {
         enabled: false,
       });
 
@@ -520,10 +411,10 @@ moduleFor(
 
       this.render(
         strip`
-      {{foo-bar foo=foo bindIsEnabled=true isEnabled=isEnabled bindIsHappy=false isHappy=isHappy}}
-      {{foo-bar foo=foo bindIsEnabled=false isEnabled=isEnabled bindIsHappy=true isHappy=isHappy}}
-      {{foo-bar foo=foo bindIsEnabled=true isEnabled=isEnabled bindIsHappy=true isHappy=isHappy}}
-      {{foo-bar foo=foo bindIsEnabled=false isEnabled=isEnabled bindIsHappy=false isHappy=isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=true isEnabled=this.isEnabled bindIsHappy=false isHappy=this.isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=false isEnabled=this.isEnabled bindIsHappy=true isHappy=this.isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=true isEnabled=this.isEnabled bindIsHappy=true isHappy=this.isHappy}}
+      {{foo-bar foo=this.foo bindIsEnabled=false isEnabled=this.isEnabled bindIsHappy=false isHappy=this.isHappy}}
     `,
         { foo: 'foo', isEnabled: true, isHappy: false }
       );
@@ -654,7 +545,7 @@ moduleFor(
 
     ['@test using a computed property for classNameBindings triggers an assertion']() {
       let FooBarComponent = Component.extend({
-        classNameBindings: computed(function() {
+        classNameBindings: computed(function () {
           return ['isHappy:happy:sad'];
         }),
       });
@@ -667,183 +558,6 @@ moduleFor(
       expectAssertion(() => {
         this.render('{{foo-bar}}');
       }, /Only arrays are allowed/);
-    }
-  }
-);
-
-moduleFor(
-  'ClassBinding integration',
-  class extends RenderingTestCase {
-    ['@test it should apply classBinding without condition always']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding=":foo"}}');
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('foo  ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('foo  ember-view') },
-      });
-    }
-
-    ['@test it should merge classBinding with class']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding="birdman:respeck" class="myName"}}', {
-        birdman: true,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('respeck myName ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('respeck myName ember-view') },
-      });
-    }
-
-    ['@test it should apply classBinding with only truthy condition']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding="myName:respeck"}}', {
-        myName: true,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('respeck  ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('respeck  ember-view') },
-      });
-    }
-
-    ['@test it should apply classBinding with only falsy condition']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding="myName::shade"}}', {
-        myName: false,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('shade  ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('shade  ember-view') },
-      });
-    }
-
-    ['@test it should apply nothing when classBinding is falsy but only supplies truthy class']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding="myName:respeck"}}', {
-        myName: false,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('ember-view') },
-      });
-    }
-
-    ['@test it should apply nothing when classBinding is truthy but only supplies falsy class']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding="myName::shade"}}', { myName: true });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('ember-view') },
-      });
-    }
-
-    ['@test it should apply classBinding with falsy condition']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', {
-        swag: false,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('scrub  ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('scrub  ember-view') },
-      });
-    }
-
-    ['@test it should apply classBinding with truthy condition']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      this.render('{{foo-bar classBinding="swag:fresh:scrub"}}', {
-        swag: true,
-      });
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('fresh  ember-view') },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        content: 'hello',
-        attrs: { class: classes('fresh  ember-view') },
-      });
     }
   }
 );

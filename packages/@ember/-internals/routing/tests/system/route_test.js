@@ -1,9 +1,10 @@
 import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import Service, { inject as injectService } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberRoute from '../../lib/system/route';
 import { defineProperty } from '../../../metal';
+import ObjectProxy from '@ember/-internals/runtime/lib/system/object_proxy';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -63,38 +64,6 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ["@test 'store' can be injected by data persistence frameworks"](assert) {
-      assert.expect(8);
-      runDestroy(route);
-
-      let owner = buildOwner();
-
-      let post = {
-        id: 1,
-      };
-
-      let Store = EmberObject.extend({
-        find(type, value) {
-          assert.ok(true, 'injected model was called');
-          assert.equal(type, 'post', 'correct type was called');
-          assert.equal(value, 1, 'correct value was called');
-          return post;
-        },
-      });
-
-      owner.register('route:index', EmberRoute);
-      owner.register('store:main', Store);
-
-      owner.inject('route', 'store', 'store:main');
-
-      route = owner.lookup('route:index');
-
-      assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
-      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
-
-      runDestroy(owner);
-    }
-
     ["@test assert if 'store.find' method is not found"]() {
       runDestroy(route);
 
@@ -106,7 +75,7 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         route.findModel('post', 1);
       }, 'Post has no method `find`.');
 
@@ -121,9 +90,9 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      expectAssertion(function() {
+      expectAssertion(function () {
         route.model({ post_id: 1 });
-      }, /You used the dynamic segment post_id in your route undefined, but <Ember.Object:ember\d+>.Post did not exist and you did not override your route\'s `model` hook./);
+      }, /You used the dynamic segment post_id in your route undefined, but <.*:ember\d+>.Post did not exist and you did not override your route's `model` hook./);
 
       runDestroy(owner);
     }
@@ -137,7 +106,7 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      ignoreAssertion(function() {
+      ignoreAssertion(function () {
         route.model({ post_id: 1 });
       });
 
@@ -311,6 +280,12 @@ moduleFor(
       assert.deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, 'serialized correctly');
     }
 
+    ['@test returns model.id if model is a Proxy'](assert) {
+      let model = ObjectProxy.create({ content: { id: 3 } });
+
+      assert.deepEqual(route.serialize(model, ['id']), { id: 3 }, 'serialized Proxy correctly');
+    }
+
     ['@test returns undefined if model is not set'](assert) {
       assert.equal(route.serialize(undefined, ['post_id']), undefined, 'serialized correctly');
     }
@@ -377,7 +352,7 @@ moduleFor(
       owner.register(
         'route:application',
         EmberRoute.extend({
-          authService: injectService('auth'),
+          authService: service('auth'),
         })
       );
 
@@ -518,24 +493,32 @@ moduleFor(
       let route = EmberRoute.create({ _router: router });
       setOwner(route, engineInstance);
 
-      assert.strictEqual(
-        route.transitionTo('application'),
-        'foo.bar.application',
-        'properly prefixes application route'
-      );
-      assert.strictEqual(
-        route.transitionTo('posts'),
-        'foo.bar.posts',
-        'properly prefixes child routes'
-      );
-      assert.throws(() => route.transitionTo('/posts'), 'throws when trying to use a url');
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.transitionTo('application'),
+          'foo.bar.application',
+          'properly prefixes application route'
+        );
+      }, /Calling transitionTo on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.transitionTo('posts'),
+          'foo.bar.posts',
+          'properly prefixes child routes'
+        );
+      }, /Calling transitionTo on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.throws(() => route.transitionTo('/posts'), 'throws when trying to use a url');
+      }, /Calling transitionTo on a route is deprecated/);
 
       let queryParams = {};
-      assert.strictEqual(
-        route.transitionTo(queryParams),
-        queryParams,
-        'passes query param only transitions through'
-      );
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.transitionTo(queryParams),
+          queryParams,
+          'passes query param only transitions through'
+        );
+      }, /Calling transitionTo on a route is deprecated/);
     }
 
     ["@test intermediateTransitionTo considers an engine's mountPoint"](assert) {
@@ -589,24 +572,32 @@ moduleFor(
       let route = EmberRoute.create({ _router: router });
       setOwner(route, engineInstance);
 
-      assert.strictEqual(
-        route.replaceWith('application'),
-        'foo.bar.application',
-        'properly prefixes application route'
-      );
-      assert.strictEqual(
-        route.replaceWith('posts'),
-        'foo.bar.posts',
-        'properly prefixes child routes'
-      );
-      assert.throws(() => route.replaceWith('/posts'), 'throws when trying to use a url');
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.replaceWith('application'),
+          'foo.bar.application',
+          'properly prefixes application route'
+        );
+      }, /Calling replaceWith on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.replaceWith('posts'),
+          'foo.bar.posts',
+          'properly prefixes child routes'
+        );
+      }, /Calling replaceWith on a route is deprecated/);
+      expectDeprecation(() => {
+        assert.throws(() => route.replaceWith('/posts'), 'throws when trying to use a url');
+      }, /Calling replaceWith on a route is deprecated/);
 
       let queryParams = {};
-      assert.strictEqual(
-        route.replaceWith(queryParams),
-        queryParams,
-        'passes query param only transitions through'
-      );
+      expectDeprecation(() => {
+        assert.strictEqual(
+          route.replaceWith(queryParams),
+          queryParams,
+          'passes query param only transitions through'
+        );
+      }, /Calling replaceWith on a route is deprecated/);
     }
   }
 );

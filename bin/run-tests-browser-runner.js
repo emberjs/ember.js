@@ -16,7 +16,7 @@ module.exports = class BrowserRunner {
 
   async run(url, attempts) {
     let result = await this.getResultWithRetry(url, attempts);
-    var failed = !result || !result.total || result.failed;
+    let failed = !result || !result.total || result.failed;
     if (failed) {
       throw result;
     }

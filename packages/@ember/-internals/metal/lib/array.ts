@@ -1,19 +1,11 @@
+import { EmberArray } from '@ember/-internals/utils';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
-import { notifyPropertyChange } from './property_events';
-import { get } from './property_get';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
-interface ObjectHasArrayObservers {
-  hasArrayObservers?: boolean;
-}
-
-export interface EmberArray<T> extends ObjectHasArrayObservers {
-  length: number;
-  objectAt(index: number): T | undefined;
-  replace(start: number, deleteCount: number, items: T[]): void;
-  splice(start: number, deleteCount: number, ...items: T[]): void;
+interface ObservedObject<T> extends EmberArray<T> {
+  _revalidate?: () => void;
 }
 
 export function objectAt<T>(array: T[] | EmberArray<T>, index: number): T | undefined {
@@ -64,50 +56,49 @@ export function replaceInNativeArray<T>(
 }
 
 interface ArrayObserverOptions {
-  willChange?: string;
-  didChange?: string;
+  willChange: string;
+  didChange: string;
 }
 
-type Operation = (
-  obj: ObjectHasArrayObservers,
+type Operation<T> = (
+  obj: ObservedObject<T>,
   eventName: string,
   target: object | Function | null,
   callbackName: string
 ) => void;
 
-function arrayObserversHelper(
-  obj: ObjectHasArrayObservers,
+function arrayObserversHelper<T>(
+  obj: ObservedObject<T>,
   target: object | Function | null,
-  opts: ArrayObserverOptions | undefined,
-  operation: Operation,
-  notify: boolean
-): ObjectHasArrayObservers {
-  let willChange = (opts && opts.willChange) || 'arrayWillChange';
-  let didChange = (opts && opts.didChange) || 'arrayDidChange';
-  let hasObservers = get(obj, 'hasArrayObservers');
+  opts: ArrayObserverOptions,
+  operation: Operation<T>
+): ObservedObject<T> {
+  let { willChange, didChange } = opts;
 
   operation(obj, '@array:before', target, willChange);
   operation(obj, '@array:change', target, didChange);
 
-  if (hasObservers === notify) {
-    notifyPropertyChange(obj, 'hasArrayObservers');
-  }
+  /*
+   * Array proxies have a `_revalidate` method which must be called to set
+   * up their internal array observation systems.
+   */
+  obj._revalidate?.();
 
   return obj;
 }
 
 export function addArrayObserver<T>(
   array: EmberArray<T>,
-  target: any,
-  opts?: ArrayObserverOptions | undefined
-): ObjectHasArrayObservers {
-  return arrayObserversHelper(array, target, opts, addListener, false);
+  target: object | Function | null,
+  opts: ArrayObserverOptions
+): ObservedObject<T> {
+  return arrayObserversHelper(array, target, opts, addListener);
 }
 
 export function removeArrayObserver<T>(
   array: EmberArray<T>,
-  target: any,
-  opts?: ArrayObserverOptions | undefined
-): ObjectHasArrayObservers {
-  return arrayObserversHelper(array, target, opts, removeListener, true);
+  target: object | Function | null,
+  opts: ArrayObserverOptions
+): ObservedObject<T> {
+  return arrayObserversHelper(array, target, opts, removeListener);
 }

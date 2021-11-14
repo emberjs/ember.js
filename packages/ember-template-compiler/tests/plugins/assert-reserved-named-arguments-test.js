@@ -165,24 +165,24 @@ moduleFor(
       }, `'@Foo' is reserved. ('baz/foo-bar' @ L1:C17) `);
     }
 
-    [`@test '@.' is reserved`]() {
-      expectAssertion(() => {
+    [`@test '@.' is reserved`](assert) {
+      assert.throws(() => {
         compile(`{{@.}}`, {
           moduleName: 'baz/foo-bar',
         });
-      }, `'@.' is reserved. ('baz/foo-bar' @ L1:C2) `);
+      }, /Attempted to parse a path expression, but it was not valid. Paths beginning with @ must start with a-z/);
 
-      expectAssertion(() => {
+      assert.throws(() => {
         compile(`{{#if @.}}Yup{{/if}}`, {
           moduleName: 'baz/foo-bar',
         });
-      }, `'@.' is reserved. ('baz/foo-bar' @ L1:C6) `);
+      }, /Attempted to parse a path expression, but it was not valid. Paths beginning with @ must start with a-z/);
 
-      expectAssertion(() => {
+      assert.throws(() => {
         compile(`{{input type=(if @. "bar" "baz")}}`, {
           moduleName: 'baz/foo-bar',
         });
-      }, `'@.' is reserved. ('baz/foo-bar' @ L1:C17) `);
+      }, /Attempted to parse a path expression, but it was not valid. Paths beginning with @ must start with a-z/);
     }
 
     [`@test '@_' is reserved`]() {

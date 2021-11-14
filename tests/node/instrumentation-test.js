@@ -1,22 +1,20 @@
 'use strict';
 
-var path = require('path');
-var distPath = path.join(__dirname, '../../dist');
-var emberPath = path.join(distPath, 'ember.debug');
+const { loadEmber, clearEmber } = require('./helpers/load-ember');
 
-QUnit.module('instrumentation', function(hooks) {
-  hooks.afterEach(function() {
-    delete global.Ember;
-    delete require.cache[emberPath + '.js'];
+const { Ember } = loadEmber();
+
+QUnit.module('instrumentation', function (hooks) {
+  hooks.afterEach(function () {
+    clearEmber();
   });
 
-  QUnit.test('it works in FastBoot environment', function(assert) {
-    var _originalWindow = global.window;
+  QUnit.test('it works in FastBoot environment', function (assert) {
+    let _originalWindow = global.window;
 
     global.window = {}; // mock window without `performance` property
-    var Ember = require(emberPath);
 
-    var result = Ember.instrument('render', {}, function() {
+    let result = Ember.instrument('render', {}, function () {
       return 'hello';
     });
 

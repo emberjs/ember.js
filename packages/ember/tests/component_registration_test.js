@@ -4,6 +4,7 @@ import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';
+import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   'Application Lifecycle - Component Registration',
@@ -13,7 +14,12 @@ moduleFor(
       return super.createApplication(options, Application.extend());
     }
 
-    ['@test The helper becomes the body of the component']() {
+    ['@test The helper becomes the body of the component'](assert) {
+      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+        assert.expect(0);
+        return;
+      }
+
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
@@ -26,8 +32,14 @@ moduleFor(
       });
     }
 
-    ['@test The helper becomes the body of the component (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;)']() {
-      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+    ['@test The helper becomes the body of the component (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;)'](
+      assert
+    ) {
+      if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+        assert.expect(0);
+        return;
+      }
+
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
@@ -54,9 +66,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('div.testing123')
-          .text()
-          .trim();
+        let text = this.$('div.testing123').text().trim();
         assert.equal(text, 'hello world', 'The component is composed correctly');
       });
     }
@@ -78,9 +88,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(
           text,
           'there goes watch him as he GOES',
@@ -114,9 +122,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(
           text,
           'hello world funkytowny-funkytowny!!!',
@@ -144,9 +150,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(
           text,
           'hello world goodfreakingTIMES-goodfreakingTIMES!!!',
@@ -160,9 +164,9 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`
+        `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
       );
-      this.addTemplate('foo-bar-baz', '{{text}}-{{yield}}');
+      this.addTemplate('foo-bar-baz', '{{this.text}}-{{yield}}');
 
       this.application.instanceInitializer({
         name: 'application-controller',
@@ -189,9 +193,7 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(text, 'inner-outer', 'The component is composed correctly');
       });
     }
@@ -201,7 +203,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        `<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>`
+        `<div id='wrapper'>{{#my-component}}{{this.text}}{{/my-component}}</div>`
       );
       this.addTemplate('foo-bar-baz', 'No way!');
 
@@ -224,16 +226,14 @@ moduleFor(
             Component.extend({
               text: 'inner',
               layoutName: 'foo-bar-baz',
-              layout: compile('{{text}}-{{yield}}'),
+              layout: compile('{{this.text}}-{{yield}}'),
             })
           );
         },
       });
 
       return this.visit('/').then(() => {
-        let text = this.$('#wrapper')
-          .text()
-          .trim();
+        let text = this.$('#wrapper').text().trim();
         assert.equal(text, 'inner-outer', 'The component is composed correctly');
       });
     }
@@ -241,7 +241,12 @@ moduleFor(
     async ['@test Using name of component that does not exist'](assert) {
       this.addTemplate('application', `<div id='wrapper'>{{#no-good}} {{/no-good}}</div>`);
 
-      await assert.rejectsAssertion(this.visit('/'), /.* named "no-good" .*/);
+      if (DEBUG) {
+        await assert.rejectsAssertion(this.visit('/'), /Attempted to resolve `no-good`/);
+      } else {
+        // Rejects with a worse error message in production
+        await assert.rejects(this.visit('/'));
+      }
     }
   }
 );

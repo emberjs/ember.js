@@ -11,7 +11,7 @@ moduleFor(
     }
 
     ['@test it updates for bound arguments']() {
-      this.render(`{{concat model.first model.second}}`, {
+      this.render(`{{concat this.model.first this.model.second}}`, {
         model: { first: 'one', second: 'two' },
       });
 
@@ -36,7 +36,7 @@ moduleFor(
 
     ['@test it can be used as a sub-expression']() {
       this.render(
-        `{{concat (concat model.first model.second) (concat model.third model.fourth)}}`,
+        `{{concat (concat this.model.first this.model.second) (concat this.model.third this.model.fourth)}}`,
         {
           model: {
             first: 'one',
@@ -80,7 +80,7 @@ moduleFor(
       this.registerHelper('x-eq', ([actual, expected]) => actual === expected);
 
       this.render(
-        `{{#if (x-eq (concat model.first model.second) "onetwo")}}Truthy!{{else}}False{{/if}}`,
+        `{{#if (x-eq (concat this.model.first this.model.second) "onetwo")}}Truthy!{{else}}False{{/if}}`,
         {
           model: {
             first: 'one',

@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
@@ -5,12 +7,13 @@ import { setupAssertionHelpers } from './assertion';
 import { setupContainersCheck } from './containers';
 import { setupDeprecationHelpers } from './deprecation';
 import { setupNamespacesCheck } from './namespaces';
+import { setupObserversCheck } from './observers';
 import { setupRunLoopCheck } from './run-loop';
 import { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
 
 declare global {
-  var Ember: any;
+  let Ember: any;
 
   interface Assert {
     rejects(promise: Promise<any>, expected?: string | RegExp, message?: string): Promise<any>;
@@ -32,10 +35,11 @@ export default function setupQUnit() {
 
   let originalModule = QUnit.module;
 
-  QUnit.module = function(name: string, callback: any) {
-    return originalModule(name, function(hooks) {
+  QUnit.module = function (name: string, callback: any) {
+    return originalModule(name, function (hooks) {
       setupContainersCheck(hooks);
       setupNamespacesCheck(hooks);
+      setupObserversCheck(hooks);
       setupRunLoopCheck(hooks);
       setupAssertionHelpers(hooks, env);
       setupDeprecationHelpers(hooks, env);
@@ -43,9 +47,9 @@ export default function setupQUnit() {
 
       callback(hooks);
     });
-  };
+  } as typeof QUnit.module;
 
-  QUnit.assert.rejects = async function(
+  QUnit.assert.rejects = async function (
     promise: Promise<any>,
     expected?: RegExp | string,
     message?: string
@@ -76,7 +80,7 @@ export default function setupQUnit() {
     Ember.onerror = prevOnError;
   };
 
-  QUnit.assert.throwsAssertion = function(
+  QUnit.assert.throwsAssertion = function (
     block: () => any,
     expected?: string | RegExp,
     message?: string
@@ -89,7 +93,7 @@ export default function setupQUnit() {
     return QUnit.assert.throws(block, expected, message);
   };
 
-  QUnit.assert.rejectsAssertion = async function(
+  QUnit.assert.rejectsAssertion = async function (
     promise: Promise<any>,
     expected?: string | RegExp,
     message?: string

@@ -3,8 +3,9 @@
 */
 
 import { assert } from '@ember/debug';
-import { Arguments, VM } from '@glimmer/runtime';
-import { UnboundReference } from '../utils/references';
+import { CapturedArguments } from '@glimmer/interfaces';
+import { createUnboundRef, valueForRef } from '@glimmer/reference';
+import { internalHelper } from './internal-helper';
 
 /**
   The `{{unbound}}` helper disconnects the one-way binding of a property,
@@ -13,7 +14,7 @@ import { UnboundReference } from '../utils/references';
   if it is set with a new value:
 
   ```handlebars
-  {{unbound name}}
+  {{unbound this.name}}
   ```
 
   Like any helper, the `unbound` helper can accept a nested helper expression.
@@ -21,9 +22,9 @@ import { UnboundReference } from '../utils/references';
 
   ```handlebars
   {{unbound (some-custom-helper)}}
-  {{unbound (capitalize name)}}
+  {{unbound (capitalize this.name)}}
   {{! You can use any helper, including unbound, in a nested expression }}
-  {{capitalize (unbound name)}}
+  {{capitalize (unbound this.name)}}
   ```
 
   The `unbound` helper only accepts a single argument, and it return an
@@ -34,11 +35,11 @@ import { UnboundReference } from '../utils/references';
   @public
 */
 
-export default function(_vm: VM, args: Arguments) {
+export default internalHelper(({ positional, named }: CapturedArguments) => {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
-    args.positional.length === 1 && args.named.length === 0
+    positional.length === 1 && Object.keys(named).length === 0
   );
 
-  return UnboundReference.create(args.positional.at(0).value());
-}
+  return createUnboundRef(valueForRef(positional[0]), '(resurt of an `unbound` helper)');
+});

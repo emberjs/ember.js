@@ -1,6 +1,6 @@
 function setProperties(object, properties) {
   for (let key in properties) {
-    if (properties.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(properties, key)) {
       object[key] = properties[key];
     }
   }
@@ -16,11 +16,11 @@ export default function factory() {
   }
 
   Klass.prototype.constructor = Klass;
-  Klass.prototype.destroy = function() {
+  Klass.prototype.destroy = function () {
     this.isDestroyed = true;
   };
 
-  Klass.prototype.toString = function() {
+  Klass.prototype.toString = function () {
     return '<Factory:' + this._guid + '>';
   };
 

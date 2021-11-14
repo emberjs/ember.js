@@ -5,7 +5,7 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
-const noop = function() {};
+const noop = function () {};
 
 moduleFor(
   'controllerFor',

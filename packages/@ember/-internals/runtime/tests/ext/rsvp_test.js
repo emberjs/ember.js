@@ -17,8 +17,8 @@ moduleFor(
       let error = new Error('Error thrown in a promise for testing purposes.');
 
       try {
-        run(function() {
-          new RSVP.Promise(function() {
+        run(function () {
+          new RSVP.Promise(function () {
             throw error;
           });
         });
@@ -75,7 +75,7 @@ moduleFor(
 
       try {
         setTesting(false);
-        setOnerror(error => {
+        setOnerror((error) => {
           assert.equal(error, actualError, 'expected the real error on the jqXHR');
           assert.equal(
             error.__reason_with_error_thrown__,
@@ -106,7 +106,7 @@ moduleFor(
 
       try {
         setTesting(false);
-        setOnerror(error => {
+        setOnerror((error) => {
           assert.equal(error.message, actualError, 'expected the real error on the jqXHR');
           assert.equal(
             error.__reason_with_error_thrown__,
@@ -135,7 +135,7 @@ moduleFor(
 
       try {
         setTesting(false);
-        setOnerror(error => {
+        setOnerror((error) => {
           assert.equal(error.message, 'a fail');
           assert.ok(JSON.stringify(error), 'Error can be serialized');
         });
@@ -155,7 +155,7 @@ moduleFor(
 
 const reason = 'i failed';
 function ajax() {
-  return new RSVP.Promise(function(resolve) {
+  return new RSVP.Promise(function (resolve) {
     setTimeout(resolve, 0); // fake true / foreign async
   });
 }
@@ -164,32 +164,32 @@ moduleFor(
   'Ember.test: rejection assertions',
   class extends AbstractTestCase {
     ['@test unambigiously unhandled rejection'](assert) {
-      assert.throws(function() {
-        run(function() {
+      assert.throws(function () {
+        run(function () {
           RSVP.Promise.reject(reason);
         }); // something is funky, we should likely assert
       }, reason);
     }
 
     ['@test sync handled'](assert) {
-      run(function() {
-        RSVP.Promise.reject(reason).catch(function() {});
+      run(function () {
+        RSVP.Promise.reject(reason).catch(function () {});
       }); // handled, we shouldn't need to assert.
       assert.ok(true, 'reached end of test');
     }
 
     ['@test handled within the same micro-task (via Ember.RVP.Promise)'](assert) {
-      run(function() {
+      run(function () {
         let rejection = RSVP.Promise.reject(reason);
-        RSVP.Promise.resolve(1).then(() => rejection.catch(function() {}));
+        RSVP.Promise.resolve(1).then(() => rejection.catch(function () {}));
       }); // handled, we shouldn't need to assert.
       assert.ok(true, 'reached end of test');
     }
 
     ['@test handled within the same micro-task (via direct run-loop)'](assert) {
-      run(function() {
+      run(function () {
         let rejection = RSVP.Promise.reject(reason);
-        schedule('afterRender', () => rejection.catch(function() {}));
+        schedule('afterRender', () => rejection.catch(function () {}));
       }); // handled, we shouldn't need to assert.
       assert.ok(true, 'reached end of test');
     }
@@ -198,12 +198,12 @@ moduleFor(
       assert.expect(2);
       let done = assert.async();
 
-      assert.throws(function() {
-        run(function() {
+      assert.throws(function () {
+        run(function () {
           let rejection = RSVP.Promise.reject(reason);
 
           next(() => {
-            rejection.catch(function() {});
+            rejection.catch(function () {});
             assert.ok(true, 'reached end of test');
             done();
           });
@@ -222,9 +222,9 @@ moduleFor(
           return RSVP.Promise.resolve(1);
         },
       };
-      run(function() {
+      run(function () {
         let rejection = RSVP.Promise.reject(reason);
-        store.find('user', 1).then(() => rejection.catch(function() {}));
+        store.find('user', 1).then(() => rejection.catch(function () {}));
       });
 
       assert.ok(true, 'reached end of test');
@@ -239,11 +239,11 @@ moduleFor(
           return ajax();
         },
       };
-      assert.throws(function() {
-        run(function() {
+      assert.throws(function () {
+        run(function () {
           let rejection = RSVP.Promise.reject(reason);
           store.find('user', 1).then(() => {
-            rejection.catch(function() {});
+            rejection.catch(function () {});
             assert.ok(true, 'reached end of test');
             done();
           });
@@ -254,11 +254,11 @@ moduleFor(
     ['@test handled in the next microTask queue flush (ajax example)'](assert) {
       let done = assert.async();
 
-      assert.throws(function() {
-        run(function() {
+      assert.throws(function () {
+        run(function () {
           let rejection = RSVP.Promise.reject(reason);
           ajax().then(() => {
-            rejection.catch(function() {});
+            rejection.catch(function () {});
             assert.ok(true, 'reached end of test');
             done();
           });

@@ -7,7 +7,7 @@ import { onerrorDefault } from '../../lib/ext/rsvp';
 import * as RSVP from 'rsvp';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-let ObjectPromiseProxy;
+let ObjectPromiseProxy, proxy;
 
 moduleFor(
   'Ember.PromiseProxy - ObjectProxy',
@@ -18,6 +18,8 @@ moduleFor(
 
     afterEach() {
       RSVP.on('error', onerrorDefault);
+      if (proxy) proxy.destroy();
+      proxy = undefined;
     }
 
     ['@test present on ember namespace'](assert) {
@@ -25,14 +27,14 @@ moduleFor(
     }
 
     ['@test no promise, invoking then should raise'](assert) {
-      let proxy = ObjectPromiseProxy.create();
+      proxy = ObjectPromiseProxy.create();
 
-      assert.throws(function() {
+      assert.throws(function () {
         proxy.then(
-          function() {
+          function () {
             return this;
           },
-          function() {
+          function () {
             return this;
           }
         );
@@ -47,14 +49,17 @@ moduleFor(
 
       let deferred = RSVP.defer();
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
       let didFulfillCount = 0;
       let didRejectCount = 0;
 
-      proxy.then(() => didFulfillCount++, () => didRejectCount++);
+      proxy.then(
+        () => didFulfillCount++,
+        () => didRejectCount++
+      );
 
       assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
       assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
@@ -153,14 +158,17 @@ moduleFor(
     ['@test rejection'](assert) {
       let reason = new Error('failure');
       let deferred = RSVP.defer();
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
       let didFulfillCount = 0;
       let didRejectCount = 0;
 
-      proxy.then(() => didFulfillCount++, () => didRejectCount++);
+      proxy.then(
+        () => didFulfillCount++,
+        () => didRejectCount++
+      );
 
       assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
       assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
@@ -253,14 +261,17 @@ moduleFor(
     // https://github.com/emberjs/ember.js/issues/15694
     ['@test rejection without specifying reason'](assert) {
       let deferred = RSVP.defer();
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
       let didFulfillCount = 0;
       let didRejectCount = 0;
 
-      proxy.then(() => didFulfillCount++, () => didRejectCount++);
+      proxy.then(
+        () => didFulfillCount++,
+        () => didRejectCount++
+      );
 
       assert.equal(get(proxy, 'content'), undefined, 'expects the proxy to have no content');
       assert.equal(get(proxy, 'reason'), undefined, 'expects the proxy to have no reason');
@@ -326,7 +337,7 @@ moduleFor(
       let expectedReason = new Error('failure');
       let deferred = RSVP.defer();
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
@@ -353,7 +364,7 @@ moduleFor(
     ['@test should work with promise inheritance'](assert) {
       class PromiseSubclass extends RSVP.Promise {}
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: new PromiseSubclass(() => {}),
       });
 
@@ -363,7 +374,7 @@ moduleFor(
     ['@test should reset isFulfilled and isRejected when promise is reset'](assert) {
       let deferred = EmberRSVP.defer();
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
@@ -462,7 +473,7 @@ moduleFor(
     ['@test should have content when isFulfilled is set'](assert) {
       let deferred = EmberRSVP.defer();
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
@@ -475,7 +486,7 @@ moduleFor(
       let error = new Error('Y U REJECT?!?');
       let deferred = EmberRSVP.defer();
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
@@ -491,11 +502,14 @@ moduleFor(
     ['@test should not error if promise is resolved after proxy has been destroyed'](assert) {
       let deferred = EmberRSVP.defer();
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
-      proxy.then(() => {}, () => {});
+      proxy.then(
+        () => {},
+        () => {}
+      );
 
       run(proxy, 'destroy');
 
@@ -510,11 +524,14 @@ moduleFor(
     ['@test should not error if promise is rejected after proxy has been destroyed'](assert) {
       let deferred = EmberRSVP.defer();
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
-      proxy.then(() => {}, () => {});
+      proxy.then(
+        () => {},
+        () => {}
+      );
 
       run(proxy, 'destroy');
 
@@ -534,12 +551,12 @@ moduleFor(
       let receivedValue;
       let didResolveCount = 0;
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
       proxy.then(
-        value => {
+        (value) => {
           receivedValue = value;
           didResolveCount++;
         },
@@ -566,13 +583,13 @@ moduleFor(
       let receivedReason;
       let didRejectCount = 0;
 
-      let proxy = ObjectPromiseProxy.create({
+      proxy = ObjectPromiseProxy.create({
         promise: deferred.promise,
       });
 
       proxy.then(
         () => {},
-        reason => {
+        (reason) => {
           receivedReason = reason;
           didRejectCount++;
         }

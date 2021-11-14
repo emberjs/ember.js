@@ -20,12 +20,7 @@ function buildInfo(options) {
   let root = (options && options.root) || path.resolve(__dirname, '..');
   let packageVersion = (options && options.packageVersion) || readPackageVersion(root);
   let gitInfo = (options && options.gitInfo) || buildGitInfo(root);
-  let buildInfo = buildFromParts(
-    packageVersion,
-    gitInfo,
-    process.env.TRAVIS,
-    process.env.TRAVIS_BRANCH
-  );
+  let buildInfo = buildFromParts(packageVersion, gitInfo);
   if (!options) {
     cached = buildInfo;
   }
@@ -75,47 +70,44 @@ function buildGitInfo(root) {
  * Build info object from parts.
  * @param {string} packageVersion
  * @param {GitInfo} gitInfo
- * @param {boolean} isCI
- * @param {string} travisBranch
  * @returns {BuildInfo}
  */
-function buildFromParts(packageVersion, gitInfo, isCI = false, travisBranch = '') {
+function buildFromParts(packageVersion, gitInfo) {
   let { tag, branch, sha } = gitInfo;
-
-  let tagVersion = parseTagVersion(tag);
   let shortSha = sha.slice(0, 8);
-  branch = travisBranch || branch; // Travis builds are always detached
-  let channel =
-    branch === 'master'
-      ? process.env.BUILD_TYPE === 'alpha'
-        ? 'alpha'
-        : 'canary'
-      : branch && escapeSemVerIdentifier(branch);
-
-  let isBuildForTag = isTagBuild(tag, branch, isCI);
-  let version = isBuildForTag ? tagVersion : buildVersion(packageVersion, shortSha, channel);
-
-  return {
-    tag,
-    branch,
-    sha,
-    shortSha,
-    channel,
-    packageVersion,
-    tagVersion,
-    version,
-    isBuildForTag,
-  };
-}
-
-function isTagBuild(tag, branch, isCI) {
-  if (!tag) {
-    return false;
+  if (tag) {
+    let tagVersion = parseTagVersion(tag);
+    return {
+      tag,
+      branch: null,
+      sha,
+      shortSha,
+      channel: 'tag',
+      packageVersion,
+      tagVersion,
+      version: tagVersion,
+      isBuildForTag: true,
+    };
+  } else {
+    let channel =
+      branch === 'master'
+        ? process.env.BUILD_TYPE === 'alpha'
+          ? 'alpha'
+          : 'canary'
+        : branch && escapeSemVerIdentifier(branch);
+    let version = buildVersion(packageVersion, shortSha, channel);
+    return {
+      tag: null,
+      branch,
+      sha,
+      shortSha,
+      channel,
+      packageVersion,
+      tagVersion: null,
+      version,
+      isBuildForTag: false,
+    };
   }
-  if (isCI) {
-    return branch === tag;
-  }
-  return true;
 }
 
 /**
@@ -133,11 +125,7 @@ function readPackageVersion(root) {
  * @param {string} tag
  */
 function parseTagVersion(tag) {
-  try {
-    return tag && semver.parse(tag).version;
-  } catch (e) {
-    return;
-  }
+  return tag && semver.parse(tag).version;
 }
 
 /**
@@ -182,4 +170,3 @@ module.exports.buildInfo = buildInfo;
 module.exports.buildFromParts = buildFromParts;
 module.exports.buildVersion = buildVersion;
 module.exports.parseTagVersion = parseTagVersion;
-module.exports.isTagBuild = isTagBuild;

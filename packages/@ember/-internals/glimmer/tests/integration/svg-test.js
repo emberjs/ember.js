@@ -8,7 +8,7 @@ moduleFor(
     ['@test unquoted viewBox property is output'](assert) {
       let viewBoxString = '0 0 100 100';
 
-      this.render('<div><svg viewBox={{model.viewBoxString}}></svg></div>', {
+      this.render('<div><svg viewBox={{this.model.viewBoxString}}></svg></div>', {
         model: {
           viewBoxString,
         },
@@ -44,7 +44,7 @@ moduleFor(
     ['@test quoted viewBox property is output'](assert) {
       let viewBoxString = '0 0 100 100';
 
-      this.render('<div><svg viewBox="{{model.viewBoxString}}"></svg></div>', {
+      this.render('<div><svg viewBox="{{this.model.viewBoxString}}"></svg></div>', {
         model: {
           viewBoxString,
         },
@@ -80,7 +80,7 @@ moduleFor(
     ['@test quoted viewBox property is concat']() {
       let viewBoxString = '100 100';
 
-      this.render('<div><svg viewBox="0 0 {{model.viewBoxString}}"></svg></div>', {
+      this.render('<div><svg viewBox="0 0 {{this.model.viewBoxString}}"></svg></div>', {
         model: {
           viewBoxString,
         },
@@ -118,7 +118,7 @@ moduleFor(
     }
 
     ['@test class is output']() {
-      this.render("<div><svg class='{{model.color}} tall'></svg></div>", {
+      this.render("<div><svg class='{{this.model.color}} tall'></svg></div>", {
         model: {
           color: 'blue',
         },

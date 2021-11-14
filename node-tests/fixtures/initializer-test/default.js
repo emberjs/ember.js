@@ -17,7 +17,7 @@ module('Unit | Initializer | foo', {
   }
 });
 
-// Replace this with your real tests.
+// TODO: Replace this with your real tests.
 test('it works', function(assert) {
   initialize(this.application);
 

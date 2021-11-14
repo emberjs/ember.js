@@ -15,11 +15,11 @@ class AbstractAppendTest extends RenderingTestCase {
   teardown() {
     this.component = null;
 
-    this.components.forEach(component => {
+    this.components.forEach((component) => {
       runTask(() => component.destroy());
     });
 
-    this.ids.forEach(id => {
+    this.ids.forEach((id) => {
       let $element = document.getElementById(id);
       if ($element) {
         $element.parentNode.removeChild($element);
@@ -44,7 +44,7 @@ class AbstractAppendTest extends RenderingTestCase {
     let componentsByName = {};
 
     // TODO: refactor/combine with other life-cycle tests
-    this.registerComponent = function(name, _options) {
+    this.registerComponent = function (name, _options) {
       function pushHook(hookName) {
         hooks.push([name, hookName]);
       }
@@ -121,7 +121,8 @@ class AbstractAppendTest extends RenderingTestCase {
         layoutName: 'components/x-parent',
       }),
 
-      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}',
+      template:
+        '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
@@ -129,7 +130,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{bar}}]{{yield}}',
+      template: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -140,7 +141,10 @@ class AbstractAppendTest extends RenderingTestCase {
 
     assert.deepEqual(
       hooks,
-      [['x-parent', 'init'], ['x-parent', 'on(init)']],
+      [
+        ['x-parent', 'init'],
+        ['x-parent', 'on(init)'],
+      ],
       'creation of x-parent'
     );
 
@@ -269,10 +273,10 @@ class AbstractAppendTest extends RenderingTestCase {
         ['x-child', 'willDestroyElement'],
         ['x-child', 'willClearRender'],
 
-        ['x-child', 'didDestroyElement'],
         ['x-parent', 'didDestroyElement'],
-
         ['x-parent', 'willDestroy'],
+
+        ['x-child', 'didDestroyElement'],
         ['x-child', 'willDestroy'],
       ],
       'destroy'
@@ -290,7 +294,8 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: '[parent: {{foo}}]{{#x-child bar=foo}}[yielded: {{foo}}]{{/x-child}}',
+      template:
+        '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
     this.registerComponent('x-child', {
@@ -298,7 +303,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{bar}}]{{yield}}',
+      template: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -396,7 +401,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-first {{foo}}!',
+      template: 'x-first {{this.foo}}!',
     });
 
     this.registerComponent('x-second', {
@@ -408,7 +413,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-second {{bar}}!',
+      template: 'x-second {{this.bar}}!',
     });
 
     let First, Second;
@@ -520,7 +525,7 @@ class AbstractAppendTest extends RenderingTestCase {
   ['@test can appendTo while rendering']() {
     let owner = this.owner;
 
-    let append = component => {
+    let append = (component) => {
       return this.append(component);
     };
 
@@ -560,7 +565,7 @@ class AbstractAppendTest extends RenderingTestCase {
   ['@test can appendTo and remove while rendering'](assert) {
     let owner = this.owner;
 
-    let append = component => {
+    let append = (component) => {
       return this.append(component);
     };
 
@@ -627,7 +632,7 @@ class AbstractAppendTest extends RenderingTestCase {
     let destroyedRoots = 0;
     this.registerComponent('other-root', {
       ComponentClass: Component.extend({
-        layout: compile(`fake-thing: {{counter}}`),
+        layout: compile(`fake-thing: {{this.counter}}`),
         init() {
           this._super(...arguments);
           this.counter = instantiatedRoots++;
@@ -641,7 +646,7 @@ class AbstractAppendTest extends RenderingTestCase {
 
     this.render(
       strip`
-      {{#if showFooBar}}
+      {{#if this.showFooBar}}
         {{foo-bar}}
       {{else}}
         {{baz-qux}}

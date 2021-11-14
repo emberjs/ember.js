@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-
 import { describeComponent, it } from 'ember-mocha';
 import hbs from 'htmlbars-inline-precompile';
 
@@ -19,10 +18,9 @@ describeComponent('foo/bar-baz', 'helper:foo/bar-baz',
       // `);
       this.set('inputValue', '1234');
 
-      this.render(hbs`{{foo/bar-baz inputValue}}`);
+      this.render(hbs`{{foo/bar-baz this.inputValue}}`);
 
       expect(this.$().text().trim()).to.equal('1234');
     });
   }
 );
-

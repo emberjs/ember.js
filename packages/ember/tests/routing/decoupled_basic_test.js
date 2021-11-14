@@ -4,16 +4,32 @@ import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
 import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { moduleFor, ApplicationTestCase, runDestroy, runTask } from 'internal-test-helpers';
+import { Object as EmberObject } from '@ember/-internals/runtime';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  getTextOf,
+  ModuleBasedTestResolver,
+  runDestroy,
+  runTask,
+} from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, computed, set, addObserver } from '@ember/-internals/metal';
-import { getTextOf } from 'internal-test-helpers';
-import { Component } from '@ember/-internals/glimmer';
+import { Mixin, set, addObserver } from '@ember/-internals/metal';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
 
 let originalConsoleError;
+
+function handleURLRejectsWith(context, assert, path, expectedReason) {
+  return context
+    .visit(path)
+    .then(() => {
+      assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
+    })
+    .catch((reason) => {
+      assert.equal(reason.message, expectedReason);
+    });
+}
 
 moduleFor(
   'Basic Routing - Decoupled from global resolver',
@@ -22,9 +38,9 @@ moduleFor(
       super(...arguments);
       this.addTemplate('home', '<h3 class="hours">Hours</h3>');
       this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{model.home}}</p>');
+      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -36,28 +52,14 @@ moduleFor(
       console.error = originalConsoleError;
     }
 
-    getController(name) {
-      return this.applicationInstance.lookup(`controller:${name}`);
-    }
-
-    handleURLAborts(assert, path, deprecated) {
+    handleURLAborts(assert, path) {
       run(() => {
         let router = this.applicationInstance.lookup('router:main');
-        let result;
-
-        if (deprecated !== undefined) {
-          expectDeprecation(() => {
-            result = router.handleURL(path);
-          });
-        } else {
-          result = router.handleURL(path);
-        }
-
-        result.then(
-          function() {
+        router.handleURL(path).then(
+          function () {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
-          function(reason) {
+          function (reason) {
             assert.ok(
               reason && reason.message === 'TransitionAborted',
               'url: `' + path + '` was to be aborted'
@@ -65,29 +67,6 @@ moduleFor(
           }
         );
       });
-    }
-
-    get currentPath() {
-      let currentPath;
-      expectDeprecation(() => {
-        currentPath = this.getController('application').get('currentPath');
-      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-      return currentPath;
-    }
-
-    get currentURL() {
-      return this.appRouter.get('currentURL');
-    }
-
-    handleURLRejectsWith(context, assert, path, expectedReason) {
-      return context
-        .visit(path)
-        .then(() => {
-          assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
-        })
-        .catch(reason => {
-          assert.equal(reason.message, expectedReason);
-        });
     }
 
     async ['@test warn on URLs not included in the route set'](assert) {
@@ -98,7 +77,7 @@ moduleFor(
 
     ['@test The Homepage'](assert) {
       return this.visit('/').then(() => {
-        assert.equal(this.currentPath, 'home', 'currently on the home route');
+        assert.equal(this.appRouter.currentPath, 'home', 'currently on the home route');
 
         let text = this.$('.hours').text();
         assert.equal(text, 'Hours', 'the home template was rendered');
@@ -106,13 +85,13 @@ moduleFor(
     }
 
     [`@test The Homepage and the Camelot page with multiple Router.map calls`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('camelot', { path: '/camelot' });
       });
 
       return this.visit('/camelot')
         .then(() => {
-          assert.equal(this.currentPath, 'camelot');
+          assert.equal(this.appRouter.currentPath, 'camelot');
 
           let text = this.$('#camelot').text();
           assert.equal(text, 'Is a silly place', 'the camelot template was rendered');
@@ -120,578 +99,15 @@ moduleFor(
           return this.visit('/');
         })
         .then(() => {
-          assert.equal(this.currentPath, 'home');
+          assert.equal(this.appRouter.currentPath, 'home');
 
           let text = this.$('.hours').text();
           assert.equal(text, 'Hours', 'the home template was rendered');
         });
     }
 
-    [`@test The Homepage with explicit template name in renderTemplate`](assert) {
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render('homepage');
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('#troll').text();
-        assert.equal(text, 'Megatroll', 'the homepage template was rendered');
-      });
-    }
-
-    [`@test an alternate template will pull in an alternate controller`](assert) {
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render('homepage');
-          },
-        })
-      );
-      this.add(
-        'controller:homepage',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
-            this.model = { home: 'Comes from homepage' };
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
-      });
-    }
-
-    [`@test An alternate template will pull in an alternate controller instead of controllerName`](
-      assert
-    ) {
-      this.add(
-        'route:home',
-        Route.extend({
-          controllerName: 'foo',
-          renderTemplate() {
-            this.render('homepage');
-          },
-        })
-      );
-      this.add(
-        'controller:foo',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
-            this.model = { home: 'Comes from foo' };
-          },
-        })
-      );
-      this.add(
-        'controller:homepage',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
-            this.model = { home: 'Comes from homepage' };
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
-      });
-    }
-
-    [`@test The template will pull in an alternate controller via key/value`](assert) {
-      this.router.map(function() {
-        this.route('homepage', { path: '/' });
-      });
-
-      this.add(
-        'route:homepage',
-        Route.extend({
-          renderTemplate() {
-            this.render({ controller: 'home' });
-          },
-        })
-      );
-      this.add(
-        'controller:home',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
-            this.model = { home: 'Comes from home.' };
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(
-          text,
-          'Comes from home.',
-          'the homepage template was rendered from data from the HomeController'
-        );
-      });
-    }
-
-    [`@test The Homepage with explicit template name in renderTemplate and controller`](assert) {
-      this.add(
-        'controller:home',
-        Controller.extend({
-          init() {
-            this._super(...arguments);
-            this.model = { home: 'YES I AM HOME' };
-          },
-        })
-      );
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render('homepage');
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, 'YES I AM HOME', 'The homepage template was rendered');
-      });
-    }
-
-    [`@test Model passed via renderTemplate model is set as controller's model`](assert) {
-      this.addTemplate('bio', '<p>{{model.name}}</p>');
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render('bio', {
-              model: { name: 'emberjs' },
-            });
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, 'emberjs', `Passed model was set as controller's model`);
-      });
-    }
-
-    ['@test render uses templateName from route'](assert) {
-      this.addTemplate('the_real_home_template', '<p>THIS IS THE REAL HOME</p>');
-      this.add(
-        'route:home',
-        Route.extend({
-          templateName: 'the_real_home_template',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
-      });
-    }
-
-    ['@test defining templateName allows other templates to be rendered'](assert) {
-      this.addTemplate('alert', `<div class='alert-box'>Invader!</div>`);
-      this.addTemplate('the_real_home_template', `<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}`);
-      this.add(
-        'route:home',
-        Route.extend({
-          templateName: 'the_real_home_template',
-          actions: {
-            showAlert() {
-              this.render('alert', {
-                into: 'home',
-                outlet: 'alert',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/')
-        .then(() => {
-          let text = this.$('p').text();
-          assert.equal(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
-
-          return runTask(() => this.appRouter.send('showAlert'));
-        })
-        .then(() => {
-          let text = this.$('.alert-box').text();
-
-          assert.equal(text, 'Invader!', 'Template for alert was rendered into the outlet');
-        });
-    }
-
-    ['@test templateName is still used when calling render with no name and options'](assert) {
-      this.addTemplate('alert', `<div class='alert-box'>Invader!</div>`);
-      this.addTemplate('home', `<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}`);
-
-      this.add(
-        'route:home',
-        Route.extend({
-          templateName: 'alert',
-          renderTemplate() {
-            this.render({});
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('.alert-box').text();
-
-        assert.equal(text, 'Invader!', 'default templateName was rendered into outlet');
-      });
-    }
-
-    ['@test The Homepage with a `setupController` hook'](assert) {
-      this.addTemplate(
-        'home',
-        `<ul>{{#each hours as |entry|}}
-        <li>{{entry}}</li>
-      {{/each}}
-      </ul>
-    `
-      );
-
-      this.add(
-        'route:home',
-        Route.extend({
-          setupController(controller) {
-            controller.set('hours', [
-              'Monday through Friday: 9am to 5pm',
-              'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm',
-            ]);
-          },
-        })
-      );
-      return this.visit('/').then(() => {
-        let text = this.$('ul li:nth-child(3)').text();
-
-        assert.equal(
-          text,
-          'Sunday: Noon to 6pm',
-          'The template was rendered with the hours context'
-        );
-      });
-    }
-
-    [`@test The route controller is still set when overriding the setupController hook`](assert) {
-      this.add(
-        'route:home',
-        Route.extend({
-          setupController() {
-            // no-op
-            // importantly, we are not calling this._super
-          },
-        })
-      );
-
-      this.add('controller:home', Controller.extend());
-
-      return this.visit('/').then(() => {
-        let homeRoute = this.applicationInstance.lookup('route:home');
-        let homeController = this.applicationInstance.lookup('controller:home');
-
-        assert.equal(
-          homeRoute.controller,
-          homeController,
-          'route controller is the home controller'
-        );
-      });
-    }
-
-    ['@test the route controller can be specified via controllerName'](assert) {
-      this.addTemplate('home', '<p>{{myValue}}</p>');
-      this.add(
-        'route:home',
-        Route.extend({
-          controllerName: 'myController',
-        })
-      );
-      this.add(
-        'controller:myController',
-        Controller.extend({
-          myValue: 'foo',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup('controller:myController');
-        let text = this.$('p').text();
-
-        assert.equal(
-          homeRoute.controller,
-          myController,
-          'route controller is set by controllerName'
-        );
-        assert.equal(
-          text,
-          'foo',
-          'The homepage template was rendered with data from the custom controller'
-        );
-      });
-    }
-
-    [`@test The route controller specified via controllerName is used in render`](assert) {
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          controllerName: 'myController',
-          renderTemplate() {
-            this.render('alternative_home');
-          },
-        })
-      );
-
-      this.add(
-        'controller:myController',
-        Controller.extend({
-          myValue: 'foo',
-        })
-      );
-
-      this.addTemplate('alternative_home', '<p>alternative home: {{myValue}}</p>');
-
-      return this.visit('/').then(() => {
-        let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup('controller:myController');
-        let text = this.$('p').text();
-
-        assert.equal(
-          homeRoute.controller,
-          myController,
-          'route controller is set by controllerName'
-        );
-
-        assert.equal(
-          text,
-          'alternative home: foo',
-          'The homepage template was rendered with data from the custom controller'
-        );
-      });
-    }
-
-    [`@test The route controller specified via controllerName is used in render even when a controller with the routeName is available`](
-      assert
-    ) {
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.addTemplate('home', '<p>home: {{myValue}}</p>');
-
-      this.add(
-        'route:home',
-        Route.extend({
-          controllerName: 'myController',
-        })
-      );
-
-      this.add(
-        'controller:home',
-        Controller.extend({
-          myValue: 'home',
-        })
-      );
-
-      this.add(
-        'controller:myController',
-        Controller.extend({
-          myValue: 'myController',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup('controller:myController');
-        let text = this.$('p').text();
-
-        assert.equal(
-          homeRoute.controller,
-          myController,
-          'route controller is set by controllerName'
-        );
-
-        assert.equal(
-          text,
-          'home: myController',
-          'The homepage template was rendered with data from the custom controller'
-        );
-      });
-    }
-
-    [`@test The Homepage with a 'setupController' hook modifying other controllers`](assert) {
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          setupController(/* controller */) {
-            this.controllerFor('home').set('hours', [
-              'Monday through Friday: 9am to 5pm',
-              'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm',
-            ]);
-          },
-        })
-      );
-
-      this.addTemplate('home', '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>');
-
-      return this.visit('/').then(() => {
-        let text = this.$('ul li:nth-child(3)').text();
-
-        assert.equal(
-          text,
-          'Sunday: Noon to 6pm',
-          'The template was rendered with the hours context'
-        );
-      });
-    }
-
-    [`@test The Homepage with a computed model that does not get overridden`](assert) {
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'controller:home',
-        Controller.extend({
-          model: computed(function() {
-            return [
-              'Monday through Friday: 9am to 5pm',
-              'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm',
-            ];
-          }),
-        })
-      );
-
-      this.addTemplate(
-        'home',
-        '<ul>{{#each model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
-      );
-
-      return this.visit('/').then(() => {
-        let text = this.$('ul li:nth-child(3)').text();
-
-        assert.equal(
-          text,
-          'Sunday: Noon to 6pm',
-          'The template was rendered with the context intact'
-        );
-      });
-    }
-
-    [`@test The Homepage getting its controller context via model`](assert) {
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          model() {
-            return [
-              'Monday through Friday: 9am to 5pm',
-              'Saturday: Noon to Midnight',
-              'Sunday: Noon to 6pm',
-            ];
-          },
-
-          setupController(controller, model) {
-            assert.equal(this.controllerFor('home'), controller);
-
-            this.controllerFor('home').set('hours', model);
-          },
-        })
-      );
-
-      this.addTemplate('home', '<ul>{{#each hours as |entry|}}<li>{{entry}}</li>{{/each}}</ul>');
-
-      return this.visit('/').then(() => {
-        let text = this.$('ul li:nth-child(3)').text();
-
-        assert.equal(
-          text,
-          'Sunday: Noon to 6pm',
-          'The template was rendered with the hours context'
-        );
-      });
-    }
-
-    [`@test The Specials Page getting its controller context by deserializing the params hash`](
-      assert
-    ) {
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      this.add(
-        'route:special',
-        Route.extend({
-          model(params) {
-            return EmberObject.create({
-              menuItemId: params.menu_item_id,
-            });
-          },
-        })
-      );
-
-      this.addTemplate('special', '<p>{{model.menuItemId}}</p>');
-
-      return this.visit('/specials/1').then(() => {
-        let text = this.$('p').text();
-
-        assert.equal(text, '1', 'The model was used to render the template');
-      });
-    }
-
-    ['@test The Specials Page defaults to looking models up via `find`']() {
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          return MenuItem.create({ id });
-        },
-      });
-      this.add('model:menu_item', MenuItem);
-
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      this.addTemplate('special', '{{model.id}}');
-
-      return this.visit('/specials/1').then(() => {
-        this.assertText('1', 'The model was used to render the template');
-      });
-    }
-
     ['@test The Special Page returning a promise puts the app into a loading state until the promise is resolved']() {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -703,7 +119,7 @@ moduleFor(
         find(id) {
           menuItem = MenuItem.create({ id: id });
 
-          return new RSVP.Promise(function(res) {
+          return new RSVP.Promise(function (res) {
             resolve = res;
           });
         },
@@ -711,7 +127,7 @@ moduleFor(
 
       this.add('model:menu_item', MenuItem);
 
-      this.addTemplate('special', '<p>{{model.id}}</p>');
+      this.addTemplate('special', '<p>{{@model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
       let visited = runTask(() => this.visit('/specials/1'));
@@ -727,7 +143,7 @@ moduleFor(
     [`@test The loading state doesn't get entered for promises that resolve on the same run loop`](
       assert
     ) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -750,7 +166,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('special', '<p>{{model.id}}</p>');
+      this.addTemplate('special', '<p>{{@model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
       return this.visit('/specials/1').then(() => {
@@ -761,7 +177,7 @@ moduleFor(
     }
 
     ["@test The Special page returning an error invokes SpecialRoute's error handler"](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -772,7 +188,7 @@ moduleFor(
       MenuItem.reopenClass({
         find(id) {
           menuItem = MenuItem.create({ id: id });
-          promise = new RSVP.Promise(res => (resolve = res));
+          promise = new RSVP.Promise((res) => (resolve = res));
 
           return promise;
         },
@@ -799,7 +215,7 @@ moduleFor(
         })
       );
 
-      runTask(() => this.handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
+      runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
 
       resolve(menuItem);
     }
@@ -807,7 +223,7 @@ moduleFor(
     ["@test ApplicationRoute's default error handler can be overridden"](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
       });
@@ -819,7 +235,7 @@ moduleFor(
       MenuItem.reopenClass({
         find(id) {
           menuItem = MenuItem.create({ id: id });
-          return new RSVP.Promise(res => (resolve = res));
+          return new RSVP.Promise((res) => (resolve = res));
         },
       });
       this.add('model:menu_item', MenuItem);
@@ -849,142 +265,11 @@ moduleFor(
         })
       );
 
-      let promise = runTask(() =>
-        this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error')
-      );
+      let promise = runTask(() => handleURLRejectsWith(this, assert, '/specials/1', 'Setup error'));
 
       resolve(menuItem);
 
       return promise;
-    }
-
-    ['@test Moving from one page to another triggers the correct callbacks'](assert) {
-      assert.expect(3);
-
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
-      });
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          return MenuItem.create({ id: id });
-        },
-      });
-      this.add('model:menu_item', MenuItem);
-
-      this.addTemplate('home', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{model.id}}</p>');
-
-      return this.visit('/')
-        .then(() => {
-          this.assertText('Home', 'The app is now in the initial state');
-
-          let promiseContext = MenuItem.create({ id: 1 });
-
-          return this.visit('/specials/1', promiseContext);
-        })
-        .then(() => {
-          assert.equal(this.currentURL, '/specials/1');
-          this.assertText('1', 'The app is now transitioned');
-        });
-    }
-
-    ['@test Nested callbacks are not exited when moving to siblings'](assert) {
-      let rootSetup = 0;
-      let rootRender = 0;
-      let rootModel = 0;
-      let rootSerialize = 0;
-      let menuItem;
-      let rootElement;
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          menuItem = MenuItem.create({ id: id });
-          return menuItem;
-        },
-      });
-
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
-          this.route('special', {
-            path: '/specials/:menu_item_id',
-            resetNamespace: true,
-          });
-        });
-      });
-
-      this.add(
-        'route:root',
-        Route.extend({
-          model() {
-            rootModel++;
-            return this._super(...arguments);
-          },
-
-          setupController() {
-            rootSetup++;
-          },
-
-          renderTemplate() {
-            rootRender++;
-          },
-
-          serialize() {
-            rootSerialize++;
-            return this._super(...arguments);
-          },
-        })
-      );
-
-      this.add('route:loading', Route.extend({}));
-      this.add('route:home', Route.extend({}));
-      this.add(
-        'route:special',
-        Route.extend({
-          model({ menu_item_id }) {
-            return MenuItem.find(menu_item_id);
-          },
-          setupController(controller, model) {
-            set(controller, 'model', model);
-          },
-        })
-      );
-
-      this.addTemplate('root.index', '<h3>Home</h3>');
-      this.addTemplate('special', '<p>{{model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
-
-      return this.visit('/').then(() => {
-        rootElement = document.getElementById('qunit-fixture');
-
-        assert.equal(
-          getTextOf(rootElement.querySelector('h3')),
-          'Home',
-          'The app is now in the initial state'
-        );
-        assert.equal(rootSetup, 1, 'The root setup was triggered');
-        assert.equal(rootRender, 1, 'The root render was triggered');
-        assert.equal(rootSerialize, 0, 'The root serialize was not called');
-        assert.equal(rootModel, 1, 'The root model was called');
-
-        let router = this.applicationInstance.lookup('router:main');
-        let menuItem = MenuItem.create({ id: 1 });
-
-        return router.transitionTo('special', menuItem).then(function() {
-          assert.equal(rootSetup, 1, 'The root setup was not triggered again');
-          assert.equal(rootRender, 1, 'The root render was not triggered again');
-          assert.equal(rootSerialize, 0, 'The root serialize was not called');
-
-          // TODO: Should this be changed?
-          assert.equal(rootModel, 1, 'The root model was called again');
-
-          assert.deepEqual(router.location.path, '/specials/1');
-          assert.equal(router.currentPath, 'root.special');
-        });
-      });
     }
 
     async ['@test Events are triggered on the controller if a matching action name is implemented'](
@@ -992,7 +277,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1014,7 +299,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('home', '<a {{action "showStuff" model}}>{{name}}</a>');
+      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{this.name}}</a>');
       this.add(
         'controller:home',
         Controller.extend({
@@ -1030,10 +315,7 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@test Events are triggered on the current state when defined in `actions` object'](
@@ -1041,7 +323,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1065,14 +347,11 @@ moduleFor(
       });
 
       this.add('route:home', HomeRoute);
-      this.addTemplate('home', '<a {{action "showStuff" model}}>{{model.name}}</a>');
+      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{@model.name}}</a>');
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
@@ -1080,8 +359,8 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('root', { path: '/' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -1111,14 +390,11 @@ moduleFor(
         })
       );
 
-      this.addTemplate('root.index', '<a {{action "showStuff" model}}>{{model.name}}</a>');
+      this.addTemplate('root.index', '<a {{action "showStuff" @model}}>{{@model.name}}</a>');
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     ['@test Events can be handled by inherited event handlers'](assert) {
@@ -1176,7 +452,7 @@ moduleFor(
     ) {
       let done = assert.async();
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
       });
 
@@ -1200,7 +476,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('home', '<a {{action "showStuff" model}}>{{name}}</a>');
+      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{this.name}}</a>');
 
       this.add(
         'controller:home',
@@ -1214,16 +490,13 @@ moduleFor(
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     async ['@test actions can be triggered with multiple arguments'](assert) {
       let done = assert.async();
-      this.router.map(function() {
-        this.route('root', { path: '/' }, function() {
+      this.router.map(function () {
+        this.route('root', { path: '/' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -1260,18 +533,18 @@ moduleFor(
         })
       );
 
-      this.addTemplate('root.index', '<a {{action "showStuff" model1 model2}}>{{model1.name}}</a>');
+      this.addTemplate(
+        'root.index',
+        '<a {{action "showStuff" this.model1 this.model2}}>{{this.model1.name}}</a>'
+      );
 
       await this.visit('/');
 
-      document
-        .getElementById('qunit-fixture')
-        .querySelector('a')
-        .click();
+      document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
     ['@test transitioning multiple times in a single run loop only sets the URL once'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo');
         this.route('bar');
@@ -1281,14 +554,14 @@ moduleFor(
         let urlSetCount = 0;
         let router = this.applicationInstance.lookup('router:main');
 
-        router.get('location').setURL = function(path) {
+        router.get('location').setURL = function (path) {
           urlSetCount++;
           set(this, 'path', path);
         };
 
         assert.equal(urlSetCount, 0);
 
-        run(function() {
+        run(function () {
           router.transitionTo('foo');
           router.transitionTo('bar');
         });
@@ -1301,7 +574,7 @@ moduleFor(
     ['@test navigating away triggers a url property change'](assert) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo', { path: '/foo' });
         this.route('bar', { path: '/bar' });
@@ -1310,10 +583,10 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
 
-        addObserver(router, 'url', function() {
+        addObserver(router, 'url', function () {
           assert.ok(true, 'url change event was fired');
         });
-        ['foo', 'bar', '/foo'].forEach(destination => run(router, 'transitionTo', destination));
+        ['foo', 'bar', '/foo'].forEach((destination) => run(router, 'transitionTo', destination));
       });
     }
 
@@ -1334,7 +607,7 @@ moduleFor(
         }),
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo');
       });
@@ -1364,7 +637,7 @@ moduleFor(
         }),
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('foo');
       });
@@ -1379,213 +652,8 @@ moduleFor(
       });
     }
 
-    ['@test Route inherits model from parent route'](assert) {
-      assert.expect(9);
-
-      this.router.map(function() {
-        this.route('the-post', { path: '/posts/:post_id' }, function() {
-          this.route('comments');
-
-          this.route('shares', { path: '/shares/:share_id', resetNamespace: true }, function() {
-            this.route('share');
-          });
-        });
-      });
-
-      let post1 = {};
-      let post2 = {};
-      let post3 = {};
-      let share1 = {};
-      let share2 = {};
-      let share3 = {};
-
-      let posts = {
-        1: post1,
-        2: post2,
-        3: post3,
-      };
-      let shares = {
-        1: share1,
-        2: share2,
-        3: share3,
-      };
-
-      this.add(
-        'route:the-post',
-        Route.extend({
-          model(params) {
-            return posts[params.post_id];
-          },
-        })
-      );
-
-      this.add(
-        'route:the-post.comments',
-        Route.extend({
-          afterModel(post /*, transition */) {
-            let parent_model = this.modelFor('the-post');
-
-            assert.equal(post, parent_model);
-          },
-        })
-      );
-
-      this.add(
-        'route:shares',
-        Route.extend({
-          model(params) {
-            return shares[params.share_id];
-          },
-        })
-      );
-
-      this.add(
-        'route:shares.share',
-        Route.extend({
-          afterModel(share /*, transition */) {
-            let parent_model = this.modelFor('shares');
-
-            assert.equal(share, parent_model);
-          },
-        })
-      );
-
-      return this.visit('/posts/1/comments')
-        .then(() => {
-          assert.ok(true, 'url: /posts/1/comments was handled');
-          return this.visit('/posts/1/shares/1');
-        })
-        .then(() => {
-          assert.ok(true, 'url: /posts/1/shares/1 was handled');
-          return this.visit('/posts/2/comments');
-        })
-        .then(() => {
-          assert.ok(true, 'url: /posts/2/comments was handled');
-          return this.visit('/posts/2/shares/2');
-        })
-        .then(() => {
-          assert.ok(true, 'url: /posts/2/shares/2 was handled');
-          return this.visit('/posts/3/comments');
-        })
-        .then(() => {
-          assert.ok(true, 'url: /posts/3/shares was handled');
-          return this.visit('/posts/3/shares/3');
-        })
-        .then(() => {
-          assert.ok(true, 'url: /posts/3/shares/3 was handled');
-        });
-    }
-
-    ['@test Routes with { resetNamespace: true } inherits model from parent route'](assert) {
-      assert.expect(6);
-
-      this.router.map(function() {
-        this.route('the-post', { path: '/posts/:post_id' }, function() {
-          this.route('comments', { resetNamespace: true }, function() {});
-        });
-      });
-
-      let post1 = {};
-      let post2 = {};
-      let post3 = {};
-
-      let posts = {
-        1: post1,
-        2: post2,
-        3: post3,
-      };
-
-      this.add(
-        'route:the-post',
-        Route.extend({
-          model(params) {
-            return posts[params.post_id];
-          },
-        })
-      );
-
-      this.add(
-        'route:comments',
-        Route.extend({
-          afterModel(post /*, transition */) {
-            let parent_model = this.modelFor('the-post');
-
-            assert.equal(post, parent_model);
-          },
-        })
-      );
-
-      return this.visit('/posts/1/comments')
-        .then(() => {
-          assert.ok(true, '/posts/1/comments');
-          return this.visit('/posts/2/comments');
-        })
-        .then(() => {
-          assert.ok(true, '/posts/2/comments');
-          return this.visit('/posts/3/comments');
-        })
-        .then(() => {
-          assert.ok(true, '/posts/3/comments');
-        });
-    }
-
-    ['@test It is possible to get the model from a parent route'](assert) {
-      assert.expect(6);
-
-      this.router.map(function() {
-        this.route('the-post', { path: '/posts/:post_id' }, function() {
-          this.route('comments', { resetNamespace: true });
-        });
-      });
-
-      let post1 = {};
-      let post2 = {};
-      let post3 = {};
-      let currentPost;
-
-      let posts = {
-        1: post1,
-        2: post2,
-        3: post3,
-      };
-
-      this.add(
-        'route:the-post',
-        Route.extend({
-          model(params) {
-            return posts[params.post_id];
-          },
-        })
-      );
-
-      this.add(
-        'route:comments',
-        Route.extend({
-          model() {
-            assert.equal(this.modelFor('the-post'), currentPost);
-          },
-        })
-      );
-
-      currentPost = post1;
-      return this.visit('/posts/1/comments')
-        .then(() => {
-          assert.ok(true, '/posts/1/comments has been handled');
-          currentPost = post2;
-          return this.visit('/posts/2/comments');
-        })
-        .then(() => {
-          assert.ok(true, '/posts/2/comments has been handled');
-          currentPost = post3;
-          return this.visit('/posts/3/comments');
-        })
-        .then(() => {
-          assert.ok(true, '/posts/3/comments has been handled');
-        });
-    }
-
     ['@test A redirection hook is provided'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('choose', { path: '/' });
         this.route('home');
       });
@@ -1598,7 +666,9 @@ moduleFor(
         Route.extend({
           redirect() {
             if (destination) {
-              this.transitionTo(destination);
+              expectDeprecation(() => {
+                this.transitionTo(destination);
+              }, /Calling transitionTo on a route is deprecated/);
             }
           },
 
@@ -1620,17 +690,17 @@ moduleFor(
           1,
           'The home template was rendered'
         );
-        assert.equal(this.currentPath, 'home');
+        assert.equal(this.appRouter.currentPath, 'home');
       });
     }
 
     ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
-        this.route('foo', function() {
-          this.route('bar', { resetNamespace: true }, function() {
+        this.route('foo', function () {
+          this.route('bar', { resetNamespace: true }, function () {
             this.route('baz');
           });
         });
@@ -1640,7 +710,9 @@ moduleFor(
         'route:bar',
         Route.extend({
           redirect() {
-            this.transitionTo('home');
+            expectDeprecation(() => {
+              this.transitionTo('home');
+            }, /Calling transitionTo on a route is deprecated/);
           },
           setupController() {
             assert.ok(false, 'Should transition before setupController');
@@ -1660,13 +732,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'home');
+        assert.equal(router.currentPath, 'home');
         assert.equal(router.get('location').getURL(), '/home');
       });
     }
@@ -1676,10 +742,10 @@ moduleFor(
     ) {
       assert.expect(6);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
-        this.route('foo', function() {
-          this.route('bar', { resetNamespace: true }, function() {
+        this.route('foo', function () {
+          this.route('bar', { resetNamespace: true }, function () {
             this.route('baz');
           });
         });
@@ -1691,9 +757,11 @@ moduleFor(
         'route:bar',
         Route.extend({
           redirect() {
-            return this.transitionTo('bar.baz').then(function() {
-              successCount++;
-            });
+            return expectDeprecation(() => {
+              return this.transitionTo('bar.baz').then(function () {
+                successCount++;
+              });
+            }, /Calling transitionTo on a route is deprecated/);
           },
 
           setupController() {
@@ -1713,13 +781,7 @@ moduleFor(
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.bar.baz');
+        assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
         assert.equal(successCount, 1, 'transitionTo success handler was called once');
       });
     }
@@ -1727,12 +789,12 @@ moduleFor(
     ['@test Redirecting to the current target with a different context aborts the remainder of the routes'](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(6);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home');
-        this.route('foo', function() {
-          this.route('bar', { path: 'bar/:id', resetNamespace: true }, function() {
+        this.route('foo', function () {
+          this.route('bar', { path: 'bar/:id', resetNamespace: true }, function () {
             this.route('baz');
           });
         });
@@ -1749,7 +811,9 @@ moduleFor(
             if (count++ > 10) {
               assert.ok(false, 'infinite loop');
             } else {
-              this.transitionTo('bar.baz', model);
+              expectDeprecation(() => {
+                this.transitionTo('bar.baz', model);
+              }, /Calling transitionTo on a route is deprecated/);
             }
           },
         })
@@ -1766,18 +830,9 @@ moduleFor(
 
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.bar.baz');
+        assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
         assert.equal(
-          this.applicationInstance
-            .lookup('router:main')
-            .get('location')
-            .getURL(),
+          this.applicationInstance.lookup('router:main').get('location').getURL(),
           '/foo/bar/2/baz'
         );
       });
@@ -1786,9 +841,9 @@ moduleFor(
     ['@test Transitioning from a parent event does not prevent currentPath from being set'](
       assert
     ) {
-      this.router.map(function() {
-        this.route('foo', function() {
-          this.route('bar', { resetNamespace: true }, function() {
+      this.router.map(function () {
+        this.route('foo', function () {
+          this.route('bar', { resetNamespace: true }, function () {
             this.route('baz');
           });
           this.route('qux');
@@ -1800,7 +855,9 @@ moduleFor(
         Route.extend({
           actions: {
             goToQux() {
-              this.transitionTo('foo.qux');
+              expectDeprecation(() => {
+                this.transitionTo('foo.qux');
+              }, /Calling transitionTo on a route is deprecated/);
             },
           },
         })
@@ -1808,254 +865,12 @@ moduleFor(
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        let applicationController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
 
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = applicationController.get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.bar.baz');
+        assert.equal(router.currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
-        expectDeprecation(() => {
-          currentPath = applicationController.get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.qux');
+        assert.equal(router.currentPath, 'foo.qux');
         assert.equal(router.get('location').getURL(), '/foo/qux');
-      });
-    }
-
-    ['@test Generated names can be customized when providing routes with dot notation'](assert) {
-      assert.expect(4);
-
-      this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
-      this.addTemplate('foo', "<div class='middle'>{{outlet}}</div>");
-      this.addTemplate('bar', "<div class='bottom'>{{outlet}}</div>");
-      this.addTemplate('bar.baz', '<p>{{name}}Bottom!</p>');
-
-      this.router.map(function() {
-        this.route('foo', { path: '/top' }, function() {
-          this.route('bar', { path: '/middle', resetNamespace: true }, function() {
-            this.route('baz', { path: '/bottom' });
-          });
-        });
-      });
-
-      this.add(
-        'route:foo',
-        Route.extend({
-          renderTemplate() {
-            assert.ok(true, 'FooBarRoute was called');
-            return this._super(...arguments);
-          },
-        })
-      );
-
-      this.add(
-        'route:bar.baz',
-        Route.extend({
-          renderTemplate() {
-            assert.ok(true, 'BarBazRoute was called');
-            return this._super(...arguments);
-          },
-        })
-      );
-
-      this.add(
-        'controller:bar',
-        Controller.extend({
-          name: 'Bar',
-        })
-      );
-
-      this.add(
-        'controller:bar.baz',
-        Controller.extend({
-          name: 'BarBaz',
-        })
-      );
-
-      return this.visit('/top/middle/bottom').then(() => {
-        assert.ok(true, '/top/middle/bottom has been handled');
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          getTextOf(rootElement.querySelector('.main .middle .bottom p')),
-          'BarBazBottom!',
-          'The templates were rendered into their appropriate parents'
-        );
-      });
-    }
-
-    ["@test Child routes render into their parent route's template by default"](assert) {
-      this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
-      this.addTemplate('top', "<div class='middle'>{{outlet}}</div>");
-      this.addTemplate('middle', "<div class='bottom'>{{outlet}}</div>");
-      this.addTemplate('middle.bottom', '<p>Bottom!</p>');
-
-      this.router.map(function() {
-        this.route('top', function() {
-          this.route('middle', { resetNamespace: true }, function() {
-            this.route('bottom');
-          });
-        });
-      });
-
-      return this.visit('/top/middle/bottom').then(() => {
-        assert.ok(true, '/top/middle/bottom has been handled');
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          getTextOf(rootElement.querySelector('.main .middle .bottom p')),
-          'Bottom!',
-          'The templates were rendered into their appropriate parents'
-        );
-      });
-    }
-
-    ['@test Child routes render into specified template'](assert) {
-      this.addTemplate('index', '<div>Index</div>');
-      this.addTemplate('application', "<h1>Home</h1><div class='main'>{{outlet}}</div>");
-      this.addTemplate('top', "<div class='middle'>{{outlet}}</div>");
-      this.addTemplate('middle', "<div class='bottom'>{{outlet}}</div>");
-      this.addTemplate('middle.bottom', '<p>Bottom!</p>');
-
-      this.router.map(function() {
-        this.route('top', function() {
-          this.route('middle', { resetNamespace: true }, function() {
-            this.route('bottom');
-          });
-        });
-      });
-
-      this.add(
-        'route:middle.bottom',
-        Route.extend({
-          renderTemplate() {
-            this.render('middle/bottom', { into: 'top' });
-          },
-        })
-      );
-
-      return this.visit('/top/middle/bottom').then(() => {
-        assert.ok(true, '/top/middle/bottom has been handled');
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          rootElement.querySelectorAll('.main .middle .bottom p').length,
-          0,
-          'should not render into the middle template'
-        );
-        assert.equal(
-          getTextOf(rootElement.querySelector('.main .middle > p')),
-          'Bottom!',
-          'The template was rendered into the top template'
-        );
-      });
-    }
-
-    ['@test Rendering into specified template with slash notation'](assert) {
-      this.addTemplate('person.profile', 'profile {{outlet}}');
-      this.addTemplate('person.details', 'details!');
-
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render('person/profile');
-            this.render('person/details', { into: 'person/profile' });
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          rootElement.textContent.trim(),
-          'profile details!',
-          'The templates were rendered'
-        );
-      });
-    }
-
-    ['@test Parent route context change'](assert) {
-      let editCount = 0;
-      let editedPostIds = emberA();
-
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('posts', '{{outlet}}');
-      this.addTemplate('post', '{{outlet}}');
-      this.addTemplate('post/index', 'showing');
-      this.addTemplate('post/edit', 'editing');
-
-      this.router.map(function() {
-        this.route('posts', function() {
-          this.route('post', { path: '/:postId', resetNamespace: true }, function() {
-            this.route('edit');
-          });
-        });
-      });
-
-      this.add(
-        'route:posts',
-        Route.extend({
-          actions: {
-            showPost(context) {
-              this.transitionTo('post', context);
-            },
-          },
-        })
-      );
-
-      this.add(
-        'route:post',
-        Route.extend({
-          model(params) {
-            return { id: params.postId };
-          },
-
-          serialize(model) {
-            return { postId: model.id };
-          },
-
-          actions: {
-            editPost() {
-              this.transitionTo('post.edit');
-            },
-          },
-        })
-      );
-
-      this.add(
-        'route:post.edit',
-        Route.extend({
-          model() {
-            let postId = this.modelFor('post').id;
-            editedPostIds.push(postId);
-            return null;
-          },
-          setup() {
-            this._super(...arguments);
-            editCount++;
-          },
-        })
-      );
-
-      return this.visit('/posts/1').then(() => {
-        assert.ok(true, '/posts/1 has been handled');
-        let router = this.applicationInstance.lookup('router:main');
-        run(() => router.send('editPost'));
-        run(() => router.send('showPost', { id: '2' }));
-        run(() => router.send('editPost'));
-        assert.equal(editCount, 2, 'set up the edit route twice without failure');
-        assert.deepEqual(
-          editedPostIds,
-          ['1', '2'],
-          'modelFor posts.post returns the right context'
-        );
       });
     }
 
@@ -2064,7 +879,7 @@ moduleFor(
       let postsTemplateRendered = false;
       let setHistory;
 
-      setHistory = function(obj, path) {
+      setHistory = function (obj, path) {
         obj.set('history', { state: { path: path } });
       };
 
@@ -2094,7 +909,7 @@ moduleFor(
         rootURL: rootURL,
       });
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts', { path: '/posts' });
       });
 
@@ -2102,8 +917,9 @@ moduleFor(
         'route:posts',
         Route.extend({
           model() {},
-          renderTemplate() {
+          setupController() {
             postsTemplateRendered = true;
+            this._super(...arguments);
           },
         })
       );
@@ -2145,47 +961,8 @@ moduleFor(
       return this.visit('/');
     }
 
-    ['@test Only use route rendered into main outlet for default into property on child'](assert) {
-      this.addTemplate('application', "{{outlet 'menu'}}{{outlet}}");
-      this.addTemplate('posts', '{{outlet}}');
-      this.addTemplate('posts.index', '<p class="posts-index">postsIndex</p>');
-      this.addTemplate('posts.menu', '<div class="posts-menu">postsMenu</div>');
-
-      this.router.map(function() {
-        this.route('posts', function() {});
-      });
-
-      this.add(
-        'route:posts',
-        Route.extend({
-          renderTemplate() {
-            this.render();
-            this.render('posts/menu', {
-              into: 'application',
-              outlet: 'menu',
-            });
-          },
-        })
-      );
-
-      return this.visit('/posts').then(() => {
-        assert.ok(true, '/posts has been handled');
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          getTextOf(rootElement.querySelector('div.posts-menu')),
-          'postsMenu',
-          'The posts/menu template was rendered'
-        );
-        assert.equal(
-          getTextOf(rootElement.querySelector('p.posts-index')),
-          'postsIndex',
-          'The posts/index template was rendered'
-        );
-      });
-    }
-
     ['@test Generating a URL should not affect currentModel'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/posts/:post_id' });
       });
 
@@ -2216,8 +993,8 @@ moduleFor(
     }
 
     ["@test Nested index route is not overridden by parent's implicit index route"](assert) {
-      this.router.map(function() {
-        this.route('posts', function() {
+      this.router.map(function () {
+        this.route('posts', function () {
           this.route('index', { path: ':category' });
         });
       });
@@ -2233,214 +1010,11 @@ moduleFor(
         });
     }
 
-    ['@test Application template does not duplicate when re-rendered'](assert) {
-      this.addTemplate('application', '<h3 class="render-once">I render once</h3>{{outlet}}');
-
-      this.router.map(function() {
-        this.route('posts');
-      });
-
-      this.add(
-        'route:application',
-        Route.extend({
-          model() {
-            return emberA();
-          },
-        })
-      );
-
-      return this.visit('/posts').then(() => {
-        assert.ok(true, '/posts has been handled');
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(getTextOf(rootElement.querySelector('h3.render-once')), 'I render once');
-      });
-    }
-
-    ['@test Child routes should render inside the application template if the application template causes a redirect'](
-      assert
-    ) {
-      this.addTemplate('application', '<h3>App</h3> {{outlet}}');
-      this.addTemplate('posts', 'posts');
-
-      this.router.map(function() {
-        this.route('posts');
-        this.route('photos');
-      });
-
-      this.add(
-        'route:application',
-        Route.extend({
-          afterModel() {
-            this.transitionTo('posts');
-          },
-        })
-      );
-
-      return this.visit('/posts').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(rootElement.textContent.trim(), 'App posts');
-      });
-    }
-
-    ["@test The template is not re-rendered when the route's context changes"](assert) {
-      this.router.map(function() {
-        this.route('page', { path: '/page/:name' });
-      });
-
-      this.add(
-        'route:page',
-        Route.extend({
-          model(params) {
-            return EmberObject.create({ name: params.name });
-          },
-        })
-      );
-
-      let insertionCount = 0;
-      this.add(
-        'component:foo-bar',
-        Component.extend({
-          didInsertElement() {
-            insertionCount += 1;
-          },
-        })
-      );
-
-      this.addTemplate('page', '<p>{{model.name}}{{foo-bar}}</p>');
-
-      let rootElement = document.getElementById('qunit-fixture');
-      return this.visit('/page/first')
-        .then(() => {
-          assert.ok(true, '/page/first has been handled');
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'first');
-          assert.equal(insertionCount, 1);
-          return this.visit('/page/second');
-        })
-        .then(() => {
-          assert.ok(true, '/page/second has been handled');
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'second');
-          assert.equal(insertionCount, 1, 'view should have inserted only once');
-          let router = this.applicationInstance.lookup('router:main');
-          return run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
-        })
-        .then(() => {
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
-          assert.equal(insertionCount, 1, 'view should still have inserted only once');
-        });
-    }
-
-    ['@test The template is not re-rendered when two routes present the exact same template & controller'](
-      assert
-    ) {
-      this.router.map(function() {
-        this.route('first');
-        this.route('second');
-        this.route('third');
-        this.route('fourth');
-      });
-
-      // Note add a component to test insertion
-
-      let insertionCount = 0;
-      this.add(
-        'component:x-input',
-        Component.extend({
-          didInsertElement() {
-            insertionCount += 1;
-          },
-        })
-      );
-
-      let SharedRoute = Route.extend({
-        setupController() {
-          this.controllerFor('shared').set('message', 'This is the ' + this.routeName + ' message');
-        },
-
-        renderTemplate() {
-          this.render('shared', { controller: 'shared' });
-        },
-      });
-
-      this.add('route:shared', SharedRoute);
-      this.add('route:first', SharedRoute.extend());
-      this.add('route:second', SharedRoute.extend());
-      this.add('route:third', SharedRoute.extend());
-      this.add('route:fourth', SharedRoute.extend());
-
-      this.add('controller:shared', Controller.extend());
-
-      this.addTemplate('shared', '<p>{{message}}{{x-input}}</p>');
-
-      let rootElement = document.getElementById('qunit-fixture');
-      return this.visit('/first')
-        .then(() => {
-          assert.ok(true, '/first has been handled');
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the first message');
-          assert.equal(insertionCount, 1, 'expected one assertion');
-          return this.visit('/second');
-        })
-        .then(() => {
-          assert.ok(true, '/second has been handled');
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the second message');
-          assert.equal(insertionCount, 1, 'expected one assertion');
-          return run(() => {
-            this.applicationInstance
-              .lookup('router:main')
-              .transitionTo('third')
-              .then(
-                function() {
-                  assert.ok(true, 'expected transition');
-                },
-                function(reason) {
-                  assert.ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
-                }
-              );
-          });
-        })
-        .then(() => {
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the third message');
-          assert.equal(insertionCount, 1, 'expected one assertion');
-          return this.visit('fourth');
-        })
-        .then(() => {
-          assert.ok(true, '/fourth has been handled');
-          assert.equal(insertionCount, 1, 'expected one assertion');
-          assert.equal(getTextOf(rootElement.querySelector('p')), 'This is the fourth message');
-        });
-    }
-
-    ['@test ApplicationRoute with model does not proxy the currentPath'](assert) {
-      let model = {};
-
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-
-      this.add(
-        'route:application',
-        Route.extend({
-          model() {
-            return model;
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let routerService = this.applicationInstance.lookup('service:router');
-        assert.equal(routerService.currentRouteName, 'index', 'currentPath is index');
-        assert.equal(
-          'currentPath' in model,
-          false,
-          'should have defined currentPath on controller'
-        );
-      });
-    }
-
     ['@test Promises encountered on app load put app into loading state until resolved'](assert) {
       assert.expect(2);
 
       let deferred = RSVP.defer();
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
       });
 
@@ -2471,369 +1045,12 @@ moduleFor(
       );
     }
 
-    ['@test Route should tear down multiple outlets'](assert) {
-      this.addTemplate('application', "{{outlet 'menu'}}{{outlet}}{{outlet 'footer'}}");
-      this.addTemplate('posts', '{{outlet}}');
-      this.addTemplate('users', 'users');
-      this.addTemplate('posts.index', '<p class="posts-index">postsIndex</p>');
-      this.addTemplate('posts.menu', '<div class="posts-menu">postsMenu</div>');
-      this.addTemplate('posts.footer', '<div class="posts-footer">postsFooter</div>');
-
-      this.router.map(function() {
-        this.route('posts', function() {});
-        this.route('users', function() {});
-      });
-
-      this.add(
-        'route:posts',
-        Route.extend({
-          renderTemplate() {
-            this.render('posts/menu', {
-              into: 'application',
-              outlet: 'menu',
-            });
-
-            this.render();
-
-            this.render('posts/footer', {
-              into: 'application',
-              outlet: 'footer',
-            });
-          },
-        })
-      );
-
-      let rootElement = document.getElementById('qunit-fixture');
-      return this.visit('/posts')
-        .then(() => {
-          assert.ok(true, '/posts has been handled');
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-menu')),
-            'postsMenu',
-            'The posts/menu template was rendered'
-          );
-          assert.equal(
-            getTextOf(rootElement.querySelector('p.posts-index')),
-            'postsIndex',
-            'The posts/index template was rendered'
-          );
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-footer')),
-            'postsFooter',
-            'The posts/footer template was rendered'
-          );
-
-          return this.visit('/users');
-        })
-        .then(() => {
-          assert.ok(true, '/users has been handled');
-          assert.equal(
-            rootElement.querySelector('div.posts-menu'),
-            null,
-            'The posts/menu template was removed'
-          );
-          assert.equal(
-            rootElement.querySelector('p.posts-index'),
-            null,
-            'The posts/index template was removed'
-          );
-          assert.equal(
-            rootElement.querySelector('div.posts-footer'),
-            null,
-            'The posts/footer template was removed'
-          );
-        });
-    }
-
-    ['@test Route supports clearing outlet explicitly'](assert) {
-      this.addTemplate('application', "{{outlet}}{{outlet 'modal'}}");
-      this.addTemplate('posts', '{{outlet}}');
-      this.addTemplate('users', 'users');
-      this.addTemplate('posts.index', '<div class="posts-index">postsIndex {{outlet}}</div>');
-      this.addTemplate('posts.modal', '<div class="posts-modal">postsModal</div>');
-      this.addTemplate('posts.extra', '<div class="posts-extra">postsExtra</div>');
-
-      this.router.map(function() {
-        this.route('posts', function() {});
-        this.route('users', function() {});
-      });
-
-      this.add(
-        'route:posts',
-        Route.extend({
-          actions: {
-            showModal() {
-              this.render('posts/modal', {
-                into: 'application',
-                outlet: 'modal',
-              });
-            },
-            hideModal() {
-              this.disconnectOutlet({
-                outlet: 'modal',
-                parentView: 'application',
-              });
-            },
-          },
-        })
-      );
-
-      this.add(
-        'route:posts.index',
-        Route.extend({
-          actions: {
-            showExtra() {
-              this.render('posts/extra', {
-                into: 'posts/index',
-              });
-            },
-            hideExtra() {
-              this.disconnectOutlet({ parentView: 'posts/index' });
-            },
-          },
-        })
-      );
-
-      let rootElement = document.getElementById('qunit-fixture');
-
-      return this.visit('/posts')
-        .then(() => {
-          let router = this.applicationInstance.lookup('router:main');
-
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-index')),
-            'postsIndex',
-            'The posts/index template was rendered'
-          );
-          run(() => router.send('showModal'));
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-modal')),
-            'postsModal',
-            'The posts/modal template was rendered'
-          );
-          run(() => router.send('showExtra'));
-
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-extra')),
-            'postsExtra',
-            'The posts/extra template was rendered'
-          );
-          run(() => router.send('hideModal'));
-
-          assert.equal(
-            rootElement.querySelector('div.posts-modal'),
-            null,
-            'The posts/modal template was removed'
-          );
-          run(() => router.send('hideExtra'));
-
-          assert.equal(
-            rootElement.querySelector('div.posts-extra'),
-            null,
-            'The posts/extra template was removed'
-          );
-          run(function() {
-            router.send('showModal');
-          });
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-modal')),
-            'postsModal',
-            'The posts/modal template was rendered'
-          );
-          run(function() {
-            router.send('showExtra');
-          });
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-extra')),
-            'postsExtra',
-            'The posts/extra template was rendered'
-          );
-          return this.visit('/users');
-        })
-        .then(() => {
-          assert.equal(
-            rootElement.querySelector('div.posts-index'),
-            null,
-            'The posts/index template was removed'
-          );
-          assert.equal(
-            rootElement.querySelector('div.posts-modal'),
-            null,
-            'The posts/modal template was removed'
-          );
-          assert.equal(
-            rootElement.querySelector('div.posts-extra'),
-            null,
-            'The posts/extra template was removed'
-          );
-        });
-    }
-
-    ['@test Route supports clearing outlet using string parameter'](assert) {
-      this.addTemplate('application', "{{outlet}}{{outlet 'modal'}}");
-      this.addTemplate('posts', '{{outlet}}');
-      this.addTemplate('users', 'users');
-      this.addTemplate('posts.index', '<div class="posts-index">postsIndex {{outlet}}</div>');
-      this.addTemplate('posts.modal', '<div class="posts-modal">postsModal</div>');
-
-      this.router.map(function() {
-        this.route('posts', function() {});
-        this.route('users', function() {});
-      });
-
-      this.add(
-        'route:posts',
-        Route.extend({
-          actions: {
-            showModal() {
-              this.render('posts/modal', {
-                into: 'application',
-                outlet: 'modal',
-              });
-            },
-            hideModal() {
-              this.disconnectOutlet('modal');
-            },
-          },
-        })
-      );
-
-      let rootElement = document.getElementById('qunit-fixture');
-      return this.visit('/posts')
-        .then(() => {
-          let router = this.applicationInstance.lookup('router:main');
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-index')),
-            'postsIndex',
-            'The posts/index template was rendered'
-          );
-          run(() => router.send('showModal'));
-          assert.equal(
-            getTextOf(rootElement.querySelector('div.posts-modal')),
-            'postsModal',
-            'The posts/modal template was rendered'
-          );
-          run(() => router.send('hideModal'));
-          assert.equal(
-            rootElement.querySelector('div.posts-modal'),
-            null,
-            'The posts/modal template was removed'
-          );
-          return this.visit('/users');
-        })
-        .then(() => {
-          assert.equal(
-            rootElement.querySelector('div.posts-index'),
-            null,
-            'The posts/index template was removed'
-          );
-          assert.equal(
-            rootElement.querySelector('div.posts-modal'),
-            null,
-            'The posts/modal template was removed'
-          );
-        });
-    }
-
-    ['@test Route silently fails when cleaning an outlet from an inactive view'](assert) {
-      assert.expect(1); // handleURL
-
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('posts', "{{outlet 'modal'}}");
-      this.addTemplate('modal', 'A Yo.');
-
-      this.router.map(function() {
-        this.route('posts');
-      });
-
-      this.add(
-        'route:posts',
-        Route.extend({
-          actions: {
-            hideSelf() {
-              this.disconnectOutlet({
-                outlet: 'main',
-                parentView: 'application',
-              });
-            },
-            showModal() {
-              this.render('modal', { into: 'posts', outlet: 'modal' });
-            },
-            hideModal() {
-              this.disconnectOutlet({ outlet: 'modal', parentView: 'posts' });
-            },
-          },
-        })
-      );
-
-      return this.visit('/posts').then(() => {
-        assert.ok(true, '/posts has been handled');
-        let router = this.applicationInstance.lookup('router:main');
-        run(() => router.send('showModal'));
-        run(() => router.send('hideSelf'));
-        run(() => router.send('hideModal'));
-      });
-    }
-
-    ['@test Router `willTransition` hook passes in cancellable transition'](assert) {
-      assert.expect(8);
-      this.router.reopen({
-        willTransition(_, _2, transition) {
-          assert.ok(true, 'willTransition was called');
-          if (transition.intent.url !== '/') {
-            transition.abort();
-          }
-        },
-      });
-
-      this.router.map(function() {
-        this.route('nork');
-        this.route('about');
-      });
-
-      this.add(
-        'route:loading',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'LoadingRoute was not entered');
-          },
-        })
-      );
-
-      this.add(
-        'route:nork',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'NorkRoute was not entered');
-          },
-        })
-      );
-
-      this.add(
-        'route:about',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'AboutRoute was not entered');
-          },
-        })
-      );
-
-      let deprecation = /You attempted to override the "willTransition" method which is deprecated\./;
-
-      return expectDeprecationAsync(() => {
-        return this.visit('/').then(() => {
-          this.handleURLAborts(assert, '/nork', deprecation);
-          this.handleURLAborts(assert, '/about', deprecation);
-        });
-      }, deprecation);
-    }
-
     ['@test Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered'](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(6);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index');
         this.route('nork');
         this.route('about');
@@ -2849,7 +1066,9 @@ moduleFor(
               assert.ok(true, 'willTransition was called');
               if (redirect) {
                 // router.js won't refire `willTransition` for this redirect
-                this.transitionTo('about');
+                expectDeprecation(() => {
+                  this.transitionTo('about');
+                }, /Calling transitionTo on a route is deprecated/);
               } else {
                 transition.abort();
               }
@@ -2915,40 +1134,12 @@ moduleFor(
       });
     }
 
-    async ['@test `didTransition` event fires on the router'](assert) {
-      assert.expect(3);
-
-      this.router.map(function() {
-        this.route('nork');
-      });
-
-      await this.visit('/');
-
-      let router = this.applicationInstance.lookup('router:main');
-      router.one('didTransition', function() {
-        assert.ok(true, 'didTransition fired on initial routing');
-      });
-
-      await this.visit('/');
-
-      router.one('didTransition', function() {
-        assert.ok(true, 'didTransition fired on the router');
-        assert.equal(
-          router.get('url'),
-          '/nork',
-          'The url property is updated by the time didTransition fires'
-        );
-      });
-
-      await this.visit('/nork');
-    }
-
     ['@test `activate` event fires on the route'](assert) {
-      assert.expect(2);
+      assert.expect(4);
 
       let eventFired = 0;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('nork');
       });
 
@@ -2958,13 +1149,15 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.on('activate', function() {
+            this.on('activate', function (transition) {
               assert.equal(++eventFired, 1, 'activate event is fired once');
+              assert.ok(transition, 'transition is passed to activate event');
             });
           },
 
-          activate() {
+          activate(transition) {
             assert.ok(true, 'activate hook is called');
+            assert.ok(transition, 'transition is passed to activate hook');
           },
         })
       );
@@ -2973,11 +1166,11 @@ moduleFor(
     }
 
     ['@test `deactivate` event fires on the route'](assert) {
-      assert.expect(2);
+      assert.expect(4);
 
       let eventFired = 0;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('nork');
         this.route('dork');
       });
@@ -2988,13 +1181,15 @@ moduleFor(
           init() {
             this._super(...arguments);
 
-            this.on('deactivate', function() {
+            this.on('deactivate', function (transition) {
               assert.equal(++eventFired, 1, 'deactivate event is fired once');
+              assert.ok(transition, 'transition is passed');
             });
           },
 
-          deactivate() {
+          deactivate(transition) {
             assert.ok(true, 'deactivate hook is called');
+            assert.ok(transition, 'transition is passed');
           },
         })
       );
@@ -3056,7 +1251,7 @@ moduleFor(
     ['@test transitionTo returns Transition when passed a route name'](assert) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
         this.route('bar');
       });
@@ -3071,9 +1266,9 @@ moduleFor(
     ['@test transitionTo returns Transition when passed a url'](assert) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('root', { path: '/' });
-        this.route('bar', function() {
+        this.route('bar', function () {
           this.route('baz');
         });
       });
@@ -3085,17 +1280,17 @@ moduleFor(
       });
     }
 
-    ['@test currentRouteName is a property installed on ApplicationController that can be used in transitionTo'](
+    ['@test currentRouteName is a property installed on Router that can be used in transitionTo'](
       assert
     ) {
-      assert.expect(36);
+      assert.expect(24);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
-        this.route('be', function() {
-          this.route('excellent', { resetNamespace: true }, function() {
-            this.route('to', { resetNamespace: true }, function() {
-              this.route('each', { resetNamespace: true }, function() {
+        this.route('be', function () {
+          this.route('excellent', { resetNamespace: true }, function () {
+            this.route('to', { resetNamespace: true }, function () {
+              this.route('each', { resetNamespace: true }, function () {
                 this.route('other');
               });
             });
@@ -3104,17 +1299,15 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let appController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
 
         function transitionAndCheck(path, expectedPath, expectedRouteName) {
           if (path) {
             run(router, 'transitionTo', path);
           }
-          expectDeprecation(() => {
-            assert.equal(appController.get('currentPath'), expectedPath);
-            assert.equal(appController.get('currentRouteName'), expectedRouteName);
-          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+
+          assert.equal(router.currentPath, expectedPath);
+          assert.equal(router.currentRouteName, expectedRouteName);
         }
 
         transitionAndCheck(null, 'index', 'index');
@@ -3137,116 +1330,8 @@ moduleFor(
       });
     }
 
-    ['@test Route model hook finds the same model as a manual find'](assert) {
-      let post;
-      let Post = EmberObject.extend();
-      this.add('model:post', Post);
-      Post.reopenClass({
-        find() {
-          post = this;
-          return {};
-        },
-      });
-
-      this.router.map(function() {
-        this.route('post', { path: '/post/:post_id' });
-      });
-
-      return this.visit('/post/1').then(() => {
-        assert.equal(Post, post);
-      });
-    }
-
-    ['@test Routes can refresh themselves causing their model hooks to be re-run'](assert) {
-      this.router.map(function() {
-        this.route('parent', { path: '/parent/:parent_id' }, function() {
-          this.route('child');
-        });
-      });
-
-      let appcount = 0;
-      this.add(
-        'route:application',
-        Route.extend({
-          model() {
-            ++appcount;
-          },
-        })
-      );
-
-      let parentcount = 0;
-      this.add(
-        'route:parent',
-        Route.extend({
-          model(params) {
-            assert.equal(params.parent_id, '123');
-            ++parentcount;
-          },
-          actions: {
-            refreshParent() {
-              this.refresh();
-            },
-          },
-        })
-      );
-
-      let childcount = 0;
-      this.add(
-        'route:parent.child',
-        Route.extend({
-          model() {
-            ++childcount;
-          },
-        })
-      );
-
-      let router;
-      return this.visit('/')
-        .then(() => {
-          router = this.applicationInstance.lookup('router:main');
-          assert.equal(appcount, 1);
-          assert.equal(parentcount, 0);
-          assert.equal(childcount, 0);
-          return run(router, 'transitionTo', 'parent.child', '123');
-        })
-        .then(() => {
-          assert.equal(appcount, 1);
-          assert.equal(parentcount, 1);
-          assert.equal(childcount, 1);
-          return run(router, 'send', 'refreshParent');
-        })
-        .then(() => {
-          assert.equal(appcount, 1);
-          assert.equal(parentcount, 2);
-          assert.equal(childcount, 2);
-        });
-    }
-
-    ['@test Specifying non-existent controller name in route#render throws'](assert) {
-      assert.expect(1);
-
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            expectAssertion(() => {
-              this.render('homepage', {
-                controller: 'stefanpenneristhemanforme',
-              });
-            }, "You passed `controller: 'stefanpenneristhemanforme'` into the `render` method, but no such controller could be found.");
-          },
-        })
-      );
-
-      return this.visit('/');
-    }
-
     ["@test Redirecting with null model doesn't error out"](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('about', { path: '/about/:hurhurhur' });
       });
@@ -3254,7 +1339,7 @@ moduleFor(
       this.add(
         'route:about',
         Route.extend({
-          serialize: function(model) {
+          serialize: function (model) {
             if (model === null) {
               return { hurhurhur: 'TreeklesMcGeekles' };
             }
@@ -3266,7 +1351,9 @@ moduleFor(
         'route:home',
         Route.extend({
           beforeModel() {
-            this.transitionTo('about', null);
+            expectDeprecation(() => {
+              this.transitionTo('about', null);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -3285,11 +1372,11 @@ moduleFor(
       let rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
       let rejectedStack = 'Yeah, buddy: stack gets printed too.';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yippie', { path: '/' });
       });
 
-      console.error = function(initialMessage, errorMessage, errorStack) {
+      console.error = function (initialMessage, errorMessage, errorStack) {
         assert.equal(
           initialMessage,
           'Error while processing route: yippie',
@@ -3317,7 +1404,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/'),
-        function(err) {
+        function (err) {
           assert.equal(err.message, rejectedMessage);
           return true;
         },
@@ -3332,11 +1419,11 @@ moduleFor(
       let rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
       let rejectedStack = 'Yeah, buddy: stack gets printed too.';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yippie', { path: '/' });
       });
 
-      console.error = function(initialMessage, errorMessage, errorStack) {
+      console.error = function (initialMessage, errorMessage, errorStack) {
         assert.equal(
           initialMessage,
           'Error while processing route: yippie',
@@ -3363,7 +1450,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/'),
-        function({ errorThrown: err }) {
+        function ({ errorThrown: err }) {
           assert.equal(err.message, rejectedMessage);
           return true;
         },
@@ -3373,11 +1460,11 @@ moduleFor(
 
     async ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
       assert.expect(2);
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('wowzers', { path: '/' });
       });
 
-      console.error = function(initialMessage) {
+      console.error = function (initialMessage) {
         assert.equal(
           initialMessage,
           'Error while processing route: wowzers',
@@ -3401,11 +1488,11 @@ moduleFor(
       assert.expect(3);
       let rejectedMessage = 'Supercalifragilisticexpialidocious';
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yondo', { path: '/' });
       });
 
-      console.error = function(initialMessage, errorMessage) {
+      console.error = function (initialMessage, errorMessage) {
         assert.equal(
           initialMessage,
           'Error while processing route: yondo',
@@ -3435,7 +1522,7 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('about');
       });
 
@@ -3467,10 +1554,10 @@ moduleFor(
     }
 
     async ['@test Errors in transitionTo within redirect hook are logged'](assert) {
-      assert.expect(4);
+      assert.expect(5);
       let actual = [];
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yondo', { path: '/' });
         this.route('stink-bomb');
       });
@@ -3479,12 +1566,14 @@ moduleFor(
         'route:yondo',
         Route.extend({
           redirect() {
-            this.transitionTo('stink-bomb', { something: 'goes boom' });
+            expectDeprecation(() => {
+              this.transitionTo('stink-bomb', { something: 'goes boom' });
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
 
-      console.error = function() {
+      console.error = function () {
         // push the arguments onto an array so we can detect if the error gets logged twice
         actual.push(arguments);
       };
@@ -3504,7 +1593,7 @@ moduleFor(
     ['@test Errors in transition show error template if available'](assert) {
       this.addTemplate('error', "<div id='error'>Error!</div>");
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('yondo', { path: '/' });
         this.route('stink-bomb');
       });
@@ -3513,7 +1602,9 @@ moduleFor(
         'route:yondo',
         Route.extend({
           redirect() {
-            this.transitionTo('stink-bomb', { something: 'goes boom' });
+            expectDeprecation(() => {
+              this.transitionTo('stink-bomb', { something: 'goes boom' });
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -3532,10 +1623,10 @@ moduleFor(
     ['@test Route#resetController gets fired when changing models and exiting routes'](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
-        this.route('a', function() {
-          this.route('b', { path: '/b/:id', resetNamespace: true }, function() {});
-          this.route('c', { path: '/c/:id', resetNamespace: true }, function() {});
+      this.router.map(function () {
+        this.route('a', function () {
+          this.route('b', { path: '/b/:id', resetNamespace: true }, function () {});
+          this.route('c', { path: '/c/:id', resetNamespace: true }, function () {});
         });
         this.route('out');
       });
@@ -3565,22 +1656,32 @@ moduleFor(
           return run(router, 'transitionTo', 'b', 'b-1');
         })
         .then(() => {
-          assert.deepEqual(calls, [['setup', 'a'], ['setup', 'b']]);
+          assert.deepEqual(calls, [
+            ['setup', 'a'],
+            ['setup', 'b'],
+          ]);
           calls.length = 0;
           return run(router, 'transitionTo', 'c', 'c-1');
         })
         .then(() => {
-          assert.deepEqual(calls, [['reset', 'b'], ['setup', 'c']]);
+          assert.deepEqual(calls, [
+            ['reset', 'b'],
+            ['setup', 'c'],
+          ]);
           calls.length = 0;
           return run(router, 'transitionTo', 'out');
         })
         .then(() => {
-          assert.deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+          assert.deepEqual(calls, [
+            ['reset', 'c'],
+            ['reset', 'a'],
+            ['setup', 'out'],
+          ]);
         });
     }
 
     async ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('boom');
       });
       this.add(
@@ -3596,7 +1697,7 @@ moduleFor(
     }
 
     async ['@test Exception during initialization of initial route is not swallowed'](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('boom', { path: '/' });
       });
       this.add(
@@ -3611,437 +1712,15 @@ moduleFor(
       await assert.rejects(this.visit('/'), /\bboom\b/);
     }
 
-    ['@test {{outlet}} works when created after initial render'](assert) {
-      this.addTemplate('sample', 'Hi{{#if showTheThing}}{{outlet}}{{/if}}Bye');
-      this.addTemplate('sample.inner', 'Yay');
-      this.addTemplate('sample.inner2', 'Boo');
-      this.router.map(function() {
-        this.route('sample', { path: '/' }, function() {
-          this.route('inner', { path: '/' });
-          this.route('inner2', { path: '/2' });
-        });
-      });
-
-      let rootElement;
-      return this.visit('/')
-        .then(() => {
-          rootElement = document.getElementById('qunit-fixture');
-          assert.equal(rootElement.textContent.trim(), 'HiBye', 'initial render');
-
-          run(() => this.applicationInstance.lookup('controller:sample').set('showTheThing', true));
-
-          assert.equal(rootElement.textContent.trim(), 'HiYayBye', 'second render');
-          return this.visit('/2');
-        })
-        .then(() => {
-          assert.equal(rootElement.textContent.trim(), 'HiBooBye', 'third render');
-        });
-    }
-
-    ['@test Can render into a named outlet at the top level'](assert) {
-      this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
-      this.addTemplate('modal', 'Hello world');
-      this.addTemplate('index', 'The index');
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.add(
-        'route:application',
-        Route.extend({
-          renderTemplate() {
-            this.render();
-            this.render('modal', {
-              into: 'application',
-              outlet: 'other',
-            });
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          rootElement.textContent.trim(),
-          'A-The index-B-Hello world-C',
-          'initial render'
-        );
-      });
-    }
-
-    ['@test Can disconnect a named outlet at the top level'](assert) {
-      this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
-      this.addTemplate('modal', 'Hello world');
-      this.addTemplate('index', 'The index');
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.add(
-        'route:application',
-        Route.extend({
-          renderTemplate() {
-            this.render();
-            this.render('modal', {
-              into: 'application',
-              outlet: 'other',
-            });
-          },
-          actions: {
-            banish() {
-              this.disconnectOutlet({
-                parentView: 'application',
-                outlet: 'other',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(
-          rootElement.textContent.trim(),
-          'A-The index-B-Hello world-C',
-          'initial render'
-        );
-
-        run(this.applicationInstance.lookup('router:main'), 'send', 'banish');
-
-        assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'second render');
-      });
-    }
-
-    ['@test Can render into a named outlet at the top level, with empty main outlet'](assert) {
-      this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
-      this.addTemplate('modal', 'Hello world');
-
-      this.router.map(function() {
-        this.route('hasNoTemplate', { path: '/' });
-      });
-
-      this.add(
-        'route:application',
-        Route.extend({
-          renderTemplate() {
-            this.render();
-            this.render('modal', {
-              into: 'application',
-              outlet: 'other',
-            });
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(rootElement.textContent.trim(), 'A--B-Hello world-C', 'initial render');
-      });
-    }
-
-    ['@test Can render into a named outlet at the top level, later'](assert) {
-      this.addTemplate('application', 'A-{{outlet}}-B-{{outlet "other"}}-C');
-      this.addTemplate('modal', 'Hello world');
-      this.addTemplate('index', 'The index');
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.add(
-        'route:application',
-        Route.extend({
-          actions: {
-            launch() {
-              this.render('modal', {
-                into: 'application',
-                outlet: 'other',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(rootElement.textContent.trim(), 'A-The index-B--C', 'initial render');
-        run(this.applicationInstance.lookup('router:main'), 'send', 'launch');
-        assert.equal(
-          rootElement.textContent.trim(),
-          'A-The index-B-Hello world-C',
-          'second render'
-        );
-      });
-    }
-
-    ["@test Can render routes with no 'main' outlet and their children"](assert) {
-      this.addTemplate('application', '<div id="application">{{outlet "app"}}</div>');
-      this.addTemplate(
-        'app',
-        '<div id="app-common">{{outlet "common"}}</div><div id="app-sub">{{outlet "sub"}}</div>'
-      );
-      this.addTemplate('common', '<div id="common"></div>');
-      this.addTemplate('sub', '<div id="sub"></div>');
-
-      this.router.map(function() {
-        this.route('app', { path: '/app' }, function() {
-          this.route('sub', { path: '/sub', resetNamespace: true });
-        });
-      });
-
-      this.add(
-        'route:app',
-        Route.extend({
-          renderTemplate() {
-            this.render('app', {
-              outlet: 'app',
-              into: 'application',
-            });
-            this.render('common', {
-              outlet: 'common',
-              into: 'app',
-            });
-          },
-        })
-      );
-
-      this.add(
-        'route:sub',
-        Route.extend({
-          renderTemplate() {
-            this.render('sub', {
-              outlet: 'sub',
-              into: 'app',
-            });
-          },
-        })
-      );
-
-      let rootElement;
-      return this.visit('/app')
-        .then(() => {
-          rootElement = document.getElementById('qunit-fixture');
-          assert.equal(
-            rootElement.querySelectorAll('#app-common #common').length,
-            1,
-            'Finds common while viewing /app'
-          );
-          return this.visit('/app/sub');
-        })
-        .then(() => {
-          assert.equal(
-            rootElement.querySelectorAll('#app-common #common').length,
-            1,
-            'Finds common while viewing /app/sub'
-          );
-          assert.equal(
-            rootElement.querySelectorAll('#app-sub #sub').length,
-            1,
-            'Finds sub while viewing /app/sub'
-          );
-        });
-    }
-
-    ['@test Tolerates stacked renders'](assert) {
-      this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
-      this.addTemplate('index', 'hi');
-      this.addTemplate('layer', 'layer');
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.add(
-        'route:application',
-        Route.extend({
-          actions: {
-            openLayer() {
-              this.render('layer', {
-                into: 'application',
-                outlet: 'modal',
-              });
-            },
-            close() {
-              this.disconnectOutlet({
-                outlet: 'modal',
-                parentView: 'application',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(rootElement.textContent.trim(), 'hi');
-        run(router, 'send', 'openLayer');
-        assert.equal(rootElement.textContent.trim(), 'hilayer');
-        run(router, 'send', 'openLayer');
-        assert.equal(rootElement.textContent.trim(), 'hilayer');
-        run(router, 'send', 'close');
-        assert.equal(rootElement.textContent.trim(), 'hi');
-      });
-    }
-
-    ['@test Renders child into parent with non-default template name'](assert) {
-      this.addTemplate('application', '<div class="a">{{outlet}}</div>');
-      this.addTemplate('exports.root', '<div class="b">{{outlet}}</div>');
-      this.addTemplate('exports.index', '<div class="c"></div>');
-
-      this.router.map(function() {
-        this.route('root', function() {});
-      });
-
-      this.add(
-        'route:root',
-        Route.extend({
-          renderTemplate() {
-            this.render('exports/root');
-          },
-        })
-      );
-
-      this.add(
-        'route:root.index',
-        Route.extend({
-          renderTemplate() {
-            this.render('exports/index');
-          },
-        })
-      );
-
-      return this.visit('/root').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        assert.equal(rootElement.querySelectorAll('.a .b .c').length, 1);
-      });
-    }
-
-    ["@test Allows any route to disconnectOutlet another route's templates"](assert) {
-      this.addTemplate('application', '{{outlet}}{{outlet "modal"}}');
-      this.addTemplate('index', 'hi');
-      this.addTemplate('layer', 'layer');
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.add(
-        'route:application',
-        Route.extend({
-          actions: {
-            openLayer() {
-              this.render('layer', {
-                into: 'application',
-                outlet: 'modal',
-              });
-            },
-          },
-        })
-      );
-      this.add(
-        'route:index',
-        Route.extend({
-          actions: {
-            close() {
-              this.disconnectOutlet({
-                parentView: 'application',
-                outlet: 'modal',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(rootElement.textContent.trim(), 'hi');
-        run(router, 'send', 'openLayer');
-        assert.equal(rootElement.textContent.trim(), 'hilayer');
-        run(router, 'send', 'close');
-        assert.equal(rootElement.textContent.trim(), 'hi');
-      });
-    }
-
-    ['@test Components inside an outlet have their didInsertElement hook invoked when the route is displayed'](
-      assert
-    ) {
-      this.addTemplate(
-        'index',
-        '{{#if showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'
-      );
-
-      let myComponentCounter = 0;
-      let otherComponentCounter = 0;
-      let indexController;
-
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-
-      this.add(
-        'controller:index',
-        Controller.extend({
-          showFirst: true,
-        })
-      );
-
-      this.add(
-        'route:index',
-        Route.extend({
-          setupController(controller) {
-            indexController = controller;
-          },
-        })
-      );
-
-      this.add(
-        'component:my-component',
-        Component.extend({
-          didInsertElement() {
-            myComponentCounter++;
-          },
-        })
-      );
-
-      this.add(
-        'component:other-component',
-        Component.extend({
-          didInsertElement() {
-            otherComponentCounter++;
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        assert.strictEqual(
-          myComponentCounter,
-          1,
-          'didInsertElement invoked on displayed component'
-        );
-        assert.strictEqual(
-          otherComponentCounter,
-          0,
-          'didInsertElement not invoked on displayed component'
-        );
-
-        run(() => indexController.set('showFirst', false));
-
-        assert.strictEqual(
-          myComponentCounter,
-          1,
-          'didInsertElement not invoked on displayed component'
-        );
-        assert.strictEqual(
-          otherComponentCounter,
-          1,
-          'didInsertElement invoked on displayed component'
-        );
-      });
-    }
-
     async ['@test Doesnt swallow exception thrown from willTransition'](assert) {
       assert.expect(1);
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('index', 'index');
       this.addTemplate('other', 'other');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('index', { path: '/' });
-        this.route('other', function() {});
+        this.route('other', function () {});
       });
 
       this.add(
@@ -4063,54 +1742,23 @@ moduleFor(
       );
     }
 
-    ['@test Exception if outlet name is undefined in render and disconnectOutlet']() {
-      this.add(
-        'route:application',
-        Route.extend({
-          actions: {
-            showModal() {
-              this.render({
-                outlet: undefined,
-                parentView: 'application',
-              });
-            },
-            hideModal() {
-              this.disconnectOutlet({
-                outlet: undefined,
-                parentView: 'application',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let router = this.applicationInstance.lookup('router:main');
-        expectAssertion(() => {
-          run(() => router.send('showModal'));
-        }, /You passed undefined as the outlet name/);
-
-        expectAssertion(() => {
-          run(() => router.send('hideModal'));
-        }, /You passed undefined as the outlet name/);
-      });
-    }
-
     ['@test Route serializers work for Engines'](assert) {
       assert.expect(2);
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let postSerialize = function(params) {
+      let postSerialize = function (params) {
         assert.ok(true, 'serialize hook runs');
         return {
           post_id: params.id,
         };
       };
-      let BlogMap = function() {
+      let BlogMap = function () {
         this.route('post', {
           path: '/post/:post_id',
           serialize: postSerialize,
@@ -4118,7 +1766,7 @@ moduleFor(
       };
       this.add('route-map:blog', BlogMap);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -4136,16 +1784,18 @@ moduleFor(
       assert.expect(1);
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {
+      let BlogMap = function () {
         this.route('post');
       };
       this.add('route-map:blog', BlogMap);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -4170,7 +1820,9 @@ moduleFor(
 
       let engineInstance;
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
       let EngineIndexRoute = Route.extend({
         init() {
@@ -4180,12 +1832,12 @@ moduleFor(
       });
 
       // Register engine route map
-      let BlogMap = function() {
+      let BlogMap = function () {
         this.route('post');
       };
       this.add('route-map:blog', BlogMap);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -4215,7 +1867,7 @@ moduleFor(
     ["@test Generated route should be an instance of App's default route if provided"](assert) {
       let generatedRoute;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('posts');
       });
 

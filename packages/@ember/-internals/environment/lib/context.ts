@@ -7,7 +7,7 @@ export interface GlobalContext {
 }
 
 // legacy imports/exports/lookup stuff (should we keep this??)
-export const context = (function(
+export const context = (function (
   global: object,
   Ember: Partial<GlobalContext> | undefined
 ): GlobalContext {

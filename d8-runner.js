@@ -37,7 +37,7 @@
 //
 // begin MISC setup;
 
-/* globals load, print, Promise */
+/* globals load, print */
 
 const global = new Function('return this;')();
 global.self = global;
@@ -52,11 +52,11 @@ global.console = {
   },
 };
 
-global.setTimeout = function(callback) {
+global.setTimeout = function (callback) {
   // good enough
   Promise.resolve()
     .then(callback)
-    .catch(e => print('error' + e));
+    .catch((e) => print('error' + e));
 };
 loadFile('./node_modules/simple-dom/dist/simple-dom.js');
 

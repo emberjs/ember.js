@@ -1,4 +1,4 @@
-import { _WeakSet as WeakSet } from '@ember/polyfills';
+import { _WeakSet as WeakSet } from '@glimmer/util';
 
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 const fnToString = Function.prototype.toString;
@@ -6,7 +6,7 @@ const fnToString = Function.prototype.toString;
 export const checkHasSuper = (() => {
   let sourceAvailable =
     fnToString
-      .call(function(this: any) {
+      .call(function (this: any) {
         return this;
       })
       .indexOf('return this') > -1;
@@ -24,7 +24,7 @@ export const checkHasSuper = (() => {
 
 const HAS_SUPER_MAP = new WeakMap();
 
-export const ROOT = Object.freeze(function() {});
+export const ROOT = Object.freeze(function () {});
 HAS_SUPER_MAP.set(ROOT, false);
 
 function hasSuper(func: Function) {
@@ -36,26 +36,36 @@ function hasSuper(func: Function) {
   return hasSuper;
 }
 
-const OBSERVERS_MAP = new WeakMap();
-
-export function setObservers(func: Function, observers: { paths: string[]; sync: boolean }) {
-  OBSERVERS_MAP.set(func, observers);
+class ObserverListenerMeta {
+  listeners?: string[] = undefined;
+  observers?: { paths: string[]; sync: boolean } = undefined;
 }
 
-export function getObservers(func: Function) {
-  return OBSERVERS_MAP.get(func);
-}
+const OBSERVERS_LISTENERS_MAP = new WeakMap<Function, ObserverListenerMeta>();
 
-const LISTENERS_MAP = new WeakMap();
+function createObserverListenerMetaFor(fn: Function) {
+  let meta = OBSERVERS_LISTENERS_MAP.get(fn);
 
-export function setListeners(func: Function, listeners?: string[]) {
-  if (listeners) {
-    LISTENERS_MAP.set(func, listeners);
+  if (meta === undefined) {
+    meta = new ObserverListenerMeta();
+    OBSERVERS_LISTENERS_MAP.set(fn, meta);
   }
+
+  return meta;
 }
 
-export function getListeners(func: Function) {
-  return LISTENERS_MAP.get(func);
+export function observerListenerMetaFor(fn: Function): ObserverListenerMeta | undefined {
+  return OBSERVERS_LISTENERS_MAP.get(fn);
+}
+
+export function setObservers(func: Function, observers: { paths: string[]; sync: boolean }): void {
+  let meta = createObserverListenerMetaFor(func);
+  meta.observers = observers;
+}
+
+export function setListeners(func: Function, listeners: string[]): void {
+  let meta = createObserverListenerMetaFor(func);
+  meta.listeners = listeners;
 }
 
 const IS_WRAPPED_FUNCTION_SET = new WeakSet();
@@ -72,7 +82,7 @@ const IS_WRAPPED_FUNCTION_SET = new WeakSet();
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
-export function wrap(func: Function, superFunc: Function) {
+export function wrap(func: Function, superFunc: Function): Function {
   if (!hasSuper(func)) {
     return func;
   }
@@ -93,8 +103,12 @@ function _wrap(func: Function, superFunc: Function): Function {
   }
 
   IS_WRAPPED_FUNCTION_SET.add(superWrapper);
-  setObservers(superWrapper, getObservers(func));
-  setListeners(superWrapper, getListeners(func));
+
+  let meta = OBSERVERS_LISTENERS_MAP.get(func);
+
+  if (meta !== undefined) {
+    OBSERVERS_LISTENERS_MAP.set(superWrapper, meta);
+  }
 
   return superWrapper;
 }

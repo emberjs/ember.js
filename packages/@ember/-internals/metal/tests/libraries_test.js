@@ -36,7 +36,7 @@ moduleFor(
     ['@test only the first registration of a library is stored'](assert) {
       assert.expect(3);
 
-      // overwrite warn to supress the double registration warning (see https://github.com/emberjs/ember.js/issues/16391)
+      // overwrite warn to suppress the double registration warning (see https://github.com/emberjs/ember.js/issues/16391)
       setDebugFunction('warn', noop);
       libs.register('magic', 1.23);
       libs.register('magic', 2.23);
@@ -72,7 +72,7 @@ moduleFor(
 
       libs.register('magic', 1.23);
 
-      setDebugFunction('warn', function(msg, test) {
+      setDebugFunction('warn', function (msg, test) {
         if (!test) {
           assert.equal(msg, 'Library "magic" is already registered with Ember.');
         }

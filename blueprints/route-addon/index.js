@@ -7,35 +7,35 @@ const inflector = require('inflection');
 module.exports = {
   description: 'Generates import wrappers for a route and its template.',
 
-  fileMapTokens: function() {
+  fileMapTokens: function () {
     return {
-      __templatepath__: function(options) {
+      __templatepath__: function (options) {
         if (options.pod) {
           return path.join(options.podPath, options.dasherizedModuleName);
         }
         return 'templates';
       },
-      __templatename__: function(options) {
+      __templatename__: function (options) {
         if (options.pod) {
           return 'template';
         }
         return options.dasherizedModuleName;
       },
-      __name__: function(options) {
+      __name__: function (options) {
         if (options.pod) {
           return 'route';
         }
 
         return options.dasherizedModuleName;
       },
-      __path__: function(options) {
+      __path__: function (options) {
         if (options.pod && options.hasPathToken) {
           return path.join(options.podPath, options.dasherizedModuleName);
         }
 
         return 'routes';
       },
-      __root__: function(options) {
+      __root__: function (options) {
         if (options.inRepoAddon) {
           return path.join('lib', options.inRepoAddon, 'app');
         }
@@ -45,13 +45,13 @@ module.exports = {
     };
   },
 
-  locals: function(options) {
+  locals: function (options) {
     let locals = {};
     let addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
     let addonName = stringUtil.dasherize(addonRawName);
     let fileName = stringUtil.dasherize(options.entity.name);
 
-    ['route', 'template'].forEach(function(blueprint) {
+    ['route', 'template'].forEach(function (blueprint) {
       let pathName = [addonName, inflector.pluralize(blueprint), fileName].join('/');
 
       if (options.pod) {

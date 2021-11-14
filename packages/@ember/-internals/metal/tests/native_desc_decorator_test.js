@@ -17,7 +17,7 @@ let classes = [
 
       defineProperty(object, key, desc);
 
-      assert.ok(object.hasOwnProperty(key));
+      assert.ok(Object.prototype.hasOwnProperty.call(object, key));
     }
 
     set(key, value) {
@@ -47,7 +47,7 @@ let classes = [
 
       defineProperty(proto, key, desc);
 
-      assert.ok(proto.hasOwnProperty(key));
+      assert.ok(Object.prototype.hasOwnProperty.call(proto, key));
     }
 
     set(key, value) {
@@ -148,7 +148,7 @@ let classes = [
   },
 ];
 
-classes.forEach(TestClass => {
+classes.forEach((TestClass) => {
   moduleFor(
     TestClass.module('@ember/-internals/metal/nativeDescDecorator'),
     class extends AbstractTestCase {
@@ -262,7 +262,7 @@ classes.forEach(TestClass => {
         factory.install(
           'foo',
           nativeDescDecorator({
-            get: function() {
+            get: function () {
               return this.__foo__;
             },
           }),
@@ -285,7 +285,7 @@ classes.forEach(TestClass => {
         factory.install(
           'foo',
           nativeDescDecorator({
-            set: function(value) {
+            set: function (value) {
               this.__foo__ = value;
             },
           }),
@@ -308,11 +308,11 @@ classes.forEach(TestClass => {
         factory.install(
           'foo',
           nativeDescDecorator({
-            get: function() {
+            get: function () {
               return this.__foo__;
             },
 
-            set: function(value) {
+            set: function (value) {
               this.__foo__ = value;
             },
           }),
@@ -324,11 +324,11 @@ classes.forEach(TestClass => {
         factory.install(
           'bar',
           nativeDescDecorator({
-            get: function() {
+            get: function () {
               return this.__bar__;
             },
 
-            set: function(value) {
+            set: function (value) {
               this.__bar__ = value;
             },
           }),
@@ -340,7 +340,7 @@ classes.forEach(TestClass => {
         factory.install(
           'fooBar',
           nativeDescDecorator({
-            get: function() {
+            get: function () {
               return this.foo + '-' + this.bar;
             },
           }),

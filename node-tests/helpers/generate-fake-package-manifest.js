@@ -1,4 +1,4 @@
-var fs = require('fs');
+const fs = require('fs');
 
 module.exports = function generateFakePackageManifest(name, version) {
   if (!fs.existsSync('node_modules')) {

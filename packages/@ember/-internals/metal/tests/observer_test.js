@@ -1,25 +1,25 @@
-import { ENV } from '@ember/-internals/environment';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import {
+  changeProperties,
   addObserver,
   removeObserver,
   notifyPropertyChange,
   defineProperty,
   computed,
-  getCachedValueFor,
   Mixin,
   mixin,
   observer,
   beginPropertyChanges,
   endPropertyChanges,
-  changeProperties,
   get,
   set,
 } from '..';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
-import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
+import { destroy } from '@glimmer/destroyable';
+import { meta as metaFor } from '@ember/-internals/meta';
 
 function K() {}
+
+let obj;
 
 // ..........................................................
 // ADD OBSERVER
@@ -28,6 +28,14 @@ function K() {}
 moduleFor(
   'addObserver',
   class extends AbstractTestCase {
+    afterEach() {
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+        return runLoopSettled();
+      }
+    }
+
     ['@test observer should assert to invalid input']() {
       expectAssertion(() => {
         observer(() => {});
@@ -63,10 +71,10 @@ moduleFor(
     }
 
     async ['@test observer should fire when property is modified'](assert) {
-      let obj = {};
+      obj = {};
       let count = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         assert.equal(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
         count++;
       });
@@ -77,12 +85,27 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked observer');
     }
 
+    async ['@test observer supports keys with colons'](assert) {
+      obj = {};
+      let count = 0;
+
+      addObserver(obj, 'foo:bar:baz', function () {
+        assert.equal(get(obj, 'foo:bar:baz'), 'bar', 'should invoke AFTER value changed');
+        count++;
+      });
+
+      set(obj, 'foo:bar:baz', 'bar');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+    }
+
     async ['@test observer should fire when dependent property is modified'](assert) {
-      let obj = { bar: 'bar' };
+      obj = { bar: 'bar' };
       defineProperty(
         obj,
         'foo',
-        computed('bar', function() {
+        computed('bar', function () {
           return get(this, 'bar').toUpperCase();
         })
       );
@@ -90,7 +113,7 @@ moduleFor(
       get(obj, 'foo');
 
       let count = 0;
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         assert.equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
         count++;
       });
@@ -103,7 +126,7 @@ moduleFor(
 
     // https://github.com/emberjs/ember.js/issues/18246
     async ['@test observer should fire when computed property is modified'](assert) {
-      let obj = { bar: 'bar' };
+      obj = { bar: 'bar' };
       defineProperty(
         obj,
         'foo',
@@ -120,7 +143,7 @@ moduleFor(
       get(obj, 'foo');
 
       let count = 0;
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         assert.equal(get(obj, 'foo'), 'baz', 'should have invoked after prop change');
         count++;
       });
@@ -136,24 +159,24 @@ moduleFor(
       assert
     ) {
       let observerCount = 0;
-      let obj = {};
+      obj = {};
 
       defineProperty(
         obj,
         'prop',
-        computed(function() {
+        computed(function () {
           return Math.random();
         })
       );
       defineProperty(
         obj,
         'anotherProp',
-        computed('prop', function() {
+        computed('prop', function () {
           return get(this, 'prop') + Math.random();
         })
       );
 
-      addObserver(obj, 'prop', function() {
+      addObserver(obj, 'prop', function () {
         observerCount++;
       });
 
@@ -167,99 +190,14 @@ moduleFor(
       assert.equal(observerCount, 10, 'should continue to fire indefinitely');
     }
 
-    async ['@test observer added via Function.prototype extensions and brace expansion should fire when property changes'](
-      assert
-    ) {
-      if (!FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
-        let obj = {};
-        let count = 0;
-
-        expectDeprecation(() => {
-          mixin(obj, {
-            observeFooAndBar: function() {
-              count++;
-            }.observes('{foo,bar}'),
-          });
-        }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.observes\('foo'\) to observer\('foo', function\(\) {}\)/);
-
-        set(obj, 'foo', 'foo');
-        await runLoopSettled();
-
-        assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
-
-        set(obj, 'bar', 'bar');
-        await runLoopSettled();
-
-        assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
-
-        set(obj, 'baz', 'baz');
-        await runLoopSettled();
-
-        assert.equal(count, 2, 'observer not invoked on unspecified property');
-      } else {
-        assert.expect(0);
-      }
-    }
-
-    async ['@test observer specified via Function.prototype extensions via brace expansion should fire when dependent property changes'](
-      assert
-    ) {
-      if (!FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
-        let obj = { baz: 'Initial' };
-        let count = 0;
-
-        defineProperty(
-          obj,
-          'foo',
-          computed('bar', function() {
-            return get(this, 'bar').toLowerCase();
-          })
-        );
-
-        defineProperty(
-          obj,
-          'bar',
-          computed('baz', function() {
-            return get(this, 'baz').toUpperCase();
-          })
-        );
-
-        expectDeprecation(() => {
-          mixin(obj, {
-            fooAndBarWatcher: function() {
-              count++;
-            }.observes('{foo,bar}'),
-          });
-        }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.observes\('foo'\) to observer\('foo', function\(\) {}\)/);
-
-        get(obj, 'foo');
-        set(obj, 'baz', 'Baz');
-        await runLoopSettled();
-
-        // fire once for foo, once for bar
-        assert.equal(
-          count,
-          2,
-          'observer specified via brace expansion invoked on dependent property change'
-        );
-
-        set(obj, 'quux', 'Quux');
-        await runLoopSettled();
-
-        assert.equal(count, 2, 'observer not fired on unspecified property');
-      } else {
-        assert.expect(0);
-      }
-    }
-
     async ['@test observers watching multiple properties via brace expansion should fire when the properties change'](
       assert
     ) {
-      let obj = {};
+      obj = {};
       let count = 0;
 
       mixin(obj, {
-        observeFooAndBar: observer('{foo,bar}', function() {
+        observeFooAndBar: observer('{foo,bar}', function () {
           count++;
         }),
       });
@@ -283,13 +221,13 @@ moduleFor(
     async ['@test observers watching multiple properties via brace expansion should fire when dependent properties change'](
       assert
     ) {
-      let obj = { baz: 'Initial' };
+      obj = { baz: 'Initial' };
       let count = 0;
 
       defineProperty(
         obj,
         'foo',
-        computed('bar', function() {
+        computed('bar', function () {
           return get(this, 'bar').toLowerCase();
         })
       );
@@ -297,13 +235,13 @@ moduleFor(
       defineProperty(
         obj,
         'bar',
-        computed('baz', function() {
+        computed('baz', function () {
           return get(this, 'baz').toUpperCase();
         })
       );
 
       mixin(obj, {
-        fooAndBarWatcher: observer('{foo,bar}', function() {
+        fooAndBarWatcher: observer('{foo,bar}', function () {
           count++;
         }),
       });
@@ -323,30 +261,6 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(count, 2, 'observer not fired on unspecified property');
-    }
-
-    ['@test nested observers should fire in order'](assert) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        // We can no longer guarantee order
-        return assert.expect(0);
-      }
-
-      let obj = { foo: 'foo', bar: 'bar' };
-      let fooCount = 0;
-      let barCount = 0;
-
-      addObserver(obj, 'foo', function() {
-        fooCount++;
-      });
-      addObserver(obj, 'bar', function() {
-        set(obj, 'foo', 'BAZ');
-        assert.equal(fooCount, 1, 'fooCount should have fired already');
-        barCount++;
-      });
-
-      set(obj, 'bar', 'BIFF');
-      assert.equal(barCount, 1, 'barCount should have fired');
-      assert.equal(fooCount, 1, 'foo should have fired');
     }
 
     async ['@test removing an chain observer on change should not fail'](assert) {
@@ -388,13 +302,18 @@ moduleFor(
       assert.equal(count2, 1, 'observer2 fired');
       assert.equal(count3, 1, 'observer3 fired');
       assert.equal(count4, 0, 'observer4 did not fire');
+
+      destroy(obj1);
+      destroy(obj2);
+      destroy(obj3);
+      destroy(obj4);
     }
 
     async ['@test deferring property change notifications'](assert) {
-      let obj = { foo: 'foo' };
+      obj = { foo: 'foo' };
       let fooCount = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         fooCount++;
       });
 
@@ -410,71 +329,8 @@ moduleFor(
       assert.equal(fooCount, 1, 'foo should have fired once');
     }
 
-    async ['@test deferring property change notifications safely despite exceptions'](assert) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        // changeProperties isn't a thing anymore
-        return assert.expect(0);
-      }
-
-      let obj = { foo: 'foo' };
-      let fooCount = 0;
-      let exc = new Error('Something unexpected happened!');
-
-      assert.expect(2);
-      addObserver(obj, 'foo', function() {
-        fooCount++;
-      });
-
-      try {
-        changeProperties(function() {
-          set(obj, 'foo', 'BIFF');
-          set(obj, 'foo', 'BAZ');
-          throw exc;
-        });
-      } catch (err) {
-        if (err !== exc) {
-          throw err;
-        }
-      }
-
-      assert.equal(fooCount, 1, 'foo should have fired once');
-
-      changeProperties(function() {
-        set(obj, 'foo', 'BIFF2');
-        set(obj, 'foo', 'BAZ2');
-      });
-
-      assert.equal(fooCount, 2, 'foo should have fired again once');
-    }
-
-    ['@test addObserver should propagate through prototype'](assert) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        // We no longer inherit unless it's an EmberObject
-        return assert.expect(0);
-      }
-
-      let obj = { foo: 'foo', count: 0 };
-      let obj2;
-
-      addObserver(obj, 'foo', function() {
-        this.count++;
-      });
-      obj2 = Object.create(obj);
-
-      set(obj2, 'foo', 'bar');
-
-      assert.equal(obj2.count, 1, 'should have invoked observer on inherited');
-      assert.equal(obj.count, 0, 'should not have invoked observer on parent');
-
-      obj2.count = 0;
-      set(obj, 'foo', 'baz');
-      assert.equal(obj.count, 0, 'should not have invoked observer on parent');
-      assert.equal(obj2.count, 0, 'should not have invoked observer on inherited');
-    }
-
     async ['@test addObserver should respect targets with methods'](assert) {
-      let observed = { foo: 'foo' };
-
+      let observed = (obj = { foo: 'foo' });
       let target1 = {
         count: 0,
 
@@ -512,7 +368,7 @@ moduleFor(
     }
 
     async ['@test addObserver should allow multiple objects to observe a property'](assert) {
-      let observed = { foo: 'foo' };
+      let observed = (obj = { foo: 'foo' });
 
       let target1 = {
         count: 0,
@@ -549,8 +405,16 @@ moduleFor(
 moduleFor(
   'removeObserver',
   class extends AbstractTestCase {
+    afterEach() {
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+        return runLoopSettled();
+      }
+    }
+
     async ['@test removing observer should stop firing'](assert) {
-      let obj = {};
+      obj = {};
       let count = 0;
       function F() {
         count++;
@@ -574,16 +438,16 @@ moduleFor(
       let barObserved = 0;
 
       let MyMixin = Mixin.create({
-        foo1: observer('bar', function() {
+        foo1: observer('bar', function () {
           barObserved++;
         }),
 
-        foo2: observer('bar', function() {
+        foo2: observer('bar', function () {
           barObserved++;
         }),
       });
 
-      let obj = {};
+      obj = {};
       MyMixin.apply(obj);
 
       set(obj, 'bar', 'HI!');
@@ -645,11 +509,21 @@ moduleFor(
 // CHAINED OBSERVERS
 //
 
-let obj, count;
+let count;
 
 moduleFor(
   'addObserver - dependentkey with chained properties',
   class extends AbstractTestCase {
+    afterEach() {
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+      }
+      obj = undefined;
+      count = 0;
+      return runLoopSettled();
+    }
+
     beforeEach() {
       obj = {
         foo: {
@@ -673,26 +547,22 @@ moduleFor(
       count = 0;
     }
 
-    afterEach() {
-      obj = count = null;
-    }
-
     async ['@test depending on a chain with a computed property'](assert) {
       defineProperty(
         obj,
         'computed',
-        computed(function() {
+        computed(function () {
           return { foo: 'bar' };
         })
       );
 
       let changed = 0;
-      addObserver(obj, 'computed.foo', function() {
+      addObserver(obj, 'computed.foo', function () {
         changed++;
       });
 
       assert.equal(
-        getCachedValueFor(obj, 'computed'),
+        metaFor(obj).valueFor('computed'),
         undefined,
         'addObserver should not compute CP'
       );
@@ -705,7 +575,7 @@ moduleFor(
 
     async ['@test depending on a simple chain'](assert) {
       let val;
-      addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
+      addObserver(obj, 'foo.bar.baz.biff', function (target, key) {
         val = get(target, key);
         count++;
       });
@@ -757,7 +627,7 @@ moduleFor(
     async ['@test depending on a chain with a capitalized first key'](assert) {
       let val;
 
-      addObserver(obj, 'Capital.foo.bar.baz.biff', function(target, key) {
+      addObserver(obj, 'Capital.foo.bar.baz.biff', function (target, key) {
         val = get(obj, key);
         count++;
       });
@@ -815,11 +685,21 @@ moduleFor(
 moduleFor(
   'props/observer_test - setting identical values',
   class extends AbstractTestCase {
+    afterEach() {
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+      }
+      obj = undefined;
+      count = 0;
+      return runLoopSettled();
+    }
+
     async ['@test setting simple prop should not trigger'](assert) {
-      let obj = { foo: 'bar' };
+      obj = { foo: 'bar' };
       let count = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         count++;
       });
 
@@ -845,16 +725,16 @@ moduleFor(
     async ['@test setting a cached computed property whose value has changed should trigger'](
       assert
     ) {
-      let obj = {};
+      obj = {};
 
       defineProperty(
         obj,
         'foo',
         computed('baz', {
-          get: function() {
+          get: function () {
             return get(this, 'baz');
           },
-          set: function(key, value) {
+          set: function (key, value) {
             return value;
           },
         })
@@ -862,7 +742,7 @@ moduleFor(
 
       let count = 0;
 
-      addObserver(obj, 'foo', function() {
+      addObserver(obj, 'foo', function () {
         count++;
       });
       set(obj, 'foo', 'bar');
@@ -886,183 +766,80 @@ moduleFor(
   }
 );
 
-if (!EMBER_METAL_TRACKED_PROPERTIES) {
-  moduleFor(
-    'changeProperties',
-    class extends AbstractTestCase {
-      ['@test observers added/removed during changeProperties should do the right thing.'](assert) {
-        let obj = {
-          foo: 0,
-        };
-        function Observer() {
-          this.didChangeCount = 0;
-        }
-        Observer.prototype = {
-          add() {
-            addObserver(obj, 'foo', this, 'didChange');
-          },
-          remove() {
-            removeObserver(obj, 'foo', this, 'didChange');
-          },
-          didChange() {
-            this.didChangeCount++;
-          },
-        };
-        let addedBeforeFirstChangeObserver = new Observer();
-        let addedAfterFirstChangeObserver = new Observer();
-        let addedAfterLastChangeObserver = new Observer();
-        let removedBeforeFirstChangeObserver = new Observer();
-        let removedBeforeLastChangeObserver = new Observer();
-        let removedAfterLastChangeObserver = new Observer();
-        removedBeforeFirstChangeObserver.add();
-        removedBeforeLastChangeObserver.add();
-        removedAfterLastChangeObserver.add();
-        changeProperties(function() {
-          removedBeforeFirstChangeObserver.remove();
-          addedBeforeFirstChangeObserver.add();
-
-          set(obj, 'foo', 1);
-
-          assert.equal(
-            addedBeforeFirstChangeObserver.didChangeCount,
-            0,
-            'addObserver called before the first change is deferred'
-          );
-
-          addedAfterFirstChangeObserver.add();
-          removedBeforeLastChangeObserver.remove();
-
-          set(obj, 'foo', 2);
-
-          assert.equal(
-            addedAfterFirstChangeObserver.didChangeCount,
-            0,
-            'addObserver called after the first change is deferred'
-          );
-
-          addedAfterLastChangeObserver.add();
-          removedAfterLastChangeObserver.remove();
-        });
-
-        assert.equal(
-          removedBeforeFirstChangeObserver.didChangeCount,
-          0,
-          'removeObserver called before the first change sees none'
-        );
-        assert.equal(
-          addedBeforeFirstChangeObserver.didChangeCount,
-          1,
-          'addObserver called before the first change sees only 1'
-        );
-        assert.equal(
-          addedAfterFirstChangeObserver.didChangeCount,
-          1,
-          'addObserver called after the first change sees 1'
-        );
-        assert.equal(
-          addedAfterLastChangeObserver.didChangeCount,
-          1,
-          'addObserver called after the last change sees 1'
-        );
-        assert.equal(
-          removedBeforeLastChangeObserver.didChangeCount,
-          0,
-          'removeObserver called before the last change sees none'
-        );
-        assert.equal(
-          removedAfterLastChangeObserver.didChangeCount,
-          0,
-          'removeObserver called after the last change sees none'
-        );
-      }
-
-      ['@test calling changeProperties while executing deferred observers works correctly'](
-        assert
-      ) {
-        let obj = { foo: 0 };
-        let fooDidChange = 0;
-
-        addObserver(obj, 'foo', () => {
-          fooDidChange++;
-          changeProperties(() => {});
-        });
-
-        changeProperties(() => {
-          set(obj, 'foo', 1);
-        });
-
-        assert.equal(fooDidChange, 1);
-      }
-    }
-  );
-}
-
 moduleFor(
   'Keys behavior with observers',
   class extends AbstractTestCase {
+    afterEach() {
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+        return runLoopSettled();
+      }
+    }
+
     ['@test should not leak properties on the prototype'](assert) {
       function Beer() {}
       Beer.prototype.type = 'ipa';
 
-      let beer = new Beer();
+      obj = new Beer();
 
-      addObserver(beer, 'type', K);
-      assert.deepEqual(Object.keys(beer), []);
-      removeObserver(beer, 'type', K);
+      addObserver(obj, 'type', K);
+      assert.deepEqual(Object.keys(obj), []);
+      removeObserver(obj, 'type', K);
     }
 
     ['@test observing a non existent property'](assert) {
       function Beer() {}
       Beer.prototype.type = 'ipa';
 
-      let beer = new Beer();
+      obj = new Beer();
 
-      addObserver(beer, 'brand', K);
+      addObserver(obj, 'brand', K);
 
-      assert.deepEqual(Object.keys(beer), []);
+      assert.deepEqual(Object.keys(obj), []);
 
-      set(beer, 'brand', 'Corona');
-      assert.deepEqual(Object.keys(beer), ['brand']);
+      set(obj, 'brand', 'Corona');
+      assert.deepEqual(Object.keys(obj), ['brand']);
 
-      removeObserver(beer, 'brand', K);
+      removeObserver(obj, 'brand', K);
     }
 
     ['@test with observers switched on and off'](assert) {
       function Beer() {}
       Beer.prototype.type = 'ipa';
 
-      let beer = new Beer();
+      obj = new Beer();
 
-      addObserver(beer, 'type', K);
-      removeObserver(beer, 'type', K);
+      addObserver(obj, 'type', K);
+      removeObserver(obj, 'type', K);
 
-      assert.deepEqual(Object.keys(beer), []);
+      assert.deepEqual(Object.keys(obj), []);
     }
 
     ['@test observers switched on and off with setter in between'](assert) {
       function Beer() {}
       Beer.prototype.type = 'ipa';
 
-      let beer = new Beer();
+      obj = new Beer();
 
-      addObserver(beer, 'type', K);
-      set(beer, 'type', 'ale');
-      removeObserver(beer, 'type', K);
+      addObserver(obj, 'type', K);
+      set(obj, 'type', 'ale');
+      removeObserver(obj, 'type', K);
 
-      assert.deepEqual(Object.keys(beer), ['type']);
+      assert.deepEqual(Object.keys(obj), ['type']);
     }
 
     ['@test observer switched on and off and then setter'](assert) {
       function Beer() {}
       Beer.prototype.type = 'ipa';
 
-      let beer = new Beer();
+      obj = new Beer();
 
-      addObserver(beer, 'type', K);
-      removeObserver(beer, 'type', K);
-      set(beer, 'type', 'ale');
+      addObserver(obj, 'type', K);
+      removeObserver(obj, 'type', K);
+      set(obj, 'type', 'ale');
 
-      assert.deepEqual(Object.keys(beer), ['type']);
+      assert.deepEqual(Object.keys(obj), ['type']);
     }
 
     ['@test observers switched on and off with setter in between (observed property is not shadowing)'](
@@ -1070,9 +847,9 @@ moduleFor(
     ) {
       function Beer() {}
 
-      let beer = new Beer();
-      set(beer, 'type', 'ale');
-      assert.deepEqual(Object.keys(beer), ['type'], 'only set');
+      obj = new Beer();
+      set(obj, 'type', 'ale');
+      assert.deepEqual(Object.keys(obj), ['type'], 'only set');
 
       let otherBeer = new Beer();
       addObserver(otherBeer, 'type', K);
@@ -1082,8 +859,8 @@ moduleFor(
       let yetAnotherBeer = new Beer();
       addObserver(yetAnotherBeer, 'type', K);
       set(yetAnotherBeer, 'type', 'ale');
-      addObserver(beer, 'type', K);
-      removeObserver(beer, 'type', K);
+      addObserver(obj, 'type', K);
+      removeObserver(obj, 'type', K);
       assert.deepEqual(
         Object.keys(yetAnotherBeer),
         ['type'],
@@ -1092,9 +869,13 @@ moduleFor(
 
       let itsMyLastBeer = new Beer();
       set(itsMyLastBeer, 'type', 'ale');
-      addObserver(beer, 'type', K);
-      removeObserver(beer, 'type', K);
+      addObserver(obj, 'type', K);
+      removeObserver(obj, 'type', K);
       assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
+
+      destroy(otherBeer);
+      destroy(yetAnotherBeer);
+      destroy(itsMyLastBeer);
     }
 
     ['@test observers switched on and off with setter in between (observed property is shadowing one on the prototype)'](
@@ -1103,9 +884,9 @@ moduleFor(
       function Beer() {}
       Beer.prototype.type = 'ipa';
 
-      let beer = new Beer();
-      set(beer, 'type', 'ale');
-      assert.deepEqual(Object.keys(beer), ['type'], 'after set');
+      obj = new Beer();
+      set(obj, 'type', 'ale');
+      assert.deepEqual(Object.keys(obj), ['type'], 'after set');
 
       let otherBeer = new Beer();
       addObserver(otherBeer, 'type', K);
@@ -1115,8 +896,8 @@ moduleFor(
       let yetAnotherBeer = new Beer();
       addObserver(yetAnotherBeer, 'type', K);
       set(yetAnotherBeer, 'type', 'ale');
-      addObserver(beer, 'type', K);
-      removeObserver(beer, 'type', K);
+      addObserver(obj, 'type', K);
+      removeObserver(obj, 'type', K);
       assert.deepEqual(
         Object.keys(yetAnotherBeer),
         ['type'],
@@ -1125,9 +906,134 @@ moduleFor(
 
       let itsMyLastBeer = new Beer();
       set(itsMyLastBeer, 'type', 'ale');
-      addObserver(beer, 'type', K);
-      removeObserver(beer, 'type', K);
+      addObserver(obj, 'type', K);
+      removeObserver(obj, 'type', K);
       assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
+
+      destroy(otherBeer);
+      destroy(yetAnotherBeer);
+      destroy(itsMyLastBeer);
+    }
+  }
+);
+
+moduleFor(
+  'changeProperties - sync observers',
+  class extends AbstractTestCase {
+    afterEach() {
+      if (obj !== undefined) {
+        destroy(obj);
+        obj = undefined;
+        return runLoopSettled();
+      }
+    }
+
+    '@test observers added/removed during changeProperties should do the right thing.'(assert) {
+      obj = {
+        foo: 0,
+      };
+      function Observer() {
+        this.didChangeCount = 0;
+      }
+      Observer.prototype = {
+        add() {
+          addObserver(obj, 'foo', this, 'didChange', true);
+        },
+        remove() {
+          removeObserver(obj, 'foo', this, 'didChange', true);
+        },
+        didChange() {
+          this.didChangeCount++;
+        },
+      };
+      let addedBeforeFirstChangeObserver = new Observer();
+      let addedAfterFirstChangeObserver = new Observer();
+      let addedAfterLastChangeObserver = new Observer();
+      let removedBeforeFirstChangeObserver = new Observer();
+      let removedBeforeLastChangeObserver = new Observer();
+      let removedAfterLastChangeObserver = new Observer();
+      removedBeforeFirstChangeObserver.add();
+      removedBeforeLastChangeObserver.add();
+      removedAfterLastChangeObserver.add();
+      changeProperties(function () {
+        removedBeforeFirstChangeObserver.remove();
+        addedBeforeFirstChangeObserver.add();
+
+        set(obj, 'foo', 1);
+
+        assert.equal(
+          addedBeforeFirstChangeObserver.didChangeCount,
+          0,
+          'addObserver called before the first change is deferred'
+        );
+
+        addedAfterFirstChangeObserver.add();
+        removedBeforeLastChangeObserver.remove();
+
+        set(obj, 'foo', 2);
+
+        assert.equal(
+          addedAfterFirstChangeObserver.didChangeCount,
+          0,
+          'addObserver called after the first change is deferred'
+        );
+
+        addedAfterLastChangeObserver.add();
+        removedAfterLastChangeObserver.remove();
+      });
+
+      assert.equal(
+        removedBeforeFirstChangeObserver.didChangeCount,
+        0,
+        'removeObserver called before the first change sees none'
+      );
+      assert.equal(
+        addedBeforeFirstChangeObserver.didChangeCount,
+        1,
+        'addObserver called before the first change sees only 1'
+      );
+      assert.equal(
+        addedAfterFirstChangeObserver.didChangeCount,
+        1,
+        'addObserver called after the first change sees 1'
+      );
+      assert.equal(
+        addedAfterLastChangeObserver.didChangeCount,
+        1,
+        'addObserver called after the last change sees 1'
+      );
+      assert.equal(
+        removedBeforeLastChangeObserver.didChangeCount,
+        0,
+        'removeObserver called before the last change sees none'
+      );
+      assert.equal(
+        removedAfterLastChangeObserver.didChangeCount,
+        0,
+        'removeObserver called after the last change sees none'
+      );
+    }
+
+    '@test calling changeProperties while executing deferred observers works correctly'(assert) {
+      obj = { foo: 0 };
+      let fooDidChange = 0;
+
+      addObserver(
+        obj,
+        'foo',
+        () => {
+          fooDidChange++;
+          changeProperties(() => {});
+        },
+        undefined,
+        true
+      );
+
+      changeProperties(() => {
+        set(obj, 'foo', 1);
+      });
+
+      assert.equal(fooDidChange, 1);
     }
   }
 );

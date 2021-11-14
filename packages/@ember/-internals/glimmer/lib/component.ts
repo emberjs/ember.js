@@ -1,124 +1,64 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { setFrameworkClass, TargetActionSupport } from '@ember/-internals/runtime';
-import { symbol } from '@ember/-internals/utils';
+import { TargetActionSupport } from '@ember/-internals/runtime';
 import {
   ActionSupport,
   ChildViewsSupport,
   ClassNamesSupport,
   CoreView,
+  EventDispatcher,
   getViewElement,
   ViewMixin,
   ViewStateSupport,
 } from '@ember/-internals/views';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { createTag, dirty } from '@glimmer/reference';
-import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
+import { Environment } from '@glimmer/interfaces';
+import { setInternalComponentManager } from '@glimmer/manager';
+import { isUpdatableRef, updateRef } from '@glimmer/reference';
+import { normalizeProperty } from '@glimmer/runtime';
+import { createTag, dirtyTag } from '@glimmer/validator';
+import { Namespace } from '@simple-dom/interface';
+import {
+  ARGS,
+  BOUNDS,
+  CURLY_COMPONENT_MANAGER,
+  DIRTY_TAG,
+  IS_DISPATCHING_ATTRS,
+} from './component-managers/curly';
 
-import { RootReference, UPDATE } from './utils/references';
-
-export const DIRTY_TAG = symbol('DIRTY_TAG');
-export const ARGS = symbol('ARGS');
-export const ROOT_REF = symbol('ROOT_REF');
-export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
-export const HAS_BLOCK = symbol('HAS_BLOCK');
-export const BOUNDS = symbol('BOUNDS');
+// Keep track of which component classes have already been processed for lazy event setup.
+let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
 /**
 @module @ember/component
 */
 
 /**
-  A component is an isolated piece of UI, represented by a template and an
-  optional class. When a component has a class, its template's `this` value
-  is an instance of the component class.
+  A component is a reusable UI element that consists of a `.hbs` template and an
+  optional JavaScript class that defines its behavior. For example, someone
+  might make a `button` in the template and handle the click behavior in the
+  JavaScript file that shares the same name as the template.
 
-  ## Template-only Components
+  Components are broken down into two categories:
 
-  The simplest way to create a component is to create a template file in
-  `app/templates/components`. For example, if you name a template
-  `app/templates/components/person-profile.hbs`:
+  - Components _without_ JavaScript, that are based only on a template. These
+    are called Template-only or TO components.
+  - Components _with_ JavaScript, which consist of a template and a backing
+    class.
 
-  ```app/templates/components/person-profile.hbs
-  <h1>{{@person.name}}</h1>
-  <img src={{@person.avatar}}>
-  <p class='signature'>{{@person.signature}}</p>
-  ```
+  Ember ships with two types of JavaScript classes for components:
 
-  You will be able to use `<PersonProfile />` to invoke this component elsewhere
-  in your application:
+  1. Glimmer components, imported from `@glimmer/component`, which are the
+     default component's for Ember Octane (3.15) and more recent editions.
+  2. Classic components, imported from `@ember/component`, which were the
+     default for older editions of Ember (pre 3.15).
 
-  ```app/templates/application.hbs
-  <PersonProfile @person={{this.currentUser}} />
-  ```
+  Below is the documentation for Classic components. If you are looking for the
+  API documentation for Template-only or Glimmer components, it is
+  [available here](/ember/release/modules/@glimmer%2Fcomponent).
 
-  Note that component names are capitalized here in order to distinguish them
-  from regular HTML elements, but they are dasherized in the file system.
-
-  While the angle bracket invocation form is generally preferred, it is also
-  possible to invoke the same component with the `{{person-profile}}` syntax:
-
-  ```app/templates/application.hbs
-  {{person-profile person=this.currentUser}}
-  ```
-
-  Note that with this syntax, you use dashes in the component name and
-  arguments are passed without the `@` sign.
-
-  In both cases, Ember will render the content of the component template we
-  created above. The end result will be something like this:
-
-  ```html
-  <h1>Tomster</h1>
-  <img src="https://emberjs.com/tomster.jpg">
-  <p class='signature'>Out of office this week</p>
-  ```
-
-  ## File System Nesting
-
-  Components can be nested inside sub-folders for logical groupping. For
-  example, if we placed our template in
-  `app/templates/components/person/short-profile.hbs`, we can invoke it as
-  `<Person::ShortProfile />`:
-
-  ```app/templates/application.hbs
-  <Person::ShortProfile @person={{this.currentUser}} />
-  ```
-
-  Or equivalently, `{{person/short-profile}}`:
-
-  ```app/templates/application.hbs
-  {{person/short-profile person=this.currentUser}}
-  ```
-
-  ## Yielding Contents
-
-  You can use `yield` inside a template to include the **contents** of any block
-  attached to the component. The block will be executed in its original context:
-
-  ```handlebars
-  <PersonProfile @person={{this.currentUser}}>
-    <p>Admin mode</p>
-    {{! Executed in the current context. }}
-  </PersonProfile>
-  ```
-
-  or
-
-  ```handlebars
-  {{#person-profile person=this.currentUser}}
-    <p>Admin mode</p>
-    {{! Executed in the current context. }}
-  {{/person-profile}}
-  ```
-
-  ```app/templates/components/person-profile.hbs
-  <h1>{{@person.name}}</h1>
-  {{yield}}
-  ```
-
-  ## Customizing Components With JavaScript
+  ## Defining a Classic Component
 
   If you want to customize the component in order to handle events, transform
   arguments or maintain internal state, you implement a subclass of `Component`.
@@ -130,7 +70,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   export default Component.extend({
     displayName: computed('person.title', 'person.firstName', 'person.lastName', function() {
-      let { title, firstName, lastName } = this;
+      let { title, firstName, lastName } = this.person;
 
       if (title) {
         return `${title} ${lastName}`;
@@ -148,7 +88,7 @@ export const BOUNDS = symbol('BOUNDS');
   {{yield}}
   ```
 
-  ## Customizing a Component's HTML Element in JavaScript
+  ## Customizing a Classic Component's HTML Element in JavaScript
 
   ### HTML Tag
 
@@ -576,10 +516,10 @@ export const BOUNDS = symbol('BOUNDS');
   actions with angle bracket invocation, adding event handler methods to the
   component's class, or adding actions to the component's template.
 
-  ### Passing Actions With Angle Bracket Invoation
+  ### Passing Actions With Angle Bracket Invocation
 
   For one-off events specific to particular instance of a component, it is possible
-  to pass actions to the component's element using angle bracket invoation syntax.
+  to pass actions to the component's element using angle bracket invocation syntax.
 
   ```handlebars
   <MyWidget {{action 'firstWidgetClicked'}} />
@@ -597,7 +537,7 @@ export const BOUNDS = symbol('BOUNDS');
   ### Event Handler Methods
 
   Components can also respond to user-initiated events by implementing a method
-  that matches the event name. This approach is appropiate when the same event
+  that matches the event name. This approach is appropriate when the same event
   should be handled by all instances of the same component.
 
   An event object will be passed as the argument to the event handler method.
@@ -722,13 +662,33 @@ const Component = CoreView.extend(
       this._super(...arguments);
       this[IS_DISPATCHING_ATTRS] = false;
       this[DIRTY_TAG] = createTag();
-      this[ROOT_REF] = new RootReference(this);
       this[BOUNDS] = null;
 
-      if (DEBUG && this.renderer._destinedForDOM && this.tagName === '') {
+      let eventDispatcher = this._dispatcher;
+      if (eventDispatcher) {
+        let lazyEventsProcessedForComponentClass = lazyEventsProcessed.get(eventDispatcher);
+        if (!lazyEventsProcessedForComponentClass) {
+          lazyEventsProcessedForComponentClass = new WeakSet<object>();
+          lazyEventsProcessed.set(eventDispatcher, lazyEventsProcessedForComponentClass);
+        }
+
+        let proto = Object.getPrototypeOf(this);
+        if (!lazyEventsProcessedForComponentClass.has(proto)) {
+          let lazyEvents = eventDispatcher.lazyEvents;
+
+          lazyEvents.forEach((mappedEventName: string, event: string) => {
+            if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
+              eventDispatcher.setupHandlerForBrowserEvent(event);
+            }
+          });
+
+          lazyEventsProcessedForComponentClass.add(proto);
+        }
+      }
+
+      if (DEBUG && eventDispatcher && this.renderer._isInteractive && this.tagName === '') {
         let eventNames = [];
-        let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
-        let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
+        let events = eventDispatcher.finalEventNameMapping;
 
         // tslint:disable-next-line:forin
         for (let key in events) {
@@ -745,42 +705,33 @@ const Component = CoreView.extend(
           !eventNames.length
         );
       }
+    },
 
-      deprecate(
-        `Using \`mouseEnter\` event handler methods in components has been deprecated.`,
-        this.mouseEnter === undefined,
-        {
-          id: 'ember-views.event-dispatcher.mouseenter-leave-move',
-          until: '4.0.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
+    get _dispatcher(): EventDispatcher | null {
+      if (this.__dispatcher === undefined) {
+        let owner = getOwner(this);
+        if (owner.lookup<Environment>('-environment:main')!.isInteractive) {
+          this.__dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
+        } else {
+          // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
+          this.__dispatcher = null;
         }
-      );
-      deprecate(
-        `Using \`mouseLeave\` event handler methods in components has been deprecated.`,
-        this.mouseLeave === undefined,
-        {
-          id: 'ember-views.event-dispatcher.mouseenter-leave-move',
-          until: '4.0.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
-        }
-      );
-      deprecate(
-        `Using \`mouseMove\` event handler methods in components has been deprecated.`,
-        this.mouseMove === undefined,
-        {
-          id: 'ember-views.event-dispatcher.mouseenter-leave-move',
-          until: '4.0.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
-        }
-      );
+      }
+
+      return this.__dispatcher;
+    },
+
+    on(eventName: string) {
+      this._dispatcher?.setupHandlerForEmberEvent(eventName);
+      return this._super(...arguments);
     },
 
     rerender() {
-      dirty(this[DIRTY_TAG]);
+      dirtyTag(this[DIRTY_TAG]);
       this._super();
     },
 
-    [PROPERTY_DID_CHANGE](key: string) {
+    [PROPERTY_DID_CHANGE](key: string, value?: unknown) {
       if (this[IS_DISPATCHING_ATTRS]) {
         return;
       }
@@ -788,8 +739,8 @@ const Component = CoreView.extend(
       let args = this[ARGS];
       let reference = args !== undefined ? args[key] : undefined;
 
-      if (reference !== undefined && reference[UPDATE] !== undefined) {
-        reference[UPDATE](get(this, key));
+      if (reference !== undefined && isUpdatableRef(reference)) {
+        updateRef(reference, arguments.length === 2 ? value : get(this, key));
       }
     },
 
@@ -839,7 +790,7 @@ const Component = CoreView.extend(
       );
 
       let element = _element!;
-      let isSVG = element.namespaceURI === SVG_NAMESPACE;
+      let isSVG = element.namespaceURI === Namespace.SVG;
       let { type, normalized } = normalizeProperty(element, name);
 
       if (isSVG || type === 'attr') {
@@ -1049,18 +1000,6 @@ const Component = CoreView.extend(
     */
 
     /**
-      Returns a jQuery object for this component's element. If you pass in a selector
-      string, this method will return a jQuery object, using the current element
-      as its buffer.
-      For example, calling `component.$('li')` will return a jQuery object containing
-      all of the `li` elements inside the DOM element of this component.
-      @method $
-      @param {String} [selector] a jQuery-compatible selector string
-      @return {jQuery} the jQuery object for the DOM node
-      @public
-    */
-
-    /**
       The HTML `id` of the component's element in the DOM. You can provide this
       value yourself but it must be unique (just as in HTML):
 
@@ -1092,15 +1031,6 @@ const Component = CoreView.extend(
       @type String
       @public
     */
-
-    /**
-     If `false`, the view will appear hidden in DOM.
-
-     @property isVisible
-     @type Boolean
-     @default null
-     @public
-     */
   }
 );
 
@@ -1111,6 +1041,6 @@ Component.reopenClass({
   positionalParams: [],
 });
 
-setFrameworkClass(Component);
+setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
 
 export default Component;

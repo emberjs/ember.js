@@ -9,16 +9,18 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
       return this._applicationInstancePromise;
     }
 
-    return (this._applicationInstancePromise = runTask(() => this.application.boot()).then(app => {
-      this.applicationInstance = app.buildInstance();
+    return (this._applicationInstancePromise = runTask(() => this.application.boot()).then(
+      (app) => {
+        this.applicationInstance = app.buildInstance();
 
-      return this.applicationInstance.boot(bootOptions);
-    }));
+        return this.applicationInstance.boot(bootOptions);
+      }
+    ));
   }
 
   async visit(url, options) {
     // Create the instance
-    let instance = await this._ensureInstance(options).then(instance =>
+    let instance = await this._ensureInstance(options).then((instance) =>
       runTask(() => instance.visit(url))
     );
 

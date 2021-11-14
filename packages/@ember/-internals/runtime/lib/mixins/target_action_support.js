@@ -5,6 +5,8 @@
 import { context } from '@ember/-internals/environment';
 import { get, Mixin, computed } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
+
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
@@ -17,12 +19,12 @@ doing more complex event handling in Components.
 @extends Mixin
 @private
 */
-export default Mixin.create({
+const TargetActionSupport = Mixin.create({
   target: null,
   action: null,
   actionContext: null,
 
-  actionContextObject: computed('actionContext', function() {
+  actionContextObject: computed('actionContext', function () {
     let actionContext = get(this, 'actionContext');
 
     if (typeof actionContext === 'string') {
@@ -145,3 +147,9 @@ function getTarget(instance) {
 
   return null;
 }
+
+if (DEBUG) {
+  Object.seal(TargetActionSupport);
+}
+
+export default TargetActionSupport;

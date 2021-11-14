@@ -3,11 +3,10 @@ export { getEngineParent, setEngineParent } from './lib/engine-parent';
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { Namespace, RegistryProxyMixin } from '@ember/-internals/runtime';
-import { Registry, privatize as P } from '@ember/-internals/container';
+import { Registry } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
-import DefaultResolver from '@ember/application/globals-resolver';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/-internals/routing';
 import { ContainerDebugAdapter } from '@ember/-internals/extension-support';
@@ -340,7 +339,6 @@ Engine.reopenClass({
     Example instanceInitializer to preload data into the store.
 
     ```app/initializer/preload-data.js
-    import $ from 'jquery';
 
     export function initialize(application) {
         var userConfig, userConfigEncoded, store;
@@ -353,7 +351,7 @@ Engine.reopenClass({
         // should not be relied upon for security or authorization.
 
         // Grab the encoded data from the meta tag
-        userConfigEncoded = $('head meta[name=app-user-config]').attr('content');
+        userConfigEncoded = document.querySelector('head meta[name=app-user-config]').attr('content');
 
         // Unescape the text, then parse the resulting JSON into a real object
         userConfig = JSON.parse(unescape(userConfigEncoded));
@@ -420,15 +418,6 @@ Engine.reopenClass({
   /**
     Set this to provide an alternate class to `DefaultResolver`
 
-    @deprecated Use 'Resolver' instead
-    @property resolver
-    @public
-  */
-  resolver: null,
-
-  /**
-    Set this to provide an alternate class to `DefaultResolver`
-
     @property resolver
     @public
   */
@@ -452,13 +441,13 @@ Engine.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  let ResolverClass = get(namespace, 'Resolver') || DefaultResolver;
+  let ResolverClass = get(namespace, 'Resolver');
   let props = { namespace };
   return ResolverClass.create(props);
 }
 
 function buildInitializerMethod(bucketName, humanName) {
-  return function(initializer) {
+  return function (initializer) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would
@@ -495,33 +484,13 @@ function commonSetupRegistry(registry) {
 
   registry.register('controller:basic', Controller, { instantiate: false });
 
-  registry.injection('view', '_viewRegistry', '-view-registry:main');
-  registry.injection('renderer', '_viewRegistry', '-view-registry:main');
-
-  registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
-
-  registry.injection('view:-outlet', 'namespace', 'application:main');
-
-  registry.injection('controller', 'target', 'router:main');
-  registry.injection('controller', 'namespace', 'application:main');
-
-  registry.injection('router', '_bucketCache', P`-bucket-cache:main`);
-  registry.injection('route', '_bucketCache', P`-bucket-cache:main`);
-
-  registry.injection('route', '_router', 'router:main');
-
   // Register the routing service...
   registry.register('service:-routing', RoutingService);
-  // Then inject the app router into it
-  registry.injection('service:-routing', 'router', 'router:main');
 
   // DEBUGGING
   registry.register('resolver-for-debugging:main', registry.resolver, {
     instantiate: false,
   });
-  registry.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
-  registry.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
-  // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
 

@@ -26,9 +26,9 @@ module.exports = class PackageJSONWriter extends Plugin {
   build() {
     let packages = this.discoverPackages();
 
-    packages.forEach(packageName => {
+    packages.forEach((packageName) => {
       this.writeMainPackageJson(packageName);
-      this.discoverEntryPoints(packageName).forEach(entryPoint => {
+      this.discoverEntryPoints(packageName).forEach((entryPoint) => {
         this.writeEntryPointPackageJson(packageName, entryPoint);
       });
     });
@@ -53,11 +53,11 @@ module.exports = class PackageJSONWriter extends Plugin {
    */
   discoverEntryPoints(packageName) {
     let files = this.glob(`${packageName}/!(index).js`)
-      .map(file => path.basename(file, '.js'))
-      .map(file => [file, true]);
+      .map((file) => path.basename(file, '.js'))
+      .map((file) => [file, true]);
     let directories = this.glob(`${packageName}/!(lib|tests)/`)
-      .map(file => path.basename(file))
-      .map(file => [file, false]);
+      .map((file) => path.basename(file))
+      .map((file) => [file, false]);
 
     return [...files, ...directories];
   }

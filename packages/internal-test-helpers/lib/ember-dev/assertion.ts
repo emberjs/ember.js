@@ -30,10 +30,10 @@ const BREAK = {};
   In particular, this prevents `Ember.assert` from throw errors that would
   disrupt the control flow.
 */
-export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
+export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv): void {
   let originalAssertFunc = env.getDebugFunction('assert');
 
-  hooks.beforeEach(function(assert) {
+  hooks.beforeEach(function (assert) {
     let expectAssertion: ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => {
       if (!DEBUG) {
         assert.ok(true, 'Assertions disabled in production builds.');
@@ -63,7 +63,7 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
       check(assert, sawCall, actualMessage, expectedMessage);
     };
 
-    let ignoreAssertion: IgnoreAssertionFunc = func => {
+    let ignoreAssertion: IgnoreAssertionFunc = (func) => {
       callWithStub(env, 'assert', func);
     };
 
@@ -71,7 +71,7 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
     window.ignoreAssertion = ignoreAssertion;
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     // Edge will occasionally not run finally blocks, so we have to be extra
     // sure we restore the original assert function
     env.setDebugFunction('assert', originalAssertFunc);

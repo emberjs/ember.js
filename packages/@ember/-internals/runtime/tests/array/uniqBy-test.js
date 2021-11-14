@@ -8,7 +8,10 @@ class UniqByTests extends AbstractTestCase {
       { id: 2, value: 'two' },
       { id: 1, value: 'one' },
     ]);
-    this.assert.deepEqual(numbers.uniqBy('id'), [{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
+    this.assert.deepEqual(numbers.uniqBy('id'), [
+      { id: 1, value: 'one' },
+      { id: 2, value: 'two' },
+    ]);
   }
 
   '@test supports function as key'() {
@@ -18,7 +21,7 @@ class UniqByTests extends AbstractTestCase {
       { id: 1, value: 'doom' },
     ]);
 
-    let keyFunction = val => {
+    let keyFunction = (val) => {
       this.assert.equal(arguments.length, 1);
       return val.value;
     };

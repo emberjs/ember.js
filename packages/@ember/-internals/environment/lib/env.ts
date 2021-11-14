@@ -1,4 +1,4 @@
-import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
+import { DEBUG } from '@glimmer/env';
 import global from './global';
 
 /**
@@ -16,7 +16,7 @@ export const ENV = {
   ENABLE_OPTIONAL_FEATURES: false,
 
   /**
-    Determines whether Ember should add to `Array`, `Function`, and `String`
+    Determines whether Ember should add to `Array`
     native object prototypes, a few extra methods in order to provide a more
     friendly API.
 
@@ -36,8 +36,6 @@ export const ENV = {
   */
   EXTEND_PROTOTYPES: {
     Array: true,
-    Function: true,
-    String: true,
   },
 
   /**
@@ -99,18 +97,36 @@ export const ENV = {
   _TEMPLATE_ONLY_GLIMMER_COMPONENTS: false,
 
   /**
-    Whether the app is using jQuery. See RFC #294.
+    Whether to perform extra bookkeeping needed to make the `captureRenderTree`
+    API work.
 
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
+    This has to be set before the ember JavaScript code is evaluated. This is
+    usually done by setting `window.EmberENV = { _DEBUG_RENDER_TREE: true };`
+    before the "vendor" `<script>` tag in `index.html`.
 
-    @property _JQUERY_INTEGRATION
+    Setting the flag after Ember is already loaded will not work correctly. It
+    may appear to work somewhat, but fundamentally broken.
+
+    This is not intended to be set directly. Ember Inspector will enable the
+    flag on behalf of the user as needed.
+
+    This flag is always on in development mode.
+
+    The flag is off by default in production mode, due to the cost associated
+    with the the bookkeeping work.
+
+    The expected flow is that Ember Inspector will ask the user to refresh the
+    page after enabling the feature. It could also offer a feature where the
+    user add some domains to the "always on" list. In either case, Ember
+    Inspector will inject the code on the page to set the flag if needed.
+
+    @property _DEBUG_RENDER_TREE
     @for EmberENV
     @type Boolean
-    @default true
+    @default false
     @private
   */
-  _JQUERY_INTEGRATION: true,
+  _DEBUG_RENDER_TREE: DEBUG,
 
   /**
     Whether the app defaults to using async observers.
@@ -148,12 +164,12 @@ export const ENV = {
   },
 };
 
-(EmberENV => {
+((EmberENV) => {
   if (typeof EmberENV !== 'object' || EmberENV === null) return;
 
   for (let flag in EmberENV) {
     if (
-      !EmberENV.hasOwnProperty(flag) ||
+      !Object.prototype.hasOwnProperty.call(EmberENV, flag) ||
       flag === 'EXTEND_PROTOTYPES' ||
       flag === 'EMBER_LOAD_HOOKS'
     )
@@ -169,18 +185,9 @@ export const ENV = {
   let { EXTEND_PROTOTYPES } = EmberENV;
   if (EXTEND_PROTOTYPES !== undefined) {
     if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {
-      ENV.EXTEND_PROTOTYPES.String = EXTEND_PROTOTYPES.String !== false;
-      if (FUNCTION_PROTOTYPE_EXTENSIONS) {
-        ENV.EXTEND_PROTOTYPES.Function = EXTEND_PROTOTYPES.Function !== false;
-      }
       ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES.Array !== false;
     } else {
-      let isEnabled = EXTEND_PROTOTYPES !== false;
-      ENV.EXTEND_PROTOTYPES.String = isEnabled;
-      if (FUNCTION_PROTOTYPE_EXTENSIONS) {
-        ENV.EXTEND_PROTOTYPES.Function = isEnabled;
-      }
-      ENV.EXTEND_PROTOTYPES.Array = isEnabled;
+      ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES !== false;
     }
   }
 
@@ -189,22 +196,26 @@ export const ENV = {
   let { EMBER_LOAD_HOOKS } = EmberENV;
   if (typeof EMBER_LOAD_HOOKS === 'object' && EMBER_LOAD_HOOKS !== null) {
     for (let hookName in EMBER_LOAD_HOOKS) {
-      if (!EMBER_LOAD_HOOKS.hasOwnProperty(hookName)) continue;
+      if (!Object.prototype.hasOwnProperty.call(EMBER_LOAD_HOOKS, hookName)) continue;
       let hooks = EMBER_LOAD_HOOKS[hookName];
       if (Array.isArray(hooks)) {
-        ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter(hook => typeof hook === 'function');
+        ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter((hook) => typeof hook === 'function');
       }
     }
   }
   let { FEATURES } = EmberENV;
   if (typeof FEATURES === 'object' && FEATURES !== null) {
     for (let feature in FEATURES) {
-      if (!FEATURES.hasOwnProperty(feature)) continue;
+      if (!Object.prototype.hasOwnProperty.call(FEATURES, feature)) continue;
       ENV.FEATURES[feature] = FEATURES[feature] === true;
     }
   }
-})(global.EmberENV || global.ENV);
 
-export function getENV() {
+  if (DEBUG) {
+    ENV._DEBUG_RENDER_TREE = true;
+  }
+})(global.EmberENV);
+
+export function getENV(): object {
   return ENV;
 }

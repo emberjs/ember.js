@@ -32,6 +32,8 @@ class SetObjectsTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify'() {
@@ -63,6 +65,8 @@ class SetObjectsTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 }
 

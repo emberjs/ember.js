@@ -7,5 +7,5 @@ export interface EngineInfo {
 
 export interface EngineRouteInfo extends EngineInfo {
   localFullName: string;
-  serializeMethod?: any;
+  serializeMethod?: (model: {}, params: string[]) => { [key: string]: unknown | undefined };
 }

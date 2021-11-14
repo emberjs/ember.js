@@ -78,13 +78,15 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(firstNameChangedCount, 1, 'firstName should have fired once');
+
+      obj.destroy();
     }
 
     ['@test should be able to retrieve cached values of computed properties without invoking the computed property'](
       assert
     ) {
       let obj = EmberObject.extend({
-        foo: computed(function() {
+        foo: computed(function () {
           return 'foo';
         }),
       }).create({

@@ -2,7 +2,7 @@
 
 import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 
-import { assign } from '@ember/polyfills';
+import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/-internals/metal';
 import {
   Object as EmberObject,
@@ -114,7 +114,7 @@ export class FalsyGenerator extends AbstractGenerator {
 
 export class StableTruthyGenerator extends TruthyGenerator {
   generate(value, idx) {
-    return assign(super.generate(value, idx), {
+    return Object.assign(super.generate(value, idx), {
       [`@test it maintains DOM stability when condition changes from ${value} to another truthy value and back [${idx}]`]() {
         this.renderValues(value);
 
@@ -140,7 +140,7 @@ export class StableTruthyGenerator extends TruthyGenerator {
 
 export class StableFalsyGenerator extends FalsyGenerator {
   generate(value, idx) {
-    return assign(super.generate(value), {
+    return Object.assign(super.generate(value), {
       [`@test it maintains DOM stability when condition changes from ${value} to another falsy value and back [${idx}]`]() {
         this.renderValues(value);
 
@@ -217,7 +217,7 @@ class ObjectProxyGenerator extends AbstractGenerator {
 }
 
 // Testing behaviors shared across all conditionals, i.e. {{#if}}, {{#unless}},
-// {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+// {{#each}}, {{#each-in}}, (if) and (unless)
 export class BasicConditionalsTest extends AbstractConditionalsTest {
   ['@test it renders the corresponding block based on the conditional']() {
     this.renderValues(this.truthyValue, this.falsyValue);
@@ -401,12 +401,14 @@ const IfUnlessWithTestCases = [
     EmberObject.create({ foo: 'bar' }),
     ObjectProxy.create({ content: true }),
     Object,
-    function() {},
+    function () {},
+    async function () {},
     new String('hello'),
     new String(''),
     new Boolean(true),
     new Boolean(false),
     new Date(),
+    htmlSafe(' '),
   ]),
 
   new StableFalsyGenerator([
@@ -418,6 +420,7 @@ const IfUnlessWithTestCases = [
     [],
     emberA(),
     ObjectProxy.create({ content: undefined }),
+    htmlSafe(''),
   ]),
 
   new ObjectProxyGenerator([
@@ -458,7 +461,7 @@ const IfUnlessWithTestCases = [
 ];
 
 // Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
-// {{#unless}}, {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+// {{#unless}}, {{#each}}, {{#each-in}}, (if) and (unless)
 export class TogglingConditionalsTest extends BasicConditionalsTest {}
 
 // Testing behaviors shared across the (if) and (unless) helpers
@@ -468,7 +471,9 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     let context = {};
 
     for (let i = 1; i <= values.length; i++) {
-      templates.push(this.templateFor({ cond: `cond${i}`, truthy: `t${i}`, falsy: `f${i}` }));
+      templates.push(
+        this.templateFor({ cond: `this.cond${i}`, truthy: `this.t${i}`, falsy: `this.f${i}` })
+      );
       context[`t${i}`] = `T${i}`;
       context[`f${i}`] = `F${i}`;
       context[`cond${i}`] = values[i - 1];
@@ -480,8 +485,8 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
   ['@test it has access to the outer scope from both templates']() {
     let template = this.wrapperFor([
-      this.templateFor({ cond: 'cond1', truthy: 'truthy', falsy: 'falsy' }),
-      this.templateFor({ cond: 'cond2', truthy: 'truthy', falsy: 'falsy' }),
+      this.templateFor({ cond: 'this.cond1', truthy: 'this.truthy', falsy: 'this.falsy' }),
+      this.templateFor({ cond: 'this.cond2', truthy: 'this.truthy', falsy: 'this.falsy' }),
     ]);
 
     this.render(template, {
@@ -524,12 +529,12 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
   ['@test it does not update when the unbound helper is used']() {
     let template = this.wrapperFor([
       this.templateFor({
-        cond: '(unbound cond1)',
+        cond: '(unbound this.cond1)',
         truthy: '"T1"',
         falsy: '"F1"',
       }),
       this.templateFor({
-        cond: '(unbound cond2)',
+        cond: '(unbound this.cond2)',
         truthy: '"T2"',
         falsy: '"F2"',
       }),
@@ -566,13 +571,13 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     let truthyEvaluated;
     let falsyEvaluated;
 
-    let withoutEvaluatingTruthy = callback => {
+    let withoutEvaluatingTruthy = (callback) => {
       truthyEvaluated = false;
       callback();
       assert.ok(!truthyEvaluated, 'x-truthy is not evaluated');
     };
 
-    let withoutEvaluatingFalsy = callback => {
+    let withoutEvaluatingFalsy = (callback) => {
       falsyEvaluated = false;
       callback();
       assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');
@@ -593,9 +598,11 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
     });
 
     let template = this.wrappedTemplateFor({
-      cond: 'cond',
-      truthy: '(x-truthy)',
-      falsy: '(x-falsy)',
+      cond: 'this.cond',
+
+      // pass values so the helpers don't eagerly compute
+      truthy: '(x-truthy this.foo)',
+      falsy: '(x-falsy this.foo)',
     });
 
     withoutEvaluatingFalsy(() => this.render(template, { cond: this.truthyValue }));
@@ -625,7 +632,7 @@ export class IfUnlessHelperTest extends TogglingHelperConditionalsTest {}
 applyMixins(IfUnlessHelperTest, ...IfUnlessWithTestCases);
 
 // Testing behaviors shared across the "toggling" syntatical constructs,
-// i.e. {{#if}}, {{#unless}}, {{#with}}, {{#each}} and {{#each-in}}
+// i.e. {{#if}}, {{#unless}}, {{#each}} and {{#each-in}}
 export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   renderValues(...values) {
     let templates = [];
@@ -634,25 +641,25 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     for (let i = 1; i <= values.length; i++) {
       templates.push(
         this.templateFor({
-          cond: `cond${i}`,
-          truthy: `{{t}}${i}`,
-          falsy: `{{f}}${i}`,
+          cond: `this.cond${i}`,
+          truthy: `{{this.t}}${i}`,
+          falsy: `{{this.f}}${i}`,
         })
       );
       context[`cond${i}`] = values[i - 1];
     }
 
     let wrappedTemplate = this.wrapperFor(templates);
-    this.render(wrappedTemplate, assign({ t: 'T', f: 'F' }, context));
+    this.render(wrappedTemplate, Object.assign({ t: 'T', f: 'F' }, context));
   }
 
   ['@test it does not update when the unbound helper is used']() {
     let template = `${this.templateFor({
-      cond: '(unbound cond1)',
+      cond: '(unbound this.cond1)',
       truthy: 'T1',
       falsy: 'F1',
     })}${this.templateFor({
-      cond: '(unbound cond2)',
+      cond: '(unbound this.cond2)',
       truthy: 'T2',
       falsy: 'F2',
     })}`;
@@ -687,14 +694,14 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it has access to the outer scope from both templates']() {
     let template = this.wrapperFor([
       this.templateFor({
-        cond: 'cond1',
-        truthy: '{{truthy}}',
-        falsy: '{{falsy}}',
+        cond: 'this.cond1',
+        truthy: '{{this.truthy}}',
+        falsy: '{{this.falsy}}',
       }),
       this.templateFor({
-        cond: 'cond2',
-        truthy: '{{truthy}}',
-        falsy: '{{falsy}}',
+        cond: 'this.cond2',
+        truthy: '{{this.truthy}}',
+        falsy: '{{this.falsy}}',
       }),
     ]);
 
@@ -738,12 +745,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it updates correctly when enclosing another conditional']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let inner = this.templateFor({
-      cond: 'inner',
+      cond: 'this.inner',
       truthy: 'T-inner',
       falsy: 'F-inner',
     });
     let template = this.wrappedTemplateFor({
-      cond: 'outer',
+      cond: 'this.outer',
       truthy: inner,
       falsy: 'F-outer',
     });
@@ -770,8 +777,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it updates correctly when enclosing #each']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({
-      cond: 'outer',
-      truthy: '{{#each inner as |text|}}{{text}}{{/each}}',
+      cond: 'this.outer',
+      truthy: '{{#each this.inner as |text|}}{{text}}{{/each}}',
       falsy: 'F-outer',
     });
 
@@ -818,8 +825,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   ['@test it updates correctly when enclosing triple-curlies']() {
     // This tests whether the outer conditional tracks its bounds correctly as its inner bounds changes
     let template = this.wrappedTemplateFor({
-      cond: 'outer',
-      truthy: '{{{inner}}}',
+      cond: 'this.outer',
+      truthy: '{{{this.inner}}}',
       falsy: 'F-outer',
     });
 
@@ -861,12 +868,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     });
 
     let innerTemplate = this.templateFor({
-      cond: 'cond2',
+      cond: 'this.cond2',
       truthy: '{{foo-bar}}',
       falsy: '',
     });
     let wrappedTemplate = this.wrappedTemplateFor({
-      cond: 'cond1',
+      cond: 'this.cond1',
       truthy: innerTemplate,
       falsy: '',
     });
@@ -905,13 +912,13 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     let truthyEvaluated;
     let falsyEvaluated;
 
-    let withoutEvaluatingTruthy = callback => {
+    let withoutEvaluatingTruthy = (callback) => {
       truthyEvaluated = false;
       callback();
       assert.ok(!truthyEvaluated, 'x-truthy is not evaluated');
     };
 
-    let withoutEvaluatingFalsy = callback => {
+    let withoutEvaluatingFalsy = (callback) => {
       falsyEvaluated = false;
       callback();
       assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');
@@ -932,7 +939,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     });
 
     let template = this.wrappedTemplateFor({
-      cond: 'cond',
+      cond: 'this.cond',
       truthy: '{{x-truthy}}',
       falsy: '{{x-falsy}}',
     });

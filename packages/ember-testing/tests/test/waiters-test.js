@@ -56,12 +56,12 @@ moduleFor(
 
       let obj = { foo: true };
 
-      this.waiters.add(obj, function() {
+      this.waiters.add(obj, function () {
         assert.ok(this.foo, 'has proper `this` context');
         return true;
       });
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.ok(true, 'is called');
         return true;
       });
@@ -74,12 +74,12 @@ moduleFor(
 
       let obj = { foo: true };
 
-      this.waiters.add(obj, function() {
+      this.waiters.add(obj, function () {
         assert.ok(true, 'precond - waiter with context is registered');
         return true;
       });
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.ok(true, 'precond - waiter without context is registered');
         return true;
       });
@@ -93,13 +93,13 @@ moduleFor(
     ['@test checkWaiters returns false if all waiters return true'](assert) {
       assert.expect(3);
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.ok(true, 'precond - waiter is registered');
 
         return true;
       });
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.ok(true, 'precond - waiter is registered');
 
         return true;
@@ -111,13 +111,13 @@ moduleFor(
     ['@test checkWaiters returns true if any waiters return false'](assert) {
       assert.expect(3);
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.ok(true, 'precond - waiter is registered');
 
         return true;
       });
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.ok(true, 'precond - waiter is registered');
 
         return false;
@@ -129,13 +129,13 @@ moduleFor(
     ['@test checkWaiters short circuits after first falsey waiter'](assert) {
       assert.expect(2);
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.ok(true, 'precond - waiter is registered');
 
         return false;
       });
 
-      this.waiters.add(function() {
+      this.waiters.add(function () {
         assert.notOk(true, 'waiter should not be called');
       });
 

@@ -1,3 +1,4 @@
+import { ENV } from '@ember/-internals/environment';
 import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
 
 import { template, templateCacheCounters } from '@ember/-internals/glimmer';
@@ -14,7 +15,7 @@ moduleFor(
 
       let { owner } = this;
 
-      let templateStr = 'Hello {{name}}';
+      let templateStr = 'Hello {{this.name}}';
       let options = { moduleName: 'my-app/templates/some-module.hbs' };
 
       let spec = precompile(templateStr, options);
@@ -26,10 +27,7 @@ moduleFor(
       let Compiled = compile(templateStr, options);
 
       assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
-      assert.ok(Precompiled.__id, 'precompiled has id');
-
       assert.equal(typeof Compiled, 'function', 'compiled is a factory');
-      assert.ok(Compiled.__id, 'compiled has id');
 
       this.expectCacheChanges({}, 'no changes');
 
@@ -70,7 +68,7 @@ moduleFor(
 
       this.expectCacheChanges(
         {
-          templateCacheHits: 2,
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 5 : 2,
           // from this.render
           templateCacheMisses: 1,
         },
@@ -97,7 +95,7 @@ moduleFor(
 
 function diff(state, lastState) {
   let res = {};
-  Object.keys(state).forEach(key => {
+  Object.keys(state).forEach((key) => {
     let delta = state[key] - lastState[key];
     if (delta !== 0) {
       res[key] = state[key] - lastState[key];

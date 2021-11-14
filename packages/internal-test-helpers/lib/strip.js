@@ -7,6 +7,6 @@ export default function strip([...strings], ...values) {
     .join('');
   return str
     .split('\n')
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .join('');
 }

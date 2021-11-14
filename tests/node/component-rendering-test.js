@@ -1,23 +1,23 @@
-var setupComponentTest = require('./helpers/setup-component');
+const setupComponentTest = require('./helpers/setup-component');
 
-QUnit.module('Components can be rendered without a DOM dependency', function(hooks) {
+QUnit.module('Components can be rendered without a DOM dependency', function (hooks) {
   setupComponentTest(hooks);
 
-  QUnit.test('Simple component', function(assert) {
-    var html = this.render('<h1>Hello</h1>');
+  QUnit.test('Simple component', function (assert) {
+    let html = this.render('<h1>Hello</h1>');
 
     assert.ok(html.match(/<h1>Hello<\/h1>/));
   });
 
-  QUnit.test('Component with dynamic value', function(assert) {
+  QUnit.test('Component with dynamic value', function (assert) {
     this.set('location', 'World');
 
-    var html = this.render('<h1>Hello {{location}}</h1>');
+    let html = this.render('<h1>Hello {{this.location}}</h1>');
 
     assert.ok(html.match(/<h1>Hello World<\/h1>/));
   });
 
-  QUnit.test('Ensure undefined attributes requiring protocol sanitization do not error', function(
+  QUnit.test('Ensure undefined attributes requiring protocol sanitization do not error', function (
     assert
   ) {
     this.owner.register(
@@ -29,8 +29,16 @@ QUnit.module('Components can be rendered without a DOM dependency', function(hoo
       })
     );
 
-    var html = this.render('{{fake-link}}');
+    let html = this.render('{{fake-link}}');
 
     assert.ok(html.match(/rel="canonical"/));
+  });
+
+  QUnit.test('attributes requiring protocol sanitization do not error', function (assert) {
+    this.set('someHref', 'https://foo.com/');
+
+    let html = this.render('<a href={{this.someHref}}>Some Link</a>');
+
+    assert.ok(html.match(/<a href="https:\/\/foo.com\/">Some Link<\/a>/));
   });
 });

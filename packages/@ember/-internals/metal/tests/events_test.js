@@ -97,7 +97,7 @@ moduleFor(
       sendEvent(obj, 'event!');
       assert.equal(target.count, 0, 'should invoke but do nothing');
 
-      target.method = function() {
+      target.method = function () {
         this.count++;
       };
       sendEvent(obj, 'event!');
@@ -107,7 +107,7 @@ moduleFor(
     ['@test calling sendEvent with extra params should be passed to listeners'](assert) {
       let obj = {};
       let params = null;
-      addListener(obj, 'event!', function() {
+      addListener(obj, 'event!', function () {
         params = Array.prototype.slice.call(arguments);
       });
 
@@ -141,11 +141,11 @@ moduleFor(
     ['@test a listener can be added as part of a mixin'](assert) {
       let triggered = 0;
       let MyMixin = Mixin.create({
-        foo1: on('bar', function() {
+        foo1: on('bar', function () {
           triggered++;
         }),
 
-        foo2: on('bar', function() {
+        foo2: on('bar', function () {
           triggered++;
         }),
       });
@@ -166,7 +166,7 @@ moduleFor(
 
       expectAssertion(() => {
         Mixin.create({
-          foo1: on(function() {}),
+          foo1: on(function () {}),
         });
       }, 'on called without valid event names');
     }
@@ -174,12 +174,12 @@ moduleFor(
     ['@test a listener added as part of a mixin may be overridden'](assert) {
       let triggered = 0;
       let FirstMixin = Mixin.create({
-        foo: on('bar', function() {
+        foo: on('bar', function () {
           triggered++;
         }),
       });
       let SecondMixin = Mixin.create({
-        foo: on('baz', function() {
+        foo: on('baz', function () {
           triggered++;
         }),
       });

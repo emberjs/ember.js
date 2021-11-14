@@ -21,16 +21,15 @@
 
     "newLine": "LF",
     "noEmit": true,
-    "allowJs": false
+    "allowJs": false,
+
+    "paths": {
+      "@glimmer/*": ["../node_modules/@glimmer/*"],
+      "@ember/object/*": ["@ember/object/*", "@ember/object/types/*"]
+    }
   },
 
-  "include": [
-    "packages/**/*.ts"
-  ],
+  "include": ["packages/**/*.ts"],
 
-  "exclude": [
-    "dist",
-    "tmp",
-    "node_modules"
-  ]
+  "exclude": ["dist", "node_modules", "tmp"]
 }

@@ -1,11 +1,13 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { DEBUG } from '@glimmer/env';
+import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
+import { componentCapabilities } from '@glimmer/manager';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { set, setProperties, computed } from '@ember/-internals/metal';
-import { setComponentManager, capabilities } from '@ember/-internals/glimmer';
+import { setComponentManager } from '@ember/-internals/glimmer';
 
 const BasicComponentManager = EmberObject.extend({
-  capabilities: capabilities('3.4'),
+  capabilities: componentCapabilities('3.13'),
 
   createComponent(factory, args) {
     return factory.create({ args });
@@ -37,7 +39,7 @@ class ComponentManagerTest extends RenderingTestCase {
     super(...arguments);
 
     InstrumentedComponentManager = EmberObject.extend({
-      capabilities: capabilities('3.4', {
+      capabilities: componentCapabilities('3.13', {
         destructor: true,
         asyncLifecycleCallbacks: true,
       }),
@@ -78,17 +80,6 @@ class ComponentManagerTest extends RenderingTestCase {
 moduleFor(
   'Component Manager - Curly Invocation',
   class extends ComponentManagerTest {
-    ['@test the string based version of setComponentManager is deprecated']() {
-      expectDeprecation(() => {
-        setComponentManager(
-          'basic',
-          EmberObject.extend({
-            greeting: 'hello',
-          })
-        );
-      }, 'Passing the name of the component manager to "setupComponentManager" is deprecated. Please pass a function that produces an instance of the manager.');
-    }
-
     ['@test it can render a basic component with custom component manager']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
@@ -98,7 +89,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
@@ -116,7 +107,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
@@ -128,7 +119,7 @@ moduleFor(
     ['@test it can have no template context']() {
       let ComponentClass = setComponentManager(() => {
         return EmberObject.create({
-          capabilities: capabilities('3.4'),
+          capabilities: componentCapabilities('3.13'),
 
           createComponent() {
             return null;
@@ -156,7 +147,7 @@ moduleFor(
       class Base {}
       setComponentManager(() => {
         return EmberObject.create({
-          capabilities: capabilities('3.4'),
+          capabilities: componentCapabilities('3.13'),
 
           createComponent(Factory, args) {
             return new Factory(args);
@@ -215,7 +206,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: capabilities('3.4'),
+            capabilities: componentCapabilities('3.13'),
 
             createComponent(factory) {
               return factory.create();
@@ -235,7 +226,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world {{count}}</p>`,
+        template: `<p>{{this.greeting}} world {{this.count}}</p>`,
         ComponentClass,
       });
 
@@ -252,14 +243,14 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
@@ -272,18 +263,18 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar firstName=firstName lastName=lastName}}', {
+      this.render('{{foo-bar firstName=this.firstName lastName=this.lastName}}', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -304,14 +295,14 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.positional', function() {
+          salutation: computed('args.positional.[]', function () {
             return this.args.positional[0] + ' ' + this.args.positional[1];
           }),
         })
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
@@ -320,22 +311,86 @@ moduleFor(
       this.assertHTML(`<p>Yehuda Katz</p>`);
     }
 
-    ['@test positional params are updated if they change']() {
+    ['@test positional params are updated if they change (computed, arr tag)']() {
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.positional', function() {
+          salutation: computed('args.positional.[]', function () {
             return this.args.positional[0] + ' ' + this.args.positional[1];
           }),
         })
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar firstName lastName}}', {
+      this.render('{{foo-bar this.firstName this.lastName}}', {
+        firstName: 'Yehuda',
+        lastName: 'Katz',
+      });
+
+      this.assertHTML(`<p>Yehuda Katz</p>`);
+
+      runTask(() =>
+        setProperties(this.context, {
+          firstName: 'Chad',
+          lastName: 'Hietala',
+        })
+      );
+
+      this.assertHTML(`<p>Chad Hietala</p>`);
+    }
+
+    ['@test positional params are updated if they change (computed, individual tags)']() {
+      let ComponentClass = setComponentManager(
+        createBasicManager,
+        EmberObject.extend({
+          salutation: computed('args.positional.0', 'args.positional.1', function () {
+            return this.args.positional[0] + ' ' + this.args.positional[1];
+          }),
+        })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{this.salutation}}</p>`,
+        ComponentClass,
+      });
+
+      this.render('{{foo-bar this.firstName this.lastName}}', {
+        firstName: 'Yehuda',
+        lastName: 'Katz',
+      });
+
+      this.assertHTML(`<p>Yehuda Katz</p>`);
+
+      runTask(() =>
+        setProperties(this.context, {
+          firstName: 'Chad',
+          lastName: 'Hietala',
+        })
+      );
+
+      this.assertHTML(`<p>Chad Hietala</p>`);
+    }
+
+    ['@test positional params are updated if they change (native)']() {
+      let ComponentClass = setComponentManager(
+        createBasicManager,
+        class extends EmberObject {
+          get salutation() {
+            return this.args.positional[0] + ' ' + this.args.positional[1];
+          }
+        }
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{this.salutation}}</p>`,
+        ComponentClass,
+      });
+
+      this.render('{{foo-bar this.firstName this.lastName}}', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -356,7 +411,7 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: capabilities('3.4', {
+            capabilities: componentCapabilities('3.13', {
               destructor: true,
             }),
 
@@ -387,11 +442,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
-      this.render('{{#if show}}{{foo-bar}}{{/if}}', { show: true });
+      this.render('{{#if this.show}}{{foo-bar}}{{/if}}', { show: true });
 
       this.assertHTML(`<p>hello world</p>`);
 
@@ -406,8 +461,9 @@ moduleFor(
       let ComponentClass = setComponentManager(
         () => {
           return EmberObject.create({
-            capabilities: capabilities('3.4', {
+            capabilities: componentCapabilities('3.13', {
               asyncLifecycleCallbacks: true,
+              updateHook: true,
             }),
 
             createComponent(factory, args) {
@@ -445,11 +501,11 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} {{@name}}</p>`,
+        template: `<p>{{this.greeting}} {{@name}}</p>`,
         ComponentClass,
       });
 
-      this.render('{{foo-bar name=name}}', { name: 'world' });
+      this.render('{{foo-bar name=this.name}}', { name: 'world' });
 
       this.assertHTML(`<p>hello world</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
@@ -457,6 +513,67 @@ moduleFor(
       runTask(() => this.context.set('name', 'max'));
       this.assertHTML(`<p>hello max</p>`);
       assert.verifySteps(['updateComponent', 'didUpdateComponent']);
+    }
+
+    '@test capabilities helper function must be used to generate capabilities'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      let ComponentClass = setComponentManager(
+        () => {
+          return EmberObject.create({
+            capabilities: {
+              asyncLifecycleCallbacks: true,
+              destructor: true,
+              update: false,
+            },
+
+            createComponent(factory, args) {
+              assert.step('createComponent');
+              return factory.create({ args });
+            },
+
+            updateComponent(component, args) {
+              assert.step('updateComponent');
+              set(component, 'args', args);
+            },
+
+            destroyComponent(component) {
+              assert.step('destroyComponent');
+              component.destroy();
+            },
+
+            getContext(component) {
+              assert.step('getContext');
+              return component;
+            },
+
+            didCreateComponent() {
+              assert.step('didCreateComponent');
+            },
+
+            didUpdateComponent() {
+              assert.step('didUpdateComponent');
+            },
+          });
+        },
+        EmberObject.extend({
+          greeting: 'hello',
+        })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{this.greeting}} {{@name}}</p>`,
+        ComponentClass,
+      });
+
+      assert.throws(() => {
+        this.render('{{foo-bar name=this.name}}', { name: 'world' });
+      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
+
+      assert.verifySteps([]);
     }
   }
 );
@@ -473,7 +590,7 @@ moduleFor(
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{greeting}} world</p>`,
+        template: `<p>{{this.greeting}} world</p>`,
         ComponentClass,
       });
 
@@ -486,14 +603,14 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
@@ -519,18 +636,18 @@ moduleFor(
       let ComponentClass = setComponentManager(
         createBasicManager,
         EmberObject.extend({
-          salutation: computed('args.named.firstName', 'args.named.lastName', function() {
+          salutation: computed('args.named.firstName', 'args.named.lastName', function () {
             return this.args.named.firstName + ' ' + this.args.named.lastName;
           }),
         })
       );
 
       this.registerComponent('foo-bar', {
-        template: `<p>{{salutation}}</p>`,
+        template: `<p>{{this.salutation}}</p>`,
         ComponentClass,
       });
 
-      this.render('<FooBar @firstName={{firstName}} @lastName={{lastName}} />', {
+      this.render('<FooBar @firstName={{this.firstName}} @lastName={{this.lastName}} />', {
         firstName: 'Yehuda',
         lastName: 'Katz',
       });
@@ -547,11 +664,12 @@ moduleFor(
       this.assertHTML(`<p>Chad Hietala</p>`);
     }
 
-    ['@test updating attributes triggers didUpdateComponent'](assert) {
+    ['@test updating attributes triggers updateComponent and didUpdateComponent'](assert) {
       let TestManager = EmberObject.extend({
-        capabilities: capabilities('3.4', {
+        capabilities: componentCapabilities('3.13', {
           destructor: true,
           asyncLifecycleCallbacks: true,
+          updateHook: true,
         }),
 
         createComponent(factory, args) {
@@ -599,13 +717,177 @@ moduleFor(
         ComponentClass,
       });
 
-      this.render('<FooBar data-test={{value}} />', { value: 'foo' });
+      this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
 
       this.assertHTML(`<p data-test="foo">Hello world!</p>`);
       assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
       runTask(() => this.context.set('value', 'bar'));
-      assert.verifySteps(['didUpdateComponent']);
+      assert.verifySteps(['updateComponent', 'didUpdateComponent']);
+    }
+
+    ['@test updateComponent fires consistently with or without args'](assert) {
+      let updated = [];
+
+      class TestManager {
+        static create() {
+          return new TestManager();
+        }
+
+        capabilities = componentCapabilities('3.13', {
+          updateHook: true,
+        });
+
+        createComponent(_factory, args) {
+          assert.step('createComponent');
+          return { id: args.named.id || 'no-id' };
+        }
+
+        updateComponent(component) {
+          assert.step('updateComponent');
+          updated.push(component);
+        }
+
+        getContext(component) {
+          assert.step('getContext');
+          return component;
+        }
+      }
+
+      let ComponentClass = setComponentManager(() => new TestManager(), {});
+
+      this.registerComponent('foo-bar', {
+        template: '{{yield}}',
+        ComponentClass,
+      });
+
+      this.render(
+        strip`
+          [<FooBar>{{this.value}}</FooBar>]
+          [<FooBar @id="static-id">{{this.value}}</FooBar>]
+          [<FooBar @id={{this.id}}>{{this.value}}</FooBar>]
+        `,
+        { id: 'dynamic-id', value: 'Hello World' }
+      );
+
+      this.assertHTML(`[Hello World][Hello World][Hello World]`);
+      assert.deepEqual(updated, []);
+      assert.verifySteps([
+        'createComponent',
+        'getContext',
+        'createComponent',
+        'getContext',
+        'createComponent',
+        'getContext',
+      ]);
+
+      runTask(() => this.context.set('value', 'bar'));
+      assert.deepEqual(updated, [{ id: 'no-id' }, { id: 'static-id' }, { id: 'dynamic-id' }]);
+      assert.verifySteps(['updateComponent', 'updateComponent', 'updateComponent']);
+    }
+
+    ['@test updating arguments does not trigger updateComponent or didUpdateComponent if `updateHook` is false'](
+      assert
+    ) {
+      class TestManager {
+        capabilities = componentCapabilities('3.13', {
+          /* implied: updateHook: false */
+        });
+
+        createComponent() {
+          assert.step('createComponent');
+          return {};
+        }
+
+        getContext(component) {
+          assert.step('getContext');
+          return component;
+        }
+
+        updateComponent() {
+          throw new Error('updateComponent called unexpectedly');
+        }
+
+        didUpdateComponent() {
+          throw new Error('didUpdateComponent called unexpectedly');
+        }
+      }
+
+      let ComponentClass = setComponentManager(() => new TestManager(), {});
+
+      this.registerComponent('foo-bar', {
+        template: `<p ...attributes>Hello world!</p>`,
+        ComponentClass,
+      });
+
+      this.render('<FooBar data-test={{this.value}} />', { value: 'foo' });
+
+      this.assertHTML(`<p data-test="foo">Hello world!</p>`);
+      assert.verifySteps(['createComponent', 'getContext']);
+
+      runTask(() => this.context.set('value', 'bar'));
+      assert.verifySteps([]);
+    }
+
+    '@test capabilities helper function must be used to generate capabilities'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      let ComponentClass = setComponentManager(
+        () => {
+          return EmberObject.create({
+            capabilities: {
+              asyncLifecycleCallbacks: true,
+              destructor: true,
+              update: false,
+            },
+
+            createComponent(factory, args) {
+              assert.step('createComponent');
+              return factory.create({ args });
+            },
+
+            updateComponent(component, args) {
+              assert.step('updateComponent');
+              set(component, 'args', args);
+            },
+
+            destroyComponent(component) {
+              assert.step('destroyComponent');
+              component.destroy();
+            },
+
+            getContext(component) {
+              assert.step('getContext');
+              return component;
+            },
+
+            didCreateComponent() {
+              assert.step('didCreateComponent');
+            },
+
+            didUpdateComponent() {
+              assert.step('didUpdateComponent');
+            },
+          });
+        },
+        EmberObject.extend({
+          greeting: 'hello',
+        })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p>{{this.greeting}} {{@name}}</p>`,
+        ComponentClass,
+      });
+
+      assert.throws(() => {
+        this.render('<FooBar @name={{this.name}} />', { name: 'world' });
+      }, /Custom component managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13'\)` \(imported via `import \{ capabilities \} from '@ember\/component';`\). /);
+
+      assert.verifySteps([]);
     }
   }
 );

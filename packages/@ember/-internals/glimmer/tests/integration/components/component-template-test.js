@@ -1,150 +1,142 @@
+import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
-import {
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-  EMBER_MODULE_UNIFICATION,
-} from '@ember/canary-features';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
-
+import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { Component, compile } from '../../utils/helpers';
-import { setComponentTemplate, getComponentTemplate } from '../../..';
 
-if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-  if (EMBER_MODULE_UNIFICATION) {
-    moduleFor(
-      'Components test: setComponentTemplate',
-      class extends RenderingTestCase {
-        '@skip setComponentTemplate does not work with module unification!'() {}
+moduleFor(
+  'Components test: setComponentTemplate',
+  class extends RenderingTestCase {
+    '@test it basically works'() {
+      this.registerComponent('foo-bar', {
+        ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
+      });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+    }
+
+    '@test it takes precedence over resolver'() {
+      this.registerComponent('foo-bar', {
+        ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
+        template: 'noooooo!',
+      });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+    }
+
+    '@test calling it with primitives asserts'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
       }
-    );
-  } else {
-    moduleFor(
-      'Components test: setComponentTemplate',
-      class extends RenderingTestCase {
-        '@test it basically works'() {
-          this.registerComponent('foo-bar', {
-            ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
-          });
 
-          this.render('<FooBar />');
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), null);
+      }, /Cannot call `setComponentTemplate` on `null`/);
 
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), undefined);
+      }, /Cannot call `setComponentTemplate` on `undefined`/);
 
-          runTask(() => this.rerender());
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), true);
+      }, /Cannot call `setComponentTemplate` on `true`/);
 
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
-        }
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), false);
+      }, /Cannot call `setComponentTemplate` on `false`/);
 
-        '@test it takes precedence over resolver'() {
-          this.registerComponent('foo-bar', {
-            ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
-            template: 'noooooo!',
-          });
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), 123);
+      }, /Cannot call `setComponentTemplate` on `123`/);
 
-          this.render('<FooBar />');
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), 'foo');
+      }, /Cannot call `setComponentTemplate` on `foo`/);
 
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), Symbol('foo'));
+      }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
+    }
 
-          runTask(() => this.rerender());
-
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
-        }
-
-        '@test calling it with primitives asserts'() {
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), null);
-          }, /Cannot call `setComponentTemplate` on `null`/);
-
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), undefined);
-          }, /Cannot call `setComponentTemplate` on `undefined`/);
-
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), true);
-          }, /Cannot call `setComponentTemplate` on `true`/);
-
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), false);
-          }, /Cannot call `setComponentTemplate` on `false`/);
-
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), 123);
-          }, /Cannot call `setComponentTemplate` on `123`/);
-
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), 'foo');
-          }, /Cannot call `setComponentTemplate` on `foo`/);
-
-          if (HAS_NATIVE_SYMBOL) {
-            expectAssertion(() => {
-              setComponentTemplate(compile('foo'), Symbol('foo'));
-            }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
-          }
-        }
-
-        '@test calling it twice on the same object asserts'() {
-          let Thing = setComponentTemplate(
-            compile('hello'),
-            Component.extend().reopenClass({
-              toString() {
-                return 'Thing';
-              },
-            })
-          );
-
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), Thing);
-          }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Thing`\)/);
-        }
-
-        '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
-          let Parent = setComponentTemplate(compile('hello'), Component.extend());
-
-          this.registerComponent('foo-bar', {
-            ComponentClass: Parent.extend(),
-          });
-
-          this.render('<FooBar />');
-
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-          runTask(() => this.rerender());
-
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
-        }
-
-        '@test templates set with setComponentTemplate are inherited (native ES class extends)'() {
-          let Parent = setComponentTemplate(compile('hello'), Component.extend());
-
-          this.registerComponent('foo-bar', {
-            ComponentClass: class extends Parent {},
-          });
-
-          this.render('<FooBar />');
-
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-          runTask(() => this.rerender());
-
-          this.assertComponentElement(this.firstChild, { content: 'hello' });
-        }
-
-        '@test it can re-assign templates from another class'() {
-          let Foo = setComponentTemplate(compile('shared'), Component.extend());
-          let Bar = setComponentTemplate(getComponentTemplate(Foo), Component.extend());
-
-          this.registerComponent('foo', { ComponentClass: Foo });
-          this.registerComponent('bar', { ComponentClass: Bar });
-
-          this.render('<Foo />|<Bar />');
-
-          this.assertText('shared|shared');
-
-          runTask(() => this.rerender());
-
-          this.assertText('shared|shared');
-        }
+    '@test calling it twice on the same object asserts'(assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
       }
-    );
+
+      let Thing = setComponentTemplate(
+        compile('hello'),
+        Component.extend().reopenClass({
+          toString() {
+            return 'Thing';
+          },
+        })
+      );
+
+      assert.throws(() => {
+        setComponentTemplate(compile('foo'), Thing);
+      }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Class`\)/);
+    }
+
+    '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
+      let Parent = setComponentTemplate(compile('hello'), Component.extend());
+
+      this.registerComponent('foo-bar', {
+        ComponentClass: Parent.extend(),
+      });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+    }
+
+    '@test templates set with setComponentTemplate are inherited (native ES class extends)'() {
+      let Parent = setComponentTemplate(compile('hello'), Component.extend());
+
+      this.registerComponent('foo-bar', {
+        ComponentClass: class extends Parent {},
+      });
+
+      this.render('<FooBar />');
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+    }
+
+    '@test it can re-assign templates from another class'() {
+      let Foo = setComponentTemplate(compile('shared'), Component.extend());
+      let Bar = setComponentTemplate(getComponentTemplate(Foo), Component.extend());
+
+      this.registerComponent('foo', { ComponentClass: Foo });
+      this.registerComponent('bar', { ComponentClass: Bar });
+
+      this.render('<Foo />|<Bar />');
+
+      this.assertText('shared|shared');
+
+      runTask(() => this.rerender());
+
+      this.assertText('shared|shared');
+    }
   }
-}
+);

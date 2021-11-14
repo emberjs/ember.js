@@ -1,17 +1,43 @@
+/* globals URLSearchParams */
+import { DEBUG } from '@glimmer/env';
 import { isEnabled } from '@ember/canary-features';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import { setContext, unsetContext } from './test-context';
 import { all } from 'rsvp';
+import { enableDestroyableTracking, assertDestroyablesDestroyed } from '@glimmer/destroyable';
+
+const ASSERT_DESTROYABLES = (() => {
+  if (typeof URLSearchParams === 'undefined' || typeof document !== 'object') {
+    return false;
+  }
+
+  let queryParams = new URLSearchParams(document.location.search.substring(1));
+  let assertDestroyables = queryParams.get('assertDestroyables');
+
+  return assertDestroyables !== null;
+})();
 
 export default function moduleFor(description, TestClass, ...mixins) {
-  QUnit.module(description, function(hooks) {
+  QUnit.module(description, function (hooks) {
     setupTestClass(hooks, TestClass, ...mixins);
   });
 }
 
+function afterEachFinally() {
+  unsetContext();
+
+  if (DEBUG && ASSERT_DESTROYABLES) {
+    assertDestroyablesDestroyed();
+  }
+}
+
 export function setupTestClass(hooks, TestClass, ...mixins) {
-  hooks.beforeEach(function(assert) {
+  hooks.beforeEach(function (assert) {
+    if (DEBUG && ASSERT_DESTROYABLES) {
+      enableDestroyableTracking();
+    }
+
     let instance = new TestClass(assert);
     this.instance = instance;
 
@@ -22,7 +48,7 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
     }
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     let promises = [];
     let instance = this.instance;
     this.instance = null;
@@ -41,10 +67,10 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
     // promise when it is not needed
     let filteredPromises = promises.filter(Boolean);
     if (filteredPromises.length > 0) {
-      return all(filteredPromises).finally(() => unsetContext());
+      return all(filteredPromises).finally(afterEachFinally);
     }
 
-    unsetContext();
+    afterEachFinally();
   });
 
   if (mixins.length > 0) {
@@ -55,39 +81,37 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
   properties.forEach(generateTest);
 
   function shouldTest(features) {
-    return features.every(feature => {
-      if (feature[0] === '!' && isEnabled(feature.slice(1))) {
-        return false;
-      } else if (!isEnabled(feature)) {
-        return false;
+    return features.every((feature) => {
+      if (feature[0] === '!') {
+        return !isEnabled(feature.slice(1));
       } else {
-        return true;
+        return isEnabled(feature);
       }
     });
   }
 
   function generateTest(name) {
     if (name.indexOf('@test ') === 0) {
-      QUnit.test(name.slice(5), function(assert) {
+      QUnit.test(name.slice(5), function (assert) {
         return this.instance[name](assert);
       });
     } else if (name.indexOf('@only ') === 0) {
       // eslint-disable-next-line qunit/no-only
-      QUnit.only(name.slice(5), function(assert) {
+      QUnit.only(name.slice(5), function (assert) {
         return this.instance[name](assert);
       });
     } else if (name.indexOf('@skip ') === 0) {
-      QUnit.skip(name.slice(5), function(assert) {
+      QUnit.skip(name.slice(5), function (assert) {
         return this.instance[name](assert);
       });
     } else {
-      let match = /^@feature\(([A-Z_a-z-!]+)\) /.exec(name);
+      let match = /^@feature\(([A-Z_a-z-! ,]+)\) /.exec(name);
 
       if (match) {
         let features = match[1].replace(/ /g, '').split(',');
 
         if (shouldTest(features)) {
-          QUnit.test(name.slice(match[0].length), function(assert) {
+          QUnit.test(name.slice(match[0].length), function (assert) {
             return this.instance[name](assert);
           });
         }

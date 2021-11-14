@@ -15,7 +15,7 @@ moduleFor(
   'Helpers test: {{unbound}}',
   class extends RenderingTestCase {
     ['@test should be able to output a property without binding']() {
-      this.render(`<div id="first">{{unbound content.anUnboundString}}</div>`, {
+      this.render(`<div id="first">{{unbound this.content.anUnboundString}}</div>`, {
         content: {
           anUnboundString: 'No spans here, son.',
         },
@@ -41,7 +41,7 @@ moduleFor(
     }
 
     ['@test should be able to use unbound helper in #each helper']() {
-      this.render(`<ul>{{#each items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`, {
+      this.render(`<ul>{{#each this.items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`, {
         items: emberA(['a', 'b', 'c', 1, 2, 3]),
       });
 
@@ -53,9 +53,12 @@ moduleFor(
     }
 
     ['@test should be able to use unbound helper in #each helper (with objects)']() {
-      this.render(`<ul>{{#each items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`, {
-        items: emberA([{ wham: 'bam' }, { wham: 1 }]),
-      });
+      this.render(
+        `<ul>{{#each this.items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`,
+        {
+          items: emberA([{ wham: 'bam' }, { wham: 1 }]),
+        }
+      );
 
       this.assertText('bam1');
 
@@ -74,7 +77,7 @@ moduleFor(
 
     ['@test it should assert unbound cannot be called with multiple arguments']() {
       let willThrow = () => {
-        this.render(`{{unbound foo bar}}`, {
+        this.render(`{{unbound this.foo this.bar}}`, {
           foo: 'BORK',
           bar: 'BLOOP',
         });
@@ -87,7 +90,7 @@ moduleFor(
     }
 
     ['@test should render on attributes']() {
-      this.render(`<a href="{{unbound model.foo}}"></a>`, {
+      this.render(`<a href="{{unbound this.model.foo}}"></a>`, {
         model: { foo: 'BORK' },
       });
 
@@ -123,7 +126,7 @@ moduleFor(
       ]);
 
       this.render(
-        `<ul>{{#each people as |person|}}<li><a href="{{unbound person.url}}">{{person.name}}</a></li>{{/each}}</ul>`,
+        `<ul>{{#each this.people as |person|}}<li><a href="{{unbound person.url}}">{{person.name}}</a></li>{{/each}}</ul>`,
         {
           people: unsafeUrls,
         }
@@ -159,7 +162,7 @@ moduleFor(
     }
 
     ['@skip helper form updates on parent re-render']() {
-      this.render(`{{unbound foo}}`, {
+      this.render(`{{unbound this.foo}}`, {
         foo: 'BORK',
       });
 
@@ -190,9 +193,9 @@ moduleFor(
 
     // semantics here is not guaranteed
     ['@test sexpr form does not update no matter what']() {
-      this.registerHelper('capitalize', args => args[0].toUpperCase());
+      this.registerHelper('capitalize', (args) => args[0].toUpperCase());
 
-      this.render(`{{capitalize (unbound foo)}}`, {
+      this.render(`{{capitalize (unbound this.foo)}}`, {
         foo: 'bork',
       });
 
@@ -222,11 +225,11 @@ moduleFor(
     }
 
     ['@test sexpr in helper form does not update on parent re-render']() {
-      this.registerHelper('capitalize', params => params[0].toUpperCase());
+      this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
-      this.registerHelper('doublize', params => `${params[0]} ${params[0]}`);
+      this.registerHelper('doublize', (params) => `${params[0]} ${params[0]}`);
 
-      this.render(`{{capitalize (unbound (doublize foo))}}`, {
+      this.render(`{{capitalize (unbound (doublize this.foo))}}`, {
         foo: 'bork',
       });
 
@@ -265,7 +268,7 @@ moduleFor(
       });
 
       this.render(
-        `{{unbound (repeat foo count=bar)}} {{repeat foo count=bar}} {{unbound (repeat foo count=2)}} {{repeat foo count=4}}`,
+        `{{unbound (repeat this.foo count=this.bar)}} {{repeat this.foo count=this.bar}} {{unbound (repeat this.foo count=2)}} {{repeat this.foo count=4}}`,
         {
           foo: 'X',
           bar: 5,
@@ -292,7 +295,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{unbound (surround model.prefix model.value "bar")}} {{surround model.prefix model.value "bar"}} {{unbound (surround "bar" model.value model.suffix)}} {{surround "bar" model.value model.suffix}}`,
+      {{unbound (surround this.model.prefix this.model.value "bar")}} {{surround this.model.prefix this.model.value "bar"}} {{unbound (surround "bar" this.model.value this.model.suffix)}} {{surround "bar" this.model.value this.model.suffix}}`,
         {
           model: {
             prefix: 'before',
@@ -332,10 +335,10 @@ moduleFor(
     }
 
     ['@test should be able to render unbound forms of multi-arg helpers']() {
-      this.registerHelper('fauxconcat', params => params.join(''));
+      this.registerHelper('fauxconcat', (params) => params.join(''));
 
       this.render(
-        `{{fauxconcat model.foo model.bar model.bing}} {{unbound (fauxconcat model.foo model.bar model.bing)}}`,
+        `{{fauxconcat this.model.foo this.model.bar this.model.bing}} {{unbound (fauxconcat this.model.foo this.model.bar this.model.bing)}}`,
         {
           model: {
             foo: 'a',
@@ -374,7 +377,7 @@ moduleFor(
         },
 
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
@@ -393,7 +396,7 @@ moduleFor(
           this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.teardown();
           }
           this.set('value', value);
@@ -404,7 +407,7 @@ moduleFor(
       });
 
       this.render(
-        `{{capitalizeName person}} {{unbound (capitalizeName person)}} {{concatNames person}} {{unbound (concatNames person)}}`,
+        `{{capitalizeName this.person}} {{unbound (capitalizeName this.person)}} {{concatNames this.person}} {{unbound (concatNames this.person)}}`,
         {
           person: {
             firstName: 'shooby',
@@ -437,10 +440,10 @@ moduleFor(
     }
 
     ['@test should be able to render an unbound helper invocation in #each helper']() {
-      this.registerHelper('capitalize', params => params[0].toUpperCase());
+      this.registerHelper('capitalize', (params) => params[0].toUpperCase());
 
       this.render(
-        `{{#each people as |person|}}{{capitalize person.firstName}} {{unbound (capitalize person.firstName)}}{{/each}}`,
+        `{{#each this.people as |person|}}{{capitalize person.firstName}} {{unbound (capitalize person.firstName)}}{{/each}}`,
         {
           people: emberA([
             {
@@ -493,7 +496,7 @@ moduleFor(
         },
 
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
@@ -512,7 +515,7 @@ moduleFor(
           this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.teardown();
           }
           this.set('value', value);
@@ -523,7 +526,7 @@ moduleFor(
       });
 
       this.render(
-        `{{capitalizeName person}} {{unbound (capitalizeName person)}} {{concatNames person}} {{unbound (concatNames person)}}`,
+        `{{capitalizeName this.person}} {{unbound (capitalizeName this.person)}} {{concatNames this.person}} {{unbound (concatNames this.person)}}`,
         {
           person: {
             firstName: 'shooby',
@@ -558,13 +561,13 @@ moduleFor(
     ['@test should be able to render bound form of a helper inside unbound form of same helper']() {
       this.render(
         strip`
-      {{#if (unbound model.foo)}}
-        {{#if model.bar}}true{{/if}}
-        {{#unless model.bar}}false{{/unless}}
+      {{#if (unbound this.model.foo)}}
+        {{#if this.model.bar}}true{{/if}}
+        {{#unless this.model.bar}}false{{/unless}}
       {{/if}}
-      {{#unless (unbound model.notfoo)}}
-        {{#if model.bar}}true{{/if}}
-        {{#unless model.bar}}false{{/unless}}
+      {{#unless (unbound this.model.notfoo)}}
+        {{#if this.model.bar}}true{{/if}}
+        {{#unless this.model.bar}}false{{/unless}}
       {{/unless}}`,
         {
           model: {
@@ -608,7 +611,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (unbound model.foo)}}`,
+        template: `{{yield (unbound this.model.foo)}}`,
       });
 
       this.render(`{{#foo-bar as |value|}}{{value}}{{/foo-bar}}`);
@@ -640,7 +643,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (unbound (hash foo=model.foo))}}`,
+        template: `{{yield (unbound (hash foo=this.model.foo))}}`,
       });
 
       this.render(`{{#foo-bar as |value|}}{{value.foo}}{{/foo-bar}}`);

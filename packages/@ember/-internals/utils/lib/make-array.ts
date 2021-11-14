@@ -29,11 +29,13 @@ const { isArray } = Array;
  @return {Array}
  @private
  */
-export default function makeArray<T>(obj: T[]): T[];
-export default function makeArray<T>(obj: T): T[];
-export default function makeArray(obj: any | null | undefined): Array<any | null | undefined> {
+function makeArray<T>(obj: T[]): T[];
+function makeArray<T>(obj: T): T[];
+function makeArray(obj: any | null | undefined): Array<any | null | undefined> {
   if (obj === null || obj === undefined) {
     return [];
   }
   return isArray(obj) ? obj : [obj];
 }
+
+export default makeArray;

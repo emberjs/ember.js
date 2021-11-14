@@ -5,7 +5,7 @@ moduleFor(
   'Cache',
   class extends AbstractTestCase {
     ['@test basic'](assert) {
-      let cache = new Cache(100, key => key.toUpperCase());
+      let cache = new Cache(100, (key) => key.toUpperCase());
 
       assert.equal(cache.get('foo'), 'FOO');
       assert.equal(cache.get('bar'), 'BAR');
@@ -13,7 +13,7 @@ moduleFor(
     }
 
     ['@test explicit sets'](assert) {
-      let cache = new Cache(100, key => key.toUpperCase());
+      let cache = new Cache(100, (key) => key.toUpperCase());
 
       assert.equal(cache.get('foo'), 'FOO');
 
@@ -28,7 +28,7 @@ moduleFor(
 
     ['@test caches computation correctly'](assert) {
       let count = 0;
-      let cache = new Cache(100, key => {
+      let cache = new Cache(100, (key) => {
         count++;
         return key.toUpperCase();
       });
@@ -62,7 +62,7 @@ moduleFor(
     }
 
     ['@test continues working after reaching cache limit'](assert) {
-      let cache = new Cache(3, key => key.toUpperCase());
+      let cache = new Cache(3, (key) => key.toUpperCase());
 
       cache.get('a');
       cache.get('b');

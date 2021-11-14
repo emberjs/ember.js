@@ -1,8 +1,122 @@
 import { getOwner } from '@ember/-internals/owner';
-import { scheduleOnce } from '@ember/runloop';
-import { get, objectAt, addArrayObserver, removeArrayObserver } from '@ember/-internals/metal';
+import { _backburner } from '@ember/runloop';
+import { get } from '@ember/-internals/metal';
 import { dasherize } from '@ember/string';
 import { Namespace, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
+
+function iterate(arr, fn) {
+  if (Symbol.iterator in arr) {
+    for (let item of arr) {
+      fn(item);
+    }
+  } else {
+    arr.forEach(fn);
+  }
+}
+
+class RecordsWatcher {
+  recordCaches = new Map();
+
+  added = [];
+  updated = [];
+  removed = [];
+
+  getCacheForItem(record) {
+    let recordCache = this.recordCaches.get(record);
+
+    if (!recordCache) {
+      let hasBeenAdded = false;
+
+      recordCache = createCache(() => {
+        if (!hasBeenAdded) {
+          this.added.push(this.wrapRecord(record));
+          hasBeenAdded = true;
+        } else {
+          this.updated.push(this.wrapRecord(record));
+        }
+      });
+
+      this.recordCaches.set(record, recordCache);
+    }
+
+    return recordCache;
+  }
+
+  constructor(records, recordsAdded, recordsUpdated, recordsRemoved, wrapRecord, release) {
+    this.release = release;
+    this.wrapRecord = wrapRecord;
+
+    this.recordArrayCache = createCache(() => {
+      let seen = new Set();
+
+      // Track `[]` for legacy support
+      consumeTag(tagFor(records, '[]'));
+
+      iterate(records, (record) => {
+        getValue(this.getCacheForItem(record));
+        seen.add(record);
+      });
+
+      // Untrack this operation because these records are being removed, they
+      // should not be polled again in the future
+      untrack(() => {
+        this.recordCaches.forEach((cache, record) => {
+          if (!seen.has(record)) {
+            this.removed.push(wrapRecord(record));
+            this.recordCaches.delete(record);
+          }
+        });
+      });
+
+      if (this.added.length > 0) {
+        recordsAdded(this.added);
+        this.added = [];
+      }
+
+      if (this.updated.length > 0) {
+        recordsUpdated(this.updated);
+        this.updated = [];
+      }
+
+      if (this.removed.length > 0) {
+        recordsRemoved(this.removed);
+        this.removed = [];
+      }
+    });
+  }
+
+  revalidate() {
+    getValue(this.recordArrayCache);
+  }
+}
+
+class TypeWatcher {
+  constructor(records, onChange, release) {
+    let hasBeenAccessed = false;
+
+    this.cache = createCache(() => {
+      // Empty iteration, we're doing this just
+      // to track changes to the records array
+      iterate(records, () => {});
+
+      // Also track `[]` for legacy support
+      consumeTag(tagFor(records, '[]'));
+
+      if (hasBeenAccessed === true) {
+        onChange();
+      } else {
+        hasBeenAccessed = true;
+      }
+    });
+
+    this.release = release;
+  }
+
+  revalidate() {
+    getValue(this.cache);
+  }
+}
 
 /**
 @module @ember/debug
@@ -28,7 +142,6 @@ import { Namespace, Object as EmberObject, A as emberA } from '@ember/-internals
   * `getRecordKeywords`
   * `getRecordFilterValues`
   * `getRecordColor`
-  * `observeRecord`
 
   The adapter will need to be registered
   in the application's container as `dataAdapter:main`.
@@ -52,7 +165,13 @@ import { Namespace, Object as EmberObject, A as emberA } from '@ember/-internals
 export default EmberObject.extend({
   init() {
     this._super(...arguments);
+
+    this.containerDebugAdapter = getOwner(this).lookup('container-debug-adapter:main');
+
     this.releaseMethods = emberA();
+    this.recordsWatchers = new Map();
+    this.typeWatchers = new Map();
+    this.flushWatchers = null;
   },
 
   /**
@@ -64,7 +183,6 @@ export default EmberObject.extend({
     @since 1.5.0
     @public
   **/
-  containerDebugAdapter: undefined,
 
   /**
     The number of attributes to send
@@ -93,6 +211,32 @@ export default EmberObject.extend({
   acceptsModelName: true,
 
   /**
+     Map from records arrays to RecordsWatcher instances
+
+     @private
+     @property recordsWatchers
+     @since 3.26.0
+   */
+
+  /**
+    Map from records arrays to TypeWatcher instances
+
+    @private
+    @property typeWatchers
+    @since 3.26.0
+   */
+
+  /**
+    Callback that is currently scheduled on backburner end to flush and check
+    all active watchers.
+
+    @private
+    @property flushWatchers
+    @since 3.26.0
+
+   */
+
+  /**
     Stores all methods that clear observers.
     These methods will be called on destruction.
 
@@ -100,7 +244,6 @@ export default EmberObject.extend({
     @property releaseMethods
     @since 1.3.0
   */
-  releaseMethods: emberA(),
 
   /**
     Specifies how records can be filtered.
@@ -135,7 +278,7 @@ export default EmberObject.extend({
     let releaseMethods = emberA();
     let typesToSend;
 
-    typesToSend = modelTypes.map(type => {
+    typesToSend = modelTypes.map((type) => {
       let klass = type.klass;
       let wrapped = this.wrapModelType(klass, type.name);
       releaseMethods.push(this.observeModelType(type.name, typesUpdated));
@@ -145,7 +288,7 @@ export default EmberObject.extend({
     typesAdded(typesToSend);
 
     let release = () => {
-      releaseMethods.forEach(fn => fn());
+      releaseMethods.forEach((fn) => fn());
       this.releaseMethods.removeObject(release);
     };
     this.releaseMethods.pushObject(release);
@@ -179,58 +322,53 @@ export default EmberObject.extend({
     Takes an array of objects containing wrapped records.
 
     @param {Function} recordsRemoved Callback to call when a record has removed.
-    Takes the following parameters:
-      index: The array index where the records were removed.
-      count: The number of records removed.
+    Takes an array of objects containing wrapped records.
 
     @return {Function} Method to call to remove all observers.
   */
   watchRecords(modelName, recordsAdded, recordsUpdated, recordsRemoved) {
-    let releaseMethods = emberA();
     let klass = this._nameToClass(modelName);
     let records = this.getRecords(klass, modelName);
-    let release;
+    let { recordsWatchers } = this;
 
-    function recordUpdated(updatedRecord) {
-      recordsUpdated([updatedRecord]);
+    let recordsWatcher = recordsWatchers.get(records);
+
+    if (!recordsWatcher) {
+      recordsWatcher = new RecordsWatcher(
+        records,
+        recordsAdded,
+        recordsUpdated,
+        recordsRemoved,
+        (record) => this.wrapRecord(record),
+        () => {
+          recordsWatchers.delete(records);
+          this.updateFlushWatchers();
+        }
+      );
+
+      recordsWatchers.set(records, recordsWatcher);
+      this.updateFlushWatchers();
+
+      recordsWatcher.revalidate();
     }
 
-    let recordsToSend = records.map(record => {
-      releaseMethods.push(this.observeRecord(record, recordUpdated));
-      return this.wrapRecord(record);
-    });
+    return recordsWatcher.release;
+  },
 
-    let contentDidChange = (array, idx, removedCount, addedCount) => {
-      for (let i = idx; i < idx + addedCount; i++) {
-        let record = objectAt(array, i);
-        let wrapped = this.wrapRecord(record);
-        releaseMethods.push(this.observeRecord(record, recordUpdated));
-        recordsAdded([wrapped]);
+  updateFlushWatchers() {
+    if (this.flushWatchers === null) {
+      if (this.typeWatchers.size > 0 || this.recordsWatchers.size > 0) {
+        this.flushWatchers = () => {
+          this.typeWatchers.forEach((watcher) => watcher.revalidate());
+          this.recordsWatchers.forEach((watcher) => watcher.revalidate());
+        };
+
+        _backburner.on('end', this.flushWatchers);
       }
-
-      if (removedCount) {
-        recordsRemoved(idx, removedCount);
-      }
-    };
-
-    let observer = {
-      didChange: contentDidChange,
-      willChange() {
-        return this;
-      },
-    };
-    addArrayObserver(records, this, observer);
-
-    release = () => {
-      releaseMethods.forEach(fn => fn());
-      removeArrayObserver(records, this, observer);
-      this.releaseMethods.removeObject(release);
-    };
-
-    recordsAdded(recordsToSend);
-
-    this.releaseMethods.pushObject(release);
-    return release;
+    } else if (this.typeWatchers.size === 0 && this.recordsWatchers.size === 0) {
+      _backburner.off('end', this.flushWatchers);
+      this.flushWatchers = null;
+    }
   },
 
   /**
@@ -240,7 +378,15 @@ export default EmberObject.extend({
   */
   willDestroy() {
     this._super(...arguments);
-    this.releaseMethods.forEach(fn => fn());
+
+    this.typeWatchers.forEach((watcher) => watcher.release());
+    this.recordsWatchers.forEach((watcher) => watcher.release());
+
+    this.releaseMethods.forEach((fn) => fn());
+
+    if (this.flushWatchers) {
+      _backburner.off('end', this.flushWatchers);
+    }
   },
 
   /**
@@ -284,28 +430,27 @@ export default EmberObject.extend({
     let klass = this._nameToClass(modelName);
     let records = this.getRecords(klass, modelName);
 
-    function onChange() {
+    let onChange = () => {
       typesUpdated([this.wrapModelType(klass, modelName)]);
-    }
-
-    let observer = {
-      didChange(array, idx, removedCount, addedCount) {
-        // Only re-fetch records if the record count changed
-        // (which is all we care about as far as model types are concerned).
-        if (removedCount > 0 || addedCount > 0) {
-          scheduleOnce('actions', this, onChange);
-        }
-      },
-      willChange() {
-        return this;
-      },
     };
 
-    addArrayObserver(records, this, observer);
+    let { typeWatchers } = this;
 
-    let release = () => removeArrayObserver(records, this, observer);
+    let typeWatcher = typeWatchers.get(records);
 
-    return release;
+    if (!typeWatcher) {
+      typeWatcher = new TypeWatcher(records, onChange, () => {
+        typeWatchers.delete(records);
+        this.updateFlushWatchers();
+      });
+
+      typeWatchers.set(records, typeWatcher);
+      this.updateFlushWatchers();
+
+      typeWatcher.revalidate();
+    }
+
+    return typeWatcher.release;
   },
 
   /**
@@ -357,13 +502,13 @@ export default EmberObject.extend({
     }
 
     // New adapters return strings instead of classes.
-    types = emberA(types).map(name => {
+    types = emberA(types).map((name) => {
       return {
         klass: this._nameToClass(name),
         name,
       };
     });
-    types = emberA(types).filter(type => this.detect(type.klass));
+    types = emberA(types).filter((type) => this.detect(type.klass));
 
     return emberA(types);
   },
@@ -380,9 +525,9 @@ export default EmberObject.extend({
     let namespaces = emberA(Namespace.NAMESPACES);
     let types = emberA();
 
-    namespaces.forEach(namespace => {
+    namespaces.forEach((namespace) => {
       for (let key in namespace) {
-        if (!namespace.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(namespace, key)) {
           continue;
         }
         // Even though we will filter again in `getModelTypes`,
@@ -477,17 +622,5 @@ export default EmberObject.extend({
   */
   getRecordColor() {
     return null;
-  },
-
-  /**
-    Observes all relevant properties and re-sends the wrapped record
-    when a change occurs.
-
-    @public
-    @method observerRecord
-    @return {Function} The function to call to remove all observers.
-  */
-  observeRecord() {
-    return function() {};
   },
 });

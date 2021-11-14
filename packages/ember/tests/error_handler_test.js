@@ -42,7 +42,7 @@ moduleFor(
 
     ['@test when Ember.onerror (which rethrows) is registered - sync run'](assert) {
       assert.expect(2);
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.ok(true, 'onerror called');
         throw error;
       });
@@ -51,7 +51,7 @@ moduleFor(
 
     ['@test when Ember.onerror (which does not rethrow) is registered - sync run'](assert) {
       assert.expect(2);
-      setOnerror(function() {
+      setOnerror(function () {
         assert.ok(true, 'onerror called');
       });
       runThatThrowsSync();
@@ -89,7 +89,7 @@ moduleFor(
       assert.expect(2);
       setTesting(false);
 
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.ok(true, 'Ember.onerror was called');
         throw error;
       });
@@ -108,7 +108,7 @@ moduleFor(
       assert.expect(1);
       setTesting(false);
 
-      setOnerror(function() {
+      setOnerror(function () {
         assert.ok(true, 'Ember.onerror was called');
       });
 
@@ -133,7 +133,7 @@ moduleFor(
 
       setTesting(true);
 
-      window.onerror = function(message) {
+      window.onerror = function (message) {
         caughtByWindowOnerror = message;
         // prevent "bubbling" and therefore failing the test
         return true;
@@ -164,7 +164,7 @@ moduleFor(
 
       setTesting(false);
 
-      window.onerror = function(message) {
+      window.onerror = function (message) {
         caughtByWindowOnerror = message;
         // prevent "bubbling" and therefore failing the test
         return true;
@@ -194,7 +194,7 @@ moduleFor(
 
       setTesting(false);
 
-      window.onerror = function() {
+      window.onerror = function () {
         assert.notOk(
           true,
           'window.onerror is never invoked when Ember.onerror intentionally swallows errors'
@@ -204,7 +204,7 @@ moduleFor(
       };
 
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(error, thrown, 'Ember.onerror is called with the error');
       });
 
@@ -221,7 +221,7 @@ moduleFor(
       assert.expect(1);
 
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -235,7 +235,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in promise constructor when Ember.onerror which does rethrow is present - rsvp`](
@@ -249,7 +249,7 @@ moduleFor(
       assert.expect(2);
 
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -261,7 +261,7 @@ moduleFor(
       // prevent QUnit handler from failing test
       QUnit.onUnhandledRejection = () => {};
 
-      window.onunhandledrejection = function(event) {
+      window.onunhandledrejection = function (event) {
         assert.pushResult({
           result: /the error/.test(event.reason),
           actual: event.reason,
@@ -277,7 +277,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in promise constructor when Ember.onerror which does not rethrow is present (Ember.testing = false) - rsvp`](
@@ -287,7 +287,7 @@ moduleFor(
 
       setTesting(false);
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -301,7 +301,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in promise constructor when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
@@ -316,7 +316,7 @@ moduleFor(
 
       setTesting(false);
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -328,7 +328,7 @@ moduleFor(
       // prevent QUnit handler from failing test
       QUnit.onUnhandledRejection = () => {};
 
-      window.onunhandledrejection = function(event) {
+      window.onunhandledrejection = function (event) {
         assert.pushResult({
           result: /the error/.test(event.reason),
           actual: event.reason,
@@ -344,7 +344,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in promise .then callback when Ember.onerror which does not rethrow is present - rsvp`](
@@ -353,7 +353,7 @@ moduleFor(
       assert.expect(1);
 
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -367,7 +367,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in promise .then callback when Ember.onerror which does rethrow is present - rsvp`](
@@ -381,7 +381,7 @@ moduleFor(
       assert.expect(2);
 
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -393,7 +393,7 @@ moduleFor(
       // prevent QUnit handler from failing test
       QUnit.onUnhandledRejection = () => {};
 
-      window.onunhandledrejection = function(event) {
+      window.onunhandledrejection = function (event) {
         assert.pushResult({
           result: /the error/.test(event.reason),
           actual: event.reason,
@@ -409,7 +409,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in promise .then callback when Ember.onerror which does not rethrow is present (Ember.testing = false) - rsvp`](
@@ -419,7 +419,7 @@ moduleFor(
 
       setTesting(false);
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -433,7 +433,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in promise .then callback when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
@@ -448,7 +448,7 @@ moduleFor(
 
       setTesting(false);
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -460,7 +460,7 @@ moduleFor(
       // prevent QUnit handler from failing test
       QUnit.onUnhandledRejection = () => {};
 
-      window.onunhandledrejection = function(event) {
+      window.onunhandledrejection = function (event) {
         assert.pushResult({
           result: /the error/.test(event.reason),
           actual: event.reason,
@@ -476,7 +476,7 @@ moduleFor(
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 10));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 10));
     }
 
     [`@test errors in async promise .then callback when Ember.onerror which does not rethrow is present - rsvp`](
@@ -485,7 +485,7 @@ moduleFor(
       assert.expect(1);
 
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -493,13 +493,13 @@ moduleFor(
         );
       });
 
-      new RSVP.Promise(resolve => setTimeout(resolve, 10)).then(() => {
+      new RSVP.Promise((resolve) => setTimeout(resolve, 10)).then(() => {
         throw thrown;
       });
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 20));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 20));
     }
 
     [`@test errors in async promise .then callback when Ember.onerror which does rethrow is present - rsvp`](
@@ -513,7 +513,7 @@ moduleFor(
       assert.expect(2);
 
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -525,7 +525,7 @@ moduleFor(
       // prevent QUnit handler from failing test
       QUnit.onUnhandledRejection = () => {};
 
-      window.onunhandledrejection = function(event) {
+      window.onunhandledrejection = function (event) {
         assert.pushResult({
           result: /the error/.test(event.reason),
           actual: event.reason,
@@ -535,13 +535,13 @@ moduleFor(
         });
       };
 
-      new RSVP.Promise(resolve => setTimeout(resolve, 10)).then(() => {
+      new RSVP.Promise((resolve) => setTimeout(resolve, 10)).then(() => {
         throw thrown;
       });
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 20));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 20));
     }
 
     [`@test errors in async promise .then callback when Ember.onerror which does not rethrow is present (Ember.testing = false) - rsvp`](
@@ -551,7 +551,7 @@ moduleFor(
 
       setTesting(false);
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -559,13 +559,13 @@ moduleFor(
         );
       });
 
-      new RSVP.Promise(resolve => setTimeout(resolve, 10)).then(() => {
+      new RSVP.Promise((resolve) => setTimeout(resolve, 10)).then(() => {
         throw thrown;
       });
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 20));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 20));
     }
 
     [`@test errors in async promise .then callback when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
@@ -579,7 +579,7 @@ moduleFor(
 
       setTesting(false);
       let thrown = new Error('the error');
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -591,7 +591,7 @@ moduleFor(
       // prevent QUnit handler from failing test
       QUnit.onUnhandledRejection = () => {};
 
-      window.onunhandledrejection = function(event) {
+      window.onunhandledrejection = function (event) {
         assert.pushResult({
           result: /the error/.test(event.reason),
           actual: event.reason,
@@ -601,13 +601,13 @@ moduleFor(
         });
       };
 
-      new RSVP.Promise(resolve => setTimeout(resolve, 10)).then(() => {
+      new RSVP.Promise((resolve) => setTimeout(resolve, 10)).then(() => {
         throw thrown;
       });
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, 20));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, 20));
     }
   }
 );

@@ -76,15 +76,15 @@ export class Libraries {
 }
 
 if (EMBER_LIBRARIES_ISREGISTERED) {
-  Libraries.prototype.isRegistered = function(name: string): boolean {
+  Libraries.prototype.isRegistered = function (name: string): boolean {
     return Boolean(this._getLibraryByName(name));
   };
 }
 
 if (DEBUG) {
-  Libraries.prototype.logVersions = function(): void {
+  Libraries.prototype.logVersions = function (): void {
     let libs = this._registry;
-    let nameLengths = libs.map(item => get(item, 'name.length'));
+    let nameLengths = libs.map((item) => get(item, 'name.length'));
     let maxNameLength = Math.max.apply(null, nameLengths);
 
     debug('-------------------------------');

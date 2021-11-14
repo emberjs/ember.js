@@ -4,18 +4,18 @@ import Test from '../lib/test';
 import Adapter from '../lib/adapters/adapter';
 import QUnitAdapter from '../lib/adapters/qunit';
 import EmberApplication from '@ember/application';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
 
 const originalDebug = getDebugFunction('debug');
-const noop = function() {};
+const noop = function () {};
 
-var App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
+let App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
 
-var originalConsoleError = console.error; // eslint-disable-line no-console
+const originalConsoleError = console.error; // eslint-disable-line no-console
 
 function runThatThrowsSync(message = 'Error for testing error handling') {
   return run(() => {
@@ -63,7 +63,7 @@ moduleFor(
   class extends AdapterSetupAndTearDown {
     ['@test Setting a test adapter manually'](assert) {
       assert.expect(1);
-      var CustomAdapter;
+      let CustomAdapter;
 
       CustomAdapter = Adapter.extend({
         asyncStart() {
@@ -71,8 +71,10 @@ moduleFor(
         },
       });
 
-      run(function() {
-        App = EmberApplication.create();
+      run(function () {
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         Test.adapter = CustomAdapter.create();
         App.setupForTesting();
       });
@@ -85,8 +87,10 @@ moduleFor(
 
       Test.adapter = null;
 
-      run(function() {
-        App = EmberApplication.create();
+      run(function () {
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         App.setupForTesting();
       });
 
@@ -100,8 +104,10 @@ moduleFor(
 
       Test.adapter = null;
 
-      run(function() {
-        App = EmberApplication.create();
+      run(function () {
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         App.setupForTesting();
       });
 
@@ -146,7 +152,7 @@ moduleFor(
         },
       };
 
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
         throw error;
       });
@@ -165,7 +171,7 @@ moduleFor(
         },
       };
 
-      setOnerror(function() {
+      setOnerror(function () {
         assert.ok(true, 'onerror is called for sync errors even if TestAdapter is setup');
       });
 
@@ -184,7 +190,7 @@ moduleFor(
         },
       };
 
-      window.onerror = function(message) {
+      window.onerror = function (message) {
         caughtByWindowOnerror = message;
         // prevent "bubbling" and therefore failing the test
         return true;
@@ -230,7 +236,7 @@ moduleFor(
         },
       };
 
-      setOnerror(function() {
+      setOnerror(function () {
         assert.ok(true, 'onerror is invoked for errors thrown in next/later');
       });
 
@@ -258,7 +264,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
       // prevent QUnit handler from failing test
       QUnit.onUnhandledRejection = () => {};
 
-      window.onunhandledrejection = function(rejection) {
+      window.onunhandledrejection = function (rejection) {
         assert.pushResult({
           result: /the error/.test(rejection.reason),
           actual: rejection.reason,
@@ -275,7 +281,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     }
 
     [`@test ${message} when both Ember.onerror and TestAdapter without \`exception\` method are present - rsvp`](
@@ -288,7 +294,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
         exception: undefined,
       });
 
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.pushResult({
           result: /the error/.test(error.message),
           actual: error.message,
@@ -302,7 +308,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     }
 
     [`@test ${message} when TestAdapter is present - rsvp`](assert) {
@@ -324,7 +330,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     }
 
     [`@test ${message} when both Ember.onerror and TestAdapter are present - rsvp`](assert) {
@@ -341,7 +347,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
         },
       });
 
-      setOnerror(function() {
+      setOnerror(function () {
         assert.notOk(true, 'Ember.onerror is not called if Test.adapter does not rethrow');
       });
 
@@ -349,7 +355,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     }
 
     [`@test ${message} when both Ember.onerror and TestAdapter are present - rsvp`](assert) {
@@ -367,7 +373,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
         },
       });
 
-      setOnerror(function(error) {
+      setOnerror(function (error) {
         assert.strictEqual(
           error,
           thrown,
@@ -379,14 +385,14 @@ function testAdapter(message, generatePromise, timeout = 10) {
 
       // RSVP.Promise's are configured to settle within the run loop, this
       // ensures that run loop has completed
-      return new RSVP.Promise(resolve => setTimeout(resolve, timeout));
+      return new RSVP.Promise((resolve) => setTimeout(resolve, timeout));
     }
   };
 }
 
 moduleFor(
   'Adapter Errors: .then callback',
-  testAdapter('errors in promise constructor', error => {
+  testAdapter('errors in promise constructor', (error) => {
     new RSVP.Promise(() => {
       throw error;
     });
@@ -395,7 +401,7 @@ moduleFor(
 
 moduleFor(
   'Adapter Errors: Promise Contructor',
-  testAdapter('errors in promise constructor', error => {
+  testAdapter('errors in promise constructor', (error) => {
     RSVP.resolve().then(() => {
       throw error;
     });
@@ -406,8 +412,8 @@ moduleFor(
   'Adapter Errors: Promise chain .then callback',
   testAdapter(
     'errors in promise constructor',
-    error => {
-      new RSVP.Promise(resolve => setTimeout(resolve, 10)).then(() => {
+    (error) => {
+      new RSVP.Promise((resolve) => setTimeout(resolve, 10)).then(() => {
         throw error;
       });
     },

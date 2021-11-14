@@ -334,15 +334,5 @@ moduleFor(
         new Foo();
       }, /You attempted to use @uniqBy/);
     }
-
-    ['@test alias throws an error if used without parameters']() {
-      expectAssertion(() => {
-        class Foo {
-          @alias foo;
-        }
-
-        new Foo();
-      }, /You attempted to use @alias/);
-    }
   }
 );

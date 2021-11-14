@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { get, set, addObserver, removeObserver } from '@ember/-internals/metal';
+import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import EmberDataAdapter from '../lib/data_adapter';
 import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
@@ -82,7 +82,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         adapter = this.applicationInstance.lookup('data-adapter:main');
-        adapter.watchModelTypes(function() {});
+        adapter.watchModelTypes(function () {});
       });
     }
 
@@ -159,36 +159,6 @@ moduleFor(
       });
     }
 
-    ['@test Model Types Updated but Unchanged Do not Trigger Callbacks'](assert) {
-      assert.expect(0);
-      let records = emberA([1, 2, 3]);
-      this.add(
-        'data-adapter:main',
-        DataAdapter.extend({
-          getRecords() {
-            return records;
-          },
-        })
-      );
-      this.add('model:post', PostClass);
-
-      return this.visit('/').then(() => {
-        adapter = this.applicationInstance.lookup('data-adapter:main');
-
-        function modelTypesAdded() {
-          run(() => {
-            records.arrayContentDidChange(0, 0, 0);
-          });
-        }
-
-        function modelTypesUpdated() {
-          assert.ok(false, "modelTypesUpdated should not be triggered if the array didn't change");
-        }
-
-        adapter.watchModelTypes(modelTypesAdded, modelTypesUpdated);
-      });
-    }
-
     ['@test Records Added'](assert) {
       let countAdded = 1;
       let post = PostClass.create();
@@ -250,16 +220,6 @@ moduleFor(
           getRecords() {
             return recordList;
           },
-          observeRecord(record, recordUpdated) {
-            let self = this;
-            function callback() {
-              recordUpdated(self.wrapRecord(record));
-            }
-            addObserver(record, 'title', callback);
-            return function() {
-              removeObserver(record, 'title', callback);
-            };
-          },
           getRecordColumnValues(record) {
             return { title: get(record, 'title') };
           },
@@ -273,8 +233,8 @@ moduleFor(
         .then(() => {
           adapter = this.applicationInstance.lookup('data-adapter:main');
 
-          function recordsAdded() {
-            set(post, 'title', 'Post Modified');
+          function recordsAdded(records) {
+            assert.equal(records[0].columnValues.title, 'Post', 'Post added correctly');
           }
 
           function recordsUpdated(records) {
@@ -283,6 +243,11 @@ moduleFor(
           }
 
           release = adapter.watchRecords('post', recordsAdded, recordsUpdated);
+
+          return runLoopSettled();
+        })
+        .then(() => {
+          set(post, 'title', 'Post Modified');
 
           return runLoopSettled();
         })

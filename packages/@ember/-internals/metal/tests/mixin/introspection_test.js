@@ -41,7 +41,7 @@ moduleFor(
 
     ['@test Ember.mixins()'](assert) {
       function mapGuids(ary) {
-        return ary.map(x => guidFor(x));
+        return ary.map((x) => guidFor(x));
       }
 
       assert.deepEqual(

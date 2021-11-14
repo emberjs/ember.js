@@ -22,12 +22,30 @@ import { EmberLocation, UpdateCallback } from './api';
   @protected
 */
 export default class NoneLocation extends EmberObject implements EmberLocation {
-  updateCallback!: UpdateCallback;
+  declare updateCallback: UpdateCallback;
   implementation = 'none';
 
-  detect() {
+  // Set in reopen so it can be overwritten with extend
+  declare path: string;
+
+  /**
+    Will be pre-pended to path.
+
+    @private
+    @property rootURL
+    @default '/'
+  */
+  // Set in reopen so it can be overwritten with extend
+  declare rootURL: string;
+
+  initState(): void {
+    this._super(...arguments);
+
     let { rootURL } = this;
 
+    // This assert doesn't have anything to do with state initialization,
+    // but we're hijacking this method since it's called after the route has
+    // set the rootURL property on its Location instance.
     assert(
       'rootURL must end with a trailing forward slash e.g. "/app/"',
       rootURL.charAt(rootURL.length - 1) === '/'
@@ -41,7 +59,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method getURL
     @return {String} path
   */
-  getURL() {
+  getURL(): string {
     let { path, rootURL } = this;
 
     // remove trailing slashes if they exists
@@ -59,7 +77,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method setURL
     @param path {String}
   */
-  setURL(path: string) {
+  setURL(path: string): void {
     set(this, 'path', path);
   }
 
@@ -72,7 +90,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback: (url: string) => void) {
+  onUpdateURL(callback: (url: string) => void): void {
     this.updateCallback = callback;
   }
 
@@ -83,7 +101,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method handleURL
     @param url {String}
   */
-  handleURL(url: string) {
+  handleURL(url: string): void {
     set(this, 'path', url);
     this.updateCallback(url);
   }
@@ -100,7 +118,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @param url {String}
     @return {String} url
   */
-  formatURL(url: string) {
+  formatURL(url: string): string {
     let { rootURL } = this;
 
     if (url !== '') {
@@ -114,13 +132,5 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
 
 NoneLocation.reopen({
   path: '',
-
-  /**
-    Will be pre-pended to path.
-
-    @private
-    @property rootURL
-    @default '/'
-  */
   rootURL: '/',
 });

@@ -32,10 +32,12 @@ class ClearTests extends AbstractTestCase {
       false,
       'should NOT have notified lastObject once'
     );
+
+    obj.destroy();
   }
 
   async '@test [X].clear() => [] + notify'() {
-    var obj, before, after, observer;
+    let obj, before, after, observer;
 
     before = newFixture(1);
     after = [];
@@ -64,6 +66,8 @@ class ClearTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 }
 

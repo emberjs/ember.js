@@ -21,28 +21,31 @@ moduleFor(
         },
 
         setupRouter() {
-          this._super(...arguments);
-          let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
-          let getRoute = this._routerMicrolib.getRoute;
+          let isNewSetup = this._super(...arguments);
+          if (isNewSetup) {
+            let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
+            let getRoute = this._routerMicrolib.getRoute;
 
-          this._routerMicrolib.getRoute = function(routeName) {
-            fetchedHandlers.push(routeName);
+            this._routerMicrolib.getRoute = function (routeName) {
+              fetchedHandlers.push(routeName);
 
-            // Cache the returns so we don't have more than one Promise for a
-            // given handler.
-            return (
-              handlerPromises[routeName] ||
-              (handlerPromises[routeName] = new RSVP.Promise(resolve => {
-                setTimeout(() => {
-                  let handler = getRoute(routeName);
+              // Cache the returns so we don't have more than one Promise for a
+              // given handler.
+              return (
+                handlerPromises[routeName] ||
+                (handlerPromises[routeName] = new RSVP.Promise((resolve) => {
+                  setTimeout(() => {
+                    let handler = getRoute(routeName);
 
-                  seenHandlers[routeName] = handler;
+                    seenHandlers[routeName] = handler;
 
-                  resolve(handler);
-                }, 10);
-              }))
-            );
-          };
+                    resolve(handler);
+                  }, 10);
+                }))
+              );
+            };
+          }
+          return isNewSetup;
         },
 
         _getQPMeta(routeInfo) {
@@ -54,12 +57,10 @@ moduleFor(
       };
     }
 
-    ['@test can render a link to an asynchronously loaded route without fetching the route'](
+    async ['@test can render a link to an asynchronously loaded route without fetching the route'](
       assert
     ) {
-      assert.expect(4);
-
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:id' });
       });
 
@@ -69,38 +70,38 @@ moduleFor(
         this.addTemplate(
           'application',
           `
-        {{link-to 'Post' 'post' 1337 (query-params foo='bar') class='post-link is-1337'}}
-        {{link-to 'Post' 'post' 7331 (query-params foo='boo') class='post-link is-7331'}}
-        {{outlet}}
-      `
+          <LinkTo @route='post' @model={{1337}} @query={{hash foo='bar'}} class='post-link is-1337'>Post</LinkTo>
+          <LinkTo @route='post' @model={{7331}} @query={{hash foo='boo'}} class='post-link is-7331'>Post</LinkTo>
+          {{outlet}}
+          `
         );
       };
 
       setupAppTemplate();
 
-      return this.visitAndAssert('/').then(() => {
-        assert.equal(
-          this.$('.post-link.is-1337').attr('href'),
-          '/post/1337?foo=bar',
-          'renders correctly with default QP value'
-        );
-        assert.equal(
-          this.$('.post-link.is-7331').attr('href'),
-          '/post/7331?foo=boo',
-          'renders correctly with non-default QP value'
-        );
-        assert.deepEqual(
-          this.fetchedHandlers,
-          ['application', 'index'],
-          `only fetched the handlers for the route we're on`
-        );
-      });
+      await this.visitAndAssert('/');
+
+      assert.equal(
+        this.$('.post-link.is-1337').attr('href'),
+        '/post/1337?foo=bar',
+        'renders correctly with default QP value'
+      );
+      assert.equal(
+        this.$('.post-link.is-7331').attr('href'),
+        '/post/7331?foo=boo',
+        'renders correctly with non-default QP value'
+      );
+      assert.deepEqual(
+        this.fetchedHandlers,
+        ['application', 'index'],
+        `only fetched the handlers for the route we're on`
+      );
     }
 
     ['@test can transitionTo to an asynchronously loaded route with simple query params'](assert) {
       assert.expect(6);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:id' });
         this.route('posts');
       });
@@ -145,7 +146,7 @@ moduleFor(
     ['@test can transitionTo to an asynchronously loaded route with array query params'](assert) {
       assert.expect(5);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('post', { path: '/post/:id' });
       });
 
@@ -181,8 +182,8 @@ moduleFor(
     ['@test can transitionTo to an asynchronously loaded route with mapped query params'](assert) {
       assert.expect(7);
 
-      this.router.map(function() {
-        this.route('post', { path: '/post/:id' }, function() {
+      this.router.map(function () {
+        this.route('post', { path: '/post/:id' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -236,8 +237,8 @@ moduleFor(
     ['@test can transitionTo with a URL'](assert) {
       assert.expect(7);
 
-      this.router.map(function() {
-        this.route('post', { path: '/post/:id' }, function() {
+      this.router.map(function () {
+        this.route('post', { path: '/post/:id' }, function () {
           this.route('index', { path: '/' });
         });
       });
@@ -287,13 +288,13 @@ moduleFor(
     ["@test undefined isn't serialized or deserialized into a string"](assert) {
       assert.expect(4);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('example');
       });
 
       this.addTemplate(
         'application',
-        "{{link-to 'Example' 'example' (query-params foo=undefined) id='the-link'}}"
+        "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
       );
 
       this.setSingleQPController('example', 'foo', undefined, {

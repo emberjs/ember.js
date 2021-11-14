@@ -1,5 +1,4 @@
 import { ENV } from '@ember/-internals/environment';
-import { assign } from '@ember/polyfills';
 
 /**
   Set `EmberENV.FEATURES` in your application's `config/environment.js` file
@@ -15,10 +14,13 @@ import { assign } from '@ember/polyfills';
 export const DEFAULT_FEATURES = {
   EMBER_LIBRARIES_ISREGISTERED: null,
   EMBER_IMPROVED_INSTRUMENTATION: null,
-  EMBER_MODULE_UNIFICATION: false,
-  EMBER_METAL_TRACKED_PROPERTIES: true,
-  EMBER_CUSTOM_COMPONENT_ARG_PROXY: true,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE: true,
+  EMBER_NAMED_BLOCKS: true,
+  EMBER_GLIMMER_HELPER_MANAGER: true,
+  EMBER_GLIMMER_INVOKE_HELPER: true,
+  EMBER_STRICT_MODE: true,
+  EMBER_DYNAMIC_HELPERS_AND_MODIFIERS: true,
+  EMBER_ROUTING_ROUTER_SERVICE_REFRESH: null,
+  EMBER_CACHED: true,
 };
 
 /**
@@ -30,7 +32,7 @@ export const DEFAULT_FEATURES = {
   @since 1.1.0
   @public
 */
-export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
+export const FEATURES = Object.assign(DEFAULT_FEATURES, ENV.FEATURES);
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's
@@ -48,10 +50,10 @@ export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
   @public
 */
 export function isEnabled(feature: string): boolean {
-  let featureValue = FEATURES[feature];
+  let value = FEATURES[feature];
 
-  if (featureValue === true || featureValue === false) {
-    return featureValue;
+  if (value === true || value === false) {
+    return value;
   } else if (ENV.ENABLE_OPTIONAL_FEATURES) {
     return true;
   } else {
@@ -69,14 +71,14 @@ function featureValue(value: null | boolean) {
 
 export const EMBER_LIBRARIES_ISREGISTERED = featureValue(FEATURES.EMBER_LIBRARIES_ISREGISTERED);
 export const EMBER_IMPROVED_INSTRUMENTATION = featureValue(FEATURES.EMBER_IMPROVED_INSTRUMENTATION);
-export const EMBER_MODULE_UNIFICATION = featureValue(FEATURES.EMBER_MODULE_UNIFICATION);
-export const EMBER_METAL_TRACKED_PROPERTIES = featureValue(FEATURES.EMBER_METAL_TRACKED_PROPERTIES);
-export const EMBER_GLIMMER_FORWARD_MODIFIERS_WITH_SPLATTRIBUTES = featureValue(
-  FEATURES.EMBER_GLIMMER_FORWARD_MODIFIERS_WITH_SPLATTRIBUTES
+export const EMBER_NAMED_BLOCKS = featureValue(FEATURES.EMBER_NAMED_BLOCKS);
+export const EMBER_GLIMMER_HELPER_MANAGER = featureValue(FEATURES.EMBER_GLIMMER_HELPER_MANAGER);
+export const EMBER_GLIMMER_INVOKE_HELPER = featureValue(FEATURES.EMBER_GLIMMER_INVOKE_HELPER);
+export const EMBER_STRICT_MODE = featureValue(FEATURES.EMBER_STRICT_MODE);
+export const EMBER_DYNAMIC_HELPERS_AND_MODIFIERS = featureValue(
+  FEATURES.EMBER_DYNAMIC_HELPERS_AND_MODIFIERS
 );
-export const EMBER_CUSTOM_COMPONENT_ARG_PROXY = featureValue(
-  FEATURES.EMBER_CUSTOM_COMPONENT_ARG_PROXY
+export const EMBER_ROUTING_ROUTER_SERVICE_REFRESH = featureValue(
+  FEATURES.EMBER_ROUTING_ROUTER_SERVICE_REFRESH
 );
-export const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = featureValue(
-  FEATURES.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
-);
+export const EMBER_CACHED = featureValue(FEATURES.EMBER_CACHED);

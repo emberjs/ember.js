@@ -85,11 +85,11 @@ moduleFor(
       }
     }
 
-    ['@test [obj, foo.baz.bat] -> EXCEPTION'](assert) {
+    ['@test set(xobj, foo.baz.bat, ...) -> EXCEPTION'](assert) {
       assert.throws(() => set(obj, 'foo.baz.bat', 'BAM'));
     }
 
-    ['@test [obj, foo.baz.bat] -> EXCEPTION'](assert) {
+    ['@test trySet(obj, foo.baz.bat, ...)'](assert) {
       trySet(obj, 'foo.baz.bat', 'BAM');
       assert.ok(true, 'does not raise');
     }

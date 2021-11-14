@@ -15,7 +15,7 @@ moduleFor(
     }
 
     ['@test resolves renderers exist but no runloops are triggered'](assert) {
-      this.render(strip`{{foo}}`, { foo: 'bar' });
+      this.render(strip`{{this.foo}}`, { foo: 'bar' });
 
       return renderSettled().then(() => {
         assert.ok(true, 'resolved even without runloops');
@@ -32,7 +32,7 @@ moduleFor(
     }
 
     ['@test resolves when rendering has completed (after property update)']() {
-      this.render(strip`{{foo}}`, { foo: 'bar' });
+      this.render(strip`{{this.foo}}`, { foo: 'bar' });
 
       this.assertText('bar');
       this.component.set('foo', 'baz');
@@ -46,7 +46,7 @@ moduleFor(
     ['@test resolves in run loop when renderer has settled'](assert) {
       assert.expect(3);
 
-      this.render(strip`{{foo}}`, { foo: 'bar' });
+      this.render(strip`{{this.foo}}`, { foo: 'bar' });
 
       this.assertText('bar');
       let promise;

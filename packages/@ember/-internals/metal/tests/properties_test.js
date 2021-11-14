@@ -1,4 +1,4 @@
-import { computed, defineProperty, deprecateProperty } from '..';
+import { defineProperty, deprecateProperty } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -6,68 +6,10 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test toString'](assert) {
       let obj = {};
-      defineProperty(obj, 'toString', undefined, function() {
+      defineProperty(obj, 'toString', undefined, function () {
         return 'FOO';
       });
       assert.equal(obj.toString(), 'FOO', 'should replace toString');
-    }
-
-    ['@test for data properties, didDefineProperty hook should be called if implemented'](assert) {
-      assert.expect(2);
-
-      let obj = {
-        didDefineProperty(obj, keyName, value) {
-          assert.equal(keyName, 'foo', 'key name should be foo');
-          assert.equal(value, 'bar', 'value should be bar');
-        },
-      };
-
-      defineProperty(obj, 'foo', undefined, 'bar');
-    }
-
-    ['@test for computed properties, didDefineProperty hook should be called if implemented'](
-      assert
-    ) {
-      assert.expect(2);
-
-      let computedProperty = computed(function() {
-        return this;
-      });
-
-      let obj = {
-        didDefineProperty(obj, keyName, value) {
-          assert.equal(keyName, 'foo', 'key name should be foo');
-          assert.strictEqual(
-            value,
-            computedProperty,
-            'value should be passed as computed property'
-          );
-        },
-      };
-
-      defineProperty(obj, 'foo', computedProperty);
-    }
-
-    ['@test for descriptor properties, didDefineProperty hook should be called if implemented'](
-      assert
-    ) {
-      assert.expect(2);
-
-      let descriptor = {
-        writable: true,
-        configurable: false,
-        enumerable: true,
-        value: 42,
-      };
-
-      let obj = {
-        didDefineProperty(obj, keyName, value) {
-          assert.equal(keyName, 'answer', 'key name should be answer');
-          assert.strictEqual(value, descriptor, 'value should be passed as descriptor');
-        },
-      };
-
-      defineProperty(obj, 'answer', descriptor);
     }
   }
 );
@@ -97,7 +39,7 @@ moduleFor(
       deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
 
       for (let prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
+        if (Object.prototype.hasOwnProperty.call(obj, prop)) {
           assert.notEqual(prop, 'baz');
         }
       }

@@ -1,5 +1,10 @@
-import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
-import { inject as injectService } from '@ember/service';
+import {
+  moduleFor,
+  ModuleBasedTestResolver,
+  ApplicationTestCase,
+  runTask,
+} from 'internal-test-helpers';
+import { service } from '@ember/service';
 import { Object as EmberObject, RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
 import Application from '@ember/application';
@@ -71,7 +76,7 @@ moduleFor(
       ENV._APPLICATION_TEMPLATE_WRAPPER = false;
 
       return this.visit('/', bootOptions)
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             isSerializationFirstNode(instance.rootElement.firstChild),
             'glimmer-vm comment node was not found'
@@ -90,7 +95,7 @@ moduleFor(
             _renderMode: 'rehydrate',
           };
 
-          this.application.visit('/', bootOptions).then(instance => {
+          this.application.visit('/', bootOptions).then((instance) => {
             assert.equal(
               instance.rootElement.innerHTML,
               indexTemplate,
@@ -108,7 +113,7 @@ moduleFor(
     // does not fire.
     [`@test Applications with autoboot set to false do not autoboot`](assert) {
       function delay(time) {
-        return new RSVP.Promise(resolve => later(resolve, time));
+        return new RSVP.Promise((resolve) => later(resolve, time));
       }
 
       let appBooted = 0;
@@ -215,7 +220,7 @@ moduleFor(
            * Visit on the application a second time. The application should remain
            * booted, but a new instance will be created.
            */
-          return this.application.visit('/').then(instance => {
+          return this.application.visit('/').then((instance) => {
             this.applicationInstance = instance;
           });
         })
@@ -239,7 +244,7 @@ moduleFor(
         () => {
           assert.ok(false, 'It should not resolve the promise');
         },
-        error => {
+        (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'boot failure');
         }
@@ -260,7 +265,7 @@ moduleFor(
         () => {
           assert.ok(false, 'It should not resolve the promise');
         },
-        error => {
+        (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'boot failure');
         }
@@ -268,7 +273,7 @@ moduleFor(
     }
 
     [`@test visit() follows redirects`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b', { path: '/b/:b' });
         this.route('c', { path: '/c/:c' });
@@ -278,7 +283,9 @@ moduleFor(
         'route:a',
         Route.extend({
           afterModel() {
-            this.replaceWith('b', 'zomg');
+            expectDeprecation(() => {
+              this.replaceWith('b', 'zomg');
+            }, /Calling replaceWith on a route is deprecated/);
           },
         })
       );
@@ -287,7 +294,9 @@ moduleFor(
         'route:b',
         Route.extend({
           afterModel(params) {
-            this.transitionTo('c', params.b);
+            expectDeprecation(() => {
+              this.transitionTo('c', params.b);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -296,7 +305,7 @@ moduleFor(
        * First call to `visit` is `this.application.visit` and returns the
        * applicationInstance.
        */
-      return this.visit('/a').then(instance => {
+      return this.visit('/a').then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -306,7 +315,7 @@ moduleFor(
     }
 
     [`@test visit() rejects if an error occurred during a transition`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b', { path: '/b/:b' });
         this.route('c', { path: '/c/:c' });
@@ -316,7 +325,9 @@ moduleFor(
         'route:a',
         Route.extend({
           afterModel() {
-            this.replaceWith('b', 'zomg');
+            expectDeprecation(() => {
+              this.replaceWith('b', 'zomg');
+            }, /Calling replaceWith on a route is deprecated/);
           },
         })
       );
@@ -325,7 +336,9 @@ moduleFor(
         'route:b',
         Route.extend({
           afterModel(params) {
-            this.transitionTo('c', params.b);
+            expectDeprecation(() => {
+              this.transitionTo('c', params.b);
+            }, /Calling transitionTo on a route is deprecated/);
           },
         })
       );
@@ -345,7 +358,7 @@ moduleFor(
         () => {
           assert.ok(false, 'It should not resolve the promise');
         },
-        error => {
+        (error) => {
           assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
           assert.equal(error.message, 'transition failure');
         }
@@ -353,14 +366,14 @@ moduleFor(
     }
 
     [`@test visit() chain`](assert) {
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('a');
         this.route('b');
         this.route('c');
       });
 
       return this.visit('/')
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -369,7 +382,7 @@ moduleFor(
 
           return instance.visit('/a');
         })
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -378,7 +391,7 @@ moduleFor(
 
           return instance.visit('/b');
         })
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -387,7 +400,7 @@ moduleFor(
 
           return instance.visit('/c');
         })
-        .then(instance => {
+        .then((instance) => {
           assert.ok(
             instance instanceof ApplicationInstance,
             'promise is resolved with an ApplicationInstance'
@@ -401,7 +414,7 @@ moduleFor(
 
       this.assertEmptyFixture();
 
-      return this.visit('/').then(instance => {
+      return this.visit('/').then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -423,7 +436,7 @@ moduleFor(
 
       this.assertEmptyFixture();
 
-      return this.visit('/', { shouldRender: false }).then(instance => {
+      return this.visit('/', { shouldRender: false }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -440,7 +453,7 @@ moduleFor(
 
       this.assertEmptyFixture();
 
-      return this.visit('/', { shouldRender: true }).then(instance => {
+      return this.visit('/', { shouldRender: true }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -458,23 +471,25 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
       this.addTemplate('application', '<h1>Hello world</h1>');
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
 
-      return this.visit('/blog', { shouldRender: false }).then(instance => {
+      return this.visit('/blog', { shouldRender: false }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -489,7 +504,7 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
@@ -502,6 +517,8 @@ moduleFor(
 
       // Register engine
       let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+
         init(...args) {
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
@@ -517,12 +534,12 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
 
-      return this.visit('/blog', { isInteractive: false }).then(instance => {
+      return this.visit('/blog', { isInteractive: false }).then((instance) => {
         assert.ok(
           instance instanceof ApplicationInstance,
           'promise is resolved with an ApplicationInstance'
@@ -538,12 +555,14 @@ moduleFor(
     [`@test visit() on engine resolves engine component`](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
       // Register engine
       let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+
         init(...args) {
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
@@ -559,7 +578,7 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
@@ -576,18 +595,20 @@ moduleFor(
     [`@test visit() on engine resolves engine helper`](assert) {
       assert.expect(2);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
 
       // Register engine
       let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+
         init(...args) {
           this._super.apply(this, args);
           this.register('template:application', compile('{{swag}}'));
           this.register(
             'helper:swag',
-            helper(function() {
+            helper(function () {
               return 'turnt up';
             })
           );
@@ -596,7 +617,7 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
-      let BlogMap = function() {};
+      let BlogMap = function () {};
       this.add('route-map:blog', BlogMap);
 
       this.assertEmptyFixture();
@@ -613,7 +634,7 @@ moduleFor(
       let xBarInitCalled = false;
       let xBarDidInsertElementCalled = false;
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.route('show', { path: '/:component_name' });
       });
 
@@ -647,14 +668,14 @@ moduleFor(
         instantiate: false,
       });
 
-      this.addTemplate('show', '{{component model.componentName model=model.componentData}}');
+      this.addTemplate('show', '{{component @model.componentName model=@model.componentData}}');
 
       this.addTemplate(
         'components/x-foo',
         `
-      <h1>X-Foo</h1>
-      <p>Hello {{model.name}}, I have been clicked {{isolatedCounter.value}} times ({{sharedCounter.value}} times combined)!</p>
-    `
+        <h1>X-Foo</h1>
+        <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>
+        `
       );
 
       this.add(
@@ -662,8 +683,8 @@ moduleFor(
         Component.extend({
           tagName: 'x-foo',
 
-          isolatedCounter: injectService(),
-          sharedCounter: injectService(),
+          isolatedCounter: service(),
+          sharedCounter: service(),
 
           init() {
             this._super();
@@ -684,15 +705,15 @@ moduleFor(
       this.addTemplate(
         'components/x-bar',
         `
-      <h1>X-Bar</h1>
-      <button {{action "incrementCounter"}}>Join {{counter.value}} others in clicking me!</button>
-    `
+        <h1>X-Bar</h1>
+        <button {{action "incrementCounter"}}>Join {{this.counter.value}} others in clicking me!</button>
+        `
       );
 
       this.add(
         'component:x-bar',
         Component.extend({
-          counter: injectService('sharedCounter'),
+          counter: service('sharedCounter'),
 
           actions: {
             incrementCounter() {
@@ -730,7 +751,7 @@ moduleFor(
           return this.application.visit('/x-bar', { rootElement: bar });
         }),
       ])
-        .then(_instances => {
+        .then((_instances) => {
           instances = _instances;
 
           assert.ok(xFooInitCalled);
@@ -773,7 +794,7 @@ moduleFor(
         })
         .finally(() => {
           runTask(() => {
-            instances.forEach(instance => {
+            instances.forEach((instance) => {
               instance.destroy();
             });
           });

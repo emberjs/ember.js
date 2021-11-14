@@ -1,10 +1,34 @@
-/*globals process */
-var enifed, requireModule, Ember;
+/* eslint-disable no-var */
+/* globals global globalThis self */
+/* eslint-disable-next-line no-unused-vars */
+var define, require;
 
-// Used in @ember/-internals/environment/lib/global.js
-mainContext = this; // eslint-disable-line no-undef
+(function () {
+  var globalObj =
+    typeof globalThis !== 'undefined'
+      ? globalThis
+      : typeof self !== 'undefined'
+      ? self
+      : typeof window !== 'undefined'
+      ? window
+      : typeof global !== 'undefined'
+      ? global
+      : null;
 
-(function() {
+  if (globalObj === null) {
+    throw new Error('unable to locate global object');
+  }
+
+  if (typeof globalObj.define === 'function' && typeof globalObj.require === 'function') {
+    define = globalObj.define;
+    require = globalObj.require;
+
+    return;
+  }
+
+  var registry = Object.create(null);
+  var seen = Object.create(null);
+
   function missingModule(name, referrerName) {
     if (referrerName) {
       throw new Error('Could not find module ' + name + ' required by: ' + referrerName);
@@ -42,9 +66,9 @@ mainContext = this; // eslint-disable-line no-undef
       if (deps[i] === 'exports') {
         reified[i] = exports;
       } else if (deps[i] === 'require') {
-        reified[i] = requireModule;
+        reified[i] = require;
       } else {
-        reified[i] = internalRequire(deps[i], name);
+        reified[i] = require(deps[i], name);
       }
     }
 
@@ -53,57 +77,21 @@ mainContext = this; // eslint-disable-line no-undef
     return exports;
   }
 
-  var isNode =
-    typeof window === 'undefined' &&
-    typeof process !== 'undefined' &&
-    {}.toString.call(process) === '[object process]';
+  require = function (name) {
+    return internalRequire(name, null);
+  };
 
-  if (!isNode) {
-    Ember = this.Ember = this.Ember || {};
-  }
+  // eslint-disable-next-line no-unused-vars
+  define = function (name, deps, callback) {
+    registry[name] = { deps: deps, callback: callback };
+  };
 
-  if (typeof Ember === 'undefined') {
-    Ember = {};
-  }
+  // setup `require` module
+  require['default'] = require;
 
-  if (typeof Ember.__loader === 'undefined') {
-    var registry = Object.create(null);
-    var seen = Object.create(null);
+  require.has = function registryHas(moduleName) {
+    return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
+  };
 
-    enifed = function(name, deps, callback) {
-      var value = {};
-
-      if (!callback) {
-        value.deps = [];
-        value.callback = deps;
-      } else {
-        value.deps = deps;
-        value.callback = callback;
-      }
-
-      registry[name] = value;
-    };
-
-    requireModule = function(name) {
-      return internalRequire(name, null);
-    };
-
-    // setup `require` module
-    requireModule['default'] = requireModule;
-
-    requireModule.has = function registryHas(moduleName) {
-      return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
-    };
-
-    requireModule._eak_seen = registry;
-
-    Ember.__loader = {
-      define: enifed,
-      require: requireModule,
-      registry: registry,
-    };
-  } else {
-    enifed = Ember.__loader.define;
-    requireModule = Ember.__loader.require;
-  }
+  require._eak_seen = require.entries = registry;
 })();

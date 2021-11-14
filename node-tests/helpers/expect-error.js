@@ -8,7 +8,7 @@ module.exports = function expectError(promise, expectedErrorText) {
     .then(() => {
       throw new Error('the command should raise an exception');
     })
-    .catch(error => {
+    .catch((error) => {
       expect(error.message).to.equal(expectedErrorText);
     });
 };

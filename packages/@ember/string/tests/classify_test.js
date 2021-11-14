@@ -1,28 +1,14 @@
-import { ENV } from '@ember/-internals/environment';
+/* eslint-disable qunit/no-test-expect-argument */
 import { classify } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
   assert.deepEqual(classify(given), expected, description);
-  if (ENV.EXTEND_PROTOTYPES.String) {
-    assert.deepEqual(given.classify(), expected, description);
-  }
 }
 
 moduleFor(
   'EmberStringUtils.classify',
   class extends AbstractTestCase {
-    ['@test String.prototype.classify is not modified without EXTEND_PROTOTYPES'](assert) {
-      if (!ENV.EXTEND_PROTOTYPES.String) {
-        assert.ok(
-          'undefined' === typeof String.prototype.classify,
-          'String.prototype helper disabled'
-        );
-      } else {
-        assert.expect(0);
-      }
-    }
-
     ['@test String classify tests'](assert) {
       test(assert, 'my favorite items', 'MyFavoriteItems', 'classify normal string');
       test(assert, 'css-class-name', 'CssClassName', 'classify dasherized string');

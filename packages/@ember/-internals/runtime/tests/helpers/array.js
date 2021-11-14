@@ -3,7 +3,6 @@ import EmberArray, { A as emberA, MutableArray } from '../../lib/mixins/array';
 import { generateGuid, guidFor } from '@ember/-internals/utils';
 import {
   get,
-  set,
   computed,
   addArrayObserver,
   removeArrayObserver,
@@ -11,7 +10,6 @@ import {
   arrayContentDidChange,
 } from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
-import Copyable from '../../lib/mixins/copyable';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {
@@ -63,12 +61,18 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   observeArray(obj) {
-    addArrayObserver(obj, this);
+    addArrayObserver(obj, this, {
+      willChange: 'arrayWillChange',
+      didChange: 'arrayDidChange',
+    });
     return this;
   },
 
   stopObserveArray(obj) {
-    removeArrayObserver(obj, this);
+    removeArrayObserver(obj, this, {
+      willChange: 'arrayWillChange',
+      didChange: 'arrayDidChange',
+    });
     return this;
   },
 
@@ -147,42 +151,6 @@ class NativeArrayHelpers extends AbstractArrayHelper {
   }
 }
 
-class CopyableNativeArray extends AbstractArrayHelper {
-  newObject() {
-    return emberA([generateGuid()]);
-  }
-
-  isEqual(a, b) {
-    if (!(a instanceof Array)) {
-      return false;
-    }
-
-    if (!(b instanceof Array)) {
-      return false;
-    }
-
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    return a[0] === b[0];
-  }
-}
-
-class CopyableArray extends AbstractArrayHelper {
-  newObject() {
-    return CopyableObject.create();
-  }
-
-  isEqual(a, b) {
-    if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) {
-      return false;
-    }
-
-    return get(a, 'id') === get(b, 'id');
-  }
-}
-
 class ArrayProxyHelpers extends AbstractArrayHelper {
   newObject(ary) {
     return ArrayProxy.create({ content: emberA(super.newObject(ary)) });
@@ -228,7 +196,7 @@ const TestArray = EmberObject.extend(EmberArray, {
     return this._content[idx];
   },
 
-  length: computed(function() {
+  length: computed(function () {
     return this._content.length;
   }),
 });
@@ -262,27 +230,12 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
     return this._content[idx];
   },
 
-  length: computed(function() {
+  length: computed(function () {
     return this._content.length;
   }),
 
   slice() {
     return this._content.slice();
-  },
-});
-
-const CopyableObject = EmberObject.extend(Copyable, {
-  id: null,
-
-  init() {
-    this._super(...arguments);
-    set(this, 'id', generateGuid());
-  },
-
-  copy() {
-    let ret = CopyableObject.create();
-    set(ret, 'id', get(this, 'id'));
-    return ret;
   },
 });
 
@@ -305,7 +258,7 @@ class EmberArrayHelpers extends MutableArrayHelpers {
 
 export function runArrayTests(name, Tests, ...types) {
   if (types.length > 0) {
-    types.forEach(type => {
+    types.forEach((type) => {
       switch (type) {
         case 'ArrayProxy':
           moduleFor(`ArrayProxy: ${name}`, Tests, ArrayProxyHelpers);
@@ -314,17 +267,13 @@ export function runArrayTests(name, Tests, ...types) {
           moduleFor(`EmberArray: ${name}`, Tests, EmberArrayHelpers);
           break;
         case 'MutableArray':
-          moduleFor(`MutableArray: ${name}`, Tests, EmberArrayHelpers);
-          break;
-        case 'CopyableArray':
-          moduleFor(`CopyableArray: ${name}`, Tests, CopyableArray);
-          break;
-        case 'CopyableNativeArray':
-          moduleFor(`CopyableNativeArray: ${name}`, Tests, CopyableNativeArray);
+          moduleFor(`MutableArray: ${name}`, Tests, MutableArrayHelpers);
           break;
         case 'NativeArray':
-          moduleFor(`NativeArray: ${name}`, Tests, EmberArrayHelpers);
+          moduleFor(`NativeArray: ${name}`, Tests, NativeArrayHelpers);
           break;
+        default:
+          throw new Error(`runArrayTests passed unexpected type ${type}`);
       }
     });
   } else {

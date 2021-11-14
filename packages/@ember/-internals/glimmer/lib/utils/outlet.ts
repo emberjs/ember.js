@@ -1,14 +1,5 @@
 import { Owner } from '@ember/-internals/owner';
-import { Opaque } from '@glimmer/interfaces';
-import {
-  combine,
-  createTag,
-  dirty,
-  Reference,
-  Tag,
-  VersionedPathReference,
-} from '@glimmer/reference';
-import { Factory as TemplateFactory, OwnedTemplate } from '../template';
+import { Template, TemplateFactory } from '@glimmer/interfaces';
 
 export interface RenderState {
   /**
@@ -36,12 +27,17 @@ export interface RenderState {
   /**
    * The controller (the self of the outlet component)
    */
-  controller: any | undefined;
+  controller: unknown;
+
+  /**
+   * The model (the resolved value of the model hook)
+   */
+  model: unknown;
 
   /**
    * template (the layout of the outlet component)
    */
-  template: OwnedTemplate | TemplateFactory | undefined;
+  template: Template | TemplateFactory | undefined;
 }
 
 export interface Outlets {
@@ -64,75 +60,4 @@ export interface OutletState {
    * Whether outlet state was rendered.
    */
   wasUsed?: boolean;
-}
-
-/**
- * Represents the root outlet.
- */
-export class RootOutletReference implements VersionedPathReference<OutletState> {
-  tag = createTag();
-
-  constructor(public outletState: OutletState) {}
-
-  get(key: string): VersionedPathReference<Opaque> {
-    return new PathReference(this, key);
-  }
-
-  value(): OutletState {
-    return this.outletState;
-  }
-
-  update(state: OutletState) {
-    this.outletState.outlets.main = state;
-    dirty(this.tag);
-  }
-}
-
-/**
- * Represents the connected outlet.
- */
-export class OutletReference implements VersionedPathReference<OutletState | undefined> {
-  tag: Tag;
-
-  constructor(
-    public parentStateRef: VersionedPathReference<OutletState | undefined>,
-    public outletNameRef: Reference<string>
-  ) {
-    this.tag = combine([parentStateRef.tag, outletNameRef.tag]);
-  }
-
-  value(): OutletState | undefined {
-    let outletState = this.parentStateRef.value();
-    let outlets = outletState === undefined ? undefined : outletState.outlets;
-    return outlets === undefined ? undefined : outlets[this.outletNameRef.value()];
-  }
-
-  get(key: string): VersionedPathReference<Opaque> {
-    return new PathReference(this, key);
-  }
-}
-
-/**
- * Outlet state is dirtied from root.
- * This just using the parent tag for dirtiness.
- */
-class PathReference implements VersionedPathReference<Opaque> {
-  public parent: VersionedPathReference<Opaque>;
-  public key: string;
-  public tag: Tag;
-
-  constructor(parent: VersionedPathReference<Opaque>, key: string) {
-    this.parent = parent;
-    this.key = key;
-    this.tag = parent.tag;
-  }
-
-  get(key: string): VersionedPathReference<Opaque> {
-    return new PathReference(this, key);
-  }
-
-  value(): Opaque {
-    let parent = this.parent.value();
-    return parent && parent[this.key];
-  }
 }

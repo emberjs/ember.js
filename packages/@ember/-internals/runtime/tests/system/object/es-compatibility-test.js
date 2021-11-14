@@ -290,11 +290,11 @@ moduleFor(
       let someEventA = 0;
       let someEventB = 0;
       class A extends EmberObject.extend({
-        fooDidChange: observer('foo', function() {
+        fooDidChange: observer('foo', function () {
           fooDidChangeBase++;
         }),
 
-        onSomeEvent: on('someEvent', function() {
+        onSomeEvent: on('someEvent', function () {
           someEventBase++;
         }),
       }) {
@@ -363,6 +363,9 @@ moduleFor(
         assert.equal(someEventBase, 1);
         assert.equal(someEventA, 1);
         assert.equal(someEventB, 0);
+
+        a.destroy();
+        b.destroy();
       });
     }
 
@@ -529,6 +532,8 @@ moduleFor(
           'B onSomeEvent event arg',
           'D onSomeEvent after super.onSomeEvent',
         ]);
+
+        d.destroy();
       });
     }
   }

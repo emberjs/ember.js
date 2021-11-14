@@ -3,7 +3,7 @@
 */
 import { checkWaiters } from '../test/waiters';
 import { RSVP } from '@ember/-internals/runtime';
-import { getCurrentRunLoop, hasScheduledTimers, run } from '@ember/runloop';
+import { _getCurrentRunLoop, _hasScheduledTimers, run } from '@ember/runloop';
 import { pendingRequests } from '../test/pending_requests';
 
 /**
@@ -37,7 +37,7 @@ import { pendingRequests } from '../test/pending_requests';
   @since 1.0.0
 */
 export default function wait(app, value) {
-  return new RSVP.Promise(function(resolve) {
+  return new RSVP.Promise(function (resolve) {
     let router = app.__container__.lookup('router:main');
 
     // Every 10ms, poll for the async thing to have finished
@@ -55,7 +55,7 @@ export default function wait(app, value) {
       }
 
       // 3. If there are scheduled timers or we are inside of a run loop, keep polling
-      if (hasScheduledTimers() || getCurrentRunLoop()) {
+      if (_hasScheduledTimers() || _getCurrentRunLoop()) {
         return;
       }
 

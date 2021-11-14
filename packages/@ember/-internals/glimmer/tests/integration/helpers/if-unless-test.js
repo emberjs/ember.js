@@ -3,27 +3,6 @@ import { moduleFor } from 'internal-test-helpers';
 import { IfUnlessHelperTest } from '../../utils/shared-conditional-tests';
 
 moduleFor(
-  'Helpers test: inline {{if}}',
-  class extends IfUnlessHelperTest {
-    templateFor({ cond, truthy, falsy }) {
-      return `{{if ${cond} ${truthy} ${falsy}}}`;
-    }
-
-    ['@test it raises when there are more than three arguments']() {
-      expectAssertion(() => {
-        this.render(`{{if condition 'a' 'b' 'c'}}`, { condition: true });
-      }, `The inline form of the 'if' helper expects two or three arguments. ('-top-level' @ L1:C0) `);
-    }
-
-    ['@test it raises when there are less than two arguments']() {
-      expectAssertion(() => {
-        this.render(`{{if condition}}`, { condition: true });
-      }, `The inline form of the 'if' helper expects two or three arguments. ('-top-level' @ L1:C0) `);
-    }
-  }
-);
-
-moduleFor(
   'Helpers test: nested {{if}} helpers (returning truthy values)',
   class extends IfUnlessHelperTest {
     templateFor({ cond, truthy, falsy }) {
@@ -76,27 +55,6 @@ moduleFor(
   class extends IfUnlessHelperTest {
     templateFor({ cond, truthy, falsy }) {
       return `{{if ${cond} ${truthy}}}{{unless ${cond} ${falsy}}}`;
-    }
-  }
-);
-
-moduleFor(
-  'Helpers test: inline {{unless}}',
-  class extends IfUnlessHelperTest {
-    templateFor({ cond, truthy, falsy }) {
-      return `{{unless ${cond} ${falsy} ${truthy}}}`;
-    }
-
-    ['@test it raises when there are more than three arguments']() {
-      expectAssertion(() => {
-        this.render(`{{unless condition 'a' 'b' 'c'}}`, { condition: true });
-      }, /The inline form of the `unless` helper expects two or three arguments/);
-    }
-
-    ['@test it raises when there are less than two arguments']() {
-      expectAssertion(() => {
-        this.render(`{{unless condition}}`, { condition: true });
-      }, /The inline form of the `unless` helper expects two or three arguments/);
     }
   }
 );

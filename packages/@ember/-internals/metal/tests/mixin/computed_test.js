@@ -15,25 +15,25 @@ moduleFor(
       window.testStarted = true;
 
       MixinA = Mixin.create({
-        aProp: computed(function() {
+        aProp: computed(function () {
           return 'A';
         }),
       });
 
       MixinB = Mixin.create(MixinA, {
-        aProp: computed(function() {
+        aProp: computed(function () {
           return this._super(...arguments) + 'B';
         }),
       });
 
       MixinC = Mixin.create(MixinA, {
-        aProp: computed(function() {
+        aProp: computed(function () {
           return this._super(...arguments) + 'C';
         }),
       });
 
       MixinD = Mixin.create({
-        aProp: computed(function() {
+        aProp: computed(function () {
           return this._super(...arguments) + 'D';
         }),
       });
@@ -56,7 +56,7 @@ moduleFor(
       defineProperty(
         obj,
         'aProp',
-        computed(function() {
+        computed(function () {
           return 'obj';
         })
       );
@@ -111,7 +111,7 @@ moduleFor(
       assert.ok(superSetOccurred, 'should pass set to _super after getting');
     }
 
-    ['@test setter behavior works properly when overriding computed properties'](assert) {
+    ['@test setter behavior asserts when overriding computed properties'](assert) {
       let obj = {};
 
       let MixinA = Mixin.create({
@@ -137,7 +137,7 @@ moduleFor(
           },
         }),
 
-        cpWithoutSetter: computed(function() {
+        cpWithoutSetter: computed(function () {
           cpWasCalled = true;
         }),
       });
@@ -156,16 +156,9 @@ moduleFor(
       );
       cpWasCalled = false;
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         set(obj, 'cpWithoutSetter', 'test');
-      }, /The \[object Object\]#cpWithoutSetter computed property was just overriden./);
-
-      assert.equal(
-        get(obj, 'cpWithoutSetter'),
-        'test',
-        'The default setter was called, the value is correct'
-      );
-      assert.ok(!cpWasCalled, 'The default setter was called, not the CP itself');
+      }, /Cannot override the computed property `cpWithoutSetter` on \[object Object\]./);
     }
   }
 );

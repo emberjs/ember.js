@@ -1,18 +1,6 @@
-import { Simple, Template, Option } from '@glimmer/interfaces';
-import { Opaque } from '@glimmer/util';
-import { Factory, Owner } from '@ember/-internals/owner';
-import { TemplateFactory } from '@ember/-internals/glimmer';
-
-export interface StaticTemplateMeta {
-  moduleName: string;
-  managerId?: string;
-}
-
-export interface OwnedTemplateMeta extends StaticTemplateMeta {
-  owner: Owner;
-  moduleName: string;
-  managerId?: string;
-}
+import { Option } from '@glimmer/interfaces';
+import { SimpleElement } from '@simple-dom/interface';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 
 export const ActionSupport: any;
 export const ChildViewsSupport: any;
@@ -20,24 +8,19 @@ export const ClassNamesSupport: any;
 export const CoreView: any;
 export const ViewMixin: any;
 export const ViewStateSupport: any;
-export const TextSupport: any;
 
-export function getElementView(element: Simple.Element): Opaque;
-export function getViewElement(view: Opaque): Option<Simple.Element>;
-export function setElementView(element: Simple.Element, view: Opaque): void;
-export function setViewElement(view: Opaque, element: Simple.Element): void;
-export function clearElementView(element: Simple.Element): void;
-export function clearViewElement(view: Opaque): void;
+export function getElementView(element: SimpleElement): unknown;
+export function getViewElement(view: unknown): Option<SimpleElement>;
+export function setElementView(element: SimpleElement, view: unknown): void;
+export function setViewElement(view: unknown, element: SimpleElement): void;
+export function clearElementView(element: SimpleElement): void;
+export function clearViewElement(view: unknown): void;
 
-export function addChildView(parent: Opaque, child: Opaque): void;
+export function addChildView(parent: unknown, child: unknown): void;
 
 export function isSimpleClick(event: Event): boolean;
 
 export function constructStyleDeprecationMessage(affectedStyle: any): string;
-
-export function hasPartial(name: string, owner: any): boolean;
-
-export function lookupPartial(templateName: string, owner: Owner): TemplateFactory;
 
 export function getViewId(view: any): string;
 
@@ -48,3 +31,14 @@ export const ActionManager: {
     [id: string]: any | undefined;
   };
 };
+
+export declare class EventDispatcher extends EmberObject {
+  events: Record<string, string>;
+  finalEventNameMapping: Record<string, string>;
+  rootElement: string | HTMLElement;
+  lazyEvents: Map<string, string>;
+
+  setup(addedEvents: object, rootElement?: string | HTMLElement): void;
+  setupHandlerForBrowserEvent(event: string): void;
+  setupHandlerForEmberEvent(event: string): void;
+}

@@ -1,11 +1,10 @@
 import AbstractApplicationTestCase from './abstract-application';
 import { ModuleBasedResolver } from '../test-resolver';
 import { Component } from '@ember/-internals/glimmer';
-import { assign } from '@ember/polyfills';
 
 export default class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
   get applicationOptions() {
-    return assign(super.applicationOptions, {
+    return Object.assign(super.applicationOptions, {
       Resolver: ModuleBasedResolver,
     });
   }
@@ -18,7 +17,7 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
     this.resolver.add(
       `template:${templateName}`,
       this.compile(templateString, {
-        moduleName: `my-app/templates/${templateName}.hbs`,
+        moduleName: `my-app/templates/${templateName.replace(/\./g, '/')}.hbs`,
       })
     );
   }

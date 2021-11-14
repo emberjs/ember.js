@@ -13,7 +13,7 @@ function run(command, args = []) {
   return p;
 }
 
-(async function() {
+(async function () {
   await run('ember', ['browserstack:connect']);
 
   try {
@@ -34,7 +34,7 @@ function run(command, args = []) {
       console.log('success');
       process.exit(0);
     } finally {
-      if (process.env.TRAVIS_JOB_NUMBER) {
+      if (process.env.GITHUB_RUN_ID) {
         await run('ember', ['browserstack:results']);
       }
       await run('ember', ['browserstack:disconnect']);

@@ -10,13 +10,18 @@ declare global {
   };
 }
 
+export type DeprecationStages = 'available' | 'enabled';
+
 export interface DeprecationOptions {
   id: string;
   until: string;
   url?: string;
+  for: string;
+  since: Partial<Record<DeprecationStages, string>>;
 }
 
 export type DeprecateFunc = (message: string, test?: boolean, options?: DeprecationOptions) => void;
+export type MissingOptionDeprecateFunc = (id: string, missingOption: string) => string;
 
 /**
  @module @ember/debug
@@ -63,7 +68,7 @@ export type DeprecateFunc = (message: string, test?: boolean, options?: Deprecat
 let registerHandler: (handler: HandlerCallback) => void = () => {};
 let missingOptionsDeprecation: string;
 let missingOptionsIdDeprecation: string;
-let missingOptionsUntilDeprecation: string;
+let missingOptionDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
 
 if (DEBUG) {
@@ -115,8 +120,8 @@ if (DEBUG) {
           // Chrome
           stack = error.stack
             .replace(/^\s+at\s+/gm, '')
-            .replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2')
-            .replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)')
+            .replace(/^([^(]+?)([\n$])/gm, '{anonymous}($1)$2')
+            .replace(/^Object.<anonymous>\s*\(([^)]+)\)/gm, '{anonymous}($1)')
             .split('\n');
           stack.shift();
         } else {
@@ -153,7 +158,10 @@ if (DEBUG) {
     'must provide an `options` hash as the third parameter.  ' +
     '`options` should include `id` and `until` properties.';
   missingOptionsIdDeprecation = 'When calling `deprecate` you must provide `id` in options.';
-  missingOptionsUntilDeprecation = 'When calling `deprecate` you must provide `until` in options.';
+
+  missingOptionDeprecation = (id: string, missingOption: string): string => {
+    return `When calling \`deprecate\` you must provide \`${missingOption}\` in options. Missing options.${missingOption} in "${id}" deprecation`;
+  };
   /**
    @module @ember/debug
    @public
@@ -176,8 +184,10 @@ if (DEBUG) {
       "view.helper.select".
     @param {string} options.until The version of Ember when this deprecation
       warning will be removed.
+    @param {String} options.for A namespace for the deprecation, usually the package name
+    @param {Object} options.since Describes when the deprecation became available and enabled.
     @param {String} [options.url] An optional url to the transition guide on the
-      emberjs.com website.
+          emberjs.com website.
     @static
     @public
     @since 1.0.0
@@ -185,7 +195,9 @@ if (DEBUG) {
   deprecate = function deprecate(message, test, options) {
     assert(missingOptionsDeprecation, Boolean(options && (options.id || options.until)));
     assert(missingOptionsIdDeprecation, Boolean(options!.id));
-    assert(missingOptionsUntilDeprecation, Boolean(options!.until));
+    assert(missingOptionDeprecation(options!.id, 'until'), Boolean(options!.until));
+    assert(missingOptionDeprecation(options!.id, 'for'), Boolean(options!.for));
+    assert(missingOptionDeprecation(options!.id, 'since'), Boolean(options!.since));
 
     invoke('deprecate', message, test, options);
   };
@@ -197,5 +209,5 @@ export {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation,
+  missingOptionDeprecation,
 };

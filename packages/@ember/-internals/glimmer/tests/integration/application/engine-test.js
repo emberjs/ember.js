@@ -1,10 +1,16 @@
-import { moduleFor, ApplicationTestCase, strip, runTaskNext } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  strip,
+  runTaskNext,
+} from 'internal-test-helpers';
 
-import Controller from '@ember/controller';
-import { RSVP } from '@ember/-internals/runtime';
 import { Component } from '@ember/-internals/glimmer';
-import Engine from '@ember/engine';
 import { Route } from '@ember/-internals/routing';
+import { RSVP } from '@ember/-internals/runtime';
+import Controller from '@ember/controller';
+import Engine from '@ember/engine';
 import { next } from '@ember/runloop';
 
 import { compile } from '../../utils/helpers';
@@ -21,7 +27,7 @@ moduleFor(
           this._enginePromises = Object.create(null);
           this._resolvedEngines = Object.create(null);
 
-          this._routerMicrolib.getRoute = name => {
+          this._routerMicrolib.getRoute = (name) => {
             let engineInfo = this._engineInfoByRoute[name];
             if (!engineInfo) {
               return getRoute(name);
@@ -35,7 +41,7 @@ moduleFor(
             let enginePromise = this._enginePromises[engineName];
 
             if (!enginePromise) {
-              enginePromise = new RSVP.Promise(resolve => {
+              enginePromise = new RSVP.Promise((resolve) => {
                 setTimeout(() => {
                   this._resolvedEngines[engineName] = true;
 
@@ -56,11 +62,11 @@ moduleFor(
 
       this.addTemplate('application', 'Application{{outlet}}');
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
-      this.add('route-map:blog', function() {
-        this.route('post', function() {
+      this.add('route-map:blog', function () {
+        this.route('post', function () {
           this.route('comments');
           this.route('likes');
         });
@@ -79,6 +85,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -100,7 +108,7 @@ moduleFor(
                 queryParams: ['official'],
               })
             );
-            this.register('template:application', compile('Engine{{lang}}{{outlet}}'));
+            this.register('template:application', compile('Engine{{this.lang}}{{outlet}}'));
             this.register(
               'route:application',
               Route.extend({
@@ -130,6 +138,8 @@ moduleFor(
       this.add(
         'engine:chat-engine',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:application', compile('Engine'));
@@ -138,42 +148,6 @@ moduleFor(
               Controller.extend({
                 init() {
                   this._super(...arguments);
-                  hooks.push('engine - application');
-                },
-              })
-            );
-          },
-        })
-      );
-    }
-
-    setupAppAndRoutableEngineWithPartial(hooks) {
-      this.addTemplate('application', 'Application{{outlet}}');
-
-      this.router.map(function() {
-        this.mount('blog');
-      });
-      this.add('route-map:blog', function() {});
-      this.add(
-        'route:application',
-        Route.extend({
-          model() {
-            hooks.push('application - application');
-          },
-        })
-      );
-
-      this.add(
-        'engine:blog',
-        Engine.extend({
-          init() {
-            this._super(...arguments);
-            this.register('template:foo', compile('foo partial'));
-            this.register('template:application', compile('Engine{{outlet}} {{partial "foo"}}'));
-            this.register(
-              'route:application',
-              Route.extend({
-                model() {
                   hooks.push('engine - application');
                 },
               })
@@ -195,73 +169,19 @@ moduleFor(
       );
     }
 
-    setupAppAndRoutlessEngineWithPartial(hooks) {
-      this.setupRoutelessEngine(hooks);
-
-      this.add(
-        'engine:chat-engine',
-        Engine.extend({
-          init() {
-            this._super(...arguments);
-            this.register('template:foo', compile('foo partial'));
-            this.register('template:application', compile('Engine {{partial "foo"}}'));
-            this.register(
-              'controller:application',
-              Controller.extend({
-                init() {
-                  this._super(...arguments);
-                  hooks.push('engine - application');
-                },
-              })
-            );
-          },
-        })
-      );
-    }
-
     additionalEngineRegistrations(callback) {
       this._additionalEngineRegistrations = callback;
-    }
-
-    setupEngineWithAttrs() {
-      this.addTemplate('application', 'Application{{mount "chat-engine"}}');
-
-      this.add(
-        'engine:chat-engine',
-        Engine.extend({
-          init() {
-            this._super(...arguments);
-            this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
-            this.register('template:troll', compile('{{attrs.wat}}'));
-            this.register(
-              'controller:application',
-              Controller.extend({
-                contextType: 'Engine',
-              })
-            );
-            this.register('template:application', compile('Engine {{foo-bar wat=contextType}}'));
-          },
-        })
-      );
     }
 
     stringsEndWith(str, suffix) {
       return str.indexOf(suffix, str.length - suffix.length) !== -1;
     }
 
-    ['@test attrs in an engine']() {
-      this.setupEngineWithAttrs([]);
-
-      return this.visit('/').then(() => {
-        this.assertText('ApplicationEngine Engine');
-      });
-    }
-
     ['@test sharing a template between engine and application has separate refinements']() {
       this.assert.expect(1);
 
       let sharedTemplate = compile(strip`
-      <h1>{{contextType}}</h1>
+      <h1>{{this.contextType}}</h1>
       {{ambiguous-curlies}}
 
       {{outlet}}
@@ -276,14 +196,16 @@ moduleFor(
         })
       );
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
-      this.add('route-map:blog', function() {});
+      this.add('route-map:blog', function () {});
 
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
 
@@ -305,7 +227,7 @@ moduleFor(
       );
 
       return this.visit('/blog').then(() => {
-        this.assertText('ApplicationController Data!EngineComponent!');
+        this.assertText('ApplicationEngineComponent!');
       });
     }
 
@@ -331,14 +253,16 @@ moduleFor(
 
       this.add('component:my-component', sharedComponent);
 
-      this.router.map(function() {
+      this.router.map(function () {
         this.mount('blog');
       });
-      this.add('route-map:blog', function() {});
+      this.add('route-map:blog', function () {});
 
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -361,7 +285,7 @@ moduleFor(
       );
 
       return this.visit('/blog').then(() => {
-        this.assertText('ApplicationLocal Data!EngineComponent!');
+        this.assertText('ApplicationEngineComponent!');
       });
     }
 
@@ -429,42 +353,6 @@ moduleFor(
       });
     }
 
-    ['@test visit() with partials in routable engine'](assert) {
-      assert.expect(2);
-
-      let hooks = [];
-
-      this.setupAppAndRoutableEngineWithPartial(hooks);
-
-      return this.visit('/blog', { shouldRender: true }).then(() => {
-        this.assertText('ApplicationEngine foo partial');
-
-        this.assert.deepEqual(
-          hooks,
-          ['application - application', 'engine - application'],
-          'the expected hooks were fired'
-        );
-      });
-    }
-
-    ['@test visit() with partials in non-routable engine'](assert) {
-      assert.expect(2);
-
-      let hooks = [];
-
-      this.setupAppAndRoutlessEngineWithPartial(hooks);
-
-      return this.visit('/', { shouldRender: true }).then(() => {
-        this.assertText('ApplicationEngine foo partial');
-
-        this.assert.deepEqual(
-          hooks,
-          ['application - application', 'engine - application'],
-          'the expected hooks were fired'
-        );
-      });
-    }
-
     ['@test deactivate should be called on Engine Routes before destruction'](assert) {
       assert.expect(3);
 
@@ -473,6 +361,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:application', compile('Engine{{outlet}}'));
@@ -508,7 +398,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_error',
           Route.extend({
@@ -517,7 +407,7 @@ moduleFor(
             },
           })
         );
-        this.register('template:application_error', compile('Error! {{model.message}}'));
+        this.register('template:application_error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
           Route.extend({
@@ -547,7 +437,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:error',
           Route.extend({
@@ -556,7 +446,7 @@ moduleFor(
             },
           })
         );
-        this.register('template:error', compile('Error! {{model.message}}'));
+        this.register('template:error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
           Route.extend({
@@ -586,7 +476,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:post_error',
           Route.extend({
@@ -595,7 +485,7 @@ moduleFor(
             },
           })
         );
-        this.register('template:post_error', compile('Error! {{model.message}}'));
+        this.register('template:post_error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post',
           Route.extend({
@@ -625,7 +515,7 @@ moduleFor(
       let errorEntered = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:post.error',
           Route.extend({
@@ -634,7 +524,7 @@ moduleFor(
             },
           })
         );
-        this.register('template:post.error', compile('Error! {{model.message}}'));
+        this.register('template:post.error', compile('Error! {{@model.message}}'));
         this.register(
           'route:post.comments',
           Route.extend({
@@ -666,7 +556,7 @@ moduleFor(
       let resolveLoading = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:application_loading',
           Route.extend({
@@ -713,7 +603,7 @@ moduleFor(
       let resolveLoading = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:loading',
           Route.extend({
@@ -758,7 +648,7 @@ moduleFor(
       let resolveLoading;
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:post', compile('{{outlet}}'));
         this.register('template:post.comments', compile('Comments'));
         this.register('template:post.likes_loading', compile('Loading'));
@@ -767,7 +657,7 @@ moduleFor(
           'route:post.likes',
           Route.extend({
             model() {
-              return new RSVP.Promise(resolve => {
+              return new RSVP.Promise((resolve) => {
                 resolveLoading = resolve;
               });
             },
@@ -798,7 +688,7 @@ moduleFor(
       let resolveLoading = RSVP.defer();
 
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:post', compile('{{outlet}}'));
         this.register('template:post.comments', compile('Comments'));
         this.register(
@@ -841,9 +731,11 @@ moduleFor(
 
     ["@test query params don't have stickiness by default between model"](assert) {
       assert.expect(1);
-      let tmpl = '{{#link-to "blog.category" 1337}}Category 1337{{/link-to}}';
+
+      let tmpl = '<LinkTo @route="category" @model={{1337}}>Category 1337</LinkTo>';
+
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:category', compile(tmpl));
       });
 
@@ -856,14 +748,33 @@ moduleFor(
       });
     }
 
+    '@test query params only transitions work properly'(assert) {
+      assert.expect(1);
+
+      let tmpl = '<LinkTo @query={{hash type="news"}}>News</LinkTo>';
+
+      this.setupAppAndRoutableEngine();
+      this.additionalEngineRegistrations(function () {
+        this.register('template:category', compile(tmpl));
+      });
+
+      return this.visit('/blog/category/1').then(() => {
+        let suffix = '/blog/category/1?type=news';
+        let href = this.element.querySelector('a').href;
+
+        // check if link ends with the suffix
+        assert.ok(this.stringsEndWith(href, suffix));
+      });
+    }
+
     async ['@test query params in customized controllerName have stickiness by default between model'](
       assert
     ) {
       assert.expect(2);
       let tmpl =
-        '{{#link-to "blog.author" 1337 class="author-1337"}}Author 1337{{/link-to}}{{#link-to "blog.author" 1 class="author-1"}}Author 1{{/link-to}}';
+        '<LinkTo @route="author" @model={{1337}} class="author-1337">Author 1337</LinkTo><LinkTo @route="author" @model=1 class="author-1">Author 1</LinkTo>';
       this.setupAppAndRoutableEngine();
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register('template:author', compile(tmpl));
       });
 
@@ -884,7 +795,7 @@ moduleFor(
 
       let hooks = [];
 
-      this.additionalEngineRegistrations(function() {
+      this.additionalEngineRegistrations(function () {
         this.register(
           'route:application',
           Route.extend({
@@ -901,9 +812,68 @@ moduleFor(
         .then(() => {
           return this.visit('/blog');
         })
-        .catch(error => {
+        .catch((error) => {
           assert.equal(error.message, 'Whoops! Something went wrong...');
         });
+    }
+
+    ['@test visit() with `shouldRender: true` queryParams are properly deserialized for lazy routes'](
+      assert
+    ) {
+      assert.expect(2);
+
+      let hooks = [];
+
+      this.setupAppAndRoutableEngine(hooks);
+
+      this.add(
+        'engine:blog',
+        Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
+          init() {
+            this._super(...arguments);
+            this.register(
+              'controller:application',
+              Controller.extend({
+                queryParams: ['lazyQueryParam'],
+              })
+            );
+
+            this.register(
+              'template:application',
+              compile('Engine<div class="lazy-query-param">{{this.lazyQueryParam}}</div>{{outlet}}')
+            );
+
+            this.register(
+              'route:application',
+              Route.extend({
+                queryParams: {
+                  lazyQueryParam: {
+                    defaultValue: null,
+                  },
+                },
+                deserializeQueryParam() {
+                  hooks.push('engine - deserialize query param');
+                  return 'foo';
+                },
+                model() {
+                  hooks.push('engine - application');
+                },
+              })
+            );
+          },
+        })
+      );
+
+      return this.visit('/blog?lazyQueryParam=bar', { shouldRender: true }).then(() => {
+        assert.deepEqual(
+          hooks,
+          ['application - application', 'engine - deserialize query param', 'engine - application'],
+          'the expected hooks were fired'
+        );
+        assert.strictEqual(this.element.querySelector('.lazy-query-param').innerHTML, 'foo');
+      });
     }
   }
 );

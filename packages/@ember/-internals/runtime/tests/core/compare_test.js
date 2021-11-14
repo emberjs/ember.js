@@ -30,7 +30,7 @@ moduleFor(
       data[10] = [1, 3];
       data[11] = { a: 'hash' };
       data[12] = EmberObject.create();
-      data[13] = function(a) {
+      data[13] = function (a) {
         return a;
       };
       data[14] = new Date('2012/01/01');

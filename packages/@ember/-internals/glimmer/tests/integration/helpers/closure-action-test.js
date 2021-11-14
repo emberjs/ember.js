@@ -4,11 +4,11 @@ import {
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe,
 } from '@ember/instrumentation';
-import { getCurrentRunLoop } from '@ember/runloop';
+import { _getCurrentRunLoop } from '@ember/runloop';
 import { set, computed } from '@ember/-internals/metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
-import { Component, INVOKE } from '../../utils/helpers';
+import { Component } from '../../utils/helpers';
 
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor(
@@ -50,7 +50,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.registerComponent('outer-component', {
           ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action outerSubmit)}}',
+          template: '{{inner-component submit=(action this.outerSubmit)}}',
         });
 
         this.subscribe('interaction.ember-action', {
@@ -105,7 +105,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.registerComponent('outer-component', {
           ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action outerSubmit)}}',
+          template: '{{inner-component submit=(action this.outerSubmit)}}',
         });
 
         this.subscribe('interaction.ember-action', {
@@ -160,7 +160,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.registerComponent('outer-component', {
           ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action outerSubmit)}}',
+          template: '{{inner-component submit=(action this.outerSubmit)}}',
         });
 
         this.subscribe('interaction.ember-action', {
@@ -209,7 +209,7 @@ moduleFor(
       });
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action outerSubmit)}}',
+        template: '{{inner-component submit=(action this.outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -226,7 +226,7 @@ moduleFor(
         template: 'inner',
       });
       this.registerComponent('outer-component', {
-        template: '{{inner-component submit=(action somethingThatIsUndefined)}}',
+        template: '{{inner-component submit=(action this.somethingThatIsUndefined)}}',
       });
 
       expectAssertion(() => {
@@ -242,7 +242,7 @@ moduleFor(
         ComponentClass: Component.extend({
           nonFunctionThing: {},
         }),
-        template: '{{inner-component submit=(action nonFunctionThing)}}',
+        template: '{{inner-component submit=(action this.nonFunctionThing)}}',
       });
 
       expectAssertion(() => {
@@ -250,10 +250,10 @@ moduleFor(
       }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);
     }
 
-    ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
+    ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as @foo']() {
       this.registerComponent('inner-component', {
         template:
-          '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>',
+          '<button id="inner-button" {{action (action @external-action)}}>Click me</button>',
       });
 
       this.registerComponent('outer-component', {
@@ -293,7 +293,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action outerSubmit)}}',
+        template: '{{inner-component submit=(action this.outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -338,7 +338,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: '{{inner-component submit=(action outerSubmit)}}',
+        template: '{{inner-component submit=(action this.outerSubmit)}}',
       });
 
       this.render('{{outer-component}}');
@@ -385,7 +385,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action (action outerSubmit "${first}") "${second}" third)}}`,
+        template: `{{inner-component submit=(action (action this.outerSubmit "${first}") "${second}" this.third)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -481,7 +481,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerSubmit value)}}`,
+        template: `{{inner-component submit=(action this.outerSubmit this.value)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -544,7 +544,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerSubmit first)}}`,
+        template: `{{inner-component submit=(action this.outerSubmit this.first)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -594,7 +594,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action (mut outerMut))}}`,
+        template: `{{inner-component submit=(action (mut this.outerMut))}}`,
       });
 
       this.render('{{outer-component}}');
@@ -637,7 +637,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action (mut outerMut) '${newValue}')}}`,
+        template: `{{inner-component submit=(action (mut this.outerMut) '${newValue}')}}`,
       });
 
       this.render('{{outer-component}}');
@@ -764,7 +764,7 @@ moduleFor(
       });
 
       let OuterComponent = Component.extend({
-        otherComponent: computed(function() {
+        otherComponent: computed(function () {
           return {
             actions: {
               outerAction() {
@@ -782,7 +782,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action 'outerAction' target=otherComponent)}}`,
+        template: `{{inner-component submit=(action 'outerAction' target=this.otherComponent)}}`,
       });
 
       this.render('{{outer-component}}');
@@ -873,7 +873,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerAction value="readProp")}}`,
+        template: `{{inner-component submit=(action this.outerAction value="readProp")}}`,
       });
 
       this.render('{{outer-component}}');
@@ -917,7 +917,7 @@ moduleFor(
 
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action outerAction objectArgument value="readProp")}}`,
+        template: `{{inner-component submit=(action this.outerAction this.objectArgument value="readProp")}}`,
       });
 
       this.render('{{outer-component}}');
@@ -979,7 +979,7 @@ moduleFor(
 
       this.registerComponent('middle-component', {
         ComponentClass: MiddleComponent,
-        template: `{{inner-component attrs-submit=attrs.submit submit=submit}}`,
+        template: `{{inner-component attrs-submit=@submit submit=this.submit}}`,
       });
 
       this.registerComponent('outer-component', {
@@ -1015,7 +1015,7 @@ moduleFor(
       let OuterComponent = Component.extend({
         actions: {
           submit() {
-            capturedRunLoop = getCurrentRunLoop();
+            capturedRunLoop = _getCurrentRunLoop();
           },
         },
       });
@@ -1039,53 +1039,6 @@ moduleFor(
       this.assert.ok(capturedRunLoop, 'action is called within a run loop');
     }
 
-    ['@test objects that define INVOKE can be casted to actions']() {
-      let innerComponent;
-      let actionArgs;
-      let invokableArgs;
-
-      let InnerComponent = Component.extend({
-        init() {
-          this._super(...arguments);
-          innerComponent = this;
-        },
-        fireAction() {
-          actionArgs = this.attrs.submit(4, 5, 6);
-        },
-      });
-
-      let OuterComponent = Component.extend({
-        foo: 123,
-        submitTask: computed(function() {
-          return {
-            [INVOKE]: (...args) => {
-              invokableArgs = args;
-              return this.foo;
-            },
-          };
-        }),
-      });
-
-      this.registerComponent('inner-component', {
-        ComponentClass: InnerComponent,
-        template: 'inner',
-      });
-
-      this.registerComponent('outer-component', {
-        ComponentClass: OuterComponent,
-        template: `{{inner-component submit=(action submitTask 1 2 3)}}`,
-      });
-
-      this.render('{{outer-component}}');
-
-      runTask(() => {
-        innerComponent.fireAction();
-      });
-
-      this.assert.equal(actionArgs, 123);
-      this.assert.deepEqual(invokableArgs, [1, 2, 3, 4, 5, 6]);
-    }
-
     ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {
       let component;
 
@@ -1100,7 +1053,7 @@ moduleFor(
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
         template:
-          '<button onclick={{action (mut label) "Clicked!"}}>{{if label label "Click me"}}</button>',
+          '<button onclick={{action (mut this.label) "Clicked!"}}>{{if this.label this.label "Click me"}}</button>',
       });
 
       this.render('{{example-component}}');
@@ -1162,7 +1115,7 @@ moduleFor(
         clicked: 0,
 
         actions: {
-          'on-click': function() {
+          'on-click': function () {
             this.incrementProperty('clicked');
           },
         },
@@ -1177,15 +1130,15 @@ moduleFor(
       this.registerComponent('outer-component', {
         ComponentClass: OuterComponent,
         template: strip`
-        <div id="counter">clicked: {{clicked}}; foo: {{foo}}</div>
+        <div id="counter">clicked: {{this.clicked}}; foo: {{this.foo}}</div>
 
         {{click-me id="string-action" onClick=(action "on-click")}}
-        {{click-me id="function-action" onClick=(action onClick)}}
-        {{click-me id="mut-action" onClick=(action (mut clicked))}}
+        {{click-me id="function-action" onClick=(action this.onClick)}}
+        {{click-me id="mut-action" onClick=(action (mut this.clicked))}}
       `,
       });
 
-      this.render('{{outer-component foo=foo}}', { foo: 1 });
+      this.render('{{outer-component foo=this.foo}}', { foo: 1 });
 
       this.assertText('clicked: 0; foo: 1');
 
@@ -1216,7 +1169,7 @@ moduleFor(
       assert.equal(didReceiveAttrsFired, 3);
 
       runTask(() =>
-        set(outer, 'onClick', function() {
+        set(outer, 'onClick', function () {
           outer.incrementProperty('clicked');
         })
       );

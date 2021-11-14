@@ -1,3 +1,5 @@
+import { DEBUG } from '@glimmer/env';
+
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
@@ -26,11 +28,13 @@ moduleFor(
       });
 
       assert.throws(() => {
-        this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
+        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+          switch: true,
+        });
       }, /silly mistake in init/);
 
       assert.equal(
-        this.env.inTransaction,
+        this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
       );
@@ -43,7 +47,11 @@ moduleFor(
 
       runTask(() => set(this.context, 'switch', true));
 
-      this.assertText('hello');
+      if (DEBUG) {
+        this.assertText('', 'it does not rerender after error in development');
+      } else {
+        this.assertText('hello', 'it rerenders after error in production');
+      }
     }
 
     ['@skip it can recover resets the transaction when an error is thrown during rerender'](
@@ -64,7 +72,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+      this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
         switch: true,
       });
 
@@ -79,7 +87,7 @@ moduleFor(
       }, /silly mistake in init/);
 
       assert.equal(
-        this.env.inTransaction,
+        this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
       );
@@ -91,7 +99,11 @@ moduleFor(
 
       runTask(() => set(this.context, 'switch', true));
 
-      this.assertText('hello');
+      if (DEBUG) {
+        this.assertText('', 'it does not rerender after error in development');
+      } else {
+        this.assertText('hello', 'it does rerender after error in production');
+      }
     }
 
     ['@test it can recover resets the transaction when an error is thrown during didInsertElement'](
@@ -113,11 +125,13 @@ moduleFor(
       });
 
       assert.throws(() => {
-        this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', { switch: true });
+        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+          switch: true,
+        });
       }, /silly mistake/);
 
       assert.equal(
-        this.env.inTransaction,
+        this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
       );
@@ -145,7 +159,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{#if switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+      this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
         switch: true,
       });
 

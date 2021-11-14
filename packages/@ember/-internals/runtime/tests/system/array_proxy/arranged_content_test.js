@@ -12,7 +12,7 @@ moduleFor(
     beforeEach() {
       run(() => {
         array = ArrayProxy.extend({
-          arrangedContent: computed('content.[]', function() {
+          arrangedContent: computed('content.[]', function () {
             let content = this.get('content');
             return (
               content &&
@@ -104,7 +104,7 @@ moduleFor(
   'ArrayProxy - arrangedContent matching content',
   class extends AbstractTestCase {
     beforeEach() {
-      run(function() {
+      run(function () {
         array = ArrayProxy.create({
           content: emberA([1, 2, 4, 5]),
         });
@@ -112,27 +112,27 @@ moduleFor(
     }
 
     afterEach() {
-      run(function() {
+      run(function () {
         array.destroy();
       });
     }
 
     ['@test insertAt - inserts object at specified index'](assert) {
-      run(function() {
+      run(function () {
         array.insertAt(2, 3);
       });
       assert.deepEqual(array.get('content'), [1, 2, 3, 4, 5]);
     }
 
     ['@test replace - does a standard array replace'](assert) {
-      run(function() {
+      run(function () {
         array.replace(1, 2, [3]);
       });
       assert.deepEqual(array.get('content'), [1, 3, 5]);
     }
 
     ['@test reverseObjects - reverses content'](assert) {
-      run(function() {
+      run(function () {
         array.reverseObjects();
       });
       assert.deepEqual(array.get('content'), [5, 4, 2, 1]);
@@ -144,14 +144,14 @@ moduleFor(
   'ArrayProxy - arrangedContent with transforms',
   class extends AbstractTestCase {
     beforeEach() {
-      run(function() {
+      run(function () {
         array = ArrayProxy.extend({
-          arrangedContent: computed('content.[]', function() {
+          arrangedContent: computed('content.[]', function () {
             let content = this.get('content');
             return (
               content &&
               emberA(
-                content.slice().sort(function(a, b) {
+                content.slice().sort(function (a, b) {
                   if (a == null) {
                     a = -1;
                   }
@@ -175,7 +175,7 @@ moduleFor(
     }
 
     afterEach() {
-      run(function() {
+      run(function () {
         array.destroy();
       });
     }
@@ -232,7 +232,7 @@ moduleFor(
   'ArrayProxy - with transforms',
   class extends AbstractTestCase {
     beforeEach() {
-      run(function() {
+      run(function () {
         array = ArrayProxy.extend({
           objectAtContent(idx) {
             let obj = objectAt(this.get('arrangedContent'), idx);
@@ -245,7 +245,7 @@ moduleFor(
     }
 
     afterEach() {
-      run(function() {
+      run(function () {
         array.destroy();
       });
     }

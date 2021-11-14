@@ -1,173 +1,208 @@
-import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { isEmberArray } from '@ember/-internals/utils';
+import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { isObject } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
-import { getLastRevisionFor, peekCacheFor } from './computed_cache';
-import { descriptorForProperty } from './descriptor_map';
-import get from './property_get';
+import { _WeakSet } from '@glimmer/util';
+import {
+  combine,
+  createUpdatableTag,
+  Tag,
+  TagMeta,
+  tagMetaFor,
+  updateTag,
+  validateTag,
+} from '@glimmer/validator';
+import { objectAt } from './array';
 import { tagForProperty } from './tags';
-import { untrack } from './tracked';
 
-export const ARGS_PROXY_TAGS = new WeakMap();
+export const CHAIN_PASS_THROUGH = new _WeakSet();
 
-export function finishLazyChains(obj: any, key: string, value: any) {
-  let meta = peekMeta(obj);
-  let lazyTags = meta !== null ? meta.readableLazyChainsFor(key) : undefined;
+export function finishLazyChains(meta: Meta, key: string, value: any) {
+  let lazyTags = meta.readableLazyChainsFor(key);
 
   if (lazyTags === undefined) {
     return;
   }
 
-  if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
-    for (let path in lazyTags) {
-      delete lazyTags[path];
+  if (isObject(value)) {
+    for (let i = 0; i < lazyTags.length; i++) {
+      let [tag, deps] = lazyTags[i];
+      updateTag(tag, getChainTagsForKey(value, deps as string, tagMetaFor(value), peekMeta(value)));
     }
-    return;
   }
 
-  for (let path in lazyTags) {
-    let tag = lazyTags[path];
-
-    update(tag, combine(getChainTagsForKey(value, path)));
-
-    delete lazyTags[path];
-  }
+  lazyTags.length = 0;
 }
 
-export function getChainTagsForKeys(obj: any, keys: string[]) {
-  let chainTags: Tag[] = [];
+export function getChainTagsForKeys(
+  obj: object,
+  keys: string[],
+  tagMeta: TagMeta,
+  meta: Meta | null
+): Tag {
+  let tags: Tag[] = [];
 
   for (let i = 0; i < keys.length; i++) {
-    chainTags.push(...getChainTagsForKey(obj, keys[i]));
+    getChainTags(tags, obj, keys[i], tagMeta, meta);
   }
 
-  return chainTags;
+  return combine(tags);
 }
 
-export function getChainTagsForKey(obj: any, path: string) {
-  let chainTags: Tag[] = [];
+export function getChainTagsForKey(
+  obj: object,
+  key: string,
+  tagMeta: TagMeta,
+  meta: Meta | null
+): Tag {
+  return combine(getChainTags([], obj, key, tagMeta, meta));
+}
 
+function getChainTags(
+  chainTags: Tag[],
+  obj: object,
+  path: string,
+  tagMeta: TagMeta,
+  meta: Meta | null
+) {
   let current: any = obj;
+  let currentTagMeta = tagMeta;
+  let currentMeta = meta;
 
+  let pathLength = path.length;
   let segmentEnd = -1;
   // prevent closures
   let segment: string, descriptor: any;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    let currentType = typeof current;
-
-    if (current === null || (currentType !== 'object' && currentType !== 'function')) {
-      // we've hit the end of the chain for now, break out
-      break;
-    }
-
     let lastSegmentEnd = segmentEnd + 1;
     segmentEnd = path.indexOf('.', lastSegmentEnd);
 
     if (segmentEnd === -1) {
-      segmentEnd = path.length;
+      segmentEnd = pathLength;
     }
 
     segment = path.slice(lastSegmentEnd, segmentEnd);
 
-    if (segment === '@each' && segmentEnd !== path.length) {
-      assert(
-        `When using @each, the value you are attempting to watch must be an array, was: ${current.toString()}`,
-        Array.isArray(current) || isEmberArray(current)
-      );
+    // If the segment is an @each, we can process it and then break
+    if (segment === '@each' && segmentEnd !== pathLength) {
+      lastSegmentEnd = segmentEnd + 1;
+      segmentEnd = path.indexOf('.', lastSegmentEnd);
 
-      segment = path.substr(segmentEnd + 1)!;
+      let arrLength = current.length;
 
-      // There shouldn't be any more segments after an `@each`, so break
-      assert(
-        `When using @each, you can only chain one property level deep`,
-        segment.indexOf('.') === -1
-      );
+      if (
+        typeof arrLength !== 'number' ||
+        // TODO: should the second test be `isEmberArray` instead?
+        !(Array.isArray(current) || 'objectAt' in current)
+      ) {
+        // If the current object isn't an array, there's nothing else to do,
+        // we don't watch individual properties. Break out of the loop.
+        break;
+      } else if (arrLength === 0) {
+        // Fast path for empty arrays
+        chainTags.push(tagForProperty(current, '[]'));
+        break;
+      }
+
+      if (segmentEnd === -1) {
+        segment = path.slice(lastSegmentEnd);
+      } else {
+        // Deprecated, remove once we turn the deprecation into an assertion
+        segment = path.slice(lastSegmentEnd, segmentEnd);
+      }
 
       // Push the tags for each item's property
-      let tags = (current as Array<any>).map(item => {
-        assert(
-          `When using @each to observe the array \`${current.toString()}\`, the items in the array must be objects`,
-          typeof item === 'object'
-        );
+      for (let i = 0; i < arrLength; i++) {
+        let item = objectAt(current as Array<any>, i);
 
-        return tagForProperty(item, segment);
-      });
+        if (item) {
+          assert(
+            `When using @each to observe the array \`${current.toString()}\`, the items in the array must be objects`,
+            typeof item === 'object'
+          );
+
+          chainTags.push(tagForProperty(item, segment, true));
+
+          currentMeta = peekMeta(item);
+          descriptor = currentMeta !== null ? currentMeta.peekDescriptors(segment) : undefined;
+
+          // If the key is an alias, we need to bootstrap it
+          if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
+            // tslint:disable-next-line: no-unused-expression
+            item[segment];
+          }
+        }
+      }
 
       // Push the tag for the array length itself
-      chainTags.push(...tags, tagForProperty(current, '[]'));
+      chainTags.push(tagForProperty(current, '[]', true, currentTagMeta));
 
       break;
     }
 
-    if (segment === 'args' && ARGS_PROXY_TAGS.has(current.args)) {
-      assert(
-        `When watching the 'args' on a GlimmerComponent, you must watch a value on the args. You cannot watch the object itself, as it never changes.`,
-        segmentEnd !== path.length
-      );
-
-      segment = path.substr(segmentEnd + 1)!;
-      segmentEnd = path.indexOf('.', segmentEnd);
-
-      let namedArgs = ARGS_PROXY_TAGS.get(current.args);
-      let ref = namedArgs.get(segment);
-
-      chainTags.push(ref.tag);
-
-      if (segmentEnd !== -1) {
-        current = ref.value();
-        segment = path.substr(segmentEnd + 1);
-        continue;
-      }
-    }
-
-    let propertyTag = tagForProperty(current, segment);
+    let propertyTag = tagForProperty(current, segment, true, currentTagMeta);
+    descriptor = currentMeta !== null ? currentMeta.peekDescriptors(segment) : undefined;
 
     chainTags.push(propertyTag);
 
-    if (segmentEnd === path.length) {
+    // If we're at the end of the path, processing the last segment, and it's
+    // not an alias, we should _not_ get the last value, since we already have
+    // its tag. There's no reason to access it and do more work.
+    if (segmentEnd === pathLength) {
+      // If the key was an alias, we should always get the next value in order to
+      // bootstrap the alias. This is because aliases, unlike other CPs, should
+      // always be in sync with the aliased value.
+      if (CHAIN_PASS_THROUGH.has(descriptor)) {
+        // tslint:disable-next-line: no-unused-expression
+        current[segment];
+      }
       break;
     }
 
-    descriptor = descriptorForProperty(current, segment);
-
     if (descriptor === undefined) {
-      // TODO: Assert that current[segment] isn't an undecorated, non-MANDATORY_SETTER getter
+      // If the descriptor is undefined, then its a normal property, so we should
+      // lookup the value to chain off of like normal.
 
       if (!(segment in current) && typeof current.unknownProperty === 'function') {
         current = current.unknownProperty(segment);
       } else {
         current = current[segment];
       }
+    } else if (CHAIN_PASS_THROUGH.has(descriptor)) {
+      current = current[segment];
     } else {
-      let lastRevision = getLastRevisionFor(current, segment);
+      // If the descriptor is defined, then its a normal CP (not an alias, which
+      // would have been handled earlier). We get the last revision to check if
+      // the CP is still valid, and if so we use the cached value. If not, then
+      // we create a lazy chain lookup, and the next time the CP is calculated,
+      // it will update that lazy chain.
+      let instanceMeta = currentMeta!.source === current ? currentMeta! : metaFor(current);
+      let lastRevision = instanceMeta.revisionFor(segment);
 
-      if (validate(propertyTag, lastRevision)) {
-        if (typeof descriptor.altKey === 'string') {
-          // it's an alias, so just get the altkey without tracking
-          untrack(() => {
-            current = get(current, descriptor.altKey);
-          });
-        } else {
-          current = peekCacheFor(current).get(segment);
-        }
+      if (lastRevision !== undefined && validateTag(propertyTag, lastRevision)) {
+        current = instanceMeta.valueFor(segment);
       } else {
-        let lazyChains = metaFor(current).writableLazyChainsFor(segment);
-
+        // use metaFor here to ensure we have the meta for the instance
+        let lazyChains = instanceMeta.writableLazyChainsFor(segment);
         let rest = path.substr(segmentEnd + 1);
 
-        let placeholderTag = lazyChains[rest];
+        let placeholderTag = createUpdatableTag();
 
-        if (placeholderTag === undefined) {
-          placeholderTag = lazyChains[rest] = createUpdatableTag();
-        }
-
+        lazyChains.push([placeholderTag, rest]);
         chainTags.push(placeholderTag);
 
         break;
       }
     }
+
+    if (!isObject(current)) {
+      // we've hit the end of the chain for now, break out
+      break;
+    }
+
+    currentTagMeta = tagMetaFor(current);
+    currentMeta = peekMeta(current);
   }
 
   return chainTags;

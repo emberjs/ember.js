@@ -19,7 +19,7 @@
 
 1. Check out `beta` branch and `git pull`
 1. Make sure any master commits that are conceptually `[{BUGFIX,DOC} {beta,release}]` are cherry-picked.
-1. `git push origin beta`, and `let travisBranch = kick off a travis build`
+1. `git push origin beta`, and `let ciBranch = kick off a CI build`
 1. `PRIOR_VERSION=v2.5.0-beta.1 ./bin/changelog.js | uniq | pbcopy`
 1. Open `CHANGELOG.md`, paste in the results of the previous script, and clean it up for human-readability.
     1. e.g. [BUGFIX beta] -> [BUGFIX], [DEPRECATE beta] -> [DEPRECATE], ...
@@ -27,14 +27,14 @@
     1. rm [DOC] (usually)
     1. rm other trivial things
 1. Backport CHANGELOG to master
-1. `await travisBranch`
-    1. if travis succeeds, process
-    1. if travis fails and it's a fix that doesn't need to be on master (e.g. linting or merge conflicts accidentally checked in), fix and retry.
+1. `await ciBranch`
+    1. if CI succeeds, process
+    1. if CI fails and it's a fix that doesn't need to be on master (e.g. linting or merge conflicts accidentally checked in), fix and retry.
     1. otherwise, start over
 1. Update `package.json` and `VERSION` file to use new version number
 1. git add/commit -m "Release v2.5.0-beta.2."
 1. `git tag v2.5.0-beta.2`
-1. `git push origin v2.5.0-beta.2`, and `let travisTag = kick off a travis build` (to produce the assets)
+1. `git push origin v2.5.0-beta.2`, and `let ciTag = kick off a CI build` (to produce the assets)
 1. `git push origin beta`
 1. `git checkout beta`
 1. `rm -rf dist && mkdir dist && cp ../components-ember/* dist/`
@@ -73,7 +73,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
 
 ### Build Changelog
 
-1. Push `beta` branch to get Travis to run
+1. Push `beta` branch to get CI to run
 1. Run `PRIOR_VERSION=<tag> ./bin/changelog.js | uniq | pbcopy`
 1. Clean up commits in CHANGELOG
     1. e.g. [BUGFIX beta] -> [BUGFIX], [DEPRECATE beta] -> [DEPRECATE], ...
@@ -94,8 +94,8 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
 
 ### Release
 
-1. `git push origin v2.4.0` to push JUST the tag. This lets us run the tag first on Travis CI, which does the correct deploy to S3, Bower, etc.
-1. THEN wait for Travis CI build to finish
+1. `git push origin v2.4.0` to push JUST the tag. This lets us run the tag first on CI, which does the correct deploy to S3, Bower, etc.
+1. THEN wait for CI build to finish
 1. Go to github and disable branch protection for the **release** branch
 1. Backup the current release branch: `git push origin release:release-version`
 1. To make this the current `release` branch: `git push -f origin beta:release`
@@ -132,9 +132,8 @@ end
     1. Any feature that has been GOed gets changed to true
 1. Run `ember s -prod`
 1. Run tests at `http://localhost:4200/tests/index.html`
-2. Run production tests `http://localhost:4200/tests/index.html?dist=prod&prod=true`
-3. In `.travis.yml`, remove `branches:` section e.g. [this commit](https://github.com/emberjs/ember.js/commit/e38ec5d910721a9e02a819b4105a4875723f4b1b).
-4. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
+1. Run production tests `http://localhost:4200/tests/index.html?dist=prod&prod=true`
+1. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
 
 ### Changelog
 

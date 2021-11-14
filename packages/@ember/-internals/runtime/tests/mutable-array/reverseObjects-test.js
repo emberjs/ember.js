@@ -32,6 +32,8 @@ class ReverseObjectsTests extends AbstractTestCase {
       1,
       'should have notified lastObject once'
     );
+
+    obj.destroy();
   }
 }
 
