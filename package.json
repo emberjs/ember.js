@@ -33,7 +33,7 @@
     "docs": "ember ember-cli-yuidoc",
     "link:glimmer": "node bin/yarn-link-glimmer.js",
     "start": "ember serve",
-    "lint": "npm-run-all --aggregate-output --continue-on-error --parallel lint:tsc lint:tslint lint:eslint lint:docs",
+    "lint": "npm-run-all --aggregate-output --continue-on-error --parallel \"lint:!(fix)\"",
     "lint:docs": "qunit tests/docs/coverage-test.js",
     "lint:eslint": "eslint . --cache",
     "lint:tsc": "tsc --noEmit",
