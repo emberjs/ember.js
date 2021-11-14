@@ -870,25 +870,21 @@ if (DEBUG) {
         this.registerHelper('is-string', ([value]) => typeof value === 'string');
       }
 
-      ['@test invoking an argument-less helper without parens in named argument position is deprecated']() {
+      ['@test invoking an argument-less helper without parens in named argument position throws'](
+        assert
+      ) {
         this.registerHelper('foo', () => 'Hello, world!');
 
-        expectDeprecation(
+        assert.throws(
           () => this.render('<Bar @content={{foo}} />', { foo: 'Not it!' }),
-          new RegExp(
-            /The `foo` helper was used in the `-top-level` template as /.source +
-              /`@content={{foo}}`\. This is ambigious between wanting the `@content` /.source +
-              /argument to be the `foo` helper itself, or the result of invoking the /.source +
-              /`foo` helper \(current behavior\)\. This implicit invocation behavior /.source +
-              /has been deprecated\./.source
-          )
+          `A resolved helper cannot be passed as a named argument as the syntax is ` +
+            `ambiguously a pass-by-reference or invocation. Use the ` +
+            `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
+            `invoke the helper with parens: \`{{(fooHelper)}}\`.`
         );
-
-        this.assertText('[true][Hello, world!]');
-        this.assertStableRerender();
       }
 
-      ['@test invoking an argument-less helper with parens in named argument position is not deprecated']() {
+      ['@test invoking an argument-less helper with parens in named argument position']() {
         this.registerHelper('foo', () => 'Hello, world!');
 
         expectNoDeprecation(() => this.render('<Bar @content={{(foo)}} />', { foo: 'Not it!' }));
@@ -897,7 +893,7 @@ if (DEBUG) {
         this.assertStableRerender();
       }
 
-      ['@test invoking an argument-less helper with quotes in named argument position is not deprecated']() {
+      ['@test invoking an argument-less helper with quotes in named argument position']() {
         this.registerHelper('foo', () => 'Hello, world!');
 
         expectNoDeprecation(() => this.render('<Bar @content="{{foo}}" />', { foo: 'Not it!' }));
@@ -906,7 +902,7 @@ if (DEBUG) {
         this.assertStableRerender();
       }
 
-      ['@test passing a local helper in named argument position is not deprecated']() {
+      ['@test passing a local helper in named argument position']() {
         let foo = defineSimpleHelper(() => 'Hello, world!');
 
         expectNoDeprecation(() =>
@@ -922,7 +918,7 @@ if (DEBUG) {
       // is trying to call `block.compile()` but `block` is the reference for `this.foo`.
       // So the execution stack is probably off-by-one or something.
 
-      ['@test invoking a local helper with parens in named argument position is not deprecated']() {
+      ['@test invoking a local helper with parens in named argument position']() {
         let foo = defineSimpleHelper(() => 'Hello, world!');
 
         expectNoDeprecation(() =>
@@ -933,9 +929,7 @@ if (DEBUG) {
         this.assertStableRerender();
       }
 
-      // TODO: this one doesn't work yet, and there is a failing test in glimmer-vm
-
-      ['@skip invoking a helper with quotes in named argument position is not deprecated']() {
+      ['@skip invoking a helper with quotes in named argument position']() {
         let foo = defineSimpleHelper(() => 'Hello, world!');
 
         expectNoDeprecation(() =>
