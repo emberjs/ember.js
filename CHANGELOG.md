@@ -1,6 +1,12 @@
 # Ember Changelog
 
-### v4.0.0-beta.9 (November 20, 2021)
+### v4.0.0-beta.10 (November 15, 2021)
+
+- [#19833](https://github.com/emberjs/ember.js/pull/19833) [CLEANUP] Remove deprecated array observers
+- [#19836](https://github.com/emberjs/ember.js/pull/19836) [CLEANUP] Turn `template-only-glimmer-components` deprecation into an error
+- [#19843](https://github.com/emberjs/ember.js/pull/19843) [CLEANUP] Turn `argument-less-helper-paren-less-invocation` deprecation into an error
+
+### v4.0.0-beta.9 (November 10, 2021)
 
 - [#19749](https://github.com/emberjs/ember.js/pull/19749) [CLEANUP] Remove `deprecate-router-events` support code
 - [#19762](https://github.com/emberjs/ember.js/pull/19762) [CLEANUP] Update GlimmerVM to 0.81
