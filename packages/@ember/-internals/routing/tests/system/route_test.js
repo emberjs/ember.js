@@ -64,7 +64,7 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ["@test assert if 'store.find' method is not found"]() {
+    ["@test assert if 'store.find' method is not found"](assert) {
       runDestroy(route);
 
       let owner = buildOwner();
@@ -75,10 +75,9 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      expectAssertion(function () {
-        route.findModel('post', 1);
-      }, 'Post has no method `find`.');
+      let result = route.findModel('post', 1);
 
+      assert.equal(result, undefined);
       runDestroy(owner);
     }
 
