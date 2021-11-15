@@ -440,15 +440,13 @@ const deprecateImportFromString = function (
   name,
   message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
 ) {
-  // Disabling this deprecation due to unintended errors in 3.25
-  // See https://github.com/emberjs/ember.js/issues/19393 fo more information.
-  deprecate(message, true, {
+  deprecate(message, false, {
     id: 'ember-string.htmlsafe-ishtmlsafe',
     for: 'ember-source',
     since: {
       enabled: '3.25',
     },
-    until: '4.0.0',
+    until: '5.0.0',
     url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
   });
 };

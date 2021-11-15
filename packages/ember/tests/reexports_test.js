@@ -20,7 +20,7 @@ moduleFor(
       });
     }
 
-    ['@skip Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
+    ['@test Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
         assert.equal(
@@ -32,7 +32,7 @@ moduleFor(
       assert.notEqual(glimmer.htmlSafe, undefined, 'Ember.String.htmlSafe is not `undefined`');
     }
 
-    ['@skip Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
+    ['@test Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
         assert.equal(
@@ -259,8 +259,6 @@ let allExports = [
   ['String.classify', '@ember/string', 'classify'],
   ['String.dasherize', '@ember/string', 'dasherize'],
   ['String.decamelize', '@ember/string', 'decamelize'],
-  ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
-  ['String.isHTMLSafe', '@ember/-internals/glimmer', 'isHTMLSafe'],
   ['String.underscore', '@ember/string', 'underscore'],
   ['String.w', '@ember/string', 'w'],
   ['STRINGS', '@ember/string', { get: '_getStrings', set: '_setStrings' }],
