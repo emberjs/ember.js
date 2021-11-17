@@ -150,7 +150,7 @@ if (HAS_NATIVE_PROXY) {
         throw new Error(
           `You attempted to set ${String(
             prop
-          )} on the arguments of a component, helper, or modifier. Arguments are immutable and cannot be updated directly, they always represent the values that are passed down. If you want to set default values, you should use a getter and local tracked state instead.`
+          )} on the arguments of a component, helper, or modifier. Arguments are immutable and cannot be updated directly; they always represent the values that are passed down. If you want to set default values, you should use a getter and local tracked state instead.`
         );
       };
 
