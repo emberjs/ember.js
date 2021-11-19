@@ -37,7 +37,7 @@
   ```
 
   For a more complex example, this template would allow the user to switch
-  between showing the user's height and weight with a click:
+  between showing the user's name and preferred coding language with a click:
 
   ```app/components/developer-detail.js
   import Component from '@glimmer/component';
