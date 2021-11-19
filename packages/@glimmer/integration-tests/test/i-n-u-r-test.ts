@@ -2,6 +2,8 @@ import { castToSimple } from '@glimmer/util';
 import { JitRenderDelegate, RenderTest } from '..';
 import { module } from './support';
 
+// "I-N-U-R" cycle
+// initial render -> no-op rerender -> update(s) via mutation(s) -> reset via replacement
 module('Render Tests: I-N-U-R', ({ test }) => {
   let doc = castToSimple(document);
 
