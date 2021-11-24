@@ -23,7 +23,9 @@ moduleFor(
     }
 
     ['@test default store utilizes the container to acquire the model factory'](assert) {
-      assert.expect(4);
+      assert.expect(5);
+
+      expectNoDeprecation();
 
       let Post = EmberObject.extend();
       let post = {};
@@ -64,8 +66,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ["@test 'store' can be injected by data persistence frameworks"](assert) {
-      assert.expect(8);
+    ["@test 'store' can be injected by data persistence frameworks [DEPRECATED]"](assert) {
+      assert.expect(9);
+      expectDeprecation();
       runDestroy(route);
 
       let owner = buildOwner();
@@ -96,8 +99,110 @@ moduleFor(
       runDestroy(owner);
     }
 
+    ["@test 'store' can be set via assignment by data persistence frameworks"](assert) {
+      assert.expect(9);
+      expectNoDeprecation();
+      runDestroy(route);
+
+      let owner = buildOwner();
+
+      let post = {
+        id: 1,
+      };
+
+      let store = {
+        find(type, value) {
+          assert.ok(true, 'injected model was called');
+          assert.equal(type, 'post', 'correct type was called');
+          assert.equal(value, 1, 'correct value was called');
+          return post;
+        },
+      };
+
+      owner.register('route:index', EmberRoute);
+
+      route = owner.lookup('route:index');
+      route.store = store;
+
+      assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
+      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+
+      runDestroy(owner);
+    }
+
+    ["@test 'store' can be set on subclass by data persistence frameworks"](assert) {
+      assert.expect(9);
+      expectNoDeprecation();
+      runDestroy(route);
+
+      let owner = buildOwner();
+
+      let post = {
+        id: 1,
+      };
+
+      let store = {
+        find(type, value) {
+          assert.ok(true, 'injected model was called');
+          assert.equal(type, 'post', 'correct type was called');
+          assert.equal(value, 1, 'correct value was called');
+          return post;
+        },
+      };
+
+      owner.register(
+        'route:index',
+        EmberRoute.extend({
+          store,
+        })
+      );
+
+      route = owner.lookup('route:index');
+
+      assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
+      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+
+      runDestroy(owner);
+    }
+
+    ["@test 'store' can be set via reopen by data persistence frameworks"](assert) {
+      assert.expect(9);
+      expectNoDeprecation();
+      runDestroy(route);
+
+      let owner = buildOwner();
+
+      let post = {
+        id: 1,
+      };
+
+      let store = {
+        find(type, value) {
+          assert.ok(true, 'injected model was called');
+          assert.equal(type, 'post', 'correct type was called');
+          assert.equal(value, 1, 'correct value was called');
+          return post;
+        },
+      };
+
+      let EmberRouteSubclassForReopen = EmberRoute.extend();
+      EmberRouteSubclassForReopen.reopen({
+        store,
+      });
+
+      owner.register('route:index', EmberRouteSubclassForReopen);
+
+      route = owner.lookup('route:index');
+
+      assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
+      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+
+      runDestroy(owner);
+    }
+
     ["@test assert if 'store.find' method is not found"]() {
       runDestroy(route);
+      expectNoDeprecation();
 
       let owner = buildOwner();
       let Post = EmberObject.extend();

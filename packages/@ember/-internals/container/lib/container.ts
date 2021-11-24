@@ -49,6 +49,13 @@ if (DEBUG) {
   }
 }
 
+export class DeprecatedStoreInjection {
+  store: unknown;
+  constructor(store: unknown) {
+    this.store = store;
+  }
+}
+
 export interface ContainerOptions {
   owner?: Owner;
   cache?: { [key: string]: CacheMember };
@@ -470,7 +477,12 @@ function injectionsFor(container: Container, fullName: string) {
   let typeInjections = registry.getTypeInjections(type);
   let injections = registry.getInjections(fullName);
 
-  return buildInjections(container, typeInjections, injections);
+  let result = buildInjections(container, typeInjections, injections);
+
+  if (DEBUG && type === 'route' && result.injections.store) {
+    result.injections.store = new DeprecatedStoreInjection(result.injections.store);
+  }
+  return result;
 }
 
 function destroyDestroyables(container: Container): void {

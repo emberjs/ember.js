@@ -1,4 +1,4 @@
-import { privatize as P } from '@ember/-internals/container';
+import { DeprecatedStoreInjection, privatize as P } from '@ember/-internals/container';
 import {
   addObserver,
   computed,
@@ -2364,7 +2364,30 @@ Route.reopen(ActionHandler, Evented, {
     },
 
     set(key, value) {
-      defineProperty(this, key, null, value);
+      if (DEBUG && value instanceof DeprecatedStoreInjection) {
+        Object.defineProperty(this, key, {
+          configurable: true,
+          enumerable: false,
+          get(): any {
+            deprecate(
+              `A value for the \`store\` property was injected onto a route via the owner API. Implicit injection via the owner API is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`,
+              false,
+              {
+                id: 'implicit-injections',
+                until: '4.0.0',
+                url: 'https://deprecations.emberjs.com/v3.x/#toc_implicit-injections',
+                for: 'ember-source',
+                since: {
+                  enabled: '3.28.7',
+                },
+              }
+            );
+            return value.store;
+          },
+        });
+      } else {
+        defineProperty(this, key, null, value);
+      }
     },
   }),
 
