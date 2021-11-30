@@ -207,14 +207,31 @@ moduleFor(
       let owner = buildOwner();
       let Post = EmberObject.extend();
 
-      owner.register('route:index', EmberRoute);
+      owner.register(
+        'route:index',
+        EmberRoute.extend({
+          routeName: 'index',
+        })
+      );
       owner.register('model:post', Post);
 
       route = owner.lookup('route:index');
 
       expectAssertion(function () {
         route.findModel('post', 1);
-      }, 'Post has no method `find`.');
+      }, `You used the dynamic segment \`post_id\` in your route ` +
+        `\`index\` for which Ember requires you provide a ` +
+        `data-loading implementation. Commonly, that is done by ` +
+        `adding a model hook implementation on the route ` +
+        `(\`model({post_id}) {\`) or by injecting an implemention of ` +
+        `a data store: \`@service store;\`.\n\n` +
+        `Rarely, applications may attempt to use a legacy behavior where ` +
+        `the model class (in this case \`post\`) is resolved and the ` +
+        `\`find\` method on that class is invoked to load data. In this ` +
+        `application, a model of \`post\` was found but it did not ` +
+        `provide a \`find\` method. You should not add a \`find\` ` +
+        `method to your model. Instead, please implement an appropriate ` +
+        `\`model\` hook on the \`index\` route.`);
 
       runDestroy(owner);
     }
@@ -223,13 +240,23 @@ moduleFor(
       runDestroy(route);
 
       let owner = buildOwner();
-      owner.register('route:index', EmberRoute);
+      owner.register(
+        'route:index',
+        EmberRoute.extend({
+          routeName: 'index',
+        })
+      );
 
       route = owner.lookup('route:index');
 
       expectAssertion(function () {
         route.model({ post_id: 1 });
-      }, /You used the dynamic segment post_id in your route undefined, but <.*:ember\d+>.Post did not exist and you did not override your route's `model` hook./);
+      }, `You used the dynamic segment \`post_id\` in your route ` +
+        `\`index\` for which Ember requires you provide a ` +
+        `data-loading implementation. Commonly, that is done by ` +
+        `adding a model hook implementation on the route ` +
+        `(\`model({post_id}) {\`) or by injecting an implemention of ` +
+        `a data store: \`@service store;\`.`);
 
       runDestroy(owner);
     }
