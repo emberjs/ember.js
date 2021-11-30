@@ -75,6 +75,7 @@ module.exports = useEditionDetector({
     let moduleName = options.entity.name;
     let rawRouteName = moduleName.split('/').pop();
     let emberPageTitleExists = 'ember-page-title' in options.project.dependencies();
+    let hasDynamicSegment = options.path && options.path.includes(':');
 
     if (options.resetNamespace) {
       moduleName = rawRouteName;
@@ -84,6 +85,7 @@ module.exports = useEditionDetector({
       moduleName: stringUtil.dasherize(moduleName),
       routeName: stringUtil.classify(rawRouteName),
       addTitle: emberPageTitleExists,
+      hasDynamicSegment,
     };
   },
 
