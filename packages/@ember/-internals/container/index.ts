@@ -6,4 +6,10 @@ The public API, specified on the application namespace should be considered the 
 */
 
 export { default as Registry, privatize } from './lib/registry';
-export { default as Container, getFactoryFor, setFactoryFor, INIT_FACTORY } from './lib/container';
+export {
+  default as Container,
+  getFactoryFor,
+  setFactoryFor,
+  INIT_FACTORY,
+  DeprecatedStoreInjection,
+} from './lib/container';
