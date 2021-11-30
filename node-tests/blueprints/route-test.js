@@ -81,7 +81,7 @@ describe('Blueprint: route', function () {
 
     it('route foo --path=:foo_id/show', function () {
       return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], (_file) => {
-        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route-with-dynamic-segment.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{outlet}}');
 
@@ -560,7 +560,9 @@ describe('Blueprint: route', function () {
 
     it('route foo --path=:foo_id/show', function () {
       return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], (_file) => {
-        expect(_file('app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('app/routes/foo.js')).to.equal(
+          fixture('route/native-route-with-dynamic-segment.js')
+        );
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{outlet}}');
 
