@@ -27,7 +27,6 @@ import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
-import { classify } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import { Template, TemplateFactory } from '@glimmer/interfaces';
 import {
@@ -2334,16 +2333,18 @@ Route.reopen(ActionHandler, Evented, {
     get(this: Route) {
       let owner = getOwner(this);
       let routeName = this.routeName;
-      let namespace = get(this, '_router.namespace');
 
       return {
         find(name: string, value: unknown) {
           let modelClass: any = owner.factoryFor(`model:${name}`);
 
           assert(
-            `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(
-              name
-            )} did not exist and you did not override your route's \`model\` hook.`,
+            `You used the dynamic segment \`${name}_id\` in your route ` +
+              `\`${routeName}\` for which Ember requires you provide a ` +
+              `data-loading implementation. Commonly, that is done by ` +
+              `adding a model hook implementation on the route ` +
+              `(\`model({${name}_id}) {\`) or by injecting an implemention of ` +
+              `a data store: \`@service store;\`.`,
             Boolean(modelClass)
           );
 
@@ -2354,7 +2355,19 @@ Route.reopen(ActionHandler, Evented, {
           modelClass = modelClass.class;
 
           assert(
-            `${classify(name)} has no method \`find\`.`,
+            `You used the dynamic segment \`${name}_id\` in your route ` +
+              `\`${routeName}\` for which Ember requires you provide a ` +
+              `data-loading implementation. Commonly, that is done by ` +
+              `adding a model hook implementation on the route ` +
+              `(\`model({${name}_id}) {\`) or by injecting an implemention of ` +
+              `a data store: \`@service store;\`.\n\n` +
+              `Rarely, applications may attempt to use a legacy behavior where ` +
+              `the model class (in this case \`${name}\`) is resolved and the ` +
+              `\`find\` method on that class is invoked to load data. In this ` +
+              `application, a model of \`${name}\` was found but it did not ` +
+              `provide a \`find\` method. You should not add a \`find\` ` +
+              `method to your model. Instead, please implement an appropriate ` +
+              `\`model\` hook on the \`${routeName}\` route.`,
             typeof modelClass.find === 'function'
           );
 
