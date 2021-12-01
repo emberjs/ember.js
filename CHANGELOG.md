@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v3.28.7 (December 1, 2021)
+
+- [#19854](https://github.com/emberjs/ember.js/pull/19854) [BUGFIX] Fix implicit injections deprecation for routes to cover previously missed cases
+- [#19857](https://github.com/emberjs/ember.js/pull/19857) [BUGFIX] Improve assert message in default store for when routes have dynamic segments but no model hook
+
 ## v3.28.6 (November 4, 2021)
 
 - [#19683](https://github.com/emberjs/ember.js/pull/19683) Ensure super.willDestroy is called correctly in Router's willDestroy
