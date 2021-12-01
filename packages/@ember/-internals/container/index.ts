@@ -11,5 +11,5 @@ export {
   getFactoryFor,
   setFactoryFor,
   INIT_FACTORY,
-  DeprecatedStoreInjection,
+  deprecatedStoreInjections,
 } from './lib/container';

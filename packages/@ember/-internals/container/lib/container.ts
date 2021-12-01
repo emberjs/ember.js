@@ -49,12 +49,8 @@ if (DEBUG) {
   }
 }
 
-export class DeprecatedStoreInjection {
-  store: unknown;
-  constructor(store: unknown) {
-    this.store = store;
-  }
-}
+export const deprecatedStoreInjections =
+  DEBUG && window.WeakSet ? new window.WeakSet<object>() : undefined;
 
 export interface ContainerOptions {
   owner?: Owner;
@@ -479,8 +475,8 @@ function injectionsFor(container: Container, fullName: string) {
 
   let result = buildInjections(container, typeInjections, injections);
 
-  if (DEBUG && type === 'route' && result.injections.store) {
-    result.injections.store = new DeprecatedStoreInjection(result.injections.store);
+  if (DEBUG && deprecatedStoreInjections && type === 'route' && result.injections.store) {
+    deprecatedStoreInjections.add(result.injections.store as object);
   }
   return result;
 }
