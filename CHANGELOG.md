@@ -10,6 +10,11 @@
 - [#18269](https://github.com/emberjs/ember.js/pull/18269) [BUGFIX] Fix for when query params are using a nested value
 - [#19787](https://github.com/emberjs/ember.js/pull/19787) Setup basic infrastructure to ensure destroyables destroyed
 
+### v4.0.1 (December 1, 2021)
+
+- [#19858](https://github.com/emberjs/ember.js/pull/19858) [BUGFIX] Improve assert message in default store for when routes have dynamic segments but no model hook
+- [#19860](https://github.com/emberjs/ember.js/pull/19860) [BUGFIX] Add model hook in route blueprint for routes with dynamic segments
+
 ### v4.0.0 (November 15, 2021)
 
 - [#19761](https://github.com/emberjs/ember.js/pull/19761) [BREAKING] Require ember-auto-import >= 2 or higher to enable ember-source to become a v2 addon in the 4.x cycle
