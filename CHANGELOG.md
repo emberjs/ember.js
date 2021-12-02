@@ -87,6 +87,10 @@
 - [#19542](https://github.com/emberjs/ember.js/pull/19542) [BUGFIX] Fix initializer test blueprints
 - [#19589](https://github.com/emberjs/ember.js/pull/19589) [BUGFIX] Don’t include type-tests in build output
 
+## v3.28.8 (December 2, 2021)
+
+- [#19868](https://github.com/emberjs/ember.js/pull/19868) [BUGFIX] Fix a bug with the implicit injections deprecation that meant injecting a store to avoid the deprecation did not work.
+
 ## v3.28.7 (December 1, 2021)
 
 - [#19854](https://github.com/emberjs/ember.js/pull/19854) [BUGFIX] Fix implicit injections deprecation for routes to cover previously missed cases
