@@ -1,4 +1,4 @@
-import { DeprecatedStoreInjection, privatize as P } from '@ember/-internals/container';
+import { deprecatedStoreInjections, privatize as P } from '@ember/-internals/container';
 import {
   addObserver,
   computed,
@@ -2377,7 +2377,7 @@ Route.reopen(ActionHandler, Evented, {
     },
 
     set(key, value) {
-      if (DEBUG && value instanceof DeprecatedStoreInjection) {
+      if (DEBUG && deprecatedStoreInjections?.has(value)) {
         Object.defineProperty(this, key, {
           configurable: true,
           enumerable: false,
@@ -2395,7 +2395,7 @@ Route.reopen(ActionHandler, Evented, {
                 },
               }
             );
-            return value.store;
+            return value;
           },
         });
       } else {

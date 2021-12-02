@@ -67,8 +67,8 @@ moduleFor(
     }
 
     ["@test 'store' can be injected by data persistence frameworks [DEPRECATED]"](assert) {
-      assert.expect(9);
-      expectDeprecation();
+      // This deprecation is based on WeakSet, so will not fire in IE11
+      assert.expect(window.WeakSet ? 9 : 8);
       runDestroy(route);
 
       let owner = buildOwner();
@@ -92,6 +92,52 @@ moduleFor(
       owner.inject('route', 'store', 'store:main');
 
       route = owner.lookup('route:index');
+
+      if (window.WeakSet) {
+        expectDeprecation(
+          `A value for the \`store\` property was injected onto a route via the owner API. Implicit injection via the owner API is now deprecated, please add an explicit injection for this value. If the injected value is a service, consider using the @service decorator.`
+        );
+      }
+      assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
+      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+
+      runDestroy(owner);
+    }
+
+    ["@test 'store' can be injected by data persistence frameworks but explicitly injected"](
+      assert
+    ) {
+      assert.expect(9);
+      runDestroy(route);
+
+      let owner = buildOwner();
+
+      let post = {
+        id: 1,
+      };
+
+      let Store = EmberObject.extend({
+        find(type, value) {
+          assert.ok(true, 'injected model was called');
+          assert.equal(type, 'post', 'correct type was called');
+          assert.equal(value, 1, 'correct value was called');
+          return post;
+        },
+      });
+
+      owner.register(
+        'route:index',
+        EmberRoute.extend({
+          store: injectService(),
+        })
+      );
+      owner.register('service:store', Store);
+
+      owner.inject('route', 'store', 'service:store');
+
+      route = owner.lookup('route:index');
+
+      expectNoDeprecation();
 
       assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
       assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
