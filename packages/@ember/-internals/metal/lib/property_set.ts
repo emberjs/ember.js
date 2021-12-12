@@ -5,7 +5,7 @@ import { DEBUG } from '@glimmer/env';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
-import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
+import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 
 interface ExtendedObject {
   isDestroyed?: boolean;

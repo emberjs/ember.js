@@ -26,8 +26,8 @@ import {
   get,
   hash,
   on,
-  TEMPLATE_ONLY_COMPONENT_MANAGER,
   templateOnlyComponent,
+  TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime';
 import { _WeakSet } from '@glimmer/util';
 import { isCurlyManager } from './component-managers/curly';

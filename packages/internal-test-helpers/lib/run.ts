@@ -1,10 +1,10 @@
 import {
-  _getCurrentRunLoop,
-  // @ts-ignore
-  _hasScheduledTimers,
   // @ts-ignore
   next,
   run,
+  _getCurrentRunLoop,
+  // @ts-ignore
+  _hasScheduledTimers,
 } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 
