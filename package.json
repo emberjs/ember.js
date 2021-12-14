@@ -122,7 +122,7 @@
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-qunit": "^6.2.0",
     "execa": "^5.1.1",
-    "expect-type": "^0.12.0",
+    "expect-type": "^0.13.0",
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fs-extra": "^9.1.0",
