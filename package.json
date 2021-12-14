@@ -103,7 +103,7 @@
     "broccoli-string-replace": "^0.1.2",
     "broccoli-typescript-compiler": "^7.0.0",
     "broccoli-uglify-sourcemap": "^3.2.0",
-    "common-tags": "^1.8.0",
+    "common-tags": "^1.8.2",
     "core-js": "^2.6.5",
     "dag-map": "^2.0.2",
     "ember-cli": "^3.12.0",
