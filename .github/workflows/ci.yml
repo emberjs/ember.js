@@ -84,6 +84,29 @@ jobs:
           BROWSERSTACK_ACCESS_KEY: o5LNEdygq1SP4L9kst4s
         run: yarn test:browserstack
 
+  smoke-test:
+    name: Smoke tests (Full Ember Apps)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+          cache: yarn
+      - name: install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
+      - name: build
+        run: yarn ember build -prod
+      - name: test
+        # todo: potentially more apps? use matrix?
+        run: |
+          yarn link
+          cd smoke-tests/ember-test-app/
+          yarn
+          yarn link ember-source
+          yarn test
+
   production-test:
     name: Production (All Tests + Canary Features)
     runs-on: ubuntu-latest
