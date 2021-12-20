@@ -1,9 +1,4 @@
-const allSupportedBrowsers = [
-  'last 2 Chrome versions',
-  'last 2 Firefox versions',
-  'Safari 12',
-  'last 2 Edge versions',
-];
+const allSupportedBrowsers = require('../lib/browsers');
 
 const modernBrowsers = [
   'last 1 Chrome versions',

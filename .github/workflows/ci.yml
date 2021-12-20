@@ -202,6 +202,11 @@ jobs:
         with:
           name: dist
           path: dist
+      - name: Setup firefox
+        uses: browser-actions/setup-firefox@latest
+        with:
+          firefox-version: 91.0.1
+      - run: firefox --version
       - name: test
         run: yarn ember test -c testem.ci-browsers.js
 
