@@ -1,6 +1,9 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
+import Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
+import { assert } from '@ember/debug';
+import { Router } from '../..';
 import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
 
 /**
@@ -169,8 +172,9 @@ ControllerMixin.reopen({
     deprecateTransitionMethods('controller', 'transitionToRoute');
 
     // target may be either another controller or a router
-    let target = get(this, 'target') as any;
-    let method = target.transitionToRoute || target.transitionTo;
+    let target = get(this, 'target');
+    assert('controller or router', target instanceof Controller || target instanceof Router);
+    let method = target instanceof Controller ? target.transitionToRoute : target.transitionTo;
     return method.apply(target, prefixRouteNameArg(this, args));
   },
 

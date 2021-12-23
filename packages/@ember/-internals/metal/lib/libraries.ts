@@ -1,5 +1,5 @@
 import { EMBER_LIBRARIES_ISREGISTERED } from '@ember/canary-features';
-import { debug, warn } from '@ember/debug';
+import { assert, debug, warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
 import { get } from './property_get';
@@ -84,7 +84,11 @@ if (EMBER_LIBRARIES_ISREGISTERED) {
 if (DEBUG) {
   Libraries.prototype.logVersions = function (): void {
     let libs = this._registry;
-    let nameLengths = libs.map((item) => get(item, 'name.length')) as number[];
+    let nameLengths = libs.map((item) => get(item, 'name.length'));
+    assert(
+      'nameLengths is number array',
+      nameLengths instanceof Array && nameLengths.every((n) => typeof n === 'number')
+    );
     let maxNameLength = Math.max.apply(null, nameLengths);
 
     debug('-------------------------------');
