@@ -19,7 +19,7 @@ export type ElementDescriptor = [
   descriptor: DecoratorPropertyDescriptor
 ];
 
-export function isElementDescriptor(args: any[]): args is ElementDescriptor {
+export function isElementDescriptor(args: unknown[]): args is ElementDescriptor {
   let [maybeTarget, maybeKey, maybeDesc] = args;
 
   return (
