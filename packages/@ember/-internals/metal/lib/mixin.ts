@@ -68,12 +68,12 @@ function concatenatedMixinProperties(
   return concats;
 }
 
-function giveDecoratorSuper<Get, Set>(
+function giveDecoratorSuper(
   key: string,
-  decorator: ComputedDecorator<Get, Set>,
-  property: ComputedProperty<Get, Set> | true,
+  decorator: ComputedDecorator,
+  property: ComputedProperty | true,
   descs: { [key: string]: any }
-): ComputedDecorator<Get, Set> {
+): ComputedDecorator {
   if (property === true) {
     return decorator;
   }
@@ -87,7 +87,7 @@ function giveDecoratorSuper<Get, Set>(
   let superDesc = descs[key];
 
   // Check to see if the super property is a decorator first, if so load its descriptor
-  let superProperty: ComputedProperty<Get, Set> | true | undefined =
+  let superProperty: ComputedProperty | true | undefined =
     typeof superDesc === 'function' ? descriptorForDecorator(superDesc) : superDesc;
 
   if (superProperty === undefined || superProperty === true) {
@@ -100,14 +100,14 @@ function giveDecoratorSuper<Get, Set>(
     return decorator;
   }
 
-  let get = wrap(originalGetter, superGetter) as ComputedPropertyGetter<Get>;
+  let get = wrap(originalGetter, superGetter) as ComputedPropertyGetter;
   let set;
   let originalSetter = property._setter;
   let superSetter = superProperty._setter;
 
   if (superSetter !== undefined) {
     if (originalSetter !== undefined) {
-      set = wrap(originalSetter, superSetter) as ComputedPropertySetter<Set>;
+      set = wrap(originalSetter, superSetter) as ComputedPropertySetter;
     } else {
       // If the super property has a setter, we default to using it no matter what.
       // This is clearly very broken and weird, but it's what was here so we have
@@ -131,14 +131,14 @@ function giveDecoratorSuper<Get, Set>(
       {
         get,
         set,
-      } as ComputedPropertyObj<Get, Set>,
+      } as ComputedPropertyObj,
     ]);
 
     newProperty._readOnly = property._readOnly;
     newProperty._meta = property._meta;
     newProperty.enumerable = property.enumerable;
 
-    return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator<Get, Set>;
+    return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator;
   }
 
   return decorator;
@@ -282,7 +282,7 @@ function mergeMixins(
   }
 }
 
-function mergeProps<Get, Set>(
+function mergeProps(
   meta: Meta,
   props: { [key: string]: unknown },
   descs: { [key: string]: unknown },
@@ -336,8 +336,8 @@ function mergeProps<Get, Set>(
         // Wrap descriptor function to implement _super() if needed
         descs[key] = giveDecoratorSuper(
           key,
-          value as ComputedDecorator<Get, Set>,
-          desc as ComputedProperty<Get, Set>,
+          value as ComputedDecorator,
+          desc as ComputedProperty,
           descs
         );
         values[key] = undefined;
