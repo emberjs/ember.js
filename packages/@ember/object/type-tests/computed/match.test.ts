@@ -1,4 +1,7 @@
 import { match } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(match('foo', /^foo$/)).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @match('foo', /^foo$/) declare match: boolean;

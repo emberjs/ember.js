@@ -1,4 +1,7 @@
 import { mapBy } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(mapBy('foo', 'key')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @mapBy('foo', 'key')

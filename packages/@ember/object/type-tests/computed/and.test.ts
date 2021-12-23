@@ -1,4 +1,7 @@
 import { and } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(and('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @and('foo') and: unknown;

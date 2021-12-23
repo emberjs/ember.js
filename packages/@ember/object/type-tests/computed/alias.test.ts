@@ -1,4 +1,7 @@
 import { alias } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(alias('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @alias('foo') alias: unknown;

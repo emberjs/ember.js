@@ -1,5 +1,9 @@
 import { bool } from '@ember/object/computed';
 
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(bool('foo')).toEqualTypeOf<PropertyDecorator>();
+
 class Foo {
   @bool('foo') declare bool: boolean;
 

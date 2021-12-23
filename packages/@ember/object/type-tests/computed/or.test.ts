@@ -1,4 +1,7 @@
 import { or } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(or('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @or('foo') or: unknown;

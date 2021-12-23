@@ -1,4 +1,7 @@
 import { lt } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(lt('foo', 10)).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @lt('foo', 10) declare lt: boolean;

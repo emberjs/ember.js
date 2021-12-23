@@ -1,4 +1,7 @@
 import { setDiff } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(setDiff('foo', 'bar')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @setDiff('foo', 'bar') declare setDiff: boolean;

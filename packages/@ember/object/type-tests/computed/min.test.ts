@@ -1,4 +1,7 @@
 import { min } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(min('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @min('foo') min: unknown;

@@ -1,4 +1,7 @@
 import { computed } from '@ember/object';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(computed('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   declare firstName: string;

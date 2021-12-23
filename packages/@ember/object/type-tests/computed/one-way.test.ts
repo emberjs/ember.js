@@ -1,4 +1,7 @@
 import { oneWay } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(oneWay('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @oneWay('foo') oneWay: unknown;

@@ -1,4 +1,7 @@
 import { filterBy } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(filterBy('foo', 'key')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @filterBy('foo', 'key', 'value')

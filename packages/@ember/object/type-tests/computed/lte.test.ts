@@ -1,4 +1,7 @@
 import { lte } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(lte('foo', 10)).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @lte('foo', 10) declare lte: boolean;

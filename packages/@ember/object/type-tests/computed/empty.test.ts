@@ -1,4 +1,7 @@
 import { empty } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(empty('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @empty('foo') declare empty: boolean;

@@ -1,4 +1,7 @@
 import { sort } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(sort('foo', 'bar')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   // With sortKey

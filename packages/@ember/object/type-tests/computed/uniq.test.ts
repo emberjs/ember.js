@@ -1,4 +1,7 @@
 import { uniq } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(uniq('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @uniq('foo') declare uniq: unknown[];

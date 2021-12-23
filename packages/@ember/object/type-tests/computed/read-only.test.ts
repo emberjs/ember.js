@@ -1,4 +1,7 @@
 import { readOnly } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(readOnly('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @readOnly('foo') readOnly: unknown;

@@ -1,4 +1,7 @@
 import { gte } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(gte('foo', 10)).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @gte('foo', 10) declare gte: boolean;

@@ -1,4 +1,7 @@
 import { reads } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(reads('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @reads('foo') reads: unknown;

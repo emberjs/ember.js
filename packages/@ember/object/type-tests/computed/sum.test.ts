@@ -1,4 +1,7 @@
 import { sum } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(sum('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @sum('foo') sum: unknown;

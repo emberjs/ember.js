@@ -1,5 +1,16 @@
 import { deprecatingAlias } from '@ember/object/computed';
 
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(
+  deprecatingAlias('foo', {
+    id: 'test',
+    until: '4.0.0',
+    for: 'testing',
+    since: { enabled: '3.0.0' },
+  })
+).toEqualTypeOf<PropertyDecorator>();
+
 class Foo {
   @deprecatingAlias('foo', {
     id: 'test',

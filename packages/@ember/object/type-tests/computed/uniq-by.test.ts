@@ -1,4 +1,7 @@
 import { uniqBy } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(uniqBy('foo', 'bar')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @uniqBy('foo', 'key')

@@ -1,4 +1,7 @@
 import { union } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(union('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @union('foo') declare union: unknown[];

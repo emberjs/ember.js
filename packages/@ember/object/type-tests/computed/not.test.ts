@@ -1,4 +1,7 @@
 import { not } from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
+
+expectTypeOf(not('foo')).toEqualTypeOf<PropertyDecorator>();
 
 class Foo {
   @not('foo') not: unknown;
