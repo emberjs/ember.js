@@ -4,27 +4,37 @@ import { deprecate } from '@ember/debug';
 import EmberError from '@ember/error';
 import Router, { STATE_SYMBOL } from 'router_js';
 import Route from './system/route';
-import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
+import EmberRouter, { PrivateRouteInfo } from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export function extractRouteArgs(
-  args: unknown[]
-): { routeName: string | undefined; models: {}[]; queryParams: object } {
-  args = args.slice();
-  let possibleQueryParams = args[args.length - 1];
+type ControllerQueryParam = string | Record<string, string> | { as?: string; scope?: string };
+type ExpandedControllerQueryParam = { as: string | null; scope: string };
 
-  let queryParams;
-  if (
-    possibleQueryParams &&
-    Object.prototype.hasOwnProperty.call(possibleQueryParams, 'queryParams')
-  ) {
-    // SAFETY: this cast is safe because we have just checked whether
-    // `possibleQueryParams` -- defined as the last item in args -- both exists
-    // and has the property `queryParams`. If either of these invariants change,
-    // ***this is unsafe and should be changed***.
-    queryParams = (args.pop() as { queryParams: object }).queryParams;
+type ExtractedArgs = {
+  routeName: string | undefined;
+  models: {}[];
+  queryParams: Record<string, unknown>;
+};
+type HasQueryParams = { queryParams: Record<string, unknown> };
+
+export function extractRouteArgs(
+  args:
+    | [routeNameOrURL: string, ...modelsAndOptions: [...any[], Record<string, unknown>]]
+    | [routeNameOrURL: string, ...models: any[]]
+    | [...modelsAndOptions: [...any[], Record<string, unknown>]]
+    | [...models: any[]]
+): ExtractedArgs {
+  args = args.slice();
+
+  let possibleQueryParams = args.pop();
+
+  let queryParams: Record<string, unknown>;
+  if (hasQueryParams(possibleQueryParams)) {
+    queryParams = possibleQueryParams.queryParams;
   } else {
+    // Not query params so return to the array
+    args.push(possibleQueryParams);
     queryParams = {};
   }
 
@@ -153,8 +163,8 @@ export function calculateCacheKey(prefix: string, parts: string[] = [], values: 
   This helper normalizes all three possible styles into the
   'Array of fully defined objects' style.
 */
-export function normalizeControllerQueryParams(queryParams: QueryParam[]) {
-  let qpMap = {};
+export function normalizeControllerQueryParams(queryParams: ControllerQueryParam[]) {
+  let qpMap: Record<string, ExpandedControllerQueryParam> = {};
 
   for (let i = 0; i < queryParams.length; ++i) {
     accumulateQueryParamDescriptors(queryParams[i], qpMap);
@@ -163,7 +173,10 @@ export function normalizeControllerQueryParams(queryParams: QueryParam[]) {
   return qpMap;
 }
 
-function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
+function accumulateQueryParamDescriptors(
+  _desc: ControllerQueryParam,
+  accum: Record<string, ExpandedControllerQueryParam>
+) {
   let desc: {} = _desc;
   let tmp: {};
   if (typeof desc === 'string') {
@@ -182,10 +195,10 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
       singleDesc = { as: singleDesc };
     }
 
-    tmp = accum[key] || { as: null, scope: 'model' };
-    Object.assign(tmp, singleDesc);
+    let val = accum[key] || { as: null, scope: 'model' };
+    Object.assign(val, singleDesc);
 
-    accum[key] = tmp;
+    accum[key] = val;
   }
 }
 
@@ -260,4 +273,14 @@ export function deprecateTransitionMethods(frameworkClass: string, methodName: s
       url: 'https://deprecations.emberjs.com/v3.x/#toc_routing-transition-methods',
     }
   );
+}
+
+function hasQueryParams(value: unknown): value is HasQueryParams {
+  if (value && typeof value === 'object') {
+    let qps = (value as HasQueryParams).queryParams;
+    if (qps && typeof qps === 'object') {
+      return Object.keys(qps).every((k) => typeof k === 'string');
+    }
+  }
+  return false;
 }

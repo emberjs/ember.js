@@ -45,6 +45,17 @@ import {
 import generateController from './generate_controller';
 import EmberRouter, { QueryParam } from './router';
 
+export type QueryParamMeta = {
+  qps: QueryParam[];
+  map: Record<string, QueryParam>;
+  propertyNames: string[];
+  states: {
+    inactive(prop: string, value: unknown): void;
+    active(prop: string, value: unknown): any;
+    allowOverrides(prop: string, value: unknown): any;
+  };
+};
+
 export const ROUTE_CONNECTIONS = new WeakMap();
 const RENDER = (symbol('render') as unknown) as string;
 
@@ -187,7 +198,14 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   // Set in reopen so it can be overriden with extend
-  declare queryParams: Record<string, unknown>;
+  declare queryParams: Record<
+    string,
+    {
+      refreshModel?: boolean;
+      replace?: boolean;
+      as?: string;
+    }
+  >;
 
   /**
     The name of the template to use by default when rendering this routes
@@ -334,7 +352,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       names = (routeInfo && routeInfo['_names']) || [];
     }
 
-    let qps = get(this, '_qp.qps') as any;
+    // SAFETY: Since `_qp` is protected we can't infer the type
+    let qps = (get(this, '_qp') as Route['_qp']).qps;
 
     let namePaths = new Array(names.length);
     for (let a = 0; a < names.length; ++a) {
@@ -493,8 +512,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
     @property _optionsForQueryParam
   */
-  _optionsForQueryParam(qp: QueryParam) {
-    const queryParams = get(this, 'queryParams') as any;
+  _optionsForQueryParam(qp: QueryParam): {} {
+    const queryParams = get(this, 'queryParams');
     return (
       get(queryParams, qp.urlKey) ||
       get(queryParams, qp.prop) ||
@@ -550,7 +569,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   */
   _internalReset(isExiting: boolean, transition: Transition) {
     let controller = this.controller;
-    controller['_qpDelegate'] = get(this, '_qp.states.inactive');
+    // SAFETY: Since `_qp` is protected we can't infer the type
+    controller['_qpDelegate'] = (get(this, '_qp') as Route['_qp']).states.inactive;
 
     this.resetController(controller, isExiting, transition);
   }
@@ -1104,16 +1124,16 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       controller = this.generateController(controllerName);
     }
 
+    // SAFETY: Since `_qp` is protected we can't infer the type
+    let queryParams = get(this, '_qp') as Route['_qp'];
+
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers. Side effects. Side effects everywhere.
     if (!this.controller) {
-      let qp = get(this, '_qp') as any;
-      let propNames = qp !== undefined ? (get(qp, 'propertyNames') as string[]) : [];
+      let propNames = queryParams.propertyNames;
       addQueryParamsObservers(controller, propNames);
       this.controller = controller;
     }
-
-    let queryParams = get(this, '_qp') as any;
 
     let states = queryParams.states;
 
@@ -1353,7 +1373,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   */
   model(params: {}, transition: Transition) {
     let name, sawParams, value;
-    let queryParams = get(this, '_qp.map') as any;
+    // SAFETY: Since `_qp` is protected we can't infer the type
+    let queryParams = (get(this, '_qp') as Route['_qp']).map;
 
     for (let prop in params) {
       if (prop === 'queryParams' || (queryParams && prop in queryParams)) {
@@ -1786,13 +1807,13 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @property _qp
     */
   @computed
-  protected get _qp() {
+  protected get _qp(): QueryParamMeta {
     let combinedQueryParameterConfiguration;
 
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
     let controller = owner.lookup<Controller>(`controller:${controllerName}`);
-    let queryParameterConfiguraton = get(this, 'queryParams') as this['queryParams'];
+    let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
     if (controller) {
@@ -1817,9 +1838,9 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       combinedQueryParameterConfiguration = queryParameterConfiguraton;
     }
 
-    let qps = [];
-    let map = {};
-    let propertyNames = [];
+    let qps: QueryParam[] = [];
+    let map: Record<string, QueryParam> = {};
+    let propertyNames: string[] = [];
 
     for (let propName in combinedQueryParameterConfiguration) {
       if (!Object.prototype.hasOwnProperty.call(combinedQueryParameterConfiguration, propName)) {
@@ -1835,7 +1856,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
       let desc = combinedQueryParameterConfiguration[propName];
       let scope = desc.scope || 'model';
-      let parts;
+      let parts: string[] | undefined = undefined;
 
       if (scope === 'controller') {
         parts = [];
@@ -1850,7 +1871,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
       let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
       let scopedPropertyName = `${controllerName}:${propName}`;
-      let qp = {
+      let qp: QueryParam = {
         undecoratedDefaultValue: get(controller!, propName),
         defaultValue,
         serializedDefaultValue: defaultValueSerialized,
@@ -2101,41 +2122,43 @@ type PartialRenderOptions = Partial<
 >;
 
 export function getFullQueryParams(router: EmberRouter, state: TransitionState<Route>) {
-  if (state['fullQueryParams']) {
-    return state['fullQueryParams'];
+  if (state.fullQueryParams) {
+    return state.fullQueryParams;
   }
 
-  let fullQueryParamsState = {};
   let haveAllRouteInfosResolved = state.routeInfos.every((routeInfo) => routeInfo.route);
 
-  Object.assign(fullQueryParamsState, state.queryParams);
+  let fullQueryParamsState: Record<string, unknown> = {
+    ...state.queryParams,
+  };
 
-  router._deserializeQueryParams(state.routeInfos, fullQueryParamsState as QueryParam);
+  router._deserializeQueryParams(state.routeInfos, fullQueryParamsState);
 
   // only cache query params state if all routeinfos have resolved; it's possible
   // for lazy routes to not have resolved when `getFullQueryParams` is called, so
   // we wait until all routes have resolved prior to caching query params state
   if (haveAllRouteInfosResolved) {
-    state['fullQueryParams'] = fullQueryParamsState;
+    state.fullQueryParams = fullQueryParamsState;
   }
 
   return fullQueryParamsState;
 }
 
 function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
-  state['queryParamsFor'] = state['queryParamsFor'] || {};
+  state.queryParamsFor = state.queryParamsFor || {};
   let name = route.fullRouteName;
 
-  if (state['queryParamsFor'][name]) {
-    return state['queryParamsFor'][name];
+  if (state.queryParamsFor[name]) {
+    return state.queryParamsFor[name];
   }
 
   let fullQueryParams = getFullQueryParams(route._router, state);
 
-  let params = (state['queryParamsFor'][name] = {});
+  let params: Record<string, unknown> = (state.queryParamsFor[name] = {});
 
   // Copy over all the query params for this route/controller into params hash.
-  let qps = get(route, '_qp.qps') as any;
+  // SAFETY: Since `_qp` is protected we can't infer the type
+  let qps = (get(route, '_qp') as Route['_qp']).qps;
   for (let i = 0; i < qps.length; ++i) {
     // Put deserialized qp on params hash.
     let qp = qps[i];
@@ -2149,7 +2172,7 @@ function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
   return params;
 }
 
-function copyDefaultValue(value: unknown) {
+function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
     return emberA(value.slice());
   }
@@ -2351,18 +2374,19 @@ Route.reopen({
     @private
    */
     queryParamsDidChange(this: Route, changed: {}, _totalPresent: unknown, removed: {}) {
-      let qpMap = (get(this, '_qp') as any).map;
+      // SAFETY: Since `_qp` is protected we can't infer the type
+      let qpMap = (get(this, '_qp') as Route['_qp']).map;
 
       let totalChanged = Object.keys(changed).concat(Object.keys(removed));
       for (let i = 0; i < totalChanged.length; ++i) {
         let qp = qpMap[totalChanged[i]];
-        if (
-          qp &&
-          (get(this._optionsForQueryParam(qp), 'refreshModel') as boolean) &&
-          this._router.currentState
-        ) {
-          this.refresh();
-          break;
+        if (qp) {
+          let options = this._optionsForQueryParam(qp);
+          assert('options exists', options && typeof options === 'object');
+          if ((get(options, 'refreshModel') as boolean) && this._router.currentState) {
+            this.refresh();
+            break;
+          }
         }
       }
 
@@ -2397,7 +2421,8 @@ Route.reopen({
         // Do a reverse lookup to see if the changed query
         // param URL key corresponds to a QP property on
         // this controller.
-        let value, svalue;
+        let value;
+        let svalue: string | null | undefined;
         if (changes.has(qp.urlKey)) {
           // Value updated in/before setupController
           value = get(controller, qp.prop);
@@ -2416,7 +2441,8 @@ Route.reopen({
           }
         }
 
-        controller._qpDelegate = get(route, '_qp.states.inactive');
+        // SAFETY: Since `_qp` is protected we can't infer the type
+        controller._qpDelegate = (get(route, '_qp') as Route['_qp']).states.inactive;
 
         let thisQueryParamChanged = svalue !== qp.serializedValue;
         if (thisQueryParamChanged) {
@@ -2460,7 +2486,8 @@ Route.reopen({
       }
 
       qpMeta.qps.forEach((qp: QueryParam) => {
-        let routeQpMeta = get(qp.route, '_qp') as any;
+        // SAFETY: Since `_qp` is protected we can't infer the type
+        let routeQpMeta = get(qp.route, '_qp') as Route['_qp'];
         let finalizedController = qp.route.controller;
         finalizedController['_qpDelegate'] = get(routeQpMeta, 'states.active');
       });
