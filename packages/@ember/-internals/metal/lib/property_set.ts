@@ -143,6 +143,6 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   @param {Object} value The value to set
   @public
 */
-export function trySet<T>(root: object, path: string, value: T): T {
+export function trySet<T>(root: object, path: string, value: T): T | undefined {
   return set(root, path, value, true);
 }
