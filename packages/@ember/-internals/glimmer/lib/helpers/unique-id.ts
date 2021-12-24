@@ -1,3 +1,30 @@
+/**
+@module ember
+*/
+
+/**
+  Use the {{unique-id}} helper to generate a unique ID string suitable for use as
+  an ID attribute in the DOM.
+
+  ```handlebars
+  <input id={{unique-id}} type="email" />
+  ```
+  Each invocation of {{unique-id}} will return a new, unique ID string.
+  You can use the `let` helper to create an ID that can be reused within a template.
+
+  ```handlebars
+  {{#let (unique-id) as |emailId|}}
+    <label for={{emailId}}>Email address</label>
+    <input id={{emailId}} type="email" />
+  {{/let}}
+  ```
+
+  @method unique-id
+  @for Ember.Templates.helpers
+  @since 4.1.0
+  @public
+  */
+
 import { createConstRef, Reference } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 

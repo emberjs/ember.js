@@ -512,6 +512,7 @@ module.exports = {
     'union',
     'uniq',
     'uniqBy',
+    'unique-id',
     'unless',
     'unregister',
     'unregisterDestructor',
