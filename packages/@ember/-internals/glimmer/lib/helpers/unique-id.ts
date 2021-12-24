@@ -1,5 +1,5 @@
+import { createConstRef, Reference } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
-import { Reference, createConstRef } from '@glimmer/reference';
 
 export default internalHelper(
   (): Reference<string> => {
