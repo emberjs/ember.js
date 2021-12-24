@@ -49,6 +49,8 @@ import { default as eachIn } from './helpers/each-in';
 import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
+import { default as uniqueId } from './helpers/unique-id';
+
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
@@ -142,6 +144,7 @@ const BUILTIN_HELPERS = {
   fn,
   get,
   hash,
+  'unique-id': uniqueId,
 };
 
 const BUILTIN_KEYWORD_MODIFIERS = {
