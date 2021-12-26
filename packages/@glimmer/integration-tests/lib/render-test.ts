@@ -19,7 +19,6 @@ import {
   GLIMMER_TEST_COMPONENT,
 } from './components';
 import { assertElementShape, assertEmberishElement } from './dom/assertions';
-import { normalizeInnerHTML } from './dom/normalize';
 import { assertElement, toInnerHTML } from './dom/simple-utils';
 import { UserHelper } from './helpers';
 import { TestModifierConstructor } from './modifiers';
@@ -337,7 +336,7 @@ export class RenderTest implements IRenderTest {
     let tag = '<' + tagName + ' data-foo="bar">';
     let closing = '</' + tagName + '>';
     let extra = '<p>hello</p>';
-    html = normalizeInnerHTML(toInnerHTML(this.element));
+    html = toInnerHTML(this.element);
 
     QUnit.assert.pushResult({
       result: html === tag + extra || html === tag + closing + extra,
