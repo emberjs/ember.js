@@ -2,7 +2,7 @@
 /* eslint-env node, es6 */
 fawe
 const fs = require('fs');
-const path = require('path');
+const path = require('path');fae
 const execa = require('execa');
 const buildInfo = require('../broccoli/build-info').buildInfo();
 
