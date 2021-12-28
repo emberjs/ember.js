@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### v4.1.0-beta.1 (November 19, 2021)
+### v4.1.0 (December 28, 2021)
 
 - [#19772](https://github.com/emberjs/ember.js/pull/19772) / [#19826](https://github.com/emberjs/ember.js/pull/19826) [FEATURE] Add a `@cached` decorator per [RFC #0566](https://github.com/emberjs/rfcs/blob/af64915b5ecde010fce09309a47ee6d2447588d0/text/0566-memo-decorator.md).
 - [#19471](https://github.com/emberjs/ember.js/pull/19471) / [#19834](https://github.com/emberjs/ember.js/pull/19834) [FEATURE] Add `refresh` method to the Router Service per [RFC #0631](https://github.com/emberjs/rfcs/blob/master/text/0631-refresh-method-for-router-service.md).
@@ -8,7 +8,6 @@
 - [#19510](https://github.com/emberjs/ember.js/pull/19510) [DEPRECATION] Deprecate auto location per [RFC #0711](https://github.com/emberjs/rfcs/blob/master/text/0711-deprecate-auto-location.md).
 - [#17570](https://github.com/emberjs/ember.js/pull/17570) [BUGFIX] Passing ObjectProxy with a property size to `isEmpty` would throw assertion
 - [#18269](https://github.com/emberjs/ember.js/pull/18269) [BUGFIX] Fix for when query params are using a nested value
-- [#19787](https://github.com/emberjs/ember.js/pull/19787) Setup basic infrastructure to ensure destroyables destroyed
 
 ### v4.0.0 (November 15, 2021)
 
