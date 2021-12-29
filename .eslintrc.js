@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
+  reportUnusedDisableDirectives: true,
   extends: [
     'eslint:recommended',
     'plugin:import/errors',
