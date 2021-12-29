@@ -81,7 +81,6 @@ var define, require;
     return internalRequire(name, null);
   };
 
-  // eslint-disable-next-line no-unused-vars
   define = function (name, deps, callback) {
     registry[name] = { deps: deps, callback: callback };
   };
