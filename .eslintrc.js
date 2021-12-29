@@ -12,6 +12,7 @@ module.exports = {
   ],
   plugins: ['ember-internal', 'import', 'qunit', 'disable-features'],
   rules: {
+    'no-console': 'error',
     'no-implicit-coercion': 'error',
     'no-new-wrappers': 'error',
     'no-unused-vars': 'error',

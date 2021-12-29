@@ -96,6 +96,7 @@ function errorLoopTransaction(fn: () => void) {
           // Noop the function so that we won't keep calling it and causing
           // infinite looping failures;
           fn = () => {
+            // eslint-disable-next-line no-console
             console.warn(
               'Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.'
             );
