@@ -117,7 +117,7 @@ export default {
       {
         id: 'deprecate-auto-location',
         until: '5.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-auto-location',
+        url: 'https://emberjs.com/deprecations/v4.x#toc_deprecate-auto-location',
         for: 'ember-source',
         since: {
           enabled: '4.1.0',
