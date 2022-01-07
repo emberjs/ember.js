@@ -179,7 +179,7 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 
   getDebugName(definition: ClassHelperFactory) {
-    return getDebugName!(definition.class!['prototype']);
+    return getDebugName!((definition.class || definition)!['prototype']);
   }
 }
 
