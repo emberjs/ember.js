@@ -145,24 +145,6 @@ module.exports = {
       ],
       protocol: 'browser',
     },
-    BS_IE_11: {
-      exe: 'node_modules/.bin/browserstack-launch',
-      args: [
-        '--os',
-        'Windows',
-        '--osv',
-        '10',
-        '--b',
-        'ie',
-        '--bv',
-        '11.0',
-        '-t',
-        '1500',
-        '--u',
-        '<url>',
-      ],
-      protocol: 'browser',
-    },
   },
   launch_in_dev: [],
   launch_in_ci: [
@@ -173,6 +155,5 @@ module.exports = {
     'BS_Safari_Current',
     'BS_Safari_Last',
     'BS_MS_Edge',
-    'BS_IE_11',
   ],
 };
