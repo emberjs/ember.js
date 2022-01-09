@@ -4015,22 +4015,21 @@ broccoli-typescript-compiler@^7.0.0:
     typescript "~4.0.3"
     walk-sync "^2.1.0"
 
-broccoli-uglify-sourcemap@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.2.0.tgz#d96f1d41f6c18e9a5d49af1a5ab9489cdcac1c6c"
-  integrity "sha1-2W8dQfbBjppdSa8aWrlInNysHGw= sha512-kkkn8v7kXdWwnZNekq+3ILuTAGkZoaoEMUYCKoER5/uokuoyTjtdYLHaE7UxHkuPEuLfjvJYv21sCCePZ74/2g=="
+broccoli-uglify-sourcemap@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-4.0.0.tgz#c5c5fbd9563cf0fe4c68c337bb61e98fe0697a3b"
+  integrity sha512-46yB4gw1Q3ALtBROY5QfKXNXxYK5uPSvER1OGjjh2t3piaipqBfuRXTzQZvmZ+Odr6/McY+J8XmxON4+lE1ukg==
   dependencies:
     async-promise-queue "^1.0.5"
-    broccoli-plugin "^1.2.1"
+    broccoli-plugin "^4.0.3"
     debug "^4.1.0"
     lodash.defaultsdeep "^4.6.1"
-    matcher-collection "^2.0.0"
-    mkdirp "^0.5.0"
+    matcher-collection "^2.0.1"
     source-map-url "^0.4.0"
-    symlink-or-copy "^1.0.1"
-    terser "^4.3.9"
-    walk-sync "^1.1.3"
-    workerpool "^5.0.1"
+    symlink-or-copy "^1.3.1"
+    terser "^5.3.0"
+    walk-sync "^2.2.0"
+    workerpool "^6.0.0"
 
 broccoli@^3.1.1:
   version "3.1.2"
@@ -8568,10 +8567,10 @@ matcher-collection@^1.0.0, matcher-collection@^1.1.1:
   dependencies:
     minimatch "^3.0.2"
 
-matcher-collection@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/matcher-collection/-/matcher-collection-2.0.0.tgz#470ae263c793e897b3f1e72c695016b7aea355c4"
-  integrity sha512-wSi4BgQGTFfBN5J+pIaS78rEKk4qIkjrw+NfJYdHsd2cRVIQsbDi3BZtNAXTFA2WHvlbS9kLGtTjv3cPJKuRSw==
+matcher-collection@^2.0.0, matcher-collection@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/matcher-collection/-/matcher-collection-2.0.1.tgz#90be1a4cf58d6f2949864f65bb3b0f3e41303b29"
+  integrity sha512-daE62nS2ZQsDg9raM0IlZzLmI2u+7ZapXBwdoeBUKAYERPDDIc0qNqA8E0Rp2D+gspKR7BgIFP52GeujaGXWeQ==
   dependencies:
     "@types/minimatch" "^3.0.3"
     minimatch "^3.0.2"
@@ -10705,10 +10704,10 @@ source-map-resolve@^0.5.0:
     source-map-url "^0.4.0"
     urix "^0.1.0"
 
-source-map-support@~0.5.12:
-  version "0.5.16"
-  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.16.tgz#0ae069e7fe3ba7538c64c98515e35339eac5a042"
-  integrity "sha1-CuBp5/47p1OMZMmFFeNTOerFoEI= sha512-efyLRJDr68D9hBBNIPWFjhpFzURh+KJykQwvMyW5UiZzYwoF6l4YMMDIJJEyFWxWCqfyxLzz6tSfUFR+kXXsVQ=="
+source-map-support@~0.5.20:
+  version "0.5.21"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.21.tgz#04fe7c7f9e1ed2d662233c28cb2b35b9f63f6e4f"
+  integrity sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==
   dependencies:
     buffer-from "^1.0.0"
     source-map "^0.6.0"
@@ -10746,6 +10745,11 @@ source-map@~0.1.x:
   integrity sha1-wkvBRspRfBRx9drL4lcbK3+eM0Y=
   dependencies:
     amdefine ">=0.0.4"
+
+source-map@~0.7.2:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
+  integrity sha512-CkCj6giN3S+n9qrYiBTX5gystlENnRW5jZeNLHpe6aue+SrHcG5VYwujhW9s4dY31mEGsxBDrHR6oI69fTXsaQ==
 
 sourcemap-codec@^1.4.1, sourcemap-codec@^1.4.4:
   version "1.4.4"
@@ -11128,14 +11132,14 @@ temp@0.9.0:
   dependencies:
     rimraf "~2.6.2"
 
-terser@^4.3.9:
-  version "4.6.2"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-4.6.2.tgz#cb1cf055e7f70caa5863f00ba3e67dc3c97b5150"
-  integrity "sha1-yxzwVef3DKpYY/ALo+Z9w8l7UVA= sha512-6FUjJdY2i3WZAtYBtnV06OOcOfzl+4hSKYE9wgac8rkLRBToPDDrBB2AcHwQD/OKDxbnvhVy2YgOPWO2SsKWqg=="
+terser@^5.3.0:
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.10.0.tgz#b86390809c0389105eb0a0b62397563096ddafcc"
+  integrity sha512-AMmF99DMfEDiRJfxfY5jj5wNH/bYO09cniSqhfoyxc8sFoYIgkJy86G04UoZU5VjlpnplVu0K6Tx6E9b5+DlHA==
   dependencies:
     commander "^2.20.0"
-    source-map "~0.6.1"
-    source-map-support "~0.5.12"
+    source-map "~0.7.2"
+    source-map-support "~0.5.20"
 
 testdouble@^3.2.6:
   version "3.3.1"
@@ -11861,10 +11865,10 @@ workerpool@^3.1.1:
     object-assign "4.1.1"
     rsvp "^4.8.4"
 
-workerpool@^5.0.1:
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-5.0.4.tgz#4f67cb70ff7550a27ab94de25b0b843cd92059a2"
-  integrity "sha1-T2fLcP91UKJ6uU3iWwuEPNkgWaI= sha512-Sywova24Ow2NQ24JPB68bI89EdqMDjUXo4OpofK/QMD7C2ZVMloYBgQ5J3PChcBJHj2vspsmGx1/3nBKXtUkXQ=="
+workerpool@^6.0.0:
+  version "6.1.5"
+  resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.1.5.tgz#0f7cf076b6215fd7e1da903ff6f22ddd1886b581"
+  integrity sha512-XdKkCK0Zqc6w3iTxLckiuJ81tiD/o5rBE/m+nXpRCB+/Sq4DqkfXZ/x0jW02DG1tGsfUGXbTJyZDP+eu67haSw==
 
 wrap-ansi@^5.1.0:
   version "5.1.0"
