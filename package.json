@@ -64,7 +64,7 @@
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
     "ember-cli-string-utils": "^1.1.0",
-    "ember-cli-version-checker": "^5.1.1",
+    "ember-cli-version-checker": "^5.1.2",
     "ember-router-generator": "^2.0.0",
     "inflection": "^1.13.1",
     "resolve": "^1.17.0",
