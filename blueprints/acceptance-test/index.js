@@ -10,6 +10,8 @@ const useTestFrameworkDetector = require('../test-framework-detector');
 module.exports = useTestFrameworkDetector({
   description: 'Generates an acceptance test for a feature.',
 
+  shouldTransformTypeScript: true,
+
   locals: function (options) {
     let testFolderRoot = stringUtils.dasherize(options.project.name());
 
