@@ -1,4 +1,4 @@
 import Service from '@ember/service';
 
-export default Service.extend({
-});
+export default class <%= classifiedModuleName %>Service extends Service {
+}

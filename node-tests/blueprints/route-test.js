@@ -40,7 +40,7 @@ describe('Blueprint: route', function () {
 
     it('route foo', function () {
       return emberGenerateDestroy(['route', 'foo'], (_file) => {
-        expect(_file('app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -58,7 +58,7 @@ describe('Blueprint: route', function () {
         expect(_file('app/templates/foo.js.hbs')).to.not.exist;
         expect(_file('tests/unit/routes/foo.js-test.js')).to.not.exist;
 
-        expect(_file('app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -84,9 +84,7 @@ describe('Blueprint: route', function () {
 
     it('route foo --path=:foo_id/show', function () {
       return emberGenerateDestroy(['route', 'foo', '--path=:foo_id/show'], (_file) => {
-        expect(_file('app/routes/foo.js')).to.equal(
-          fixture('route/native-route-with-dynamic-segment.js')
-        );
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route-with-dynamic-segment.js'));
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -105,7 +103,7 @@ describe('Blueprint: route', function () {
 
     it('route parent/child --reset-namespace', function () {
       return emberGenerateDestroy(['route', 'parent/child', '--reset-namespace'], (_file) => {
-        expect(_file('app/routes/child.js')).to.equal(fixture('route/native-route-child.js'));
+        expect(_file('app/routes/child.js')).to.equal(fixture('route/route-child.js'));
 
         expect(_file('app/templates/child.hbs')).to.equal('{{page-title "Child"}}\n{{outlet}}');
 
@@ -125,7 +123,7 @@ describe('Blueprint: route', function () {
       return emberGenerateDestroy(
         ['route', 'parent/child', '--reset-namespace', '--pod'],
         (_file) => {
-          expect(_file('app/child/route.js')).to.equal(fixture('route/native-route-child.js'));
+          expect(_file('app/child/route.js')).to.equal(fixture('route/route-child.js'));
 
           expect(_file('app/child/template.hbs')).to.equal('{{page-title "Child"}}\n{{outlet}}');
 
@@ -171,7 +169,7 @@ describe('Blueprint: route', function () {
 
     it('route foo --pod', function () {
       return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
-        expect(_file('app/foo/route.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('app/foo/route.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -189,7 +187,7 @@ describe('Blueprint: route', function () {
         expect(_file('app/foo.js/template.hbs')).to.not.exist;
         expect(_file('tests/unit/foo.js/route-test.js')).to.not.exist;
 
-        expect(_file('app/foo/route.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('app/foo/route.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -246,7 +244,7 @@ describe('Blueprint: route', function () {
 
       it('route foo --pod', function () {
         return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
-          expect(_file('app/pods/foo/route.js')).to.equal(fixture('route/native-route.js'));
+          expect(_file('app/pods/foo/route.js')).to.equal(fixture('route/route.js'));
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -266,7 +264,7 @@ describe('Blueprint: route', function () {
           expect(_file('app/pods/foo.js/template.hbs')).to.not.exist;
           expect(_file('tests/unit/pods/foo.js/route-test.js')).to.not.exist;
 
-          expect(_file('app/pods/foo/route.js')).to.equal(fixture('route/native-route.js'));
+          expect(_file('app/pods/foo/route.js')).to.equal(fixture('route/route.js'));
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -300,7 +298,7 @@ describe('Blueprint: route', function () {
 
     it('route foo', function () {
       return emberGenerateDestroy(['route', 'foo'], (_file) => {
-        expect(_file('addon/routes/foo.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('addon/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('addon/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -328,7 +326,7 @@ describe('Blueprint: route', function () {
         expect(_file('app/templates/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/routes/foo.js-test.js')).to.not.exist;
 
-        expect(_file('addon/routes/foo.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('addon/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('addon/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -351,7 +349,7 @@ describe('Blueprint: route', function () {
 
     it('route foo/bar', function () {
       return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
-        expect(_file('addon/routes/foo/bar.js')).to.equal(fixture('route/native-route-nested.js'));
+        expect(_file('addon/routes/foo/bar.js')).to.equal(fixture('route/route-nested.js'));
 
         expect(_file('addon/templates/foo/bar.hbs')).to.equal('{{page-title "Bar"}}\n{{outlet}}');
 
@@ -375,7 +373,7 @@ describe('Blueprint: route', function () {
 
     it('route foo --dummy', function () {
       return emberGenerateDestroy(['route', 'foo', '--dummy'], (_file) => {
-        expect(_file('tests/dummy/app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('tests/dummy/app/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('tests/dummy/app/templates/foo.hbs')).to.equal(
           '{{page-title "Foo"}}\n{{outlet}}'
@@ -396,7 +394,7 @@ describe('Blueprint: route', function () {
         expect(_file('tests/dummy/app/routes/foo.js.js')).to.not.exist;
         expect(_file('tests/dummy/app/templates/foo.js.hbs')).to.not.exist;
 
-        expect(_file('tests/dummy/app/routes/foo.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('tests/dummy/app/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('tests/dummy/app/templates/foo.hbs')).to.equal(
           '{{page-title "Foo"}}\n{{outlet}}'
@@ -416,7 +414,7 @@ describe('Blueprint: route', function () {
     it('route foo/bar --dummy', function () {
       return emberGenerateDestroy(['route', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/routes/foo/bar.js')).to.equal(
-          fixture('route/native-route-nested.js')
+          fixture('route/route-nested.js')
         );
 
         expect(_file('tests/dummy/app/templates/foo/bar.hbs')).to.equal(
@@ -437,7 +435,7 @@ describe('Blueprint: route', function () {
 
     it('route foo --pod', function () {
       return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
-        expect(_file('addon/foo/route.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('addon/foo/route.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('addon/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -461,7 +459,7 @@ describe('Blueprint: route', function () {
         expect(_file('app/foo.js/template.js')).to.not.exist;
         expect(_file('tests/unit/foo.js/route-test.js')).to.not.exist;
 
-        expect(_file('addon/foo/route.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('addon/foo/route.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('addon/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
@@ -494,9 +492,7 @@ describe('Blueprint: route', function () {
 
     it('route foo --in-repo-addon=my-addon', function () {
       return emberGenerateDestroy(['route', 'foo', '--in-repo-addon=my-addon'], (_file) => {
-        expect(_file('lib/my-addon/addon/routes/foo.js')).to.equal(
-          fixture('route/native-route.js')
-        );
+        expect(_file('lib/my-addon/addon/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal(
           '{{page-title "Foo"}}\n{{outlet}}'
@@ -522,9 +518,7 @@ describe('Blueprint: route', function () {
         expect(_file('lib/my-addon/app/templates/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/routes/foo.js-test.js')).to.not.exist;
 
-        expect(_file('lib/my-addon/addon/routes/foo.js')).to.equal(
-          fixture('route/native-route.js')
-        );
+        expect(_file('lib/my-addon/addon/routes/foo.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal(
           '{{page-title "Foo"}}\n{{outlet}}'
@@ -545,7 +539,7 @@ describe('Blueprint: route', function () {
     it('route foo/bar --in-repo-addon=my-addon', function () {
       return emberGenerateDestroy(['route', 'foo/bar', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/routes/foo/bar.js')).to.equal(
-          fixture('route/native-route-nested.js')
+          fixture('route/route-nested.js')
         );
 
         expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal(

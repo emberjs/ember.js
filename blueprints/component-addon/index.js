@@ -4,9 +4,8 @@ const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const useEditionDetector = require('../edition-detector');
 
-module.exports = useEditionDetector({
+module.exports = {
   description: 'Generates a component.',
 
   fileMapTokens: function () {
@@ -73,4 +72,4 @@ module.exports = useEditionDetector({
       path: getPathOption(options),
     };
   },
-});
+};

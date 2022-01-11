@@ -35,9 +35,7 @@ describe('Blueprint: controller', function () {
 
     it('controller foo', function () {
       return emberGenerateDestroy(['controller', 'foo'], (_file) => {
-        expect(_file('app/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
-        );
+        expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
           fixture('controller-test/default.js')
@@ -50,9 +48,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/controllers/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
 
-        expect(_file('app/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
-        );
+        expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
           fixture('controller-test/default.js')
@@ -63,7 +59,7 @@ describe('Blueprint: controller', function () {
     it('controller foo/bar', function () {
       return emberGenerateDestroy(['controller', 'foo/bar'], (_file) => {
         expect(_file('app/controllers/foo/bar.js')).to.equal(
-          fixture('controller/native-controller-nested.js')
+          fixture('controller/controller-nested.js')
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
@@ -80,9 +76,7 @@ describe('Blueprint: controller', function () {
 
       it('controller foo --pod podModulePrefix', function () {
         return emberGenerateDestroy(['controller', 'foo', '--pod'], (_file) => {
-          expect(_file('app/pods/foo/controller.js')).to.equal(
-            fixture('controller/native-controller.js')
-          );
+          expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
             fixture('controller-test/default.js')
@@ -92,9 +86,7 @@ describe('Blueprint: controller', function () {
 
       it('controller foo.js --pod podModulePrefix', function () {
         return emberGenerateDestroy(['controller', 'foo.js', '--pod'], (_file) => {
-          expect(_file('app/pods/foo/controller.js')).to.equal(
-            fixture('controller/native-controller.js')
-          );
+          expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
             fixture('controller-test/default.js')
@@ -120,9 +112,7 @@ describe('Blueprint: controller', function () {
 
     it('controller foo', function () {
       return emberGenerateDestroy(['controller', 'foo'], (_file) => {
-        expect(_file('addon/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
-        );
+        expect(_file('addon/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('app/controllers/foo.js')).to.contain(
           "export { default } from 'my-addon/controllers/foo';"
@@ -140,9 +130,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/controllers/foo.js.js')).to.not.exist;
         expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
 
-        expect(_file('addon/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
-        );
+        expect(_file('addon/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('app/controllers/foo.js')).to.contain(
           "export { default } from 'my-addon/controllers/foo';"
@@ -157,7 +145,7 @@ describe('Blueprint: controller', function () {
     it('controller foo/bar', function () {
       return emberGenerateDestroy(['controller', 'foo/bar'], (_file) => {
         expect(_file('addon/controllers/foo/bar.js')).to.equal(
-          fixture('controller/native-controller-nested.js')
+          fixture('controller/controller-nested.js')
         );
 
         expect(_file('app/controllers/foo/bar.js')).to.contain(
@@ -173,7 +161,7 @@ describe('Blueprint: controller', function () {
     it('controller foo --dummy', function () {
       return emberGenerateDestroy(['controller', 'foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
+          fixture('controller/controller.js')
         );
 
         expect(_file('app/controllers/foo-test.js')).to.not.exist;
@@ -187,7 +175,7 @@ describe('Blueprint: controller', function () {
         expect(_file('tests/dummy/app/controllers/foo.js.js')).to.not.exist;
 
         expect(_file('tests/dummy/app/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
+          fixture('controller/controller.js')
         );
 
         expect(_file('app/controllers/foo-test.js')).to.not.exist;
@@ -199,7 +187,7 @@ describe('Blueprint: controller', function () {
     it('controller foo/bar --dummy', function () {
       return emberGenerateDestroy(['controller', 'foo/bar', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/controllers/foo/bar.js')).to.equal(
-          fixture('controller/native-controller-nested.js')
+          fixture('controller/controller-nested.js')
         );
 
         expect(_file('app/controllers/foo/bar.js')).to.not.exist;
@@ -225,7 +213,7 @@ describe('Blueprint: controller', function () {
     it('controller foo --in-repo-addon=my-addon', function () {
       return emberGenerateDestroy(['controller', 'foo', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
+          fixture('controller/controller.js')
         );
 
         expect(_file('lib/my-addon/app/controllers/foo.js')).to.contain(
@@ -245,7 +233,7 @@ describe('Blueprint: controller', function () {
         expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
 
         expect(_file('lib/my-addon/addon/controllers/foo.js')).to.equal(
-          fixture('controller/native-controller.js')
+          fixture('controller/controller.js')
         );
 
         expect(_file('lib/my-addon/app/controllers/foo.js')).to.contain(
@@ -263,7 +251,7 @@ describe('Blueprint: controller', function () {
         ['controller', 'foo/bar', '--in-repo-addon=my-addon'],
         (_file) => {
           expect(_file('lib/my-addon/addon/controllers/foo/bar.js')).to.equal(
-            fixture('controller/native-controller-nested.js')
+            fixture('controller/controller-nested.js')
           );
 
           expect(_file('lib/my-addon/app/controllers/foo/bar.js')).to.contain(

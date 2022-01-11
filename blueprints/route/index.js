@@ -5,9 +5,8 @@ const path = require('path');
 const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
-const useEditionDetector = require('../edition-detector');
 
-module.exports = useEditionDetector({
+module.exports = {
   description: 'Generates a route and a template, and registers the route with the router.',
 
   availableOptions: [
@@ -122,7 +121,7 @@ module.exports = useEditionDetector({
   normalizeEntityName: function (entityName) {
     return entityName.replace(/\.js$/, ''); //Prevent generation of ".js.js" files
   },
-});
+};
 
 function updateRouter(action, options) {
   let entity = options.entity;
