@@ -219,7 +219,6 @@ jobs:
         partner:
           [
             ember-test-helpers,
-            ember-string,
             ember-legacy-built-in-components,
           ]
     steps:
