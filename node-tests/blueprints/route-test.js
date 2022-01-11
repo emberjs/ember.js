@@ -32,6 +32,7 @@ describe('Blueprint: route', function () {
           modifyPackages([
             { name: 'ember-qunit', delete: true },
             { name: 'ember-cli-qunit', dev: true },
+            { name: 'ember-page-title', dev: true },
           ])
         )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
@@ -291,6 +292,7 @@ describe('Blueprint: route', function () {
           modifyPackages([
             { name: 'ember-qunit', delete: true },
             { name: 'ember-cli-qunit', dev: true },
+            { name: 'ember-page-title', dev: true },
           ])
         )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
@@ -484,6 +486,7 @@ describe('Blueprint: route', function () {
           modifyPackages([
             { name: 'ember-qunit', delete: true },
             { name: 'ember-cli-qunit', dev: true },
+            { name: 'ember-page-title', dev: true },
           ])
         )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
