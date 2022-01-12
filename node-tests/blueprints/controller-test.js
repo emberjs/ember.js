@@ -68,6 +68,41 @@ describe('Blueprint: controller', function () {
       });
     });
 
+    it('controller foo --pod', function () {
+      return emberGenerateDestroy(['controller', 'foo', '--pod'], (_file) => {
+        expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
+
+        expect(_file('tests/unit/foo/controller-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
+    it('controller foo.js --pod', function () {
+      return emberGenerateDestroy(['controller', 'foo.js', '--pod'], (_file) => {
+        expect(_file('app/foo.js/controller.js')).to.not.exist;
+        expect(_file('tests/unit/foo.js/controller-test.js')).to.not.exist;
+
+        expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
+
+        expect(_file('tests/unit/foo/controller-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
+    it('controller foo/bar --pod', function () {
+      return emberGenerateDestroy(['controller', 'foo/bar', '--pod'], (_file) => {
+        expect(_file('app/foo/bar/controller.js')).to.equal(
+          fixture('controller/controller-nested.js')
+        );
+
+        expect(_file('tests/unit/foo/bar/controller-test.js')).to.equal(
+          fixture('controller-test/default-nested.js')
+        );
+      });
+    });
+
     describe('with podModulePrefix', function () {
       enableOctane();
       beforeEach(function () {
@@ -86,10 +121,24 @@ describe('Blueprint: controller', function () {
 
       it('controller foo.js --pod podModulePrefix', function () {
         return emberGenerateDestroy(['controller', 'foo.js', '--pod'], (_file) => {
+          expect(_file('app/pods/foo.js/controller.js')).to.not.exist;
+          expect(_file('tests/unit/pods/foo.js/controller-test.js')).to.not.exist;
           expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
             fixture('controller-test/default.js')
+          );
+        });
+      });
+
+      it('controller foo/bar --pod podModulePrefix', function () {
+        return emberGenerateDestroy(['controller', 'foo/bar', '--pod'], (_file) => {
+          expect(_file('app/pods/foo/bar/controller.js')).to.equal(
+            fixture('controller/controller-nested.js')
+          );
+
+          expect(_file('tests/unit/pods/foo/bar/controller-test.js')).to.equal(
+            fixture('controller-test/default-nested.js')
           );
         });
       });

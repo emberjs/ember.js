@@ -169,6 +169,10 @@ describe('Blueprint: route', function () {
 
     it('route foo --pod', function () {
       return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
+        expect(_file('app/foo.js/route.js')).to.not.exist;
+        expect(_file('app/foo.js/template.hbs')).to.not.exist;
+        expect(_file('tests/unit/foo.js/route-test.js')).to.not.exist;
+
         expect(_file('app/foo/route.js')).to.equal(fixture('route/route.js'));
 
         expect(_file('app/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
@@ -276,6 +280,24 @@ describe('Blueprint: route', function () {
           expect(file('app/router.js')).to.not.contain("this.route('foo.js')");
         }).then(() => {
           expect(file('app/router.js')).to.not.contain("this.route('foo')");
+        });
+      });
+
+      describe('ember-page-title is not installed', function () {
+        beforeEach(function () {
+          return modifyPackages([{ name: 'ember-page-title', delete: true }]);
+        });
+
+        it('route foo', function () {
+          return emberGenerateDestroy(['route', 'foo'], (_file) => {
+            expect(_file('app/templates/foo.hbs')).to.equal('{{outlet}}');
+          });
+        });
+
+        it('route foo/bar', function () {
+          return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
+            expect(_file('app/templates/foo/bar.hbs')).to.equal('{{outlet}}');
+          });
         });
       });
     });
@@ -474,6 +496,24 @@ describe('Blueprint: route', function () {
         expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/default.js'));
       });
     });
+
+    describe('ember-page-title is not installed', function () {
+      beforeEach(function () {
+        return modifyPackages([{ name: 'ember-page-title', delete: true }]);
+      });
+
+      it('route foo', function () {
+        return emberGenerateDestroy(['route', 'foo'], (_file) => {
+          expect(_file('addon/templates/foo.hbs')).to.equal('{{outlet}}');
+        });
+      });
+
+      it('route foo/bar', function () {
+        return emberGenerateDestroy(['route', 'foo/bar'], (_file) => {
+          expect(_file('addon/templates/foo/bar.hbs')).to.equal('{{outlet}}');
+        });
+      });
+    });
   });
 
   describe('in in-repo-addon', function () {
@@ -557,6 +597,24 @@ describe('Blueprint: route', function () {
         expect(_file('tests/unit/routes/foo/bar-test.js')).to.equal(
           fixture('route-test/default-nested.js')
         );
+      });
+    });
+
+    describe('ember-page-title is not installed', function () {
+      beforeEach(function () {
+        return modifyPackages([{ name: 'ember-page-title', delete: true }]);
+      });
+
+      it('route foo', function () {
+        return emberGenerateDestroy(['route', 'foo', '--in-repo-addon=my-addon'], (_file) => {
+          expect(_file('lib/my-addon/addon/templates/foo.hbs')).to.equal('{{outlet}}');
+        });
+      });
+
+      it('route foo/bar', function () {
+        return emberGenerateDestroy(['route', 'foo/bar', '--in-repo-addon=my-addon'], (_file) => {
+          expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal('{{outlet}}');
+        });
       });
     });
   });
