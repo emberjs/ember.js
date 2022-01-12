@@ -6,7 +6,7 @@ const path = require('path');fae
 const execa = require('execa');
 const buildInfo = require('../broccoli/build-info').buildInfo();
 
-function exec(command, args) {
+function exec(command, args) {faed
   // eslint-disable-next-line
   console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
   let stream = execa(command, args);
