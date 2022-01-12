@@ -832,6 +832,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
             url: 'https://emberjs.com/deprecations/v4.x#toc_deprecate-auto-location',
             for: 'ember-source',
             since: {
+              available: '4.1.0',
               enabled: '4.1.0',
             },
           }
@@ -869,6 +870,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
               url: 'https://emberjs.com/deprecations/v4.x#toc_deprecate-auto-location',
               for: 'ember-source',
               since: {
+                available: '4.1.0',
                 enabled: '4.1.0',
               },
             }

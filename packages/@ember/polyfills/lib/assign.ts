@@ -39,6 +39,7 @@ export function assign(target: object, ...rest: object[]): object {
       url: 'https://deprecations.emberjs.com/v4.x/#toc_ember-polyfills-deprecate-assign',
       for: 'ember-source',
       since: {
+        available: '4.0.0',
         enabled: '4.0.0',
       },
     }

@@ -159,7 +159,7 @@ export default class Registry implements IRegistry {
    @param {Object} options
    @return {Container} created container
    */
-  container(options?: ContainerOptions) {
+  container(options?: ContainerOptions): Container {
     return new Container(this, options);
   }
 
@@ -355,7 +355,7 @@ export default class Registry implements IRegistry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Boolean}
    */
-  has(fullName: string) {
+  has(fullName: string): boolean {
     if (!this.isValidFullName(fullName)) {
       return false;
     }
@@ -392,7 +392,7 @@ export default class Registry implements IRegistry {
    @param {String} type
    @param {Object} options
    */
-  optionsForType(type: string, options: TypeOptions) {
+  optionsForType(type: string, options: TypeOptions): void {
     this._typeOptions[type] = options;
   }
 
@@ -410,7 +410,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName: string, options: TypeOptions) {
+  options(fullName: string, options: TypeOptions): void {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   }
@@ -459,7 +459,7 @@ export default class Registry implements IRegistry {
    @param {String} injectionName
    @deprecated
    */
-  injection(fullName: string, property: string) {
+  injection(fullName: string, property: string): void {
     deprecate(
       `As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject \`${property}\` on \`${fullName}\`, or look it up directly using the \`getOwner\` API.`,
       false,
@@ -469,6 +469,7 @@ export default class Registry implements IRegistry {
         url: 'https://deprecations.emberjs.com/v4.x#toc_implicit-injections',
         for: 'ember-source',
         since: {
+          available: '4.0.0',
           enabled: '4.0.0',
         },
       }
