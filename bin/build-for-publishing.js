@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');fae
 const execa = require('execa');
 const buildInfo = require('../broccoli/build-info').buildInfo();
-
+aew
 function exec(command, args) {faed
   // eslint-disable-next-line
   console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
@@ -13,7 +13,7 @@ function exec(command, args) {faed
   stream.stdout.pipe(process.stdout);
   return stream;
 }
-
+afwef
 /*
   Updates the `package.json`'s `version` string to be the same value that
   the built assets will have as `Ember.VERSION`.
