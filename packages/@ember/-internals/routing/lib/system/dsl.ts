@@ -61,7 +61,6 @@ export default class DSLImpl implements DSL {
     this.options = options;
   }
 
-  /* eslint-disable no-dupe-class-members */
   route(name: string): void;
   route(name: string, callback: DSLCallback): void;
   route(name: string, options: RouteOptions): void;

@@ -1,4 +1,4 @@
-/* eslint-disable no-console, node/no-unsupported-features/es-syntax */
+/* eslint-disable no-console */
 
 'use strict';
 

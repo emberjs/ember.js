@@ -346,7 +346,6 @@ const Application = Engine.extend({
   _applicationInstances: null,
 
   init() {
-    // eslint-disable-line no-unused-vars
     this._super(...arguments);
 
     if (DEBUG) {
@@ -1124,7 +1123,6 @@ Application.reopenClass({
     @private
   */
   buildRegistry() {
-    // eslint-disable-line no-unused-vars
     let registry = this._super(...arguments);
 
     commonSetupRegistry(registry);

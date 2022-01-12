@@ -113,7 +113,6 @@ export class AliasedProperty extends ComputedDescriptor {
 }
 
 function AliasedProperty_readOnlySet(obj: object, keyName: string): never {
-  // eslint-disable-line no-unused-vars
   throw new EmberError(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
 }
 

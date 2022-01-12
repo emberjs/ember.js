@@ -1,11 +1,11 @@
 import { ENV } from '@ember/-internals/environment';
-import { _getProp, _setProp, get, set } from '@ember/-internals/metal';
+import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { assert, deprecate, warn } from '@ember/debug';
 import { DeprecationOptions } from '@ember/debug/lib/deprecate';
-import { _backburner, schedule } from '@ember/runloop';
+import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import { EnvironmentDelegate } from '@glimmer/runtime';

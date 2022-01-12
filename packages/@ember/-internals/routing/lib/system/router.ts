@@ -684,8 +684,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     if (DEBUG) {
       let infos = this._routerMicrolib.currentRouteInfos;
       if (this.namespace.LOG_TRANSITIONS) {
-        // eslint-disable-next-line no-console
         assert('expected infos to be set', infos);
+        // eslint-disable-next-line no-console
         console.log(`Intermediate-transitioned into '${EmberRouter._routePath(infos)}'`);
       }
     }

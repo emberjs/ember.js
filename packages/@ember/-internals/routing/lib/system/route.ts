@@ -1477,7 +1477,6 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   setupController(controller: Controller, context: {}, _transition?: Transition) {
-    // eslint-disable-line no-unused-vars
     if (controller && context !== undefined) {
       set(controller, 'model', context);
     }
