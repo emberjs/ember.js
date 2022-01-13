@@ -7,6 +7,8 @@ const path = require('path');
 module.exports = {
   description: 'Generates a helper function.',
 
+  shouldTransformTypeScript: true,
+
   filesPath() {
     let rootPath = 'files';
     return path.join(this.path, rootPath);

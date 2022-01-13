@@ -7,6 +7,8 @@ const inflector = require('inflection');
 module.exports = {
   description: 'Generates an import wrapper.',
 
+  shouldTransformTypeScript: true,
+
   fileMapTokens: function () {
     return {
       __name__: function (options) {
