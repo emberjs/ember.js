@@ -7,6 +7,9 @@ const path = require('path');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a controller unit test.',
+
+  shouldTransformTypeScript: true,
+
   locals: function (options) {
     let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
     let controllerPathName = dasherizedModuleName;
