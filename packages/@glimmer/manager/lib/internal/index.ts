@@ -138,21 +138,21 @@ export function getInternalHelperManager(
     );
   }
 
-  const manager = getManager(HELPER_MANAGERS, definition)!;
+  const manager = getManager(HELPER_MANAGERS, definition);
 
-  if (manager === undefined) {
-    if (isOptional === true) {
-      return null;
-    } else if (DEBUG) {
-      throw new Error(
-        `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${debugToString!(
-          definition
-        )}`
-      );
-    }
+  if (manager) {
+    return manager;
+  } else if (isOptional === true) {
+    return null;
+  } else if (DEBUG) {
+    throw new Error(
+      `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${debugToString!(
+        definition
+      )}`
+    );
   }
 
-  return manager;
+  return null;
 }
 
 export function setInternalComponentManager<T extends object>(
