@@ -56,6 +56,11 @@ export type QueryParamMeta = {
   };
 };
 
+type RouteTransitionState = TransitionState<Route> & {
+  fullQueryParams?: Record<string, unknown>;
+  queryParamsFor?: Record<string, Record<string, unknown>>;
+};
+
 export const ROUTE_CONNECTIONS = new WeakMap();
 const RENDER = (symbol('render') as unknown) as string;
 
@@ -2121,7 +2126,7 @@ type PartialRenderOptions = Partial<
   Pick<RenderOptions, 'into' | 'outlet' | 'controller' | 'model'>
 >;
 
-export function getFullQueryParams(router: EmberRouter, state: TransitionState<Route>) {
+export function getFullQueryParams(router: EmberRouter, state: RouteTransitionState) {
   if (state.fullQueryParams) {
     return state.fullQueryParams;
   }
@@ -2144,7 +2149,7 @@ export function getFullQueryParams(router: EmberRouter, state: TransitionState<R
   return fullQueryParamsState;
 }
 
-function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
+function getQueryParamsFor(route: Route, state: RouteTransitionState) {
   state.queryParamsFor = state.queryParamsFor || {};
   let name = route.fullRouteName;
 

@@ -1,5 +1,6 @@
 import { expandProperties } from '@ember/object/computed';
 
+// eslint-disable-next-line no-console
 expandProperties('{foo}.bar.{baz}', (arg: string) => console.log(arg));
 
 // @ts-expect-error a callback is required

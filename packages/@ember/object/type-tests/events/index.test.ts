@@ -5,10 +5,12 @@ import { on } from '@ember/object/evented';
 
 class Job extends EmberObject {
   logStartOrUpdate = on('started', 'updated', () => {
+    // eslint-disable-next-line no-console
     console.log('Job updated!');
   });
 
   logCompleted = on('completed', () => {
+    // eslint-disable-next-line no-console
     console.log('Job completed!');
   });
 }
