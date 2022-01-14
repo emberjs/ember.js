@@ -1,6 +1,10 @@
 import { buildCapabilities } from '../util/capabilities';
 
-import type { CapturedArguments as Arguments, HelperCapabilities } from '@glimmer/interfaces';
+import type {
+  CapturedArguments as Arguments,
+  HelperCapabilities,
+  HelperManagerWithValue,
+} from '@glimmer/interfaces';
 
 type FnArgs<Args extends Arguments = Arguments> =
   | [...Args['positional'], Args['named']]
@@ -20,11 +24,11 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
     hasScheduledEffect: false,
   }) as HelperCapabilities;
 
-  createHelper(fn: AnyFunction, args: Arguments) {
+  createHelper(fn: AnyFunction, args: Arguments): State {
     return { fn, args };
   }
 
-  getValue({ fn, args }: State) {
+  getValue({ fn, args }: State): unknown {
     if (Object.keys(args.named).length > 0) {
       let argsForFn: FnArgs<Arguments> = [...args.positional, args.named];
 
@@ -34,7 +38,7 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
     return fn(...args.positional);
   }
 
-  getDebugName(fn: AnyFunction) {
+  getDebugName(fn: AnyFunction): string {
     if (fn.name) {
       return `(helper function ${fn.name})`;
     }
