@@ -7,6 +7,8 @@ const inflector = require('inflection');
 module.exports = {
   description: 'Generates import wrappers for a route and its template.',
 
+  shouldTransformTypeScript: true,
+
   fileMapTokens: function () {
     return {
       __templatepath__: function (options) {

@@ -7,6 +7,8 @@ const useTestFrameworkDetector = require('../test-framework-detector');
 module.exports = useTestFrameworkDetector({
   description: 'Generates a route unit test.',
 
+  shouldTransformTypeScript: true,
+
   availableOptions: [
     {
       name: 'reset-namespace',
