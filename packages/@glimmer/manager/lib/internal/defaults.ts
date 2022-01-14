@@ -13,7 +13,7 @@ interface State {
   args: Arguments;
 }
 
-export class FunctionHelperManager {
+export class FunctionHelperManager implements HelperManagerWithValue<State> {
   capabilities = buildCapabilities({
     hasValue: true,
     hasDestroyable: false,
