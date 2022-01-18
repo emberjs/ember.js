@@ -7,7 +7,7 @@ expectTypeOf(
     id: 'test',
     until: '4.0.0',
     for: 'testing',
-    since: { enabled: '3.0.0' },
+    since: { available: '3.0.0', enabled: '3.0.0' },
   })
 ).toEqualTypeOf<PropertyDecorator>();
 
@@ -16,7 +16,7 @@ class Foo {
     id: 'test',
     until: '4.0.0',
     for: 'testing',
-    since: { enabled: '3.0.0' },
+    since: { available: '3.0.0', enabled: '3.0.0' },
   })
   declare deprecatingAlias: unknown;
 

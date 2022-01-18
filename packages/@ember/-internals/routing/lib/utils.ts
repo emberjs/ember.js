@@ -111,7 +111,7 @@ function _calculateCacheValuePrefix(prefix: string, part: string) {
 /*
   Stolen from Controller
 */
-export function calculateCacheKey(prefix: string, parts: string[] = [], values: {}): string {
+export function calculateCacheKey(prefix: string, parts: string[] = [], values: {} | null): string {
   let suffixes = '';
   for (let i = 0; i < parts.length; ++i) {
     let part = parts[i];
