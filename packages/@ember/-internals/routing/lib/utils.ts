@@ -8,7 +8,9 @@ import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export function extractRouteArgs(args: unknown[]) {
+export function extractRouteArgs(
+  args: unknown[]
+): { routeName: string | undefined; models: {}[]; queryParams: object } {
   args = args.slice();
   let possibleQueryParams = args[args.length - 1];
 
@@ -35,14 +37,14 @@ export function extractRouteArgs(args: unknown[]) {
   return { routeName, models, queryParams };
 }
 
-export function getActiveTargetName(router: Router<Route>) {
+export function getActiveTargetName(router: Router<Route>): string {
   let routeInfos = router.activeTransition
     ? router.activeTransition[STATE_SYMBOL]!.routeInfos
     : router.state!.routeInfos;
   return routeInfos[routeInfos.length - 1].name;
 }
 
-export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInfo[]) {
+export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInfo[]): void {
   if (routeInfos['_namesStashed']) {
     return;
   }
@@ -99,7 +101,7 @@ function _calculateCacheValuePrefix(prefix: string, part: string) {
 /*
   Stolen from Controller
 */
-export function calculateCacheKey(prefix: string, parts: string[] = [], values: {}) {
+export function calculateCacheKey(prefix: string, parts: string[] = [], values: {}): string {
   let suffixes = '';
   for (let i = 0; i < parts.length; ++i) {
     let part = parts[i];
@@ -221,7 +223,7 @@ export function prefixRouteNameArg(route: Route, args: any[]) {
   return args;
 }
 
-export function shallowEqual(a: {}, b: {}) {
+export function shallowEqual(a: {}, b: {}): boolean {
   let k;
   let aCount = 0;
   let bCount = 0;
@@ -243,7 +245,7 @@ export function shallowEqual(a: {}, b: {}) {
   return aCount === bCount;
 }
 
-export function deprecateTransitionMethods(frameworkClass: string, methodName: string) {
+export function deprecateTransitionMethods(frameworkClass: string, methodName: string): void {
   deprecate(
     `Calling ${methodName} on a ${frameworkClass} is deprecated. Use the RouterService instead.`,
     false,
@@ -251,6 +253,7 @@ export function deprecateTransitionMethods(frameworkClass: string, methodName: s
       id: 'routing.transition-methods',
       for: 'ember-source',
       since: {
+        available: '3.26.0',
         enabled: '3.26.0',
       },
       until: '5.0.0',

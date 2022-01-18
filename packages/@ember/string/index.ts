@@ -245,6 +245,7 @@ function deprecateImportFromString(
     id: 'ember-string.htmlsafe-ishtmlsafe',
     for: 'ember-source',
     since: {
+      available: '3.25',
       enabled: '3.25',
     },
     until: '4.0.0',

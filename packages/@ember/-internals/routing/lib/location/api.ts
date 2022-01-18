@@ -120,6 +120,7 @@ export default {
         url: 'https://emberjs.com/deprecations/v4.x#toc_deprecate-auto-location',
         for: 'ember-source',
         since: {
+          available: '4.1.0',
           enabled: '4.1.0',
         },
       }

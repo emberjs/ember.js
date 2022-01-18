@@ -112,6 +112,7 @@ const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
     until: '4.4.0',
     for: 'ember-source',
     since: {
+      available: '3.28.0',
       enabled: '3.28.0',
     },
   },
