@@ -690,7 +690,6 @@ const Component = CoreView.extend(
         let eventNames = [];
         let events = eventDispatcher.finalEventNameMapping;
 
-        // tslint:disable-next-line:forin
         for (let key in events) {
           let methodName = events[key];
 
@@ -700,7 +699,6 @@ const Component = CoreView.extend(
         }
         // If in a tagless component, assert that no event handlers are defined
         assert(
-          // tslint:disable-next-line:max-line-length
           `You can not define \`${eventNames}\` function(s) to handle DOM event in the \`${this}\` tagless component since it doesn't have any DOM element.`,
           !eventNames.length
         );

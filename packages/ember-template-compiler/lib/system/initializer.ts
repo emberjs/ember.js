@@ -7,7 +7,6 @@ if (
   has('@ember/-internals/browser-environment') &&
   has('@ember/-internals/glimmer')
 ) {
-  // tslint:disable:no-require-imports
   let emberEnv = require('@ember/-internals/browser-environment');
   let emberGlimmer = require('@ember/-internals/glimmer');
   let emberApp = require('@ember/application');

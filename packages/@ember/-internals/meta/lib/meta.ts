@@ -124,7 +124,7 @@ export class Meta {
     this._listeners = undefined;
   }
 
-  get parent() {
+  get parent(): Meta | null {
     let parent = this._parent;
     if (parent === undefined) {
       let proto = getPrototypeOf(this.source);

@@ -24,7 +24,6 @@ export interface Component {
 }
 
 type Finalizer = () => void;
-// tslint:disable-next-line:no-empty
 function NOOP() {}
 
 /**

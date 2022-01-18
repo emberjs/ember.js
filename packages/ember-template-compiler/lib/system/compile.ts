@@ -24,7 +24,6 @@ export default function compile(
   options: Partial<EmberPrecompileOptions> = {}
 ): Factory {
   if (!template && has('@ember/-internals/glimmer')) {
-    // tslint:disable-next-line:no-require-imports
     template = require('@ember/-internals/glimmer').template;
   }
 

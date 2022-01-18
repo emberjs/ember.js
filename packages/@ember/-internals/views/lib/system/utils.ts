@@ -188,7 +188,7 @@ export function getViewRange(view: View): Range {
   @method getViewClientRects
   @param {Ember.View} view
 */
-export function getViewClientRects(view: View): ClientRectList | DOMRectList {
+export function getViewClientRects(view: View): DOMRectList {
   let range = getViewRange(view);
   return range.getClientRects();
 }

@@ -1,9 +1,9 @@
 import {
-  // @ts-ignore
+  // @ts-expect-error 'next' is not typed
   next,
   run,
   _getCurrentRunLoop,
-  // @ts-ignore
+  // @ts-expect-error '_hasScheduledTimers' is not typed
   _hasScheduledTimers,
 } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';

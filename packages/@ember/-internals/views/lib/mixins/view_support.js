@@ -383,13 +383,11 @@ let mixin = {
   init() {
     this._super(...arguments);
 
-    // tslint:disable-next-line:max-line-length
     assert(
       `You cannot use a computed property for the component's \`elementId\` (${this}).`,
       descriptorForProperty(this, 'elementId') === undefined
     );
 
-    // tslint:disable-next-line:max-line-length
     assert(
       `You cannot use a computed property for the component's \`tagName\` (${this}).`,
       descriptorForProperty(this, 'tagName') === undefined
