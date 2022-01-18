@@ -63,7 +63,6 @@ const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
-    // tslint:disable-next-line:max-line-length
     assert(
       `You cannot invoke a component with both 'id' and 'elementId' at the same time.`,
       !args.named.has('elementId')

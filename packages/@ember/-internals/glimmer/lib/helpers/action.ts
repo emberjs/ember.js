@@ -417,7 +417,6 @@ function makeClosureAction(
     self = context;
     fn = action as Function;
   } else {
-    // tslint:disable-next-line:max-line-length
     assert(
       `An action could not be made for \`${
         debugKey || action

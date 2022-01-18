@@ -26,10 +26,7 @@ interface Observable {
    * observers will be buffered.
    */
   setProperties<K extends keyof this>(hash: Pick<this, K>): Record<K, unknown>;
-  setProperties<K extends keyof this>(
-    // tslint:disable-next-line:unified-signatures
-    hash: { [KK in K]: any }
-  ): Record<K, unknown>;
+  setProperties<K extends keyof this>(hash: { [KK in K]: any }): Record<K, unknown>;
   /**
    * Convenience method to call `propertyWillChange` and `propertyDidChange` in
    * succession.

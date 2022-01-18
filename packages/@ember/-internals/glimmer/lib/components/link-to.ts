@@ -2,7 +2,7 @@ import { Owner } from '@ember/-internals/owner';
 import { RouterState, RoutingService } from '@ember/-internals/routing';
 import { QueryParam } from '@ember/-internals/routing/lib/system/router';
 import { isSimpleClick } from '@ember/-internals/views';
-import { assert, debugFreeze, warn } from '@ember/debug';
+import { assert, debugFreeze, inspect, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
@@ -342,9 +342,14 @@ class LinkTo extends InternalComponent {
       try {
         return routing.generateURL(route, models, query);
       } catch (e) {
-        // tslint:disable-next-line:max-line-length
-        e.message = `While generating link to route "${route}": ${e.message}`;
-        throw e;
+        let details = e instanceof Error ? e.message : inspect(e);
+        let message = `While generating link to route "${route}": ${details}`;
+        if (e instanceof Error) {
+          e.message = message;
+          throw e;
+        } else {
+          throw message;
+        }
       }
     } else {
       return routing.generateURL(route, models, query);

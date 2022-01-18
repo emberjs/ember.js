@@ -129,7 +129,6 @@ function getChainTags(
 
           // If the key is an alias, we need to bootstrap it
           if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
-            // tslint:disable-next-line: no-unused-expression
             item[segment];
           }
         }
@@ -154,7 +153,6 @@ function getChainTags(
       // bootstrap the alias. This is because aliases, unlike other CPs, should
       // always be in sync with the aliased value.
       if (CHAIN_PASS_THROUGH.has(descriptor)) {
-        // tslint:disable-next-line: no-unused-expression
         current[segment];
       }
       break;

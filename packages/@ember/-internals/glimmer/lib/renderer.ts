@@ -61,7 +61,6 @@ export class DynamicScope implements GlimmerDynamicScope {
   }
 
   get(key: 'outletState'): Reference<OutletState | undefined> {
-    // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'
@@ -70,7 +69,6 @@ export class DynamicScope implements GlimmerDynamicScope {
   }
 
   set(key: 'outletState', value: Reference<OutletState | undefined>) {
-    // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'

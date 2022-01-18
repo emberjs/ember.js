@@ -105,7 +105,7 @@ if (DEBUG) {
     if (setters !== undefined && setters[keyName] !== undefined) {
       Object.defineProperty(obj, keyName, setters[keyName]);
 
-      setters[keyName] = undefined;
+      delete setters[keyName];
     }
   };
 
