@@ -4152,10 +4152,9 @@ broccoli-string-replace@^0.1.2:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^3.0.3"
 
-broccoli-typescript-compiler@^7.0.0:
+broccoli-typescript-compiler@tildeio/broccoli-typescript-compiler#typescript-peer:
   version "7.0.0"
-  resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-7.0.0.tgz#a7792ceb8db2ddb3d57e91e429750b4ce9568626"
-  integrity "sha1-p3ks642y3bPVfpHkKXULTOlWhiY= sha512-9BSZc9tVdm3SEbR7uyMQ6XqYMQWkdCvp2dPlZYnENEqbUToCIVOJuOZ24nrenR6N4eTZPnY3R99DkgyoxmRp5A=="
+  resolved "https://codeload.github.com/tildeio/broccoli-typescript-compiler/tar.gz/de6ded9f70183716ca4ce5a067babcf0a285aa8e"
   dependencies:
     broccoli-funnel "^3.0.3"
     broccoli-merge-trees "^4.2.0"
@@ -4163,7 +4162,6 @@ broccoli-typescript-compiler@^7.0.0:
     fs-tree-diff "^2.0.1"
     heimdalljs "0.3.3"
     md5-hex "^3.0.1"
-    typescript "~4.0.3"
     walk-sync "^2.1.0"
 
 broccoli-uglify-sourcemap@^4.0.0:
@@ -11915,11 +11913,6 @@ typescript@^4.5.4:
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.5.4.tgz#a17d3a0263bf5c8723b9c52f43c5084edf13c2e8"
   integrity sha512-VgYs2A2QIRuGphtzFV7aQJduJ2gyfTljngLzjpfW9FoYZF6xuw1W0vW9ghCKLfcWrCFxK81CSGRAvS1pn4fIUg==
-
-typescript@~4.0.3:
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.3.tgz#153bbd468ef07725c1df9c77e8b453f8d36abba5"
-  integrity "sha1-FTu9Ro7wdyXB35x36LRT+NNqu6U= sha512-tEu6DGxGgRJPb/mVPIZ48e69xCn2yRmCgYmDugAVwmJ6o+0u1RI18eO7E7WBTLYLaEVVOhwQmcdhQHweux/WPg=="
 
 uc.micro@^1.0.0, uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"
