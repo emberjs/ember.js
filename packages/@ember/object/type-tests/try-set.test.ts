@@ -1,9 +1,9 @@
 import { trySet } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-let obj = { name: 'Zoey' };
+const obj = { name: 'Zoey' };
 
-let result = trySet(obj, 'contacts.twitter', '@emberjs');
+const result = trySet(obj, 'contacts.twitter', '@emberjs');
 expectTypeOf(result).toEqualTypeOf<string | undefined>();
 
 // @ts-expect-error requires a value

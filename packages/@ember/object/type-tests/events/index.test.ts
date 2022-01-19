@@ -26,9 +26,12 @@ class MyClass extends EmberObject {
     super();
     addListener(this, 'willDestroy', this, 'willDestroyListener');
     addListener(this, 'willDestroy', this, 'willDestroyListener', true);
+
     addListener(this, 'willDestroy', this, this.willDestroyListener);
+
     addListener(this, 'willDestroy', this, this.willDestroyListener, true);
     removeListener(this, 'willDestroy', this, 'willDestroyListener');
+
     removeListener(this, 'willDestroy', this, this.willDestroyListener);
   }
 

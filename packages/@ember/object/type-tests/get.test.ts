@@ -2,7 +2,7 @@ import { get } from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';
 
-let foo = { baz: 1 };
+const foo = { baz: 1 };
 
 // We can infer basic types
 expectTypeOf(get(foo, 'baz')).toEqualTypeOf<number>();

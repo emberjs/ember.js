@@ -1,6 +1,6 @@
 import { defineProperty } from '@ember/object';
 
-let contact = {};
+const contact = {};
 
 // ES5 compatible mode
 defineProperty(contact, 'firstName', {

@@ -2,7 +2,7 @@ import { set } from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';
 
-let foo = { baz: 1 };
+const foo = { baz: 1 };
 
 expectTypeOf(set(foo, 'baz', 2)).toEqualTypeOf<number>();
 
