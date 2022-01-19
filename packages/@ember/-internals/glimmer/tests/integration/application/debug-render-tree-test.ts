@@ -28,7 +28,7 @@ interface CapturedBounds {
 }
 
 function compileTemplate(templateSource: string, options: Partial<EmberPrecompileOptions>) {
-  return compile(templateSource, options) as any;
+  return compile(templateSource, options);
 }
 
 type Expected<T> = T | ((actual: T) => boolean);

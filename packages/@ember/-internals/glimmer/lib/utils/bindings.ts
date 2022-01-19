@@ -116,7 +116,7 @@ export function createSimpleClassNameBindingRef(inner: Reference, path?: string)
         path !== undefined
       );
 
-      return dasherizedPath || (dasherizedPath = dasherize(path!));
+      return dasherizedPath || (dasherizedPath = dasherize(path));
     } else if (value || value === 0) {
       return String(value);
     } else {

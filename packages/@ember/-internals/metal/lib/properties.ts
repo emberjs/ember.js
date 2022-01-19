@@ -72,7 +72,7 @@ export function defineProperty(
   }
 
   if (isClassicDecorator(desc)) {
-    defineDecorator(obj, keyName, desc!, meta);
+    defineDecorator(obj, keyName, desc, meta);
   } else if (desc === null || desc === undefined) {
     defineValue(obj, keyName, data, wasDescriptor, true);
   } else {
@@ -91,9 +91,9 @@ export function defineDecorator(obj: object, keyName: string, desc: Decorator, m
   let propertyDesc;
 
   if (DEBUG) {
-    propertyDesc = desc!(obj, keyName, undefined, meta, true);
+    propertyDesc = desc(obj, keyName, undefined, meta, true);
   } else {
-    propertyDesc = desc!(obj, keyName, undefined, meta);
+    propertyDesc = desc(obj, keyName, undefined, meta);
   }
 
   Object.defineProperty(obj, keyName, propertyDesc as PropertyDescriptor);

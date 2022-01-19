@@ -87,7 +87,7 @@ export const mountHelper = internalHelper(
 
         assert(
           `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-          (owner as Owner).hasRegistration(`engine:${name}`)
+          owner.hasRegistration(`engine:${name}`)
         );
 
         lastName = name;

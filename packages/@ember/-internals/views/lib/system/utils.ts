@@ -229,7 +229,7 @@ export const elMatches: typeof Element.prototype.matches | undefined =
 
 export function matches(el: Element, selector: string): boolean {
   assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
-  return elMatches!.call(el, selector);
+  return elMatches.call(el, selector);
 }
 
 export function contains(a: Node, b: Node): boolean {

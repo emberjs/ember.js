@@ -814,9 +814,9 @@ export function observer<T extends (...args: any[]) => any>(
     dependentKeys = args as string[];
     sync = !ENV._DEFAULT_ASYNC_OBSERVERS;
   } else {
-    func = (funcOrDef as ObserverDefinition<T>).fn;
-    dependentKeys = (funcOrDef as ObserverDefinition<T>).dependentKeys;
-    sync = (funcOrDef as ObserverDefinition<T>).sync;
+    func = funcOrDef.fn;
+    dependentKeys = funcOrDef.dependentKeys;
+    sync = funcOrDef.sync;
   }
 
   assert('observer called without a function', typeof func === 'function');
@@ -831,7 +831,7 @@ export function observer<T extends (...args: any[]) => any>(
   let paths: string[] = [];
 
   for (let i = 0; i < dependentKeys.length; ++i) {
-    expandProperties(dependentKeys[i] as string, (path: string) => paths.push(path));
+    expandProperties(dependentKeys[i], (path: string) => paths.push(path));
   }
 
   setObservers(func as Function, {

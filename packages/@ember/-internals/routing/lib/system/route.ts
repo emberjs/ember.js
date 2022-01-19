@@ -456,7 +456,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     let state = transition ? transition[STATE_SYMBOL] : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
-    let params = Object.assign({}, state!.params[fullName!]);
+    let params = Object.assign({}, state!.params[fullName]);
     let queryParams = getQueryParamsFor(route, state!);
 
     return Object.keys(queryParams).reduce((params, key) => {

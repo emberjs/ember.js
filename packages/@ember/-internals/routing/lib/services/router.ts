@@ -1,4 +1,4 @@
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { EMBER_ROUTING_ROUTER_SERVICE_REFRESH } from '@ember/canary-features';
@@ -58,7 +58,7 @@ export default class RouterService extends Service {
     if (router !== undefined) {
       return router;
     }
-    const owner = getOwner(this) as Owner;
+    const owner = getOwner(this);
     router = owner.lookup('router:main') as EmberRouter;
     return (this[ROUTER] = router);
   }

@@ -32,7 +32,6 @@ if (DEBUG) {
 
   let MANDATORY_SETTERS: WeakMap<
     object,
-    // @ts-ignore
     { [key: string | symbol]: PropertyDescriptorWithMeta }
   > = new WeakMap();
 
@@ -45,7 +44,7 @@ if (DEBUG) {
       return;
     }
 
-    SEEN_TAGS!.add(tag);
+    SEEN_TAGS.add(tag);
 
     if (Array.isArray(obj) && isElementKey(keyName)) {
       return;
