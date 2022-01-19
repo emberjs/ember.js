@@ -6,7 +6,7 @@ import { getOwner, Owner } from '@ember/-internals/owner';
 import { symbol } from '@ember/-internals/utils';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
-import EmberRouter, { QueryParam } from '../system/router';
+import EmberRouter from '../system/router';
 import RouterState from '../system/router_state';
 
 const ROUTER = (symbol('ROUTER') as unknown) as string;
@@ -37,7 +37,12 @@ export default class RoutingService extends Service {
     return this.router.hasRoute(routeName);
   }
 
-  transitionTo(routeName: string, models: {}[], queryParams: QueryParam, shouldReplace: boolean) {
+  transitionTo(
+    routeName: string,
+    models: {}[],
+    queryParams: Record<string, unknown>,
+    shouldReplace: boolean
+  ) {
     let transition = this.router._doTransition(routeName, models, queryParams);
 
     if (shouldReplace) {
@@ -47,15 +52,15 @@ export default class RoutingService extends Service {
     return transition;
   }
 
-  normalizeQueryParams(routeName: string, models: {}[], queryParams: QueryParam) {
+  normalizeQueryParams(routeName: string, models: {}[], queryParams: Record<string, unknown>) {
     this.router._prepareQueryParams(routeName, models, queryParams);
   }
 
-  _generateURL(routeName: string, models: {}[], queryParams: {}) {
+  _generateURL(routeName: string, models: {}[], queryParams: Record<string, unknown>) {
     let visibleQueryParams = {};
     if (queryParams) {
       Object.assign(visibleQueryParams, queryParams);
-      this.normalizeQueryParams(routeName, models, visibleQueryParams as QueryParam);
+      this.normalizeQueryParams(routeName, models, visibleQueryParams);
     }
 
     return this.router.generate(routeName, ...models, {
@@ -63,7 +68,7 @@ export default class RoutingService extends Service {
     });
   }
 
-  generateURL(routeName: string, models: {}[], queryParams: {}) {
+  generateURL(routeName: string, models: {}[], queryParams: Record<string, unknown>) {
     if (this.router._initialTransitionStarted) {
       return this._generateURL(routeName, models, queryParams);
     } else {
@@ -79,7 +84,7 @@ export default class RoutingService extends Service {
 
   isActiveForRoute(
     contexts: {}[],
-    queryParams: QueryParam | undefined,
+    queryParams: Record<string, unknown> | undefined,
     routeName: string,
     routerState: RouterState
   ): boolean {

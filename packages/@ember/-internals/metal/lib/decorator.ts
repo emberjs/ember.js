@@ -13,9 +13,13 @@ export type Decorator = (
   isClassicDecorator?: boolean
 ) => DecoratorPropertyDescriptor;
 
-export function isElementDescriptor(
-  args: any[]
-): args is [object, string, DecoratorPropertyDescriptor] {
+export type ElementDescriptor = [
+  target: object,
+  propertyName: string,
+  descriptor: DecoratorPropertyDescriptor
+];
+
+export function isElementDescriptor(args: unknown[]): args is ElementDescriptor {
   let [maybeTarget, maybeKey, maybeDesc] = args;
 
   return (

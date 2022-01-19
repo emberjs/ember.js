@@ -1,7 +1,7 @@
 import Router, { TransitionState } from 'router_js';
 import { shallowEqual } from '../utils';
 import Route from './route';
-import EmberRouter, { QueryParam } from './router';
+import EmberRouter from './router';
 
 export default class RouterState {
   router: Router<Route>;
@@ -17,7 +17,7 @@ export default class RouterState {
     this.routerJsState = routerJsState;
   }
 
-  isActiveIntent(routeName: string, models: {}[], queryParams?: QueryParam): boolean {
+  isActiveIntent(routeName: string, models: {}[], queryParams?: Record<string, unknown>): boolean {
     let state = this.routerJsState;
     if (!this.router.isActiveIntent(routeName, models, undefined, state)) {
       return false;

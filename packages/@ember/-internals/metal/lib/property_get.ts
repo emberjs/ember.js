@@ -69,7 +69,9 @@ interface MaybeHasIsDestroyed {
   @return {Object} the property value or `null`.
   @public
 */
-export function get(obj: object, keyName: string): any {
+export function get<T extends object, K extends keyof T>(obj: T, keyName: K): T[K];
+export function get(obj: object, keyName: string): unknown;
+export function get(obj: object, keyName: string): unknown {
   assert(
     `Get must be called with two arguments; an object and a property key`,
     arguments.length === 2

@@ -17,6 +17,7 @@ import Route, {
   defaultSerialize,
   getFullQueryParams,
   hasDefaultSerialize,
+  QueryParamMeta,
   RenderOptions,
   ROUTE_CONNECTIONS,
 } from './route';
@@ -110,9 +111,15 @@ export interface QueryParam {
   urlKey: string;
   type: string;
   route: Route;
-  parts: string[];
-  values: {};
+  parts?: string[];
+  values: {} | null;
   scopedPropertyName: string;
+  scope: string;
+  defaultValue: unknown;
+  undecoratedDefaultValue: unknown;
+  serializedValue: string | null | undefined;
+  serializedDefaultValue: string | null | undefined;
+  controllerName: string;
 }
 
 export type PrivateRouteInfo = InternalRouteInfo<Route>;
@@ -174,8 +181,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   currentPath: string | null = null;
   currentRoute = null;
 
-  _qpCache = Object.create(null);
-  _qpUpdates = new Set();
+  _qpCache: Record<string, { qps: QueryParam[]; map: QueryParamMeta['map'] }> = Object.create(null);
+
+  // Set of QueryParam['urlKey']
+  _qpUpdates: Set<string> = new Set();
   _queuedQPChanges: { [key: string]: unknown } = {};
 
   _bucketCache: BucketCache;
@@ -301,7 +310,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   }
 
   _initRouterJs(): void {
-    let location = get(this, 'location');
+    let location = get(this, 'location') as IEmberLocation;
     let router = this;
     let owner = getOwner(this);
     let seen = Object.create(null);
@@ -454,7 +463,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       replaceURL(url: string) {
         if (location.replaceURL) {
           let doReplaceURL = () => {
-            location.replaceURL(url);
+            location.replaceURL!(url);
             set(router, 'currentURL', url);
           };
           once(doReplaceURL);
@@ -534,9 +543,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   */
   startRouting() {
     if (this.setupRouter()) {
-      let initialURL = get(this, 'initialURL');
+      let initialURL = get(this, 'initialURL') as string | undefined;
       if (initialURL === undefined) {
-        initialURL = get(this, 'location').getURL();
+        initialURL = (get(this, 'location') as IEmberLocation).getURL();
       }
       let initialTransition = this.handleURL(initialURL);
       if (initialTransition && initialTransition.error) {
@@ -552,7 +561,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     this._didSetupRouter = true;
     this._setupLocation();
 
-    let location = get(this, 'location');
+    let location = get(this, 'location') as IEmberLocation;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
@@ -726,7 +735,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @private
     @since 1.7.0
   */
-  isActiveIntent(routeName: string, models: {}[], queryParams: QueryParam) {
+  isActiveIntent(routeName: string, models: {}[], queryParams: Record<string, unknown>) {
     return this.currentState!.isActiveIntent(routeName, models, queryParams);
   }
 
@@ -789,6 +798,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     once(this, this._fireQueryParamTransition);
   }
 
+  // The queryParameterName is QueryParam['urlKey']
   _updatingQPChanged(queryParameterName: string) {
     this._qpUpdates.add(queryParameterName);
   }
@@ -897,7 +907,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @param {Object} queryParams
     @return {Void}
   */
-  _serializeQueryParams(routeInfos: PrivateRouteInfo[], queryParams: QueryParam) {
+  _serializeQueryParams(
+    routeInfos: PrivateRouteInfo[],
+    queryParams: Record<string, unknown>
+  ): asserts queryParams is Record<string, string | null | undefined> {
     forEachQueryParam(
       this,
       routeInfos,
@@ -942,7 +955,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @param {Object} queryParams
     @return {Void}
   */
-  _deserializeQueryParams(routeInfos: PrivateRouteInfo[], queryParams: QueryParam) {
+  _deserializeQueryParams(routeInfos: PrivateRouteInfo[], queryParams: Record<string, unknown>) {
     forEachQueryParam(
       this,
       routeInfos,
@@ -989,7 +1002,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @param {Object} queryParams
     @return {Void}
   */
-  _pruneDefaultQueryParamValues(routeInfos: PrivateRouteInfo[], queryParams: {}) {
+  _pruneDefaultQueryParamValues(
+    routeInfos: PrivateRouteInfo[],
+    queryParams: Record<string, string | null | undefined>
+  ) {
     let qps = this._queryParamsFor(routeInfos);
     for (let key in queryParams) {
       let qp = qps.map[key];
@@ -1002,7 +1018,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _doTransition(
     _targetRouteName: string | undefined,
     models: {}[],
-    _queryParams: {},
+    _queryParams: Record<string, unknown>,
     _keepDefaultQueryParamValues?: boolean
   ) {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
@@ -1013,15 +1029,16 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     this._initialTransitionStarted = true;
 
-    let queryParams = {};
+    let queryParams: Record<string, unknown> = {};
 
     this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
 
     Object.assign(queryParams, _queryParams);
+
     this._prepareQueryParams(
       targetRouteName,
       models,
-      queryParams as QueryParam,
+      queryParams,
       Boolean(_keepDefaultQueryParamValues)
     );
 
@@ -1035,7 +1052,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _processActiveTransitionQueryParams(
     targetRouteName: string,
     models: {}[],
-    queryParams: {},
+    queryParams: Record<string, unknown>,
     _queryParams: {}
   ) {
     // merge in any queryParams from the active transition which could include
@@ -1044,7 +1061,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       return;
     }
 
-    let unchangedQPs = {};
+    let unchangedQPs: Partial<QueryParamMeta> = {};
     let qpUpdates = this._qpUpdates;
     let params = getFullQueryParams(this, this._routerMicrolib.activeTransition[STATE_SYMBOL]);
     for (let key in params) {
@@ -1076,7 +1093,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _prepareQueryParams(
     targetRouteName: string,
     models: {}[],
-    queryParams: QueryParam,
+    queryParams: Record<string, unknown>,
     _fromRouterService?: boolean
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
@@ -1099,7 +1116,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   */
   _getQPMeta(routeInfo: PrivateRouteInfo) {
     let route = routeInfo.route;
-    return route && get(route, '_qp');
+    return route && (get(route, '_qp') as Route['_qp']);
   }
 
   /**
@@ -1120,7 +1137,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     }
 
     let shouldCache = true;
-    let map = {};
+    let map: QueryParamMeta['map'] = {};
     let qps = [];
     let qpsByUrlKey = DEBUG ? {} : null;
     let qpMeta;
@@ -1758,7 +1775,7 @@ function didBeginTransition(transition: Transition, router: EmberRouter) {
 function forEachQueryParam(
   router: EmberRouter,
   routeInfos: PrivateRouteInfo[],
-  queryParams: QueryParam,
+  queryParams: Record<string, unknown>,
   callback: (key: string, value: unknown, qp: QueryParam) => void
 ) {
   let qpCache = router._queryParamsFor(routeInfos);
@@ -1856,7 +1873,7 @@ EmberRouter.reopen({
 
   // FIXME: Does this need to be overrideable via extend?
   url: computed(function (this: Router<Route>) {
-    let location = get(this, 'location');
+    let location = get(this, 'location') as string | IEmberLocation;
 
     if (typeof location === 'string') {
       return undefined;

@@ -1,32 +1,36 @@
-import { ObserverMethod } from './-private/types';
+import { Mixin } from '@ember/-internals/metal';
+
+export type ObserverMethod<Target, Sender> =
+  | keyof Target
+  | ((this: Target, sender: Sender, key: string, value: any, rev: number) => void);
 
 /**
  * This mixin provides properties and property observing functionality, core features of the Ember object model.
  */
-interface Observable {
+export interface Observable {
   /**
    * Retrieves the value of a property from the object.
    */
-  get<K extends keyof this>(key: K): unknown;
-  // get<K extends keyof this>(key: K): UnwrapComputedPropertyGetter<this[K]>;
+  get(key: string): unknown;
+
   /**
    * To get the values of multiple properties at once, call `getProperties`
    * with a list of strings or an array:
    */
-  getProperties<K extends keyof this>(list: K[]): Record<K, unknown>;
-  getProperties<K extends keyof this>(...list: K[]): Record<K, unknown>;
+  getProperties<L extends string[]>(list: L): { [Key in L[number]]: unknown };
+  getProperties<L extends string[]>(...list: L): { [Key in L[number]]: unknown };
+
   /**
    * Sets the provided key or path to the value.
    */
-  set<K extends keyof this>(key: K, value: this[K]): this[K];
-  set<T>(key: keyof this, value: T): T;
+  set<T>(key: string, value: T): T;
+
   /**
    * Sets a list of properties at once. These properties are set inside
    * a single `beginPropertyChanges` and `endPropertyChanges` batch, so
    * observers will be buffered.
    */
-  setProperties<K extends keyof this>(hash: Pick<this, K>): Record<K, unknown>;
-  setProperties<K extends keyof this>(hash: { [KK in K]: any }): Record<K, unknown>;
+  setProperties<T extends Record<string, any>>(hash: T): T;
   /**
    * Convenience method to call `propertyWillChange` and `propertyDidChange` in
    * succession.
@@ -69,5 +73,6 @@ interface Observable {
    */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
-// declare const Observable: Mixin<Observable, CoreObject>;
+
+declare const Observable: Mixin;
 export default Observable;

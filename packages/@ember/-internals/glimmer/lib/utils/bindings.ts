@@ -62,8 +62,8 @@ export function installAttributeBinding(
     if (elementId === undefined || elementId === null) {
       elementId = component.elementId;
     }
-    elementId = createPrimitiveRef(elementId);
-    operations.setAttribute('id', elementId, true, null);
+    let elementIdRef = createPrimitiveRef(elementId);
+    operations.setAttribute('id', elementIdRef, true, null);
     return;
   }
 

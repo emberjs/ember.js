@@ -1,6 +1,5 @@
 import { Owner } from '@ember/-internals/owner';
 import { RouterState, RoutingService } from '@ember/-internals/routing';
-import { QueryParam } from '@ember/-internals/routing/lib/system/router';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, debugFreeze, inspect, warn } from '@ember/debug';
 import { EngineInstance, getEngineParent } from '@ember/engine';
@@ -400,8 +399,7 @@ class LinkTo extends InternalComponent {
     flaggedInstrument('interaction.link-to', payload, () => {
       assert('[BUG] route can only be missing if isLoading is true', isPresent(route));
 
-      // TODO: is the signature wrong? this.query is definitely NOT a QueryParam!
-      payload.transition = routing.transitionTo(route, models, query as QueryParam, replace);
+      payload.transition = routing.transitionTo(route, models, query, replace);
     });
   }
 
@@ -448,8 +446,7 @@ class LinkTo extends InternalComponent {
     }
   }
 
-  // TODO: this should probably be Record<string, unknown> or something
-  private get query(): {} {
+  private get query(): Record<string, unknown> {
     if ('query' in this.args.named) {
       let query = this.named('query');
 
@@ -554,8 +551,7 @@ class LinkTo extends InternalComponent {
 
       assert('[BUG] route can only be missing if isLoading is true', isPresent(route));
 
-      // TODO: is the signature wrong? this.query is definitely NOT a QueryParam!
-      return routing.isActiveForRoute(models, query as QueryParam, route, state);
+      return routing.isActiveForRoute(models, query, route, state);
     }
   }
 

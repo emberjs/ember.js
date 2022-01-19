@@ -6,8 +6,9 @@ import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
+import { Transition } from 'router_js';
 import Route from '../system/route';
-import EmberRouter, { QueryParam } from '../system/router';
+import EmberRouter from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
 const ROUTER = (symbol('ROUTER') as unknown) as string;
@@ -115,11 +116,18 @@ export default class RouterService extends Service {
        attempted transition
      @public
    */
-  transitionTo(...args: (string | object)[]) {
+  transitionTo(
+    routeNameOrURL: string,
+    ...modelsAndOptions: [...any[], Record<string, unknown>]
+  ): Transition;
+  transitionTo(routeNameOrURL: string, ...models: any[]): Transition;
+  transitionTo(...modelsAndOptions: [...any[], Record<string, unknown>]): Transition;
+  transitionTo(...models: any[]): Transition;
+  transitionTo(...args: (string | any | Record<string, unknown>)[]): Transition {
     if (resemblesURL(args[0])) {
       // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
       // in 3.6+, so it can be removed when TS is upgraded.
-      return this._router._doURLTransition('transitionTo', args[0] as string);
+      return this._router._doURLTransition('transitionTo', args[0]);
     }
 
     let { routeName, models, queryParams } = extractRouteArgs(args);
@@ -329,10 +337,7 @@ export default class RouterService extends Service {
         // *do not* account for this being `undefined`.
         routeName as string,
         models,
-        // UNSAFE: downstream consumers treat this as `QueryParam`, which the
-        // type system here *correctly* reports as incorrect, because it may be
-        // just an empty object.
-        queryParams as QueryParam,
+        queryParams,
         true /* fromRouterService */
       );
 
