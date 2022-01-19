@@ -337,9 +337,6 @@ export default class RouterService extends Service {
         // *do not* account for this being `undefined`.
         routeName as string,
         models,
-        // UNSAFE: downstream consumers treat this as `QueryParam`, which the
-        // type system here *correctly* reports as incorrect, because it may be
-        // just an empty object.
         queryParams,
         true /* fromRouterService */
       );
