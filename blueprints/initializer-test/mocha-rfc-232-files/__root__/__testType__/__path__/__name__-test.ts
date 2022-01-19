@@ -12,7 +12,9 @@ describe('<%= friendlyTestName %>', function () {
       initialize,
     });
 
-    this.application = this.TestApplication.create({ autoboot: false });
+    this.application = this.TestApplication.create({
+      autoboot: false
+    });
   });
 
   afterEach(function () {

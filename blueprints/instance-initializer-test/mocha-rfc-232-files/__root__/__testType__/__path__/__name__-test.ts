@@ -11,7 +11,11 @@ describe('<%= friendlyTestName %>', function () {
       name: 'initializer under test',
       initialize,
     });
-    this.application = this.TestApplication.create({ autoboot: false });
+
+    this.application = this.TestApplication.create({
+      autoboot: false
+    });
+    
     this.instance = this.application.buildInstance();
   });
   afterEach(function () {

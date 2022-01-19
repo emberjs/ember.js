@@ -13,6 +13,7 @@ module('Unit | Initializer | foo', function (hooks) {
       podModulePrefix = config.podModulePrefix;
       Resolver = Resolver;
     };
+
     this.TestApplication.initializer({
       name: 'initializer under test',
       initialize,
